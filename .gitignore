@@ -24,3 +24,6 @@ state.json
 # OS / Editor
 .DS_Store
 Thumbs.db
+
+# Zigbee2MQTT logs
+zigbee2mqtt/log/
