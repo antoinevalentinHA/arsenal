@@ -1,0 +1,39 @@
+# ==========================================================
+# 🌧️ TEMPLATE BINARY SENSOR — Pluie récente (≤ 1h)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer s’il a plu au cours de la dernière heure,
+#   d’après le capteur de précipitations horaire.
+#
+# ⚙️ Fonctionnement :
+#   - Source : sensor.pluviometre_precipitation_last_hour (mm)
+#   - Seuil : > 0 mm = pluie récente
+#   - Indisponible si données inconnues ou non valides
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.pluie_recente
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Pluie récente (≤1h)"
+      unique_id: pluie_recente_1h
+      default_entity_id: binary_sensor.pluie_recente
+
+      # Capteur disponible uniquement si données valides
+      availability: >
+        {{ states('sensor.pluviometre_precipitation_last_hour')
+           not in ['unknown','unavailable','none',''] }}
+
+      # Précipitations > 0 mm sur la dernière heure
+      state: >
+        {% set pluie = states('sensor.pluviometre_precipitation_last_hour') | float(0) %}
+        {{ pluie > 0 }}
+
+      # Icône dynamique
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:umbrella
+        {% else %}
+          mdi:weather-partly-rainy
+        {% endif %}

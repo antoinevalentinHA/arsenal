@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Meteo — Pluie (capteurs locaux robustes)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#     Fournir des capteurs locaux, robustes et persistants,
+#     pour la pluie, afin de stabiliser les dependances
+#     (utility_meter, dashboards, historiques).
+#
+# 🧩 PERIMETRE
+#     - Stabilisation du cumul "aujourd'hui" avec fallback local
+#     - Exposition d'un total cumulatif persistant (store)
+#
+# 🔗 DEPENDANCES
+#     - Source brute :
+#         sensor.pluviometre_precipitation_aujourd_hui
+#     - Stores :
+#         input_number.pluie_total_local_store
+#         input_number.pluie_today_last
+#
+# 🚫 NE FAIT PAS
+#     - Ne construit pas le total (c'est l'automation)
+#     - Ne fait aucun reset temporel (semaine/mois)
+#
+# 🧠 STATUT ARCHITECTURAL
+#     - Abstraction / robustification (couche "donnees locales")
+# ==========================================================
+
+- sensor:
+
+    # ------------------------------------------------------------
+    # Pluie – Aujourd'hui (local, fallback)
+    # ------------------------------------------------------------
+    - name: "pluie_aujourdhui_local"
+      unique_id: pluie_aujourdhui_local
+      default_entity_id: sensor.pluie_aujourdhui_local
+      unit_of_measurement: "mm"
+      device_class: precipitation
+      state_class: measurement
+      icon: mdi:weather-rainy
+      state: >
+        {% set v = states('sensor.pluviometre_precipitation_aujourd_hui') %}
+        {% if v in ['unknown','unavailable','none','None',''] %}
+          {{ states('sensor.pluie_aujourdhui_local') }}
+        {% else %}
+          {{ v | float(0) }}
+        {% endif %}
+
+    # ------------------------------------------------------------
+    # Pluie – Total cumulatif local (expose le store)
+    # ------------------------------------------------------------
+    - name: "pluie_total_local"
+      unique_id: pluie_total_local
+      default_entity_id: sensor.pluie_total_local
+      unit_of_measurement: "mm"
+      device_class: precipitation
+      state_class: total
+      icon: mdi:weather-pouring
+      state: >
+        {% set v = states('input_number.pluie_total_local_store') %}
+        {% if v in ['unknown','unavailable','none','None',''] %}
+          {{ states('sensor.pluie_total_local') }}
+        {% else %}
+          {{ v | float(0) }}
+        {% endif %}

@@ -1,0 +1,88 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Meteo — Pluie — Totalisateur cumulatif
+# ----------------------------------------------------------
+# ID : 10160000000009
+#
+# 🎯 ROLE
+#     Construire et maintenir un total cumulatif persistant (mm)
+#     a partir d'un cumul journalier (mm) sujet a reset.
+#
+# 🧩 PRINCIPE
+#     - A chaque mise a jour de la pluie du jour (local) 
+#       ou au démarrage stabilisé du système :
+#         • calcule un delta si progression
+#         • ignore les resets/glitches (ne retranche jamais)
+#         • incremente un store persistant
+#         • memorise la derniere valeur traitee
+#
+# 🔗 DEPENDANCES
+#     - Lecture :
+#         sensor.pluie_aujourdhui_local
+#         input_number.pluie_total_local_store
+#         input_number.pluie_today_last
+#     - Ecriture :
+#         input_number.pluie_total_local_store
+#         input_number.pluie_today_last
+#
+# 🚫 NE FAIT PAS
+#     - Ne mesure pas directement la pluie
+#     - Ne corrige pas la source brute
+#     - Ne calcule pas les decoupages hebdo (utility_meter)
+#
+# 🧠 STATUT ARCHITECTURAL
+#     - Construction causale (action) + garantie monotonicite
+# ==========================================================
+
+- id: "10160000000009"
+  alias: "Pluie – Totalisateur cumulatif"
+  mode: single
+
+  trigger:
+
+    # Mise à jour sur variation journalière
+    - platform: state
+      entity_id: sensor.pluie_aujourdhui_local
+
+    # Reconciliation post-demarrage (systeme stable)
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition: []
+
+  action:
+
+    - alias: "Pluie – increment total store"
+      service: input_number.set_value
+      target:
+        entity_id: input_number.pluie_total_local_store
+      data:
+        value: >
+          {% set raw = states('sensor.pluie_aujourdhui_local') %}
+          {% if raw in ['unknown','unavailable','none','None',''] %}
+            {{ states('input_number.pluie_total_local_store') | float(0) }}
+          {% else %}
+            {% set today = raw | float(0) %}
+            {% set last_today = states('input_number.pluie_today_last') | float(0) %}
+            {% set total = states('input_number.pluie_total_local_store') | float(0) %}
+
+            {% if today >= last_today %}
+              {{ (total + (today - last_today)) | round(3) }}
+            {% else %}
+              {{ total | round(3) }}
+            {% endif %}
+          {% endif %}
+
+    - alias: "Pluie – update today_last"
+      service: input_number.set_value
+      target:
+        entity_id: input_number.pluie_today_last
+      data:
+        value: >
+          {% set raw = states('sensor.pluie_aujourdhui_local') %}
+          {% if raw in ['unknown','unavailable','none','None',''] %}
+            {{ states('input_number.pluie_today_last') | float(0) }}
+          {% else %}
+            {{ raw | float(0) }}
+          {% endif %}
