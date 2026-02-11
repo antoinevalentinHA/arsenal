@@ -56,4 +56,5 @@ carte_clim_diagnostic_chauffage_hiver_actif:
       - color: '#111'
     label:
       - font-size: 13px
+      - font-weight: 400
       - color: '#111'

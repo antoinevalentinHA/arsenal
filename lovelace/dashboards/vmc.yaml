@@ -24,6 +24,7 @@ views:
           action: navigate
           navigation_path: /reglages-vmc-dashboard/vmc
 
+
     ########################################################
     # 🧩 VERTICAL STACK PRINCIPAL
     ########################################################

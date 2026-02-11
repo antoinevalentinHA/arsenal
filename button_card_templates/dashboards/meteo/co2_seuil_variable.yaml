@@ -49,17 +49,15 @@ carte_co2_seuils_variables:
             return 'rgba(76,175,80,0.2)';                                       // 🟢 correct
           ]]]
 
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
     name:
       - font-size: 13px
       - font-weight: 500
       - color: '#111'
-
     state:
       - font-size: 18px
-      - font-weight: bold
-      - color: '#111'
-
-    icon:
-      - width: 26px
-      - height: 26px
+      - font-weight: 700
       - color: '#111'

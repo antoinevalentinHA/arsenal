@@ -84,7 +84,7 @@ views:
               - type: custom:button-card
                 template: carte_humidite_absolue
                 entity: sensor.humidite_absolue_chambre_arnaud
-                name: Chambre Arnaud
+                name: Arnaud
                 icon: mdi:water
                 triggers_update:
                   - sensor.humidite_absolue_chambre_arnaud
@@ -93,7 +93,7 @@ views:
               - type: custom:button-card
                 template: carte_humidite_absolue
                 entity: sensor.humidite_absolue_chambre_matthieu
-                name: Chambre Matthieu
+                name: Matthieu
                 icon: mdi:water
                 triggers_update:
                   - sensor.humidite_absolue_chambre_matthieu
@@ -102,7 +102,7 @@ views:
               - type: custom:button-card
                 template: carte_humidite_absolue
                 entity: sensor.humidite_absolue_chambre_parents
-                name: Chambre Parents
+                name: Parents
                 icon: mdi:water
                 triggers_update:
                   - sensor.humidite_absolue_chambre_parents

@@ -56,15 +56,16 @@ deshumidificateur_capteur:
     icon:
       - color: '#111'
     name:
-      - font-size: 14px
+      - font-size: 13px
       - font-weight: 500
       - color: '#111'
     state:
       - font-size: 16px
-      - font-weight: 600
+      - font-weight: 700
       - color: '#111'
     label:
       - font-size: 13px
+      - font-weight: 400
       - color: '#111'
   state_display: |
     [[[

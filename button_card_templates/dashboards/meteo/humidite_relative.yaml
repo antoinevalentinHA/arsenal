@@ -38,9 +38,8 @@ carte_humidite:
       - color: '#111'
     state:
       - font-size: 18px
-      - font-weight: bold
+      - font-weight: 700
       - color: '#111'
-
 
 humidite:
   template: carte_base
@@ -89,10 +88,11 @@ humidite:
       - color: '#111'
     state:
       - font-size: 18px
-      - font-weight: bold
+      - font-weight: 700
       - color: '#111'
     label:
       - font-size: 13px
+      - font-weight: 400
       - color: '#111'
   label: |
     [[[ 

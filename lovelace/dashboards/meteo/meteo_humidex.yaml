@@ -82,7 +82,7 @@ views:
               - type: custom:button-card
                 template: carte_humidex
                 entity: sensor.humidex_chambre_arnaud
-                name: Chambre Arnaud
+                name: Arnaud
                 triggers_update:
                   - sensor.humidex_chambre_arnaud
                   - sensor.couleur_humidex_chambre_arnaud
@@ -90,7 +90,7 @@ views:
               - type: custom:button-card
                 template: carte_humidex
                 entity: sensor.humidex_chambre_matthieu
-                name: Chambre Matthieu
+                name: Matthieu
                 triggers_update:
                   - sensor.humidex_chambre_matthieu
                   - sensor.couleur_humidex_chambre_matthieu
@@ -98,7 +98,7 @@ views:
               - type: custom:button-card
                 template: carte_humidex
                 entity: sensor.humidex_chambre_parents
-                name: Chambre Parents
+                name: Parents
                 triggers_update:
                   - sensor.humidex_chambre_parents
                   - sensor.couleur_humidex_chambre_parents

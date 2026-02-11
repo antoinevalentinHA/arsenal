@@ -63,4 +63,5 @@ carte_clim_diagnostic_presence_babysitting:
       - color: '#111'
     label:
       - font-size: 13px
+      - font-weight: 400
       - color: '#111'

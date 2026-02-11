@@ -93,8 +93,8 @@ carte_integration_critique:
       - font-weight: 500
       - color: "#111"
     state:
-      - font-size: 13px
-      - font-weight: 500
+      - font-size: 14px
+      - font-weight: 400
       - justify-self: center
       - align-self: end
       - color: |

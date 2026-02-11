@@ -16,9 +16,9 @@
 
 carte_precipitations_seuils_variables:
   template: carte_base
-
+  icon: mdi:water
   show_state: true
-  show_icon: false
+  show_icon: true
 
   tap_action:
     action: none
@@ -49,11 +49,14 @@ carte_precipitations_seuils_variables:
             return 'rgba(158,158,158,0.2)';                                    // sec
           ]]]
 
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
     name:
       - font-size: 13px
-      - font-weight: 600
+      - font-weight: 500
       - color: '#111'
-
     state:
       - font-size: 18px
       - font-weight: 700

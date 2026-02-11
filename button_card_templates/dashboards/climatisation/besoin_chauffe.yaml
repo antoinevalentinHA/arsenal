@@ -70,8 +70,9 @@ carte_diagnostic_besoin_chauffe_temperature_min_chambres:
       - color: '#111'
     state:
       - font-size: 18px
-      - font-weight: bold
+      - font-weight: 700
       - color: '#111'
     label:
       - font-size: 13px
+      - font-weight: 400
       - color: '#111'

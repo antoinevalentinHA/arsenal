@@ -270,5 +270,6 @@ carte_chauffage_synthese:
       - font-size: 15px
       - color: '#000000'
     label:
+      - font-weight: 400
       - font-size: 13px
       - color: '#000000'

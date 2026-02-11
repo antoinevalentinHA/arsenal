@@ -56,4 +56,5 @@ carte_diagnostic_chauffage_blocage_aeration:
       - color: '#111'
     label:
       - font-size: 13px
+      - font-weight: 400
       - color: '#111'
