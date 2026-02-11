@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBERS : ECS — Diagnostic de fin de cycle
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Figer les caractéristiques clés du DERNIER cycle ECS
+#   terminé, afin de disposer d’un diagnostic stable :
+#     - Durée totale du cycle
+#     - Température maximale réellement atteinte
+#
+# 🧱 Principe :
+#   - Ces helpers sont mis à jour UNIQUEMENT
+#     en fin de cycle ECS
+#   - Ils conservent la dernière valeur connue
+#     jusqu’au cycle suivant
+#
+# 📌 Important :
+#   - Ces valeurs sont des CONSTATS, pas des objectifs
+#   - Elles ne déclenchent aucune action
+#   - Elles ne modifient jamais le comportement ECS
+#
+# 🔗 Utilisation :
+#   - Dashboards diagnostics ECS
+#   - Logs de fin de cycle
+#   - Calculs d’auto-ajustement (post-mortem)
+#
+# 🧠 Principe Arsenal :
+#   - Le cycle se termine → la réalité est figée
+#   - Les analyses travaillent sur du stable
+#
+# 📐 Unités :
+#   - Durée : minutes
+#   - Température : °C
+# ==========================================================
+
+
+ecs_duree_dernier_cycle_figee:
+  name: ECS - Durée cycle figée
+  min: 0
+  max: 180
+  step: 0.1
+  unit_of_measurement: "min"
+  mode: box
+  icon: mdi:timer-outline
+
+ecs_temperature_max_figee:
+  name: ECS - Température max figée
+  min: 0
+  max: 100
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-high

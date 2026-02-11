@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Plateaux thermostatiques mémorisés
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mémoriser de manière persistante le DERNIER plateau
+#   thermique STRICT valide détecté pour chaque pièce.
+#
+# 📌 Objectif principal :
+#   - Éviter les états `unknown` lorsque
+#     aucun plateau strict n’est détectable
+#   - Fournir une valeur stable et exploitable
+#     pour l’affichage et le diagnostic
+#
+# ⚙️ Fonctionnement :
+#   - Les capteurs détectent un plateau strict (ou non)
+#   - Si un plateau valide est détecté :
+#       → la valeur est stockée dans ce helper
+#   - En absence de plateau :
+#       → la dernière valeur mémorisée est conservée
+#
+# ❗ Important :
+#   - Ces helpers NE DÉTECTENT PAS les plateaux
+#   - Ils ne font QUE MÉMORISER une valeur valide
+#
+# 🔗 Utilisés par :
+#   - Template sensors :
+#       • vicare/chauffage/diagnostic_vannes/plateaux_stricts.yaml
+#       • vicare/chauffage/diagnostic_vannes/affichage_plateau.yaml
+#   - Automatisation :
+#       • vicare/chauffage/update_plateaux_thermostatiques.yaml
+#   - Script :
+#       • vicare/chauffage/reset_plateau.yaml
+#
+# 🧠 Principe Arsenal :
+#   - Les capteurs DÉTECTENT
+#   - Les automatisations DÉCIDENT
+#   - Les helpers MÉMORISENT
+#   - Les dashboards AFFICHENT
+# ==========================================================
+
+
+plateau_chambre_arnaud:
+  name: plateau_chambre_arnaud
+  min: 0
+  max: 30
+  step: 0.1
+
+plateau_chambre_matthieu:
+  name: plateau_chambre_matthieu
+  min: 0
+  max: 30
+  step: 0.1
+
+plateau_chambre_parents:
+  name: plateau_chambre_parents
+  min: 0
+  max: 30
+  step: 0.1

@@ -1,0 +1,112 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Vacances – Orchestration du contexte global
+#
+#  ID : 1009000000006
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’ORCHESTRATION DE CONTEXTE MÉTIER.
+#
+#     Elle applique l’ensemble des mesures de contexte
+#     associées au mode *Vacances* dès que celui-ci
+#     devient actif.
+#
+#     Elle met la maison dans un état sûr, sobre et cohérent,
+#     sans jamais piloter les décisions dynamiques
+#     (chauffage, aération, etc.).
+#
+#  🧱 NATURE
+#
+#     - Orchestration d’intention utilisateur
+#     - Application de règles de contexte global
+#     - Aucune logique décisionnelle autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement sur passage de `mode_maison` à *Vacances*
+#     - Application séquentielle des mesures de contexte :
+#         • blocage des planifications ECS
+#         • désactivation des booléens généraux non pertinents
+#     - Notification utilisateur de synthèse
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas des consignes de chauffage
+#     - Ne pilote pas la décision thermique centrale (V3)
+#     - Ne gère pas la sortie du mode Vacances
+#     - Ne remplace aucun moteur métier spécialisé
+#
+#  🔗 UTILISATION
+#
+#     - Point d’entrée unique du contexte *Vacances*
+#     - Garantit une mise en sécurité cohérente
+#       de la maison lors d’une absence prolongée
+#
+#  🧠 PRINCIPE ARSENAL
+#
+#     Vacances = intention + contexte.
+#     Toute décision dynamique reste
+#     du ressort des moteurs centraux.
+#
+#  🛡️ ROBUSTESSE
+#
+#     Les actions critiques (ECS, alarme)
+#     sont conditionnées à la disponibilité
+#     des intégrations externes.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1009000000006'
+  alias: "Vacances – Application du contexte"
+  description: >
+    Applique les actions de contexte liées au mode *Vacances* :
+    sécurité, climatisation, ECS, alarmes et désactivations générales.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Intention Vacances
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_select.mode_maison
+      to: 'Vacances'
+
+  # ======================================================
+  # 🔄 Actions — Séquence de contexte Vacances
+  # ======================================================
+  action:
+
+    # ⛔ Arrêt planifications ECS (ponctuelle + désinfection)
+    - action: input_boolean.turn_on
+      target:
+        entity_id:
+          - input_boolean.ecs_blocage_planifiee
+
+    - delay: "00:00:01"
+
+    # ⛔ Désactivation booléens généraux
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.mode_vaisselle
+          - input_boolean.ecs_desinfection_active
+          - input_boolean.bouclage_visiteur
+
+    # 🔔 Notification — Synthèse
+    - action: persistent_notification.create
+      data:
+        notification_id: contexte_vacances
+        title: "✈️ Mode Vacances activé"
+        message: >
+          Le mode *Vacances* a été activé à {{ now().strftime('%H:%M') }}.  
+
+          **Actions appliquées :**  
+          • Planification ECS (ponctuel + désinfection) désactivée  
+          • Bouclage visiteur désactivé  
+          • Mode vaisselle désactivé  

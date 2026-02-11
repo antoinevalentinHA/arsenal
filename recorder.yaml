@@ -1,0 +1,318 @@
+auto_purge: true
+purge_keep_days: 7
+commit_interval: 60
+
+include:
+  entities:
+
+    # =====================================================
+    # ==== 🌡️ TEMPÉRATURES – MAISON / PIÈCES ====
+    # =====================================================
+    - sensor.temperature_maison_moyenne_jour
+    - sensor.temperature_exterieure_moyenne_jour
+    - sensor.temperature_min_chambres
+    - sensor.temperature_max_chambres
+    - sensor.temperature_jardin
+    - sensor.temperature_entree
+    - sensor.temperature_sejour
+    - sensor.temperature_palier
+    - sensor.temperature_chambre_arnaud
+    - sensor.temperature_chambre_matthieu
+    - sensor.temperature_chambre_parents
+    - sensor.temperature_petite_maison
+    - sensor.temperature_sdb_parents
+    - sensor.temperature_sdb_enfants
+    - sensor.temperature_garage
+    - sensor.temperature_cave
+    - sensor.temperature_max_rdc
+    - sensor.temperature_sejour_mean_10min
+    - sensor.temperature_sejour_mean_30min
+
+    # =====================================================
+    # ==== 💧 HUMIDITÉ RELATIVE ====
+    # =====================================================
+    - sensor.humidite_relative_jardin
+    - sensor.humidite_relative_entree
+    - sensor.humidite_relative_sejour
+    - sensor.humidite_relative_chambre_arnaud
+    - sensor.humidite_relative_chambre_matthieu
+    - sensor.humidite_relative_chambre_parents
+    - sensor.humidite_relative_petite_maison
+    - sensor.humidite_relative_sdb_parents
+    - sensor.humidite_relative_sdb_enfants
+    - sensor.humidite_relative_garage
+    - sensor.humidite_relative_cave
+
+    # =====================================================
+    # ==== 💦 HUMIDITÉ ABSOLUE ====
+    # =====================================================
+    - sensor.humidite_absolue_jardin
+    - sensor.humidite_absolue_entree
+    - sensor.humidite_absolue_sejour
+    - sensor.humidite_absolue_chambre_arnaud
+    - sensor.humidite_absolue_chambre_matthieu
+    - sensor.humidite_absolue_chambre_parents
+    - sensor.humidite_absolue_petite_maison
+    - sensor.humidite_absolue_sdb_parents
+    - sensor.humidite_absolue_sdb_enfants
+    - sensor.humidite_absolue_garage
+    - sensor.humidite_absolue_cave
+
+    # =====================================================
+    # ==== 🌫️ HUMIDEX ====
+    # =====================================================
+    - sensor.humidex_jardin
+    - sensor.humidex_entree
+    - sensor.humidex_sejour
+    - sensor.humidex_chambre_arnaud
+    - sensor.humidex_chambre_matthieu
+    - sensor.humidex_chambre_parents
+    - sensor.humidex_petite_maison
+
+    # =====================================================
+    # ==== 🫁 CO2 ====
+    # =====================================================
+    - sensor.co2_entree
+    - sensor.co2_sejour
+    - sensor.co2_chambre_arnaud
+    - sensor.co2_chambre_matthieu
+    - sensor.co2_chambre_parents
+    - sensor.co2_petite_maison
+
+    # =====================================================
+    # ==== 🔊 BRUIT ====
+    # =====================================================
+    - sensor.bruit_chambre_arnaud
+    - sensor.bruit_chambre_matthieu
+
+    # =====================================================
+    # ==== 🌧️ PLUIE / PRESSION ====
+    # =====================================================
+    - sensor.pluviometre_precipitation
+    - binary_sensor.zigbee_pluie_water_leak
+    - sensor.pression_chambre_arnaud
+
+    # =====================================================
+    # ==== 🎛️ MODES DE LA MAISON ====
+    # =====================================================
+    - input_select.mode_maison
+    - input_boolean.mode_babysitting
+
+    # =====================================================
+    # ==== 🚨 ALARME ====
+    # =====================================================
+    - alarm_control_panel.alarme_maison
+
+    # =====================================================
+    # ==== 🧍 PRESENCE ====
+    # =====================================================
+    - binary_sensor.presence_famille_unifiee
+    - binary_sensor.presence_famille_securite
+
+    # =====================================================
+    # ==== ❄️ CLIMATISATION ====
+    # =====================================================
+    - switch.clim_power
+    - sensor.clim_mode_local
+    - sensor.clim_target_mode
+    - sensor.clim_consommation_estimee_energie
+    - sensor.clim_consommation_estimee_aujourd_hui
+    - input_datetime.clim_mode_last_change
+
+    # =====================================================
+    #  ==== 🪟 AERATION ====
+    # =====================================================
+
+    - input_boolean.aeration_episode_en_cours
+    - input_boolean.chauffage_blocage_aeration
+    - input_boolean.aeration_pipeline_arme
+    - input_boolean.aeration_confirmee
+    - input_datetime.aeration_debut
+    - input_datetime.chauffage_fin_blocage_aeration
+    - input_datetime.analyse_deltat_disponible
+    - input_number.ref_temp_entree
+    - input_number.ref_temp_sejour
+    - input_number.ref_temp_chambre_arnaud
+    - input_number.ref_temp_chambre_matthieu
+    - input_number.ref_temp_chambre_parents
+    - input_number.ref_temp_palier
+    - input_number.duree_aeration_rdc_stock
+    - input_number.duree_aeration_etage_stock
+
+    # =====================================================
+    # ==== 🍓 SANTÉ PLATEFORME — CORE / SUPERVISOR ====
+    # =====================================================
+    - sensor.home_assistant_supervisor_cpu_percent
+    - sensor.home_assistant_supervisor_memory_percent
+    - sensor.home_assistant_core_cpu_percent
+    - sensor.home_assistant_core_memory_percent
+
+    # =====================================================
+    # ==== 🔌 STABILITÉ RESEAU ====
+    # =====================================================
+    - binary_sensor.internet_disponible
+    - binary_sensor.coupure_secteur
+
+    # =====================================================
+    # ==== 🔥 CHAUFFAGE ====
+    # =====================================================
+    - sensor.programme_chauffage
+    - sensor.chauffage_consigne_confort_local
+    - sensor.chauffage_consigne_reduced_local
+    - sensor.chauffage_parallele_suggeree
+    - sensor.chauffage_pente_suggeree
+    - sensor.temperature_chaudiere_locale
+    - sensor.temperature_de_consigne_appliquee_locale
+    - sensor.ecart_consigne_instantane
+    - sensor.electricite_chaudiere_semaine_local
+    - sensor.electricite_chaudiere_annee_local
+    - sensor.gaz_chauffage_jour
+    - sensor.gaz_chauffage_semaine
+    - sensor.gaz_chauffage_mois
+    - sensor.gaz_chauffage_annee
+    - sensor.gaz_chauffage_total_local
+    - sensor.electricite_chaudiere_semaine
+    - sensor.electricite_chaudiere_annee
+    - input_boolean.chauffage_standby_force
+    - input_boolean.poele_recent
+    - input_boolean.blocage_chauffage_poele
+    - timer.poele_blocage_chauffage
+    - sensor.chauffage_autorisation_cible
+    - sensor.chauffage_mode_calcule
+    - sensor.chauffage_raison_calculee
+    - input_boolean.chauffage_inhibition_geofencing
+    - input_select.chauffage_dernier_mode_decide
+
+    # =====================================================
+    # ==== 🔥 CHAUFFAGE - DIAGNOSTIC THERMIQUE ====
+    # =====================================================
+
+    - sensor.temperature_arret_presence_chambres
+    - sensor.temperature_plancher_absence_chambres
+    - sensor.duree_stabilisation_absence_chambres
+    - sensor.nombre_cycles_jour_presence_chambres
+    - sensor.duree_cycle_moyenne_presence_chambres
+    - sensor.amplitude_oscillation_cycle_presence_chambres
+    - sensor.amplitude_chute_reprise_presence_chambres
+    - sensor.duree_chute_reprise_presence_chambres
+    - sensor.amplitude_overshoot_arret_presence_chambres
+    - sensor.duree_overshoot_arret_presence_chambres
+
+    # =====================================================
+    # ==== 🚿 ECS (EAU CHAUDE SANITAIRE) ====
+    # =====================================================
+    - sensor.ecs_temperature_ballon_securisee
+    - sensor.ecs_consigne_dernier_cycle
+    - sensor.ecs_temperature_max_cycle
+    - sensor.ecs_consigne_chaudiere_securisee
+    - sensor.ecs_fin_cycle_consigne_atteinte
+    - binary_sensor.ecs_chauffe_en_cours_local
+    - sensor.gaz_ecs_jour
+    - sensor.gaz_ecs_semaine
+    - sensor.gaz_ecs_mois
+    - sensor.gaz_ecs_annee
+    - sensor.gaz_ecs_total_local
+    - binary_sensor.ecs_desinfection_retour_vacances_autorisee
+    - timer.vacances_longues_ecs
+
+    # =====================================================
+    # ==== 💨 DÉSHUMIDIFICATEUR ====
+    # =====================================================
+    - binary_sensor.deshumidificateur_actif
+
+    # =====================================================
+    # ==== 🌬️ VMC ====
+    # =====================================================
+    - input_boolean.vmc_haute_vitesse
+
+    # =====================================================
+    # ==== 🛌 WITHINGS ====
+    # =====================================================
+    - sensor.withings_sleep_score_local
+    - sensor.withings_sommeil_total_local
+    - sensor.withings_average_heart_rate_local
+    - sensor.withings_average_respiratory_rate_local
+    - sensor.withings_temperature_du_corps_local
+    - sensor.withings_steps_today_local
+    - sensor.withings_distance_travelled_today_local
+    - sensor.withings_total_calories_burnt_today_local
+    - input_number.duree_sommeil_last
+    - sensor.withings_sommeil_total_moyenne_7j
+    - sensor.withings_sommeil_total_moyenne_14j
+    - sensor.withings_sommeil_total_moyenne_30j
+
+    # =====================================================
+    # ==== 🏭🌫️ IMPRIMERIE – HUMIDEX ====
+    # =====================================================
+    - sensor.humidex_direction
+    - sensor.humidex_compta
+    - sensor.humidex_qualite
+    - sensor.humidex_devis
+    - sensor.humidex_commercial
+    - sensor.humidex_komori
+    - sensor.humidex_bobst
+    - sensor.humidex_media
+
+    # =====================================================
+    # ==== 🏭🔊 IMPRIMERIE – BRUIT ====
+    # =====================================================
+    - sensor.bruit_komori
+    - sensor.bruit_bobst
+    - sensor.bruit_media
+
+    # =====================================================
+    # ==== 🏭🌡️ IMPRIMERIE – TEMPÉRATURES / HUMIDITÉ ====
+    # =====================================================
+    - sensor.temperature_exterieur
+    - sensor.humidite_relative_exterieur
+    - sensor.humidite_absolue_exterieur
+    - sensor.temperature_direction
+    - sensor.humidite_relative_direction
+    - sensor.humidite_absolue_direction
+    - sensor.temperature_compta
+    - sensor.temperature_qualite
+    - sensor.temperature_devis
+    - sensor.temperature_commercial
+    - sensor.temperature_stock_carton
+    - sensor.temperature_stock_pf
+    - sensor.humidite_relative_stock_carton
+    - sensor.humidite_relative_stock_pf
+    - sensor.temperature_komori
+    - sensor.temperature_bobst
+    - sensor.temperature_media
+    - sensor.humidite_relative_komori
+    - sensor.humidite_relative_bobst
+    - sensor.humidite_relative_media
+
+    # =====================================================
+    # ==== 🚗 AUTOMOBILE ====
+    # =====================================================
+    - sensor.autonomie_audi_e_tron_mensuelle
+    - sensor.audi_e_tron_pourcentage_moteur_principal_local
+    - sensor.audi_e_tron_kilometrage_local
+    - sensor.audi_e_tron_autonomie_local
+    - sensor.audi_e_tron_etat_de_charge_local
+    - sensor.audi_a3_sportback_e_tron_range_local
+    - sensor.audi_a3_sportback_e_tron_charging_state_local
+    - sensor.audi_a3_sportback_e_tron_primary_engine_percent_local
+    - input_number.autonomie_audi_etron_full
+    - sensor.distance_audi_e_tron_mensuelle
+    - sensor.distance_audi_e_tron_annuelle
+
+    # =====================================================
+    # ==== ⚡ CONSOMMATION – PRISES ====
+    # =====================================================
+    - sensor.prise_deshumidificateur_energy
+    - sensor.prise_refrigerateur_energy
+    - sensor.prise_buanderie_energy
+    - sensor.prise_lave_vaisselle_energy
+    - sensor.prise_onduleur_energy
+    - sensor.prise_box_energy
+    - sensor.prise_bouclage_energy
+    - sensor.prise_sdb_enfants_energy
+    - sensor.prise_jardin_energy
+    - sensor.prise_sejour_baies_vitrees_energy
+    - sensor.prise_lampe_sejour_energy
+    - sensor.deshumidificateur_energy_proxy
+    - sensor.lave_vaisselle_energy_proxy
+    - sensor.refrigerateur_energy_proxy

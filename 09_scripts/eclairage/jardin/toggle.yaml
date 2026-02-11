@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Éclairage Jardin — TOGGLE MATÉRIEL
+# ----------------------------------------------------------
+# 🚨 STATUT ARCHITECTURAL : DÉCONSEILLÉ (ANTI-PATTERN)
+#
+# ----------------------------------------------------------
+# 🎯 RÔLE TECHNIQUE
+#   Effectuer une bascule directe (toggle) sur la prise Zigbee
+#   pilotant l’éclairage du jardin.
+#
+# ----------------------------------------------------------
+# ⚠️ AVERTISSEMENT MAJEUR
+#
+#   Ce script :
+#     - N’est PAS idempotent
+#     - Ne garantit AUCUN état final
+#     - Dépend entièrement de l’état courant du matériel
+#
+#   ➜ Il est INADAPTÉ à toute logique automatique fiable.
+#
+# ----------------------------------------------------------
+# 🧨 RISQUES CONNUS
+#
+#   - Désynchronisation logique / réalité
+#   - Allumage involontaire en plein jour
+#   - Extinction involontaire la nuit
+#   - Effets de bord en cas de double appel
+#
+# ----------------------------------------------------------
+# 🧠 RÈGLE ARSENAL
+#
+#   - Les AUTOMATISMES doivent utiliser :
+#       • script.jardin_on
+#       • script.jardin_off
+#
+#   - Ce script est réservé à :
+#       • actions manuelles
+#       • tests ponctuels
+#       • debug contrôlé
+#
+# ----------------------------------------------------------
+# 🧩 CONTEXTE D’EXISTENCE
+#
+#   Ce script est conservé volontairement pour :
+#     - accès manuel depuis dashboard
+#     - dépannage rapide
+#
+#   MAIS :
+#     ➜ Toute dépendance automatique est considérée
+#       comme une anomalie architecturale.
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script utilitaire — NON STABLE
+#
+# 📍 Entité :
+#   script.jardin_toggle
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+jardin_toggle:
+  alias: "Éclairage Jardin - Toggle"
+  mode: single
+  sequence:
+    - action: switch.toggle
+      target:
+        entity_id: switch.prise_jardin

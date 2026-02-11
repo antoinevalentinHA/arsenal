@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧊 TEMPLATE TRIGGERED SENSOR — Nom chambre la plus froide
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Identifier **quelle chambre est la plus froide** d’après le
+#   capteur global `sensor.temperature_min_chambres`.
+#
+# ⚙️ Fonctionnement :
+#   - Récupère la valeur de l’attribut `chambre_la_plus_froide`
+#     du capteur `sensor.temperature_min_chambres`.  
+#   - Si l’attribut est absent ou invalide, conserve la dernière
+#     valeur connue pour éviter une sortie vide.  
+#
+# 🧮 Logique :
+#   • Capteur principal : `sensor.nom_chambre_la_plus_froide`  
+#   • Source unique : `sensor.temperature_min_chambres`  
+#   • L’état affiche le nom de la chambre la plus froide.  
+#
+# 🧠 Déclencheurs :
+#   - Changement d’état de `sensor.temperature_min_chambres`.  
+#   - Démarrage de Home Assistant.  
+#
+# 📊 Type : Trigger Template Sensor  
+# 🏷️ Donnée : Nom de pièce (texte)  
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_min_chambres
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Nom chambre la plus froide"
+      unique_id: nom_chambre_la_plus_froide
+      state: >
+        {% set nom = state_attr('sensor.temperature_min_chambres', 'chambre_la_plus_froide') %}
+        {{ nom if nom is not none else states(this.entity_id) }}

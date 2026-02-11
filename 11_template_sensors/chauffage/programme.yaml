@@ -1,0 +1,55 @@
+# ==========================================================
+# 🔥 TEMPLATE SENSOR — Programme Chauffage simplifie
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Identifier clairement le programme actif de ViCare :
+#     - "Confort" si comfort/normal
+#     - "Eco"     si sleep/reduced
+#     - "Inconnu" sinon
+#
+# ⚙️ Source :
+#   climate.vscotho1_200_11_chauffage → active_vicare_program
+#
+# 🧠 Particularites :
+#   - Gere les etats unknown/unavailable/none pour eviter les erreurs.
+#   - Les attributs exposes permettent un diagnostic rapide :
+#       programme_vicare, preset_mode, hvac_action, vicare_api.
+#
+# 📊 Type : Template Sensor  
+# 🔥 Domaine : Chauffage / ViCare
+# ==========================================================
+
+- sensor:
+    - name: "Programme"
+      unique_id: programme_chauffage
+      icon: >
+        {% set prog = state_attr('climate.vscotho1_200_11_chauffage', 'active_vicare_program') | default('none') | lower %}
+        {% if prog in ['comfort', 'normal'] %}
+          mdi:fire
+        {% elif prog in ['sleep', 'reduced'] %}
+          mdi:leaf
+        {% else %}
+          mdi:help-circle-outline
+        {% endif %}
+      state: >
+        {% set prog = state_attr('climate.vscotho1_200_11_chauffage', 'active_vicare_program') | default('none') | lower %}
+        {% if prog in ['comfort', 'normal'] %}
+          Confort
+        {% elif prog in ['sleep', 'reduced'] %}
+          Eco
+        {% else %}
+          Inconnu
+        {% endif %}
+      attributes:
+        programme_vicare: >
+          {% set v = state_attr('climate.vscotho1_200_11_chauffage', 'active_vicare_program') %}
+          {{ v if v not in ['unknown','unavailable',none] else 'Indisponible' }}
+        preset_mode: >
+          {% set v = state_attr('climate.vscotho1_200_11_chauffage', 'preset_mode') %}
+          {{ v if v not in ['unknown','unavailable',none] else 'Indisponible' }}
+        hvac_action: >
+          {% set v = state_attr('climate.vscotho1_200_11_chauffage', 'hvac_action') %}
+          {{ v if v not in ['unknown','unavailable',none] else 'Indisponible' }}
+        vicare_api: >
+          {% set v = states('binary_sensor.vicare_api_disponible') %}
+          {{ v if v not in ['unknown','unavailable','none'] else 'Inconnue' }}

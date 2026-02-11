@@ -1,0 +1,1168 @@
+# ==========================================================
+#  TEMPLATE SENSORS — Humidité Relative “Filtre Période” (multipériode)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Capturer et mémoriser l’**humidité relative** par période météo
+#   (aube / matin / jour / crepuscule / nuit), afin de conserver des
+#   références climatiques comparables sur une même journée.
+#
+# ⚙️ Fonctionnement :
+#   - Chaque entité `sensor.humidite_relative_filtre_<periode>_<zone>` surveille :
+#       • son capteur source (ex : `sensor.humidite_relative_chambre_arnaud`)
+#       • l’état du capteur `sensor.periode_meteo`
+#   - Lorsque `sensor.periode_meteo` = `<periode>` (période portée par le nom
+#     de l’entité), la valeur courante du capteur source est copiée.
+#   - En dehors de cette période, le capteur conserve la dernière valeur capturée
+#     (mémoire via `states(this.entity_id)`).
+#
+# 🧩 Capteurs couverts :
+#   - Généré pour plusieurs zones (chambres, cave, séjour, entrée, extérieur, etc.)
+#   - Chaque zone existe pour plusieurs périodes, selon un schéma strictement identique.
+#
+# 🧮 Logique :
+#   1️⃣ Déduire la période cible depuis le nom de l’entité (`...filtre_<periode>_...`).
+#   2️⃣ Construire la source attendue (`sensor.humidite_relative_<zone>`) par transformation
+#      déterministe de `this.entity_id`.
+#   3️⃣ Si `sensor.periode_meteo` = période cible → copie la valeur de la source.
+#   4️⃣ Sinon → conserve la dernière valeur (`states(this.entity_id)`).
+#
+# ⚠️ Cas particuliers :
+#   - Aucun. Tous les capteurs du fichier utilisent strictement la même logique
+#     via `state: *humidite_relative_filtre_logic`.
+#
+# 🧾 Exemple de rendu :
+#   **État :** `52`
+#
+# 📊 Type : Trigger-based Template Sensor
+# 🌡️ Domaine : Confort / Climat / Humidité relative par période
+# ==========================================================
+
+
+####################################################
+# 🌅 AUBE
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Chambre Arnaud"
+      unique_id: humidite_relative_filtre_aube_chambre_arnaud
+      state: &humidite_relative_filtre_logic >
+        {%- set eid = this.entity_id -%}
+        {%- set prefix = 'sensor.humidite_relative_filtre_' -%}
+        {%- set periode = eid.split(prefix)[1].split('_')[0] -%}
+        {%- set src = eid | replace(prefix ~ periode ~ '_', 'sensor.humidite_relative_') -%}
+        {%- if is_state('sensor.periode_meteo', periode) -%}
+          {{ states(src) }}
+        {%- else -%}
+          {{ states(eid) }}
+        {%- endif -%}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Cave"
+      unique_id: humidite_relative_filtre_aube_cave
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Entree"
+      unique_id: humidite_relative_filtre_aube_entree
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Jardin"
+      unique_id: humidite_relative_filtre_aube_jardin
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Garage"
+      unique_id: humidite_relative_filtre_aube_garage
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Chambre Matthieu"
+      unique_id: humidite_relative_filtre_aube_chambre_matthieu
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Chambre Parents"
+      unique_id: humidite_relative_filtre_aube_chambre_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Petite Maison"
+      unique_id: humidite_relative_filtre_aube_petite_maison
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube SDB Enfants"
+      unique_id: humidite_relative_filtre_aube_sdb_enfants
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube SDB Parents"
+      unique_id: humidite_relative_filtre_aube_sdb_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Séjour"
+      unique_id: humidite_relative_filtre_aube_sejour
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Extérieur"
+      unique_id: humidite_relative_filtre_aube_exterieur
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Direction"
+      unique_id: humidite_relative_filtre_aube_direction
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Compta"
+      unique_id: humidite_relative_filtre_aube_compta
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Qualité"
+      unique_id: humidite_relative_filtre_aube_qualite
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Devis"
+      unique_id: humidite_relative_filtre_aube_devis
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Commercial"
+      unique_id: humidite_relative_filtre_aube_commercial
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Stock Carton"
+      unique_id: humidite_relative_filtre_aube_stock_carton
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Stock PF"
+      unique_id: humidite_relative_filtre_aube_stock_pf
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Komori"
+      unique_id: humidite_relative_filtre_aube_komori
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Bobst"
+      unique_id: humidite_relative_filtre_aube_bobst
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Aube Media"
+      unique_id: humidite_relative_filtre_aube_media
+      state: *humidite_relative_filtre_logic
+
+####################################################
+# 🌤 MATIN
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Chambre Arnaud"
+      unique_id: humidite_relative_filtre_matin_chambre_arnaud
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Cave"
+      unique_id: humidite_relative_filtre_matin_cave
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Entree"
+      unique_id: humidite_relative_filtre_matin_entree
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Jardin"
+      unique_id: humidite_relative_filtre_matin_jardin
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Garage"
+      unique_id: humidite_relative_filtre_matin_garage
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Chambre Matthieu"
+      unique_id: humidite_relative_filtre_matin_chambre_matthieu
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Chambre Parents"
+      unique_id: humidite_relative_filtre_matin_chambre_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Petite Maison"
+      unique_id: humidite_relative_filtre_matin_petite_maison
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin SDB Enfants"
+      unique_id: humidite_relative_filtre_matin_sdb_enfants
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin SDB Parents"
+      unique_id: humidite_relative_filtre_matin_sdb_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Séjour"
+      unique_id: humidite_relative_filtre_matin_sejour
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Extérieur"
+      unique_id: humidite_relative_filtre_matin_exterieur
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Direction"
+      unique_id: humidite_relative_filtre_matin_direction
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Compta"
+      unique_id: humidite_relative_filtre_matin_compta
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Devis"
+      unique_id: humidite_relative_filtre_matin_devis
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Qualité"
+      unique_id: humidite_relative_filtre_matin_qualite
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Commercial"
+      unique_id: humidite_relative_filtre_matin_commercial
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Stock Carton"
+      unique_id: humidite_relative_filtre_matin_stock_carton
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Stock PF"
+      unique_id: humidite_relative_filtre_matin_stock_pf
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Komori"
+      unique_id: humidite_relative_filtre_matin_komori
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Bobst"
+      unique_id: humidite_relative_filtre_matin_bobst
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Matin Media"
+      unique_id: humidite_relative_filtre_matin_media
+      state: *humidite_relative_filtre_logic
+
+####################################################
+# ☀️ JOUR
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Chambre Arnaud"
+      unique_id: humidite_relative_filtre_jour_chambre_arnaud
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Cave"
+      unique_id: humidite_relative_filtre_jour_cave
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Entree"
+      unique_id: humidite_relative_filtre_jour_entree
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Jardin"
+      unique_id: humidite_relative_filtre_jour_jardin
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Garage"
+      unique_id: humidite_relative_filtre_jour_garage
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Chambre Matthieu"
+      unique_id: humidite_relative_filtre_jour_chambre_matthieu
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Chambre Parents"
+      unique_id: humidite_relative_filtre_jour_chambre_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Petite Maison"
+      unique_id: humidite_relative_filtre_jour_petite_maison
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour SDB Enfants"
+      unique_id: humidite_relative_filtre_jour_sdb_enfants
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour SDB Parents"
+      unique_id: humidite_relative_filtre_jour_sdb_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Séjour"
+      unique_id: humidite_relative_filtre_jour_sejour
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Extérieur"
+      unique_id: humidite_relative_filtre_jour_exterieur
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Direction"
+      unique_id: humidite_relative_filtre_jour_direction
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Compta"
+      unique_id: humidite_relative_filtre_jour_compta
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Qualité"
+      unique_id: humidite_relative_filtre_jour_qualite
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Devis"
+      unique_id: humidite_relative_filtre_jour_devis
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Commercial"
+      unique_id: humidite_relative_filtre_jour_commercial
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Stock Carton"
+      unique_id: humidite_relative_filtre_jour_stock_carton
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Stock PF"
+      unique_id: humidite_relative_filtre_jour_stock_pf
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Komori"
+      unique_id: humidite_relative_filtre_jour_komori
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Bobst"
+      unique_id: humidite_relative_filtre_jour_bobst
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Jour Media"
+      unique_id: humidite_relative_filtre_jour_media
+      state: *humidite_relative_filtre_logic
+
+####################################################
+# 🌇 CREPUSCULE
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule Chambre Arnaud"
+      unique_id: humidite_relative_filtre_crepuscule_chambre_arnaud
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule Cave"
+      unique_id: humidite_relative_filtre_crepuscule_cave
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule Entree"
+      unique_id: humidite_relative_filtre_crepuscule_entree
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule Jardin"
+      unique_id: humidite_relative_filtre_crepuscule_jardin
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule Garage"
+      unique_id: humidite_relative_filtre_crepuscule_garage
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule Chambre Matthieu"
+      unique_id: humidite_relative_filtre_crepuscule_chambre_matthieu
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule Chambre Parents"
+      unique_id: humidite_relative_filtre_crepuscule_chambre_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule Petite Maison"
+      unique_id: humidite_relative_filtre_crepuscule_petite_maison
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule SDB Enfants"
+      unique_id: humidite_relative_filtre_crepuscule_sdb_enfants
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule SDB Parents"
+      unique_id: humidite_relative_filtre_crepuscule_sdb_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crepuscule Séjour"
+      unique_id: humidite_relative_filtre_crepuscule_sejour
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Extérieur"
+      unique_id: humidite_relative_filtre_crepuscule_exterieur
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Direction"
+      unique_id: humidite_relative_filtre_crepuscule_direction
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Compta"
+      unique_id: humidite_relative_filtre_crepuscule_compta
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Qualité"
+      unique_id: humidite_relative_filtre_crepuscule_qualite
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Devis"
+      unique_id: humidite_relative_filtre_crepuscule_devis
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Commercial"
+      unique_id: humidite_relative_filtre_crepuscule_commercial
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Stock Carton"
+      unique_id: humidite_relative_filtre_crepuscule_stock_carton
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Stock PF"
+      unique_id: humidite_relative_filtre_crepuscule_stock_pf
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Komori"
+      unique_id: humidite_relative_filtre_crepuscule_komori
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Bobst"
+      unique_id: humidite_relative_filtre_crepuscule_bobst
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Crépuscule Media"
+      unique_id: humidite_relative_filtre_crepuscule_media
+      state: *humidite_relative_filtre_logic
+
+####################################################
+# 🌙 NUIT
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Chambre Arnaud"
+      unique_id: humidite_relative_filtre_nuit_chambre_arnaud
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Cave"
+      unique_id: humidite_relative_filtre_nuit_cave
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Entree"
+      unique_id: humidite_relative_filtre_nuit_entree
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Jardin"
+      unique_id: humidite_relative_filtre_nuit_jardin
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Garage"
+      unique_id: humidite_relative_filtre_nuit_garage
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Chambre Matthieu"
+      unique_id: humidite_relative_filtre_nuit_chambre_matthieu
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Chambre Parents"
+      unique_id: humidite_relative_filtre_nuit_chambre_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Petite Maison"
+      unique_id: humidite_relative_filtre_nuit_petite_maison
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit SDB Enfants"
+      unique_id: humidite_relative_filtre_nuit_sdb_enfants
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit SDB Parents"
+      unique_id: humidite_relative_filtre_nuit_sdb_parents
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Séjour"
+      unique_id: humidite_relative_filtre_nuit_sejour
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Extérieur"
+      unique_id: humidite_relative_filtre_nuit_exterieur
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Direction"
+      unique_id: humidite_relative_filtre_nuit_direction
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Compta"
+      unique_id: humidite_relative_filtre_nuit_compta
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Qualité"
+      unique_id: humidite_relative_filtre_nuit_qualite
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Devis"
+      unique_id: humidite_relative_filtre_nuit_devis
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Commercial"
+      unique_id: humidite_relative_filtre_nuit_commercial
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Stock Carton"
+      unique_id: humidite_relative_filtre_nuit_stock_carton
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Stock PF"
+      unique_id: humidite_relative_filtre_nuit_stock_pf
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Komori"
+      unique_id: humidite_relative_filtre_nuit_komori
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Bobst"
+      unique_id: humidite_relative_filtre_nuit_bobst
+      state: *humidite_relative_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Relative Filtre Nuit Media"
+      unique_id: humidite_relative_filtre_nuit_media
+      state: *humidite_relative_filtre_logic

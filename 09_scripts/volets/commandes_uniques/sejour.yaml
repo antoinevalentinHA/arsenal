@@ -1,0 +1,98 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPTS : Volets séjour (commandes unitaires)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Fournir des commandes UNITAIRES, déterministes et
+#   strictement exécutives pour les volets du séjour
+#   (gauche et droit).
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ
+#
+#   - Piloter individuellement chaque volet du séjour
+#   - Garantir :
+#       • Ouverture complète (100 %)
+#       • Fermeture complète (0 %)
+#
+#   Ces scripts constituent la brique de base utilisée par :
+#     • scripts groupés (ouvrir_volets_sejour / fermer_volets_sejour)
+#     • scripts globaux (tous les volets)
+#     • scénarios météo (pluie, soleil)
+#     • scénarios horaires et présence
+#
+# ----------------------------------------------------------
+# ⚙️ MODE DE FONCTIONNEMENT
+#
+#   - Ouverture :
+#       cover.set_cover_position → position: 100
+#   - Fermeture :
+#       cover.close_cover
+#
+#   ➜ Compatibles avec la "position préférée"
+#     si celle-ci est gérée nativement par le volet.
+#
+# ----------------------------------------------------------
+# 🧠 PHILOSOPHIE ARSENAL
+#
+#   - Scripts PUREMENT exécutifs
+#   - Aucune logique métier
+#   - Aucune décision contextuelle
+#   - Aucune vérification d’état
+#
+#   ➜ Ils exécutent un ordre.
+#   ➜ Ils ne savent PAS pourquoi.
+#
+# ----------------------------------------------------------
+# ❌ CE QUE CES SCRIPTS NE FONT PAS
+#
+#   - Ne testent pas l’état courant du volet
+#   - Ne gèrent pas les erreurs matérielles
+#   - Ne prennent en compte ni météo, ni présence, ni horaires
+#
+# ----------------------------------------------------------
+# 🧩 CAS D’USAGE
+#
+#   - Appels directs depuis Lovelace
+#   - Orchestration par scripts groupés
+#   - Actions météo (pluie, vent, sécurité)
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+ouvrir_volet_sejour_droit:
+  alias: "Ouvrir volet séjour droit"
+  mode: single
+  sequence:
+    - service: cover.set_cover_position
+      target:
+        entity_id: cover.sejour_droit
+      data:
+        position: 100
+
+fermer_volet_sejour_droit:
+  alias: "Fermer volet séjour droit"
+  mode: single
+  sequence:
+    - service: cover.close_cover
+      target:
+        entity_id: cover.sejour_droit
+
+ouvrir_volet_sejour_gauche:
+  alias: "Ouvrir volet séjour gauche"
+  mode: single
+  sequence:
+    - service: cover.set_cover_position
+      target:
+        entity_id: cover.sejour_gauche
+      data:
+        position: 100
+
+fermer_volet_sejour_gauche:
+  alias: "Fermer volet séjour gauche"
+  mode: single
+  sequence:
+    - service: cover.close_cover
+      target:
+        entity_id: cover.sejour_gauche

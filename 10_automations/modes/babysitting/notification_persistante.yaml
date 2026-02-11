@@ -1,0 +1,112 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Babysitting – Projection d’état persistant du mode
+#
+#  ID : 10090000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de PROJECTION D’ÉTAT MÉTIER.
+#
+#     Elle projette dans l’UI une notification persistante
+#     représentant exclusivement l’état courant :
+#
+#         « Mode Babysitting actif »
+#
+#     tant que `input_boolean.mode_babysitting` est à ON,
+#     et la disqualifie explicitement dès sa désactivation.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Projection directe d’un état métier backend
+#     - Zéro logique décisionnelle
+#     - Zéro mémoire événementielle
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement sur tout changement de :
+#         input_boolean.mode_babysitting
+#
+#     - Si ON :
+#         • création notification persistante d’état
+#
+#     - Si OFF :
+#         • disqualification explicite de cette notification
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne trace aucun événement passé
+#     - Ne notifie aucune activation / désactivation
+#     - Ne synthétise aucune action
+#     - Ne dépend d’aucun timer ni contexte
+#
+# ----------------------------------------------------------
+#  🧠 PRINCIPE ARSENAL
+#
+#     Une notification persistante représente
+#     un état métier courant,
+#     jamais une transition ni un historique.
+#
+# ----------------------------------------------------------
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10090000000011"
+  alias: "Babysitting – État persistant du mode"
+  description: >
+    Projette une notification persistante tant que le mode Babysitting
+    est actif, et la disqualifie explicitement à sa désactivation.
+
+  mode: restart
+
+  # ======================================================
+  # 🔔 Déclencheur — Tout changement d’état du mode
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_boolean.mode_babysitting
+
+  # ======================================================
+  # 🔄 Actions — Création ou disqualification de l’état
+  # ======================================================
+  action:
+
+    - choose:
+
+        ####################################################
+        # 🧸 Entrée en mode Babysitting → création état
+        ####################################################
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.mode_babysitting
+              state: "on"
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: mode_babysitting_actif
+                title: "🧸 Mode Babysitting actif"
+                message: >
+                  Le mode *Babysitting* est actuellement actif.
+
+                  Tant que ce mode est présent :
+                  • les présences enfants sont forcées,
+                  • les décisions de sécurité et chauffage
+                    sont adaptées à ce contexte.
+
+        ####################################################
+        # 🔓 Sortie du mode Babysitting → disqualification
+        ####################################################
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.mode_babysitting
+              state: "off"
+          sequence:
+            - service: persistent_notification.dismiss
+              data:
+                notification_id: mode_babysitting_actif

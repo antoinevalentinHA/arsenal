@@ -1,0 +1,138 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Atelier
+#              Reset historique hebdomadaire & recalage min/max
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Outil de maintenance MANUEL permettant de :
+#     - purger l’historique hebdomadaire des conditions atelier
+#     - recalibrer les min/max hebdomadaires de température
+#
+#   Ce script sert à redéfinir un NOUVEAU POINT DE RÉFÉRENCE
+#   pour l’analyse environnementale de l’atelier.
+#
+# ----------------------------------------------------------
+# 🧱 PÉRIMÈTRE MÉTIER
+#
+#   Zones concernées :
+#     - Komori
+#     - Bobst
+#     - Media
+#
+#   Données traitées :
+#     - historiques texte (rolling 4 semaines)
+#     - min / max hebdomadaires
+#
+# ----------------------------------------------------------
+# ⚠️ ACTION DESTRUCTIVE ASSUMÉE
+#
+#   - Les historiques précédents sont définitivement effacés
+#   - Aucune sauvegarde automatique n’est effectuée
+#
+#   ➜ Script à exécuter UNIQUEMENT :
+#     - lors d’un changement de période de référence
+#     - après dérive ou incohérence de lecture
+#     - en début de nouveau cycle d’analyse
+#
+# ----------------------------------------------------------
+# 🔒 PROTECTIONS ET GARANTIES
+#
+#   - Ne touche PAS aux températures minimales nocturnes
+#   - Ne force aucune valeur invalide
+#   - Recalage basé uniquement sur capteurs disponibles
+#
+# ----------------------------------------------------------
+# 🧠 SÉPARATION DES RÔLES
+#
+#   - Les capteurs mesurent
+#   - Les dashboards affichent
+#   - Ce script RÉINITIALISE le cadre d’analyse
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucun déclenchement automatique
+#   - Aucun calcul statistique
+#   - Aucun archivage long terme
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script de maintenance métier — destructif contrôlé
+#
+# 📍 Entité :
+#   script.reset_atelier_historique
+#
+# ⏱️ Fréquence :
+#   Exceptionnelle / manuelle uniquement
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+reset_atelier_historique:
+  alias: "Atelier – Reset historique hebdo + min/max"
+  mode: single
+
+  sequence:
+
+    # ======================================================
+    # 1️⃣ Purge de l'historique texte (4 semaines)
+    # ======================================================
+    - action: input_text.set_value
+      data:
+        value: ""
+      target:
+        entity_id:
+          - input_text.conditions_komori_semaine_1
+          - input_text.conditions_komori_semaine_2
+          - input_text.conditions_komori_semaine_3
+          - input_text.conditions_komori_semaine_4
+
+          - input_text.conditions_bobst_semaine_1
+          - input_text.conditions_bobst_semaine_2
+          - input_text.conditions_bobst_semaine_3
+          - input_text.conditions_bobst_semaine_4
+
+          - input_text.conditions_media_semaine_1
+          - input_text.conditions_media_semaine_2
+          - input_text.conditions_media_semaine_3
+          - input_text.conditions_media_semaine_4
+
+    # ======================================================
+    # 2️⃣ Reinitialisation min/max hebdo depuis capteurs
+    #     (si valeur valide)
+    # ======================================================
+
+    # 🔁 Komori
+    - action: input_number.set_value
+      target:
+        entity_id:
+          - input_number.atelier_komori_temperature_min
+          - input_number.atelier_komori_temperature_max
+      data:
+        value: >
+          {% set v = states('sensor.temperature_komori') | float(none) %}
+          {{ v if v is not none else states('input_number.atelier_komori_temperature_min') }}
+
+    # 🔁 Bobst
+    - action: input_number.set_value
+      target:
+        entity_id:
+          - input_number.atelier_bobst_temperature_min
+          - input_number.atelier_bobst_temperature_max
+      data:
+        value: >
+          {% set v = states('sensor.temperature_bobst') | float(none) %}
+          {{ v if v is not none else states('input_number.atelier_bobst_temperature_min') }}
+
+    # 🔁 Media
+    - action: input_number.set_value
+      target:
+        entity_id:
+          - input_number.atelier_media_temperature_min
+          - input_number.atelier_media_temperature_max
+      data:
+        value: >
+          {% set v = states('sensor.temperature_media') | float(none) %}
+          {{ v if v is not none else states('input_number.atelier_media_temperature_min') }}

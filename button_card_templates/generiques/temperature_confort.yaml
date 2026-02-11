@@ -1,0 +1,26 @@
+#################################################################
+# 🛋️ TEMPÉRATURE — CONFORT THERMIQUE
+# ---------------------------------------------------------------
+# Carte socle UI générique :
+#   - structure visuelle
+#   - gestion des données manquantes
+#   - palette canonique Arsenal
+#
+# ⚠️ Aucune interprétation métier (chauffage / clim).
+# 🔒 Contrat UI neutre — réutilisable.
+#################################################################
+
+carte_temperature_confort:
+  template: carte_capteur
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const GREY = 'rgba(158, 158, 158, 0.2)';
+            return GREY;
+          ]]]

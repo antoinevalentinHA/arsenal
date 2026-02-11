@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Seuil extérieur mini (clim HEAT)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir la température extérieure minimale
+#    en dessous de laquelle la climatisation
+#    n’est PLUS autorisée à fonctionner en mode HEAT.
+#
+# ❄️ Problématique traitée :
+#    - Rendement dégradé de la PAC air/air par grand froid
+#    - Sollicitations excessives et inefficaces
+#    - Risque d’inconfort thermique ou énergétique
+#
+# ⚙️ Fonctionnement :
+#    - Utilisé comme seuil de PROTECTION
+#    - Si T° extérieure < seuil :
+#        → mode HEAT clim interdit
+#        → retour exclusif au chauffage principal
+#    - Aucun déclenchement direct
+#    - Aucune consigne modifiée
+#
+# 🔍 Utilisation :
+#    - Script :
+#        • decision_centrale.yaml (arbitrage global)
+#    - Dashboards :
+#        • affichage état / diagnostic uniquement
+#
+# 🚫 Interdits :
+#    - Ne PAS utiliser comme seuil de déclenchement
+#    - Ne PAS interpréter comme consigne
+#    - Ne PAS modifier automatiquement
+#
+# 📐 Unité :
+#    - °C (température extérieure réelle)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Garde-fou thermique clim HEAT
+# ==========================================================
+
+
+clim_hiver_seuil_temperature_exterieure:
+  name: Température extérieure minimale clim chauffage
+  min: -5
+  max: 10
+  step: 0.5
+  unit_of_measurement: "°C"
+  mode: box

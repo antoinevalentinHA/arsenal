@@ -1,0 +1,93 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Vaisselle : Lancement manuel (wrapper)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Wrapper strictement technique permettant le déclenchement
+#   MANUEL du cycle ECS « vaisselle » via un bouton utilisateur.
+#
+#   Ce script ne décide rien.
+#   Il prépare temporairement le contexte attendu par
+#   la chaîne ECS standard, puis s’efface.
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ UNIQUE
+#
+#   - Activer temporairement `input_boolean.mode_vaisselle`
+#     si celui-ci est inactif
+#   - Déléguer intégralement la logique de sécurité et
+#     de lancement à :
+#       → `script.ecs_vaisselle_lancer_si_ok`
+#   - Restaurer l’état initial sans effet de bord
+#
+# ----------------------------------------------------------
+# ⏱️ SYNCHRONISATION CONTRÔLÉE
+#
+#   - Introduction volontaire de micro-délais :
+#       • propagation d’état Home Assistant
+#       • lecture fiable du mode par `chauffage_ecs_cycle`
+#
+#   Ces délais sont techniques, assumés et documentés.
+#
+# ----------------------------------------------------------
+# ❌ CE SCRIPT NE FAIT PAS
+#
+#   - Aucune vérification métier
+#   - Aucune décision de sécurité
+#   - Aucun pilotage ECS direct
+#   - Aucun contournement des garde-fous existants
+#
+# ----------------------------------------------------------
+# 🧠 PHILOSOPHIE ARSENAL
+#
+#   - Bouton ≠ moteur ≠ décision
+#   - Le bouton n’invente jamais une logique
+#   - Le moteur ECS reste l’unique autorité
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES CLÉS
+#
+#   - input_boolean.mode_vaisselle
+#   - script.ecs_vaisselle_lancer_si_ok
+#   - script.chauffage_ecs_cycle
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+ecs_vaisselle_lancer_via_bouton:
+  alias: "ECS - Vaisselle : Lancer via bouton"
+  mode: single
+
+  sequence:
+    - variables:
+        was_on: "{{ is_state('input_boolean.mode_vaisselle', 'on') }}"
+
+    # ======================================================
+    # 1️⃣ Activation temporaire du mode (si nécessaire)
+    # ======================================================
+    - choose:
+        - conditions: "{{ not was_on }}"
+          sequence:
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.mode_vaisselle
+            # Laisser Home Assistant propager l’état (important)
+            - delay: "00:00:01"
+
+    # ======================================================
+    # 2️⃣ Lancement sécurisé standard
+    # ======================================================
+    - action: script.ecs_vaisselle_lancer_si_ok
+
+    # ======================================================
+    # 3️⃣ Restauration de l’état initial
+    #     (petit délai pour laisser chauffage_ecs_cycle lire le mode)
+    # ======================================================
+    - choose:
+        - conditions: "{{ not was_on }}"
+          sequence:
+            - delay: "00:00:02"
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.mode_vaisselle

@@ -1,0 +1,62 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Diagnostics Batteries
+icon: mdi:battery
+
+views:
+  ####################################
+  # 🔋 DIAGNOSTICS BATTERIES
+  ####################################
+  - title: Batteries
+    path: batteries
+    icon: mdi:battery
+
+    # ==========================================================
+    # 🧭 BADGES — Navigation
+    # ==========================================================
+    badges: !include ../../includes/badges/diagnostics_systeme.yaml
+
+    # ==========================================================
+    # 🧩 CONTENU PRINCIPAL
+    # ==========================================================
+    cards:
+      - type: vertical-stack
+        cards:
+
+          ########################################################
+          # 🔋 SECTION : Batteries (vue unifiée & tri auto)
+          ########################################################
+          - !include ../../includes/section_headers/details.yaml
+
+          - type: custom:auto-entities
+            filter:
+              include:
+                - group: group.batteries
+            sort:
+              method: state
+              numeric: true
+              reverse: false
+            card:
+              type: custom:bar-card
+              unit_of_measurement: "%"
+              show_header_toggle: false
+              entity_row: true
+              severity:
+                - from: 0
+                  to: 25
+                  color: "rgba(244, 67, 54, 0.9)"     # 🔴 critique
+                - from: 26
+                  to: 50
+                  color: "rgba(255, 152, 0, 0.85)"    # 🟠 bas
+                - from: 51
+                  to: 75
+                  color: "rgba(255, 235, 59, 0.85)"   # 🟡 moyen
+                - from: 76
+                  to: 100
+                  color: "rgba(76, 175, 80, 0.9)"     # 🟢 OK
+              style: |
+                ha-card {
+                  border-radius: 12px;
+                  box-shadow: var(--ha-card-box-shadow);
+                  padding: 8px;
+                }

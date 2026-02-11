@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 TEMPLATE SENSOR — Clim : raison de la décision
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Expliquer clairement la raison principale qui motive
+#   l’état actuel ou la non-activation de la climatisation.
+#
+# 🧱 Principe Arsenal :
+#   - Capteur STRICTEMENT explicatif
+#   - Aucune logique de décision
+#   - Aucune action
+#   - Aucune modification d’état
+#
+# 🎯 Hiérarchie des causes (priorité décroissante) :
+#   1. Blocages transversaux (sécurité / cohérence énergétique)
+#   2. Blocages fonctionnels clim
+#   3. Contraintes environnementales
+#   4. Demandes thermiques
+#
+# ⚠️ IMPORTANT :
+#   - Ce capteur consomme UNIQUEMENT des vérités métier
+#   - Aucune comparaison de seuil n’est faite ici
+# ==========================================================
+
+- sensor:
+    - name: "Clim raison decision"
+      unique_id: clim_raison_decision
+      icon: mdi:comment-text-outline
+      state: >
+        {% if is_state('input_boolean.blocage_clim_poele', 'on') %}
+          blocage_poele
+
+        {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+          blocage_aeration
+
+        {% elif is_state('binary_sensor.clim_blocage_horaire_reel', 'on') %}
+          blocage_horaire
+
+        {% elif is_state('binary_sensor.fenetre_ouverte_maison', 'on') %}
+          fenetre_ouverte
+
+        {% elif is_state('binary_sensor.clim_humidex_sup_cible_dry', 'on') %}
+          humidite_elevee
+
+        {% elif is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
+          temperature_elevee
+
+        {% elif is_state('binary_sensor.clim_seuil_allumage_heat_atteint', 'on')
+              and is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+          soutien_chauffage
+
+        {% else %}
+          aucune_demande
+        {% endif %}

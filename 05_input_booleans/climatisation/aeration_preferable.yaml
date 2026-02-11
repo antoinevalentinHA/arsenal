@@ -1,0 +1,41 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Climatisation – Ignorer la recommandation d’aération
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation permettant à la climatisation
+#     (COOL / DRY) de fonctionner même lorsque
+#     l’aération est jugée préférable par le système.
+#
+#     Ce booléen permet de privilégier volontairement
+#     la climatisation à la place de l’aération naturelle.
+#
+#  🧱 Nature :
+#     - Autorisation de substitution
+#     - Choix stratégique manuel
+#
+#  🔄 Fonctionnement :
+#     - ON  : la climatisation peut fonctionner
+#             même si l’aération est recommandée
+#     - OFF : l’aération bloque COOL et DRY
+#
+#  📥 N’effectue PAS :
+#     - aucune détection d’aération
+#     - aucune évaluation de pertinence
+#     - aucune commande directe de la climatisation
+#
+#  📤 Utilisation :
+#     - Lue par le script
+#       Climatisation – Décision centrale
+#     - Intervient exclusivement dans la logique
+#       de disponibilité des modes COOL et DRY
+#
+#  🧠 Principe Arsenal :
+#     - Une recommandation automatique peut
+#       être consciemment contournée
+# ==========================================================
+
+
+clim_ignore_aeration:
+  name: Ignorer le garde-fou aération
+  icon: mdi:tune
+  initial: off

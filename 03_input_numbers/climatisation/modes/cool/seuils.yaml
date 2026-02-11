@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Seuils ON / OFF climatisation (COOL)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir les seuils thermiques explicites
+#    de déclenchement et d’extinction de la
+#    climatisation en mode COOL.
+#
+# 🧠 Principe clé :
+#    Ces seuils matérialisent une hystérésis
+#    volontaire et lisible :
+#      - ON  : température haute de déclenchement
+#      - OFF : température basse d’extinction
+#
+# 🏠 Contextes distincts :
+#    - Présence  : confort prioritaire
+#    - Absence   : tolérance thermique élargie
+#
+# ⚙️ Fonctionnement :
+#    - Lus par des capteurs template dédiés
+#      (seuils_on_off/cool/on|off.yaml)
+#    - Jamais utilisés comme déclencheurs directs
+#    - Jamais modifiés automatiquement
+#
+# 🚫 Interdits :
+#    - Calcul dynamique de ces valeurs
+#    - Utilisation comme consigne cible
+#    - Déclenchement direct d’automatisation
+#
+# 📐 Unité :
+#    - degré Celsius (°C)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Seuils décisionnels explicites
+# ==========================================================
+
+
+clim_seuil_declenchement_presence:
+  name: Seuil déclenchement clim (présence)
+  min: 22
+  max: 28
+  step: 0.5
+  unit_of_measurement: "°C"
+  icon: mdi:home-thermometer-outline
+  mode: box
+
+clim_seuil_declenchement_absence:
+  name: Seuil déclenchement clim (absence)
+  min: 22
+  max: 28
+  step: 0.5
+  unit_of_measurement: "°C"
+  icon: mdi:home-export-outline
+  mode: box
+
+clim_seuil_extinction_presence:
+  name: Seuil extinction clim (présence)
+  min: 20
+  max: 26
+  step: 0.5
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-chevron-down
+
+clim_seuil_extinction_absence:
+  name: Seuil extinction clim (absence)
+  min: 22
+  max: 26
+  step: 0.5
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-off

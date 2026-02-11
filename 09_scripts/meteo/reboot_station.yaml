@@ -1,0 +1,84 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Reboot matériel Netatmo (alimentation)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Redémarrer électriquement un module Netatmo alimenté
+#   via une prise commandée (Zigbee, Wi-Fi, etc.), afin de
+#   corriger un gel du pont HomeKit ou une perte réseau.
+#
+#   Ce script N’ANALYSE RIEN.
+#   Il COUPE puis RELANCE l’alimentation.
+#
+# ----------------------------------------------------------
+# 🧱 POSITION DANS L’ARCHITECTURE
+#
+#   - Script utilitaire bas niveau
+#   - Aucune logique métier Netatmo
+#   - Aucun diagnostic
+#
+#   ➜ Il est appelé UNIQUEMENT par des automatisations
+#     qui ont déjà identifié un dysfonctionnement.
+#
+# ----------------------------------------------------------
+# ⚙️ PRINCIPE TECHNIQUE
+#
+#   - Coupure électrique franche
+#   - Délai fixe volontaire (8 secondes)
+#   - Remise sous tension
+#
+#   ➜ Aucun retry
+#   ➜ Aucun contrôle d’état
+#   ➜ Aucun appel cloud
+#
+# ----------------------------------------------------------
+# 🧩 GÉNÉRICITÉ
+#
+#   - Script volontairement paramétrable
+#   - La prise à redémarrer est fournie en argument
+#
+#   ➜ Un seul script
+#   ➜ Zéro duplication
+#
+# ----------------------------------------------------------
+# 🔐 PARAMÈTRE OBLIGATOIRE
+#
+#   switch_entity :
+#     Entité `switch.*` alimentant le module Netatmo
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Aucune vérification HomeKit
+#   - Aucune détection de panne
+#   - Aucun retry intelligent
+#   - Aucune notification
+#
+#   ➜ Toute intelligence est volontairement EXTERNE
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script utilitaire — infrastructure / alimentation
+#
+# 📍 Entité :
+#   script.reboot_netatmo
+#
+# 🔁 Mode :
+#   single (pas de parallélisme)
+#
+# ✅ Compatibilité :
+#   Home Assistant 2025+
+#   Arsenal v6+
+# ==========================================================
+
+
+reboot_netatmo:
+  alias: Redémarrage station Netatmo
+  mode: single
+  sequence:
+    - service: switch.turn_off
+      target:
+        entity_id: "{{ switch_entity }}"
+    - delay: "00:00:08"
+    - service: switch.turn_on
+      target:
+        entity_id: "{{ switch_entity }}"

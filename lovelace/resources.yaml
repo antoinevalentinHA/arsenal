@@ -1,0 +1,23 @@
+# 📈 Mini Graph Card
+- url: /local/mini-graph-card/mini-graph-card-bundle.js
+  type: module
+
+# 🔘 Button Card
+- url: /local/button-card/button-card.js
+  type: module
+
+# 📊 Bar Card
+- url: /local/bar-card/bar-card.js
+  type: module
+
+# 🎨 Card Mod
+- url: /local/lovelace-card-mod/card-mod.js
+  type: module
+
+# 📊 ApexCharts Card
+- url: /local/apexcharts-card/apexcharts-card.js
+  type: module
+
+# ⚙️ Auto Entities
+- url: /local/lovelace-auto-entities/auto-entities.js
+  type: module

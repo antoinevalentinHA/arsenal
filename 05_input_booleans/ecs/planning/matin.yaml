@@ -1,0 +1,138 @@
+# ==========================================================
+# 🚿 INPUT BOOLEAN — ECS Lundi matin activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du lundi matin est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Lundi matin activé  
+#   - Icône : mdi:shower-head
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_monday_matin_active
+# ==========================================================
+
+ecs_monday_matin_active:
+  name: ECS Lundi matin activé
+  icon: mdi:shower-head
+
+
+# ==========================================================
+# 🚿 INPUT BOOLEAN — ECS Mardi matin activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du mardi matin est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Mardi matin activé  
+#   - Icône : mdi:shower-head
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_tuesday_matin_active
+# ==========================================================
+
+ecs_tuesday_matin_active:
+  name: ECS Mardi matin activé
+  icon: mdi:shower-head
+
+
+# ==========================================================
+# 🚿 INPUT BOOLEAN — ECS Mercredi matin activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du mercredi matin est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Mercredi matin activé  
+#   - Icône : mdi:shower-head
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_wednesday_matin_active
+# ==========================================================
+
+ecs_wednesday_matin_active:
+  name: ECS Mercredi matin activé
+  icon: mdi:shower-head
+
+
+# ==========================================================
+# 🚿 INPUT BOOLEAN — ECS Jeudi matin activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du jeudi matin est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Jeudi matin activé  
+#   - Icône : mdi:shower-head
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_thursday_matin_active
+# ==========================================================
+
+ecs_thursday_matin_active:
+  name: ECS Jeudi matin activé
+  icon: mdi:shower-head
+
+
+# ==========================================================
+# 🚿 INPUT BOOLEAN — ECS Vendredi matin activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du vendredi matin est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Vendredi matin activé  
+#   - Icône : mdi:shower-head
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_friday_matin_active
+# ==========================================================
+
+ecs_friday_matin_active:
+  name: ECS Vendredi matin activé
+  icon: mdi:shower-head
+
+
+# ==========================================================
+# 🚿 INPUT BOOLEAN — ECS Samedi matin activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du samedi matin est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Samedi matin activé  
+#   - Icône : mdi:shower-head
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_saturday_matin_active
+# ==========================================================
+
+ecs_saturday_matin_active:
+  name: ECS Samedi matin activé
+  icon: mdi:shower-head
+
+
+# ==========================================================
+# 🚿 INPUT BOOLEAN — ECS Dimanche matin activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du dimanche matin est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Dimanche matin activé  
+#   - Icône : mdi:shower-head
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_sunday_matin_active
+# ==========================================================
+
+ecs_sunday_matin_active:
+  name: ECS Dimanche matin activé
+  icon: mdi:shower-head

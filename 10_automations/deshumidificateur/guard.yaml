@@ -1,0 +1,97 @@
+# ==========================================================
+#  🧠 ARSENAL — GUARD :
+#     Déshumidificateur – Invariant logique d’autorisation
+#
+#  ID : 10060000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Garde-fou logique fondamental du sous-système
+#     déshumidification.
+#
+#     Ce GUARD interdit toute situation où le
+#     déshumidificateur est actif alors que la
+#     recommandation logique de fonctionnement
+#     est absente.
+#
+#     Il s’applique en permanence, indépendamment
+#     de toute logique métier ou de confort.
+#
+#  🛡️ PRINCIPE
+#
+#     - Surveillance continue de deux états binaires :
+#         • état réel du déshumidificateur
+#         • recommandation logique de démarrage
+#
+#     - Détection d’un état interdit :
+#         • actif alors que non recommandé
+#
+#     - Correction immédiate et unilatérale
+#
+#     Aucune temporisation.
+#     Aucune interprétation.
+#     Aucune négociation.
+#
+#  🚫 CE QUE CE GUARD NE FAIT PAS
+#
+#     - Ne calcule PAS l’humidité
+#     - Ne définit AUCUN seuil
+#     - Ne prend AUCUNE décision de confort
+#     - Ne planifie AUCUNE action
+#
+#  ✅ CE QUE CE GUARD FAIT EXCLUSIVEMENT
+#
+#     - Impose un invariant logique non négociable
+#     - Corrige une contradiction persistante
+#     - Garantit la cohérence état ↔ autorisation
+#
+#  🧠 AUTORITÉ D’EXÉCUTION
+#
+#     script.set_deshumidificateur_state
+#
+#     → script unique responsable de l’état réel
+#       du déshumidificateur.
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     GUARD défensif de niveau fondamental :
+#     invariants > recommandations > décisions.
+#
+#     Toute autre logique doit composer avec lui,
+#     jamais l’inverse.
+# ==========================================================
+
+
+- id: "10060000000003"
+  alias: "GUARD – Déshumidificateur – État interdit"
+  mode: restart
+
+  # ======================================================
+  # 🔔 Déclencheurs — Événementiels uniquement
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.deshumidificateur_actif
+        - binary_sensor.deshumidificateur_cave_demarrage_recommande
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ======================================================
+  # 🧠 Condition — Etat interdit
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: >
+        {{ is_state('binary_sensor.deshumidificateur_actif', 'on')
+           and is_state('binary_sensor.deshumidificateur_cave_demarrage_recommande', 'off') }}
+
+  # ======================================================
+  # 🔄 Action — Extinction défensive
+  # ======================================================
+  action:
+    - action: script.set_deshumidificateur_state
+      data:
+        target_state: "off"

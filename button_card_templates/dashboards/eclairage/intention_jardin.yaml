@@ -1,0 +1,125 @@
+# ==============================================================
+# 🧠 ARSENAL — BUTTON CARD :
+#     Jardin – Intention eclairage
+# --------------------------------------------------------------
+# Carte d’intention OPÉRATIONNELLE (dashboard niveau 0).
+#
+# Source :
+#   sensor.jardin_intention_eclairage
+#
+# Rôle :
+#   - Exposer ce que le système s’attend à faire
+#   - Donner une lecture immédiate (quoi / pourquoi)
+# ==============================================================
+
+carte_jardin_intention_eclairage:
+  template: carte_base
+
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+
+  name: Intention éclairage jardin
+
+  # ------------------------------------------------------------
+  # 🧠 Texte principal (state)
+  # ------------------------------------------------------------
+  state_display: |
+    [[[ 
+      const map = {
+        'Matin – allumage attendu': 'Allumage matin attendu',
+        'Matin – attente presence': 'Attente présence (matin)',
+        'Soir – allumage attendu': 'Allumage soir attendu',
+        'Soir – attente presence': 'Attente présence (soir)',
+        'Soir – extinction autorisee': 'Extinction autorisée',
+        'Aucun eclairage attendu': 'Aucun éclairage attendu'
+      };
+      return map[entity.state] || entity.state;
+    ]]]
+
+  # ------------------------------------------------------------
+  # 🧾 Label explicatif (diagnostic humain)
+  # ------------------------------------------------------------
+  label: |
+    [[[
+      const a = entity.attributes || {};
+      if (entity.state.includes('attente presence')) {
+        return 'Présence non détectée';
+      }
+      if (entity.state === 'Soir – extinction autorisee') {
+        return 'Confort OK · extinction possible';
+      }
+      if (entity.state === 'Aucun eclairage attendu') {
+        return 'Aucun cycle actif';
+      }
+      return '—';
+    ]]]
+
+  # ------------------------------------------------------------
+  # 🎨 Styles conditionnels (couleur = intention)
+  # ------------------------------------------------------------
+  state:
+    # 🟢 Allumage attendu
+    - value: 'Matin – allumage attendu'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'Soir – allumage attendu'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    # 🟡 Attente présence
+    - value: 'Matin – attente presence'
+      styles:
+        card:
+          - background-color: rgba(255,235,59,0.2)
+
+    - value: 'Soir – attente presence'
+      styles:
+        card:
+          - background-color: rgba(255,235,59,0.2)
+
+    # 🔵 Extinction autorisée
+    - value: 'Soir – extinction autorisee'
+      styles:
+        card:
+          - background-color: rgba(144, 202, 249, 0.25)
+
+    # ⚪ Rien attendu
+    - value: 'Aucun eclairage attendu'
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+
+  # ------------------------------------------------------------
+  # 🚫 Aucune interaction
+  # ------------------------------------------------------------
+  tap_action:
+    action: none
+
+  # ------------------------------------------------------------
+  # 🖌️ Styles globaux (alignés avec tes autres cartes)
+  # ------------------------------------------------------------
+  styles:
+    card:
+      - height: 72px
+      - border-radius: 12px
+      - padding: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 15px
+      - font-weight: 600
+      - color: '#111'
+
+    label:
+      - font-size: 12px
+      - color: '#555'

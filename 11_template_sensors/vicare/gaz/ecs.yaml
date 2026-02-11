@@ -1,0 +1,83 @@
+# ================================================================
+#  TEMPLATE SENSOR : ViCare – Gaz ECS (capteurs locaux)
+# ---------------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir des capteurs locaux et persistants pour la
+#     consommation de gaz dédiée à l’ECS, avec fallback intégral
+#     en cas de perte cloud Viessmann.
+#
+#  🎯 Objectifs :
+#     - Sécuriser les données pour utility_meter
+#     - Stabiliser les dashboards ECS
+#     - Donner une valeur toujours disponible
+#
+#  🧩 Sources Viessmann :
+#     sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_cette_semaine
+#     sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_ce_mois_ci
+#     sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_cette_annee
+#
+#  💡 Unités :
+#     kWh (PCI)
+# ================================================================
+
+- sensor:
+
+    # ------------------------------------------------------------
+    # Consommation de gaz – ECS (cette semaine)
+    # ------------------------------------------------------------
+    - name: "gaz_ecs_jour_local"
+      unique_id: gaz_ecs_jour_local
+      unit_of_measurement: "kWh"
+      icon: mdi:water-boiler
+      state: >
+        {% set v = states('sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_aujourd_hui') %}
+        {% if v in ['unknown','unavailable','none','None',''] %}
+          {{ states('sensor.gaz_ecs_jour_local') }}
+        {% else %}
+          {{ v | float }}
+        {% endif %}
+
+    # ------------------------------------------------------------
+    # Consommation de gaz – ECS (cette semaine)
+    # ------------------------------------------------------------
+    - name: "gaz_ecs_semaine_local"
+      unique_id: gaz_ecs_semaine_local
+      unit_of_measurement: "kWh"
+      icon: mdi:water-boiler
+      state: >
+        {% set v = states('sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_cette_semaine') %}
+        {% if v in ['unknown','unavailable','none','None',''] %}
+          {{ states('sensor.gaz_ecs_semaine_local') }}
+        {% else %}
+          {{ v | float }}
+        {% endif %}
+
+    # ------------------------------------------------------------
+    # Consommation de gaz – ECS (ce mois-ci)
+    # ------------------------------------------------------------
+    - name: "gaz_ecs_mois_local"
+      unique_id: gaz_ecs_mois_local
+      unit_of_measurement: "kWh"
+      icon: mdi:water-boiler
+      state: >
+        {% set v = states('sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_ce_mois_ci') %}
+        {% if v in ['unknown','unavailable','none','None',''] %}
+          {{ states('sensor.gaz_ecs_mois_local') }}
+        {% else %}
+          {{ v | float }}
+        {% endif %}
+
+    # ------------------------------------------------------------
+    # Consommation de gaz – ECS (cette année)
+    # ------------------------------------------------------------
+    - name: "gaz_ecs_annee_local"
+      unique_id: gaz_ecs_annee_local
+      unit_of_measurement: "kWh"
+      icon: mdi:water-boiler
+      state: >
+        {% set v = states('sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_cette_annee') %}
+        {% if v in ['unknown','unavailable','none','None',''] %}
+          {{ states('sensor.gaz_ecs_annee_local') }}
+        {% else %}
+          {{ v | float }}
+        {% endif %}

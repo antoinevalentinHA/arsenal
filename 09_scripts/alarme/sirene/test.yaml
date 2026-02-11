@@ -1,0 +1,64 @@
+# ==========================================================
+# 🔔 SCRIPT — Sirène : Test fonctionnel (bip court)
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Vérifier le bon fonctionnement et la communication
+#   de la sirène Zigbee via Zigbee2MQTT, sans déclencher
+#   d’alarme réelle ni de mode intrusif.
+#
+# 🎯 Objectif :
+#   Fournir un test sonore sûr, discret et non anxiogène,
+#   destiné aux phases de diagnostic, de maintenance
+#   ou de validation d’intégration.
+#
+# ⚙️ Fonctionnement :
+#   - Publie une commande MQTT de type "squawk".
+#   - Niveau sonore faible, sans strobe.
+#   - Aucun usage du mode "burglar" ou "emergency".
+#
+# 🚫 Ce script NE FAIT PAS :
+#   - Ne déclenche PAS d’alarme
+#   - Ne modifie PAS l’état de l’alarme
+#   - Ne dépend PAS d’un contexte de sécurité
+#   - Ne journalise PAS d’événement critique
+#
+# 🧱 Dépendances :
+#   - MQTT / Zigbee2MQTT
+#   - Sirène Zigbee compatible commande "squawk"
+#
+# 📊 Type :
+#   Script de test / diagnostic (non coercitif)
+#
+# 📍 Entité :
+#   script.sirene_test
+#
+# 🔁 Remarque sémantique :
+#   - Ce script est strictement réservé aux tests.
+#   - Il ne doit jamais être utilisé comme feedback
+#     fonctionnel (armement / désarmement / intrusion).
+#
+# ✅ Architecture :
+#   Arsenal v6+
+#   Home Assistant 2024.8+
+# ==========================================================
+
+
+sirene_test:
+  alias: Tester la sirène (bip court)
+  mode: single
+  sequence:
+    - action: mqtt.publish
+      data:
+        topic: zigbee2mqtt/sirene/set
+        payload: >
+          {
+            "squawk": {
+              "squawk_mode": "system_is_armed",
+              "level": "low",
+              "strobe": false,
+              "strobe_level": "low"
+            }
+          }
+        qos: 0
+        retain: false
+        evaluate_payload: true

@@ -1,0 +1,31 @@
+# ==========================================================
+# 💧 TEMPLATE BINARY SENSOR — Humidex au-dessus du seuil (activation du mode Dry)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si l’humidex maximal mesuré dans les chambres
+#   dépasse le seuil de déclenchement du mode “Dry”.
+#   Ce capteur complète `binary_sensor.chambre_max_humidex_en_dessous_seuil_off`
+#   pour un pilotage automatique stable avec hystérésis.
+#
+# ⚙️ Fonctionnement :
+#   - Compare :
+#       • sensor.humidex_max_chambres
+#       • input_number.seuil_humidex_deshumidification
+#   - Si humidex max > seuil → capteur actif (on)
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.chambre_max_humidex_au_dessus_seuil
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Humidex max au-dessus du seuil"
+      unique_id: chambre_max_humidex_au_dessus_seuil
+      default_entity_id: binary_sensor.chambre_max_humidex_au_dessus_seuil
+      device_class: heat
+
+      state: >
+        {% set seuil = states('input_number.seuil_humidex_deshumidification') | float(29) %}
+        {% set humidex = states('sensor.humidex_max_chambres') | float(0) %}
+        {{ humidex > seuil }}
+

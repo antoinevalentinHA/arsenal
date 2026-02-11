@@ -1,0 +1,138 @@
+# ==========================================================
+# 🛁 INPUT BOOLEAN — ECS Lundi soir activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du lundi soir est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Lundi soir activé  
+#   - Icône : mdi:bathtub
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_monday_soir_active
+# ==========================================================
+
+ecs_monday_soir_active:
+  name: ECS Lundi soir activé
+  icon: mdi:bathtub
+
+
+# ==========================================================
+# 🛁 INPUT BOOLEAN — ECS Mardi soir activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du mardi soir est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Mardi soir activé  
+#   - Icône : mdi:bathtub
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_tuesday_soir_active
+# ==========================================================
+
+ecs_tuesday_soir_active:
+  name: ECS Mardi soir activé
+  icon: mdi:bathtub
+
+
+# ==========================================================
+# 🛁 INPUT BOOLEAN — ECS Mercredi soir activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du mercredi soir est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Mercredi soir activé  
+#   - Icône : mdi:bathtub
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_wednesday_soir_active
+# ==========================================================
+
+ecs_wednesday_soir_active:
+  name: ECS Mercredi soir activé
+  icon: mdi:bathtub
+
+
+# ==========================================================
+# 🛁 INPUT BOOLEAN — ECS Jeudi soir activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du jeudi soir est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Jeudi soir activé  
+#   - Icône : mdi:bathtub
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_thursday_soir_active
+# ==========================================================
+
+ecs_thursday_soir_active:
+  name: ECS Jeudi soir activé
+  icon: mdi:bathtub
+
+
+# ==========================================================
+# 🛁 INPUT BOOLEAN — ECS Vendredi soir activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du vendredi soir est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Vendredi soir activé  
+#   - Icône : mdi:bathtub
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_friday_soir_active
+# ==========================================================
+
+ecs_friday_soir_active:
+  name: ECS Vendredi soir activé
+  icon: mdi:bathtub
+
+
+# ==========================================================
+# 🛁 INPUT BOOLEAN — ECS Samedi soir activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du samedi soir est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Samedi soir activé  
+#   - Icône : mdi:bathtub
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_saturday_soir_active
+# ==========================================================
+
+ecs_saturday_soir_active:
+  name: ECS Samedi soir activé
+  icon: mdi:bathtub
+
+
+# ==========================================================
+# 🛁 INPUT BOOLEAN — ECS Dimanche soir activé
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la chauffe ECS du dimanche soir est programmée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS Dimanche soir activé  
+#   - Icône : mdi:bathtub
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_sunday_soir_active
+# ==========================================================
+
+ecs_sunday_soir_active:
+  name: ECS Dimanche soir activé
+  icon: mdi:bathtub

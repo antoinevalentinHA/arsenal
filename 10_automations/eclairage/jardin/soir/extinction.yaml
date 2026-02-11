@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 AUTOMATION — Jardin : extinction automatique (soir)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Éteindre automatiquement l’éclairage du jardin le soir
+#   dès que l’extinction est AUTORISÉE par la logique métier.
+#
+# 🧱 Principe Arsenal (ECS-like) :
+#   - Aucune vérification périodique
+#   - Déclenchement événementiel unique
+#   - Basé exclusivement sur un capteur de vérité métier
+#
+# ⚠️ Aucune notification persistante :
+#   - L’extinction est un événement passé
+#   - L’état matériel OFF suffit comme information utilisateur
+#
+# ==========================================================
+
+- id: '1007000000004'
+  alias: "Lumière jardin - Extinction automatique soir"
+  description: >
+    Éteint automatiquement l’éclairage du jardin le soir
+    lorsque toutes les conditions métier sont réunies
+    (durée dépassée et absence d’activité au séjour).
+    Aucun message persistant n’est émis, conformément
+    au contrat Notifications Arsenal.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Vérité métier
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.lumiere_jardin_soir_extinction_autorisee
+      to: 'on'
+
+  # ======================================================
+  # 🔄 Action — Extinction matérielle
+  # ======================================================
+  action:
+    - action: script.jardin_off

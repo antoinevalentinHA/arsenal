@@ -1,0 +1,49 @@
+# ==========================================================
+# 👨‍👩‍👧 TEMPLATE BINARY SENSOR — Présence famille (standard)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer la présence d’un membre de la famille
+#   dans la maison, en se basant sur :
+#     • Les entités `person.*` (Home Assistant)
+#     • Les indicateurs de présence enfants
+#     • Le mode babysitting
+#
+# ⚙️ Fonctionnement :
+#   - ON  → au moins une présence détectée
+#   - OFF → aucune présence active
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.presence_famille
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Présence (Famille)"
+      unique_id: presence_famille
+      default_entity_id: binary_sensor.presence_famille
+      device_class: presence
+
+      state: >
+        {% set entites_presence = [
+          'person.valentin',
+          'person.constance',
+          'binary_sensor.presence_enfants',
+          'input_boolean.presence_visiteur'
+        ] %}
+
+        {{
+          entites_presence
+            | select('is_state', 'on')
+            | list
+            | length > 0
+          or
+          entites_presence
+            | select('is_state', 'Maison – Sécurité')
+            | list
+            | length > 0
+          or
+          entites_presence
+            | select('is_state', 'home')
+            | list
+            | length > 0
+        }}

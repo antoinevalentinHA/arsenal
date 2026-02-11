@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER SYSTÈME : Compteur tentatives reload SwitchBot
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Comptabiliser le nombre de tentatives de rechargement
+#   de l’intégration SwitchBot (Bluetooth / Cloud)
+#   afin d’éviter :
+#     - les boucles de reload incontrôlées
+#     - les appels répétés au cloud SwitchBot
+#     - les instabilités prolongées de l’intégration
+#
+# 🧠 Nature :
+#   - Compteur de SUPERVISION SYSTÈME
+#   - État interne de protection
+#   - Non destiné à représenter un état utilisateur
+#
+# ⚙️ Fonctionnement :
+#   - Incrémenté à chaque tentative de reload SwitchBot
+#   - Lu par l’automatisation de supervision dédiée
+#   - Comparé à un seuil maximal autorisé
+#   - Réinitialisé explicitement :
+#       • après un reload réussi
+#       • via un reset contrôlé
+#
+# ⚠️ Important :
+#   - Ce helper NE mesure PAS l’état des périphériques
+#   - Il NE reflète PAS la disponibilité Bluetooth
+#   - Il sert UNIQUEMENT de garde-fou logique
+#
+# 🔗 Utilisé par :
+#   - Automatisations :
+#       • 10_automations/system/reload_integrations/switchbot.yaml
+#
+# 📐 Unité :
+#   - Tentatives (compteur entier)
+#
+# 🧠 Principe Arsenal :
+#   - Les intégrations hybrides (BT + cloud) sont fragiles
+#   - Le système doit limiter ses propres réactions
+#   - Une panne ne doit jamais provoquer d’emballement
+#
+# ==========================================================
+
+switchbot_reload_tentatives:
+  name: "SwitchBot – Tentatives reload"
+  min: 0
+  max: 50
+  step: 1
+  mode: box

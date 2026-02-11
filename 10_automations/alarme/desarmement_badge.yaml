@@ -1,0 +1,99 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme – Désarmement via badge RFID
+#
+#  ID : 10020000000026
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation passerelle chargée de désarmer l’alarme
+#     lorsqu’un badge RFID autorisé est présenté sur
+#     l’un des claviers Zigbee.
+#
+#  🧩 PRINCIPE
+#
+#     - Réagit uniquement à l’action "disarm" des claviers
+#     - Compare l’UID du badge à la liste autorisée
+#     - Délègue le désarmement au script centralisé
+#     - Notifie immédiatement en cas de badge inconnu
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne gère pas les codes PIN
+#     - Ne décide pas de l’armement
+#     - Ne stocke aucun historique de badges
+#     - Ne contient aucune logique métier d’alarme
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Séparation stricte saisie / application
+#     - Centralisation du désarmement
+#     - Respect de la vie privée (pas de traçage)
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10020000000026"
+  alias: "Alarme - Désarmement via badge"
+  description: >
+    Désarme l'alarme si un badge autorisé est utilisé. Envoie une
+    notification si le badge est inconnu. Utilise le script de
+    désarmement centralisé.
+
+  mode: single
+
+  # --------------------------------------------------------
+  # Déclencheurs : les deux claviers publient action="disarm"
+  # --------------------------------------------------------
+  trigger:
+    - platform: state
+      entity_id:
+        - sensor.clavier_alarme_1_action
+        - sensor.clavier_alarme_2_action
+      to: "disarm"
+
+  # --------------------------------------------------------
+  # Variables :
+  #  - badges_autorises : liste issue de l'input_text
+  #  - badge_utilise : UID du badge détecté (clavier 1 ou 2)
+  # --------------------------------------------------------
+  variables:
+    badges_autorises: >
+      {{ states('input_text.badges_autorises').split(',') }}
+
+    badge_utilise: >
+      {% if trigger.entity_id == 'sensor.clavier_alarme_1_action' %}
+        {{ states('sensor.clavier_alarme_1_badge') }}
+      {% else %}
+        {{ states('sensor.clavier_alarme_2_badge') }}
+      {% endif %}
+
+  # --------------------------------------------------------
+  # Aucune condition globale (gestion dans choose)
+  # --------------------------------------------------------
+  condition: []
+
+  action:
+
+    # --------------------------------------------------------
+    # Cas 1 : Badge autorisé → désarmement propre via script
+    # --------------------------------------------------------
+    - choose:
+        - conditions: "{{ badge_utilise in badges_autorises }}"
+          sequence:
+            - action: script.alarme_desarmer
+              data:
+                origine: "Badge RFID"
+
+      # --------------------------------------------------------
+      # Cas 2 : Badge inconnu → notification immédiate
+      # --------------------------------------------------------
+      default:
+        - action: script.notification_envoyer
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "Badge inconnu"
+            message: >
+              Tentative de désarmement via badge inconnu :
+              {{ badge_utilise }}

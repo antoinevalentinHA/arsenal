@@ -1,0 +1,260 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Simulation de présence
+#              Générateur d’horaires journaliers
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Générer des horaires pseudo-aléatoires réalistes
+#   pour la simulation de présence (matin / soir),
+#   en fonction :
+#     - du lever et coucher du soleil
+#     - de fenêtres horaires configurées
+#     - du nombre de cycles souhaités
+#
+# ----------------------------------------------------------
+# 🧩 NATURE DU SCRIPT
+#
+#   Ce script est un GÉNÉRATEUR DE DONNÉES.
+#
+#   Il :
+#     - calcule
+#     - tire aléatoirement
+#     - fige des horaires
+#
+#   dans des helpers de type `input_text`.
+#
+# ----------------------------------------------------------
+# 📤 SORTIES (MÉMOIRES PERSISTANTES)
+#
+#   - input_text.horaires_simulation_presence_matin
+#   - input_text.horaires_simulation_presence_soir
+#   - input_text.horaires_simulation_presence_garage_matin
+#   - input_text.horaires_simulation_presence_garage_soir
+#
+#   ➜ Ces valeurs sont ensuite CONSUMÉES par
+#     d’autres automatisations.
+#
+# ----------------------------------------------------------
+# ⚠️ NON-DÉTERMINISME ASSUMÉ
+#
+#   - Deux exécutions successives peuvent produire
+#     des résultats différents.
+#   - Ce comportement est VOLONTAIRE.
+#
+#   ➜ Le script ne doit PAS être exécuté :
+#     - en boucle
+#     - en réaction directe à un événement lumineux
+#
+# ----------------------------------------------------------
+# 🧠 SÉPARATION DES RÔLES (RÈGLE ARSENAL)
+#
+#   - Ce script GÉNÈRE des horaires
+#   - Les automatisations EXÉCUTENT les actions
+#   - Les scripts d’éclairage APPLIQUENT les états
+#
+# ----------------------------------------------------------
+# ⏱️ MOMENT D’EXÉCUTION RECOMMANDÉ
+#
+#   - 1 fois par jour
+#   - ou à l’activation du mode simulation présence
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucun allumage / extinction
+#   - Aucune décision temps réel
+#   - Aucune correction ultérieure
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script générateur — non déterministe — à effet mémoire
+#
+# 📍 Entité :
+#   script.generer_horaires_simulation_presence
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+generer_horaires_simulation_presence:
+  alias: "Générer horaires simulation présence"
+  mode: single
+
+  sequence:
+    - variables:
+        fmt: "%H:%M"
+        today: "{{ now().date() }}"
+        now_ts: "{{ as_timestamp(now()) }}"
+        next_rising: "{{ as_timestamp(as_local(as_datetime(state_attr('sun.sun','next_rising')))) }}"
+        last_rising: >
+          {% set v = state_attr('sun.sun','last_rising') %}
+          {{ as_timestamp(as_local(as_datetime(v))) if v is not none else none }}
+        lever: >
+          {% if last_rising is not none %}
+            {{ next_rising if now_ts < next_rising else last_rising }}
+          {% else %}
+            {{ next_rising }}
+          {% endif %}
+        next_setting: "{{ as_timestamp(as_local(as_datetime(state_attr('sun.sun','next_setting')))) }}"
+        last_setting: >
+          {% set v = state_attr('sun.sun','last_setting') %}
+          {{ as_timestamp(as_local(as_datetime(v))) if v is not none else none }}
+        coucher: >
+          {% if last_setting is not none %}
+            {{ next_setting if now_ts < next_setting else last_setting }}
+          {% else %}
+            {{ next_setting }}
+          {% endif %}
+        nb_cycles_matin: "{{ states('input_number.nb_cycles_simulation_presence_matin') | int(0) }}"
+        nb_cycles_soir: "{{ states('input_number.nb_cycles_simulation_presence_soir') | int(0) }}"
+
+    # Tirage matin chambre
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.horaires_simulation_presence_matin
+      data:
+        value: >
+          {% set debut_raw = states('input_datetime.debut_cycle_simulation_presence_matin') %}
+          {% set fin_raw = states('input_datetime.fin_cycle_simulation_presence_matin') %}
+          {% if debut_raw not in ['unknown','unavailable','None','none',''] and
+                fin_raw not in ['unknown','unavailable','None','none',''] %}
+            {% set d_parts = debut_raw.split(':') %}
+            {% set f_parts = fin_raw.split(':') %}
+            {% set debut = as_timestamp(today|string ~ ' ' ~ d_parts[0] ~ ':' ~ d_parts[1] ~ ':' ~ d_parts[2]) | int %}
+            {% set fin = as_timestamp(today|string ~ ' ' ~ f_parts[0] ~ ':' ~ f_parts[1] ~ ':' ~ f_parts[2]) | int %}
+            {% set plage = (fin - debut) | int %}
+            {% set ns = namespace(result=[]) %}
+            {% if plage > 0 and nb_cycles_matin > 0 %}
+              {% for i in range(nb_cycles_matin * 5) %}
+                {% set t = debut + (range(0, plage) | random) %}
+                {% if t >= debut and t <= fin and t < lever %}
+                  {% set h = t | timestamp_custom(fmt, true) %}
+                  {% set ns.result = ns.result + [h] %}
+                  {% if ns.result | length == nb_cycles_matin %}
+                    {% break %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if ns.result | length > 0 %}
+              {{ ns.result | sort | join(', ') }}
+            {% else %}
+              Aucun
+            {% endif %}
+          {% else %}
+            Aucun
+          {% endif %}
+
+    # Tirage matin garage
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.horaires_simulation_presence_garage_matin
+      data:
+        value: >
+          {% set debut_raw = states('input_datetime.debut_cycle_simulation_presence_garage_matin') %}
+          {% set fin_raw = states('input_datetime.fin_cycle_simulation_presence_garage_matin') %}
+          {% if debut_raw not in ['unknown','unavailable','None','none',''] and
+                fin_raw not in ['unknown','unavailable','None','none',''] %}
+            {% set d_parts = debut_raw.split(':') %}
+            {% set f_parts = fin_raw.split(':') %}
+            {% set debut = as_timestamp(today|string ~ ' ' ~ d_parts[0] ~ ':' ~ d_parts[1] ~ ':' ~ d_parts[2]) | int %}
+            {% set fin = as_timestamp(today|string ~ ' ' ~ f_parts[0] ~ ':' ~ f_parts[1] ~ ':' ~ f_parts[2]) | int %}
+            {% set plage = (fin - debut) | int %}
+            {% set nb = states('input_number.nb_cycles_simulation_presence_garage_matin') | int(0) %}
+            {% set ns = namespace(result=[]) %}
+            {% if plage > 0 and nb > 0 %}
+              {% for i in range(nb * 5) %}
+                {% set t = debut + (range(0, plage) | random) %}
+                {% if t >= debut and t <= fin %}
+                  {% set h = t | timestamp_custom(fmt, true) %}
+                  {% set ns.result = ns.result + [h] %}
+                  {% if ns.result | length == nb %}
+                    {% break %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if ns.result | length > 0 %}
+              {{ ns.result | sort | join(', ') }}
+            {% else %}
+              Aucun
+            {% endif %}
+          {% else %}
+            Aucun
+          {% endif %}
+
+    # Tirage soir chambre
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.horaires_simulation_presence_soir
+      data:
+        value: >
+          {% set debut_raw = states('input_datetime.debut_cycle_simulation_presence_soir') %}
+          {% set fin_raw = states('input_datetime.fin_cycle_simulation_presence_soir') %}
+          {% if debut_raw not in ['unknown','unavailable','None','none',''] and
+                fin_raw not in ['unknown','unavailable','None','none',''] %}
+            {% set d_parts = debut_raw.split(':') %}
+            {% set f_parts = fin_raw.split(':') %}
+            {% set debut = as_timestamp(today|string ~ ' ' ~ d_parts[0] ~ ':' ~ d_parts[1] ~ ':' ~ d_parts[2]) | int %}
+            {% set fin = as_timestamp(today|string ~ ' ' ~ f_parts[0] ~ ':' ~ f_parts[1] ~ ':' ~ f_parts[2]) | int %}
+            {% set plage = (fin - debut) | int %}
+            {% set ns = namespace(result=[]) %}
+            {% if plage > 0 and nb_cycles_soir > 0 %}
+              {% for i in range(nb_cycles_soir * 5) %}
+                {% set t = debut + (range(0, plage) | random) %}
+                {% if t >= debut and t <= fin and t > coucher %}
+                  {% set h = t | timestamp_custom(fmt, true) %}
+                  {% set ns.result = ns.result + [h] %}
+                  {% if ns.result | length == nb_cycles_soir %}
+                    {% break %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if ns.result | length > 0 %}
+              {{ ns.result | sort | join(', ') }}
+            {% else %}
+              Aucun
+            {% endif %}
+          {% else %}
+            Aucun
+          {% endif %}
+
+    # Tirage soir garage
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.horaires_simulation_presence_garage_soir
+      data:
+        value: >
+          {% set debut_raw = states('input_datetime.debut_cycle_simulation_presence_garage_soir') %}
+          {% set fin_raw = states('input_datetime.fin_cycle_simulation_presence_garage_soir') %}
+          {% if debut_raw not in ['unknown','unavailable','None','none',''] and
+                fin_raw not in ['unknown','unavailable','None','none',''] %}
+            {% set d_parts = debut_raw.split(':') %}
+            {% set f_parts = fin_raw.split(':') %}
+            {% set debut = as_timestamp(today|string ~ ' ' ~ d_parts[0] ~ ':' ~ d_parts[1] ~ ':' ~ d_parts[2]) | int %}
+            {% set fin = as_timestamp(today|string ~ ' ' ~ f_parts[0] ~ ':' ~ f_parts[1] ~ ':' ~ f_parts[2]) | int %}
+            {% set plage = (fin - debut) | int %}
+            {% set nb = states('input_number.nb_cycles_simulation_presence_garage_soir') | int(0) %}
+            {% set ns = namespace(result=[]) %}
+            {% if plage > 0 and nb > 0 %}
+              {% for i in range(nb * 5) %}
+                {% set t = debut + (range(0, plage) | random) %}
+                {% if t >= debut and t <= fin %}
+                  {% set h = t | timestamp_custom(fmt, true) %}
+                  {% set ns.result = ns.result + [h] %}
+                  {% if ns.result | length == nb %}
+                    {% break %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+            {% if ns.result | length > 0 %}
+              {{ ns.result | sort | join(', ') }}
+            {% else %}
+              Aucun
+            {% endif %}
+          {% else %}
+            Aucun
+          {% endif %}

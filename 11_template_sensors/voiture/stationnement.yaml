@@ -1,0 +1,39 @@
+# ==========================================================
+# ⏱️ TEMPLATE TRIGGERED SENSOR — Audi e-tron (Temps de stationnement)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Afficher l’heure locale correcte à partir du timestamp UTC fourni
+#   par l’intégration Audi, avec gestion automatique été/hiver.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque mise à jour du capteur source.
+#   - Réévaluation automatique au démarrage de Home Assistant.
+#   - Conversion UTC → Europe/Paris via décalage dynamique.
+#   - Format : JJ/MM/AAAA HH:MM.
+#   - Si donnée invalide → conserve la dernière valeur connue.
+#
+# 🧮 Source : sensor.audi_a3_sportback_e_tron_park_time
+# 📊 Type : Trigger Template Sensor
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.audi_a3_sportback_e_tron_park_time
+
+  sensor:
+    - name: "Audi e-tron – Temps stationnement (Local)"
+      unique_id: audi_a3_sportback_e_tron_park_time_local
+      state: >
+        {% set s = states('sensor.audi_a3_sportback_e_tron_park_time') %}
+        {% if s not in ['unknown', 'unavailable', 'none', ''] %}
+          {% set dt = as_datetime(s) %}
+          {% if dt %}
+            {% set offset = now().utcoffset().total_seconds() %}
+            {% set ts = as_timestamp(dt) + offset %}
+            {{ ts | timestamp_custom('%d/%m/%Y %H:%M') }}
+          {% else %}
+            {{ this.state | default('Inconnu') }}
+          {% endif %}
+        {% else %}
+          {{ this.state | default('Inconnu') }}
+        {% endif %}

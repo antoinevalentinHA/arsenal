@@ -1,0 +1,337 @@
+# ==========================================================
+# FICHIER : utility_meter.yaml
+# ----------------------------------------------------------
+# Rôle :
+# Définition des compteurs Utility Meter pour le suivi
+# des consommations (électricité, gaz, durées, estimations).
+#
+# Principes retenus :
+# - AUCUNE modification des entity_id existants
+# - Classement par grandes familles fonctionnelles
+# - Ordre logique : journalier → hebdomadaire → mensuel → annuel
+# - Commentaires explicites pour maintenance et audit
+#
+# Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+############################################################
+# 🔌 ÉLECTRICITÉ — APPAREILS DOMESTIQUES
+############################################################
+
+# ----------------------------------------------------------
+# Déshumidificateur (cave)
+# ----------------------------------------------------------
+
+deshumidificateur_daily_energy:
+  source: sensor.deshumidificateur_energy_proxy
+  cycle: daily
+
+deshumidificateur_weekly_energy:
+  source: sensor.deshumidificateur_energy_proxy
+  cycle: weekly
+
+deshumidificateur_monthly_energy:
+  source: sensor.deshumidificateur_energy_proxy
+  cycle: monthly
+
+deshumidificateur_yearly_energy:
+  source: sensor.deshumidificateur_energy_proxy
+  cycle: yearly
+
+
+# ----------------------------------------------------------
+# Réfrigérateur
+# ----------------------------------------------------------
+
+refrigerateur_daily_energy:
+  source: sensor.refrigerateur_energy_proxy
+  cycle: daily
+
+refrigerateur_weekly_energy:
+  source: sensor.refrigerateur_energy_proxy
+  cycle: weekly
+
+refrigerateur_monthly_energy:
+  source: sensor.refrigerateur_energy_proxy
+  cycle: monthly
+
+refrigerateur_yearly_energy:
+  source: sensor.refrigerateur_energy_proxy
+  cycle: yearly
+
+# ----------------------------------------------------------
+# Buanderie (lave-linge + sèche-linge)
+# ----------------------------------------------------------
+
+buanderie_journalier:
+  source: sensor.prise_buanderie_energy
+  name: Buanderie aujourd'hui
+  cycle: daily
+
+buanderie_mensuel:
+  source: sensor.prise_buanderie_energy
+  name: Buanderie ce mois-ci
+  cycle: monthly
+
+buanderie_annuel:
+  source: sensor.prise_buanderie_energy
+  name: Buanderie cette année
+  cycle: yearly
+
+
+# ----------------------------------------------------------
+# Éclairage / prises spécifiques
+# ----------------------------------------------------------
+
+# Lampe chambre parents
+
+lampe_parents_journalier:
+  source: sensor.prise_lampe_parents_energy
+  name: Lampe parents aujourd'hui
+  cycle: daily
+
+lampe_parents_mensuel:
+  source: sensor.prise_lampe_parents_energy
+  name: Lampe parents ce mois-ci
+  cycle: monthly
+
+lampe_parents_annuel:
+  source: sensor.prise_lampe_parents_energy
+  name: Lampe parents cette année
+  cycle: yearly
+
+# Lampe séjour
+
+lampe_sejour_journalier:
+  source: sensor.prise_lampe_sejour_energy
+  name: Lampe séjour aujourd'hui
+  cycle: daily
+
+lampe_sejour_mensuel:
+  source: sensor.prise_lampe_sejour_energy
+  name: Lampe séjour ce mois-ci
+  cycle: monthly
+
+lampe_sejour_annuel:
+  source: sensor.prise_lampe_sejour_energy
+  name: Lampe séjour cette année
+  cycle: yearly
+
+# Éclairage jardin
+
+eclairage_jardin_journalier:
+  source: sensor.prise_jardin_energy
+  name: Eclairage jardin aujourd'hui
+  cycle: daily
+
+eclairage_jardin_mensuel:
+  source: sensor.prise_jardin_energy
+  name: Eclairage jardin ce mois-ci
+  cycle: monthly
+
+eclairage_jardin_annuel:
+  source: sensor.prise_jardin_energy
+  name: Eclairage jardin cette année
+  cycle: yearly
+
+# Prise salle de bain enfants
+
+prise_sdb_enfants_daily_energy:
+  source: sensor.prise_sdb_enfants_energy
+  cycle: daily
+
+prise_sdb_enfants_weekly_energy:
+  source: sensor.prise_sdb_enfants_energy
+  cycle: weekly
+
+prise_sdb_enfants_monthly_energy:
+  source: sensor.prise_sdb_enfants_energy
+  cycle: monthly
+
+prise_sdb_enfants_yearly_energy:
+  source: sensor.prise_sdb_enfants_energy
+  cycle: yearly
+
+# ----------------------------------------------------------
+# Réseau / informatique
+# ----------------------------------------------------------
+
+# Box Internet
+
+box_daily_energy:
+  source: sensor.prise_box_energy
+  cycle: daily
+
+box_weekly_energy:
+  source: sensor.prise_box_energy
+  cycle: weekly
+
+box_monthly_energy:
+  source: sensor.prise_box_energy
+  cycle: monthly
+
+box_yearly_energy:
+  source: sensor.prise_box_energy
+  cycle: yearly
+
+# Prise onduleur (NAS / réseau)
+
+prise_onduleur_daily_energy:
+  source: sensor.prise_onduleur_energy
+  cycle: daily
+
+prise_onduleur_weekly_energy:
+  source: sensor.prise_onduleur_energy
+  cycle: weekly
+
+prise_onduleur_monthly_energy:
+  source: sensor.prise_onduleur_energy
+  cycle: monthly
+
+prise_onduleur_yearly_energy:
+  source: sensor.prise_onduleur_energy
+  cycle: yearly
+
+############################################################
+# 🍽️ ÉLECTROMÉNAGER SPÉCIFIQUE
+############################################################
+
+# Lave-vaisselle
+prise_lave_vaisselle_daily_energy:
+  source: sensor.lave_vaisselle_energy_proxy
+  cycle: daily
+
+prise_lave_vaisselle_weekly_energy:
+  source: sensor.lave_vaisselle_energy_proxy
+  cycle: weekly
+
+prise_lave_vaisselle_monthly_energy:
+  source: sensor.lave_vaisselle_energy_proxy
+  cycle: monthly
+
+prise_lave_vaisselle_yearly_energy:
+  source: sensor.lave_vaisselle_energy_proxy
+  cycle: yearly
+
+############################################################
+# 🌡️ CONFORT / CLIMATISATION
+############################################################
+
+# Climatisation — consommation estimée
+
+clim_consommation_estimee_jour:
+  source: sensor.clim_consommation_estimee_energy_proxy
+  name: Clim - Estimation jour
+  cycle: daily
+
+clim_consommation_estimee_mois:
+  source: sensor.clim_consommation_estimee_energy_proxy
+  name: Clim - Estimation mois
+  cycle: monthly
+
+clim_consommation_estimee_an:
+  source: sensor.clim_consommation_estimee_energy_proxy
+  name: Clim - Estimation an
+  cycle: yearly
+
+############################################################
+# Bouclage ECS
+############################################################
+
+bouclage_daily_energy:
+  source: sensor.prise_bouclage_energy
+  cycle: daily
+
+bouclage_weekly_energy:
+  source: sensor.prise_bouclage_energy
+  cycle: weekly
+
+bouclage_monthly_energy:
+  source: sensor.prise_bouclage_energy
+  cycle: monthly
+
+bouclage_yearly_energy:
+  source: sensor.prise_bouclage_energy
+  cycle: yearly
+
+############################################################
+# 🔥 CHAUDIÈRE — GAZ & ÉLECTRICITÉ
+############################################################
+
+# ----------------------------------------------------------
+# Gaz — Chauffage
+# ----------------------------------------------------------
+
+gaz_chauffage_jour:
+  source: sensor.gaz_chauffage_total_proxy
+  cycle: daily
+
+gaz_chauffage_semaine:
+  source: sensor.gaz_chauffage_total_proxy
+  cycle: weekly
+
+gaz_chauffage_mois:
+  source: sensor.gaz_chauffage_total_proxy
+  cycle: monthly
+
+gaz_chauffage_annee:
+  source: sensor.gaz_chauffage_total_proxy
+  cycle: yearly
+
+# ----------------------------------------------------------
+# Gaz — Eau chaude sanitaire (ECS)
+# ----------------------------------------------------------
+
+gaz_ecs_jour:
+  source: sensor.gaz_ecs_total_proxy
+  cycle: daily
+
+gaz_ecs_semaine:
+  source: sensor.gaz_ecs_total_proxy
+  cycle: weekly
+
+gaz_ecs_mois:
+  source: sensor.gaz_ecs_total_proxy
+  cycle: monthly
+
+gaz_ecs_annee:
+  source: sensor.gaz_ecs_total_proxy
+  cycle: yearly
+
+# ----------------------------------------------------------
+# Électricité chaudière
+# ----------------------------------------------------------
+
+electricite_chaudiere_semaine:
+  source: sensor.electricite_chaudiere_semaine_local
+  cycle: weekly
+
+electricite_chaudiere_annee:
+  source: sensor.electricite_chaudiere_annee_local
+  cycle: yearly
+
+
+############################################################
+# 🚗 MOBILITÉ
+############################################################
+
+# Temps de charge Audi A3 (durée cumulée)
+
+audi_charge_duree_mensuelle:
+  source: input_number.audi_charge_last_duration
+  cycle: monthly
+  name: "Durée de charge Audi (mensuelle)"
+
+# Distance parcourue Audi e-tron (mensuelle)
+
+audi_e_tron_distance_mois:
+  source: sensor.audi_e_tron_kilometrage_local
+  cycle: monthly
+  name: "Distance Audi e-tron (mensuelle)"
+
+# Distance parcourue Audi e-tron (annuelle)
+
+audi_e_tron_distance_an:
+  source: sensor.audi_e_tron_kilometrage_local
+  cycle: yearly
+  name: "Distance Audi e-tron (annuelle)"

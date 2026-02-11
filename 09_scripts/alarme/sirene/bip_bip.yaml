@@ -1,0 +1,66 @@
+# ==========================================================
+# 🔊 SCRIPT — Sirène : Bip bip (confirmation désarmement)
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Émettre deux bips sonores successifs via la sirène Zigbee
+#   afin de confirmer explicitement le désarmement de l’alarme.
+#
+# 🎯 Objectif :
+#   Fournir un retour utilisateur clair, audible mais discret,
+#   indiquant que le système d’alarme est désormais désarmé.
+#
+# ⚙️ Fonctionnement :
+#   - Envoie deux commandes MQTT successives à la sirène.
+#   - Chaque commande déclenche un bip court (1 seconde).
+#   - Les deux bips sont espacés d’un délai fixe (2 secondes).
+#
+# 🚫 Ce script NE FAIT PAS :
+#   - Ne décide PAS du désarmement
+#   - Ne vérifie PAS l’état de l’alarme
+#   - Ne contrôle PAS la disponibilité de la sirène
+#   - Ne déclenche PAS d’alerte ou de sirène continue
+#
+# 🧱 Dépendances :
+#   - MQTT / Zigbee2MQTT
+#   - Sirène Zigbee (topic zigbee2mqtt/sirene)
+#
+# 📊 Type :
+#   Script utilitaire (confirmation sonore post-action)
+#
+# 📍 Entité :
+#   script.sirene_bip_bip
+#
+# 🔁 Remarque sémantique :
+#   - À la différence de `script.sirene_bip`,
+#     ce script est purement déclaratif (feedback UX)
+#     et ne comporte aucune logique de sécurité.
+#
+# ✅ Architecture :
+#   Arsenal v6+
+#   Home Assistant 2024.8+
+# ==========================================================
+
+
+sirene_bip_bip:
+  alias: Bip bip sirène (désarmement)
+  description: >
+    Deux bips brefs pour confirmer le désarmement de l’alarme.
+  mode: restart
+
+  sequence:
+    - repeat:
+        count: 2
+        sequence:
+          - action: mqtt.publish
+            data:
+              topic: zigbee2mqtt/sirene/set
+              payload: >
+                {
+                  "warning": {
+                    "mode": "emergency",
+                    "level": "low",
+                    "strobe": false,
+                    "duration": 1
+                  }
+                }
+          - delay: "00:00:02"

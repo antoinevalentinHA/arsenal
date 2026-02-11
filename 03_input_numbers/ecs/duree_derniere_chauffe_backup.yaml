@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBER : ECS — Backup durée chauffe réelle
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Sauvegarder de manière persistante la DERNIÈRE
+#   durée de chauffe ECS considérée comme valide,
+#   afin de survivre aux redémarrages ou interruptions.
+#
+# 🧱 Principe :
+#   - Mis à jour en fin de cycle ECS
+#   - Peut être utilisé comme valeur de repli
+#     si la durée instantanée devient invalide
+#
+# 📌 Important :
+#   - Ce helper n’est PAS un diagnostic officiel
+#   - Ce helper n’est PAS une consigne
+#   - Il sert uniquement de continuité technique
+#
+# 🔗 Utilisation :
+#   - Automatisation de fin de cycle ECS
+#   - Scripts ou calculs nécessitant une valeur sûre
+#     après redémarrage
+#
+# 🧠 Principe Arsenal :
+#   - La réalité est sauvegardée
+#   - L’analyse décide ensuite quoi en faire
+#
+# 📐 Unité :
+#   - minutes
+# ==========================================================
+
+
+ecs_duree_chauffe_reel_backup:
+  name: ECS duree chauffe reel backup
+  min: 0
+  max: 200
+  step: 0.1
+  icon: mdi:timer-outline

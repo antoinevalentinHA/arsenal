@@ -1,0 +1,92 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Notification batteries faibles
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Point UNIQUE de notification concernant les batteries
+#   détectées comme faibles dans le système.
+#
+#   Ce script se contente d’EXPOSER un état déjà calculé.
+#   Il ne surveille rien.
+#   Il ne décide rien.
+#
+# ----------------------------------------------------------
+# 🧱 POSITION DANS L’ARCHITECTURE
+#
+#   - Script de restitution utilisateur
+#   - Dépend EXCLUSIVEMENT du capteur agrégé :
+#
+#       sensor.batteries_faibles
+#
+#   ➜ Toute la logique de détection est externalisée
+#   ➜ Toute la logique d’envoi est centralisée ici
+#
+# ----------------------------------------------------------
+# 📤 COMPORTEMENT
+#
+#   - Lit l’attribut `faibles` du capteur
+#   - Cas gérés explicitement :
+#       • aucune batterie faible
+#       • une seule batterie
+#       • plusieurs batteries
+#
+#   - Génère un message :
+#       • lisible
+#       • stable
+#       • sans bruit inutile
+#
+# ----------------------------------------------------------
+# 🔒 GARANTIES
+#
+#   - Aucune notification si le capteur est vide
+#   - Aucun calcul de seuil
+#   - Aucune dépendance à un device ou à Zigbee
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne scanne pas les batteries
+#   - Ne fixe aucun seuil
+#   - Ne déclenche pas d’alerte autonome
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script utilitaire — notification pure
+#
+# 📍 Entité :
+#   script.notification_batteries_faibles
+#
+# 🔗 Dépendances :
+#   - sensor.batteries_faibles
+#   - script.notification_envoyer
+#
+# 🧩 Pipeline :
+#   Système / Supervision / Maintenance
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+notification_batteries_faibles:
+  alias: Notification batteries faibles
+  mode: single
+  sequence:
+    - variables:
+        batterie_liste: >
+          {% set faibles = state_attr('sensor.batteries_faibles', 'faibles') %}
+          {% if not faibles %}
+            Aucune batterie faible détectée.
+          {% elif faibles is string %}
+            • {{ faibles }}
+          {% else %}
+            {% for item in faibles %}
+            • {{ item }}
+            {% endfor %}
+          {% endif %}
+
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🔋 Batterie faible détectée"
+        message: "{{ batterie_liste }}"

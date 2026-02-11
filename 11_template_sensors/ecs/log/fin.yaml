@@ -1,0 +1,54 @@
+# ==========================================================
+# ⏱️ TEMPLATE TRIGGERED SENSOR — ECS Fin cycle (consigne atteinte, durci)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer le moment exact où la température du ballon ECS
+#   atteint (ou dépasse) la consigne appliquée du dernier cycle,
+#   avec persistance locale du timestamp après redémarrage.
+#
+# 💪 Améliorations :
+#   - Mémoire locale `last_valid` (aucun reset à unknown)
+#   - Validation seulement si chauffe réelle récente
+#   - Anti-rebond : mise à jour unique par cycle
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.ecs_temperature_ballon_securisee
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: systeme_stable
+
+  sensor:
+    - name: "ECS fin cycle consigne atteinte"
+      unique_id: ecs_fin_cycle_consigne_atteinte
+      device_class: timestamp
+      icon: mdi:clock-check-outline
+
+      state: >
+        {% set temp = states('sensor.ecs_temperature_ballon_securisee') | float(0) %}
+        {% set cons = states('sensor.ecs_consigne_dernier_cycle') | float(0) %}
+        {% set resume = states('input_text.ecs_dernier_cycle_resume') %}
+        {% set start_str = resume.split('|')[0] if resume not in ['unknown','unavailable','none',''] else none %}
+        {% set annee = now().year %}
+        {% set start = as_timestamp(strptime(start_str ~ '/' ~ annee, '%d/%m %H:%M/%Y')) if start_str else 0 %}
+        {% set last_str = states('sensor.ecs_fin_cycle_consigne_atteinte') %}
+        {% set last = as_timestamp(last_str) if last_str not in ['unknown','unavailable','none'] else 0 %}
+        {% set ecs_on = states.binary_sensor.ecs_chauffe_en_cours_local.last_changed %}
+        {% set ecs_recent = (as_timestamp(now()) - as_timestamp(ecs_on)) < 7200 %}
+        {% set anti_rebond = (as_timestamp(now()) - last) > 300 %}
+
+        {% if temp >= cons and start > 0 and ecs_recent and anti_rebond %}
+          {{ now().isoformat() }}
+        {% elif last_str not in ['unknown','unavailable','none'] %}
+          {{ last_str }}
+        {% else %}
+          {{ '' }}
+        {% endif %}
+
+      attributes:
+        last_valid: >
+          {% set last_str = states('sensor.ecs_fin_cycle_consigne_atteinte') %}
+          {{ last_str if last_str not in ['unknown','unavailable','none'] else '' }}
+          

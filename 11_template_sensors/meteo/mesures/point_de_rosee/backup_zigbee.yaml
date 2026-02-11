@@ -1,0 +1,148 @@
+# ==========================================================
+# 💧 TEMPLATE TRIGGERED SENSORS — Points de rosée (factorisés)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Calculer le **point de rosée (°C)** pour plusieurs pièces
+#   à partir des capteurs consolidés :
+#     • sensor.temperature_xxx
+#     • sensor.humidite_relative_xxx
+#
+# 🧩 Factorisation :
+#   - Un moteur de calcul unique est défini via une **ancre YAML**
+#     et réutilisé par alias sur chaque capteur.
+#   - Chaque capteur fournit ses sources via attributs :
+#       • temperature_source
+#       • humidite_source
+#
+# 🧮 Formule (Magnus–Tetens) :
+#   Td = (b * γ(T, RH)) / (a - γ(T, RH))
+#   avec γ = (a*T)/(b+T) + ln(RH/100)
+#   où a = 17.62 et b = 243.12
+#
+# ✅ Conditions de calcul :
+#   - T et RH doivent être numériques
+#   - RH ∈ ]0 ; 100]
+#   - Sinon : conservation du dernier état (states(this.entity_id))
+#
+# 🧠 Déclenchements :
+#   - Variation des entités sources (température / humidité)
+#   - Démarrage de Home Assistant
+#
+# 📦 Capteurs créés :
+#   • sensor.point_de_rosee_sejour
+#   • sensor.point_de_rosee_chambre_arnaud
+#   • sensor.point_de_rosee_chambre_matthieu
+#   • sensor.point_de_rosee_chambre_parents
+#
+# 📊 Type : Trigger Template Sensors
+# 🌡️ Unité : °C
+# 💧 Icône : mdi:thermometer-water
+# 🔒 Système : local
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.humidite_relative_sejour
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée séjour"
+      unique_id: point_de_rosee_sejour
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+
+      # 🔗 Ancre du moteur
+      state: &dewpoint_logic >
+        {% set T = states(this.attributes.temperature_source) | float(none) %}
+        {% set RH = states(this.attributes.humidite_source) | float(none) %}
+
+        {% if T is not none and RH is not none and 0 < RH <= 100 %}
+          {% set a, b = 17.62, 243.12 %}
+          {% set gamma = (a*T/(b+T)) + log(RH/100) %}
+          {{ ((b*gamma)/(a-gamma)) | round(1) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+
+      attributes:
+        temperature_source: sensor.temperature_sejour
+        humidite_source: sensor.humidite_relative_sejour
+
+
+# ==========================================================
+# 💤 Chambre Arnaud
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.humidite_relative_chambre_arnaud
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée chambre Arnaud"
+      unique_id: point_de_rosee_chambre_arnaud
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+
+      # 🔗 Réutilisation
+      state: *dewpoint_logic
+
+      attributes:
+        temperature_source: sensor.temperature_chambre_arnaud
+        humidite_source: sensor.humidite_relative_chambre_arnaud
+
+
+# ==========================================================
+# 💤 Chambre Matthieu
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu
+        - sensor.humidite_relative_chambre_matthieu
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée chambre Matthieu"
+      unique_id: point_de_rosee_chambre_matthieu
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+
+      state: *dewpoint_logic
+
+      attributes:
+        temperature_source: sensor.temperature_chambre_matthieu
+        humidite_source: sensor.humidite_relative_chambre_matthieu
+
+
+# ==========================================================
+# 🛏️ Chambre Parents
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents
+        - sensor.humidite_relative_chambre_parents
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée chambre Parents"
+      unique_id: point_de_rosee_chambre_parents
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+
+      state: *dewpoint_logic
+
+      attributes:
+        temperature_source: sensor.temperature_chambre_parents
+        humidite_source: sensor.humidite_relative_chambre_parents

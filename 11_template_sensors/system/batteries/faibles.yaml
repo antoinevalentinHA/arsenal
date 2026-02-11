@@ -1,0 +1,88 @@
+# ==========================================================
+# 🔋 TEMPLATE SENSOR — Batteries Faibles
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Centraliser la surveillance de toutes les batteries
+#   du périmètre défini par `group.batteries` afin de fournir
+#   une mesure agrégée fiable pour la maintenance.
+#
+# ⚙️ Fonctionnement :
+#   - Dérive dynamiquement la liste des capteurs depuis
+#     `group.batteries` (source UNIQUE de périmètre).
+#   - Compare chaque valeur numérique avec un **seuil normatif**
+#     (par défaut 28 %).
+#   - Le capteur principal renvoie :
+#       → le **nombre de batteries critiques**.
+#   - L’attribut `faibles` renvoie :
+#       → la **liste détaillée des entités concernées**
+#         avec leur niveau (%) restant.
+#   - Si aucune batterie n’est sous le seuil :
+#       → affiche `"Aucune batterie faible"`.
+#
+# 🧮 Logique :
+#   • Capteur principal : `sensor.batteries_faibles`
+#   • État : nombre total d’entités de `group.batteries`
+#            dont la valeur est strictement < seuil
+#   • Attributs :
+#       - `faibles` → liste détaillée "entité : xx%"
+#
+# 🧠 Source de périmètre :
+#   - group.batteries
+#     → Source UNIQUE et canonique de la liste des batteries
+#       surveillées par le système.
+#
+# 🧠 Déclenchement :
+#   - Automatique, basé sur les mises à jour des entités
+#     membres de `group.batteries`.
+#   - Aucun trigger explicite, aucun polling périodique.
+#
+# ⚙️ Paramètres normatifs :
+#   - `seuil` = 28 %
+#     → Seuil critique défini par le contrat Batteries.
+#
+# 🧠 Lecture métier :
+#   Ce capteur matérialise une **mesure agrégée de maintenance**.
+#   Il ne déclenche aucune action directe et n’est utilisé que pour :
+#     - diagnostic,
+#     - information utilisateur,
+#     - alimentation des notifications disciplinées.
+#
+# 🔗 Dépendances structurantes :
+#   - group.batteries
+#
+# 🚫 Interdits :
+#   - Toute liste codée en dur d’entités batterie
+#   - Toute duplication du périmètre ailleurs
+#   - Toute décision fonctionnelle basée sur ce capteur
+#
+# 📊 Type : Template Sensor
+# 📍 Entité : sensor.batteries_faibles
+# 🏷️ Statut : Arsenal v8.x — mesure agrégée maintenance
+# ==========================================================
+
+- sensor:
+    - name: "Batteries faibles"
+      unique_id: batteries_faibles
+      icon: mdi:battery-alert
+      state: >
+        {% set seuil = 28 %}
+        {% set entites = expand('group.batteries') | map(attribute='entity_id') | list %}
+        {% set faibles = entites
+          | map('states')
+          | select('match', '^[0-9]+$')
+          | map('int')
+          | select('lt', seuil)
+          | list %}
+        {{ faibles | count }}
+      attributes:
+        faibles: >
+          {% set seuil = 28 %}
+          {% set entites = expand('group.batteries') | map(attribute='entity_id') | list %}
+          {% set faibles = [] %}
+          {% for e in entites %}
+            {% set val = states(e) | float(default=101) %}
+            {% if val < seuil %}
+              {% set faibles = faibles + [e ~ ' : ' ~ val|round(0) ~ '%'] %}
+            {% endif %}
+          {% endfor %}
+          {{ '\n'.join(faibles) if faibles else 'Aucune batterie faible' }}

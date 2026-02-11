@@ -1,0 +1,133 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS Petite Maison — Mode Éco robuste
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Orchestrateur UNIQUE du passage en mode ÉCO
+#   du chauffe-eau Atlantic de la petite maison.
+#
+#   Ce script est le SEUL point autorisé pour :
+#     - appliquer le mode Éco
+#     - garantir une combinaison d’états VALIDE
+#     - vérifier localement le succès réel
+#
+# ----------------------------------------------------------
+# 🧱 CONTRAINTE MÉTIER (OVERKIZ)
+#
+#   Le mode ÉCO doit être appliqué avec :
+#     → away_mode = off
+#
+#   Toute combinaison contraire est :
+#     - instable
+#     - non garantie par l’API
+#
+#   Ce script :
+#     - force la désactivation préalable de away_mode
+#     - applique ensuite operation_mode = eco
+#
+# ----------------------------------------------------------
+# 🧠 LOGIQUE D’ORCHESTRATION
+#
+#   Séquence imposée :
+#     1️⃣ Désactivation explicite du mode absence
+#     2️⃣ Application du mode ÉCO
+#     3️⃣ Vérification LOCALE du mode réel
+#
+#   ➜ Aucune étape n’est implicite
+#
+# ----------------------------------------------------------
+# ⏳ VÉRIFICATION & RELANCE
+#
+#   - Attente active avec timeout (2 minutes)
+#   - Succès confirmé uniquement si :
+#       • mode local = eco
+#
+#   - En cas d’échec :
+#       • relance contrôlée
+#       • notification mobile événementielle
+#       • aucune hypothèse optimiste
+#
+# ----------------------------------------------------------
+# 🛑 CE SCRIPT NE FAIT PAS
+#
+#   - Aucune planification horaire
+#   - Aucune décision de présence / absence
+#   - Aucun appel direct depuis des cartes Lovelace complexes
+#
+#   ➜ Il applique une demande claire :
+#     « passer en mode Éco de manière sûre »
+#
+# ----------------------------------------------------------
+# 🧩 ARCHITECTURE ARSENAL
+#
+#   - Les automatisations décident QUAND
+#   - Ce script décide COMMENT
+#   - Overkiz n’est jamais piloté directement ailleurs
+#
+# ----------------------------------------------------------
+# 🧾 TRAÇABILITÉ
+#
+#   - Aucune notification en cas de succès
+#   - Notification mobile événementielle uniquement
+#     en cas d’échec après relance
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script critique — Orchestration ECS / Overkiz
+#
+# 📍 Entité :
+#   script.ecs_petite_maison_mode_eco
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+ecs_petite_maison_mode_eco:
+  alias: "ECS Petite Maison - Mode Éco"
+  sequence:
+    # 🔁 Désactivation du mode absence
+    - service: water_heater.set_away_mode
+      target:
+        entity_id: water_heater.petite_maison
+      data:
+        away_mode: "off"
+
+    # 💧 Activation du mode Éco
+    - service: water_heater.set_operation_mode
+      target:
+        entity_id: water_heater.petite_maison
+      data:
+        operation_mode: eco
+
+    # ⏳ Vérification locale
+    - wait_template: >
+        {{ states('sensor.ecs_petite_maison_mode_fonctionnement_local') == 'eco' }}
+      timeout: "00:02:00"
+      continue_on_timeout: false
+
+    # 🎯 Confirmation ou relance
+    - choose:
+        # ✅ Succès
+        - conditions: >
+            {{ states('sensor.ecs_petite_maison_mode_fonctionnement_local') == 'eco' }}
+          sequence:
+            []
+
+        # ❌ Échec : relance + notification mobile
+        - conditions: >
+            {{ states('sensor.ecs_petite_maison_mode_fonctionnement_local') != 'eco' }}
+          sequence:
+            - service: water_heater.set_operation_mode
+              target:
+                entity_id: water_heater.petite_maison
+              data:
+                operation_mode: eco
+            - delay: "00:01:00"
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "⚠️ ECS Petite Maison – Échec passage mode Éco"
+                message: >
+                  Tentative échouée, relance envoyée à {{ now().strftime('%H:%M') }}.
+  mode: single

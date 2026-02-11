@@ -1,0 +1,133 @@
+#################################################################
+# ❄️ CARTE CLIMATISATION — SYNTHÈSE D’ÉTAT
+# ---------------------------------------------------------------
+# Carte de lecture consolidée de l’état de la climatisation locale.
+#
+# Rôle :
+#   - Afficher le mode actif
+#   - Exposer la consigne appliquée
+#   - Fournir une lecture humaine immédiate
+#
+# Principe Arsenal :
+#   - Carte de lecture
+#   - Aucune action directe
+#   - Aucune décision UI
+#   - Restitution fidèle des capteurs métier
+#################################################################
+
+carte_clim_synthese:
+  template: carte_base
+
+  entity: sensor.clim_mode_local
+
+  show_icon: true
+  show_name: false
+  show_state: true
+  show_label: true
+
+  tap_action:
+    action: navigate
+    navigation_path: /clim-dashboard/climatisation_
+
+  hold_action:
+    action: more-info
+
+  icon: |
+    [[[
+      const mode = (entity.state || '').toLowerCase();
+      if (mode === 'dry')  return 'mdi:water-percent';
+      if (mode === 'heat') return 'mdi:fire';
+      if (mode === 'off')  return 'mdi:power-standby';
+      return 'mdi:snowflake';
+    ]]]
+
+  state_display: |
+    [[[
+      const mode = (entity.state || '').toLowerCase();
+      if (mode === 'cool') return 'Actif';
+      if (mode === 'dry')  return 'Déshumid.';
+      if (mode === 'heat') return 'Chauffage';
+      if (mode === 'off')  return 'Veille';
+      return mode || 'Inconnu';
+    ]]]
+
+  label: |
+    [[[
+      const consigne = states['sensor.consigne_clim_appliquee_locale']?.state;
+      const mode = (entity.state || '').toLowerCase();
+
+      if (mode === 'off') return '';
+      if (mode === 'cool')
+        return 'Consigne : ' +
+          ((!consigne || ['unavailable','unknown'].includes(consigne)) ? '-' : consigne) + '°C';
+      if (mode === 'dry')  return 'Déshumidification';
+      if (mode === 'heat') return 'Chauffage léger';
+      return 'État : ' + (mode || '-');
+    ]]]
+
+  color_type: card
+
+  state:
+    # 🧊 COOL
+    - operator: template
+      value: |
+        [[[
+          return (entity.state || '').toLowerCase() === 'cool';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(144, 202, 249, 0.25)
+
+    # ✅ DRY
+    - operator: template
+      value: |
+        [[[
+          return (entity.state || '').toLowerCase() === 'dry';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76,175,80,0.2)
+
+    # 🔥 HEAT
+    - operator: template
+      value: |
+        [[[
+          return (entity.state || '').toLowerCase() === 'heat';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244,67,54,0.2)
+
+    # ⚪ OFF
+    - operator: template
+      value: |
+        [[[
+          return (entity.state || '').toLowerCase() === 'off';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+
+    # 💤 Défaut
+    - operator: default
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+
+  styles:
+    card:
+      - height: 80px
+      - border-radius: 12px
+      - padding: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+    icon:
+      - width: 28px
+      - height: 28px
+      - color: '#000000'
+    state:
+      - font-weight: 600
+      - font-size: 15px
+      - color: '#000000'
+    label:
+      - font-size: 13px
+      - color: '#000000'

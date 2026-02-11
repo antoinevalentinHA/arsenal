@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Seuils ΔHA d’aération (saisonnier)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir le différentiel minimal d’humidité absolue (ΔHA)
+#    requis pour considérer qu’une aération est bénéfique,
+#    selon la saison.
+#
+# 🧠 Lecture métier :
+#    Ces seuils sont lus en temps réel par les capteurs
+#    binaires d’aération (RDC et étage).
+#    Ils conditionnent l’autorisation et la priorité
+#    d’aération sur des critères hygrométriques.
+#
+# 🌦️ Seuils saisonniers :
+#    - Été :
+#        → éviter l’entrée d’air plus humide
+#    - Hiver :
+#        → privilégier le séchage de l’air intérieur
+#    - Inter-saison :
+#        → compromis hygro-thermique
+#
+# 🔗 Dépendances :
+#    - Binary sensors aération (RDC / étage)
+#    - Dashboards réglages aération
+#    - UI avancée (button-card templates)
+#
+# 🚫 Interdits :
+#    - Les utiliser comme indicateurs visuels simples
+#    - Les confondre avec des valeurs de référence internes
+#    - Les modifier sans compréhension de l’impact global
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - seuils décisionnels actifs (hygrométrie)
+# ==========================================================
+
+
+aeration_delta_ha_min_ete:
+  name: Aeration ΔHA min (été)
+  min: 0
+  max: 5
+  step: 0.1
+  unit_of_measurement: "g/m³"
+  mode: box
+  icon: mdi:water-percent
+
+aeration_delta_ha_min_hiver:
+  name: Aeration ΔHA min (hiver)
+  min: 0
+  max: 5
+  step: 0.1
+  unit_of_measurement: "g/m³"
+  mode: box
+  icon: mdi:water-percent
+
+aeration_delta_ha_min_inter:
+  name: Aeration ΔHA min (inter-saison)
+  min: 0
+  max: 5
+  step: 0.1
+  unit_of_measurement: "g/m³"
+  mode: box
+  icon: mdi:water-percent

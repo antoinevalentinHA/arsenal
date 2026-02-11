@@ -1,0 +1,139 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR :
+#     Chauffage – Raison de la décision (canonique)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#
+#   Exposer la CAUSE DOMINANTE qui motive la décision
+#   thermique, ou l’abstention volontaire de décision.
+#
+#   Ce capteur ne décrit PAS l’état réel du chauffage,
+#   mais la RAISON MÉTIER ayant conduit à la décision
+#   Comfort / Eco / Neutre.
+#
+# ----------------------------------------------------------
+# 🧱 STATUT ARCHITECTURAL
+#
+#   - Capteur explicatif canonique
+#   - Strict miroir de la hiérarchie décisionnelle
+#   - Référence unique pour :
+#       • notifications
+#       • dashboards de diagnostic
+#       • audits et traçabilité
+#
+# ----------------------------------------------------------
+# 🧠 HIÉRARCHIE DES CAUSES (ORDRE STRICT)
+#
+#   0. Override opérateur (commande souveraine)
+#   1. Blocages hiérarchiques (régime automatique)
+#   2. Autorisation système en attente (hystérésis centrale)
+#   3. Standby forcé
+#   4. Confort d’opportunité (pré-confort, présence)
+#   5. Régime d’absence (avec ou sans protection thermique)
+#
+#   ⚠️ La présence n’est JAMAIS une autorité thermique.
+#
+# ----------------------------------------------------------
+# 🛑 GARANTIES
+#
+#   - Aucune logique décisionnelle autonome
+#   - Aucune action
+#   - Aucun effet de bord
+#   - Calcul déterministe et lisible
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Ne pilote aucun équipement
+#   - Ne reflète pas l’état réel du chauffage
+#   - Ne modifie aucun contexte
+#
+# ----------------------------------------------------------
+# ✅ SORTIE CANONIQUE
+#
+#   - Chaîne courte, stable, non localisée
+#   - Exploitable par notifications et UI
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- sensor:
+    - name: "Chauffage raison calculee"
+      unique_id: chauffage_raison_calculee
+      icon: mdi:comment-text-outline
+      state: >
+
+        {# ======================================================
+           👤 NIVEAU 0 — OVERRIDE OPÉRATEUR (SOUVERAIN)
+           ====================================================== #}
+
+        {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
+          confort_force
+
+
+        {# ======================================================
+           🛑 NIVEAU 1 — BLOCAGES HIÉRARCHIQUES (AUTOMATIQUE)
+           ====================================================== #}
+
+        {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
+          blocage_poele
+
+        {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+          blocage_aeration
+
+        {% elif is_state('input_boolean.aeration_episode_en_cours', 'on') %}
+          aeration_en_cours
+
+        {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
+          fenetre_ouverte
+
+        {% elif is_state('input_select.mode_maison', 'Vacances') %}
+          mode_maison_vacances
+
+
+        {# ======================================================
+           🧠 NIVEAU 2 — AUTORISATION SYSTÈME EN ATTENTE
+           (hystérésis centrale, post-blocage)
+           ====================================================== #}
+
+        {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on')
+              and not is_state('input_boolean.chauffage_standby_force', 'on') %}
+          autorisation_en_attente
+
+
+        {# ======================================================
+           🔒 NIVEAU 3 — STANDBY (HYSTÉRÉSIS THERMIQUE)
+           ====================================================== #}
+
+        {% elif is_state('input_boolean.chauffage_standby_force', 'on') %}
+          standby_force
+
+
+        {# ======================================================
+           🌡️ NIVEAU 4 — CONFORT D’OPPORTUNITÉ
+           ====================================================== #}
+
+        {% elif is_state('binary_sensor.pre_confort_actif', 'on') %}
+          pre_confort_retour_vacances
+
+        {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+          presence_on
+
+
+        {# ======================================================
+           🟠 NIVEAU 5 — ABSENCE / PROTECTION THERMIQUE
+           ====================================================== #}
+
+        {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
+          absence_protection_thermique
+
+
+        {# ======================================================
+           ⚪ FALLBACK — ABSENCE NOMINALE
+           ====================================================== #}
+
+        {% else %}
+          absence
+
+        {% endif %}

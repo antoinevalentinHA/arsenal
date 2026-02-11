@@ -1,0 +1,115 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme – Application décision centrale (V2)
+#
+#  ID : 10020000000027
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’application chargée d’exécuter
+#     STRICTEMENT l’état cible calculé par la décision
+#     centrale de l’alarme, de manière :
+#       - atomique
+#       - idempotente
+#       - robuste aux retriggers et redémarrages
+#
+#  🧩 PRINCIPE ARSENAL V2
+#
+#     - Snapshot de l’état cible AVANT recalcul
+#     - Exécution du cerveau décisionnel
+#     - Snapshot de l’état cible APRÈS recalcul
+#     - Comparaison snapshot → snapshot
+#     - Application UNIQUE, figée et déterministe
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne prend aucune décision métier
+#     - Ne recalcule aucune logique
+#     - N’introduit aucun délai
+#     - N’émet aucune notification directe
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Séparation stricte décision / application
+#     - Idempotence garantie
+#     - Couche d’exécution pure (production grade)
+#
+#  ⚙️ EXÉCUTION
+#
+#     - Mode : queued (max 5)
+#     - Résistance aux retriggers
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10020000000027"
+  alias: "Alarme - Application décision centrale"
+  mode: queued
+  max: 5
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.presence_famille_securite
+        - binary_sensor.presence_famille_securite_absent_depuis_5_min
+        - input_select.mode_alarme
+        - input_boolean.visite_en_cours
+        - input_boolean.blocage_armement_auto
+        - binary_sensor.delai_desarmement_en_cours
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  action:
+
+    # ------------------------------------------------------
+    # 0) SNAPSHOT — état cible AVANT recalcul
+    # ------------------------------------------------------
+    - variables:
+        cible_avant: "{{ states('input_text.alarme_etat_cible') }}"
+
+    # ------------------------------------------------------
+    # 1) CALCUL — cerveau V2 (publication helpers)
+    # ------------------------------------------------------
+    - action: script.alarme_decision_centrale
+
+    # ------------------------------------------------------
+    # 2) SNAPSHOT — état cible APRÈS recalcul
+    # ------------------------------------------------------
+    - variables:
+        cible_calculee: "{{ states('input_text.alarme_etat_cible') }}"
+
+    # ------------------------------------------------------
+    # 3) APPLICATION — basée UNIQUEMENT sur le snapshot
+    # ------------------------------------------------------
+    - choose:
+
+        # ----------------------------------------------
+        # 🔓 DESARMEMENT
+        # ----------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ cible_calculee == 'DISARMED'
+                   and states('alarm_control_panel.alarme_maison') != 'disarmed' }}
+          sequence:
+            - action: script.alarme_desarmer
+              data:
+                origine: "Decision centrale"
+
+        # ----------------------------------------------
+        # 🔐 ARMEMENT AUTO
+        # ----------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ cible_calculee == 'ARMED_AWAY'
+                   and states('alarm_control_panel.alarme_maison') == 'disarmed' }}
+          sequence:
+            - action: script.alarme_armer
+              data:
+                origine: "Decision centrale"
+
+      default: []

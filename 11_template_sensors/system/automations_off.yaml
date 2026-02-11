@@ -1,0 +1,65 @@
+# ==========================================================
+# 🤖 TEMPLATE SENSOR — Automatisations désactivées
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Comptabiliser le nombre d’automatisations actuellement désactivées
+#   dans Home Assistant, tout en exposant des attributs détaillés
+#   permettant une identification rapide.
+#
+# ⚙️ Fonctionnement :
+#   - Récupère toutes les entités du domaine `automation`.
+#   - Filtre celles dont l’état est `off`.
+#   - Calcule :
+#       • le nombre total d’automatisations désactivées (valeur principale)
+#       • la liste des `entity_id` correspondants (attribut `entity_ids`)
+#       • la liste des noms (`names`)
+#       • une chaîne lisible des noms (`friendly_list`)
+#   - Si aucune automatisation n’est désactivée :
+#       → retourne `0` et `Aucune` dans les attributs.
+#
+# 🧠 Détails techniques :
+#   - Domaine : automation
+#   - Icône : mdi:robot-off
+#   - Unité : aucune
+#   - Valeur principale : nombre d’automatisations `off`
+#
+# 📊 Type : Template Sensor
+# 📍 Entité : sensor.automatisations_desactivees
+# ==========================================================
+
+- sensor:
+    - name: "Automatisations désactivées"
+      unique_id: automations_disabled_count
+      icon: mdi:robot-off
+      state: >
+        {% set autos = states.automation | list %}
+        {% if autos | count > 0 %}
+          {{ autos | selectattr('state', 'eq', 'off') | list | count }}
+        {% else %}
+          0
+        {% endif %}
+      attributes:
+        entity_ids: >
+          {% set autos = states.automation | list %}
+          {% if autos | count > 0 %}
+            {{ autos | selectattr('state', 'eq', 'off')
+                      | map(attribute='entity_id') | list }}
+          {% else %}
+            []
+          {% endif %}
+        names: >
+          {% set autos = states.automation | list %}
+          {% if autos | count > 0 %}
+            {{ autos | selectattr('state', 'eq', 'off')
+                      | map(attribute='name') | list }}
+          {% else %}
+            []
+          {% endif %}
+        friendly_list: >
+          {% set autos = states.automation | list %}
+          {% if autos | count > 0 %}
+            {% set items = autos | selectattr('state','eq','off') | map(attribute='name') | list %}
+            {{ items | join(', ') if items else 'Aucune' }}
+          {% else %}
+            Aucune
+          {% endif %}

@@ -1,0 +1,58 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Système – Stabilisation technique post-démarrage
+#
+#  ID : 10120000000018
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Gérer la phase de stabilisation technique de Home Assistant
+#     après un redémarrage afin d’éviter tout déclenchement
+#     parasite dans les pipelines métier.
+#
+#     Cette automation matérialise un état purement technique
+#     du système, indépendant de toute logique fonctionnelle.
+#
+#  🚫 NE FAIT PAS
+#     - N’interagit pas avec l’alarme ou la sécurité
+#     - Ne prend aucune décision métier
+#     - Ne pilote aucun équipement
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • événement de démarrage de Home Assistant
+#     - Séquence :
+#         • déclaration explicite du système comme instable
+#         • temporisation de remise en état technique
+#         • déclaration du système comme stable
+#     - Sert de garde-fou temporel pour les automatisations
+#       dépendantes de la stabilité globale du système
+#
+#  ✅ CONTRAINTES
+#     - Reflète uniquement un état technique interne
+#     - Aucune dépendance aux capteurs, présences ou contextes
+#     - Durée de stabilisation fixe et déterministe
+# ==========================================================
+
+
+- id: "10120000000018"
+  alias: "Système - Stabilisation post-demarrage"
+  mode: single
+
+  trigger:
+    - platform: homeassistant
+      event: start
+
+  action:
+
+    # Systeme declare instable pendant le redemarrage
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.systeme_stable
+
+    # Delai de stabilisation technique
+    - delay: "00:02:00"
+
+    # Systeme declare stable
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.systeme_stable

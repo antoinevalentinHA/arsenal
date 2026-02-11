@@ -1,0 +1,203 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles d’humidité relative (filtrée après-midi)
+# ----------------------------------------------------------
+#  🧠 Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de l’humidité relative mesurée durant l’**après-midi** ☀️,
+#     période correspondant à la phase de température maximale
+#     et d’assèchement de l’air intérieur et extérieur.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Source : capteurs `sensor.humidite_relative_filtre_jour_*`
+#     - Métrique : moyenne (`mean`)
+#
+#  📅 Fenêtre d’analyse :
+#     - Période glissante : 30 jours
+#     - Taille d’échantillon : 5 000 valeurs
+#
+#  📊 Sortie :
+#     - Moyenne mensuelle d’humidité relative (%) durant l’après-midi
+#
+#  🏡 Zones couvertes :
+#     - Chambres, pièces de vie, extérieurs, zones industrielles,
+#       bureaux et locaux techniques.
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🏠 Chambres
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Chambre Arnaud"
+  entity_id: sensor.humidite_relative_filtre_jour_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_5000 5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Chambre Matthieu"
+  entity_id: sensor.humidite_relative_filtre_jour_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Chambre Parents"
+  entity_id: sensor.humidite_relative_filtre_jour_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏡 Espaces de vie et communs
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Entrée"
+  entity_id: sensor.humidite_relative_filtre_jour_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Séjour"
+  entity_id: sensor.humidite_relative_filtre_jour_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Petite Maison"
+  entity_id: sensor.humidite_relative_filtre_jour_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🚿 Salles de bains
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne SDB Enfants"
+  entity_id: sensor.humidite_relative_filtre_jour_sdb_enfants
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne SDB Parents"
+  entity_id: sensor.humidite_relative_filtre_jour_sdb_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🌳 Extérieur et jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Jardin"
+  entity_id: sensor.humidite_relative_filtre_jour_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Extérieur"
+  entity_id: sensor.humidite_relative_filtre_jour_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏢 Zones administratives
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Direction"
+  entity_id: sensor.humidite_relative_filtre_jour_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Compta"
+  entity_id: sensor.humidite_relative_filtre_jour_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Qualité"
+  entity_id: sensor.humidite_relative_filtre_jour_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Devis"
+  entity_id: sensor.humidite_relative_filtre_jour_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Commercial"
+  entity_id: sensor.humidite_relative_filtre_jour_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏭 Zones industrielles / ateliers
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Komori"
+  entity_id: sensor.humidite_relative_filtre_jour_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Bobst"
+  entity_id: sensor.humidite_relative_filtre_jour_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Media"
+  entity_id: sensor.humidite_relative_filtre_jour_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 📦 Zones de stockage
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Stock Carton"
+  entity_id: sensor.humidite_relative_filtre_jour_stock_carton
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Stock PF"
+  entity_id: sensor.humidite_relative_filtre_jour_stock_pf
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# ⚙️ Locaux techniques
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Cave"
+  entity_id: sensor.humidite_relative_filtre_jour_cave
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre jour Moyenne Garage"
+  entity_id: sensor.humidite_relative_filtre_jour_garage
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000

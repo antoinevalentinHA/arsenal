@@ -1,0 +1,30 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Climatisation
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Transformer l'état brut de la clim (cool/dry/heat/off)
+#     en un état visuel standardisé pour le dashboard.
+#
+#  🎯 Mapping :
+#     cool → eco (bleu clair)
+#     dry  → confort (vert)
+#     heat → alert (rouge)
+#     off  → off (gris)
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_clim_dashboard"
+      unique_id: etat_clim_dashboard
+      state: >
+        {% set mode = states('sensor.clim_mode_local') | lower %}
+
+        {% if mode == 'cool' %}
+          eco
+        {% elif mode == 'dry' %}
+          confort
+        {% elif mode == 'heat' %}
+          alert
+        {% else %}
+          off
+        {% endif %}

@@ -1,0 +1,21 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Inhibition géofencing — Offset ON
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Seuil bas d’activation de l’inhibition geofencing.
+#   Déclenchement si ecart_consigne_confort < -offset_on
+#   (écart = température - consigne_confort).
+#
+# 📌 Interprétation :
+#   offset_on = 0.7  → ON si température < consigne - 0.7
+# ==========================================================
+
+inhibition_geofencing_offset_on:
+  name: Chauffage – Inhibition geofencing (seuil bas)
+  icon: mdi:thermometer-alert
+  min: 0.0
+  max: 1.2
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box

@@ -1,0 +1,135 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Chauffage : Durée chute reprise Présence Chambres
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Mesurer la **durée effective de la chute thermique**
+#   après une transition de reprise chauffage (reduced → comfort),
+#   depuis l’instant de reprise jusqu’au point le plus bas atteint.
+#
+#   Ce capteur quantifie directement :
+#     - la latence inertielle bâtiment + hydraulique
+#     - le retard réel de réponse thermique après ordre de reprise
+#
+# 🔎 Déclencheurs :
+#   - Nouvelle reprise chauffage (capteur A1)
+#   - Variation de l’amplitude de chute (capteur A2)
+#
+# ⚙️ Principe :
+#   - À chaque reprise valide :
+#       • durée remise à zéro
+#   - Tant que l’amplitude augmente réellement :
+#       • durée = now() – t_reprise
+#   - Dès que l’amplitude cesse d’augmenter :
+#       • durée figée automatiquement
+#
+# 📌 Nature :
+#   - Diagnostic pur
+#   - Mesure intra-cycle uniquement
+#   - Figement automatique à stabilisation
+#
+# 🚫 Ne fait pas :
+#   - Ne décide rien
+#   - Ne déclenche rien
+#   - Ne mémorise pas inter-cycle
+#
+# 📦 Capteur créé :
+#   • sensor.duree_chute_reprise_presence_chambres
+#
+# 📁 Dossier :
+#   /homeassistant/11_template_sensors/chauffage/diagnostic_thermique/inertie_reprise/
+# ==========================================================
+
+- trigger:
+
+    # Nouvelle reprise chauffage (A1)
+    - platform: state
+      entity_id: sensor.temperature_reprise_presence_chambres
+
+    # Évolution de l’amplitude de chute (A2)
+    - platform: state
+      entity_id: sensor.amplitude_chute_reprise_presence_chambres
+
+
+  sensor:
+    - name: "Durée chute reprise Présence Chambres"
+      unique_id: duree_chute_reprise_presence_chambres
+      unit_of_measurement: "min"
+      icon: mdi:timer-sand
+
+
+      state: >
+        {# -------------------------------------------------- #}
+        {# Invalidation aération / post-aération             #}
+        {# -------------------------------------------------- #}
+
+        {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+          {{ this.state }}
+
+        {% else %}
+
+          {% set reprise_valide = state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') %}
+          {% set t_reprise = state_attr('sensor.temperature_reprise_presence_chambres', 't_reprise') %}
+          {% set amp = states('sensor.amplitude_chute_reprise_presence_chambres') | float(none) %}
+          {% set last = this.state | float(none) %}
+          {% set last_amp = state_attr('sensor.duree_chute_reprise_presence_chambres', 'last_amp') | float(none) %}
+
+          {# -------------------------------------------------- #}
+          {# Neutralisation si reprise invalide ou données absentes #}
+          {# -------------------------------------------------- #}
+
+          {% if not reprise_valide or t_reprise is none or amp is none %}
+            {{ none }}
+
+          {% else %}
+
+            {# -------------------------------------------------- #}
+            {# Reset UNIQUEMENT lors d’une vraie reprise valide  #}
+            {# -------------------------------------------------- #}
+
+            {% if trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' %}
+              {{ 0 }}
+
+            {% else %}
+
+              {# -------------------------------------------------- #}
+              {# Phase de chute encore en cours (amplitude augmente) #}
+              {# -------------------------------------------------- #}
+
+              {% if last_amp is none or amp > last_amp %}
+
+                {% set delta = (now().timestamp() - t_reprise) / 60 %}
+                {{ delta | round(2) }}
+
+              {# -------------------------------------------------- #}
+              {# Fin de chute détectée → figement automatique      #}
+              {# -------------------------------------------------- #}
+
+              {% else %}
+
+                {% if last is not none %}
+                  {{ last }}
+                {% else %}
+                  {{ none }}
+                {% endif %}
+
+              {% endif %}
+
+            {% endif %}
+
+          {% endif %}
+
+        {% endif %}
+
+
+      attributes:
+
+        # --------------------------------------------------
+        # Dernière amplitude observée (détection fin de chute)
+        # --------------------------------------------------
+        last_amp: >
+          {% set amp = states('sensor.amplitude_chute_reprise_presence_chambres') | float(none) %}
+          {% if amp is not none %}
+            {{ amp }}
+          {% else %}
+            {{ this.attributes.get('last_amp') }}
+          {% endif %}

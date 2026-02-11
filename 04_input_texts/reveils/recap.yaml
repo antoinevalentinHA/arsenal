@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Réveils (récapitulatif heures)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Conserver un RÉCAPITULATIF TEXTUEL des heures
+#   de réveil configurées, à des fins de lisibilité
+#   et de diagnostic.
+#
+# 🧱 Nature :
+#   - Mémoire dérivée
+#   - Donnée descriptive non décisionnelle
+#
+# 🚫 Ne fait PAS :
+#   - Ne déclenche aucun réveil
+#   - Ne planifie aucune alarme
+#   - Ne définit aucune heure active
+#   - Ne pilote aucun appareil
+#
+# 🔗 Alimentation :
+#   - Automatisations de calcul / agrégation
+#   - Reset automatique selon le contexte
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace (lecture humaine)
+#   - Diagnostic configuration réveils
+#
+# 🧠 Principe ARSENAL :
+#   - Les heures actives sont définies ailleurs
+#   - Ce helper ne fait que les résumer
+#
+# ⚠️ Sémantique :
+#   - Valeur indicative uniquement
+#   - Peut être vide sans impact fonctionnel
+# ==========================================================
+
+
+reveils_arnaud_heures:
+  name: Réveils Arnaud - Heures
+  max: 255
+  mode: text
+
+reveils_matthieu_heures:
+  name: Réveils Matthieu - Heures
+  max: 255
+  mode: text

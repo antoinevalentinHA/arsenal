@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR — DIAGNOSTIC CHAUFFAGE : REPRISE
+#     Synthèse indicative — Vitesse de reprise (présence)
+# ----------------------------------------------------------
+# Domaine : Chauffage / Diagnostic thermique / Synthèses
+# Couche  : Diagnostic (texte) — UI
+# Statut  : DIAGNOSTIC — LECTURE UNIQUEMENT
+#
+# 🎯 Rôle :
+#   Publier un état textuel indicatif de dynamique de reprise
+#   à partir de la vitesse réelle de reprise en présence.
+#
+# 🔗 Dépendances (lecture) :
+#   - sensor.vitesse_reprise_presence_chambres
+#
+# 🚫 Interdits :
+#   - Aucun service, aucune action, aucune écriture d’entité
+#   - Aucune autorisation, aucun blocage, aucune décision centrale
+#
+# ==========================================================
+
+- sensor:
+    - name: Diagnostic chauffage reprise
+      unique_id: diagnostic_chauffage_reprise
+      state: >-
+        {%- set v_reprise = states('sensor.vitesse_reprise_presence_chambres') | float(none) -%}
+        {%- set txt = none -%}
+        {%- if v_reprise is not none -%}
+          {%- if v_reprise > 1.5 -%}{%- set txt = 'Reprise rapide (bonne puissance / émetteurs efficaces)' -%}
+          {%- elif v_reprise > 0.8 -%}{%- set txt = 'Reprise modérée' -%}
+          {%- else -%}{%- set txt = 'Reprise lente (inertie forte ou puissance limitée)' -%}
+          {%- endif -%}
+        {%- endif -%}
+        {{- txt if txt is not none else '' -}}

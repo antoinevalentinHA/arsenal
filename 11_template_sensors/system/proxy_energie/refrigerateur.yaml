@@ -1,0 +1,50 @@
+- sensor:
+    # ==========================================================
+    # 🧠 ARSENAL — PROXY ÉNERGIE SÉCURISÉ
+    # ----------------------------------------------------------
+    # Appareil : Réfrigérateur
+    #
+    # Rôle :
+    #   Proxy intermédiaire sécurisé pour la consommation énergie
+    #   issue d’une prise Zigbee.
+    #
+    # Problème traité :
+    #   - Cycles longs avec phases à 0 W
+    #   - Reset occasionnel du compteur énergie
+    #   - Régressions provoquant des deltas négatifs
+    #
+    # Garde-fous :
+    #   - Ignore unknown / unavailable / none
+    #   - Interdit toute valeur négative
+    #   - Interdit toute régression de compteur
+    #   - Garantit un compteur monotone croissant
+    #
+    # Usage :
+    #   Source UNIQUE des utility_meter du réfrigérateur
+    #
+    # ==========================================================
+
+    - name: refrigerateur_energy_proxy
+      unique_id: refrigerateur_energy_proxy
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: total_increasing
+
+      state: >
+        {% set raw = states('sensor.prise_refrigerateur_energy') %}
+        {% set prev = states('sensor.refrigerateur_energy_proxy') %}
+
+        {% if raw in ['unknown', 'unavailable', 'none', ''] %}
+          {{ prev if prev not in ['unknown', 'unavailable', 'none', ''] else 0 }}
+        {% else %}
+          {% set raw_val = raw | float(0) %}
+          {% set prev_val = prev | float(0) %}
+
+          {% if raw_val < 0 %}
+            {{ prev_val }}
+          {% elif raw_val < prev_val %}
+            {{ prev_val }}
+          {% else %}
+            {{ raw_val }}
+          {% endif %}
+        {% endif %}

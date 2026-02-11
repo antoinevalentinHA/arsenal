@@ -1,0 +1,63 @@
+# ==============================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR :
+#     Jardin – Intention eclairage (operationnelle)
+# --------------------------------------------------------------
+# 🎯 RÔLE
+#
+#   Exposer une intention UI "niveau 0" : ce que le système
+#   s’attend à faire, compte tenu du contexte courant.
+#
+#   Cette intention est OPERATIONNELLE :
+#     - elle tient compte de la présence (déclencheur d’action)
+#     - elle ne dépend pas de l’état matériel ON/OFF
+#
+#   Sources :
+#     - binary_sensor.jardin_cycle_matin_actif
+#     - binary_sensor.jardin_cycle_eclairage_soir_actif
+#     - binary_sensor.lumiere_jardin_soir_extinction_autorisee
+#     - binary_sensor.presence_famille_unifiee
+#
+# ==============================================================
+
+- sensor:
+    - name: "Jardin - Intention eclairage"
+      unique_id: jardin_intention_eclairage
+      icon: mdi:lightbulb-auto-outline
+
+      state: >
+        {% set matin = is_state('binary_sensor.jardin_cycle_matin_actif', 'on') %}
+        {% set soir = is_state('binary_sensor.jardin_cycle_eclairage_soir_actif', 'on') %}
+        {% set extinction_ok = is_state('binary_sensor.lumiere_jardin_soir_extinction_autorisee', 'on') %}
+        {% set presence = is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+
+        {% if matin %}
+          {% if presence %}
+            Matin – allumage attendu
+          {% else %}
+            Matin – attente presence
+          {% endif %}
+        {% elif soir %}
+          {% if extinction_ok %}
+            Soir – extinction autorisee
+          {% else %}
+            {% if presence %}
+              Soir – allumage attendu
+            {% else %}
+              Soir – attente presence
+            {% endif %}
+          {% endif %}
+        {% else %}
+          Aucun eclairage attendu
+        {% endif %}
+
+      attributes:
+        cycle_matin_actif: "{{ is_state('binary_sensor.jardin_cycle_matin_actif', 'on') }}"
+        cycle_soir_actif: "{{ is_state('binary_sensor.jardin_cycle_eclairage_soir_actif', 'on') }}"
+        extinction_soir_autorisee: "{{ is_state('binary_sensor.lumiere_jardin_soir_extinction_autorisee', 'on') }}"
+        presence: "{{ is_state('binary_sensor.presence_famille_unifiee', 'on') }}"
+
+        auto_matin: "{{ is_state('input_boolean.auto_lumiere_jardin_matin', 'on') }}"
+        auto_soir: "{{ is_state('input_boolean.auto_lumiere_jardin_soir', 'on') }}"
+
+        prise_jardin: "{{ states('switch.prise_jardin') }}"
+        systeme_stable: "{{ states('input_boolean.systeme_stable') }}"

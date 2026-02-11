@@ -1,0 +1,51 @@
+# ==========================================================
+# 💧 TEMPLATE BINARY SENSOR — Critère de déshumidification Cave (humidite relative, avec hystérésis)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si le taux d’humidité relative (RH) dans la cave
+#   justifie l’activation du déshumidificateur.
+#   Ce capteur applique une logique à hystérésis :
+#     • Activation : RH ≥ seuil ON
+#     • Désactivation : RH ≤ seuil OFF
+#
+# ⚙️ Fonctionnement :
+#   - Mesure : sensor.humidite_relative_cave
+#   - Seuils :
+#       • input_number.cave_rh_cible_on
+#       • input_number.cave_rh_cible_off
+#   - L’état actuel du capteur est pris en compte pour
+#     stabiliser le comportement (évite les basculements rapides).
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.critere_deshumidification_cave
+# ==========================================================
+
+- binary_sensor:
+
+    # ------------------------------------------------------
+    # 💨 Critère d’activation du déshumidificateur (RH Cave)
+    # ------------------------------------------------------
+    - name: "Critère déshumidification cave"
+      unique_id: critere_deshumidification_cave
+      default_entity_id: binary_sensor.critere_deshumidification_cave
+      device_class: moisture
+
+      # --------------------------------------------------
+      # 🧮 Hystérésis basée sur l’humidité relative (RH)
+      # --------------------------------------------------
+      state: >
+        {# --- Lecture des données --- #}
+        {% set rh        = states('sensor.humidite_relative_cave') | float(0) %}
+        {% set seuil_on  = states('input_number.cave_rh_cible_on')  | float(80) %}
+        {% set seuil_off = states('input_number.cave_rh_cible_off') | float(70) %}
+
+        {# --- État actuel (mémoire) --- #}
+        {% set current_on = is_state(this.entity_id, 'on') %}
+
+        {# --- Hystérésis RH --- #}
+        {% if current_on %}
+          {{ rh > seuil_off }}
+        {% else %}
+          {{ rh >= seuil_on }}
+        {% endif %}
+

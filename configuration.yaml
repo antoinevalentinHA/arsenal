@@ -1,0 +1,51 @@
+default_config:
+
+# Activation du dossier /config/pyscript pour les scripts locaux
+pyscript:
+
+# Configuration mqtt (sensors et binary_sensors zigbee2mqtt)
+mqtt:
+  sensor: !include_dir_merge_list mqtt_sensors/
+  binary_sensor: !include_dir_merge_list mqtt_binary_sensors/
+
+# Inclusions par dossiers
+group: !include_dir_merge_named 02_groups
+input_number: !include_dir_merge_named 03_input_numbers
+input_text: !include_dir_merge_named 04_input_texts
+input_boolean: !include_dir_merge_named 05_input_booleans
+input_select: !include_dir_merge_named 06_input_selects
+input_datetime: !include_dir_merge_named 07_input_datetimes
+timer: !include_dir_merge_named 08_timers
+alarm_control_panel: !include_dir_merge_list template_alarm_panels
+script: !include_dir_merge_named 09_scripts
+automation: !include_dir_merge_list 10_automations
+utility_meter: !include utility_meter.yaml
+template: !include_dir_merge_list 11_template_sensors/
+sensor: !include_dir_merge_list 12_sensor_platforms/
+
+# Configuration lovelace (mode yaml, ressources et dashboards)
+lovelace: !include lovelace/lovelace_main.yaml
+
+# Configuration http (proxys et adresses de confiance)
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 192.168.1.0/24
+    - 10.9.0.0/24
+    - 127.0.0.1
+    - ::1
+
+# URLs d'accès à home assistant (externe et interne)
+homeassistant:
+  external_url: "https://maisonarsenal.synology.me"
+  internal_url: "http://192.168.1.117:8123"
+  customize: !include_dir_merge_named 01_customize/
+
+# Configuration du recorder (base de données)
+recorder: !include recorder.yaml
+
+# Configuration du logbook (journal des événements)
+logbook: !include logbook.yaml
+
+# Configuration du logger (niveau de verbosite)
+logger: !include logger.yaml

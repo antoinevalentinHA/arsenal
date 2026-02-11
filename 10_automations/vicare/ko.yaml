@@ -1,0 +1,79 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alerte – Indisponibilité prolongée de l’API ViCare
+#
+#  ID : 1013000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Détecter une indisponibilité prolongée de l’API Viessmann
+#     ViCare et informer l’utilisateur par une alerte claire
+#     et persistante.
+#
+#     Cette automation vise à signaler une dégradation
+#     critique du lien API susceptible d’affecter le
+#     chauffage et l’eau chaude sanitaire.
+#
+#  🚫 NE FAIT PAS
+#     - Ne tente aucune relance ou récupération automatique
+#     - Ne pilote pas le chauffage ni l’ECS
+#     - Ne spamme pas l’utilisateur avec des alertes répétées
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • passage de l’API ViCare à l’état indisponible
+#           maintenu pendant au moins 5 minutes
+#     - Garde-fous :
+#         • anti faux-positifs temporel
+#         • vérification d’absence d’alerte existante
+#     - Action :
+#         • création d’une notification persistante unique
+#           décrivant l’impact potentiel sur le système
+#
+#  ✅ CONTRAINTES
+#     - Automation purement informative
+#     - Aucune dépendance au contexte utilisateur
+#     - Une seule alerte active tant que la situation persiste
+# ==========================================================
+
+
+- id: '1013000000001'
+  alias: "Alerte - API Viessmann indisponible"
+  description: >
+    Alerte si l’API Viessmann passe indisponible (données figées depuis > 45 min).
+    Envoie une seule notification persistante et push.
+  mode: single
+  max_exceeded: silent
+
+  # ======================================================
+  # 🔔 Déclencheur — API indisponible durablement
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.vicare_api_disponible
+      from: "on"
+      to: "off"
+      for: "00:05:00"  # anti faux-positifs
+
+  # Aucune condition externe requise pour déclencher
+  condition: []
+
+  # ======================================================
+  # 🔄 Actions — Protection anti-duplicate + Alerte
+  # ======================================================
+  action:
+    # 🔍 Vérifier qu’aucune alerte similaire n’existe déjà
+    - condition: template
+      alias: "Pas déjà notifié"
+      value_template: >
+        {{ not state_attr('persistent_notification.vicare_api_indispo', 'message') }}
+
+    # 🚨 Créer une alerte persistante
+    - service: persistent_notification.create
+      data:
+        title: "🚨 API ViCare – Indisponible"
+        message: >
+          L’API Viessmann est indisponible depuis plus de 45 minutes  
+          (détection à {{ now().strftime('%H:%M') }}).  
+          
+          Les commandes de chauffage et d’eau chaude sanitaire ne sont plus garanties.
+        notification_id: vicare_api_indispo

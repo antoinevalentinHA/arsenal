@@ -1,0 +1,96 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPTS : Volets enfants (commandes unitaires)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Fournir des commandes UNITAIRES, déterministes et
+#   strictement exécutives pour les volets des chambres
+#   enfants (Arnaud et Matthieu).
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ
+#
+#   - Piloter un volet individuel
+#   - Appliquer une ouverture complète (100 %)
+#   - Appliquer une fermeture complète (0 %)
+#
+#   Ces scripts sont la brique de base
+#   utilisée par :
+#     • scripts groupés (enfants, séjour)
+#     • scripts globaux (tous les volets)
+#     • scénarios météo / horaires / présence
+#
+# ----------------------------------------------------------
+# ⚙️ MODE DE FONCTIONNEMENT
+#
+#   - Ouverture :
+#       cover.set_cover_position → position: 100
+#   - Fermeture :
+#       cover.close_cover
+#
+#   ➜ Compatibles avec la "position préférée"
+#     si celle-ci est gérée nativement par le volet.
+#
+# ----------------------------------------------------------
+# 🧠 PHILOSOPHIE ARSENAL
+#
+#   - Aucune logique métier
+#   - Aucune condition
+#   - Aucune vérification d’état
+#
+#   ➜ Ces scripts exécutent.
+#   ➜ Ils ne décident jamais.
+#
+# ----------------------------------------------------------
+# ❌ CE QUE CES SCRIPTS NE FONT PAS
+#
+#   - Ne vérifient pas la position réelle
+#   - Ne gèrent pas les erreurs matérielles
+#   - Ne tiennent compte d’aucun contexte (pluie, soleil, présence)
+#
+# ----------------------------------------------------------
+# 🧩 CAS D’USAGE
+#
+#   - Appels directs depuis Lovelace
+#   - Scripts groupés (ouvrir / fermer volets enfants)
+#   - Orchestration globale des volets
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+ouvrir_volet_arnaud:
+  alias: "Ouvrir volet Arnaud"
+  mode: single
+  sequence:
+    - service: cover.set_cover_position
+      target:
+        entity_id: cover.chambre_arnaud
+      data:
+        position: 100
+
+fermer_volet_arnaud:
+  alias: "Fermer volet Arnaud"
+  mode: single
+  sequence:
+    - service: cover.close_cover
+      target:
+        entity_id: cover.chambre_arnaud
+
+ouvrir_volet_matthieu:
+  alias: "Ouvrir volet Matthieu"
+  mode: single
+  sequence:
+    - service: cover.set_cover_position
+      target:
+        entity_id: cover.chambre_matthieu
+      data:
+        position: 100
+
+fermer_volet_matthieu:
+  alias: "Fermer volet Matthieu"
+  mode: single
+  sequence:
+    - service: cover.close_cover
+      target:
+        entity_id: cover.chambre_matthieu

@@ -1,0 +1,209 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Stock – Maintenance hebdomadaire des mémoires hygrométriques
+#
+#  ID : 1018000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de MAINTENANCE MÉTIER.
+#
+#     Elle conserve, chaque semaine, un historique
+#     synthétique des conditions de température et
+#     d’humidité des zones Stock (Carton et PF),
+#     puis réinitialise les mémoires min/max hebdomadaires.
+#
+#  🧱 NATURE
+#
+#     - Gestion de mémoire persistante (helpers)
+#     - Archivage textuel volontaire
+#     - Réinitialisation contrôlée d’états métier
+#
+#  ⚙️ PRINCIPE
+#
+#     - Exécution hebdomadaire (lundi à 00:00)
+#     - Rotation d’historique sur 4 périodes :
+#         • décalage semaine N-3 → N-4
+#         • injection de la semaine écoulée en N-1
+#     - Génération d’un récapitulatif lisible et daté
+#     - Réinitialisation conditionnelle des min/max
+#       depuis les capteurs si valeurs valides
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne modifie pas les capteurs physiques
+#     - Ne calcule pas de statistiques temporelles
+#     - Ne dépend pas de l’historique HA (recorder)
+#     - Ne touche pas aux mémoires hors Stock
+#
+#  🔗 UTILISATION
+#
+#     - Alimente les dashboards Stock
+#     - Fournit un historique métier synthétique
+#     - Garantit un redémarrage propre des min/max hebdos
+#
+#  🧩 COHÉRENCE SYSTÈME
+#
+#     Pattern strictement identique
+#     aux maintenances hebdomadaires Atelier.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1018000000002"
+  alias: "Stock – Archivage hebdomadaire et reset min/max"
+  description: >
+    Chaque lundi à 00:00, archive les conditions de la semaine
+    (Carton + PF), fait tourner les semaines d’historique (1→4)
+    et remet à jour les min/max avec les valeurs actuelles si disponibles.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Minuit chaque jour
+  # ======================================================
+  trigger:
+    - platform: time
+      at: "00:00:00"
+
+  # ======================================================
+  # ✅ Condition — Exécution uniquement le lundi
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: "{{ now().isoweekday() == 1 }}"
+
+  # ======================================================
+  # 📊 Variables — Période + récapitulatifs conditionnels
+  # ======================================================
+  variables:
+    periode: "{{ (now() - timedelta(days=7)).strftime('%d/%m') }} → {{ now().strftime('%d/%m') }}"
+    
+    recap_carton: >
+      {% set tmin = states('input_number.stock_carton_temperature_min') %}
+      {% set tmax = states('input_number.stock_carton_temperature_max') %}
+      {% set hmin = states('input_number.stock_carton_humidite_min') %}
+      {% set hmax = states('input_number.stock_carton_humidite_max') %}
+      {% if tmin not in ['unknown','unavailable'] and tmax not in ['unknown','unavailable'] %}
+      📅 {{ periode }} | 🌡️ {{ tmin }}–{{ tmax }} °C | 💧 {{ hmin }}–{{ hmax }} %
+      {% else %}
+      📅 {{ periode }} | Données non disponibles
+      {% endif %}
+
+    recap_pf: >
+      {% set tmin = states('input_number.stock_pf_temperature_min') %}
+      {% set tmax = states('input_number.stock_pf_temperature_max') %}
+      {% set hmin = states('input_number.stock_pf_humidite_min') %}
+      {% set hmax = states('input_number.stock_pf_humidite_max') %}
+      {% if tmin not in ['unknown','unavailable'] and tmax not in ['unknown','unavailable'] %}
+      📅 {{ periode }} | 🌡️ {{ tmin }}–{{ tmax }} °C | 💧 {{ hmin }}–{{ hmax }} %
+      {% else %}
+      📅 {{ periode }} | Données non disponibles
+      {% endif %}
+
+  # ======================================================
+  # 🔄 Action — Rotation hebdo + réinit conditionnelle
+  # ======================================================
+  action:
+
+    # 🔁 Rotation historique Carton
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_carton_semaine_4
+        value: "{{ states('input_text.conditions_carton_semaine_3') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_carton_semaine_3
+        value: "{{ states('input_text.conditions_carton_semaine_2') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_carton_semaine_2
+        value: "{{ states('input_text.conditions_carton_semaine_1') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_carton_semaine_1
+        value: "{{ recap_carton }}"
+
+    # 🔁 Rotation historique PF
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_pf_semaine_4
+        value: "{{ states('input_text.conditions_pf_semaine_3') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_pf_semaine_3
+        value: "{{ states('input_text.conditions_pf_semaine_2') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_pf_semaine_2
+        value: "{{ states('input_text.conditions_pf_semaine_1') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_pf_semaine_1
+        value: "{{ recap_pf }}"
+
+    # ⏱ Délai court pour éviter collision de valeurs
+    - delay: "00:00:02"
+
+    # ♻️ Réinitialisation Carton
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_carton_temperature_min
+      data:
+        value: >
+          {% set v = states('sensor.temperature_stock_carton') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_carton_temperature_min') }}
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_carton_temperature_max
+      data:
+        value: >
+          {% set v = states('sensor.temperature_stock_carton') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_carton_temperature_max') }}
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_carton_humidite_min
+      data:
+        value: >
+          {% set v = states('sensor.humidite_relative_stock_carton') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_carton_humidite_min') }}
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_carton_humidite_max
+      data:
+        value: >
+          {% set v = states('sensor.humidite_relative_stock_carton') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_carton_humidite_max') }}
+
+    # ♻️ Réinitialisation PF
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_pf_temperature_min
+      data:
+        value: >
+          {% set v = states('sensor.temperature_stock_pf') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_pf_temperature_min') }}
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_pf_temperature_max
+      data:
+        value: >
+          {% set v = states('sensor.temperature_stock_pf') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_pf_temperature_max') }}
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_pf_humidite_min
+      data:
+        value: >
+          {% set v = states('sensor.humidite_relative_stock_pf') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_pf_humidite_min') }}
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_pf_humidite_max
+      data:
+        value: >
+          {% set v = states('sensor.humidite_relative_stock_pf') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_pf_humidite_max') }}

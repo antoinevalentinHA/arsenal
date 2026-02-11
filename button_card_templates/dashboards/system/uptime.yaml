@@ -1,0 +1,63 @@
+#################################################################
+# ⏱️ CARTE UPTIME SYSTÈME — UI
+# ---------------------------------------------------------------
+# Affiche l’uptime Home Assistant avec interprétation visuelle
+# de la stabilité système.
+#
+# Principe Arsenal :
+#   - Carte d’information interprétée
+#   - Aucune logique métier
+#   - Lecture immédiate de la stabilité HA
+#################################################################
+
+carte_uptime_systeme:
+  template: carte_base
+
+  show_state: true
+
+  tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const state = states['sensor.uptime_jours']?.state;
+
+            // ⚪ Donnée indisponible
+            if (state === undefined || state === null || state === "unknown" || state === "unavailable") {
+              return "rgba(158, 158, 158, 0.1)";
+            }
+
+            const jours = parseFloat(state);
+
+            // ⚪ Reboot très récent : neutre
+            if (jours < 1) {
+              return "rgba(158, 158, 158, 0.2)";
+            }
+
+            // 🔵 Stabilité en cours : information motivante
+            if (jours < 3) {
+              return "rgba(33, 150, 243, 0.2)";
+            }
+
+            // 🟢 Stabilité établie
+            if (jours < 14) {
+              return "rgba(76, 175, 80, 0.2)";
+            }
+
+            // 🟢 Stabilité forte / remarquable
+            return "rgba(76, 175, 80, 0.2)";
+          ]]]
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: "#111"
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: "#111"
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: "#111"

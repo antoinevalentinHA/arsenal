@@ -1,0 +1,27 @@
+# ==========================================================
+# 🧍 INPUT BOOLEAN — Présence enfants
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Indiquer la présence ou l’absence d’un enfant dans la maison.
+#
+# 📌 Contrat logique :
+#   - ON  → présent
+#   - OFF → absent
+#
+# ⚙️ Fonctionnement :
+#   - Activé → automatisations et dashboards considèrent l’enfant présent
+#   - Désactivé → automatisations et dashboards considèrent l’enfant absent
+#
+# 📊 Usage :
+#   - Alimente les modes : normal / babysitting / vacances
+#   - Sert aux templates de présence enfants pour dashboards
+# ==========================================================
+
+
+presence_arnaud:
+  name: Présence Arnaud
+  icon: mdi:account-child
+
+presence_matthieu:
+  name: Présence Matthieu
+  icon: mdi:account-child-circle

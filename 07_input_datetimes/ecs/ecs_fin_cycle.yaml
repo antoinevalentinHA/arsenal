@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : ECS (pic thermique)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mémorisation de l’HORODATAGE (date + heure)
+#   correspondant au PIC THERMIQUE (Tmax)
+#   atteint lors d’un cycle de chauffe ECS.
+#
+#   Ce helper marque la FIN EFFECTIVE
+#   du cycle de chauffe du ballon ECS.
+#
+# 🧩 Nature :
+#   Mémoire PERSISTANTE — repère temporel analytique.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS la chauffe ECS
+#   - Ne pilote PAS la chaudière
+#   - Ne modifie PAS la consigne
+#   - Ne prend AUCUNE décision métier
+#
+# 🔍 Spécificité technique :
+#   - Date + heure (précision absolue)
+#   - Valeur définie automatiquement
+#     à l’atteinte du Tmax ECS
+#   - Persistante aux redémarrages
+#
+# 🔄 Fonctionnement :
+#   - Écrit par l’automatisation :
+#       • ECS – Log timestamp fin de cycle
+#   - Lu par :
+#       • Capteurs de durée de chauffe ECS
+#       • Analyses de performance thermique
+#
+# 🔗 Utilisation :
+#   - Capteurs template ECS :
+#       • Calcul durée = Tmax – début cycle
+#   - Diagnostics ECS :
+#       • Lecture fin réelle de chauffe
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Événement thermique (Tmax)
+#       • Mémoire (input_datetime)
+#       • Analyse (capteurs)
+#       • Décision (logique ECS)
+#
+# ⚠️ Remarque :
+#   La mise à jour de cet horodatage
+#   n’implique JAMAIS une action
+#   ou une commande thermique.
+# ==========================================================
+
+
+ecs_tmax_timestamp:
+  name: "ECS tmax timestamp"
+  has_date: true
+  has_time: true

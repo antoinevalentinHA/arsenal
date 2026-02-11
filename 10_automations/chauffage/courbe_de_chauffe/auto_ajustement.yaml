@@ -1,0 +1,204 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Décision d’auto-ajustement de la courbe
+#
+#  ID : 10240000000009
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Décider, tracer et figer les ajustements de la courbe
+#     de chauffe (pente et parallèle) à partir des suggestions
+#     issues des capteurs Arsenal.
+#
+#     Cette automation matérialise la décision (réelle ou
+#     simulée), puis délègue l’exécution aux scripts dédiés.
+#
+#  🧱 PRINCIPE ARSENAL
+#     - Les capteurs suggèrent (calculs en amont)
+#     - Les input_number figent la décision
+#     - La journalisation est immédiate et non bloquante
+#     - Les scripts exécutent sans décider
+#
+#  🚫 NE FAIT PAS
+#     - Ne calcule pas les suggestions (déjà produites ailleurs)
+#     - Ne pilote pas directement la chaudière
+#     - Ne décide pas en dehors du cadre auto-ajustement autorisé
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • exécution planifiée quotidienne
+#     - Pré-requis :
+#         • auto-ajustement activé
+#         • API ViCare disponible
+#         • maison en mode Normal
+#         • au moins une correction suggérée
+#     - Modes :
+#         • simulation : traçage et notification sans écriture
+#         • réel : figer → tracer → exécuter via scripts blindés
+#
+#  ✅ CONTRAINTES
+#     - Décision centralisée, exécution découplée
+#     - Respect des garde-fous thermiques existants
+#     - Comportement déterministe et traçable
+# ==========================================================
+
+
+- id: "10240000000009"
+  alias: "Chauffage – Décision auto-ajustement courbe"
+  description: >
+    Ajuste (ou simule) la pente et le parallèle de la courbe de chauffe
+    selon les valeurs suggérées, avec traçabilité immédiate et
+    exécution découplée.
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "10:00:00"
+
+  condition:
+
+    # Auto-ajustement activé
+    - condition: template
+      value_template: >
+        {{ is_state('input_boolean.chauffage_reglages_auto', 'on') }}
+
+    # API ViCare disponible
+    - condition: template
+      value_template: >
+        {{ is_state('binary_sensor.vicare_api_disponible', 'on') }}
+
+    # Maison en mode Normal
+    - condition: template
+      value_template: >
+        {{ is_state('input_select.mode_maison', 'Normal') }}
+
+    # Au moins une correction suggérée
+    - condition: template
+      value_template: >
+        {{ states('sensor.chauffage_pente_suggeree') != states('input_number.chauffage_pente_consigne')
+           or states('sensor.chauffage_parallele_suggeree') != states('input_number.chauffage_parallele_consigne') }}
+
+  action:
+
+    # ======================================================
+    # 1️⃣ Capture état actuel et suggestions
+    # ======================================================
+    - variables:
+        pente_actuelle: "{{ states('input_number.chauffage_pente_consigne') | float }}"
+        pente_suggeree: "{{ states('sensor.chauffage_pente_suggeree') | float }}"
+        parallele_actuel: "{{ states('input_number.chauffage_parallele_consigne') | float }}"
+        parallele_suggeree: "{{ states('sensor.chauffage_parallele_suggeree') | float }}"
+        simulation: "{{ is_state('input_boolean.courbe_auto_simulation', 'on') }}"
+
+    - choose:
+
+        # ==================================================
+        # 🧪 MODE SIMULATION — aucune écriture système
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ simulation }}"
+          sequence:
+
+            # -------------------------------
+            # 📝 Journalisation immédiate (simulation)
+            # -------------------------------
+            - service: logbook.log
+              data:
+                name: "Chauffage"
+                message: >
+                  🧪 Simulation auto-ajustement :
+                  pente {{ pente_actuelle }} → {{ pente_suggeree }},
+                  parallèle {{ parallele_actuel }} → {{ parallele_suggeree }}
+
+            - event: chauffage_adjustment
+              event_data:
+                mode: "simulation"
+                pente_before: "{{ pente_actuelle }}"
+                pente_after: "{{ pente_suggeree }}"
+                para_before: "{{ parallele_actuel }}"
+                para_after: "{{ parallele_suggeree }}"
+                timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
+
+            - service: persistent_notification.create
+              data:
+                title: "🤖 Simulation auto-ajustement chauffage"
+                message: >
+                  Mode auto actif (simulation).
+
+                  Ajustements proposés :
+                  • Pente : {{ pente_actuelle }} → {{ pente_suggeree }}
+                  • Parallèle : {{ parallele_actuel }} → {{ parallele_suggeree }}
+
+                  Aucun changement n’a été appliqué.
+
+        # ==================================================
+        # 🔥 MODE RÉEL — figer, tracer, puis exécuter
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ not simulation }}"
+          sequence:
+
+            # -------------------------------
+            # 🔒 Figer la consigne PENTE
+            # -------------------------------
+            - choose:
+                - conditions: >
+                    {{ pente_suggeree > pente_actuelle
+                       or (pente_suggeree < pente_actuelle
+                           and is_state('binary_sensor.poele_en_fonction_stable','off')) }}
+                  sequence:
+                    - service: input_number.set_value
+                      target:
+                        entity_id: input_number.chauffage_pente_consigne
+                      data:
+                        value: "{{ pente_suggeree }}"
+
+            # -------------------------------
+            # 🔒 Figer la consigne PARALLÈLE
+            # -------------------------------
+            - choose:
+                - conditions: >
+                    {{ parallele_suggeree > parallele_actuel
+                       or (parallele_suggeree < parallele_actuel
+                           and is_state('binary_sensor.poele_en_fonction_stable','off')) }}
+                  sequence:
+                    - service: input_number.set_value
+                      target:
+                        entity_id: input_number.chauffage_parallele_consigne
+                      data:
+                        value: "{{ parallele_suggeree }}"
+
+            # -------------------------------
+            # 📝 Journalisation immédiate (décision réelle)
+            # -------------------------------
+            - service: logbook.log
+              data:
+                name: "Chauffage"
+                message: >
+                  🔧 Auto-ajustement décidé :
+                  pente {{ pente_actuelle }} → {{ pente_suggeree }},
+                  parallèle {{ parallele_actuel }} → {{ parallele_suggeree }}
+
+            - event: chauffage_adjustment
+              event_data:
+                mode: "real"
+                pente_before: "{{ pente_actuelle }}"
+                pente_after: "{{ pente_suggeree }}"
+                para_before: "{{ parallele_actuel }}"
+                para_after: "{{ parallele_suggeree }}"
+                timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
+
+            # -------------------------------
+            # ⚙️ Exécution réelle (scripts blindés)
+            # -------------------------------
+            - choose:
+                - conditions: >
+                    {{ pente_suggeree != pente_actuelle }}
+                  sequence:
+                    - service: script.chauffage_appliquer_pente
+
+                - conditions: >
+                    {{ parallele_suggeree != parallele_actuel }}
+                  sequence:
+                    - service: script.chauffage_appliquer_parallele

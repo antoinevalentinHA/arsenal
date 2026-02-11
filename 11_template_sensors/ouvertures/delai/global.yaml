@@ -1,0 +1,28 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERNE)
+#     Fenêtre ouverte (Maison) - Mixte avec délais
+# ----------------------------------------------------------
+# Combinaisons :
+#   • Entrée            → immédiat
+#   • Séjour            → après délai (fenetre_sejour_ouverte_avec_delai)
+#   • Étage             → mixte (fenetre_ouverte_etage_avec_delai)
+#
+# Préservation :
+#   - entity_id historique : binary_sensor.fenetre_ouverte_maison_avec_delai
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Fenêtre ouverte (Maison) - Mixte avec délais"
+      unique_id: fenetre_ouverte_maison_avec_delai
+      default_entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+      device_class: opening
+
+      state: >
+        {% set capteurs = [
+          'binary_sensor.capteur_fenetre_entree',
+          'binary_sensor.fenetre_sejour_ouverte_avec_delai',
+          'binary_sensor.fenetre_ouverte_etage_avec_delai'
+        ] %}
+
+        {{ capteurs | select('is_state', 'on') | list | length > 0 }}

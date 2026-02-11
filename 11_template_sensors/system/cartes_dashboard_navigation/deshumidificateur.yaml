@@ -1,0 +1,24 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Déshumidificateur
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Représenter visuellement l'état du déshumidificateur
+#     sur le menu principal.
+#
+#  🎯 États :
+#     - alert (ON) → bleu foncé / ou rouge si souhaité
+#     - off   (OFF) → gris
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_deshumidificateur_dashboard"
+      unique_id: etat_deshumidificateur_dashboard
+      state: >
+        {% set actif = states('binary_sensor.deshumidificateur_actif') %}
+
+        {% if actif == 'on' %}
+          alert
+        {% else %}
+          off
+        {% endif %}

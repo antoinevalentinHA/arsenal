@@ -1,0 +1,144 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+title: Atelier
+icon: mdi:factory
+
+views:
+  ####################################
+  # 🏭 ATELIER
+  ####################################
+  - title: Atelier
+    path: atelier
+    icon: mdi:factory
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+    ########################################################
+    # 🧩 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+
+      - !include ../../includes/navigation/imprimerie.yaml
+
+      - type: vertical-stack
+        cards:
+
+          - !include ../../includes/section_headers/conditions_actuelles.yaml
+
+          - type: markdown
+            content: >
+              **Komori :**
+
+              🌡️ Température : **{{ states('sensor.temperature_komori') }} °C**
+
+
+              **Bobst :**
+
+              🌡️ Température : **{{ states('sensor.temperature_bobst') }} °C**
+
+
+              **Media :**
+
+              🌡️ Température : **{{ states('sensor.temperature_media') }} °C**
+
+          - !include ../../includes/section_headers/min_max_semaine.yaml
+
+          - type: markdown
+            content: >
+              **Komori :**
+
+              • 🌡️ Température min : **{{ states('input_number.atelier_komori_temperature_min') }} °C**  
+
+              • 🌡️ Température max : **{{ states('input_number.atelier_komori_temperature_max') }} °C**
+
+
+              **Bobst :**
+
+              • 🌡️ Température min : **{{ states('input_number.atelier_bobst_temperature_min') }} °C**  
+
+              • 🌡️ Température max : **{{ states('input_number.atelier_bobst_temperature_max') }} °C**
+
+
+              **Media :**
+
+              • 🌡️ Température min : **{{ states('input_number.atelier_media_temperature_min') }} °C**  
+
+              • 🌡️ Température max : **{{ states('input_number.atelier_media_temperature_max') }} °C**
+            card_mod:
+              style: |
+                ha-card {
+                  padding: 8px 12px;
+                  font-size: 14px;
+                }
+
+          - !include ../../includes/section_headers/historique_4_semaines.yaml
+
+          - type: markdown
+            content: |
+              **Komori :**
+              1️⃣ {{ states('input_text.conditions_komori_semaine_1') }}
+
+              2️⃣ {{ states('input_text.conditions_komori_semaine_2') }}
+
+              3️⃣ {{ states('input_text.conditions_komori_semaine_3') }}
+
+              4️⃣ {{ states('input_text.conditions_komori_semaine_4') }}
+
+
+              **Bobst :**
+              1️⃣ {{ states('input_text.conditions_bobst_semaine_1') }}
+
+              2️⃣ {{ states('input_text.conditions_bobst_semaine_2') }}
+
+              3️⃣ {{ states('input_text.conditions_bobst_semaine_3') }}
+
+              4️⃣ {{ states('input_text.conditions_bobst_semaine_4') }}
+
+
+              **Media :**
+              1️⃣ {{ states('input_text.conditions_media_semaine_1') }}
+
+              2️⃣ {{ states('input_text.conditions_media_semaine_2') }}
+
+              3️⃣ {{ states('input_text.conditions_media_semaine_3') }}
+
+              4️⃣ {{ states('input_text.conditions_media_semaine_4') }}
+            card_mod:
+              style: |
+                ha-card {
+                  padding: 8px 12px;
+                  font-size: 14px;
+                }
+
+          - type: horizontal-stack
+            cards:
+
+              - type: custom:button-card
+                template: badge_action_confirmee
+                icon: mdi:delete-outline
+                tap_action:
+                  action: call-service
+                  confirmation:
+                    text: 🗑️ Réinitialiser l’historique hebdo de l’atelier ?
+                  service: script.reset_atelier_historique
+                variables:
+                  bg_color: rgba(244, 67, 54, 0.2)
+                  icon_color: '#B71C1C'
+
+              - type: custom:button-card
+                template: badge_action_confirmee
+                icon: mdi:playlist-edit
+                tap_action:
+                  action: call-service
+                  confirmation:
+                    text: 📋 Forcer l’archivage hebdo des conditions atelier ?
+                  service: automation.trigger
+                  service_data:
+                    entity_id: automation.atelier_archive_hebdo_rotation_x4_refresh_minmax
+                variables:
+                  bg_color: rgba(33, 150, 243, 0.2)
+                  icon_color: '#1565C0'

@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBERS : VMC — Seuils humidité relative
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir les SEUILS HR utilisés pour déterminer
+#   si une ventilation haute vitesse est requise.
+#
+# 🧱 Principe :
+#   - Ces input_number ne contiennent aucune logique
+#   - Ils fournissent uniquement :
+#       • un seuil d’entrée (ON)
+#       • un seuil de sortie (OFF)
+#
+#   → L’hystérésis est appliquée ailleurs.
+#
+# ❌ Ne sont PAS :
+#   - des capteurs d’humidité
+#   - des déclencheurs directs
+#   - des commandes VMC
+#   - des automatismes
+#
+# 🔗 Utilisation :
+#   - Consommés par :
+#       • binary_sensor.vmc_haute_vitesse_requise
+#   - Affichage / réglage :
+#       • dashboards VMC
+#       • button-card templates
+#
+# 🧠 Principe Arsenal :
+#   - Mesure ≠ Décision ≠ Action
+#   - Seuils explicites, réglables, indépendants
+#
+# 📐 Unité :
+#   - Humidité relative (%)
+# ==========================================================
+
+
+vmc_seuil_on:
+  name: "VMC - Seuil déclenchement"
+  min: 50
+  max: 90
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:water-percent
+  mode: slider
+  #initial: 70
+
+vmc_seuil_off:
+  name: "VMC - Seuil arrêt"
+  min: 40
+  max: 85
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:water-percent-off
+  mode: slider
+  #initial: 65

@@ -1,0 +1,387 @@
+# ==========================================================
+# 💦 TEMPLATE TRIGGERED SENSORS — Couleur Humidité Relative
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Attribuer une couleur indicative selon la position de la
+#   valeur d’humidité relative mesurée par rapport à une
+#   zone de confort centrée et configurable.
+#
+# ⚙️ Principe général :
+#   - Chaque zone possède ses propres seuils métier :
+#       • sensor.humidite_relative_seuil_bas_<zone>
+#       • sensor.humidite_relative_seuil_haut_<zone>
+#   - Le centre de confort est calculé localement :
+#       centre = (seuil_bas + seuil_haut) / 2
+#   - Un helper global définit la demi-largeur de la zone verte :
+#       input_number.humidite_relative_couleur_zone_verte
+#
+# ⚙️ Sources utilisées :
+#   - Valeur mesurée :
+#       • sensor.humidite_relative_<zone>
+#   - Seuils par zone :
+#       • sensor.humidite_relative_seuil_bas_<zone>
+#       • sensor.humidite_relative_seuil_haut_<zone>
+#   - Helper global :
+#       • input_number.humidite_relative_couleur_zone_verte
+#
+# 🎨 Logique de couleurs :
+#   blue        → humidité très basse (sous le seuil bas)
+#   light_blue  → humidité basse mais proche du seuil
+#   light_green → légèrement sous le centre de confort
+#   green       → zone idéale (centre ± zone verte)
+#   yellow      → légèrement au-dessus du centre
+#   red         → humidité trop élevée (au-delà du seuil haut)
+#   grey        → valeurs invalides ou seuils incohérents
+#
+# 🔁 Rafraîchissement :
+#   - À chaque changement de valeur, seuil ou helper
+#   - Au démarrage de Home Assistant
+#
+# 🧠 Détails techniques :
+#   - Conversion automatique virgule → point
+#   - Protection contre unknown / unavailable
+#   - Couleur renvoyée sous forme de texte exploitable en UI
+#
+# 📊 Type :
+#   Trigger Template Sensors
+#
+# 📍 Convention de nommage :
+#   - couleur_humidite_relative_<zone>
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_cave
+        - sensor.humidite_relative_seuil_bas_cave
+        - sensor.humidite_relative_seuil_haut_cave
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Cave"
+      unique_id: couleur_humidite_relative_cave
+      state: &couleur_humidite_relative_logic >
+        {% set suffixe = this.entity_id | replace('sensor.couleur_humidite_relative_', '') %}
+        {% set src = 'sensor.humidite_relative_' ~ suffixe %}
+        {% set src_bas = 'sensor.humidite_relative_seuil_bas_' ~ suffixe %}
+        {% set src_haut = 'sensor.humidite_relative_seuil_haut_' ~ suffixe %}
+
+        {% set raw = states(src) %}
+        {% set h = raw | replace(',', '.') | float(999) %}
+        {% set bas = states(src_bas) | replace(',', '.') | float(0) %}
+        {% set haut = states(src_haut) | replace(',', '.') | float(0) %}
+        {% set zone = states('input_number.humidite_relative_couleur_zone_verte') | float(2) %}
+        {% set centre = (bas + haut) / 2 %}
+
+        {% if raw in ['unknown', 'unavailable', None] or h == 999 %}
+          grey
+        {% elif bas == 0 or haut == 0 or bas >= haut %}
+          grey
+        {% elif h < bas %}
+          blue
+        {% elif h < centre - zone %}
+          light_blue
+        {% elif h < centre %}
+          light_green
+        {% elif h <= centre + zone %}
+          green
+        {% elif h <= haut %}
+          yellow
+        {% else %}
+          red
+        {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_entree
+        - sensor.humidite_relative_seuil_bas_entree
+        - sensor.humidite_relative_seuil_haut_entree
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Entrée"
+      unique_id: couleur_humidite_relative_entree
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_garage
+        - sensor.humidite_relative_seuil_bas_garage
+        - sensor.humidite_relative_seuil_haut_garage
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Garage"
+      unique_id: couleur_humidite_relative_garage
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_petite_maison
+        - sensor.humidite_relative_seuil_bas_petite_maison
+        - sensor.humidite_relative_seuil_haut_petite_maison
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Petite Maison"
+      unique_id: couleur_humidite_relative_petite_maison
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_enfants
+        - sensor.humidite_relative_seuil_bas_sdb_enfants
+        - sensor.humidite_relative_seuil_haut_sdb_enfants
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative SDB Enfants"
+      unique_id: couleur_humidite_relative_sdb_enfants
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sdb_parents
+        - sensor.humidite_relative_seuil_bas_sdb_parents
+        - sensor.humidite_relative_seuil_haut_sdb_parents
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative SDB Parents"
+      unique_id: couleur_humidite_relative_sdb_parents
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_jardin
+        - sensor.humidite_relative_seuil_bas_jardin
+        - sensor.humidite_relative_seuil_haut_jardin
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Jardin"
+      unique_id: couleur_humidite_relative_jardin
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_arnaud
+        - sensor.humidite_relative_seuil_bas_chambre_arnaud
+        - sensor.humidite_relative_seuil_haut_chambre_arnaud
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Chambre Arnaud"
+      unique_id: couleur_humidite_relative_chambre_arnaud
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_matthieu
+        - sensor.humidite_relative_seuil_bas_chambre_matthieu
+        - sensor.humidite_relative_seuil_haut_chambre_matthieu
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Chambre Matthieu"
+      unique_id: couleur_humidite_relative_chambre_matthieu
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_parents
+        - sensor.humidite_relative_seuil_bas_chambre_parents
+        - sensor.humidite_relative_seuil_haut_chambre_parents
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Chambre Parents"
+      unique_id: couleur_humidite_relative_chambre_parents
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sejour
+        - sensor.humidite_relative_seuil_bas_sejour
+        - sensor.humidite_relative_seuil_haut_sejour
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Séjour"
+      unique_id: couleur_humidite_relative_sejour
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_exterieur
+        - sensor.humidite_relative_seuil_bas_exterieur
+        - sensor.humidite_relative_seuil_haut_exterieur
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Extérieur"
+      unique_id: couleur_humidite_relative_exterieur
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_direction
+        - sensor.humidite_relative_seuil_bas_direction
+        - sensor.humidite_relative_seuil_haut_direction
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Direction"
+      unique_id: couleur_humidite_relative_direction
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_compta
+        - sensor.humidite_relative_seuil_bas_compta
+        - sensor.humidite_relative_seuil_haut_compta
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Compta"
+      unique_id: couleur_humidite_relative_compta
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_qualite
+        - sensor.humidite_relative_seuil_bas_qualite
+        - sensor.humidite_relative_seuil_haut_qualite
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Qualité"
+      unique_id: couleur_humidite_relative_qualite
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_devis
+        - sensor.humidite_relative_seuil_bas_devis
+        - sensor.humidite_relative_seuil_haut_devis
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Devis"
+      unique_id: couleur_humidite_relative_devis
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_commercial
+        - sensor.humidite_relative_seuil_bas_commercial
+        - sensor.humidite_relative_seuil_haut_commercial
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Commercial"
+      unique_id: couleur_humidite_relative_commercial
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_carton
+        - sensor.humidite_relative_seuil_bas_stock_carton
+        - sensor.humidite_relative_seuil_haut_stock_carton
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Stock Carton"
+      unique_id: couleur_humidite_relative_stock_carton
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_stock_pf
+        - sensor.humidite_relative_seuil_bas_stock_pf
+        - sensor.humidite_relative_seuil_haut_stock_pf
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Stock PF"
+      unique_id: couleur_humidite_relative_stock_pf
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_komori
+        - sensor.humidite_relative_seuil_bas_komori
+        - sensor.humidite_relative_seuil_haut_komori
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Komori"
+      unique_id: couleur_humidite_relative_komori
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_bobst
+        - sensor.humidite_relative_seuil_bas_bobst
+        - sensor.humidite_relative_seuil_haut_bobst
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Bobst"
+      unique_id: couleur_humidite_relative_bobst
+      state: *couleur_humidite_relative_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_media
+        - sensor.humidite_relative_seuil_bas_media
+        - sensor.humidite_relative_seuil_haut_media
+        - input_number.humidite_relative_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité relative Media"
+      unique_id: couleur_humidite_relative_media
+      state: *couleur_humidite_relative_logic

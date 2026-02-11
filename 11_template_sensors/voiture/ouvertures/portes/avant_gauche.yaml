@@ -1,0 +1,33 @@
+# ==========================================================
+# 🚪 TEMPLATE TRIGGERED BINARY SENSOR — Audi e-tron (Porte avant gauche)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser l’état du capteur `binary_sensor.audi_a3_sportback_e_tron_left_front_door`
+#   afin d’éviter les basculements erratiques ou les états inconnus
+#   lors des interruptions de communication avec le véhicule.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque changement d’état du capteur source.
+#   - Réévaluation automatique au démarrage de Home Assistant.
+#   - Si état valide → reprise directe.
+#   - Sinon → conservation du dernier état connu.
+#
+# 🧮 Source : binary_sensor.audi_a3_sportback_e_tron_left_front_door
+# 📊 Type : Trigger Template Binary Sensor
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: binary_sensor.audi_a3_sportback_e_tron_left_front_door
+
+  binary_sensor:
+    - name: "Audi e-tron – Porte avant gauche (Local)"
+      unique_id: audi_a3_sportback_e_tron_left_front_door_local
+      device_class: door
+      state: >
+        {% set s = states('binary_sensor.audi_a3_sportback_e_tron_left_front_door') %}
+        {% if s in ['on','off'] %}
+          {{ s }}
+        {% else %}
+          {{ this.state | default('off') }}
+        {% endif %}

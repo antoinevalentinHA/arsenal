@@ -1,0 +1,72 @@
+# ==========================================================
+#  Arsenal — Automation : Aeration – Persistance durees
+# ----------------------------------------------------------
+#  Rôle :
+#    Synchroniser les durées d’aération calculées
+#    vers des helpers persistants afin de :
+#      - survivre aux redémarrages Home Assistant
+#      - garantir une continuité logique des épisodes
+#
+#  Principe :
+#    - Écoute les capteurs de durée calculée
+#    - Écrit dans les input_number "stock"
+#    - Actif uniquement pendant un épisode d’aération
+#
+#  Important :
+#    - Aucun calcul métier
+#    - Aucun reset
+#    - Pure persistance (guard technique)
+# ==========================================================
+
+- id: "10010000000025"
+  alias: "Aération – Persistance durées"
+  mode: queued
+
+  # ======================================================
+  # Déclencheurs
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id:
+        - sensor.duree_aeration_rdc
+        - sensor.duree_aeration_etage
+
+  # ======================================================
+  # Conditions
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.aeration_episode_en_cours
+      state: "on"
+
+  # ======================================================
+  # Actions
+  # ======================================================
+  action:
+    - choose:
+
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.entity_id == 'sensor.duree_aeration_rdc' }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.duree_aeration_rdc_stock
+              data:
+                value: >
+                  {{
+                    (states('sensor.duree_aeration_rdc') | float(0) * 60) | round(0)
+                  }}
+
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.entity_id == 'sensor.duree_aeration_etage' }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.duree_aeration_etage_stock
+              data:
+                value: >
+                  {{
+                    (states('sensor.duree_aeration_etage') | float(0) * 60) | round(0)
+                  }}

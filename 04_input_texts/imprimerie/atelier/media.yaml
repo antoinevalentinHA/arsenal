@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Atelier Media (conditions météo)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Conserver des SNAPSHOTS des conditions météo
+#   mesurées par le capteur situé à proximité de la
+#   plieuse-colleuse Bobst Media,
+#   sur un historique glissant de 4 semaines.
+#
+# 🧱 Nature :
+#   - Mémoire environnementale historisée
+#   - Données figées post-mesure (texte)
+#
+# 🚫 Ne fait PAS :
+#   - Ne mesure aucune donnée en temps réel
+#   - Ne remplace pas le capteur source
+#   - Ne pilote aucune machine
+#   - Ne déclenche aucune automatisation
+#
+# 🔗 Alimentation :
+#   - Capture automatique des valeurs du capteur Media
+#   - Archivage hebdomadaire par décalage
+#
+# 🔗 Utilisation :
+#   - Dashboards atelier
+#   - Analyse qualité pliage / collage / carton
+#
+# 🧠 Principe ARSENAL :
+#   - Séparation stricte :
+#       mesure temps réel ≠ mémoire figée ≠ décision
+#
+# ⚠️ Sémantique :
+#   - Valeur descriptive, non active
+#   - Représente un état passé
+# ==========================================================
+
+
+conditions_media_semaine_1:
+  name: "Media – Semaine 1 (la + recente)"
+  max: 255
+  mode: text
+
+conditions_media_semaine_2:
+  name: "Media – Semaine 2"
+  max: 255
+  mode: text
+
+conditions_media_semaine_3:
+  name: "Media – Semaine 3"
+  max: 255
+  mode: text
+
+conditions_media_semaine_4:
+  name: "Media – Semaine 4"
+  max: 255
+  mode: text

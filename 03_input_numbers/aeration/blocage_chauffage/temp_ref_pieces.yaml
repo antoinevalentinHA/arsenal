@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Températures de référence (aération)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Stocker la température de référence figée au moment
+#    du début d’aération, pièce par pièce.
+#
+# 🧠 Lecture métier :
+#    Ces helpers représentent l’état thermique INITIAL
+#    servant de base au calcul de la chute de température (ΔT).
+#    Ils sont écrits une seule fois par cycle d’aération
+#    et ne sont jamais modifiés manuellement.
+#
+# 📌 Pièces incluses :
+#    - Entrée
+#    - Séjour
+#    - Chambre Arnaud
+#    - Chambre Matthieu
+#    - Chambre Parents
+#    - Palier
+#
+# 🔗 Dépendances :
+#    - Automatisations aération (capture initiale)
+#    - Templates ΔT par pièce (analyse thermique)
+#    - Dashboards diagnostics
+#
+# 🚫 Interdits :
+#    - Modifier manuellement ces valeurs
+#    - Les utiliser comme consignes ou seuils
+#    - Les confondre avec des températures courantes
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - référence thermique figée / aération
+# ==========================================================
+
+
+ref_temp_entree:
+  name: "ref_temp_entree"
+  min: -10
+  max: 40
+  step: 0.1
+
+ref_temp_sejour:
+  name: "ref_temp_sejour"
+  min: -10
+  max: 40
+  step: 0.1
+
+ref_temp_chambre_arnaud:
+  name: "ref_temp_chambre_arnaud"
+  min: -10
+  max: 40
+  step: 0.1
+
+ref_temp_chambre_matthieu:
+  name: "ref_temp_chambre_matthieu"
+  min: -10
+  max: 40
+  step: 0.1
+
+ref_temp_chambre_parents:
+  name: "ref_temp_chambre_parents"
+  min: -10
+  max: 40
+  step: 0.1
+
+ref_temp_palier:
+  name: "ref_temp_palier"
+  min: -10
+  max: 40
+  step: 0.1

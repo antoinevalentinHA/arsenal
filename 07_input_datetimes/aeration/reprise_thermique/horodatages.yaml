@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Aération / Reprise thermique
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stockage des HORODATAGES PERSISTANTS
+#   utilisés comme REPÈRES TEMPORELS
+#   dans le pipeline d’aération et de reprise thermique.
+#
+#   Ce fichier regroupe exclusivement
+#   des mémoires temporelles.
+#
+# 🧩 Nature :
+#   Mémoire PERSISTANTE — horodatages de référence.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche AUCUNE action
+#   - Ne décide PAS d’aérer ou de chauffer
+#   - Ne calcule AUCUN indicateur thermique
+#   - Ne représente PAS un état instantané
+#
+# 🔄 Utilisation :
+#   - Automatisations aération :
+#       • Marquage du début d’un épisode qualifié
+#       • Raisonnement temporel (durées, délais)
+#   - Dashboards diagnostics :
+#       • Lecture et compréhension des épisodes passés
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Mesure
+#       • Analyse
+#       • Mémoire
+#       • Décision
+#
+# 🛑 Contraintes Arsenal :
+#   - Aucun "input_datetime:" global dans le fichier
+#   - Pas d’"initial"
+#   - has_date + has_time obligatoires
+#   - Noms bruts, sans accents, sans décorations
+# ==========================================================
+
+
+aeration_debut:
+  name: "aeration_debut"
+  has_date: true
+  has_time: true

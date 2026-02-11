@@ -1,0 +1,158 @@
+# ==========================================================
+# 🌡️ TEMPLATE SENSORS — Humidex “Seuil Bas”
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Déterminer, pour chaque zone, le **seuil bas de confort Humidex**, 
+#   c’est-à-dire la limite inférieure à partir de laquelle l’ambiance 
+#   devient légèrement trop fraîche ou sèche pour le confort humain.
+#
+# ⚙️ Fonctionnement :
+#   - Le calcul dépend :
+#       • de la période météorologique actuelle (`sensor.periode_meteo`),  
+#       • de la moyenne filtrée correspondante (`sensor.humidex_filtre_<periode>_moyenne_<zone>`),  
+#       • et d’un **offset saisonnier adaptatif** selon le mois.  
+#   - En hiver, le seuil est abaissé davantage (plus strict),  
+#     car une sensation de fraîcheur est perçue plus fortement.
+#
+# 🧮 Logique :
+#   1️⃣ Récupération de la période météo actuelle :
+#       → `aube`, `matin`, `jour`, `crepuscule` ou `nuit`
+#   2️⃣ Calcul de la moyenne du capteur filtré correspondant à la période :
+#       → ex. `sensor.humidex_filtre_jour_moyenne_sejour`
+#   3️⃣ Application d’un **offset saisonnier** :
+#       - Hiver  (Déc, Jan, Fév)  →  -1.5  
+#       - Inter-saisons (Mar, Avr, Oct, Nov)  →  -1.2  
+#       - Été   (Mai à Sep)       →  -1.0  
+#   4️⃣ Résultat final :
+#       → `seuil_bas = moyenne - offset`
+#
+# 🧩 Capteurs / Zones concernées :
+#   ▪️ Résidentiel :
+#      - Chambre Arnaud  
+#      - Chambre Matthieu  
+#      - Chambre Parents  
+#      - Entrée  
+#      - Séjour  
+#      - Petite Maison  
+#      - Jardin  
+#      - Extérieur  
+#
+#   ▪️ Professionnel / Technique :
+#      - Direction  
+#      - Compta  
+#      - Qualité  
+#      - Devis  
+#      - Commercial  
+#      - Komori  
+#      - Bobst  
+#      - Media
+#
+# 💡 Interprétation :
+#   - Si l’Humidex réel < Seuil Bas :
+#       → sensation de **fraîcheur / inconfort léger** probable.  
+#   - Si l’Humidex réel ≈ Seuil Bas :
+#       → zone de **transition thermique**, souvent au réveil ou le soir.  
+#   - Si l’Humidex réel > Seuil Bas :
+#       → **confort thermique optimal** ou ambiance plus tempérée.
+#
+# ⚠️ Remarques :
+#   - Ce système s’adapte automatiquement à la période de la journée 
+#     et à la saison, sans intervention manuelle.  
+#   - L’offset pourrait être ajusté localement (ex. zones humides ou exposées).  
+#   - Couplé aux capteurs “Humidex Seuil Haut”, il forme un 
+#     **cadre dynamique de confort thermique personnalisé**.
+#
+# 📊 Type : Template Sensor  
+# 📈 Domaine : Confort / Thermique / Climat intérieur intelligent  
+# ==========================================================
+
+- sensor:
+    - name: "Humidex Seuil Bas Chambre Arnaud"
+      unique_id: humidex_seuil_bas_chambre_arnaud
+      state: &humidex_seuil_bas_logic >
+        {% set periode = states('sensor.periode_meteo') %}
+        {% set suffixe = this.entity_id | replace('sensor.humidex_seuil_bas_', '') %}
+        {% set moyenne = states('sensor.humidex_filtre_' ~ periode ~ '_moyenne_' ~ suffixe) | float(0) %}
+        {% set mois = now().month %}
+
+        {# Offset saisonnier : plus strict en hiver #}
+        {% set offset =
+          1.5 if mois in [12, 1, 2] else
+          1.2 if mois in [3, 4, 10, 11] else
+          1.0 %}
+        {{ (moyenne - offset) | round(1) }}
+
+- sensor:
+    - name: "Humidex Seuil Bas Entrée"
+      unique_id: humidex_seuil_bas_entree
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Jardin"
+      unique_id: humidex_seuil_bas_jardin
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Chambre Matthieu"
+      unique_id: humidex_seuil_bas_chambre_matthieu
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Chambre Parents"
+      unique_id: humidex_seuil_bas_chambre_parents
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Petite Maison"
+      unique_id: humidex_seuil_bas_petite_maison
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Séjour"
+      unique_id: humidex_seuil_bas_sejour
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Extérieur"
+      unique_id: humidex_seuil_bas_exterieur
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Direction"
+      unique_id: humidex_seuil_bas_direction
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Compta"
+      unique_id: humidex_seuil_bas_compta
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Qualité"
+      unique_id: humidex_seuil_bas_qualite
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Devis"
+      unique_id: humidex_seuil_bas_devis
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Commercial"
+      unique_id: humidex_seuil_bas_commercial
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Komori"
+      unique_id: humidex_seuil_bas_komori
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Bobst"
+      unique_id: humidex_seuil_bas_bobst
+      state: *humidex_seuil_bas_logic
+
+- sensor:
+    - name: "Humidex Seuil Bas Media"
+      unique_id: humidex_seuil_bas_media
+      state: *humidex_seuil_bas_logic

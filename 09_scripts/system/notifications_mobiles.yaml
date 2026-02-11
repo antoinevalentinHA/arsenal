@@ -1,0 +1,159 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPTS : Notifications (Core)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Fournir une couche UNIQUE, stable et abstraite
+#   d’envoi de notifications vers les téléphones.
+#
+#   Tous les scripts et automatisations Arsenal
+#   doivent passer EXCLUSIVEMENT par ces scripts
+#   pour notifier un utilisateur.
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE D’ABSTRACTION
+#
+#   Les cibles de notification ne sont JAMAIS
+#   codées en dur.
+#
+#   Chaque téléphone est référencé via :
+#     - input_text.telephone_*_notify
+#
+#   ➜ Un changement de smartphone, d’application
+#     ou de service notify ne nécessite
+#     AUCUNE modification du code YAML.
+#
+# ----------------------------------------------------------
+# 📌 SCRIPTS FOURNIS
+#
+#   1️⃣ notification_envoyer
+#      - Envoi vers UNE cible dynamique
+#      - La cible est résolue via un helper input_text
+#
+#   2️⃣ notification_envoyer_famille
+#      - Envoi simultané aux deux téléphones
+#      - Utilisé pour les événements critiques
+#
+#   3️⃣ notification_envoyer_avance
+#      - Variante avec paramètres avancés (Android)
+#      - Supporte :
+#          • priorité
+#          • ttl
+#          • importance
+#          • tags
+#          • group
+#
+# ----------------------------------------------------------
+# 🔒 GARANTIES
+#
+#   - Aucun script métier ne dépend d’un service notify réel
+#   - Aucun téléphone n’est référencé directement
+#   - Les notifications sont totalement uniformisées
+#   - La logique applicative est découplée du matériel
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne décide PAS quand notifier
+#   - Ne filtre PAS les événements
+#   - Ne journalise PAS les notifications
+#   - Ne gère PAS les accusés de réception
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Scripts utilitaires — couche infrastructure
+#
+# 📍 Entités :
+#   - script.notification_envoyer
+#   - script.notification_envoyer_famille
+#   - script.notification_envoyer_avance
+#
+# 🔗 Dépendances :
+#   - input_text.telephone_antoine_notify
+#   - input_text.telephone_constance_notify
+#   - Services notify Home Assistant
+#
+# 🧩 Pipeline :
+#   Core / Notifications / Abstraction
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.12+
+#   Arsenal v6+
+# ==========================================================
+
+
+notification_envoyer:
+  alias: "Notification - Envoyer"
+  mode: parallel
+  fields:
+    cible:
+      description: "Helper contenant le service notify"
+      example: "input_text.telephone_antoine_notify"
+    titre:
+      description: "Titre de la notification"
+      example: "Aération"
+    message:
+      description: "Message de la notification"
+      example: "Fenêtres ouvertes à l’étage"
+  sequence:
+    # ------------------------------------------------------
+    # Résolution du service depuis le helper
+    # ------------------------------------------------------
+    - variables:
+        svc: "{{ states(cible) }}"
+
+    # ------------------------------------------------------
+    # Envoi
+    # ------------------------------------------------------
+    - service: "{{ svc }}"
+      data:
+        title: "{{ titre }}"
+        message: "{{ message }}"
+
+
+notification_envoyer_famille:
+  alias: "Notification - Envoyer Famille"
+  mode: parallel
+  fields:
+    titre:
+      description: "Titre de la notification"
+    message:
+      description: "Message de la notification"
+  sequence:
+    # ------------------------------------------------------
+    # Téléphone Antoine
+    # ------------------------------------------------------
+    - service: "{{ states('input_text.telephone_antoine_notify') }}"
+      data:
+        title: "{{ titre }}"
+        message: "{{ message }}"
+
+    # ------------------------------------------------------
+    # Téléphone Constance
+    # ------------------------------------------------------
+    - service: "{{ states('input_text.telephone_constance_notify') }}"
+      data:
+        title: "{{ titre }}"
+        message: "{{ message }}"
+
+
+notification_envoyer_avance:
+  alias: "Notification - Envoyer Avance"
+  mode: parallel
+  fields:
+    cible:
+      description: "Helper contenant le service notify"
+    titre:
+      description: "Titre de la notification"
+    message:
+      description: "Message de la notification"
+    extra:
+      description: "Bloc data additionnel pour Android"
+      default: {}
+  sequence:
+    - variables:
+        svc: "{{ states(cible) }}"
+    - service: "{{ svc }}"
+      data:
+        title: "{{ titre }}"
+        message: "{{ message }}"
+        data: "{{ extra }}"

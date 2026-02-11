@@ -1,0 +1,43 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Alarme – Blocage armement automatique
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Verrou logique interdisant temporairement
+#     toute décision d’armement automatique
+#     de l’alarme.
+#
+#     Il permet de suspendre volontairement
+#     le comportement automatique du système,
+#     sans impacter les actions manuelles.
+#
+#  🧱 Nature :
+#     - Verrou de décision
+#     - Override de sécurité temporaire
+#
+#  🔄 Cycle de vie :
+#     - ON  : le réarmement automatique est
+#             strictement interdit
+#     - OFF : le système est autorisé à
+#             décider à nouveau
+#
+#  📥 N’effectue PAS :
+#     - aucun armement ou désarmement
+#     - aucun pilotage de l’alarme
+#     - aucune gestion de durée
+#
+#  📤 Utilisation :
+#     - Lue par :
+#         • scripts de décision centrale alarme
+#         • automatisations d’armement
+#         • capteurs de cohérence
+#     - Utilisée conjointement avec
+#       timer.blocage_armement_auto
+#
+#  🧠 Principe Arsenal :
+#     - Une décision automatique peut
+#       toujours être explicitement interdite
+# ==========================================================
+
+blocage_armement_auto:
+  name: Blocage armement automatique
+  icon: mdi:shield-off

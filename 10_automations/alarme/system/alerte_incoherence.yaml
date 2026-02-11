@@ -1,0 +1,88 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme – Alerte divergence état réel / état cible
+#
+#  ID : 10020000000030
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de surveillance chargée de détecter
+#     un échec d’application du système d’alarme lorsque
+#     l’état réel du panneau ne correspond pas à l’état
+#     cible décidé par le cerveau.
+#
+#  🧩 PRINCIPE
+#
+#     - Le cerveau exprime une intention via un état cible
+#     - L’automatisation centrale tente l’application
+#     - Si la divergence persiste au-delà d’un délai donné :
+#         → alerte critique (panne ou blocage probable)
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne prend aucune décision métier
+#     - N’arme ni ne désarme l’alarme
+#     - N’applique aucune correction automatique
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Séparation stricte décision / application / contrôle
+#     - Détection proactive des échecs techniques
+#     - Aucune action corrective implicite
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10020000000030"
+  alias: "Alarme - Alerte divergence état réel / cible"
+  description: >
+    Alerte critique si l'état réel de l'alarme ne correspond pas
+    à l'état cible demandé par la décision centrale pendant plus
+    de 5 minutes. Indique un échec d'application (intégration bloquée,
+    panne API, refus matériel, etc.).
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Divergence persistante
+  # ======================================================
+  trigger:
+    - platform: template
+      value_template: >
+        {% set cible = states('input_text.alarme_etat_cible') %}
+        {% set reel = states('alarm_control_panel.alarme_maison') %}
+
+        {% set divergence =
+             (cible == 'ARMED_AWAY' and reel != 'armed_away') or
+             (cible == 'DISARMED' and reel != 'disarmed') %}
+
+        {{ divergence and cible not in ['NOOP', 'unknown', 'unavailable'] }}
+      for: "00:05:00"
+
+  # ======================================================
+  # ▶️ Action — Notification critique
+  # ======================================================
+  action:
+    - action: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🛑 Échec système alarme"
+        message: >
+          Le système d’alarme n’a pas réussi à appliquer
+          la décision centrale depuis plus de 5 minutes.
+
+          **État cible demandé :**
+          {{ states('input_text.alarme_etat_cible') }}
+
+          **État réel bloqué :**
+          {{ states('alarm_control_panel.alarme_maison') }}
+
+          **Raison logique :**
+          {{ states('input_text.alarme_raison') }}
+
+          Vérifie l’intégration de l’alarme ou les logs système.
+        extra:
+          priority: high
+          importance: high
+          ttl: 0

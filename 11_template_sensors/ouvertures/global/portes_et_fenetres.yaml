@@ -1,0 +1,45 @@
+# ==========================================================
+# 🚪🪟 TEMPLATE BINARY SENSOR — Ouvertures maison (global)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer si au moins une ouverture de la maison
+#   (fenêtre ou porte) est actuellement ouverte.
+#
+# ⚙️ Fonctionnement :
+#   - Regroupe l’ensemble des capteurs d’ouvertures :
+#       • Chambres (Arnaud, Matthieu, Parents)
+#       • Séjour (4 ouvrants)
+#       • Entrée
+#       • Portes d’entrée et de garage
+#   - Statut :
+#       • ON  → au moins une ouverture est détectée
+#       • OFF → toutes les ouvertures sont fermées
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.ouvertures_maison
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Ouvertures"
+      unique_id: ouvertures_maison
+      default_entity_id: binary_sensor.ouvertures_maison
+      device_class: opening
+
+      state: >
+        {% set ouvertures = [
+          'binary_sensor.capteur_chambre_arnaud',
+          'binary_sensor.capteur_chambre_matthieu',
+          'binary_sensor.capteur_chambre_parents_droite',
+          'binary_sensor.capteur_chambre_parents_gauche',
+          'binary_sensor.capteur_chambre_parents_milieu',
+          'binary_sensor.capteur_fenetre_entree',
+          'binary_sensor.capteur_fenetre_sejour_1',
+          'binary_sensor.capteur_fenetre_sejour_2',
+          'binary_sensor.capteur_fenetre_sejour_3',
+          'binary_sensor.capteur_fenetre_sejour_4',
+          'binary_sensor.capteur_porte_entree',
+          'binary_sensor.capteur_porte_garage'
+        ] %}
+
+        {{ ouvertures | select('is_state', 'on') | list | length > 0 }}

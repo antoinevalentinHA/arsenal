@@ -1,0 +1,202 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles d’humidité absolue (filtrée à l’aube)
+# ----------------------------------------------------------
+#  🧠 Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de l’humidité absolue (en g/m³), dérivée des mesures
+#     “filtrées à l’aube”, c’est-à-dire calculées sur la période
+#     la plus stable thermiquement de la journée.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Agrège les valeurs des entités `sensor.humidite_absolue_filtre_aube_*`
+#     - Produit une moyenne glissante (caractéristique `mean`)
+#
+#  📅 Fenêtre d’analyse :
+#     - Période d’analyse : 30 jours glissants
+#     - Taille d’échantillon : 5 000 points max
+#
+#  📊 Sortie :
+#     - Moyenne de l’humidité absolue filtrée à l’aube (g/m³)
+#
+#  🏡 Zones couvertes :
+#     - Chambres, pièces de vie, locaux techniques, bureaux, ateliers
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🏠 Chambres
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Chambre Arnaud"
+  entity_id: sensor.humidite_absolue_filtre_aube_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_5000 5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Chambre Matthieu"
+  entity_id: sensor.humidite_absolue_filtre_aube_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Chambre Parents"
+  entity_id: sensor.humidite_absolue_filtre_aube_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏡 Espaces de vie et communs
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Entrée"
+  entity_id: sensor.humidite_absolue_filtre_aube_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Séjour"
+  entity_id: sensor.humidite_absolue_filtre_aube_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Petite Maison"
+  entity_id: sensor.humidite_absolue_filtre_aube_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🚿 Salles de bains
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne SDB Enfants"
+  entity_id: sensor.humidite_absolue_filtre_aube_sdb_enfants
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne SDB Parents"
+  entity_id: sensor.humidite_absolue_filtre_aube_sdb_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🌳 Extérieur et jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Jardin"
+  entity_id: sensor.humidite_absolue_filtre_aube_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Extérieur"
+  entity_id: sensor.humidite_absolue_filtre_aube_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏢 Zones administratives
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Direction"
+  entity_id: sensor.humidite_absolue_filtre_aube_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Compta"
+  entity_id: sensor.humidite_absolue_filtre_aube_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Qualité"
+  entity_id: sensor.humidite_absolue_filtre_aube_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Devis"
+  entity_id: sensor.humidite_absolue_filtre_aube_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Commercial"
+  entity_id: sensor.humidite_absolue_filtre_aube_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏭 Zones industrielles / ateliers
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Komori"
+  entity_id: sensor.humidite_absolue_filtre_aube_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Bobst"
+  entity_id: sensor.humidite_absolue_filtre_aube_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Media"
+  entity_id: sensor.humidite_absolue_filtre_aube_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 📦 Zones de stockage
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Stock Carton"
+  entity_id: sensor.humidite_absolue_filtre_aube_stock_carton
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Stock PF"
+  entity_id: sensor.humidite_absolue_filtre_aube_stock_pf
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# ⚙️ Locaux techniques
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Cave"
+  entity_id: sensor.humidite_absolue_filtre_aube_cave
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre aube Moyenne Garage"
+  entity_id: sensor.humidite_absolue_filtre_aube_garage
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000

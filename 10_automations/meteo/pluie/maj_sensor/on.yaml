@@ -1,0 +1,113 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Pluie – Décision de début d’épisode météo
+#
+#  ID : 1016000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de DÉCISION MÉTÉO.
+#
+#     Elle détermine le début effectif d’un épisode
+#     de pluie au sens métier, et active l’état
+#     global `pluie_en_cours` lorsqu’une pluie
+#     réelle est confirmée.
+#
+#     Elle s’appuie sur plusieurs sources,
+#     hiérarchisées et validées.
+#
+#  🧱 NATURE
+#
+#     - Décision métier (entrée d’état)
+#     - Multi-sources avec priorité explicite
+#     - Tolérante aux indisponibilités capteurs
+#
+#  ⚙️ PRINCIPE
+#
+#     - Source prioritaire :
+#         • Capteur Zigbee (via impulsion logique)
+#     - Source de secours :
+#         • Pluviomètre Netatmo
+#     - Validation stricte :
+#         • rejet des états unknown / unavailable
+#         • activation uniquement si pluie réelle
+#     - Activation de `pluie_en_cours`
+#       uniquement si l’état est inactif
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne détecte pas la fin de la pluie
+#     - Ne génère pas d’impulsion Zigbee
+#     - Ne temporise pas l’état pluie
+#     - Ne force pas l’état en cas de capteurs invalides
+#
+#  🔗 UTILISATION
+#
+#     - Autorité unique d’entrée en état pluie
+#     - Consommée par les scénarios météo
+#       (aération, protections, logiques extérieures)
+#
+#  🛡️ ROBUSTESSE
+#
+#     La logique multi-sources garantit une
+#     détection fiable même en cas de :
+#       - reboot Zigbee
+#       - indisponibilité cloud Netatmo
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1016000000002"
+  alias: "Pluie – Décision de début d’épisode"
+  description: >
+    Active le suivi pluie (`pluie_en_cours`) dès qu’une pluie est détectée
+    par Zigbee (virtuel) ou Netatmo, en ignorant les capteurs indisponibles.
+
+  mode: restart
+  max_exceeded: silent
+
+  # ======================================================
+  # 🔔 Déclencheurs — Zigbee ou Netatmo
+  # ======================================================
+  trigger:
+    # Capteur Zigbee virtuel (impulsion)
+    - platform: state
+      id: zigbee
+      entity_id: input_boolean.pluie_zigbee_virtuel
+      from: "off"
+      to: "on"
+
+    # Netatmo — tout changement de valeur
+    - platform: state
+      id: netatmo
+      entity_id: sensor.pluviometre_precipitation
+      to: ~
+
+  # ======================================================
+  # ✅ Conditions — Il pleut vraiment + pas déjà actif
+  # ======================================================
+  condition:
+    - condition: template
+      alias: "Validation pluie réelle et capteurs valides"
+      value_template: >
+        {% set zigbee_valide = states('binary_sensor.zigbee_pluie_water_leak') not in ['unavailable','unknown','none'] %}
+        {% set netatmo_valide = states('sensor.pluviometre_precipitation') not in ['unavailable','unknown','none'] %}
+        {% set zigbee_pluie = is_state('binary_sensor.zigbee_pluie_water_leak', 'on') %}
+        {% set netatmo_pluie = (states('sensor.pluviometre_precipitation') | float(0)) > 0 %}
+        {{ (zigbee_valide and zigbee_pluie)
+           or (not zigbee_valide and netatmo_valide and netatmo_pluie) }}
+
+    - condition: state
+      entity_id: input_boolean.pluie_en_cours
+      state: "off"
+
+  # ======================================================
+  # 🔄 Action — Activation du suivi pluie
+  # ======================================================
+  action:
+    - service: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.pluie_en_cours

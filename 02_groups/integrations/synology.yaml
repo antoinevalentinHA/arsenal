@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : Capteurs Synology
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Regrouper l’ensemble des capteurs exposant l’état
+#    matériel et système du NAS Synology hébergeant
+#    des services critiques pour Arsenal.
+#
+# 🧠 Lecture métier :
+#    Ce groupe représente une SOURCE DE TÉLÉMÉTRIE
+#    d’infrastructure.
+#    Il ne prend aucune décision, mais permet au système
+#    de vérifier la disponibilité et la fraîcheur des
+#    données du NAS.
+#
+# 🧩 Périmètre :
+#    - Utilisation CPU (détaillée et totale)
+#    - Mémoire réelle et swap
+#    - Charge système
+#    - Réseau (débits)
+#    - Stockage (volumes, disques, températures)
+#    - Température globale du NAS
+#
+# 🔗 Dépendances :
+#    - Intégration Synology DSM
+#    - Utilisé par :
+#      • capteurs système de contrôle de fraîcheur des données
+#      • templates d’audit infrastructure
+#      • dashboards de supervision
+#
+# 🚫 Interdits :
+#    - Déclencher une action métier directe
+#    - Mélanger des capteurs non Synology
+#    - Utiliser ce groupe comme condition fonctionnelle
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle infrastructure / fiabilité système
+# ==========================================================
+
+
+synology_capteurs:
+  name: "Capteurs Synology"
+  entities:
+
+    ########################################################
+    # 🧠 CPU & CHARGE
+    ########################################################
+    - sensor.nas_valentin_utilisation_du_processeur_autre
+    - sensor.nas_valentin_utilisation_du_processeur_utilisateur
+    - sensor.nas_valentin_utilisation_du_processeur_systeme
+    - sensor.nas_valentin_utilisation_du_processeur_totale
+    - sensor.nas_valentin_charge_moyenne_du_processeur_1_min
+
+
+    ########################################################
+    # 🧠 MÉMOIRE
+    ########################################################
+    - sensor.nas_valentin_utilisation_de_la_memoire_reelle
+    - sensor.nas_valentin_memoire_disponible_reelle
+    - sensor.nas_valentin_memoire_disponible_espace_d_echange
+
+
+    ########################################################
+    # 🌐 RÉSEAU
+    ########################################################
+    - sensor.nas_valentin_debit_de_transfert
+    - sensor.nas_valentin_debit_de_telechargement
+
+
+    ########################################################
+    # 💾 STOCKAGE — VOLUMES
+    ########################################################
+    - sensor.nas_valentin_volume_1_etat
+    - sensor.nas_valentin_volume_1_temperature_moyenne_du_disque
+    - sensor.nas_valentin_volume_1_temperature_maximale_du_disque
+
+
+    ########################################################
+    # 💽 STOCKAGE — DISQUES
+    ########################################################
+    - sensor.nas_valentin_drive_1_etat
+    - sensor.nas_valentin_drive_1_temperature
+    - sensor.nas_valentin_drive_2_etat
+    - sensor.nas_valentin_drive_2_temperature
+
+
+    ########################################################
+    # 🌡️ TEMPÉRATURE GLOBALE
+    ########################################################
+    - sensor.nas_valentin_temperature

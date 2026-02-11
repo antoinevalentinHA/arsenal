@@ -1,0 +1,46 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Météo – Source pluie Zigbee virtuelle
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Source météo artificielle simulant un signal
+#     de détection de pluie équivalent à celui
+#     du capteur Zigbee réel.
+#
+#     Ce helper permet d’injecter volontairement
+#     un événement pluie dans le pipeline météo.
+#
+#  🧱 Nature :
+#     - Source brute météo
+#     - Signal injecté manuellement
+#     - Équivalent fonctionnel au capteur physique
+#
+#  🔄 Cycle de vie :
+#     - ON  : émission d’un signal pluie simulé
+#     - OFF : aucune émission
+#
+#  📥 N’est PAS :
+#     - une vérité métier
+#     - un état météo consolidé
+#     - un indicateur consommé directement
+#
+#  📤 Utilisation :
+#     - Lu par :
+#         • automatisations d’impulsion pluie
+#         • logique de consolidation météo
+#     - Impact indirect sur :
+#         • input_boolean.pluie_en_cours
+#
+#  🎯 Cas d’usage :
+#     - tests et débogage météo
+#     - contournement temporaire du capteur Zigbee
+#     - maintenance ou panne capteur
+#
+#  🧠 Principe Arsenal :
+#     - Les sources peuvent être substituées
+#     - La vérité métier reste unique et consolidée
+# ==========================================================
+
+
+pluie_zigbee_virtuel:
+  name: Pluie Zigbee virtuel
+  icon: mdi:weather-pouring

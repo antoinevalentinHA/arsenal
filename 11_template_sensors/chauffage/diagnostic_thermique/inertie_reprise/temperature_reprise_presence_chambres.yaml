@@ -1,0 +1,174 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR
+#     Diagnostic thermique — Inertie reprise
+#
+# 🧠 RÔLE
+#     Figer la température exacte au moment de la reprise chauffage
+#     (transition reduced → comfort) afin de constituer le point
+#     de départ officiel des mesures d’inertie post-reprise.
+#
+# 🎯 FINALITÉ
+#     - Infrastructure fondatrice de la famille inertie reprise
+#     - Source unique pour :
+#         • amplitude chute post-reprise
+#         • durée chute post-reprise
+#         • vitesse de reprise
+#
+# 🧩 PÉRIMÈTRE
+#     - Observation brute uniquement
+#     - Aucun calcul dérivé
+#     - Aucun filtrage de régime
+#     - Aucune qualification
+#
+# 🔒 Invalidation stricte :
+#   - tout cycle impacté par aération est neutralisé
+#   - aucune mise à jour pendant aeration_pipeline_arme
+# 
+# 🚫 NE FAIT PAS
+#     - Ne lit aucun offset
+#     - Ne lit aucune consigne
+#     - Ne lit aucun seuil
+#     - Ne produit aucune durée
+#     - Ne produit aucune vitesse
+#     - Ne déclenche aucune action
+#
+# 🔗 DÉPENDANCES
+#     - input_select.chauffage_dernier_mode_decide
+#     - sensor.temperature_min_chambres
+#     - input_boolean.aeration_pipeline_arme
+#
+# 🧠 STATUT
+#     - Diagnostic thermique
+#     - Infrastructure fondatrice
+#     - Impact système : nul
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: input_select.chauffage_dernier_mode_decide
+      from: "reduced"
+      to: "comfort"
+
+    # Invalidation événementielle (évite l'invalidation "au reload")
+    - platform: state
+      entity_id: input_boolean.aeration_pipeline_arme
+      to: "on"
+
+  sensor:
+    - name: "Température reprise Présence Chambres"
+      unique_id: temperature_reprise_presence_chambres
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+      state: >
+        {% set prev = this.state | float(none) %}
+        {% set is_trig = (trigger is defined and trigger is not none) %}
+
+        {# -------------------------------------------------- #}
+        {# Snapshot strict : n'écrit QUE sur reprise canonique #}
+        {# -------------------------------------------------- #}
+
+        {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+          {{ prev }}
+
+        {% elif is_trig
+              and trigger.platform == 'state'
+              and trigger.entity_id == 'input_select.chauffage_dernier_mode_decide'
+              and trigger.from_state is not none
+              and trigger.to_state is not none
+              and trigger.from_state.state == 'reduced'
+              and trigger.to_state.state == 'comfort' %}
+
+          {% set t = states('sensor.temperature_min_chambres') | float(none) %}
+          {% if t is not none %}
+            {{ t }}
+          {% else %}
+            {{ prev }}
+          {% endif %}
+
+        {% else %}
+          {{ prev }}
+        {% endif %}
+
+      attributes:
+
+        # --------------------------------------------------
+        # Timestamp canonique de reprise (A1)
+        # --------------------------------------------------
+        t_reprise: >
+          {% set is_trig = (trigger is defined and trigger is not none) %}
+          {% if is_trig
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'input_select.chauffage_dernier_mode_decide'
+                and trigger.from_state is not none
+                and trigger.to_state is not none
+                and trigger.from_state.state == 'reduced'
+                and trigger.to_state.state == 'comfort'
+                and states('input_boolean.aeration_pipeline_arme') == 'off' %}
+            {{ now().timestamp() }}
+          {% else %}
+            {{ this.attributes.get('t_reprise') }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Reprise valide (événementielle)
+        # --------------------------------------------------
+        reprise_valide: >
+          {% set is_trig = (trigger is defined and trigger is not none) %}
+          {% if is_trig
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'input_select.chauffage_dernier_mode_decide'
+                and trigger.from_state is not none
+                and trigger.to_state is not none
+                and trigger.from_state.state == 'reduced'
+                and trigger.to_state.state == 'comfort'
+                and states('input_boolean.aeration_pipeline_arme') == 'off' %}
+            true
+          {% elif is_trig
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'input_boolean.aeration_pipeline_arme'
+                and trigger.to_state is not none
+                and trigger.to_state.state == 'on' %}
+            false
+          {% else %}
+            {{ this.attributes.get('reprise_valide') }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Raison d’invalidation (événementielle)
+        # --------------------------------------------------
+        raison_invalidation: >
+          {% set is_trig = (trigger is defined and trigger is not none) %}
+          {% if is_trig
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'input_select.chauffage_dernier_mode_decide'
+                and trigger.from_state is not none
+                and trigger.to_state is not none
+                and trigger.from_state.state == 'reduced'
+                and trigger.to_state.state == 'comfort'
+                and states('input_boolean.aeration_pipeline_arme') == 'off' %}
+            ok
+          {% elif is_trig
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'input_boolean.aeration_pipeline_arme'
+                and trigger.to_state is not none
+                and trigger.to_state.state == 'on' %}
+            aeration
+          {% else %}
+            {{ this.attributes.get('raison_invalidation') }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Timestamp d'invalidation (métadonnée stable)
+        # --------------------------------------------------
+        t_invalidation: >
+          {% set is_trig = (trigger is defined and trigger is not none) %}
+          {% if is_trig
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'input_boolean.aeration_pipeline_arme'
+                and trigger.to_state is not none
+                and trigger.to_state.state == 'on' %}
+            {{ now().timestamp() }}
+          {% else %}
+            {{ this.attributes.get('t_invalidation') }}
+          {% endif %}

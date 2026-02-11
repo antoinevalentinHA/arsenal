@@ -1,0 +1,96 @@
+# ==========================================================
+# 🛡️ TEMPLATE BINARY SENSOR — Cohérence du système d’alarme
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Vérifier la cohérence entre l’état de l’alarme et la présence
+#   réelle de la famille, afin de détecter des situations anormales :
+#     • Alarme armée alors que quelqu’un est présent
+#     • Alarme désarmée alors que la maison est vide
+#
+# ⚙️ Fonctionnement :
+#   - Analyse :
+#       • L’état de l’alarme
+#       • La présence et son âge
+#       • L’absence prolongée
+#       • Les modes de test, babysitting ou blocage
+#   - Si le mode test, babysitting ou blocage est actif → toujours cohérent
+#   - Sinon, détecte les incohérences logiques selon le temps écoulé
+#
+# 🧩 Attribut :
+#   → `raison` : indique la cause du statut (cohérent ou non)
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.alarme_systeme_coherent
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Système alarme cohérent"
+      unique_id: alarme_systeme_coherent
+      default_entity_id: binary_sensor.alarme_systeme_coherent
+
+      state: >
+        {# --- États de base --- #}
+        {% set alarme = states('alarm_control_panel.alarme_maison') %}
+        {% set presence = is_state('binary_sensor.presence_famille_securite', 'on') %}
+        {% set absent = is_state('binary_sensor.presence_famille_securite_absent_depuis_5_min', 'on') %}
+        {% set blocage = is_state('input_boolean.blocage_armement_auto', 'on') %}
+        {% set test = is_state('input_boolean.mode_test_alarme', 'on') %}
+        {% set babysitting = is_state('input_boolean.mode_babysitting', 'on') %}
+
+        {# --- Âge de présence --- #}
+        {% set p = states.binary_sensor.presence_famille_securite %}
+        {% set presence_age = (now() - p.last_changed).total_seconds()
+                              if p is not none and p.last_changed is not none else 9999 %}
+
+        {# --- Âge d'absence prolongée --- #}
+        {% set a = states.binary_sensor.presence_famille_securite_absent_depuis_5_min %}
+        {% set absence_age = (now() - a.last_changed).total_seconds()
+                             if a is not none and a.last_changed is not none else 0 %}
+
+        {# --- Modes toujours cohérents --- #}
+        {% if test or babysitting or blocage %}
+          true
+
+        {# --- Incohérence : alarme armée alors que présence persistante --- #}
+        {% elif alarme == 'armed_away' and presence and presence_age > 30 %}
+          false
+
+        {# --- Incohérence : alarme désarmée alors que maison vide depuis longtemps --- #}
+        {% elif alarme == 'disarmed' and absent and absence_age > 180 %}
+          false
+
+        {# --- Par défaut : cohérent --- #}
+        {% else %}
+          true
+        {% endif %}
+
+      attributes:
+
+        raison: >
+          {% set alarme = states('alarm_control_panel.alarme_maison') %}
+          {% set presence = is_state('binary_sensor.presence_famille_securite', 'on') %}
+          {% set absent = is_state('binary_sensor.presence_famille_securite_absent_depuis_5_min', 'on') %}
+          {% set blocage = is_state('input_boolean.blocage_armement_auto', 'on') %}
+          {% set test = is_state('input_boolean.mode_test_alarme', 'on') %}
+          {% set babysitting = is_state('input_boolean.mode_babysitting', 'on') %}
+
+          {% set p = states.binary_sensor.presence_famille_securite %}
+          {% set presence_age = (now() - p.last_changed).total_seconds()
+                                if p is not none and p.last_changed is not none else 9999 %}
+
+          {% set a = states.binary_sensor.presence_famille_securite_absent_depuis_5_min %}
+          {% set absence_age = (now() - a.last_changed).total_seconds()
+                               if a is not none and a.last_changed is not none else 0 %}
+
+          {% if test or babysitting %}
+            force_on
+          {% elif blocage %}
+            blocage_actif
+          {% elif alarme == 'armed_away' and presence and presence_age > 30 %}
+            armed_away_avec_presence
+          {% elif alarme == 'disarmed' and absent and absence_age > 180 %}
+            desarme_maison_vide
+          {% else %}
+            coherent
+          {% endif %}

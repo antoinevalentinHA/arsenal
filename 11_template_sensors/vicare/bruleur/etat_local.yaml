@@ -1,0 +1,30 @@
+# ==========================================================
+# 🔥 TEMPLATE BINARY SENSOR — Bruleur physique (local sécurisé)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Reproduire localement l’état physique du brûleur ViCare,
+#   en conservant la dernière valeur valide si l’API tombe.
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: binary_sensor.vscotho1_200_11_bruleur
+
+  binary_sensor:
+    - name: "Bruleur physique local"
+      unique_id: bruleur_physique_local
+      device_class: heat
+      state: >
+        {% set src = 'binary_sensor.vscotho1_200_11_bruleur' %}
+        {% set etat = states(src) %}
+        {% if etat in ['on', 'off'] %}
+          {{ etat }}
+        {% else %}
+          {{ this.state }}
+        {% endif %}
+      icon: >
+        {% if is_state('binary_sensor.bruleur_physique_local', 'on') %}
+          mdi:fire
+        {% else %}
+          mdi:fire-off
+        {% endif %}

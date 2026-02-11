@@ -1,0 +1,23 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERNE)
+#     Absence zone securite >= 5 min
+# ----------------------------------------------------------
+# Logique :
+#   ON si :
+#     - binary_sensor.presence_famille_securite == off
+#     - timer.presence_famille_securite_absence == idle
+#
+# Préservation :
+#   - entity_id historique : binary_sensor.presence_famille_securite_absent_depuis_5_min
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Absence zone securite >= 5 min"
+      unique_id: presence_famille_securite_absent_depuis_5_min
+      default_entity_id: binary_sensor.presence_famille_securite_absent_depuis_5_min
+
+      state: >
+        {% set presence = is_state('binary_sensor.presence_famille_securite', 'off') %}
+        {% set timer_ok = is_state('timer.presence_famille_securite_absence', 'idle') %}
+        {{ presence and timer_ok }}

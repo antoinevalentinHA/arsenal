@@ -1,0 +1,40 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Réglages Volets
+icon: mdi:window-shutter
+
+views:
+  - title: Volets
+    path: volets
+    icon: mdi:window-shutter
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /volets-dashboard/general
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # === Volets automatiques pluie ===
+          - type: custom:button-card
+            template: section_header
+            name: 🌧️ Volets automatiques
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_boolean.fermeture_volets_pluie
+                name: Activer la fermeture automatique
+              - entity: input_number.seuil_pluie_fermeture_volets
+                name: Seuil de déclenchement (mm)
+              - entity: input_select.activation_volets_pluie
+                name: Condition de déclenchement

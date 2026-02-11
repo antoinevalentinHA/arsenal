@@ -1,0 +1,153 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Clim – Écriture de consigne utilisateur clim éteinte
+#
+#  ID : 1003000000009
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’adaptation technique.
+#
+#     Elle permet l’écriture d’une consigne de climatisation
+#     lorsque l’équipement est éteint, en contournant
+#     temporairement une contrainte matérielle
+#     (refus d’écriture à l’état OFF).
+#
+#     Cette automation n’a AUCUN rôle de pilotage climatique.
+#
+#  🧩 PRINCIPE
+#
+#     - Détection d’un changement de consigne utilisateur
+#       alors que la climatisation est éteinte
+#     - Sauvegarde stricte de l’état initial (relais + mode)
+#     - Mise sous tension temporaire et forcée
+#     - Écriture de la consigne cible
+#     - Restauration intégrale de l’état précédent
+#
+#  🧠 PARAMÈTRE UTILISATEUR
+#
+#     input_number.clim_consigne_presence
+#
+#     → consigne souhaitée par l’utilisateur
+#       pour un futur usage, indépendamment
+#       de l’état immédiat de la climatisation.
+#
+#  📦 SOURCES TECHNIQUES
+#
+#     - sensor.clim_mode_local
+#     - sensor.consigne_clim_appliquee
+#     - switch.clim_power
+#
+#  📤 ACTIONS TECHNIQUES
+#
+#     - switch.turn_on / turn_off (relais clim)
+#     - climate.set_hvac_mode
+#     - climate.set_temperature
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide PAS quand la clim doit fonctionner
+#     - Ne force PAS un refroidissement effectif
+#     - Ne modifie PAS la stratégie climatique globale
+#     - Ne mémorise AUCUN état métier
+#     - Ne déclenche AUCUNE logique de présence ou d’absence
+#
+#  📢 NOTIFICATION
+#
+#     - Purement informative
+#     - Destinée à expliciter un comportement technique
+#       volontairement non intuitif pour l’utilisateur
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de compatibilité matérielle :
+#     écriture ≠ décision ≠ pilotage ≠ stratégie.
+#
+#     Toute intelligence climatique reste portée
+#     par les pipelines de décision dédiés.
+# ==========================================================
+
+
+- id: '1003000000009'
+  alias: "Clim - Correction consigne manuelle si clim éteinte"
+  mode: single
+
+  description: >
+    Si la consigne de climatisation est modifiée alors que la clim est éteinte,
+    applique temporairement la nouvelle consigne, puis restaure l’état initial (relais + mode).
+
+  trigger:
+    # 🎚️ Modification de la consigne de température (présence)
+    - platform: state
+      entity_id: input_number.clim_consigne_presence
+
+  condition:
+    # ✅ Clim éteinte (lecture locale)
+    - condition: state
+      entity_id: sensor.clim_mode_local
+      state: 'off'
+
+  action:
+    # 🧠 Sauvegarde de l’état initial
+    - variables:
+        hvac_before: "{{ states('sensor.clim_mode_local') }}"
+        power_before: "{{ states('switch.clim_power') }}"
+
+    # ⚡ Allumage du relais
+    - service: switch.turn_on
+      target:
+        entity_id: switch.clim_power
+
+    # ⏱️ Attente stabilisation
+    - delay: "00:00:05"
+
+    # ❄️ Passage en mode "cool"
+    - service: climate.set_hvac_mode
+      target:
+        entity_id: climate.clim
+      data:
+        hvac_mode: cool
+
+    - delay: "00:00:02"
+
+    # 🌡️ Application de la consigne
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.clim
+      data:
+        temperature: "{{ states('sensor.consigne_clim_appliquee') | float }}"
+
+    - delay: "00:00:10"
+
+    # 🔁 Restauration de l’état précédent
+    - choose:
+        # 👉 Si le relais était éteint → l’éteindre à nouveau
+        - conditions:
+            - condition: template
+              value_template: "{{ power_before == 'off' }}"
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.clim_power
+
+        # 👉 Si le relais était ON mais pas en mode cool → restaurer le mode initial
+        - conditions:
+            - condition: template
+              value_template: "{{ power_before == 'on' }}"
+            - condition: template
+              value_template: "{{ hvac_before not in ['cool','unknown','unavailable','none',''] }}"
+          sequence:
+            - service: climate.set_hvac_mode
+              target:
+                entity_id: climate.clim
+              data:
+                hvac_mode: "{{ hvac_before }}"
+
+    # 📢 Notification explicative
+    - service: persistent_notification.create
+      data:
+        title: "🌀 Climatisation – Correction manuelle"
+        message: >
+          La consigne de climatisation a été modifiée alors que la climatisation était éteinte.  
+          Le système l’a brièvement allumée pour appliquer la nouvelle consigne (**{{ states('sensor.consigne_clim_appliquee') }} °C**),  
+          puis a restauré l’état initial (power = {{ power_before }}, mode = {{ hvac_before }}).

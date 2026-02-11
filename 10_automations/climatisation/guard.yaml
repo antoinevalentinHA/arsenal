@@ -1,0 +1,133 @@
+# ==========================================================
+#  🧠 ARSENAL — GUARD :
+#     CLIM – Invariants logiques non négociables
+#
+#  ID : 10030000000101
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Garde-fou logique fondamental du système climatique.
+#
+#     Ce GUARD impose des invariants stricts destinés
+#     à empêcher toute situation incohérente, absurde
+#     ou énergétiquement injustifiable de la climatisation,
+#     indépendamment de la décision centrale.
+#
+# ----------------------------------------------------------
+#  🛡️ PRINCIPE
+#
+#     - Surveillance continue des états critiques :
+#         • présence
+#         • ouvertures
+#         • état réel de la clim
+#         • alimentation électrique
+#
+#     - Détection de combinaisons INTERDITES
+#     - Correction immédiate et UNILATÉRALE
+#
+#     Ce GUARD :
+#       • NE DÉCIDE PAS d’un mode
+#       • NE REMPLACE PAS la décision centrale
+#       • N’INTERPRÈTE AUCUNE logique de confort
+#
+#     Il s’applique APRÈS la décision,
+#     sur l’exécution réelle uniquement.
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CE GUARD NE FAIT PAS
+#
+#     - Ne produit AUCUNE décision métier
+#     - Ne modifie PAS `sensor.clim_target_mode`
+#     - Ne déclenche PAS de scénario
+#     - Ne recherche PAS le confort
+#
+# ----------------------------------------------------------
+#  ✅ CE QUE CE GUARD FAIT EXCLUSIVEMENT
+#
+#     - Impose des INVARIANTS PHYSIQUES
+#     - Corrige des états RÉELS interdits
+#     - Garantit la cohérence :
+#
+#         décision centrale
+#         ≠
+#         exécution incohérente
+#
+# ----------------------------------------------------------
+#  📦 INVARIANTS APPLIQUÉS
+#
+#     - Clim active sans présence        → INTERDIT
+#     - Clim active avec ouvertures      → INTERDIT
+#     - Clim logique active sans power   → INTERDIT
+#     - Power actif sans légitimité      → INTERDIT
+#
+#     (la légitimité est définie par la
+#      décision centrale et ses autorisations)
+#
+# ----------------------------------------------------------
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Niveau : GUARD fondamental (post-décision)
+#
+#     Invariants physiques
+#         → Décision centrale (sensor.clim_target_mode)
+#             → Exécution idempotente
+#
+#     Le GUARD corrige l’EXÉCUTION,
+#     jamais la DÉCISION.
+# ==========================================================
+
+- id: "10030000000101"
+  alias: "CLIM – Guard logique anti-absurde"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.presence_famille_unifiee
+        - binary_sensor.fenetre_ouverte_maison
+        - climate.clim
+        - switch.clim_power
+
+  variables:
+    presence: "{{ is_state('binary_sensor.presence_famille_unifiee', 'on') }}"
+    windows_ok: "{{ is_state('binary_sensor.fenetre_ouverte_maison', 'off') }}"
+    clim_power: "{{ states('switch.clim_power') }}"
+    clim_state: "{{ states('climate.clim') }}"
+
+    clim_active: >
+      {{ clim_state not in ['off', 'unavailable', 'unknown'] }}
+
+  condition:
+    - condition: template
+      value_template: >
+        {{
+          (clim_active and not presence)
+          or
+          (clim_active and not windows_ok)
+          or
+          (clim_active and clim_power == 'off')
+          or
+          (clim_power == 'on' and (not presence or not windows_ok))
+        }}
+
+  action:
+
+    # ------------------------------------------------------
+    # 1️⃣ Forcer arrêt logique de la clim si active
+    # ------------------------------------------------------
+    - choose:
+        - conditions: "{{ clim_active }}"
+          sequence:
+            - action: climate.turn_off
+              target:
+                entity_id: climate.clim
+
+    # ------------------------------------------------------
+    # 2️⃣ Couper l’alimentation si inutile ou incohérente
+    # ------------------------------------------------------
+    - choose:
+        - conditions: "{{ clim_power == 'on' }}"
+          sequence:
+            - action: switch.turn_off
+              target:
+                entity_id: switch.clim_power

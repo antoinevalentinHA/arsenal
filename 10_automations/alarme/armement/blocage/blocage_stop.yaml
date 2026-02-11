@@ -1,0 +1,52 @@
+# ==========================================================
+#  AUTOMATION : Alarme – Blocage armement auto (stop)
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Lever automatiquement le blocage d’armement
+#     lorsque la période de sécurité est terminée.
+#
+#  🎯 Objectif :
+#     Garantir que le blocage ne reste JAMAIS actif
+#     indéfiniment, même après :
+#       - redémarrage de Home Assistant
+#       - crash
+#       - restauration
+#
+#  🧩 Principe Arsenal :
+#     - Le temps est géré par le moteur Timer de HA
+#     - Cette automatisation réagit à un événement
+#     - Aucun état bloquant ne dépend d’un script en attente
+#
+#  ⚙️ Fonctionnement :
+#     - Écoute l’événement timer.finished
+#     - Cible explicitement le timer du blocage
+#     - Désactive le boolean de blocage
+#
+#  🛡️ Robustesse :
+#     - Auto-guérison post-reboot
+#     - Zéro état zombie possible
+#
+#  ❌ Ne fait PAS :
+#     - Aucune décision métier
+#     - Aucun recalcul
+#     - Aucune notification
+#
+#  🆔 ID : 10020000000029
+#  ✅ Compatible Arsenal / indestructible
+# ==========================================================
+
+- id: "10020000000029"
+  alias: "Alarme - Blocage armement auto (stop)"
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.blocage_armement_auto
+
+  action:
+    # ⏹️ Levée du blocage d’armement automatique
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.blocage_armement_auto

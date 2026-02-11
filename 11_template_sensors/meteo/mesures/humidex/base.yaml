@@ -1,0 +1,328 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSORS — Calcul de l’Humidex
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Calculer l’indice **Humidex** pour différentes zones de la maison
+#   et du bâtiment professionnel, à partir de la **température réelle**
+#   et du **point de rosée**.
+#
+# 🧮 Formule utilisée :
+#   e = 6.11 × e^(5417.7530 × ((1/273.16) - (1/(273.15 + Td))))
+#   Humidex = T + 0.5555 × (e - 10)
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement (triggers) :
+#       • À chaque changement de température OU de point de rosée
+#       • Au démarrage de Home Assistant (event: start)
+#   - Si les deux valeurs sont valides :
+#       → calcul complet et résultat arrondi à 0.1°C
+#   - Sinon :
+#       → conservation de la dernière valeur connue
+#
+# 🧠 Détails techniques :
+#   - Un capteur par pièce ou zone : Chambre Arnaud, Séjour, Jardin, etc.
+#   - Chaque capteur inclut en attributs :
+#       • `temperature_source` — l’entité de température utilisée
+#       • `rosee_source` — l’entité du point de rosée associée
+#   - Unité : °C (degré Celsius)
+#   - Icône : mdi:thermometer
+#
+# 🏷️ Exemples d’entités :
+#   - sensor.humidex_chambre_parents
+#   - sensor.humidex_exterieur
+#   - sensor.humidex_commercial
+#
+# 📊 Type : Trigger Template Sensors
+# 📍 Regroupe plusieurs entités similaires (une par zone)
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree
+        - sensor.point_de_rosee_entree
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidex Entrée"
+      unique_id: humidex_entree
+      unit_of_measurement: "°C"
+      state: &humidex_logic >
+        {% set T_raw = states(this.attributes.temperature_source) %}
+        {% set Td_raw = states(this.attributes.rosee_source) %}
+        {% if T_raw not in ['unknown','unavailable','none',None]
+              and Td_raw not in ['unknown','unavailable','none',None] %}
+          {% set T = T_raw | float %}
+          {% set Td = Td_raw | float %}
+          {% set e = 6.11 * (2.718281828 ** (5417.7530 * ((1/273.16) - (1/(273.15 + Td))))) %}
+          {{ (T + 0.5555 * (e - 10)) | round(1) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+      attributes:
+        temperature_source: sensor.temperature_entree
+        rosee_source: sensor.point_de_rosee_entree
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_petite_maison
+        - sensor.point_de_rosee_petite_maison
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidex Petite Maison"
+      unique_id: humidex_petite_maison
+      unit_of_measurement: "°C"
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_petite_maison
+        rosee_source: sensor.point_de_rosee_petite_maison
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_jardin
+        - sensor.point_de_rosee_jardin
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidex Jardin"
+      unique_id: humidex_jardin
+      unit_of_measurement: "°C"
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_jardin
+        rosee_source: sensor.point_de_rosee_jardin
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_bobst
+        - sensor.point_de_rosee_bobst
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Bobst"
+      unique_id: humidex_bobst
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_bobst
+        rosee_source: sensor.point_de_rosee_bobst
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_commercial
+        - sensor.point_de_rosee_commercial
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Commercial"
+      unique_id: humidex_commercial
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_commercial
+        rosee_source: sensor.point_de_rosee_commercial
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_compta
+        - sensor.point_de_rosee_compta
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Compta"
+      unique_id: humidex_compta
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_compta
+        rosee_source: sensor.point_de_rosee_compta
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_devis
+        - sensor.point_de_rosee_devis
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Devis"
+      unique_id: humidex_devis
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_devis
+        rosee_source: sensor.point_de_rosee_devis
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_direction
+        - sensor.point_de_rosee_direction
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidex Direction"
+      unique_id: humidex_direction
+      unit_of_measurement: "°C"
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_direction
+        rosee_source: sensor.point_de_rosee_direction
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_komori
+        - sensor.point_de_rosee_komori
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Komori"
+      unique_id: humidex_komori
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_komori
+        rosee_source: sensor.point_de_rosee_komori
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_media
+        - sensor.point_de_rosee_media
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Media"
+      unique_id: media_humidex
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_media
+        rosee_source: sensor.point_de_rosee_media
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_qualite
+        - sensor.point_de_rosee_qualite
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Qualité"
+      unique_id: humidex_qualite
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_qualite
+        rosee_source: sensor.point_de_rosee_qualite
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.point_de_rosee_sejour
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Séjour"
+      unique_id: humidex_sejour
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_sejour
+        rosee_source: sensor.point_de_rosee_sejour
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.point_de_rosee_chambre_arnaud
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Chambre Arnaud"
+      unique_id: humidex_chambre_arnaud
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_chambre_arnaud
+        rosee_source: sensor.point_de_rosee_chambre_arnaud
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu
+        - sensor.point_de_rosee_chambre_matthieu
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Chambre Matthieu"
+      unique_id: humidex_chambre_matthieu
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_chambre_matthieu
+        rosee_source: sensor.point_de_rosee_chambre_matthieu
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents
+        - sensor.point_de_rosee_chambre_parents
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Chambre Parents"
+      unique_id: humidex_chambre_parents
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_chambre_parents
+        rosee_source: sensor.point_de_rosee_chambre_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_exterieur
+        - sensor.point_de_rosee_exterieur
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidex Extérieur"
+      unique_id: humidex_exterieur
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *humidex_logic
+      attributes:
+        temperature_source: sensor.temperature_exterieur
+        rosee_source: sensor.point_de_rosee_exterieur

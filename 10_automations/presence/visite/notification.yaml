@@ -1,0 +1,69 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Visiteur – Notification persistante d’état
+#
+#  ID : 10210000000006
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Publie et disqualifie la notification persistante
+#     représentant l’état métier courant :
+#         "Mode Visiteur actif".
+#
+#     Cette automation est l’UNIQUE point autorisé
+#     de gestion de la notification persistante Visiteur.
+#
+# ----------------------------------------------------------
+# 🧩 PRINCIPE
+#
+#     - ON  → création notification persistante
+#     - OFF → disqualification immédiate
+#
+#     Aucune autre automation n’est autorisée
+#     à créer ou supprimer cette notification.
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPES ARSENAL
+#
+#     - Notification persistante = projection d’un état
+#     - Zéro événement, zéro mémoire, zéro transition
+#     - Unicité stricte du point de gestion
+#
+# ==========================================================
+
+- id: "10210000000006"
+  alias: "Visiteur – Notification persistante d’état"
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.visite_en_cours
+
+  action:
+
+    - choose:
+
+        # 🟢 État ON → publier notification persistante
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.visite_en_cours
+              state: "on"
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: visiteur_etat
+                title: "🔐 Mode Visiteur actif"
+                message: >
+                  Le mode *Visiteur* est actuellement actif.
+
+                  Tant que cette notification est visible :
+                  • l’alarme est adaptée,
+                  • la présence visiteur est forcée,
+                  • le bouclage ECS peut être actif.
+
+        # 🔴 État OFF → disqualification
+      default:
+        - service: persistent_notification.dismiss
+          data:
+            notification_id: visiteur_etat

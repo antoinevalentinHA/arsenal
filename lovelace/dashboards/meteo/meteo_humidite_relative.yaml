@@ -1,0 +1,204 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+title: Humidité Relative
+views:
+  - title: Humidité Relative
+    path: humidite_relative
+    icon: mdi:server
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-meteo-dashboard/reglages-meteo
+
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /meteo-backups-dashboard/backup_meteo
+
+    # ======================================================
+    # 💦 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    # ======================================================
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          # ------------------------------------------------------
+          # 🧭 Navigation météo
+          # ------------------------------------------------------
+          - !include ../../includes/navigation/meteo.yaml
+
+          # ======================================================
+          # 🌿 JARDIN
+          # ======================================================
+          - !include ../../includes/section_headers/jardin.yaml
+
+          - square: false
+            type: grid
+            columns: 1
+            cards:
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_jardin
+                name: Humidité
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_jardin
+                  - sensor.couleur_humidite_relative_jardin
+                  - input_select.saison
+
+          # ======================================================
+          # 🏠 RDC
+          # ======================================================
+          - !include ../../includes/section_headers/rdc.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_entree
+                name: Entrée
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_entree
+                  - sensor.couleur_humidite_relative_entree
+                  - input_select.saison
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_sejour
+                name: Séjour
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_sejour
+                  - sensor.couleur_humidite_relative_sejour
+                  - input_select.saison
+
+          # ======================================================
+          # 🛏️ CHAMBRES
+          # ======================================================
+          - !include ../../includes/section_headers/chambres.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_chambre_arnaud
+                name: Arnaud
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_chambre_arnaud
+                  - sensor.couleur_humidite_relative_chambre_arnaud
+                  - input_select.saison
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_chambre_matthieu
+                name: Matthieu
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_chambre_matthieu
+                  - sensor.couleur_humidite_relative_chambre_matthieu
+                  - input_select.saison
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_chambre_parents
+                name: Parents
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_chambre_parents
+                  - sensor.couleur_humidite_relative_chambre_parents
+                  - input_select.saison
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_petite_maison
+                name: Petite Maison
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_petite_maison
+                  - sensor.couleur_humidite_relative_petite_maison
+                  - input_select.saison
+
+          # ======================================================
+          # 🚿 SALLES DE BAIN
+          # ======================================================
+          - !include ../../includes/section_headers/salles_de_bain.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_sdb_parents
+                name: Parents
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_sdb_parents
+                  - sensor.couleur_humidite_relative_sdb_parents
+                  - input_select.saison
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_sdb_enfants
+                name: Enfants
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_sdb_enfants
+                  - sensor.couleur_humidite_relative_sdb_enfants
+                  - input_select.saison
+
+          # ======================================================
+          # 🧱 CAVE & GARAGE
+          # ======================================================
+          - !include ../../includes/section_headers/cave_et_garage.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - type: custom:button-card
+                template: carte_humidite
+                entity: sensor.humidite_relative_garage
+                name: Garage
+                icon: mdi:water-percent
+                triggers_update:
+                  - sensor.humidite_relative_garage
+                  - sensor.couleur_humidite_relative_garage
+                  - input_select.saison
+
+              - type: custom:button-card
+                template: carte_humidite
+                name: Cave
+                icon: mdi:water-percent
+                entity: sensor.humidite_relative_cave
+                variables:
+                  couleur: sensor.couleur_humidite_relative_cave
+                triggers_update:
+                  - sensor.humidite_relative_cave
+                  - sensor.couleur_humidite_relative_cave
+                  - input_select.saison

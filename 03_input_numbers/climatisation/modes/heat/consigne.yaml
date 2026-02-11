@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Consigne clim chauffage (hiver)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir la température CIBLE envoyée à la climatisation
+#    lorsqu’un fonctionnement en mode HEAT est autorisé
+#    et décidé par la logique centrale.
+#
+# 🧩 Principe :
+#    - Il s’agit d’une CONSIGNE, pas d’un seuil.
+#    - Elle est appliquée uniquement après validation
+#      des conditions de déclenchement (présence,
+#      température extérieure, seuils ON/OFF, etc.).
+#
+# ⚙️ Fonctionnement :
+#    - Utilisée par le script de décision centrale clim
+#    - Transmise telle quelle au climatiseur
+#    - Ne subit aucun offset ni hystérésis
+#
+# 🔍 Utilisation :
+#    - Script :
+#        • climatisation/decision_centrale.yaml
+#    - Dashboard :
+#        • réglages climatisation
+#
+# 🚫 Ne pas confondre avec :
+#    - Seuils de déclenchement / extinction
+#    - Offsets ON / OFF
+#    - Consignes COOL ou DRY
+#
+# 📐 Unité :
+#    - °C (température cible réelle)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Consigne unique clim chauffage
+# ==========================================================
+
+
+clim_hiver_temperature_consigne:
+  name: Consigne température clim chauffage
+  min: 18
+  max: 25
+  step: 0.5
+  unit_of_measurement: "°C"
+  mode: box

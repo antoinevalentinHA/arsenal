@@ -1,0 +1,61 @@
+# ==========================================================
+#  TEMPLATE SENSORS — Plateaux thermostatiques stricts
+#  Pieces : parents, arnaud, matthieu
+# ----------------------------------------------------------
+#  Role :
+#    Detecter un plateau thermique reel base sur :
+#      - moyenne glissante 12h
+#      - variance thermique 12h
+#
+#  Regle :
+#    Si variance < 0.02 :
+#      → plateau = moyenne 12h (arrondie)
+#      → l'automatisation peut mettre a jour l'input_number
+#
+#    Si variance >= 0.02 :
+#      → plateau = valeur memorisee dans l'input_number
+#      → plus de reset a 0 lors des perturbations
+#
+#  Important :
+#    On ne renvoie JAMAIS "unknown" car le sensor est numerique.
+#    Le fallback se fait toujours sur la valeur memorisee.
+# ==========================================================
+
+- sensor:
+
+    # ------------------------------------------------------
+    #  Chambre PARENTS
+    # ------------------------------------------------------
+    - name: "plateau_thermostatique_chambre_parents"
+      unique_id: "plateau_thermostatique_chambre_parents"
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: &plateau_thermostatique_logic >
+        {% set suffixe = this.entity_id | replace('sensor.plateau_thermostatique_', '') %}
+        {% set mean = states('sensor.temperature_stats_12h_mean_' ~ suffixe) | float(0) %}
+        {% set var  = states('sensor.temperature_stats_12h_variance_' ~ suffixe) | float(99) %}
+        {% set mem  = states('input_number.plateau_' ~ suffixe) | float(0) %}
+
+        {% if var < 0.02 and mean > 0 %}
+          {{ mean | round(1) }}
+        {% else %}
+          {{ mem }}
+        {% endif %}
+
+    # ------------------------------------------------------
+    #  Chambre ARNAUD
+    # ------------------------------------------------------
+    - name: "plateau_thermostatique_chambre_arnaud"
+      unique_id: "plateau_thermostatique_chambre_arnaud"
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *plateau_thermostatique_logic
+
+    # ------------------------------------------------------
+    #  Chambre MATTHIEU
+    # ------------------------------------------------------
+    - name: "plateau_thermostatique_chambre_matthieu"
+      unique_id: "plateau_thermostatique_chambre_matthieu"
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer
+      state: *plateau_thermostatique_logic

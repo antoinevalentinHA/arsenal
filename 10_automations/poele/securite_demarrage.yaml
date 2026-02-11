@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : Poele – Rattrapage blocage apres stabilisation
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Garantir la coherence entre le timer de blocage poele
+#   et les drapeaux de blocage chauffage lors du retour
+#   a un systeme Home Assistant declare stable.
+#
+# 🧱 Principe :
+#   - Cette automation s'execute UNIQUEMENT lorsque
+#     le systeme est declare stable
+#   - Si le timer de blocage poele n'est plus actif
+#     MAIS que les drapeaux de blocage sont encore ON,
+#     alors ils sont leves immediatement
+#
+# ⚠️ IMPORTANT :
+#   - Ne declenche JAMAIS un blocage
+#   - Ne depend PAS de homeassistant.start
+#   - Ne corrige que les incoherences persistantes
+#
+# 📥 Entrees :
+#   - input_boolean.systeme_stable
+#   - timer.poele_blocage_chauffage
+#   - input_boolean.blocage_chauffage_poele
+#
+# 📤 Sorties :
+#   - input_boolean.blocage_chauffage_poele
+#   - input_boolean.blocage_clim_poele
+#
+# 🏷️ ID :
+#   10100000000007
+#
+# ✅ Architecture :
+#   Arsenal V6+
+# ==========================================================
+
+- id: "10100000000007"
+  alias: "Poêle – Rattrapage blocage après stabilisation"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: systeme_stable
+
+  condition:
+    - condition: state
+      entity_id: timer.poele_blocage_chauffage
+      state: "idle"
+
+    - condition: state
+      entity_id: input_boolean.blocage_chauffage_poele
+      state: "on"
+
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.blocage_chauffage_poele
+          - input_boolean.blocage_clim_poele

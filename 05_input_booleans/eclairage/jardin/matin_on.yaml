@@ -1,0 +1,25 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN :
+#     Jardin – Éclairage matin actif
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#   Mémoriser le fait qu’un ALLUMAGE RÉEL
+#   de l’éclairage du jardin (matin)
+#   a effectivement eu lieu.
+#
+#   ⚠️ Ce booléen :
+#     - ne représente PAS l’existence du cycle matin
+#     - ne représente PAS une intention
+#     - ne représente PAS l’état matériel courant
+#
+#   Il constitue une TRACE MÉTIER TRANSITOIRE,
+#   utilisée exclusivement pour :
+#     - qualifier la légitimité d’une notification
+#     - distinguer un vrai cycle d’un recalcul HA
+#
+# ==========================================================
+
+jardin_eclairage_matin_actif:
+  name: "Jardin – Éclairage matin actif"
+  icon: mdi:flag-checkered

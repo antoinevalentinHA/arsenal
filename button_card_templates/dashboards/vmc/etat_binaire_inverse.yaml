@@ -1,0 +1,51 @@
+#################################################################
+# 🔄 CARTE ÉTAT BINAIRE INTERPRÉTÉ (INVERSE) — UI
+# ---------------------------------------------------------------
+# Carte affichant un binary_sensor dont l’état ON est défavorable
+# et l’état OFF favorable.
+#
+# Exemples :
+#   - Extraction inutile / utile
+#   - Aération défavorable / favorable
+#   - Condition non remplie / remplie
+#
+# Principe Arsenal :
+#   - Carte purement informationnelle
+#   - Traduction humaine explicite
+#   - Convention couleur inversée
+#################################################################
+
+carte_etat_binaire_interprete_inverse:
+  template: carte_base
+
+  show_state: true
+
+  state_display: |
+    [[[
+      return entity.state === 'on'
+        ? (variables?.label_on || 'Défavorable')
+        : (variables?.label_off || 'Favorable');
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity.state === 'on'
+              ? (variables?.color_on || 'rgba(244, 67, 54, 0.2)')
+              : (variables?.color_off || 'rgba(76, 175, 80, 0.2)');
+          ]]]
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'
+
+    icon:
+      - width: 26px
+      - color: '#000'

@@ -1,0 +1,142 @@
+# ==========================================================
+# 💧 TEMPLATE TRIGGERED SENSORS — Humidité relative unifiée
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Fournir une **valeur consolidée d’humidité relative (%)**
+#   pour chaque pièce, en utilisant les capteurs locaux :
+#     • HomeKit → source principale
+#     • Zigbee → fallback automatique
+#
+# ⚙️ Fonctionnement :
+#   - Les capteurs d’humidité utilisés sont les capteurs *consolidés* :
+#       • sensor.humidite_relative_xxx
+#   - Ces capteurs gèrent déjà :
+#       • la priorité HomeKit
+#       • le fallback Zigbee
+#       • la tolérance aux unavailable
+#       • la conservation du dernier état valide
+#   - Les capteurs “unifiés” se contentent donc de :
+#       → valider la valeur
+#       → arrondir proprement
+#       → fournir une entité stable pour les dashboards / automations
+#
+# 🧮 Logique de sélection :
+#   ```
+#   Si valeur disponible → round(x)
+#   Sinon → conserver la dernière valeur connue
+#   ```
+#
+# 🧠 Détails techniques :
+#   - Déclenchement sur variation du capteur consolidé
+#   - Déclenchement au démarrage de Home Assistant
+#   - Ignore automatiquement :
+#       • unknown
+#       • unavailable
+#       • none
+#   - Valeurs arrondies à l’entier le plus proche (ou 0.1 selon tes capteurs)
+#
+# 📊 Type : Trigger Template Sensors
+# 📏 Unité : %
+# 💨 Device class : humidity
+# 🔒 Système 100 % local — aucune dépendance Netatmo cloud
+#
+# 📍 Entités créées :
+#   • sensor.humidite_relative_chambre_arnaud
+#   • sensor.humidite_relative_chambre_matthieu
+#   • sensor.humidite_relative_chambre_parents
+#   • sensor.humidite_relative_sejour
+#   • sensor.humidite_relative_entree
+#   • sensor.humidite_relative_petite_maison
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_arnaud_1
+        - sensor.humidite_relative_chambre_arnaud_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité relative Chambre Arnaud"
+      unique_id: humidite_relative_chambre_arnaud
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: &humidite_relative_consolidee_logic >
+        {% set suffixe = this.entity_id | replace('sensor.humidite_relative_', '') %}
+        {% set src1 = 'sensor.humidite_relative_' ~ suffixe ~ '_1' %}
+        {% set src2 = 'sensor.humidite_relative_' ~ suffixe ~ '_2' %}
+
+        {% set h1 = states(src1) | float(none) %}
+        {% set h2 = states(src2) | float(none) %}
+        {% set last = this.state | float(none) %}
+
+        {% if h1 is not none %}
+          {{ h1 | round(0) }}
+        {% elif h2 is not none %}
+          {{ h2 | round(0) }}
+        {% elif last is not none %}
+          {{ last | round(0) }}
+        {% else %}
+          none
+        {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_matthieu_1
+        - sensor.humidite_relative_chambre_matthieu_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité relative Chambre Matthieu"
+      unique_id: humidite_relative_chambre_matthieu
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_relative_consolidee_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_parents_1
+        - sensor.humidite_relative_chambre_parents_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité relative Chambre Parents"
+      unique_id: humidite_relative_chambre_parents
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_relative_consolidee_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sejour_1
+        - sensor.humidite_relative_sejour_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité relative Séjour"
+      unique_id: humidite_relative_sejour
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_relative_consolidee_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_entree_1
+        - sensor.humidite_relative_entree_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative entree"
+      unique_id: humidite_relative_entree
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_relative_consolidee_logic

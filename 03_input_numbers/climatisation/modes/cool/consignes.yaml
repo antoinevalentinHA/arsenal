@@ -1,0 +1,55 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Consignes climatisation (référence)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir les températures cibles de référence
+#    utilisées par le système de climatisation
+#    selon le contexte de présence :
+#      - Présence : confort prioritaire
+#      - Absence  : maintien temporaire / économie
+#
+# 🧠 Lecture métier :
+#    Ces consignes représentent des valeurs
+#    autorisées et souhaitées par l’utilisateur.
+#    Le système ne les calcule pas :
+#      → il choisit laquelle appliquer,
+#        et à quel moment.
+#
+# ⚙️ Fonctionnement :
+#    - Modifiables manuellement via dashboard
+#    - Appliquées automatiquement par les scripts
+#      de gestion de la climatisation
+#    - Peuvent être corrigées / synchronisées
+#      sans modifier l’intention utilisateur
+#
+# 📐 Unité :
+#    - degré Celsius (°C)
+#
+# 🚫 Interdits :
+#    - Calcul automatique de la valeur
+#    - Utilisation comme mesure réelle
+#    - Déclenchement direct d’automatisation
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Consignes de confort autoritaires
+# ==========================================================
+
+
+clim_consigne_presence:
+  name: Consigne clim si présence
+  min: 18
+  max: 25
+  step: 0.5
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer
+
+clim_consigne_absence:
+  name: Consigne clim si absence (temporaire)
+  min: 18
+  max: 25
+  step: 0.5
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-low

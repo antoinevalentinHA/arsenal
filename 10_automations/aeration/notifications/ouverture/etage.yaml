@@ -1,0 +1,116 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Notification – Aération conseillée étage
+#
+#  ID : 1001000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de notification pure, chargée d’informer
+#     les occupants qu’une aération est recommandée à l’étage.
+#
+#     Cette automation ne prend AUCUNE décision thermique.
+#     Elle réagit exclusivement à une décision amont.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchée lorsque l’aération devient conseillée
+#       (binary_sensor.aeration_conseillee = on, état stabilisé)
+#     - Deux branches explicites :
+#         • fenêtres fermées → notification mobile + persistante
+#         • fenêtres déjà ouvertes → notification persistante seule
+#     - La notification persistante est systématiquement
+#       remplacée via un notification_id unique par zone
+#     - Applique un anti-spam persistant
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas si l’aération est favorable
+#     - Ne pilote aucune fenêtre
+#     - Ne modifie aucun état thermique
+#
+#  🔗 DÉPENDANCES
+#
+#     - Décision aération : binary_sensor.aeration_conseillee
+#     - Fenêtres étage : binary_sensor.fenetre_ouverte_etage
+#     - Présence : binary_sensor.presence_famille
+#     - Notifications :
+#         • persistent_notification.create (notification_id zoné)
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Séparation stricte décision / notification
+#     - Notifications zonées (RDC / Étage)
+#     - Notification persistante décisionnelle
+#       (une seule par zone, jamais historique)
+#     - Anti-spam persistant par mémoire horodatée
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '1001000000003'
+  alias: "Notification - Aération étage"
+
+  description: >
+    Notifie une aération conseillée à l’étage avec remplacement
+    systématique de la notification persistante précédente.
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aeration_conseillee
+      to: 'on'
+      for:
+        minutes: "{{ states('input_number.aeration_stabilisation_minutes') | int(0) }}"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.notifications_aeration_actives
+      state: 'on'
+
+    - condition: state
+      entity_id: input_boolean.notifications_aeration_etage
+      state: 'on'
+
+    - condition: state
+      entity_id: binary_sensor.presence_famille
+      state: 'on'
+
+  action:
+
+    - choose:
+
+        # Fenêtres fermées
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_etage
+              state: 'off'
+          sequence:
+            - action: persistent_notification.create
+              data:
+                notification_id: aeration_conseillee_etage
+                title: "💨 Aération conseillée – Étage"
+                message: >
+                  Les conditions d’aération sont favorables à l’étage.
+                  Il est conseillé d’ouvrir les fenêtres.
+
+        # Fenêtres ouvertes
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_etage
+              state: 'on'
+          sequence:
+            - action: persistent_notification.create
+              data:
+                notification_id: aeration_conseillee_etage
+                title: "💨 Aération conseillée – Étage"
+                message: >
+                  Les conditions d’aération sont favorables à l’étage.
+                  Les fenêtres sont déjà ouvertes.
+
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.aeration_last_notification_ouverture_etage
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

@@ -1,0 +1,65 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Prise placard – Coupure temporisée post-déclenchement
+#
+#  ID : 10080000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de COUPURE TEMPORISÉE.
+#
+#     Elle programme l’extinction de la prise
+#     à un instant fixe (+3 heures) après la
+#     première détection de consommation.
+#
+#     Elle vise à empêcher un fonctionnement
+#     prolongé ou oublié d’un équipement.
+#
+#  🧱 NATURE
+#
+#     - Temporisation simple post-événement
+#     - Déclenchement unique sur signal physique
+#     - Aucune mesure de durée réelle de consommation
+#
+#  ⚙️ PRINCIPE
+#
+#     - Détection initiale : puissance > 0 W
+#     - Démarrage d’un délai fixe de 3 heures
+#     - Coupure forcée de la prise à échéance
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne mesure pas une durée de consommation
+#     - Ne vérifie pas que la consommation persiste
+#     - Ne tient pas compte d’arrêts ou de reprises
+#     - Ne protège pas contre les redéclenchements multiples
+#
+#  🔗 UTILISATION
+#
+#     - Sécurité anti-oubli
+#     - Limitation temporelle d’un équipement non critique
+#
+#  ⚠️ NOTE ARCHITECTURALE
+#
+#     Toute reprise de consommation après coupure
+#     redéclenchera un nouveau cycle complet de 3 h.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.x
+# ==========================================================
+
+
+- id: "10080000000005"
+  alias: "Prise placard – Extinction programmée après déclenchement"
+  description: >
+    Coupe la prise 3h après détection de consommation.
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.prise_sejour_placard_power
+      above: 0
+  action:
+    - delay: "03:00:00"
+    - service: switch.turn_off
+      target:
+        entity_id: switch.prise_sejour_placard

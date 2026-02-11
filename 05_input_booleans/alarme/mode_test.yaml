@@ -1,0 +1,42 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Alarme – Mode test
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Mode global indiquant que le système d’alarme
+#     est actuellement en phase de test ou de
+#     vérification.
+#
+#     Ce mode modifie le CONTEXTE d’exécution
+#     afin d’éviter toute action réelle, bruyante
+#     ou intrusive.
+#
+#  🧱 Nature :
+#     - Mode global explicite
+#     - Neutralisation volontaire des effets
+#
+#  🔄 Cycle de vie :
+#     - ON  : le système est considéré en mode test
+#     - OFF : retour au fonctionnement normal
+#
+#  📥 N’effectue PAS :
+#     - aucune simulation de détection
+#     - aucune redirection de notification
+#     - aucune action directe sur l’alarme
+#
+#  📤 Utilisation :
+#     - Lue par :
+#         • automatisations d’intrusion
+#         • automatisations de sirène
+#         • scripts d’armement / désarmement
+#         • capteurs de cohérence
+#     - Sert à court-circuiter toute action
+#       réelle lors des tests
+#
+#  🧠 Principe Arsenal :
+#     - Tester un système ne doit jamais
+#       produire d’effets réels
+# ==========================================================
+
+mode_test_alarme:
+  name: Mode test
+  icon: mdi:shield-off

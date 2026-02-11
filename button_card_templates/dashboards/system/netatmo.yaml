@@ -1,0 +1,64 @@
+#################################################################
+# 🔌 NETATMO HOMEKIT — DIAGNOSTIC UI
+#################################################################
+#
+# 🧠 Rôle :
+#   Template button-card dédié au diagnostic de l’intégration
+#   Netatmo HomeKit (capteurs météo / environnement).
+#
+# 🎯 Objectifs :
+#   - Identifier rapidement l’état global de l’intégration
+#   - Distinguer les pannes réseau des pannes HomeKit
+#   - Fournir un retour visuel immédiat et explicite
+#
+# 🧩 Principe Arsenal :
+#   - Lecture seule
+#   - Aucune logique métier
+#   - Aucune action automatique
+#
+# 📡 Source :
+#   - Capteur diagnostic synthétique (état textuel)
+#
+# 🎨 États supportés :
+#   - ok           → intégration fonctionnelle
+#   - ko_reseau    → problème réseau / connectivité
+#   - ko_homekit   → problème HomeKit / bridge Apple
+#
+# 🎨 Codes couleur :
+#   - 🟢 Vert  : fonctionnement nominal
+#   - ⚪ Gris  : indisponibilité réseau
+#   - 🔴 Rouge : erreur HomeKit
+#
+# 🧪 Robustesse :
+#   - Icône par état (sémantique forte)
+#   - Fallback implicite via carte_base
+#
+#################################################################
+
+netatmo_diagnostic:
+  template: carte_base
+  show_state: true
+  icon: mdi:weather-cloudy
+
+  styles:
+    icon:
+      - color: "#111"
+
+  state:
+    - value: "ok"
+      icon: mdi:check-circle
+      styles:
+        card:
+          - background-color: "rgba(76, 175, 80, 0.2)"
+
+    - value: "ko_reseau"
+      icon: mdi:lan-disconnect
+      styles:
+        card:
+          - background-color: "rgba(158, 158, 158, 0.2)"
+
+    - value: "ko_homekit"
+      icon: mdi:apple
+      styles:
+        card:
+          - background-color: "rgba(244, 67, 54, 0.2)"

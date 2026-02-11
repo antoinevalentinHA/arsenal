@@ -1,0 +1,96 @@
+# ==============================================================
+# 🧠 TEMPLATE : carte_chauffage_intention
+# --------------------------------------------------------------
+# Carte d’intention du chauffage — UI Arsenal (lecture seule).
+#
+# Rôle :
+#   - Exposer l’INTENTION décisionnelle pure
+#   - Traduire Eco / Confort / Neutre selon la RAISON métier
+#
+# Source :
+#   - sensor.chauffage_mode_calcule
+#   - sensor.chauffage_raison_calculee
+# ==============================================================
+
+carte_chauffage_intention:
+  template: carte_base
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  icon: mdi:brain
+  name: Intention chauffage
+
+  #################################################################
+  # 🧠 TEXTE D’ÉTAT — SÉMANTIQUE ARSENAL
+  #################################################################
+  state_display: |
+    [[[ 
+      const intention = entity.state;
+      const raison = states['sensor.chauffage_raison_calculee']?.state;
+
+      if (intention === 'Confort') {
+        return 'Confort requis';
+      }
+
+      if (intention === 'Neutre') {
+        return 'Confort autorisé';
+      }
+
+      if (intention === 'Eco') {
+        if (raison === 'absence_inhibition_thermique') {
+          return 'Sobriété • protection thermique';
+        }
+        if (raison === 'absence') {
+          return 'Sobriété • absence';
+        }
+        return 'Sobriété thermique';
+      }
+
+      return intention;
+    ]]]
+
+  #################################################################
+  # 🎨 COULEURS — INTENTION, PAS ACTION
+  #################################################################
+  state:
+
+    # 🟢 CONFORT REQUIS
+    - value: Confort
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    # ⚪ NEUTRE — AUTORISATION SANS ACTION
+    - value: Neutre
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    # ⚪ ECO — SOBRIÉTÉ STRUCTURELLE
+    - value: Eco
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+  tap_action:
+    action: none
+
+  #################################################################
+  # 🧱 STYLES GÉNÉRAUX
+  #################################################################
+  styles:
+    card:
+      - height: 72px
+      - border-radius: 12px
+      - padding: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 15px
+      - font-weight: 600
+      - color: '#111'

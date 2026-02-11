@@ -1,0 +1,53 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Autorisation pluie (volets)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition du CONTEXTE D’AUTORISATION
+#   pour l’action automatique des volets
+#   en cas de détection de pluie.
+#
+#   Ce helper précise DANS QUEL CONTEXTE
+#   l’automatisme est autorisé à agir,
+#   jamais QUAND ni COMMENT.
+#
+# 🧩 Nature :
+#   Paramètre MÉTIER conditionnel.
+#
+# ❌ Ne fait PAS :
+#   - Ne détecte PAS la pluie
+#   - Ne commande PAS directement les volets
+#   - Ne déclenche AUCUNE action
+#   - Ne contient AUCUNE logique temporelle
+#
+# 🔍 Sémantique des valeurs :
+#   - Toujours :
+#       Autorise l’action quel que soit l’état de présence.
+#   - En présence uniquement :
+#       Autorise l’action seulement si la maison est occupée.
+#   - En absence uniquement :
+#       Autorise l’action seulement si la maison est vide.
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace :
+#       • Paramétrage utilisateur du comportement pluie
+#   - Scripts météo / pluie :
+#       • Condition d’autorisation avant toute action volet
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte :
+#       • Autorisation (input_select)
+#       • Détection (capteurs météo)
+#       • Action (scripts / automatisations)
+#
+# ⚠️ Remarque :
+#   Toute modification de ce helper doit rester
+#   déclarative et lisible pour l’utilisateur.
+# ==========================================================
+
+activation_volets_pluie:
+  name: Activation pluie (volets)
+  icon: mdi:home-switch
+  options:
+    - Toujours
+    - En présence uniquement
+    - En absence uniquement

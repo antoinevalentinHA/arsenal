@@ -1,0 +1,98 @@
+# ==========================================================
+# 🎯 TEMPLATE TRIGGERED SENSORS — Humidité absolue cible ON / OFF (Cave)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Calculer les **seuils d’humidité absolue correspondants** aux cibles
+#   d’humidité relative définies pour le pilotage de la cave.
+#
+# ⚙️ Fonctionnement :
+#   - Deux capteurs :
+#       • `humidite_absolue_cible_on_cave`  → seuil ON (activation déshumidification)
+#       • `humidite_absolue_cible_off_cave` → seuil OFF (désactivation)
+#   - Déclenchement sur :
+#       • changement de la température de la cave (`sensor.temperature_cave`)  
+#       • modification de la consigne RH correspondante (`input_number.cave_rh_cible_on/off`)  
+#       • démarrage de Home Assistant
+#
+# 🧮 Calcul :
+#   Utilise la formule standard de la vapeur d’eau pour convertir la RH cible en humidité absolue :
+#     ```
+#     SVP = 6.112 * 10 ** ((7.5 * T) / (237.7 + T))
+#     VP  = (RH / 100) * SVP
+#     AH  = (2.1674 * VP / (273.15 + T)) * 100
+#     ```
+#     → où :
+#        • T  = température actuelle de la cave (°C)
+#        • RH = consigne d’humidité relative (%)
+#        • AH = humidité absolue cible (g/m³)
+#
+# 🧠 Détails techniques :
+#   - Les valeurs de RH sont bornées entre 1 et 100 %.  
+#   - En cas de données invalides, le capteur conserve sa dernière valeur connue.  
+#   - Les attributs précisent les sources utilisées :
+#       • `temperature_source`  
+#       • `rh_cible_source`
+#
+# 💡 Utilisation :
+#   Ces capteurs sont utilisés pour comparer l’humidité absolue mesurée dans la cave
+#   à la valeur cible afin de déterminer si le déshumidificateur doit être activé ou non.
+#
+# 📊 Type : Trigger Template Sensors  
+# 📍 Entités :
+#   - sensor.humidite_absolue_cible_on_cave  
+#   - sensor.humidite_absolue_cible_off_cave  
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_cave
+        - input_number.cave_rh_cible_on
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue cible ON (cave)"
+      unique_id: humidite_absolue_cible_on_cave
+      unit_of_measurement: "g/m³"
+      icon: mdi:target
+      state: >
+        {% set T = states('sensor.temperature_cave') | float(none) %}
+        {% set RHt = states('input_number.cave_rh_cible_on') | float(none) %}
+        {% if T is not none and RHt is not none %}
+          {% set RH = 1 if RHt <= 0 else (100 if RHt > 100 else RHt) %}
+          {% set svp = 6.112 * (10 ** ((7.5 * T) / (237.7 + T))) %}
+          {% set vp = (RH / 100) * svp %}
+          {{ (2.1674 * vp / (273.15 + T) * 100) | round(2) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+      attributes:
+        temperature_source: sensor.temperature_cave
+        rh_cible_source: input_number.cave_rh_cible_on
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_cave
+        - input_number.cave_rh_cible_off
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue cible OFF (cave)"
+      unique_id: humidite_absolue_cible_off_cave
+      unit_of_measurement: "g/m³"
+      icon: mdi:target-variant
+      state: >
+        {% set T = states('sensor.temperature_cave') | float(none) %}
+        {% set RHt = states('input_number.cave_rh_cible_off') | float(none) %}
+        {% if T is not none and RHt is not none %}
+          {% set RH = 1 if RHt <= 0 else (100 if RHt > 100 else RHt) %}
+          {% set svp = 6.112 * (10 ** ((7.5 * T) / (237.7 + T))) %}
+          {% set vp = (RH / 100) * svp %}
+          {{ (2.1674 * vp / (273.15 + T) * 100) | round(2) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+      attributes:
+        temperature_source: sensor.temperature_cave
+        rh_cible_source: input_number.cave_rh_cible_off

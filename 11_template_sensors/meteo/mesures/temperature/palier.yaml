@@ -1,0 +1,46 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Température Palier
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Fournir la **température du palier** à partir du capteur intégré
+#   de la climatisation (`sensor.clim_indoor_temperature`).
+#
+# ⚙️ Fonctionnement :
+#   - Lit directement la valeur du capteur de la clim.
+#   - Si la donnée reçue est numérique → elle est utilisée telle quelle.
+#   - Si la donnée est invalide (`unknown`, `unavailable`, etc.) :
+#       → conserve la **dernière valeur connue** pour assurer la continuité.
+#
+# 🧮 Logique :
+#   • Capteur principal : `sensor.temperature_palier`
+#   • Source de donnée : `sensor.clim_indoor_temperature`
+#
+# 🧠 Déclencheurs :
+#   - À chaque changement d’état du capteur de la climatisation.  
+#   - À chaque redémarrage de Home Assistant.  
+#
+# 📊 Type : Trigger Template Sensor  
+# 🌡️ Unité : °C  
+# 🏠 Classe : temperature  
+# 🧾 Précision : pleine valeur du capteur source  
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.clim_indoor_temperature
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température Palier"
+      unique_id: temperature_palier
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      state: >
+        {% set t = states('sensor.clim_indoor_temperature') %}
+        {% if t | is_number %}
+          {{ t | float }}
+        {% else %}
+          {{ this.state | float(0) }}
+        {% endif %}

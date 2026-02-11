@@ -1,0 +1,60 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Clim – Transit décision → exécution
+#
+#  ID : 10030000000105
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Déclencher l’exécution de la climatisation
+#     lorsque la DÉCISION CENTRALE change.
+#
+#     Cette automation :
+#       - n’analyse rien
+#       - ne décide rien
+#       - ne pilote rien directement
+#
+#     Elle se contente de relayer
+#     `sensor.clim_target_mode`
+#     vers le script d’exécution idempotent.
+#
+#  🧠 AUTORITÉ DE DÉCISION
+#
+#     sensor.clim_target_mode
+#
+#  🧠 AUTORITÉ D’EXÉCUTION
+#
+#     script.clim_execution
+# ==========================================================
+
+- id: "10030000000105"
+  alias: "Clim – Transit décision vers exécution"
+  description: >
+    Relais entre la décision centrale PURE
+    (sensor.clim_target_mode)
+    et le script d’exécution idempotent.
+  mode: single
+  max_exceeded: silent
+
+  # ======================================================
+  # 🔔 Déclencheur — Changement de décision
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: sensor.clim_target_mode
+
+  # ======================================================
+  # 🛑 Sécurité système
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  # ======================================================
+  # ▶️ Action — Exécution idempotente
+  # ======================================================
+  action:
+    - service: script.turn_on
+      target:
+        entity_id: script.clim_execution

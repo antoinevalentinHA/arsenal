@@ -1,0 +1,26 @@
+# ==========================================================
+# 👶 INPUT BOOLEAN — Mode Enfants ECS
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Activer ou désactiver le mode “Enfants” pour l’ECS.
+#
+# ⚙️ Fonctionnement :
+#   - Activé → le mode enfants est actif et certaines
+#       automatismes ECS sont adaptés (bains, routines).
+#   - Désactivé → le mode enfants est inactif ; le système
+#       reprend le fonctionnement normal.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean
+#   - Nom : Mode Enfants actif
+#   - Icône : mdi:human-child
+#   - Usage : contrôle manuel du mode enfants ECS
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.mode_enfants
+# ==========================================================
+
+
+mode_enfants:
+  name: Mode Enfants actif
+  icon: mdi:human-child

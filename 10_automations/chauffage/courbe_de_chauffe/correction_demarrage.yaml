@@ -1,0 +1,89 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Resynchronisation courbe au redémarrage
+#
+#  ID : 10240000000010
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Restaurer la cohérence entre les consignes locales
+#     (pente et parallèle de la courbe de chauffe) et
+#     l’état cloud ViCare après un redémarrage de
+#     Home Assistant.
+#
+#     Cette automation garantit que la chaudière applique
+#     bien les valeurs de référence décidées par ARSENAL.
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide aucun ajustement de courbe
+#     - Ne calcule aucune valeur thermique
+#     - Ne s’exécute pas si l’API ViCare est indisponible
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • passage du système à l’état stable post-démarrage
+#     - Pré-requis :
+#         • API ViCare disponible
+#     - Traitement :
+#         • comparaison consignes locales ↔ valeurs cloud
+#         • appel des scripts dédiés uniquement en cas d’écart
+#     - Objectif :
+#         • restitution fidèle de la configuration ARSENAL
+#
+#  ✅ CONTRAINTES
+#     - Synchronisation unidirectionnelle (local → cloud)
+#     - Délégation complète de l’exécution aux scripts ViCare
+#     - Aucune dépendance aux entités climate ou états transitoires
+# ==========================================================
+
+
+- id: "10240000000010"
+  alias: "Chauffage – Sync courbe démarrage"
+  description: >
+    Remet les valeurs de pente et de décalage de la courbe de chauffe
+    au démarrage de Home Assistant, si l’API Viessmann est disponible
+    et si le cloud diverge de la consigne locale.
+  mode: single
+
+  # ------------------------------------------------------
+  # 🔔 Trigger — Home Assistant stabilisé
+  # ------------------------------------------------------
+  trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ------------------------------------------------------
+  # 🎯 Actions — Sécurisation + restitution cible
+  # ------------------------------------------------------
+  action:
+
+    # 🟢 API ViCare doit être disponible
+    - condition: state
+      entity_id: binary_sensor.vicare_api_disponible
+      state: "on"
+
+    # 📊 Lecture consigne locale et état cloud
+    - variables:
+        pente_cible: "{{ states('input_number.chauffage_pente_consigne') | float }}"
+        parallele_cible: "{{ states('input_number.chauffage_parallele_consigne') | float }}"
+        pente_cloud: "{{ states('number.vscotho1_200_11_heating_curve_slope') | float }}"
+        parallele_cloud: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float }}"
+        pente_a_modifier: "{{ pente_cible != pente_cloud }}"
+        parallele_a_modifier: "{{ parallele_cible != parallele_cloud }}"
+
+    # 🔁 Mise en cohérence par script si nécessaire
+    - choose:
+
+        # Mise à jour pente
+        - conditions:
+            - condition: template
+              value_template: "{{ pente_a_modifier }}"
+          sequence:
+            - service: script.chauffage_appliquer_pente
+
+        # Mise à jour parallèle
+        - conditions:
+            - condition: template
+              value_template: "{{ parallele_a_modifier }}"
+          sequence:
+            - service: script.chauffage_appliquer_parallele

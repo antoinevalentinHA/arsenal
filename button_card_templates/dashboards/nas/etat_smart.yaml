@@ -1,0 +1,51 @@
+#################################################################
+# 🧠 CARTE NAS — ÉTAT SMART DISQUE
+# ---------------------------------------------------------------
+# Affiche l’état SMART d’un disque NAS avec codage couleur.
+#
+# États interprétés :
+#   - OK / Normal        → 🟢
+#   - Attention / Warn   → 🟠
+#   - Échec / Fail       → 🔴
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture immédiate
+#   - Aucune logique métier
+#################################################################
+
+carte_nas_smart_etat:
+  template: carte_base
+
+  show_state: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = (entity.state || '').toLowerCase();
+
+            if (v.includes('échec') || v.includes('fail'))
+              return 'rgba(244, 67, 54, 0.2)';   // 🔴 échec
+
+            if (v.includes('attention') || v.includes('warn'))
+              return 'rgba(255, 152, 0, 0.2)';   // 🟠 alerte
+
+            if (v.includes('ok') || v.includes('normal'))
+              return 'rgba(76, 175, 80, 0.2)';   // 🟢 OK
+
+            return 'rgba(224, 224, 224, 0.2)';   // ⚪ inconnu
+          ]]]
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'
+
+    icon:
+      - color: '#111'

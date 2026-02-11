@@ -1,0 +1,37 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Aération – Confirmée
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Mémoire logique indiquant qu’une ouverture
+#     a dépassé le délai de grâce et est désormais
+#     considérée comme une aération effective.
+#
+#  🧱 Nature :
+#     - Mémoire d’état persistante (ON / OFF)
+#     - Vérité métier intermédiaire
+#
+#  🔄 Cycle de vie :
+#     - ON  : écrit par les automatisations d’ouvertures
+#             après expiration du délai de grâce
+#     - OFF : réinitialisé lors de la fin d’aération
+#             ou de la fermeture des ouvrants
+#
+#  📥 N’effectue PAS :
+#     - aucune détection d’ouverture
+#     - aucun calcul de durée
+#     - aucune décision de blocage chauffage
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations d’aération
+#     - Lue par les automatisations de blocage chauffage
+#     - Persistée via recorder pour continuité d’état
+#
+#  🧠 Principe Arsenal :
+#     - Séparation stricte :
+#         détection → temporisation → mémoire → décision
+# ==========================================================
+
+
+aeration_confirmee:
+  name: "Aeration confirmee"
+  icon: mdi:check-circle

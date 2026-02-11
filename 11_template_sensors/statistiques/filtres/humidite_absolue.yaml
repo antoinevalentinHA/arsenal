@@ -1,0 +1,1390 @@
+# ==========================================================
+#  TEMPLATE SENSORS — Humidité Absolue “Filtre Période” (multipériode)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Capturer et mémoriser l’**humidité absolue** par période météo
+#   (aube / matin / jour / crepuscule / nuit), afin de conserver des
+#   références climatiques comparables sur une même journée.
+#
+# ⚙️ Fonctionnement :
+#   - Chaque entité `sensor.humidite_absolue_filtre_<periode>_<zone>` surveille :
+#       • son capteur source (ex : `sensor.humidite_absolue_chambre_arnaud`)
+#       • l’état du capteur `sensor.periode_meteo`
+#   - Lorsque `sensor.periode_meteo` = `<periode>` (période portée par le nom
+#     de l’entité), la valeur courante du capteur source est copiée.
+#   - En dehors de cette période, le capteur conserve la dernière valeur capturée
+#     (mémoire via `states(this.entity_id)`).
+#
+# 🧩 Capteurs couverts :
+#   - Généré pour plusieurs zones (chambres, cave, séjour, entrée, extérieur, etc.)
+#   - Chaque zone existe pour plusieurs périodes, selon un schéma strictement identique.
+#
+# 🧮 Logique :
+#   1️⃣ Déduire la période cible depuis le nom de l’entité (`...filtre_<periode>_...`).
+#   2️⃣ Construire la source attendue (`sensor.humidite_absolue_<zone>`) par transformation
+#      déterministe de `this.entity_id`.
+#   3️⃣ Si `sensor.periode_meteo` = période cible → copie la valeur de la source.
+#   4️⃣ Sinon → conserve la dernière valeur (`states(this.entity_id)`).
+#
+# ⚠️ Cas particuliers :
+#   - Aucun. Tous les capteurs du fichier utilisent strictement la même logique
+#     via `state: *humidite_absolue_filtre_logic`.
+#
+# 🧾 Exemple de rendu :
+#   **État :** `8.7`
+#   **Attributs :**
+#   - humidite_absolue_source: `sensor.humidite_absolue_cave`
+#
+# 📊 Type : Trigger-based Template Sensor
+# 🌡️ Domaine : Confort / Climat / Humidité absolue par période
+# ==========================================================
+
+
+####################################################
+# 🌅 AUBE
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Chambre Arnaud"
+      unique_id: humidite_absolue_filtre_aube_chambre_arnaud
+      state: &humidite_absolue_filtre_logic >
+        {%- set eid = this.entity_id -%}
+        {%- set prefix = 'sensor.humidite_absolue_filtre_' -%}
+        {%- set periode = eid.split(prefix)[1].split('_')[0] -%}
+        {%- set src = eid | replace(prefix ~ periode ~ '_', 'sensor.humidite_absolue_') -%}
+        {%- if is_state('sensor.periode_meteo', periode) -%}
+          {{ states(src) }}
+        {%- else -%}
+          {{ states(eid) }}
+        {%- endif -%}
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Cave"
+      unique_id: humidite_absolue_filtre_aube_cave
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_cave
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Entree"
+      unique_id: humidite_absolue_filtre_aube_entree
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_entree
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Jardin"
+      unique_id: humidite_absolue_filtre_aube_jardin
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_jardin
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Garage"
+      unique_id: humidite_absolue_filtre_aube_garage
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_garage
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Chambre Matthieu"
+      unique_id: humidite_absolue_filtre_aube_chambre_matthieu
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_matthieu
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Chambre Parents"
+      unique_id: humidite_absolue_filtre_aube_chambre_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Petite Maison"
+      unique_id: humidite_absolue_filtre_aube_petite_maison
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_petite_maison
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube SDB Enfants"
+      unique_id: humidite_absolue_filtre_aube_sdb_enfants
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_enfants
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube SDB Parents"
+      unique_id: humidite_absolue_filtre_aube_sdb_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Séjour"
+      unique_id: humidite_absolue_filtre_aube_sejour
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sejour
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Extérieur"
+      unique_id: humidite_absolue_filtre_aube_exterieur
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_exterieur
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Direction"
+      unique_id: humidite_absolue_filtre_aube_direction
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_direction
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Compta"
+      unique_id: humidite_absolue_filtre_aube_compta
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_compta
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Qualité"
+      unique_id: humidite_absolue_filtre_aube_qualite
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_qualite
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Devis"
+      unique_id: humidite_absolue_filtre_aube_devis
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_devis
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Commercial"
+      unique_id: humidite_absolue_filtre_aube_commercial
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_commercial
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Stock Carton"
+      unique_id: humidite_absolue_filtre_aube_stock_carton
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_carton
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Stock PF"
+      unique_id: humidite_absolue_filtre_aube_stock_pf
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_pf
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Komori"
+      unique_id: humidite_absolue_filtre_aube_komori
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_komori
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Bobst"
+      unique_id: humidite_absolue_filtre_aube_bobst
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_bobst
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Aube Media"
+      unique_id: humidite_absolue_filtre_aube_media
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_media
+
+####################################################
+# 🌤 MATIN
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Chambre Arnaud"
+      unique_id: humidite_absolue_filtre_matin_chambre_arnaud
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Cave"
+      unique_id: humidite_absolue_filtre_matin_cave
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_cave
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Entree"
+      unique_id: humidite_absolue_filtre_matin_entree
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_entree
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Jardin"
+      unique_id: humidite_absolue_filtre_matin_jardin
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_jardin
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Garage"
+      unique_id: humidite_absolue_filtre_matin_garage
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_garage
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Chambre Matthieu"
+      unique_id: humidite_absolue_filtre_matin_chambre_matthieu
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_matthieu
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Chambre Parents"
+      unique_id: humidite_absolue_filtre_matin_chambre_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Petite Maison"
+      unique_id: humidite_absolue_filtre_matin_petite_maison
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_petite_maison
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin SDB Enfants"
+      unique_id: humidite_absolue_filtre_matin_sdb_enfants
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_enfants
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin SDB Parents"
+      unique_id: humidite_absolue_filtre_matin_sdb_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Séjour"
+      unique_id: humidite_absolue_filtre_matin_sejour
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sejour
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Extérieur"
+      unique_id: humidite_absolue_filtre_matin_exterieur
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_exterieur
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Direction"
+      unique_id: humidite_absolue_filtre_matin_direction
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_direction
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Compta"
+      unique_id: humidite_absolue_filtre_matin_compta
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_compta
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Qualité"
+      unique_id: humidite_absolue_filtre_matin_qualite
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_qualite
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Devis"
+      unique_id: humidite_absolue_filtre_matin_devis
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_devis
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Commercial"
+      unique_id: humidite_absolue_filtre_matin_commercial
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_commercial
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Stock Carton"
+      unique_id: humidite_absolue_filtre_matin_stock_carton
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_carton
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Stock PF"
+      unique_id: humidite_absolue_filtre_matin_stock_pf
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_pf
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Komori"
+      unique_id: humidite_absolue_filtre_matin_komori
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_komori
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Bobst"
+      unique_id: humidite_absolue_filtre_matin_bobst
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_bobst
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Matin Media"
+      unique_id: humidite_absolue_filtre_matin_media
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_media
+
+####################################################
+# ☀️ JOUR
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Chambre Arnaud"
+      unique_id: humidite_absolue_filtre_jour_chambre_arnaud
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Cave"
+      unique_id: humidite_absolue_filtre_jour_cave
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_cave
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Entree"
+      unique_id: humidite_absolue_filtre_jour_entree
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_entree
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Jardin"
+      unique_id: humidite_absolue_filtre_jour_jardin
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_jardin
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Garage"
+      unique_id: humidite_absolue_filtre_jour_garage
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_garage
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Chambre Matthieu"
+      unique_id: humidite_absolue_filtre_jour_chambre_matthieu
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_matthieu
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Chambre Parents"
+      unique_id: humidite_absolue_filtre_jour_chambre_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Petite Maison"
+      unique_id: humidite_absolue_filtre_jour_petite_maison
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_petite_maison
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour SDB Enfants"
+      unique_id: humidite_absolue_filtre_jour_sdb_enfants
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_enfants
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour SDB Parents"
+      unique_id: humidite_absolue_filtre_jour_sdb_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Séjour"
+      unique_id: humidite_absolue_filtre_jour_sejour
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sejour
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Extérieur"
+      unique_id: humidite_absolue_filtre_jour_exterieur
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_exterieur
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Direction"
+      unique_id: humidite_absolue_filtre_jour_direction
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_direction
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Compta"
+      unique_id: humidite_absolue_filtre_jour_compta
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_compta
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Qualité"
+      unique_id: humidite_absolue_filtre_jour_qualite
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_qualite
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Devis"
+      unique_id: humidite_absolue_filtre_jour_devis
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_devis
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Commercial"
+      unique_id: humidite_absolue_filtre_jour_commercial
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_commercial
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Stock Carton"
+      unique_id: humidite_absolue_filtre_jour_stock_carton
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_carton
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Stock PF"
+      unique_id: humidite_absolue_filtre_jour_stock_pf
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_pf
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Komori"
+      unique_id: humidite_absolue_filtre_jour_komori
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_komori
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Bobst"
+      unique_id: humidite_absolue_filtre_jour_bobst
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_bobst
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Jour Media"
+      unique_id: humidite_absolue_filtre_jour_media
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_media
+
+####################################################
+# 🌇 CREPUSCULE
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule Chambre Arnaud"
+      unique_id: humidite_absolue_filtre_crepuscule_chambre_arnaud
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule Cave"
+      unique_id: humidite_absolue_filtre_crepuscule_cave
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_cave
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule Entree"
+      unique_id: humidite_absolue_filtre_crepuscule_entree
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_entree
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule Jardin"
+      unique_id: humidite_absolue_filtre_crepuscule_jardin
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_jardin
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule Garage"
+      unique_id: humidite_absolue_filtre_crepuscule_garage
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_garage
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule Chambre Matthieu"
+      unique_id: humidite_absolue_filtre_crepuscule_chambre_matthieu
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_matthieu
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule Chambre Parents"
+      unique_id: humidite_absolue_filtre_crepuscule_chambre_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule Petite Maison"
+      unique_id: humidite_absolue_filtre_crepuscule_petite_maison
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_petite_maison
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule SDB Enfants"
+      unique_id: humidite_absolue_filtre_crepuscule_sdb_enfants
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_enfants
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule SDB Parents"
+      unique_id: humidite_absolue_filtre_crepuscule_sdb_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crepuscule Séjour"
+      unique_id: humidite_absolue_filtre_crepuscule_sejour
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sejour
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Extérieur"
+      unique_id: humidite_absolue_filtre_crepuscule_exterieur
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_exterieur
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Direction"
+      unique_id: humidite_absolue_filtre_crepuscule_direction
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_direction
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Compta"
+      unique_id: humidite_absolue_filtre_crepuscule_compta
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_compta
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Qualité"
+      unique_id: humidite_absolue_filtre_crepuscule_qualite
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_qualite
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Devis"
+      unique_id: humidite_absolue_filtre_crepuscule_devis
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_devis
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Commercial"
+      unique_id: humidite_absolue_filtre_crepuscule_commercial
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_commercial
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Stock Carton"
+      unique_id: humidite_absolue_filtre_crepuscule_stock_carton
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_carton
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Stock PF"
+      unique_id: humidite_absolue_filtre_crepuscule_stock_pf
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_pf
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Komori"
+      unique_id: humidite_absolue_filtre_crepuscule_komori
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_komori
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Bobst"
+      unique_id: humidite_absolue_filtre_crepuscule_bobst
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_bobst
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Crépuscule Media"
+      unique_id: humidite_absolue_filtre_crepuscule_media
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_media
+
+####################################################
+# 🌙 NUIT
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Chambre Arnaud"
+      unique_id: humidite_absolue_filtre_nuit_chambre_arnaud
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_arnaud
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Cave"
+      unique_id: humidite_absolue_filtre_nuit_cave
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_cave
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Entree"
+      unique_id: humidite_absolue_filtre_nuit_entree
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_entree
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Jardin"
+      unique_id: humidite_absolue_filtre_nuit_jardin
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_jardin
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Garage"
+      unique_id: humidite_absolue_filtre_nuit_garage
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_garage
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Chambre Matthieu"
+      unique_id: humidite_absolue_filtre_nuit_chambre_matthieu
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_matthieu
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Chambre Parents"
+      unique_id: humidite_absolue_filtre_nuit_chambre_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_chambre_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Petite Maison"
+      unique_id: humidite_absolue_filtre_nuit_petite_maison
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_petite_maison
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit SDB Enfants"
+      unique_id: humidite_absolue_filtre_nuit_sdb_enfants
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_enfants
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit SDB Parents"
+      unique_id: humidite_absolue_filtre_nuit_sdb_parents
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sdb_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Séjour"
+      unique_id: humidite_absolue_filtre_nuit_sejour
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_sejour
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Extérieur"
+      unique_id: humidite_absolue_filtre_nuit_exterieur
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_exterieur
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Direction"
+      unique_id: humidite_absolue_filtre_nuit_direction
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_direction
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Compta"
+      unique_id: humidite_absolue_filtre_nuit_compta
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_compta
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Qualité"
+      unique_id: humidite_absolue_filtre_nuit_qualite
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_qualite
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Devis"
+      unique_id: humidite_absolue_filtre_nuit_devis
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_devis
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Commercial"
+      unique_id: humidite_absolue_filtre_nuit_commercial
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_commercial
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Stock Carton"
+      unique_id: humidite_absolue_filtre_nuit_stock_carton
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_carton
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Stock PF"
+      unique_id: humidite_absolue_filtre_nuit_stock_pf
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_stock_pf
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Komori"
+      unique_id: humidite_absolue_filtre_nuit_komori
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_komori
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Bobst"
+      unique_id: humidite_absolue_filtre_nuit_bobst
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_bobst
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Humidité Absolue Filtre Nuit Media"
+      unique_id: humidite_absolue_filtre_nuit_media
+      state: *humidite_absolue_filtre_logic
+      attributes:
+        humidite_absolue_source: sensor.humidite_absolue_media

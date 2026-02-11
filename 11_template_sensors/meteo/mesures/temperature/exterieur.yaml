@@ -1,0 +1,77 @@
+# ==========================================================
+# 🌡️ TEMPLATE SENSOR — Température Extérieure
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Déterminer la **température extérieure de référence** à partir de
+#   deux capteurs placés à des positions différentes :
+#     • `Bobst SO` (Sud-Ouest)
+#     • `Komori NO` (Nord-Est)
+#
+# ⚙️ Fonctionnement :
+#   - Compare les deux mesures disponibles (`sensor.temperature_exterieur_1` et `_2`).
+#   - Sélectionne la **plus basse température**, considérée comme la plus représentative
+#     des conditions extérieures réelles (moins exposée au soleil direct).
+#   - En cas d’indisponibilité des capteurs, le capteur conserve sa dernière valeur.
+#
+# 🧮 Logique :
+#   • Capteur principal : `sensor.temperature_exterieur`
+#   • Attributs :
+#       - `capteur_utilise` → nom du capteur dont la valeur a été retenue.  
+#       - `sources` → liste complète des capteurs considérés.
+#
+# 🧠 Déclenchement :
+#   - Se met à jour automatiquement à chaque changement d’état d’un capteur source.  
+#   - Aucune dépendance à un binaire de bascule (fonctionne toujours).  
+#
+# 📊 Type : Template Sensor  
+# 🌡️ Unité : °C  
+# 🏠 Classe : temperature  
+# ==========================================================
+
+- sensor:
+    - name: "Température Extérieur"
+      unique_id: temperature_exterieur
+      unit_of_measurement: "°C"
+      state_class: measurement
+      device_class: temperature
+      state: >
+        {% set bobst = states('sensor.temperature_exterieur_2') %}
+        {% set komori = states('sensor.temperature_exterieur_1') %}
+        {% set brut = {'Bobst SO': bobst, 'Komori NO': komori} %}
+
+        {% set best = namespace(valeur=None, label=None) %}
+
+        {% for nom, val in brut.items() if val | float(default=999) != 999 %}
+          {% set f = val | float %}
+          {% if best.valeur is none or f < best.valeur %}
+            {% set best.valeur = f %}
+            {% set best.label = nom %}
+          {% endif %}
+        {% endfor %}
+
+        {% if best.valeur is not none %}
+          {{ best.valeur | round(1) }}
+        {% else %}
+          {{ None }}
+        {% endif %}
+
+      attributes:
+        capteur_utilise: >
+          {% set bobst = states('sensor.temperature_exterieur_2') %}
+          {% set komori = states('sensor.temperature_exterieur_1') %}
+          {% set brut = {'Bobst SO': bobst, 'Komori NO': komori} %}
+
+          {% set min_nom = none %}
+          {% set min_val = none %}
+          {% for nom, val in brut.items() if val | float(default=999) != 999 %}
+            {% set f = val | float %}
+            {% if min_val is none or f < min_val %}
+              {% set min_val = f %}
+              {% set min_nom = nom %}
+            {% endif %}
+          {% endfor %}
+
+          {{ min_nom if min_nom is not none else (state_attr(this.entity_id, 'capteur_utilise') or 'Mémoire') }}
+        sources: >
+          - sensor.temperature_exterieur_2
+          - sensor.temperature_exterieur_1

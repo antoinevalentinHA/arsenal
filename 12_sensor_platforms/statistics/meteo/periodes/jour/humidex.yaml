@@ -1,0 +1,152 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles de l’Humidex (filtré sur la période de l’après-midi)
+# ----------------------------------------------------------
+#  🧠 Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de l’**Humidex mesuré durant l’après-midi** (☀️ période “filtre jour”),
+#     indicateur combinant **température** et **humidité relative**
+#     pour évaluer le **confort thermique perçu** au moment le plus chaud de la journée.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Source : capteurs `sensor.humidex_filtre_jour_*`
+#     - Métrique : `mean` (moyenne)
+#
+#  📅 Fenêtre d’analyse :
+#     - Période glissante : 30 jours
+#     - Taille d’échantillon : 5 000 valeurs
+#
+#  📊 Sortie :
+#     - Moyenne mensuelle de l’Humidex **de l’après-midi**
+#       (valeur indicative du confort ou de la contrainte thermique)
+#
+#  🏡 Zones couvertes :
+#     - Chambres, espaces de vie, bureaux, zones industrielles et extérieurs.
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🏠 Chambres
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Chambre Arnaud"
+  entity_id: sensor.humidex_filtre_jour_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_5000 5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Chambre Matthieu"
+  entity_id: sensor.humidex_filtre_jour_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Chambre Parents"
+  entity_id: sensor.humidex_filtre_jour_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏡 Espaces de vie et communs
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Entrée"
+  entity_id: sensor.humidex_filtre_jour_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Séjour"
+  entity_id: sensor.humidex_filtre_jour_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Petite Maison"
+  entity_id: sensor.humidex_filtre_jour_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🌳 Extérieur et jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Jardin"
+  entity_id: sensor.humidex_filtre_jour_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Extérieur"
+  entity_id: sensor.humidex_filtre_jour_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏢 Zones administratives
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Direction"
+  entity_id: sensor.humidex_filtre_jour_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Compta"
+  entity_id: sensor.humidex_filtre_jour_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Qualité"
+  entity_id: sensor.humidex_filtre_jour_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Devis"
+  entity_id: sensor.humidex_filtre_jour_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Commercial"
+  entity_id: sensor.humidex_filtre_jour_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏭 Zones industrielles / ateliers
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Komori"
+  entity_id: sensor.humidex_filtre_jour_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Bobst"
+  entity_id: sensor.humidex_filtre_jour_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre jour Moyenne Media"
+  entity_id: sensor.humidex_filtre_jour_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000

@@ -1,0 +1,27 @@
+# ==========================================================
+# 🏖️ BINARY SENSOR — Vacances actives
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Indiquer si la maison est réellement en situation de
+#   vacances (absence humaine effective + intention).
+#
+# ✅ ON si :
+#   - mode_maison = Vacances
+#   - aucune présence famille
+#   - aucune visite en cours
+#
+# ❌ Ne déclenche aucune action
+# ==========================================================
+
+- binary_sensor:
+    - name: "Vacances actives"
+      unique_id: vacances_actives
+      default_entity_id: binary_sensor.vacances_actives
+      state: >
+        {{
+          is_state('input_select.mode_maison', 'Vacances')
+          and is_state('binary_sensor.presence_famille_unifiee', 'off')
+          and is_state('input_boolean.visite_en_cours', 'off')
+        }}
+      icon: >
+        mdi:beach

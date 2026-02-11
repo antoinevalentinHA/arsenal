@@ -1,0 +1,71 @@
+#################################################################
+# 🤖 AUTOMATISATIONS — SUPERVISION UI
+#################################################################
+#
+# 🧠 Rôle :
+#   Carte de supervision globale des automatisations.
+#
+# 🎯 Principe :
+#   - Diagnostic binaire
+#   - 0  → Normal
+#   - >0 → Incident
+#
+# 🚫 Ne fait PAS :
+#   - N’affiche jamais le nombre
+#   - N’effectue aucune action automatique
+#
+#################################################################
+
+carte_compteur_alerte:
+  template: carte_base
+
+  show_icon: true
+  show_name: true
+  show_state: true
+
+  icon: mdi:robot
+  name: Automat.
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = Number(entity?.state);
+            if (isNaN(v)) return 'rgba(158,158,158,0.2)';     // inconnu
+            return v === 0
+              ? 'rgba(76,175,80,0.2)'                         // 🟢 Normal
+              : 'rgba(244,67,54,0.2)';                        // 🔴 Incident
+          ]]]
+      - border-radius: 12px
+      - height: 72px
+      - padding: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: "#111"
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: "#111"
+
+    state:
+      - font-size: 13px
+      - font-weight: 400
+      - justify-self: center
+      - align-self: end
+      - color: |
+          [[[
+            const v = Number(entity?.state);
+            if (isNaN(v)) return '#616161';    // gris
+            return v === 0 ? '#111' : '#b71c1c';
+          ]]]
+
+  state_display: |
+    [[[
+      const v = Number(entity?.state);
+      if (isNaN(v)) return '—';
+      return v === 0 ? 'Normal' : 'Incident';
+    ]]]

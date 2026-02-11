@@ -1,0 +1,43 @@
+#################################################################
+# ❤️ CARTE FRÉQUENCE CARDIAQUE — UI
+# ---------------------------------------------------------------
+# Carte qualitative pour l’affichage de la fréquence cardiaque
+# moyenne (BPM) avec interprétation visuelle par paliers.
+#
+# Exemples :
+#   - FC moyenne nocturne
+#   - FC de repos
+#
+# Principe Arsenal :
+#   - Lecture seule
+#   - Aucune logique métier
+#   - Interprétation UI uniquement
+#################################################################
+
+carte_frequence_cardiaque_qualitative:
+  template: carte_base
+
+  show_state: true
+  show_icon: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const bpm = parseFloat(entity?.state);
+
+            if (isNaN(bpm)) return "rgba(158, 158, 158, 0.2)";   // ⚪ inconnu
+            if (bpm < 55)  return "rgba(144, 202, 249, 0.25)";    // 🔵 bas (repos)
+            if (bpm < 70)  return "rgba(76, 175, 80, 0.2)";      // 🟢 idéal
+            if (bpm < 80)  return "rgba(255, 235, 59, 0.2)";    // 🟡 modéré
+            if (bpm < 90)  return "rgba(255, 152, 0, 0.2)";     // 🟠 élevé
+            return "rgba(244, 67, 54, 0.2)";                     // 🔴 trop élevé
+          ]]]
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'

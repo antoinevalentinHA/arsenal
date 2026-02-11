@@ -1,0 +1,53 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Mode Enfants – Restauration planning bains ECS
+#
+#  ID : 10250000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Restaurer automatiquement le planning ECS du soir
+#     associé aux bains des enfants lorsque le mode
+#     Enfants est activé.
+#
+#     Cette automation agit comme un pont entre un
+#     contexte de présence (enfants présents) et la
+#     planification ECS correspondante.
+#
+#  🧱 PRINCIPE ARSENAL
+#     - Le contexte décide (mode Enfants)
+#     - Les scripts appliquent la configuration
+#     - Les automatismes ne contiennent aucune logique métier
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide pas des jours ou horaires de bain
+#     - Ne déclenche aucun cycle ECS directement
+#     - Ne modifie aucune consigne ou stratégie thermique
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • activation du mode Enfants
+#     - Action :
+#         • appel du script chargé de restaurer
+#           les créneaux ECS du soir depuis la sauvegarde
+#
+#  ⚠️ IMPORTANT
+#     - Toute modification du planning doit être faite
+#       dans le script dédié ou dans la logique amont
+#
+#  ✅ CONTRAINTES
+#     - Automation strictement contextuelle
+#     - Aucun effet de bord hors mode Enfants
+# ==========================================================
+
+
+- id: '10250000000003'
+  alias: Mode Enfants – Restaurer planning bains ECS
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.mode_enfants
+      to: "on"
+
+  action:
+    - service: script.mode_enfants_ecs_activer

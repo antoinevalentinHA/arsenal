@@ -1,0 +1,111 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Buanderie – Détection de fin de cycle électroménager
+#
+#  ID : 1008000000004
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de DÉTECTION événementielle.
+#
+#     Elle confirme la fin effective d’un cycle
+#     d’électroménager en constatant l’absence durable
+#     de consommation électrique, sans reprise ultérieure.
+#
+#     Elle marque la sortie de l’état "cycle en cours"
+#     et notifie l’utilisateur.
+#
+#  🧱 NATURE
+#
+#     - Détection technique post-événement
+#     - Confirmation par absence de signal
+#     - Aucune décision métier autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Seuil bas (< 2 W) maintenu 15 minutes
+#     - Phase de confirmation par attente :
+#         • surveillance d’une éventuelle reprise > 30 W
+#         • délai maximal de 5 minutes
+#     - En l’absence de reprise :
+#         • fin de cycle confirmée
+#         • notification utilisateur
+#         • extinction du flag de suivi
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne pilote aucun appareil
+#     - Ne décide pas de la durée d’un cycle
+#     - Ne déclenche aucun autre cycle
+#     - Ne corrige pas un état incohérent existant
+#
+#  🔗 UTILISATION
+#
+#     - Termine explicitement l’état "cycle en cours"
+#     - Sert de signal de sortie aux logiques
+#       de suivi ou d’archivage éventuelles
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1008000000004"
+  alias: "Buanderie - Fin de cycle"
+  description: >
+    Détecte la fin d’un cycle de lavage via seuil bas prolongé,
+    confirme l’absence de reprise, puis envoie une notification
+    mobile et supprime l’indicateur de cycle en cours.
+
+  mode: restart
+
+  # ======================================================
+  # 🔔 Déclencheur — Puissance < 2 W pendant 15 min
+  # ======================================================
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.prise_buanderie_power
+      below: 2
+      for: "00:15:00"
+
+  # ======================================================
+  # ✅ Condition — Cycle actif uniquement
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.buanderie_cycle
+      state: "on"
+
+  # ======================================================
+  # 🔄 Action — Confirmation + extinction + notification
+  # ======================================================
+  action:
+
+    # ⏱ Attente 5 min pour vérifier qu’il n’y a pas reprise > 30 W
+    - alias: "Attente de confirmation"
+      wait_for_trigger:
+        - platform: numeric_state
+          entity_id: sensor.prise_buanderie_power
+          above: 30
+      timeout: "00:05:00"
+      continue_on_timeout: true
+
+    # ✅ Si pas de reprise → fin de cycle confirmée
+    - choose:
+        - conditions: "{{ wait.trigger is none }}"
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: buanderie_cycle
+
+            - action: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🧺 Buanderie – Cycle terminé"
+                message: >
+                  Le cycle de lavage est terminé ✅
+
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.buanderie_cycle

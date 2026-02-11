@@ -1,0 +1,51 @@
+# ================================================================
+#  TEMPLATE SENSOR : ViCare – Electricité Chaudière (capteurs locaux)
+# ---------------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir des capteurs locaux, robustes et persistants pour
+#     la consommation électrique de la chaudière Viessmann.
+#
+#  🎯 Objectifs :
+#     - Découpler complètement des états cloud
+#     - Garantir une valeur exploitable pour utility_meter
+#     - Assurer un fallback automatique (aucune valeur vide)
+#
+#  🧩 Sources Viessmann :
+#     sensor.vscotho1_200_11_consommation_d_electricite_cette_semaine
+#     sensor.vscotho1_200_11_consommation_d_electricite_cette_annee
+#
+#  💡 Unité :
+#     kWh
+# ================================================================
+
+- sensor:
+
+    # ------------------------------------------------------------
+    # Electricité chaudière – Semaine (local, fallback)
+    # ------------------------------------------------------------
+    - name: "electricite_chaudiere_semaine_local"
+      unique_id: electricite_chaudiere_semaine_local
+      unit_of_measurement: "kWh"
+      icon: mdi:flash
+      state: >
+        {% set v = states('sensor.vscotho1_200_11_consommation_d_electricite_cette_semaine') %}
+        {% if v in ['unknown','unavailable','none','None',''] %}
+          {{ states('sensor.electricite_chaudiere_semaine_local') }}
+        {% else %}
+          {{ v | float }}
+        {% endif %}
+
+    # ------------------------------------------------------------
+    # Electricité chaudière – Année (local, fallback)
+    # ------------------------------------------------------------
+    - name: "electricite_chaudiere_annee_local"
+      unique_id: electricite_chaudiere_annee_local
+      unit_of_measurement: "kWh"
+      icon: mdi:flash
+      state: >
+        {% set v = states('sensor.vscotho1_200_11_consommation_d_electricite_cette_annee') %}
+        {% if v in ['unknown','unavailable','none','None',''] %}
+          {{ states('sensor.electricite_chaudiere_annee_local') }}
+        {% else %}
+          {{ v | float }}
+        {% endif %}

@@ -1,0 +1,121 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Home
+views:
+  - title: Home
+    path: home
+    icon: mdi:server
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-ecs-dashboard/ecs
+
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-ecs-dashboard/diagnostics-ecs
+
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ==================================================
+          # 🚿 ECS — ÉTAT & COMMANDES
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - type: custom:button-card
+                template: section_header
+                name: 🚿 ECS
+
+              - type: custom:button-card
+                template: carte_ecs_etat_ballon
+                entity: sensor.ecs_temperature_ballon_securisee
+                name: Eau chaude
+                icon: mdi:water-thermometer
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+
+                  - type: custom:button-card
+                    template: carte_action_ecs_vaisselle
+                    name: Vaisselle
+                    icon: mdi:silverware-clean
+
+                  - type: custom:button-card
+                    template: carte_action_ecs_bouclage
+                    entity: switch.prise_bouclage
+                    name: Bouclage
+                    icon: mdi:play-circle
+
+
+          # ==================================================
+          # 📜 HISTORIQUE ECS
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/historique.yaml
+
+              - type: custom:mini-graph-card
+                name: 💧 Température ECS
+                icon: mdi:thermometer-water
+                entities:
+                  - entity: sensor.ecs_temperature_ballon_securisee
+                    name: Cuve
+                  - entity: sensor.ecs_consigne_dernier_cycle
+                    name: Consigne
+                    color: rgba(158, 158, 158, 0.2)
+                    show_state: true
+                    show_fill: false
+                hours_to_show: 48
+                points_per_hour: 6
+                line_width: 3
+                animate: true
+                smoothing: true
+                show:
+                  labels: true
+                  legend: false
+                  extrema: true
+                  fill: fade
+                  icon: false
+                font_size: 75
+                height: 160
+                align_state: center
+                decimals: 1
+                color_thresholds:
+                  - value: 25
+                    color: rgba(144, 202, 249, 0.8)   # bleu info (frais)
+                  - value: 30
+                    color: rgba(144, 202, 249, 0.6)   # bleu info atténué
+                  - value: 35
+                    color: rgba(255, 152, 0, 0.8)     # orange attention
+                  - value: 40
+                    color: rgba(244, 67, 54, 0.8)     # rouge alerte
+                  - value: 45
+                    color: rgba(244, 67, 54, 1.0)     # rouge critique
+                tap_action:
+                  action: more-info
+
+              - type: history-graph
+                entities:
+                  - entity: binary_sensor.ecs_chauffe_en_cours_local
+                logarithmic_scale: true

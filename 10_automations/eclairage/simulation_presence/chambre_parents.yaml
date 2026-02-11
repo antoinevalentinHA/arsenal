@@ -1,0 +1,147 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Simulation de présence – Parents – Matérialisation lampe
+#
+#  ID : 10070000000023
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de matérialisation physique
+#     de la simulation de présence (chambre parents).
+#
+#     Elle applique réellement l’état ON / OFF de la lampe
+#     en fonction d’une vérité métier unique exposée
+#     par un capteur composite.
+#
+#     Cette automation ne contient AUCUNE logique
+#     temporelle ni décisionnelle.
+#
+#  🧩 PRINCIPE
+#
+#     - Écoute exclusive de la vérité métier :
+#         binary_sensor.simulation_presence_plage_allumage_parents
+#
+#     - Réaction stricte aux transitions :
+#         • OFF → ON  → lampe ON + notification
+#         • ON  → OFF → lampe OFF + notification supprimée
+#
+#     - Réévaluation automatique au redémarrage
+#       (via input_boolean.systeme_stable)
+#
+#  🧠 AUTORISATION D’EXÉCUTION
+#
+#     L’action réelle n’est autorisée que si :
+#       • le mode maison est "Vacances"
+#         OU
+#       • le mode test de simulation est actif
+#
+#     En dehors de ces cas, la simulation est inopérante.
+#
+#  🧠 SOURCE MÉTIER
+#
+#     binary_sensor.simulation_presence_plage_allumage_parents
+#
+#     → capteur composite responsable :
+#       • du calcul horaire
+#       • de la logique de présence simulée
+#
+#  🧠 ACTION RÉELLE
+#
+#     switch.prise_lampe_parents
+#
+#     → pilotage physique de la lampe
+#
+#  📢 NOTIFICATIONS
+#
+#     - Notification persistante synchronisée
+#     - Visible UNIQUEMENT lorsque la simulation est active
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule PAS les horaires
+#     - Ne choisit PAS quand simuler
+#     - Ne pilote PAS d’autres pièces
+#     - Ne décide PAS de la stratégie de présence
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation réactive pure :
+#     vérité métier ≠ calcul ≠ action.
+#
+#     Elle matérialise une simulation décidée ailleurs,
+#     sans jamais en être la source.
+# ==========================================================
+
+
+- id: "10070000000023"
+  alias: "Simulation présence - Parents - Pilotage lampe"
+  mode: single
+
+  # ======================================================
+  # 🔔 DÉCLENCHEUR — Vérité métier uniquement
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.simulation_presence_plage_allumage_parents
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ======================================================
+  # 🔐 CONDITIONS — Autorisation de la simulation
+  # ======================================================
+  condition:
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: input_select.mode_maison
+          state: "Vacances"
+
+        - condition: state
+          entity_id: input_boolean.test_simulation_presence
+          state: "on"
+
+  # ======================================================
+  # 🔄 ACTION — Application réelle + notifications
+  # ======================================================
+  action:
+    - choose:
+
+        # --------------------------------------------------
+        # 💡 CAS 1 — Entrée dans une plage de simulation
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.simulation_presence_plage_allumage_parents
+              state: "on"
+
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: switch.prise_lampe_parents
+
+            - service: persistent_notification.create
+              data:
+                title: "💡 Simulation de présence – Parents"
+                message: >
+                  La lampe de la chambre des parents est allumée
+                  dans le cadre de la simulation de présence.
+                notification_id: "simulation_presence_parents"
+
+        # --------------------------------------------------
+        # 🌑 CAS 2 — Sortie de plage de simulation
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.simulation_presence_plage_allumage_parents
+              state: "off"
+
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.prise_lampe_parents
+
+            - service: persistent_notification.dismiss
+              data:
+                notification_id: "simulation_presence_parents"

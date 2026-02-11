@@ -1,0 +1,41 @@
+#################################################################
+# ⚙️ CARTE ACTION STANDARD — UI
+# ---------------------------------------------------------------
+# Carte d’action manuelle non critique avec confirmation.
+#
+# Principe Arsenal :
+#   - Action explicite
+#   - Confirmation obligatoire
+#   - Non destructif
+#   - Zéro logique métier
+#################################################################
+
+carte_action_standard:
+  template: carte_base
+
+  show_state: false
+  show_icon: true
+
+  tap_action:
+    action: call-service
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Confirmer l’exécution de cette action ?";
+        ]]]
+    service_data:
+      entity_id: '[[[ return entity.entity_id ]]]'
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)
+      - height: 72px
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: "#444"
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: "#111"

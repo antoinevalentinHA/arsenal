@@ -1,0 +1,118 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : Température (capteurs socle)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Centraliser l’affichage et l’identification des capteurs
+#    de température utilisés comme référence thermique
+#    dans l’ensemble du système Arsenal.
+#
+# 🧠 Principe fondamental :
+#    La température est la variable MAÎTRESSE du système.
+#    Toutes les décisions thermiques (chauffage, climatisation,
+#    aération, confort) s’y réfèrent directement ou indirectement.
+#
+# 🧩 Périmètre :
+#    - Définit les friendly_name et icônes
+#    - Identifie clairement les capteurs par zone
+#    - Ne calcule aucune logique décisionnelle
+#
+# 🔗 Dépendances :
+#    - Capteurs physiques (Zigbee, Netatmo, autres)
+#    - Capteurs agrégés (moyennes, extrêmes)
+#    - Utilisés par :
+#      • chauffage (décision centrale)
+#      • climatisation
+#      • aération intelligente
+#      • diagnostics thermiques
+#
+# 🚫 Interdits :
+#    - Modifier des seuils ou consignes ici
+#    - Introduire une logique métier
+#    - Appliquer des corrections ou offsets
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle critique / référence absolue
+# ==========================================================
+
+
+############################################################
+# 🏠 ESPACES DE VIE — INTÉRIEUR
+############################################################
+
+sensor.temperature_entree:
+  friendly_name: "Température Entrée"
+  icon: mdi:thermometer
+
+sensor.temperature_sejour:
+  friendly_name: "Température Séjour"
+  icon: mdi:thermometer
+
+sensor.temperature_palier:
+  friendly_name: "Température Palier"
+  icon: mdi:thermometer
+
+
+############################################################
+# 🛏️ CHAMBRES
+############################################################
+
+sensor.temperature_chambre_arnaud:
+  friendly_name: "Température Chambre Arnaud"
+  icon: mdi:thermometer
+
+sensor.temperature_chambre_matthieu:
+  friendly_name: "Température Chambre Matthieu"
+  icon: mdi:thermometer
+
+sensor.temperature_chambre_parents:
+  friendly_name: "Température Chambre Parents"
+  icon: mdi:thermometer
+
+
+############################################################
+# 🚿 SALLES DE BAINS
+############################################################
+
+sensor.temperature_sdb_parents:
+  friendly_name: "Température SDB Parents"
+  icon: mdi:thermometer
+
+sensor.temperature_sdb_enfants:
+  friendly_name: "Température SDB Enfants"
+  icon: mdi:thermometer
+
+
+############################################################
+# 🏗️ ANNEXES & ZONES TECHNIQUES
+############################################################
+
+sensor.temperature_cave:
+  friendly_name: "Température Cave"
+  icon: mdi:thermometer
+
+sensor.temperature_garage:
+  friendly_name: "Température Garage"
+  icon: mdi:thermometer
+
+sensor.temperature_petite_maison:
+  friendly_name: "Température Petite Maison"
+  icon: mdi:thermometer
+
+
+############################################################
+# 🌿 EXTÉRIEUR
+############################################################
+
+sensor.temperature_jardin:
+  friendly_name: "Température Jardin"
+  icon: mdi:thermometer
+
+
+############################################################
+# 📊 CAPTEURS AGRÉGÉS / SYNTHÈSE
+############################################################
+
+sensor.temperature_maison_moyenne_jour:
+  friendly_name: "Température moyenne Maison"
+  icon: mdi:thermometer

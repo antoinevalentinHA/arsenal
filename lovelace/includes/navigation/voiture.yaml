@@ -1,0 +1,60 @@
+square: false
+type: grid
+cards:
+
+  # marge gauche
+  - type: custom:button-card
+    template: bouton_spacer
+    color_type: blank-card
+  - type: custom:button-card
+    template: bouton_spacer
+    color_type: blank-card
+  - type: custom:button-card
+    template: bouton_spacer
+    color_type: blank-card
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    name: Aperçu
+    icon: mdi:magnify
+    tap_action:
+      action: navigate
+      navigation_path: /audi-dashboard/audi_a3_e-tron
+    styles:
+      icon:
+        - color: '#1565C0'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    name: Sécurité
+    icon: mdi:shield
+    tap_action:
+      action: navigate
+      navigation_path: /audi-securite-dashboard/securite
+    styles:
+      icon:
+        - color: '#B71C1C'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    name: Batterie
+    icon: mdi:battery
+    tap_action:
+      action: navigate
+      navigation_path: /audi-batterie-dashboard/statistiques
+    styles:
+      icon:
+        - color: '#2E7D32'
+
+  # marge droite
+  - type: custom:button-card
+    template: bouton_spacer
+    color_type: blank-card
+  - type: custom:button-card
+    template: bouton_spacer
+    color_type: blank-card
+  - type: custom:button-card
+    template: bouton_spacer
+    color_type: blank-card
+
+columns: 9

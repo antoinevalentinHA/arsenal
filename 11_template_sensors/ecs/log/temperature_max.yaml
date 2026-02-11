@@ -1,0 +1,53 @@
+# ==========================================================
+# 🚿 TEMPLATE SENSOR — ECS - Temperature max cycle
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Suivre la **température maximale atteinte par le ballon ECS**
+#   pendant le cycle de chauffe en cours, avec persistance locale.
+#
+# ✅ Améliorations :
+#   - Fiable même après un redémarrage ou un retour de `unavailable`
+#   - S’appuie sur `input_boolean.ecs_cycle_en_cours` pour déterminer le contexte
+# ==========================================================
+
+- sensor:
+    - name: "ECS - Temperature max cycle"
+      unique_id: ecs_temperature_max_cycle
+      device_class: temperature
+      unit_of_measurement: "°C"
+
+      availability: >
+        {{ states('sensor.ecs_temperature_ballon_securisee') not in ['unknown','unavailable','none'] }}
+
+      state: >
+        {% set t = states('sensor.ecs_temperature_ballon_securisee') %}
+        {% set t_valid = t not in ['unknown','unavailable','none'] %}
+        {% set current = (t | float(0)) if t_valid else 0 %}
+        {% set previous_state = states('sensor.ecs_temperature_max_cycle') %}
+        {% set previous = (previous_state | float(0)) if previous_state not in ['unknown','unavailable','none'] else current %}
+        {% set last_valid = this.attributes.get('last_valid_max', previous) | float(0) %}
+        {% set in_cycle = is_state('input_boolean.ecs_cycle_en_cours', 'on') %}
+
+        {% if not t_valid %}
+          {{ last_valid }}
+        {% elif in_cycle %}
+          {{ [previous, current, last_valid] | max }}
+        {% else %}
+          {{ last_valid }}
+        {% endif %}
+
+      attributes:
+        last_valid_max: >
+          {% set t = states('sensor.ecs_temperature_ballon_securisee') | float(0) %}
+          {% set prev = this.attributes.get('last_valid_max', t) | float(0) %}
+          {{ [t, prev] | max }}
+
+      icon: >
+        {% set v = states('sensor.ecs_temperature_max_cycle') | float(0) %}
+        {% if v < 35 %}
+          mdi:coolant-temperature
+        {% elif v < 45 %}
+          mdi:water-thermometer
+        {% else %}
+          mdi:water-boiler
+        {% endif %}

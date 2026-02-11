@@ -1,0 +1,27 @@
+# ==========================================================
+# 🔄 INPUT BOOLEAN — ECS Auto-ajustement
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Permettre d’activer ou désactiver manuellement
+#   l’auto-ajustement des offsets ECS.
+#
+# ⚙️ Fonctionnement :
+#   - Activé → l’auto-ajustement est autorisé et les
+#       automatisations peuvent corriger les offsets ECS.
+#   - Désactivé → l’auto-ajustement est bloqué ; aucune
+#       correction automatique n’est effectuée.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean
+#   - Nom : ECS - Auto ajustement actif
+#   - Icône : mdi:auto-fix
+#   - Usage : contrôle manuel de l’auto-ajustement ECS
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_autocorrect_active
+# ==========================================================
+
+
+ecs_autocorrect_active:
+  name: ECS - Auto ajustement actif
+  icon: mdi:auto-fix

@@ -1,0 +1,89 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR :
+#     Jardin – Cycle d’éclairage soir actif
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Capteur binaire de lecture métier TEMPORELLE.
+#
+#     Il indique si le cycle d’éclairage automatique
+#     du jardin (soir) existe selon les cadres
+#     temporels définis.
+#
+#     Ce capteur n’exprime PAS une activation effective,
+#     mais l’existence logique du cycle SOIR.
+#
+# ----------------------------------------------------------
+# 🧩 PRINCIPE
+#
+#     Le cycle SOIR est considéré comme ACTIF si :
+#
+#       • l’automatisme du soir est autorisé
+#       • l’instant courant est postérieur
+#         à l’ouverture temporelle du soir,
+#         déduite du coucher de soleil du jour courant
+#       • la borne de fin absolue du cycle SOIR
+#         n’est pas atteinte
+#
+#     La présence :
+#       - ne définit PAS l’existence du cycle
+#       - intervient uniquement pour :
+#           • déclencher l’allumage effectif
+#           • adoucir l’extinction
+#
+#     Tolérance pratique :
+#       - si Home Assistant n’a pas encore fourni
+#         de timestamp de coucher exploitable
+#         mais que la nuit est confirmée,
+#         le cycle SOIR est considéré comme ouvert
+#         avec un léger décalage toléré.
+#
+# ----------------------------------------------------------
+# 🧠 SOURCES UTILISÉES
+#
+#     - input_boolean.auto_lumiere_jardin_soir
+#     - input_number.lumiere_jardin_soir_offset_minutes
+#     - binary_sensor.jardin_soir_fin_absolue
+#     - sun.sun (last_setting / next_setting)
+#
+# ==========================================================
+
+- binary_sensor:
+    - name: "Jardin – Cycle eclairage soir actif"
+      unique_id: jardin_cycle_eclairage_soir_actif
+      default_entity_id: binary_sensor.jardin_cycle_eclairage_soir_actif
+      state: >
+        {% set auto = is_state('input_boolean.auto_lumiere_jardin_soir', 'on') %}
+        {% set fin_absolue = is_state('binary_sensor.jardin_soir_fin_absolue', 'on') %}
+        {% set offset = states('input_number.lumiere_jardin_soir_offset_minutes') | int(0) %}
+
+        {# Etat nuit / jour #}
+        {% set nuit = is_state('sun.sun', 'below_horizon') %}
+
+        {# Coucher fourni par Home Assistant #}
+        {% set ls = state_attr('sun.sun', 'last_setting') %}
+        {% set ns = state_attr('sun.sun', 'next_setting') %}
+
+        {# Détermination du coucher de référence #}
+        {% if nuit and ls is not none %}
+          {% set coucher = as_local(as_datetime(ls)) %}
+        {% elif (not nuit) and ns is not none %}
+          {% set coucher = as_local(as_datetime(ns)) %}
+        {% elif ls is not none %}
+          {% set coucher = as_local(as_datetime(ls)) %}
+        {% else %}
+          {% set coucher = none %}
+        {% endif %}
+
+        {# Fallback pratique post-redémarrage :
+           nuit confirmée mais pas de coucher exploitable #}
+        {% if coucher is none and nuit %}
+          {% set coucher = now() - timedelta(minutes=5) %}
+        {% endif %}
+
+        {{
+          auto
+          and not fin_absolue
+          and coucher is not none
+          and now() >= (coucher + timedelta(minutes=offset))
+        }}

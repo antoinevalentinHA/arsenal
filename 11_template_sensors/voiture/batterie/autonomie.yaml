@@ -1,0 +1,35 @@
+# ==========================================================
+# 🛣️ TEMPLATE TRIGGERED SENSOR — Audi e-tron (Autonomie)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser la donnée `sensor.audi_a3_sportback_e_tron_range`
+#   afin d’assurer une continuité sur le dashboard même en cas
+#   de perte de communication ou de valeur invalide.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque changement du capteur d’autonomie.
+#   - Réévaluation automatique au démarrage de Home Assistant.
+#   - Si donnée numérique valide → reprise directe.
+#   - Sinon → conservation de la dernière valeur connue.
+#
+# 🧮 Source : sensor.audi_a3_sportback_e_tron_range
+# 📊 Type : Trigger Template Sensor
+# 📏 Unité : km
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.audi_a3_sportback_e_tron_range
+
+  sensor:
+    - name: "Audi e-tron – Autonomie (Local)"
+      unique_id: audi_a3_sportback_e_tron_range_local
+      unit_of_measurement: "km"
+      state_class: measurement
+      state: >
+        {% set v = states('sensor.audi_a3_sportback_e_tron_range') %}
+        {% if v | is_number %}
+          {{ v | float }}
+        {% else %}
+          {{ this.state | float(0) }}
+        {% endif %}

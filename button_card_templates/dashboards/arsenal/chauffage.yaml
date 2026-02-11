@@ -1,0 +1,92 @@
+#################################################################
+# 🔥 CARTE CHAUFFAGE — ÉTAT RÉEL
+# ---------------------------------------------------------------
+# Affiche l’état réel du chauffage à partir du programme
+# actif, de l’action HVAC et de l’état du brûleur.
+#
+# Principe Arsenal :
+#   - Carte d’état réel
+#   - Priorité aux états physiques
+#   - Aucune décision métier
+#################################################################
+
+carte_chauffage_etat:
+  template: carte_base
+
+  show_state: true
+
+  state_display: |
+    [[[
+      const mode = entity.attributes.active_vicare_mode;
+      const action = entity.attributes.hvac_action;
+      if (mode === 'standby') return 'Veille';
+      if (action === 'heating') return 'Actif';
+      if (action === 'idle') return 'Repos';
+      if (action === 'off') return 'Éteint';
+      return action || '—';
+    ]]]
+
+  tap_action:
+    action: navigate
+    navigation_path: /chauffage-dashboard/chauffage
+
+  hold_action:
+    action: more-info
+
+  styles:
+    state:
+      - font-size: 13px
+      - font-weight: 400
+      - color: '#111'
+
+  state:
+    # 🔥 PRIORITÉ ABSOLUE — Brûleur actif
+    - operator: template
+      value: |
+        [[[
+          return states['binary_sensor.bruleur_chauffage_actif']?.state === 'on';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)
+
+    # ⚪ Chaudière OFF / Standby
+    - operator: template
+      value: |
+        [[[
+          const mode = entity.attributes.active_vicare_mode;
+          return mode === 'standby';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    # ✅ Programme Confort (chaudière active)
+    - operator: template
+      value: |
+        [[[
+          const mode = entity.attributes.active_vicare_mode;
+          const prog = states['sensor.programme_chauffage']?.state;
+          return mode !== 'standby' && prog === 'Confort';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    # 🧊 Programme Éco (chaudière active)
+    - operator: template
+      value: |
+        [[[
+          const mode = entity.attributes.active_vicare_mode;
+          const prog = states['sensor.programme_chauffage']?.state;
+          return mode !== 'standby' && prog === 'Éco';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(144, 202, 249, 0.25)
+
+    # 💤 Cas par défaut
+    - operator: default
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)

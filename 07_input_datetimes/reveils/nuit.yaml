@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Réveil nocturne (cadre horaire)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition du CADRE HORAIRE utilisé pour
+#   identifier un réveil nocturne.
+#
+#   Ces helpers bornent une PLAGE TEMPORELLE
+#   considérée comme « nuit active »,
+#   indépendamment de toute action directe.
+#
+# 🧩 Nature :
+#   Paramètres MÉTIER — cadre horaire nocturne.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche AUCUNE action
+#   - Ne modifie PAS directement le chauffage
+#   - Ne pilote PAS l’éclairage
+#   - Ne génère PAS de notification à lui seul
+#
+# 🔍 Spécificité technique :
+#   - Heure uniquement (pas de date)
+#   - Plage pouvant TRAVERSER minuit
+#   - Comparaisons temporelles gérées
+#     par les automatisations consommatrices
+#
+# 🔄 Fonctionnement :
+#   - Les heures sont définies manuellement
+#     via les dashboards de réglage sommeil.
+#   - Les automatisations :
+#       • comparent l’heure courante
+#       • déterminent si un événement
+#         survient dans le cadre nocturne
+#
+# 🔗 Utilisation :
+#   - Automatisations réveils enfants :
+#       • Comptage des réveils nocturnes
+#   - Dashboards diagnostics :
+#       • Visualisation du créneau actif
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Définition du cadre (input_datetime)
+#       • Détection (automatisations)
+#       • Analyse / action (logique métier)
+#
+# ⚠️ Remarque :
+#   Modifier ces valeurs change UNIQUEMENT
+#   la définition de la plage nocturne,
+#   jamais le comportement immédiat du système.
+# ==========================================================
+
+
+heure_reveil_nuit_debut:
+  name: Heure début réveil nuit
+  has_time: true
+  has_date: false
+
+heure_reveil_nuit_fin:
+  name: Heure fin réveil nuit
+  has_time: true
+  has_date: false

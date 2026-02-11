@@ -1,0 +1,28 @@
+# ==========================================================
+# 🔵 INPUT BOOLEAN — Blocage ECS planifiée
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Permet de désactiver temporairement la chauffe ECS
+#   planifiée sans modifier le planning ni le mode Vacances.
+#
+# ⚙️ Fonctionnement :
+#   - Activé → l’automatisation de chauffe planifiée
+#       ne démarre pas, mais le reste du système
+#       fonctionne normalement.
+#   - Désactivé → la chauffe planifiée se déroule
+#       normalement selon le planning.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean
+#   - Nom : Blocage chauffe planifiée
+#   - Icône : mdi:water-boiler-off
+#   - Usage : contrôle manuel temporaire du démarrage ECS
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_blocage_planifiee
+# ==========================================================
+
+
+ecs_blocage_planifiee:
+  name: "Blocage chauffe planifiée"
+  icon: mdi:water-boiler-off

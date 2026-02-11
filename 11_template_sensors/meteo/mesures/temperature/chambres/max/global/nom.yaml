@@ -1,0 +1,32 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Nom de la chambre la plus chaude
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Identifier le **nom de la chambre présentant la température la plus élevée**,
+#   à partir de l’attribut du capteur `sensor.temperature_max_chambres`.
+#
+# ⚙️ Fonctionnement :
+#   - Se met à jour lorsque la température maximale des chambres change.  
+#   - Déclenchement également au démarrage de Home Assistant.  
+#   - Si aucune information valide n’est disponible, conserve la dernière valeur connue.  
+#
+# 🧠 Détails techniques :
+#   - Source : attribut `chambre_la_plus_chaude` du capteur `sensor.temperature_max_chambres`.  
+#   - Renvoie directement le nom de la pièce, sous forme de texte brut.  
+#
+# 📊 Type : Trigger Template Sensor  
+# 🏷️ Entité : sensor.nom_chambre_la_plus_chaude  
+# 💬 Type de valeur : texte  
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_max_chambres
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Nom chambre la plus chaude"
+      unique_id: nom_chambre_la_plus_chaude
+      state: >
+        {% set nom = state_attr('sensor.temperature_max_chambres', 'chambre_la_plus_chaude') %}
+        {{ nom if nom is not none else states(this.entity_id) }}

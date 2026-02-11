@@ -1,0 +1,139 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Réalignement ViCare HA
+#
+#  ID : 10240000000004
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de garde de souveraineté post-synchronisation ViCare.
+#
+#     Cette automation garantit que l’état matériel réel du chauffage
+#     reste strictement aligné sur la dernière décision effectivement
+#     exécutée par Arsenal, mémorisée dans :
+#
+#         input_select.chauffage_dernier_mode_decide
+#
+#     Elle ne prend AUCUNE décision thermique.
+#     Elle ne fait que corriger une divergence passive injectée par ViCare.
+#
+#  🧩 PÉRIMÈTRE
+#
+#     - Déclenchée exclusivement sur :
+#         • binary_sensor.chauffage_incoherence_vicare_decision (divergence qualifiée)
+#         • input_boolean.systeme_stable (démarrage HA)
+#
+#     - Entités lues :
+#         • sensor.programme_chauffage
+#         • input_select.chauffage_dernier_mode_decide
+#         • binary_sensor.vicare_api_disponible
+#         • input_boolean.chauffage_application_en_cours
+#         • binary_sensor.chauffage_incoherence_vicare_decision
+#
+#     - Scripts appelés :
+#         • script.chauffage_consigne_confort
+#         • script.chauffage_consigne_reduite
+#
+#  🚫 INTERDITS
+#
+#     - Aucune décision locale
+#     - Aucun appel direct à climate.*
+#     - Aucune écriture dans input_select.chauffage_dernier_mode_decide
+#     - Aucun autre trigger que ceux listés ci-dessus
+#     - Aucune logique métier (présence, blocage, seuil, hystérésis)
+#
+#  🧠 NATURE ARCHITECTURALE
+#
+#     - Type : Garde de cohérence
+#     - Statut : Invariant défensif
+#     - Autorité : Subordonnée à la Décision Centrale Chauffage
+#
+# ==========================================================
+
+- id: "10240000000004"
+  alias: "Réalignement ViCare HA"
+  mode: single
+
+  trigger:
+
+    # 🔴 Détection d’incohérence réelle ViCare / Décision
+    - platform: state
+      entity_id: binary_sensor.chauffage_incoherence_vicare_decision
+      to: "on"
+
+    # 🚀 Stabilisation Home Assistant
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  action:
+
+    # ======================================================
+    # ⏱️ ETAPE 1 : DELAI DE STABILISATION POST-SYNCHRONISATION
+    # ------------------------------------------------------
+    # Laisser ViCare terminer la rafale de resynchronisation
+    # avant toute évaluation.
+    # ======================================================
+    - delay: "00:00:10"
+
+    # ======================================================
+    # 🛑 ETAPE 2 : GARDE GLOBALE — VERROU APPLICATION EN COURS
+    # ------------------------------------------------------
+    # Si une décision centrale est en cours d’exécution,
+    # cette automation est strictement interdite d’agir.
+    # ======================================================
+    - condition: template
+      value_template: >
+        {{ states('input_boolean.chauffage_application_en_cours') != 'on' }}
+
+    # ======================================================
+    # 🧠 ETAPE 3 : DETECTION ET CORRECTION DE DIVERGENCE
+    # ------------------------------------------------------
+    # Toutes les conditions sont évaluées en templates
+    # tolérants au reload YAML.
+    # ======================================================
+    - choose:
+
+        # --------------------------------------------------
+        # 🔴 CAS 1 — Divergence :
+        #     dernier_mode_decide = comfort
+        #     programme réel = Eco
+        # --------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('binary_sensor.vicare_api_disponible') == 'on' }}
+            - condition: template
+              value_template: >
+                {{ states('input_select.chauffage_dernier_mode_decide') == 'comfort' }}
+            - condition: template
+              value_template: >
+                {{ states('sensor.programme_chauffage') not in ['unknown','unavailable'] }}
+            - condition: template
+              value_template: >
+                {{ states('sensor.programme_chauffage') == 'Eco' }}
+          sequence:
+            - service: script.chauffage_consigne_confort
+
+        # --------------------------------------------------
+        # 🔴 CAS 2 — Divergence :
+        #     dernier_mode_decide = reduced
+        #     programme réel = Confort
+        # --------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('binary_sensor.vicare_api_disponible') == 'on' }}
+            - condition: template
+              value_template: >
+                {{ states('input_select.chauffage_dernier_mode_decide') == 'reduced' }}
+            - condition: template
+              value_template: >
+                {{ states('sensor.programme_chauffage') not in ['unknown','unavailable'] }}
+            - condition: template
+              value_template: >
+                {{ states('sensor.programme_chauffage') == 'Confort' }}
+          sequence:
+            - service: script.chauffage_consigne_reduite
+
+      default: []

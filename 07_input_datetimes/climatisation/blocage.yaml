@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Créneau de blocage horaire (Clim)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition du CRÉNEAU HORAIRE pendant lequel
+#   la climatisation est INTERDITE de fonctionnement
+#   automatique.
+#
+#   Ces helpers encadrent QUAND la climatisation
+#   n’est pas autorisée à agir.
+#
+# 🧩 Nature :
+#   Paramètres MÉTIER — interdiction temporelle.
+#
+# ❌ Ne fait PAS :
+#   - Ne coupe PAS directement la climatisation
+#   - Ne pilote PAS climate.clim
+#   - Ne déclenche AUCUNE action immédiate
+#   - Ne décide PAS du mode (COOL / DRY / HEAT)
+#
+# 🔍 Spécificité technique :
+#   - Heure uniquement (pas de date)
+#   - Créneau applicable quotidiennement
+#   - La logique de comparaison temporelle
+#     est portée par les capteurs et scripts
+#
+# 🔄 Fonctionnement :
+#   - Les heures sont définies manuellement
+#     via les dashboards de réglage.
+#   - Les composants consommateurs :
+#       • détectent si le blocage est actif
+#       • inhibent les décisions automatiques
+#
+# 🔗 Utilisation :
+#   - Capteurs binaires climatisation :
+#       • Détection du blocage horaire actif
+#   - Scripts de décision centrale :
+#       • Prise en compte du cadre d’interdiction
+#   - Dashboards diagnostics :
+#       • Lecture du créneau configuré
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_datetime)
+#       • Décision (scripts centraux)
+#       • Action réelle (intégration clim)
+#
+# ⚠️ Remarque :
+#   Modifier ces valeurs change le CADRE
+#   de décision, pas l’état immédiat
+#   de la climatisation.
+# ==========================================================
+
+
+clim_heure_blocage_autom_on:
+  name: Début blocage autom. clim
+  has_time: true
+  has_date: false
+  icon: mdi:power-off
+
+clim_heure_blocage_autom_off:
+  name: Fin blocage autom. clim
+  has_time: true
+  has_date: false
+  icon: mdi:power-on

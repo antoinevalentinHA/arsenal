@@ -1,0 +1,54 @@
+# ==========================================================
+# 💧 TEMPLATE BINARY SENSOR — Critère de déshumidification HA Cave (avec hystérésis)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si l’humidité absolue de la cave justifie
+#   l’activation du déshumidificateur.
+#   Ce capteur applique une logique à hystérésis :
+#     • Activation quand HA ≥ seuil ON
+#     • Désactivation quand HA ≤ seuil OFF
+#
+# ⚙️ Fonctionnement :
+#   - Mesure : sensor.humidite_absolue_cave
+#   - Seuils :
+#       • sensor.humidite_absolue_cible_on_cave
+#       • sensor.humidite_absolue_cible_off_cave
+#   - L’état actuel du capteur influence la comparaison
+#     (permet d’éviter les oscillations rapides ON/OFF).
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.critere_deshumidification_ha_cave
+# ==========================================================
+
+- binary_sensor:
+
+    # ------------------------------------------------------
+    # 💨 Critère d’activation du déshumidificateur de cave
+    # ------------------------------------------------------
+    - name: "Critère déshumidification HA cave"
+      unique_id: critere_deshumidification_ha_cave
+      default_entity_id: binary_sensor.critere_deshumidification_ha_cave
+      device_class: moisture
+
+      # --------------------------------------------------
+      # 🧮 Hystérésis basée sur l’humidité absolue
+      # --------------------------------------------------
+      state: >
+        {# --- Lecture des valeurs --- #}
+        {% set ha        = states('sensor.humidite_absolue_cave') | float(0) %}
+        {% set seuil_on  = states('sensor.humidite_absolue_cible_on_cave')  | float(99) %}
+        {% set seuil_off = states('sensor.humidite_absolue_cible_off_cave') | float(0) %}
+
+        {# --- Mémoire d’état actuelle --- #}
+        {% set current_on = is_state(this.entity_id, 'on') %}
+
+        {# --- Hystérésis :
+             - Si déjà ON  → rester ON tant que ha > seuil_off
+             - Si OFF      → s'activer seulement si ha >= seuil_on
+        #}
+        {% if current_on %}
+          {{ ha > seuil_off }}
+        {% else %}
+          {{ ha >= seuil_on }}
+        {% endif %}
+

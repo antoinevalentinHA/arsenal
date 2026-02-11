@@ -1,0 +1,28 @@
+# ==========================================================
+# 🧩 INPUT BOOLEAN — Blocage chauffage après aération (activation système)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Permettre d’activer ou de désactiver la logique complète
+#   de blocage du chauffage après une aération prolongée.
+#
+# ⚙️ Fonctionnement :
+#   - Activé → la logique de blocage post-aération est active.  
+#       Une longue aération entraîne la mise en standby du chauffage  
+#       pendant une durée dépendant de la température extérieure.  
+#   - Désactivé → le système ignore les longues aérations :  
+#       aucune suspension du chauffage n’est appliquée.  
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : Blocage chauffage après aération actif  
+#   - Utilisé par : Automation 10010000000023  
+#   - Icône : mdi:hvac-off
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.blocage_chauffage_aeration_active
+# ==========================================================
+
+
+blocage_chauffage_aeration_active:
+  name: "Blocage chauffage aération actif"
+  icon: mdi:hvac-off

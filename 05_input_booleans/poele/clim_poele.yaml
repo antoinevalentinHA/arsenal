@@ -1,0 +1,35 @@
+# ==========================================================
+# 🔥 INPUT BOOLEAN — Climatisation – Blocage par poêle
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Indique que la climatisation en mode HEAT ne doit pas être
+#   activée car un apport thermique suffisant est fourni par le poêle.
+#
+# 🎯 Principe Arsenal :
+#   - Ce boolean NE DÉTECTE RIEN
+#   - Ce boolean NE DÉCIDE RIEN
+#   - Il est PILOTÉ par une automatisation dédiée (Poêle)
+#   - Il est CONSOMMÉ uniquement par la décision centrale climatisation (mode HEAT)
+#
+# 📌 Contrat logique :
+#   - ON  → clim HEAT bloquée
+#   - OFF → clim libre de fonctionner
+#
+# 🚫 Interdictions :
+#   - Aucune action directe sur la climatisation
+#   - Aucun seuil ou consigne appliqué
+#   - Aucune mémoire longue
+#
+# 🧩 Usage :
+#   - Script clim_decision : lecture du boolean
+#   - Dashboard : affichage de l’état
+#   - Automatisation Poêle : mise à jour
+#
+# ✅ Architecture :
+#   Arsenal V5+
+# ==========================================================
+
+
+blocage_clim_poele:
+  name: "Blocage clim par poele"
+  icon: mdi:fire-off

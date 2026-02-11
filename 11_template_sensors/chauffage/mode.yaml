@@ -1,0 +1,29 @@
+# ==========================================================
+# 🔥 TEMPLATE BINARY SENSOR — Chauffage actif
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si le chauffage ViCare est considéré comme actif,
+#   selon le preset actuel (comfort = actif, sleep = inactif).
+#
+# ⚙️ Fonctionnement :
+#   - ON  → preset_mode == "comfort"
+#   - OFF → preset_mode == "sleep" ou données indisponibles
+#
+# 🧩 Source :
+#   climate.vscotho1_200_11_chauffage
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité : binary_sensor.chauffage_actif
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Chauffage actif"
+      unique_id: chauffage_actif
+      default_entity_id: binary_sensor.chauffage_actif
+
+      state: >
+        {% set preset = state_attr('sensor.programme_chauffage', 'preset_mode')
+                         | default('unknown')
+                         | lower %}
+        {{ preset == 'comfort' }}

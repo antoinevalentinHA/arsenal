@@ -1,0 +1,16 @@
+# ==========================================================
+# 📊 STATISTICS SENSOR — Température extérieure moyenne (24 h)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Calculer la moyenne glissante sur 24 heures de la
+#   température extérieure, pour corrélation avec la
+#   température chaudière moyenne.
+# ==========================================================
+
+- platform: statistics
+  name: "Temperature exterieure moyenne jour"
+  entity_id: sensor.temperature_jardin
+  state_characteristic: mean
+  max_age:
+    hours: 24
+  sampling_size: 300

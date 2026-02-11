@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR :
+#     Jardin – Fin absolue du cycle SOIR
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Déterminer une borne de fin DURE et NON NÉGOCIABLE
+#     du cycle d’éclairage du jardin (soir).
+#
+#     Ce capteur passe à ON lorsque l’on atteint
+#     un instant situé 3 heures AVANT le prochain
+#     lever du soleil.
+#
+#     Il garantit qu’aucun cycle SOIR ne peut
+#     subsister à l’approche du matin, même en cas :
+#       - de redémarrage Home Assistant
+#       - de capteur de mouvement défaillant
+#       - d’extinction manuelle ou matérielle
+#
+# 🧱 NATURE
+#
+#     - Capteur de lecture pure
+#     - Déterministe
+#     - Stateless
+#
+# 📍 ENTITÉ
+#
+#     binary_sensor.jardin_soir_fin_absolue
+# ==========================================================
+
+- binary_sensor:
+    - name: "Jardin – Fin absolue cycle soir"
+      unique_id: jardin_soir_fin_absolue
+      default_entity_id: binary_sensor.jardin_soir_fin_absolue
+      state: >
+        {% set next_rising = state_attr('sun.sun', 'next_rising') %}
+
+        {% if next_rising is none %}
+          false
+        {% else %}
+          {% set lever = as_local(as_datetime(next_rising)) %}
+          {{ now() >= (lever - timedelta(hours=3)) }}
+        {% endif %}

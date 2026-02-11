@@ -1,0 +1,118 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Lave-vaisselle – Détection de fin de cycle
+#
+#  ID : 1008000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de DÉTECTION événementielle.
+#
+#     Elle confirme la fin effective d’un cycle
+#     de lave-vaisselle en constatant une absence
+#     prolongée de consommation électrique,
+#     sous réserve d’une durée minimale de cycle.
+#
+#     Elle marque la sortie de l’état "cycle en cours"
+#     et notifie l’utilisateur.
+#
+#  🧱 NATURE
+#
+#     - Détection technique post-événement
+#     - Confirmation par absence de signal
+#     - Protection contre faux positifs (pause / micro-arrêt)
+#     - Aucune décision métier autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Seuil bas (< 2 W) maintenu 10 minutes
+#     - Vérification que le cycle est actif
+#     - Vérification d’une durée minimale de cycle (≥ 45 min)
+#     - Phase de confirmation :
+#         • surveillance d’une éventuelle reprise (> 5 W)
+#         • délai maximal de 5 minutes
+#     - En l’absence de reprise :
+#         • fin de cycle confirmée
+#         • notification utilisateur
+#         • extinction du flag de suivi
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne pilote pas le lave-vaisselle
+#     - Ne décide pas de la durée d’un cycle
+#     - Ne force pas une fin de cycle
+#     - Ne corrige pas un état incohérent préexistant
+#
+#  🔗 UTILISATION
+#
+#     - Termine explicitement l’état "cycle en cours"
+#     - Sert de signal de sortie aux logiques
+#       de suivi ou d’archivage éventuelles
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1008000000002"
+  alias: "Lave-vaisselle – Détection fin de cycle"
+  description: >
+    Détecte la fin du cycle du lave-vaisselle si la puissance reste basse
+    pendant 10 min. Confirme avec 5 min d’attente sans reprise, puis
+    notifie et désactive l’état de cycle.
+
+  mode: restart
+
+  # ======================================================
+  # 🔔 Déclencheur — Conso < 2 W pendant 10 min
+  # ======================================================
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.prise_lave_vaisselle_power
+      below: 2
+      for: "00:10:00"
+
+  # ======================================================
+  # ✅ Conditions — Flag actif + durée cycle ≥ 45 min
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.lave_vaisselle_cycle
+      state: "on"
+
+    - condition: template
+      value_template: >
+        {% set start = states.input_boolean.lave_vaisselle_cycle.last_changed %}
+        {{ start is not none and (now() - start).total_seconds() > 2700 }}
+
+  # ======================================================
+  # 🔄 Action — Vérification finale + notification + extinction
+  # ======================================================
+  action:
+
+    - alias: "Attente de confirmation"
+      wait_for_trigger:
+        - platform: numeric_state
+          entity_id: sensor.prise_lave_vaisselle_power
+          above: 5
+      timeout: "00:05:00"
+      continue_on_timeout: true
+
+    - choose:
+        - conditions: "{{ wait.trigger is none }}"
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: lave_vaisselle_cycle
+
+            - action: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🍽️ Lave-vaisselle – Cycle terminé"
+                message: >
+                  Le cycle du lave-vaisselle est terminé ✅
+
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.lave_vaisselle_cycle

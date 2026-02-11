@@ -1,0 +1,105 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Relance automatique de l’intégration ViCare sur gel
+#
+#  ID : 1012000000014
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Surveiller la fraîcheur des données issues de l’intégration
+#     Viessmann ViCare et relancer automatiquement celle-ci lorsque
+#     les données restent figées pendant une durée prolongée.
+#
+#     Cette automation vise exclusivement à restaurer un flux
+#     de données bloqué, dans un objectif de résilience système.
+#
+#  🚫 NE FAIT PAS
+#     - Ne pilote pas le chauffage
+#     - Ne modifie aucune consigne, courbe ou état ECS
+#     - Ne force pas la mise à jour des données
+#     - Ne s’exécute pas en mode Vacances
+#     - Ne s’exécute pas en cas de standby chauffage forcé
+#
+#  🧩 UTILISATION
+#     - Surveillance périodique (toutes les 3 heures)
+#     - Condition principale :
+#         • âge des données ViCare ≥ 180 minutes
+#     - Garde-fous contextuels :
+#         • exclusion du mode Vacances
+#         • exclusion du standby chauffage forcé
+#     - Action :
+#         • reload de la config_entry ViCare
+#     - Vérification post-reload et notification explicite
+#       selon succès ou échec
+#
+#  ✅ CONTRAINTES
+#     - Aucune logique métier chauffage intégrée
+#     - Aucune interaction avec les décisions thermiques
+#     - Comportement déterministe et stable après redémarrage HA
+# ==========================================================
+
+
+- id: "1012000000014"
+  alias: "Chauffage – Relance ViCare (auto)"
+  description: >
+    Relance Viessmann uniquement si aucune donnée n’a été mise à jour
+    depuis plus de 3 heures. Vérifie chaque heure, notifie le résultat,
+    et s’interrompt en mode Vacances ou standby forcé.
+
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: time_pattern
+      hours: "/3"
+
+  condition:
+    - condition: template
+      alias: Données figées depuis 3 h
+      value_template: >
+        {{ states('sensor.vicare_age_donnees') | float(0) >= 180 }}
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: input_select.mode_maison
+          state: "Vacances"
+        - condition: state
+          entity_id: input_boolean.chauffage_standby_force
+          state: "on"
+
+  action:
+    # ======================================================
+    # 🔧 Reload ViCare
+    # ======================================================
+    - service: homeassistant.reload_config_entry
+      data:
+        entry_id: !secret vicare_entry_id
+
+    - delay: "00:02:00"
+
+    - choose:
+
+        # =======================
+        #  ✅ Succès relance
+        # =======================
+        - conditions: >
+            {{ states('sensor.vicare_age_donnees') | float(999) < 10 }}
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "✅ ViCare relancé"
+                message: >
+                  {{ now().strftime('%d/%m %H:%M') }} — Intégration ViCare relancée
+                  avec succès, données à nouveau fraîches.
+
+      # =======================
+      #  ❌ Échec relance
+      # =======================
+      default:
+        - service: script.notification_envoyer
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "⚠️ ViCare toujours figé"
+            message: >
+              {{ now().strftime('%d/%m %H:%M') }} — Tentative de relance échouée.
+              Les données n’ont pas été mises à jour après 2 minutes.

@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : ECS – Température cible (session)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker la TEMPÉRATURE CIBLE utilisée temporairement
+#   pendant une SESSION de cycle ECS en cours.
+#
+# 🧱 Nature :
+#   - Variable de session persistante
+#   - Mémoire transitoire de travail
+#
+# 🚫 Ne fait PAS :
+#   - Ne définit pas la consigne ECS globale
+#   - Ne pilote pas directement la chaudière
+#   - Ne déclenche aucun cycle ECS
+#   - Ne constitue pas une configuration durable
+#
+# 🔗 Utilisation :
+#   - Script :
+#       09_scripts/vicare/ecs/cycle.yaml
+#     → lecture / écriture pendant la session ECS
+#
+# 🧠 Principe ARSENAL :
+#   - La consigne durable est définie ailleurs
+#   - La session ECS peut utiliser des valeurs temporaires
+#
+# ⚠️ Sémantique :
+#   - Valeur valable UNIQUEMENT pendant la session active
+#   - Hors session, ce champ est inerte
+# ==========================================================
+
+
+ecs_target_temp_session:
+  name: ECS Target Temp (session)
+  max: 5

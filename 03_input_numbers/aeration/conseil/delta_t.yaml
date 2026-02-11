@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Seuils thermiques d’aération
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir les conditions thermiques minimales requises
+#    pour autoriser une aération, selon la saison.
+#
+# 🧠 Lecture métier :
+#    Ces seuils sont lus en temps réel par les capteurs
+#    binaires d’aération (RDC et étage).
+#    Ils conditionnent l’autorisation d’aérer sur des
+#    critères purement thermiques.
+#
+# 🌡️ Niveaux définis :
+#    - Écart T° ext < int :
+#        → garde-fou global (aération utile uniquement)
+#    - ΔT minimal hiver :
+#        → exigence renforcée (préservation chauffage)
+#    - ΔT minimal inter-saison :
+#        → compromis confort / efficacité
+#
+# 🔗 Dépendances :
+#    - Binary sensors aération (RDC / étage)
+#    - Dashboards réglages aération
+#    - UI avancée (button-card templates)
+#
+# 🚫 Interdits :
+#    - Les utiliser comme indicateurs visuels simples
+#    - Les confondre avec des valeurs de référence internes
+#    - Les modifier sans compréhension de l’impact global
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - seuils décisionnels actifs (thermique)
+# ==========================================================
+
+
+aeration_seuil_ecart_temperature_min:
+  name: Écart T° min extérieur < intérieur
+  min: 0.1
+  max: 5
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+
+aeration_delta_t_min_hiver:
+  name: Aeration ΔT min (hiver)
+  min: 0
+  max: 10
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+aeration_delta_t_min_inter:
+  name: Aeration ΔT min (inter-saison)
+  min: 0
+  max: 10
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up

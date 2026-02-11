@@ -1,0 +1,32 @@
+# ==========================================================
+# 🚗 TEMPLATE TRIGGERED SENSOR — Audi e-tron (État de charge)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser la donnée `sensor.audi_a3_sportback_e_tron_charging_state`
+#   en conservant la dernière valeur connue si l’intégration Audi
+#   renvoie une valeur invalide ou indisponible.
+#
+# ⚙️ Fonctionnement :
+#   - Mise à jour à chaque changement du capteur source.
+#   - Réévaluation au démarrage de Home Assistant.
+#   - Si donnée valide → reprise directe.
+#   - Sinon → conservation de la dernière valeur connue.
+#
+# 🧮 Source : sensor.audi_a3_sportback_e_tron_charging_state
+# 📊 Type : Trigger Template Sensor
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.audi_a3_sportback_e_tron_charging_state
+
+  sensor:
+    - name: "Audi e-tron – État de charge (Local)"
+      unique_id: audi_a3_sportback_e_tron_charging_state_local
+      state: >
+        {% set s = states('sensor.audi_a3_sportback_e_tron_charging_state') %}
+        {% if s not in ['unknown','unavailable','none',''] %}
+          {{ s }}
+        {% else %}
+          {{ this.state | default('Inconnu') }}
+        {% endif %}

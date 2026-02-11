@@ -1,0 +1,67 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Cibles RH cave (ON / OFF)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir les seuils d’humidité relative servant
+#    à piloter le déshumidificateur de la cave
+#    avec une hystérésis explicite.
+#
+# 🧩 Principe :
+#    - cave_rh_cible_on  :
+#        → seuil de DÉCLENCHEMENT
+#    - cave_rh_cible_off :
+#        → seuil d’EXTINCTION
+#
+#    Les deux valeurs forment une bande morte
+#    volontaire pour éviter tout pompage.
+#
+# ⚙️ Fonctionnement :
+#    - Comparés à l’humidité relative mesurée en cave
+#    - Utilisés par les binary_sensors décisionnels
+#    - Exploités indirectement pour le calcul
+#      des seuils d’humidité absolue équivalents
+#
+# 🔁 Effet recherché :
+#    - Régulation stable et lisible
+#    - Cycles longs et maîtrisés
+#    - Protection du matériel
+#
+# 🔍 Utilisation :
+#    - Binary sensors :
+#        • deshumidificateur/logique.yaml
+#        • deshumidificateur/criteres/humidite_relative.yaml
+#    - Template sensors :
+#        • meteo/mesures/humidite_absolue/cave_seuils.yaml
+#    - Dashboards :
+#        • réglages
+#        • diagnostics déshumidificateur
+#
+# 🚫 Ne pas confondre avec :
+#    - Humidité absolue
+#    - Seuils météo extérieurs
+#    - Recommandations d’aération
+#
+# 📐 Unité :
+#    - % (humidité relative)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Régulation déshumidification cave
+# ==========================================================
+
+
+cave_rh_cible_on:
+  name: Cave - RH cible ON
+  min: 60
+  max: 85
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:target
+
+cave_rh_cible_off:
+  name: Cave - RH cible OFF
+  min: 65
+  max: 80
+  step: 1
+  unit_of_measurement: "%"
+  icon: mdi:target-variant

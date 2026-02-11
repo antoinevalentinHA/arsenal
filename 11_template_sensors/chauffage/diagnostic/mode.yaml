@@ -1,0 +1,113 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (DIAGNOSTIC)
+#     Chauffage – Mode calculé (diagnostic)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Recalculer le mode de chauffage ATTENDU
+#   à partir des faits bruts du système,
+#   afin de :
+#     - diagnostiquer la décision centrale
+#     - détecter toute inversion de priorité
+#     - analyser les cas limites (absence / présence / blocages)
+#
+# 🧩 STATUT ARCHITECTURAL
+#   - Capteur de DIAGNOSTIC UNIQUEMENT
+#   - N’est PAS une source de vérité
+#   - N’est JAMAIS consommé par une automation
+#   - Peut volontairement dupliquer une logique métier
+#
+# ⚠️ RÈGLE ABSOLUE
+#   Toute divergence entre ce capteur et :
+#     - le comportement réel de la Décision Centrale
+#   doit être analysée comme :
+#     → bug
+#     → court-circuit
+#     → priorité mal ordonnée
+#
+# ----------------------------------------------------------
+# 🔎 LOGIQUE (ALIGNEMENT CONTRAT V3 PRO)
+#
+#   - Override opérateur (`mode_confort_chauffage`) :
+#       → Confort (priorité souveraine)
+#
+#   - Blocages hiérarchiques (hors override) :
+#       → Eco
+#
+#   - Présence :
+#       → Confort / Neutre / Eco selon `chauffage_autorisation_cible`
+#       (autorisation, jamais décision autonome)
+#
+#   - Absence (hors override) :
+#       → Confort uniquement si inhibition géofencing active
+#       → Sinon Eco
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#   - Ne pilote aucun verrou
+#   - Ne modifie aucune consigne
+#   - Ne déclenche aucune action
+#
+# ----------------------------------------------------------
+# ✅ SORTIE (DIAGNOSTIC)
+#   - "Confort"
+#   - "Eco"
+#   - "Neutre"
+#
+# ==========================================================
+
+- sensor:
+    - name: "Chauffage mode calcule"
+      unique_id: chauffage_mode_calcule
+      icon: mdi:brain
+      state: >
+
+        {# ==================================================
+           1. OVERRIDE OPÉRATEUR — PRIORITÉ SOUVERAINE
+           ================================================== #}
+        {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
+          Confort
+
+        {# ==================================================
+           2. BLOCAGES HIÉRARCHIQUES (HORS OVERRIDE)
+           ================================================== #}
+        {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
+          Eco
+        {% elif is_state('input_boolean.aeration_episode_en_cours', 'on') %}
+          Eco
+        {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+          Eco
+        {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
+          Eco
+        {% elif is_state('input_select.mode_maison', 'Vacances') %}
+          Eco
+        {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
+          Eco
+
+        {# ==================================================
+           3. RÉGIME PRÉSENCE — AUTORISATION THERMIQUE
+           ================================================== #}
+        {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+
+          {% set cible = states('sensor.chauffage_autorisation_cible') %}
+
+          {% if cible == 'comfort' %}
+            Confort
+          {% elif cible == 'neutre' %}
+            Neutre
+          {% else %}
+            Eco
+          {% endif %}
+
+        {# ==================================================
+           4. RÉGIME ABSENCE — PROTECTION THERMIQUE
+           ================================================== #}
+        {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
+          Confort
+
+        {# ==================================================
+           5. ABSENCE — SOBRIÉTÉ NOMINALE
+           ================================================== #}
+        {% else %}
+          Eco
+        {% endif %}

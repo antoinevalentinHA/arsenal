@@ -1,0 +1,53 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+title: Météo Publique
+views:
+  - title: Météo Publique
+    path: meteo_publique
+    icon: mdi:server
+
+    badges: !include ../../includes/badges/base.yaml
+
+    # ======================================================
+    # 🌤️ CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    # ======================================================
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          # ------------------------------------------------------
+          # 🧭 Navigation météo
+          # ------------------------------------------------------
+          - !include ../../includes/navigation/meteo.yaml
+
+          # ======================================================
+          # 🕒 PRÉVISIONS 8 HEURES
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🕒 Prévisions 8 heures
+
+          - show_current: false
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.forecast_maison
+            forecast_type: hourly
+            forecast_slots: 8
+
+          # ======================================================
+          # 📅 PRÉVISIONS 6 JOURS
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📅 Prévisions 6 jours
+
+          - show_current: true
+            show_forecast: true
+            type: weather-forecast
+            entity: weather.forecast_maison
+            forecast_type: daily
+            forecast_slots: 10

@@ -1,0 +1,32 @@
+# ==========================================================
+#  INPUT BOOLEAN — Volets : autorisation fermeture par pluie
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Verrou d’autorisation permettant ou interdisant
+#     la fermeture automatique des volets lors
+#     d’un épisode de pluie détecté.
+#
+#     Ce helper ne détecte PAS la pluie
+#     et ne décide PAS du moment d’action.
+#
+#  🔓 Contrat logique :
+#     - ON  : la pluie est autorisée à déclencher
+#             une fermeture automatique des volets
+#     - OFF : la pluie n’a aucun effet sur les volets
+#
+#  📥 Pilotage :
+#     - Manuel (réglages utilisateur)
+#
+#  📤 Consommation :
+#     - script.meteo_pluie
+#
+#  🧱 Principe Arsenal :
+#     - La météo exprime un fait
+#     - Les scripts décident
+#     - Les booléens autorisent ou interdisent
+# ==========================================================
+
+
+fermeture_volets_pluie:
+  name: Fermeture volets pluie
+  icon: mdi:weather-pouring

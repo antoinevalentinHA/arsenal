@@ -1,0 +1,89 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Lave-vaisselle – Détection de début de cycle
+#
+#  ID : 1008000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de DÉTECTION événementielle.
+#
+#     Elle identifie le démarrage effectif d’un cycle
+#     de lave-vaisselle à partir d’un signal physique
+#     mesuré (consommation électrique prolongée).
+#
+#     Elle marque l’entrée en état "cycle en cours"
+#     et notifie l’utilisateur.
+#
+#  🧱 NATURE
+#
+#     - Détection technique
+#     - Basée sur un seuil physique mesuré
+#     - Aucune logique métier de décision
+#
+#  ⚙️ PRINCIPE
+#
+#     - Surconsommation > 30 W maintenue 3 minutes
+#     - Vérification que le cycle n’est pas déjà actif
+#     - Activation d’un flag binaire de suivi
+#     - Notification persistante
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne pilote pas le lave-vaisselle
+#     - Ne décide pas du déroulement du cycle
+#     - Ne calcule aucune durée de fonctionnement
+#     - Ne détecte pas la fin de cycle
+#
+#  🔗 UTILISATION
+#
+#     - Initialise l’état "cycle en cours"
+#     - Sert de point d’entrée aux automatisations
+#       de suivi et de fin de cycle
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1008000000001"
+  alias: "Lave-vaisselle – Détection début de cycle"
+  description: >
+    Détecte le début de cycle du lave-vaisselle via seuil
+    de consommation (30 W pendant 3 min). Active un flag
+    et affiche une notification persistante.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Surconsommation prolongée
+  # ======================================================
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.prise_lave_vaisselle_power
+      above: 30
+      for: "00:03:00"
+
+  # ======================================================
+  # ✅ Condition — Cycle inactif
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.lave_vaisselle_cycle
+      state: "off"
+
+  # ======================================================
+  # 🔄 Action — Flag ON + notification
+  # ======================================================
+  action:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.lave_vaisselle_cycle
+
+    - action: persistent_notification.create
+      data:
+        title: "🍽️ Lave-vaisselle – Cycle en cours"
+        message: >
+          Le lave-vaisselle est actuellement en fonctionnement.
+        notification_id: lave_vaisselle_cycle

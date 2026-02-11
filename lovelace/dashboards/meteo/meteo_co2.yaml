@@ -1,0 +1,93 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+title: CO2
+views:
+  - title: CO2
+    path: co2
+    icon: mdi:server
+
+    badges: !include ../../includes/badges/base.yaml
+
+    # ======================================================
+    # 🫁 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    # ======================================================
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          # ------------------------------------------------------
+          # 🧭 Navigation météo / qualité air
+          # ------------------------------------------------------
+          - !include ../../includes/navigation/meteo.yaml
+
+          # ======================================================
+          # 🏠 RDC
+          # ======================================================
+          - !include ../../includes/section_headers/rdc.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - type: custom:button-card
+                template: carte_co2_seuils_variables
+                entity: sensor.co2_entree
+                name: Entrée
+                variables:
+                  seuil_warn: 500
+                  seuil_crit: 800
+
+              - type: custom:button-card
+                template: carte_co2_seuils_variables
+                entity: sensor.co2_sejour
+                name: Séjour
+                variables:
+                  seuil_warn: 500
+                  seuil_crit: 800
+
+          # ======================================================
+          # 🛏️ CHAMBRES
+          # ======================================================
+          - !include ../../includes/section_headers/chambres.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - type: custom:button-card
+                template: carte_co2_seuils_variables
+                entity: sensor.co2_chambre_arnaud
+                name: Arnaud
+                variables:
+                  seuil_warn: 500
+                  seuil_crit: 800
+
+              - type: custom:button-card
+                template: carte_co2_seuils_variables
+                entity: sensor.co2_chambre_matthieu
+                name: Matthieu
+                variables:
+                  seuil_warn: 500
+                  seuil_crit: 800
+
+              - type: custom:button-card
+                template: carte_co2_seuils_variables
+                entity: sensor.co2_chambre_parents
+                name: Parents
+                variables:
+                  seuil_warn: 500
+                  seuil_crit: 800
+
+              - type: custom:button-card
+                template: carte_co2_seuils_variables
+                entity: sensor.co2_petite_maison
+                name: Petite Maison
+                variables:
+                  seuil_warn: 600
+                  seuil_crit: 1000

@@ -1,0 +1,123 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Gardien permanent de la consigne hors cycle
+#
+#  ID : 10250000000006
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Garantir que la consigne ECS reste fixée à la valeur
+#     de sécurité (10 °C) en dehors de tout cycle ECS en
+#     cours ou planifié.
+#
+#     Cette automation agit comme un gardien permanent,
+#     chargé de détecter et corriger toute dérive de
+#     consigne hors fenêtres autorisées.
+#
+#  🧱 PRINCIPE ARSENAL
+#     - Les cycles ECS décident quand chauffer
+#     - Hors cycle, la consigne doit rester minimale
+#     - Le gardien vérifie et corrige silencieusement
+#
+#  🚫 NE FAIT PAS
+#     - Ne déclenche aucun cycle ECS
+#     - Ne modifie pas la planification ECS
+#     - Ne corrige jamais pendant un cycle en cours
+#     - Ne dépend pas des états cloud ViCare
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • changement de la consigne ECS chaudière
+#         • stabilisation post-démarrage du système
+#     - Conditions :
+#         • aucun cycle ECS actif ou verrouillé
+#         • hors créneaux ECS planifiés (matin / soir)
+#         • consigne effective différente de 10 °C
+#     - Séquence :
+#         • temporisation courte de stabilisation
+#         • application de la consigne 10 °C
+#         • vérification réelle après délai
+#         • seconde tentative si nécessaire
+#         • relance du timer de surveillance
+#
+#  ⚠️ IMPORTANT
+#     - Cette automation est un garde-fou de sécurité
+#     - Toute modification de la valeur cible ou des
+#       créneaux ECS doit être décidée ailleurs
+#
+#  ✅ CONTRAINTES
+#     - Correction silencieuse et idempotente
+#     - Aucune action en période légitime de chauffe ECS
+#     - Robustesse indépendante du cloud
+# ==========================================================
+
+
+- id: "10250000000006"
+  alias: "ECS – Gardien consigne hors cycle"
+  description: >
+    Maintient la consigne ECS à 10 °C hors cycle planifié ou en cours.
+    Vérifie et corrige silencieusement toute dérive de consigne.
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: number.vscotho1_200_11_dhw_temperature
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: template
+      value_template: >
+        {% set cons = states('sensor.ecs_consigne_chaudiere_securisee') | float(0) %}
+        {% set running = is_state('script.chauffage_ecs_cycle','on') %}
+        {% set verrou = is_state('input_boolean.ecs_cycle_en_cours','on') %}
+        {% set d = now().strftime('%A') | lower %}
+        {% set hm = now().strftime('%H:%M') %}
+        {% set matin = states('input_datetime.ecs_' ~ d ~ '_matin_heure')[0:5] %}
+        {% set soir  = states('input_datetime.ecs_' ~ d ~ '_soir_heure')[0:5] %}
+        {% set target_times = [matin, soir] | reject('in', ['unknown','unavailable','']) | list %}
+        {{ cons != 10 and (not running) and (not verrou)
+           and not (hm in target_times) }}
+
+  action:
+    # 🕐 Temporisation initiale (stabilisation post-démarrage)
+    - delay:
+        seconds: 3
+
+    - variables:
+        retour_temp: 10
+        number_setpoint: number.vscotho1_200_11_dhw_temperature
+        sensor_consigne: sensor.ecs_consigne_chaudiere_securisee
+
+    # 1️⃣ Correction de la consigne
+    - service: number.set_value
+      continue_on_error: true
+      target:
+        entity_id: "{{ number_setpoint }}"
+      data:
+        value: "{{ retour_temp }}"
+
+    # 2️⃣ Vérification (1 tentative après 15 s)
+    - delay:
+        seconds: 15
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states(sensor_consigne) | float(0) == retour_temp }}
+          sequence: []
+
+      default:
+        - service: number.set_value
+          continue_on_error: true
+          target:
+            entity_id: "{{ number_setpoint }}"
+          data:
+            value: "{{ retour_temp }}"
+
+    # 3️⃣ Redémarrage du timer de surveillance
+    - service: timer.start
+      target:
+        entity_id: timer.ecs_gardien_consigne_verification

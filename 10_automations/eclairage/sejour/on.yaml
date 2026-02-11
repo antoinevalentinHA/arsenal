@@ -1,0 +1,102 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Séjour – Allumage immédiat par présence (périodes sombres)
+#
+#  ID : 10070000000014
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’allumage réactif par présence locale.
+#
+#     Elle alimente la lampe du séjour dès qu’un mouvement
+#     est détecté, uniquement si :
+#       • l’automatisme est autorisé
+#       • la lampe est actuellement éteinte
+#       • la période lumineuse est défavorable
+#
+#     Cette automation agit directement sur le matériel.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement immédiat sur détection de mouvement
+#     - Vérification d’une autorisation utilisateur
+#     - Vérification d’un état matériel (lampe OFF)
+#     - Restriction temporelle basée sur la période lumineuse
+#     - Allumage direct de la prise concernée
+#
+#     Aucune temporisation.
+#     Aucune logique de maintien.
+#
+#  🧠 SOURCE D’ÉVÉNEMENT
+#
+#     - binary_sensor.capteur_mouvements_sejour_1_occupancy
+#     - binary_sensor.capteur_mouvements_sejour_2_occupancy
+#
+#     → événements physiques locaux
+#
+#  🧠 AUTORISATION
+#
+#     input_boolean.sejour_auto_light
+#
+#     → autorisation globale de l’allumage automatique
+#
+#  🧠 CONTEXTE LUMINEUX
+#
+#     sensor.periode_meteo
+#
+#     → filtre de période :
+#       crépuscule / nuit / aube
+#
+#  🧠 ACTION DIRECTE
+#
+#     switch.prise_lampe_sejour
+#
+#     → alimentation électrique de la lampe du séjour
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - N’éteint JAMAIS la lampe
+#     - Ne gère AUCUNE temporisation
+#     - Ne maintient AUCUN état logique
+#     - Ne décide PAS d’une ambiance
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation d’entrée immédiate conditionnée :
+#     événement ≠ durée ≠ scénario.
+#
+#     Elle privilégie la réactivité,
+#     complétée par une extinction temporisée
+#     gérée séparément.
+# ==========================================================
+
+
+- id: "10070000000014"
+  alias: "Séjour - Allumage auto"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_mouvements_sejour_1_occupancy
+        - binary_sensor.capteur_mouvements_sejour_2_occupancy
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.sejour_auto_light
+      state: "on"
+
+    - condition: state
+      entity_id: switch.prise_lampe_sejour
+      state: "off"
+
+    - condition: template
+      value_template: >
+        {{ states('sensor.periode_meteo') in ['crepuscule', 'nuit', 'aube'] }}
+
+  action:
+    - alias: "Allumer la lumière du séjour"
+      action: switch.turn_on
+      target:
+        entity_id: switch.prise_lampe_sejour

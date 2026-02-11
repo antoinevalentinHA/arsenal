@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : ECS – Dernier ajustement offset
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker la TRACE du dernier ajustement automatique
+#   des offsets ECS (bucket, valeurs avant/après, erreur).
+#
+# 🧱 Nature :
+#   - Journal événementiel (1 entrée)
+#   - Mémoire dérivée post-action
+#
+# 🚫 Ne fait PAS :
+#   - Ne déclenche aucun ajustement
+#   - Ne modifie aucune consigne ECS
+#   - Ne pilote pas la chaudière
+#   - Ne constitue pas un historique
+#
+# 💡 Avantages :
+#   - Persistance au reboot
+#   - Lisibilité sur le dashboard ECS
+#   - Suffisant avec la limite des 255 caractères
+#
+# 📏 Contenu attendu :
+#   Ex. "28/11 07:12 • Désinfection • 2.1→2.4 • Err +1.2°C"
+# ==========================================================
+
+
+ecs_dernier_ajustement:
+  name: ecs_dernier_ajustement
+  max: 255

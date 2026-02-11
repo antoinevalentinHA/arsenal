@@ -1,0 +1,13 @@
+- platform: statistics
+  name: temperature_stats_12h_mean_chambre_matthieu
+  entity_id: sensor.temperature_chambre_matthieu
+  state_characteristic: mean
+  max_age:
+    hours: 12
+
+- platform: statistics
+  name: temperature_stats_12h_variance_chambre_matthieu
+  entity_id: sensor.temperature_chambre_matthieu
+  state_characteristic: variance
+  max_age:
+    hours: 12

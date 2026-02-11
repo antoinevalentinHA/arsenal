@@ -1,0 +1,178 @@
+#################################################################
+# 🧭 NAVIGATION — TEMPLATES UI
+#################################################################
+#
+# 🧠 Rôle :
+#   Templates button-card dédiés à la navigation entre
+#   dashboards et vues Lovelace.
+#
+# 🎯 Objectifs :
+#   - Fournir une navigation claire, rapide et cohérente
+#   - Centraliser les styles des boutons de navigation
+#   - Permettre des variantes dynamiques pilotées par état
+#
+# 🧩 Principe Arsenal :
+#   - Aucune logique métier
+#   - Aucune décision
+#   - Navigation explicite uniquement
+#
+# ⚙️ Typologies :
+#   - Boutons fixes :
+#       • Accueil
+#       • Paramètres
+#       • Diagnostics
+#   - Boutons génériques :
+#       • navigation simple
+#   - Boutons dynamiques :
+#       • couleur pilotée par un capteur d’état externe
+#
+# 🎨 Codes couleur (dynamique) :
+#   - alert    → rouge
+#   - normal   → bleu
+#   - confort  → vert
+#   - eco      → bleu clair
+#   - standby  → gris
+#   - off      → gris
+#
+# 🧪 Robustesse :
+#   - Fallback visuel en cas d’état manquant
+#   - Aucun impact fonctionnel en cas d’erreur UI
+#
+#################################################################
+
+#################################################################
+# 🧭 BOUTONS DE NAVIGATION — ACCÈS DIRECTS
+# ---------------------------------------------------------------
+# Boutons fixes vers les dashboards principaux.
+#################################################################
+
+bouton_accueil_badge_carre:
+  template: bouton_navigation_base
+  name: Accueil
+  icon: mdi:home
+  tap_action:
+    action: navigate
+    navigation_path: /arsenal-dashboard/arsenal
+  styles:
+    card:
+      - border-radius: 12px
+
+bouton_navigation_badge_carre:
+  template: bouton_navigation_base
+  name: Navigation
+  icon: mdi:apps
+  tap_action:
+    action: navigate
+    navigation_path: /navigation-dashboard/home
+  styles:
+    card:
+      - border-radius: 12px
+
+bouton_retour_badge_carre:
+  template: bouton_navigation_base
+  icon: mdi:arrow-left
+  tap_action:
+    action: navigate
+    navigation_path: /arsenal-dashboard/arsenal
+  styles:
+    card:
+      - border-radius: 12px
+
+bouton_parametres_badge_carre:
+  template: bouton_navigation_base
+  name: Paramètres
+  icon: mdi:cog
+  tap_action:
+    action: navigate
+    navigation_path: /dashboard-reglages/0
+  styles:
+    card:
+      - border-radius: 12px
+
+bouton_diagnostics_badge_carre:
+  template: bouton_navigation_base
+  name: Diagnostics
+  icon: mdi:stethoscope
+  tap_action:
+    action: navigate
+    navigation_path: /diagnostics-dashboard/diagnostics
+  styles:
+    card:
+      - border-radius: 12px
+
+#################################################################
+# 🔁 BOUTONS DE NAVIGATION — GÉNÉRIQUES
+# ---------------------------------------------------------------
+# Boutons de navigation simples, non contextualisés.
+#################################################################
+
+bouton_navigation:
+  show_icon: true
+  show_state: false
+  show_name: true
+  color_type: card
+  tap_action:
+    action: navigate
+  styles:
+    card:
+      - border-radius: 12px
+      - padding: 8px
+      - height: 72px
+      - box-shadow: var(--ha-card-box-shadow)
+      - background-color: "#F5F5F5"
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: "#111"
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: "#111"
+
+bouton_navigation_dynamique:
+  show_icon: true
+  show_state: false
+  show_name: true
+  color_type: card
+  tap_action:
+    action: navigate
+
+  styles:
+    card:
+      - border-radius: 12px
+      - padding: 8px
+      - height: 72px
+      - box-shadow: var(--ha-card-box-shadow)
+      - background-color: "#F5F5F5"
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: >
+          [[[
+            const sensor = variables?.etat_dashboard;
+            if (!sensor || !states[sensor]) {
+              return "#9E9E9E";  // fallback gris
+            }
+
+            const st = states[sensor].state;
+
+            // ------------------------------------------------------
+            // 🎨 Palette centrale : 1 seul mapping universel
+            // ------------------------------------------------------
+            const map = {
+              alert:   "#FF0000",   // rouge
+              normal:  "#1976D2",   // bleu modes normal
+              confort: "#4CAF50",   // vert
+              eco:     "#2196F3",   // bleu clair
+              standby: "#9E9E9E",   // gris
+              off:     "#9E9E9E"    // gris
+            };
+
+            return map[st] ?? "#9E9E9E";
+          ]]]
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: "#111"

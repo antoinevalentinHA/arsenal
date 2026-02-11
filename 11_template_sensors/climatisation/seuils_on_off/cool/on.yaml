@@ -1,0 +1,48 @@
+# ==========================================================
+# 🌡️ TRIGGERED TEMPLATE SENSOR — Seuil d’allumage clim appliqué
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer dynamiquement le seuil de température à partir duquel
+#   la climatisation (mode COOL) doit s’allumer, selon la présence ou
+#   l’absence de la famille.
+#
+# ⚙️ Fonctionnement :
+#   - Si présence détectée → seuil = input_number.clim_seuil_declenchement_presence
+#   - Si absence détectée  → seuil = input_number.clim_seuil_declenchement_absence
+#   - Actualisation automatique à chaque changement de présence ou helper
+#
+# 🧠 Détails techniques :
+#   - Unité        : °C
+#   - Icône        : mdi:thermometer-chevron-up
+#   - Attributs    :
+#       • mode_actif → "Présence" ou "Absence"
+#
+# 📊 Type : Triggered Template Sensor
+# 📍 Entité : sensor.seuil_allumage_clim_applique
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.presence_famille_unifiee
+        - input_number.clim_seuil_declenchement_presence
+        - input_number.clim_seuil_declenchement_absence
+
+  sensor:
+    - name: "Seuil allumage clim appliqué"
+      unique_id: seuil_allumage_clim_applique
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-chevron-up
+      state: >
+        {% if is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+          {{ states('input_number.clim_seuil_declenchement_presence') | float(0) }}
+        {% else %}
+          {{ states('input_number.clim_seuil_declenchement_absence') | float(0) }}
+        {% endif %}
+      attributes:
+        mode_actif: >
+          {% if is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+            Présence
+          {% else %}
+            Absence
+          {% endif %}

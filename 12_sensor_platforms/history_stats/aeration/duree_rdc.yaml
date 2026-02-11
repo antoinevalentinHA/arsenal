@@ -1,0 +1,33 @@
+# ==========================================================
+#  HISTORY STATS SENSOR — Temps d’aération RDC
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Calcule la durée totale pendant laquelle les fenêtres
+#     du rez-de-chaussée sont restées ouvertes
+#     depuis le début de la journée.
+#
+#  ⚙️ Composant : `platform: history_stats`
+#     - Exploite l’historique de Home Assistant.
+#     - Calcule le **temps cumulé** passé dans un état spécifique.
+#
+#  🧩 Entrée :
+#     - `binary_sensor.fenetre_ouverte_rdc`
+#       → Capteur regroupé des ouvertures au RDC.
+#
+#  📅 Fenêtre d’analyse :
+#     - Début : minuit (00:00:00)
+#     - Fin : instant présent
+#
+#  📊 Sortie :
+#     - Valeur en **heures** (durée cumulée des ouvertures)
+#
+#  ✅ Mise à jour continue à chaque changement d’état
+# ==========================================================
+
+- platform: history_stats
+  name: "Durée aération RDC"
+  entity_id: binary_sensor.fenetre_ouverte_rdc
+  state: "on"                                   # État à mesurer (fenêtres ouvertes)
+  type: time                                    # Mesure du temps cumulé dans cet état
+  start: "{{ now().replace(hour=0, minute=0, second=0) }}"  # Début de journée (minuit)
+  end: "{{ now() }}"                            # Jusqu'à l’instant actuel

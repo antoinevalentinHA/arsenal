@@ -1,0 +1,63 @@
+#################################################################
+# 💧 DÉSHUMIDIFICATEUR — DÉCISION LOGIQUE
+# ---------------------------------------------------------------
+# Expose la décision logique de démarrage du déshumidificateur
+# de la cave, telle que calculée par le système.
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture seule
+#   - Aucune action utilisateur
+#   - Traduction humaine de la décision métier
+#################################################################
+
+carte_deshumidificateur_decision_logique:
+  template: carte_base
+
+  entity: binary_sensor.deshumidificateur_cave_demarrage_recommande
+
+  show_state: true
+  show_name: true
+  show_label: false
+  show_icon: true
+  color_type: card
+
+  icon: mdi:play-circle
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state:
+    - value: 'on'
+      state_display: Recommandé
+    - value: 'off'
+      state_display: Non recommandé
+    - value: unavailable
+      state_display: Indisponible
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const st = entity.state;
+            if (st === 'on')  return "rgba(76, 175, 80, 0.2)";   // 🟢 recommandé
+            if (st === 'off') return "rgba(158, 158, 158, 0.2)"; // ⚪ non recommandé
+            return "rgba(244, 67, 54, 0.2)";                     // 🔴 indisponible
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: rgba(0, 0, 0, 0.6)
+      - text-transform: capitalize

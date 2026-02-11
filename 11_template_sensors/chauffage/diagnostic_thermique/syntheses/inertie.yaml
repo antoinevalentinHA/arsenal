@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR — DIAGNOSTIC CHAUFFAGE : INERTIE
+#     Synthèse indicative — Refroidissement réel (présence)
+# ----------------------------------------------------------
+# Domaine : Chauffage / Diagnostic thermique / Synthèses
+# Couche  : Diagnostic (texte) — UI
+# Statut  : DIAGNOSTIC — LECTURE UNIQUEMENT
+#
+# 🎯 Rôle :
+#   Publier un état textuel indicatif d’inertie / isolation
+#   à partir de la vitesse réelle de refroidissement en présence.
+#
+# 🔗 Dépendances (lecture) :
+#   - sensor.vitesse_refroidissement_presence_chambres
+#
+# 🚫 Interdits :
+#   - Aucun service, aucune action, aucune écriture d’entité
+#   - Aucune autorisation, aucun blocage, aucune décision centrale
+#
+# ==========================================================
+
+- sensor:
+    - name: Diagnostic chauffage inertie
+      unique_id: diagnostic_chauffage_inertie
+      state: >-
+        {%- set v_refroid = states('sensor.vitesse_refroidissement_presence_chambres') | float(none) -%}
+        {%- set txt = none -%}
+        {%- if v_refroid is not none -%}
+          {%- if v_refroid < -0.5 -%}{%- set txt = 'Bâtiment très dissipatif' -%}
+          {%- elif v_refroid < -0.25 -%}{%- set txt = 'Dissipation normale' -%}
+          {%- else -%}{%- set txt = 'Très bonne inertie / isolation' -%}
+          {%- endif -%}
+        {%- endif -%}
+        {{- txt if txt is not none else '' -}}

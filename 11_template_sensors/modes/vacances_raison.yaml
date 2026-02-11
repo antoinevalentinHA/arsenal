@@ -1,0 +1,28 @@
+# ==========================================================
+# 🧠 TEMPLATE SENSOR — Vacances : raison
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Expliquer clairement pourquoi les vacances
+#   sont actives ou bloquées.
+#
+# 🥇 Priorité :
+#   1. Mode maison non Vacances
+#   2. Présence famille
+#   3. Visite en cours
+#   4. Vacances actives
+# ==========================================================
+
+- sensor:
+    - name: "Vacances raison"
+      unique_id: vacances_raison
+      icon: mdi:comment-text-outline
+      state: >
+        {% if not is_state('input_select.mode_maison', 'Vacances') %}
+          mode_maison_normal
+        {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+          presence_famille
+        {% elif is_state('input_boolean.visite_en_cours', 'on') %}
+          visite_en_cours
+        {% else %}
+          vacances_actives
+        {% endif %}

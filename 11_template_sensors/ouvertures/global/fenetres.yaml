@@ -1,0 +1,33 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERNE)
+#     Fenêtre ouverte (Maison)
+# ----------------------------------------------------------
+# Rôle :
+#   ON si au moins une fenêtre est ouverte (sans délais de grâce).
+#
+# Préservation :
+#   - entity_id historique : binary_sensor.fenetre_ouverte_maison
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Fenêtre ouverte (Maison)"
+      unique_id: fenetre_ouverte_maison
+      default_entity_id: binary_sensor.fenetre_ouverte_maison
+      device_class: opening
+
+      state: >
+        {% set fenetres = [
+          'binary_sensor.capteur_chambre_arnaud',
+          'binary_sensor.capteur_chambre_matthieu',
+          'binary_sensor.capteur_chambre_parents_droite',
+          'binary_sensor.capteur_chambre_parents_gauche',
+          'binary_sensor.capteur_chambre_parents_milieu',
+          'binary_sensor.capteur_fenetre_entree',
+          'binary_sensor.capteur_fenetre_sejour_1',
+          'binary_sensor.capteur_fenetre_sejour_2',
+          'binary_sensor.capteur_fenetre_sejour_3',
+          'binary_sensor.capteur_fenetre_sejour_4'
+        ] %}
+
+        {{ fenetres | select('is_state', 'on') | list | length > 0 }}

@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : Fenêtre mode Babysitting
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir une FENÊTRE TEMPORELLE maximale associée
+#   au mode Babysitting.
+#
+# 🧩 Nature :
+#   Cadre TEMPOREL — durée maximale d’un mode.
+#
+# ❌ Ne fait PAS :
+#   - Ne décide PAS de l’activation du mode Babysitting
+#   - Ne désactive PAS d’automatisations
+#   - Ne modifie PAS chauffage / alarme / éclairage
+#   - Ne force PAS un retour d’état
+#
+# 🔍 Spécificité technique :
+#   - Timer restaurable (`restore: true`)
+#   - Durée fixe : 8 heures
+#   - États exploitables : active / idle
+#
+# 🔄 Fonctionnement :
+#   - Démarré lors de l’activation du mode Babysitting
+#   - Tant qu’il est actif :
+#       • le mode est considéré comme
+#         TEMPORELLEMENT VALIDE
+#   - À l’expiration :
+#       • la fenêtre temporelle est close
+#       • le mode Babysitting n’est plus
+#         considéré comme valide
+#
+# 🔗 Utilisation :
+#   - Automatisations de gestion du mode Babysitting
+#   - Sécurité de non-oubli du mode
+#   - Diagnostics des modes actifs
+#
+# 🧠 Principe Arsenal associé :
+#   - Le timer définit le TEMPS
+#   - Le mode est une DÉCISION externe
+#
+# ⚠️ Remarque :
+#   L’expiration du timer n’entraîne
+#   AUCUNE action automatique directe.
+# ==========================================================
+
+
+babysitting:
+  name: "Timer Babysitting"
+  duration: "08:00:00"
+  restore: true

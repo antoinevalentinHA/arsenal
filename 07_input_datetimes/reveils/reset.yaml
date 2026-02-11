@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Reset réveils (référence horaire)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition de l’HEURE DE RÉFÉRENCE quotidienne
+#   utilisée pour la réinitialisation des états
+#   et compteurs liés aux réveils.
+#
+#   Ce helper fournit une ANCRE TEMPORELLE
+#   unique pour les automatisations de reset.
+#
+# 🧩 Nature :
+#   Paramètre MÉTIER — référence horaire journalière.
+#
+# ❌ Ne fait PAS :
+#   - Ne réinitialise AUCUN état
+#   - Ne modifie AUCUN compteur
+#   - Ne déclenche AUCUNE logique métier
+#   - Ne contient AUCUNE action
+#
+# 🔍 Spécificité technique :
+#   - Heure uniquement (pas de date)
+#   - Utilisée quotidiennement
+#   - Exploitée comme point fixe
+#     par les automatisations de reset
+#
+# 🔄 Fonctionnement :
+#   - L’heure est définie manuellement
+#     via les dashboards de réglage sommeil.
+#   - Les automatisations :
+#       • se déclenchent à cette heure
+#       • exécutent les remises à zéro
+#
+# 🔗 Utilisation :
+#   - Automatisations réveils :
+#       • Reset compteurs Arnaud
+#       • Reset compteurs Matthieu
+#   - Dashboards diagnostics :
+#       • Lecture de l’heure de reset
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Référence temporelle (input_datetime)
+#       • Déclenchement (automatisation)
+#       • Action réelle (reset)
+#
+# ⚠️ Remarque :
+#   Modifier cette valeur change UNIQUEMENT
+#   l’heure de référence du reset,
+#   jamais l’état immédiat du système.
+# ==========================================================
+
+
+heure_reset_reveils:
+  name: Heure reset réveils
+  has_time: true
+  has_date: false

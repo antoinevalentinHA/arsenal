@@ -1,0 +1,32 @@
+# ==========================================================
+# 🪟 TEMPLATE BINARY SENSOR — Séjour (grâce / délai expiré)
+# ----------------------------------------------------------
+# 💡 Logique Arsenal :
+#   Ce capteur N’EST ON que lorsque :
+#     1) au moins une fenêtre du séjour est ouverte
+#     2) ET que le timer de grâce est expiré (timer = idle)
+#
+#   Pendant le délai (timer = active), ce capteur doit rester OFF.
+#
+# 📍 Entité : binary_sensor.fenetre_sejour_ouverte_avec_delai
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Fenêtres séjour (grâce)"
+      unique_id: fenetre_sejour_ouverte_avec_delai
+      default_entity_id: binary_sensor.fenetre_sejour_ouverte_avec_delai
+      device_class: opening
+
+      state: >
+        {% set sejour = [
+          'binary_sensor.capteur_fenetre_sejour_1',
+          'binary_sensor.capteur_fenetre_sejour_2',
+          'binary_sensor.capteur_fenetre_sejour_3',
+          'binary_sensor.capteur_fenetre_sejour_4'
+        ] %}
+
+        {{
+          (sejour | select('is_state', 'on') | list | length > 0)
+          and is_state('timer.fenetre_sejour_ouverte_grace', 'idle')
+        }}

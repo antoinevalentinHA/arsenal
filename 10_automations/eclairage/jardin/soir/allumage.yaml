@@ -1,0 +1,83 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Jardin – Activation éclairage (cycle soir)
+#
+#  ID : 1007000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation réactive d’activation EFFECTIVE de l’éclairage
+#     du jardin le soir.
+#
+#     L’éclairage est allumé uniquement si :
+#       • le cycle soir existe (capteur temporel)
+#       • une présence est détectée dans la maison
+#
+#     ⚠️ Aucune notification persistante :
+#     - La notification persistante est réservée
+#       à la projection directe d’un état matériel vécu,
+#       gérée ailleurs si nécessaire.
+#
+#     Cette automation est robuste aux redémarrages :
+#       - elle ne dépend pas d’un événement présence "rejoué"
+#       - elle effectue un rattrapage à la remise en stabilité
+#
+# ----------------------------------------------------------
+#  🧠 SOURCES
+#
+#     - binary_sensor.jardin_cycle_eclairage_soir_actif
+#     - binary_sensor.presence_famille_unifiee
+#     - input_boolean.systeme_stable
+#     - switch.prise_jardin
+#
+# ==========================================================
+
+- id: '1007000000003'
+  alias: "Lumière jardin - Activation cycle soir"
+  description: >
+    Allume l’éclairage du jardin lorsque le cycle soir existe
+    ET qu’une présence est détectée. Inclut un rattrapage à la
+    remise en stabilité après redémarrage.
+    Aucune notification persistante n’est émise.
+
+  mode: single
+
+  trigger:
+    # Ouverture du cycle soir
+    - platform: state
+      entity_id: binary_sensor.jardin_cycle_eclairage_soir_actif
+      to: 'on'
+
+    # Arrivée réelle de présence (hors redémarrage, gérée par le rattrapage)
+    - platform: state
+      entity_id: binary_sensor.presence_famille_securite
+      to: 'on'
+
+    # Rattrapage après redémarrage / remise en route
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: 'on'
+
+  condition:
+    # Système stable uniquement
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: 'on'
+
+    # Cycle soir existant
+    - condition: state
+      entity_id: binary_sensor.jardin_cycle_eclairage_soir_actif
+      state: 'on'
+
+    # Présence détectée
+    - condition: state
+      entity_id: binary_sensor.presence_famille_securite
+      state: 'on'
+
+    # Idempotence : n’allumer que si c’est réellement éteint
+    - condition: state
+      entity_id: switch.prise_jardin
+      state: 'off'
+
+  action:
+    - action: script.jardin_on

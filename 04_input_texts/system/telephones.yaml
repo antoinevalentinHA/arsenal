@@ -1,0 +1,82 @@
+# ==========================================================
+#  INPUT TEXT — Téléphones (helpers maîtres)
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Stocke le nom brut du téléphone (ex: pixel_7a)
+#     utilisé ensuite pour générer automatiquement :
+#       - notify.mobile_app_<tel>
+#       - sensor.<tel>_wi_fi_bssid
+#       - device_tracker.<tel>
+#
+#  🎯 Objectif :
+#     Changer de téléphone ⇒ changer 1 valeur seulement.
+# ==============================================================
+
+telephone_antoine:
+  name: Telephone Antoine
+  max: 50
+  icon: mdi:cellphone
+
+telephone_constance:
+  name: Telephone Constance
+  max: 50
+  icon: mdi:cellphone
+
+# ==========================================================
+#  INPUT_TEXTS : Telephones - Services de notification
+# ----------------------------------------------------------
+#  🎯 Rôle :
+#     Définir les noms de services de notification pour
+#     chaque téléphone du foyer, afin de ne jamais modifier
+#     les automatisations lors d’un changement d’appareil.
+#
+#  🛠️ Usage :
+#     - input_text.telephone_antoine_notify
+#     - input_text.telephone_constance_notify
+#
+#     Dans les automatisations :
+#       service: "{{ states('input_text.telephone_antoine_notify') }}"
+#
+#  ✅ Arsenal Ready
+# ==========================================================
+
+telephone_antoine_notify:
+  name: "Telephone Antoine - Notify service"
+  icon: mdi:cellphone-text
+
+telephone_constance_notify:
+  name: "Telephone Constance - Notify service"
+  icon: mdi:cellphone-text
+
+# ==========================================================
+#  INPUT_TEXTS : Telephones - Device Trackers
+# ----------------------------------------------------------
+#  🎯 Rôle :
+#     Définir les entités de géolocalisation des téléphones,
+#     afin de permettre un changement d'appareil sans modifier
+#     les templates.
+# ==========================================================
+
+telephone_antoine_tracker:
+  name: "Telephone Antoine - Tracker entity_id"
+  icon: mdi:crosshairs-gps
+
+telephone_constance_tracker:
+  name: "Telephone Constance - Tracker entity_id"
+  icon: mdi:crosshairs-gps
+
+# ==========================================================
+#  INPUT_TEXTS : Telephones - WiFi BSSID sensors
+# ----------------------------------------------------------
+#  🎯 Rôle :
+#     Stocker les entity_id des capteurs Wi-Fi des téléphones.
+#     Permet de changer de smartphone sans modifier le YAML.
+# ==========================================================
+
+telephone_antoine_wifi_bssid:
+  name: "Telephone Antoine - WiFi BSSID entity_id"
+  icon: mdi:wifi
+
+telephone_constance_wifi_bssid:
+  name: "Telephone Constance - WiFi BSSID entity_id"
+  icon: mdi:wifi

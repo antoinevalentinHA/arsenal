@@ -1,0 +1,116 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Jardin – Calcul horaire extinction matin
+#
+#  ID : 10070000000020
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de calcul horaire dérivé.
+#
+#     Elle calcule et met à jour l’heure d’extinction
+#     de l’éclairage du jardin le matin, en fonction :
+#       • du lever réel du soleil
+#       • d’un délai solaire configurable
+#       • d’une heure fixe de secours
+#
+#     Cette automation n’a AUCUN effet direct
+#     sur l’éclairage.
+#
+#  🧩 PRINCIPE
+#
+#     - Recalcul déclenché sur :
+#         • lever du soleil
+#         • modification des paramètres utilisateurs
+#     - Calcul de deux candidats :
+#         • extinction solaire (lever + délai)
+#         • extinction fixe de secours
+#     - Sélection de l’heure la plus proche (la plus tôt)
+#     - Publication de l’heure cible dans un helper
+#
+#  🧠 PARAMÈTRES UTILISATEUR
+#
+#     - input_number.delai_extinction_jardin_matin
+#         → délai en minutes après le lever du soleil
+#
+#     - input_datetime.heure_allumage_jardin_matin
+#         → heure de référence du cycle matin
+#
+#     - input_datetime.heure_extinction_jardin_matin_fixe
+#         → heure de secours indépendante du soleil
+#
+#  🧠 SORTIE CALCULÉE
+#
+#     input_datetime.heure_extinction_jardin_matin
+#
+#     → heure cible consommée par les automatisations
+#       de clôture du cycle d’éclairage matin
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - N’allume PAS l’éclairage
+#     - N’éteint PAS l’éclairage
+#     - Ne déclenche AUCUNE action terrain
+#     - Ne décide PAS du cycle d’éclairage
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de pré-calcul horaire :
+#     calcul ≠ déclenchement ≠ action.
+#
+#     Elle fournit une heure fiable,
+#     déterministe et saisonnière,
+#     consommée par les couches supérieures.
+# ==========================================================
+
+
+- id: '10070000000020'
+  alias: "Mise  à jour heure extinction jardin matin"
+  description: >
+    Met à jour automatiquement l’heure d’extinction du jardin
+    le matin selon le lever du soleil, l’heure d’allumage du matin
+    et une heure fixe de secours configurable.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheurs
+  # ======================================================
+  trigger:
+    - platform: sun
+      event: sunrise
+
+    - platform: state
+      entity_id:
+        - input_number.delai_extinction_jardin_matin
+        - input_datetime.heure_allumage_jardin_matin
+        - input_datetime.heure_extinction_jardin_matin_fixe
+
+  # ======================================================
+  # 🔄 Action — Calcul et mise à jour
+  # ======================================================
+  action:
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.heure_extinction_jardin_matin
+      data:
+        time: >
+          {% set now_ts = now() %}
+          
+          {% set sunrise_next = as_local(as_datetime(state_attr('sun.sun', 'next_rising'))) %}
+          {% set sunrise = sunrise_next if sunrise_next.date() == now_ts.date()
+              else sunrise_next - timedelta(days=1) %}
+          
+          {% set delay = states('input_number.delai_extinction_jardin_matin') | float(0) %}
+          
+          {% set dt_solaire = sunrise + timedelta(minutes=delay) %}
+          {% set dt_fixe = today_at(states('input_datetime.heure_extinction_jardin_matin_fixe')) %}
+          
+          {# On prend l'heure la PLUS PROCHE (la plus tôt) #}
+          {% set dt = [dt_solaire, dt_fixe] | min %}
+          
+          {% if dt < now_ts %}
+            {{ (dt + timedelta(days=1)).strftime('%H:%M:%S') }}
+          {% else %}
+            {{ dt.strftime('%H:%M:%S') }}
+          {% endif %}

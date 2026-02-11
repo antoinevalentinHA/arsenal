@@ -1,0 +1,33 @@
+# ==========================================================
+# 🪟 TEMPLATE TRIGGERED BINARY SENSOR — Audi e-tron (Fenêtres)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser l’état du capteur `binary_sensor.audi_a3_sportback_e_tron_windows`
+#   afin d’éviter les états indéterminés lors de perte de données
+#   ou d’erreurs temporaires de l’intégration Audi.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque changement du capteur source.
+#   - Réévaluation automatique au démarrage de Home Assistant.
+#   - Si état valide → reprise directe.
+#   - Sinon → conservation du dernier état connu.
+#
+# 🧮 Source : binary_sensor.audi_a3_sportback_e_tron_windows
+# 📊 Type : Trigger Template Binary Sensor
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: binary_sensor.audi_a3_sportback_e_tron_windows
+
+  binary_sensor:
+    - name: "Audi e-tron – Fenêtres ouvertes (Local)"
+      unique_id: audi_a3_sportback_e_tron_windows_local
+      device_class: window
+      state: >
+        {% set s = states('binary_sensor.audi_a3_sportback_e_tron_windows') %}
+        {% if s in ['on','off'] %}
+          {{ s }}
+        {% else %}
+          {{ this.state | default('off') }}
+        {% endif %}

@@ -1,0 +1,21 @@
+# ==========================================================
+#  PROXY STATISTICS — Capteurs métier (chauffage / clim)
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🌿 Pourcentage consigne Eco — 24h
+# ----------------------------------------------------------
+- platform: statistics
+  name: "pourcentage_consigne_eco_24h_proxy"
+  entity_id: sensor.pourcentage_consigne_eco_24h
+  state_characteristic: mean
+  sampling_size: 1
+
+# ----------------------------------------------------------
+# 🌿 Pourcentage consigne Eco — 7j
+# ----------------------------------------------------------
+- platform: statistics
+  name: "pourcentage_consigne_eco_7j_proxy"
+  entity_id: sensor.pourcentage_consigne_eco_7j
+  state_characteristic: mean
+  sampling_size: 1

@@ -1,0 +1,24 @@
+# ==========================================================
+# ✋ INPUT BOOLEAN — Mémo Hold Bouton Cuisine
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Mémoriser un appui long (“hold”) sur le bouton Zigbee
+#   de la cuisine, afin de déclencher ou différer certaines actions.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → un appui long vient d’être détecté
+#   - OFF → aucun appui long actif ou détection réinitialisée
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : Mémo Hold Bouton Cuisine  
+#   - Icône : mdi:gesture-tap-hold
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.memo_hold_bouton_cuisine
+# ==========================================================
+
+
+memo_hold_bouton_cuisine:
+  name: Mémo Hold Bouton Cuisine
+  icon: mdi:gesture-tap-hold

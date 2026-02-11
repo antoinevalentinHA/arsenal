@@ -1,0 +1,41 @@
+# ==========================================================
+# 🌡️ TRIGGERED TEMPLATE SENSOR — Écart consigne instantané (mode présence)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Calculer l’écart entre la température intérieure minimale
+#   et la consigne appliquée, uniquement lorsque le chauffage
+#   est en mode "confort" (consigne confort active).
+#
+# ⚙️ Fonctionnement :
+#   - Actif uniquement si la consigne appliquée = consigne présence
+#   - Sinon, conserve la dernière valeur connue.
+#   - Se met à jour dès qu’une des entités sources change.
+#
+# 📊 Type : Triggered Template Sensor
+# 📍 Entité : sensor.ecart_consigne_instantane
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_min_chambres
+        - sensor.temperature_de_consigne_appliquee_locale
+        - input_number.chauffage_consigne_confort
+  sensor:
+    - name: "Ecart consigne instantane"
+      unique_id: ecart_consigne_instantane
+      unit_of_measurement: "°C"
+      state: >
+        {% set consigne_appliquee = states('sensor.temperature_de_consigne_appliquee_locale') | float(none) %}
+        {% set consigne_presence = states('input_number.chauffage_consigne_confort') | float(none) %}
+        {% set t_int = states('sensor.temperature_min_chambres') | float(none) %}
+        {% set previous = this.state | float(none) %}
+
+        {% if consigne_appliquee is not none
+              and consigne_presence is not none
+              and (consigne_appliquee | round(1)) == (consigne_presence | round(1))
+              and t_int is not none %}
+          {{ (t_int - consigne_appliquee) | round(2) }}
+        {% else %}
+          {{ previous }}
+        {% endif %}

@@ -1,0 +1,24 @@
+#################################################################
+# 🌙 CARTE ACTION — BONNE NUIT
+# ---------------------------------------------------------------
+# Déclenche la routine globale "Bonne nuit".
+#
+# Principe Arsenal :
+#   - Carte d’action explicite
+#   - Aucune lecture d’état
+#   - Confirmation obligatoire
+#   - Effet volontaire et global
+#################################################################
+
+carte_action_bonne_nuit:
+  template: carte_base
+
+  tap_action:
+    action: call-service
+    service: script.extinction_soir_maison
+    confirmation:
+      text: Lancer la routine “Bonne nuit” ?
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)

@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : Blocage armement automatique
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition d’une FENÊTRE TEMPORELLE de blocage
+#   pendant laquelle l’armement AUTOMATIQUE
+#   de l’alarme est interdit.
+#
+#   Ce timer matérialise la DURÉE du blocage,
+#   sans porter lui-même la logique d’armement.
+#
+# 🧩 Nature :
+#   Cadre TEMPOREL — temporisation de sécurité.
+#
+# ❌ Ne fait PAS :
+#   - N’arme PAS l’alarme
+#   - Ne désarme PAS l’alarme
+#   - Ne décide PAS si l’armement est autorisé
+#   - Ne remplace PAS la logique centrale d’alarme
+#
+# 🔍 Spécificité technique :
+#   - Durée fixe (5 minutes)
+#   - Timer restaurable (`restore: true`)
+#   - État exploitable : active / idle
+#
+# 🔄 Fonctionnement :
+#   - Démarré par les automatisations de blocage
+#     suite à :
+#       • désarmement manuel
+#       • entrée autorisée
+#       • événement légitime identifié
+#   - À l’expiration :
+#       • le blocage temporel est levé
+#       • l’armement automatique redevient éligible
+#
+# 🔗 Utilisation :
+#   - Automatisations alarme :
+#       • Blocage armement auto (start / stop)
+#   - Capteurs binaires :
+#       • Cohérence / possibilité d’armement
+#   - Scripts décision centrale alarme
+#   - Dashboards diagnostics :
+#       • État et temps restant
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Blocage logique (input_boolean)
+#       • Cadre temporel (timer)
+#       • Décision (scripts / capteurs)
+#       • Action réelle (armement alarme)
+#
+# ⚠️ Remarque :
+#   L’expiration du timer n’implique JAMAIS
+#   un armement automatique immédiat.
+# ==========================================================
+
+
+blocage_armement_auto:
+  name: "Blocage armement auto"
+  duration: "00:05:00"
+  restore: true

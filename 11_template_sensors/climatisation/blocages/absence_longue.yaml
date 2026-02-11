@@ -1,0 +1,28 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR :
+#     Clim – Extinction autorisée (absence prolongée)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la vérité métier autorisant l’extinction
+#   complète de la climatisation lorsque l’absence
+#   prolongée est confirmée.
+#
+# 🧱 PRINCIPE
+#   - Basé exclusivement sur le timer d’absence prolongée
+#   - Valide uniquement si l’absence est toujours réelle
+#   - Aucun calcul de durée
+#   - Aucune action
+#
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim – Extinction autorisée (absence prolongée)"
+      unique_id: clim_extinction_absence_prolongee_autorisee
+      default_entity_id: binary_sensor.clim_extinction_absence_prolongee_autorisee
+      state: >
+        {{
+          is_state('binary_sensor.presence_famille_unifiee', 'off')
+          and is_state('timer.absence_longue_clim', 'idle')
+        }}
+      icon: >
+        mdi:timer-off

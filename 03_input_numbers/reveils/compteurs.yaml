@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS : Compteurs de réveils nocturnes enfants
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Comptabiliser le nombre de réveils nocturnes
+#   détectés pour chaque enfant au cours de la nuit :
+#     - Arnaud
+#     - Matthieu
+#
+# 🧠 Nature :
+#   - Compteurs MANUELS / LOGIQUES
+#   - États de diagnostic et d’observation familiale
+#   - NON médicaux, NON biométriques
+#
+# ⚙️ Fonctionnement :
+#   - Incrémentés par automatisations dédiées
+#     lors d’un événement qualifié comme "réveil"
+#   - Valeur plafonnée (ex : max 10)
+#   - Réinitialisés explicitement :
+#       • chaque matin
+#       • ou lors d’une action parentale volontaire
+#
+# ❌ Important :
+#   - Ces helpers ne mesurent PAS le sommeil réel
+#   - Ils ne proviennent PAS de capteurs physiologiques
+#   - Ils servent uniquement à :
+#       • observer des tendances
+#       • corréler bruit / environnement / réveils
+#       • alimenter des dashboards de diagnostic
+#
+# 🔗 Utilisés par :
+#   - Dashboards :
+#       • lovelace/dashboards/diagnostics/sommeil.yaml
+#       • lovelace/dashboards/meteo/meteo_bruit.yaml
+#   - Automatisations :
+#       • 10_automations/reveils/compteurs/*.yaml
+#       • 10_automations/reveils/reset/*.yaml
+#
+# 📐 Unité :
+#   - Nombre de réveils (compteur entier)
+#
+# 🧠 Principe Arsenal :
+#   - On n’interprète pas → on OBSERVE
+#   - Le système aide à comprendre, pas à diagnostiquer
+#   - Toute action reste humaine
+#
+# ==========================================================
+
+reveils_nocturnes_arnaud:
+  name: Réveils Arnaud
+  min: 0
+  max: 10
+  step: 1
+  icon: mdi:bed
+
+reveils_nocturnes_matthieu:
+  name: Réveils Matthieu
+  min: 0
+  max: 10
+  step: 1
+  icon: mdi:bed

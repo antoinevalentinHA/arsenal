@@ -1,0 +1,51 @@
+# ==========================================================
+# 🔥 TEMPLATE SENSOR — Dernière chauffe ECS
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Afficher la **date et l’heure du dernier déclenchement**
+#   du cycle de chauffe de l’ECS (Eau Chaude Sanitaire).
+#
+# ⚙️ Fonctionnement :
+#   - Récupère la propriété `last_triggered` du script
+#     `script.chauffage_ecs_cycle`.
+#   - Si une date est disponible :
+#       → convertit le timestamp au format `JJ/MM HH:MM`.
+#   - Sinon :
+#       → affiche `Jamais` (aucune chauffe enregistrée).
+#
+# 🧩 Attributs :
+#   • `timestamp_brut` → valeur brute en timestamp (secondes Unix)
+#
+# 🧮 Logique :
+#   1️⃣ Lecture de `script.chauffage_ecs_cycle.last_triggered`.
+#   2️⃣ Si disponible, transformation en date lisible.
+#   3️⃣ Stockage simultané du timestamp brut dans un attribut.
+#
+# ⚠️ Cas particuliers :
+#   - Si la clé `last_triggered` est absente ou `None`, renvoie "Jamais".
+#   - Ce capteur est **non numérique** mais utile pour les scripts ou automations.
+#
+# 🧾 Exemple de rendu :
+#   **État :** `29/10 22:45`
+#   **Attributs :**
+#   - timestamp_brut : `1730225100.0`
+#
+# 📊 Type : Template Sensor  
+# 🪄 Domaine : ECS / Historique cycles ViCare  
+# ==========================================================
+
+- sensor:
+    - name: "Dernière chauffe ECS"
+      unique_id: derniere_chauffe_ecs
+      icon: mdi:clock-outline
+      state: >
+        {% set t = state_attr('script.chauffage_ecs_cycle', 'last_triggered') %}
+        {% if t %}
+          {{ as_timestamp(t) | timestamp_custom('%d/%m %H:%M') }}
+        {% else %}
+          Jamais
+        {% endif %}
+      attributes:
+        timestamp_brut: >
+          {% set t = state_attr('script.chauffage_ecs_cycle', 'last_triggered') %}
+          {{ as_timestamp(t) if t else none }}

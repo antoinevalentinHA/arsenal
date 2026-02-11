@@ -1,0 +1,40 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Visite – Programmation active
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation de la programmation automatique
+#     des périodes de visite (ex. visite hebdomadaire).
+#
+#     Ce booléen détermine si les automatisations
+#     planifiées ont le droit d’activer le mode
+#     visite de la maison.
+#
+#  🧱 Nature :
+#     - Paramètre de stratégie
+#     - Autorisation d’automatismes planifiés
+#
+#  🔄 Fonctionnement :
+#     - ON  : les automatisations de visite
+#             planifiée sont autorisées
+#     - OFF : toute activation automatique
+#             du mode visite est interdite
+#
+#  📥 N’effectue PAS :
+#     - aucune activation immédiate du mode visite
+#     - aucune détection de présence
+#     - aucune action directe sur l’alarme
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations de
+#       programmation de visite
+#     - Conditionne l’activation de
+#       input_boolean.visite_en_cours
+#
+#  🧠 Principe Arsenal :
+#     - Un comportement planifié doit
+#       toujours pouvoir être neutralisé
+# ==========================================================
+
+mode_visiteur:
+  name: "Mode visiteur"
+  icon: mdi:account

@@ -1,0 +1,130 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Pluie – Adaptation Zigbee en impulsion logique sécurisée
+#
+#  ID : 1016000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’ADAPTATION DE SIGNAL.
+#
+#     Elle transforme le signal brut d’un capteur
+#     Zigbee de pluie en une impulsion logique unique,
+#     exploitable de manière fiable par le reste
+#     du système Arsenal.
+#
+#     Elle assure également la protection contre
+#     les états incohérents ou bloqués du capteur.
+#
+#  🧱 NATURE
+#
+#     - Normalisation de signal matériel
+#     - Génération d’impulsion logique
+#     - Sécurisation contre rebond et blocage
+#
+#  ⚙️ PRINCIPE
+#
+#     - Détection d’un passage à l’état "on"
+#       avec anti-rebond minimal
+#     - Activation d’un booléen virtuel d’impulsion
+#     - Démarrage d’un timer de réarmement (2 min)
+#       interdisant toute redétection durant ce délai
+#     - Ignorance explicite des états non valides
+#
+#  🛡️ SÉCURITÉ
+#
+#     - Surveillance d’un état "on" prolongé (> 10 min)
+#     - Forçage OFF du booléen virtuel en cas de capteur bloqué
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas du contexte météo
+#     - Ne déclenche aucun scénario métier directement
+#     - Ne remplace pas une logique pluie métier
+#     - Ne corrige pas le capteur physique lui-même
+#
+#  🔗 UTILISATION
+#
+#     - Fournit une impulsion pluie fiable
+#       aux automatisations dépendantes
+#     - Sert de couche d’abstraction matérielle
+#       pour les logiques météo
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1016000000005"
+  alias: "Pluie – Normalisation capteur Zigbee"
+  description: >
+    Transforme le capteur Zigbee pluie en impulsion unique :
+    active un booléen virtuel et démarre un timer de 2 min
+    pour éviter les redéclenchements. Ignore les états
+    indisponibles et force un OFF si capteur bloqué.
+
+  mode: restart
+
+  # ======================================================
+  # 🔔 Déclencheur — Détection pluie Zigbee
+  # ======================================================
+  trigger:
+    # 💧 Pluie détectée (impulsion)
+    - platform: state
+      entity_id: binary_sensor.zigbee_pluie_water_leak
+      to: "on"
+      for: "00:00:01"  # anti-rebond
+
+    # 🧯 Sécurité : capteur bloqué "on" depuis 10 min
+    - platform: state
+      entity_id: binary_sensor.zigbee_pluie_water_leak
+      to: "on"
+      for: "00:10:00"
+      id: capteur_bloque
+
+  # ======================================================
+  # ✅ Conditions — Ignorer les états non valides
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: >
+        {{ trigger.id == 'capteur_bloque' or
+           states('binary_sensor.zigbee_pluie_water_leak') not in ['unavailable','unknown','none'] }}
+
+  # ======================================================
+  # 🔄 Actions — Impulsion + temporisation via timer
+  # ======================================================
+  action:
+    - choose:
+
+        # ------------------------------------------------------------------
+        # 🟢 Impulsion normale — détection pluie (si booléen off)
+        # ------------------------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.pluie_zigbee_virtuel
+              state: "off"
+            - condition: template
+              value_template: "{{ trigger.id is not defined or trigger.id != 'capteur_bloque' }}"
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.pluie_zigbee_virtuel
+
+            - service: timer.start
+              target:
+                entity_id: timer.pluie_zigbee_rearm
+              data:
+                duration: "00:02:00"
+
+        # ------------------------------------------------------------------
+        # 🔴 Sécurité — capteur bloqué "on" trop longtemps
+        # ------------------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.id == 'capteur_bloque' }}"
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.pluie_zigbee_virtuel

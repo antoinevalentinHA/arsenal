@@ -1,0 +1,81 @@
+# ==========================================================
+# 🌅 TEMPLATE SENSOR — Période Météo (Basée sur la position du Soleil)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Déterminer automatiquement la **période de la journée** (aube, matin,
+#   jour, crépuscule, nuit) en fonction de la position du soleil :
+#   - `elevation` → hauteur du soleil au-dessus de l’horizon
+#   - `azimuth` → angle de position du soleil (0° = Nord, 180° = Sud)
+#
+# ⚙️ Fonctionnement :
+#   - Utilise les attributs de `sun.sun` pour calculer la période.
+#   - Le découpage est basé sur les critères suivants :
+#       🌙 **nuit** → soleil sous -6° d’élévation  
+#       🌅 **aube** → élévation entre -6° et 5°, azimut < 180°  
+#       🌤 **matin** → élévation entre 5° et 35°, azimut < 180°  
+#       ☀️ **jour** → élévation ≥ 35° ou azimut ≥ 180° et élévation ≥ 5°  
+#       🌇 **crépuscule** → élévation < 5°, azimut ≥ 180°, élévation > -6°  
+#   - Si le soleil est indisponible (`unknown` ou `unavailable`) → état `inconnu`.
+#
+# 🧮 Logique :
+#   • Capteur principal : `sensor.periode_meteo`
+#   • Attributs :
+#       - `elevation` → hauteur du soleil
+#       - `azimuth` → position du soleil
+#       - `icon` → icône dynamique selon la période
+#
+# 🧠 Déclenchement :
+#   - Automatique via `sun.sun` (pas besoin de trigger manuel).
+#   - Mis à jour à chaque changement d’état du soleil.
+#
+# 📊 Type : Template Sensor  
+# 🌍 Domaine : Météo / Lumière naturelle  
+# 🕐 Mise à jour : dynamique selon le mouvement solaire  
+# ==========================================================
+
+- sensor:
+    - name: periode_meteo
+      unique_id: periode_meteo
+      state: >
+        {% set elev = state_attr('sun.sun', 'elevation') | float(0) %}
+        {% set azim = state_attr('sun.sun', 'azimuth') | float(0) %}
+        {% set sun_state = states('sun.sun') %}
+
+        {% if sun_state in ['unknown', 'unavailable'] %}
+          inconnu
+
+        {% elif elev < -6 %}
+          nuit
+
+        {% elif elev >= -6 and elev < 5 and azim < 180 %}
+          aube
+
+        {% elif elev >= 5 and elev < 35 and azim < 180 %}
+          matin
+
+        {% elif elev >= 35 or (azim >= 180 and elev >= 5) %}
+          jour
+
+        {% elif elev < 5 and azim >= 180 and elev > -6 %}
+          crepuscule
+
+        {% else %}
+          inconnu
+        {% endif %}
+      attributes:
+        elevation: "{{ state_attr('sun.sun', 'elevation') }}"
+        azimuth: "{{ state_attr('sun.sun', 'azimuth') }}"
+        icon: >
+          {% set elev = state_attr('sun.sun', 'elevation') | float(0) %}
+          {% set azim = state_attr('sun.sun', 'azimuth') | float(0) %}
+          {% if elev < -6 %}
+            mdi:weather-night
+          {% elif elev < 5 and azim < 180 %}
+            mdi:weather-sunset-up
+          {% elif elev < 5 and azim >= 180 %}
+            mdi:weather-sunset-down
+          {% elif elev < 35 %}
+            mdi:weather-sunny
+          {% else %}
+            mdi:weather-sunny-alert
+          {% endif %}

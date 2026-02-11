@@ -1,0 +1,60 @@
+# ==========================================================
+#  🔒 TEMPLATE BINARY SENSOR — Chauffage autorisé (système)
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Indiquer si le chauffage est globalement autorisé à fonctionner,
+#     en tenant compte des verrous de standby et de blocage post-aération.
+#
+#  💡 Avantages :
+#     - Centralise la logique d’autorisation
+#     - Évite les relances intempestives pendant un blocage
+#     - Fournit les détails des verrous actifs
+#     - Simplifie les conditions dans les automations
+#     - Affichable directement sur le dashboard "Chauffage"
+#
+#  ⚙️ Fonctionnement :
+#     ON  → chauffage_standby_force = off  ET  chauffage_blocage_aeration = off
+#     OFF → l’un des deux verrous est actif
+#
+#  📊 Type : Template Binary Sensor
+#  📍 Entité : binary_sensor.chauffage_autorise_systeme
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Chauffage autorisé (système)"
+      unique_id: chauffage_autorise_systeme
+      default_entity_id: binary_sensor.chauffage_autorise_systeme
+
+      state: >
+        {{ is_state('input_boolean.chauffage_standby_force', 'off')
+           and is_state('input_boolean.chauffage_blocage_aeration', 'off') }}
+
+      icon: >
+        {% set ok = is_state('input_boolean.chauffage_standby_force', 'off')
+                     and is_state('input_boolean.chauffage_blocage_aeration', 'off') %}
+        {% if ok %}
+          mdi:radiator
+        {% else %}
+          mdi:radiator-off
+        {% endif %}
+
+      attributes:
+
+        standby_force: >
+          {{ states('input_boolean.chauffage_standby_force') }}
+
+        blocage_aeration: >
+          {{ states('input_boolean.chauffage_blocage_aeration') }}
+
+        resume: >
+          {% if is_state('input_boolean.chauffage_standby_force', 'on')
+                and is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+            Standby forcé + Blocage post-aération actifs
+          {% elif is_state('input_boolean.chauffage_standby_force', 'on') %}
+            Standby forcé actif
+          {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+            Blocage post-aération actif
+          {% else %}
+            Aucun verrou actif
+          {% endif %}

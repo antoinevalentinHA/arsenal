@@ -1,0 +1,63 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Diagnostics Automatisations
+icon: mdi:toggle-switch-off
+
+views:
+  ####################################
+  # ⚙️ DIAGNOSTICS AUTOMATISATIONS
+  ####################################
+  - title: Automatisations OFF
+    path: diagnostics-automatisations
+    icon: mdi:toggle-switch-off
+
+    # ==========================================================
+    # 🧭 BADGES — Navigation
+    # ==========================================================
+    badges: !include ../../includes/badges/diagnostics_systeme.yaml
+
+    # ==========================================================
+    # 🧩 CONTENU PRINCIPAL
+    # ==========================================================
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ======================================================
+          # ⚙️ SECTION : Automatisations désactivées
+          # ------------------------------------------------------
+          # Rôle :
+          #   - Afficher dynamiquement la liste des automatisations
+          #     dont l’état est "off" (désactivé)
+          #   - Permettre un réarmement direct via le toggle
+          #   - Trier par nom pour une lecture claire
+          # ======================================================
+          - !include ../../includes/section_headers/details.yaml
+
+          # ======================================================
+          # 📋 LISTE DYNAMIQUE — Auto-entities
+          # ------------------------------------------------------
+          # - Filtre : domain = automation, state = 'off'
+          # - Affichage : nom + dernière exécution
+          # - Toggle intégré pour réactivation manuelle
+          # - else : carte affichée si la liste est vide
+          # ======================================================
+          - type: custom:auto-entities
+            card:
+              type: entities
+              show_header_toggle: false
+            filter:
+              include:
+                - domain: automation
+                  state: 'off'
+                  options:
+                    toggle: true
+                    secondary_info: last-triggered
+            sort:
+              method: name
+            else:
+              type: markdown
+              content: |
+                ## ✅ Aucun incident détecté
+
+                Aucune automatisation n’est désactivée.

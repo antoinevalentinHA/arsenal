@@ -1,0 +1,86 @@
+#################################################################
+# 🗂️ CARTE ÉTAT TEXTE INTERPRÉTÉ — UI
+# ---------------------------------------------------------------
+# Carte d’affichage d’un état textuel avec interprétation
+# sémantique vers un code couleur.
+#
+# Rôle :
+#   - Traduire un état textuel en statut visuel
+#   - Fournir une lecture immédiate
+#
+# Principe Arsenal :
+#   - Carte purement informationnelle
+#   - Aucune interaction
+#   - Interprétation UI, pas métier
+#################################################################
+
+carte_etat_texte_interprete:
+  template: carte_base
+
+  show_state: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = (entity.state || '').toLowerCase();
+
+            if (v.includes('critique') || v.includes('erreur') || v.includes('error'))
+              return "rgba(244, 67, 54, 0.2)";   // 🔴 critique
+
+            if (v.includes('avert') || v.includes('warning'))
+              return "rgba(255, 152, 0, 0.2)";   // 🟠 avertissement
+
+            if (v.includes('normal') || v.includes('ok'))
+              return "rgba(76, 175, 80, 0.2)";   // 🟢 normal
+
+            return "rgba(224, 224, 224, 0.2)";   // ⚪ inconnu
+          ]]]
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'
+    icon:
+      - color: '#111'
+
+#################################################################
+# 🧾 CARTE CAPTEUR — ÉTAT TEXTUEL
+# ---------------------------------------------------------------
+# Carte générique pour capteurs exposant un état texte :
+#   OK / Normal / Attention / Échec / Warning / etc.
+#
+# Principe Arsenal :
+#   - Interprétation visuelle standardisée
+#   - Aucun couplage matériel
+#   - Réutilisable (NAS, volumes, disques, sécurité…)
+#################################################################
+
+carte_capteur_etat_textuel:
+  template: carte_base
+
+  show_state: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = (entity.state || '').toLowerCase();
+            if (v.includes('échec') || v.includes('fail') || v.includes('critical'))
+              return 'rgba(244, 67, 54, 0.2)';   // 🔴 critique
+            if (v.includes('attention') || v.includes('warn'))
+              return 'rgba(255, 152, 0, 0.2)';   // 🟠 avertissement
+            if (v.includes('ok') || v.includes('normal'))
+              return 'rgba(76, 175, 80, 0.2)';   // 🟢 nominal
+            return 'rgba(224, 224, 224, 0.2)';   // ⚪ inconnu
+          ]]]

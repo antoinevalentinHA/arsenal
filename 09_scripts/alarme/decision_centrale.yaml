@@ -1,0 +1,147 @@
+# ==========================================================
+# 🧠 SCRIPT — Alarme : Décision centrale (PURE)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Calculer de manière DÉTERMINISTE l’état logique cible
+#   de l’alarme à un instant T, à partir des états observés
+#   (présence, modes, blocages, délais).
+#
+# 🧮 Principe fondamental :
+#   Ce script est un CERVEAU LOGIQUE PUR.
+#   Il produit une décision, mais N’EXÉCUTE RIEN.
+#
+# 📤 Sorties (helpers — sources de vérité) :
+#   - input_text.alarme_decision
+#       → code décisionnel interne (machine)
+#   - input_text.alarme_etat_cible
+#       → état logique attendu (ARMED_AWAY / DISARMED / NOOP)
+#   - input_text.alarme_raison
+#       → justification humaine lisible
+#
+# 🚫 Ce script NE FAIT PAS :
+#   - Ne déclenche AUCUN armement
+#   - Ne déclenche AUCUN désarmement
+#   - Ne lance AUCUN délai ou timer
+#   - N’envoie AUCUNE notification
+#   - N’agit JAMAIS sur `alarm_control_panel`
+#
+# 🧱 Responsabilité unique :
+#   - Observer
+#   - Déduire
+#   - Publier une décision
+#
+# 🧩 Consommation des résultats :
+#   - Les automatisations d’application DOIVENT lire
+#     exclusivement les helpers produits par ce script.
+#   - Aucune logique décisionnelle ne doit exister ailleurs.
+#
+# 🧪 Propriétés Arsenal :
+#   - Déterministe (mêmes entrées → même sortie)
+#   - Testable isolément
+#   - Idempotent
+#   - Sans effet de bord
+#
+# 📊 Type :
+#   Script de calcul décisionnel (autorité logique unique)
+#
+# 📍 Entité :
+#   script.alarme_decision_centrale
+#
+# 🧠 Sémantique Arsenal :
+#   - La décision ≠ l’action
+#   - NOOP est un état VALIDE et intentionnel
+#   - L’alarme ne doit JAMAIS "s’auto-armer" sans passer ici
+#
+# ✅ Architecture :
+#   Arsenal v6+
+#   Home Assistant 2024.8+
+# ==========================================================
+
+
+alarme_decision_centrale:
+  alias: "Alarme – Décision centrale"
+  mode: single
+
+  sequence:
+    - variables:
+
+        # =============================
+        # Entrées normalisées
+        # =============================
+        mode_alarme: "{{ states('input_select.mode_alarme') | default('Inconnu') }}"
+        alarme_etat: "{{ states('alarm_control_panel.alarme_maison') | default('unknown') }}"
+
+        presence_securite: "{{ is_state('binary_sensor.presence_famille_securite', 'on') }}"
+        presence_visiteur: "{{ is_state('input_boolean.presence_visiteur', 'on') }}"
+        absence_stable: "{{ is_state('binary_sensor.presence_famille_securite_absent_depuis_5_min', 'on') }}"
+
+        blocage_armement_auto: "{{ is_state('input_boolean.blocage_armement_auto', 'on') }}"
+        delai_en_cours: "{{ is_state('binary_sensor.delai_desarmement_en_cours', 'on') }}"
+
+        # =============================
+        # Décision centrale
+        # =============================
+        decision: >
+          {% if presence_visiteur %}
+            VISITEUR_PRESENT
+          {% elif presence_securite %}
+            PRESENCE
+          {% elif mode_alarme != 'Automatique' %}
+            MODE_NON_AUTOMATIQUE
+          {% elif not absence_stable %}
+            ABSENCE_NON_STABLE
+          {% elif blocage_armement_auto %}
+            BLOCAGE_AUTO
+          {% elif delai_en_cours and not presence_securite %}
+            DELAI_ENTREE
+          {% else %}
+            ARMEMENT_AUTORISE
+          {% endif %}
+
+        # =============================
+        # Etat cible
+        # =============================
+        etat_cible: >
+          {% if decision in ['VISITEUR_PRESENT', 'PRESENCE'] %}
+            DISARMED
+          {% elif decision == 'ARMEMENT_AUTORISE' %}
+            ARMED_AWAY
+          {% else %}
+            NOOP
+          {% endif %}
+
+        # =============================
+        # Raison humaine
+        # =============================
+        raison: >
+          {% if decision == 'VISITEUR_PRESENT' %}
+            Présence visiteur détectée
+          {% elif decision == 'PRESENCE' %}
+            Présence détectée
+          {% elif decision == 'MODE_NON_AUTOMATIQUE' %}
+            Mode alarme non automatique
+          {% elif decision == 'ABSENCE_NON_STABLE' %}
+            Absence non stabilisée
+          {% elif decision == 'BLOCAGE_AUTO' %}
+            Blocage armement automatique actif
+          {% elif decision == 'DELAI_ENTREE' %}
+            Délai d'entrée en cours
+          {% else %}
+            Absence confirmée et conditions réunies
+          {% endif %}
+
+    # ======================================================
+    #  SORTIE — Publication des resultats (helpers)
+    # ======================================================
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.alarme_decision
+      data:
+        value: "{{ decision }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.alarme_etat_cible
+      data:
+        value: "{{ etat_cible }}"

@@ -1,0 +1,82 @@
+# ==========================================================
+#  STATISTICS SENSORS — Withings : Fréquences cardiaque et respiratoire
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Calculer les moyennes mobiles des fréquences physiologiques
+#     mesurées par les capteurs Withings fiabilisés localement.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Calcule les moyennes sur des fenêtres de 7, 14 et 30 jours.
+#     - Permet d’analyser les tendances de récupération et de stress.
+#
+#  🧩 Entrées surveillées :
+#     - sensor.withings_average_heart_rate_local
+#     - sensor.withings_average_respiratory_rate_local
+#
+#  📊 Objectif :
+#     - Suivre l’évolution du rythme cardiaque et respiratoire
+#     - Détecter les dérives physiologiques sur la durée
+#
+#  ✅ Périodes : 7 j / 14 j / 30 j
+#  ✅ Échantillons : 1000 / 2000 / 4000
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🫀 FRÉQUENCE CARDIAQUE MOYENNE — Moyennes glissantes
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Withings Frequence Cardiaque Moyenne 7j"
+  unique_id: withings_frequence_cardiaque_moyenne_7j
+  entity_id: sensor.withings_average_heart_rate_local
+  state_characteristic: mean
+  max_age:
+    days: 7
+  sampling_size: 1000
+
+- platform: statistics
+  name: "Withings Frequence Cardiaque Moyenne 14j"
+  unique_id: withings_frequence_cardiaque_moyenne_14j
+  entity_id: sensor.withings_average_heart_rate_local
+  state_characteristic: mean
+  max_age:
+    days: 14
+  sampling_size: 2000
+
+- platform: statistics
+  name: "Withings Frequence Cardiaque Moyenne 30j"
+  unique_id: withings_frequence_cardiaque_moyenne_30j
+  entity_id: sensor.withings_average_heart_rate_local
+  state_characteristic: mean
+  max_age:
+    days: 30
+  sampling_size: 4000
+
+# ----------------------------------------------------------
+# 🌬️ FRÉQUENCE RESPIRATOIRE MOYENNE — Moyennes glissantes
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Withings Frequence Respiratoire Moyenne 7j"
+  unique_id: withings_frequence_respiratoire_moyenne_7j
+  entity_id: sensor.withings_average_respiratory_rate_local
+  state_characteristic: mean
+  max_age:
+    days: 7
+  sampling_size: 1000
+
+- platform: statistics
+  name: "Withings Frequence Respiratoire Moyenne 14j"
+  unique_id: withings_frequence_respiratoire_moyenne_14j
+  entity_id: sensor.withings_average_respiratory_rate_local
+  state_characteristic: mean
+  max_age:
+    days: 14
+  sampling_size: 2000
+
+- platform: statistics
+  name: "Withings Frequence Respiratoire Moyenne 30j"
+  unique_id: withings_frequence_respiratoire_moyenne_30j
+  entity_id: sensor.withings_average_respiratory_rate_local
+  state_characteristic: mean
+  max_age:
+    days: 30
+  sampling_size: 4000

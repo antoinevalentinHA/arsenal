@@ -1,0 +1,25 @@
+# ==========================================================
+#  INPUT BOOLEAN : Systeme – Stable
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Indiquer que Home Assistant a terminé sa phase de
+#     redémarrage et que l’état global du système
+#     (capteurs, templates, timers, restore_state)
+#     est considéré comme cohérent.
+#
+#  Utilisation :
+#     Sert de garde logique dans les pipelines sensibles
+#     (chauffage, aération, alarme, etc.) afin d’éviter
+#     tout déclenchement parasite juste après un reboot.
+#
+#  ⚠️ Remarque importante :
+#     Ce helper n’est PAS un état métier.
+#     Il autorise ou interdit l’exécution des décisions.
+#
+# 📍 Entité : input_boolean.systeme_stable
+# ==========================================================
+
+
+systeme_stable:
+  name: "Systeme stable"
+  icon: mdi:check-decagram

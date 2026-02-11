@@ -1,0 +1,459 @@
+# ==========================================================
+# 💧 TEMPLATE TRIGGERED SENSORS — Humidité absolue (toutes zones)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Calculer l’**humidité absolue (en g/m³)** pour chaque pièce intérieure
+#   et zone extérieure, à partir de la température et de l’humidité relative.
+#
+# ⚙️ Fonctionnement :
+#   - Chaque capteur est un **Trigger Template Sensor**.
+#   - Il se met à jour :
+#       • lorsque la température ou l’humidité relative de la pièce change  
+#       • au démarrage de Home Assistant (`homeassistant start`)
+#
+# 🧮 Calcul :
+#   Utilise la formule de la vapeur d’eau dans l’air :
+#     ```
+#     SVP = 6.112 * 10 ** ((7.5 * T) / (237.7 + T))
+#     VP  = (RH / 100) * SVP
+#     AH  = (2.1674 * VP / (273.15 + T)) * 100
+#     ```
+#     → où :
+#        • T  = Température en °C  
+#        • RH = Humidité relative en %  
+#        • AH = Humidité absolue en g/m³
+#
+# 🧠 Détails techniques :
+#   - Les valeurs aberrantes (RH < 0 ou RH > 100) sont corrigées automatiquement.  
+#   - En cas de mesure invalide (`unknown`, `unavailable`, etc.) :
+#       → conservation du dernier état connu.  
+#   - Chaque entité conserve ses attributs `temperature_source` et `humidite_source`
+#     pour la traçabilité des données.
+#
+# 📊 Type : Trigger Template Sensors (un par pièce)  
+# 📏 Unité : g/m³  
+# 🪶 Icône : mdi:water-percent  
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree
+        - sensor.humidite_relative_entree
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue entrée"
+      unique_id: humidite_absolue_entree
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: &absolute_humidity_logic >
+        {% set T = states(this.attributes.temperature_source) | float(none) %}
+        {% set RH_raw = states(this.attributes.humidite_source) | float(none) %}
+        {% if T is not none and RH_raw is not none %}
+          {% set RH = 1 if RH_raw <= 0 else (100 if RH_raw > 100 else RH_raw) %}
+          {% set svp = 6.112 * (10 ** ((7.5 * T) / (237.7 + T))) %}
+          {% set vp = (RH / 100) * svp %}
+          {{ (2.1674 * vp / (273.15 + T) * 100) | round(2) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_entree' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_entree' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_garage
+        - sensor.humidite_relative_garage
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue garage"
+      unique_id: humidite_absolue_garage
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_garage' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_garage' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_petite_maison
+        - sensor.humidite_relative_petite_maison
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue petite maison"
+      unique_id: humidite_absolue_petite_maison
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_petite_maison' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_petite_maison' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_enfants
+        - sensor.humidite_relative_sdb_enfants
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue SDB Enfants"
+      unique_id: humidite_absolue_sdb_enfants
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_sdb_enfants' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_sdb_enfants' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_parents
+        - sensor.humidite_relative_sdb_parents
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue SDB Parents"
+      unique_id: humidite_absolue_sdb_parents
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_sdb_parents' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_sdb_parents' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_cave
+        - sensor.humidite_relative_cave
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Cave"
+      unique_id: humidite_absolue_cave
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: sensor.temperature_cave
+        humidite_source: sensor.humidite_relative_cave
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.humidite_relative_sejour
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Séjour"
+      unique_id: humidite_absolue_sejour
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: sensor.temperature_sejour
+        humidite_source: sensor.humidite_relative_sejour
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.humidite_relative_chambre_arnaud
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Chambre Arnaud"
+      unique_id: humidite_absolue_chambre_arnaud
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: sensor.temperature_chambre_arnaud
+        humidite_source: sensor.humidite_relative_chambre_arnaud
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu
+        - sensor.humidite_relative_chambre_matthieu
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Chambre Matthieu"
+      unique_id: humidite_absolue_chambre_matthieu
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: sensor.temperature_chambre_matthieu
+        humidite_source: sensor.humidite_relative_chambre_matthieu
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents
+        - sensor.humidite_relative_chambre_parents
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Chambre Parents"
+      unique_id: humidite_absolue_chambre_parents
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: sensor.temperature_chambre_parents
+        humidite_source: sensor.humidite_relative_chambre_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_jardin
+        - sensor.humidite_relative_jardin
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Jardin"
+      unique_id: humidite_absolue_jardin
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: sensor.temperature_jardin
+        humidite_source: sensor.humidite_relative_jardin
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_commercial
+        - sensor.humidite_relative_commercial
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité absolue Commercial"
+      unique_id: humidite_absolue_commercial
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_commercial' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_commercial' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_compta
+        - sensor.humidite_relative_compta
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité absolue Compta"
+      unique_id: humidite_absolue_compta
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_compta' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_compta' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_devis
+        - sensor.humidite_relative_devis
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité absolue Devis"
+      unique_id: humidite_absolue_devis
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_devis' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_devis' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_direction
+        - sensor.humidite_relative_direction
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Direction"
+      unique_id: humidite_absolue_direction
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_direction' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_direction' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_komori
+        - sensor.humidite_relative_komori
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité absolue Komori"
+      unique_id: humidite_absolue_komori
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_komori' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_komori' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_media
+        - sensor.humidite_relative_media
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité absolue Media"
+      unique_id: humidite_absolue_media
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_media' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_media' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_bobst
+        - sensor.humidite_relative_bobst
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité absolue Bobst"
+      unique_id: humidite_absolue_bobst
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_bobst' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_bobst' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_qualite
+        - sensor.humidite_relative_qualite
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité absolue Qualité"
+      unique_id: humidite_absolue_qualite
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_qualite' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_qualite' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_exterieur
+        - sensor.humidite_relative_exterieur
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Extérieur"
+      unique_id: humidite_absolue_exterieur
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_exterieur' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_exterieur' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_carton
+        - sensor.humidite_relative_stock_carton
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Stock Carton"
+      unique_id: humidite_absolue_stock_carton
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_stock_carton' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_stock_carton' }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_pf
+        - sensor.humidite_relative_stock_pf
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue Stock PF"
+      unique_id: humidite_absolue_stock_pf
+      unit_of_measurement: "g/m³"
+      icon: mdi:water-percent
+      state: *absolute_humidity_logic
+      attributes:
+        temperature_source: >
+          {{ 'sensor.temperature_stock_pf' }}
+        humidite_source: >
+          {{ 'sensor.humidite_relative_stock_pf' }}

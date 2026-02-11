@@ -1,0 +1,42 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Garage – Éclairage (état logique)
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     État logique de référence indiquant si
+#     l’éclairage du garage est considéré
+#     comme allumé ou éteint par le système.
+#
+#     Ce booléen constitue la source de vérité
+#     fonctionnelle pour l’éclairage du garage.
+#
+#  🧱 Nature :
+#     - État logique maître
+#     - Vérité fonctionnelle persistante
+#
+#  🔄 Cycle de vie :
+#     - ON  : le système considère que
+#             l’éclairage du garage doit être ON
+#     - OFF : le système considère que
+#             l’éclairage du garage doit être OFF
+#
+#  📥 N’effectue PAS :
+#     - aucun retour d’état matériel
+#     - aucune détection électrique
+#     - aucune commande directe des lampes
+#
+#  📤 Utilisation :
+#     - Écrit par :
+#         • automatisations d’éclairage garage
+#         • scripts manuels de bascule
+#         • scénarios de simulation de présence
+#     - Lu par :
+#         • dashboards et diagnostics
+#         • automatisations d’allumage / extinction
+#
+#  🧠 Principe Arsenal :
+#     - L’état logique prime sur l’état matériel
+# ==========================================================
+
+
+garage_light_state:
+  name: Garage

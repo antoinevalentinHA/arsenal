@@ -1,0 +1,69 @@
+#################################################################
+# 🚪 CARTE OUVERTURES — DIAGNOSTIC
+# ---------------------------------------------------------------
+# Indique si des ouvertures (portes / fenêtres) sont ouvertes
+# dans la maison et fournit un résumé lisible.
+#
+# Principe Arsenal :
+#   - Carte de diagnostic agrégée
+#   - Lecture seule
+#   - Décision portée par le capteur
+#   - UI = restitution fidèle
+#################################################################
+
+carte_ouvertures_diagnostic:
+  template: carte_base
+
+  entity: binary_sensor.ouvertures_maison
+
+  show_icon: true
+  show_state: false
+  show_name: true
+  show_label: true
+  color_type: card
+
+  tap_action:
+    action: navigate
+    navigation_path: /ouvertures-dashboard/portes_et_fenetres
+
+  hold_action:
+    action: more-info
+
+  state:
+    - value: 'on'
+      color: rgba(244, 67, 54, 0.2)   # 🔴 Ouvertures ouvertes
+    - value: 'off'
+      color: rgba(76, 175, 80, 0.2)   # 🟢 Tout fermé
+
+  label: |
+    [[[
+      if (entity.state === "off") return "Fermé";
+
+      const ouvertures = entity.attributes?.entity_id || [];
+      const ouvertes = ouvertures.filter(e => states[e]?.state === "on");
+
+      if (ouvertes.length === 0) return "Ouvert";
+
+      const fenetres = ouvertes.filter(e => e.includes("fenetre"));
+
+      if (fenetres.length === ouvertes.length) {
+        return fenetres.length > 1
+          ? `${fenetres.length} fenêtre(s) ouvertes`
+          : "1 fenêtre ouverte";
+      }
+
+      return "Ouvert";
+    ]]]
+
+  styles:
+    icon:
+      - width: 26px
+      - height: 26px
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - font-weight: 400
+      - color: '#111'

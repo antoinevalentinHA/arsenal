@@ -1,0 +1,89 @@
+#################################################################
+# 🪟 VOLETS — TEMPLATES UI (ACTIONS)
+#################################################################
+#
+# 🧠 Rôle :
+#   Template button-card générique destiné aux actions
+#   manuelles sur les volets roulants.
+#
+# 🎯 Objectifs :
+#   - Centraliser la logique d’appel de service
+#   - Garantir une UI cohérente et sécurisée
+#   - Éviter toute duplication dans les dashboards
+#
+# 🧩 Principe Arsenal :
+#   - Action explicite uniquement (interaction utilisateur)
+#   - Aucune logique métier
+#   - Aucune décision automatique
+#
+# ⚙️ Fonctionnement :
+#   - Service, cible et données fournis via variables
+#   - Gestion spécifique du service cover.stop_cover
+#   - Confirmation optionnelle avant exécution
+#
+# 🎨 Codes visuels :
+#   - success → action positive (ouvrir / monter)
+#   - danger  → action critique (fermer / descendre)
+#   - neutral → action neutre (stop)
+#
+# 🧪 Robustesse :
+#   - Fallbacks sûrs si variables absentes
+#   - Aucun effet de bord sans interaction humaine
+#
+#################################################################
+
+shutter_action:
+  show_state: false
+  show_name: true
+  tap_action:
+    action: call-service
+    service: |
+      [[[ return variables.service || null ]]]
+    service_data: |
+      [[[ 
+        const data = {};
+        if (variables.data) Object.assign(data, variables.data);
+        if (variables.target) {
+          if (variables.service?.startsWith("cover.stop_cover")) {
+            if (variables.target.entity_id) data.entity_id = variables.target.entity_id;
+          } else {
+            data.target = variables.target;
+          }
+        }
+        return data;
+      ]]]
+    confirmation:
+      text: |
+        [[[ return variables.confirm || null ]]]
+  name: |
+    [[[ return variables.name || '' ]]]
+  icon: |
+    [[[ return variables.icon || 'mdi:window-shutter' ]]]
+  styles:
+    card:
+      - padding: 4px 6px
+      - border-radius: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+      - height: 60px
+      - background-color: |
+          [[[ 
+            const tone = (variables.tone || 'neutral').toLowerCase();
+            if (tone === 'success') return 'rgba(76,175,80,0.2)';
+            if (tone === 'danger')  return 'rgba(244,67,54,0.2)';
+            return 'rgba(158,158,158,0.2)';
+          ]]]
+    grid:
+      - grid-template-rows: 1fr auto
+      - grid-template-columns: auto
+      - justify-items: center
+      - align-items: center
+    name:
+      - font-weight: 500
+      - font-size: 12px
+      - text-align: center
+      - line-height: 1.1
+      - color: '#111'
+    icon:
+      - width: 28px
+      - height: 28px
+      - color: '#111'

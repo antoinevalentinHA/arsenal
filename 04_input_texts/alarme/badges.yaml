@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Badges autorisés
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker la liste DECLARATIVE des identifiants de badges
+#   RFID autorisés à désarmer l’alarme.
+#
+# 🧱 Nature :
+#   - Référentiel statique / paramètre métier
+#   - Mémoire persistante (texte)
+#
+# 🚫 Ne fait PAS :
+#   - Ne lit aucun badge
+#   - Ne valide aucune authentification
+#   - Ne prend aucune décision de sécurité
+#   - Ne déclenche aucune action
+#
+# 🔗 Utilisation :
+#   - Automatisation :
+#       10_automations/alarme/desarmement_badge.yaml
+#     → comparaison du badge lu avec la liste autorisée
+#
+# 🧠 Principe ARSENAL :
+#   - Séparation stricte données / décision
+#   - Les helpers stockent, les automatisations décident
+#
+# ⚠️ Convention :
+#   - Liste séparée par des virgules
+#   - Aucun espace
+#   - Format attendu par split(',')
+# ==========================================================
+
+
+badges_autorises:
+  name: Badges autorises
+  mode: text
+  max: 255
+  initial: "+CA86273E,+2492263E,+F3D5273E"

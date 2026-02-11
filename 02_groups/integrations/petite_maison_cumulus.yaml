@@ -1,0 +1,81 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : Cumulus Petite Maison
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Regrouper l’ensemble des entités liées au chauffe-eau
+#    (cumulus) de la petite maison afin de fournir une source
+#    cohérente et centralisée pour l’observation, le diagnostic
+#    et les contrôles système.
+#
+# 🧠 Lecture métier :
+#    Ce groupe représente un SOUS-SYSTÈME ECS complet :
+#    états, paramètres, mesures et actionneur.
+#    Il ne décide rien par lui-même, mais sert de base
+#    à des capteurs système de fiabilité.
+#
+# 🧩 Périmètre :
+#    - États de fonctionnement (binary_sensor)
+#    - Paramètres et consignes (number)
+#    - Mesures physiques et énergétiques (sensor)
+#    - Actionneur ECS (water_heater)
+#
+# 🔗 Dépendances :
+#    - Intégration du cumulus petite maison
+#    - Utilisé par :
+#      • capteurs système de contrôle de fraîcheur des données
+#      • templates d’audit ECS (âge des données)
+#      • dashboards ECS (lecture et supervision)
+#
+# 🚫 Interdits :
+#    - Prendre une décision métier directement via ce groupe
+#    - Déclencher une action à partir du groupe lui-même
+#    - Mélanger des entités non liées au cumulus
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle système / ECS secondaire
+# ==========================================================
+
+
+petite_maison_cumulus:
+  name: "Cumulus Petite Maison"
+  entities:
+
+    ########################################################
+    # 🔥 ÉTATS DE FONCTIONNEMENT
+    ########################################################
+    - binary_sensor.petite_maison_heating_status
+    - binary_sensor.petite_maison_absence_mode
+    - binary_sensor.petite_maison_boost_mode
+    - binary_sensor.petite_maison_manual_mode
+
+
+    ########################################################
+    # 🎛️ PARAMÈTRES & CONSIGNES
+    ########################################################
+    - number.petite_maison_expected_number_of_shower
+    - number.petite_maison_target_temperature
+    - number.petite_maison_water_target_temperature
+
+
+    ########################################################
+    # 🌡️ MESURES ECS
+    ########################################################
+    - sensor.petite_maison_bottom_tank_water_temperature
+    - sensor.petite_maison_control_water_target_temperature
+    - sensor.petite_maison_expected_number_of_shower
+    - sensor.petite_maison_number_of_shower_remaining
+    - sensor.petite_maison_warm_water_remaining
+
+
+    ########################################################
+    # ⚡ ÉNERGIE
+    ########################################################
+    - sensor.petite_maison_electric_power_consumption
+    - sensor.petite_maison_modbuslink_1_2_electric_energy_consumption
+
+
+    ########################################################
+    # 🚿 ACTIONNEUR
+    ########################################################
+    - water_heater.petite_maison

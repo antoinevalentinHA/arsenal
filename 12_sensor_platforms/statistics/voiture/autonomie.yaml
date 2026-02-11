@@ -1,0 +1,30 @@
+# ==========================================================
+#  STATISTICS SENSORS — Audi e-tron
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Ce deux capteurs agrège les données 
+#     d’autonomie sur les 31 derniers jours (≈ 1 mois).
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Fournit des valeurs dérivées : total, moyenne, min, max, etc.
+#     - Idéal pour générer des statistiques temporelles simples
+#       sans recourir à des outils externes.
+#
+#  🧩 Entrées surveillées :
+#     - input_number.autonomie_audi_etron_full   → autonomie affichée batterie pleine
+#
+#  📊 Objectif :
+#     - Calculer la **moyenne d’autonomie observée** sur le mois
+#
+#  ✅ Période d’analyse : 31 jours
+#  ✅ Échantillons maximum : 1000
+# ==========================================================
+
+- platform: statistics
+  name: "Autonomie Audi etron Mensuelle"
+  unique_id: autonomie_audi_etron_mensuelle
+  entity_id: input_number.autonomie_audi_etron_full
+  state_characteristic: mean        # Moyenne des valeurs enregistrées
+  max_age:
+    days: 31                        # Fenêtre de 31 jours
+  sampling_size: 1000               # Limite d’échantillons conservés

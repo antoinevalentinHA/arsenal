@@ -1,0 +1,75 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme – Notification persistante d’état
+#
+#  ID : 1002000000021
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’interface chargée d’afficher une
+#     notification persistante indiquant l’état de
+#     l’alarme lorsqu’elle est armée en mode Absent,
+#     et de la retirer automatiquement lors du désarmement.
+#
+#  🧩 PRINCIPE
+#
+#     - Réagit aux changements d’état de l’alarme
+#     - Crée une notification persistante à l’armement
+#     - Supprime la notification au désarmement
+#     - Affiche le mode en français avec horodatage
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas de l’armement
+#     - Ne modifie aucun état de sécurité
+#     - Ne déclenche aucune action d’alarme
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Feedback utilisateur clair et continu
+#     - Séparation stricte état / affichage
+#     - Nettoyage automatique sans action manuelle
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1002000000021'
+  alias: Alarme - Notification persistante
+  description: >
+    Affiche une notification persistante lors de l’armement de l’alarme
+    en mode Absent (armed_away), et la supprime lorsqu’elle est désarmée.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarme_maison
+      to:
+        - armed_away
+        - disarmed
+
+  action:
+    - choose:
+
+        # ✅ Création de notification lors de l’activation
+        - conditions:
+            - condition: state
+              entity_id: alarm_control_panel.alarme_maison
+              state: 'armed_away'
+          sequence:
+            - action: persistent_notification.create
+              data:
+                title: "🔒 Alarme activée"
+                message: >
+                  L’alarme est activée.
+                notification_id: "alarme_etat"
+
+        # ✅ Suppression lors du désarmement
+        - conditions:
+            - condition: state
+              entity_id: alarm_control_panel.alarme_maison
+              state: 'disarmed'
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: "alarme_etat"

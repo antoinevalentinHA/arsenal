@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBER : Audi A3 e-tron — Autonomie pleine charge
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mémoriser l’autonomie ÉLECTRIQUE réelle observée
+#   lorsque le véhicule atteint une charge complète (≈ 100 %).
+#
+# 🧱 Principe :
+#   - Valeur FIGÉE par cycle de charge
+#   - Mise à jour UNIQUEMENT lorsque la batterie est pleine
+#   - Sert de référence stable (baseline)
+#
+# ❌ Ne fait PAS :
+#   - mesure instantanée
+#   - estimation dynamique
+#   - projection restante
+#
+# 🔗 Utilisation :
+#   - Alimenté par :
+#       • automation : voiture/autonomie.yaml
+#   - Consommé par :
+#       • capteurs statistiques Audi
+#       • dashboards véhicule
+#
+# 🧠 Principe Arsenal :
+#   - Le véhicule mesure
+#   - L’automatisation sélectionne le moment valide
+#   - Le helper mémorise
+#   - Les dashboards comparent
+#
+# 📐 Unité :
+#   - Kilomètres (km)
+# ==========================================================
+
+
+autonomie_audi_etron_full:
+  name: "Autonomie A3 e-tron (pleine charge)"
+  min: 0
+  max: 100
+  step: 1
+  unit_of_measurement: "km"
+  mode: box

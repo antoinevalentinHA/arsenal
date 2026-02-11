@@ -1,0 +1,49 @@
+# ==========================================================
+# 🌡️ TEMPLATE SENSOR — Température de consigne appliquée (locale)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Refléter la consigne réellement appliquée selon le
+#   programme de chauffage actif, sans dépendre du cloud ViCare.
+#
+# ⚙️ Fonctionnement :
+#   - Source du programme actif : sensor.programme_chauffage
+#   - Sources locales sécurisées :
+#       → sensor.chauffage_consigne_confort_local
+#       → sensor.chauffage_consigne_reduced_local
+#   - Vérifie que les valeurs sont valides et numériques
+#     avant d’appliquer la logique.
+#
+# 🧱 Sécurisation :
+#   - Valeur de repli : dernière valeur connue
+#   - Fallback → confort local si tout est inconnu
+#
+# 📍 Entité : sensor.temperature_consigne_appliquee_locale
+# ==========================================================
+
+- sensor:
+    - name: "Temperature de consigne appliquee (locale)"
+      unique_id: temperature_consigne_appliquee_locale
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state: >
+        {% set mode = states('sensor.programme_chauffage') | lower %}
+        {% set confort = states('sensor.chauffage_consigne_confort_local') %}
+        {% set reduit = states('sensor.chauffage_consigne_reduced_local') %}
+        
+        {% set c = confort if confort not in ['unknown','unavailable','none',''] else this.state %}
+        {% set r = reduit if reduit not in ['unknown','unavailable','none',''] else this.state %}
+        
+        {% set tc = c | float(0) %}
+        {% set tr = r | float(0) %}
+        
+        {% if mode in ['confort','comfort'] %}
+          {{ tc }}
+        {% elif mode in ['éco','eco','reduced'] %}
+          {{ tr }}
+        {% elif (tc | float(0)) > 0 %}
+          {{ tc }}
+        {% else %}
+          {{ this.state | float(0) }}
+        {% endif %}
+      attributes:
+        programme_actif: "{{ states('sensor.programme_chauffage') }}"

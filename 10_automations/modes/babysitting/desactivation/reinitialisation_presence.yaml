@@ -1,0 +1,76 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Présence enfants – Remise à zéro quotidienne des mémoires
+#
+#  ID : 1009000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de REMISE À ZÉRO MÉTIER.
+#
+#     Elle réinitialise chaque jour, à une heure fixe,
+#     les indicateurs de présence des enfants afin
+#     de garantir un état propre pour la journée à venir.
+#
+#  🧱 NATURE
+#
+#     - Maintenance quotidienne de mémoire métier
+#     - Déclenchement calendaire fixe
+#     - Aucune condition contextuelle
+#
+#  ⚙️ PRINCIPE
+#
+#     - Exécution quotidienne à 05:00
+#     - Désactivation systématique des booléens :
+#         • presence_arnaud
+#         • presence_matthieu
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne détecte pas la présence réelle
+#     - Ne décide pas de l’occupation de la maison
+#     - Ne dépend pas du mode Babysitting
+#     - Ne tient compte d’aucun capteur
+#
+#  🔗 UTILISATION
+#
+#     - Garantit une base saine pour les logiques
+#       de présence enfants de la journée
+#     - Évite toute persistance involontaire d’état
+#
+#  🛡️ INTENTION
+#
+#     L’absence volontaire de conditions est assumée :
+#     cette remise à zéro est considérée comme
+#     une règle quotidienne fondatrice.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1009000000002'
+  alias: "Présence enfants – Remise à zéro quotidienne"
+  description: >
+    Réinitialise chaque jour les indicateurs de présence
+    des enfants à 05:00.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Horaire quotidien
+  # ======================================================
+  trigger:
+    - platform: time
+      at: "05:00:00"
+
+  # ======================================================
+  # 🔄 Action — Désactivation des booléens de présence
+  # ======================================================
+  action:
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.presence_arnaud
+          - input_boolean.presence_matthieu

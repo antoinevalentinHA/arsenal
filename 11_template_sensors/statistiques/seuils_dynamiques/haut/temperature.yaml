@@ -1,0 +1,209 @@
+# ==========================================================
+# 🌡️ TEMPLATE SENSORS — Température “Seuil Haut”
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Déterminer pour chaque zone la **température maximale de confort**
+#   (ou “seuil haut”) selon :
+#     - la période météorologique (`sensor.periode_meteo`),
+#     - la température moyenne filtrée de la pièce,
+#     - et un **offset saisonnier adaptatif** (plus permissif en hiver).
+#
+# ⚙️ Fonctionnement :
+#   - Source principale :
+#       → `sensor.temperature_filtre_<periode>_moyenne_<zone>`
+#   - Périodes météo possibles :
+#       → `aube`, `matin`, `jour`, `crepuscule`, `nuit`
+#   - Offset saisonnier :
+#       • Hiver  (Déc, Jan, Fév)     → +2.0 °C  
+#       • Inter-saisons (Mar, Avr, Oct, Nov) → +1.5 °C  
+#       • Été   (Mai à Sep)          → +1.0 °C  
+#     (plus tolérant en hiver, plus strict en été pour éviter la surchauffe)
+#
+#   ➜ Formule :
+#        seuil_haut = moyenne + offset
+#
+# 🧮 Logique :
+#   1️⃣ Identifier la période météo active via `sensor.periode_meteo`.  
+#   2️⃣ Récupérer la moyenne filtrée correspondante.  
+#   3️⃣ Calculer un offset de confort selon le mois.  
+#   4️⃣ Déterminer la température maximale de confort acceptable.  
+#   5️⃣ Arrondir à 0,1 °C pour cohérence d’affichage.
+#
+# 🧩 Capteurs / Zones concernées :
+#   ▪️ Résidentiel :
+#      - Chambre Arnaud  
+#      - Chambre Matthieu  
+#      - Chambre Parents  
+#      - Séjour  
+#      - Entrée  
+#      - Cave  
+#      - Garage  
+#      - Palier  
+#      - Petite Maison  
+#      - SDB Enfants  
+#      - SDB Parents  
+#      - Jardin  
+#      - Extérieur  
+#
+#   ▪️ Professionnel / Technique :
+#      - Direction  
+#      - Compta  
+#      - Qualité  
+#      - Devis  
+#      - Commercial  
+#      - Stock Carton  
+#      - Stock PF  
+#      - Komori  
+#      - Bobst  
+#      - Media
+#
+# 💡 Interprétation :
+#   - Si température > Seuil Haut :
+#       → Risque d’inconfort thermique (air trop chaud ou surchauffe).  
+#   - Si température ≈ Seuil Haut :
+#       → Zone limite supérieure du confort.  
+#   - Si température < Seuil Haut :
+#       → Confort thermique normal ou optimal.
+#
+# ⚠️ Remarques :
+#   - Le **seuil haut** agit comme une limite de confort supérieure 
+#     et peut être utilisé pour déclencher :
+#       • la climatisation,  
+#       • la ventilation,  
+#       • ou un avertissement de surchauffe.  
+#   - Le système reste **dynamique** : les seuils s’ajustent selon
+#     les périodes du jour et les saisons.  
+#   - Associé au “Température Seuil Bas”, il permet :
+#       → de définir une **zone de confort thermique adaptative**,  
+#       → de créer des **alertes intelligentes**,  
+#       → ou de piloter automatiquement le chauffage/climatisation.
+#
+# 📊 Type : Template Sensor  
+# 🔥 Domaine : Thermique / Confort / Régulation intelligente  
+# ==========================================================
+
+- sensor:
+    - name: "Température Seuil Haut Chambre Arnaud"
+      unique_id: temperature_seuil_haut_chambre_arnaud
+      state: &temperature_seuil_haut_logic >
+        {% set periode = states('sensor.periode_meteo') %}
+        {% set suffixe = this.entity_id | replace('sensor.temperature_seuil_haut_', '') %}
+        {% set moyenne = states('sensor.temperature_filtre_' ~ periode ~ '_moyenne_' ~ suffixe) | float(0) %}
+        {% set mois = now().month %}
+
+        {# Offset saisonnier : plus humide en été #}
+        {% set offset =
+          1.4 if mois in [6, 7, 8] else
+          1.1 if mois in [3, 4, 9, 10] else
+          0.9 %}
+        {{ (moyenne + offset) | round(1) }}
+
+- sensor:
+    - name: "Température Seuil Haut Cave"
+      unique_id: temperature_seuil_haut_cave
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Entrée"
+      unique_id: temperature_seuil_haut_entree
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Jardin"
+      unique_id: temperature_seuil_haut_jardin
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Garage"
+      unique_id: temperature_seuil_haut_garage
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Chambre Matthieu"
+      unique_id: temperature_seuil_haut_chambre_matthieu
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Chambre Parents"
+      unique_id: temperature_seuil_haut_chambre_parents
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Petite Maison"
+      unique_id: temperature_seuil_haut_petite_maison
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut SDB Enfants"
+      unique_id: temperature_seuil_haut_sdb_enfants
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut SDB Parents"
+      unique_id: temperature_seuil_haut_sdb_parents
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Séjour"
+      unique_id: temperature_seuil_haut_sejour
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Palier"
+      unique_id: temperature_seuil_haut_palier
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Extérieur"
+      unique_id: temperature_seuil_haut_exterieur
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Direction"
+      unique_id: temperature_seuil_haut_direction
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Compta"
+      unique_id: temperature_seuil_haut_compta
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Qualité"
+      unique_id: temperature_seuil_haut_qualite
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Devis"
+      unique_id: temperature_seuil_haut_devis
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Commercial"
+      unique_id: temperature_seuil_haut_commercial
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Stock Carton"
+      unique_id: temperature_seuil_haut_stock_carton
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Stock PF"
+      unique_id: temperature_seuil_haut_stock_pf
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Komori"
+      unique_id: temperature_seuil_haut_komori
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Bobst"
+      unique_id: temperature_seuil_haut_bobst
+      state: *temperature_seuil_haut_logic
+
+- sensor:
+    - name: "Température Seuil Haut Media"
+      unique_id: temperature_seuil_haut_media
+      state: *temperature_seuil_haut_logic

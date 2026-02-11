@@ -1,0 +1,35 @@
+# ==========================================================
+#  🧠 ARSENAL — INPUT_TEXT : Chauffage – Dernier auto-ajustement
+# ----------------------------------------------------------
+#  🎯 Rôle :
+#     Conserver la TRACE TEXTUELLE du dernier événement
+#     d’auto-ajustement de la courbe de chauffe
+#     (simulation ou réel).
+#
+#  📌 Exemple de valeur :
+#     02/12 10:00 • real • pente 1.3→1.5 • para 0.0→0.5
+#
+#  🧱 Nature :
+#     - Mémoire dérivée
+#     - Journal événementiel (1 ligne)
+#
+#  🚫 Ne fait PAS :
+#     - Ne déclenche aucun ajustement
+#     - Ne modifie aucune consigne
+#     - Ne pilote pas la chaudière
+#     - Ne reflète pas l’état courant de la courbe
+#
+#  🔗 Utilisation :
+#     - Dashboard Diagnostic Chauffage (lecture humaine)
+#
+#  🧠 Principe ARSENAL :
+#     - L’action est exécutée ailleurs
+#     - Le helper ne fait qu’en garder la trace
+# ==========================================================
+
+
+chauffage_last_adjustment:
+  name: "Chauffage dernier auto-ajustement"
+  icon: mdi:chart-line
+  mode: text
+  max: 120

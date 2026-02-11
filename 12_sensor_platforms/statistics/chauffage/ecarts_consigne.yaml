@@ -1,0 +1,31 @@
+# ==========================================================
+# 📊 STATISTICS SENSOR — Moyennes glissantes sur 24 h (chauffage)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Calculer les moyennes glissantes sur 24 h des écarts
+#   de consigne instantanés (global, froid, doux).
+# ==========================================================
+
+- platform: statistics
+  name: "Ecart consigne stats 24h"
+  entity_id: sensor.ecart_consigne_instantane
+  state_characteristic: mean
+  max_age:
+    hours: 24
+  sampling_size: 300
+
+- platform: statistics
+  name: "Ecart consigne stats froid"
+  entity_id: sensor.ecart_consigne_instantane_froid
+  state_characteristic: mean
+  max_age:
+    hours: 24
+  sampling_size: 300
+
+- platform: statistics
+  name: "Ecart consigne stats doux"
+  entity_id: sensor.ecart_consigne_instantane_doux
+  state_characteristic: mean
+  max_age:
+    hours: 24
+  sampling_size: 300

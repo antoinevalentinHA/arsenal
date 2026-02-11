@@ -1,0 +1,75 @@
+#################################################################
+# 🛡️ CARTE ALARME — UI
+# ---------------------------------------------------------------
+# Carte de pilotage et de lecture de l’alarme maison.
+#
+# Rôle :
+#   - Afficher l’état lisible de l’alarme
+#   - Permettre l’armement / désarmement explicite
+#   - Donner accès au dashboard alarme
+#
+# Principe Arsenal :
+#   - UI uniquement
+#   - Actions explicites (pas de toggle implicite)
+#   - Traduction visuelle directe de l’état exposé
+#################################################################
+
+carte_alarme:
+  template: carte_base
+
+  show_state: true
+
+  styles:
+    card:
+      - height: 72px
+      - padding: 8px
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - justify-self: center
+      - text-align: center
+    state:
+      - font-size: 13px
+      - font-weight: 400
+      - justify-self: center
+      - text-align: center
+
+  state_display: |
+    [[[
+      if (!entity) return '—';
+      return entity.state === 'armed_away' ? 'Armée'
+           : entity.state === 'disarmed'  ? 'Désarmée'
+           : entity.state;
+    ]]]
+
+  tap_action:
+    action: call-service
+    confirmation:
+      text: |
+        [[[
+          return entity?.state === 'armed_away'
+            ? "⚠️ Désarmer l’alarme ?"
+            : "⚠️ Armer l’alarme ?";
+        ]]]
+    service: |
+      [[[
+        return entity?.state === 'disarmed'
+          ? 'alarm_control_panel.alarm_arm_away'
+          : 'alarm_control_panel.alarm_disarm';
+      ]]]
+    service_data:
+      entity_id: alarm_control_panel.alarme_maison
+
+  hold_action:
+    action: navigate
+    navigation_path: /alarme-dashboard/alarme
+
+  state:
+    - value: disarmed
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)   # 🟢 Désarmée
+    - value: armed_away
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)   # 🔴 Armée

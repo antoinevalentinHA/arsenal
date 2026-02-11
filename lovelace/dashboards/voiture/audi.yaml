@@ -1,0 +1,196 @@
+# ==========================================================
+# 🚗 DASHBOARD : Audi A3 e-tron
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Centralise les informations et commandes locales du véhicule
+#   Audi A3 e-tron : batterie, sécurité, synchronisation et navigation.
+#
+# 💡 Objectif :
+#   Fournir une interface synthétique, claire et lisible, permettant :
+#     - de surveiller l’état de charge et l’autonomie
+#     - de vérifier la sécurité du véhicule (portes/fenêtres)
+#     - de contrôler les mises à jour locales
+#     - d’accéder rapidement aux dashboards de détail
+#
+# 🧩 Structure :
+#   1️⃣ Batterie & Autonomie
+#   2️⃣ Sécurité
+#   3️⃣ Mise à jour
+#   4️⃣ Navigation
+#
+# ✅ Compatible : Lovelace / button-card / HA 2024.8+
+# ==========================================================
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+title: Audi A3 e-tron
+
+views:
+  - title: Audi A3 e-tron
+    path: audi_a3_e-tron
+    icon: mdi:server
+
+    badges: !include ../../includes/badges/base.yaml
+
+    # ==========================================================
+    # 🧩 CONTENEUR PRINCIPAL
+    # ----------------------------------------------------------
+    # Contient toutes les sections verticales du tableau de bord.
+    # ==========================================================
+    cards:
+
+      - type: vertical-stack
+        cards:
+          - !include ../../includes/navigation/voiture.yaml
+
+          - type: vertical-stack
+            cards:
+    
+              # ==========================================================
+              # ⚡ SECTION : Batterie & Autonomie
+              # ==========================================================
+              - type: custom:button-card
+                template: section_header
+                name: ⚡ Batterie & Autonomie
+    
+              - square: false
+                type: grid
+                columns: 3
+                cards:
+    
+                  # 🔋 État de charge
+                  - type: custom:button-card
+                    template: carte_etat_charge_vehicule
+                    entity: sensor.audi_e_tron_etat_de_charge_local
+                    name: Charge
+                    icon: mdi:ev-station
+    
+                  # 🔋 Niveau de batterie
+                  - type: custom:button-card
+                    template: carte_batterie_seuils_variables
+                    entity: sensor.audi_e_tron_pourcentage_moteur_principal_local
+                    name: Batterie
+                    icon: mdi:battery-high
+                    variables:
+                      s_crit: 10
+                      s_low: 20
+                      s_mid: 40
+                      s_ok: 60
+                      s_good: 80
+    
+                  # 🚗 Autonomie restante
+                  - type: custom:button-card
+                    template: carte_autonomie_seuils_variables
+                    entity: sensor.audi_e_tron_autonomie_local
+                    name: Autonomie
+                    icon: mdi:map-marker-distance
+                    variables:
+                      s_crit: 5
+                      s_low: 10
+                      s_mid: 20
+                      s_ok: 30
+                      s_good: 35
+    
+              # ==========================================================
+              # 🔒 SECTION : Sécurité
+              # ==========================================================
+              - type: custom:button-card
+                template: section_header
+                name: 🔒 Sécurité
+    
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+    
+                  # 🚪 Portes
+                  - type: custom:button-card
+                    template: audi_etat_capteur
+                    entity: binary_sensor.audi_e_tron_portes_verrouillees_local
+                    name: Portes
+                    icon: mdi:car-door-lock
+                    tap_action: none
+    
+                  # 🪟 Fenêtres
+                  - type: custom:button-card
+                    template: audi_etat_capteur
+                    entity: binary_sensor.audi_e_tron_fenetres_ouvertes_local
+                    name: Fenêtres
+                    tap_action: none
+                    icon: |
+                      [[[ 
+                        return entity.state === "off"
+                          ? "mdi:window-closed"
+                          : "mdi:window-open";
+                      ]]]
+    
+              # ==========================================================
+              # 🔄 SECTION : Mise à jour
+              # ==========================================================
+              - type: custom:button-card
+                template: section_header
+                name: 🔄 Mise à jour
+    
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+    
+                  - type: custom:button-card
+                    template: carte_duree_stationnement
+                    entity: sensor.audi_e_tron_temps_stationnement_local
+                    name: Stationné depuis
+                    icon: mdi:car-clock
+
+                  - type: custom:button-card
+                    template: carte_derniere_mise_a_jour
+                    entity: sensor.audi_e_tron_derniere_mise_a_jour_local
+                    name: Dernière MAJ
+                    icon: mdi:cloud-refresh
+
+              # ======================================================
+              # ⚙️ SECTION : Distance et révision
+              # ======================================================
+              - type: custom:button-card
+                template: section_header
+                name: ⚙️ Distance et révision
+
+              - type: grid
+                columns: 3
+                square: false
+                cards:
+  
+                  - type: custom:button-card
+                    template: audi_etat_info
+                    entity: sensor.audi_e_tron_kilometrage_local
+                    name: Odomètre
+                    icon: mdi:counter
+
+                  - type: custom:button-card
+                    template: audi_info_metrique
+                    entity: sensor.distance_audi_e_tron_mensuelle
+                    name: Distance mois
+                    icon: mdi:calendar-month
+                
+                  - type: custom:button-card
+                    template: audi_info_metrique
+                    entity: sensor.distance_audi_e_tron_annuelle
+                    name: Distance année
+                    icon: mdi:calendar
+        
+
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+                  - type: custom:button-card
+                    template: audi_etat_info
+                    entity: sensor.audi_e_tron_prochaine_inspection_temps_local
+                    name: Temps avant révision
+                    icon: mdi:calendar-clock
+                    tap_action: none
+    
+                  - type: custom:button-card
+                    template: audi_etat_info
+                    entity: sensor.audi_e_tron_prochaine_inspection_distance_local
+                    name: Distance avant révision
+                    icon: mdi:map-marker-distance
+                    tap_action: none

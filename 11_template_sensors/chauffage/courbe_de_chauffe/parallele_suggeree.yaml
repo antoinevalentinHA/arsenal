@@ -1,0 +1,45 @@
+# ==========================================================
+# 🌡️ TRIGGERED TEMPLATE SENSOR — Chauffage : Parallèle suggérée
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#    Proposer, de manière réactive, un nouvel offset (parallèle)
+#    de la courbe de chauffe en fonction de l’écart global 24h.
+#
+# 🔎 Déclencheurs :
+#    - sensor.ecart_consigne_moyenne_24h
+#    - input_number.chauffage_parallele_consigne
+#
+# ⚙️ Critères :
+#    - ecart_global < -0.4 → offset += 1
+#    - ecart_global > 0.4  → offset -= 1
+#    - sinon offset inchangé
+#    - bornes : -5 → +5
+#
+# 📌 Note :
+#    Proposition purement locale, jamais appliquée automatiquement.
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.ecart_consigne_moyenne_24h
+        - input_number.chauffage_parallele_consigne
+
+  sensor:
+    - name: "chauffage_parallele_suggeree"
+      unique_id: chauffage_parallele_suggeree
+      unit_of_measurement: ""
+      icon: mdi:axis-arrow
+      state: >
+        {% set ecart_global = states('sensor.ecart_consigne_moyenne_24h') | float(0) %}
+        {% set offset_actuel = states('input_number.chauffage_parallele_consigne') | float(0) %}
+        {% set offset_min = -5 %}
+        {% set offset_max = 5 %}
+
+        {% if ecart_global < -0.4 %}
+          {{ [offset_actuel + 1, offset_max] | min }}
+        {% elif ecart_global > 0.4 %}
+          {{ [offset_actuel - 1, offset_min] | max }}
+        {% else %}
+          {{ offset_actuel }}
+        {% endif %}

@@ -1,0 +1,38 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Aération – Pipeline armé
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Flag de sécurité indiquant que le pipeline
+#     d’aération est autorisé à fonctionner
+#     après l’initialisation complète du système.
+#
+#  🧱 Nature :
+#     - Verrou technique global
+#     - Condition d’armement post-démarrage
+#
+#  🔄 Cycle de vie :
+#     - OFF : état par défaut au démarrage
+#             (pipeline interdit)
+#     - ON  : positionné explicitement lorsque
+#             le système est jugé stable
+#
+#  📥 N’effectue PAS :
+#     - aucune détection d’aération
+#     - aucune décision thermique
+#     - aucune action de blocage ou de reprise
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations du pipeline
+#       d’aération (blocage chauffage, guards)
+#     - Sert de précondition obligatoire à toute
+#       logique d’aération
+#
+#  🧠 Principe Arsenal :
+#     - Rien ne s’exécute par défaut
+#     - Tout pipeline doit être explicitement armé
+# ==========================================================
+
+
+aeration_pipeline_arme:
+  name: "Aération — Pipeline armé"
+  icon: mdi:shield-check

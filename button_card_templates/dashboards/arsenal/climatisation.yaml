@@ -1,0 +1,63 @@
+#################################################################
+# ❄️ CARTE CLIMATISATION — ÉTAT RÉEL
+# ---------------------------------------------------------------
+# Affiche l’état réel de la climatisation locale en fonction
+# du mode actif et de la consigne appliquée.
+#
+# Principe Arsenal :
+#   - Carte d’état réel
+#   - Aucune décision métier
+#   - Lecture lisible et contextualisée
+#################################################################
+
+carte_clim_etat:
+  template: carte_base
+
+  show_label: true
+  show_state: false
+
+  label: |
+    [[[
+      const mode = (entity.state || '').toLowerCase();
+      const consigne = states['sensor.consigne_clim_appliquee_locale']?.state;
+
+      if (mode === 'cool')
+        return 'Consigne : ' +
+          ((!consigne || ['unavailable','unknown'].includes(consigne)) ? '-' : consigne) + '°C';
+
+      if (mode === 'dry')  return 'Mode Dry actif';
+      if (mode === 'heat') return 'Mode Chauffage actif';
+      if (mode === 'off')  return 'Veille';
+
+      return 'État : ' + (mode || '-');
+    ]]]
+
+  tap_action:
+    action: navigate
+    navigation_path: /clim-dashboard/climatisation_
+
+  hold_action:
+    action: more-info
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const mode = (entity.state || '').toLowerCase();
+            if (mode === 'cool') return 'rgba(33, 150, 243, 0.2)';  // 🧊 Refroidissement
+            if (mode === 'dry')  return 'rgba(76, 175, 80, 0.2)';     // ✅ Déshumidification
+            if (mode === 'heat') return 'rgba(244, 67, 54, 0.2)';    // 🔥 Chauffage
+            return 'rgba(158, 158, 158, 0.2)';                        // ⚪ Veille / autre
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#000000'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#000000'
+    label:
+      - font-size: 13px
+      - font-weight: 400
+      - color: '#000000'

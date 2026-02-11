@@ -1,0 +1,12 @@
+#################################################################
+# ⚠️ CARTE ACTION STANDARD — WARNING
+# ---------------------------------------------------------------
+# Action manuelle sensible (calibration, reset, recalcul…)
+#################################################################
+
+carte_action_standard_warning:
+  template: carte_action_standard
+
+  styles:
+    card:
+      - background-color: rgba(255, 235, 59, 0.2)

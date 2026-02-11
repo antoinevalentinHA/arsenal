@@ -1,0 +1,27 @@
+# ======================================================
+# 🌬️ Carte — VMC (état réel)
+# ------------------------------------------------------
+# Lecture seule. Aucune action métier autorisée.
+# Clic → navigation vers le dashboard VMC.
+# ======================================================
+- type: custom:button-card
+  template: carte_mode_binaire_interprete
+  entity: input_boolean.vmc_haute_vitesse
+  name: VMC
+  icon: mdi:fan
+
+  tap_action:
+    action: navigate
+    navigation_path: /vmc-dashboard/home
+
+  hold_action:
+    action: none
+
+  double_tap_action:
+    action: none
+
+  variables:
+    label_on: High
+    label_off: Normal
+    color_on: rgba(244, 67, 54, 0.2)
+    color_off: rgba(76, 175, 80, 0.2)

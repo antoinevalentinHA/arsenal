@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : ECS – Résumé figé du dernier cycle
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Conserver un RÉSUMÉ FIGÉ et STABILISÉ du dernier
+#   cycle ECS, destiné à l’analyse, au diagnostic
+#   et au parsing par des capteurs template.
+#
+# 🧱 Nature :
+#   - Synthèse événementielle figée
+#   - Donnée dérivée post-cycle (texte semi-structuré)
+#
+# 🚫 Ne fait PAS :
+#   - Ne déclenche aucun cycle ECS
+#   - Ne pilote aucune consigne
+#   - Ne reflète pas l’état ECS en temps réel
+#   - Ne constitue pas une source de vérité primaire
+#
+# 🔗 Alimentation :
+#   - Automatisations de log ECS (fin de cycle)
+#
+# 🔗 Utilisation :
+#   - Dashboards diagnostics ECS
+#   - Capteurs template d’analyse / diagnostic
+#   - Automatisations ECS (lecture passive)
+#
+# 🧠 Principe ARSENAL :
+#   - Le temps réel est ailleurs
+#   - Le figé sert à comprendre et analyser
+#
+# ⚠️ Technique :
+#   - Format texte semi-structuré (séparateur `|`)
+#   - Toute logique d’interprétation est EXTERNE
+# ==========================================================
+
+
+ecs_resume_dernier_cycle_fige:
+  name: ECS - Résumé figé dernier cycle
+  max: 255
+  icon: mdi:clipboard-text-outline

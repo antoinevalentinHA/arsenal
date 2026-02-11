@@ -1,0 +1,60 @@
+#################################################################
+# 🌧️ CARTE PRÉCIPITATIONS — SEUILS VARIABLES
+# ---------------------------------------------------------------
+# Affiche une quantité de précipitations (mm) avec code couleur.
+#
+# Variables attendues :
+#   - seuil_faible  : pluie faible
+#   - seuil_modere  : pluie modérée
+#   - seuil_forte   : pluie forte
+#
+# Principe Arsenal :
+#   - Carte purement informationnelle
+#   - Seuils définis par le contexte temporel (1h / jour / semaine)
+#   - Aucune logique métier
+#################################################################
+
+carte_precipitations_seuils_variables:
+  template: carte_base
+
+  show_state: true
+  show_icon: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${v.toFixed(1)} mm`;
+    ]]]
+
+  styles:
+    card:
+      - height: 72px
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+
+            const f = variables?.seuil_faible;
+            const m = variables?.seuil_modere;
+            const s = variables?.seuil_forte;
+
+            if (isNaN(v)) return 'rgba(224,224,224,0.2)';
+            if (s !== undefined && v >= s) return 'rgba(30,136,229,0.35)';   // 🌊 forte pluie
+            if (m !== undefined && v >= m) return 'rgba(100,181,246,0.3)';   // 🌧️ modérée
+            if (f !== undefined && v >= f) return 'rgba(187,222,251,0.3)';   // 🌦️ faible
+            return 'rgba(158,158,158,0.2)';                                    // sec
+          ]]]
+
+    name:
+      - font-size: 13px
+      - font-weight: 600
+      - color: '#111'
+
+    state:
+      - font-size: 18px
+      - font-weight: 700
+      - color: '#111'

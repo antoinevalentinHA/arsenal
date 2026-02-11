@@ -1,0 +1,23 @@
+- name: "bouton_cuisine_action"
+  unique_id: bouton_cuisine_action
+  state_topic: "zigbee2mqtt/bouton_cuisine"
+  value_template: "{{ (value_json | default({}, true)).get('action', '') }}"
+  icon: mdi:gesture-tap-button
+
+- name: "bouton_sdb_action"
+  unique_id: bouton_sdb_action
+  state_topic: "zigbee2mqtt/bouton_sdb"
+  value_template: "{{ (value_json | default({}, true)).get('action', '') }}"
+  icon: mdi:gesture-tap-button
+
+- name: "bouton_garage_1_action"
+  unique_id: bouton_garage_1_action
+  state_topic: "zigbee2mqtt/bouton_garage_1"
+  value_template: "{{ (value_json | default({}, true)).get('action', '') }}"
+  icon: mdi:gesture-tap-button
+
+- name: "bouton_garage_2_action"
+  unique_id: bouton_garage_2_action
+  state_topic: "zigbee2mqtt/bouton_garage_2"
+  value_template: "{{ (value_json | default({}, true)).get('action', '') }}"
+  icon: mdi:gesture-tap-button

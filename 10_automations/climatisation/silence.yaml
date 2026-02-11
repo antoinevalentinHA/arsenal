@@ -1,0 +1,143 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Clim – Modulation acoustique (exécution mode silencieux)
+#
+# ID : 1003000000020
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Automation d’EXÉCUTION subordonnée.
+#
+#     Elle applique l’état du mode silencieux
+#     de la climatisation en fonction de la
+#     décision métier portée par un capteur dédié.
+#
+#     Cette automation ne décide RIEN.
+#
+# ----------------------------------------------------------
+# 🧩 PRINCIPE
+#
+#     - Réagit uniquement à des événements structurants
+#       (décision métier, état réel, stabilité système)
+#     - Compare la décision attendue à l’état réel
+#     - Corrige tout écart détecté
+#
+#     L’automation est volontairement IDÉMPOTENTE :
+#     elle peut être exécutée plusieurs fois sans
+#     effet de bord.
+#
+# ----------------------------------------------------------
+# 🔁 COMPORTEMENT D’EXÉCUTION
+#
+#     Cette automation peut être déclenchée deux fois
+#     lors d’un même changement effectif :
+#
+#       1. Changement de la décision métier
+#       2. Changement induit de l’état réel
+#
+#     Ce double déclenchement est NORMAL et voulu.
+#     Il correspond à une ré-évaluation miroir
+#     garantissant la convergence de l’état réel
+#     vers la décision métier.
+#
+#     Le mode d’exécution `queued` est utilisé pour :
+#       - éviter tout log parasite "Already running"
+#       - préserver une exécution séquentielle
+#       - maintenir un comportement strictement déterministe
+#
+# ----------------------------------------------------------
+# 🧠 SOURCE DE DÉCISION
+#
+#     - binary_sensor.clim_silencieux_autorise
+#
+# ----------------------------------------------------------
+# 📦 SOURCES TECHNIQUES
+#
+#     - sensor.clim_mode_silencieux_local
+#     - switch.clim_quiet_fan
+#
+# ----------------------------------------------------------
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule PAS de plage horaire
+#     - Ne teste PAS la présence
+#     - Ne déclenche PAS la climatisation
+#     - Ne modifie PAS le mode HVAC
+#     - Ne décide PAS du confort thermique
+#
+# ----------------------------------------------------------
+# 🧠 ARCHITECTURE ARSENAL
+#
+#     Décision = capteur
+#     Action   = automation
+#
+#     Automation événementielle,
+#     sans polling,
+#     sans boucle temporelle,
+#     et robuste aux redémarrages et
+#     aux pertes d’état transitoires.
+# ==========================================================
+
+
+- id: '1003000000020'
+  alias: Clim - Mode silencieux (exécution)
+  description: >
+    Applique l’état du mode silencieux de la climatisation
+    selon la décision métier portée par
+    `binary_sensor.clim_silencieux_autorise`.
+
+    Automation strictement événementielle et idempotente.
+
+  trigger:
+
+    # 🔁 Changement de décision métier
+    - platform: state
+      entity_id: binary_sensor.clim_silencieux_autorise
+
+    # 🔁 Changement d’état réel du mode silencieux
+    - platform: state
+      entity_id: sensor.clim_mode_silencieux_local
+
+    # 🔁 Redémarrage / remise en état du système
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: 'on'
+
+  condition:
+
+    # 🔒 Exécution uniquement si le système est stable
+    - condition: template
+      value_template: >
+        {{ states('input_boolean.systeme_stable') == 'on' }}
+
+  action:
+    - choose:
+
+        # 🎧 Activation du mode silencieux
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('binary_sensor.clim_silencieux_autorise') == 'on' }}
+            - condition: template
+              value_template: >
+                {{ states('sensor.clim_mode_silencieux_local') == 'off' }}
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: switch.clim_quiet_fan
+
+        # 🔊 Désactivation du mode silencieux
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('binary_sensor.clim_silencieux_autorise') == 'off' }}
+            - condition: template
+              value_template: >
+                {{ states('sensor.clim_mode_silencieux_local') == 'on' }}
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.clim_quiet_fan
+
+  mode: queued
+  max: 2

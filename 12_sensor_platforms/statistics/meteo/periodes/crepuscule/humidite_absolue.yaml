@@ -1,0 +1,205 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles d’humidité absolue (filtrée au crépuscule)
+# ----------------------------------------------------------
+#  🧠 Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de l’humidité absolue (g/m³) relevée au crépuscule,
+#     moment où la température baisse et la condensation
+#     potentielle augmente. Ces valeurs permettent de
+#     détecter les déséquilibres de ventilation et le confort
+#     hygrométrique du soir.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Source : capteurs `sensor.humidite_absolue_filtre_crepuscule_*`
+#     - Métrique calculée : `mean` (moyenne)
+#
+#  📅 Fenêtre d’analyse :
+#     - Période glissante : 30 jours
+#     - Échantillons : 5 000 mesures maximum
+#
+#  📊 Sortie :
+#     - Moyenne mensuelle de l’humidité absolue crépusculaire
+#
+#  🏡 Zones couvertes :
+#     - Chambres, pièces à vivre, ateliers, extérieurs,
+#       zones administratives et de stockage.
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🏠 Chambres
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Chambre Arnaud"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_5000 5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Chambre Matthieu"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Chambre Parents"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏡 Espaces de vie et communs
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Entrée"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Séjour"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Petite Maison"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🚿 Salles de bains
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne SDB Enfants"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_sdb_enfants
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne SDB Parents"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_sdb_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🌳 Extérieur et jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Jardin"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Extérieur"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏢 Zones administratives
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Direction"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Compta"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Qualité"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Devis"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Commercial"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏭 Zones industrielles / ateliers
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Komori"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Bobst"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Media"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 📦 Zones de stockage
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Stock Carton"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_stock_carton
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Stock PF"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_stock_pf
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# ⚙️ Locaux techniques
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Cave"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_cave
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité absolue filtre crepuscule Moyenne Garage"
+  entity_id: sensor.humidite_absolue_filtre_crepuscule_garage
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000

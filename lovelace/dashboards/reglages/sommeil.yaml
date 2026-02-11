@@ -1,0 +1,54 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Réglages Sommeil
+icon: mdi:sleep
+
+views:
+  - title: Sommeil
+    path: sommeil
+    icon: mdi:sleep
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /meteo-bruit-dashboard/bruit
+
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          - type: custom:button-card
+            template: section_header
+            name: 😴 Réveils nocturnes
+    
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.seuil_reveil_bruit
+                name: Seuil de bruit
+              - entity: input_datetime.heure_reveil_nuit_debut
+                name: Heure début détection
+              - entity: input_datetime.heure_reveil_nuit_fin
+                name: Heure fin détection
+              - entity: input_datetime.heure_reset_reveils
+                name: Heure de reset
+    
+          - type: custom:button-card
+            template: section_header
+            name: 🔊 Babyphone
+    
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_boolean.babyphone_arnaud
+                name: Babyphone Arnaud
+              - entity: input_boolean.babyphone_matthieu
+                name: Babyphone Matthieu

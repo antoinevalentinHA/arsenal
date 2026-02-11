@@ -1,0 +1,125 @@
+# ==========================================================
+# 🧠 ARSENAL — TRIGGERED BINARY SENSOR MÉTIER
+#     Chauffage — Incohérence consignes ViCare / Références HA
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Détecter de manière STRICTEMENT DÉTERMINISTE
+#     toute divergence effective entre :
+#
+#       - les consignes réelles côté ViCare (lecture locale fiabilisée)
+#         • sensor.chauffage_consigne_confort_local
+#         • sensor.chauffage_consigne_reduced_local
+#
+#       - les références souveraines Arsenal (HA maître)
+#         • input_number.chauffage_consigne_confort
+#         • input_number.chauffage_consigne_reduite
+#
+#     Ces capteurs constituent :
+#       - des SOURCES DE VÉRITÉ de divergence de consigne
+#         (diagnostic / guards / réalignement éventuel)
+#
+# 🚫 NE FAIT PAS
+#     - Ne déclenche aucune action
+#     - Ne modifie aucun état
+#     - Ne décide rien
+#
+# 🔒 ROBUSTESSE
+#     - Recalcul uniquement sur changements pertinents
+#     - Neutralisé si API indisponible
+#     - Neutralisé si application en cours
+#     - Ignore Inconnu / unknown / unavailable
+#     - Tolérance epsilon anti-bruit
+#     - Anti-rebond temporel intégré
+# ==========================================================
+
+- trigger:
+
+    # 🔁 Confort : lecture ViCare locale / référence HA
+    - platform: state
+      entity_id: sensor.chauffage_consigne_confort_local
+    - platform: state
+      entity_id: input_number.chauffage_consigne_confort
+
+    # 🔁 Réduite : lecture ViCare locale / référence HA
+    - platform: state
+      entity_id: sensor.chauffage_consigne_reduced_local
+    - platform: state
+      entity_id: input_number.chauffage_consigne_reduite
+
+    # 🔁 Disponibilité API
+    - platform: state
+      entity_id: binary_sensor.vicare_api_disponible
+
+
+  binary_sensor:
+
+    - name: "Chauffage — Incohérence consigne Confort (ViCare / HA)"
+      unique_id: chauffage_incoherence_consigne_confort_vicare_ha
+      device_class: problem
+
+      # --------------------------------------------------
+      # ⏱️ Anti-rebond structurel
+      # --------------------------------------------------
+      delay_on: "00:00:15"
+      delay_off: "00:00:05"
+
+      # --------------------------------------------------
+      # 🧠 Logique canonique de divergence (Confort)
+      # --------------------------------------------------
+      state: >
+        {% set api = states('binary_sensor.vicare_api_disponible') == 'on' %}
+        {% set ha_s = states('input_number.chauffage_consigne_confort') %}
+        {% set local_s = states('sensor.chauffage_consigne_confort_local') %}
+        {% set eps = 0.05 %}
+      
+        {% if not api %}
+          false
+        {% elif ha_s in ['unknown','unavailable','none','None',''] %}
+          false
+        {% elif local_s in ['unknown','unavailable','none','None',''] %}
+          false
+        {% else %}
+          {% set ha = ha_s | float(0) %}
+          {% set local = local_s | float(0) %}
+          {% if ha <= 0 or local <= 0 %}
+            false
+          {% else %}
+            {{ (ha - local) | abs > eps }}
+          {% endif %}
+        {% endif %}
+
+    - name: "Chauffage — Incohérence consigne Réduite (ViCare / HA)"
+      unique_id: chauffage_incoherence_consigne_reduite_vicare_ha
+      device_class: problem
+
+      # --------------------------------------------------
+      # ⏱️ Anti-rebond structurel
+      # --------------------------------------------------
+      delay_on: "00:00:15"
+      delay_off: "00:00:05"
+
+      # --------------------------------------------------
+      # 🧠 Logique canonique de divergence (Réduite)
+      # --------------------------------------------------
+      state: >
+        {% set api = states('binary_sensor.vicare_api_disponible') == 'on' %}
+        {% set ha_s = states('input_number.chauffage_consigne_reduite') %}
+        {% set local_s = states('sensor.chauffage_consigne_reduced_local') %}
+        {% set eps = 0.05 %}
+      
+        {% if not api %}
+          false
+        {% elif ha_s in ['unknown','unavailable','none','None',''] %}
+          false
+        {% elif local_s in ['unknown','unavailable','none','None',''] %}
+          false
+        {% else %}
+          {% set ha = ha_s | float(0) %}
+          {% set local = local_s | float(0) %}
+          {% if ha <= 0 or local <= 0 %}
+            false
+          {% else %}
+            {{ (ha - local) | abs > eps }}
+          {% endif %}
+        {% endif %}

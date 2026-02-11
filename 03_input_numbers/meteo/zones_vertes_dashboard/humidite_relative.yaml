@@ -1,0 +1,45 @@
+# ==========================================================
+# 🎨 ARSENAL — HELPER UI : Zone verte humidité relative
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir la demi-largeur de la zone de confort VISUELLE
+#   utilisée pour colorer les capteurs d’humidité relative
+#   dans les dashboards et vues diagnostics.
+#
+# 🧠 Principe :
+#   - Chaque pièce possède ses seuils métier :
+#       • seuil_bas  (% HR)
+#       • seuil_haut (% HR)
+#   - Le centre de confort est calculé localement :
+#       centre = (seuil_bas + seuil_haut) / 2
+#   - Ce helper définit la tolérance graphique :
+#       zone verte = centre ± humidite_relative_couleur_zone_verte
+#
+# ⚠️ Important :
+#   - Ce helper est STRICTEMENT VISUEL.
+#   - Il n’influence aucun seuil métier.
+#   - Il ne pilote aucune automatisation.
+#   - Il n’intervient dans aucune décision.
+#
+# 🎨 Interprétation visuelle :
+#   - Vert   → HR dans la zone idéale
+#   - Jaune  → HR acceptable mais décalée
+#   - Rouge  → HR hors des seuils définis
+#
+# 📦 Portée :
+#   - Helper global
+#   - Utilisé par les capteurs de COULEUR
+#     dérivés de l’humidité relative
+#
+# 📐 Unité :
+#   - Pourcentage d’humidité relative (% HR)
+#
+# ==========================================================
+
+
+humidite_relative_couleur_zone_verte:
+  name: Zone verte humidite relative
+  min: 1
+  max: 10
+  step: 0.5
+  mode: slider

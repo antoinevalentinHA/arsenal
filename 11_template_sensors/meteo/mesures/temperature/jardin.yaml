@@ -1,0 +1,81 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Température Jardin (HomeKit min)
+# ----------------------------------------------------------
+# ✔ Deux sondes HomeKit → MIN pour éviter le biais solaire
+# ✔ SwitchBot → fallback
+# ✔ Mémoire → dernier état connu
+# ✔ 100 % local, aucune dépendance Netatmo
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_jardin_1
+        - sensor.temperature_jardin_2
+        - sensor.temperature_jardin_3
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température Jardin"
+      unique_id: temperature_jardin
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+      state: >
+        {% set t1 = states('sensor.temperature_jardin_1') | float(none) %}
+        {% set t2 = states('sensor.temperature_jardin_2') | float(none) %}
+        {% set t3 = states('sensor.temperature_jardin_3') | float(none) %}
+        {% set last = this.state | float(none) %}
+
+        {# 1. HomeKit : les deux valides → min #}
+        {% if t1 is not none and t2 is not none %}
+          {{ [t1, t2] | min | round(1) }}
+
+        {# 2. HomeKit : un seul valide #}
+        {% elif t1 is not none %}
+          {{ t1 | round(1) }}
+        {% elif t2 is not none %}
+          {{ t2 | round(1) }}
+
+        {# 3. SwitchBot #}
+        {% elif t3 is not none %}
+          {{ t3 | round(1) }}
+
+        {# 4. dernière valeur connue #}
+        {% elif last is not none %}
+          {{ last | round(1) }}
+
+        {# 5. rien #}
+        {% else %}
+          {{ none }}
+        {% endif %}
+
+      attributes:
+        valeur: "{{ states(this.entity_id) }}"
+
+        capteur_utilise: >
+          {% set t1 = states('sensor.temperature_jardin_1') | float(none) %}
+          {% set t2 = states('sensor.temperature_jardin_2') | float(none) %}
+          {% set t3 = states('sensor.temperature_jardin_3') | float(none) %}
+          {% set last = this.state | float(none) %}
+
+          {% if t1 is not none and t2 is not none %}
+            HomeKit (min)
+          {% elif t1 is not none %}
+            HomeKit (1)
+          {% elif t2 is not none %}
+            HomeKit (2)
+          {% elif t3 is not none %}
+            SwitchBot
+          {% elif last is not none %}
+            Mémoire
+          {% else %}
+            Aucun
+          {% endif %}
+
+        sources: >
+          sensor.temperature_jardin_1,
+          sensor.temperature_jardin_2,
+          sensor.temperature_jardin_3

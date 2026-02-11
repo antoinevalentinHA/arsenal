@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Délai allumage jardin (soir)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir le décalage temporel appliqué autour
+#    du coucher du soleil pour l’allumage automatique
+#    de l’éclairage extérieur du jardin.
+#
+# 🧩 Principe :
+#    - Le coucher du soleil est fourni par Home Assistant
+#    - Ce paramètre permet d’allumer :
+#        • AVANT le coucher (valeur négative)
+#        • EXACTEMENT au coucher (0)
+#        • APRÈS le coucher (valeur positive)
+#
+# ⚙️ Fonctionnement :
+#    - Valeur exprimée en minutes (−60 à +60)
+#    - Utilisée pour calculer une heure d’allumage cible
+#    - La logique d’allumage se base sur cette heure
+#
+# 🔍 Utilisation :
+#    - Template sensor :
+#        • eclairage/horaire_jardin_on.yaml
+#    - Automatisation :
+#        • eclairage/jardin/soir/maj_heure_allumage.yaml
+#    - Dashboards :
+#        • réglages éclairage
+#        • diagnostics éclairage
+#
+# 🚫 Ne pas confondre avec :
+#    - Délais d’absence
+#    - Horaires fixes
+#    - Extinction du matin (lever du soleil)
+#
+# 📐 Unité :
+#    - minutes (offset autour du coucher du soleil)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Paramètre éclairage jardin (soir)
+# ==========================================================
+
+
+delai_allumage_jardin_soir:
+  name: Délai allumage jardin soir (min)
+  icon: mdi:clock-fast
+  min: -60
+  max: 60
+  step: 1
+  unit_of_measurement: min
+  mode: slider

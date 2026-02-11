@@ -1,0 +1,192 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Ouvertures
+icon: mdi:lock
+
+views:
+  ####################################
+  # 🚪 PORTES ET FENÊTRES
+  ####################################
+  - title: Ouvertures
+    path: ouvertures
+    icon: mdi:lock
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-ouvertures-dashboard/reglages_ouvertures
+
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-ouvertures-dashboard/diagnostics-ouvertures
+
+    ########################################################
+    # 🧱 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # 🏠 Entrée
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+
+              - !include ../includes/section_headers/entree.yaml
+
+              - type: grid
+                columns: 3
+                square: false
+                cards:
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_porte_garage
+                    name: Garage
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:garage-open-variant
+                      icon_off: mdi:garage
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_porte_entree
+                    name: Porte
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:door-open
+                      icon_off: mdi:door-closed
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_fenetre_entree
+                    name: Fenêtre
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:window-open-variant
+                      icon_off: mdi:window-closed-variant
+
+          # 🛋️ Séjour
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+
+              - !include ../includes/section_headers/sejour.yaml
+
+              - type: grid
+                columns: 4
+                square: false
+                cards:
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_fenetre_sejour_1
+                    name: Baie vitrée 1
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:window-open-variant
+                      icon_off: mdi:window-closed-variant
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_fenetre_sejour_2
+                    name: Baie vitrée 2
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:window-open-variant
+                      icon_off: mdi:window-closed-variant
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_fenetre_sejour_3
+                    name: Baie vitrée 3
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:window-open-variant
+                      icon_off: mdi:window-closed-variant
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_fenetre_sejour_4
+                    name: Baie vitrée 4
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:window-open-variant
+                      icon_off: mdi:window-closed-variant
+
+          # 🛏️ Chambre parents
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+
+              - !include ../includes/section_headers/chambre_parents.yaml
+
+              - type: grid
+                columns: 3
+                square: false
+                cards:
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_chambre_parents_gauche
+                    name: Dressing
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:wardrobe
+                      icon_off: mdi:wardrobe-outline
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_chambre_parents_milieu
+                    name: Fenêtre Gauche
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:window-open-variant
+                      icon_off: mdi:window-closed-variant
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_chambre_parents_droite
+                    name: Fenêtre Droite
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:window-open-variant
+                      icon_off: mdi:window-closed-variant
+
+          # 🛏️ Chambre enfants
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+
+              - !include ../includes/section_headers/chambre_enfants.yaml
+
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_chambre_matthieu
+                    name: Fenêtre Matthieu
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:window-open-variant
+                      icon_off: mdi:window-closed-variant
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.capteur_chambre_arnaud
+                    name: Fenêtre Arnaud
+                    tap_action: none
+                    variables:
+                      icon_on: mdi:window-open-variant
+                      icon_off: mdi:window-closed-variant

@@ -1,0 +1,94 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Ouvertures – Qualification d’aération confirmée
+#
+#  ID : 10170000000009
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de QUALIFICATION DE FAIT MÉTIER.
+#
+#     Elle marque une aération comme confirmée
+#     lorsque l’un des délais de grâce associés
+#     aux ouvertures arrive à son terme.
+#
+#     Elle transforme un état transitoire
+#     (ouverture récente) en fait métier stable
+#     (aération effective).
+#
+#  🧱 NATURE
+#
+#     - Qualification binaire d’un événement physique
+#     - Déclenchement sur fin de temporisation
+#     - Aucun pilotage ni décision autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement à la fin de l’un des timers :
+#         • timer.fenetre_sejour_ouverte_grace
+#         • timer.fenetre_chambre_parents_grace
+#     - Si le système est stable :
+#         • activation du booléen `aeration_confirmee`
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas d’une action (chauffage, aération)
+#     - Ne bloque ni n’autorise aucun moteur
+#     - Ne déclenche aucun script métier
+#     - Ne tient compte d’aucun contexte thermique
+#
+#  🔗 UTILISATION
+#
+#     - Sert de source de vérité métier
+#       pour les moteurs décisionnels
+#     - Permet de distinguer :
+#         • ouverture brève
+#         • aération réelle et persistante
+#
+#  🧠 PRINCIPE ARSENAL
+#
+#     Un fait métier doit être posé explicitement,
+#     sans interprétation ni effet de bord.
+#
+#  🛡️ SÉCURITÉ
+#
+#     L’inhibition durant le boot garantit
+#     l’absence de faux positifs au démarrage.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10170000000009"
+  alias: "Ouvertures – Qualification aération confirmée"
+  mode: single
+
+  trigger:
+
+    # Séjour (baies vitrées)
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.fenetre_sejour_ouverte_grace
+
+    # Chambre parents
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.fenetre_chambre_parents_grace
+
+  condition:
+
+    # Ne pas confirmer pendant le boot
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+
+    # Marquage aération confirmée
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.aeration_confirmee

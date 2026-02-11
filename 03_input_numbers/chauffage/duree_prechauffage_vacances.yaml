@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Chauffage : Durée préchauffage retour Vacances
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir la durée fixe d’anticipation thermique avant fin
+#   de régime Vacances pour autoriser le pré-confort retour.
+#
+# 🧩 Périmètre :
+#   - paramétrage utilisateur uniquement
+#   - anticipation temporelle fixe
+#   - aucune dépendance thermique
+#
+# 🔗 Dépendances :
+#   - consommé par binary_sensor pré-confort actif
+#   - consommé par automations Vacances
+#
+# 🚫 Interdits :
+#   - aucune décision
+#   - aucun pilotage matériel
+#   - aucune écriture de consigne
+#   - aucun usage hors Vacances
+#
+# 🧠 Statut architectural :
+#   SOCLE DE PARAMÉTRAGE — NON DÉCISIONNEL — NON THERMIQUE
+#
+# 🏷️ Statut :
+#   SOCLE — Actif en production — Remplaçable ultérieurement
+# ==========================================================
+
+duree_prechauffage_retour_vacances:
+  name: "Durée préchauffage retour Vacances"
+  min: 3
+  max: 24
+  step: 1
+  unit_of_measurement: "heures"
+  mode: box

@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMERS : Fenêtres de grâce ouvertures
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir des FENÊTRES TEMPORELLES DE GRÂCE après
+#   l’ouverture de certaines fenêtres, afin d’éviter
+#   toute interprétation immédiate.
+#
+# 🧩 Nature :
+#   Cadres TEMPORELS — délais post-événement.
+#
+# ❌ Ne font PAS :
+#   - Ne suspendent PAS le chauffage
+#   - Ne bloquent PAS la climatisation
+#   - Ne neutralisent PAS l’alarme
+#   - Ne prennent AUCUNE décision métier
+#
+# 🔍 Spécificités techniques :
+#   - Timers restaurables (`restore: true`)
+#   - Durée fixe : 30 secondes
+#   - États exploitables : active / idle
+#
+# 🔄 Fonctionnement :
+#   - Démarrés à l’ouverture de la fenêtre concernée
+#   - Tant qu’un timer est actif :
+#       • la fenêtre est considérée comme
+#         RÉCEMMENT OUVERTE
+#   - À l’expiration :
+#       • la fenêtre redevient
+#         ÉVALUABLE normalement
+#
+# 🔗 Utilisation :
+#   - Capteurs binaires de délai ouverture
+#   - Décisions chauffage / climatisation
+#   - Validation d’aération qualifiée
+#   - Diagnostics des ouvertures
+#
+# 🧠 Principe Arsenal associé :
+#   - Le timer définit le TEMPS
+#   - L’interprétation est EXTERNE
+#
+# ⚠️ Remarque :
+#   L’expiration d’un timer n’entraîne
+#   AUCUNE action automatique directe.
+# ==========================================================
+
+
+fenetre_chambre_parents_grace:
+  name: Fenêtre chambre parents - grâce
+  duration: "00:00:30"
+  restore: true
+
+fenetre_sejour_ouverte_grace:
+  name: Fenetres sejour grace
+  duration: "00:00:30"
+  restore: true

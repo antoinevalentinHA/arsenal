@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Chauffage (fin blocage aération)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mémorisation de l’HORODATAGE (date + heure)
+#   marquant la FIN THÉORIQUE du blocage chauffage
+#   consécutif à une aération prolongée.
+#
+#   Ce helper constitue une RÉFÉRENCE TEMPORELLE
+#   utilisée par le pipeline thermique pour
+#   évaluer la levée possible du blocage.
+#
+# 🧩 Nature :
+#   Mémoire PERSISTANTE — repère temporel.
+#
+# ❌ Ne fait PAS :
+#   - Ne débloque PAS le chauffage
+#   - Ne redémarre PAS la chauffe
+#   - Ne force AUCUNE reprise thermique
+#   - Ne prend AUCUNE décision métier
+#
+# 🔍 Spécificité technique :
+#   - Date + heure (précision absolue)
+#   - Valeur calculée automatiquement
+#     lors d’un épisode d’aération qualifiée
+#   - Persistante aux redémarrages
+#
+# 🔄 Fonctionnement :
+#   - Écrite par l’automatisation :
+#       • Chauffage – Blocage aération
+#   - Lue par :
+#       • Automatisations de recovery
+#       • Capteurs de diagnostic
+#       • Dashboards d’analyse
+#
+# 🔗 Utilisation :
+#   - Pipeline aération / chauffage :
+#       • Évaluation de la fin de blocage
+#       • Synchronisation des états
+#   - Dashboards diagnostics :
+#       • Lecture explicite du repère
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Événement (aération)
+#       • Mémoire (input_datetime)
+#       • Décision (pipeline thermique)
+#       • Action réelle (chauffage)
+#
+# ⚠️ Remarque :
+#   Le dépassement de cet horodatage
+#   n’implique JAMAIS une reprise automatique
+#   du chauffage.
+# ==========================================================
+
+
+chauffage_fin_blocage_aeration:
+  name: Chauffage - Fin blocage aeration
+  has_date: true
+  has_time: true
+  icon: mdi:clock-end

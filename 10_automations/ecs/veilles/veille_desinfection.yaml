@@ -1,0 +1,56 @@
+# ==========================================================
+#  AUTOMATION : ECS — Veille desinfection
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Observer le créneau de desinfection ECS calcule et
+#     declencher le cycle une seule fois lorsque le creneau
+#     devient actif.
+#
+# 🧱 Principe Arsenal :
+#     - Aucune logique temporelle
+#     - Aucune boucle
+#     - Aucune decision metier
+#     - Reagit uniquement a l'etat calcule
+#
+#  ⚙️ Comportement :
+#     - Declenchement au passage OFF -> ON du creneau
+#     - Rattrapage apres reboot si encore dans la fenetre
+#     - Systeme obligatoirement stable
+#
+#  ✅ Compatibilite : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10250000000002"
+  alias: "ECS - Veille désinfection"
+  description: >
+    Lance la desinfection ECS lorsque le creneau calcule
+    devient actif, sans scan minute.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.ecs_creneau_desinfection_en_cours
+      from: "off"
+      to: "on"
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+    - condition: state
+      entity_id: binary_sensor.ecs_creneau_desinfection_en_cours
+      state: "on"
+
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "off"
+
+  action:
+    - service: script.chauffage_ecs_cycle
+      data:
+        mode: "desinfection"

@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : BSSIDs maison
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker la liste des BSSIDs Wi-Fi considérés
+#   comme appartenant au réseau "maison".
+#
+# 🧱 Nature :
+#   - Référentiel technique statique
+#   - Donnée déclarative (texte)
+#
+# 🚫 Ne fait PAS :
+#   - Ne scanne aucun réseau Wi-Fi
+#   - Ne détecte aucune présence à lui seul
+#   - Ne valide aucune connexion réseau
+#   - Ne configure aucun équipement Wi-Fi
+#
+# 🔗 Utilisation :
+#   - Capteurs template de présence / sécurité
+#   - Automatisations système liées au Wi-Fi
+#   - Dashboards diagnostics
+#
+# 🧠 Principe ARSENAL :
+#   - Les helpers décrivent un référentiel
+#   - La logique d’interprétation est externe
+#
+# ⚠️ Convention :
+#   - Liste de BSSIDs (MAC Wi-Fi)
+#   - Séparateur défini par la logique de parsing
+#   - Casse normalisée lors de la lecture
+# ==========================================================
+
+
+bssid_maison:
+  name: BSSIDs maison
+  mode: text
+  max: 255

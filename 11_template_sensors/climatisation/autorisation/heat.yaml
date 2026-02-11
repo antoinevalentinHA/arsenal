@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Autorisation chauffage d’appoint climatisation
+#
+# 🎯 Rôle :
+#   Indiquer si le mode HEAT est AUTORISÉ
+#   indépendamment du besoin thermique.
+#
+# 🧱 Principe Arsenal :
+#   - Lecture PURE
+#   - Aucune décision
+#   - Aucune action
+#
+# 🔌 Dérivé STRICTEMENT de :
+#   - température extérieure minimale hiver
+#   - autorisation explicite chauffage par clim
+#   - présence réelle
+#   - fenêtres
+#   - blocage horaire
+#   - blocage poêle
+# ==========================================================
+
+- binary_sensor:
+    - name: "Autorisation chauffage d’appoint climatisation"
+      unique_id: autorisation_clim_heat
+      default_entity_id: binary_sensor.autorisation_clim_heat
+      state: >
+        {{
+          states('sensor.temperature_jardin') | float(0)
+            > states('input_number.clim_hiver_seuil_temperature_exterieure') | float(99)
+          and is_state('input_boolean.chauffage_clim_active_en_hiver', 'on')
+          and is_state('input_boolean.chauffage_blocage_aeration', 'off')
+          and is_state('binary_sensor.presence_famille_unifiee', 'on')
+          and is_state('binary_sensor.fenetre_ouverte_maison', 'off')
+          and is_state('input_boolean.clim_blocage_horaire_actif', 'off')
+          and is_state('input_boolean.blocage_clim_poele', 'off')
+        }}

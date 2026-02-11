@@ -1,0 +1,29 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN
+# ----------------------------------------------------------
+# 🍽️ ECS : Mode vaisselle
+#
+# 🎯 Rôle :
+#   Indiquer si le mode “Vaisselle” est actif pour la gestion
+#   automatique de l’eau chaude sanitaire (ECS).
+#
+# 🧱 Principe Arsenal :
+#   - Activé → le mode vaisselle est en cours
+#   - Désactivé → le mode vaisselle est inactif
+#   - Ne pilote rien directement, sert uniquement d’indicateur métier
+#
+# 🔌 Dépendances :
+#   - Automatisations ECS vaisselle
+#   - Scripts et horaires de bouclage
+#
+# ⚠️ Important :
+#   - Toute modification de comportement doit se faire dans les
+#     automations ou scripts correspondants
+#
+# 📍 Entité : input_boolean.mode_vaisselle
+# ==========================================================
+
+
+mode_vaisselle:
+  name: Mode vaisselle
+  icon: mdi:dishwasher

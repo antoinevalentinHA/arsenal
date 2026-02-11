@@ -1,0 +1,158 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Gardien de vérification consigne post-cycle
+#
+#  ID : 10250000000007
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Vérifier et rétablir la consigne ECS de sécurité
+#     (10 °C) après la fin d’un cycle ECS, afin de
+#     garantir le retour effectif à l’état nominal,
+#     même en cas d’ignorance partielle des commandes
+#     par ViCare.
+#
+#     Cette automation agit comme un garde-fou différé,
+#     déclenché par timer, indépendamment du moment
+#     exact de fin du cycle.
+#
+#  🧱 PRINCIPE ARSENAL
+#     - Les cycles ECS peuvent laisser la consigne haute
+#     - La sécurité impose un retour systématique à 10 °C
+#     - La vérification est réelle, pas déclarative
+#
+#  🚫 NE FAIT PAS
+#     - Ne déclenche aucun cycle ECS
+#     - Ne modifie aucune planification ECS
+#     - Ne s’exécute jamais pendant un cycle ECS actif
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • fin du timer de vérification ECS
+#     - Pré-requis :
+#         • aucun cycle ECS en cours (verrou logique)
+#     - Séquence :
+#         • temporisation post-cycle
+#         • contrôle de la consigne effective
+#         • deux tentatives de correction espacées
+#         • fallback matériel (bouton physique)
+#         • alerte critique si échec persistant
+#
+#  ⚠️ IMPORTANT
+#     - Cette automation est un garde-fou de sécurité
+#     - Elle intervient uniquement après les cycles ECS
+#     - Toute modification de la valeur cible (10 °C)
+#       doit être décidée au niveau système ECS
+#
+#  ✅ CONTRAINTES
+#     - Sécurité prioritaire sur toute autre logique
+#     - Vérification basée sur l’état réel chaudière
+#     - Aucune sortie silencieuse en cas d’échec
+# ==========================================================
+
+
+- id: "10250000000007"
+  alias: "ECS - Gardien vérification consigne"
+  description: >
+    Vérifie la consigne après timer et force l'arrêt si nécessaire.
+    Double tentative de rabaissement + bouton + notification critique si échec.
+  mode: restart
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.ecs_gardien_consigne_verification
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "off"
+
+  action:
+    # 🕐 Délai initial pour stabilisation post-cycle
+    - delay:
+        seconds: 3
+
+    - variables:
+        retour_temp: 10
+        number_setpoint: number.vscotho1_200_11_dhw_temperature
+        sensor_consigne: sensor.ecs_consigne_chaudiere_securisee
+        btn_one_shot: button.vscotho1_200_11_activer_le_prelevement_unique
+
+    - choose:
+        - conditions:
+            - condition: or
+              conditions:
+                - condition: template
+                  value_template: >
+                    {{ states(sensor_consigne) not in ['unknown','unavailable','none']
+                       and (states(sensor_consigne) | float(0)) != retour_temp }}
+                - condition: state
+                  entity_id: binary_sensor.ecs_chauffe_en_cours_local
+                  state: "on"
+
+          sequence:
+
+            # 🔁 Tentative 1
+            - service: number.set_value
+              target:
+                entity_id: "{{ number_setpoint }}"
+              data:
+                value: "{{ retour_temp }}"
+
+            - wait_for_trigger:
+                - platform: template
+                  value_template: >
+                    {{ (states(sensor_consigne) | float(0)) == retour_temp }}
+              timeout: "00:01:00"
+              continue_on_timeout: true
+
+            # 🔁 Tentative 2 si besoin
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ (states(sensor_consigne) | float(0)) != retour_temp }}
+                  sequence:
+                    - service: number.set_value
+                      target:
+                        entity_id: "{{ number_setpoint }}"
+                      data:
+                        value: "{{ retour_temp }}"
+                    - wait_for_trigger:
+                        - platform: template
+                          value_template: >
+                            {{ (states(sensor_consigne) | float(0)) == retour_temp }}
+                      timeout: "00:01:00"
+                      continue_on_timeout: true
+
+            # 🛑 Dernier recours : appui bouton matériel + notif critique
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ (states(sensor_consigne) | float(0)) != retour_temp }}
+                  sequence:
+                    - service: button.press
+                      target:
+                        entity_id: "{{ btn_one_shot }}"
+                    - delay:
+                        seconds: 15
+                    - service: number.set_value
+                      target:
+                        entity_id: "{{ number_setpoint }}"
+                      data:
+                        value: "{{ retour_temp }}"
+                    - service: script.notification_envoyer_avance
+                      data:
+                        cible: input_text.telephone_antoine_notify
+                        titre: "🚨 ECS – Consigne basse non appliquée"
+                        message: >
+                          À {{ now().strftime('%H:%M') }}, malgré deux tentatives
+                          et un appui sur le bouton, la consigne ECS n’est
+                          toujours pas revenue à 10 °C.  
+                          Risque de rebond détecté – vérifie l’intégration ViCare.
+                        extra:
+                          ttl: 0
+                          priority: high
+                          importance: high

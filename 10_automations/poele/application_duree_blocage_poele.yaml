@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : Poele – Ajustement duree blocage en cours
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Reajuster la duree du blocage chauffage (et chauffage par clim)
+#   lorsque le parametre utilisateur est modifie,
+#   UNIQUEMENT si un blocage poele est deja actif.
+#
+# 🧱 Principe :
+#   - Le poele reste STRICTEMENT EVENEMENTIEL
+#   - Cette automation ne cree JAMAIS de blocage
+#   - Elle ne leve JAMAIS un blocage
+#   - Elle ne fait que recalibrer un timer en cours
+#
+# ⚠️ Regle Arsenal (Option 1) :
+#   - La valeur 0 est interdite par conception
+#   - Le helper est un PARAMETRE, jamais une commande
+#
+# 📥 Entree :
+#   - input_number.poele_duree_blocage_chauffage_minutes
+#
+# 📤 Sortie :
+#   - timer.poele_blocage_chauffage (redemarrage avec nouvelle duree)
+#
+# 🧪 Condition d'execution :
+#   - input_boolean.blocage_chauffage_poele == on
+#
+# 🏷️ ID :
+#   10100000000008
+#
+# ✅ Architecture :
+#   Arsenal V6+
+# ==========================================================
+
+- id: "10100000000008"
+  alias: "Poêle – Ajustement durée blocage en cours"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_number.poele_duree_blocage_chauffage_minutes
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.blocage_chauffage_poele
+      state: "on"
+
+  action:
+    - service: timer.start
+      target:
+        entity_id: timer.poele_blocage_chauffage
+      data:
+        duration: >
+          {{ states('input_number.poele_duree_blocage_chauffage_minutes') | int * 60 }}

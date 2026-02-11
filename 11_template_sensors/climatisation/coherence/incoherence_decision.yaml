@@ -1,0 +1,44 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim — Incohérence décision / réel
+#
+# 🎯 Rôle :
+#   Détecter une divergence persistante entre
+#   la décision centrale (sensor.clim_target_mode)
+#   et l’état réel observé de la climatisation.
+#
+# 🧱 Principe Arsenal :
+#   - Diagnostic PUR
+#   - Aucune décision
+#   - Aucune action
+#
+# ⏱️ Anti-bruit :
+#   - Divergence persistante ≥ 60 s
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.clim_target_mode
+        - switch.clim_power
+        - sensor.clim_mode_local
+      for: "00:01:00"
+
+  binary_sensor:
+    - name: "Clim incoherence decision reel"
+      unique_id: clim_incoherence_decision_reel
+      device_class: problem
+      state: >
+        {% set target = states('sensor.clim_target_mode') %}
+        {% set power = states('switch.clim_power') %}
+        {% set mode  = states('sensor.clim_mode_local') %}
+
+        {% if target == 'off' %}
+          {{ power == 'on' or mode != 'off' }}
+        {% elif target in ['cool', 'dry', 'heat'] %}
+          {{ power != 'on' or mode != target }}
+        {% else %}
+          false
+        {% endif %}

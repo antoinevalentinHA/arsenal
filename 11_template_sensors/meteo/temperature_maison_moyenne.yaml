@@ -1,0 +1,49 @@
+# ==========================================================
+# 🌡 TEMPLATE SENSOR — Température maison moyenne (jour)
+# ----------------------------------------------------------
+#  Rôle :
+#    Calculer une température intérieure moyenne représentative
+#    de l'ensemble de la maison pour les usages thermiques
+#    (dont l'indice énergétique jour).
+#
+#  Principe :
+#    Moyenne simple de tous les capteurs de température
+#    fiables et pertinents dans les pièces chauffées.
+#
+#  Avantages :
+#    - Très stable
+#    - Représentatif du volume thermique global
+#    - Parfait pour les comparaisons météo / charge thermique
+#
+#  Compatibilité :
+#    - Tous les capteurs listés ci-dessous
+# ==========================================================
+
+- sensor:
+    - name: "temperature_maison_moyenne_jour"
+      unique_id: temperature_maison_moyenne_jour
+      unit_of_measurement: "°C"
+      icon: mdi:home-thermometer
+      state: >
+        {% set sensors = [
+          'sensor.temperature_entree',
+          'sensor.temperature_sejour',
+          'sensor.temperature_palier',
+          'sensor.temperature_chambre_arnaud',
+          'sensor.temperature_chambre_matthieu',
+          'sensor.temperature_chambre_parents',
+          'sensor.temperature_sdb_parents',
+          'sensor.temperature_sdb_enfants'
+        ] %}
+
+        {% set values = sensors
+          | map('states')
+          | map('float', default=none)
+          | select('number')
+          | list %}
+
+        {% if values | length > 0 %}
+          {{ (values | sum / (values | length)) | round(2) }}
+        {% else %}
+          unknown
+        {% endif %}

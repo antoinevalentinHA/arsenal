@@ -1,0 +1,41 @@
+#################################################################
+# 🖥️ CARTE INFO SYSTÈME — UI
+# ---------------------------------------------------------------
+# Carte d’affichage d’une information système simple
+# (dernier démarrage, uptime, horodatage, etc.).
+#
+# Rôle :
+#   - Présenter une information technique lisible
+#   - Sans interaction utilisateur
+#
+# Principe Arsenal :
+#   - Carte purement informationnelle
+#   - Aucun effet de bord
+#   - Style homogène diagnostics / infra
+#################################################################
+
+carte_info_systeme:
+  template: carte_base
+
+  show_state: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)   # 🟦 info système
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'
+    icon:
+      - color: '#111'

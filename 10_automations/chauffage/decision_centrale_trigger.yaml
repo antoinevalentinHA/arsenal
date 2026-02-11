@@ -1,0 +1,231 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Déclenchement de la décision centrale
+#
+#  ID : 10240000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Déclencher le script de décision centrale du chauffage
+#     dès qu’un changement de contexte pertinent est détecté.
+#
+#     Cette automation constitue le point d’entrée unique
+#     vers le cerveau décisionnel du chauffage.
+#
+# ----------------------------------------------------------
+#  🧱 PRINCIPE ARSENAL
+#
+#     - Les capteurs et helpers signalent les changements
+#     - Cette automation déclenche la décision
+#     - Le script central décide
+#     - Les automatismes d’application exécutent
+#
+# ----------------------------------------------------------
+#  ⚙️ COMPORTEMENT
+#
+#     - Déclenchement sur :
+#         • changements de hiérarchie (blocages, régime, override)
+#         • thermostat logique (autorisation_cible)
+#         • protection absence
+#         • fin de transactions exécutives
+#         • reprise système stabilisée
+#
+#     - Stabilisation conditionnelle :
+#         • override prioritaire (mode confort chauffage)
+#           → décision immédiate (aucun délai)
+#         • autres cas
+#           → délai de stabilisation court (2 s)
+#
+# ----------------------------------------------------------
+#  🚫 NE FAIT PAS
+#
+#     - Ne prend aucune décision thermique
+#     - Ne pilote aucun équipement
+#     - Ne contient aucun garde-fou métier
+#     - Ne vérifie pas l’état de préparation des entités critiques
+#
+# ----------------------------------------------------------
+#  ⚠️ NOTES IMPORTANTES
+#
+#     - Les overrides explicites ne patientent jamais
+#     - Le délai de stabilisation est conservé uniquement
+#       pour l’absorption du bruit de contexte
+#
+# ----------------------------------------------------------
+#  ✅ CONTRAINTES
+#
+#     - Déclencheur exhaustif mais non décisionnel
+#     - Architecture conforme au modèle Arsenal
+#     - Réactivité immédiate en cas de signal prioritaire
+# ==========================================================
+
+
+- id: "10240000000001"
+  alias: "Chauffage – Trigger décision centrale"
+  description: >
+    Declenche le script de decision centrale du chauffage
+    sur toute transition hiérarchique, thermique ou structurelle
+    conforme au contrat Chauffage Arsenal V3 PRO.
+
+  mode: restart
+  max_exceeded: silent
+
+  trigger:
+
+    # ======================================================
+    # 📍 PRIORITÉ ZÉRO — OVERRIDES & AUTORISATION SYSTÈME
+    # ======================================================
+
+    - platform: state
+      entity_id: binary_sensor.chauffage_autorise_systeme
+
+    - platform: state
+      entity_id: input_boolean.mode_confort_chauffage
+      id: "mode_confort_chauffage"
+
+
+    # ======================================================
+    # 🛑 NIVEAU 1 — BLOCAGES ABSOLUS
+    # ======================================================
+
+    # Standby mécanique hiérarchique
+    - platform: state
+      entity_id: input_boolean.chauffage_standby_force
+
+    # Aération épisode en cours (entrée / sortie)
+    - platform: state
+      entity_id: input_boolean.aeration_episode_en_cours
+
+    # Blocage post-aération (entrée / sortie)
+    - platform: state
+      entity_id: input_boolean.chauffage_blocage_aeration
+
+    # Fenêtres qualifiées avec délai
+    - platform: state
+      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+      id: "maison_delai"
+
+    # Poêle actif
+    - platform: state
+      entity_id: input_boolean.blocage_chauffage_poele
+
+    # Mode maison (Vacances, etc.)
+    - platform: state
+      entity_id: input_select.mode_maison
+
+
+    # ======================================================
+    # 🧠 NIVEAU 2 — RÉGIME (PRÉSENCE / ABSENCE)
+    # ======================================================
+
+    - platform: state
+      entity_id: binary_sensor.presence_famille_unifiee
+
+
+    # ======================================================
+    # 🔁 ABSENCE — PROTECTION THERMIQUE
+    # ======================================================
+
+    # Inhibition géofencing thermique
+    - platform: state
+      entity_id: input_boolean.chauffage_inhibition_geofencing
+      id: "blocage_geofencing_thermique"
+
+
+    # ======================================================
+    # 🌡️ PRÉSENCE — THERMOSTAT LOGIQUE (CŒUR DU SYSTÈME)
+    # ======================================================
+
+    # Autorisation thermique calculée (comfort / neutre / reduced)
+    - platform: state
+      entity_id: sensor.chauffage_autorisation_cible
+      id: "autorisation_thermique_change"
+
+
+    # ======================================================
+    # 🔥 GESTION FENÊTRES — FINS DE DÉLAIS
+    # ======================================================
+
+    # Fin délai séjour
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.fenetre_sejour_ouverte_grace
+      id: "delai_sejour_expire"
+
+    # Fin délai parents
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.fenetre_chambre_parents_grace
+      id: "delai_parents_expire"
+
+
+    # ======================================================
+    # 🔁 FIN ANTI-REBOND GÉOLOCALISATION
+    # ======================================================
+
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.chauffage_geoloc_antirebond
+      id: "antirebond_expire"
+
+
+    # ======================================================
+    # ⏱️ ORDONNANCEMENT — FIN DE TRANSACTION EXÉCUTIVE
+    # ======================================================
+
+    # Fin d'application ViCare (transaction terminée)
+    - platform: state
+      entity_id: input_boolean.chauffage_application_en_cours
+      to: "off"
+      id: "fin_execution_vicare"
+
+
+    # ======================================================
+    # 🚀 REPRISE SYSTÈME — STABILISATION HOME ASSISTANT
+    # ======================================================
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: "systeme_stable"
+
+
+  condition:
+
+    # ==================================================
+    #  🔒 ANTI-REBOND GÉOLOC
+    # ==================================================
+    - condition: state
+      entity_id: timer.chauffage_geoloc_antirebond
+      state: "idle"
+
+
+  action:
+
+    # ==================================================
+    #  🕒 STABILISATION CONDITIONNELLE
+    #     - Override prioritaire : immédiat
+    #     - Autres cas : délai 2 s
+    # ==================================================
+    - alias: "Stabilisation conditionnelle"
+      choose:
+        # 🔥 Override chauffage prioritaire
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.id == 'mode_confort_chauffage' }}"
+          sequence: []
+      default:
+        # 🕒 Cas général : stabilisation courte
+        - delay: "00:00:02"
+
+
+    # ==================================================
+    #  🧠 APPEL DU CERVEAU CENTRAL DU CHAUFFAGE
+    # ==================================================
+    - alias: "Appel du cerveau central du chauffage"
+      service: script.turn_on
+      target:
+        entity_id: script.chauffage_decision_centrale

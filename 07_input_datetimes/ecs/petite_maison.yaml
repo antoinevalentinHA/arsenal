@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Séjour ECS Petite Maison
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition de la PÉRIODE CALENDAIRE
+#   pendant laquelle la production d’ECS
+#   de la Petite Maison est AUTORISÉE.
+#
+#   Ces helpers bornent le séjour prévu,
+#   sans piloter directement le chauffe-eau.
+#
+# 🧩 Nature :
+#   Paramètres MÉTIER — planification calendaire.
+#
+# ❌ Ne fait PAS :
+#   - N’active PAS directement le chauffe-eau
+#   - Ne coupe PAS directement l’ECS
+#   - Ne déclenche AUCUNE action immédiate
+#   - Ne remplace PAS la logique de décision
+#
+# 🔍 Spécificité technique :
+#   - Date uniquement (pas d’heure)
+#   - Comparaison faite sur la date courante
+#   - La logique d’activation / désactivation
+#     est portée par les automatisations dédiées
+#
+# 🔄 Fonctionnement :
+#   - Les dates sont définies manuellement
+#     via les dashboards de réglage ECS.
+#   - Les automatisations :
+#       • détectent le début du séjour
+#       • détectent la fin du séjour
+#       • autorisent ou interdisent la chauffe ECS
+#
+# 🔗 Utilisation :
+#   - Automatisations ECS Petite Maison :
+#       • Programmation début de séjour
+#       • Programmation fin de séjour
+#   - Dashboards diagnostics :
+#       • Lecture des dates programmées
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_datetime)
+#       • Décision (automatisations)
+#       • Action réelle (chauffe-eau)
+#
+# ⚠️ Remarque :
+#   Modifier ces valeurs change la PÉRIODE
+#   autorisée, jamais l’état immédiat
+#   du chauffe-eau.
+# ==========================================================
+
+
+debut_ecs_petite_maison_programmee:
+  name: "Début séjour ECS Petite Maison"
+  has_date: true
+  has_time: false
+
+fin_ecs_petite_maison_programmee:
+  name: "Fin séjour ECS Petite Maison"
+  has_date: true
+  has_time: false

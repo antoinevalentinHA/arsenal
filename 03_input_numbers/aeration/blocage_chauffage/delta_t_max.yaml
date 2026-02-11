@@ -1,0 +1,25 @@
+# ==========================================================
+#  Arsenal — HELPER : ΔT max décisionnel (aération)
+# ----------------------------------------------------------
+#  Rôle :
+#    Stocker la valeur ΔT_max EXACTE utilisée par le pipeline
+#    (module M3) pour décider d’une prolongation de blocage.
+#
+#  Important :
+#    - Ce helper ne pilote rien.
+#    - Il sert d’affichage / debug cohérent avec le log.
+#
+#  🚫 Interdits :
+#    - Modifier manuellement cette valeur
+#    - L’utiliser comme seuil ou paramètre d’entrée
+#    - La confondre avec un réglage utilisateur
+#
+# ==========================================================
+
+delta_t_max_decisionnel_aeration:
+  name: "ΔT max décisionnel (aération)"
+  min: 0
+  max: 10
+  step: 0.01
+  unit_of_measurement: "°C"
+  mode: box

@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : Absence stabilisée (sécurité)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir une FENÊTRE TEMPORELLE de latence
+#   après le passage en état "absence",
+#   avant toute exploitation sécuritaire
+#   (armement automatique, logique alarme).
+#
+# 🧩 Nature :
+#   Cadre TEMPOREL — temporisation de stabilisation.
+#
+# ❌ Ne fait PAS :
+#   - Ne détecte PAS la présence ou l’absence
+#   - Ne confirme PAS un état métier
+#   - Ne déclenche PAS l’armement
+#   - Ne décide PAS du niveau de sécurité
+#
+# 🔍 Spécificité technique :
+#   - Timer restaurable (`restore: true`)
+#   - Durée fixe (5 minutes)
+#   - États exploitables : active / idle
+#
+# 🔄 Fonctionnement :
+#   - Démarré lors du passage en absence
+#     détectée par la présence unifiée
+#   - Tant qu’il est actif :
+#       • l’absence est considérée
+#         comme NON STABILISÉE
+#   - À l’expiration :
+#       • la fenêtre temporelle est close
+#       • l’absence devient exploitable
+#         par les logiques de sécurité
+#
+# 🔗 Utilisation :
+#   - Automatisation :
+#       • gestion du délai absence 5 min
+#   - Capteur binaire :
+#       • absence stabilisée (timer idle)
+#   - Scripts décision centrale alarme
+#   - Diagnostics présence / sécurité
+#
+# 🧠 Principe Arsenal associé :
+#   - Le timer définit le TEMPS
+#   - La stabilité est une INTERPRÉTATION
+#   - La décision reste toujours externe
+#
+# ⚠️ Remarque :
+#   L’expiration du timer n’implique
+#   AUCUNE action automatique à elle seule.
+# ==========================================================
+
+presence_famille_securite_absence:
+  name: "Presence securite absence stable"
+  duration: "00:05:00"
+  restore: true

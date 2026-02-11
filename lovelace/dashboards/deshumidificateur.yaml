@@ -1,0 +1,133 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Cave
+views:
+  - title: Cave
+    path: cave
+    icon: mdi:server
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-deshumidificateur-dashboard/deshumidificateur
+
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ==================================================
+          # 💧 MESURES HUMIDITÉ — CAVE
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/cave.yaml
+
+              - type: custom:mini-graph-card
+                name: Humidité relevative (4 jours)
+                icon: mdi:water-percent
+                entities:
+                  - entity: sensor.humidite_relative_cave
+                hours_to_show: 96
+                points_per_hour: 1
+                line_width: 3
+                height: 60
+                show:
+                  fill: true
+                  extrema: true
+                  average: false
+                  icon: true
+                  name: true
+                  state: true
+                color_thresholds:
+                  - value: 78
+                    color: '#2196F3'
+                  - value: 76
+                    color: '#4FC3F7'
+                  - value: 74
+                    color: '#FFEB3B'
+                  - value: 72
+                    color: '#FF9800'
+                  - value: 70
+                    color: '#F44336'
+
+
+          # ==================================================
+          # ⚖️ CONDITIONS DE DÉSHUMIDIFICATION
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/conditions.yaml
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+
+                  - type: custom:button-card
+                    template: deshumidificateur_capteur
+                    entity: binary_sensor.critere_deshumidification_ha_cave
+                    name: Critère HA (g/m³)
+                    icon: mdi:water
+                    tap_action: none
+
+                  - type: custom:button-card
+                    template: deshumidificateur_capteur
+                    entity: binary_sensor.critere_deshumidification_cave
+                    name: Critère HR (%)
+                    icon: mdi:water-percent
+                    tap_action: none
+
+
+          # ==================================================
+          # 🧠 DÉCISION / ÉTAT RÉEL
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/decision.yaml
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+
+                  - type: custom:button-card
+                    template: carte_deshumidificateur_decision_logique
+                    name: Décision logique
+
+                  - type: custom:button-card
+                    template: carte_deshumidificateur_etat_reel
+                    name: État réel (prise)
+
+
+          # ==================================================
+          # 📜 HISTORIQUE
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/historique.yaml
+
+              - type: history-graph
+                entities:
+                  - entity: binary_sensor.deshumidificateur_actif
+                logarithmic_scale: false

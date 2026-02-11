@@ -1,0 +1,94 @@
+#################################################################
+# 💧 UI ARSENAL — CARTE ECS : ÉTAT BALLON
+# ---------------------------------------------------------------
+# Carte de lecture principale de l’état ECS.
+#
+# Rôle :
+#   - Afficher la température réelle du ballon ECS
+#   - Donner accès au dashboard ECS (tap)
+#   - Permettre un cycle ECS ponctuel explicite (hold + confirmation)
+#
+# Principe Arsenal :
+#   - Carte d’état prioritaire
+#   - Action secondaire volontaire (hold)
+#   - Aucune décision métier ici
+#
+#################################################################
+
+carte_ecs_etat_ballon:
+  template: carte_base
+
+  show_state: true
+
+  state_display: |
+    [[[ 
+      const st = entity.state;
+      if (st === 'unavailable' || st === 'unknown' || st === 'none') return 'Indisponible';
+      const t = parseFloat(st);
+      if (isNaN(t)) return '—';
+      return `${t.toFixed(1)} °C`;
+    ]]]
+
+  tap_action:
+    action: navigate
+    navigation_path: /ecs-dashboard/home
+
+  hold_action:
+    action: call-service
+    service: script.chauffage_ecs_cycle
+    data:
+      mode: ponctuel
+    confirmation:
+      text: Lancer un cycle de chauffage ECS ponctuel ?
+
+  state:
+    # 🔶 Température basse → ballon à chauffer
+    - operator: template
+      value: |
+        [[[ 
+          const t = parseFloat(entity.state);
+          return !isNaN(t) && t < 39;
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(144, 202, 249, 0.25)
+
+    # 🔴 Température suffisante → ballon chaud
+    - operator: template
+      value: |
+        [[[ 
+          const t = parseFloat(entity.state);
+          return !isNaN(t) && t >= 39;
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)
+
+    # ⚪ Valeur invalide
+    - operator: template
+      value: |
+        [[[ 
+          const st = entity.state;
+          return st !== 'unavailable' && st !== 'unknown' && st !== 'none' && isNaN(parseFloat(st));
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    # 💤 Cas par défaut
+    - operator: default
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+  styles:
+    name:
+      - color: var(--primary-text-color)
+      - font-weight: 500
+      - font-size: 13px
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: var(--primary-text-color)
+      - justify-self: center
+      - align-self: center

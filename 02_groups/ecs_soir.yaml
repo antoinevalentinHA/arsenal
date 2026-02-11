@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : ECS Soir – Jours actifs
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Regrouper les paramètres journaliers permettant
+#    d’autoriser ou non les cycles ECS du soir,
+#    afin de simplifier leur évaluation dans les scripts.
+#
+# 🧠 Lecture métier :
+#    Ce groupe agrège des helpers d’autorisation (input_boolean)
+#    représentant les jours où l’ECS du soir est active.
+#    Il ne décide rien par lui-même, mais sert de base
+#    à des scripts ECS qui interprètent ces autorisations.
+#
+# 🧩 Périmètre :
+#    - Autorisations journalières ECS (soir)
+#    - Un input_boolean par jour de la semaine
+#
+# 🔗 Dépendances :
+#    - Helpers ECS (input_boolean)
+#    - Utilisé par :
+#      • scripts ECS (activation / désactivation)
+#
+# 🚫 Interdits :
+#    - Utiliser ce groupe pour de l’affichage UI
+#    - Introduire une logique horaire ici
+#    - Prendre une décision directe sans script
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - fonctionnel / paramétrique ECS
+# ==========================================================
+
+
+ecs_soir_actifs:
+  name: ECS Soir – Jours actifs
+  entities:
+
+    - input_boolean.ecs_monday_soir_active
+    - input_boolean.ecs_tuesday_soir_active
+    - input_boolean.ecs_wednesday_soir_active
+    - input_boolean.ecs_thursday_soir_active
+    - input_boolean.ecs_friday_soir_active
+    - input_boolean.ecs_saturday_soir_active
+    - input_boolean.ecs_sunday_soir_active

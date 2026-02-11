@@ -1,0 +1,50 @@
+#################################################################
+# 🔌 PRISES — TEMPLATES UI
+#################################################################
+#
+# 🧠 Rôle :
+#   Template button-card dédié au pilotage manuel des prises
+#   connectées (ON / OFF).
+#
+# 🎯 Objectifs :
+#   - Offrir une commande simple et immédiate
+#   - Fournir un retour visuel clair de l’état réel
+#
+# 🧩 Principe Arsenal :
+#   - Action directe autorisée (toggle)
+#   - Aucune logique métier
+#   - Aucune décision automatique
+#
+# ⚙️ Comportement :
+#   - Tap : bascule ON / OFF
+#
+# 🎨 Codes couleur :
+#   - 🟢 Vert  : prise activée
+#   - ⚪ Clair : prise désactivée
+#
+# 🧪 Robustesse :
+#   - Basé uniquement sur l’état réel de la prise
+#   - Aucun effet de bord en cas d’indisponibilité
+#
+#################################################################
+
+prise_template:
+  template: carte_base
+  tap_action:
+    action: toggle
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+  styles:
+    icon:
+      - width: 26px
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#000000'

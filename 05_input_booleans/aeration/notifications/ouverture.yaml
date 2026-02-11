@@ -1,0 +1,72 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Notifications aération – RDC
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation locale pour l’envoi des notifications
+#     d’aération concernant le rez-de-chaussée.
+#
+#  🧱 Nature :
+#     - Paramètre utilisateur local (RDC)
+#     - Filtre d’autorisation secondaire
+#
+#  🔄 Fonctionnement :
+#     - ON  : les notifications d’aération RDC sont
+#             autorisées (si le global est actif)
+#     - OFF : aucune notification d’aération RDC
+#             n’est envoyée
+#
+#  📥 N’effectue PAS :
+#     - aucune évaluation des conditions d’aération
+#     - aucune décision d’envoi
+#     - aucun contournement du verrou global
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations de notifications
+#       d’aération du RDC
+#     - Synchronisée avec
+#       input_boolean.notifications_aeration_actives
+#
+#  🧠 Principe Arsenal :
+#     - Autorisation globale → filtre local
+# ==========================================================
+
+notifications_aeration_rdc:
+  name: Notifications aération RDC
+  icon: mdi:fan-alert
+
+
+# ==========================================================
+#  INPUT_BOOLEAN : Notifications aération – Étage
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation locale pour l’envoi des notifications
+#     d’aération concernant l’étage.
+#
+#  🧱 Nature :
+#     - Paramètre utilisateur local (étage)
+#     - Filtre d’autorisation secondaire
+#
+#  🔄 Fonctionnement :
+#     - ON  : les notifications d’aération étage sont
+#             autorisées (si le global est actif)
+#     - OFF : aucune notification d’aération étage
+#             n’est envoyée
+#
+#  📥 N’effectue PAS :
+#     - aucune évaluation des conditions d’aération
+#     - aucune décision d’envoi
+#     - aucun contournement du verrou global
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations de notifications
+#       d’aération de l’étage
+#     - Synchronisée avec
+#       input_boolean.notifications_aeration_actives
+#
+#  🧠 Principe Arsenal :
+#     - Autorisation globale → filtre local
+# ==========================================================
+
+notifications_aeration_etage:
+  name: Notifications aération étage
+  icon: mdi:fan-alert

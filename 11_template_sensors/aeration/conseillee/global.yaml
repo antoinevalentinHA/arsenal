@@ -1,0 +1,105 @@
+# ==========================================================
+# 🪟 TEMPLATE BINARY SENSOR — Aération conseillée (Global)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si une aération est conseillée au niveau global,
+#   en s’appuyant sur les états des capteurs d’aération
+#   du rez-de-chaussée (RDC) et de l’étage.
+#
+# ⚙️ Fonctionnement :
+#   - Combine les résultats de :
+#       • binary_sensor.aeration_preferable_rdc
+#       • binary_sensor.aeration_preferable_etage
+#   - Retourne `true` si l’un des deux recommande l’aération
+#   - Adapte l’icône et les attributs selon les causes dominantes
+#   - Fournit un résumé (attribut `decision_globale`) indiquant
+#     la raison principale de la recommandation
+#
+# 📊 Type : Template Binary Sensor (valeur booléenne)
+# 📍 Entité générée : binary_sensor.aeration_conseillee
+# ==========================================================
+
+- binary_sensor:
+
+    # ------------------------------------------------------
+    # 🏠 Aération conseillée (agrégation RDC + Étage)
+    # ------------------------------------------------------
+    - name: "Aération conseillée – Global"
+      unique_id: aeration_conseillee_global
+      default_entity_id: binary_sensor.aeration_conseillee
+
+      # --------------------------------------------------
+      # ✅ Vérifie la disponibilité des capteurs d’aération
+      # --------------------------------------------------
+      availability: >
+        {% set rdc   = states('binary_sensor.aeration_preferable_rdc') %}
+        {% set etage = states('binary_sensor.aeration_preferable_etage') %}
+        {{ rdc not in ['unknown','unavailable','None'] and
+           etage not in ['unknown','unavailable','None'] }}
+
+      # --------------------------------------------------
+      # 🧮 État principal du binaire :
+      #   → Vrai si au moins un étage recommande d’aérer
+      # --------------------------------------------------
+      state: >
+        {{ is_state('binary_sensor.aeration_preferable_rdc', 'on')
+           or is_state('binary_sensor.aeration_preferable_etage', 'on') }}
+
+      # --------------------------------------------------
+      # 🎨 Icône dynamique selon la cause principale
+      # --------------------------------------------------
+      icon: >
+        {% set rdc   = state_attr('binary_sensor.aeration_preferable_rdc','decision') %}
+        {% set etage = state_attr('binary_sensor.aeration_preferable_etage','decision') %}
+        {% set all = [rdc, etage] | select('defined') | list %}
+        {% if is_state('input_boolean.pluie_en_cours','on') %}
+          mdi:weather-rainy
+        {% elif 'co2_priorite' in all %}
+          mdi:molecule-co2
+        {% elif 'pluie_recente' in all %}
+          mdi:weather-rainy
+        {% elif 'canicule' in all %}
+          mdi:weather-sunny-alert
+        {% elif 'aeration_ok' in all %}
+          mdi:weather-windy
+        {% elif 'seuil_ha_non_atteint' in all or 'seuil_dt_non_atteint' in all %}
+          mdi:chart-bell-curve
+        {% else %}
+          mdi:help-circle
+        {% endif %}
+
+      # --------------------------------------------------
+      # 📊 Attributs informatifs et diagnostic global
+      # --------------------------------------------------
+      attributes:
+
+        # États individuels des deux capteurs
+        rdc_state: "{{ states('binary_sensor.aeration_preferable_rdc') }}"
+        etage_state: "{{ states('binary_sensor.aeration_preferable_etage') }}"
+
+        # Raison détaillée par étage
+        rdc_decision: "{{ state_attr('binary_sensor.aeration_preferable_rdc', 'decision') }}"
+        etage_decision: "{{ state_attr('binary_sensor.aeration_preferable_etage', 'decision') }}"
+
+        # 🧠 Décision globale consolidée
+        decision_globale: >
+          {% set d_rdc   = state_attr('binary_sensor.aeration_preferable_rdc', 'decision') %}
+          {% set d_etage = state_attr('binary_sensor.aeration_preferable_etage', 'decision') %}
+          {% set all = [d_rdc, d_etage] | select('defined') | list %}
+          {% if is_state('input_boolean.pluie_en_cours','on') %}
+            pluie_recente
+          {% elif 'co2_priorite' in all %}
+            co2_priorite
+          {% elif 'pluie_recente' in all %}
+            pluie_recente
+          {% elif 'canicule' in all %}
+            canicule
+          {% elif 'aeration_ok' in all %}
+            aeration_ok
+          {% elif 'seuil_ha_non_atteint' in all %}
+            seuil_ha_non_atteint
+          {% elif 'seuil_dt_non_atteint' in all %}
+            seuil_dt_non_atteint
+          {% else %}
+            inconnue
+          {% endif %}

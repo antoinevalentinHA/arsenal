@@ -1,0 +1,31 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Éclairage
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Déterminer si une source lumineuse (intérieure ou
+#     extérieure) contrôlée par HA est active.
+#
+#  🎯 États :
+#     - alert → au moins une lumière allumée
+#     - off   → tout est éteint
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_eclairage_dashboard"
+      unique_id: etat_eclairage_dashboard
+      state: >
+        {% set sources = [
+          states('switch.prise_sejour_baies_vitrees'),
+          states('input_boolean.garage_light_state'),
+          states('switch.prise_lampe_parents'),
+          states('switch.prise_lampe_sejour'),
+          states('switch.prise_jardin')
+        ] %}
+
+        {# Vérif si au moins une source est ON #}
+        {% if 'on' in sources %}
+          alert
+        {% else %}
+          off
+        {% endif %}

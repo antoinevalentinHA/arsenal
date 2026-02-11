@@ -1,0 +1,25 @@
+# ==========================================================
+# 🔥 INPUT BOOLEAN — ECS cycle en cours
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si un cycle de chauffe de l’eau chaude sanitaire (ECS)
+#   est actuellement en cours.
+#
+# ⚙️ Fonctionnement :
+#   - Activé → un cycle ECS est actif.  
+#   - Désactivé → aucun cycle ECS en cours.  
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : Chauffe ECS  
+#   - Icône : mdi:progress-clock
+#   - Usage : verrou logique pour automatisations ECS
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_cycle_en_cours
+# ==========================================================
+
+
+ecs_cycle_en_cours:
+  name: Chauffe
+  icon: mdi:progress-clock

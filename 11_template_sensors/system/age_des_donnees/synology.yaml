@@ -1,0 +1,46 @@
+# ==========================================================
+# 🕒 TEMPLATE SENSOR — Synology : Âge des données
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Calculer l’ancienneté (en minutes) des dernières données
+#   issues des capteurs du groupe `group.synology_capteurs`.
+#
+# ⚙️ Fonctionnement :
+#   - Récupère toutes les entités du groupe Synology.
+#   - Ignore les états `unknown` ou `unavailable`.
+#   - Identifie la dernière mise à jour valide (`last_updated`).
+#   - Calcule le temps écoulé depuis cette mise à jour en minutes.
+#   - La valeur est plafonnée à 300 minutes maximum.
+#   - Si aucun capteur valide n’est disponible :
+#       → conserve la dernière valeur connue (fallback = 999).
+#
+# 🧠 Détails techniques :
+#   - Unité : minutes
+#   - Domaine : Template Sensor
+#   - Source : group.synology_capteurs
+#
+# 📊 Type : Template Sensor
+# 📍 Entité : sensor.synology_age_donnees
+# ==========================================================
+
+- sensor:
+    - name: "Synology Age Donnees"
+      unique_id: synology_age_donnees
+      unit_of_measurement: "min"
+      state: >
+        {% set grp = expand('group.synology_capteurs') %}
+        {% if grp | count > 0 %}
+          {% set entites = grp
+              | rejectattr('state', 'in', ['unknown','unavailable'])
+              | selectattr('last_updated', 'defined')
+              | list %}
+          {% if entites | count > 0 %}
+            {% set last = entites | map(attribute='last_updated') | map('as_timestamp') | max %}
+            {% set age = ((now().timestamp() - last) / 60) | round(0) %}
+            {{ [age, 300] | min }}
+          {% else %}
+            {{ states(this.entity_id) | default(999) }}
+          {% endif %}
+        {% else %}
+          {{ states(this.entity_id) | default(999) }}
+        {% endif %}

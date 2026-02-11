@@ -1,0 +1,97 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme – Arrêt automatique de la sirène
+#
+#  ID : 1002000000012
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de sécurité chargée d’éteindre
+#     automatiquement la sirène après une durée
+#     maximale définie, ou rapidement en mode test.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchée à l’allumage de la sirène
+#     - En mode normal :
+#         • attend la durée maximale configurée
+#         • éteint la sirène
+#         • notifie l’utilisateur
+#     - En mode test :
+#         • applique un délai symbolique court
+#         • éteint la sirène sans notification
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne déclenche jamais la sirène
+#     - Ne décide pas du contexte d’alarme
+#     - Ne modifie aucun état de sécurité
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Protection contre les sirènes persistantes
+#     - Comportement différencié réel / test
+#     - Séparation stricte déclenchement / extinction
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1002000000012'
+  alias: Alarme - Arrêt automatique de la sirène
+  description: >
+    Éteint la sirène après la durée définie par number.sirene_max_duration.
+    En mode test, la sirène est arrêtée immédiatement, sans notification.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Allumage de la sirène
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: switch.sirene_alarm
+      to: 'on'
+
+  # ======================================================
+  # ▶️ Actions — Durée max vs. test
+  # ======================================================
+  action:
+    - choose:
+
+        # 🚨 Cas normal — durée max + notification
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.mode_test_alarme
+              state: 'off'
+          sequence:
+            - delay:
+                seconds: "{{ states('number.sirene_max_duration') | int }}"
+
+            - condition: state
+              entity_id: switch.sirene_alarm
+              state: 'on'
+
+            - action: switch.turn_off
+              target:
+                entity_id: switch.sirene_alarm
+
+            - action: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🔕 Sirène arrêtée automatiquement"
+                message: >
+                  La sirène a été arrêtée automatiquement après {{
+                    states('number.sirene_max_duration') | int
+                  }} seconde(s) de déclenchement.
+
+        # 🧪 Mode test — arrêt rapide, sans alerte
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.mode_test_alarme
+              state: 'on'
+          sequence:
+            - delay: "00:00:03"
+            - action: switch.turn_off
+              target:
+                entity_id: switch.sirene_alarm

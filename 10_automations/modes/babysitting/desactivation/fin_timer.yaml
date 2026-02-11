@@ -1,0 +1,97 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Babysitting – Sortie automatique du mode (fin de timer)
+#
+#  ID : 1009000000008
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de SORTIE DE MODE MÉTIER.
+#
+#     Elle assure la désactivation automatique du
+#     mode Babysitting à l’expiration du timer associé,
+#     lorsque le retour automatique est explicitement autorisé.
+#
+#     Elle restaure l’état nominal du système
+#     (présences enfants et chauffage).
+#
+#  🧱 NATURE
+#
+#     - Orchestration de fin de mode
+#     - Déclenchement temporel (timer)
+#     - Conditionnée par une autorisation utilisateur
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement à la fin du timer Babysitting
+#     - Conditions préalables :
+#         • mode Babysitting actif
+#         • retour automatique autorisé
+#     - Actions séquentielles :
+#         • désactivation du mode Babysitting
+#         • réinitialisation des présences enfants
+#         • retour au programme de chauffage nominal
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas de l’activation du mode Babysitting
+#     - Ne modifie pas la durée du timer
+#     - Ne gère pas les règles métier du chauffage
+#     - Ne force pas la sortie sans autorisation explicite
+#
+#  🔗 UTILISATION
+#
+#     - Garantit une sortie propre et prévisible
+#       du mode Babysitting
+#     - Évite les états résiduels après garde prolongée
+#
+#  🛡️ SÉCURITÉ
+#
+#     Le double garde-fou (mode actif + autorisation)
+#     empêche toute sortie automatique non désirée.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1009000000008'
+  alias: "Babysitting – Sortie automatique du mode"
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.babysitting
+
+  # ======================================================
+  # ✅ Conditions — Mode actif + reset auto autorisé
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.mode_babysitting
+      state: "on"
+
+    - condition: state
+      entity_id: input_boolean.reset_mode_babysitting_auto
+      state: "on"
+
+  # ======================================================
+  # 🔄 Actions — Désactivation, reset, chauffage, notification
+  # ======================================================
+  action:
+
+    # 🔄 Désactiver le mode babysitting
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.mode_babysitting
+
+    # 👶 Réinitialiser les présences enfants
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.presence_arnaud
+          - input_boolean.presence_matthieu
+
+  mode: single

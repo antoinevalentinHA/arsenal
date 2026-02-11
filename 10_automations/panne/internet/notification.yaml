@@ -1,0 +1,117 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Réseau – Sortie du mode panne Internet
+#
+#  ID : 10040000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de SORTIE EXPLICITE DU MODE PANNE INTERNET.
+#
+#     Elle disqualifie l’état système persistant
+#     "panne Internet en cours" lorsque l’accès
+#     Internet est effectivement rétabli,
+#     et notifie l’utilisateur par canal mobile.
+#
+#     Elle ne publie AUCUNE notification persistante de succès.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Réaction à la fin d’un événement critique
+#     - Disqualification d’un état système persistant
+#     - Notification utilisateur mobile
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement lorsque l’accès Internet redevient disponible
+#     - Suppression explicite de la notification persistante "panne Internet"
+#     - Notification mobile de confirmation uniquement
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne publie PAS de notification persistante de succès
+#     - Ne trace PAS un événement passé
+#     - Ne modifie PAS la stratégie de remédiation réseau
+#
+# ----------------------------------------------------------
+#  🔗 DÉPENDANCES
+#
+#     - Capteur d’accès Internet :
+#         binary_sensor.acces_externe
+#     - Automation d’entrée en mode panne Internet :
+#         automation.reseau_redemarrage_box_auto
+#     - Notification persistante :
+#         notification_id: panne_internet
+#
+# ----------------------------------------------------------
+#  🧠 PRINCIPE ARSENAL
+#
+#     On persiste un état dégradé.
+#     On disqualifie cet état au retour nominal.
+#     On ne persiste jamais un succès.
+#
+# ----------------------------------------------------------
+#  🛡️ ROBUSTESSE
+#
+#     - Fenêtre temporelle stricte
+#     - Zéro faux positif
+#     - Tolérant aux redémarrages HA
+#
+# ----------------------------------------------------------
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '10040000000003'
+  alias: "Réseau – Sortie mode panne Internet"
+  description: >
+    Disqualifie l’état persistant de panne Internet lorsque la connexion est rétablie,
+    et notifie l’utilisateur par notification mobile uniquement.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Connexion Internet rétablie
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.acces_externe
+      to: 'on'
+
+  # ======================================================
+  # 🔁 Actions — Disqualification état + notification mobile
+  # ======================================================
+  action:
+
+    # 🧠 Heure du dernier redémarrage automatique
+    - variables:
+        last_triggered: "{{ state_attr('automation.reseau_redemarrage_box_auto', 'last_triggered') }}"
+        heure_redemarrage: >
+          {% if last_triggered %}
+            {{ (last_triggered | as_timestamp(0)) | timestamp_custom('%H:%M') }}
+          {% else %}
+            Inconnue
+          {% endif %}
+
+    # 🔕 Disqualification de l’état panne Internet
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: panne_internet
+
+    # 📲 Notification mobile de confirmation uniquement
+    - service: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🌐 Connexion Internet rétablie"
+        message: >
+          La box a redémarré automatiquement à {{ heure_redemarrage }}.  
+          La connexion Internet est désormais disponible.
+        extra:
+          ttl: 0
+          priority: high
+          importance: high

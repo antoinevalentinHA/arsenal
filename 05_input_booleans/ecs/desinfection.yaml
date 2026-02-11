@@ -1,0 +1,28 @@
+# ==========================================================
+# 🔘 INPUT BOOLEAN — ECS désinfection hebdomadaire
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Permettre d’activer ou désactiver manuellement la
+#   programmation de la désinfection hebdomadaire de
+#   l’eau chaude sanitaire (ECS).
+#
+# ⚙️ Fonctionnement :
+#   - ON  → le cycle de désinfection ECS hebdomadaire
+#           peut être déclenché automatiquement.  
+#   - OFF → le cycle de désinfection ECS hebdomadaire
+#           est désactivé.  
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : ECS – Désinfection hebdomadaire active  
+#   - Icône : mdi:alert
+#   - Usage : interrupteur/actionneur pour automatisations ECS
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_desinfection_active
+# ==========================================================
+
+
+ecs_desinfection_active:
+  name: "ECS – Desinfection active"
+  icon: mdi:alert

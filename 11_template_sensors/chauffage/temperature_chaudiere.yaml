@@ -1,0 +1,38 @@
+# ==========================================================
+# 🌡️ ARSENAL — TEMPLATE SENSOR
+# Température chaudière (locale sécurisée)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Fournir une température de départ chauffage robuste,
+#   tolérante aux lenteurs / coupures ViCare,
+#   sans jamais violer le contrat numérique HA.
+#
+# 🧱 Principe :
+#   - Valeur ViCare si fraîche
+#   - Sinon dernière valeur locale connue
+#   - Fallback initial NUMÉRIQUE pur
+# ==========================================================
+
+- sensor:
+    - name: "Temperature chaudiere locale"
+      unique_id: temperature_chaudiere_locale
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state: >
+        {% set src = 'sensor.vscotho1_200_11_supply_temperature' %}
+        {% set val = states(src) | float(none) %}
+        {% set age = (as_timestamp(now()) - as_timestamp(states[src].last_changed)) / 60 %}
+        {% set prev = this.state | float(none) %}
+
+        {% if val is not none and val > 0 and age < 30 %}
+          {{ val | round(1) }}
+
+        {% elif prev is not none %}
+          {{ prev | round(1) }}
+
+        {% elif val is not none %}
+          {{ val | round(1) }}
+
+        {% else %}
+          unknown
+        {% endif %}

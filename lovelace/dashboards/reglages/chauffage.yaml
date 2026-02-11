@@ -1,0 +1,223 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Réglages Chauffage
+icon: mdi:fire
+
+views:
+  - title: Chauffage
+    path: chauffage
+    icon: mdi:fire
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /chauffage-dashboard/chauffage
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔥 Mode Confort forcé
+
+          - type: custom:button-card
+            template: carte_toggle
+            entity: input_boolean.mode_confort_chauffage
+            name: Confort forcé
+            icon: mdi:radiator
+
+          - type: custom:button-card
+            template: section_header
+            name: 📋 Consignes
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.chauffage_consigne_confort
+                name: Consigne Confort
+              - entity: input_number.chauffage_consigne_reduite
+                name: Consigne Réduite
+
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Autorisation automatique
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_select.chauffage_mode
+                name: Mode chauffage
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🌡️ Température extérieure
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.chauffage_seuil_ext_on
+                name: Seuil ON
+              - entity: input_number.chauffage_seuil_ext_off
+                name: Seuil OFF
+
+          - type: markdown
+            content: |
+              {% set seuil_on = states('input_number.chauffage_seuil_ext_on') %}
+              {% set seuil_off = states('input_number.chauffage_seuil_ext_off') %}
+
+              {% if seuil_on not in ['unknown', 'unavailable']
+                 and seuil_off not in ['unknown', 'unavailable'] %}
+
+              {% set seuil_on = seuil_on | float %}
+              {% set seuil_off = seuil_off | float %}
+
+              🔎 Seuils d’autorisation
+
+              - Autorisation confort : < {{ seuil_on | round(1) }} °C  
+              - Interdiction confort : ≥ {{ seuil_off | round(1) }} °C  
+
+              {% else %}
+
+              🔎 Seuils d’autorisation
+
+              ⏳ Données non disponibles (initialisation)
+
+              {% endif %}
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🌡️ Température intérieure
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.chauffage_offset_on
+                name: Offset ON
+              - entity: input_number.chauffage_offset_off
+                name: Offset OFF
+
+          - type: markdown
+            content: |
+              {% set consigne = states('input_number.chauffage_consigne_confort') %}
+              {% set offset_on = states('input_number.chauffage_offset_on') %}
+              {% set offset_off = states('input_number.chauffage_offset_off') %}
+
+              {% if consigne not in ['unknown', 'unavailable']
+                 and offset_on not in ['unknown', 'unavailable']
+                 and offset_off not in ['unknown', 'unavailable'] %}
+
+              {% set consigne = consigne | float %}
+              {% set offset_on = offset_on | float %}
+              {% set offset_off = offset_off | float %}
+
+              {% set seuil_entree = consigne - offset_on %}
+              {% set seuil_sortie = consigne + offset_off %}
+
+              🔎 Seuils d’autorisation
+
+              - Autorisation confort : < {{ seuil_entree | round(1) }} °C  
+              - Interdiction confort : ≥ {{ seuil_sortie | round(1) }} °C  
+
+              {% else %}
+
+              🔎 Seuils d’autorisation
+
+              ⏳ Données non disponibles (initialisation)
+
+              {% endif %}
+
+          - type: custom:button-card
+            template: section_header
+            name: 🛡️ Protection thermique
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_boolean.blocage_geofencing
+                name: ✅ Protection thermique en absence
+              - entity: input_number.inhibition_geofencing_offset_on
+                name: Offset ON
+              - entity: input_number.inhibition_geofencing_offset_off
+                name: Offset OFF
+
+          - type: markdown
+            content: |
+              {% set consigne = states('input_number.chauffage_consigne_confort') %}
+              {% set offset_on = states('input_number.inhibition_geofencing_offset_on') %}
+              {% set offset_off = states('input_number.inhibition_geofencing_offset_off') %}
+
+              {% if consigne not in ['unknown', 'unavailable']
+                 and offset_on not in ['unknown', 'unavailable']
+                 and offset_off not in ['unknown', 'unavailable'] %}
+
+              {% set consigne = consigne | float %}
+              {% set offset_on = offset_on | float %}
+              {% set offset_off = offset_off | float %}
+
+              {% set seuil_entree = consigne - offset_on %}
+              {% set seuil_sortie = consigne - offset_off %}
+
+              🔎 Seuils thermiques effectifs
+
+              - Entrée protection : {{ seuil_entree | round(1) }} °C  
+              - Sortie protection : {{ seuil_sortie | round(1) }} °C  
+
+              {% else %}
+
+              🔎 Seuils thermiques effectifs
+
+              ⏳ Données non disponibles (initialisation)
+
+              {% endif %}
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔒 Blocages
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 💨 Aération
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_boolean.blocage_chauffage_aeration_active
+                name: Système de blocage actif
+
+              # --- Délai de stabilisation des capteurs ---
+              - entity: input_number.delai_stabilisation_capteurs
+                name: Délai de stabilisation (min)
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🔥 Poêle
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.poele_duree_blocage_chauffage_minutes
+                name: Duree blocage apres poele (min)
+
+          - type: custom:button-card
+            template: section_header
+            name: 📈 Courbe de chauffe
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.chauffage_pente_consigne
+                name: Pente
+              - entity: input_number.chauffage_parallele_consigne
+                name: Parallèle
+              - entity: input_boolean.chauffage_reglages_auto
+                name: Ajustement automatique
+              - entity: input_boolean.courbe_auto_simulation
+                name: Mode simulation

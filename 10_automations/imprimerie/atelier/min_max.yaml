@@ -1,0 +1,137 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Atelier – Maintien temps réel des mémoires min/max
+#
+#  ID : 10180000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de MAINTIEN DE MÉMOIRE MÉTIER.
+#
+#     Elle met à jour en continu les valeurs
+#     minimales et maximales de température
+#     pour les zones de l’atelier (Komori, Bobst, Media),
+#     à chaque nouvelle mesure valide reçue.
+#
+#  🧱 NATURE
+#
+#     - Mémoire persistante (helpers input_number)
+#     - Mise à jour monotone (min ↓ / max ↑ uniquement)
+#     - Déclenchement événementiel sur variation capteur
+#
+#  ⚙️ PRINCIPE
+#
+#     - Surveillance des capteurs de température atelier
+#     - À chaque changement :
+#         • comparaison avec les valeurs mémorisées
+#         • écrasement uniquement si un nouvel extrême est atteint
+#     - Aucune remise à zéro automatique
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule pas de statistiques temporelles
+#     - Ne produit pas d’historique long terme
+#     - Ne remet jamais à zéro les min/max
+#     - Ne corrige pas des valeurs déjà incohérentes
+#
+#  🔗 UTILISATION
+#
+#     - Alimente les dashboards atelier
+#     - Sert de base aux cycles hebdomadaires
+#       de réinitialisation et d’archivage
+#
+#  🧩 COHÉRENCE SYSTÈME
+#
+#     Logique volontairement identique
+#     au sous-système Stock (pattern Arsenal partagé).
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10180000000003"
+  alias: "Atelier – Mémoire temps réel des min/max"
+  description: >
+    Met a jour dynamiquement les extremes de temperature
+    pour l'atelier (Komori, Bobst, Media) a chaque changement
+    de mesure valide.
+
+  mode: queued
+
+  trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_komori
+        - sensor.temperature_bobst
+        - sensor.temperature_media
+
+  action:
+    - choose:
+
+        # 🖨️ Komori
+        - conditions: "{{ trigger.entity_id == 'sensor.temperature_komori' }}"
+          sequence:
+            - variables:
+                value: "{{ states('sensor.temperature_komori') | float(none) }}"
+            - condition: template
+              value_template: "{{ value is not none }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.atelier_komori_temperature_min
+              data:
+                value: >
+                  {% set current = states('input_number.atelier_komori_temperature_min') | float(999) %}
+                  {{ value if value < current else current }}
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.atelier_komori_temperature_max
+              data:
+                value: >
+                  {% set current = states('input_number.atelier_komori_temperature_max') | float(-999) %}
+                  {{ value if value > current else current }}
+
+        # 📐 Bobst
+        - conditions: "{{ trigger.entity_id == 'sensor.temperature_bobst' }}"
+          sequence:
+            - variables:
+                value: "{{ states('sensor.temperature_bobst') | float(none) }}"
+            - condition: template
+              value_template: "{{ value is not none }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.atelier_bobst_temperature_min
+              data:
+                value: >
+                  {% set current = states('input_number.atelier_bobst_temperature_min') | float(999) %}
+                  {{ value if value < current else current }}
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.atelier_bobst_temperature_max
+              data:
+                value: >
+                  {% set current = states('input_number.atelier_bobst_temperature_max') | float(-999) %}
+                  {{ value if value > current else current }}
+
+        # 🧍 Media
+        - conditions: "{{ trigger.entity_id == 'sensor.temperature_media' }}"
+          sequence:
+            - variables:
+                value: "{{ states('sensor.temperature_media') | float(none) }}"
+            - condition: template
+              value_template: "{{ value is not none }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.atelier_media_temperature_min
+              data:
+                value: >
+                  {% set current = states('input_number.atelier_media_temperature_min') | float(999) %}
+                  {{ value if value < current else current }}
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.atelier_media_temperature_max
+              data:
+                value: >
+                  {% set current = states('input_number.atelier_media_temperature_max') | float(-999) %}
+                  {{ value if value > current else current }}

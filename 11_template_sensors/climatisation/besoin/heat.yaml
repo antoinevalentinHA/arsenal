@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Besoin chauffage d’appoint climatisation
+#
+# 🎯 Rôle :
+#   Exprimer un BESOIN MÉTIER de chauffage d’appoint (HEAT),
+#   à partir des primitives thermiques existantes,
+#   avec hystérésis explicite et sans recalcul physique.
+#
+# 🧱 Principe Arsenal :
+#   - Synthèse PURE de capteurs amont
+#   - Aucune action
+#   - Aucune temporisation
+#   - Aucune autorisation intégrée
+#
+# 🔌 Dépendances STRICTES :
+#   - binary_sensor.clim_seuil_allumage_heat_atteint
+#   - binary_sensor.clim_seuil_extinction_heat_atteint
+#
+# 🧠 Logique :
+#   - ON  si seuil d’allumage HEAT atteint
+#   - OFF si seuil d’extinction HEAT atteint
+#   - Sinon : état inchangé (hystérésis métier)
+# ==========================================================
+
+- binary_sensor:
+    - name: "Besoin chauffage d’appoint climatisation"
+      unique_id: besoin_clim_heat
+      default_entity_id: binary_sensor.besoin_clim_heat
+      state: >
+        {% set on = is_state('binary_sensor.clim_seuil_allumage_heat_atteint', 'on') %}
+        {% set off = is_state('binary_sensor.clim_seuil_extinction_heat_atteint', 'on') %}
+
+        {% if on %}
+          true
+        {% elif off %}
+          false
+        {% else %}
+          {{ is_state(this.entity_id, 'on') }}
+        {% endif %}

@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION (10_automations)
+#     Chauffage — UI — Notification persistante Confort
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#   Projection UI STRICTEMENT observable de l’état Confort
+#   du chauffage.
+#
+#   - Une notification persistante SI le chauffage est
+#     effectivement en mode Confort.
+#   - Disqualification explicite dès sortie du Confort.
+#
+#   Cette automation :
+#     - ne décide rien
+#     - ne mémorise rien
+#     - ne dépend d’aucun script
+#
+#   Elle est entièrement reconstructible à partir
+#   de l’état courant du système.
+#
+# 🚫 NE FAIT PAS
+#   - Aucune notification pour le mode Réduit
+#   - Aucune logique métier
+#   - Aucune dépendance aux helpers de gouvernance
+# ==========================================================
+
+- id: "10240000000019"
+  alias: "Chauffage — UI — Notification persistante Confort"
+  description: >
+    Affiche une notification persistante uniquement lorsque
+    le chauffage est effectivement en mode Confort.
+
+  mode: restart
+
+  trigger:
+    # Entrée en Confort
+    - platform: state
+      entity_id: sensor.programme_chauffage
+      to: "Confort"
+
+    # Sortie du Confort (vers n'importe quel autre état)
+    - platform: state
+      entity_id: sensor.programme_chauffage
+      from: "Confort"
+
+    # Reconstruction UI post-démarrage
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition: []
+
+  action:
+    - choose:
+        # Chauffage en Confort → notification
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('sensor.programme_chauffage') == 'Confort' }}
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: chauffage_mode_confort
+                title: "🔥 Chauffage — Mode Confort"
+                message: >
+                  Le chauffage est actuellement en mode Confort.
+
+      default:
+        # Hors Confort → disqualification explicite
+        - service: persistent_notification.dismiss
+          data:
+            notification_id: chauffage_mode_confort

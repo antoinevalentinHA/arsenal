@@ -1,0 +1,108 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Notification – Fin aération conseillée – Étage
+#
+#  ID : 10010000000027
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de notification pure chargée de :
+#
+#     - disqualifier la notification persistante
+#       "aération conseillée – étage" lorsque la recommandation
+#       cesse d’être valable,
+#     - notifier éventuellement les occupants si des fenêtres
+#       sont encore ouvertes.
+#
+#     Cette automation NE crée JAMAIS de notification
+#     persistante négative.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchée lorsque l’aération cesse d’être conseillée
+#       (binary_sensor.aeration_conseillee = off, état stabilisé)
+#     - Deux actions possibles :
+#         • fenêtres ouvertes  → notification mobile
+#         • tous les cas       → disqualification persistante
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne crée aucune notification persistante
+#     - Ne remplace pas une notification par une autre
+#     - Ne décide pas de la recommandation
+#     - Ne pilote aucune fenêtre
+#
+#  🔗 DÉPENDANCES
+#
+#     - Décision aération : binary_sensor.aeration_conseillee
+#     - Fenêtres étage : binary_sensor.fenetre_ouverte_etage
+#     - Présence : binary_sensor.presence_famille
+#     - Notifications :
+#         • script.notification_envoyer
+#         • persistent_notification.dismiss
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Notification persistante = état positif valable uniquement
+#     - Absence de notification = état non valable
+#     - Disqualification silencieuse, jamais de persistante négative
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '10010000000027'
+  alias: "Notification - Fin aération conseillée – Étage"
+
+  description: >
+    Disqualifie la notification persistante d’aération conseillée
+    à l’étage lorsque la recommandation cesse.
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.aeration_conseillee
+      to: 'off'
+      for:
+        minutes: "{{ states('input_number.aeration_stabilisation_minutes') | int(0) }}"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.notifications_aeration_actives
+      state: 'on'
+
+    - condition: state
+      entity_id: input_boolean.notifications_aeration_etage
+      state: 'on'
+
+  action:
+
+    # Notification mobile éventuelle
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.presence_famille
+              state: 'on'
+
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_etage
+              state: 'on'
+          sequence:
+            - action: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🚫 Fin aération conseillée – Étage"
+                message: >
+                  L’aération n’est plus recommandée à l’étage.
+                  Il est conseillé de fermer les fenêtres.
+
+    # Disqualification inconditionnelle
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: aeration_conseillee_etage
+
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.aeration_last_notification_fermeture_etage
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

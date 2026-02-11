@@ -1,0 +1,43 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Climatisation – Déshumidification automatique
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation globale de l’utilisation du mode
+#     déshumidification (DRY) de la climatisation.
+#
+#     Ce booléen détermine si la climatisation est
+#     autorisée à intervenir automatiquement pour
+#     réduire l’humidité ambiante.
+#
+#  🧱 Nature :
+#     - Autorisation de service
+#     - Commutateur global d’automatismes (clim)
+#
+#  🔄 Fonctionnement :
+#     - ON  : les automatisations sont autorisées
+#             à utiliser la clim en mode DRY
+#     - OFF : toute déshumidification via la clim
+#             est interdite
+#
+#  📥 N’effectue PAS :
+#     - aucune mesure d’humidité
+#     - aucune décision de seuil
+#     - aucune action sur le déshumidificateur
+#       de la cave
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations
+#       de gestion hygrométrique
+#       via la climatisation
+#     - Pilotée via les dashboards
+#       de réglages climatisation
+#
+#  🧠 Principe Arsenal :
+#     - Chaque moyen de régulation doit
+#       disposer de son autorisation propre
+# ==========================================================
+
+
+auto_deshumidification_active:
+  name: "Déshumidification automatique"
+  icon: mdi:air-humidifier-off

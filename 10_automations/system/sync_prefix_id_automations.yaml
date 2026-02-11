@@ -1,0 +1,44 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION : System – Synchronisation prefix_id
+# ----------------------------------------------------------
+#  🎯 Rôle :
+#     Synchroniser automatiquement la valeur sélectionnée
+#     dans le helper input_select avec le helper texte
+#     input_text.prefix_id, utilisé comme identifiant court.
+#
+#  🧱 Principe Arsenal :
+#     - Le select est la source utilisateur
+#     - Le input_text est la valeur de travail figée
+#     - Aucun calcul métier ici, simple propagation contrôlée
+#
+#  ⚙️ Comportement :
+#     - À chaque changement de sélection :
+#         → copie les 4 premiers caractères
+#           vers input_text.prefix_id
+#
+#  📥 Entrée :
+#     - input_select.prefix_id_select
+#
+#  📤 Sortie :
+#     - input_text.prefix_id
+#
+#  🏷️ ID :
+#     10120000000015
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10120000000015"
+  alias: "System – Synchronisation prefix_id"
+
+  trigger:
+    - platform: state
+      entity_id: input_select.prefix_id_select
+
+  action:
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.prefix_id
+      data:
+        value: "{{ states('input_select.prefix_id_select')[:4] }}"

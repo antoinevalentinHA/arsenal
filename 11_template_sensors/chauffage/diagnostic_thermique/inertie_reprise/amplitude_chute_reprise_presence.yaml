@@ -1,0 +1,130 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Chauffage : Amplitude chute reprise Présence Chambres
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Mesurer l’**amplitude maximale de chute thermique** observée
+#   après une transition de reprise chauffage (reduced → comfort),
+#   à partir du point de reprise figé.
+#
+#   Ce capteur quantifie directement :
+#     - l’inertie résiduelle bâtiment + hydraulique
+#     - l’erreur induite par l’offset ON présence
+#
+# 🔎 Déclencheurs :
+#   - Nouvelle reprise chauffage (capteur A1)
+#   - Variation de la température minimale Chambres
+#
+# ⚙️ Principe :
+#   - À chaque reprise valide :
+#       • remise à zéro de l’amplitude
+#   - Ensuite :
+#       • amplitude = max(amplitude précédente,
+#                        température_reprise – température_actuelle)
+#
+# 🔒 Invalidation stricte :
+#   - tout cycle impacté par aération est neutralisé
+#   - aucune mise à jour pendant aeration_pipeline_arme
+# 
+# 📌 Nature :
+#   - Diagnostic pur
+#   - Aucune mémorisation inter-cycle
+#   - Aucune logique décisionnelle
+#
+# 🚫 Ne fait pas :
+#   - Ne décide rien
+#   - Ne fige aucune valeur externe
+#   - Ne déclenche aucun effet de bord
+#
+# 📦 Capteur créé :
+#   • sensor.amplitude_chute_reprise_presence_chambres
+#
+# 📁 Dossier :
+#   /homeassistant/11_template_sensors/chauffage/diagnostic_thermique/inertie_reprise/
+# ==========================================================
+
+- trigger:
+
+    # Nouvelle reprise chauffage (A1)
+    - platform: state
+      entity_id: sensor.temperature_reprise_presence_chambres
+
+    # Variation thermique Chambres
+    - platform: state
+      entity_id: sensor.temperature_min_chambres
+
+
+  sensor:
+    - name: "Amplitude chute reprise Présence Chambres"
+      unique_id: amplitude_chute_reprise_presence_chambres
+      unit_of_measurement: "°C"
+      device_class: temperature
+      icon: mdi:arrow-collapse-down
+
+
+      state: >
+        {# -------------------------------------------------- #}
+        {# Invalidation aération / post-aération             #}
+        {# -------------------------------------------------- #}
+
+        {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+          {{ this.state }}
+
+        {% else %}
+
+          {% set reprise_valide = state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') %}
+          {% set t_reprise = state_attr('sensor.temperature_reprise_presence_chambres', 't_reprise') %}
+          {% set T_reprise = states('sensor.temperature_reprise_presence_chambres') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set last = this.state | float(none) %}
+
+          {# -------------------------------------------------- #}
+          {# Neutralisation si reprise invalide ou données absentes #}
+          {# -------------------------------------------------- #}
+
+          {% if not reprise_valide or t_reprise is none or T_reprise is none or T_cur is none %}
+            {{ none }}
+
+          {% else %}
+
+            {# -------------------------------------------------- #}
+            {# Reset UNIQUEMENT lors d’une vraie reprise valide  #}
+            {# -------------------------------------------------- #}
+
+            {% if trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' %}
+              {{ 0 }}
+
+            {% else %}
+
+              {% set chute = (T_reprise - T_cur) | float %}
+
+              {# -------------------------------------------------- #}
+              {# Pas encore de chute réelle                        #}
+              {# -------------------------------------------------- #}
+
+              {% if chute <= 0 %}
+
+                {% if last is not none %}
+                  {{ last }}
+                {% else %}
+                  {{ 0 }}
+                {% endif %}
+
+              {# -------------------------------------------------- #}
+              {# Chute réelle observée                             #}
+              {# -------------------------------------------------- #}
+
+              {% else %}
+
+                {% if last is not none %}
+                  {{ [last, chute] | max | round(3) }}
+                {% else %}
+                  {{ chute | round(3) }}
+                {% endif %}
+
+              {% endif %}
+
+            {% endif %}
+
+          {% endif %}
+
+        {% endif %}

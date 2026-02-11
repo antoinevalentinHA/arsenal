@@ -1,0 +1,78 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Température min Chambres
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Identifier la **température la plus basse** parmi les chambres
+#   (Arnaud, Matthieu, Parents), en utilisant les capteurs consolidés
+#   HomeKit + Zigbee.
+#
+# ⚙️ Fonctionnement :
+#   - Analyse les capteurs consolidés :
+#       • sensor.temperature_chambre_arnaud
+#       • sensor.temperature_chambre_matthieu
+#       • sensor.temperature_chambre_parents
+#   - Ignore les valeurs non numériques.
+#   - Si aucune valeur n’est disponible, conserve la dernière connue.
+#
+# 📦 Capteur créé :
+#   • sensor.temperature_min_chambres
+#
+# 🧠 Déclencheurs :
+#   - Variation d’un capteur consolidé.
+#   - Démarrage de Home Assistant.
+#
+# 📊 Type : Trigger Template Sensor
+# 🌡️ Unité : °C
+# 🏠 Classe : temperature
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_chambre_parents
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température min Chambres"
+      unique_id: temperature_min_chambres
+      unit_of_measurement: "°C"
+      state_class: measurement
+      device_class: temperature
+
+      state: >
+        {% set brut = {
+          'Chambre Arnaud': states('sensor.temperature_chambre_arnaud'),
+          'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
+          'Chambre Parents': states('sensor.temperature_chambre_parents')
+        } %}
+
+        {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
+        {% set last = this.state %}
+
+        {% if valides %}
+          {{ (valides | sort(attribute=1))[0][1] | float | round(1) }}
+        {% else %}
+          {{ last }}
+        {% endif %}
+
+      attributes:
+        chambre_la_plus_froide: >
+          {% set brut = {
+            'Chambre Arnaud': states('sensor.temperature_chambre_arnaud'),
+            'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
+            'Chambre Parents': states('sensor.temperature_chambre_parents')
+          } %}
+          {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
+          {% if valides %}
+            {{ (valides | sort(attribute=1))[0][0] }}
+          {% else %}
+            {{ state_attr(this.entity_id, 'chambre_la_plus_froide') or 'Mémoire' }}
+          {% endif %}
+
+        capteurs_utilises: >
+          - sensor.temperature_chambre_arnaud
+          - sensor.temperature_chambre_matthieu
+          - sensor.temperature_chambre_parents

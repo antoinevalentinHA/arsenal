@@ -1,0 +1,113 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Journalisation du début de cycle
+#
+#  ID : 10250000000009
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Journaliser systématiquement le lancement de chaque
+#     cycle ECS dès son déclenchement effectif, en capturant
+#     l’ensemble du contexte initial utile à l’analyse.
+#
+#     Cette automation constitue le point d’ancrage
+#     documentaire de tout cycle ECS.
+#
+#  🧱 PRINCIPE ARSENAL
+#     - Un cycle ECS doit être traçable dès son départ
+#     - Le contexte initial fait foi (mode, consigne, T°)
+#     - La validation finale est différée (statut pending)
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide pas du lancement d’un cycle ECS
+#     - Ne pilote aucune consigne ou équipement
+#     - Ne valide pas la réussite du cycle
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • appel du script central de cycle ECS
+#     - Données capturées :
+#         • mode de cycle (ponctuel / désinfection / vaisselle)
+#         • consigne appliquée
+#         • température initiale du ballon
+#         • statut du boost éventuel
+#         • horodatage précis du lancement
+#     - Actions :
+#         • écriture d’un résumé structuré dans un helper texte
+#         • horodatage officiel du dernier cycle
+#         • réinitialisation de la température max de cycle
+#
+#  ⚠️ IMPORTANT
+#     - Le marquage "pending" est volontaire :
+#       la validation du cycle est effectuée a posteriori
+#     - Le format produit est destiné à être exploité
+#       par les dashboards et capteurs Arsenal
+#
+#  ✅ CONTRAINTES
+#     - Journalisation immédiate et non bloquante
+#     - Format stable et homogène
+#     - Aucune dépendance aux gardiens ECS
+# ==========================================================
+
+
+- id: "10250000000009"
+  alias: "ECS – Log début cycle"
+  description: >
+    Mémorise le mode, la consigne et la T° initiale dès le lancement
+    d’un cycle ECS, réinitialise la T° max et horodate le cycle.
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Appel du script principal ECS
+  # ======================================================
+  trigger:
+    - platform: event
+      event_type: call_service
+      event_data:
+        domain: script
+        service: chauffage_ecs_cycle
+
+  # ======================================================
+  # 🔄 Actions — Construction et journalisation
+  # ======================================================
+  action:
+    # 🧮 Variables de contexte
+    - variables:
+        mode_cycle: "{{ trigger.event.data.service_data.mode | default('ponctuel') }}"
+        consigne: >
+          {% if mode_cycle == 'desinfection' %}
+            {{ states('input_number.ecs_temperature_desinfection') }}
+          {% elif mode_cycle == 'vaisselle' %}
+            {{ states('input_number.ecs_consigne_vaisselle') }}
+          {% else %}
+            {{ states('input_number.ecs_consigne_temperature') }}
+          {% endif %}
+        t0: >
+          {% set v = states('sensor.ecs_temperature_ballon_securisee') %}
+          {{ (v | float(0)) if (v | is_number) else '—' }}
+        boost_flag: >
+          {% if trigger.event.data.service_data.boost_applique is defined
+                and trigger.event.data.service_data.boost_applique %}
+            oui
+          {% else %}
+            non
+          {% endif %}
+
+    # 🧾 1️⃣ Écriture du résumé dans le helper
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.ecs_dernier_cycle_resume
+      data:
+        value: >
+          {{ now().strftime('%d/%m %H:%M') }}|{{ mode_cycle }}|{{ consigne }}|{{ t0 }}|{{ boost_flag }}|pending
+
+    # 🕒 2️⃣ Horodatage officiel du cycle
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.ecs_dernier_cycle_datetime
+      data:
+        datetime: "{{ now() }}"
+
+    # 🔁 3️⃣ Réinitialisation de la T° max pour le nouveau cycle
+    - service: homeassistant.update_entity
+      target:
+        entity_id: sensor.ecs_temperature_max_cycle

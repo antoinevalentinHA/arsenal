@@ -1,0 +1,39 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Baies vitrées – Prise automatique
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation du fonctionnement automatique
+#     de la prise électrique associée aux baies vitrées.
+#
+#     Ce booléen conditionne l’exécution de toutes
+#     les automatisations ON / OFF liées à cette prise.
+#
+#  🧱 Nature :
+#     - Autorisation locale de service
+#     - Commutateur d’automatismes
+#
+#  🔄 Fonctionnement :
+#     - ON  : les automatisations de la prise
+#             des baies vitrées sont autorisées
+#     - OFF : aucun automatisme ne s’exécute
+#
+#  📥 N’effectue PAS :
+#     - aucun retour d’état matériel
+#     - aucune détection de luminosité
+#     - aucune commande directe de la prise
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations :
+#         • allumage automatique
+#         • extinction automatique
+#     - Pilotée via les dashboards
+#       d’éclairage
+#
+#  🧠 Principe Arsenal :
+#     - Tout automatisme local doit
+#       pouvoir être explicitement neutralisé
+# ==========================================================
+
+
+prise_baies_vitrees_auto:
+  name: prise_baies_vitrees_auto

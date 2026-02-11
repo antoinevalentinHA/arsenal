@@ -1,0 +1,90 @@
+# ==========================================================
+#  AUTOMATION : ECS – Alerte rebond (chauffe sans demande HA)
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Détecter qu’une chauffe ECS démarre alors qu’aucune
+#     demande Home Assistant n’a été lancée récemment.
+#
+#  💡 Avantages :
+#     - Détection en direct d’un comportement anormal
+#     - Aide au diagnostic de rebonds chaudière
+#     - Aucune fausse alerte si cycle récent
+#
+#  ⚙️ Comportement :
+#     - Si chauffe ECS = ON (détectée localement)
+#       ET dernier cycle HA trop ancien
+#       → Notifications push détaillant le rebond
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '10250000000018'
+  alias: "ECS - Alerte rebond (chauffe sans demande HA)"
+  description: >
+    Notifie si la chaudière démarre une chauffe ECS alors qu'aucun script de cycle
+    n'a été lancé récemment (détection de rebond en direct).
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Détection via binaire local
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.ecs_chauffe_en_cours_local
+      to: "on"
+
+  # ======================================================
+  # 🔧 Variables — Contexte de diagnostic
+  # ======================================================
+  variables:
+    window_min: 8
+    last_script_ts: "{{ states('input_datetime.ecs_dernier_cycle_datetime') }}"
+    diff_minutes: >
+      {% if last_script_ts not in ['unknown','unavailable','none',''] %}
+        {{ ((as_timestamp(now()) - as_timestamp(last_script_ts)) / 60) | round(1) }}
+      {% else %}
+        999
+      {% endif %}
+    rebond_suspect: "{{ diff_minutes > window_min }}"
+
+    # Sources locales
+    t_cuve: >
+      {% set v = states('sensor.ecs_temperature_ballon_securisee') %}
+      {{ (v | float(0)) if (v | float(999) != 999) else '—' }}
+
+    consigne_chaudiere: "{{ states('sensor.ecs_consigne_chaudiere_securisee') }}"
+    resume: "{{ states('input_text.ecs_dernier_cycle_resume') }}"
+    resume_parts: "{{ resume.split('|') if resume and resume not in ['unknown','unavailable'] else [] }}"
+    dernier_cycle_hhmm: "{{ resume_parts[0] if resume_parts|length > 0 else '—' }}"
+    dernier_cycle_mode: "{{ resume_parts[1] if resume_parts|length > 1 else '—' }}"
+    dernier_cycle_consigne: "{{ resume_parts[2] if resume_parts|length > 2 else '—' }}"
+    dernier_cycle_t0: "{{ resume_parts[3] if resume_parts|length > 3 else '—' }}"
+
+  # ======================================================
+  # ✅ Conditions — Rebond confirmé
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: "{{ rebond_suspect }}"
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "off"
+
+  # ======================================================
+  # 🔄 Actions — Notifications explicites
+  # ======================================================
+  action:
+    # 📱 Notification mobile
+    - service: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "⚠️ ECS – Chauffe non demandée détectée"
+        message: >
+          À {{ now().strftime('%H:%M') }}, la chauffe ECS a démarré  
+          alors qu’aucun cycle Home Assistant n’a été lancé récemment  
+          (dernier script : {{ dernier_cycle_hhmm }}, il y a {{ diff_minutes }} min).  
+          
+          **Détails :**  
+          • Température cuve : {{ t_cuve }} °C  
+          • Consigne chaudière : {{ consigne_chaudiere }} °C  
+          • Dernier cycle : mode = {{ dernier_cycle_mode }}, consigne = {{ dernier_cycle_consigne }} °C, T₀ = {{ dernier_cycle_t0 }} °C

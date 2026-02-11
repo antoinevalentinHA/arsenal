@@ -1,0 +1,56 @@
+# ==========================================================
+# 🤖 INPUT BOOLEAN — Chauffage — Auto-ajustement courbe
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Autoriser ou interdire l’exécution automatique de l’ajustement
+#   de la courbe de chauffe (pente et parallèle) par le système
+#   Arsenal, selon les mesures et seuils calculés.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → les ajustements automatiques de la courbe sont
+#           activés et appliqués par les automatisations.
+#   - OFF → aucun ajustement automatique n’est réalisé,
+#           le chauffage reste sur les valeurs figées.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean
+#   - Nom : Chauffage — Auto-ajustement courbe
+#   - Icône : mdi:robot
+#   - Usage : override global de la logique automatique de régulation
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.chauffage_reglages_auto
+# ==========================================================
+
+chauffage_reglages_auto:
+  name: "Chauffage — Auto-ajustement courbe"
+  icon: mdi:robot
+
+
+# ==========================================================
+# 🤖 INPUT BOOLEAN — Chauffage — Mode simulation courbe
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Permettre d’activer un mode “simulation” pour l’auto-ajustement
+#   de la courbe de chauffe, afin de tester les décisions et
+#   prédictions sans appliquer les changements au chauffage réel.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → simulation active, aucune commande n’est envoyée
+#           au chauffage réel.
+#   - OFF → simulation désactivée, les ajustements réels peuvent
+#           être appliqués si `chauffage_reglages_auto` est actif.
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean
+#   - Nom : Chauffage – Mode simulation courbe
+#   - Icône : mdi:robot-off
+#   - Usage : tests et validation de la logique d’ajustement
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.courbe_auto_simulation
+# ==========================================================
+
+courbe_auto_simulation:
+  name: "Chauffage – Mode simulation courbe"
+  icon: mdi:robot-off

@@ -1,0 +1,143 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Sécurité – Sortie partielle du mode panne (ECS)
+#
+#  ID : 1004000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de SORTIE PARTIELLE DU MODE PANNE SECTEUR.
+#
+#     Elle marque la fin de l’incident électrique pour
+#     le sous-système ECS et restaure une configuration
+#     sanitaire sécurisée après le retour du courant,
+#     tout en laissant le chauffage sous l’autorité
+#     de sa décision centrale.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Réaction à la fin d’un événement critique
+#     - Sécurisation post-incident
+#     - Publication d’un retour à l’état nominal ECS
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement après retour du secteur confirmé
+#       et stable (≥ 5 minutes)
+#     - Rejet explicite des états restaurés
+#       (anti faux-positifs au redémarrage)
+#
+#     - Actions effectuées :
+#         • désactivation de l’override chauffage
+#           (`input_boolean.mode_confort_chauffage`)
+#         • remise de la consigne ECS à un niveau
+#           sécurisé (10 °C)
+#         • notification utilisateur (locale + mobile)
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne force aucune consigne chauffage
+#     - Ne décide d’aucune stratégie thermique
+#     - Ne pilote aucun autre sous-système
+#     - Ne gère pas la logique de reprise chauffage
+#
+# ----------------------------------------------------------
+#  🔗 UTILISATION
+#
+#     - Complément direct de l’automation d’entrée
+#       en mode panne secteur
+#     - Garantit une sortie ECS propre et maîtrisée
+#       après incident électrique
+#
+# ----------------------------------------------------------
+#  🧠 PRINCIPE ARSENAL
+#
+#     La sortie d’un mode dégradé peut être progressive.
+#     Chaque sous-système reprend sous le contrôle
+#     de son moteur décisionnel dédié.
+#
+# ----------------------------------------------------------
+#  🛡️ ROBUSTESSE
+#
+#     Les vérifications temporelles et des états restaurés
+#     garantissent l’absence de déclenchements fantômes
+#     lors d’un redémarrage ou d’un retour secteur instable.
+#
+# ----------------------------------------------------------
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1004000000002'
+  alias: "Sécurité – Sortie mode panne (ECS)"
+  description: >
+    Restaure uniquement l’ECS après retour du courant secteur.  
+    Le chauffage est automatiquement géré par l’automatisation  
+    *gestion_chauffage_avec_presence*.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Retour courant secteur confirmé
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.coupure_secteur
+      from: 'on'
+      to: 'off'
+      for: "00:05:00"
+
+  # ======================================================
+  # ✅ Conditions — Vérifie un retour réel (non restauré / stable)
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: >
+        {{ not (
+          (trigger.from_state and trigger.from_state.attributes.get('restored', false)) or
+          (trigger.to_state and trigger.to_state.attributes.get('restored', false))
+        ) }}
+
+    - condition: template
+      value_template: >
+        {{ (as_timestamp(trigger.to_state.last_changed) - as_timestamp(trigger.from_state.last_changed)) >= 30 }}
+
+  # ======================================================
+  # 🔁 Actions — Sortie partielle du mode panne (ECS)
+  # ======================================================
+  action:
+
+    # 1) Rétablir le chauffage en gestion automatique
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.mode_confort_chauffage
+
+    # 2) Rebasculer l’ECS en sécurité (10 °C)
+    - service: number.set_value
+      target:
+        entity_id: number.vscotho1_200_11_dhw_temperature
+      data:
+        value: 10
+
+    # 3) 🔕 Disqualification de l'état panne
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: mode_panne_secteur
+
+    # 4) Notification mobile
+    - service: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "✅ Courant rétabli"
+        message: >
+          Alimentation rétablie à {{ now().strftime('%H:%M') }}.  
+          ECS remise à 10 °C, chauffage géré automatiquement.
+        extra:
+          ttl: 0
+          priority: high
+          importance: high

@@ -1,0 +1,48 @@
+#################################################################
+# 🌐 CARTE ÉTAT INTERNET — UI
+# ---------------------------------------------------------------
+# Affiche l’état de la connectivité Internet et permet,
+# en cas de problème, le redémarrage manuel de la box.
+#
+# Principe Arsenal :
+#   - Carte d’état système critique
+#   - Lecture immédiate (OK / KO)
+#   - Action de secours protégée
+#   - Aucune logique métier
+#################################################################
+
+carte_etat_internet:
+  template: carte_base
+
+  show_state: true
+
+  tap_action:
+    action: more-info
+
+  hold_action:
+    action: call-service
+    service: script.redemarrer_box
+    confirmation:
+      text: Es-tu sûr de vouloir redémarrer la box internet ?
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity?.state;
+            if (s === "on")  return "rgba(76, 175, 80, 0.2)";   // 🟢 Internet OK
+            if (s === "off") return "rgba(244, 67, 54, 0.2)";   // 🔴 Internet KO
+            return "rgba(158, 158, 158, 0.2)";                  // ⚪ état inconnu
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: "#111"
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: "#111"
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: "#111"

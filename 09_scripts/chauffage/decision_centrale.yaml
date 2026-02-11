@@ -1,0 +1,310 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Chauffage – Décision Centrale V3
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#
+#   Cerveau UNIQUE de décision du chauffage.
+#
+#   Ce script est la SEULE autorité habilitée à décider
+#   un changement de programme chauffage :
+#     → Confort
+#     → Réduit
+#
+#   Il peut :
+#     - ordonner un changement explicite de programme
+#     - OU refuser volontairement toute action
+#
+# ----------------------------------------------------------
+# 🧱 HIÉRARCHIE DES PRIORITÉS (ORDRE STRICT)
+#
+#   👤 NIVEAU 0 — OVERRIDE OPÉRATEUR (SOUVERAIN)
+#     (commande humaine explicite, prioritaire sur toute logique Arsenal)
+#     - mode_confort_chauffage = ON
+#
+#     Effet :
+#       - impose immédiatement le programme Confort
+#       - contourne les blocages hiérarchiques et les abstentions
+#       - reste subordonné aux sécurités matérielles hors périmètre Arsenal
+#
+#   🛑 NIVEAU 1 — INTERDICTIONS SYSTÈME (RÉGIME AUTOMATIQUE)
+#     (souveraines hors override opérateur)
+#     - Chauffage non autorisé système
+#     - Standby forcé
+#
+#   🧠 NIVEAU 2 — CONTEXTES MAJEURS (RÉGIME AUTOMATIQUE)
+#     (imposent Réduit hors override opérateur)
+#     - Poêle actif (instantané ou mémoire)
+#     - Aération en cours ou bloquée
+#     - Fenêtres ouvertes (avec délai)
+#     - Mode maison = Vacances
+#
+#   🌡️ NIVEAU 3 — CONFORT D’OPPORTUNITÉ (RÉGIME AUTOMATIQUE)
+#     (sous réserve des niveaux supérieurs)
+#     - Présence réelle du foyer
+#     - Pré-confort (retour anticipé)
+#     - Inhibition géofencing (protection thermique en absence)
+#
+# ----------------------------------------------------------
+# 🔁 HYSTÉRÉSIS DÉCISIONNELLE & ÉTAT D’ATTENTE
+#
+#   Hors override opérateur, ce script ne force JAMAIS
+#   une reprise automatique à la levée d’un blocage ou d’un délai.
+#
+#   ➜ Fin de blocage ≠ reprise chauffage
+#   ➜ Passage en Confort uniquement si le BESOIN THERMIQUE
+#     est confirmé par les capteurs métier.
+#
+#   Objectifs :
+#     - Zéro effet yo-yo
+#     - Respect de l’inertie thermique
+#     - Aucune action “par principe”
+#
+# ----------------------------------------------------------
+# 🛑 GARDE-FOUS D’ABSTENTION
+#
+#   Hors override opérateur, AUCUNE action n’est déclenchée si :
+#     - Le programme chauffage est inconnu
+#     - Le mode désiré est déjà actif
+#     - Un anti-rebond géolocalisation est en cours
+#
+#   En override opérateur :
+#     - ces abstentions ne neutralisent jamais une commande humaine
+#
+# ----------------------------------------------------------
+# 🔒 ANTI-REBOND GÉOLOCALISATION
+#
+#   Toute décision validée déclenche un timer bloquant
+#   toute décision concurrente immédiate.
+#
+#   ➜ Stabilisation logique
+#   ➜ Protection thermique et API ViCare
+#
+# ----------------------------------------------------------
+# 🧾 OBSERVABILITÉ & TRAÇABILITÉ
+#
+#   Toute décision explicite produit :
+#     - Un changement de programme observable
+#     - Un logbook lisible
+#     - Une raison métier traçable
+#
+#   En cas d’override opérateur, la raison `confort_force`
+#   est prioritaire et doit rester lisible.
+#
+# ----------------------------------------------------------
+# 🧱 GARANTIES SYSTÈME
+#
+#   - Une seule décision à la fois
+#   - Zéro appel inutile
+#   - Zéro oscillation en régime automatique
+#   - Zéro ambiguïté d’état
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucun appel ViCare direct
+#   - Aucun réglage de consigne
+#   - Aucune hypothèse thermique
+#   - Aucune décision implicite
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+chauffage_decision_centrale:
+  alias: "Chauffage - Décision centrale"
+  description: >
+    Decision automatique unique Comfort/Reduced selon le contexte
+    global, avec évitement total des actions inutiles.
+
+  mode: restart
+
+  sequence:
+
+    # ------------------------------------------------------
+    # Protection initiale : anti-rebond geoloc
+    # ------------------------------------------------------
+
+    - alias: "Guard anti-rebond (hors override)"
+      condition: template
+      value_template: >
+        {{
+          is_state('input_boolean.mode_confort_chauffage', 'on')
+          or is_state('timer.chauffage_geoloc_antirebond', 'idle')
+        }}
+
+    # ------------------------------------------------------
+    # Variables principales (programme actuel et évaluation)
+    # ------------------------------------------------------
+    - alias: "Set variables"
+      variables:
+
+        # Programme chauffage actuel (lecture locale sécurisée)
+        prog_actuel: >
+          {% set v = states('sensor.programme_chauffage') | lower %}
+          {% if 'eco' in v %}
+            reduced
+          {% elif 'comfort' in v or 'confort' in v %}
+            comfort
+          {% else %}
+            unknown
+          {% endif %}
+
+        # Mode désiré calculé selon le contexte global
+        desired_mode: >
+          {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
+            comfort
+
+          {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
+            reduced
+
+          {% elif is_state('input_boolean.aeration_episode_en_cours', 'on') %}
+            reduced
+
+          {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+            reduced
+
+          {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
+            reduced
+
+          {% elif is_state('input_select.mode_maison', 'Vacances') %}
+            reduced
+
+          {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
+            reduced
+
+          {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+            {{ states('sensor.chauffage_autorisation_cible') }}
+
+          {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
+            comfort
+
+          {% else %}
+            reduced
+          {% endif %}
+
+        reason: >
+          {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
+            confort_force
+
+          {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
+            chauffage_non_autorise
+
+          {% elif is_state('input_boolean.aeration_episode_en_cours', 'on') %}
+            aeration_en_cours
+
+          {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+            blocage_aeration_en_cours
+
+          {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
+            fenetre_ouverte_maison
+
+          {% elif is_state('input_select.mode_maison', 'Vacances') %}
+            mode_maison_vacances
+
+          {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
+            poele_actif
+
+          {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+            {% set cible = states('sensor.chauffage_autorisation_cible') %}
+            {% if cible == 'comfort' %}
+              besoin_thermique
+            {% elif cible == 'neutre' %}
+              presence_on
+            {% else %}
+              confort_suffisant
+            {% endif %}
+
+          {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
+            absence_protection_thermique
+
+          {% else %}
+            absence
+          {% endif %}
+
+    # ------------------------------------------------------
+    # Cas particulier : programme inconnu -> on stoppe tout
+    # ------------------------------------------------------
+    - alias: "Guard programme inconnu (hors override)"
+      condition: template
+      value_template: >
+        {{
+          is_state('input_boolean.mode_confort_chauffage', 'on')
+          or prog_actuel != 'unknown'
+        }}
+
+    # ------------------------------------------------------
+    # Garde-fou neutre : autorisation sans action
+    # ------------------------------------------------------
+    - alias: "Stop si mode neutre"
+      choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ desired_mode == 'neutre' }}"
+          sequence:
+            - stop: "Mode neutre — autorisation sans action"
+
+    # ------------------------------------------------------
+    # Garde-fou principal : si pas de changement → stop total
+    # ------------------------------------------------------
+    - alias: "Guard aucun changement"
+      condition: template
+      value_template: "{{ desired_mode != prog_actuel }}"
+
+    # ------------------------------------------------------
+    # Decision centrale (un seul choose, seulement si changement)
+    # ------------------------------------------------------
+    - alias: "Decision centrale"
+      choose:
+
+        # ---------- Passage en Comfort ----------
+        - conditions:
+            - condition: template
+              value_template: "{{ desired_mode == 'comfort' }}"
+            - condition: template
+              value_template: "{{ not is_state('sensor.programme_chauffage', 'Confort') }}"
+          sequence:
+            - alias: "Activer chauffage confort"
+              service: script.chauffage_consigne_confort
+              data:
+                raison: "{{ reason }}"
+
+            - alias: "Start anti-rebond"
+              service: timer.start
+              target:
+                entity_id: timer.chauffage_geoloc_antirebond
+
+            - alias: "Log confort"
+              service: logbook.log
+              data:
+                name: "Chauffage - Décision"
+                message: >
+                  Passage en mode Confort.
+                  Raison: {{ reason }}.
+                entity_id: sensor.programme_chauffage
+
+      default:
+
+        # ---------- Passage en Reduced ----------
+        - alias: "Activer chauffage reduced"
+          choose:
+            - conditions:
+                - condition: template
+                  value_template: "{{ not is_state('sensor.programme_chauffage', 'Eco') }}"
+              sequence:
+                - service: script.chauffage_consigne_reduite
+                  data:
+                    raison: "{{ reason }}"
+
+        - alias: "Start anti-rebond"
+          service: timer.start
+          target:
+            entity_id: timer.chauffage_geoloc_antirebond
+
+        - alias: "Log reduced"
+          service: logbook.log
+          data:
+            name: "Chauffage - Decision"
+            message: >
+              Passage en mode Réduit.
+              Raison: {{ reason }}.
+            entity_id: sensor.programme_chauffage

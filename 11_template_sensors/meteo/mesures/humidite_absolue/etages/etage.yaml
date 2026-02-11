@@ -1,0 +1,73 @@
+# ==========================================================
+# 💧 TEMPLATE TRIGGERED SENSOR — Humidité absolue intérieure (Étage)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Calculer la **moyenne de l’humidité absolue** des chambres situées à l’étage,
+#   afin d’obtenir une estimation fiable de l’humidité globale intérieure.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement sur variation de l’humidité absolue :
+#       • sensor.humidite_absolue_chambre_arnaud  
+#       • sensor.humidite_absolue_chambre_matthieu  
+#       • sensor.humidite_absolue_chambre_parents
+#   - Mise à jour également au démarrage de Home Assistant.
+#
+# 🧮 Calcul :
+#   1️⃣ Récupère les valeurs des trois capteurs.  
+#   2️⃣ Filtre les mesures valides :
+#        - supérieures à 0  
+#        - inférieures à 30 (plage réaliste en g/m³)
+#   3️⃣ Fait la moyenne des valeurs retenues.  
+#   4️⃣ Si aucune donnée valide n’est disponible → conserve la dernière valeur connue.
+#
+# 🧠 Détails techniques :
+#   - L’unité utilisée est **g/m³**.  
+#   - L’attribut `sources` liste les entités utilisées pour le calcul.  
+#   - L’attribut `nombre_sources_valides` indique combien de capteurs ont été pris en compte.
+#
+# 💡 Utilisation :
+#   Permet de comparer l’humidité absolue intérieure à celle de l’extérieur
+#   pour déterminer les conditions d’aération optimales.
+#
+# 📊 Type : Trigger Template Sensor  
+# 📍 Nom de l’entité : sensor.humidite_absolue_interieur_etage
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.humidite_absolue_chambre_matthieu
+        - sensor.humidite_absolue_chambre_parents
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidité absolue intérieure (Étage)"
+      unique_id: humidite_absolue_interieur_etage
+      unit_of_measurement: "g/m³"
+      icon: mdi:water
+      state: >
+        {% set sources = [
+          states('sensor.humidite_absolue_chambre_arnaud') | float(0),
+          states('sensor.humidite_absolue_chambre_matthieu') | float(0),
+          states('sensor.humidite_absolue_chambre_parents') | float(0)
+        ] %}
+        {% set valides = sources | select('gt', 0) | select('lt', 30) | list %}
+        {% if valides %}
+          {{ (valides | sum / valides | length) | round(2) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+      attributes:
+        sources: >
+          - sensor.humidite_absolue_chambre_arnaud
+          - sensor.humidite_absolue_chambre_matthieu
+          - sensor.humidite_absolue_chambre_parents
+        nombre_sources_valides: >
+          {% set sources = [
+            states('sensor.humidite_absolue_chambre_arnaud') | float(0),
+            states('sensor.humidite_absolue_chambre_matthieu') | float(0),
+            states('sensor.humidite_absolue_chambre_parents') | float(0)
+          ] %}
+          {% set valides = sources | select('gt', 0) | select('lt', 30) | list %}
+          {{ valides | length }}

@@ -1,0 +1,122 @@
+#################################################################
+# 💨 VMC — TEMPLATES UI (CAPTEURS)
+#################################################################
+#
+# 🧠 Rôle :
+#   Template button-card destiné à l’affichage des capteurs
+#   pilotant la VMC (humidité relative ou CO₂).
+#
+# 🎯 Objectifs :
+#   - Visualiser la valeur mesurée
+#   - Contextualiser l’état par rapport aux seuils ON / OFF
+#   - Expliquer visuellement le comportement de la VMC
+#
+# 🧩 Principe Arsenal :
+#   - Aucune décision métier
+#   - Aucune action sur la VMC
+#   - Lecture seule des états et seuils calculés ailleurs
+#
+# ⚙️ Logique d’affichage (UI uniquement) :
+#   - Seuils dépendants du type de capteur :
+#       • humidité relative (%)
+#       • CO₂ (ppm)
+#   - Couleur basée sur :
+#       • valeur mesurée
+#       • seuil ON / OFF
+#       • état réel de la VMC (haute vitesse)
+#
+# 📡 Dépendances :
+#   - input_boolean.vmc_haute_vitesse
+#   - input_number.vmc_seuil_on / off
+#   - input_number.vmc_co2_seuil_on / off
+#
+# 🎨 Codes couleur :
+#   - 🟢 Vert  : valeur revenue sous seuil pertinent
+#   - 🔴 Rouge : valeur excessive
+#   - ⚪ Gris  : données indisponibles
+#
+# 🧪 Robustesse :
+#   - Tolérance aux états unknown / unavailable
+#   - Fallback visuel neutre
+#
+#################################################################
+
+#################################################################
+# 📊 Carte — Capteur VMC (HR / CO₂)
+# ---------------------------------------------------------------
+# Carte générique utilisée pour les capteurs
+# influençant le régime de ventilation.
+#################################################################
+
+vmc_capteur:
+  template: carte_base
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const eid = entity?.entity_id;
+            const st = hass.states[eid];
+            if (!st) return "rgba(158,158,158,0.2)";
+            const raw = parseFloat(st.state);
+            if (isNaN(raw)) return "rgba(158,158,158,0.2)";
+
+            const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
+            const isCO2 = unit.includes("ppm");
+
+            const seuilOn  = parseFloat(hass.states[isCO2
+              ? "input_number.vmc_co2_seuil_on"
+              : "input_number.vmc_seuil_on"]?.state);
+            const seuilOff = parseFloat(hass.states[isCO2
+              ? "input_number.vmc_co2_seuil_off"
+              : "input_number.vmc_seuil_off"]?.state);
+
+            if (isNaN(seuilOn) || isNaN(seuilOff)) return "rgba(158,158,158,0.2)";
+
+            const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
+
+            if (vmcOn) {
+              return raw > seuilOff ? "rgba(244,67,54,0.2)" : "rgba(76,175,80,0.2)";
+            } else {
+              return raw >= seuilOn ? "rgba(244,67,54,0.2)" : "rgba(76,175,80,0.2)";
+            }
+          ]]]
+    icon:
+      - color: '#111'
+    name:
+      - font-size: 14px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 16px
+      - font-weight: 600
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - color: '#111'
+  label: |
+    [[[
+      const eid = entity?.entity_id;
+      const st = hass.states[eid];
+      if (!st) return "Seuil : —";
+      const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
+      const isCO2 = unit.includes("ppm");
+
+      const seuilOn  = parseFloat(hass.states[isCO2
+        ? "input_number.vmc_co2_seuil_on"
+        : "input_number.vmc_seuil_on"]?.state);
+      const seuilOff = parseFloat(hass.states[isCO2
+        ? "input_number.vmc_co2_seuil_off"
+        : "input_number.vmc_seuil_off"]?.state);
+
+      if (isNaN(seuilOn) || isNaN(seuilOff)) return "Seuil : —";
+
+      const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
+
+      return vmcOn
+        ? `Seuil Off : ${seuilOff.toFixed(0)}${isCO2 ? " ppm" : " %"}` 
+        : `Seuil On : ${seuilOn.toFixed(0)}${isCO2 ? " ppm" : " %"}`;
+    ]]]

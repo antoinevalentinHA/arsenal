@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : Proxys statistiques (LTS)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir les métadonnées des capteurs proxy destinés
+#    à l’enregistrement des statistiques long terme (LTS)
+#    dans Home Assistant.
+#
+# 🧠 Lecture métier :
+#    Ces capteurs sont des PROXYS TECHNIQUES.
+#    Ils existent uniquement pour permettre au Recorder
+#    de stocker des valeurs agrégées sur la durée.
+#    Ils ne représentent pas une mesure physique directe.
+#
+# 🧩 Périmètre :
+#    - Définit les métadonnées statistiques :
+#      • unit_of_measurement
+#      • state_class
+#      • unit_class
+#    - Garantit la persistance des données 24h / 7j
+#
+# 🔗 Dépendances :
+#    - Capteurs calculés ailleurs (templates, scripts)
+#    - Utilisés par :
+#      • Recorder
+#      • statistiques long terme
+#      • dashboards d’analyse
+#
+# 🚫 Interdits :
+#    - Introduire une logique métier
+#    - Déclencher une action à partir de ces capteurs
+#    - Modifier les calculs sources ici
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle technique / persistance des données
+# ==========================================================
+
+
+############################################################
+# 📊 POURCENTAGE CONSIGNE ÉCO — AGRÉGATS TEMPORELS
+############################################################
+
+sensor.pourcentage_consigne_eco_24h_proxy:
+  unit_of_measurement: "%"
+  state_class: measurement
+  unit_class: percentage
+
+sensor.pourcentage_consigne_eco_7j_proxy:
+  unit_of_measurement: "%"
+  state_class: measurement
+  unit_class: percentage

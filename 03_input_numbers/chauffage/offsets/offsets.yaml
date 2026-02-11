@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Chauffage — Offsets ON / OFF
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir l’hystérésis thermique appliquée
+#   autour de la consigne de chauffage.
+#
+#   Ces offsets permettent de créer deux seuils distincts :
+#     - Seuil ON  : déclenchement autorisé du chauffage
+#     - Seuil OFF : arrêt autorisé du chauffage
+#
+# 🧱 Principe :
+#   - La consigne est la valeur CENTRALE
+#   - L’offset ON définit la marge basse :
+#       → chauffage autorisé si température
+#         < consigne - offset_on
+#   - L’offset OFF définit la marge haute :
+#       → chauffage coupé si température
+#         > consigne + offset_off
+#
+# 🧠 Principe Arsenal :
+#   - Les capteurs MESURENT la température réelle
+#   - Les template_sensors QUALIFIENT les seuils ON / OFF
+#   - Les scripts de décision COMBINENT ces états
+#   - Ces helpers ne décident jamais
+#
+# ⚠️ Règles fondamentales :
+#   - Aucun déclenchement direct
+#   - Aucun arrêt direct
+#   - Aucun calcul autonome
+#   - Zéro logique métier embarquée
+#
+# 🔗 Utilisation :
+#   - Consommés par :
+#     - sensor.autorisation_chauffage_selon_temperature
+#     - scripts de décision chauffage (pipeline maître)
+#   - Affichés dans :
+#     - dashboards diagnostics / réglages chauffage
+#
+# 📐 Unité :
+#   - Degrés Celsius (°C)
+#
+# 🧠 Objectif :
+#   - Éviter le pompage thermique
+#   - Stabiliser les cycles ON / OFF
+#   - Rendre l’hystérésis explicite et réglable
+# ==========================================================
+
+
+chauffage_offset_on:
+  name: "Offset seuil ON (chauffage)"
+  min: 0.0
+  max: 3.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+chauffage_offset_off:
+  name: "Offset seuil OFF (chauffage)"
+  min: 0.0
+  max: 3.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up

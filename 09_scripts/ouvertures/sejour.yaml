@@ -1,0 +1,87 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Ouverture séjour – Timer de grâce dynamique
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Démarrer (ou redémarrer) le timer de grâce associé
+#   à l’ouverture des fenêtres du séjour, avec une durée
+#   PARAMÉTRABLE définie par l’utilisateur.
+#
+#   Ce script n’évalue aucune condition métier.
+#   Il applique une temporisation demandée.
+#
+# ----------------------------------------------------------
+# 🧱 POSITION DANS L’ARCHITECTURE
+#
+#   - Script de service (middleware)
+#   - Pont entre :
+#       • les automatismes d’ouverture du séjour
+#       • le helper `timer.fenetre_sejour_ouverte_grace`
+#
+#   ➜ Aucune logique d’aération ici
+#   ➜ Aucune décision chauffage / clim / alarme
+#
+# ----------------------------------------------------------
+# ⏱️ GESTION DE LA DURÉE
+#
+#   - La durée n’est PAS codée en dur
+#   - Elle provient EXCLUSIVEMENT du helper :
+#
+#       input_number.delai_ouverture_sejour
+#
+#   - La valeur est :
+#       • lue à l’exécution
+#       • convertie en entier (secondes)
+#       • toujours numérique (fallback assuré)
+#
+# ----------------------------------------------------------
+# 🔁 COMPORTEMENT
+#
+#   - Mode : restart
+#   - Toute nouvelle ouverture relance le timer
+#   - Une seule temporisation active à la fois
+#
+# ----------------------------------------------------------
+# 🔒 ROBUSTESSE
+#
+#   - Aucune dépendance à l’état précédent du timer
+#   - Aucun calcul métier
+#   - Aucun effet de bord
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne décide pas si l’aération est valide
+#   - Ne bloque ni ne force chauffage / clim
+#   - Ne ferme aucune fenêtre
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script utilitaire — temporisation dynamique
+#
+# 📍 Entité :
+#   script.timer_ouverture_sejour_start
+#
+# 🔗 Dépendances :
+#   - timer.fenetre_sejour_ouverte_grace
+#   - input_number.delai_ouverture_sejour
+#
+# 🧩 Pipeline :
+#   Ouvertures / Aération — V3
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+timer_ouverture_sejour_start:
+  alias: "Ouverture séjour – Timer dynamique"
+  mode: restart
+
+  sequence:
+    - action: timer.start
+      target:
+        entity_id: timer.fenetre_sejour_ouverte_grace
+      data:
+        duration: >
+          {{ states('input_number.delai_ouverture_sejour') | int }}

@@ -1,0 +1,88 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Buanderie – Détection de début de cycle électroménager
+#
+#  ID : 1008000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de DÉTECTION événementielle.
+#
+#     Elle identifie le démarrage effectif d’un cycle
+#     d’électroménager à partir d’un signal physique
+#     mesuré (consommation électrique prolongée).
+#
+#     Elle marque l’entrée en état "cycle en cours"
+#     et notifie l’utilisateur.
+#
+#  🧱 NATURE
+#
+#     - Détection technique
+#     - Aucune logique métier de décision
+#     - Basée sur un seuil physique mesuré
+#
+#  ⚙️ PRINCIPE
+#
+#     - Surconsommation > 50 W maintenue 3 minutes
+#     - Vérification que le cycle n’est pas déjà actif
+#     - Activation d’un flag de suivi
+#     - Notification persistante
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne pilote aucun appareil
+#     - Ne décide pas de la durée du cycle
+#     - Ne détermine pas la fin de cycle
+#     - Ne gère pas d’hystérésis ou de temporisation métier
+#
+#  🔗 UTILISATION
+#
+#     - Initialise l’état "cycle en cours"
+#     - Sert de point d’entrée aux automatisations
+#       de suivi et de fin de cycle
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1008000000003"
+  alias: "Buanderie - Début de cycle"
+  description: >
+    Détecte le début de cycle électroménager (puissance > 50 W pendant 3 minutes),
+    active le flag de cycle en cours et envoie une notification persistante.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Surconsommation prolongée
+  # ======================================================
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.prise_buanderie_power
+      above: 50
+      for: "00:03:00"
+
+  # ======================================================
+  # ✅ Condition — Cycle inactif uniquement
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.buanderie_cycle
+      state: "off"
+
+  # ======================================================
+  # 🔄 Action — Activation flag + notification
+  # ======================================================
+  action:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.buanderie_cycle
+
+    - action: persistent_notification.create
+      data:
+        title: "🧺 Buanderie – Cycle en cours"
+        message: >
+          Un cycle d’électroménager est actuellement en cours.
+        notification_id: buanderie_cycle

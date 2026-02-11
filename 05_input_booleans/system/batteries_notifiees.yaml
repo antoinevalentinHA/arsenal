@@ -1,0 +1,24 @@
+# ==========================================================
+# 🔋 INPUT BOOLEAN — Batteries notifiées aujourd'hui
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si les notifications de batteries faibles ont déjà
+#   été envoyées aujourd’hui, afin d’éviter les doublons.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → les notifications de batteries ont été envoyées
+#   - OFF → aucune notification envoyée pour le jour en cours
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : 🔋 Batteries notifiées aujourd'hui  
+#   - Icône : mdi:battery-check
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.batteries_notifiees
+# ==========================================================
+
+
+batteries_notifiees:
+  name: 🔋 Batteries notifiées aujourd'hui
+  icon: mdi:battery-check

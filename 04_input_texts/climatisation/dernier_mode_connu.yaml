@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧱 INPUT_TEXT — Climatisation : dernier mode connu
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Conserver la dernière valeur valide OBSERVÉE du mode de
+#   fonctionnement de la climatisation (cool / dry / heat).
+#
+# 📌 Principe Arsenal :
+#   - Mémoire métier dérivée (cache fiable)
+#   - Écrit uniquement lors d’un changement réel de mode
+#   - Utilisé pour sécuriser les transitions (unknown,
+#     unavailable, redémarrage HA).
+#
+# ⚙️ Fonctionnement :
+#   - Ne contient qu’un libellé de mode simple.
+#   - Sert de référence PASSIVE pour les calculs de durées
+#     (aucune logique embarquée).
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_text
+#   - Longueur max : 16 caractères
+#   - Icône : mdi:cached
+#
+# 📊 Type : Helper (Input Text)
+# 📍 Entité : input_text.clim_mode_last
+# ==========================================================
+
+
+clim_mode_last:
+  name: "Clim - Dernier mode connu"
+  max: 16
+  icon: mdi:cached

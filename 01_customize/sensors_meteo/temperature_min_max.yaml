@@ -1,0 +1,156 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : Températures Min / Max 24h
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Centraliser l’affichage des températures minimales
+#    et maximales observées sur les dernières 24 heures,
+#    par zone.
+#
+# 🧠 Lecture métier :
+#    Ces capteurs fournissent une vision RÉTROSPECTIVE
+#    du comportement thermique de la maison.
+#    Ils sont destinés au diagnostic, à l’analyse
+#    et à la compréhension des inerties thermiques.
+#
+# 🧩 Périmètre :
+#    - Définit les friendly_name et icônes
+#    - Regroupe les capteurs Min / Max journaliers
+#    - Fournit une lecture synthétique par zone
+#
+# 🔗 Dépendances :
+#    - Capteurs de température instantanée
+#    - Agrégations temporelles (24h)
+#    - Utilisés par :
+#      • dashboards de suivi
+#      • analyses thermiques
+#
+# 🚫 Interdits :
+#    - Utiliser ces valeurs comme seuils décisionnels
+#    - Déclencher une action en temps réel
+#    - Corriger ou filtrer les données ici
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - observation / historique
+# ==========================================================
+
+
+############################################################
+# 🌿 EXTÉRIEUR
+############################################################
+
+sensor.temperature_min_jour_jardin:
+  friendly_name: "Jardin"
+  icon: mdi:tree
+
+sensor.temperature_max_jour_jardin:
+  friendly_name: "Jardin"
+  icon: mdi:tree
+
+
+############################################################
+# 🏠 ESPACES DE VIE — INTÉRIEUR
+############################################################
+
+sensor.temperature_min_jour_entree:
+  friendly_name: "Entrée"
+  icon: mdi:door
+
+sensor.temperature_max_jour_entree:
+  friendly_name: "Entrée"
+  icon: mdi:door
+
+sensor.temperature_min_jour_sejour:
+  friendly_name: "Séjour"
+  icon: mdi:sofa
+
+sensor.temperature_max_jour_sejour:
+  friendly_name: "Séjour"
+  icon: mdi:sofa
+
+sensor.temperature_min_jour_palier:
+  friendly_name: "Palier"
+  icon: mdi:stairs-up
+
+sensor.temperature_max_jour_palier:
+  friendly_name: "Palier"
+  icon: mdi:stairs-up
+
+
+############################################################
+# 🛏️ CHAMBRES
+############################################################
+
+sensor.temperature_min_jour_chambre_arnaud:
+  friendly_name: "Chambre Arnaud"
+  icon: mdi:human-child
+
+sensor.temperature_max_jour_chambre_arnaud:
+  friendly_name: "Chambre Arnaud"
+  icon: mdi:human-child
+
+sensor.temperature_min_jour_chambre_matthieu:
+  friendly_name: "Chambre Matthieu"
+  icon: mdi:teddy-bear
+
+sensor.temperature_max_jour_chambre_matthieu:
+  friendly_name: "Chambre Matthieu"
+  icon: mdi:teddy-bear
+
+sensor.temperature_min_jour_chambre_parents:
+  friendly_name: "Chambre Parents"
+  icon: mdi:account-multiple
+
+sensor.temperature_max_jour_chambre_parents:
+  friendly_name: "Chambre Parents"
+  icon: mdi:account-multiple
+
+
+############################################################
+# 🚿 SALLES DE BAINS
+############################################################
+
+sensor.temperature_min_jour_sdb_parents:
+  friendly_name: "SDB Parents"
+  icon: mdi:shower
+
+sensor.temperature_max_jour_sdb_parents:
+  friendly_name: "SDB Parents"
+  icon: mdi:shower
+
+sensor.temperature_min_jour_sdb_enfants:
+  friendly_name: "SDB Enfants"
+  icon: mdi:shower
+
+sensor.temperature_max_jour_sdb_enfants:
+  friendly_name: "SDB Enfants"
+  icon: mdi:shower
+
+
+############################################################
+# 🏗️ ANNEXES & ZONES TECHNIQUES
+############################################################
+
+sensor.temperature_min_jour_petite_maison:
+  friendly_name: "Petite Maison"
+  icon: mdi:home-outline
+
+sensor.temperature_max_jour_petite_maison:
+  friendly_name: "Petite Maison"
+  icon: mdi:home-outline
+
+sensor.temperature_min_jour_garage:
+  friendly_name: "Garage"
+  icon: mdi:garage
+
+sensor.temperature_max_jour_garage:
+  friendly_name: "Garage"
+  icon: mdi:garage
+
+sensor.temperature_min_jour_cave:
+  friendly_name: "Cave"
+  icon: mdi:stairs-down
+
+sensor.temperature_max_jour_cave:
+  friendly_name: "Cave"
+  icon: mdi:stairs-down

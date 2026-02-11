@@ -1,0 +1,96 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : Batteries
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Regrouper l’ensemble des capteurs de niveau de batterie
+#    afin de fournir une vue centralisée pour le diagnostic,
+#    la maintenance et la surveillance humaine.
+#
+# 🧠 Lecture métier :
+#    Ce groupe est un outil de DIAGNOSTIC UI.
+#    Il n’est utilisé que pour l’affichage et la supervision
+#    des niveaux de batterie des équipements.
+#    Il ne participe à aucune logique système ni décisionnelle.
+#
+# 🧩 Périmètre :
+#    - Capteurs de batterie (Zigbee, Netatmo, SwitchBot, etc.)
+#    - Équipements maison et atelier
+#    - Tous niveaux confondus
+#
+# 🔗 Dépendances :
+#    - Capteurs batterie exposés par les intégrations
+#    - Utilisé par :
+#      • dashboards diagnostics (batteries)
+#
+# 🚫 Interdits :
+#    - Utiliser ce groupe comme condition métier
+#    - Déclencher une automatisation
+#    - Servir de source système (fiabilité, âge des données)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - diagnostic / maintenance
+# ==========================================================
+
+
+batteries:
+  name: Batteries
+  entities:
+
+    - sensor.bouton_cuisine_battery
+    - sensor.bouton_sdb_battery
+    - sensor.bouton_garage_1_battery
+    - sensor.bouton_garage_2_battery
+    - sensor.capteur_fenetre_arnaud_battery
+    - sensor.capteur_fenetre_matthieu_battery
+    - sensor.capteur_fenetre_parents_droite_battery
+    - sensor.capteur_fenetre_parents_gauche_battery
+    - sensor.capteur_fenetre_parents_milieu_battery
+    - sensor.capteur_fenetre_entree_battery
+    - sensor.capteur_fenetre_sejour_1_battery
+    - sensor.capteur_fenetre_sejour_2_battery
+    - sensor.capteur_fenetre_sejour_3_battery
+    - sensor.capteur_fenetre_sejour_4_battery
+    - sensor.capteur_mouvements_entree_battery
+    - sensor.capteur_mouvements_garage_1_battery
+    - sensor.capteur_mouvements_garage_2_battery
+    - sensor.capteur_mouvements_sejour_1_battery
+    - sensor.capteur_mouvements_sejour_2_battery
+    - sensor.capteur_porte_entree_battery
+    - sensor.capteur_porte_garage_battery
+    - sensor.cave_batterie
+    - sensor.chambre_batterie
+    - sensor.chambre_parents_batterie
+    - sensor.exterieur_batterie
+    - sensor.jardin_se_batterie
+    - sensor.jardin_no_batterie
+    - sensor.jardin_batterie
+    - sensor.petite_maison_batterie
+    - sensor.pluviometre_batterie
+    - sensor.sejour_batterie
+    - sensor.entree_batterie
+    - sensor.clavier_alarme_1_battery
+    - sensor.clavier_alarme_2_battery
+    - sensor.deshumidificateur_batterie
+    - sensor.garage_batterie
+    - sensor.sdb_enfants_batterie
+    - sensor.sirene_battery
+    - sensor.meteo_zigbee_chambre_arnaud_battery
+    - sensor.meteo_zigbee_chambre_matthieu_battery
+    - sensor.meteo_zigbee_chambre_parents_battery
+    - sensor.meteo_zigbee_entree_battery
+    - sensor.meteo_zigbee_sdb_parents_battery
+    - sensor.meteo_zigbee_sejour_battery
+    - sensor.bobst_102_exterieur_so_batterie
+    - sensor.komori_exterieur_no_batterie
+    - sensor.direction_batterie
+    - sensor.compta_batterie
+    - sensor.qualite_batterie
+    - sensor.devis_commandes_batterie
+    - sensor.commercial_batterie
+    - sensor.stock_carton_batterie
+    - sensor.stock_pf_batterie
+    - sensor.mezzanine_batterie
+    - sensor.alarme_batterie
+    - sensor.zigbee_pluie_battery
+    - sensor.vmc_batterie

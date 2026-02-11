@@ -1,0 +1,422 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Planning ECS
+icon: mdi:calendar-week
+
+views:
+  - title: Planning ECS
+    path: ecs_planning
+    icon: mdi:calendar-week
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-ecs-dashboard/ecs
+
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          # ======================================================
+          # 🟦 BARRE D’ACTIONS
+          # ======================================================
+          - type: horizontal-stack
+            cards:
+
+              # marge gauche
+              - type: custom:button-card
+                template: bouton_spacer
+                color_type: blank-card
+              - type: custom:button-card
+                template: bouton_spacer
+                color_type: blank-card
+              - type: custom:button-card
+                template: bouton_spacer
+                color_type: blank-card
+
+              # sauvegarde
+              - type: custom:button-card
+                template: bouton_navigation_badge_carre
+                icon: mdi:content-save
+                tap_action:
+                  action: call-service
+                  service: pyscript.ecs_sauvegarde_planning
+                styles:
+                  icon:
+                    - color: '#2E7D32'
+
+              # restauration
+              - type: custom:button-card
+                template: bouton_navigation_badge_carre
+                icon: mdi:backup-restore
+                tap_action:
+                  action: call-service
+                  service: pyscript.ecs_restore_planning
+                styles:
+                  icon:
+                    - color: '#B71C1C'
+
+              # marge droite
+              - type: custom:button-card
+                template: bouton_spacer
+                color_type: blank-card
+              - type: custom:button-card
+                template: bouton_spacer
+                color_type: blank-card
+              - type: custom:button-card
+                template: bouton_spacer
+                color_type: blank-card
+              - type: custom:button-card
+                template: bouton_spacer
+                color_type: blank-card
+
+
+          # ======================================================
+          # 📅 LUNDI
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📅 Lundi
+
+          - type: horizontal-stack
+            cards:
+
+              - type: entities
+                title: "🛁 Matin"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_monday_matin_active
+                    name: Actif
+                  - entity: input_datetime.ecs_monday_matin_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+              - type: entities
+                title: "🛀 Soir"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_monday_soir_active
+                    name: Actif
+                  - entity: input_datetime.ecs_monday_soir_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+
+          # ======================================================
+          # 📅 MARDI
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📅 Mardi
+
+          - type: horizontal-stack
+            cards:
+
+              - type: entities
+                title: "🛁 Matin"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_tuesday_matin_active
+                    name: Actif
+                  - entity: input_datetime.ecs_tuesday_matin_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+              - type: entities
+                title: "🛀 Soir"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_tuesday_soir_active
+                    name: Actif
+                  - entity: input_datetime.ecs_tuesday_soir_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+
+          # ======================================================
+          # 📅 MERCREDI
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📅 Mercredi
+
+          - type: horizontal-stack
+            cards:
+
+              - type: entities
+                title: "🛁 Matin"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_wednesday_matin_active
+                    name: Actif
+                  - entity: input_datetime.ecs_wednesday_matin_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+              - type: entities
+                title: "🛀 Soir"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_wednesday_soir_active
+                    name: Actif
+                  - entity: input_datetime.ecs_wednesday_soir_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+
+          # ======================================================
+          # 📅 JEUDI
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📅 Jeudi
+
+          - type: horizontal-stack
+            cards:
+
+              - type: entities
+                title: "🛁 Matin"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_thursday_matin_active
+                    name: Actif
+                  - entity: input_datetime.ecs_thursday_matin_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+              - type: entities
+                title: "🛀 Soir"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_thursday_soir_active
+                    name: Actif
+                  - entity: input_datetime.ecs_thursday_soir_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+
+          # ======================================================
+          # 📅 VENDREDI
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📅 Vendredi
+
+          - type: horizontal-stack
+            cards:
+
+              - type: entities
+                title: "🛁 Matin"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_friday_matin_active
+                    name: Actif
+                  - entity: input_datetime.ecs_friday_matin_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+              - type: entities
+                title: "🛀 Soir"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_friday_soir_active
+                    name: Actif
+                  - entity: input_datetime.ecs_friday_soir_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+
+          # ======================================================
+          # 📅 SAMEDI
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📅 Samedi
+
+          - type: horizontal-stack
+            cards:
+
+              - type: entities
+                title: "🛁 Matin"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_saturday_matin_active
+                    name: Actif
+                  - entity: input_datetime.ecs_saturday_matin_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+              - type: entities
+                title: "🛀 Soir"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_saturday_soir_active
+                    name: Actif
+                  - entity: input_datetime.ecs_saturday_soir_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+
+          # ======================================================
+          # 📅 DIMANCHE
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📅 Dimanche
+
+          - type: horizontal-stack
+            cards:
+
+              - type: entities
+                title: "🛁 Matin"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_sunday_matin_active
+                    name: Actif
+                  - entity: input_datetime.ecs_sunday_matin_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }
+
+              - type: entities
+                title: "🛀 Soir"
+                show_header_toggle: false
+                card_mod:
+                  style: |
+                    .card-header {
+                      font-size: 15px !important;
+                      font-weight: 500 !important;
+                      color: #444;
+                    }
+                entities:
+                  - entity: input_boolean.ecs_sunday_soir_active
+                    name: Actif
+                  - entity: input_datetime.ecs_sunday_soir_heure
+                    name: " "
+                    card_mod:
+                      style: |
+                        hui-generic-entity-row .name { display: none; }

@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Audi e-tron – Historique autonomie
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Conserver un HISTORIQUE TEXTUEL COMPACT de l’autonomie
+#   mesurée de l’Audi e-tron, à des fins de lisibilité
+#   et de suivi dans le dashboard véhicule.
+#
+# 🧱 Nature :
+#   - Mémoire dérivée
+#   - Historique résumé (texte)
+#
+# 🚫 Ne fait PAS :
+#   - Ne mesure pas l’autonomie
+#   - Ne calcule aucune statistique
+#   - Ne pilote aucun équipement
+#   - Ne constitue pas une source de vérité
+#
+# 🔗 Alimentation :
+#   - Automatisation d’archivage autonomie véhicule
+#
+# 🔗 Utilisation :
+#   - Dashboard Audi (lecture humaine)
+#
+# 🧠 Principe ARSENAL :
+#   - Le capteur mesure
+#   - L’automatisation archive
+#   - Le helper conserve un résumé lisible
+#
+# ⚠️ Sémantique :
+#   - Historique non exhaustif
+#   - Valeur indicative uniquement
+# ==========================================================
+
+
+historique_autonomie_audi_etron:
+  name: Historique autonomie Audi e-tron
+  mode: text
+  max: 255

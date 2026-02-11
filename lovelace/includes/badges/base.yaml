@@ -1,0 +1,5 @@
+- type: custom:button-card
+  template: bouton_accueil_badge_carre
+
+- type: custom:button-card
+  template: bouton_navigation_badge_carre

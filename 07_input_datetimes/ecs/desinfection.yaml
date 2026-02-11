@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Heure désinfection ECS
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition de l’HEURE DE RÉFÉRENCE utilisée
+#   pour la planification du cycle de désinfection
+#   thermique de l’ECS.
+#
+#   Ce helper précise À QUELLE HEURE
+#   la fenêtre de désinfection est autorisée.
+#
+# 🧩 Nature :
+#   Paramètre MÉTIER — planification horaire.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS la désinfection
+#   - Ne chauffe PAS l’ECS
+#   - Ne pilote PAS la chaudière
+#   - Ne garantit PAS l’exécution du cycle
+#
+# 🔍 Spécificité technique :
+#   - Heure uniquement (pas de date)
+#   - Réutilisée cycliquement (hebdomadaire)
+#   - La logique temporelle est portée
+#     par les capteurs et automatisations ECS
+#
+# 🔄 Fonctionnement :
+#   - L’heure est définie manuellement
+#     via les dashboards de réglage ECS.
+#   - Les capteurs comparent :
+#       • jour ciblé
+#       • heure ciblée
+#     pour déterminer une fenêtre active.
+#
+# 🔗 Utilisation :
+#   - Capteurs binaires ECS :
+#       • Détection de la fenêtre
+#         de désinfection autorisée
+#   - Dashboards diagnostics :
+#       • Lecture de la programmation
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_datetime)
+#       • Autorisation (capteurs)
+#       • Action réelle (ViCare)
+#
+# ⚠️ Remarque :
+#   Modifier cette valeur change la PLANIFICATION,
+#   jamais le comportement immédiat de l’ECS.
+# ==========================================================
+
+
+ecs_desinfection_heure:
+  name: Heure désinfection ECS
+  has_time: true
+  has_date: false
+  icon: mdi:clock-time-eight-outline

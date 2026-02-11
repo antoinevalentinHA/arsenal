@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN
+# ----------------------------------------------------------
+# 🔥 Chauffage : Standby forcé
+#
+# 🎯 Rôle :
+#   Représenter le verrou logique permettant de forcer
+#   le chauffage en standby selon la décision calculée
+#   par `sensor.chauffage_autorisation_cible`.
+#
+# 🧱 Principe Arsenal :
+#   - Aucune logique métier
+#   - Aucune action directe sur le chauffage
+#   - Application stricte de la décision centrale
+#
+# 🔌 Dépendances :
+#   - Automatisation : Chauffage – Application autorisation automatique
+#   - sensor.chauffage_autorisation_cible
+#   - input_boolean.systeme_stable
+#
+# ⚠️ IMPORTANT :
+#   - Le boolean n’interprète rien
+#   - Toute modification de seuil ou de logique doit se
+#     faire dans le template sensor correspondant
+#
+# 📍 Entité : input_boolean.chauffage_standby_force
+# ==========================================================
+
+
+chauffage_standby_force:
+  name: Chauffage standby forcé
+  icon: mdi:radiator-off

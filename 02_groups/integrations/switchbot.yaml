@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : Capteurs SwitchBot
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Regrouper l’ensemble des capteurs environnementaux
+#    issus de l’écosystème SwitchBot afin de fournir
+#    une source cohérente pour l’observation et les
+#    contrôles système de fraîcheur des données.
+#
+# 🧠 Lecture métier :
+#    Ce groupe représente une SOURCE DE MESURE physique.
+#    Il ne prend aucune décision, mais alimente des
+#    capteurs système chargés de vérifier la validité
+#    et la fraîcheur des données SwitchBot.
+#
+# 🧩 Périmètre :
+#    - Capteurs de température
+#    - Capteurs d’humidité relative
+#    - Zones intérieures, techniques et extérieures
+#
+# 🔗 Dépendances :
+#    - Intégration SwitchBot
+#    - Utilisé par :
+#      • capteurs système de contrôle de fraîcheur des données
+#      • templates d’audit (âge des données SwitchBot)
+#      • dashboards environnement (lecture)
+#
+# 🚫 Interdits :
+#    - Utiliser ce groupe comme condition métier directe
+#    - Mélanger des capteurs non SwitchBot
+#    - Déclencher une action à partir du groupe
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle mesures / fiabilité système
+# ==========================================================
+
+
+switchbot_capteurs:
+  name: "Capteurs SwitchBot"
+  entities:
+
+    ########################################################
+    # 🚿 SALLES DE BAINS
+    ########################################################
+    - sensor.temperature_sdb_parents
+    - sensor.humidite_relative_sdb_parents
+    - sensor.temperature_sdb_enfants
+    - sensor.humidite_relative_sdb_enfants
+
+
+    ########################################################
+    # 🌿 EXTÉRIEUR
+    ########################################################
+    - sensor.temperature_jardin_3
+    - sensor.humidite_relative_jardin_3
+
+
+    ########################################################
+    # 🏗️ ZONES TECHNIQUES
+    ########################################################
+    - sensor.temperature_garage
+    - sensor.humidite_relative_garage
+    - sensor.temperature_cave
+    - sensor.humidite_relative_cave

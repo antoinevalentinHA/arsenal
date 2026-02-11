@@ -1,0 +1,64 @@
+# ==========================================================
+#  AUTOMATION : Voiture — Notification état de charge
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Matérialiser dans l’UI l’état métier unique
+#     « le véhicule est actuellement en charge »
+#     via une notification persistante.
+#
+#  🧩 Périmètre :
+#     - Apparition de la notification quand l’état devient vrai
+#     - Extinction de la notification quand l’état devient faux
+#
+#  🚫 Interdits :
+#     - Aucune logique décisionnelle
+#     - Aucune référence temporelle
+#     - Aucune notification événementielle
+#     - Aucun calcul
+#
+#  🧠 Statut architectural :
+#     Application — matérialisation d’état
+#
+#  🏷️ Statut :
+#     Arsenal — Domaine Voiture / Charge
+# ==========================================================
+
+- id: "10150000000005"
+  alias: Voiture — Notification état de charge
+  description: >
+    Affiche une notification persistante tant que le véhicule
+    est en état de charge, et la supprime dès que cet état disparaît.
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Transition de l’état de charge (local)
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: sensor.audi_e_tron_etat_de_charge_local
+      to: "charging"
+
+    - platform: state
+      entity_id: sensor.audi_e_tron_etat_de_charge_local
+      from: "charging"
+
+  # ======================================================
+  # 🔄 Actions — Création / extinction de la notification
+  # ======================================================
+  action:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('sensor.audi_e_tron_etat_de_charge_local') == 'charging' }}
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: voiture_etat_charge
+                title: "🔋 Audi A3 e-tron"
+                message: "Charge en cours"
+
+      default:
+        - service: persistent_notification.dismiss
+          data:
+            notification_id: voiture_etat_charge

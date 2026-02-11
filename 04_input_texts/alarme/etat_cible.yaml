@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Alarme – État cible
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker l’ÉTAT CIBLE de l’alarme tel que décidé
+#   par la décision centrale (intention système).
+#
+# 🧱 Nature :
+#   - Consigne abstraite
+#   - Mémoire décisionnelle persistante
+#
+# 🚫 Ne fait PAS :
+#   - Ne modifie pas l’état réel de l’alarme
+#   - Ne pilote aucun dispositif
+#   - Ne déclenche aucune action
+#   - Ne reflète pas l’état courant réel
+#
+# 🔗 Écrit par :
+#   - Script :
+#       09_scripts/alarme/decision_centrale.yaml
+#
+# 🔗 Utilisé par :
+#   - Automatisations d’application de décision
+#   - Automatisations de contrôle de cohérence
+#   - Dashboards Lovelace (alarme / diagnostics)
+#   - Templates button-card (affichage cible)
+#
+# 🧠 Principe ARSENAL :
+#   - Séparation stricte :
+#       décision → consigne → application → état réel
+#   - La consigne n’est pas l’exécution
+#
+# ⚠️ Sémantique :
+#   - "État cible" ≠ "état réel"
+#   - Toute divergence est intentionnellement détectable
+# ==========================================================
+
+
+alarme_etat_cible:
+  name: "Alarme – Etat cible"
+  max: 20

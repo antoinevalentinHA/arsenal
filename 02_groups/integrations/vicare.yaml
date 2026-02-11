@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : Capteurs ViCare (locaux sécurisés)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Regrouper exclusivement les entités ViCare locales,
+#    fiables et sécurisées utilisées comme source pour
+#    les capteurs système de contrôle de fraîcheur des données.
+#
+# 🧠 Lecture métier :
+#    Ce groupe représente la SOURCE DE VÉRITÉ locale
+#    pour le chauffage et l’ECS.
+#    Il exclut volontairement toute entité cloud afin
+#    de garantir la stabilité, la résilience et la
+#    sobriété des appels API Viessmann.
+#
+# 🧩 Périmètre :
+#    - États de fonctionnement chauffage / ECS
+#    - Consignes et températures sécurisées (fallback)
+#    - Entités locales uniquement
+#
+# 🔗 Dépendances :
+#    - Intégration ViCare (accès local)
+#    - Utilisé par :
+#      • capteurs système de contrôle de fraîcheur des données
+#      • templates d’audit ViCare (âge des données)
+#
+# 🚫 Interdits :
+#    - Ajouter des entités cloud ViCare
+#    - Déclencher une décision métier directe
+#    - Utiliser ce groupe pour piloter le chauffage
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle critique / chauffage & ECS
+# ==========================================================
+
+
+vicare_capteurs:
+  name: "Capteurs ViCare"
+  entities:
+
+    ########################################################
+    # 🔥 CHAUFFAGE
+    ########################################################
+    - sensor.programme_chauffage
+    - binary_sensor.bruleur_chauffage_actif
+
+
+    ########################################################
+    # 🚿 EAU CHAUDE SANITAIRE (ECS)
+    ########################################################
+    - sensor.ecs_consigne_chaudiere_securisee
+    - sensor.ecs_temperature_ballon_securisee
+    - binary_sensor.ecs_chauffe_en_cours_local

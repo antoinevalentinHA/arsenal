@@ -1,0 +1,66 @@
+#################################################################
+# 👨‍👩‍👧‍👦 CARTE CLIM — DIAGNOSTIC PRÉSENCE / BABYSITTING
+# ---------------------------------------------------------------
+# Indique si la présence (ou le mode Babysitting) autorise
+# le fonctionnement de la climatisation.
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture seule
+#   - Aucune action directe
+#   - Décision portée par les entités métier
+#################################################################
+
+carte_clim_diagnostic_presence_babysitting:
+  template: carte_base
+
+  entity: binary_sensor.presence_famille_unifiee
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  icon: |
+    [[[
+      const presence = entity.state === "on";
+      const babysitting = states['input_boolean.mode_babysitting']?.state === "on";
+
+      if (presence)    return "mdi:account-group";    // 👥 Présence détectée
+      if (babysitting) return "mdi:account-child";    // 👶 Babysitting
+      return "mdi:account-off";                       // ⚪ Absence
+    ]]]
+
+  label: |
+    [[[
+      const presence = entity.state === "on";
+      const babysitting = states['input_boolean.mode_babysitting']?.state === "on";
+
+      if (presence)    return "Présence détectée";
+      if (babysitting) return "Mode Babysitting actif";
+      return "Absence";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const presence = entity.state === "on";
+            const babysitting = states['input_boolean.mode_babysitting']?.state === "on";
+
+            return (presence || babysitting)
+              ? "rgba(76, 175, 80, 0.2)"    // 🟢 autorisé
+              : "rgba(158, 158, 158, 0.2)"; // ⚪ bloqué
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#000000'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - color: '#111'

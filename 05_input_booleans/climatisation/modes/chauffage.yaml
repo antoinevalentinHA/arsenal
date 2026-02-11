@@ -1,0 +1,41 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Chauffage par climatisation – Autorisé
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation stratégique permettant ou interdisant
+#     l’utilisation de la climatisation en mode chauffage
+#     comme chauffage d’appoint en période hivernale.
+#
+#     Ce booléen définit si la climatisation a le droit
+#     de participer au chauffage, en complément
+#     du système principal.
+#
+#  🧱 Nature :
+#     - Autorisation saisonnière
+#     - Verrou de coexistence énergétique
+#
+#  🔄 Fonctionnement :
+#     - ON  : la climatisation est autorisée
+#             à fonctionner en mode chauffage
+#     - OFF : toute utilisation de la clim
+#             pour le chauffage est interdite
+#
+#  📥 N’effectue PAS :
+#     - aucune détection de saison
+#     - aucune décision de priorité
+#     - aucune commande directe du matériel
+#
+#  📤 Utilisation :
+#     - Lue par :
+#         • script Décision centrale climatisation
+#         • automatisations de modes clim
+#         • scénarios globaux (vacances, saison)
+#
+#  🧠 Principe Arsenal :
+#     - Un chauffage d’appoint doit être
+#       explicitement autorisé
+# ==========================================================
+
+
+chauffage_clim_active_en_hiver:
+  name: Chauffage activé

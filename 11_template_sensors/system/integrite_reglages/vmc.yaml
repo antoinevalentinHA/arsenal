@@ -1,0 +1,27 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Intégrité paramètres — VMC
+# ==========================================================
+
+- binary_sensor:
+    - name: "VMC — Paramètres invalides"
+      unique_id: parametres_invalides_vmc
+      default_entity_id: binary_sensor.parametres_invalides_vmc
+      state: >
+        {{
+          not (
+            states('input_number.vmc_co2_seuil_on') | float(0)
+              > states('input_number.vmc_co2_seuil_off') | float(0)
+          )
+        }}
+      icon: >
+        mdi:alert-circle-outline
+      attributes:
+
+        seuils_co2_invalides: >
+          {{
+            not (
+              states('input_number.vmc_co2_seuil_on') | float(0)
+                > states('input_number.vmc_co2_seuil_off') | float(0)
+            )
+          }}

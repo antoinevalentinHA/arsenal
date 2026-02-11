@@ -1,0 +1,82 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR : VMC haute vitesse requise
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Déterminer si la VMC DOIT être en haute vitesse,
+#   indépendamment de son état réel ou des actions appliquées.
+#
+# 🧱 Principe :
+#   - Vérité métier PURE
+#   - Aucun timer
+#   - Aucune action
+#   - Aucune mémoire d’état
+#
+# 📌 Logique :
+#   ON  → humidité excessive avec aération favorable
+#         OU CO₂ excessif (si capteur valide)
+#   OFF → humidité revenue sous seuils
+#         ET CO₂ acceptable ou indisponible
+#         ET aération défavorable
+#
+# ✅ Compatible redémarrage / cloud down
+# ==========================================================
+
+- binary_sensor:
+    - name: "VMC haute vitesse requise"
+      unique_id: vmc_haute_vitesse_requise
+      default_entity_id: binary_sensor.vmc_haute_vitesse_requise
+      state: >
+
+        {% set seuil_on  = states('input_number.vmc_seuil_on')      | float(70) %}
+        {% set seuil_off = states('input_number.vmc_seuil_off')     | float(65) %}
+        {% set co2_on    = states('input_number.vmc_co2_seuil_on')  | float(1000) %}
+        {% set co2_off   = states('input_number.vmc_co2_seuil_off') | float(800) %}
+
+        {% set h_sdb_p = states('sensor.humidite_relative_sdb_parents') | float(0) %}
+        {% set h_sdb_e = states('sensor.humidite_relative_sdb_enfants') | float(0) %}
+        {% set h_sej   = states('sensor.humidite_relative_sejour')      | float(0) %}
+
+        {% set co2_state  = states('sensor.co2_sejour') %}
+        {% set co2_valide = co2_state not in ['unknown','unavailable','none',''] %}
+        {% set co2        = co2_state | float(0) %}
+
+        {% set delta_ha = state_attr(
+            'binary_sensor.aeration_preferable_etage',
+            'delta_humidite_absolue'
+          ) | float(0) %}
+
+        {% set humidite_haute =
+             (h_sdb_p >= seuil_on)
+          or (h_sdb_e >= seuil_on)
+          or (h_sej   >= seuil_on)
+        %}
+
+        {% set humidite_ok =
+             (h_sdb_p < seuil_off)
+          and (h_sdb_e < seuil_off)
+          and (h_sej   < seuil_off)
+        %}
+
+        {% set co2_haut = co2_valide and (co2 >= co2_on) %}
+        {% set co2_ok   = (not co2_valide) or (co2 < co2_off) %}
+
+        {% set ha_favorable   = delta_ha > 0 %}
+        {% set ha_defavorable = delta_ha <= 0 %}
+
+        {{
+          (
+            (ha_favorable and humidite_haute)
+            or co2_haut
+          )
+          and not (
+            humidite_ok
+            and co2_ok
+            and ha_defavorable
+          )
+        }}
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:fan-alert
+        {% else %}
+          mdi:fan
+        {% endif %}

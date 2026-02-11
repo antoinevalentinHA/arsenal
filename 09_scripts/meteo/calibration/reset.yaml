@@ -1,0 +1,111 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Météo intérieure
+#              RESET calibration capteurs Zigbee
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Réinitialiser à ZÉRO l’ensemble des calibrations
+#   de température et d’humidité appliquées aux capteurs Zigbee.
+#
+#   Ce script ANNULE toute correction existante.
+#
+# ----------------------------------------------------------
+# ⚠️ ACTION CRITIQUE — IMPACT GLOBAL IMMÉDIAT
+#
+#   - Tous les offsets Zigbee sont remis à 0
+#   - La réalité perçue par le système est modifiée instantanément
+#   - Tous les usages en aval sont impactés :
+#       • chauffage
+#       • climatisation
+#       • aération
+#       • humidité
+#       • dashboards
+#
+#   ➜ Ce script est volontairement radical.
+#
+# ----------------------------------------------------------
+# 🧱 USAGE MÉTIER AUTORISÉ
+#
+#   Ce script DOIT être exécuté UNIQUEMENT :
+#     - avant une campagne complète de recalibration
+#     - après un remplacement de capteur
+#     - après une dérive identifiée et assumée
+#
+#   ➜ Il ne constitue PAS une action corrective fine,
+#     mais une remise à l’état neutre.
+#
+# ----------------------------------------------------------
+# 🚫 INTERDICTIONS ABSOLUES
+#
+#   - Ne pas exécuter en exploitation normale
+#   - Ne pas automatiser
+#   - Ne pas déclencher sur événement
+#   - Ne pas chaîner avec d’autres scripts
+#
+#   ➜ Toute exécution est un acte volontaire et conscient.
+#
+# ----------------------------------------------------------
+# 🔁 MODE D’EXÉCUTION
+#
+#   - Exécution unique (mode single)
+#   - Application immédiate et globale
+#   - Aucune condition, aucun filtrage
+#
+# ----------------------------------------------------------
+# 🧾 TRAÇABILITÉ
+#
+#   - Une entrée explicite est ajoutée au logbook
+#   - Permet d’identifier sans ambiguïté :
+#       • une rupture de continuité de mesure
+#       • un changement de référence
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucun recalibrage automatique
+#   - Aucune comparaison de capteurs
+#   - Aucune validation de conditions
+#   - Aucune temporisation
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script de maintenance lourde — remise à zéro système
+#
+# 📍 Entité :
+#   script.reset_calibration_capteurs_zigbee
+#
+# 🔗 Script complémentaire obligatoire :
+#   script.calibration_capteurs_zigbee
+#
+# ⏱️ Fréquence :
+#   Exceptionnelle — maintenance uniquement
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+reset_calibration_capteurs_zigbee:
+  alias: "Zigbee – Reset calibration T° & HR"
+  mode: single
+  sequence:
+    - action: number.set_value
+      target:
+        entity_id:
+          - number.meteo_zigbee_sejour_temperature_calibration
+          - number.meteo_zigbee_sejour_humidity_calibration
+          - number.meteo_zigbee_chambre_arnaud_temperature_calibration
+          - number.meteo_zigbee_chambre_arnaud_humidity_calibration
+          - number.meteo_zigbee_chambre_matthieu_temperature_calibration
+          - number.meteo_zigbee_chambre_matthieu_humidity_calibration
+          - number.meteo_zigbee_chambre_parents_temperature_calibration
+          - number.meteo_zigbee_chambre_parents_humidity_calibration
+          - number.meteo_zigbee_entree_temperature_calibration
+          - number.meteo_zigbee_entree_humidity_calibration
+      data:
+        value: 0
+
+    - action: logbook.log
+      data:
+        name: "Reset Calibration"
+        message: "Toutes les calibrations Zigbee ont été remises à 0 ✅"

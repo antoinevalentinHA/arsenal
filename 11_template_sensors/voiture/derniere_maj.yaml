@@ -1,0 +1,38 @@
+# ==========================================================
+# 🕒 TEMPLATE TRIGGERED SENSOR — Audi e-tron (Dernière mise à jour)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser la donnée `sensor.audi_a3_sportback_e_tron_last_update`
+#   tout en la convertissant et formatant en heure locale lisible,
+#   afin d’assurer un affichage constant et cohérent avec le reste du dashboard.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque changement du capteur source.
+#   - Réévaluation automatique au démarrage de Home Assistant.
+#   - Conversion UTC → locale (Europe/Paris).
+#   - Format humain : JJ/MM/AAAA HH:MM.
+#   - Si donnée invalide → conservation de la dernière valeur connue.
+#
+# 🧮 Source : sensor.audi_a3_sportback_e_tron_last_update
+# 📊 Type : Trigger Template Sensor
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.audi_a3_sportback_e_tron_last_update
+
+  sensor:
+    - name: "Audi e-tron – Dernière mise à jour (Local)"
+      unique_id: audi_a3_sportback_e_tron_last_update_local
+      state: >
+        {% set s = states('sensor.audi_a3_sportback_e_tron_last_update') %}
+        {% if s not in ['unknown', 'unavailable', 'none', ''] %}
+          {% set dt = as_datetime(s) %}
+          {% if dt %}
+            {{ as_local(dt).strftime('%d/%m/%Y %H:%M') }}
+          {% else %}
+            {{ this.state | default('Inconnu') }}
+          {% endif %}
+        {% else %}
+          {{ this.state | default('Inconnu') }}
+        {% endif %}

@@ -1,0 +1,110 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Vaisselle : Garde de déclenchement
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Garde d’autorisation AVANT lancement d’un cycle ECS
+#   spécifique au mode « vaisselle ».
+#
+#   Ce script ne chauffe pas.
+#   Il ne décide pas du cycle thermique.
+#   Il autorise ou refuse l’appel au cycle ECS.
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ UNIQUE
+#
+#   Valider que les conditions minimales de sécurité
+#   et de disponibilité ECS sont réunies avant tout
+#   déclenchement du cycle vaisselle.
+#
+# ----------------------------------------------------------
+# 🔍 CONTRÔLES EFFECTUÉS (100 % LOCAUX)
+#
+#   - Mode vaisselle explicitement activé
+#   - Aucun cycle ECS en cours (avec délai anti-rebond)
+#   - Délai minimal respecté depuis la dernière chauffe ECS
+#
+# ----------------------------------------------------------
+# 🚿 ACTION AUTORISÉE
+#
+#   Si — et seulement si — tous les contrôles sont validés :
+#
+#     → Appel du script exécutif :
+#       `script.chauffage_ecs_cycle`
+#       avec `mode: vaisselle`
+#
+# ----------------------------------------------------------
+# ❌ CE SCRIPT NE FAIT PAS
+#
+#   - Aucune planification horaire
+#   - Aucune décision thermique
+#   - Aucune modification de consigne
+#   - Aucune interaction directe avec ViCare
+#
+# ----------------------------------------------------------
+# 🧠 PHILOSOPHIE ARSENAL
+#
+#   - Séparation stricte :
+#       autorisation  ≠  exécution
+#   - Refus silencieux si conditions non réunies
+#   - Aucun effet de bord
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES CLÉS
+#
+#   - input_boolean.mode_vaisselle
+#   - input_boolean.ecs_cycle_en_cours
+#   - sensor.derniere_chauffe_ecs
+#   - script.chauffage_ecs_cycle
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+ecs_vaisselle_lancer_si_ok:
+  alias: "ECS - Vaisselle : Lancer si OK"
+  mode: single
+
+  sequence:
+    # ======================================================
+    # 🧩 Vérifications préalables (100 % locales)
+    # ======================================================
+
+    # 1️⃣ Mode vaisselle activé
+    - condition: state
+      entity_id: input_boolean.mode_vaisselle
+      state: "on"
+
+    # 2️⃣ Vérifie qu'aucune chauffe ECS n'est en cours depuis au moins 2 minutes
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "off"
+      for: "00:02:00"
+
+    # 3️⃣ Vérifie un délai minimal de 45 minutes depuis la dernière chauffe
+    - condition: template
+      value_template: >
+        {% set last = states('sensor.derniere_chauffe_ecs') %}
+        {% if last in [None, '', 'unknown', 'unavailable'] %}
+          true
+        {% else %}
+          {% set jour, heure = last.split(' ') %}
+          {% set j, m = jour.split('/') %}
+          {% set h, mi = heure.split(':') %}
+          {% set parsed = now().replace(
+            month = m | int,
+            day = j | int,
+            hour = h | int,
+            minute = mi | int,
+            second = 0,
+            microsecond = 0
+          ) %}
+          {{ (as_timestamp(now()) - as_timestamp(parsed)) > 45 * 60 }}
+        {% endif %}
+
+    # ======================================================
+    # 🚿 Déclenchement du cycle ECS
+    # ======================================================
+    - action: script.chauffage_ecs_cycle
+      data:
+        mode: "vaisselle"

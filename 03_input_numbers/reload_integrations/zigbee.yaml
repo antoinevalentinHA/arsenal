@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER SYSTÈME : Compteur tentatives reload Zigbee2MQTT
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Comptabiliser le nombre de tentatives de rechargement
+#   de l’intégration Zigbee2MQTT afin de :
+#     - prévenir les boucles de reload destructrices
+#     - protéger le coordinateur Zigbee
+#     - éviter l’instabilité du réseau maillé
+#
+# 🧠 Nature :
+#   - Compteur de SUPERVISION CRITIQUE
+#   - État interne de protection système
+#   - Non destiné à représenter un état fonctionnel Zigbee
+#
+# ⚙️ Fonctionnement :
+#   - Incrémenté à chaque tentative de reload Zigbee2MQTT
+#   - Lu par l’automatisation de supervision dédiée
+#   - Comparé à un seuil maximal autorisé
+#   - Réinitialisé explicitement :
+#       • après un reload réussi
+#       • lors d’une intervention contrôlée
+#
+# ⚠️ Important :
+#   - Ce helper NE mesure PAS l’état du réseau Zigbee
+#   - Il NE reflète PAS la qualité LQI, RSSI ou disponibilité
+#   - Il sert UNIQUEMENT de garde-fou logique
+#
+# 🔗 Utilisé par :
+#   - Automatisations :
+#       • 10_automations/system/reload_integrations/zigbee.yaml
+#
+# 📐 Unité :
+#   - Tentatives (compteur entier)
+#
+# 🧠 Principe Arsenal :
+#   - Zigbee est un système maillé sensible
+#   - Trop de reloads détruisent plus qu’ils ne réparent
+#   - Le système doit savoir s’arrêter
+#
+# ==========================================================
+
+zigbee_reload_tentatives:
+  name: "Zigbee2MQTT – Tentatives reload"
+  min: 0
+  max: 50
+  step: 1
+  mode: box

@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Chauffage – Raison d'exécution
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Conserver la RAISON EXPLICITE associée à une action
+#   réellement exécutée sur le chauffage
+#   (confort / reduced).
+#
+# 🧱 Nature :
+#   - Mémoire explicative
+#   - Trace post-action (diagnostic)
+#
+# 🚫 Ne fait PAS :
+#   - Ne déclenche aucune action
+#   - Ne participe à aucune décision
+#   - Ne pilote pas le chauffage
+#   - Ne constitue pas une vérité fonctionnelle
+#
+# 🔗 Écrit par :
+#   - Scripts d’application des consignes chauffage
+#     (présence / absence)
+#
+# 🔗 Utilisation :
+#   - Dashboard Diagnostic Chauffage (lecture humaine)
+#
+# 🧠 Principe ARSENAL :
+#   - La décision est ailleurs
+#   - L’exécution est ailleurs
+#   - Ce helper n’en garde que la justification
+#
+# ⚠️ Sémantique :
+#   - Champ explicatif uniquement
+#   - Aucun rôle causal ou décisionnel
+# ==========================================================
+
+
+chauffage_raison:
+  name: "Chauffage — Raison d'exécution"
+  max: 255

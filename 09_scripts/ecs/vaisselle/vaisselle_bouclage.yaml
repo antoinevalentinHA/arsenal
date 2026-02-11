@@ -1,0 +1,127 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Vaisselle + Bouclage
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Orchestrateur séquentiel pour le scénario « vaisselle » :
+#
+#     1) Déclenchement du cycle ECS vaisselle
+#        via la chaîne sécurisée existante
+#     2) Attente de la fin effective du cycle ECS
+#        (moteur unifié)
+#     3) Lancement du bouclage ECS 5 minutes
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ UNIQUE
+#
+#   Coordonner des briques EXISTANTES :
+#     - autorisation / lancement du cycle ECS vaisselle
+#     - observation de la fin de cycle
+#     - bouclage post-cycle
+#
+#   Ce script ne chauffe pas par lui-même.
+#   Il ne contient aucune logique thermique.
+#
+# ----------------------------------------------------------
+# 🔁 SÉQUENCEMENT CONTRÔLÉ
+#
+#   - Si un cycle ECS est déjà en cours :
+#       → aucune relance
+#       → simple attente avant bouclage
+#
+#   - Sinon :
+#       → déclenchement du cycle vaisselle
+#       → notification utilisateur
+#
+#   - Puis :
+#       → attente de libération du verrou ECS
+#       → timeout de sécurité
+#
+# ----------------------------------------------------------
+# 🚿 ACTION FINALE
+#
+#   Une fois le cycle ECS terminé (ou timeout atteint) :
+#
+#     → lancement du script :
+#       `script.bouclage_ecs_5_minutes`
+#
+# ----------------------------------------------------------
+# ❌ CE SCRIPT NE FAIT PAS
+#
+#   - Aucune décision d’autorisation ECS
+#   - Aucune modification de consigne
+#   - Aucun pilotage ViCare direct
+#   - Aucune logique de post-prélèvement
+#
+# ----------------------------------------------------------
+# 🧠 PHILOSOPHIE ARSENAL
+#
+#   - Orchestration ≠ décision ≠ exécution
+#   - Réutilisation stricte des moteurs existants
+#   - Séquence lisible, observable et déterministe
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES CLÉS
+#
+#   - script.ecs_vaisselle_lancer_via_bouton
+#   - input_boolean.ecs_cycle_en_cours
+#   - script.bouclage_ecs_5_minutes
+#   - script.notification_envoyer
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+lancer_vaisselle_et_bouclage:
+  alias: "ECS - Vaisselle + Bouclage"
+  mode: single
+
+  sequence:
+    # ======================================================
+    # 1️⃣ Lancement du cycle ECS via le script sécurisé
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.ecs_cycle_en_cours
+              state: "on"
+          sequence: []
+
+      default:
+        - action: script.ecs_vaisselle_lancer_via_bouton
+
+        - action: script.notification_envoyer
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "🍽 ECS – Vaisselle en cours"
+            message: >
+              Cycle ECS (mode vaisselle) lancé à {{ now().strftime('%H:%M') }}.
+              Le bouclage sera effectué après la fin du cycle.
+
+    # ======================================================
+    # 2️⃣ Attente de fin de cycle ECS (moteur unifié)
+    # ======================================================
+    - wait_template: "{{ is_state('input_boolean.ecs_cycle_en_cours', 'off') }}"
+      timeout: "00:30:00"
+      continue_on_timeout: true
+
+    # ======================================================
+    # 3️⃣ Bouclage ECS – 5 minutes
+    # ======================================================
+    - action: script.bouclage_ecs_5_minutes
+
+    # ======================================================
+    # 4️⃣ Notification utilisateur
+    # ======================================================
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🍽 ECS – Vaisselle terminée"
+        message: >
+          {% if wait.completed %}
+            À {{ now().strftime('%H:%M') }}, le cycle ECS s’est terminé.
+            Le bouclage de **5 minutes** a été lancé.
+          {% else %}
+            À {{ now().strftime('%H:%M') }}, timeout atteint (30 min sans fin détectée).
+            Bouclage lancé par sécurité.
+          {% endif %}

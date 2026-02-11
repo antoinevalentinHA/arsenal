@@ -1,0 +1,85 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR : VMC intention
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Exposer l’intention métier de la VMC et la cause principale
+#   de manière lisible et localisée.
+#
+# 🧱 Principe :
+#   - Traduction sémantique PURE
+#   - Aucun état partagé entre templates
+#   - Compatible reload / redémarrage
+# ==========================================================
+
+- sensor:
+    - name: "VMC intention"
+      icon: mdi:brain
+
+      state: >
+        {% if is_state('binary_sensor.vmc_haute_vitesse_requise', 'on') %}
+          Extraction utile demandée
+        {% else %}
+          Fonctionnement nominal demandé
+        {% endif %}
+
+      attributes:
+
+        cause: >
+          {% set seuil_on = states('input_number.vmc_seuil_on') | float(70) %}
+          {% set co2_on   = states('input_number.vmc_co2_seuil_on') | float(1000) %}
+
+          {% set pieces = {
+            'SDB Parents': states('sensor.humidite_relative_sdb_parents') | float(0),
+            'SDB Enfants': states('sensor.humidite_relative_sdb_enfants') | float(0),
+            'Séjour':      states('sensor.humidite_relative_sejour') | float(0)
+          } %}
+
+          {% set piece = pieces | dictsort(false, 'value') | last %}
+          {% set nom_piece = piece[0] %}
+          {% set h_max = piece[1] %}
+
+          {% set co2_state  = states('sensor.co2_sejour') %}
+          {% set co2_valide = co2_state not in ['unknown','unavailable','none',''] %}
+          {% set co2        = co2_state | float(0) %}
+
+          {% set delta_ha = state_attr(
+              'binary_sensor.aeration_preferable_etage',
+              'delta_humidite_absolue'
+            ) | float(0) %}
+
+          {% if is_state('binary_sensor.vmc_haute_vitesse_requise', 'off') %}
+            Aucun besoin identifié
+          {% elif co2_valide and co2 >= co2_on %}
+            CO₂ élevé – Séjour
+          {% elif h_max >= seuil_on and delta_ha > 0 %}
+            Humidité excessive – {{ nom_piece }} (aération favorable)
+          {% elif h_max >= seuil_on %}
+            Humidité excessive – {{ nom_piece }}
+          {% else %}
+            Cause indéterminée
+          {% endif %}
+
+        humidite_max: >
+          {% set vals = [
+            states('sensor.humidite_relative_sdb_parents') | float(0),
+            states('sensor.humidite_relative_sdb_enfants') | float(0),
+            states('sensor.humidite_relative_sejour') | float(0)
+          ] %}
+          {{ vals | max }}
+
+        piece_dominante: >
+          {% set pieces = {
+            'SDB Parents': states('sensor.humidite_relative_sdb_parents') | float(0),
+            'SDB Enfants': states('sensor.humidite_relative_sdb_enfants') | float(0),
+            'Séjour':      states('sensor.humidite_relative_sejour') | float(0)
+          } %}
+          {{ (pieces | dictsort(false, 'value') | last)[0] }}
+
+        co2_sejour: >
+          {{ states('sensor.co2_sejour') }}
+
+        delta_humidite_absolue: >
+          {{ state_attr(
+               'binary_sensor.aeration_preferable_etage',
+               'delta_humidite_absolue'
+             ) | float(0) }}

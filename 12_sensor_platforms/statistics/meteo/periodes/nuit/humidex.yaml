@@ -1,0 +1,152 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles de l’Humidex (filtré sur la période nocturne)
+# ----------------------------------------------------------
+#  🌙 Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de l’**Humidex mesuré la nuit** (période “filtre nuit”),
+#     indicateur combinant température et humidité relative
+#     pour évaluer le **confort thermique perçu pendant le sommeil**.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Source : capteurs `sensor.humidex_filtre_nuit_*`
+#     - Métrique : `mean` (moyenne)
+#
+#  📅 Fenêtre d’analyse :
+#     - Période glissante : 30 jours
+#     - Taille d’échantillon : 5 000 valeurs
+#
+#  📊 Sortie :
+#     - Moyenne mensuelle de l’humidex **nocturne** (sans influence solaire)
+#       — idéale pour l’évaluation du confort thermique nocturne
+#
+#  🏡 Zones couvertes :
+#     - Chambres, pièces de vie, bureaux, extérieurs, ateliers.
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🏠 Chambres
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Chambre Arnaud"
+  entity_id: sensor.humidex_filtre_nuit_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_5000 5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Chambre Matthieu"
+  entity_id: sensor.humidex_filtre_nuit_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Chambre Parents"
+  entity_id: sensor.humidex_filtre_nuit_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏡 Espaces de vie et communs
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Entrée"
+  entity_id: sensor.humidex_filtre_nuit_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Séjour"
+  entity_id: sensor.humidex_filtre_nuit_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Petite Maison"
+  entity_id: sensor.humidex_filtre_nuit_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🌳 Extérieur et jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Jardin"
+  entity_id: sensor.humidex_filtre_nuit_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Extérieur"
+  entity_id: sensor.humidex_filtre_nuit_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏢 Zones administratives
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Direction"
+  entity_id: sensor.humidex_filtre_nuit_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Compta"
+  entity_id: sensor.humidex_filtre_nuit_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Qualité"
+  entity_id: sensor.humidex_filtre_nuit_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Devis"
+  entity_id: sensor.humidex_filtre_nuit_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Commercial"
+  entity_id: sensor.humidex_filtre_nuit_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏭 Zones industrielles / ateliers
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Komori"
+  entity_id: sensor.humidex_filtre_nuit_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Bobst"
+  entity_id: sensor.humidex_filtre_nuit_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidex filtre nuit Moyenne Media"
+  entity_id: sensor.humidex_filtre_nuit_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000

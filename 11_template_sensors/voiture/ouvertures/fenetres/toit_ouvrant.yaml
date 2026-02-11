@@ -1,0 +1,33 @@
+# ==========================================================
+# 🌤️ TEMPLATE TRIGGERED BINARY SENSOR — Audi e-tron (Toit ouvrant)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser l’état du capteur `binary_sensor.audi_a3_sportback_e_tron_sun_roof`
+#   pour éviter les états incohérents ou inconnus lors de pertes
+#   de communication avec l’intégration Audi.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque changement d’état du capteur source.
+#   - Réévaluation automatique au démarrage de Home Assistant.
+#   - Si état valide → reprise directe.
+#   - Sinon → conservation du dernier état connu.
+#
+# 🧮 Source : binary_sensor.audi_a3_sportback_e_tron_sun_roof
+# 📊 Type : Trigger Template Binary Sensor
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: binary_sensor.audi_a3_sportback_e_tron_sun_roof
+
+  binary_sensor:
+    - name: "Audi e-tron – Toit ouvrant (Local)"
+      unique_id: audi_a3_sportback_e_tron_sun_roof_local
+      device_class: window
+      state: >
+        {% set s = states('binary_sensor.audi_a3_sportback_e_tron_sun_roof') %}
+        {% if s in ['on','off'] %}
+          {{ s }}
+        {% else %}
+          {{ this.state | default('off') }}
+        {% endif %}

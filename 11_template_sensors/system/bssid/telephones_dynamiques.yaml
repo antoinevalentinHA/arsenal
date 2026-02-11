@@ -1,0 +1,21 @@
+# ==========================================================
+# 📡 TEMPLATE SENSORS — BSSID téléphones (abstraction)
+# ----------------------------------------------------------
+# Rôle :
+#   Exposer des entités stables pour permettre des triggers
+#   sur des capteurs Wi-Fi dynamiques (définis via helpers).
+# ==========================================================
+
+- sensor:
+
+    - name: "telephone_antoine_bssid_dynamic"
+      unique_id: telephone_antoine_bssid_dynamic
+      state: >
+        {% set ent = states('input_text.telephone_antoine_wifi_bssid') %}
+        {{ states(ent) }}
+
+    - name: "telephone_constance_bssid_dynamic"
+      unique_id: telephone_constance_bssid_dynamic
+      state: >
+        {% set ent = states('input_text.telephone_constance_wifi_bssid') %}
+        {{ states(ent) }}

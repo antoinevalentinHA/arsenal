@@ -1,0 +1,19 @@
+# ==========================================================
+# 🌿 HISTORY STATS — Duree consigne Eco (24h)
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Mesure le temps total passé en mode Eco sur les 24
+#   dernières heures.
+#
+# 🧩 Dépendances :
+#   - sensor.programme_chauffage
+# ==========================================================
+
+- platform: history_stats
+  name: "Duree consigne Eco 24h"
+  entity_id: sensor.programme_chauffage
+  state: "Eco"
+  type: time
+  duration:
+    hours: 24
+  end: "{{ now() }}"

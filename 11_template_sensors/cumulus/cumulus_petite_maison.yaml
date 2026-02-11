@@ -1,0 +1,109 @@
+# ==========================================================
+#  TEMPLATE SENSORS — ECS Petite maison (valeurs fiabilisées localement)
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Stabiliser les données du chauffe-eau Atlantic "Petite maison"
+#     pour éviter toute coupure ou perte d'information lorsque
+#     l'intégration Overkiz / Cozytouch n'est pas disponible.
+#
+#  💡 Avantages :
+#     - Zéro "unknown" ou "unavailable" dans les dashboards
+#     - Conservation de la dernière donnée valide
+#     - Cohérence entre température, mode, et chauffe en cours
+#     - Base fiable pour les automatisations ECS locales
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- sensor:
+    ########################################################
+    # 🌡️ TEMPÉRATURES ET CONSIGNES
+    ########################################################
+    - name: "ecs_petite_maison_temperature_eau_locale"
+      unique_id: "ecs_petite_maison_temperature_eau_locale"
+      icon: mdi:thermometer-water
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state: >
+        {% set v = states('sensor.petite_maison_bottom_tank_water_temperature') %}
+        {% if v not in ['unknown', 'unavailable', '', None] %}
+          {{ (v | float(0)) | round(1) }}
+        {% else %}
+          {{ states('sensor.ecs_petite_maison_temperature_eau_locale') }}
+        {% endif %}
+
+    - name: "ecs_petite_maison_consigne_locale"
+      unique_id: "ecs_petite_maison_consigne_locale"
+      icon: mdi:thermostat
+      unit_of_measurement: "°C"
+      state: >
+        {% set v = states('number.petite_maison_target_temperature') %}
+        {% if v not in ['unknown', 'unavailable', '', None] %}
+          {{ (v | float(0)) | round(1) }}
+        {% else %}
+          {{ states('sensor.ecs_petite_maison_consigne_locale') }}
+        {% endif %}
+
+    - name: "ecs_petite_maison_temperature_cuve_cible_locale"
+      unique_id: "ecs_petite_maison_temperature_cuve_cible_locale"
+      icon: mdi:target
+      unit_of_measurement: "°C"
+      state: >
+        {% set v = states('sensor.petite_maison_control_water_target_temperature') %}
+        {% if v not in ['unknown', 'unavailable', '', None] %}
+          {{ (v | float(0)) | round(1) }}
+        {% else %}
+          {{ states('sensor.ecs_petite_maison_temperature_cuve_cible_locale') }}
+        {% endif %}
+
+    ########################################################
+    # 🔥 CHAUFFE / STATUT
+    ########################################################
+    - name: "ecs_petite_maison_chauffe_en_cours_locale"
+      unique_id: "ecs_petite_maison_chauffe_en_cours_locale"
+      icon: mdi:fire
+      state: >
+        {% set v = states('binary_sensor.petite_maison_heating_status') %}
+        {% if v not in ['unknown', 'unavailable', '', None] %}
+          {{ v }}
+        {% else %}
+          {{ states('sensor.ecs_petite_maison_chauffe_en_cours_locale') }}
+        {% endif %}
+
+    - name: "ecs_petite_maison_mode_fonctionnement_local"
+      unique_id: "ecs_petite_maison_mode_fonctionnement_local"
+      icon: mdi:water-boiler
+      state: >
+        {% set op = state_attr('water_heater.petite_maison', 'operation_mode') %}
+        {% if op not in ['unknown', 'unavailable', '', None] %}
+          {{ op }}
+        {% else %}
+          {{ states('sensor.ecs_petite_maison_mode_fonctionnement_local') }}
+        {% endif %}
+
+    ########################################################
+    # 🚿 DOUCHES / VOLUME D'EAU DISPONIBLE
+    ########################################################
+    - name: "ecs_petite_maison_nombre_douches_restant_local"
+      unique_id: "ecs_petite_maison_nombre_douches_restant_local"
+      icon: mdi:shower
+      unit_of_measurement: "douches"
+      state: >
+        {% set v = states('sensor.petite_maison_number_of_shower_remaining') %}
+        {% if v not in ['unknown', 'unavailable', '', None] %}
+          {{ (v | float(0)) | round(1) }}
+        {% else %}
+          {{ states('sensor.ecs_petite_maison_nombre_douches_restant_local') }}
+        {% endif %}
+
+    - name: "ecs_petite_maison_eau_chaude_restante_locale"
+      unique_id: "ecs_petite_maison_eau_chaude_restante_locale"
+      icon: mdi:water-percent
+      unit_of_measurement: "%"
+      state: >
+        {% set v = states('sensor.petite_maison_warm_water_remaining') %}
+        {% if v not in ['unknown', 'unavailable', '', None] %}
+          {{ (v | float(0)) | round(1) }}
+        {% else %}
+          {{ states('sensor.ecs_petite_maison_eau_chaude_restante_locale') }}
+        {% endif %}

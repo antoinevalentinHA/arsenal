@@ -1,0 +1,33 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER : Poele – Duree blocage chauffage (minutes)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Parametrer la duree du blocage thermique applique
+#   apres une detection de contribution du poele.
+#
+# 🧱 Principe :
+#   - Le poele est EVENEMENTIEL (declencheur uniquement)
+#   - Le timer est l'unique autorite de fin de blocage
+#   - Ce helper ne declenche rien et ne leve jamais un blocage
+#
+# ⚠️ Regle :
+#   - La valeur 0 est INTERDITE
+#   - La duree est toujours strictement positive
+#
+# 🔗 Utilisation :
+#   - Consomme par :
+#     - Poele – Demarrage blocage chauffage (10100000000005)
+#     - Poele – Ajustement duree blocage en cours (10100000000008)
+#
+# ✅ Unites :
+#   - minutes (conversion en secondes dans les automations)
+# ==========================================================
+
+poele_duree_blocage_chauffage_minutes:
+  name: "Poele - Duree blocage chauffage (minutes)"
+  icon: mdi:timer-outline
+  min: 5
+  max: 360
+  step: 5
+  unit_of_measurement: min
+  mode: slider

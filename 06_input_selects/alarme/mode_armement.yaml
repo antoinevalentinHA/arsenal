@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Mode d’armement de l’alarme
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Sélection du MODE DE STRATÉGIE d’armement de l’alarme.
+#   Définit COMMENT l’alarme peut être armée,
+#   jamais SI elle l’est.
+#
+# 🧩 Nature :
+#   Paramètre MÉTIER de stratégie globale.
+#
+# ❌ Ne fait PAS :
+#   - N’est PAS l’état réel de l’alarme
+#   - N’arme ni ne désarme l’alarme
+#   - Ne déclenche aucune action directe
+#   - Ne contient aucune logique décisionnelle
+#
+# 🔍 Sémantique des valeurs :
+#   - Manuel :
+#       L’armement ne peut être effectué
+#       que par une action explicite de l’utilisateur.
+#   - Automatique :
+#       Autorise les automatisations à proposer
+#       ou effectuer l’armement selon les conditions.
+#   - Désactivé :
+#       Interdit tout armement, manuel ou automatique.
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace :
+#       • Lecture du mode actif
+#       • Sélection utilisateur du comportement global
+#   - Scripts & automatisations :
+#       • Entrée de contexte pour la décision centrale alarme
+#       • Conditions d’autorisation d’armement
+#       • Capteurs binaires de possibilité d’armement
+#
+# 🧠 Principe Arsenal associé :
+#   - Dissociation stricte entre :
+#       • Stratégie (input_select)
+#       • Décision (scripts centraux)
+#       • Action (automatisations)
+#   - Le mode définit un CADRE,
+#     jamais une exécution.
+#
+# ⚠️ Remarque :
+#   Toute extension de ce helper (nouveau mode)
+#   doit être accompagnée d’une mise à jour
+#   explicite de la décision centrale.
+# ==========================================================
+
+
+mode_alarme:
+  name: Mode d'armement alarme
+  options:
+    - "Manuel"
+    - "Automatique"
+    - "Désactivé"

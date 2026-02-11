@@ -1,0 +1,62 @@
+# ==========================================================
+# 💧 TEMPLATE TRIGGERED SENSOR — Humidité absolue intérieure (RDC)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Calculer la **moyenne d’humidité absolue du rez-de-chaussée**,
+#   en s’appuyant sur les deux sources fiables : Entrée et Séjour.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement sur changement des entités suivantes :
+#       • sensor.humidite_absolue_entree  
+#       • sensor.humidite_absolue_sejour  
+#   - Mise à jour également au démarrage de Home Assistant.
+#
+# 🧮 Calcul :
+#   → moyenne des valeurs valides (0 < x < 30 g/m³)
+#   → en absence de valeur valide, conservation de la dernière mesure
+#
+# 🧠 Détails techniques :
+#   - Attributs :
+#       • sources : liste complète des entités utilisées  
+#       • nombre_sources_valides : nombre de mesures retenues
+#   - Unité : g/m³
+#   - Icône : mdi:water
+#
+# 📊 Type : Trigger Template Sensor  
+# 📍 Nom de l’entité : sensor.humidite_absolue_interieure_rdc
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_entree
+        - sensor.humidite_absolue_sejour
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité absolue intérieure (RDC)"
+      unique_id: humidite_absolue_interieure_rdc
+      unit_of_measurement: "g/m³"
+      icon: mdi:water
+      state: >
+        {% set ha_entree = states('sensor.humidite_absolue_entree') | float(0) %}
+        {% set ha_sejour = states('sensor.humidite_absolue_sejour') | float(0) %}
+        {% set valides = [ha_entree, ha_sejour] | select('gt', 0) | select('lt', 30) | list %}
+
+        {% if valides | length > 0 %}
+          {{ (valides | sum / valides | length) | round(2) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+
+      attributes:
+        sources: >
+          - sensor.humidite_absolue_entree
+          - sensor.humidite_absolue_sejour
+
+        nombre_sources_valides: >
+          {% set ha_entree = states('sensor.humidite_absolue_entree') | float(0) %}
+          {% set ha_sejour = states('sensor.humidite_absolue_sejour') | float(0) %}
+          {% set valides = [ha_entree, ha_sejour] | select('gt', 0) | select('lt', 30) | list %}
+          {{ valides | length }}

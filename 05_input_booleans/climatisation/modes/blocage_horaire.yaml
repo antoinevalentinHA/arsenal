@@ -1,0 +1,42 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Climatisation – Blocage horaire actif
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation de la logique de blocage horaire
+#     de la climatisation.
+#
+#     Ce booléen indique si les règles horaires
+#     sont autorisées à restreindre le fonctionnement
+#     de la climatisation.
+#
+#  🧱 Nature :
+#     - Paramètre de stratégie
+#     - Filtre décisionnel
+#
+#  🔄 Fonctionnement :
+#     - ON  : la logique de blocage horaire
+#             est prise en compte
+#     - OFF : toute restriction horaire
+#             est ignorée
+#
+#  📥 N’effectue PAS :
+#     - aucun calcul d’horaires
+#     - aucune décision de mode
+#     - aucune commande directe de la clim
+#
+#  📤 Utilisation :
+#     - Lue par :
+#         • script Décision centrale climatisation
+#         • capteurs de diagnostic clim
+#     - Pilotée via les dashboards
+#       de réglages climatisation
+#
+#  🧠 Principe Arsenal :
+#     - Une contrainte doit pouvoir
+#       être explicitement activée ou neutralisée
+# ==========================================================
+
+
+clim_blocage_horaire_actif:
+  name: "Blocage horaire clim actif"
+  icon: mdi:timer-off

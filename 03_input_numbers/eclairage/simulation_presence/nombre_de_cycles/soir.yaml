@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER — Simulation de présence (cycles)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Définir l’INTENSITÉ de la simulation de présence en
+#   configurant le nombre de cycles lumineux ON/OFF
+#   par créneau horaire (matin / soir) et par zone
+#   (chambre / garage).
+#
+# ⚙️ Fonctionnement :
+#   - Ces helpers sont purement PARAMÉTRIQUES.
+#   - Ils ne pilotent aucun équipement directement.
+#   - Ils sont lus par le script central :
+#       `09_scripts/eclairage/simulation_presence.yaml`
+#     qui génère des séquences réalistes et non déterministes.
+#
+# 🧩 Logique métier :
+#   - Valeur 0  → aucun cycle (simulation inactive sur le créneau).
+#   - Valeur N  → N cycles ON/OFF répartis dans la plage autorisée.
+#   - Les DURÉES de cycles sont gérées séparément via :
+#       • input_number.duree_min_cycle_simulation_presence
+#       • input_number.duree_max_cycle_simulation_presence
+#
+# 🔗 Utilisé par :
+#   - Script :
+#       • 09_scripts/eclairage/simulation_presence.yaml
+#   - Dashboards :
+#       • lovelace/dashboards/reglages/eclairage.yaml
+#       • lovelace/dashboards/diagnostics/eclairage.yaml
+#
+# 🧠 Principe Arsenal :
+#   - Les helpers règlent l’intention.
+#   - Les scripts exécutent.
+#   - Aucune logique métier cachée dans l’UI.
+# ==========================================================
+
+
+# ==========================================================
+# 🔢 Nombre de cycles soir chambre
+# ==========================================================
+nb_cycles_simulation_presence_soir:
+  name: Nombre cycles soir
+  icon: mdi:counter
+  min: 0
+  max: 5
+  step: 1
+  unit_of_measurement: "cycles"
+
+# ==========================================================
+# 🔢 Nombre de cycles soir garage
+# ==========================================================
+nb_cycles_simulation_presence_garage_soir:
+  name: Nb cycles soir garage
+  icon: mdi:counter
+  min: 0
+  max: 5
+  step: 1
+  unit_of_measurement: "cycles"

@@ -1,0 +1,105 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Overkiz – Relance automatique de l’intégration sur gel prolongé
+#
+#  ID : 1012000000012
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Surveiller la fraîcheur des données issues de l’intégration
+#     Overkiz (Cozytouch) et relancer automatiquement celle-ci
+#     lorsque les données restent figées pendant une durée
+#     anormalement longue.
+#
+#     Automation de résilience SILENCIEUSE.
+#
+#  🚫 NE FAIT PAS
+#     - Ne pilote pas le cumulus
+#     - Ne déclenche aucune action ECS
+#     - Ne produit aucune notification
+#
+#  🧩 PRINCIPE
+#     - Surveillance périodique
+#     - Relance automatique si données figées
+#     - Backoff progressif via compteur
+#     - Reset automatique dès retour de données fraîches
+#
+# ==========================================================
+
+- id: '1012000000012'
+  alias: "Overkiz – Relance intégration (auto)"
+  description: >
+    Recharge automatiquement l’intégration Overkiz (Atlantic Cozytouch)
+    si aucune donnée n’a été mise à jour depuis longtemps.
+    Mécanisme de résilience silencieux avec compteur de tentatives
+    et reset automatique dès retour de données fraîches.
+
+  mode: single
+  max_exceeded: silent
+
+  # ======================================================
+  # ⏱️ Déclencheur périodique
+  # ======================================================
+  trigger:
+    - platform: time_pattern
+      hours: "/2"
+
+  # ======================================================
+  # ✅ Condition — Données figées ≥ 180 min
+  # ======================================================
+  condition:
+    - condition: template
+      alias: "Données Cozytouch figées"
+      value_template: >
+        {% set age = states('sensor.petite_maison_cumulus_age_donnees') | float(0) %}
+        {{ age >= 180 }}
+
+  # ======================================================
+  # 🔄 Actions — reload + suivi
+  # ======================================================
+  action:
+    # ------------------------------------------------------
+    # 🧮 Variables locales
+    # ------------------------------------------------------
+    - variables:
+        tentative: "{{ states('input_number.overkiz_reload_tentatives') | int(0) }}"
+        prochain_delai: >
+          {% set base = [ (tentative + 1) * 10, 60 ] | min %}
+          {{ base }}
+
+    # ------------------------------------------------------
+    # 📈 Incrémenter compteur de tentatives
+    # ------------------------------------------------------
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.overkiz_reload_tentatives
+      data:
+        value: "{{ tentative + 1 }}"
+
+    # ------------------------------------------------------
+    # 🔧 Recharger l’intégration Overkiz
+    # ------------------------------------------------------
+    - action: homeassistant.reload_config_entry
+      data:
+        entry_id: !secret overkiz_entry_id
+
+    # ------------------------------------------------------
+    # 🕦 Attente courte du retour des données
+    # ------------------------------------------------------
+    - delay: "00:02:00"
+
+    # ------------------------------------------------------
+    # 🔍 Vérification post-reload
+    # ------------------------------------------------------
+    - choose:
+        # ✅ Succès → reset compteur
+        - conditions: >
+            {{ states('sensor.petite_maison_cumulus_age_donnees') | float(999) < 10 }}
+          sequence:
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.overkiz_reload_tentatives
+              data:
+                value: 0
+
+    # ❌ Échec → silence volontaire
+    #    (état observable via le compteur et l’âge des données)

@@ -1,0 +1,40 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Babyphone – Matthieu
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation d’activation du service
+#     de surveillance « babyphone » pour Matthieu.
+#
+#     Ce booléen détermine si les automatisations
+#     babyphone associées sont autorisées à fonctionner.
+#
+#  🧱 Nature :
+#     - Paramètre utilisateur
+#     - Commutateur de service
+#
+#  🔄 Fonctionnement :
+#     - ON  : la surveillance babyphone est active
+#             pour Matthieu
+#     - OFF : aucune automatisation babyphone
+#             ne s’exécute pour Matthieu
+#
+#  📥 N’effectue PAS :
+#     - aucune détection de bruit ou de mouvement
+#     - aucune analyse du sommeil
+#     - aucune action directe
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations
+#       babyphone dédiées à Matthieu
+#     - Pilotée via les dashboards
+#       de réglages sommeil
+#
+#  🧠 Principe Arsenal :
+#     - Un service sensible doit pouvoir
+#       être explicitement activé ou désactivé
+# ==========================================================
+
+
+babyphone_matthieu:
+  name: "Babyphone Matthieu"
+  icon: mdi:baby-face-outline

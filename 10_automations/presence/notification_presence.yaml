@@ -1,0 +1,137 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Présence — Notification persistante
+#
+#  ID : 10210000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Projection UI d’un état courant de présence individuelle.
+#
+#     Cette automation matérialise deux notifications persistantes
+#     distinctes, chacune représentant l’état courant de présence
+#     d’une personne, strictement alignées sur le Contrat
+#     Notifications Arsenal.
+#
+#     - Une notification pour Antoine
+#     - Une notification pour Constance
+#
+#     Chaque notification :
+#       - apparaît si la personne est considérée présente
+#       - est disqualifiée dès qu’elle est explicitement absente
+#
+#     Cette automation ne décide rien.
+#     Elle observe exclusivement des états durables.
+#
+#  🧩 PÉRIMÈTRE
+#
+#     - Entités observées :
+#         • person.valentin
+#         • person.constance
+#
+#     - États interprétés :
+#
+#         Présent :
+#           • tout état ≠ not_home
+#
+#         Absent :
+#           • not_home
+#
+#     Tout autre état n’est PAS assimilé implicitement
+#     à une absence.
+#
+#  🚫 INTERDITS
+#
+#     - Aucune notification éphémère
+#     - Aucune référence temporelle
+#     - Aucune mémoire implicite
+#     - Aucune logique métier décisionnelle
+#     - Aucune dépendance à l’historique
+#
+#  🔄 ROBUSTESSE RELOAD
+#
+#     - Recalculable à partir du seul état courant
+#     - Notifications indépendantes et disqualifiées explicitement
+#
+# ==========================================================
+
+- id: "10210000000001"
+  alias: Présence — Notification persistante
+
+  trigger:
+    # Valentin : absent explicite
+    - platform: state
+      entity_id: person.valentin
+      to: "not_home"
+
+    # Valentin : présent (sortie de not_home vers n'importe quel état)
+    - platform: state
+      entity_id: person.valentin
+      from: "not_home"
+
+    # Constance : absente explicite
+    - platform: state
+      entity_id: person.constance
+      to: "not_home"
+
+    # Constance : présente (sortie de not_home vers n'importe quel état)
+    - platform: state
+      entity_id: person.constance
+      from: "not_home"
+
+  condition: []
+
+  action:
+    - choose:
+        # Valentin absent explicite
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.entity_id == 'person.valentin'
+                   and trigger.to_state.state == 'not_home' }}
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: presence_valentin
+
+        # Valentin présent
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.entity_id == 'person.valentin'
+                   and trigger.from_state is not none
+                   and trigger.from_state.state == 'not_home' }}
+          sequence:
+            - action: persistent_notification.create
+              data:
+                notification_id: presence_valentin
+                title: "👤 Présence Antoine"
+                message: >
+                  Antoine est présent.
+
+        # Constance absente explicite
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.entity_id == 'person.constance'
+                   and trigger.to_state.state == 'not_home' }}
+          sequence:
+            - action: persistent_notification.dismiss
+              data:
+                notification_id: presence_constance
+
+        # Constance présente
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.entity_id == 'person.constance'
+                   and trigger.from_state is not none
+                   and trigger.from_state.state == 'not_home' }}
+          sequence:
+            - action: persistent_notification.create
+              data:
+                notification_id: presence_constance
+                title: "👤 Présence Constance"
+                message: >
+                  Constance est présente.
+      default: []

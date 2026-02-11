@@ -1,0 +1,218 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: 'Climatisation '
+views:
+  - title: 'Climatisation '
+    path: climatisation
+    icon: mdi:server
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-climatisation-dashboard/climatisation
+
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-climatisation-dashboard/diagnostics-climatisation
+
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ==================================================
+          # ❄️ CLIMATISEUR — SYNTHÈSE & OPTIONS
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - type: custom:button-card
+                template: section_header
+                name: ❄️ Climatiseur
+
+              - type: custom:button-card
+                template: carte_clim_synthese
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: clim_option_toggle
+                    entity: switch.clim_quiet_fan
+                    name: Ventilation silencieuse
+                    icon: mdi:fan
+
+                  - type: custom:button-card
+                    template: clim_option_toggle
+                    entity: switch.clim_outdoor_unit_low_noise
+                    name: Réduire bruit extérieur
+                    icon: mdi:volume-off
+
+
+          # ==================================================
+          # 🧠 DÉCISION
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/decision.yaml
+
+              - type: custom:button-card
+                template: carte_clim_intention
+                entity: sensor.clim_raison_decision
+
+              - type: custom:button-card
+                template: carte_clim_decision
+                entity: sensor.clim_action_en_cours
+
+
+          # ==================================================
+          # ⚖️ CONDITIONS — MODE AFFICHÉ
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/conditions.yaml
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_select.clim_conditions_mode
+                    name: Mode affiché
+
+
+          # ==================================================
+          # ❄️ DIAGNOSTICS — MODE COOL
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 2
+            visibility:
+              - condition: state
+                entity: input_select.clim_conditions_mode
+                state: Cool
+            cards:
+
+              - type: custom:button-card
+                template: carte_clim_diagnostic_temperature_exterieure
+                name: Température extérieure
+
+              - type: custom:button-card
+                template: carte_clim_diagnostic_aeration_etage
+                name: Aération préférable
+                icon: mdi:weather-windy
+
+              - type: custom:button-card
+                template: carte_clim_diagnostic_temperature_min_chambres
+                name: Chambre la plus froide
+
+              - type: custom:button-card
+                template: carte_clim_diagnostic_extinction_temperature_min_chambres
+                name: Chambre la plus froide
+
+
+          # ==================================================
+          # 💧 DIAGNOSTICS — MODE DRY
+          # ==================================================
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_conditions_mode
+                state: Dry
+            card:
+              type: grid
+              square: false
+              columns: 2
+              cards:
+
+                - type: custom:button-card
+                  template: carte_clim_diagnostic_humidex_max_chambres
+                  name: Humidex max chambres
+
+                - type: custom:button-card
+                  template: carte_clim_diagnostic_fenetres_maison
+                  name: Fenêtres maison
+                  icon: mdi:window-closed-variant
+
+                - type: custom:button-card
+                  template: carte_clim_diagnostic_presence_babysitting
+                  name: Présence / Babysitting
+                  icon: mdi:account-group
+
+                - type: custom:button-card
+                  template: carte_clim_diagnostic_aeration_etage
+                  name: Aération préférable
+                  icon: mdi:weather-windy
+
+
+          # ==================================================
+          # 🔥 DIAGNOSTICS — MODE HEAT
+          # ==================================================
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_conditions_mode
+                state: Heat
+            card:
+              type: grid
+              square: false
+              columns: 2
+              cards:
+
+                - type: custom:button-card
+                  template: carte_diagnostic_besoin_chauffe_temperature_min_chambres
+                  name: Chambre la plus froide
+                  icon: mdi:thermometer
+
+                - type: custom:button-card
+                  template: carte_clim_diagnostic_temperature_exterieure_hiver
+                  name: T° extérieure
+                  icon: mdi:thermometer-lines
+
+                - type: custom:button-card
+                  template: carte_clim_diagnostic_presence_babysitting
+                  name: Présence / Babysitting
+
+                - type: custom:button-card
+                  template: carte_clim_diagnostic_fenetres_maison
+                  name: Fenêtres maison
+                  icon: mdi:window-closed-variant
+
+                - type: custom:button-card
+                  template: carte_clim_diagnostic_chauffage_hiver_actif
+                  name: Chauffage clim hiver
+
+                - type: custom:button-card
+                  template: carte_diagnostic_chauffage_blocage_aeration
+                  name: Blocage post-aération
+
+
+          # ==================================================
+          # 📜 HISTORIQUE
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/historique.yaml
+
+              - type: history-graph
+                entities:
+                  - entity: switch.clim_power
+                logarithmic_scale: true

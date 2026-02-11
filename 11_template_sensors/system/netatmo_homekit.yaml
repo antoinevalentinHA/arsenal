@@ -1,0 +1,51 @@
+# ==========================================================
+#  Arsenal — TEMPLATE SENSOR : Diagnostic Netatmo
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un diagnostic clair de l'etat des stations
+#     Netatmo en distinguant :
+#       - ok
+#       - ko_reseau
+#       - ko_homekit
+#
+#  🎯 Principe :
+#     - Si la temperature est numerique → ok
+#     - Sinon :
+#         - ping KO → ko_reseau
+#         - ping OK → ko_homekit
+#
+#  ⚙️ Sources :
+#     Arnaud   : sensor.temperature_jardin_1
+#                binary_sensor.station_meteo_netatmo_1
+#     Matthieu: sensor.temperature_jardin_2
+#                binary_sensor.station_meteo_netatmo_2
+# ==========================================================
+
+- sensor:
+    - name: "diagnostic_netatmo_arnaud"
+      unique_id: diagnostic_netatmo_arnaud
+      state: >
+        {% set t = states('sensor.temperature_jardin_1') %}
+        {% if t | float(default=None) is not none %}
+          ok
+        {% else %}
+          {% if is_state('binary_sensor.station_meteo_netatmo_1', 'off') %}
+            ko_reseau
+          {% else %}
+            ko_homekit
+          {% endif %}
+        {% endif %}
+
+    - name: "diagnostic_netatmo_matthieu"
+      unique_id: diagnostic_netatmo_matthieu
+      state: >
+        {% set t = states('sensor.temperature_jardin_2') %}
+        {% if t | float(default=None) is not none %}
+          ok
+        {% else %}
+          {% if is_state('binary_sensor.station_meteo_netatmo_2', 'off') %}
+            ko_reseau
+          {% else %}
+            ko_homekit
+          {% endif %}
+        {% endif %}

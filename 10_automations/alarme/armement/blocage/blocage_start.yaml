@@ -1,0 +1,55 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme – Blocage armement automatique (start)
+#
+#  ID : 10020000000028
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation technique chargée d’activer un blocage
+#     temporaire de l’armement automatique de l’alarme
+#     après un désarmement manuel.
+#
+#  🧩 PRINCIPE
+#
+#     - Réagit exclusivement à un désarmement humain
+#     - Active un état métier consommé par le cerveau alarme
+#     - Démarre un timer persistant de blocage
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas de l’armement
+#     - N’envoie aucune notification
+#     - N’applique aucune temporisation active
+#
+#  🛡️ ROBUSTESSE
+#
+#     - Aucun wait ni script bloquant
+#     - Timer persistant (post-reboot safe)
+#
+#  ✅ Compatibilité : Arsenal / Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10020000000028"
+  alias: "Alarme - Blocage armement auto (start)"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarme_maison
+      from: armed_away
+      to: disarmed
+
+  action:
+    # ▶️ Activation du blocage d’armement automatique
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.blocage_armement_auto
+
+    # ▶️ Démarrage du timer de blocage (3 min)
+    - action: timer.start
+      target:
+        entity_id: timer.blocage_armement_auto
+      data:
+        duration: "00:03:00"

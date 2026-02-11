@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBERS : Gaz — Registres persistants locaux
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Servir de REGISTRES DE MÉMOIRE PERSISTANTE pour les
+#   consommations gaz Chauffage et ECS, afin de :
+#     - survivre aux redémarrages Home Assistant
+#     - compenser les limites des compteurs ViCare
+#     - permettre un calcul incrémental fiable
+#
+# 🧱 Principe :
+#   - ViCare fournit des valeurs cumulées volatiles
+#   - Les automatisations calculent les deltas journaliers
+#   - Ces helpers stockent :
+#       • le total local cumulatif
+#       • la dernière valeur "today" connue
+#
+#   → Ces input_number sont de simples registres mémoire.
+#
+# ❌ Ne sont PAS :
+#   - des capteurs de mesure
+#   - des totaux officiels
+#   - des entités statistiques
+#   - des sources de vérité primaire
+#
+# 🔗 Utilisation :
+#   - Automatisations :
+#       • vicare/conso_gaz/chauffage.yaml
+#       • vicare/conso_gaz/ecs.yaml
+#   - Template sensors :
+#       • vicare/gaz/conso_chauffage.yaml
+#       • vicare/gaz/conso_ecs.yaml
+#
+# 🧠 Principe Arsenal :
+#   - ViCare calcule mal → Arsenal mémorise proprement
+#   - La mémoire est locale, explicite et maîtrisée
+#
+# 📐 Unité :
+#   - kWh (valeurs cumulées)
+# ==========================================================
+
+
+gaz_chauffage_total_local_store:
+  name: Gaz chauffage total store
+  min: 0
+  max: 100000
+  step: 0.001
+  mode: box
+
+gaz_chauffage_today_last:
+  name: Gaz chauffage today last
+  min: 0
+  max: 100000
+  step: 0.001
+  mode: box
+
+gaz_ecs_total_local_store:
+  name: Gaz ecs total store
+  min: 0
+  max: 100000
+  step: 0.001
+  mode: box
+
+gaz_ecs_today_last:
+  name: Gaz ecs today last
+  min: 0
+  max: 100000
+  step: 0.001
+  mode: box
+

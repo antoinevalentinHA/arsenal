@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : ECS / Gardien — Post-prélèvement
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Introduire une TEMPORISATION COURTE après un prélèvement
+#   d’eau chaude sanitaire afin d’éviter toute interprétation
+#   prématurée des capteurs ECS par le “gardien ECS”.
+#
+#   Ce timer permet la stabilisation :
+#     - des températures mesurées
+#     - des états ViCare
+#     - des calculs de consigne post-usage
+#
+# 🧩 Nature :
+#   Filtre temporel TRANSITOIRE (anti-rebond capteurs).
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS de chauffe ECS
+#   - Ne décide PAS d’une consigne
+#   - Ne pilote PAS la chaudière
+#   - Ne remplace PAS la logique du gardien ECS
+#
+# ⚙️ Fonctionnement :
+#   - Démarré explicitement après détection
+#     d’un prélèvement ECS.
+#   - Tant que le timer est ACTIF :
+#       → les contrôles du gardien ECS
+#         sont volontairement suspendus.
+#   - À l’expiration :
+#       → la surveillance ECS redevient valide.
+#
+# 🔄 Persistance :
+#   - restore: false
+#   - Comportement strictement instantané :
+#     aucun effet résiduel après redémarrage.
+#
+# 🔗 Utilisation :
+#   - Scripts ECS :
+#       • Séquencement du cycle ECS
+#       • Gestion post-prélèvement
+#   - Automatisations :
+#       • Application différée de consigne
+#       • Protection contre faux diagnostics
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Stabilisation des signaux (timer)
+#       • Diagnostic ECS (gardien)
+#       • Décision thermique (logique ViCare)
+#
+# ⚠️ Remarque :
+#   Ce timer protège la QUALITÉ DES MESURES,
+#   pas le fonctionnement de l’ECS lui-même.
+# ==========================================================
+
+
+ecs_gardien_post_prelevement:
+  name: "ECS Gardien post prelevement"
+  duration: "00:00:10"
+  restore: false

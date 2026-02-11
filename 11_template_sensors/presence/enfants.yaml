@@ -1,0 +1,29 @@
+# ==========================================================
+# 👶 TEMPLATE BINARY SENSOR — Présence enfants
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Regrouper les présences individuelles des enfants
+#   (Arnaud et Matthieu) dans un capteur unique.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → au moins un enfant est considéré présent
+#   - OFF → aucun enfant présent
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.presence_enfants
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Présence (Enfants)"
+      unique_id: presence_enfants
+      default_entity_id: binary_sensor.presence_enfants
+      device_class: presence
+
+      state: >
+        {% set enfants = [
+          'input_boolean.presence_arnaud',
+          'input_boolean.presence_matthieu'
+        ] %}
+
+        {{ enfants | select('is_state', 'on') | list | length > 0 }}

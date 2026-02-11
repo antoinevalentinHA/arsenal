@@ -1,0 +1,41 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Mode visite – En cours
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Indicateur global signalant que la maison
+#     est actuellement en situation de visite
+#     (présence de personnes extérieures au foyer).
+#
+#     Ce mode modifie le CONTEXTE de raisonnement
+#     du système, sans déclencher d’actions directes.
+#
+#  🧱 Nature :
+#     - Mode global explicite
+#     - Contexte humain prioritaire
+#
+#  🔄 Cycle de vie :
+#     - ON  : la maison est considérée en mode visite
+#     - OFF : retour au fonctionnement normal
+#
+#  📥 N’effectue PAS :
+#     - aucune détection de présence
+#     - aucune action sur l’alarme, le chauffage
+#       ou l’éclairage
+#     - aucune décision automatique
+#
+#  📤 Utilisation :
+#     - Lue par :
+#         • décision centrale alarme
+#         • capteurs de modes (vacances / raisons)
+#         • automatisations de sécurité post-reboot
+#     - Sert à invalider ou neutraliser certains
+#       raisonnements automatiques inadaptés
+#
+#  🧠 Principe Arsenal :
+#     - Le contexte humain prime sur
+#       toute déduction automatique
+# ==========================================================
+
+visite_en_cours:
+  name: Visite en cours
+  icon: mdi:account-clock

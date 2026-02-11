@@ -1,0 +1,26 @@
+# ==========================================================
+# 🌡️ TEMPLATE SENSOR — Écarts moyens 24 h (chauffage)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Exposer la moyenne 24 h des écarts de consigne instantanés
+#   pour usage direct dans le dashboard diagnostic.
+# ==========================================================
+
+- sensor:
+    - name: "Ecart consigne moyenne 24h"
+      unique_id: ecart_consigne_moyenne_24h
+      unit_of_measurement: "°C"
+      state: >
+        {{ states('sensor.ecart_consigne_stats_24h') | float(0) | round(2) }}
+
+    - name: "Ecart consigne moyenne froid"
+      unique_id: ecart_consigne_moyenne_froid
+      unit_of_measurement: "°C"
+      state: >
+        {{ states('sensor.ecart_consigne_stats_froid') | float(0) | round(2) }}
+
+    - name: "Ecart consigne moyenne doux"
+      unique_id: ecart_consigne_moyenne_doux
+      unit_of_measurement: "°C"
+      state: >
+        {{ states('sensor.ecart_consigne_stats_doux') | float(0) | round(2) }}

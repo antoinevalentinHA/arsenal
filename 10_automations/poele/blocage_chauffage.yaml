@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : Poele – Demarrage blocage chauffage
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Declencher un blocage thermique temporaire du chauffage
+#   (et chauffage par clim) lors de la detection d'un
+#   evenement de fonctionnement du poele.
+#
+# 🧱 Principe :
+#   - Le capteur poele est EVENEMENTIEL
+#   - Chaque detection relance un timer de blocage
+#   - Le OFF du capteur est volontairement ignore
+#
+# ⚠️ IMPORTANT :
+#   - Cette automation NE leve JAMAIS le blocage
+#   - La levee est exclusivement geree par la fin du timer
+#
+# 📥 Entree :
+#   - binary_sensor.poele_en_fonction
+#
+# 📤 Sorties :
+#   - input_boolean.blocage_chauffage_poele
+#   - input_boolean.blocage_clim_poele
+#   - timer.poele_blocage_chauffage
+#
+# 🏷️ ID :
+#   10100000000005
+#
+# ✅ Architecture :
+#   Arsenal V6+
+# ==========================================================
+
+- id: "10100000000005"
+  alias: "Poêle – Démarrage blocage chauffage"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.poele_en_fonction
+      to: "on"
+
+  action:
+    - service: input_boolean.turn_on
+      target:
+        entity_id:
+          - input_boolean.blocage_chauffage_poele
+          - input_boolean.blocage_clim_poele
+
+    - service: timer.start
+      target:
+        entity_id: timer.poele_blocage_chauffage
+      data:
+        duration: >
+          {{ states('input_number.poele_duree_blocage_chauffage_minutes') | int * 60 }}

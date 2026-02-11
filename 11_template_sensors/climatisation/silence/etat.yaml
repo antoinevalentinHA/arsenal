@@ -1,0 +1,39 @@
+# ==========================================================
+# 📴 TRIGGERED TEMPLATE SENSOR — Clim mode silencieux (local)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Fournir une lecture locale fiable du mode silencieux de la climatisation,
+#   même en cas d’indisponibilité de l’intégration Airstage.
+#
+# ⚙️ Fonctionnement :
+#   - Source : switch.clim_quiet_fan
+#   - Si la valeur est valide (on/off) → utilisée directement
+#   - Sinon → conserve le dernier état connu
+#
+# 📊 Type : Triggered Template Sensor
+# 📍 Entité : sensor.clim_mode_silencieux_local
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: switch.clim_quiet_fan
+
+    # 🚀 Stabilisation Home Assistant
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: systeme_stable
+
+  sensor:
+    - name: "Clim mode silencieux (local)"
+      unique_id: clim_mode_silencieux_local
+      icon: mdi:volume-off
+      state: >
+        {% set s = states('switch.clim_quiet_fan') %}
+        {% if s in ['on','off'] %}
+          {{ s }}
+        {% elif this.state in ['on','off',''] %}
+          {{ this.state }}
+        {% else %}
+          off
+        {% endif %}

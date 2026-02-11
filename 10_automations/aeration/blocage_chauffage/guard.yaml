@@ -1,0 +1,81 @@
+# ==========================================================
+#  AUTOMATION : Chauffage - Aeration - Mini-guard pipeline
+#  ID : 10010000000024
+# ----------------------------------------------------------
+#  Rôle :
+#    Empêcher tout état "pipeline zombie" où le pipeline
+#    d’aération resterait armé alors qu’aucune aération,
+#    aucun blocage et aucune ouverture ne sont actifs.
+#
+#  Principe :
+#    - Cette automatisation N’INITIE RIEN.
+#    - Elle ne fait que désarmer le pipeline si l’état
+#      global est incohérent.
+#
+#  Condition de désarmement :
+#    - aeration_episode_en_cours = off
+#    - chauffage_blocage_aeration = off
+#    - fenetre_ouverte_maison = off
+#    - aeration_pipeline_arme = on
+#
+#  Objectif :
+#    - Éviter les déclenchements fantômes (M2, blocage initial)
+#    - Garantir une sortie propre d’épisode
+#
+#  Compatibilité :
+#    - Home Assistant 2024.8+
+#    - Arsenal V3 / V4
+# ==========================================================
+
+- id: "10010000000024"
+  alias: "Chauffage - Aération - Mini-guard pipeline"
+  mode: queued
+
+  ##########################################################
+  #  TRIGGERS
+  ##########################################################
+
+  trigger:
+
+    - platform: state
+      entity_id:
+        - input_boolean.aeration_episode_en_cours
+        - input_boolean.chauffage_blocage_aeration
+        - binary_sensor.fenetre_ouverte_maison
+        - input_boolean.aeration_pipeline_arme
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  ##########################################################
+  #  CONDITIONS
+  ##########################################################
+
+  condition:
+
+    - condition: state
+      entity_id: input_boolean.aeration_pipeline_arme
+      state: "on"
+
+    - condition: state
+      entity_id: input_boolean.aeration_episode_en_cours
+      state: "off"
+
+    - condition: state
+      entity_id: input_boolean.chauffage_blocage_aeration
+      state: "off"
+
+    - condition: state
+      entity_id: binary_sensor.fenetre_ouverte_maison
+      state: "off"
+
+  ##########################################################
+  #  ACTIONS
+  ##########################################################
+
+  action:
+
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_pipeline_arme

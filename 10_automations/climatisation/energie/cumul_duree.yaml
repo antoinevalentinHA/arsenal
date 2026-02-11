@@ -1,0 +1,168 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Clim – Journalisation événementielle des durées par mode
+#
+#  ID : 10030000000103
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de journalisation temporelle événementielle.
+#
+#     Elle attribue des durées de fonctionnement à chaque
+#     mode de climatisation (Cool / Dry / Heat) en calculant
+#     des deltas temporels uniquement lors d’événements réels.
+#
+#     Cette automation remplace volontairement tout modèle
+#     de comptage périodique (polling).
+#
+#  🧩 PRINCIPE
+#
+#     - AUCUNE incrémentation temporelle périodique
+#     - Calcul uniquement lors :
+#         • d’un changement effectif de mode
+#         • d’un redémarrage stabilisé du système
+#     - À chaque événement :
+#         1) calcul du delta depuis le dernier changement
+#         2) attribution au mode précédent
+#         3) mise à jour de l’instant de référence
+#         4) mémorisation du mode courant
+#
+#     Le mode OFF est traité comme un état terminal
+#     ne générant aucune durée active.
+#
+#  🧠 ÉTAT MÉMOIRE UTILISÉ
+#
+#     - input_datetime.clim_mode_last_change
+#     - input_text.clim_mode_last
+#
+#     → références persistantes nécessaires au calcul
+#       des deltas événementiels
+#
+#  📦 COMPTEURS JOURNALIERS
+#
+#     - input_number.clim_duree_cool_aujourdhui
+#     - input_number.clim_duree_dry_aujourdhui
+#     - input_number.clim_duree_heat_aujourdhui
+#
+#     → compteurs journaliers remis à zéro ailleurs
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne mesure PAS une durée en temps réel
+#     - Ne dépend PAS d’un pas de temps fixe
+#     - Ne pilote PAS la climatisation
+#     - Ne décide PAS des modes
+#     - Ne calcule PAS de consommation énergétique
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation socle de temporalité événementielle :
+#     journal temporel ≠ compteur périodique.
+#
+#     Elle fournit une base déterministe,
+#     utilisée par les couches de calcul énergétique.
+# ==========================================================
+
+
+- id: "10030000000103"
+  alias: "Clim - Cumul durée fonctionnement (événementiel)"
+  description: >
+    Calcule et cumule les durées de fonctionnement par mode
+    (cool / dry / heat) uniquement sur événements, sans polling.
+
+  trigger:
+    - platform: state
+      entity_id: sensor.clim_mode_local
+
+    # 🚀 Stabilisation Home Assistant
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: systeme_stable
+
+  variables:
+    mode_actuel: "{{ states('sensor.clim_mode_local') }}"
+    mode_precedent: "{{ states('input_text.clim_mode_last') }}"
+    last_change: "{{ states('input_datetime.clim_mode_last_change') }}"
+
+    now_ts: "{{ now().timestamp() }}"
+    last_ts: >
+      {% if last_change not in ['unknown','unavailable','none',''] %}
+        {{ as_timestamp(last_change) }}
+      {% else %}
+        {{ now().timestamp() }}
+      {% endif %}
+
+    delta_h: "{{ ((now_ts - last_ts) / 3600) | round(4) }}"
+
+  condition:
+    # On ignore les états non exploitables
+    - condition: template
+      value_template: >
+        {{ mode_actuel in ['cool','dry','heat','off'] }}
+
+  action:
+
+    # ------------------------------------------------------
+    # 1) Ajout de la durée écoulée au mode précédent
+    # ------------------------------------------------------
+    - choose:
+
+        - conditions:
+            - condition: template
+              value_template: "{{ mode_precedent == 'cool' and delta_h > 0 }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.clim_duree_cool_aujourdhui
+              data:
+                value: >
+                  {{
+                    (states('input_number.clim_duree_cool_aujourdhui') | float(0)
+                    + delta_h) | round(4)
+                  }}
+
+        - conditions:
+            - condition: template
+              value_template: "{{ mode_precedent == 'dry' and delta_h > 0 }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.clim_duree_dry_aujourdhui
+              data:
+                value: >
+                  {{
+                    (states('input_number.clim_duree_dry_aujourdhui') | float(0)
+                    + delta_h) | round(4)
+                  }}
+
+        - conditions:
+            - condition: template
+              value_template: "{{ mode_precedent == 'heat' and delta_h > 0 }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.clim_duree_heat_aujourdhui
+              data:
+                value: >
+                  {{
+                    (states('input_number.clim_duree_heat_aujourdhui') | float(0)
+                    + delta_h) | round(4)
+                  }}
+
+    # ------------------------------------------------------
+    # 2) Mise à jour des références
+    # ------------------------------------------------------
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.clim_mode_last_change
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.clim_mode_last
+      data:
+        value: "{{ mode_actuel }}"
+
+  mode: single

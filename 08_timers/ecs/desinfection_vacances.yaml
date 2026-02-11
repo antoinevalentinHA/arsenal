@@ -1,0 +1,9 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER :
+#     Vacances – Seuil long pour désinfection ECS
+# ==========================================================
+
+vacances_longues_ecs:
+  name: "Vacances – Durée longue ECS (6j)"
+  duration: "144:00:00"
+  restore: true

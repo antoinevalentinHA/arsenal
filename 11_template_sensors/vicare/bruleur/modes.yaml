@@ -1,0 +1,69 @@
+# ==========================================================
+# 🔥 TEMPLATE BINARY SENSORS — Bruleur mode ECS / Chauffage (local + concordance)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Visualisation des périodes de chauffe ECS et Chauffage,
+#   uniquement si une activité physique du brûleur a été
+#   détectée localement (via bruleur_physique_local).
+#
+# ⚙️ Fonctionnement :
+#   - ECS       → ON si ECS locale active ET brûleur physique allumé
+#                 ou allumé dans les 300 dernières secondes
+#   - Chauffage → ON si brûleur chauffage actif ET brûleur physique allumé
+#                 ou allumé dans les 300 dernières secondes
+#
+# 💡 Avantages :
+#   - Filtrage physique → plus de faux positifs
+#   - 100 % local, sans dépendance directe ViCare
+#   - Cohérence parfaite entre logique et réalité
+#
+# 📊 Type : Template Binary Sensors (syntax moderne)
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Bruleur mode ECS"
+      unique_id: bruleur_mode_ecs
+      default_entity_id: binary_sensor.bruleur_mode_ecs
+      device_class: heat
+
+      state: >
+        {% set ecs = is_state('binary_sensor.ecs_chauffe_en_cours_local', 'on') %}
+        {% set bruleur_phys = is_state('binary_sensor.bruleur_physique_local', 'on') %}
+
+        {# Sécurisation du last_changed : renvoie 0 si inconnue #}
+        {% set last = states.binary_sensor.bruleur_physique_local.last_changed %}
+        {% set last_ts = (as_timestamp(last) | default(0)) %}
+        {% set recent = (now().timestamp() - last_ts) < 300 %}
+
+        {{ ecs and (bruleur_phys or recent) }}
+
+      icon: >
+        {% if is_state('binary_sensor.bruleur_mode_ecs', 'on') %}
+          mdi:water-boiler
+        {% else %}
+          mdi:water-boiler-off
+        {% endif %}
+
+    - name: "Bruleur mode Chauffage"
+      unique_id: bruleur_mode_chauffage
+      default_entity_id: binary_sensor.bruleur_mode_chauffage
+      device_class: heat
+
+      state: >
+        {% set ch = is_state('binary_sensor.bruleur_chauffage_actif', 'on') %}
+        {% set bruleur_phys = is_state('binary_sensor.bruleur_physique_local', 'on') %}
+
+        {# Sécurisation du last_changed : renvoie 0 si inconnue #}
+        {% set last = states.binary_sensor.bruleur_physique_local.last_changed %}
+        {% set last_ts = (as_timestamp(last) | default(0)) %}
+        {% set recent = (now().timestamp() - last_ts) < 300 %}
+
+        {{ ch and (bruleur_phys or recent) }}
+
+      icon: >
+        {% if is_state('binary_sensor.bruleur_mode_chauffage', 'on') %}
+          mdi:radiator
+        {% else %}
+          mdi:radiator-off
+        {% endif %}

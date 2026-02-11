@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Next ID Result
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Afficher le RÉSULTAT d’un calcul de prochain identifiant
+#   (aide visuelle / contrôle humain).
+#
+# 🧱 Nature :
+#   - Helper utilitaire
+#   - Tampon d’affichage non décisionnel
+#
+# 🚫 Ne fait PAS :
+#   - Ne génère aucun identifiant
+#   - Ne garantit aucune unicité
+#   - Ne réserve aucun ID
+#   - Ne modifie aucune automatisation
+#
+# 🔗 Utilisation :
+#   - Dashboard Lovelace :
+#       dashboards/id_automatisations.yaml
+#
+# 🧠 Principe ARSENAL :
+#   - Les outils d’aide n’ont aucun pouvoir fonctionnel
+#   - L’affichage ≠ l’action
+#
+# ⚠️ Sémantique :
+#   - Valeur indicative uniquement
+#   - Peut être vide ou obsolète sans impact
+# ==========================================================
+
+
+next_id_result:
+  name: Next ID Result
+  mode: text
+  max: 20

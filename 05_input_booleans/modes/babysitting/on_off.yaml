@@ -1,0 +1,39 @@
+# ==========================================================
+#  INPUT BOOLEAN — Mode Babysitting
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Indique que la maison est temporairement en mode Babysitting,
+#     afin de suspendre certaines automatisations de sécurité,
+#     de confort et de présence pendant la garde des enfants.
+#
+#     Ce boolean NE DÉCIDE RIEN et NE DÉCLENCHE AUCUNE ACTION
+#     directement. Il sert uniquement de **flag métier global**.
+#
+#  🔄 Cycle de vie :
+#     - Activé : le mode Babysitting est actif
+#     - Désactivé : retour au comportement normal
+#
+#  📥 Pilotage :
+#     - Manuel via dashboard
+#     - Automatisations :
+#         • timer.babysitting
+#         • input_boolean.reset_mode_babysitting_auto
+#
+#  📤 Consommation :
+#     - Scripts / automations qui adaptent :
+#         • armement automatique de l’alarme
+#         • consignes chauffage / clim / éclairage
+#         • notifications de mouvement
+#
+#  🧱 Principe Arsenal :
+#     - Les capteurs mesurent
+#     - Les scripts et automatisations décident
+#     - Les input_booleans autorisent ou verrouillent
+#       les actions métier
+# ==========================================================
+
+
+mode_babysitting:
+  name: "Mode Babysitting"
+  icon: mdi:account-child
+  #initial: off

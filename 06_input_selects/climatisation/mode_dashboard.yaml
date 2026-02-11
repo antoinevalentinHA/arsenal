@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Mode affiché (Climatisation)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Sélection du MODE D’AFFICHAGE des conditions climatiques
+#   dans les dashboards Lovelace.
+#
+#   Ce helper permet de forcer l’affichage :
+#     • COOL
+#     • HEAT
+#     • DRY
+#   indépendamment du mode réel de la climatisation.
+#
+# 🧩 Nature :
+#   Tolérance VISUELLE / CONTEXTE D’INTERFACE.
+#
+# ❌ Ne fait PAS :
+#   - Ne pilote PAS la climatisation
+#   - Ne modifie PAS climate.clim
+#   - Ne déclenche AUCUNE action
+#   - Ne représente PAS l’état réel du système
+#   - Ne participe PAS à la décision thermique
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace uniquement :
+#       • Forçage du contexte d’affichage
+#       • Lecture pédagogique des seuils
+#       • Visualisation des conditions par mode
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte UI / Logique / Action
+#   - Les helpers d’interface ne doivent jamais
+#     influencer le comportement du système.
+#
+# ⚠️ Remarque :
+#   Toute confusion entre ce helper et
+#   le mode réel de la climatisation
+#   constitue une erreur d’architecture.
+# ==========================================================
+
+clim_conditions_mode:
+  name: Mode affiché (conditions)
+  options:
+    - Cool
+    - Heat
+    - Dry
+  icon: mdi:tune-vertical

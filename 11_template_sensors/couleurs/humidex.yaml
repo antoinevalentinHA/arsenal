@@ -1,0 +1,275 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSORS — Couleur Humidex (toutes zones)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Fournir une indication visuelle du niveau de confort
+#   thermique perçu (Humidex) pour chaque zone, en comparant
+#   la valeur mesurée à des seuils bas et haut définis
+#   localement.
+#
+# ⚙️ Fonctionnement :
+#   - Source principale :
+#       • sensor.humidex_<zone>
+#   - Seuils métier associés :
+#       • sensor.humidex_seuil_bas_<zone>
+#       • sensor.humidex_seuil_haut_<zone>
+#   - Calcul d’une marge dynamique :
+#       • marge = (seuil_haut - seuil_bas) / 5
+#
+# 🎨 Interprétation des couleurs :
+#   - blue        → Humidex très bas (froid sec)
+#   - light_blue  → Bas
+#   - light_green → Légèrement sous la zone de confort
+#   - green       → Zone de confort optimale
+#   - yellow      → Légèrement inconfortable (chaleur/humidité)
+#   - red         → Inconfort marqué
+#   - grey        → Valeurs invalides ou seuils incohérents
+#
+# 🔁 Rafraîchissement :
+#   - À chaque changement de valeur ou de seuil
+#   - Au démarrage de Home Assistant
+#
+# 🧠 Détails techniques :
+#   - Capteurs indépendants par zone
+#   - Les seuils ne sont jamais modifiés
+#   - Sortie sous forme de texte (nom de couleur)
+#
+# 📊 Type :
+#   Trigger Template Sensors
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_chambre_arnaud
+        - sensor.humidex_seuil_bas_chambre_arnaud
+        - sensor.humidex_seuil_haut_chambre_arnaud
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Chambre Arnaud"
+      unique_id: couleur_humidex_chambre_arnaud
+      state: &couleur_humidex_logic >
+        {% set suffixe = this.entity_id | replace('sensor.couleur_humidex_', '') %}
+        {% set src = 'sensor.humidex_' ~ suffixe %}
+        {% set src_bas = 'sensor.humidex_seuil_bas_' ~ suffixe %}
+        {% set src_haut = 'sensor.humidex_seuil_haut_' ~ suffixe %}
+
+        {% set raw = states(src) %}
+        {% set h = raw | replace(',', '.') | float(999) %}
+        {% set bas = states(src_bas) | replace(',', '.') | float(0) %}
+        {% set haut = states(src_haut) | replace(',', '.') | float(0) %}
+        {% set marge = (haut - bas) / 5 if (haut - bas) > 0 else 1.0 %}
+
+        {% if raw in ['unknown', 'unavailable', None] or h == 999 %}
+          grey
+        {% elif bas == 0 or haut == 0 or bas >= haut %}
+          grey
+        {% elif h < bas - marge %}
+          blue
+        {% elif h < bas %}
+          light_blue
+        {% elif h < bas + marge %}
+          light_green
+        {% elif h < haut %}
+          green
+        {% elif h < haut + marge %}
+          yellow
+        {% else %}
+          red
+        {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_chambre_matthieu
+        - sensor.humidex_seuil_bas_chambre_matthieu
+        - sensor.humidex_seuil_haut_chambre_matthieu
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Chambre Matthieu"
+      unique_id: couleur_humidex_chambre_matthieu
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_chambre_parents
+        - sensor.humidex_seuil_bas_chambre_parents
+        - sensor.humidex_seuil_haut_chambre_parents
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Chambre Parents"
+      unique_id: couleur_humidex_chambre_parents
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_entree
+        - sensor.humidex_seuil_bas_entree
+        - sensor.humidex_seuil_haut_entree
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Entrée"
+      unique_id: couleur_humidex_entree
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_petite_maison
+        - sensor.humidex_seuil_bas_petite_maison
+        - sensor.humidex_seuil_haut_petite_maison
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Petite Maison"
+      unique_id: couleur_humidex_petite_maison
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_sejour
+        - sensor.humidex_seuil_bas_sejour
+        - sensor.humidex_seuil_haut_sejour
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Séjour"
+      unique_id: couleur_humidex_sejour
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_jardin
+        - sensor.humidex_seuil_bas_jardin
+        - sensor.humidex_seuil_haut_jardin
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Jardin"
+      unique_id: couleur_humidex_jardin
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_exterieur
+        - sensor.humidex_seuil_bas_exterieur
+        - sensor.humidex_seuil_haut_exterieur
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Extérieur"
+      unique_id: couleur_humidex_exterieur
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_direction
+        - sensor.humidex_seuil_bas_direction
+        - sensor.humidex_seuil_haut_direction
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Direction"
+      unique_id: couleur_humidex_direction
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_compta
+        - sensor.humidex_seuil_bas_compta
+        - sensor.humidex_seuil_haut_compta
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Compta"
+      unique_id: couleur_humidex_compta
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_qualite
+        - sensor.humidex_seuil_bas_qualite
+        - sensor.humidex_seuil_haut_qualite
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Qualité"
+      unique_id: couleur_humidex_qualite
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_devis
+        - sensor.humidex_seuil_bas_devis
+        - sensor.humidex_seuil_haut_devis
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Devis"
+      unique_id: couleur_humidex_devis
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_commercial
+        - sensor.humidex_seuil_bas_commercial
+        - sensor.humidex_seuil_haut_commercial
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Commercial"
+      unique_id: couleur_humidex_commercial
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_komori
+        - sensor.humidex_seuil_bas_komori
+        - sensor.humidex_seuil_haut_komori
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Komori"
+      unique_id: couleur_humidex_komori
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_bobst
+        - sensor.humidex_seuil_bas_bobst
+        - sensor.humidex_seuil_haut_bobst
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Bobst"
+      unique_id: couleur_humidex_bobst
+      state: *couleur_humidex_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_media
+        - sensor.humidex_seuil_bas_media
+        - sensor.humidex_seuil_haut_media
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidex Media"
+      unique_id: couleur_humidex_media
+      state: *couleur_humidex_logic

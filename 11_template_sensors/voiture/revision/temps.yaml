@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧰 TEMPLATE TRIGGERED SENSOR — Audi e-tron (Prochaine inspection - Temps)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser la donnée `sensor.audi_a3_sportback_e_tron_service_inspection_time`
+#   afin de garantir un suivi constant du délai d’entretien,
+#   même en cas d’erreurs ou d’indisponibilités de l’intégration.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque changement du capteur source.
+#   - Réévaluation automatique au démarrage de Home Assistant.
+#   - Si donnée valide → reprise directe.
+#   - Sinon → conservation de la dernière valeur connue.
+#
+# 🧮 Source : sensor.audi_a3_sportback_e_tron_service_inspection_time
+# 📊 Type : Trigger Template Sensor
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.audi_a3_sportback_e_tron_service_inspection_time
+
+  sensor:
+    - name: "Audi e-tron – Prochaine inspection (Temps) (Local)"
+      unique_id: audi_a3_sportback_e_tron_service_inspection_time_local
+      state: >
+        {% set s = states('sensor.audi_a3_sportback_e_tron_service_inspection_time') %}
+        {% if s not in ['unknown','unavailable','none',''] %}
+          {{ s }}
+        {% else %}
+          {{ this.state | default('Inconnu') }}
+        {% endif %}

@@ -1,0 +1,68 @@
+# ==========================================================
+# 🛣️ TEMPLATE TRIGGERED SENSOR — ECS (Température ballon sécurisée)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Fournir une lecture stable et fiable de la température ECS,
+#   même lorsque ViCare renvoie une valeur invalide ou indisponible.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement sur tout changement de
+#       `sensor.vscotho1_200_11_dhw_storage_temperature`
+#       ou au démarrage de Home Assistant.
+#   - Si la valeur source est numérique → mise à jour directe.
+#   - Sinon → conservation de la dernière valeur valide connue.
+#
+# 💡 Avantages :
+#   - Évite les transitions “unavailable”
+#   - Maintient un historique continu
+#   - Empêche les faux `last_changed` pendant les pertes API
+#
+# 🧮 Source : sensor.vscotho1_200_11_dhw_storage_temperature
+# 📊 Type : Trigger Template Sensor
+# 📏 Unité : °C
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.vscotho1_200_11_dhw_storage_temperature
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: systeme_stable
+
+  sensor:
+    - name: "ECS - Temperature ballon (securisee)"
+      unique_id: ecs_temperature_ballon_securisee
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state_class: measurement
+
+      state: >
+        {% set v = states('sensor.vscotho1_200_11_dhw_storage_temperature') %}
+        {% if v | is_number %}
+          {{ v | float }}
+        {% elif this.state is defined and this.state not in ['unknown','unavailable','none'] %}
+          {{ this.state }}
+        {% else %}
+          {{ this.attributes.get('last_valid', 0) }}
+        {% endif %}
+
+      attributes:
+        last_valid: >
+          {% set v = states('sensor.vscotho1_200_11_dhw_storage_temperature') %}
+          {% if v | is_number %}
+            {{ v | float }}
+          {% else %}
+            {{ this.attributes.get('last_valid', this.state | float(0)) }}
+          {% endif %}
+
+      icon: >
+        {% set temp = states('sensor.ecs_temperature_ballon_securisee') | float(0) %}
+        {% if temp < 35 %}
+          mdi:coolant-temperature
+        {% elif temp < 45 %}
+          mdi:water-thermometer
+        {% else %}
+          mdi:water-boiler
+        {% endif %}

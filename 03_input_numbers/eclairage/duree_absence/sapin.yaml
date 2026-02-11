@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Durée absence guirlande
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir la durée d’inactivité maximale autorisée
+#    avant extinction automatique de la guirlande
+#    décorative (sapin / éclairage festif).
+#
+# 🧩 Principe :
+#    - Le décompte démarre après la DERNIÈRE présence
+#      détectée dans la zone concernée.
+#    - La guirlande est éteinte uniquement si
+#      aucune activité n’est observée durant
+#      toute la durée définie.
+#
+# ⚙️ Fonctionnement :
+#    - Valeur exprimée en minutes
+#    - Utilisée directement par l’automatisation
+#    - Aucun timer Home Assistant dédié
+#
+# 🔍 Utilisation :
+#    - Automatisation :
+#        • eclairage/sapin/off.yaml
+#    - Dashboard :
+#        • réglages éclairage
+#
+# 🚫 Ne pas confondre avec :
+#    - Éclairage fonctionnel (garage, extérieur)
+#    - Programmations horaires fixes
+#    - Scènes manuelles
+#
+# 📐 Unité :
+#    - minutes
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Paramètre éclairage décoratif
+# ==========================================================
+
+
+duree_absence_guirlande:
+  name: Durée absence guirlande (min)
+  icon: mdi:timer-outline
+  min: 1
+  max: 60
+  step: 5
+  unit_of_measurement: min
+  mode: slider

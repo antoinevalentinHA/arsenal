@@ -1,0 +1,33 @@
+# ==========================================================
+# ⚡ TEMPLATE SENSOR — Climatisation : Consommation estimée
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Suivre la consommation énergétique estimée de la climatisation.
+#
+# ⚙️ Fonctionnement :
+#   - La valeur principale provient de l’helper `input_number.clim_consommation_cumulee`.
+#   - Si celui-ci est indisponible ou inconnu, le capteur conserve sa dernière valeur connue.
+#
+# 🧠 Détails techniques :
+#   - Device class : energy
+#   - State class  : total_increasing (cumul de consommation)
+#   - Unité        : kWh
+#   - Icône        : ⚡ mdi:flash
+#
+# 📊 Type : Template Sensor
+# 📍 Entité : sensor.clim_consommation_estimee_energy
+# ==========================================================
+
+- sensor:
+    - name: "Clim - Consommation estimée (énergie)"
+      unique_id: clim_consommation_estimee_energy
+      icon: mdi:flash
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: total_increasing
+
+      # Valeur issue de l’input_number, avec repli sur la dernière valeur valide
+      state: >
+        {% set val = states('input_number.clim_consommation_cumulee') %}
+        {{ val | float(0) if val not in ['unknown','unavailable', None]
+           else (states(this.entity_id) | float(0)) }}

@@ -1,0 +1,65 @@
+# ==========================================================
+#  AUTOMATION : ECS – Reset verrou au demarrage si consigne deja a 10
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Éviter qu’un verrou ECS reste bloqué actif après un
+#     redémarrage de Home Assistant si la consigne ECS est déjà abaissée.
+#
+#  💡 Avantages :
+#     - Suppression automatique des états incohérents
+#     - L’utilisateur ne reste jamais bloqué hors cycle
+#     - Diagnostic clair via notification
+#
+#  ⚙️ Comportement :
+#     - Au démarrage HA :
+#       si “cycle en cours” = ON
+#       ET que la consigne ECS = 10 °C
+#       → remise du verrou à OFF + notification
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10250000000022"
+  alias: "ECS - Reset verrou au demarrage si consigne deja à 10"
+  description: >
+    Débloque automatiquement l'input_boolean.ecs_cycle_en_cours si Home Assistant
+    redémarre avec la consigne ECS déjà rabaissée (10°C). Évite les blocages fantômes.
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Stabilisation Home Assistant
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ======================================================
+  # ✅ Conditions — Verrou actif + consigne basse déjà présente
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "on"
+    - condition: template
+      value_template: >
+        {% set consigne = states('sensor.ecs_consigne_chaudiere_securisee') | float(0) %}
+        {% set t_cuve = states('sensor.ecs_temperature_ballon_securisee') | float(0) %}
+        {{ consigne <= 10 and t_cuve < 30 }}
+
+  # ======================================================
+  # 🔄 Actions — Déblocage immédiat + notification
+  # ======================================================
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.ecs_cycle_en_cours
+
+    - service: persistent_notification.create
+      data:
+        title: "🔄 ECS – Déblocage au démarrage"
+        message: >
+          À {{ now().strftime('%H:%M') }}, un verrou ECS était encore actif  
+          alors que la consigne était déjà à 10 °C.  
+          
+          Le verrou a été remis à *OFF* automatiquement pour permettre un nouveau cycle.

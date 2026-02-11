@@ -1,0 +1,60 @@
+# ==========================================================
+#  AUTOMATION : Voiture – Archive moyenne mensuelle autonomie
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Archiver automatiquement la moyenne mensuelle
+#     d’autonomie enregistrée pour le véhicule Audi e-tron.
+#
+#  💡 Avantages :
+#     - Historisation sur 5 mois glissants
+#     - Archivage automatique et autonome
+#     - Lisibilité chronologique décroissante
+#
+#  ⚙️ Comportement :
+#     - Le 1er de chaque mois à 00h05 :
+#       si la moyenne est valide et non déjà enregistrée → mise à jour de l’historique.
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '1015000000004'
+  alias: Voiture - Archive moyenne mensuelle autonomie
+  description: Archive la moyenne mensuelle à chaque nouvelle mesure complète
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Tous les 1ers du mois à 00:05
+  # ======================================================
+  trigger:
+    - platform: time
+      at: "00:05:00"
+
+  # ======================================================
+  # ✅ Conditions — Moyenne valide et > 0
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: >
+        {% set moyenne = states('sensor.autonomie_audi_e_tron_mensuelle') %}
+        {{ moyenne not in ['unknown', 'unavailable', 'none'] and moyenne | float(0) > 0 }}
+
+  # ======================================================
+  # 🔄 Actions — Archivage mensuel sur 5 lignes max
+  # ======================================================
+  action:
+    - variables:
+        mois: "{{ now().strftime('%Y-%m') }}"
+        moyenne: "{{ (states('sensor.autonomie_audi_e_tron_mensuelle') | float(0)) | round(1) }}"
+        ancien: "{{ states('input_text.historique_autonomie_audi_etron') | default('') }}"
+        ligne: "{{ mois ~ ' : ' ~ moyenne ~ ' km' }}"
+
+    - service: input_text.set_value
+      data:
+        entity_id: input_text.historique_autonomie_audi_etron
+        value: >
+          {% set lignes = ancien.split('\n') if ancien else [] %}
+          {% if lignes|length > 0 and lignes[0].startswith(mois) %}
+            {{ '\n'.join(lignes) }}
+          {% else %}
+            {{ '\n'.join(([ligne] + lignes)[:5]) }}
+          {% endif %}

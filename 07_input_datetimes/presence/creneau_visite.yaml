@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Créneau horaire Visiteur
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition du CRÉNEAU HORAIRE autorisé
+#   pour le mode "Visiteur" de l’alarme.
+#
+#   Ces helpers encadrent QUAND le mode visite
+#   peut être actif.
+#
+# 🧩 Nature :
+#   Paramètres MÉTIER — planification horaire.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS directement le mode visite
+#   - Ne modifie PAS l’état de l’alarme
+#   - Ne décide PAS de l’armement ou du désarmement
+#   - Ne contient AUCUNE logique métier
+#
+# 🔍 Spécificité technique :
+#   - Heure uniquement (pas de date)
+#   - Le créneau est réutilisé quotidiennement
+#   - La logique temporelle est portée
+#     par les automatisations dédiées
+#
+# 🔄 Fonctionnement :
+#   - Les heures sont définies manuellement
+#     via les dashboards de réglage.
+#   - Les automatisations :
+#       • activent le mode visite au début
+#       • le désactivent à la fin
+#       • sécurisent le comportement au reboot
+#
+# 🔗 Utilisation :
+#   - Automatisations alarme / visite :
+#       • Activation programmée
+#       • Désactivation programmée
+#       • Sécurisation post-redémarrage
+#   - Dashboards diagnostics :
+#       • Lecture du créneau actif
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_datetime)
+#       • Décision (scripts centraux)
+#       • Action (automatisations)
+#
+# ⚠️ Remarque :
+#   Modifier ces valeurs change le CRÉNEAU,
+#   pas l’état immédiat de l’alarme.
+# ==========================================================
+
+
+visiteur_start:
+  name: Heure début visiteur
+  has_date: false
+  has_time: true
+
+visiteur_end:
+  name: Heure fin visiteur
+  has_date: false
+  has_time: true

@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Alarme – Apprentissage contrôlé des BSSID Wi-Fi en zone
+#
+#  ID : 10120000000016
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Enregistrer automatiquement les BSSID Wi-Fi détectés
+#     comme candidats d’apprentissage lorsque :
+#       - la présence sécurité est active
+#       - un nouveau BSSID non encore connu est détecté
+#
+#     Cette automation enrichit progressivement
+#     input_text.bssid_maison, utilisé ensuite pour qualifier
+#     la présence Wi-Fi.
+#
+#  🚫 NE FAIT PAS
+#     - Ne pilote pas l’alarme
+#     - Ne décide aucun état de sécurité
+#     - N’effectue aucune détection géographique
+#     - N’analyse aucun BSSID directement
+#
+#  🧩 PRINCIPE
+#     - Déclenchement unique sur signal métier :
+#         • binary_sensor.wifi_nouveau_bssid = on
+#     - Lecture des candidats depuis les attributs du capteur
+#     - Enrichissement contrôlé de la liste maison
+#     - Journalisation uniquement en cas d’ajout réel
+#
+# ==========================================================
+
+- id: "10120000000016"
+  alias: Alarme – Apprentissage BSSID en zone
+  mode: single
+
+  trigger:
+
+    # Signal métier : nouveau BSSID détecté en présence sécurité
+    - platform: state
+      entity_id: binary_sensor.wifi_nouveau_bssid
+      to: "on"
+
+    # Stabilisation HA (reprise apprentissage éventuelle)
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+
+  action:
+
+    - variables:
+
+        # --- Liste actuelle maison ---
+        current_list: >-
+          {% set raw = states('input_text.bssid_maison') | string %}
+          {{ raw.split(',') | map('trim') | map('lower') | map('replace','-',':') | list }}
+
+        # --- Candidats fournis par le capteur diagnostic ---
+        candidats: >-
+          {{ state_attr('binary_sensor.wifi_nouveau_bssid','candidats') | default([], true) }}
+
+        # --- Fusion / détection ajouts ---
+        merged: "{{ (current_list + candidats) | unique | list }}"
+        added:  "{{ merged | difference(current_list) | list }}"
+
+
+    - choose:
+
+        # --------------------------------------------------
+        # Cas utile : au moins un BSSID réellement nouveau
+        # --------------------------------------------------
+
+        - conditions: "{{ added | length > 0 }}"
+          sequence:
+
+            # Mise à jour liste maison
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bssid_maison
+              data:
+                value: "{{ merged | join(', ') }}"
+
+            # Journalisation système
+            - service: system_log.write
+              data:
+                level: info
+                logger: custom_components.alarme
+                message: >
+                  [ALARME] BSSID ajouté(s): {{ added | join(', ') }}
+                  Liste = {{ merged | join(', ') }}

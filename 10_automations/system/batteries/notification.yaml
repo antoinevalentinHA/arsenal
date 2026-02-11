@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Maintenance – Notification batteries faibles (quotidienne)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Notifier l’utilisateur lorsqu’au moins une batterie
+#     est détectée comme faible, en garantissant
+#     une seule notification par jour.
+#
+# 🧱 PRINCIPE
+#
+#     - Observation du compteur de batteries faibles
+#     - Déclenchement conditionnel si le compteur est > 0
+#     - Verrou journalier via un booléen dédié
+#     - Délégation de l’envoi à un script centralisé
+#
+# 📥 ENTRÉES
+#
+#     - sensor.batteries_faibles
+#     - input_boolean.batteries_notifiees
+#
+# 📤 SORTIES
+#
+#     - Notification utilisateur (via script)
+#     - Activation du verrou journalier
+#
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule pas les niveaux de batterie
+#     - Ne décide pas des seuils
+#     - Ne réinitialise pas le verrou journalier
+#
+# ✅ ARCHITECTURE
+#
+#     Arsenal
+# ==========================================================
+
+
+- id: '1012000000001'
+  alias: Batteries faibles - Notification quotidienne
+  description: Notifie si batteries faibles détectées, une seule fois par jour.
+  mode: single
+
+  # 🔔 Déclencheur — Variation du compteur de batteries faibles
+  trigger:
+    - platform: state
+      entity_id: sensor.batteries_faibles
+
+  # ✅ Conditions — Au moins 1 & pas encore notifié aujourd’hui
+  condition:
+    - condition: numeric_state
+      entity_id: sensor.batteries_faibles
+      above: 0
+
+    - condition: state
+      entity_id: input_boolean.batteries_notifiees
+      state: 'off'
+
+  # 🔄 Actions — Notification puis verrou journalier
+  action:
+    - service: script.notification_batteries_faibles
+
+    - service: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.batteries_notifiees

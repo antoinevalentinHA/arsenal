@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Durée min cycle simulation présence
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir la durée MINIMALE autorisée pour un cycle
+#    d’éclairage dans le cadre de la simulation de présence.
+#
+# 🧩 Principe :
+#    - La simulation de présence repose sur des cycles
+#      pseudo-aléatoires pour imiter une activité humaine.
+#    - Ce paramètre fixe une borne BASSE stricte afin
+#      d’éviter des cycles trop courts, irréalistes ou
+#      mécaniquement suspects.
+#
+# ⚙️ Fonctionnement :
+#    - Valeur exprimée en minutes
+#    - Utilisée comme limite inférieure dans les
+#      binary_sensors de décision de cycle
+#    - Combinée avec la durée MAX pour former
+#      l’intervalle autorisé [MIN ; MAX]
+#
+# 🔍 Utilisation :
+#    - Binary sensors :
+#        • eclairage/simulation_chambre_parents.yaml
+#        • eclairage/simulation_garage.yaml
+#    - Dashboards :
+#        • réglages éclairage
+#        • diagnostics simulation présence
+#
+# 🚫 Ne pas confondre avec :
+#    - Durée MAX d’un cycle
+#    - Délais d’absence
+#    - Durées fixes d’éclairage
+#
+# 📐 Unité :
+#    - minutes (borne basse d’un cycle)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Paramètre de réalisme comportemental
+# ==========================================================
+
+
+duree_min_cycle_simulation_presence:
+  name: Durée min d’un cycle
+  icon: mdi:timer-sand-empty
+  min: 1
+  max: 60
+  step: 1
+  unit_of_measurement: "min"

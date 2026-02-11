@@ -1,0 +1,27 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+# ----------------------------------------------------------
+# 🔥 Chauffage : écart à la consigne confort
+#
+# 🎯 Rôle :
+#   Mesurer l’écart thermique entre la température intérieure
+#   minimale et la consigne CONFORT de référence.
+#
+# 🧱 Principe :
+#   - Indépendant de la consigne appliquée
+#   - Indépendant de la présence / absence
+#   - Référence métier stable pour les garde-fous thermiques
+# ==========================================================
+
+- sensor:
+    - name: "Ecart consigne confort"
+      unique_id: ecart_consigne_confort
+      unit_of_measurement: "°C"
+      state: >
+        {% set t_int = states('sensor.temperature_min_chambres') | float(none) %}
+        {% set consigne = states('input_number.chauffage_consigne_confort') | float(none) %}
+        {% if t_int is not none and consigne is not none %}
+          {{ (t_int - consigne) | round(2) }}
+        {% else %}
+          {{ none }}
+        {% endif %}

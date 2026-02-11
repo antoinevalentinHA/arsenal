@@ -1,0 +1,127 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Simulation de présence (cadres horaires)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition des CADRES HORAIRES utilisés
+#   par le moteur de simulation de présence.
+#
+#   Ces helpers bornent QUAND les cycles
+#   de simulation peuvent s’exécuter,
+#   sans jamais déclencher directement
+#   d’action d’éclairage.
+#
+# 🧩 Nature :
+#   Paramètres MÉTIER — planification temporelle.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche AUCUNE action
+#   - N’allume PAS d’éclairage
+#   - N’éteint PAS d’éclairage
+#   - Ne simule PAS de présence à lui seul
+#
+# 🔍 Spécificité technique :
+#   - Heure uniquement (pas de date)
+#   - Cadres applicables quotidiennement
+#   - Distinction volontaire :
+#       • matin / soir
+#       • zones standard / garage
+#
+# 🔄 Fonctionnement :
+#   - Les heures sont définies manuellement
+#     via les dashboards de réglage.
+#   - Les scripts de simulation :
+#       • vérifient si l’heure courante
+#         est incluse dans un cadre autorisé
+#       • orchestrent les cycles internes
+#
+# 🔗 Utilisation :
+#   - Scripts éclairage / simulation de présence
+#   - Dashboards réglages :
+#       • Paramétrage utilisateur
+#       • Lecture des cadres actifs
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_datetime)
+#       • Décision (scripts de simulation)
+#       • Action (commande éclairage)
+#
+# ⚠️ Remarque :
+#   Modifier ces valeurs modifie le CADRE
+#   de simulation, jamais l’état immédiat
+#   des éclairages.
+# ==========================================================
+
+
+# ==========================================================
+# 🌅 INPUT DATETIME — Début cycles matin chambre
+# ==========================================================
+debut_cycle_simulation_presence_matin:
+  name: Début cycles matin
+  icon: mdi:weather-sunset-up
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌅 INPUT DATETIME — Début cycles matin garage
+# ==========================================================
+debut_cycle_simulation_presence_garage_matin:
+  name: Debut cycles matin garage
+  icon: mdi:garage
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌇 INPUT DATETIME — Fin cycles matin chambre
+# ==========================================================
+fin_cycle_simulation_presence_matin:
+  name: Fin cycles matin
+  icon: mdi:weather-sunset-down
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌇 INPUT DATETIME — Fin cycles matin garage
+# ==========================================================
+fin_cycle_simulation_presence_garage_matin:
+  name: Fin cycles matin garage
+  icon: mdi:garage
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌆 INPUT DATETIME — Début cycles soir chambre
+# ==========================================================
+debut_cycle_simulation_presence_soir:
+  name: Début cycles soir
+  icon: mdi:weather-sunset-up
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌆 INPUT DATETIME — Début cycles soir garage
+# ==========================================================
+debut_cycle_simulation_presence_garage_soir:
+  name: Debut cycles soir garage
+  icon: mdi:garage
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌙 INPUT DATETIME — Fin cycles soir chambre
+# ==========================================================
+fin_cycle_simulation_presence_soir:
+  name: Fin cycles soir
+  icon: mdi:weather-night
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌙 INPUT DATETIME — Fin cycles soir garage
+# ==========================================================
+fin_cycle_simulation_presence_garage_soir:
+  name: Fin cycles soir garage
+  icon: mdi:garage
+  has_date: false
+  has_time: true
+  

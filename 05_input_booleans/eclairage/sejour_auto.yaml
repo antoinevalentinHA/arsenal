@@ -1,0 +1,41 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Séjour – Éclairage automatique
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation du fonctionnement automatique
+#     de l’éclairage du séjour.
+#
+#     Ce booléen détermine si les automatisations
+#     d’allumage et d’extinction du séjour
+#     sont autorisées à s’exécuter.
+#
+#  🧱 Nature :
+#     - Autorisation locale de service
+#     - Commutateur d’automatismes
+#
+#  🔄 Fonctionnement :
+#     - ON  : l’éclairage du séjour est piloté
+#             automatiquement
+#     - OFF : aucun automatisme d’éclairage
+#             ne s’exécute
+#
+#  📥 N’effectue PAS :
+#     - aucune détection de présence
+#     - aucune analyse de luminosité
+#     - aucune commande directe des lampes
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations
+#       d’éclairage automatique du séjour
+#     - Pilotée via les dashboards
+#       d’éclairage
+#
+#  🧠 Principe Arsenal :
+#     - Tout automatisme local doit
+#       pouvoir être explicitement autorisé
+# ==========================================================
+
+
+sejour_auto_light:
+  name: Séjour Lumière Auto
+  icon: mdi:auto-mode

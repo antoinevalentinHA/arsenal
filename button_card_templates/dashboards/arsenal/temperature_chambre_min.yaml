@@ -1,0 +1,60 @@
+#################################################################
+# 🧊 CARTE TEMPÉRATURE — MINIMUM CHAMBRES
+# ---------------------------------------------------------------
+# Orientation : CHAUFFAGE
+#
+# Règles :
+#   - Bleu  : temp_min < (consigne chauffage confort - offset chauffage)
+#   - Vert  : zone chauffage autorisée
+#   - Rouge : temp_min > (consigne clim cool + offset clim)
+#################################################################
+
+carte_temperature_min_chambres:
+  template: carte_temperature_confort
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const get = (id) => {
+              const s = states[id];
+              const v = parseFloat(s?.state);
+              return Number.isFinite(v) ? v : null;
+            };
+
+            const temp_min      = get('sensor.temperature_min_chambres');
+            const cons_chauff   = get('input_number.chauffage_consigne_confort');
+            const off_chauff    = get('input_number.chauffage_offset_on');
+            const cons_clim     = get('input_number.clim_consigne_presence');
+            const off_clim      = get('input_number.clim_offset_on');
+
+            const RED   = 'rgba(244, 67, 54, 0.2)';
+            const GREEN = 'rgba(76, 175, 80, 0.2)';
+            const BLUE  = 'rgba(144, 202, 249, 0.25)';
+            const GREY  = 'rgba(158, 158, 158, 0.2)';
+
+            if (
+              temp_min === null ||
+              cons_chauff === null ||
+              off_chauff === null ||
+              cons_clim === null ||
+              off_clim === null
+            ) {
+              return GREY;
+            }
+
+            const seuil_chauff_on = cons_chauff - off_chauff;
+            const seuil_clim_on   = cons_clim + off_clim;
+
+            if (temp_min < seuil_chauff_on) return BLUE;
+            if (temp_min > seuil_clim_on)   return RED;
+            return GREEN;
+          ]]]
+
+  label: |
+    [[[
+      return states['sensor.temperature_min_chambres']
+        ?.attributes
+        ?.chambre_la_plus_froide
+        || 'Inconnue';
+    ]]]

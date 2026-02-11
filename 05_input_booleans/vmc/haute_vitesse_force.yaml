@@ -1,0 +1,25 @@
+# ==========================================================
+# 💨 INPUT BOOLEAN — VMC : Forcer haute vitesse
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Forcer manuellement le passage de la VMC en mode
+#   “haute vitesse”, indépendamment des conditions automatiques.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → VMC en vitesse élevée forcée
+#   - OFF → retour au contrôle automatique normal
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean
+#   - Nom : VMC - Forcer haute vitesse
+#   - Icône : mdi:fan-alert
+#   - Usage : forçage manuel du régime VMC haute vitesse
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.vmc_force_haute_vitesse
+# ==========================================================
+
+
+vmc_force_haute_vitesse:
+  name: "VMC - Forcer haute vitesse"
+  icon: mdi:fan-alert

@@ -1,0 +1,97 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER — Imprimerie : historique Ateliers
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker l’HISTORIQUE min / max de TEMPÉRATURE
+#   réellement OBSERVÉE dans les ateliers de l’imprimerie :
+#     - Atelier Komori
+#     - Atelier Bobst
+#     - Atelier Media
+#
+# ✅ Important :
+#   - Ces helpers ne sont PAS des seuils.
+#   - Ils ne pilotent aucun équipement.
+#   - Ils représentent des VALEURS RÉELLES enregistrées (min / max).
+#
+# ⚙️ Fonctionnement :
+#   - Les capteurs fournissent la température instantanée.
+#   - Les automatisations comparent la mesure courante
+#     aux valeurs stockées :
+#       → si plus basse : mise à jour du “min”
+#       → si plus haute : mise à jour du “max”
+#   - Une automatisation d’archivage peut figer ces valeurs
+#     à intervalle défini (journalier, mensuel, etc.).
+#   - Un script permet la réinitialisation de l’historique.
+#
+# 🔗 Utilisés par :
+#   - Dashboards :
+#       • lovelace/dashboards/imprimerie/imprimerie_atelier.yaml
+#   - Automatisations :
+#       • 10_automations/imprimerie/atelier/min_max.yaml
+#       • 10_automations/imprimerie/atelier/archivage.yaml
+#   - Scripts :
+#       • 09_scripts/imprimerie/reset_atelier_historique.yaml
+#
+# 🧠 Principe Arsenal :
+#   - Les capteurs MESURENT.
+#   - Les automatisations ENREGISTRENT (min / max).
+#   - Les helpers STOCKENT.
+#   - Les dashboards EXPOSENT.
+#   - Les scripts RÉINITIALISENT.
+#
+# ==========================================================
+
+
+atelier_komori_temperature_min:
+  name: "Atelier Komori – Température min nuit"
+  min: -20
+  max: 40
+  step: 0.1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-low
+
+atelier_komori_temperature_max:
+  name: "Atelier Komori – Température max"
+  min: -20
+  max: 40
+  step: 0.1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-high
+
+atelier_bobst_temperature_min:
+  name: "Atelier Bobst – Température min nuit"
+  min: -20
+  max: 40
+  step: 0.1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-low
+
+atelier_bobst_temperature_max:
+  name: "Atelier Bobst – Température max"
+  min: -20
+  max: 40
+  step: 0.1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-high
+
+atelier_media_temperature_min:
+  name: "Atelier Media – Température min nuit"
+  min: -20
+  max: 40
+  step: 0.1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-low
+
+atelier_media_temperature_max:
+  name: "Atelier Media – Température max"
+  min: -20
+  max: 40
+  step: 0.1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-high

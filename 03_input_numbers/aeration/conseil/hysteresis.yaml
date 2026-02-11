@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Hystérésis aération (UI)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Déclarer des valeurs d’hystérésis destinées à encadrer
+#    l’arrêt de la recommandation d’aération, à des fins
+#    de réglage et de conception.
+#
+# 🧠 Lecture métier :
+#    Ces helpers ne sont actuellement PAS utilisés par
+#    le moteur d’aération.
+#    Aucune hystérésis fonctionnelle n’est implémentée
+#    à ce stade dans le pipeline.
+#
+# 📐 Paramètres déclarés :
+#    - Hystérésis ΔHA :
+#        → marge hygrométrique (arrêt reco)
+#    - Hystérésis ΔT :
+#        → marge thermique (arrêt reco)
+#
+# 🔗 Dépendances :
+#    - Dashboards réglages aération
+#
+# 🚫 Interdits :
+#    - Supposer une hystérésis active
+#    - Les considérer comme des paramètres moteur
+#    - Les utiliser sans implémentation explicite
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - réglages UI / non utilisés
+# ==========================================================
+
+
+aeration_hysteresis_ha:
+  name: "Hystérésis ΔHA (arrêt reco)"
+  min: 0
+  max: 2
+  step: 0.1
+  unit_of_measurement: "g/m³"
+  mode: box
+  icon: mdi:tune
+
+aeration_hysteresis_t:
+  name: "Hystérésis ΔT (arrêt reco)"
+  min: 0
+  max: 2
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:tune-variant

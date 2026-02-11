@@ -1,0 +1,30 @@
+#################################################################
+# 🏠 CARTE MODE MAISON — UI
+# ---------------------------------------------------------------
+# Carte générique d’affichage / interaction pour le mode maison.
+#
+# Rôle :
+#   - Afficher le mode maison courant
+#   - Donner accès aux réglages associés
+#
+# Principe Arsenal :
+#   - Aucune logique métier
+#   - Traduction visuelle simple d’un état exposé
+#################################################################
+
+carte_mode_maison:
+  template: carte_toggle
+
+  tap_action:
+    action: navigate
+    navigation_path: /modes-dashboard/home
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const mode = (entity?.state || '').toLowerCase();
+            return mode === 'normal'
+              ? 'rgba(76, 175, 80, 0.2)'   // 🟢 Mode nominal
+              : 'rgba(244, 67, 54, 0.2)'; // 🔴 Mode dégradé / spécial
+          ]]]

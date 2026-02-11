@@ -1,0 +1,31 @@
+# ==========================================================
+# 💧 TEMPLATE BINARY SENSOR — Humidex en dessous du seuil OFF (désactivation du mode Dry)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si l’humidex maximal mesuré dans les chambres
+#   est redescendu sous le seuil d’arrêt du mode “Dry”.
+#   Ce capteur complète `binary_sensor.clim_humidex_sup_cible_dry`
+#   pour permettre un pilotage automatique avec hystérésis (ON/OFF).
+#
+# ⚙️ Fonctionnement :
+#   - Compare :
+#       • sensor.humidex_max_chambres
+#       • input_number.seuil_humidex_deshumidification - 1
+#   - Si humidex max < seuil OFF → capteur actif (on)
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.chambre_max_humidex_en_dessous_seuil_off
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Humidex max en-dessous du seuil OFF"
+      unique_id: chambre_max_humidex_en_dessous_seuil_off
+      default_entity_id: binary_sensor.chambre_max_humidex_en_dessous_seuil_off
+      device_class: cold
+
+      state: >
+        {% set seuil_off = (states('input_number.seuil_humidex_deshumidification') | float(29)) - 1 %}
+        {% set humidex = states('sensor.humidex_max_chambres') | float(0) %}
+        {{ humidex < seuil_off }}
+

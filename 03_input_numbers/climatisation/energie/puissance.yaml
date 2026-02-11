@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Puissances climatisation (référence)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Stocker les puissances électriques de référence
+#    utilisées pour estimer la consommation énergétique
+#    de la climatisation, selon le mode actif :
+#      - COOL (froid)
+#      - DRY  (déshumidification)
+#      - HEAT (chauffage)
+#
+# 🧠 Lecture métier :
+#    Ces valeurs représentent une puissance moyenne
+#    nominale par mode, volontairement simplifiée,
+#    utilisée comme coefficient de calcul :
+#
+#      Énergie (kWh) = Durée (h) × Puissance (kW)
+#
+# ⚙️ Fonctionnement :
+#    - Valeurs fixes, ajustables manuellement
+#    - Lues par les automatisations de cumul énergie
+#    - Aucune modification automatique
+#
+# 📐 Unité :
+#    - kilowatt (kW)
+#
+# 🚫 Interdits :
+#    - Utilisation comme capteur réel
+#    - Pilotage direct de la climatisation
+#    - Déclenchement d’automatisation
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - paramètres énergétiques de calcul
+# ==========================================================
+
+
+puissance_clim_cool:
+  name: Puissance Cool (kW)
+  min: 0
+  max: 5
+  step: 0.1
+  unit_of_measurement: kW
+  mode: box
+
+puissance_clim_dry:
+  name: Puissance Dry (kW)
+  min: 0
+  max: 5
+  step: 0.1
+  unit_of_measurement: kW
+  mode: box
+
+puissance_clim_heat:
+  name: Puissance Heat (kW)
+  min: 0
+  max: 5
+  step: 0.1
+  unit_of_measurement: kW
+  mode: box

@@ -1,0 +1,60 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Jardin – Désactivation éclairage (cycle matin)
+#
+#  ID : 1007000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Garantir l’extinction de l’éclairage du jardin
+#     lorsque le cycle logique d’éclairage matinal
+#     devient INACTIF.
+#
+#     ⚠️ Aucune notification persistante :
+#     - La fin de cycle est un événement passé
+#     - L’extinction matérielle suffit comme signal utilisateur
+#
+# ----------------------------------------------------------
+# 🧠 SOURCE DÉCISION
+#
+#     binary_sensor.jardin_cycle_matin_actif
+#
+# ----------------------------------------------------------
+# 🧠 MÉMOIRE MÉTIER
+#
+#     input_boolean.jardin_eclairage_matin_actif
+#
+# ==========================================================
+
+- id: '1007000000002'
+  alias: "Lumière jardin - Désactivation cycle matin"
+  description: >
+    Éteint systématiquement l’éclairage du jardin à la fin
+    du cycle matin. Aucun message persistant n’est émis,
+    conformément au contrat Notifications Arsenal.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Fin logique du cycle matin
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.jardin_cycle_matin_actif
+      to: 'off'
+
+  # ======================================================
+  # 🔄 Actions
+  # ======================================================
+  action:
+    # --------------------------------------------------
+    # 🔒 GARANTIE FONCTIONNELLE (toujours)
+    # --------------------------------------------------
+    - action: script.jardin_off
+
+    # --------------------------------------------------
+    # ♻️ Nettoyage mémoire métier
+    # --------------------------------------------------
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.jardin_eclairage_matin_actif

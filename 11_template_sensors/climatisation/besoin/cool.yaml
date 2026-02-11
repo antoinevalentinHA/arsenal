@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Besoin refroidissement climatisation
+#
+# 🎯 Rôle :
+#   Exprimer un BESOIN MÉTIER de refroidissement (COOL),
+#   à partir des primitives thermiques existantes,
+#   avec hystérésis explicite et sans recalcul physique.
+#
+# 🧱 Principe Arsenal :
+#   - Synthèse PURE de capteurs amont
+#   - Aucune action
+#   - Aucune temporisation
+#   - Aucune dépendance aux autorisations
+#   - Aucune logique d’exécution
+#
+# 🔌 Dépendances STRICTES :
+#   - binary_sensor.clim_seuil_allumage_cool_atteint
+#   - binary_sensor.clim_seuil_extinction_cool_atteint
+#
+# 🧠 Logique :
+#   - ON  si seuil d’allumage COOL atteint
+#   - OFF si seuil d’extinction COOL atteint
+#   - Sinon : état inchangé (hystérésis métier)
+#
+# ⚠️ IMPORTANT :
+#   - Ce capteur n’intègre AUCUNE contrainte physique
+#     (fenêtres, présence, horaires, etc.)
+#   - Il n’exprime qu’un BESOIN, jamais une décision.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Besoin refroidissement climatisation"
+      unique_id: besoin_clim_cool
+      default_entity_id: binary_sensor.besoin_clim_cool
+      state: >
+        {% set on = is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
+        {% set off = is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
+
+        {% if on %}
+          true
+        {% elif off %}
+          false
+        {% else %}
+          {{ is_state(this.entity_id, 'on') }}
+        {% endif %}

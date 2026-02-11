@@ -1,0 +1,117 @@
+#################################################################
+# 🌡️ TEMPÉRATURE
+# ---------------------------------------------------------------
+# Température ambiante avec comparaison relative (_1).
+# Les deltas sont purement informatifs.
+#################################################################
+
+temperature:
+  template: carte_base
+  show_icon: true
+  show_state: true
+  show_name: true
+  show_label: true
+  icon: mdi:thermometer
+  styles:
+    card:
+      - background-color: |
+          [[[ 
+            const map = {
+              red: "rgba(244, 67, 54, 0.2)",
+              yellow: "rgba(255, 235, 59, 0.3)",
+              green: "rgba(76, 175, 80, 0.2)",
+              grey: "rgba(158, 158, 158, 0.4)"
+            };
+            if (!entity || !entity.entity_id) return map.grey;
+
+            const id = entity.entity_id;
+            const val = parseFloat(entity.state);
+            if (isNaN(val)) return map.grey;
+
+            // ✅ Jardin : Netatmo => toujours vert
+            if (id === "sensor.temperature_jardin_1" ||
+                id === "sensor.temperature_jardin_2")
+              return map.green;
+
+            let refId = id.replace(/_\d$/, "_1");
+            const ref = parseFloat(states[refId]?.state);
+            if (isNaN(ref)) return map.grey;
+
+            const diff = Math.abs(val - ref);
+            if (diff < 0.3) return map.green;
+            if (diff < 0.8) return map.yellow;
+            return map.red;
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - color: '#111'
+  label: |
+    [[[ 
+      if (!entity || !entity.entity_id) return '';
+      const id = entity.entity_id;
+
+      // ✅ Jardin : Netatmo => PAS de delta
+      if (id === "sensor.temperature_jardin_1" ||
+          id === "sensor.temperature_jardin_2")
+        return '';
+
+      // ✅ Maître (intérieur)
+      if (id.endsWith("_1")) return '';
+
+      const val = parseFloat(entity.state);
+      const refId = id.replace(/_\d$/, "_1");
+      const ref = parseFloat(states[refId]?.state);
+      if (isNaN(val) || isNaN(ref)) return 'Données KO';
+
+      const diff = (val - ref).toFixed(1);
+      return `Δ ${diff > 0 ? '+' : ''}${diff}°C`;
+    ]]]
+
+
+carte_temperature:
+  template: carte_base
+  show_state: true
+  show_name: true
+  show_icon: true
+  styles:
+    card:
+      - background-color: |
+          [[[ 
+            const map = {
+              red: "rgba(244, 67, 54, 0.2)",
+              yellow: "rgba(255, 235, 59, 0.2)",
+              green: "rgba(76, 175, 80, 0.2)",
+              light_green: "rgba(144, 238, 144, 0.2)",
+              light_blue: "rgba(100, 181, 246, 0.2)",
+              blue: "rgba(144, 202, 249, 0.25)",
+              grey: "rgba(224, 224, 224, 0.2)"
+            };
+            if (!entity || !entity.entity_id) return map.grey;
+            const colorEntity = entity.entity_id.replace(/^sensor\.(.*)/, "sensor.couleur_$1");
+            const key = states[colorEntity]?.state || "grey";
+            return map[key] || map.grey;
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'

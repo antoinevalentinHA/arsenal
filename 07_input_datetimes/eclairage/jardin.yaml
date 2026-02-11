@@ -1,0 +1,79 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Éclairage jardin (cadres horaires)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition des CADRES HORAIRES utilisés
+#   par les automatisations d’éclairage du jardin.
+#
+#   Ces helpers bornent QUAND l’éclairage
+#   peut être allumé ou doit être éteint,
+#   sans jamais commander directement les lampes.
+#
+# 🧩 Nature :
+#   Paramètres MÉTIER — planification horaire / garde-fous.
+#
+# ❌ Ne fait PAS :
+#   - N’allume PAS l’éclairage
+#   - N’éteint PAS l’éclairage
+#   - Ne déclenche AUCUNE action directe
+#   - Ne remplace PAS la logique soleil / présence
+#
+# 🔍 Spécificité technique :
+#   - Heure uniquement (pas de date)
+#   - Cadres applicables quotidiennement
+#   - Certaines valeurs servent de bornes FIXES,
+#     d’autres sont recalculées dynamiquement
+#
+# 🔄 Fonctionnement :
+#   - Les heures sont :
+#       • soit définies manuellement
+#       • soit utilisées comme références fixes
+#   - Les automatisations :
+#       • comparent ces heures au contexte réel
+#       • décident d’allumer ou d’éteindre
+#
+# 🔗 Utilisation :
+#   - Automatisations éclairage jardin :
+#       • Allumage matin
+#       • Extinction matin (garde-fou)
+#       • Allumage soir
+#   - Dashboards réglages / diagnostics :
+#       • Paramétrage utilisateur
+#       • Lecture des horaires actifs
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_datetime)
+#       • Décision (automatisations)
+#       • Action (commande éclairage)
+#
+# ⚠️ Remarque :
+#   Modifier ces valeurs change le CADRE
+#   de décision, jamais l’état immédiat
+#   de l’éclairage.
+# ==========================================================
+
+
+heure_allumage_jardin_matin:
+  name: Heure allumage jardin matin
+  icon: mdi:clock-time-seven-outline
+  has_date: false
+  has_time: true
+
+heure_extinction_jardin_matin:
+  name: Heure extinction jardin matin
+  icon: mdi:clock-time-seven-outline
+  has_date: false
+  has_time: true
+
+heure_extinction_jardin_matin_fixe:
+  name: Heure extinction jardin matin fixe
+  icon: mdi:clock-time-eight-outline
+  has_date: false
+  has_time: true
+
+heure_allumage_jardin_soir:
+  name: Heure allumage jardin soir
+  icon: mdi:clock-time-seven-outline
+  has_date: false
+  has_time: true

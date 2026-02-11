@@ -1,0 +1,46 @@
+# ==========================================================
+# 🎨 ARSENAL — HELPER UI : Zone verte humidité absolue
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir la demi-largeur de la zone de confort VISUELLE
+#   utilisée pour colorer les capteurs d’humidité absolue
+#   dans les dashboards et vues diagnostics.
+#
+# 🧠 Principe :
+#   - Chaque zone possède ses seuils métier :
+#       • seuil_bas  (g/m³)
+#       • seuil_haut (g/m³)
+#   - Le centre de confort est calculé localement :
+#       centre = (seuil_bas + seuil_haut) / 2
+#   - Ce helper définit la tolérance graphique :
+#       zone verte = centre ± humidite_absolue_couleur_zone_verte
+#
+# ⚠️ Important :
+#   - Ce helper est STRICTEMENT VISUEL.
+#   - Il n’influence aucun seuil métier.
+#   - Il ne pilote aucune automatisation.
+#   - Il n’intervient dans aucune décision.
+#
+# 🎨 Interprétation visuelle :
+#   - Bleu / light_blue  → air trop sec
+#   - Vert               → zone idéale
+#   - Jaune              → air chargé
+#   - Rouge              → excès d’humidité
+#
+# 📦 Portée :
+#   - Helper global
+#   - Utilisé par les capteurs de COULEUR
+#     dérivés de l’humidité absolue
+#
+# 📐 Unité :
+#   - grammes par mètre cube (g/m³)
+#
+# ==========================================================
+
+
+humidite_absolue_couleur_zone_verte:
+  name: Zone verte humidité absolue
+  min: 0.2
+  max: 3.0
+  step: 0.1
+  mode: slider

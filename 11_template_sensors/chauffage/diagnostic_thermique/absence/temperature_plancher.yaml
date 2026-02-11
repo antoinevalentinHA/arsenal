@@ -1,0 +1,202 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR
+#     Chauffage : Température plancher Absence Chambres
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mesurer, sur un cycle d’absence réel unique, la température
+#   minimale réellement atteinte par la zone Chambres.
+#
+#   Capteur d’observabilité thermique pure :
+#     - inertie bâtiment
+#     - qualité isolation
+#     - profondeur refroidissement naturel
+#
+# 🔒 Propriétés :
+#   - intra-cycle strict (absence uniquement)
+#   - figé naturellement en fin de cycle
+#   - reload-safe / runtime-safe
+#   - aucun seuil métier
+#   - aucune décision
+#
+# 📌 Autorités :
+#   - Source thermique : sensor.temperature_min_chambres
+#   - Contexte absence : binary_sensor.presence_famille_unifiee
+#
+# 🔒 Frontière canonique :
+#   - Début cycle : présence on → off
+#   - Fin cycle   : présence off → on
+#
+# ==========================================================
+
+- trigger:
+    # ------------------------------------------------------
+    # Début de cycle absence (entrée réelle en absence)
+    # ------------------------------------------------------
+    - platform: state
+      entity_id: binary_sensor.presence_famille_unifiee
+      to: "off"
+
+    # ------------------------------------------------------
+    # Fin de cycle absence (retour réel en présence)
+    # ------------------------------------------------------
+    - platform: state
+      entity_id: binary_sensor.presence_famille_unifiee
+      from: "off"
+
+    # ------------------------------------------------------
+    # Mise à jour température pendant absence
+    # ------------------------------------------------------
+    - platform: state
+      entity_id: sensor.temperature_min_chambres
+
+  sensor:
+    - name: temperature_plancher_absence_chambres
+      unique_id: temperature_plancher_absence_chambres
+      unit_of_measurement: "°C"
+
+      state: >
+        {% set cycle_valide = this.attributes.get('cycle_valide') %}
+        {% set Tmin = this.attributes.get('tmin') %}
+
+        {# Publication autorisée uniquement si cycle valide #}
+        {% if cycle_valide %}
+          {{ Tmin }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+
+      attributes:
+
+        # --------------------------------------------------
+        # Début de cycle absence
+        # --------------------------------------------------
+        t_cycle_start: >
+          {% if trigger.platform == 'state'
+                and trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+            {{ now().timestamp() }}
+          {% else %}
+            {{ this.attributes.get('t_cycle_start') }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Fin de cycle absence
+        # --------------------------------------------------
+        t_cycle_end: >
+          {% if trigger.platform == 'state'
+                and trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.from_state.state == 'off' %}
+            {{ now().timestamp() }}
+          {% else %}
+            {{ this.attributes.get('t_cycle_end') }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Durée totale du cycle (secondes)
+        # --------------------------------------------------
+        cycle_duree_s: >
+          {% set t_start = this.attributes.get('t_cycle_start') %}
+          {% set t_end = this.attributes.get('t_cycle_end') %}
+
+          {% if t_start is not none and t_end is not none %}
+            {{ (t_end - t_start) | int }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Température minimale atteinte
+        # --------------------------------------------------
+        tmin: >
+          {% set presence = states('binary_sensor.presence_famille_unifiee') %}
+          {% set Tcur = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set Tmin = this.attributes.get('tmin') %}
+
+          {# Début de cycle absence #}
+          {% if trigger.platform == 'state'
+                and trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+
+            {% if Tcur is not none %}
+              {{ Tcur }}
+            {% else %}
+              {{ none }}
+            {% endif %}
+
+          {# Mise à jour pendant cycle absence #}
+          {% elif presence == 'off'
+                and trigger.entity_id == 'sensor.temperature_min_chambres'
+                and Tcur is not none %}
+
+            {% if Tmin is not none and Tcur < Tmin %}
+              {{ Tcur }}
+            {% else %}
+              {{ Tmin }}
+            {% endif %}
+
+          {# Hors cycle #}
+          {% else %}
+            {{ Tmin }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Timestamp du minimum thermique
+        # --------------------------------------------------
+        tmin_timestamp: >
+          {% if trigger.platform == 'state'
+                and trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+            {{ now().timestamp() }}
+
+          {% elif states('binary_sensor.presence_famille_unifiee') == 'off'
+                and trigger.entity_id == 'sensor.temperature_min_chambres'
+                and states('sensor.temperature_min_chambres') | float(none) is not none
+                and this.attributes.get('tmin') is not none
+                and (states('sensor.temperature_min_chambres') | float) < this.attributes.get('tmin') %}
+
+            {{ now().timestamp() }}
+
+          {% else %}
+            {{ this.attributes.get('tmin_timestamp') }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Cycle valide (>= 1 heure, cycle complet, sans aération)
+        # --------------------------------------------------
+        cycle_valide: >
+          {% set duree = this.attributes.get('cycle_duree_s') %}
+          {% set t_end = this.attributes.get('t_cycle_end') %}
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+
+          {% if t_end is none %}
+            false
+          {% elif aeration == 'on' %}
+            false
+          {% elif duree is not none and duree >= 3600 %}
+            true
+          {% else %}
+            false
+          {% endif %}
+
+        # --------------------------------------------------
+        # Raison d’invalidation éventuelle
+        # --------------------------------------------------
+        raison_invalidation: >
+          {% set duree = this.attributes.get('cycle_duree_s') %}
+          {% set t_end = this.attributes.get('t_cycle_end') %}
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+
+          {% if t_end is none %}
+            incomplet
+          {% elif aeration == 'on' %}
+            aeration
+          {% elif duree is not none and duree < 3600 %}
+            trop_court
+          {% else %}
+            ok
+          {% endif %}
+
+        # --------------------------------------------------
+        # Source thermique
+        # --------------------------------------------------
+        source_temp_entity: "sensor.temperature_min_chambres"

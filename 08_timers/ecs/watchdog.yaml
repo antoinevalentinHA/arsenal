@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : ECS / Cycle — Watchdog de sécurité
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Garantir qu’un cycle ECS (chauffe, maintien, relance)
+#   ne puisse JAMAIS dépasser une durée maximale autorisée.
+#
+#   Ce timer agit comme un GARDE-FOU TEMPOREL ABSOLU
+#   contre tout cycle ECS bloqué, incomplet ou anormal.
+#
+# 🧩 Nature :
+#   Watchdog de durée maximale (timeout dur).
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS de chauffe ECS
+#   - Ne stoppe PAS directement un cycle
+#   - Ne décide PAS de la consigne
+#   - Ne juge PAS la conformité thermique
+#
+# ⚙️ Fonctionnement :
+#   - Démarré à CHAQUE lancement de cycle ECS.
+#   - Tant que le timer est ACTIF :
+#       → le cycle est autorisé à se dérouler.
+#   - Si le timer ARRIVE À EXPIRATION :
+#       → le cycle est considéré comme ANORMAL
+#       → une action de sécurité DOIT être déclenchée
+#         (alerte, arrêt, reset, journalisation).
+#
+# 🔄 Persistance :
+#   - restore: true
+#   - Obligation de restauration après redémarrage :
+#     un cycle ECS ne doit JAMAIS échapper à sa
+#     limite temporelle à cause d’un reboot.
+#
+# 🔗 Utilisation :
+#   - Scripts ECS :
+#       • cycle.yaml
+#   - Automatisations :
+#       • watchdog ECS
+#       • sécurités consigne / vacances
+#
+# 🧠 Principe Arsenal associé :
+#   - Tout processus thermique doit avoir :
+#       • un point de départ
+#       • une condition de fin
+#       • ET une durée maximale incompressible.
+#
+# ⚠️ Remarque critique :
+#   L’expiration de ce timer est un ÉVÉNEMENT
+#   DE SÉCURITÉ, jamais un comportement normal.
+# ==========================================================
+
+
+ecs_cycle_watchdog:
+  name: "ECS – Timer sécurité cycle"
+  duration: "00:30:00"   # 30 minutes max
+  restore: true

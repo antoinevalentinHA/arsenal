@@ -1,0 +1,83 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Garage – Interface bouton physique (MQTT)
+#
+#  ID : 10070000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’interface utilisateur matérielle.
+#
+#     Elle traduit un appui simple sur l’un des boutons
+#     physiques du garage (via messages MQTT Zigbee2MQTT)
+#     en une demande de bascule de l’éclairage,
+#     déléguée au script centralisé.
+#
+#     Cette automation ne gère AUCUN état.
+#
+#  🧩 PRINCIPE
+#
+#     - Écoute directe des messages MQTT bruts
+#       émis par les boutons physiques
+#     - Filtrage minimal :
+#         • appui simple uniquement
+#     - Délégation immédiate de l’action
+#       au script d’autorité
+#
+#  🧠 SOURCE D’ÉVÉNEMENT
+#
+#     - zigbee2mqtt/bouton_garage_1
+#     - zigbee2mqtt/bouton_garage_2
+#
+#     → événements physiques bruts,
+#       sans interprétation métier
+#
+#  🧠 AUTORITÉ D’ACTION
+#
+#     script.garage_toggle
+#
+#     → script unique responsable :
+#       • du pilotage réel de l’éclairage
+#       • de la cohérence d’état logique
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne pilote PAS directement la lumière
+#     - Ne gère AUCUN état logique
+#     - Ne décide PAS du mode automatique
+#     - Ne contient AUCUNE temporisation
+#     - Ne contient AUCUNE logique métier
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation d’interface pure :
+#     geste utilisateur ≠ état ≠ pilotage.
+#
+#     Elle relie un événement matériel
+#     à une action centralisée,
+#     sans jamais porter d’intelligence.
+# ==========================================================
+
+
+- id: "10070000000011"
+  alias: "Garage - Bouton 1 (MQTT) SwitchBot via état logique"
+  mode: single
+
+  trigger:
+    # 🔵 Bouton Garage 1
+    - platform: mqtt
+      topic: "zigbee2mqtt/bouton_garage_1"
+
+    # 🟢 Bouton Garage 2
+    - platform: mqtt
+      topic: "zigbee2mqtt/bouton_garage_2"
+
+  condition:
+    - condition: template
+      value_template: >
+        {% set j = trigger.payload | from_json %}
+        {{ j.action == 'single' }}
+
+  action:
+    - alias: "Basculer la lumière via script"
+      action: script.garage_toggle

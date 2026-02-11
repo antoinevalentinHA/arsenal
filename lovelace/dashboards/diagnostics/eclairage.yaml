@@ -1,0 +1,69 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+title: Diagnostics Éclairage
+icon: mdi:lightbulb
+
+views:
+  ####################################
+  # 💡 ÉCLAIRAGE
+  ####################################
+  - title: Éclairage
+    path: eclairage
+    icon: mdi:lightbulb
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /eclairage-dashboard/home
+
+    ########################################################
+    # 🌟 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # 🔍 Informations internes
+
+          - type: custom:button-card
+            template: section_header
+            name: 🎭 Simulation de présence
+
+          # 🛠️ Paramètres globaux
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🛠️ Paramètres globaux
+
+          - type: markdown
+            content: |
+              **Mode** : {% if is_state('input_select.mode_maison', 'Vacances') %} Vacances 🏖️ {% else %} Normal 🏡 {% endif %}
+              **Test activé** : {% if is_state('input_boolean.test_simulation_presence', 'on') %} 🟢 Oui {% else %} 🔴 Non {% endif %}
+
+          # 🛏️ Zone : Parents
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🛏️ Simulation parents
+
+          - type: markdown
+            content: |
+              Lampes : {% if is_state('switch.prise_lampe_parents', 'on') %} 🟢 ON {% else %} 🔴 OFF {% endif %}
+              Horaires matin : {{ states('input_text.horaires_simulation_presence_matin') or '_aucun_' }}
+              Horaires soir : {{ states('input_text.horaires_simulation_presence_soir') or '_aucun_' }}
+
+          # 🏠 Zone : Garage
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🏠 Simulation garage
+
+          - type: markdown
+            content: |
+              Lampes : {% if is_state('input_boolean.garage_light_state', 'on') %} 🟢 ON {% else %} 🔴 OFF {% endif %}
+              Horaires matin : {{ states('input_text.horaires_simulation_presence_garage_matin') or '_aucun_' }}
+              Horaires soir : {{ states('input_text.horaires_simulation_presence_garage_soir') or '_aucun_' }}

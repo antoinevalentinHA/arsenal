@@ -1,0 +1,183 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Diagnostics Climatisation
+icon: mdi:snowflake
+
+views:
+  - title: Climatisation
+    path: diagnostics-climatisation
+    icon: mdi:snowflake
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /clim-dashboard/climatisation
+
+    ########################################################
+    # ❄️ VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+
+          ########################################################
+          # 🧠 SECTION : Décision centrale
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: ⚖️ Décision du système
+          
+          - type: markdown
+            content: |
+              {% set mode = states('sensor.clim_mode_local') %}
+              {% set raison = states('input_text.climatisation_raison') %}
+
+              {% macro badge_mode(mode) -%}
+              {% if mode == 'cool' %}❄️ COOL
+              {% elif mode == 'heat' %}🔥 HEAT
+              {% elif mode == 'dry' %}💧 DRY
+              {% elif mode == 'off' %}⚪ AUCUNE
+              {% else %}⛔ {{ mode|upper }}
+              {% endif %}
+              {%- endmacro %}
+
+              {# -----------------------------------------------------------
+                 Statut décisionnel synthétique
+                 ----------------------------------------------------------- #}
+              {% if mode in ['cool','heat','dry'] %}
+                {% set statut = 'active' %}
+              {% elif mode == 'off' %}
+                {% set statut = 'repos' %}
+              {% else %}
+                {% set statut = 'inconnu' %}
+              {% endif %}
+
+              {% if statut == 'active' %}
+              🟢 **Décision active**
+
+              Action décidée : {{ badge_mode(mode) }}  
+              Cause principale : {{ raison if raison not in ['unknown','unavailable',''] else '—' }}
+
+              {% elif statut == 'repos' %}
+              ⚪ **Aucune action en cours**
+
+              Le système est au repos.  
+              Aucune condition ne justifie une action à cet instant.
+
+              {% else %}
+              🟠 **Décision indéterminée**
+
+              État décisionnel non interprétable.  
+              Mode brut : `{{ mode }}`
+
+              {% endif %}
+
+          ########################################################
+          # 🌡 SECTION : Conditions actuelles & seuils
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🔎 Lecture métier
+
+          - type: markdown
+            content: |
+              {% macro fmt(v) -%}
+              {{ '—' if v in ['unknown','unavailable',None,'none',''] else (v | float | round(1)) }}
+              {%- endmacro %}
+
+              {% set t_ext = states('sensor.temperature_jardin') | float(0) %}
+              {% set t_max = states('sensor.temperature_max_chambres') | float(0) %}
+              {% set t_min = states('sensor.temperature_min_chambres') | float(0) %}
+
+              {% set seuil_cool = states('sensor.seuil_allumage_clim_applique') | float(0) %}
+              {% set seuil_cool_off = states('sensor.seuil_extinction_clim_applique') | float(0) %}
+              {% set seuil_heat = states('sensor.seuil_allumage_chauffage_clim') | float(0) %}
+              {% set seuil_heat_off = states('sensor.seuil_extinction_chauffage_clim') | float(0) %}
+
+              {% set cool_on = is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
+              {% set cool_off = is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
+              {% set heat_on = is_state('binary_sensor.clim_seuil_allumage_heat_atteint', 'on') %}
+              {% set heat_off = is_state('binary_sensor.clim_seuil_extinction_heat_atteint', 'on') %}
+              {% set dry_ok = is_state('binary_sensor.clim_humidex_sup_cible_dry', 'on') %}
+
+              - ❄️ **COOL** :
+                {{ '🟢 Allumage OK' if cool_on else '⚪ Allumage non atteint' }}
+                {{ '🟢 Maintien OK' if cool_off else '🔴 Sortie requise' }}
+
+              - 🔥 **HEAT** :
+                {{ '🟢 Allumage OK' if heat_on else '⚪ Allumage non atteint' }}
+                {{ '🟢 Maintien OK' if heat_off else '🔴 Sortie requise' }}
+
+              - 💧 **DRY** :
+                {{ '🟢 Autorisé (humidex)' if dry_ok else '⚪ Non requis' }}
+
+          ########################################################
+          # 🚫 SECTION : Blocages clim & Saison
+          ########################################################
+          # Sous-section : Blocages clim
+          - type: custom:button-card
+            template: section_header
+            name: 🚫 Blocages
+
+          - type: markdown
+            content: |
+              {% set blocage_auto = is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
+              {% set now_h = now().strftime('%H:%M') %}
+              {% set h_on = states('input_datetime.clim_heure_blocage_autom_on')[:5] %}
+              {% set h_off = states('input_datetime.clim_heure_blocage_autom_off')[:5] %}
+              {% set blocage_horaire = (
+                blocage_auto and
+                (h_on <= now_h < h_off if h_on < h_off else (now_h >= h_on or now_h < h_off))
+              ) %}
+
+              {% set post_aeration = is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+
+              {% set fin_blocage = states('input_datetime.chauffage_fin_blocage_aeration') %}
+              {% if fin_blocage not in ['unknown','unavailable','none',''] %}
+                {% set fin_blocage_fmt = as_timestamp(as_datetime(fin_blocage) | as_local)
+                      | timestamp_custom('%d/%m %H:%M') %}
+              {% else %}
+                {% set fin_blocage_fmt = '—' %}
+              {% endif %}
+
+              {% set reo = states('input_datetime.aeration_reouverture_last') %}
+              {% if reo not in ['unknown','unavailable','none',''] %}
+                {% set reo_fmt = as_timestamp(as_datetime(reo) | as_local)
+                      | timestamp_custom('%d/%m %H:%M') %}
+              {% else %}
+                {% set reo_fmt = '—' %}
+              {% endif %}
+
+              {# -----------------------------------------------------------
+                 Synthèse des blocages actifs
+                 ----------------------------------------------------------- #}
+
+              {% if not blocage_horaire and not post_aeration %}
+
+              🟢 **Aucun blocage en cours**  
+              Le système est pleinement autorisé à agir.
+
+              {% else %}
+
+              🟥 **Blocage(s) actif(s)**
+
+              {% if blocage_horaire %}
+              - ⏰ **Blocage horaire actif**  
+                Plage : {{ h_on }} → {{ h_off }}
+              {% endif %}
+
+              {% if post_aeration %}
+              - 🌬 **Blocage post-aération actif**  
+                Fin prévue : {{ fin_blocage_fmt }}  
+                Dernière réouverture : {{ reo_fmt }}
+              {% endif %}
+
+              {% endif %}

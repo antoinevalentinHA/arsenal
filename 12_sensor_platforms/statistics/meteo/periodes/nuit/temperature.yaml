@@ -1,0 +1,211 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles de la Température (filtrée sur la période nocturne)
+# ----------------------------------------------------------
+#  🌡️ Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de la **température mesurée la nuit** (période “filtre nuit”),
+#     afin d’évaluer :
+#       - le confort thermique nocturne 🌙
+#       - la stabilité des températures en période sans ensoleillement ☁️
+#       - l’efficacité de l’isolation et de l’inertie thermique du bâtiment 🧱
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Source : capteurs `sensor.temperature_filtre_nuit_*`
+#     - Métrique : `mean` (moyenne)
+#
+#  📅 Fenêtre d’analyse :
+#     - Période glissante : 30 jours
+#     - Taille d’échantillon : 5 000 points
+#
+#  📊 Sortie :
+#     - Moyenne mensuelle de la température **nocturne (°C)**
+#
+#  🏡 Zones couvertes :
+#     - Chambres, zones de vie, extérieurs, ateliers, stockage, etc.
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🏠 Chambres
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température filtre nuit Moyenne Chambre Arnaud"
+  entity_id: sensor.temperature_filtre_nuit_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_5000 5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Chambre Matthieu"
+  entity_id: sensor.temperature_filtre_nuit_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Chambre Parents"
+  entity_id: sensor.temperature_filtre_nuit_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏡 Espaces de vie et communs
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température filtre nuit Moyenne Entrée"
+  entity_id: sensor.temperature_filtre_nuit_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Séjour"
+  entity_id: sensor.temperature_filtre_nuit_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Petite Maison"
+  entity_id: sensor.temperature_filtre_nuit_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Palier"
+  entity_id: sensor.temperature_filtre_nuit_palier
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🚿 Salles de bains
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température filtre nuit Moyenne SDB Enfants"
+  entity_id: sensor.temperature_filtre_nuit_sdb_enfants
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne SDB Parents"
+  entity_id: sensor.temperature_filtre_nuit_sdb_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🌳 Extérieur et jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température filtre nuit Moyenne Jardin"
+  entity_id: sensor.temperature_filtre_nuit_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Extérieur"
+  entity_id: sensor.temperature_filtre_nuit_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏢 Zones administratives
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température filtre nuit Moyenne Direction"
+  entity_id: sensor.temperature_filtre_nuit_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Compta"
+  entity_id: sensor.temperature_filtre_nuit_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Qualité"
+  entity_id: sensor.temperature_filtre_nuit_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Devis"
+  entity_id: sensor.temperature_filtre_nuit_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Commercial"
+  entity_id: sensor.temperature_filtre_nuit_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏭 Zones industrielles / ateliers
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température filtre nuit Moyenne Komori"
+  entity_id: sensor.temperature_filtre_nuit_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Bobst"
+  entity_id: sensor.temperature_filtre_nuit_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Media"
+  entity_id: sensor.temperature_filtre_nuit_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 📦 Zones de stockage
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température filtre nuit Moyenne Stock Carton"
+  entity_id: sensor.temperature_filtre_nuit_stock_carton
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Stock PF"
+  entity_id: sensor.temperature_filtre_nuit_stock_pf
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# ⚙️ Locaux techniques
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température filtre nuit Moyenne Cave"
+  entity_id: sensor.temperature_filtre_nuit_cave
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Température filtre nuit Moyenne Garage"
+  entity_id: sensor.temperature_filtre_nuit_garage
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000

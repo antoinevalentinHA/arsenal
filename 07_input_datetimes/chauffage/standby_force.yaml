@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Chauffage (standby forcé)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mémorisation de l’HORODATAGE (date + heure)
+#   du DERNIER CHANGEMENT de l’état
+#   « chauffage standby forcé ».
+#
+#   Ce helper constitue une TRACE TEMPORELLE
+#   utilisée à des fins de diagnostic
+#   et de compréhension du comportement chauffage.
+#
+# 🧩 Nature :
+#   Mémoire PERSISTANTE — journal temporel.
+#
+# ❌ Ne fait PAS :
+#   - Ne force PAS le standby
+#   - Ne lève PAS le standby
+#   - Ne pilote PAS le chauffage
+#   - Ne prend AUCUNE décision métier
+#
+# 🔍 Spécificité technique :
+#   - Date + heure (précision absolue)
+#   - Mis à jour UNIQUEMENT lors
+#     d’un changement effectif d’état
+#   - Persistant aux redémarrages
+#
+# 🔄 Fonctionnement :
+#   - Écrit par l’automatisation :
+#       • Chauffage – Log standby forcé
+#   - Lu par :
+#       • Dashboards diagnostics chauffage
+#       • Analyses post-événement
+#
+# 🔗 Utilisation :
+#   - Diagnostics chauffage :
+#       • Datation du dernier forçage
+#       • Corrélation avec blocages / reprises
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • État (standby forcé)
+#       • Mémoire (input_datetime)
+#       • Décision (pipeline chauffage)
+#       • Action réelle (ViCare)
+#
+# ⚠️ Remarque :
+#   La mise à jour de cet horodatage
+#   n’implique AUCUNE action thermique.
+# ==========================================================
+
+
+chauffage_standby_force_changed:
+  name: Chauffage standby force - last change
+  has_date: true
+  has_time: true

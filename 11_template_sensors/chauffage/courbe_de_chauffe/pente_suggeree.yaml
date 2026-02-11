@@ -1,0 +1,45 @@
+# ==========================================================
+# 🌡️ TRIGGERED TEMPLATE SENSOR — Chauffage : Pente suggérée
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#    Proposer, de façon réactive et cohérente, une nouvelle valeur
+#    de pente de courbe de chauffe en fonction des écarts froids.
+#
+# 🔎 Déclencheurs :
+#    - Moyenne glissante 24h des écarts en mode froid
+#    - Pente consigne actuelle
+#
+# ⚙️ Règles :
+#    - ecart_froid < -0.5 → pente += 0.1
+#    - ecart_froid > 0.5  → pente -= 0.1
+#    - sinon pente identique
+#    - bornes : 1.2 → 1.8
+#
+# ⏸️ Note :
+#    Ce capteur n’applique rien automatiquement : il propose.
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.ecart_consigne_stats_froid
+        - input_number.chauffage_pente_consigne
+
+  sensor:
+    - name: "chauffage_pente_suggeree"
+      unique_id: chauffage_pente_suggeree
+      unit_of_measurement: ""
+      icon: mdi:axis-arrow
+      state: >
+        {% set ecart_froid = states('sensor.ecart_consigne_stats_froid') | float(0) %}
+        {% set pente_actuelle = states('input_number.chauffage_pente_consigne') | float(1.5) %}
+        {% set pente_min = 1.2 %}
+        {% set pente_max = 1.8 %}
+
+        {% if ecart_froid < -0.5 %}
+          {{ [pente_actuelle + 0.1, pente_max] | min }}
+        {% elif ecart_froid > 0.5 %}
+          {{ [pente_actuelle - 0.1, pente_min] | max }}
+        {% else %}
+          {{ pente_actuelle }}
+        {% endif %}

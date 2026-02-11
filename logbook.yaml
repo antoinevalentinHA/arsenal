@@ -1,0 +1,141 @@
+include:
+  entities:
+
+    # =====================================================
+    # 🔥 CHAUFFAGE
+    # =====================================================
+    - sensor.programme_chauffage
+    - binary_sensor.poele_en_fonction
+    - input_boolean.blocage_chauffage_poele
+    - timer.poele_blocage_chauffage
+    - script.chauffage_decision_centrale
+    - script.chauffage_appliquer_parallele
+    - script.chauffage_appliquer_pente
+    - script.chauffage_consigne_reduite
+    - script.chauffage_consigne_confort
+    - sensor.chauffage_mode_calcule
+    - sensor.chauffage_raison_calculee
+    - sensor.chauffage_autorisation_cible
+
+    # =====================================================
+    # ❄️ CLIMATISATION
+    # =====================================================
+    - switch.clim_power
+    - sensor.clim_target_mode
+
+    # =====================================================
+    # 🌬️ AERATION - BLOCAGE CHAUFFAGE
+    # =====================================================
+    - input_boolean.aeration_episode_en_cours
+    - input_boolean.chauffage_blocage_aeration
+
+    # =====================================================
+    # 🚿 ECS (EAU CHAUDE SANITAIRE)
+    # =====================================================
+    - input_boolean.ecs_cycle_en_cours
+    - script.bouclage_ecs_5_minutes
+    - automation.bouclage_ecs_arret_automatique_fin_timer
+    - script.chauffage_ecs_cycle
+    - script.lancer_vaisselle_et_bouclage
+    - automation.ecs_petite_maison_debut_sejour
+    - automation.ecs_petite_maison_fin_sejour
+    - automation.ecs_gardien_post_prelevement
+    - automation.ecs_gardien_consigne_hors_cycle
+    - automation.ecs_watchdog_fin_de_cycle
+    - automation.ecs_desinfection_au_retour_de_vacances
+    - automation.ecs_alerte_rebond_chauffe_sans_demande_ha
+    - automation.ecs_log_debut_cycle
+    - automation.ecs_gel_donnees_fin_de_cycle
+    - script.ecs_petite_maison_arret_absence
+    - script.ecs_petite_maison_mode_eco
+
+    # =====================================================
+    # 🌬️ VENTILATION / AIR / CAVE
+    # =====================================================
+    - input_boolean.vmc_haute_vitesse
+    - automation.vmc_gestion_automatique_humidite
+    - script.vmc_basse_vitesse
+    - script.vmc_haute_vitesse
+    - binary_sensor.deshumidificateur_actif
+    - automation.deshumidificateur_on_si_recommande
+    - automation.deshumidificateur_off_si_non_recommande
+    - script.set_deshumidificateur_state
+
+    # =====================================================
+    # ECLAIRAGE
+    # =====================================================
+    - automation.lumiere_jardin_extinction_automatique_soir
+    - automation.guirlande_allumage_presence
+    - automation.guirlande_extinction_absence
+
+    # =====================================================
+    # ELECTROMENAGER
+    # =====================================================
+    - automation.buanderie_debut_de_cycle
+    - automation.buanderie_fin_de_cycle
+    - automation.lave_vaisselle_detection_debut_de_cycle
+    - automation.lave_vaisselle_detection_fin_de_cycle
+
+    # =====================================================
+    # VOITURE
+    # =====================================================
+    - automation.voiture_enregistrement_autonomie_pleine_charge
+
+    # =====================================================
+    # 🚨 ALARME — Événements significatifs
+    # =====================================================
+    - automation.alarme_intrusion_capteurs_de_mouvement
+    - automation.alarme_desarmement_via_badge
+    - script.alarme_armer
+    - automation.alarme_visiteur_desactivation_securite
+    - automation.alarme_visiteur_reactivation_armement_auto
+
+    # =====================================================
+    # MODES
+    # =====================================================
+    - automation.babysitting_sortie_automatique_du_mode
+    - automation.babysitting_activation_du_mode
+    - automation.vacances_application_du_contexte
+    - automation.vacances_activation_automatique_du_mode
+    - automation.vacances_desactivation_automatique_du_mode
+    - automation.normal_sortie_du_contexte_vacances
+
+    # =====================================================
+    # 🚨 SÉCURITÉ & SUPERVISION
+    # =====================================================
+    - binary_sensor.coupure_secteur
+    - binary_sensor.internet_disponible
+    - automation.netatmo_redemarrage_sur_panne_reseau_arnaud
+    - automation.netatmo_redemarrage_sur_panne_reseau_matthieu
+    - automation.mode_panne_coupure_secteur
+    - automation.securite_sortie_mode_panne_ecs
+    - automation.reseau_confirmation_retour_internet
+    - automation.batteries_faibles_notification_quotidienne
+    - automation.alerte_api_viessmann_indisponible
+    - automation.alerte_api_viessmann_retablie
+    - script.reboot_netatmo
+    - script.redemarrer_box
+    - script.mode_panne_coupure_secteur
+
+    # =====================================================
+    # 🌧️ MÉTÉO / EXTÉRIEUR
+    # =====================================================
+    - automation.pluie_decision_de_debut_depisode
+    - automation.pluie_decision_de_fin_depisode
+    - sensor.nom_chambre_la_plus_chaude
+    - sensor.nom_chambre_la_plus_froide
+
+    # =====================================================
+    # 🧒 ENFANTS / CONFORT
+    # =====================================================
+    - automation.sdb_enfants_charge_veilleuse_arnaud
+    - automation.babyphone_arnaud
+    - automation.babyphone_matthieu
+    - automation.compteur_reveils_arnaud
+    - automation.compteur_reveils_matthieu
+
+    # =====================================================
+    # 🌐 RÉSEAU / STABILITÉ
+    # =====================================================
+    - automation.reseau_redemarrage_box_auto
+    - automation.nas_alerte_temperature_disque

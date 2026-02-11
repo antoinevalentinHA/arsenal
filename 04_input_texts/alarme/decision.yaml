@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Alarme – Décision centrale
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker le RÉSULTAT TEXTUEL de la décision centrale
+#   de l’alarme, à des fins de lisibilité et de diagnostic.
+#
+# 🧱 Nature :
+#   - Mémoire descriptive
+#   - Trace décisionnelle lisible (état exposé)
+#
+# 🚫 Ne fait PAS :
+#   - Ne prend aucune décision
+#   - Ne contient aucune logique métier
+#   - Ne pilote aucun état d’alarme
+#   - Ne déclenche aucune action
+#
+# 🔗 Écrit par :
+#   - Script :
+#       09_scripts/alarme/decision_centrale.yaml
+#     → formalisation explicite de la décision prise
+#
+# 🔗 Utilisé par :
+#   - Dashboards Lovelace (alarme / diagnostics)
+#   - Templates button-card (affichage décision)
+#
+# 🧠 Principe ARSENAL :
+#   - La décision vit dans les scripts
+#   - Les helpers exposent l’état résultant
+#   - Lisibilité > implicite
+#
+# ⚠️ Sémantique :
+#   - Le terme "decision" désigne le RÉSULTAT,
+#     pas le processus de décision
+# ==========================================================
+
+
+alarme_decision:
+  name: "Alarme – Decision centrale"
+  max: 50

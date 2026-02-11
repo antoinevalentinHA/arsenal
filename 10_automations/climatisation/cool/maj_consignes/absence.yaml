@@ -1,0 +1,96 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Réglages – Clim consigne absence
+#
+#  ID : 1003000000008
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de synchronisation paramètre → système.
+#
+#     Elle applique une consigne de température à la
+#     climatisation lorsque le paramètre utilisateur
+#     `input_number.clim_consigne_absence` est modifié,
+#     à condition que le contexte autorise déjà le refroidissement.
+#
+#     Cette automation ne décide PAS du mode de la climatisation.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement sur modification du paramètre d’absence
+#     - Vérification stricte du contexte :
+#         • climatisation déjà en mode COOL
+#         • absence confirmée
+#     - Vérification anti-redondance :
+#         • aucune action si la consigne est déjà appliquée
+#
+#  🧠 PARAMÈTRE MÉTIER
+#
+#     input_number.clim_consigne_absence
+#
+#     → paramètre utilisateur définissant la température
+#       cible souhaitée en cas d’absence.
+#
+#  📦 SOURCES UTILISÉES
+#
+#     - sensor.consigne_clim_appliquee
+#     - sensor.clim_mode_local
+#     - binary_sensor.presence_famille_unifiee
+#
+#  📤 ACTION RÉALISÉE
+#
+#     - climate.set_temperature (climate.clim)
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne choisit PAS le mode de climatisation
+#     - Ne force PAS le passage en COOL
+#     - Ne gère PAS la présence
+#     - Ne calcule PAS la consigne cible
+#     - Ne contient AUCUNE stratégie thermique globale
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation volontairement subordonnée :
+#     paramètre ≠ décision ≠ stratégie ≠ pilotage.
+#
+#     Toute logique de décision climatique
+#     est externalisée dans les pipelines dédiés.
+# ==========================================================
+
+
+- id: '1003000000008'
+  alias: "Réglages - Clim consigne absence"
+  mode: single
+
+  trigger:
+    # 🎚️ Changement du slider de consigne d’absence
+    - platform: state
+      entity_id: input_number.clim_consigne_absence
+
+  condition:
+    # ✅ Clim en mode refroidissement (local)
+    - condition: state
+      entity_id: sensor.clim_mode_local
+      state: 'cool'
+
+    # ✅ Absence détectée
+    - condition: state
+      entity_id: binary_sensor.presence_famille_unifiee
+      state: 'off'
+
+    # 🧠 Anti-redondance : éviter les ordres inutiles
+    - condition: template
+      alias: "Éviter envoi inutile"
+      value_template: >
+        {% set cible = states('sensor.consigne_clim_appliquee') | float %}
+        {% set actuelle = state_attr('climate.clim', 'temperature') | float(99) %}
+        {{ actuelle != cible and actuelle != 0 and actuelle != 99 }}
+
+  action:
+    # 🌡️ Application de la nouvelle température cible
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.clim
+      data:
+        temperature: "{{ states('sensor.consigne_clim_appliquee') | float }}"

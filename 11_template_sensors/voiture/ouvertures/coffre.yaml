@@ -1,0 +1,33 @@
+# ==========================================================
+# 🎒 TEMPLATE TRIGGERED BINARY SENSOR — Audi e-tron (Coffre verrouillé)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser l’état du capteur `binary_sensor.audi_a3_sportback_e_tron_trunk_lock`
+#   afin d’éviter les retours “unknown/unavailable” ou incohérents,
+#   garantissant un état fiable pour le dashboard et les automatisations.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque changement d’état du capteur source.
+#   - Réévaluation automatique au démarrage de Home Assistant.
+#   - Si état valide → reprise directe.
+#   - Sinon → conservation du dernier état connu.
+#
+# 🧮 Source : binary_sensor.audi_a3_sportback_e_tron_trunk_lock
+# 📊 Type : Trigger Template Binary Sensor
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: binary_sensor.audi_a3_sportback_e_tron_trunk_lock
+
+  binary_sensor:
+    - name: "Audi e-tron – Coffre verrouillé (Local)"
+      unique_id: audi_a3_sportback_e_tron_trunk_lock_local
+      device_class: lock
+      state: >
+        {% set s = states('binary_sensor.audi_a3_sportback_e_tron_trunk_lock') %}
+        {% if s in ['on','off'] %}
+          {{ s }}
+        {% else %}
+          {{ this.state | default('off') }}
+        {% endif %}

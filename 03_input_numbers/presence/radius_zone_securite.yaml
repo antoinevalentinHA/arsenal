@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Rayon zone de sécurité
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir le rayon géographique de la zone de sécurité
+#    utilisée pour qualifier la présence ou l’absence
+#    dans le cadre du système d’alarme.
+#
+# 🧠 Lecture métier :
+#    Cette valeur est lue par les capteurs de présence
+#    sécurité afin de déterminer si un occupant est
+#    considéré comme présent à proximité du domicile.
+#    Elle influence indirectement l’armement et le
+#    comportement du système d’alarme.
+#
+# 📍 Portée :
+#    - Rayon exprimé en mètres autour du domicile
+#    - Utilisé pour le géofencing de sécurité
+#
+# 🔗 Dépendances :
+#    - Binary sensors présence sécurité
+#    - Dashboards réglages alarme
+#
+# 🚫 Interdits :
+#    - Définir un rayon trop faible sans test réel
+#    - Le confondre avec une zone de confort
+#    - Le modifier sans vérifier l’impact sur l’armement auto
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - paramètre de sécurité actif (géofencing)
+# ==========================================================
+
+zone_securite_radius:
+  name: Rayon zone sécurité
+  icon: mdi:map-marker-radius
+  min: 20
+  max: 150
+  step: 5
+  unit_of_measurement: "m"

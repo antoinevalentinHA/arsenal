@@ -1,0 +1,96 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Réglages – Clim consigne présence
+#
+#  ID : 1003000000010
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de synchronisation paramètre → climatisation.
+#
+#     Elle applique la consigne utilisateur définie pour
+#     le mode présence lorsque ce paramètre est modifié,
+#     à condition que le contexte climatique soit déjà actif.
+#
+#     Cette automation ne déclenche PAS la climatisation.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement sur modification du paramètre utilisateur
+#     - Vérification stricte du contexte :
+#         • présence confirmée
+#         • climatisation déjà en mode COOL
+#     - Anti-redondance :
+#         • aucun envoi si la consigne est déjà appliquée
+#
+#  🧠 PARAMÈTRE MÉTIER
+#
+#     input_number.clim_consigne_presence
+#
+#     → consigne cible souhaitée en présence,
+#       exprimée indépendamment de l’état immédiat
+#       de la climatisation.
+#
+#  📦 SOURCES UTILISÉES
+#
+#     - sensor.consigne_clim_appliquee
+#     - sensor.clim_mode_local
+#     - binary_sensor.presence_famille_unifiee
+#
+#  📤 ACTION RÉALISÉE
+#
+#     - climate.set_temperature (climate.clim)
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne choisit PAS le mode de climatisation
+#     - Ne force PAS l’allumage de la clim
+#     - Ne décide PAS du confort thermique
+#     - Ne gère PAS la présence
+#     - Ne contient AUCUNE stratégie climatique
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation volontairement subordonnée :
+#     paramètre ≠ décision ≠ pilotage ≠ stratégie.
+#
+#     Toute intelligence climatique
+#     est portée par les pipelines de décision.
+# ==========================================================
+
+
+- id: '1003000000010'
+  alias: "Réglages - Clim consigne présence"
+  mode: single
+
+  trigger:
+    # 🎚️ Changement de consigne de température (présence)
+    - platform: state
+      entity_id: input_number.clim_consigne_presence
+
+  condition:
+    # ❄️ Clim active en mode "cool" (local)
+    - condition: state
+      entity_id: sensor.clim_mode_local
+      state: 'cool'
+
+    # 👪 Présence confirmée dans la maison
+    - condition: state
+      entity_id: binary_sensor.presence_famille_unifiee
+      state: 'on'
+
+    # 🔁 Éviter envoi inutile (si la température cible est déjà appliquée)
+    - condition: template
+      alias: "Éviter envoi inutile"
+      value_template: >
+        {% set cible = states('sensor.consigne_clim_appliquee') | float %}
+        {% set actuelle = state_attr('climate.clim', 'temperature') | float(99) %}
+        {{ actuelle != cible and actuelle not in [0, 99] }}
+
+  action:
+    # 📡 Envoi de la consigne à la clim (service cloud normal)
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.clim
+      data:
+        temperature: "{{ states('sensor.consigne_clim_appliquee') | float }}"

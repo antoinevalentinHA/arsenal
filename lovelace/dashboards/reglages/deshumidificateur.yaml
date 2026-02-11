@@ -1,0 +1,35 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Réglages Déshumidificateur
+icon: mdi:air-filter
+
+views:
+  - title: Déshumidificateur
+    path: deshumidificateur
+    icon: mdi:air-filter
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /deshumidificateur-dashboard/cave
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          - !include ../../includes/section_headers/cave.yaml
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.cave_rh_cible_on
+                name: HR cible ON (%)
+              - entity: input_number.cave_rh_cible_off
+                name: HR cible OFF (%)

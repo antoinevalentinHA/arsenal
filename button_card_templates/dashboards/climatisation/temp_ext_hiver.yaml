@@ -1,0 +1,63 @@
+#################################################################
+# ❄️☀️ CARTE CLIM — DIAGNOSTIC TEMPÉRATURE EXTÉRIEURE (HIVER)
+# ---------------------------------------------------------------
+# Indique si la température extérieure est supérieure
+# au seuil hivernal autorisant le fonctionnement de la clim.
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture seule
+#   - Aucune action directe
+#   - Décision portée par les capteurs métier
+#################################################################
+
+carte_clim_diagnostic_temperature_exterieure_hiver:
+  template: carte_base
+
+  entity: sensor.temperature_jardin
+
+  show_state: true
+  show_name: true
+  show_label: true
+  show_icon: false
+  color_type: card
+
+  label: |
+    [[[
+      const s = states['input_number.clim_hiver_seuil_temperature_exterieure']
+        ? states['input_number.clim_hiver_seuil_temperature_exterieure'].state
+        : '—';
+      return "Seuil min : " + s;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const temp = parseFloat(entity.state);
+            const seuil = parseFloat(
+              states['input_number.clim_hiver_seuil_temperature_exterieure']?.state || "99"
+            );
+
+            if (isNaN(temp) || isNaN(seuil))
+              return "rgba(244, 67, 54, 0.2)";   // 🔴 incohérence
+
+            return temp > seuil
+              ? "rgba(76, 175, 80, 0.2)"        // 🟢 clim autorisée
+              : "rgba(158, 158, 158, 0.2)";     // ⚪ clim bloquée
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#000000'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - color: '#111'

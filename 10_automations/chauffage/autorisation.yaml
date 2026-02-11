@@ -1,0 +1,90 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Application de l’autorisation automatique
+#
+#  ID : 10240000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Appliquer la décision ternaire calculée par le capteur
+#     central `sensor.chauffage_autorisation_cible` en
+#     pilotant exclusivement le verrou logique
+#     `input_boolean.chauffage_standby_force`.
+#
+#     Cette automation est un point d’application mécanique
+#     de la décision Arsenal, sans aucune interprétation.
+#
+#  🧱 PRINCIPE ARSENAL
+#     - Les capteurs décident (logique centralisée)
+#     - Les automatismes appliquent (exécution stricte)
+#     - Les actionneurs ne réfléchissent pas
+#
+#  🚫 NE FAIT PAS
+#     - Ne calcule aucune autorisation chauffage
+#     - Ne pilote pas directement la chaudière
+#     - Ne modifie aucune consigne ou mode thermique
+#     - N’interprète pas les états "neutre / reduced / comfort"
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • changement de la cible d’autorisation chauffage
+#         • stabilisation du système Home Assistant
+#     - Comportement :
+#         • cible = neutre   → aucune action
+#         • cible = reduced  → activation du verrou logique
+#         • cible = comfort  → levée du verrou logique
+#
+#  🔌 DÉPENDANCES
+#     - sensor.chauffage_autorisation_cible
+#     - input_boolean.chauffage_standby_force
+#     - input_boolean.systeme_stable
+#
+#  ⚠️ IMPORTANT
+#     - Toute modification de logique, seuil ou stratégie
+#       doit être effectuée dans le capteur de décision
+#     - Cette automation ne doit jamais contenir
+#       de logique métier
+#
+#  ✅ CONTRAINTES
+#     - Application idempotente (pas d’écriture inutile)
+#     - Comportement déterministe et traçable
+#     - Architecture strictement conforme au modèle Arsenal
+# ==========================================================
+
+
+- id: "10240000000002"
+  alias: "Chauffage – Application autorisation automatique"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: sensor.chauffage_autorisation_cible
+
+    # 🚀 Synchronisation backend Arsenal
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  variables:
+    cible: "{{ states('sensor.chauffage_autorisation_cible') }}"
+    verrou_actuel: "{{ is_state('input_boolean.chauffage_standby_force', 'on') }}"
+
+  action:
+    - choose:
+
+        # 🟡 Zone neutre → aucune action
+        - conditions: "{{ cible == 'neutre' }}"
+          sequence: []
+
+        # ❄️ Reduced → poser le verrou si nécessaire
+        - conditions: "{{ cible == 'reduced' and not verrou_actuel }}"
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.chauffage_standby_force
+
+        # 🔥 Comfort → lever le verrou si nécessaire
+        - conditions: "{{ cible == 'comfort' and verrou_actuel }}"
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.chauffage_standby_force

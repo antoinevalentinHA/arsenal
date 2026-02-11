@@ -1,0 +1,42 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Buanderie – Cycle en cours
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     État logique indiquant si au moins un
+#     appareil de la buanderie (lave-linge,
+#     sèche-linge, etc.) est considéré comme
+#     en cours de cycle par le système.
+#
+#     Ce booléen constitue la source de vérité
+#     métier sur l’activité globale de la buanderie.
+#
+#  🧱 Nature :
+#     - État logique métier agrégé
+#     - Vérité fonctionnelle persistante
+#
+#  🔄 Cycle de vie :
+#     - ON  : un ou plusieurs cycles sont actifs
+#     - OFF : aucun cycle n’est en cours
+#
+#  📥 N’effectue PAS :
+#     - aucune détection électrique directe
+#     - aucune mesure de consommation
+#     - aucune commande de prise ou d’appareil
+#
+#  📤 Utilisation :
+#     - Écrit par :
+#         • automatisations de début de cycle
+#         • automatisations de fin de cycle
+#     - Lu par :
+#         • automatisations de gestion énergétique
+#         • notifications de fin de cycle
+#
+#  🧠 Principe Arsenal :
+#     - Un état applicatif global doit être
+#       représenté par une vérité logique unique
+# ==========================================================
+
+
+buanderie_cycle:
+  name: Buanderie - cycle en cours
+  icon: mdi:washing-machine

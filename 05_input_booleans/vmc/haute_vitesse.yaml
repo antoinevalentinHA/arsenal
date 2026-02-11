@@ -1,0 +1,25 @@
+# ==========================================================
+# 💨 INPUT BOOLEAN — VMC : Haute vitesse
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si la VMC fonctionne actuellement en mode
+#   “haute vitesse” (extraction maximale).
+#
+# ⚙️ Fonctionnement :
+#   - ON  → VMC en régime élevé (extraction maximale)
+#   - OFF → VMC en vitesse normale
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean
+#   - Nom : VMC haute vitesse
+#   - Icône : mdi:fan
+#   - Usage : indicateur de régime VMC pour automatisations
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.vmc_haute_vitesse
+# ==========================================================
+
+
+vmc_haute_vitesse:
+  name: "Haute vitesse"
+  icon: mdi:fan

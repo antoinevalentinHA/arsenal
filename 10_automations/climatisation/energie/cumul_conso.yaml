@@ -1,0 +1,126 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Clim – Clôture journalière consommation estimée
+#
+#  ID : 1003000000019
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de consolidation énergétique journalière.
+#
+#     Elle estime la consommation électrique quotidienne
+#     de la climatisation à partir :
+#       • des durées de fonctionnement par mode
+#       • des puissances paramétriques associées
+#
+#     puis ajoute cette valeur à un cumul persistant.
+#
+#     Cette automation ne mesure AUCUNE consommation réelle.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement quotidien fixe (23:55)
+#     - Calcul estimatif :
+#         ∑ durée (heures) × puissance (kW)
+#     - Ajout au cumul uniquement si :
+#         • la journée n’est pas nulle
+#         • la valeur diffère du cumul précédent
+#     - Réinitialisation des compteurs journaliers
+#
+#  🧠 DONNÉES D’ENTRÉE
+#
+#     - input_number.clim_duree_cool_aujourdhui
+#     - input_number.clim_duree_dry_aujourdhui
+#     - input_number.clim_duree_heat_aujourdhui
+#
+#     → durées journalières déjà calculées ailleurs
+#       (cette automation ne les produit pas)
+#
+#     - input_number.puissance_clim_cool
+#     - input_number.puissance_clim_dry
+#     - input_number.puissance_clim_heat
+#
+#     → hypothèses de puissance utilisées
+#       pour l’estimation énergétique
+#
+#  🧠 MÉMOIRE PERSISTANTE
+#
+#     input_number.clim_consommation_cumulee
+#
+#     → cumul estimatif non réinitialisé,
+#       utilisé pour le suivi long terme
+#
+#  📤 ACTIONS RÉALISÉES
+#
+#     - Écriture du cumul estimé
+#     - Réinitialisation des compteurs journaliers
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne mesure PAS une consommation réelle
+#     - Ne dépend PAS de capteurs d’énergie
+#     - Ne corrige PAS les valeurs passées
+#     - Ne décide PAS du fonctionnement de la clim
+#     - Ne pilote AUCUN équipement
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de comptabilité énergétique estimative :
+#     estimation ≠ mesure ≠ pilotage.
+#
+#     Elle fournit une cohérence interne
+#     et une traçabilité reproductible,
+#     sans prétention de vérité physique.
+# ==========================================================
+
+
+- id: '1003000000019'
+  alias: Clim - Cumul consommation estimée journalière
+  description: >
+    À 23:55, ajoute au cumul la conso du jour calculée
+    à partir des durées Cool/Dry/Heat et des puissances réglables.
+
+  trigger:
+    - platform: time
+      at: '23:55:00'
+
+  variables:
+    # 🕓 Durées journalières par mode
+    cool_h: "{{ states('input_number.clim_duree_cool_aujourdhui') | float(0) }}"
+    dry_h:  "{{ states('input_number.clim_duree_dry_aujourdhui')  | float(0) }}"
+    heat_h: "{{ states('input_number.clim_duree_heat_aujourdhui') | float(0) }}"
+
+    # ⚡ Puissances en kW par mode
+    p_cool_kw: "{{ states('input_number.puissance_clim_cool') | float(0) }}"
+    p_dry_kw:  "{{ states('input_number.puissance_clim_dry')  | float(0) }}"
+    p_heat_kw: "{{ states('input_number.puissance_clim_heat') | float(0) }}"
+
+    # 🔢 Calculs intermédiaires
+    jour_kwh: >
+      {{ ((cool_h * p_cool_kw) + (dry_h * p_dry_kw) + (heat_h * p_heat_kw)) | round(3) }}
+    cumul_actuel: "{{ states('input_number.clim_consommation_cumulee') | float(0) }}"
+    cumul_nouveau: "{{ (cumul_actuel + jour_kwh) | round(3) }}"
+
+  action:
+
+    # ✅ Ajout au cumul si la journée est non nulle
+    - condition: template
+      value_template: "{{ jour_kwh > 0 and cumul_nouveau != cumul_actuel }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.clim_consommation_cumulee
+      data:
+        value: "{{ cumul_nouveau }}"
+
+    # 🔁 Réinitialisation des compteurs journaliers
+    - service: input_number.set_value
+      target:
+        entity_id:
+          - input_number.clim_duree_cool_aujourdhui
+          - input_number.clim_duree_dry_aujourdhui
+          - input_number.clim_duree_heat_aujourdhui
+      data:
+        value: 0
+
+  mode: single

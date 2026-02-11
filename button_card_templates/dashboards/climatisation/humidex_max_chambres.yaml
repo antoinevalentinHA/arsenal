@@ -1,0 +1,59 @@
+#################################################################
+# 💧 CARTE CLIM — DIAGNOSTIC HUMIDEX MAX CHAMBRES
+# ---------------------------------------------------------------
+# Indique si l’humidex maximal relevé dans les chambres
+# autorise l’activation du mode Dry (déshumidification).
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture seule
+#   - Aucune action directe
+#   - Décision portée par les capteurs métier
+#################################################################
+
+carte_clim_diagnostic_humidex_max_chambres:
+  template: carte_base
+
+  entity: sensor.humidex_max_chambres
+
+  show_state: true
+  show_name: true
+  show_label: true
+  show_icon: false
+  color_type: card
+
+  label: |
+    [[[
+      const s = states['input_number.seuil_humidex_deshumidification']
+        ? states['input_number.seuil_humidex_deshumidification'].state
+        : '—';
+      return "Seuil ON : " + s;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const humidex = parseFloat(entity.state);
+            const seuil = parseFloat(
+              states['input_number.seuil_humidex_deshumidification']?.state || "99"
+            );
+
+            if (isNaN(humidex) || isNaN(seuil))
+              return "rgba(244, 67, 54, 0.2)";   // 🔴 incohérence / indéterminé
+
+            return humidex >= seuil
+              ? "rgba(76, 175, 80, 0.2)"        // 🟢 Dry autorisé
+              : "rgba(158, 158, 158, 0.2)";     // ⚪ Dry non autorisé
+          ]]]
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - color: '#111'

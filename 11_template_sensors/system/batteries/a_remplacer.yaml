@@ -1,0 +1,57 @@
+# ==========================================================
+# 🔋 TEMPLATE BINARY SENSOR — Batterie à remplacer
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Détecter s’il existe au moins une batterie du périmètre
+#   défini par `group.batteries` dont le niveau est critique
+#   et nécessite un remplacement.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → si au moins une entité de `group.batteries`
+#           a un niveau strictement < 28 %
+#   - OFF → sinon
+#
+# 🧩 Source de périmètre :
+#   - group.batteries
+#     → Source UNIQUE et canonique de la liste des capteurs
+#       de batterie du système (Zigbee, Netatmo, SwitchBot, etc.)
+#
+# 🧠 Détails techniques :
+#   - On extrait dynamiquement toutes les entités du groupe.
+#   - On ne conserve que les états numériques ("^[0-9]+$").
+#   - On convertit en int et filtre ceux < 28.
+#   - Si au moins une batterie satisfait ce critère → ON.
+#
+# 🧠 Lecture métier :
+#   Ce capteur matérialise un INVARIANT DE MAINTENANCE :
+#   "Aucune batterie critique ne doit être ignorée par le système."
+#
+# 🔗 Dépendance structurante :
+#   - group.batteries (contrat de périmètre)
+#
+# 🚫 Interdits :
+#   - Toute liste codée en dur dans ce template
+#   - Toute duplication du périmètre batterie ailleurs
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité : binary_sensor.batterie_a_remplacer
+# 🏷️ Statut : Arsenal v8.x — invariant maintenance
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Batterie à remplacer"
+      unique_id: batterie_a_remplacer
+      default_entity_id: binary_sensor.batterie_a_remplacer
+      device_class: battery
+
+      state: >
+        {{
+          expand('group.batteries')
+          | map(attribute='state')
+          | select('match', '^[0-9]+$')
+          | map('int')
+          | select('lt', 28)
+          | list
+          | count > 0
+        }}

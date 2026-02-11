@@ -1,0 +1,146 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles d’humidex
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Ces capteurs calculent la **moyenne glissante sur 30 jours**
+#     de l’humidex dans chaque pièce ou zone surveillée.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Calcule des statistiques à partir des historiques de Home Assistant
+#     - Ici, on retient uniquement la **moyenne** (`state_characteristic: mean`)
+#
+#  📅 Fenêtre temporelle :
+#     - Période d’analyse : 30 jours glissants
+#     - Nombre max. d’échantillons : 10 000
+#
+#  📊 Sortie :
+#     - Moyenne d’humidex sur les 30 derniers jours pour chaque entité
+#
+#  🏡 Zones domestiques : chambres, séjour, entrée, jardin, etc.
+#  🏢 Zones professionnelles : bureaux, ateliers, presses, etc.
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🏠 Chambres
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex Moyenne Chambre Arnaud"
+  entity_id: sensor.humidex_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_10000 10000
+
+- platform: statistics
+  name: "Humidex Moyenne Chambre Matthieu"
+  entity_id: sensor.humidex_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Chambre Parents"
+  entity_id: sensor.humidex_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+# ----------------------------------------------------------
+# 🏡 Zones de vie
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex Moyenne Séjour"
+  entity_id: sensor.humidex_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Entrée"
+  entity_id: sensor.humidex_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Jardin"
+  entity_id: sensor.humidex_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Petite Maison"
+  entity_id: sensor.humidex_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Extérieur"
+  entity_id: sensor.humidex_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+# ----------------------------------------------------------
+# 🏢 Bureaux et zones professionnelles
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex Moyenne Direction"
+  entity_id: sensor.humidex_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Compta"
+  entity_id: sensor.humidex_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Qualité"
+  entity_id: sensor.humidex_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Devis"
+  entity_id: sensor.humidex_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Commercial"
+  entity_id: sensor.humidex_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+# ----------------------------------------------------------
+# 🏭 Zones techniques / Atelier
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidex Moyenne Komori"
+  entity_id: sensor.humidex_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Bobst"
+  entity_id: sensor.humidex_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidex Moyenne Media"
+  entity_id: sensor.humidex_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000

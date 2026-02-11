@@ -1,0 +1,33 @@
+# ==========================================================
+# 🧠 TEMPLATE SENSOR — Clim : action en cours
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer de manière synthétique ce que fait réellement
+#   la climatisation à l’instant T (survol dashboard).
+#
+# 🧱 Principe Arsenal :
+#   - Capteur STRICTEMENT explicatif
+#   - Basé sur l’état réel (HVAC + alimentation)
+#   - Priorité à l’état "bloquée" si un verrou est actif
+#   - Aucune logique de décision
+#
+# ✅ Usage :
+#   Dashboard de survol (lecture immédiate)
+# ==========================================================
+
+- sensor:
+    - name: "Clim action en cours"
+      unique_id: clim_action_en_cours
+      icon: mdi:air-conditioner
+      state: >
+        {% if is_state('input_boolean.blocage_clim_poele', 'on') %}
+          bloquee
+        {% elif is_state('climate.clim', 'cool') %}
+          cool_actif
+        {% elif is_state('climate.clim', 'dry') %}
+          dry_actif
+        {% elif is_state('climate.clim', 'heat') %}
+          heat_actif
+        {% else %}
+          arret
+        {% endif %}

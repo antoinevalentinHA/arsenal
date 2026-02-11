@@ -1,0 +1,69 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Vacances (période calendaire)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition de la PÉRIODE CALENDAIRE
+#   correspondant à une absence prolongée
+#   (vacances).
+#
+#   Ces helpers bornent temporellement
+#   le mode « Vacances », sans jamais
+#   piloter directement l’état de la maison.
+#
+# 🧩 Nature :
+#   Paramètres MÉTIER — planification calendaire.
+#
+# ❌ Ne fait PAS :
+#   - Ne bascule PAS directement le mode Vacances
+#   - Ne modifie PAS le chauffage ou l’ECS
+#   - Ne déclenche AUCUNE action immédiate
+#   - Ne remplace PAS la logique centrale des modes
+#
+# 🔍 Spécificité technique :
+#   - Date + heure (précision fine)
+#   - Comparaison avec l’instant courant
+#   - Exploité conjointement avec
+#     `input_boolean.mode_vacances_auto`
+#
+# 🔄 Fonctionnement :
+#   - Les dates sont définies manuellement
+#     via les dashboards de réglage des modes.
+#   - Les automatisations :
+#       • détectent l’entrée dans la période
+#       • détectent la sortie de la période
+#       • autorisent ou non le mode Vacances
+#
+# 🔗 Utilisation :
+#   - Automatisations modes :
+#       • Activation programmée Vacances
+#       • Désactivation programmée Vacances
+#   - Capteurs et scripts :
+#       • Pré-confort retour
+#       • Diagnostics chauffage / ECS
+#   - Dashboards :
+#       • Paramétrage
+#       • Visualisation des dates
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_datetime)
+#       • Autorisation (booléen / capteurs)
+#       • Décision (scripts centraux)
+#       • Action réelle (chauffage, ECS, etc.)
+#
+# ⚠️ Remarque :
+#   Modifier ces valeurs change UNIQUEMENT
+#   la période de validité du mode Vacances,
+#   jamais l’état immédiat du système.
+# ==========================================================
+
+
+debut_vacances:
+  name: Début des vacances
+  has_date: true
+  has_time: true
+
+fin_vacances:
+  name: Fin des vacances
+  has_date: true
+  has_time: true

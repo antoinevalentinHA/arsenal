@@ -1,0 +1,144 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim – Exécution mode cible
+#
+# 🎯 Rôle :
+#   Appliquer le mode cible issu de `sensor.clim_target_mode`
+#   de manière idempotente, sans aucune décision métier.
+#
+# 🧱 Principe Arsenal :
+#   - Action PURE
+#   - Zéro logique thermique
+#   - Zéro arbitrage
+#   - Zéro redondance
+#
+# 🔌 Dépendances :
+#   - sensor.clim_target_mode
+#   - climate.clim
+#   - switch.clim_power
+#
+# 📍 Entité :
+#   script.clim_execution
+# ==========================================================
+
+clim_execution:
+  alias: "Clim – Exécution mode cible"
+  mode: single
+  max_exceeded: silent
+
+  sequence:
+
+    # ======================================================
+    # 1️⃣ LECTURE — Mode cible et état réel
+    # ======================================================
+    - variables:
+        target: "{{ states('sensor.clim_target_mode') }}"
+        hvac: "{{ state_attr('climate.clim', 'hvac_mode') }}"
+        power: "{{ states('switch.clim_power') }}"
+
+    # ======================================================
+    # 2️⃣ ABSTENTION — Mode inconnu ou stable
+    # ======================================================
+    - condition: template
+      value_template: >
+        {{ target in ['cool', 'dry', 'heat', 'off'] }}
+
+    # ======================================================
+    # 3️⃣ APPLICATION — Selon le mode cible
+    # ======================================================
+    - choose:
+
+        # --------------------------------------------------
+        # ➜ MODE COOL
+        # --------------------------------------------------
+        - conditions: "{{ target == 'cool' }}"
+          sequence:
+
+            - choose:
+                - conditions: "{{ power != 'on' }}"
+                  sequence:
+                    - service: switch.turn_on
+                      target:
+                        entity_id: switch.clim_power
+                    - delay: "00:00:02"
+
+            - choose:
+                - conditions: "{{ hvac != 'cool' }}"
+                  sequence:
+                    - service: climate.set_hvac_mode
+                      target:
+                        entity_id: climate.clim
+                      data:
+                        hvac_mode: cool
+
+
+        # --------------------------------------------------
+        # ➜ MODE DRY
+        # --------------------------------------------------
+        - conditions: "{{ target == 'dry' }}"
+          sequence:
+
+            - choose:
+                - conditions: "{{ power != 'on' }}"
+                  sequence:
+                    - service: switch.turn_on
+                      target:
+                        entity_id: switch.clim_power
+                    - delay: "00:00:02"
+
+            - choose:
+                - conditions: "{{ hvac != 'dry' }}"
+                  sequence:
+                    - service: climate.set_hvac_mode
+                      target:
+                        entity_id: climate.clim
+                      data:
+                        hvac_mode: dry
+
+
+        # --------------------------------------------------
+        # ➜ MODE HEAT
+        # --------------------------------------------------
+        - conditions: "{{ target == 'heat' }}"
+          sequence:
+
+            - choose:
+                - conditions: "{{ power != 'on' }}"
+                  sequence:
+                    - service: switch.turn_on
+                      target:
+                        entity_id: switch.clim_power
+                    - delay: "00:00:02"
+
+            - choose:
+                - conditions: "{{ hvac != 'heat' }}"
+                  sequence:
+                    - service: climate.set_hvac_mode
+                      target:
+                        entity_id: climate.clim
+                      data:
+                        hvac_mode: heat
+
+
+        # --------------------------------------------------
+        # ➜ MODE OFF
+        # --------------------------------------------------
+        - conditions: "{{ target == 'off' }}"
+          sequence:
+
+            - choose:
+                - conditions: "{{ hvac != 'off' }}"
+                  sequence:
+                    - service: climate.turn_off
+                      target:
+                        entity_id: climate.clim
+                    - delay: "00:00:01"
+
+            - choose:
+                - conditions: "{{ power == 'on' }}"
+                  sequence:
+                    - service: switch.turn_off
+                      target:
+                        entity_id: switch.clim_power

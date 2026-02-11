@@ -1,0 +1,196 @@
+# ==========================================================
+# 💧 TEMPLATE SENSORS — Humidité Relative “Seuil Bas”
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Déterminer le **seuil bas de confort en humidité relative (%)**
+#   pour chaque zone du bâtiment, afin de détecter les conditions 
+#   d’air trop sec (inconfort, irritation, électricité statique, etc.).  
+#   Ce seuil est **automatiquement ajusté selon la saison et la période
+#   météorologique** du moment.
+#
+# ⚙️ Fonctionnement :
+#   - Dépend de la **période météo active** (`sensor.periode_meteo`) :
+#       → `aube`, `matin`, `jour`, `crepuscule`, `nuit`
+#   - Récupère la moyenne courante issue du capteur filtré :
+#       → `sensor.humidite_relative_filtre_<periode>_moyenne_<zone>`
+#   - Applique un **offset saisonnier adaptatif**, selon le mois :
+#       - Décembre, Janvier, Février → -5 %  (air plus sec, seuil plus bas)  
+#       - Mars, Avril, Octobre, Novembre → -4 %  
+#       - Mai à Septembre → -3 %
+#   - Calcule le seuil bas :
+#       → `seuil_bas = moyenne - offset`
+#
+# 🧮 Logique :
+#   1️⃣ Identifier la période météo active (jour, nuit, etc.).  
+#   2️⃣ Récupérer la moyenne d’humidité relative correspondante.  
+#   3️⃣ Déterminer l’offset saisonnier selon le mois.  
+#   4️⃣ Appliquer le calcul et arrondir à 0,1 %.  
+#
+# 🧩 Capteurs / Zones concernées :
+#   ▪️ Résidentiel :
+#      - Chambre Arnaud  
+#      - Chambre Matthieu  
+#      - Chambre Parents  
+#      - Entrée  
+#      - Séjour  
+#      - Cave  
+#      - Garage  
+#      - Petite Maison  
+#      - SDB Enfants  
+#      - SDB Parents  
+#      - Jardin  
+#      - Extérieur  
+#
+#   ▪️ Professionnel / Technique :
+#      - Direction  
+#      - Compta  
+#      - Qualité  
+#      - Devis  
+#      - Commercial  
+#      - Stock Carton  
+#      - Stock PF  
+#      - Komori  
+#      - Bobst  
+#      - Media
+#
+# 💡 Interprétation :
+#   - Si humidité relative < Seuil Bas :
+#       → Risque d’air trop sec, inconfort, besoin d’humidification.  
+#   - Si humidité relative ≈ Seuil Bas :
+#       → Zone de confort limite, attention à la dérive hygrométrique.  
+#   - Si humidité relative > Seuil Bas :
+#       → Conditions de confort acceptables.
+#
+# ⚠️ Remarques :
+#   - L’ajustement automatique rend les seuils cohérents sur toute l’année :
+#       → plus exigeant en hiver (où l’air intérieur est naturellement sec),  
+#       → plus permissif en été.  
+#   - Ces seuils sont essentiels pour la **gestion du confort intérieur** 
+#     et la **prévention des déséquilibres hygrométriques**.  
+#   - Associés aux capteurs “Humidité Relative Seuil Haut”, ils définissent 
+#     un **cadre dynamique de confort hygrométrique complet**.
+#
+# 📊 Type : Template Sensor  
+# 💧 Domaine : Hygrométrie / Confort / Santé intérieure  
+# ==========================================================
+
+- sensor:
+    - name: "Humidité relative Seuil Bas Chambre Arnaud"
+      unique_id: humidite_relative_seuil_bas_chambre_arnaud
+      state: &humidite_relative_seuil_bas_logic >
+        {% set periode = states('sensor.periode_meteo') %}
+        {% set suffixe = this.entity_id | replace('sensor.humidite_relative_seuil_bas_', '') %}
+        {% set moyenne = states('sensor.humidite_relative_filtre_' ~ periode ~ '_moyenne_' ~ suffixe) | float(0) %}
+        {% set mois = now().month %}
+
+        {# Offset saisonnier : plus strict en hiver #}
+        {% set offset =
+          5 if mois in [12, 1, 2] else
+          4 if mois in [3, 4, 10, 11] else
+          3 %}
+        {{ (moyenne - offset) | round(1) }}
+
+- sensor:
+    - name: "Humidité relative Seuil Bas Entrée"
+      unique_id: humidite_relative_seuil_bas_entree
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité relative Seuil Bas Jardin"
+      unique_id: humidite_relative_seuil_bas_jardin
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité relative Seuil Bas Chambre Matthieu"
+      unique_id: humidite_relative_seuil_bas_chambre_matthieu
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité relative Seuil Bas Chambre Parents"
+      unique_id: humidite_relative_seuil_bas_chambre_parents
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité relative Seuil Bas Petite Maison"
+      unique_id: humidite_relative_seuil_bas_petite_maison
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité relative Seuil Bas Séjour"
+      unique_id: humidite_relative_seuil_bas_sejour
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité relative Seuil Bas Cave"
+      unique_id: humidite_relative_seuil_bas_cave
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité relative Seuil Bas SDB Parents"
+      unique_id: humidite_relative_seuil_bas_sdb_parents
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité relative Seuil Bas SDB Enfants"
+      unique_id: humidite_relative_seuil_bas_sdb_enfants
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité relative Seuil Bas Garage"
+      unique_id: humidite_relative_seuil_bas_garage
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Extérieur"
+      unique_id: humidite_relative_seuil_bas_exterieur
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Direction"
+      unique_id: humidite_relative_seuil_bas_direction
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Compta"
+      unique_id: humidite_relative_seuil_bas_compta
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Qualité"
+      unique_id: humidite_relative_seuil_bas_qualite
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Devis"
+      unique_id: humidite_relative_seuil_bas_devis
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Commercial"
+      unique_id: humidite_relative_seuil_bas_commercial
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Stock Carton"
+      unique_id: humidite_relative_seuil_bas_stock_carton
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Stock PF"
+      unique_id: humidite_relative_seuil_bas_stock_pf
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Komori"
+      unique_id: humidite_relative_seuil_bas_komori
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Bobst"
+      unique_id: humidite_relative_seuil_bas_bobst
+      state: *humidite_relative_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Relative Seuil Bas Media"
+      unique_id: humidite_relative_seuil_bas_media
+      state: *humidite_relative_seuil_bas_logic

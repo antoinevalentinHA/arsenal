@@ -1,0 +1,21 @@
+- name: "clavier_alarme_1_action"
+  unique_id: clavier_alarme_1_action
+  state_topic: "zigbee2mqtt/clavier_alarme_1/action"
+  icon: mdi:key-variant
+
+- name: "clavier_alarme_1_badge"
+  unique_id: clavier_alarme_1_badge
+  state_topic: "zigbee2mqtt/clavier_alarme_1"
+  value_template: "{{ value_json.action_code | default('') }}"
+  icon: mdi:nfc
+
+- name: "clavier_alarme_2_action"
+  unique_id: clavier_alarme_2_action
+  state_topic: "zigbee2mqtt/clavier_alarme_2/action"
+  icon: mdi:key-variant
+
+- name: "clavier_alarme_2_badge"
+  unique_id: clavier_alarme_2_badge
+  state_topic: "zigbee2mqtt/clavier_alarme_2"
+  value_template: "{{ value_json.action_code | default('') }}"
+  icon: mdi:nfc

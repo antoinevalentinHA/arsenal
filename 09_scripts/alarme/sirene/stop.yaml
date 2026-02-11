@@ -1,0 +1,62 @@
+# ==========================================================
+# 🔕 SCRIPT — Sirène : Arrêt immédiat
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Arrêter immédiatement toute émission sonore en cours
+#   de la sirène Zigbee, quel que soit le mode actif.
+#
+# 🎯 Objectif :
+#   Fournir une action terminale explicite permettant
+#   l’extinction forcée de la sirène lors d’un désarmement,
+#   d’une annulation d’alarme ou d’une action manuelle.
+#
+# ⚙️ Fonctionnement :
+#   - Publie une commande MQTT Zigbee2MQTT avec
+#     `"mode": "stop"` vers la sirène.
+#   - Ne contient aucune logique conditionnelle.
+#   - Ne dépend d’aucun état interne Home Assistant.
+#
+# 🚫 Ce script NE FAIT PAS :
+#   - Ne décide PAS quand arrêter la sirène
+#   - Ne vérifie PAS l’état de l’alarme
+#   - Ne gère PAS de temporisation
+#   - Ne déclenche AUCUN autre feedback (sonore ou visuel)
+#
+# 🧱 Dépendances :
+#   - MQTT / Zigbee2MQTT
+#   - Sirène Zigbee compatible commande "warning → stop"
+#
+# 📊 Type :
+#   Script d’exécution directe (action terminale)
+#
+# 📍 Entité :
+#   script.arret_sirene
+#
+# 🔁 Remarque sémantique :
+#   - Ce script est volontairement minimaliste.
+#   - Toute logique métier (désarmement, validation,
+#     sécurité, UX) est portée par les automatisations
+#     ou scripts appelants.
+#
+# ✅ Architecture :
+#   Arsenal v6+
+#   Home Assistant 2024.8+
+# ==========================================================
+
+
+arret_sirene:
+  alias: Arrêter la sirène (mode burglar)
+  mode: single
+  sequence:
+    - action: mqtt.publish
+      data:
+        topic: zigbee2mqtt/sirene/set
+        payload: >
+          {
+            "warning": {
+              "mode": "stop"
+            }
+          }
+        qos: 0
+        retain: false
+        evaluate_payload: true

@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : Fenêtre pluie (anti-rebond Zigbee)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir une FENÊTRE TEMPORELLE post-détection de pluie,
+#   utilisée comme référence d’anti-rebond pour les
+#   événements pluie issus du capteur Zigbee.
+#
+# 🧩 Nature :
+#   Cadre TEMPOREL — temporisation post-événement.
+#
+# ❌ Ne fait PAS :
+#   - Ne détecte PAS la pluie
+#   - Ne filtre PAS directement les événements
+#   - Ne bloque PAS un capteur Zigbee
+#   - Ne décide PAS de l’état "pluie"
+#
+# 🔍 Spécificité technique :
+#   - Timer restaurable (`restore: true`)
+#   - Durée fixe (2 minutes)
+#   - États exploitables : active / idle
+#
+# 🔄 Fonctionnement :
+#   - Démarré lors d’une détection pluie
+#   - Tant qu’il est actif :
+#       • les événements pluie sont
+#         considérés comme NON EXPLOITABLES
+#         par les logiques métier
+#   - À l’expiration :
+#       • la fenêtre temporelle est close
+#       • une nouvelle impulsion pluie
+#         peut être prise en compte
+#
+# 🔗 Utilisation :
+#   - Automatisations météo / pluie
+#   - Logique d’impulsion pluie
+#   - Anti-rebond événementiel Zigbee
+#   - Diagnostics météo
+#
+# 🧠 Principe Arsenal associé :
+#   - Le timer définit le TEMPS
+#   - La validité d’un événement est
+#     une INTERPRÉTATION externe
+#
+# ⚠️ Remarque :
+#   L’expiration du timer n’entraîne
+#   AUCUNE action automatique.
+# ==========================================================
+
+
+pluie_zigbee_rearm:
+  name: "Réarmement pluie (Zigbee)"
+  duration: "00:02:00"
+  restore: true

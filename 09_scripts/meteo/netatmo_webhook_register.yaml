@@ -1,0 +1,79 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Netatmo
+#              Réenregistrement du webhook API
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Forcer le réenregistrement du webhook Netatmo
+#   auprès des serveurs cloud de l’API Netatmo.
+#
+#   Ce script restaure la capacité de Home Assistant
+#   à recevoir les événements push Netatmo.
+#
+# ----------------------------------------------------------
+# 🧩 CONTEXTE D’UTILISATION
+#
+#   Ce script est destiné à corriger les situations
+#   où les événements Netatmo ne sont plus reçus :
+#
+#     - redémarrage de Home Assistant
+#     - reconnexion réseau
+#     - renouvellement de token OAuth
+#     - mise à jour de l’intégration Netatmo
+#     - perte silencieuse du webhook côté cloud
+#
+# ----------------------------------------------------------
+# ⚙️ COMPORTEMENT TECHNIQUE
+#
+#   - Appelle explicitement le service :
+#       netatmo.register_webhook
+#   - Aucun paramètre requis
+#   - Action immédiate
+#   - Aucune vérification de retour côté API
+#
+#   ➜ L’appel est idempotent :
+#     plusieurs exécutions successives sont sans danger.
+#
+# ----------------------------------------------------------
+# 🧠 POSITION DANS L’ARCHITECTURE ARSENAL
+#
+#   - Script d’infrastructure
+#   - Ne fait AUCUN traitement métier
+#   - Ne modifie AUCUNE donnée utilisateur
+#   - Sert exclusivement à restaurer un lien technique
+#
+# ----------------------------------------------------------
+# 🧱 USAGES AUTORISÉS
+#
+#   - Exécution manuelle de maintenance
+#   - Appel contrôlé au démarrage du système
+#   - Déclenchement ponctuel en cas de perte Netatmo
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Aucun calcul
+#   - Aucune notification
+#   - Aucune automatisation météo
+#   - Aucune dépendance à d’autres scripts
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script d’infrastructure — connectivité cloud
+#
+# 📍 Entité :
+#   script.netatmo_register_webhook
+#
+# ⏱️ Fréquence :
+#   Ponctuelle / maintenance
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+netatmo_register_webhook:
+  alias: Netatmo - Réenregistrer webhook
+  mode: single
+  sequence:
+    - action: netatmo.register_webhook

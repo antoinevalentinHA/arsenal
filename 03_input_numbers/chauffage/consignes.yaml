@@ -1,0 +1,67 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Consignes thermiques chauffage
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir les CONSIGNES DE TEMPÉRATURE de référence
+#   utilisées par le système de décision chauffage :
+#     - Consigne en présence
+#     - Consigne en absence
+#
+# 🧱 Nature :
+#   - Ce sont des CONSIGNES, pas des seuils.
+#   - Elles n’exécutent aucune action directe.
+#   - Elles ne déclenchent jamais le chauffage à elles seules.
+#
+# 🧠 Principe Arsenal :
+#   - Les capteurs MESURENT.
+#   - Les consignes EXPRIMENT une intention thermique.
+#   - Les scripts / automatisations DÉCIDENT.
+#   - Les intégrations (ViCare) EXÉCUTENT.
+#
+# 🔗 Utilisation :
+#   - Calcul des écarts à la consigne
+#   - Logique décisionnelle centrale chauffage
+#   - Synchronisation bidirectionnelle HA ↔ ViCare
+#   - Affichage et réglage via dashboards
+#
+# ⚠️ Règle fondamentale :
+#   - Une consigne n’est jamais un ordre.
+#   - Aucun ON/OFF ne doit dépendre uniquement
+#     de la valeur de ces helpers.
+#
+# 📐 Unité :
+#   - Degrés Celsius (°C)
+# ==========================================================
+
+
+chauffage_consigne_presence:
+  name: Consigne présence
+  min: 17
+  max: 25
+  step: 1
+  unit_of_measurement: "°C"
+  mode: box
+
+chauffage_consigne_absence:
+  name: Consigne absence
+  min: 12
+  max: 20
+  step: 1
+  unit_of_measurement: "°C"
+  mode: box
+
+chauffage_consigne_confort:
+  name: Consigne confort
+  min: 17
+  max: 25
+  step: 1
+  unit_of_measurement: "°C"
+  mode: box
+
+chauffage_consigne_reduite:
+  name: Consigne réduite
+  min: 12
+  max: 20
+  step: 1
+  unit_of_measurement: "°C"
+  mode: box

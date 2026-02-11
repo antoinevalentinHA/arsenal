@@ -1,0 +1,35 @@
+# ==========================================================
+# ⚙️ TEMPLATE TRIGGERED SENSOR — Audi e-tron (Pourcentage moteur principal)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser la donnée `sensor.audi_a3_sportback_e_tron_primary_engine_percent`
+#   en conservant la dernière valeur numérique connue si la donnée
+#   devient indisponible ou invalide.
+#
+# ⚙️ Fonctionnement :
+#   - Mise à jour à chaque changement de valeur du capteur source.
+#   - Réévaluation au démarrage de Home Assistant.
+#   - Si donnée valide → reprise directe.
+#   - Sinon → conservation de la dernière valeur connue.
+#
+# 🧮 Source : sensor.audi_a3_sportback_e_tron_primary_engine_percent
+# 📊 Type : Trigger Template Sensor
+# 📏 Unité : %
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.audi_a3_sportback_e_tron_primary_engine_percent
+
+  sensor:
+    - name: "Audi e-tron – Pourcentage moteur principal (Local)"
+      unique_id: audi_a3_sportback_e_tron_primary_engine_percent_local
+      unit_of_measurement: "%"
+      state_class: measurement
+      state: >
+        {% set v = states('sensor.audi_a3_sportback_e_tron_primary_engine_percent') %}
+        {% if v | is_number %}
+          {{ v | float }}
+        {% else %}
+          {{ this.state | float(0) }}
+        {% endif %}

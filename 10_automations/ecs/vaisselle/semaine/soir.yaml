@@ -1,0 +1,52 @@
+# ==========================================================
+#  AUTOMATION : vaisselle_semaine_soir
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Automatiser le chauffage ECS pour le mode “vaisselle”
+#     en soirée durant la semaine uniquement.
+#
+#  💡 Avantages :
+#     - Aucune action manuelle nécessaire
+#     - Créneaux adaptés aux usages du soir
+#     - Logique validée par le script centralisé
+#
+#  ⚙️ Comportement :
+#     - À 18:30, 19:30 et 20:30
+#     - Lundi → vendredi uniquement
+#     - Si mode vaisselle = ON → lancement conditionnel via script
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '10250000000014'
+  alias: "ECS — Vaisselle — Semaine — Soir"
+  description: >
+    Déclenche à 18h30, 19h30 et 20h30 si mode vaisselle actif (le wrapper fait les vérifs).
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheurs — Créneaux du soir (Semaine)
+  # ======================================================
+  trigger:
+    - platform: time
+      at: "18:30:00"
+    - platform: time
+      at: "19:30:00"
+    - platform: time
+      at: "20:30:00"
+
+  # ======================================================
+  # ✅ Conditions — Mode vaisselle + jours ouvrés
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.mode_vaisselle
+      state: "on"
+    - condition: time
+      weekday: [mon, tue, wed, thu, fri]
+
+  # ======================================================
+  # 🔄 Action — Appel du script wrapper de décision
+  # ======================================================
+  action:
+    - service: script.ecs_vaisselle_lancer_si_ok

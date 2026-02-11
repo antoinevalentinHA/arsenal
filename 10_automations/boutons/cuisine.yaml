@@ -1,0 +1,130 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Bouton Cuisine – Jardin / Vaisselle
+#
+#  ID : 1014000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’interface physique utilisateur.
+#
+#     Elle interprète les gestes effectués sur le bouton
+#     Zigbee de la cuisine et déclenche des actions
+#     contextuelles distinctes selon le type d’appui.
+#
+#     Cette automation ne prend AUCUNE décision métier :
+#     elle se contente de traduire un geste utilisateur
+#     en actions explicites.
+#
+#  🧩 PRINCIPE
+#
+#     - Appui simple :
+#         • bascule (toggle) la prise du jardin
+#
+#     - Appui long :
+#         • mémorise le début d’appui via un helper
+#         • déclenche une action spécifique au relâchement
+#
+#     - Relâchement après appui long :
+#         • valide que l’appui long était intentionnel
+#         • déclenche un bouclage ECS temporisé
+#
+#  🧠 MÉMOIRE UTILISÉE
+#
+#     input_boolean.memo_hold_bouton_cuisine
+#
+#     → mémoire technique transitoire permettant
+#       de distinguer un appui long réel d’un simple appui.
+#
+#  📦 ACTIONS DÉCLENCHÉES
+#
+#     - switch.prise_jardin
+#     - script.bouclage_ecs_5_minutes
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide PAS quand un bouclage ECS est pertinent
+#     - Ne gère PAS la durée du bouclage
+#     - Ne contient AUCUNE logique métier ECS
+#     - Ne gère PAS d’état persistant long terme
+#
+#  📍 USAGE
+#
+#     - Interface physique quotidienne (cuisine)
+#     - Déclencheur manuel explicite
+#
+#  ✅ STATUT
+#
+#     Automation purement événementielle,
+#     conforme à l’architecture Arsenal :
+#     interface ≠ décision ≠ stratégie.
+# ==========================================================
+
+
+- id: '1014000000002'
+  alias: Bouton Cuisine - Jardin / Vaisselle
+  mode: queued
+
+  trigger:
+    # 🖱️ Appui simple
+    - id: single
+      platform: mqtt
+      topic: zigbee2mqtt/bouton_cuisine
+      value_template: "{{ value_json.get('action', '') }}"
+      payload: "single"
+
+    # ⏱️ Appui long
+    - id: hold
+      platform: mqtt
+      topic: zigbee2mqtt/bouton_cuisine
+      value_template: "{{ value_json.get('action', '') }}"
+      payload: "hold"
+
+    # ✋ Relâchement
+    - id: release
+      platform: mqtt
+      topic: zigbee2mqtt/bouton_cuisine
+      value_template: "{{ value_json.get('action', '') }}"
+      payload: "release"
+
+  action:
+    - choose:
+
+        # ==================================================
+        #  Appui simple → Toggle jardin
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: single
+          sequence:
+            - service: switch.toggle
+              target:
+                entity_id: switch.prise_jardin
+
+        # ==================================================
+        #  Début appui long → mémorisation
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: hold
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.memo_hold_bouton_cuisine
+
+        # ==================================================
+        #  Fin appui long → Bouclage ECS
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: release
+          sequence:
+            - condition: state
+              entity_id: input_boolean.memo_hold_bouton_cuisine
+              state: 'on'
+
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.memo_hold_bouton_cuisine
+
+            - service: script.bouclage_ecs_5_minutes

@@ -1,0 +1,43 @@
+# ==========================================================
+# ⚡ TEMPLATE SENSOR — Climatisation : Consommation estimée aujourd’hui
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Calculer la consommation énergétique estimée quotidienne de la climatisation,
+#   en fonction du temps de fonctionnement par mode (Cool, Dry, Heat) et
+#   de la puissance moyenne associée à chaque mode.
+#
+# ⚙️ Fonctionnement :
+#   Consommation = Σ (durée_mode × puissance_mode)
+#   - cool : durée du mode froid (input_number.clim_duree_cool_aujourdhui)
+#   - dry  : durée du mode déshumidification (input_number.clim_duree_dry_aujourdhui)
+#   - heat : durée du mode chauffage (input_number.clim_duree_heat_aujourdhui)
+#
+# 🧠 Détails techniques :
+#   - Device class : energy
+#   - State class  : measurement (valeur quotidienne)
+#   - Unité        : kWh
+#   - Icône        : ⚡ mdi:flash
+#
+# 📊 Type : Template Sensor
+# 📍 Entité : sensor.clim_consommation_estimee_aujourdhui
+# ==========================================================
+
+- sensor:
+    - name: "Clim - Consommation estimée aujourd'hui"
+      unique_id: clim_consommation_estimee_aujourdhui
+      icon: mdi:flash
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: measurement
+
+      # Calcul basé sur la durée de fonctionnement × puissance de chaque mode
+      state: >
+        {% set cool = states('input_number.clim_duree_cool_aujourdhui') | float(0) %}
+        {% set dry  = states('input_number.clim_duree_dry_aujourdhui')  | float(0) %}
+        {% set heat = states('input_number.clim_duree_heat_aujourdhui') | float(0) %}
+
+        {% set p_cool = states('input_number.puissance_clim_cool') | float(0) %}
+        {% set p_dry  = states('input_number.puissance_clim_dry')  | float(0) %}
+        {% set p_heat = states('input_number.puissance_clim_heat') | float(0) %}
+
+        {{ ((cool * p_cool) + (dry * p_dry) + (heat * p_heat)) | round(2) }}

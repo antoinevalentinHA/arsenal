@@ -1,0 +1,115 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Normal – Restauration du contexte global
+#
+#  ID : 1009000000007
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de RESTAURATION DE CONTEXTE MÉTIER.
+#
+#     Elle réactive l’ensemble des fonctions et états
+#     volontairement suspendus durant le mode *Vacances*
+#     afin de remettre la maison dans un fonctionnement
+#     nominal.
+#
+#     Elle ne publie aucun état UI et ne notifie pas
+#     l’utilisateur.
+#
+#     Elle prépare exclusivement le terrain pour que
+#     les moteurs décisionnels (chauffage, ECS, alarme)
+#     recalculent leurs comportements normalement.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Orchestration silencieuse de sortie de contexte
+#     - Application séquentielle d’un état nominal
+#     - Aucune logique décisionnelle autonome
+#     - Aucune projection d’état en UI
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement lors du passage de `mode_maison`
+#       à l’état *Normal*
+#
+#     - Actions appliquées :
+#         • réactivation des planifications ECS
+#         • réactivation du bouclage visiteur
+#
+#     - Aucune notification
+#     - Aucune persistance UI
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne notifie pas l’utilisateur
+#     - Ne projette aucun état en UI
+#     - Ne décide pas des consignes de chauffage
+#     - Ne pilote pas la décision thermique centrale
+#     - Ne gère pas l’entrée ou la sortie du mode Vacances
+#     - Ne force aucun état final de confort
+#
+# ----------------------------------------------------------
+#  🔗 UTILISATION
+#
+#     - Point de restauration unique du contexte *Normal*
+#     - Garantit un retour propre et silencieux
+#       après une absence prolongée
+#
+# ----------------------------------------------------------
+#  🧠 PRINCIPE ARSENAL
+#
+#     Le retour à *Normal* réactive le contexte.
+#     Les décisions dynamiques restent du ressort
+#     exclusif des moteurs centraux.
+#
+# ----------------------------------------------------------
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+- id: '1009000000007'
+  alias: "Normal – Sortie du contexte Vacances"
+  description: >
+    Remet en service toutes les fonctions désactivées durant le
+    mode *Vacances* : ECS, bouclage, etc.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Mode Maison devient "Normal"
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_select.mode_maison
+      to: "Normal"
+
+  # ======================================================
+  # 🔄 Actions — Séquence de restauration complète
+  # ======================================================
+  action:
+
+    # ✅ Réactivation planifications ECS
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.ecs_blocage_planifiee
+
+    - action: input_boolean.turn_on
+      target:
+        entity_id:
+          - input_boolean.ecs_desinfection_active
+
+    # 🔁 Réactivation bouclage visiteur
+    - action: input_boolean.turn_on
+      target:
+        entity_id:
+          - input_boolean.bouclage_visiteur
+
+    # 🧹 Disqualification notification Vacances
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: contexte_vacances

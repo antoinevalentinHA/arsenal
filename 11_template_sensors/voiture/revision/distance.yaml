@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧰 TEMPLATE TRIGGERED SENSOR — Audi e-tron (Prochaine inspection - Distance)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Stabiliser la donnée `sensor.audi_a3_sportback_e_tron_service_inspection_distance`
+#   pour garantir la continuité d’affichage et d’analyse,
+#   même en cas d’erreur ou d’absence temporaire de donnée.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque changement du capteur source.
+#   - Réévaluation automatique au démarrage de Home Assistant.
+#   - Si donnée numérique valide → reprise directe.
+#   - Sinon → conservation de la dernière valeur connue.
+#
+# 🧮 Source : sensor.audi_a3_sportback_e_tron_service_inspection_distance
+# 📊 Type : Trigger Template Sensor
+# 📏 Unité : km
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.audi_a3_sportback_e_tron_service_inspection_distance
+
+  sensor:
+    - name: "Audi e-tron – Prochaine inspection (Distance) (Local)"
+      unique_id: audi_a3_sportback_e_tron_service_inspection_distance_local
+      unit_of_measurement: "km"
+      state_class: measurement
+      state: >
+        {% set v = states('sensor.audi_a3_sportback_e_tron_service_inspection_distance') %}
+        {% if v | is_number %}
+          {{ v | float }}
+        {% else %}
+          {{ this.state | float(0) }}
+        {% endif %}

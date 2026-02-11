@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Courbe de chauffe (consignes)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir les VALEURS DE CONSIGNE de la courbe de chauffe
+#   utilisées par le système chauffage :
+#     - Pente de la courbe
+#     - Parallèle (décalage vertical)
+#
+# 🧱 Nature :
+#   - Ce sont des PARAMÈTRES DE COURBE, pas des commandes.
+#   - Ils n’allument ni n’éteignent jamais le chauffage.
+#   - Ils n’impliquent aucune décision ON / OFF.
+#
+# 🧠 Principe Arsenal :
+#   - Les capteurs analysent le comportement thermique.
+#   - Les capteurs suggèrent (pente / parallèle).
+#   - Les input_number FIGENT la consigne retenue.
+#   - Les automatisations décident si et quand appliquer.
+#   - ViCare exécute la modification réelle.
+#
+# 🔗 Utilisation :
+#   - Référence officielle de la courbe active
+#   - Comparaison avec valeurs suggérées
+#   - Auto-ajustement contrôlé (simulé ou réel)
+#   - Synchronisation HA ↔ ViCare
+#   - Affichage diagnostic et réglages manuels
+#
+# ⚠️ Règles fondamentales :
+#   - Modifier une consigne ≠ appliquer immédiatement
+#   - Toute application doit passer par une automatisation
+#     explicitement identifiée comme autorité d’exécution
+#
+# 📐 Unités :
+#   - Pente       : sans unité
+#   - Parallèle   : degrés Celsius (°C)
+# ==========================================================
+
+
+chauffage_pente_consigne:
+  name: Pente (consigne)
+  min: 0.0
+  max: 3.0
+  step: 0.1
+  unit_of_measurement: ""
+
+chauffage_parallele_consigne:
+  name: Parallèle (consigne)
+  min: -10
+  max: 10
+  step: 1
+  unit_of_measurement: "°C"

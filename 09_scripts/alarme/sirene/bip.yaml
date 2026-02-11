@@ -1,0 +1,73 @@
+# ==========================================================
+# 🔊 SCRIPT — Sirène : Bip court sécurisé
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Émettre un bip sonore court via la sirène Zigbee,
+#   uniquement si celle-ci est considérée comme disponible.
+#
+# 🎯 Objectif :
+#   Fournir un retour sonore discret (confirmation / feedback)
+#   sans risquer d’envoyer une commande vers une sirène
+#   non joignable ou en état indéterminé.
+#
+# ⚙️ Fonctionnement :
+#   - Vérifie la disponibilité INDIRECTE de la sirène
+#     via l’état du capteur de batterie associé.
+#   - Si la batterie est connue :
+#       → envoie une commande MQTT Zigbee2MQTT
+#         pour produire un bip court (1 seconde).
+#   - Journalise l’action dans le log système.
+#
+# 🚫 Ce script NE FAIT PAS :
+#   - Ne décide PAS quand biper
+#   - Ne gère PAS la logique d’alarme
+#   - Ne vérifie PAS l’état armé / désarmé
+#   - Ne déclenche PAS la sirène en continu
+#
+# 🧱 Dépendances :
+#   - sensor.sirene_battery
+#   - MQTT / Zigbee2MQTT
+#
+# 📊 Type :
+#   Script utilitaire (feedback sonore sécurisé)
+#
+# 📍 Entité :
+#   script.sirene_bip
+#
+# ✅ Architecture :
+#   Arsenal v6+
+#   Home Assistant 2024.8+
+# ==========================================================
+
+
+sirene_bip:
+  alias: Sirène - Bip court (sécurisé)
+  mode: queued
+  max: 3
+
+  sequence:
+    # 🔒 Vérifie que la sirène est disponible (battery connue)
+    - condition: template
+      value_template: >
+        {{ states('sensor.sirene_battery') not in ['unknown', 'unavailable', None] }}
+
+    # 🔊 Bip court (1 seconde max)
+    - action: mqtt.publish
+      data:
+        topic: zigbee2mqtt/sirene/set
+        payload: >
+          {
+            "warning": {
+              "mode": "emergency",
+              "level": "low",
+              "strobe": false,
+              "duration": 1
+            }
+          }
+
+    # 📝 Log système (facultatif)
+    - action: system_log.write
+      data:
+        level: info
+        logger: custom_components.alarme
+        message: "[ALARME] Sirène - Bip court envoyé à {{ now().strftime('%H:%M:%S') }}"

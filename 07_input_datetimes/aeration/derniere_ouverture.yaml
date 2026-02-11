@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Aération – Dernière réouverture
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mémorisation de l’HORODATAGE
+#   de la dernière réouverture détectée
+#   pendant une phase de blocage post-aération.
+#
+# 🧩 Nature :
+#   Mémoire PERSISTANTE — repère temporel.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche AUCUNE action
+#   - Ne décide PAS d’un blocage ou d’une reprise
+#   - Ne représente PAS un état thermique
+#
+# 🔄 Exploitation :
+#   - Fournit un CONTEXTE temporel
+#     aux pipelines M3 / M4
+#   - Permet de décaler ou invalider
+#     certaines analyses (ex: deltaT)
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte :
+#       • Événement
+#       • Mémoire
+#       • Décision
+# ==========================================================
+
+
+aeration_reouverture_last:
+  name: "Aération – Dernière réouverture pendant blocage"
+  has_date: true
+  has_time: true

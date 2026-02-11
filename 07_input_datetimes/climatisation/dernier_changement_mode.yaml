@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Climatisation – Dernier changement de mode
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mémorisation de l’HORODATAGE (date + heure)
+#   du dernier changement EFFECTIF de mode
+#   de la climatisation.
+#
+# 🧩 Nature :
+#   Mémoire PERSISTANTE — source de vérité temporelle.
+#
+# ❌ Ne fait PAS :
+#   - Ne décide PAS du mode de fonctionnement
+#   - Ne pilote PAS la climatisation
+#   - Ne déclenche AUCUNE action
+#   - Ne reflète PAS une intention utilisateur
+#
+# 🔄 Fonctionnement :
+#   - Écrit exclusivement par l’automatisation
+#     événementielle de changement de mode.
+#   - Utilisé comme référence pour :
+#       • calculs de durées par mode
+#       • cumul énergétique
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Événement
+#       • Mémoire
+#       • Calcul
+#       • Décision
+#
+# ⚠️ Remarque :
+#   Ce helper ne doit JAMAIS être modifié manuellement.
+# ==========================================================
+
+
+clim_mode_last_change:
+  name: "Clim - Dernier changement de mode"
+  has_date: true
+  has_time: true
+  icon: mdi:clock-outline

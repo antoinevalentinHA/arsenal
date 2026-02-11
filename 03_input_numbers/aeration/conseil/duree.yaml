@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Durées cibles d’aération
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir des durées d’aération cibles à des fins
+#    de réglage utilisateur et d’affichage dans l’interface.
+#
+# 🧠 Lecture métier :
+#    Ces helpers représentent des OBJECTIFS DE DURÉE,
+#    non des contraintes imposées au moteur d’aération.
+#    À ce stade, ils ne sont pas utilisés par les
+#    automatisations décisionnelles.
+#
+# 📐 Paramètres définis :
+#    - Durée cible d’aération :
+#        → durée souhaitée à titre indicatif
+#    - Durée max en grand froid :
+#        → limite de confort déclarative (UI uniquement)
+#
+# 🔗 Dépendances :
+#    - Dashboards réglages aération
+#    - UI avancée (button-card templates)
+#
+# 🚫 Interdits :
+#    - Supposer un effet direct sur la durée réelle
+#    - Les considérer comme des règles moteur actives
+#    - Les utiliser sans raccordement explicite au pipeline
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - réglages UI / objectifs déclaratifs
+# ==========================================================
+
+
+aeration_duree_cible_minutes:
+  name: "Durée cible aération"
+  min: 2
+  max: 30
+  step: 1
+  unit_of_measurement: "min"
+  mode: slider
+  icon: mdi:timer
+
+aeration_duree_grand_froid_max_minutes:
+  name: "Durée max en grand froid"
+  min: 2
+  max: 15
+  step: 1
+  unit_of_measurement: "min"
+  mode: slider
+  icon: mdi:timer-sand

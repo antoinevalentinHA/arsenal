@@ -1,0 +1,136 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme – Intrusion (capteurs d’ouverture)
+#
+#  ID : 1002000000007
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de détection d’intrusion basée sur
+#     les capteurs d’ouverture lorsque l’alarme est armée.
+#
+#     Selon le mode actif ou test, elle déclenche :
+#       - une alarme réelle
+#       - ou une notification de test uniquement
+#
+#  🧩 PRINCIPE
+#
+#     - Réagit à l’ouverture d’un capteur surveillé
+#     - Vérifie l’état d’armement et plusieurs garde-fous
+#     - Applique un comportement distinct réel / test
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas du mode d’armement
+#     - Ne gère aucun délai d’entrée
+#     - Ne modifie aucun état de présence
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Séparation détection / armement / décision
+#     - Gestion explicite des faux positifs
+#     - Mode test non intrusif
+#
+#  ⚙️ EXÉCUTION
+#
+#     - Mode : queued (max 10)
+#     - Protection contre conflits d’exécution
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1002000000007'
+  alias: "Alarme – Intrusion (capteurs d’ouverture)"
+  description: >
+    Déclenche une alarme ou une notification de test si un capteur d’ouverture
+    s’active alors que l’alarme est armée en mode Absent. Évite les déclenchements
+    injustifiés via plusieurs sécurités (état capteur, délai, armement récent).
+
+  mode: queued
+  max: 10
+
+  # ======================================================
+  # 🔔 Déclencheur — Ouverture d’un capteur
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_chambre_arnaud
+        - binary_sensor.capteur_chambre_matthieu
+        - binary_sensor.capteur_chambre_parents_droite
+        - binary_sensor.capteur_chambre_parents_gauche
+        - binary_sensor.capteur_chambre_parents_milieu
+        - binary_sensor.capteur_fenetre_entree
+        - binary_sensor.capteur_fenetre_sejour_1
+        - binary_sensor.capteur_fenetre_sejour_2
+        - binary_sensor.capteur_fenetre_sejour_3
+        - binary_sensor.capteur_fenetre_sejour_4
+      to: 'on'
+
+  # ======================================================
+  # ✅ Conditions — Armement valide + anti-faux positifs
+  # ======================================================
+  condition:
+    - condition: template
+      alias: "Capteur valide (pas unknown/unavailable)"
+      value_template: >
+        {{ trigger.to_state.state not in ['unknown', 'unavailable'] }}
+
+    - condition: state
+      entity_id: alarm_control_panel.alarme_maison
+      state: 'armed_away'
+
+    - condition: state
+      entity_id: binary_sensor.alarme_armee_auto_recentement
+      state: 'off'
+
+    - condition: state
+      entity_id: binary_sensor.delai_desarmement_en_cours
+      state: 'off'
+
+  # ======================================================
+  # ▶️ Action — Déclenchement réel ou test
+  # ======================================================
+  action:
+    - choose:
+
+        # 🔐 Mode actif → Sirène + Notification
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.mode_test_alarme
+              state: 'off'
+          sequence:
+            - action: alarm_control_panel.alarm_trigger
+              target:
+                entity_id: alarm_control_panel.alarme_maison
+
+            - action: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🚨 Intrusion détectée"
+                message: >
+                  Intrusion confirmée à {{ now().strftime('%H:%M') }}  
+                  (capteur : {{ trigger.to_state.name }}).  
+                  
+                  La sirène a été déclenchée.
+                extra:
+                  ttl: 0
+                  priority: high
+                  importance: high
+
+        # 🧪 Mode test → Notification uniquement
+      default:
+        - action: script.notification_envoyer_avance
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "🔕 Intrusion simulée (mode test)"
+            message: >
+              Déclenchement de test à {{ now().strftime('%H:%M') }}  
+              (capteur : {{ trigger.to_state.name }}).  
+              
+              Aucun déclenchement réel n’a été effectué.
+            extra:
+              ttl: 0
+              priority: high
+              importance: high

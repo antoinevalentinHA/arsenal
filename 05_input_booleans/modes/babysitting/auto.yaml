@@ -1,0 +1,35 @@
+# ==========================================================
+#  INPUT BOOLEAN — Mode Babysitting : réinitialisation automatique
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorise ou bloque la réinitialisation automatique
+#     du mode Babysitting après expiration du timer associé.
+#
+#     Ce booléen ne déclenche pas directement la désactivation,
+#     il sert uniquement de **verrou logique** pour les
+#     automatisations responsables de la remise à l’état normal.
+#
+#  🔄 Cycle de vie :
+#     - ON  : la fin du timer `timer.babysitting` peut désactiver
+#             automatiquement le mode Babysitting
+#     - OFF : aucune réinitialisation automatique ; le retour à
+#             l’état normal doit être fait manuellement
+#
+#  📥 Pilotage :
+#     - Lecture et modification via dashboard ou scripts
+#
+#  📤 Consommation :
+#     - automatisations :
+#         • activation / désactivation du mode Babysitting
+#         • timers de fin de session
+#
+#  🧱 Principe Arsenal :
+#     - Les timers et scripts décident
+#     - Les input_booleans autorisent ou interdisent
+#       les actions automatisées
+# ==========================================================
+
+
+reset_mode_babysitting_auto:
+  name: "Réinitialisation auto babysitting"
+  icon: mdi:clock-check

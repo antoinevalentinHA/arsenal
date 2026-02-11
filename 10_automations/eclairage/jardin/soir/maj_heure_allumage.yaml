@@ -1,0 +1,96 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Jardin – Calcul horaire allumage soir
+#
+#  ID : 1007000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de calcul horaire dérivé.
+#
+#     Elle calcule et met à jour l’heure d’allumage
+#     de l’éclairage du jardin le soir, en fonction :
+#       • du coucher réel du soleil
+#       • d’un délai utilisateur (positif ou négatif)
+#
+#     Cette automation n’a AUCUN effet direct
+#     sur l’éclairage.
+#
+#  🧩 PRINCIPE
+#
+#     - Recalcul déclenché sur :
+#         • coucher du soleil
+#         • modification du délai utilisateur
+#     - Calcul d’une heure cible :
+#         coucher du soleil + délai
+#     - Garantie d’une heure future valide :
+#         si l’heure calculée est dépassée,
+#         elle est reportée au lendemain
+#     - Publication du résultat dans un helper
+#
+#  🧠 PARAMÈTRE UTILISATEUR
+#
+#     - input_number.delai_allumage_jardin_soir
+#         → décalage en minutes par rapport au coucher du soleil
+#
+#  🧠 SORTIE CALCULÉE
+#
+#     input_datetime.heure_allumage_jardin_soir
+#
+#     → heure cible consommée par les capteurs
+#       et automatisations du cycle soir
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - N’allume PAS l’éclairage
+#     - Ne déclenche AUCUNE action terrain
+#     - Ne décide PAS du cycle d’éclairage
+#     - Ne corrige PAS un état incohérent
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de pré-calcul horaire :
+#     calcul ≠ cycle ≠ action.
+#
+#     Elle fournit une heure saisonnière fiable,
+#     utilisée par les couches supérieures
+#     sans jamais piloter le matériel.
+# ==========================================================
+
+
+- id: '1007000000005'
+  alias: "Mise  à jour heure allumage jardin soir"
+  description: >
+    Met à jour automatiquement l’heure d’allumage du jardin le soir
+    en fonction du coucher du soleil et du délai défini par l’utilisateur.
+    Si l’heure résultante est dépassée, elle est reportée au lendemain.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheurs — Coucher du soleil + changement délai
+  # ======================================================
+  trigger:
+    - platform: sun
+      event: sunset
+
+    - platform: state
+      entity_id: input_number.delai_allumage_jardin_soir
+
+  # ======================================================
+  # 🔄 Action — Calcul et mise à jour de l'heure
+  # ======================================================
+  action:
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.heure_allumage_jardin_soir
+      data:
+        time: >
+          {% set sunset = as_local(as_datetime(state_attr('sun.sun', 'next_setting'))) %}
+          {% set delay = states('input_number.delai_allumage_jardin_soir') | float(0) %}
+          {% set dt = sunset + timedelta(minutes=delay) %}
+          {% if dt < now() %}
+            {{ (dt + timedelta(days=1)).strftime('%H:%M:%S') }}
+          {% else %}
+            {{ dt.strftime('%H:%M:%S') }}
+          {% endif %}

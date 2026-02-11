@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS MÉTIER : Stocks de durée d’aération
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker de manière PERSISTANTE (mémoire durable)
+#   les durées cumulées d’aération pour :
+#     - Rez-de-chaussée (RDC)
+#     - Étage
+#
+# 🧠 Nature de ces helpers :
+#   - Ce sont des REGISTRES MÉTIER.
+#   - Ils ne mesurent rien directement.
+#   - Ils ne calculent rien.
+#   - Ils stockent une valeur DÉJÀ DÉCIDÉE.
+#
+# ⚙️ Principe de fonctionnement :
+#   - Les événements d’aération sont détectés ailleurs.
+#   - Une automatisation incrémente ces stocks.
+#   - La valeur survit aux redémarrages Home Assistant.
+#   - Un reset explicite est possible en fin d’épisode
+#     (manuel ou automatisé).
+#
+# ⚠️ Important :
+#   - Ces helpers NE SONT PAS des durées instantanées.
+#   - Ils NE doivent PAS être remis à zéro implicitement.
+#   - Toute modification est une ACTION VOLONTAIRE.
+#
+# 🔗 Utilisés par :
+#   - Automatisations :
+#       • 10_automations/aeration/sauvegarde_duree.yaml
+#       • 10_automations/aeration/reset_duree.yaml
+#   - Dashboards :
+#       • lovelace/dashboards/aeration.yaml
+#   - Recorder :
+#       • recorder.yaml (inclusion explicite)
+#
+# 📐 Unité :
+#   - Secondes (s)
+#
+# 🧠 Principe Arsenal :
+#   - Les capteurs DÉTECTENT.
+#   - Les scripts / automations DÉCIDENT.
+#   - Les helpers STOCKENT.
+#   - Les dashboards EXHIBENT.
+#
+# ==========================================================
+
+duree_aeration_rdc_stock:
+  name: "Durée aération RDC (stock)"
+  min: 0
+  max: 100000
+  step: 1
+  unit_of_measurement: "s"
+
+duree_aeration_etage_stock:
+  name: "Durée aération Étage (stock)"
+  min: 0
+  max: 100000
+  step: 1
+  unit_of_measurement: "s"

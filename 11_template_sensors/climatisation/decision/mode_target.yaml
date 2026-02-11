@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom UI :
+#   Mode climatisation cible
+#
+# 🎯 Rôle :
+#   Décision centrale PURE du mode de climatisation,
+#   dérivée des besoins et autorisations,
+#   sans aucune action ni effet de bord.
+#
+# 🧱 Principe Arsenal :
+#   - Décision PURE
+#   - Aucune exécution
+#   - Aucune temporisation
+#   - Entity_id contractuel maîtrisé
+#
+# 📍 Entité :
+#   sensor.clim_target_mode
+# ==========================================================
+
+- sensor:
+    - name: "Clim Target Mode"
+      unique_id: clim_target_mode
+      state: >
+        {% if is_state('binary_sensor.besoin_clim_cool', 'on')
+              and is_state('binary_sensor.autorisation_clim_cool', 'on') %}
+          cool
+        {% elif is_state('binary_sensor.besoin_clim_dry', 'on')
+              and is_state('binary_sensor.autorisation_clim_dry', 'on') %}
+          dry
+        {% elif is_state('binary_sensor.besoin_clim_heat', 'on')
+              and is_state('binary_sensor.autorisation_clim_heat', 'on') %}
+          heat
+        {% else %}
+          off
+        {% endif %}

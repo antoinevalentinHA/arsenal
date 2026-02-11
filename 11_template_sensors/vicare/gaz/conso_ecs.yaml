@@ -1,0 +1,23 @@
+# ==========================================================
+#  TEMPLATE SENSOR : Gaz ECS – Total cumulatif local
+# ----------------------------------------------------------
+#  Rôle :
+#    Exposer le compteur persistant
+#    input_number.gaz_ecs_total_local_store
+#    comme un sensor energy compatible statistiques.
+# ==========================================================
+
+- sensor:
+    - name: "gaz_ecs_total_local"
+      unique_id: gaz_ecs_total_local
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: total
+      icon: mdi:water-boiler
+      state: >
+        {% set v = states('input_number.gaz_ecs_total_local_store') %}
+        {% if v in ['unknown','unavailable','none','None',''] %}
+          {{ states('sensor.gaz_ecs_total_local') }}
+        {% else %}
+          {{ v | float(0) }}
+        {% endif %}

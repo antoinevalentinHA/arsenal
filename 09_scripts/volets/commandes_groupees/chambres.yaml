@@ -1,0 +1,77 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPTS : Volets enfants (commandes groupées)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Fournir des commandes GROUPÉES, strictement exécutives,
+#   pour l’ouverture et la fermeture complètes des volets
+#   des chambres enfants (Arnaud & Matthieu).
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ
+#
+#   - Orchestrer plusieurs scripts unitaires
+#   - Garantir une exécution séquentielle fiable
+#   - Gérer une temporisation minimale (HomeKit / radio)
+#
+# ----------------------------------------------------------
+# ⚙️ MODE DE FONCTIONNEMENT
+#
+#   - Appel exclusif des scripts unitaires :
+#       • ouvrir_volet_arnaud
+#       • ouvrir_volet_matthieu
+#       • fermer_volet_arnaud
+#       • fermer_volet_matthieu
+#
+#   - Délai volontaire entre chaque commande
+#     pour éviter pertes ou collisions HomeKit.
+#
+# ----------------------------------------------------------
+# 🧠 PHILOSOPHIE ARSENAL
+#
+#   - Aucune logique métier
+#   - Aucune condition
+#   - Aucune décision
+#
+#   ➜ Ces scripts exécutent.
+#   ➜ Ils ne décident jamais.
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#   - Scripts unitaires volets enfants
+#   - Chaîne HomeKit / radio fonctionnelle
+#
+# ----------------------------------------------------------
+# ❌ CE QUE CES SCRIPTS NE FONT PAS
+#
+#   - Ne vérifient pas l’état réel des volets
+#   - Ne compensent pas les erreurs matérielles
+#   - Ne prennent aucune décision contextuelle
+#
+# ----------------------------------------------------------
+# 🧩 CAS D’USAGE
+#
+#   - Boutons Lovelace
+#   - Commandes vocales
+#   - Appels depuis scripts de niveau supérieur
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+ouvrir_volets_enfants:
+  alias: "Ouvrir volets enfants"
+  mode: single
+  sequence:
+    - service: script.ouvrir_volet_arnaud
+    - delay: "00:00:01"
+    - service: script.ouvrir_volet_matthieu
+
+fermer_volets_enfants:
+  alias: "Fermer volets enfants"
+  mode: single
+  sequence:
+    - service: script.fermer_volet_arnaud
+    - delay: "00:00:01"
+    - service: script.fermer_volet_matthieu

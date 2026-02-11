@@ -1,0 +1,41 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Lave-vaisselle – Cycle en cours
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     État logique indiquant si un cycle de
+#     lave-vaisselle est considéré comme
+#     en cours par le système.
+#
+#     Ce booléen constitue la source de vérité
+#     métier sur l’état du cycle.
+#
+#  🧱 Nature :
+#     - État logique métier
+#     - Vérité fonctionnelle persistante
+#
+#  🔄 Cycle de vie :
+#     - ON  : un cycle est considéré comme actif
+#     - OFF : aucun cycle n’est en cours
+#
+#  📥 N’effectue PAS :
+#     - aucune détection électrique directe
+#     - aucune mesure de consommation
+#     - aucune commande de la prise
+#
+#  📤 Utilisation :
+#     - Écrit par :
+#         • automatisations de début de cycle
+#         • automatisations de fin de cycle
+#     - Lu par :
+#         • automatisations de gestion énergétique
+#         • notifications de début / fin de cycle
+#
+#  🧠 Principe Arsenal :
+#     - Un cycle applicatif est représenté
+#       par un état logique explicite
+# ==========================================================
+
+
+lave_vaisselle_cycle:
+  name: Lave-vaisselle - cycle en cours
+  icon: mdi:dishwasher

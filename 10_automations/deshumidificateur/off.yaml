@@ -1,0 +1,109 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Déshumidificateur – Extinction différée hors recommandation
+#
+#  ID : 1006000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de discipline opérationnelle.
+#
+#     Elle éteint le déshumidificateur lorsque celui-ci
+#     fonctionne sans recommandation logique depuis
+#     une durée significative, afin d’éviter tout
+#     fonctionnement inutile ou prolongé.
+#
+#     Cette automation n’est PAS un garde-fou invariant.
+#
+#  🧩 PRINCIPE
+#
+#     - Détection d’une absence de recommandation persistante
+#     - Vérification que l’appareil est actif depuis suffisamment longtemps
+#     - Extinction contrôlée et assumée
+#
+#     Une tolérance temporelle est volontairement appliquée
+#     pour éviter des coupures trop agressives.
+#
+#  🕒 TEMPORISATIONS APPLIQUÉES
+#
+#     - Recommandation absente ≥ 5 minutes
+#     - Appareil actif ≥ 20 minutes
+#
+#     Ces durées constituent une politique d’usage,
+#     pas une règle logique absolue.
+#
+#  🧠 DÉCLENCHEURS UTILISÉS
+#
+#     - Changement d’état de la recommandation
+#     - Redémarrage stabilisé du système
+#     - Vérification périodique (polling volontaire)
+#
+#     Le polling est assumé pour garantir
+#     qu’aucun état prolongé ne soit manqué.
+#
+#  🧠 AUTORITÉ D’EXÉCUTION
+#
+#     script.set_deshumidificateur_state
+#
+#     → script unique responsable de l’état réel
+#       du déshumidificateur.
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule PAS l’humidité
+#     - Ne décide PAS quand déshumidifier
+#     - Ne remplace PAS le GUARD invariant
+#     - Ne corrige PAS immédiatement un état interdit
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de gestion temporelle :
+#     tolérance ≠ invariant.
+#
+#     Elle complète le GUARD défensif
+#     en apportant une extinction propre,
+#     robuste et traçable dans le temps.
+# ==========================================================
+
+
+- id: '1006000000002'
+  alias: "Déshumidificateur OFF si non recommandé"
+  description: >
+    Met le déshumidificateur hors tension si la recommandation
+    est absente depuis 5 min et que l'appareil est actif depuis ≥ 20 min.
+  mode: restart
+
+  # ======================================================
+  # 🔔 Déclencheurs — Non recommandé / Vérification périodique / Reboot HA
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
+      to: 'off'
+      for: '00:05:00'
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+    - platform: time_pattern
+      minutes: "/10"
+
+  # ======================================================
+  # ✅ Conditions — Non recommandé + actif ≥ 20 min
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: >
+        {{ is_state('binary_sensor.deshumidificateur_cave_demarrage_recommande', 'off')
+           and is_state('binary_sensor.deshumidificateur_actif', 'on')
+           and (as_timestamp(now()) - as_timestamp(states.binary_sensor.deshumidificateur_actif.last_changed)) > 20*60 }}
+
+  # ======================================================
+  # 🔄 Action — Extinction + log + notification
+  # ======================================================
+  action:
+
+    - action: script.set_deshumidificateur_state
+      data:
+        target_state: "off"

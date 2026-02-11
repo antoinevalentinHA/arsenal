@@ -1,0 +1,43 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Aération – Épisode en cours
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Marqueur global indiquant qu’un épisode
+#     d’aération est actuellement actif.
+#
+#     Il définit le CONTEXTE thermique courant
+#     pour l’ensemble du système (chauffage,
+#     diagnostics, dashboards).
+#
+#  🧱 Nature :
+#     - État métier transversal
+#     - Mémoire d’épisode persistante (ON / OFF)
+#
+#  🔄 Cycle de vie :
+#     - ON  : positionné au démarrage effectif
+#             d’un épisode d’aération
+#     - OFF : réinitialisé à la fin complète
+#             de l’épisode (fin d’aération)
+#
+#  📥 N’effectue PAS :
+#     - aucune détection d’ouverture
+#     - aucune temporisation
+#     - aucune décision thermique
+#     - aucun blocage actif du chauffage
+#
+#  📤 Utilisation :
+#     - Lue par :
+#         • automatisations de blocage chauffage
+#         • script Décision centrale chauffage
+#         • capteurs de diagnostic Vicare
+#         • dashboards de diagnostic
+#
+#  🧠 Principe Arsenal :
+#     - Un épisode métier = un état explicite
+#     - Le cerveau lit les états,
+#       il ne les déduit pas implicitement
+# ==========================================================
+
+
+aeration_episode_en_cours:
+  name: "aeration_episode_en_cours"

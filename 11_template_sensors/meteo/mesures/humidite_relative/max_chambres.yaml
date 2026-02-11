@@ -1,0 +1,89 @@
+# ==========================================================
+# 🛏️ TEMPLATE TRIGGERED SENSOR — Humidité relative max Chambres
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Identifier **la chambre la plus humide** en s’appuyant sur
+#   les capteurs consolidés (HomeKit + Zigbee fallback) :
+#     • sensor.humidite_relative_chambre_arnaud
+#     • sensor.humidite_relative_chambre_matthieu
+#     • sensor.humidite_relative_chambre_parents
+#
+# ⚙️ Fonctionnement :
+#   - Compare les valeurs numériques valides ∈ ]0 ; 100].
+#   - Retourne l’humidité maximale.
+#   - En cas de données invalides → conserve la dernière valeur connue.
+#
+# 🧠 Déclencheurs :
+#   - Variation d’un capteur consolidé.
+#   - Démarrage de Home Assistant.
+#
+# 📊 Type : Trigger Template Sensor
+# 📏 Unité : %
+# 💨 Device class : humidity
+# 📍 Entité : sensor.humidite_relative_max_chambres
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_arnaud
+        - sensor.humidite_relative_chambre_matthieu
+        - sensor.humidite_relative_chambre_parents
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité relative max Chambres"
+      unique_id: humidite_relative_max_chambres
+      unit_of_measurement: "%"
+      device_class: humidity
+
+      state: >
+        {% set brut = {
+          'Chambre Arnaud': states('sensor.humidite_relative_chambre_arnaud'),
+          'Chambre Matthieu': states('sensor.humidite_relative_chambre_matthieu'),
+          'Chambre Parents': states('sensor.humidite_relative_chambre_parents')
+        } %}
+
+        {% set valides = [] %}
+        {% for nom, v in brut.items() %}
+          {% set value = v | float(none) %}
+          {% if value is not none and 0 < value <= 100 %}
+            {% set valides = valides + [[nom, value]] %}
+          {% endif %}
+        {% endfor %}
+
+        {% if valides %}
+          {% set sorted = valides | sort(attribute=1) %}
+          {{ sorted[-1][1] | round(0) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+
+      attributes:
+        chambre_la_plus_humide: >
+          {% set brut = {
+            'Chambre Arnaud': states('sensor.humidite_relative_chambre_arnaud'),
+            'Chambre Matthieu': states('sensor.humidite_relative_chambre_matthieu'),
+            'Chambre Parents': states('sensor.humidite_relative_chambre_parents')
+          } %}
+
+          {% set valides = [] %}
+          {% for nom, v in brut.items() %}
+            {% set value = v | float(none) %}
+            {% if value is not none and 0 < value <= 100 %}
+              {% set valides = valides + [[nom, value]] %}
+            {% endif %}
+          {% endfor %}
+
+          {% if valides %}
+            {% set sorted = valides | sort(attribute=1) %}
+            {{ sorted[-1][0] }}
+          {% else %}
+            {{ state_attr(this.entity_id, 'chambre_la_plus_humide') or 'Mémoire' }}
+          {% endif %}
+
+        sources: >
+          - sensor.humidite_relative_chambre_arnaud
+          - sensor.humidite_relative_chambre_matthieu
+          - sensor.humidite_relative_chambre_parents

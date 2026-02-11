@@ -1,0 +1,93 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : Humidex (capteurs météo)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Centraliser l’affichage et l’iconographie des capteurs
+#    d’humidex utilisés pour le confort thermique et hygrométrique.
+#
+# 🧩 Périmètre :
+#    - Définit les friendly_name et icônes des capteurs humidex
+#    - Ne calcule AUCUNE valeur
+#    - N’influence AUCUNE décision automatique
+#
+# 🔗 Dépendances :
+#    - Capteurs humidex définis ailleurs (template / intégrations)
+#    - Utilisés par dashboards, diagnostics et logiques météo
+#
+# 🚫 Interdits :
+#    - Modifier les calculs d’humidex
+#    - Ajouter de la logique métier ou conditionnelle
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle / pure présentation
+# ==========================================================
+
+
+############################################################
+# 🏠 ESPACES DE VIE — INTÉRIEUR
+############################################################
+
+sensor.humidex_entree:
+  friendly_name: "Humidex Entrée"
+  icon: mdi:thermometer-water
+
+sensor.humidex_sejour:
+  friendly_name: "Humidex Séjour"
+  icon: mdi:thermometer-water
+
+
+############################################################
+# 🛏️ CHAMBRES
+############################################################
+
+sensor.humidex_chambre_arnaud:
+  friendly_name: "Humidex Chambre Arnaud"
+  icon: mdi:thermometer-water
+
+sensor.humidex_chambre_matthieu:
+  friendly_name: "Humidex Chambre Matthieu"
+  icon: mdi:thermometer-water
+
+sensor.humidex_chambre_parents:
+  friendly_name: "Humidex Chambre Parents"
+  icon: mdi:thermometer-water
+
+
+############################################################
+# 🚿 SALLES DE BAINS
+############################################################
+
+sensor.humidex_sdb_parents:
+  friendly_name: "Humidex SDB Parents"
+  icon: mdi:thermometer-water
+
+sensor.humidex_sdb_enfants:
+  friendly_name: "Humidex SDB Enfants"
+  icon: mdi:thermometer-water
+
+
+############################################################
+# 🏗️ ANNEXES & ZONES TECHNIQUES
+############################################################
+
+sensor.humidex_cave:
+  friendly_name: "Humidex Cave"
+  icon: mdi:thermometer-water
+
+sensor.humidex_garage:
+  friendly_name: "Humidex Garage"
+  icon: mdi:thermometer-water
+
+sensor.humidex_petite_maison:
+  friendly_name: "Humidex Petite Maison"
+  icon: mdi:thermometer-water
+
+
+############################################################
+# 🌿 EXTÉRIEUR
+############################################################
+
+sensor.humidex_jardin:
+  friendly_name: "Humidex Jardin"
+  icon: mdi:thermometer-water

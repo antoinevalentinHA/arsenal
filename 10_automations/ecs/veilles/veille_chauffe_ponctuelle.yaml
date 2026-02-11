@@ -1,0 +1,60 @@
+# ==========================================================
+#  AUTOMATION : ECS — Veille chauffe ponctuelle
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Observer le créneau ECS ponctuel calculé et déclencher
+#     le cycle de chauffe une seule fois quand le créneau
+#     devient actif.
+#
+#  🧱 Principe Arsenal :
+#     - Aucune logique temporelle
+#     - Aucune boucle
+#     - Aucune decision metier
+#     - Reagit uniquement a l'etat calcule
+#
+#  ⚙️ Comportement :
+#     - Declenchement au passage OFF -> ON du capteur
+#     - Verification de securite avant lancement
+#
+#  ✅ Compatibilite : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10250000000001"
+  alias: "ECS - Veille chauffe ponctuelle"
+  description: >
+    Lance un cycle ECS ponctuel lorsque le créneau calculé
+    devient actif, sans scan minute.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.ecs_creneau_ponctuel_en_cours
+      from: "off"
+      to: "on"
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+    - condition: state
+      entity_id: binary_sensor.ecs_creneau_ponctuel_en_cours
+      state: "on"
+
+    # 🔒 BLOCAGE PLANIFICATION
+    - condition: state
+      entity_id: input_boolean.ecs_blocage_planifiee
+      state: "off"
+
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "off"
+
+  action:
+    - service: script.chauffage_ecs_cycle
+      data:
+        mode: "ponctuel"

@@ -1,0 +1,85 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Séjour – Levée du délai fenêtres
+#
+#  ID : 10170000000006
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de LEVÉE DE BLOCAGE TEMPORAIRE.
+#
+#     Elle annule le timer de grâce associé aux fenêtres
+#     du séjour dès que toutes les ouvertures sont
+#     intégralement refermées.
+#
+#     Elle permet au moteur chauffage de reprendre
+#     immédiatement son fonctionnement normal,
+#     sans attendre l’expiration du délai de sécurité.
+#
+#  🧱 NATURE
+#
+#     - Synchronisation ouvertures ↔ chauffage
+#     - Annulation conditionnelle de temporisation
+#     - Aucune décision thermique autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement à chaque fermeture de fenêtre
+#       du séjour
+#     - Vérification globale :
+#         • aucune fenêtre du séjour encore ouverte
+#     - Annulation du timer :
+#         • timer.fenetre_sejour_ouverte_grace
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas d’allumer ou d’éteindre le chauffage
+#     - Ne démarre pas le timer de grâce
+#     - Ne traite pas les fenêtres individuellement
+#     - Ne force aucune consigne thermique
+#
+#  🔗 UTILISATION
+#
+#     - Complément direct des automatisations
+#       de blocage chauffage liées aux fenêtres du séjour
+#     - Garantit une reprise rapide dès fermeture complète
+#
+#  🧠 PRINCIPE ARSENAL
+#
+#     Les temporisations protègent le système.
+#     Leur levée doit être explicite, globale
+#     et immédiatement réversible.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10170000000006"
+  alias: "Chauffage – Séjour – Levée délai fenêtres"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_fenetre_sejour_1
+        - binary_sensor.capteur_fenetre_sejour_2
+        - binary_sensor.capteur_fenetre_sejour_3
+        - binary_sensor.capteur_fenetre_sejour_4
+      to: "off"
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ expand([
+          'binary_sensor.capteur_fenetre_sejour_1',
+          'binary_sensor.capteur_fenetre_sejour_2',
+          'binary_sensor.capteur_fenetre_sejour_3',
+          'binary_sensor.capteur_fenetre_sejour_4'
+        ]) | selectattr('state','eq','on') | list | count == 0 }}
+
+  action:
+    - service: timer.cancel
+      target:
+        entity_id: timer.fenetre_sejour_ouverte_grace

@@ -1,0 +1,113 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Airstage – Relance manuelle de l’intégration
+#
+#  ID : 1012000000013
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Permet de relancer manuellement l’intégration Fujitsu
+#     Airstage afin de tenter de restaurer un flux de données
+#     figé ou dégradé.
+#
+#     Cette automation est conçue exclusivement comme un
+#     outil de maintenance et de diagnostic.
+#
+#  🚫 NE FAIT PAS
+#     - Ne se déclenche jamais automatiquement
+#     - Ne planifie aucune relance périodique
+#     - Ne pilote pas la climatisation
+#     - Ne force pas la mise à jour des données
+#
+#  🧩 UTILISATION
+#     - Déclenchement volontaire uniquement :
+#         • bouton « Exécuter » dans Home Assistant
+#         • service automation.trigger
+#         • bouton dédié dans un dashboard
+#     - Vérifie l’état de fraîcheur des données avant et après
+#       relance
+#     - Gère un compteur de tentatives et notifie le résultat
+#
+#  ✅ CONTRAINTES
+#     - Aucune logique automatique ou conditionnelle globale
+#     - Aucune interaction avec des règles métier
+#     - Fonctionne indépendamment des automatisations
+#       de résilience automatique
+# ==========================================================
+
+
+- id: '1012000000013'
+  alias: "Airstage – Relance intégration (manuel)"
+  description: >
+    Relance manuellement l’intégration Fujitsu Airstage.
+    Ne se déclenche jamais automatiquement : exécution à la demande uniquement.
+  mode: single
+  max_exceeded: silent
+
+  # ======================================================
+  # 🚫 Déclencheur — Toujours faux (aucun lancement automatique)
+  # ======================================================
+  trigger:
+    - platform: template
+      value_template: "{{ false }}"
+
+  # ======================================================
+  # ✅ Condition — Données figées ≥ 60 min (contrôle à la main)
+  # ======================================================
+  condition:
+    - condition: template
+      alias: "Données Airstage figées"
+      value_template: >
+        {{ states('sensor.fujitsu_age_donnees') | float(0) >= 60 }}
+
+  # ======================================================
+  # 🔄 Actions — Reload + notifications
+  # ======================================================
+  action:
+    - variables:
+        tentative: "{{ states('input_number.airstage_reload_tentatives') | int(0) }}"
+        prochain_delai: >
+          {% set base = [ (tentative + 1) * 10, 60 ] | min %}
+          {{ base }}
+
+    # 📈 Incrément du compteur de tentatives
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.airstage_reload_tentatives
+      data:
+        value: "{{ tentative + 1 }}"
+
+    # 🔧 Rechargement de l’intégration Airstage
+    - service: homeassistant.reload_config_entry
+      data:
+        entry_id: !secret airstage_entry_id
+
+    # ⏳ Délai de 2 min avant vérification de fraîcheur
+    - delay: "00:02:00"
+
+    - choose:
+
+        # ❌ Échec → notification mobile prioritaire
+        - conditions: >
+            {{ states('sensor.fujitsu_age_donnees') | float(999) >= 10 }}
+          sequence:
+            - service: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🚨 Relance Airstage échouée"
+                message: >
+                  {{ now().strftime('%d/%m %H:%M') }}  
+                  La relance manuelle d’Airstage n’a pas réussi.  
+                  Vérifie la connectivité du module ou du réseau local.
+                extra:
+                  ttl: 0
+                  priority: high
+                  importance: high
+
+      default:
+
+        # ✅ Succès → compteur réinitialisé, silence UI
+        - service: input_number.set_value
+          target:
+            entity_id: input_number.airstage_reload_tentatives
+          data:
+            value: 0

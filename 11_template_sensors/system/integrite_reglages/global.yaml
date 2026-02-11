@@ -1,0 +1,69 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Intégrité paramètres — Global
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#   Fournir une vue AGRÉGÉE de l’intégrité des paramètres
+#   du système, tous domaines confondus.
+#
+#   Ce capteur est la SENTINELLE GLOBALE :
+#     - ON  → au moins un domaine présente
+#             des paramètres invalides
+#     - OFF → tous les domaines sont cohérents
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE ARSENAL
+#
+#   - Lecture pure
+#   - Aucune décision métier
+#   - Aucune action
+#   - Dépend uniquement des capteurs d’intégrité
+#     de chaque domaine
+#
+# ----------------------------------------------------------
+# 📦 SOURCES
+#
+#   - group.parametres_invalides_domaines
+#
+# ----------------------------------------------------------
+# 📊 ATTRIBUTS EXPOSÉS
+#
+#   - domaines_invalides :
+#       Liste des domaines actuellement en erreur
+#
+#   - nombre_domaines_invalides :
+#       Compteur simple des domaines invalides
+#
+# ----------------------------------------------------------
+# 🧠 ARCHITECTURE
+#
+#   Diagnostic global — Observabilité système
+# ==========================================================
+
+- binary_sensor:
+    - name: "Système — Paramètres invalides"
+      unique_id: parametres_invalides_global
+      default_entity_id: binary_sensor.parametres_invalides_global
+      state: >
+        {{ is_state('group.parametres_invalides_domaines', 'on') }}
+      icon: >
+        mdi:alert-octagon-outline
+      attributes:
+
+        domaines_invalides: >
+          {{
+            expand('group.parametres_invalides_domaines')
+            | selectattr('state', 'eq', 'on')
+            | map(attribute='entity_id')
+            | map('replace', 'binary_sensor.parametres_invalides_', '')
+            | list
+          }}
+
+        nombre_domaines_invalides: >
+          {{
+            expand('group.parametres_invalides_domaines')
+            | selectattr('state', 'eq', 'on')
+            | list
+            | count
+          }}

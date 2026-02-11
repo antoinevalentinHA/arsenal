@@ -1,0 +1,212 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Chauffage - Diagnostic thermique
+icon: mdi:fire
+
+views:
+
+  - title: Chauffage - Diagnostic thermique
+    path: diagnostic-thermique
+    icon: mdi:fire
+
+    # ==========================================================
+    # 🧭 BADGES — Navigation & retour contextuel
+    # ==========================================================
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-chauffage-dashboard/diagnostics-chauffage
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          - type: custom:button-card
+            template: section_header
+            name: 🧪 Interprétation
+
+          - type: markdown
+            content: |
+              {% set reg  = states('sensor.diagnostic_chauffage_regulation') %}
+              {% set rep  = states('sensor.diagnostic_chauffage_reprise') %}
+              {% set ine  = states('sensor.diagnostic_chauffage_inertie') %}
+              {% set stab = states('sensor.diagnostic_chauffage_stabilite') %}
+
+              {% set na = ['unknown','unavailable','none','None',''] %}
+
+              {# =======================================================
+                 ⚪ DONNÉES INDISPONIBLES
+                 ======================================================= #}
+              {% if reg in na or rep in na or ine in na or stab in na %}
+
+              ⚪ **Interprétation indisponible**
+
+              Une ou plusieurs synthèses diagnostic sont **unknown/unavailable**.
+
+              - **Régulation :** {{ reg }}
+              - **Reprise :** {{ rep }}
+              - **Inertie / isolation :** {{ ine }}
+              - **Stabilité (cyclage) :** {{ stab }}
+
+              {% else %}
+
+              🧠 **Interprétation indicative**
+
+              - {% if 'très stable' in reg %}🟢{% elif 'correcte' in reg %}🔵{% elif 'instable' in reg %}🟠{% else %}🔵{% endif %} **Régulation :** {{ reg }}
+              - {% if 'rapide' in rep %}🟢{% elif 'modérée' in rep %}🔵{% elif 'lente' in rep %}🟠{% else %}🔵{% endif %} **Reprise :** {{ rep }}
+              - {% if 'Très bonne' in ine %}🟢{% elif 'normale' in ine %}🔵{% elif 'très dissipatif' in ine %}🟠{% else %}🔵{% endif %} **Inertie / isolation :** {{ ine }}
+              - {% if 'très stable' in stab %}🟢{% elif 'correcte' in stab %}🔵{% elif 'Nervosité' in stab %}🟠{% else %}🔵{% endif %} **Stabilité (cyclage) :** {{ stab }}
+
+              {% endif %}
+
+          - type: custom:button-card
+            template: section_header
+            name: 🧾 Contexte
+    
+          - type: markdown
+            content: |
+              **Mode décidé :** `{{ states('input_select.chauffage_dernier_mode_decide') }}`
+              **Aération pipeline armé :** `{{ states('input_boolean.aeration_pipeline_arme') }}`
+              **Blocage chauffage (aération) :** `{{ states('input_boolean.chauffage_blocage_aeration') }}`
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔥 Dynamiques Présence — Reprise / Arrêt
+    
+          - type: markdown
+            content: |
+              {%- macro num(entity_id, digits=2, suffix='') -%}
+                {%- set s = states(entity_id) -%}
+                {%- if s in ['unknown','unavailable','none','None',''] -%}
+                  n/a
+                {%- else -%}
+                  {%- set v = s | float(none) -%}
+                  {%- if v is none -%}n/a{%- else -%}{{ v | round(digits) }}{{ suffix }}{%- endif -%}
+                {%- endif -%}
+              {%- endmacro -%}
+
+              {%- macro intv(entity_id, suffix='') -%}
+                {%- set s = states(entity_id) -%}
+                {%- if s in ['unknown','unavailable','none','None',''] -%}
+                  n/a
+                {%- else -%}
+                  {%- set v = s | int(none) -%}
+                  {%- if v is none -%}n/a{%- else -%}{{ v }}{{ suffix }}{%- endif -%}
+                {%- endif -%}
+              {%- endmacro -%}
+
+              {%- macro dur_min(entity_id, digits=1) -%}
+                {%- set s = states(entity_id) -%}
+                {%- if s in ['unknown','unavailable','none','None',''] -%}
+                  n/a
+                {%- else -%}
+                  {%- set v = s | float(none) -%}
+                  {%- if v is none -%}n/a{%- else -%}{{ v | round(digits) }} min{%- endif -%}
+                {%- endif -%}
+              {%- endmacro -%}
+
+              {%- set a1 = 'sensor.temperature_reprise_presence_chambres' -%}
+              {%- set c1 = 'sensor.amplitude_chute_reprise_presence_chambres' -%}
+              {%- set c2 = 'sensor.duree_chute_reprise_presence_chambres' -%}
+              {%- set c3 = 'sensor.vitesse_reprise_presence_chambres' -%}
+
+              {%- set b0 = 'sensor.temperature_arret_presence_chambres' -%}
+              {%- set o1 = 'sensor.amplitude_overshoot_arret_presence_chambres' -%}
+              {%- set o2 = 'sensor.duree_overshoot_arret_presence_chambres' -%}
+              {%- set o3 = 'sensor.vitesse_refroidissement_presence_chambres' -%}
+
+              **Reprise (A1)**
+              - **Température (A1)** : `{{ num(a1, 2, ' °C') }}`
+              - **Chute post-reprise** : `{{ num(c1, 2, ' °C') }}` • `{{ dur_min(c2, 1) }}`
+              - **Vitesse réelle de reprise** : `{{ num(c3, 2, ' °C/h') }}`
+
+              **Arrêt (B0)**
+              - **Température (B0)** : `{{ num(b0, 2, ' °C') }}`
+              - **Overshoot post-arrêt** : `{{ num(o1, 2, ' °C') }}` • `{{ dur_min(o2, 1) }}`
+              - **Vitesse refroidissement présence** : `{{ num(o3, 2, ' °C/h') }}`
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔄 Stabilité — Oscillateur thermique
+    
+          - type: markdown
+            content: |
+              {%- macro num(entity_id, digits=2, suffix='') -%}
+                {%- set s = states(entity_id) -%}
+                {%- if s in ['unknown','unavailable','none','None',''] -%}
+                  n/a
+                {%- else -%}
+                  {%- set v = s | float(none) -%}
+                  {%- if v is none -%}n/a{%- else -%}{{ v | round(digits) }}{{ suffix }}{%- endif -%}
+                {%- endif -%}
+              {%- endmacro -%}
+
+              {%- macro intv(entity_id, suffix='') -%}
+                {%- set s = states(entity_id) -%}
+                {%- if s in ['unknown','unavailable','none','None',''] -%}
+                  n/a
+                {%- else -%}
+                  {%- set v = s | int(none) -%}
+                  {%- if v is none -%}n/a{%- else -%}{{ v }}{{ suffix }}{%- endif -%}
+                {%- endif -%}
+              {%- endmacro -%}
+
+              {%- set osc = 'sensor.amplitude_oscillation_cycle_presence_chambres' -%}
+              {%- set d2  = 'sensor.nombre_cycles_jour_presence_chambres' -%}
+              {%- set d3  = 'sensor.duree_cycle_moyenne_presence_chambres' -%}
+
+              {%- set d2f = states(d2) | float(none) -%}
+              {%- set d3f = states(d3) | float(none) -%}
+
+              - **Amplitude oscillation cycle** : `{{ num(osc, 2, ' °C') }}`
+              - **Nombre de cycles aujourd’hui** : `{{ intv(d2) }}`
+              - **Durée cycle moyenne** : `{{ num(d3, 2, ' min') }}`
+
+              **Cohérence (D2 × D3 ≈ 1440 min)**
+              {% if d2f is not none and d3f is not none and d2f > 0 and d3f > 0 %}
+              {%- set prod = d2f * d3f -%}
+              - ratio : `{{ (prod / 1440) | round(2) }}`
+              - écart : `{{ (prod - 1440) | round(0) }} min`
+              {% else %}
+              - `n/a`
+              {% endif %}
+
+          - type: custom:button-card
+            template: section_header
+            name: 🌙 Absence — Inertie passive
+    
+          - type: markdown
+            content: |
+              {%- macro num(entity_id, digits=2, suffix='') -%}
+                {%- set s = states(entity_id) -%}
+                {%- if s in ['unknown','unavailable','none','None',''] -%}
+                  n/a
+                {%- else -%}
+                  {%- set v = s | float(none) -%}
+                  {%- if v is none -%}n/a{%- else -%}{{ v | round(digits) }}{{ suffix }}{%- endif -%}
+                {%- endif -%}
+              {%- endmacro -%}
+
+              {%- macro dur_h_from_s(entity_id, digits=2) -%}
+                {%- set s = states(entity_id) -%}
+                {%- if s in ['unknown','unavailable','none','None',''] -%}
+                  non atteinte sur ce cycle
+                {%- else -%}
+                  {%- set v = s | float(none) -%}
+                  {%- if v is none -%}non atteinte sur ce cycle{%- else -%}{{ ((v / 3600) | round(digits)) }} h{%- endif -%}
+                {%- endif -%}
+              {%- endmacro -%}
+
+              {%- set tmin = 'sensor.temperature_plancher_absence_chambres' -%}
+              {%- set dstb = 'sensor.duree_stabilisation_absence_chambres' -%}
+
+              - **Température plancher atteinte** : `{{ num(tmin, 2, ' °C') }}`
+              - **Durée stabilisation thermique** : `{{ dur_h_from_s(dstb, 2) }}`

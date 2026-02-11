@@ -1,0 +1,65 @@
+# ==========================================================
+# 👨‍👩‍👧‍👦 TEMPLATE BINARY SENSOR — Présence famille (zone sécurité)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer si au moins un membre de la famille est présent
+#   dans la zone de sécurité du domicile.
+#
+# ⚙️ Fonctionnement :
+#   - Combine plusieurs sources :
+#       • Position GPS (via device_tracker)
+#       • Connexion Wi-Fi locale
+#       • Modes spéciaux (enfants ou babysitting)
+#   - ON  → au moins une présence détectée
+#   - OFF → aucune présence détectée dans la zone de sécurité
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.presence_famille_securite
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Présence"
+      unique_id: presence_famille_securite
+      default_entity_id: binary_sensor.presence_famille_securite
+      device_class: presence
+
+      state: >
+        {# --- Paramètres zone de sécurité --- #}
+        {% set lat_zone = state_attr('zone.maison_securite', 'latitude')  | float %}
+        {% set lon_zone = state_attr('zone.maison_securite', 'longitude') | float %}
+        {% set radius   = states('input_number.zone_securite_radius') | float %}
+
+        {# --- Entités trackers via helpers --- #}
+        {% set tracker_antoine   = states('input_text.telephone_antoine_tracker') %}
+        {% set tracker_constance = states('input_text.telephone_constance_tracker') %}
+
+        {# --- Coordonnées dynamiques --- #}
+        {% set coords = [
+          [
+            state_attr(tracker_antoine, 'latitude')  | float(0),
+            state_attr(tracker_antoine, 'longitude') | float(0)
+          ],
+          [
+            state_attr(tracker_constance, 'latitude')  | float(0),
+            state_attr(tracker_constance, 'longitude') | float(0)
+          ]
+        ] %}
+
+        {# --- Détection zone par distance --- #}
+        {% set inside = namespace(flag=false) %}
+        {% for c in coords %}
+          {% set d = distance(c[0], c[1], lat_zone, lon_zone) * 1000 %}
+          {% if d < radius %}
+            {% set inside.flag = true %}
+          {% endif %}
+        {% endfor %}
+
+        {{
+          inside.flag
+          or is_state('person.valentin', 'Zone maison')
+          or is_state('person.constance', 'Zone maison')
+          or is_state('binary_sensor.presence_wifi_maison', 'on')
+          or is_state('binary_sensor.presence_enfants', 'on')
+          or is_state('input_boolean.presence_visiteur', 'on')
+        }}

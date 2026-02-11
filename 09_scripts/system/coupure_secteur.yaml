@@ -1,0 +1,106 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Mode panne – Coupure secteur
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Script de bascule en MODE DÉGRADÉ lors d’une coupure
+#   d’alimentation électrique détectée.
+#
+#   Il applique immédiatement des réglages de survie
+#   thermique et sanitaire pour préserver un confort
+#   minimal pendant une panne secteur.
+#
+# ----------------------------------------------------------
+# 🧱 POSITION DANS L’ARCHITECTURE
+#
+#   - Script de résilience système
+#   - Niveau : sécurité / continuité de service
+#
+#   ➜ Il est déclenché UNIQUEMENT par une automatisation
+#     de détection de panne électrique.
+#
+# ----------------------------------------------------------
+# ⚙️ COMPORTEMENT
+#
+#   Lors de l’exécution :
+#
+#   - Eau chaude sanitaire :
+#       • Lancement d’un cycle ECS ponctuel de secours
+#
+#   - Information utilisateur :
+#       • Notification persistante (état système)
+#       • Notification mobile prioritaire
+#
+# ----------------------------------------------------------
+# 🔒 GARANTIES
+#
+#   - Aucune décision métier
+#   - Aucune temporisation interne
+#   - Aucune sortie automatique du mode panne
+#
+#   ➜ Ce script applique un état de secours,
+#     il ne gère PAS le retour à la normale.
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne détecte pas la coupure secteur
+#   - Ne surveille pas le retour du courant
+#   - Ne restaure aucun état précédent
+#   - Ne boucle pas
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script de résilience — mode dégradé électrique
+#
+# 📍 Entité :
+#   script.mode_panne_coupure_secteur
+#
+# 🔗 Dépendances :
+#   - script.chauffage_ecs_cycle
+#   - persistent_notification
+#   - script.notification_envoyer_avance
+#
+# 🧩 Pipeline :
+#   Système / Panne / Résilience électrique
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+mode_panne_coupure_secteur:
+  alias: "Mode panne - Coupure secteur"
+  mode: single
+  sequence:
+
+    # 1) ECS -> lancer le cycle ponctuel
+    - service: script.chauffage_ecs_cycle
+      data:
+        mode: "ponctuel"
+
+    # 2) ⚠️ Notification persistante – état système (panne en cours)
+    - service: persistent_notification.create
+      data:
+        notification_id: mode_panne_secteur
+        title: "⚠️ Coupure secteur – Mode secours activé"
+        message: >
+          Coupure d’alimentation détectée à {{ now().strftime('%H:%M') }}  
+          (tension nulle sur la prise du réfrigérateur).  
+
+          **Actions automatiques effectuées :**
+          • Chauffage réglé en mode *confort*  
+          • Production d’eau chaude lancée (*mode secours*)  
+
+          Le système repassera en mode normal dès le retour du secteur.
+
+    # 3) 📲 Notification mobile prioritaire
+    - service: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "⚠️ Coupure secteur détectée"
+        message: "Mode secours activé : chauffage mode Confort et ECS lancée."
+        extra:
+          ttl: 0
+          priority: high
+          importance: high

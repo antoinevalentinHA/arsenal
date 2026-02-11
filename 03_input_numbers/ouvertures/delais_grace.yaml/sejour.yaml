@@ -1,0 +1,59 @@
+# ==========================================================
+# 🪟 ARSENAL — HELPER MÉTIER : Délai d’ouverture fenêtre
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir un délai de grâce avant qualification
+#   d’une ouverture de fenêtre dans une pièce
+#   à inertie / grâce thermique.
+#
+# 🧠 Contexte métier :
+#   - Certaines pièces (ex : séjour)
+#     ne doivent pas déclencher immédiatement
+#     une réaction thermique (chauffage / aération).
+#   - Ce délai permet d’absorber les ouvertures
+#     brèves (aération rapide, manipulation).
+#
+# ⚙️ Principe :
+#   - Le capteur détecte l’ouverture.
+#   - Le script applique un délai configurable.
+#   - Si l’ouverture persiste au-delà :
+#       → elle est qualifiée comme réelle.
+#
+# 🎯 Objectifs :
+#   - Supprimer toute constante temporelle en dur.
+#   - Permettre un réglage fin par pièce.
+#   - Différencier les logiques :
+#       • séjour : délai
+#       • enfants : immédiat
+#
+# ⚠️ Important :
+#   - Ce helper est un PARAMÈTRE MÉTIER.
+#   - Il impacte directement les décisions
+#     chauffage / aération.
+#   - Il ne sert pas à l’affichage.
+#
+# 🔗 Utilisé par :
+#   - Scripts :
+#       • 09_scripts/ouvertures/sejour.yaml
+#   - Dashboards :
+#       • lovelace/dashboards/reglages/ouvertures.yaml
+#
+# 📐 Unité :
+#   - Secondes (s)
+#
+# 🧠 Principe Arsenal :
+#   - Les capteurs DÉTECTENT.
+#   - Le helper PARAMÈTRE le délai.
+#   - Le script QUALIFIE l’ouverture.
+#   - Le système DÉCIDE.
+#
+# ==========================================================
+
+delai_ouverture_sejour:
+  name: "Délai ouverture séjour"
+  min: 0
+  max: 90
+  step: 10
+  unit_of_measurement: "s"
+  mode: slider
+#  initial: 30

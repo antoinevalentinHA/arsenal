@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : Antirebond chauffage (géolocalisation)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Filtrer TEMPORELLEMENT les événements issus de la
+#   géolocalisation afin d’éviter des décisions chauffage
+#   répétées ou instables dues au bruit du signal GPS
+#   (entrées / sorties rapides, pertes de précision, latence).
+#
+# 🧩 Nature :
+#   Garde-fou temporel d’ENTRÉE.
+#
+# ❌ Ne fait PAS :
+#   - Ne décide PAS du mode chauffage
+#   - Ne force PAS l’allumage ou l’extinction
+#   - Ne bloque PAS le chauffage par lui-même
+#   - Ne remplace PAS la logique métier de présence
+#
+# ⚙️ Fonctionnement :
+#   - Démarré explicitement lors d’un événement
+#     de géolocalisation (présence).
+#   - Tant que le timer est ACTIF :
+#       → toute nouvelle décision basée sur la géoloc
+#         est volontairement ignorée.
+#   - À l’expiration :
+#       → la géolocalisation redevient une source valide
+#         pour déclencher la décision centrale.
+#
+# 🔄 Persistance :
+#   - restore: true
+#   - Garantit la continuité du filtrage après redémarrage
+#     de Home Assistant (pas de rebond post-boot).
+#
+# 🔗 Utilisation :
+#   - Automatisations :
+#       • Déclencheur de la décision centrale chauffage
+#   - Scripts :
+#       • Démarrage / annulation contrôlée du timer
+#   - Dashboards :
+#       • Diagnostic lisible de l’état de filtrage géoloc
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Filtrage des signaux instables (timer)
+#       • Décision métier (script central)
+#       • Action finale (chauffage / ViCare)
+#
+# ⚠️ Remarque :
+#   Ce timer protège la DÉCISION,
+#   pas le chauffage lui-même.
+# ==========================================================
+
+
+chauffage_geoloc_antirebond:
+  name: "Antirebond chauffage geolocalisation"
+  duration: "00:05:00"
+  restore: true

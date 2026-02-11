@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Jour visiteur (Alarme)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Sélection manuelle du jour de visite prévu,
+#   utilisé dans le cadre du mode "visite" du système d’alarme.
+#
+# 🧩 Nature :
+#   Helper de CONTEXTE MÉTIER.
+#
+# ❌ Ne fait PAS :
+#   - Ne mesure aucun événement réel
+#   - Ne déclenche aucune action
+#   - Ne prend aucune décision logique
+#   - Ne pilote ni l’alarme ni ses états
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace :
+#       • Affichage du jour prévu
+#       • Paramétrage utilisateur du mode visite
+#   - Automatisations alarme / visite :
+#       • Comparaison avec le jour courant
+#       • Validation ou invalidation du mode visite
+#       • Sécurisation au redémarrage (reboot)
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Paramétrage humain (input_select)
+#       • Logique décisionnelle (automatisations)
+#   - La sélection d’un jour est une INFORMATION,
+#     jamais une instruction.
+#
+# ⚠️ Remarque :
+#   Toute modification de ce helper doit rester
+#   purement sémantique (liste de jours),
+#   sans impact fonctionnel direct.
+# ==========================================================
+
+jour_visiteur:
+  name: Jour visiteur
+  options:
+    - Lundi
+    - Mardi
+    - Mercredi
+    - Jeudi
+    - Vendredi
+    - Samedi
+    - Dimanche

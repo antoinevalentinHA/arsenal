@@ -1,0 +1,26 @@
+# ==============================
+# ARSENAL — Git ignore
+# ==============================
+
+# Secrets
+secrets.yaml
+
+# Home Assistant runtime
+.storage/
+*.db
+*.db-shm
+*.db-wal
+home-assistant.log*
+OZW_Log.txt
+
+# State / noise
+state.json
+.state
+
+# Backups / archives
+*.tar
+*.zip
+
+# OS / Editor
+.DS_Store
+Thumbs.db

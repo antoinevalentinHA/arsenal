@@ -1,0 +1,88 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Chauffage – Reset plateau thermostatique (pièce ciblée)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Réinitialise manuellement le plateau thermostatique mémorisé
+#   pour une pièce donnée, sélectionnée via :
+#     → input_select.adjustment_piece
+#
+#   Ce script permet de forcer une reprise propre
+#   de l’observation thermique locale.
+#
+# ----------------------------------------------------------
+# 🧩 CONTEXTE MÉTIER
+#
+#   Le plateau thermostatique représente :
+#     - une stabilisation thermique observée
+#     - utilisée par les logiques d’ajustement chauffage
+#
+#   Ce reset est une action volontaire de maintenance,
+#   typiquement après :
+#     - modification de consignes
+#     - changement de comportement thermique
+#     - diagnostic ou recalibrage
+#
+# ----------------------------------------------------------
+# 🎛️ MODE D’UTILISATION
+#
+#   - Appelé exclusivement depuis un bouton de dashboard
+#   - Ciblage dynamique via input_select.adjustment_piece
+#
+# ----------------------------------------------------------
+# 🏠 PIÈCES SUPPORTÉES
+#
+#   - chambre_arnaud
+#   - chambre_matthieu
+#   - chambre_parents
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucune décision chauffage
+#   - Aucune action ViCare
+#   - Aucune modification de consigne
+#   - Aucun déclenchement automatique
+#
+# ----------------------------------------------------------
+# 🔒 GARANTIES
+#
+#   - Action ponctuelle
+#   - Effet strictement local
+#   - Aucun impact global sur le système chauffage
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+reset_plateau_piece:
+  alias: "Reset plateau pièce"
+  mode: single
+  sequence:
+    - variables:
+        piece: "{{ states('input_select.adjustment_piece') }}"
+
+    - choose:
+        - conditions: "{{ piece == 'chambre_arnaud' }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.plateau_chambre_arnaud
+              data:
+                value: 0
+
+        - conditions: "{{ piece == 'chambre_matthieu' }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.plateau_chambre_matthieu
+              data:
+                value: 0
+
+        - conditions: "{{ piece == 'chambre_parents' }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.plateau_chambre_parents
+              data:
+                value: 0

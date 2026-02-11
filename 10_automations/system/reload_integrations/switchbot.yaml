@@ -1,0 +1,112 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     SwitchBot – Relance automatique de l’intégration sur gel
+#
+#  ID : 1012000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Surveiller la fraîcheur des données issues de l’intégration
+#     SwitchBot et relancer automatiquement celle-ci lorsque
+#     les données cessent d’être mises à jour pendant une
+#     durée significative.
+#
+#     Cette automation agit comme un mécanisme de résilience
+#     face aux gels d’API ou aux blocages Bluetooth.
+#
+#  🚫 NE FAIT PAS
+#     - Ne pilote aucun appareil SwitchBot
+#     - Ne déclenche aucune action métier dépendante des données
+#     - Ne force pas la mise à jour des états
+#
+#  🧩 UTILISATION
+#     - Surveillance périodique (toutes les 10 minutes)
+#     - Condition principale :
+#         • âge des données SwitchBot ≥ 60 minutes
+#     - Action :
+#         • reload de la config_entry SwitchBot
+#     - Suivi :
+#         • compteur de tentatives
+#         • backoff progressif plafonné
+#         • reset automatique dès retour de données fraîches
+#         • notification persistante selon succès ou échec
+#
+#  ✅ CONTRAINTES
+#     - Aucune logique métier intégrée
+#     - Aucune dépendance au contexte utilisateur
+#     - Comportement stable après redémarrage Home Assistant
+# ==========================================================
+
+
+- id: '1012000000011'
+  alias: "SwitchBot – Relance intégration (auto)"
+  mode: single
+  max_exceeded: silent
+
+  # ======================================================
+  # ⏱️ Déclencheur périodique
+  # ======================================================
+  trigger:
+    - platform: time_pattern
+      minutes: "/10"
+
+  # ======================================================
+  # ✅ Condition : données figées ≥ 60 min
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: >
+        {{ states('sensor.switchbot_age_donnees') | float(0) >= 60 }}
+
+  # ======================================================
+  # 🔄 Action : incrément + reload + contrôle du succès
+  # ======================================================
+  action:
+    - variables:
+        tentative: "{{ states('input_number.switchbot_reload_tentatives') | int(0) }}"
+        prochain_delai: >
+          {% set base = [ (tentative + 1) * 10, 60 ] | min %}
+          {{ base }}
+
+    # 📈 Incrément des tentatives
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.switchbot_reload_tentatives
+      data:
+        value: "{{ tentative + 1 }}"
+
+    # 🔧 Rechargement de la config SwitchBot
+    - service: homeassistant.reload_config_entry
+      data:
+        entry_id: !secret switchbot_entry_id
+
+    # 🕦 Petit délai avant vérification
+    - delay: "00:02:00"
+
+    - choose:
+
+        # ✅ Succès : compteur réinitialisé
+        - conditions: >
+            {{ states('sensor.switchbot_age_donnees') | float(999) < 10 }}
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.switchbot_reload_tentatives
+              data:
+                value: 0
+
+            - service: persistent_notification.create
+              data:
+                title: "✅ SwitchBot relancé"
+                message: >
+                  {{ now().strftime('%d/%m %H:%M') }}  
+                  Les données SwitchBot sont de nouveau fraîches.
+
+      # ❌ Échec : avertissement
+      default:
+        - service: persistent_notification.create
+          data:
+            title: "🚨 Relance SwitchBot échouée"
+            message: >
+              {{ now().strftime('%d/%m %H:%M') }}  
+              Tentative n°{{ tentative + 1 }} échouée  
+              (nouvelle tentative dans ~{{ prochain_delai }} min).

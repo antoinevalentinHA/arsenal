@@ -1,0 +1,31 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Mouvements
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Indiquer si au moins un capteur de mouvement de la
+#     maison détecte une présence.
+#
+#  🎯 États :
+#     - alert → au moins un mouvement détecté
+#     - off   → aucun mouvement
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_mouvements_dashboard"
+      unique_id: etat_mouvements_dashboard
+      state: >
+        {% set mouvements = [
+          states('binary_sensor.capteur_mouvements_sejour_1_occupancy'),
+          states('binary_sensor.capteur_mouvements_sejour_2_occupancy'),
+          states('binary_sensor.capteur_mouvements_entree_occupancy'),
+          states('binary_sensor.capteur_mouvements_garage_1_occupancy'),
+          states('binary_sensor.capteur_mouvements_garage_2_occupancy'),
+          states('binary_sensor.capteur_mouvements_garage_3_occupancy')
+        ] %}
+
+        {% if 'on' in mouvements %}
+          alert
+        {% else %}
+          off
+        {% endif %}

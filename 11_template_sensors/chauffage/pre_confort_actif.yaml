@@ -1,0 +1,60 @@
+# ==========================================================
+# 🔥 BINARY SENSOR — Pré-confort actif
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Autoriser le chauffage en Confort par anticipation
+#   avant un retour de vacances programmé.
+#
+# 🧩 Périmètre :
+#   - Détection d’une fenêtre de préchauffage avant fin_vacances
+#   - Piloté exclusivement par une durée fixe configurable
+#
+# ⏱️ Délai variable :
+#   - issu de input_number.duree_prechauffage_retour_vacances
+#   - valeur en heures, conversion interne en secondes
+#
+# 🔗 Dépendances :
+#   - input_select.mode_maison
+#   - input_datetime.fin_vacances
+#   - input_number.duree_prechauffage_retour_vacances
+#   - input_boolean.systeme_stable
+#
+# 🚫 Interdits / Ne fait pas :
+#   - Ne simule PAS une présence
+#   - N’interagit PAS avec alarme / ECS
+#   - Ne déclenche aucune action directe
+#
+# 🧠 Statut architectural :
+#   Diagnostic décisionnel — Autorité locale simple
+#
+# 🏷️ Statut :
+#   Arsenal — Socle
+# ==========================================================
+
+- trigger:
+    - platform: time_pattern
+      minutes: "/1"
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: systeme_stable
+
+  binary_sensor:
+    - name: "Pre-confort actif"
+      unique_id: pre_confort_actif
+      icon: mdi:radiator
+      state: >
+        {% set fin = states('input_datetime.fin_vacances') %}
+        {% set duree_h = states('input_number.duree_prechauffage_retour_vacances') | float(0) %}
+        {% if is_state('input_select.mode_maison', 'Vacances')
+              and fin not in ['unknown', 'unavailable', 'none', None]
+              and duree_h > 0 %}
+          {% set fin_dt = strptime(fin, '%Y-%m-%d %H:%M:%S') %}
+          {% if fin_dt is not none %}
+            {{ (as_timestamp(fin_dt) - as_timestamp(now())) <= (duree_h * 3600) }}
+          {% else %}
+            false
+          {% endif %}
+        {% else %}
+          false
+        {% endif %}

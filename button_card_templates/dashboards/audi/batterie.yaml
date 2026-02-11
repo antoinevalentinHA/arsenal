@@ -1,0 +1,83 @@
+#################################################################
+# 🔋 CARTE BATTERIE — SEUILS VARIABLES
+# ---------------------------------------------------------------
+# Affiche un niveau de batterie (%) avec code couleur paramétrable.
+#
+# Variables attendues :
+#   - s_crit : seuil critique
+#   - s_low  : seuil bas
+#   - s_mid  : seuil moyen
+#   - s_ok   : seuil correct
+#   - s_good : seuil bon
+#
+# Principe Arsenal :
+#   - Carte purement informationnelle
+#   - Seuils définis par le contexte (véhicule, batterie, usage)
+#   - Aucune interaction
+#################################################################
+
+carte_batterie_seuils_variables:
+  template: carte_base
+
+  show_state: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${Math.round(v)} %`;
+    ]]]
+
+  styles:
+    card:
+      - height: 72px
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+
+            const s_crit = variables?.s_crit;
+            const s_low  = variables?.s_low;
+            const s_mid  = variables?.s_mid;
+            const s_ok   = variables?.s_ok;
+            const s_good = variables?.s_good;
+
+            // ⚪ Indisponible
+            if (isNaN(v))
+              return 'rgba(224, 224, 224, 0.2)';
+
+            // 🔴 Critique
+            if (s_crit !== undefined && v < s_crit)
+              return 'rgba(244, 67, 54, 0.2)';
+
+            // 🟠 Faible
+            if (s_low !== undefined && v < s_low)
+              return 'rgba(255, 152, 0, 0.25)';
+
+            // 🟡 Vigilance
+            if (s_mid !== undefined && v < s_mid)
+              return 'rgba(255, 193, 7, 0.25)';
+
+            // 🟢 OK / Bon / Très bon
+            return 'rgba(76, 175, 80, 0.2)';
+          ]]]
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'

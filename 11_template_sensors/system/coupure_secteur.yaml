@@ -1,0 +1,30 @@
+# ==========================================================
+# ⚡ TEMPLATE BINARY SENSOR — Coupure secteur
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Détecter une coupure de courant sur la prise de la cave à vin.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → si la tension mesurée est égale à 0 V
+#   - OFF → si la tension est différente de 0 V
+#
+# 🧩 Source :
+#   sensor.prise_onduleur_voltage
+#
+# 🧠 Détails techniques :
+#   - Device class “problem” pour signaler une anomalie (coupure)
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité : binary_sensor.coupure_secteur
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Coupure secteur"
+      unique_id: coupure_secteur
+      default_entity_id: binary_sensor.coupure_secteur
+      device_class: problem
+
+      # Coupure détectée si la tension est mesurée à 0 V
+      state: >
+        {{ states('sensor.prise_onduleur_voltage') | float(230) == 0 }}

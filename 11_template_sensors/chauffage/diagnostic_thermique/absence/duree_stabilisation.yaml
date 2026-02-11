@@ -1,0 +1,242 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR
+#     Chauffage : Durée stabilisation Absence Chambres
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#     Mesurer le temps nécessaire après entrée réelle en absence
+#     pour que le bâtiment atteigne un régime thermique quasi-stationnaire
+#     (refroidissement devenu durablement très lent).
+#
+# 🧱 FRONTIÈRE D’AUTORITÉ
+#     OBSERVABILITÉ INERTIE THERMIQUE PASSIVE — ABSENCE RÉELLE
+#
+# 🧩 FINALITÉ
+#     - Qualification inertie structurelle du bâtiment
+#     - Analyse qualité d’isolation
+#     - Calibration offsets absence (supervisée uniquement)
+#     - Diagnostic inertiel long terme
+#
+# 🔒 PROPRIÉTÉS
+#   - Intra-cycle strict (absence uniquement)
+#   - Figé définitivement dès stabilisation atteinte
+#   - Reset complet à chaque nouveau cycle
+#   - Reload-safe / restart-safe / runtime-safe
+#   - Aucun seuil métier
+#   - Aucune décision
+#   - Aucune action
+#
+# 🚫 NE FAIT PAS
+#   - Ne décide jamais
+#   - Ne conditionne jamais une autorisation
+#   - Ne pilote jamais un mode
+#   - Ne sert jamais de seuil direct
+#
+# 🔗 AUTORITÉS
+#   - Contexte absence : binary_sensor.presence_famille_unifiee
+#   - Source thermique : sensor.temperature_min_chambres
+#
+# 🔒 FRONTIÈRE CANONIQUE
+#   - Début cycle : présence on → off
+#   - Fin cycle   : présence off → on
+#
+# 🧠 STATUT
+#   Capteur STRUCTURANT — INERTIE PASSIVE ABSENCE
+# ==========================================================
+
+- trigger:
+
+    # ------------------------------------------------------
+    # Début cycle absence (entrée réelle en absence)
+    # ------------------------------------------------------
+    - platform: state
+      entity_id: binary_sensor.presence_famille_unifiee
+      to: "off"
+
+    # ------------------------------------------------------
+    # Fin cycle absence (retour réel en présence)
+    # ------------------------------------------------------
+    - platform: state
+      entity_id: binary_sensor.presence_famille_unifiee
+      from: "off"
+
+    # ------------------------------------------------------
+    # Mise à jour thermique pendant absence
+    # ------------------------------------------------------
+    - platform: state
+      entity_id: sensor.temperature_min_chambres
+
+
+  sensor:
+    - name: "Durée stabilisation Absence Chambres"
+      unique_id: duree_stabilisation_absence_chambres
+      unit_of_measurement: "min"
+      icon: mdi:clock-check-outline
+
+
+      # ==================================================
+      # 🧠 ÉTAT PRINCIPAL — Durée stabilisation (minutes)
+      # ==================================================
+
+      state: >
+        {% set t0 = this.attributes.get('t_cycle_start') %}
+        {% set tstab = this.attributes.get('t_stabilisation') %}
+        {% set last = this.state | float(0) %}
+
+        {% if t0 is not none and tstab is not none %}
+          {{ ((tstab - t0) / 60) | round(1) }}
+        {% else %}
+          {{ last }}
+        {% endif %}
+
+
+      attributes:
+
+        # --------------------------------------------------
+        # Paramètres physiques canoniques Arsenal
+        # --------------------------------------------------
+
+        arsenal_rate_threshold_c_per_h: -0.03
+        arsenal_required_stable_duration_s: 5400
+
+
+        # --------------------------------------------------
+        # Début de cycle absence (RESET GLOBAL)
+        # --------------------------------------------------
+
+        t_cycle_start: >
+          {% if trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+            {{ now().timestamp() }}
+          {% else %}
+            {{ this.attributes.get('t_cycle_start') }}
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Dernier échantillon thermique (figé par trigger)
+        # --------------------------------------------------
+
+        t_last_sample: >
+          {% if trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+            {{ none }}
+
+          {% elif states('binary_sensor.presence_famille_unifiee') == 'off'
+                and trigger.entity_id == 'sensor.temperature_min_chambres'
+                and states('sensor.temperature_min_chambres') | float(none) is not none %}
+            {{ now().timestamp() }}
+
+          {% else %}
+            {{ this.attributes.get('t_last_sample') }}
+          {% endif %}
+
+        T_last_sample: >
+          {% if trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+            {{ none }}
+
+          {% elif states('binary_sensor.presence_famille_unifiee') == 'off'
+                and trigger.entity_id == 'sensor.temperature_min_chambres'
+                and states('sensor.temperature_min_chambres') | float(none) is not none %}
+            {{ states('sensor.temperature_min_chambres') | float }}
+
+          {% else %}
+            {{ this.attributes.get('T_last_sample') }}
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Dérivée thermique réelle entre deux échantillons
+        # --------------------------------------------------
+
+        rate_last_c_per_h: >
+          {% set tprev = this.attributes.get('t_last_sample') %}
+          {% set Tprev = this.attributes.get('T_last_sample') %}
+          {% set Tcur = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set tcur = now().timestamp() %}
+
+          {% if tprev is not none and Tprev is not none and Tcur is not none %}
+            {% set dt_h = (tcur - tprev) / 3600 %}
+            {% if dt_h > 0 %}
+              {{ (Tcur - Tprev) / dt_h }}
+            {% else %}
+              {{ none }}
+            {% endif %}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Fenêtre candidate de stabilisation
+        # --------------------------------------------------
+
+        t_stable_candidate_start: >
+          {% set rate = this.attributes.get('rate_last_c_per_h') %}
+          {% set prev = this.attributes.get('t_stable_candidate_start') %}
+          {% set presence = states('binary_sensor.presence_famille_unifiee') %}
+
+          {% if trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+            {{ none }}
+
+          {% elif presence != 'off' %}
+            {{ none }}
+
+          {% elif rate is not none and rate > this.attributes.get('arsenal_rate_threshold_c_per_h') %}
+            {% if prev is not none %}
+              {{ prev }}
+            {% else %}
+              {{ now().timestamp() }}
+            {% endif %}
+
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Détection et figement stabilisation définitive
+        # --------------------------------------------------
+
+        t_stabilisation: >
+          {% set tstab = this.attributes.get('t_stabilisation') %}
+          {% set t_candidate = this.attributes.get('t_stable_candidate_start') %}
+          {% set presence = states('binary_sensor.presence_famille_unifiee') %}
+
+          {% if trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+            {{ none }}
+
+          {% elif tstab is not none %}
+            {{ tstab }}
+
+          {% elif presence == 'off'
+                and t_candidate is not none
+                and (now().timestamp() - t_candidate) >= this.attributes.get('arsenal_required_stable_duration_s') %}
+            {{ t_candidate }}
+
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Statut de validité Arsenal
+        # --------------------------------------------------
+
+        arsenal_status: >
+          {% if this.attributes.get('t_stabilisation') is not none %}
+            stabilised
+          {% elif states('binary_sensor.presence_famille_unifiee') == 'off' %}
+            searching
+          {% else %}
+            no_cycle
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Source thermique
+        # --------------------------------------------------
+
+        source_temp_entity: "sensor.temperature_min_chambres"

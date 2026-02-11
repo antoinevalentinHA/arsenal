@@ -1,0 +1,96 @@
+# ==========================================================
+#  🔥 TEMPLATE SENSOR — ECS Dernier cycle résumé
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un résumé cohérent, stable et exploitable du
+#     dernier cycle ECS, basé EXCLUSIVEMENT sur les valeurs figées.
+#
+#  📦 Source de vérité :
+#     input_text.ecs_resume_dernier_cycle_fige
+#
+#  🔧 Attributs calculés :
+#     - date
+#     - mode
+#     - consigne
+#     - t0 (température initiale)
+#     - boost (oui/non)
+#     - valide (oui/non/pending)
+#     - tmax (figée)
+#     - durée (figée)
+#     - delta (tmax - consigne réelle)
+# ==========================================================
+
+- sensor:
+    - name: "ECS Dernier cycle résumé"
+      unique_id: ecs_dernier_cycle_resume
+      icon: mdi:chart-line
+
+      # 🛡️ Disponibilité
+      availability: >
+        {{ states('input_text.ecs_resume_dernier_cycle_fige') not in
+           ['unknown','unavailable','none','', None] }}
+
+      # 🎯 État = date du cycle (propre et lisible)
+      state: >
+        {% set raw = states('input_text.ecs_resume_dernier_cycle_fige') %}
+        {% set parts = raw.split('|') %}
+        {% if parts|length >= 1 %}
+          {{ parts[0] }}
+        {% else %}
+          Aucun cycle
+        {% endif %}
+
+      attributes:
+        date: >
+          {% set p = states('input_text.ecs_resume_dernier_cycle_fige').split('|') %}
+          {{ p[0] if p|length > 0 else '—' }}
+
+        mode: >
+          {% set p = states('input_text.ecs_resume_dernier_cycle_fige').split('|') %}
+          {{ p[1]|capitalize if p|length > 1 else 'Inconnu' }}
+
+        consigne: >
+          {% set p = states('input_text.ecs_resume_dernier_cycle_fige').split('|') %}
+          {{ p[2] if p|length > 2 else '—' }}
+
+        temperature_depart: >
+          {% set p = states('input_text.ecs_resume_dernier_cycle_fige').split('|') %}
+          {{ p[3] if p|length > 3 else '—' }}
+
+        boost: >
+          {% set p = states('input_text.ecs_resume_dernier_cycle_fige').split('|') %}
+          {% set b = (p[4]|lower) if p|length > 4 else 'non' %}
+          {{ '⚡ Oui' if b == 'oui' else '—' }}
+
+        valide: >
+          {% set p = states('input_text.ecs_resume_dernier_cycle_fige').split('|') %}
+          {% set v = (p[5]|lower) if p|length > 5 else 'pending' %}
+          {% if v == 'oui' %}
+            ✓ Oui
+          {% elif v == 'non' %}
+            ⚠️ Non
+          {% else %}
+            ⏳ Pending
+          {% endif %}
+
+        temperature_max: >
+          {{ states('input_number.ecs_temperature_max_figee')|float(0) }}
+
+        duree_minutes: >
+          {{ states('input_number.ecs_duree_dernier_cycle_figee')|float(0) }}
+
+        delta: >
+          {% set cons = states('input_text.ecs_resume_dernier_cycle_fige').split('|') %}
+          {% set c = cons[2]|float(0) if cons|length > 2 else 0 %}
+          {% set tmax = states('input_number.ecs_temperature_max_figee')|float(0) %}
+          {{ (tmax - c)|round(1) }}
+
+        rebond: >
+          {% set last = states('sensor.derniere_chauffe_ecs') %}
+          {% if last in ['unknown','unavailable','none'] %}
+            Inconnu
+          {% else %}
+            {% set last_ts = as_timestamp(states.sensor.derniere_chauffe_ecs.last_changed) %}
+            {% set delta = (as_timestamp(now()) - last_ts)|int %}
+            {{ '⚠️ Oui' if delta < 3600 else '✓ Non' }}
+          {% endif %}

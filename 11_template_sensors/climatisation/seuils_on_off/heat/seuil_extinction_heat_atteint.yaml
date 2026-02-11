@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim – Seuil extinction HEAT atteint
+#
+# 🎯 Rôle :
+#   Indiquer si la température minimale intérieure
+#   est remontée au-dessus du seuil d’extinction HEAT
+#   appliqué par le système.
+#
+# 🧱 Principe Arsenal :
+#   - Lecture PURE
+#   - Aucune temporisation
+#   - Aucune action
+#   - Seuil déjà calculé ailleurs
+#
+# 🔌 Consommateurs typiques :
+#   - Automation "Clim – Analyse complète et décision"
+#   - UI diagnostic clim
+#
+# ⚠️ IMPORTANT :
+#   - Strictement équivalent à la condition :
+#       temperature_min_chambres >= seuil_extinction_chauffage_clim
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim – Seuil extinction HEAT atteint"
+      unique_id: clim_seuil_extinction_heat_atteint
+      default_entity_id: binary_sensor.clim_seuil_extinction_heat_atteint
+      state: >
+        {{
+          states('sensor.temperature_min_chambres') | float(-99)
+          >=
+          states('sensor.seuil_extinction_chauffage_clim') | float(999)
+        }}

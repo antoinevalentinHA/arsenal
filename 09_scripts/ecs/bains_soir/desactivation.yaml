@@ -1,0 +1,93 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Mode enfants (désactivation avec sauvegarde)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Désactive temporairement le mode ECS "enfants"
+#   tout en sauvegardant précisément les soirs actifs
+#   afin de permettre une restauration ultérieure fidèle.
+#
+# ----------------------------------------------------------
+# 🧩 PRINCIPE DE FONCTIONNEMENT
+#
+#   - Identifie les soirs ECS actuellement actifs via :
+#       group.ecs_soir_actifs
+#
+#   - Extrait les jours correspondants
+#     (lundi, mardi, etc.)
+#
+#   - Sauvegarde cette configuration dans :
+#       input_text.mode_enfants_ecs_soirs_sauvegarde
+#
+#   - Désactive ensuite l’ensemble des soirs ECS actifs
+#
+# ----------------------------------------------------------
+# 🧠 CONTEXTE MÉTIER
+#
+#   Le mode "enfants" ECS repose sur :
+#     - une planification spécifique des bains du soir
+#     - une activation sélective par jour
+#
+#   Ce script permet une suspension propre du mode
+#   sans perte d’information ni reconfiguration manuelle.
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucune décision de chauffe
+#   - Aucune commande directe au chauffe-eau
+#   - Aucun calcul de besoin ECS
+#   - Aucune restauration automatique
+#
+# ----------------------------------------------------------
+# 🔒 GARANTIES
+#
+#   - Sauvegarde exhaustive avant toute désactivation
+#   - Désactivation uniquement des soirs réellement actifs
+#   - Aucun impact sur les autres modes ECS
+#
+# ----------------------------------------------------------
+# 🎛️ MODE D’UTILISATION
+#
+#   - Appelé lors de la sortie du mode enfants
+#   - Utilisé conjointement avec :
+#       script.mode_enfants_ecs_activer
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+mode_enfants_ecs_desactiver:
+  alias: "Mode enfants ECS - Désactiver"
+  mode: single
+  sequence:
+    # Lire soirs actifs dans le planning
+    - variables:
+        soirs_actifs: >
+          {{ expand('group.ecs_soir_actifs')
+              | selectattr('state','eq','on')
+              | map(attribute='entity_id')
+              | list }}
+
+    # Extraire les jours
+    - variables:
+        jours: >
+          {{ soirs_actifs
+              | map('replace','input_boolean.ecs_','')
+              | map('replace','_soir_active','')
+              | list
+              | join(',') }}
+
+    # Sauvegarde
+    - service: input_text.set_value
+      data:
+        entity_id: input_text.mode_enfants_ecs_soirs_sauvegarde
+        value: "{{ jours }}"
+
+    # Désactiver tous les soirs actifs
+    - repeat:
+        for_each: "{{ soirs_actifs }}"
+        sequence:
+          - service: input_boolean.turn_off
+            data:
+              entity_id: "{{ repeat.item }}"

@@ -1,0 +1,69 @@
+#################################################################
+# 🚪 CAPTEURS DE CONTACT — TEMPLATES UI
+#################################################################
+#
+# 🧠 Rôle :
+#   Template button-card destiné à l’affichage des capteurs
+#   de contact (portes, fenêtres, ouvrants).
+#
+# 🎯 Objectifs :
+#   - Indiquer clairement l’état ouvert / fermé
+#   - Offrir une lecture visuelle immédiate
+#   - Faciliter l’identification du type d’ouvrant
+#
+# 🧩 Principe Arsenal :
+#   - Lecture seule
+#   - Aucune logique métier
+#   - Aucune action automatique
+#
+# ⚙️ Logique d’affichage (UI uniquement) :
+#   - Rouge  → ouvrant ouvert
+#   - Vert   → ouvrant fermé
+#   - Gris   → état inconnu / indisponible
+#
+# 🎨 Icônes :
+#   - Icône ON / OFF paramétrable via variables
+#   - Fallback sur l’icône de l’entité si non définie
+#
+# 🧪 Robustesse :
+#   - Tolérance aux états unknown / unavailable
+#   - Rendu neutre en cas de données manquantes
+#
+#################################################################
+
+contact_sensor:
+  template: carte_base
+  show_state: false
+  show_name: true
+  tap_action:
+    action: more-info
+  variables:
+    icon_on: null
+    icon_off: null
+  styles:
+    card:
+      - background-color: |
+          [[[
+            if (entity.state === 'on')  return 'rgba(244, 67, 54, 0.2)';   // rouge (ouvert)
+            if (entity.state === 'off') return 'rgba(76, 175, 80, 0.2)';   // vert (fermé)
+            return 'rgba(158, 158, 158, 0.2)';                             // gris (inconnu)
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+  state:
+    - value: 'on'
+      icon: |
+        [[[
+          return variables.icon_on || entity.attributes.icon || 'mdi:alert';
+        ]]]
+    - value: 'off'
+      icon: |
+        [[[
+          return variables.icon_off || entity.attributes.icon || 'mdi:check-circle-outline';
+        ]]]

@@ -1,0 +1,39 @@
+# ==========================================================
+#  INPUT_DATETIME : Aération – Mémoire notifications
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Conserver de manière PERSISTANTE la date/heure de la
+#     dernière notification par type (ouverture / fermeture)
+#     et par zone (RDC / étage).
+#
+#  💡 Avantages :
+#     - Anti-spam robuste aux redémarrages et reload
+#     - 4 mémoires distinctes évitant tout conflit logique
+#     - Lisibilité parfaite (ouverture vs fermeture)
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🪟 Notifications d’OUVERTURE
+# ----------------------------------------------------------
+aeration_last_notification_ouverture_rdc:
+  name: "Aération – Dernière notification Ouverture RDC"
+  has_date: true
+  has_time: true
+
+aeration_last_notification_ouverture_etage:
+  name: "Aération – Dernière notification Ouverture étage"
+  has_date: true
+  has_time: true
+
+# ----------------------------------------------------------
+# 🚫 Notifications de FERMETURE
+# ----------------------------------------------------------
+aeration_last_notification_fermeture_rdc:
+  name: "Aération – Dernière notification Fermeture RDC"
+  has_date: true
+  has_time: true
+
+aeration_last_notification_fermeture_etage:
+  name: "Aération – Dernière notification Fermeture étage"
+  has_date: true
+  has_time: true

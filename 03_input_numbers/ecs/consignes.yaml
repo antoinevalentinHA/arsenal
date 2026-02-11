@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBERS : ECS — Consignes de température
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir les CONSIGNES CIBLES de température ECS
+#   utilisées selon le type de cycle déclenché.
+#
+# 🧱 Principe métier :
+#   - Ces helpers représentent des OBJECTIFS thermiques
+#   - Ils ne déclenchent jamais un cycle
+#   - Ils ne sont jamais comparés directement à un seuil
+#
+# 📌 Détails des consignes :
+#   - ecs_consigne_temperature :
+#       → Consigne ECS normale (usage quotidien)
+#   - ecs_consigne_vaisselle :
+#       → Consigne ECS réduite / fonctionnelle
+#         (vaisselle, appoint court)
+#   - ecs_temperature_desinfection :
+#       → Consigne ECS haute, cycle sanitaire
+#
+# ⚙️ Utilisation réelle :
+#   - Sélectionnées dynamiquement par :
+#       • 09_scripts/vicare/ecs/cycle.yaml
+#   - Tracées dans :
+#       • logs ECS
+#       • dashboards diagnostics
+#
+# 🧠 Principe Arsenal :
+#   - Helpers = INTENTION
+#   - Scripts = DÉCISION
+#   - Automatisations = ORCHESTRATION
+#
+# 📐 Unité :
+#   - Degrés Celsius (°C)
+# ==========================================================
+
+
+ecs_consigne_temperature:
+  name: Température ECS
+  min: 35
+  max: 60
+  step: 1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:water-boiler
+
+ecs_consigne_vaisselle:
+  name: "Consigne ECS – Vaisselle"
+  min: 30
+  max: 50
+  step: 1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:dishwasher
+
+ecs_temperature_desinfection:
+  name: Température désinfection ECS
+  min: 50
+  max: 60
+  step: 1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-water

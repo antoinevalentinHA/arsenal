@@ -1,0 +1,33 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN
+# ----------------------------------------------------------
+# 🔥 Chauffage : Blocage du geofencing
+#
+# 🎯 Rôle :
+#   Autoriser ou non le blocage de l'application
+#   de la consigne réduite via géolocalisation
+#   lorsque les conditions thermiques sont défavorables.
+#
+# 🧱 Principe :
+#   - ON  → le geofencing peut être bloqué
+#   - OFF → geofencing toujours appliqué
+#
+# ⚠️ Détails techniques :
+#   - Domaine : input_boolean
+#   - Nom : Chauffage – Blocage geofencing
+#   - Icône : mdi:map-marker-off-outline
+#   - Usage : activation/désactivation de la logique de blocage
+#            liée à la consigne réduite et aux seuils thermiques
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.blocage_geofencing
+#
+# ❗ Aucune logique métier n’est effectuée ici : ce boolean
+#   sert uniquement de drapeau pour les capteurs et scripts
+#   qui appliquent la restriction selon les conditions définies.
+# ==========================================================
+
+
+blocage_geofencing:
+  name: Chauffage – Blocage geofencing
+  icon: mdi:map-marker-off-outline

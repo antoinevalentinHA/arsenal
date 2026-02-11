@@ -1,0 +1,41 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Numérotation
+icon: mdi:numeric
+
+views:
+  - title: id Automatisations
+    path: id-automatisations
+    icon: mdi:format-list-numbered
+
+    badges: !include ../includes/badges/diagnostics_systeme.yaml
+
+    ########################################################
+    # 📐 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+
+          ####################################################
+          # 🆔 AIDE A LA NUMEROTATION DES AUTOMATISATIONS
+          ####################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🆔 Création d'ID pour automatisations
+
+          - type: entities
+            entities:
+              - entity: input_select.prefix_id_select
+                name: Domaine d'automatisations
+
+              - type: custom:button-card
+                template: carte_capteur
+                name: Générer prochain ID
+                icon: mdi:calculator
+                tap_action:
+                  action: call-service
+                  service: pyscript.generate_next_id_from_prefix
+
+              - entity: input_text.next_id_result
+                name: Prochain ID disponible

@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR — DIAGNOSTIC CHAUFFAGE : STABILITÉ
+#     Synthèse indicative — Charge de cyclage (journalier)
+# ----------------------------------------------------------
+# Domaine : Chauffage / Diagnostic thermique / Synthèses
+# Couche  : Diagnostic (texte) — UI
+# Statut  : DIAGNOSTIC — LECTURE UNIQUEMENT
+#
+# 🎯 Rôle :
+#   Publier un état textuel indicatif de stabilité de cyclage
+#   à partir du nombre de cycles journaliers en présence.
+#
+# 🔗 Dépendances (lecture) :
+#   - sensor.nombre_cycles_jour_presence_chambres
+#
+# 🚫 Interdits :
+#   - Aucun service, aucune action, aucune écriture d’entité
+#   - Aucune autorisation, aucun blocage, aucune décision centrale
+#
+# ==========================================================
+
+- sensor:
+    - name: Diagnostic chauffage stabilite
+      unique_id: diagnostic_chauffage_stabilite
+      state: >-
+        {%- set d2 = states('sensor.nombre_cycles_jour_presence_chambres') | float(none) -%}
+        {%- set txt = none -%}
+        {%- if d2 is not none -%}
+          {%- if d2 <= 4 -%}{%- set txt = 'Système très stable (peu de cycles)' -%}
+          {%- elif d2 <= 8 -%}{%- set txt = 'Stabilité correcte' -%}
+          {%- else -%}{%- set txt = 'Nervosité élevée (cycles fréquents)' -%}
+          {%- endif -%}
+        {%- endif -%}
+        {{- txt if txt is not none else '' -}}

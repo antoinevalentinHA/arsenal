@@ -1,0 +1,107 @@
+# ==========================================================
+# 🔥 SCRIPT ARSENAL — Chauffage : Application décalage parallèle
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Appliquer le décalage parallèle de la courbe de chauffe
+#   Viessmann (ViCare) de manière robuste et contrôlée.
+#
+# 🧠 Nature du script :
+#   - Script STRICTEMENT exécutif
+#   - Ne contient AUCUNE logique décisionnelle
+#   - N’est JAMAIS déclenché directement par l’utilisateur
+#
+# ⚙️ Comportement :
+#   - Lit la consigne cible depuis un helper
+#   - Compare à la valeur cloud actuelle
+#   - Applique la consigne uniquement si nécessaire
+#   - Répète l’envoi de façon bornée et temporisée
+#   - Valide le résultat par observation côté cloud
+#
+# 🔒 Garanties :
+#   - Idempotence totale
+#   - Limitation stricte des appels API ViCare
+#   - Aucune hypothèse sur le succès d’un service
+#
+# ⚠️ Limites connues :
+#   - ViCare ne fournit pas d’ACK fiable
+#   - La chaudière peut écraser la valeur ultérieurement
+#
+# 📌 Usage :
+#   - Appelé exclusivement par des automatisations
+#     de décision ou de correction thermique
+#
+# 🗓️ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+chauffage_appliquer_parallele:
+  alias: "Chauffage – Appliquer décalage parallèle"
+  mode: restart
+  sequence:
+
+    # ======================================================
+    # 1️⃣ Capture état initial et consigne cible
+    # ======================================================
+    - variables:
+        parallele_cible: "{{ states('input_number.chauffage_parallele_consigne') | float }}"
+        parallele_initial: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float }}"
+        tolerance: 0.01
+
+    # ======================================================
+    # 2️⃣ Sortie immédiate si déjà conforme
+    # ======================================================
+    - condition: template
+      value_template: >
+        {{ (parallele_cible - parallele_initial) | abs > tolerance }}
+
+    # ======================================================
+    # 3️⃣ Tentatives ViCare bornées (max 3)
+    # ======================================================
+    - repeat:
+        count: 3
+        sequence:
+
+          # 📡 Envoi de la consigne au cloud ViCare
+          - service: number.set_value
+            target:
+              entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
+            data:
+              value: "{{ parallele_cible }}"
+
+          # ⏳ Attente propagation cloud
+          - delay: "00:00:20"
+
+          # 🔄 Rafraîchissement explicite
+          - service: homeassistant.update_entity
+            target:
+              entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
+
+          # ⏳ Stabilisation lecture
+          - delay: "00:00:30"
+
+          # ✅ Sortie anticipée si conforme
+          - condition: template
+            value_template: >
+              {{ ((states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float - parallele_cible) | abs) < tolerance }}
+            enabled: true
+
+    # ======================================================
+    # 4️⃣ Vérification finale factuelle
+    # ======================================================
+    - variables:
+        parallele_final: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float }}"
+
+    - condition: template
+      value_template: >
+        {{ (parallele_final - parallele_cible) | abs < tolerance }}
+
+    # ======================================================
+    # 5️⃣ Journalisation factuelle (cloud confirmé)
+    # ======================================================
+    - service: logbook.log
+      data:
+        name: "ViCare"
+        message: >
+          📊 Parallele CONFIRME cote cloud :
+          {{ parallele_initial }} → {{ parallele_final }}
+        entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe

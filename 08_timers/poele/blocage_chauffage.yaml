@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : Verrou temporel poêle (chauffage)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir une FENÊTRE TEMPORELLE INCOMPRESSIBLE pendant
+#   laquelle le blocage chauffage lié au poêle
+#   NE PEUT PAS être levé.
+#
+# 🧩 Nature :
+#   Verrou TEMPOREL métier (poêle → chauffage).
+#
+# ❌ Ne fait PAS :
+#   - Ne bloque PAS le chauffage lui-même
+#   - Ne modifie AUCUNE consigne
+#   - Ne pilote NI chaudière NI clim
+#   - Ne prend AUCUNE décision thermique
+#
+# 🔒 Principe Arsenal :
+#   - Le blocage chauffage est appliqué AILLEURS
+#   - Ce timer impose une durée minimale incompressible
+#   - Tant qu’il est actif :
+#       • toute tentative de levée du blocage est invalide
+#
+# ⏱️ Fonctionnement :
+#   - Démarré ou redémarré à chaque détection poêle
+#   - La durée repart à zéro à chaque nouvel événement
+#   - L’expiration est la SEULE condition temporelle
+#     autorisant une levée éventuelle du blocage
+#
+# ⏳ Durée :
+#   - 1 heure
+#   - Représente l’inertie thermique minimale post-poêle
+#
+# 🔍 États exploitables :
+#   - active : verrou temporel actif
+#   - idle   : levée temporellement autorisée
+#
+# 🔗 Utilisation :
+#   - Automatisations poêle
+#   - Décision chauffage centrale
+#   - Sécurité anti-reprise prématurée
+#   - Diagnostics chauffage
+#
+# ⚠️ Remarque cruciale :
+#   L’expiration du timer :
+#   - N’ENTRAÎNE AUCUNE reprise automatique
+#   - Autorise seulement une réévaluation
+# ==========================================================
+
+
+poele_blocage_chauffage:
+  duration: "01:00:00"

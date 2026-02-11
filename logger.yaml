@@ -1,0 +1,44 @@
+# Niveau global par défaut
+default: warning
+
+# Règles spécifiques
+logs:
+
+  # ── Core / Sensors ───────────────────────────────────────────────
+  homeassistant.components.sensor: error
+
+  # ── Réseau / HTTP / UPnP ─────────────────────────────────────────
+  async_upnp_client.profiles.profile: error
+  aiohttp.client: error
+  aiohttp.connector: critical
+  urllib3.connectionpool: error
+
+  # ── Multimédia ───────────────────────────────────────────────────
+  pychromecast.socket_client: critical
+  homeassistant.components.media_player: error
+  homeassistant.components.samsungtv: error
+
+  # ── UI / Lovelace ────────────────────────────────────────────────
+  homeassistant.components.lovelace: error
+
+  # ── Climatisation Airstage ───────────────────────────────────────
+  custom_components.fujitsu_airstage: error
+  custom_components.fujitsu_airstage.sensor: error
+
+  # ── Audi Connect ─────────────────────────────────────────────────
+  custom_components.audiconnect: critical
+  custom_components.audiconnect.audi_api: critical
+
+  # ── Robot aspirateur Roborock ────────────────────────────────────
+  roborock: critical
+  roborock.version_1_apis: critical
+  roborock.version_1_apis.roborock_mqtt_client_v1: critical
+  roborock.cloud_api: critical
+
+  # ── Intégrations tierces ─────────────────────────────────────────
+  homeassistant.components.withings: critical
+  aiowithings: critical
+
+  # ── Système / logs externes ──────────────────────────────────────
+  homeassistant.components.system_log.external: warning
+  py.warnings: warning

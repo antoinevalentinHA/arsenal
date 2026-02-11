@@ -1,0 +1,95 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER — Imprimerie : historique Stock (Carton / PF)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker l’HISTORIQUE min/max (Température + HR)
+#   MESURÉ dans les zones de stockage de l’imprimerie :
+#     - Stock Carton
+#     - Stock Produits Finis (PF)
+#
+# ✅ Important :
+#   - Ces helpers ne sont PAS des seuils.
+#   - Ils représentent des VALEURS RÉELLES enregistrées (min/max),
+#     mises à jour automatiquement à partir des capteurs.
+#
+# ⚙️ Fonctionnement :
+#   - Les capteurs donnent la mesure instantanée.
+#   - Les automatisations comparent et mettent à jour ces helpers :
+#       → si nouvelle valeur plus basse : maj du “min”
+#       → si nouvelle valeur plus haute : maj du “max”
+#   - Une automatisation d’archivage peut figer / historiser périodiquement.
+#   - Un script permet le reset (remise à zéro / relance de l’historique).
+#
+# 🔗 Utilisés par :
+#   - Dashboards :
+#       • lovelace/dashboards/imprimerie/imprimerie_stockage.yaml
+#   - Automatisations :
+#       • 10_automations/imprimerie/stock/min_max.yaml
+#       • 10_automations/imprimerie/stock/archivage.yaml
+#   - Scripts :
+#       • 09_scripts/imprimerie/reset_stock_historique.yaml
+#
+# 🧠 Principe Arsenal :
+#   - Les capteurs MESURENT.
+#   - Les automatisations ENREGISTRENT (min/max) dans les helpers.
+#   - Les dashboards EXHIBENT.
+#   - Les scripts RÉINITIALISENT.
+#
+# ==========================================================
+
+
+stock_carton_temperature_min:
+  name: "Carton – Température min"
+  min: -10
+  max: 50
+  step: 0.1
+  mode: box
+
+stock_carton_temperature_max:
+  name: "Carton – Température max"
+  min: -10
+  max: 50
+  step: 0.1
+  mode: box
+
+stock_carton_humidite_min:
+  name: "Carton – HR min"
+  min: 0
+  max: 100
+  step: 1
+  mode: box
+
+stock_carton_humidite_max:
+  name: "Carton – HR max"
+  min: 0
+  max: 100
+  step: 1
+  mode: box
+
+stock_pf_temperature_min:
+  name: "PF – Température min"
+  min: -10
+  max: 50
+  step: 0.1
+  mode: box
+
+stock_pf_temperature_max:
+  name: "PF – Température max"
+  min: -10
+  max: 50
+  step: 0.1
+  mode: box
+
+stock_pf_humidite_min:
+  name: "PF – HR min"
+  min: 0
+  max: 100
+  step: 1
+  mode: box
+
+stock_pf_humidite_max:
+  name: "PF – HR max"
+  min: 0
+  max: 100
+  step: 1
+  mode: box

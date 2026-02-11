@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Réveils nocturnes – Réinitialisation Matthieu
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Réinitialiser automatiquement le compteur et
+#     l’historique des réveils nocturnes de Matthieu
+#     à l’heure configurée par l’utilisateur.
+#
+# 🧱 PRINCIPE
+#
+#     - Déclenchement à une heure paramétrable
+#       via un helper horaire
+#     - Remise à zéro du compteur quotidien
+#     - Purge de l’historique des heures enregistrées
+#
+# 📥 ENTRÉE
+#
+#     - input_datetime.heure_reset_reveils
+#
+# 📤 SORTIES
+#
+#     - input_number.reveils_nocturnes_matthieu
+#     - input_text.reveils_matthieu_heures
+#
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne détecte aucun bruit
+#     - Ne déclenche aucune notification
+#     - Ne modifie aucun seuil ou période de surveillance
+#
+# ✅ ARCHITECTURE
+#
+#     Arsenal
+# ==========================================================
+
+
+- id: '1011000000004'
+  alias: "Réveils - Réinitialisation Matthieu"
+  description: >
+    Réinitialise le compteur et l'historique des réveils de Matthieu à l'heure définie.
+  mode: single
+
+  # 🔔 Déclencheur — à l’heure programmée
+  trigger:
+    - platform: time
+      at: input_datetime.heure_reset_reveils
+
+  # 🔄 Actions — reset compteur + purge historique
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.reveils_nocturnes_matthieu
+      data:
+        value: 0
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.reveils_matthieu_heures
+      data:
+        value: ""

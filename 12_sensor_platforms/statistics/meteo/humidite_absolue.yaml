@@ -1,0 +1,199 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles d’humidité absolue
+# ----------------------------------------------------------
+#  🧠 Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de l’humidité absolue (g/m³) dans chaque zone
+#     domestique et professionnelle.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Exploite l’historique de chaque capteur pour établir des statistiques.
+#     - Ici, on retient uniquement la **moyenne** via :
+#           state_characteristic: mean
+#
+#  📅 Fenêtre d’analyse :
+#     - Période : 30 jours glissants
+#     - Échantillons max : 10 000
+#
+#  📊 Sortie :
+#     - Moyenne mensuelle de l’humidité absolue (g/m³)
+#
+#  🏡 Zones couvertes :
+#     - Pièces de la maison
+#     - Espaces extérieurs
+#     - Locaux professionnels / ateliers
+# ==========================================================
+
+
+# ----------------------------------------------------------
+# 🏠 Chambres et pièces domestiques
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue Moyenne Chambre Arnaud"
+  entity_id: sensor.humidite_absolue_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_10000 10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Chambre Matthieu"
+  entity_id: sensor.humidite_absolue_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Chambre Parents"
+  entity_id: sensor.humidite_absolue_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Séjour"
+  entity_id: sensor.humidite_absolue_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Entrée"
+  entity_id: sensor.humidite_absolue_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Cave"
+  entity_id: sensor.humidite_absolue_cave
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Garage"
+  entity_id: sensor.humidite_absolue_garage
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Petite Maison"
+  entity_id: sensor.humidite_absolue_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+# ----------------------------------------------------------
+# 🚿 Salles de bains
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue Moyenne SDB Enfants"
+  entity_id: sensor.humidite_absolue_sdb_enfants
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne SDB Parents"
+  entity_id: sensor.humidite_absolue_sdb_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+# ----------------------------------------------------------
+# 🌳 Extérieur / Jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue Moyenne Jardin"
+  entity_id: sensor.humidite_absolue_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Extérieur"
+  entity_id: sensor.humidite_absolue_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+# ----------------------------------------------------------
+# 🏢 Zones de bureaux
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue Moyenne Direction"
+  entity_id: sensor.humidite_absolue_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Compta"
+  entity_id: sensor.humidite_absolue_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Qualité"
+  entity_id: sensor.humidite_absolue_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Devis"
+  entity_id: sensor.humidite_absolue_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Commercial"
+  entity_id: sensor.humidite_absolue_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+# ----------------------------------------------------------
+# 📦 Zones de stockage
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue Moyenne Stock Carton"
+  entity_id: sensor.humidite_absolue_stock_carton
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Stock PF"
+  entity_id: sensor.humidite_absolue_stock_pf
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+# ----------------------------------------------------------
+# 🏭 Zones industrielles / ateliers
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité absolue Moyenne Komori"
+  entity_id: sensor.humidite_absolue_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Bobst"
+  entity_id: sensor.humidite_absolue_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité absolue Moyenne Media"
+  entity_id: sensor.humidite_absolue_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000

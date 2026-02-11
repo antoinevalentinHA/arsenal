@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER : Seuil bruit qualification réveil
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir le niveau sonore (en dB) à partir duquel
+#   un RÉVEIL est considéré comme détecté.
+#
+# ⚙️ Fonctionnement :
+#   - Un capteur mesure le niveau de bruit.
+#   - Si bruit >= seuil_reveil_bruit :
+#       → réveil qualifié
+#       → incrément du compteur de réveils
+#       (ex : input_number.reveils_nocturnes_arnaud / matthieu)
+#
+# ✅ Important :
+#   - Ce helper est un SEUIL DÉCISIONNEL (binaire) :
+#       en dessous → pas de réveil
+#       au-dessus  → réveil
+#   - Il ne mesure rien : il fixe la frontière de qualification.
+#
+# 🔗 Utilisé par :
+#   - Dashboards :
+#       • lovelace/dashboards/diagnostics/sommeil.yaml
+#       • lovelace/dashboards/reglages/sommeil.yaml
+#   - Automatisations :
+#       • 10_automations/reveils/babyphone/*.yaml
+#       • 10_automations/reveils/compteurs/*.yaml
+#
+# 📐 Unité :
+#   - Décibels (dB)
+# ==========================================================
+
+seuil_reveil_bruit:
+  name: Seuil de bruit réveil
+  min: 30
+  max: 45
+  step: 1
+  icon: mdi:volume-high

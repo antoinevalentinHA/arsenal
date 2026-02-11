@@ -1,0 +1,92 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Mouvements
+views:
+  - title: Mouvements
+    path: mouvements
+    icon: mdi:motion-sensor
+
+    badges: !include ../includes/badges/base.yaml
+
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ===========================================================
+          # 🚗 GARAGE — 3 CAPTEURS
+          # ===========================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/garage.yaml
+
+              - type: grid
+                square: false
+                columns: 3
+                cards:
+
+                  - type: custom:button-card
+                    template: carte_mouvement
+                    show_name: false
+                    tap_action: none
+                    entity: binary_sensor.capteur_mouvements_garage_3_occupancy
+
+                  - type: custom:button-card
+                    template: carte_mouvement
+                    show_name: false
+                    tap_action: none
+                    entity: binary_sensor.capteur_mouvements_garage_1_occupancy
+
+                  - type: custom:button-card
+                    template: carte_mouvement
+                    show_name: false
+                    tap_action: none
+                    entity: binary_sensor.capteur_mouvements_garage_2_occupancy
+
+
+          # ===========================================================
+          # 🏠 ENTRÉE
+          # ===========================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/entree.yaml
+
+              - type: custom:button-card
+                template: carte_mouvement
+                show_name: false
+                tap_action: none
+                entity: binary_sensor.capteur_mouvements_entree_occupancy
+
+
+          # ===========================================================
+          # 🛋️ SÉJOUR — 2 CAPTEURS
+          # ===========================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/sejour.yaml
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+
+                  - type: custom:button-card
+                    template: carte_mouvement
+                    show_name: false
+                    tap_action: none
+                    entity: binary_sensor.capteur_mouvements_sejour_2_occupancy
+
+                  - type: custom:button-card
+                    template: carte_mouvement
+                    show_name: false
+                    tap_action: none
+                    entity: binary_sensor.capteur_mouvements_sejour_1_occupancy

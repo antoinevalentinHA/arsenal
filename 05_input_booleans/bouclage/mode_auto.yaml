@@ -1,0 +1,28 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN
+#     Bouclage ECS — Activation plage horaire
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Helper d’autorisation utilisateur permettant
+#     d’activer ou désactiver le système de bouclage
+#     automatique ECS sur plage horaire.
+#
+# 🧩 PÉRIMÈTRE
+#
+#     - Autorisation globale du système
+#     - Aucune logique temporelle
+#     - Aucune décision métier
+#
+# 🚫 INTERDITS
+#
+#     - Ne pilote aucun équipement directement
+#     - Ne contient aucune logique horaire
+#
+# 🧠 STATUT
+#
+#     Helper de contrôle — Application
+# ==========================================================
+
+bouclage_plage_active:
+  name: "Autorisation Bouclage ECS"

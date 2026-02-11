@@ -1,0 +1,45 @@
+# ==========================================================
+#  ARSENAL — Simulation de présence
+#  Paramètres métier : plages d’allumage
+# ==========================================================
+#
+#  🧠 Rôle :
+#     Paramètres métier définissant si une zone
+#     est incluse dans la simulation de présence
+#     durant sa plage d’allumage.
+#
+#     Ces booléens servent de vérités de configuration
+#     persistantes pour le calcul des capteurs
+#     de simulation de présence.
+#
+#  🧱 Nature :
+#     - Paramètres métier
+#     - Entrées de calcul
+#     - Configuration persistante
+#
+#  📥 N’effectuent PAS :
+#     - aucune détection horaire
+#     - aucune décision d’allumage
+#     - aucune commande d’éclairage
+#
+#  📤 Utilisation :
+#     - Lus par les binary_sensors :
+#         • binary_sensor.simulation_presence_plage_allumage_parents
+#         • binary_sensor.simulation_presence_plage_allumage_garage
+#     - Ces capteurs dérivés sont ensuite
+#       consommés par les automatisations
+#       de simulation de présence.
+#
+#  🧠 Principe Arsenal :
+#     - La vérité métier est séparée
+#       de la logique de calcul
+# ==========================================================
+
+
+simulation_presence_plage_allumage_parents:
+  name: Simulation presence - Plage allumage parents
+  icon: mdi:home-lightbulb-outline
+
+simulation_presence_plage_allumage_garage:
+  name: Simulation presence - Plage allumage garage
+  icon: mdi:garage-variant

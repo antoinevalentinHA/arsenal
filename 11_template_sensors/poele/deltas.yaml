@@ -1,0 +1,47 @@
+# ================================================================
+# 🌡️ TEMPLATE SENSOR — Séjour : Delta 10 min (safe)
+# ================================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_sejour
+
+  sensor:
+    - name: "sejour_delta_10min"
+      unique_id: sejour_delta_10min
+      unit_of_measurement: "°C"
+      state_class: measurement
+      icon: mdi:chart-line-variant
+      state: >
+        {% set now = states('sensor.temperature_sejour') | float %}
+        {% set past = states('sensor.temperature_sejour_mean_10min') | float(default=None) %}
+
+        {% if past is not none %}
+          {{ (now - past) | round(2) }}
+        {% else %}
+          {{ states('sensor.sejour_delta_10min') | float(0) }}
+        {% endif %}
+
+# ================================================================
+# 🌡️ TEMPLATE SENSOR — Séjour : Delta 30 min (safe)
+# ================================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_sejour
+
+  sensor:
+    - name: "sejour_delta_30min"
+      unique_id: sejour_delta_30min
+      unit_of_measurement: "°C"
+      state_class: measurement
+      icon: mdi:chart-line-variant
+      state: >
+        {% set now = states('sensor.temperature_sejour') | float %}
+        {% set past = states('sensor.temperature_sejour_mean_30min') | float(default=None) %}
+
+        {% if past is not none %}
+          {{ (now - past) | round(2) }}
+        {% else %}
+          {{ states('sensor.sejour_delta_30min') | float(0) }}
+        {% endif %}

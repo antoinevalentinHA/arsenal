@@ -1,0 +1,258 @@
+# ==========================================================
+# 🪟 TEMPLATE BINARY SENSOR — Aération préférable (Étage)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer si l’aération à l’étage est recommandée ou non,
+#   en fonction de la différence d’humidité absolue et de température
+#   entre l’intérieur et l’extérieur, des conditions météo,
+#   du niveau de CO₂ et de la saison.
+#
+# ⚙️ Fonctionnement :
+#   - Compare humidité absolue intérieure / extérieure
+#   - Vérifie la différence de température
+#   - Ajuste les seuils selon la saison (Hiver / Été / Inter)
+#   - Modifie les seuils la nuit, en cas de pluie ou de grand froid
+#   - Priorise le CO₂ et la canicule selon les seuils configurés
+#
+# 📊 Type : Template Binary Sensor (valeur booléenne)
+# 📍 Entité générée : binary_sensor.aeration_preferable_etage
+# ==========================================================
+
+- binary_sensor:
+
+    # ------------------------------------------------------
+    # 🏠 Aération préférable à l’étage
+    # ------------------------------------------------------
+    - name: "Aération préférable – Étage"
+      unique_id: aeration_preferable_etage
+      default_entity_id: binary_sensor.aeration_preferable_etage
+
+      # --------------------------------------------------
+      # ✅ Vérifie la disponibilité des capteurs requis
+      # --------------------------------------------------
+      availability: >
+        {% set src = {
+          'int_abs': states('sensor.humidite_absolue_interieure_etage'),
+          'ext_abs': states('sensor.humidite_absolue_jardin'),
+          't_in':    states('sensor.temperature_max_chambres'),
+          't_out':   states('sensor.temperature_jardin')
+        } %}
+        {% set ok = src.values() | reject('in', ['unknown','unavailable','None']) | list | count == src|length %}
+        {{ ok }}
+
+      # --------------------------------------------------
+      # 🧮 Calcul de la condition d’aération
+      #   → Retourne vrai si l’aération est pertinente
+      # --------------------------------------------------
+      state: >
+        {% set int_abs = states('sensor.humidite_absolue_interieure_etage') | float(none) %}
+        {% set ext_abs = states('sensor.humidite_absolue_jardin')       | float(none) %}
+        {% set t_in    = states('sensor.temperature_max_chambres') | float(none) %}
+        {% set t_out   = states('sensor.temperature_jardin')    | float(none) %}
+        {% set rh_out  = states('sensor.humidite_relative_jardin') | float(none) %}
+        {% set co2     = states('sensor.co2_etage') | float(none) %}
+        {% set pluie   = is_state('input_boolean.pluie_en_cours','on') %}
+
+        {% set saison = states('input_select.saison') | default('Indéfini') %}
+        {% set is_hiver = (saison == 'Hiver') %}
+        {% set is_ete   = (saison == 'Été') %}
+
+        {% if is_hiver %}
+          {% set ha_min = states('input_number.aeration_delta_ha_min_hiver') | float(2.0) %}
+          {% set dt_min = states('input_number.aeration_delta_t_min_hiver')  | float(3.0) %}
+        {% elif is_ete %}
+          {% set ha_min = states('input_number.aeration_delta_ha_min_ete')   | float(1.0) %}
+          {% set dt_min = states('input_number.aeration_seuil_ecart_temperature_min') | float(2.0) %}
+        {% else %}
+          {% set ha_min = states('input_number.aeration_delta_ha_min_inter') | float(1.5) %}
+          {% set dt_min = states('input_number.aeration_delta_t_min_inter')  | float(2.5) %}
+        {% endif %}
+
+        {% set nuit = now().hour >= 22 or now().hour < 9 %}
+        {% if nuit %}
+          {% set ha_min = [ha_min - (states('input_number.aeration_mod_nuit_delta_ha') | float(0.3)), 0.5] | max %}
+          {% set dt_min = [dt_min - (states('input_number.aeration_mod_nuit_delta_t')  | float(1.5)), 0.5] | max %}
+        {% endif %}
+
+        {% if rh_out is not none and rh_out >= (states('input_number.aeration_pluie_rh_ext_seuil') | float(95)) %}
+          {% set ha_min = ha_min + (states('input_number.aeration_mod_pluie_delta_ha') | float(0.5)) %}
+        {% endif %}
+
+        {% if t_out is not none and t_out < (states('input_number.aeration_grand_froid_seuil_ext') | float(0)) %}
+          {% set dt_min = dt_min + (states('input_number.aeration_mod_grand_froid_add_delta_t') | float(1.0)) %}
+        {% endif %}
+
+        {% set canicule = (t_out is not none and t_out >= (states('input_number.aeration_canicule_seuil_ext') | float(28))) %}
+        {% set co2_seuil = states('input_number.aeration_co2_seuil') | float(1000) %}
+        {% set co2_fort  = states('input_number.aeration_co2_seuil_fort') | float(1200) %}
+
+        {% if [int_abs, ext_abs, t_in, t_out] | select('equalto', none) | list | count > 0 %}
+          false
+        {% else %}
+          {% set cond_ha = (int_abs - ext_abs) >= ha_min %}
+          {% set cond_dt = (t_in - t_out)   >= dt_min %}
+          {% set cond_r  = not pluie %}
+          {% set cond_c  = (co2 is not none) and (co2 >= co2_fort) %}
+          {% if cond_c %}
+            true
+          {% elif canicule and (co2 is none or co2 < co2_seuil) %}
+            false
+          {% else %}
+            {{ cond_ha and cond_dt and cond_r }}
+          {% endif %}
+        {% endif %}
+
+      # --------------------------------------------------
+      # 🎨 Icône dynamique selon la raison de la décision
+      # --------------------------------------------------
+      icon: >
+        {% set d = state_attr('binary_sensor.aeration_preferable_etage','decision') %}
+        {% if d == 'pluie_recente' %} mdi:weather-rainy
+        {% elif d == 'co2_priorite' %} mdi:molecule-co2
+        {% elif d == 'canicule' %} mdi:weather-sunny-alert
+        {% elif d == 'aeration_ok' %} mdi:weather-windy
+        {% elif d == 'inconnue' %} mdi:help-circle
+        {% else %} mdi:snowflake
+        {% endif %}
+
+      # --------------------------------------------------
+      # 📊 Attributs informatifs et seuils utilisés
+      # --------------------------------------------------
+      attributes:
+
+        # 💧 Différence d’humidité absolue (g/m³)
+        delta_humidite_absolue: >
+          {% set int_abs = states('sensor.humidite_absolue_interieure_etage') | float(none) %}
+          {% set ext_abs = states('sensor.humidite_absolue_jardin')       | float(none) %}
+          {% if int_abs is none or ext_abs is none %} none
+          {% else %} {{ (int_abs - ext_abs) | round(2) }}
+          {% endif %}
+
+        # 🌡️ Différence de température (°C)
+        delta_temperature: >
+          {% set t_in  = states('sensor.temperature_max_chambres') | float(none) %}
+          {% set t_out = states('sensor.temperature_jardin')    | float(none) %}
+          {% if t_in is none or t_out is none %} none
+          {% else %} {{ (t_in - t_out) | round(1) }}
+          {% endif %}
+
+        # 🌧️ Précipitations sur la dernière heure
+        pluie_1h_mm: >
+          {% set r = states('sensor.pluviometre_precipitation_last_hour') | float(none) %}
+          {% if r is none %} none
+          {% else %} {{ r | round(1) }}
+          {% endif %}
+
+        # ⚙️ Seuils de calcul appliqués (détail JSON)
+        seuils_utilises: >
+          {% set saison = states('input_select.saison') | default('Indéfini') %}
+          {% set is_hiver = (saison == 'Hiver') %}
+          {% set is_ete   = (saison == 'Été') %}
+
+          {# Seuils de base #}
+          {% if is_hiver %}
+            {% set ha_min0 = states('input_number.aeration_delta_ha_min_hiver') | float(2.0) %}
+            {% set dt_min0 = states('input_number.aeration_delta_t_min_hiver')  | float(3.0) %}
+          {% elif is_ete %}
+            {% set ha_min0 = states('input_number.aeration_delta_ha_min_ete')   | float(1.0) %}
+            {% set dt_min0 = states('input_number.aeration_seuil_ecart_temperature_min') | float(2.0) %}
+          {% else %}
+            {% set ha_min0 = states('input_number.aeration_delta_ha_min_inter') | float(1.5) %}
+            {% set dt_min0 = states('input_number.aeration_delta_t_min_inter')  | float(2.5) %}
+          {% endif %}
+
+          {# Modulateurs #}
+          {% set rh_out  = states('sensor.humidite_relative_jardin') | float(none) %}
+          {% set nuit = now().hour >= 22 or now().hour < 9 %}
+          {% set ha_min = ha_min0 %}
+          {% set dt_min = dt_min0 %}
+          {% if nuit %}
+            {% set ha_min = [ha_min - (states('input_number.aeration_mod_nuit_delta_ha') | float(0.3)), 0.5] | max %}
+            {% set dt_min = [dt_min - (states('input_number.aeration_mod_nuit_delta_t')  | float(1.5)), 0.5] | max %}
+          {% endif %}
+          {% if rh_out is not none and rh_out >= (states('input_number.aeration_pluie_rh_ext_seuil') | float(95)) %}
+            {% set ha_min = ha_min + (states('input_number.aeration_mod_pluie_delta_ha') | float(0.5)) %}
+          {% endif %}
+          {% set t_out = states('sensor.temperature_jardin') | float(none) %}
+          {% if t_out is not none and t_out < (states('input_number.aeration_grand_froid_seuil_ext') | float(0)) %}
+            {% set dt_min = dt_min + (states('input_number.aeration_mod_grand_froid_add_delta_t') | float(1.0)) %}
+          {% endif %}
+          {% set canicule = (t_out is not none and t_out >= (states('input_number.aeration_canicule_seuil_ext') | float(28))) %}
+          {% set rain_max = states('input_number.aeration_rain_max_mm') | float(0.0) %}
+          {% set co2_seuil = states('input_number.aeration_co2_seuil') | float(1000) %}
+          {% set co2_fort  = states('input_number.aeration_co2_seuil_fort') | float(1200) %}
+
+          {{ {
+            'saison': saison,
+            'ha_min_base': ha_min0,
+            'dt_min_base': dt_min0,
+            'ha_min_applique': ha_min,
+            'dt_min_applique': dt_min,
+            'rain_max': rain_max,
+            'co2_seuil': co2_seuil,
+            'co2_fort': co2_fort,
+            'canicule': canicule,
+            'nuit': nuit,
+            'rh_out': rh_out,
+            't_out': t_out
+          } | tojson }}
+
+        # 🧠 Décision finale (texte explicatif)
+        decision: >
+          {% set int_abs = states('sensor.humidite_absolue_interieure_etage') | float(none) %}
+          {% set ext_abs = states('sensor.humidite_absolue_jardin')       | float(none) %}
+          {% set t_in    = states('sensor.temperature_max_chambres') | float(none) %}
+          {% set t_out   = states('sensor.temperature_jardin')    | float(none) %}
+          {% set rh_out  = states('sensor.humidite_relative_jardin') | float(none) %}
+          {% set co2     = states('sensor.co2_etage') | float(none) %}
+          {% set pluie   = is_state('input_boolean.pluie_en_cours','on') %}
+
+          {% set saison = states('input_select.saison') | default('Indéfini') %}
+          {% set is_hiver = (saison == 'Hiver') %}
+          {% set is_ete   = (saison == 'Été') %}
+
+          {% if is_hiver %}
+            {% set ha_min = states('input_number.aeration_delta_ha_min_hiver') | float(2.0) %}
+            {% set dt_min = states('input_number.aeration_delta_t_min_hiver')  | float(3.0) %}
+          {% elif is_ete %}
+            {% set ha_min = states('input_number.aeration_delta_ha_min_ete')   | float(1.0) %}
+            {% set dt_min = states('input_number.aeration_seuil_ecart_temperature_min') | float(2.0) %}
+          {% else %}
+            {% set ha_min = states('input_number.aeration_delta_ha_min_inter') | float(1.5) %}
+            {% set dt_min = states('input_number.aeration_delta_t_min_inter')  | float(2.5) %}
+          {% endif %}
+
+          {% set nuit = now().hour >= 22 or now().hour < 9 %}
+          {% if nuit %}
+            {% set ha_min = [ha_min - (states('input_number.aeration_mod_nuit_delta_ha') | float(0.3)), 0.5] | max %}
+            {% set dt_min = [dt_min - (states('input_number.aeration_mod_nuit_delta_t')  | float(1.5)), 0.5] | max %}
+          {% endif %}
+
+          {% if rh_out is not none and rh_out >= (states('input_number.aeration_pluie_rh_ext_seuil') | float(95)) %}
+            {% set ha_min = ha_min + (states('input_number.aeration_mod_pluie_delta_ha') | float(0.5)) %}
+          {% endif %}
+
+          {% if t_out is not none and t_out < (states('input_number.aeration_grand_froid_seuil_ext') | float(0)) %}
+            {% set dt_min = dt_min + (states('input_number.aeration_mod_grand_froid_add_delta_t') | float(1.0)) %}
+          {% endif %}
+
+          {% set co2_seuil = states('input_number.aeration_co2_seuil') | float(1000) %}
+          {% set co2_fort  = states('input_number.aeration_co2_seuil_fort') | float(1200) %}
+          {% set canicule = (t_out is not none and t_out >= (states('input_number.aeration_canicule_seuil_ext') | float(28))) %}
+
+          {% if pluie %}
+            pluie_recente
+          {% elif [int_abs, ext_abs, t_in, t_out] | select('equalto', none) | list | count > 0 %}
+            inconnue
+          {% elif (co2 is not none) and (co2 >= co2_fort) %}
+            co2_priorite
+          {% elif canicule and (co2 is none or co2 < co2_seuil) %}
+            canicule
+          {% elif (int_abs - ext_abs) < ha_min %}
+            seuil_ha_non_atteint
+          {% elif (t_in - t_out) < dt_min %}
+            seuil_dt_non_atteint
+          {% else %}
+            aeration_ok
+          {% endif %}
+

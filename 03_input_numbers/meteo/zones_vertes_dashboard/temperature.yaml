@@ -1,0 +1,46 @@
+# ==========================================================
+# 🎨 ARSENAL — HELPER UI : Zone verte température
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir la demi-largeur de la zone de confort VISUELLE
+#   utilisée pour colorer les capteurs de température
+#   dans les dashboards et vues diagnostics.
+#
+# 🧠 Principe :
+#   - Chaque pièce possède ses seuils métier :
+#       • seuil_bas  (°C)
+#       • seuil_haut (°C)
+#   - Le centre de confort est calculé localement :
+#       centre = (seuil_bas + seuil_haut) / 2
+#   - Ce helper définit la tolérance graphique :
+#       zone verte = centre ± temperature_couleur_zone_verte
+#
+# ⚠️ Important :
+#   - Ce helper est STRICTEMENT VISUEL.
+#   - Il n’influence aucun seuil métier.
+#   - Il ne pilote aucune automatisation.
+#   - Il n’intervient dans aucune décision thermique.
+#
+# 🎨 Interprétation visuelle :
+#   - Vert   → température dans la zone idéale
+#   - Jaune  → température acceptable mais décalée
+#   - Rouge  → température hors des seuils définis
+#
+# 📦 Portée :
+#   - Helper global
+#   - Utilisé exclusivement par les capteurs de COULEUR
+#     dérivés de la température
+#
+# 📐 Unité :
+#   - Degrés Celsius (°C)
+#
+# ==========================================================
+
+
+temperature_couleur_zone_verte:
+  name: Zone verte température (± autour du centre)
+  unit_of_measurement: "°C"
+  min: 0.2
+  max: 1.5
+  step: 0.1
+  mode: slider

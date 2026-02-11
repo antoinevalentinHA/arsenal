@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 BINARY SENSOR — Simulation presence – Parents – Plage active
+# ----------------------------------------------------------
+# 🧱 Modèle ECS :
+#   - Calcul pur (stateless)
+#   - Fenêtres reconstruites chaque rendu
+#   - Tolérant au redémarrage
+#
+# 🎯 Vérité métier :
+#   ON si ∃ horaire simulé HH:MM tel que :
+#     today_at(HH:MM) ≤ now < today_at(HH:MM) + durée_cycle
+#
+# 📌 Sources :
+#   - input_text.horaires_simulation_presence_matin
+#   - input_text.horaires_simulation_presence_soir
+# ==========================================================
+
+- binary_sensor:
+    - name: "Simulation presence - Plage allumage parents"
+      unique_id: simulation_presence_plage_allumage_parents
+      default_entity_id: binary_sensor.simulation_presence_plage_allumage_parents
+      state: >
+        {% set now_ts = as_timestamp(now()) %}
+        {% set duree_min = states('input_number.duree_min_cycle_simulation_presence') | int(0) %}
+        {% set duree_max = states('input_number.duree_max_cycle_simulation_presence') | int(0) %}
+        {% set ns = namespace(active=false) %}
+
+        {% set horaires = [] %}
+        {% set txt_matin = states('input_text.horaires_simulation_presence_matin') %}
+        {% set txt_soir  = states('input_text.horaires_simulation_presence_soir') %}
+
+        {% if txt_matin not in ['unknown','unavailable','none','Aucun',''] %}
+          {% set horaires = horaires + txt_matin.split(', ') %}
+        {% endif %}
+        {% if txt_soir not in ['unknown','unavailable','none','Aucun',''] %}
+          {% set horaires = horaires + txt_soir.split(', ') %}
+        {% endif %}
+
+        {% for h in horaires %}
+          {% set start_ts = as_timestamp(today_at(h)) %}
+          {% if start_ts is not none %}
+            {# durée déterministe journalière basée sur HHMM #}
+            {% set seed = (h | replace(':','') | int(0)) %}
+            {% set duree = duree_min + (seed % (duree_max - duree_min + 1)) if duree_max > duree_min else duree_min %}
+            {% set end_ts = start_ts + (duree * 60) %}
+            {% if start_ts <= now_ts < end_ts %}
+              {% set ns.active = true %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {{ ns.active }}
+      icon: >
+        mdi:home-lightbulb-outline

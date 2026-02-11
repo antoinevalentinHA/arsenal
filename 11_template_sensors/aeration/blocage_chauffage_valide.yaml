@@ -1,0 +1,253 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR MÉTIER
+#     Aération — Validation physique bloquante
+# ----------------------------------------------------------
+# 📛 Domaine : Chauffage / Aération / Observabilité physique
+# 🧠 Nature  : Fait métier qualifié (lecture seule)
+#
+# 🎯 RÔLE FONDAMENTAL
+#
+#   Qualifier si un **épisode d’aération reconnu** est
+#   **physiquement crédible au regard de la thermique observée**.
+#
+#   Ce capteur ne décrit PAS :
+#     - l’état Zigbee,
+#     - l’état physique réel d’un ouvrant,
+#     - l’état brut du pipeline,
+#     - une intention décisionnelle.
+#
+#   Il décrit exclusivement :
+#     → la VALIDITÉ PHYSIQUE NORMATIVE de la cause bloquante « aération »
+#
+#   Sémantique contractuelle :
+#
+#     ON  : interdiction thermique physiquement légitime
+#     OFF : aucune interdiction thermique liée à l’aération
+#
+# ----------------------------------------------------------
+# 🧠 FINALITÉ ARCHITECTURALE
+#
+#   Ce capteur constitue :
+#     - le garde-fou anti-épisode zombie
+#     - la barrière de sécurité contre pertes Zigbee
+#     - la future source unique NIVEAU 2 « aération bloquante »
+#
+#   Il a vocation à devenir :
+#     → l’unique interface normative entre :
+#         pipeline aération
+#         et Décision Centrale Chauffage
+#
+#   ⚠️ À CE STADE :
+#     - NON consommé par la Décision Centrale
+#     - NON bloquant effectif
+#     - NON décisionnel
+#     - STRICTEMENT en phase d’observation passive
+#
+# ----------------------------------------------------------
+# 🔍 CRITÈRE PHYSIQUE CANONIQUE
+#
+#   Invariant exploité :
+#     Toute ouverture réelle suffisamment longue
+#     produit une signature thermique mesurable
+#     sur au moins UNE zone impactée.
+#
+#   Règle normative :
+#
+#     aération_bloquante_valide = true SI ET SEULEMENT SI :
+#
+#       - épisode d’aération actif reconnu
+#       ET
+#       - durée épisode ≥ délai de stabilisation contractuel
+#       ET
+#       - au moins UNE zone présente :
+#             ΔT_zone ≥ ΔT_min_physique
+#
+#   Interprétation :
+#     - validation par la PHYSIQUE uniquement
+#     - aucune confiance accordée à l’état Zigbee brut
+#
+# ----------------------------------------------------------
+# ⚙️ PARAMÈTRES PHYSIQUES DE RÉFÉRENCE
+#
+#   Paramètres contractuels indicatifs :
+#
+#     - délai minimal avant qualification :
+#         ≥ 10 minutes
+#
+#     - seuil chute thermique minimale :
+#         ΔT_min_physique = 0.20 °C   (valeur de départ)
+#
+#   Ces paramètres sont :
+#     - calibrables
+#     - observables
+#     - versionnables
+#
+# ----------------------------------------------------------
+# 🔒 PROPRIÉTÉS CONTRACTUELLES
+#
+#   - lecture seule
+#   - aucun déclenchement
+#   - aucun effet de bord
+#   - aucune action
+#   - aucune décision
+#   - aucune correction Zigbee
+#   - aucune logique réparatrice
+#
+#   Ce capteur :
+#     - ne ferme jamais un épisode
+#     - ne lève jamais un blocage
+#     - ne déclenche jamais une reprise
+#
+#   Il produit UNIQUEMENT :
+#     → un fait métier qualifié
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES NORMATIVES
+#
+#   Infrastructure aération :
+#     - input_boolean.aeration_pipeline_arme
+#     - input_datetime.analyse_deltat_disponible
+#
+#   Observabilité ouvrants :
+#     - binary_sensor.* ouvrants avec délai
+#
+#   Observabilité thermique :
+#     - sensor.deltaT_entree
+#     - sensor.deltaT_sejour
+#     - sensor.deltaT_chambre_parents
+#     - sensor.deltaT_chambre_arnaud
+#     - sensor.deltaT_chambre_matthieu
+#
+# ----------------------------------------------------------
+# 🛑 STATUT D’INTÉGRATION ACTUEL
+#
+#   - Phase : OBSERVATION PASSIVE
+#   - Rôle actuel : DIAGNOSTIC & VALIDATION CONCEPTUELLE
+#   - Consommateurs : AUCUN
+#   - Impact système : NUL
+#
+#   Toute activation décisionnelle future :
+#     - nécessite évolution contractuelle
+#     - nécessite mise à jour Décision Centrale
+#     - nécessite validation humaine explicite
+#
+# ----------------------------------------------------------
+# 📌 POSITIONNEMENT ARSENAL
+#
+#   Ce capteur appartient à la couche :
+#     Observabilité physique métier
+#
+#   Il est :
+#     - indépendant du Zigbee brut
+#     - indépendant de la Décision Centrale
+#     - indépendant du pilotage matériel
+#
+#   Il prépare :
+#     une sécurisation future anti-zombie
+#     sans altérer l’architecture actuelle.
+#
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Aération bloquante valide"
+      unique_id: aeration_bloquante_valide
+      default_entity_id: binary_sensor.aeration_bloquante_valide
+      device_class: problem
+
+      state: >
+        {# -------------------------------------------------- #}
+        {# 1) Pipeline armé ?                                #}
+        {# -------------------------------------------------- #}
+
+        {% if states('input_boolean.aeration_pipeline_arme') != 'on' %}
+          false
+
+        {% else %}
+
+          {# -------------------------------------------------- #}
+          {# 2) Fenêtre temporelle atteinte ?                  #}
+          {# -------------------------------------------------- #}
+
+          {% set dt = states('input_datetime.analyse_deltat_disponible') | as_datetime %}
+          {% if dt is none or now().replace(tzinfo=None) < dt %}
+            false
+
+          {% else %}
+
+            {# -------------------------------------------------- #}
+            {# 3) Détermination des zones ouvertes              #}
+            {# -------------------------------------------------- #}
+
+            {% set zones = [] %}
+
+            {# Entrée #}
+            {% if is_state('binary_sensor.capteur_fenetre_entree', 'on') %}
+              {% set zones = zones + ['entree'] %}
+            {% endif %}
+
+            {# Séjour (au moins une baie ouverte) #}
+            {% if is_state('binary_sensor.fenetre_sejour_ouverte_avec_delai', 'on') %}
+              {% set zones = zones + ['sejour'] %}
+            {% endif %}
+
+            {# Chambre parents #}
+            {% if is_state('binary_sensor.fenetre_chambre_parents_ouverte_avec_delai', 'on') %}
+              {% set zones = zones + ['chambre_parents'] %}
+            {% endif %}
+
+            {# Chambre Arnaud #}
+            {% if is_state('binary_sensor.capteur_chambre_arnaud', 'on') %}
+              {% set zones = zones + ['chambre_arnaud'] %}
+            {% endif %}
+
+            {# Chambre Matthieu #}
+            {% if is_state('binary_sensor.capteur_chambre_matthieu', 'on') %}
+              {% set zones = zones + ['chambre_matthieu'] %}
+            {% endif %}
+
+            {# -------------------------------------------------- #}
+            {# 4) Aucune zone ouverte → incohérent              #}
+            {# -------------------------------------------------- #}
+
+            {% if zones | length == 0 %}
+              false
+
+            {% else %}
+
+              {# -------------------------------------------------- #}
+              {# 5) Lecture des ΔT par zone ouverte              #}
+              {# -------------------------------------------------- #}
+
+              {% set valid = false %}
+
+              {% for z in zones %}
+
+                {% if z == 'entree' %}
+                  {% set dtz = states('sensor.deltaT_entree') | float(0) %}
+                {% elif z == 'sejour' %}
+                  {% set dtz = states('sensor.deltaT_sejour') | float(0) %}
+                {% elif z == 'chambre_parents' %}
+                  {% set dtz = states('sensor.deltaT_chambre_parents') | float(0) %}
+                {% elif z == 'chambre_arnaud' %}
+                  {% set dtz = states('sensor.deltaT_chambre_arnaud') | float(0) %}
+                {% elif z == 'chambre_matthieu' %}
+                  {% set dtz = states('sensor.deltaT_chambre_matthieu') | float(0) %}
+                {% else %}
+                  {% set dtz = 0 %}
+                {% endif %}
+
+                {# Seuil physique minimal contractuel #}
+                {% if dtz >= 0.2 %}
+                  {% set valid = true %}
+                {% endif %}
+
+              {% endfor %}
+
+              {{ valid }}
+
+            {% endif %}
+
+          {% endif %}
+
+        {% endif %}

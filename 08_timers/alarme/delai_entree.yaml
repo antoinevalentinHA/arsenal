@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : Délai d’entrée
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition d’une FENÊTRE TEMPORELLE d’attente
+#   après l’ouverture d’un accès protégé
+#   (porte d’entrée, porte de garage).
+#
+#   Ce timer borne le TEMPS ACCORDÉ
+#   au désarmement manuel de l’alarme
+#   avant toute réaction intrusive.
+#
+# 🧩 Nature :
+#   Cadre TEMPOREL — temporisation d’entrée.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS l’alarme
+#   - Ne rend PAS l’alarme silencieuse
+#   - Ne décide PAS du statut d’intrusion
+#   - Ne désarme PAS l’alarme
+#
+# 🔍 Spécificité technique :
+#   - Durée variable, définie dynamiquement
+#     via `input_number.alarme_delai_entree`
+#   - Timer restaurable (`restore: true`)
+#   - États exploitables : active / idle
+#
+# 🔄 Fonctionnement :
+#   - Démarré lors de l’ouverture
+#     d’un accès légitime surveillé
+#   - Pendant son activité :
+#       • le système sait qu’il est
+#         en phase de délai d’entrée
+#   - À l’expiration :
+#       • le délai est terminé
+#       • la logique centrale décide
+#         de la suite (intrusion ou non)
+#
+# 🔗 Utilisation :
+#   - Automatisations intrusion (start / fin)
+#   - Capteur binaire :
+#       • état "délai de désarmement actif"
+#   - Script décision centrale alarme
+#   - Dashboards diagnostics :
+#       • état et temps restant
+#
+# 🧠 Principe Arsenal associé :
+#   - Le timer définit le TEMPS
+#   - La décision appartient au moteur
+#   - L’action finale est toujours explicite
+#
+# ⚠️ Remarque :
+#   L’expiration du timer n’implique JAMAIS
+#   un déclenchement automatique à elle seule.
+# ==========================================================
+
+
+delai_entree:
+  name: "Délai entrée"
+  duration: "00:00:30"
+  restore: true

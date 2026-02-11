@@ -1,0 +1,50 @@
+# ==========================================================
+# 🔥 TEMPLATE SENSOR — Mode Bruleur Chaudiere (local + eco)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer le mode réel du brûleur uniquement à partir
+#   des capteurs locaux, tout en respectant le programme
+#   de chauffage (Eco, Confort, etc.).
+#
+# ⚙️ Fonctionnement :
+#   - "Repos"     → aucun actif ou programme = Eco
+#   - "ECS"       → ECS actif seul
+#   - "Chauffage" → Chauffage actif seul
+#   - "Mixte"     → ECS et Chauffage actifs simultanément
+#
+# 🧩 Sources :
+#   - binary_sensor.ecs_chauffe_en_cours_local
+#   - binary_sensor.bruleur_chauffage_actif
+#   - sensor.programme_chauffage
+# ==========================================================
+
+- sensor:
+    - name: "Mode Brûleur Chaudière"
+      unique_id: bruleur_mode
+      icon: mdi:fire
+      state: >
+        {% set ecs = is_state('binary_sensor.ecs_chauffe_en_cours_local', 'on') %}
+        {% set ch = is_state('binary_sensor.bruleur_chauffage_actif', 'on') %}
+        {% set programme = states('sensor.programme_chauffage') | lower %}
+
+        {% if programme == 'eco' %}
+          {% if ecs %}
+            ECS
+          {% else %}
+            Repos
+          {% endif %}
+        {% else %}
+          {% if ecs and ch %}
+            Mixte
+          {% elif ecs %}
+            ECS
+          {% elif ch %}
+            Chauffage
+          {% else %}
+            Repos
+          {% endif %}
+        {% endif %}
+      attributes:
+        programme: "{{ states('sensor.programme_chauffage') }}"
+        ecs_actif: "{{ states('binary_sensor.ecs_chauffe_en_cours_local') }}"
+        chauffage_actif: "{{ states('binary_sensor.bruleur_chauffage_actif') }}"

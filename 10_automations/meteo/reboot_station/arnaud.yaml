@@ -1,0 +1,73 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Netatmo – Remédiation réseau (reboot station Arnaud)
+#
+#  ID : 10160000000007
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de REMÉDIATION TECHNIQUE CONDITIONNELLE.
+#
+#     Elle déclenche un redémarrage électrique de la
+#     station Netatmo de la chambre Arnaud uniquement
+#     lorsqu’un diagnostic réseau explicite l’autorise.
+#
+#  🧱 NATURE
+#
+#     - Action corrective ciblée
+#     - Pilotée par un diagnostic externe
+#     - Aucun diagnostic interne
+#
+#  ⚙️ PRINCIPE
+#
+#     - Surveillance de l’état du capteur
+#       `sensor.diagnostic_netatmo_arnaud`
+#     - Si diagnostic = `ko_reseau` :
+#         • reboot électrique de la station
+#         • notification utilisateur
+#     - Si diagnostic ≠ `ko_reseau` :
+#         • aucune action
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne diagnostique pas l’origine de la panne
+#     - Ne redémarre jamais en cas de `ko_homekit`
+#     - Ne force pas un redémarrage périodique
+#     - Ne gère pas de logique de retry ou de boucle
+#
+#  🔗 UTILISATION
+#
+#     - Correctif automatique des pannes réseau Netatmo
+#     - Action ponctuelle, déclenchée uniquement
+#       par une autorité de diagnostic dédiée
+#
+#  🛡️ SÉCURITÉ
+#
+#     La séparation stricte diagnostic / action
+#     empêche tout redémarrage intempestif.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10160000000007"
+  alias: "Netatmo – Redémarrage sur panne réseau (Arnaud)"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.diagnostic_netatmo_arnaud
+      to: "ko_reseau"
+
+  action:
+    - service: script.reboot_netatmo
+      data:
+        switch_entity: "switch.prise_chambre_arnaud"
+
+    - service: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🔧 Netatmo – Redémarrage"
+        message: "Netatmo Chambre Arnaud rebootee (panne reseau detectee)."

@@ -1,0 +1,54 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Mémorisation changement du verrou standby forcé
+#
+#  ID : 10240000000006
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Enregistrer la date et l’heure exactes de chaque
+#     changement d’état du verrou logique
+#     `input_boolean.chauffage_standby_force`.
+#
+#     Cette automation fournit une mémoire temporelle fiable
+#     utilisable par les règles de décision, les audits ou
+#     l’analyse a posteriori.
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide pas de l’activation ou désactivation du verrou
+#     - Ne pilote aucun équipement de chauffage
+#     - N’influence aucune logique métier
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • toute modification de l’état du verrou standby forcé
+#     - Action :
+#         • écriture de l’horodatage courant dans un helper
+#           `input_datetime`
+#     - Précision :
+#         • horodatage normalisé (sans microsecondes)
+#
+#  ✅ CONTRAINTES
+#     - Automation strictement mémorielle
+#     - Aucune condition ou interprétation
+#     - Source de vérité temporelle unique pour ce verrou
+# ==========================================================
+
+
+- id: "10240000000006"
+  alias: "Chauffage – Mémoire standby forcé"
+  description: >
+    Enregistre la date/heure du changement de
+    input_boolean.chauffage_standby_force dans le helper dédié.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.chauffage_standby_force
+
+  action:
+    - alias: "Save timestamp to input_datetime"
+      service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.chauffage_standby_force_changed
+      data:
+        datetime: "{{ now().replace(microsecond=0).isoformat() }}"

@@ -1,0 +1,35 @@
+# ==========================================================
+#  HISTORY STATS SENSOR — Temps d’aération à l’étage
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Calcule la durée totale pendant laquelle
+#     la fenêtre de l’étage est restée ouverte 
+#     depuis minuit (sur la journée en cours).
+#
+#  ⚙️ Composant : `platform: history_stats`
+#     - Analyse les historiques de Home Assistant.
+#     - Permet de calculer :
+#         • le temps passé dans un état donné (type: time)
+#         • le nombre de changements d’état (type: count)
+#         • ou la dernière durée depuis le dernier changement (type: ratio)
+#
+#  🧩 Entrée :
+#     - `binary_sensor.fenetre_ouverte_etage`
+#       → Capteur d’ouverture de fenêtre pour tout l’étage.
+#
+#  📅 Fenêtre d’analyse :
+#     - Du début de la journée (00:00:00) jusqu’à l’instant présent.
+#
+#  📊 Sortie :
+#     - Valeur en heures (durée totale d’ouverture cumulée)
+#
+#  ✅ Mise à jour automatique à chaque changement d’état
+# ==========================================================
+
+- platform: history_stats
+  name: "Durée aération Étage"
+  entity_id: binary_sensor.fenetre_ouverte_etage
+  state: "on"                                   # État mesuré (fenêtre ouverte)
+  type: time                                    # Calcule le temps total dans cet état
+  start: "{{ now().replace(hour=0, minute=0, second=0) }}"  # Début de journée
+  end: "{{ now() }}"                            # Jusqu’à maintenant

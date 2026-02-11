@@ -1,0 +1,24 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Ouvertures
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Représenter l'état global des ouvertures pour le
+#     menu principal (portes et fenêtres).
+#
+#  🎯 États normalisés :
+#     - alert → rouge (au moins une ouverture)
+#     - off   → gris   (tout fermé)
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_ouvertures_dashboard"
+      unique_id: etat_ouvertures_dashboard
+      state: >
+        {% set ouvert = states('binary_sensor.ouvertures_maison') %}
+
+        {% if ouvert == 'on' %}
+          alert
+        {% else %}
+          off
+        {% endif %}

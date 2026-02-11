@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Éclairage Jardin — Allumage stable
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Point UNIQUE et volontaire d’allumage de l’éclairage jardin.
+#
+#   Ce script garantit un allumage :
+#     - sans effet de bord
+#     - sans bascule inutile
+#     - sans dépendance au contexte appelant
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE DE STABILITÉ
+#
+#   - Si l’éclairage est déjà allumé :
+#       → aucune action
+#
+#   - Si l’éclairage est éteint :
+#       → allumage explicite
+#
+#   ➜ Comportement idempotent
+#
+# ----------------------------------------------------------
+# 🧠 SÉPARATION DES RÔLES
+#
+#   - Les automatisations décident QUAND allumer
+#     (soir, coucher du soleil, présence, simulation, etc.)
+#
+#   - Ce script applique COMMENT allumer,
+#     sans interprétation ni logique métier.
+#
+# ----------------------------------------------------------
+# 🛑 CE SCRIPT NE FAIT PAS
+#
+#   - Aucun calcul horaire
+#   - Aucune détection de présence
+#   - Aucun toggle
+#   - Aucune logique inverse
+#
+#   ➜ Il exécute un allumage sûr, point final.
+#
+# ----------------------------------------------------------
+# 🧩 ARCHITECTURE ARSENAL
+#
+#   - Centralise tous les allumages jardin
+#   - Évite les appels directs à `switch.prise_jardin`
+#   - Garantit un comportement homogène et lisible
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script utilitaire — action stable
+#
+# 📍 Entité :
+#   script.jardin_on
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+jardin_on:
+  alias: "Éclairage Jardin - Allumage"
+  mode: single
+  sequence:
+    - condition: state
+      entity_id: switch.prise_jardin
+      state: "off"
+
+    - action: switch.turn_on
+      target:
+        entity_id: switch.prise_jardin

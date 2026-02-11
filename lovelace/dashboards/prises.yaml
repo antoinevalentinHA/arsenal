@@ -1,0 +1,251 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Home
+icon: mdi:server
+
+views:
+  ####################################
+  # ⚡️ PRISES CONNECTÉES – HOME
+  ####################################
+  - title: Home
+    path: home
+    icon: mdi:server
+
+    badges: !include ../includes/badges/base.yaml
+
+    ########################################################
+    # 🧱 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+
+          - type: custom:button-card
+            template: section_header
+            name: 🏠 Maison – Réseau & Énergie
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_box
+                name: Box
+                icon: mdi:router-wireless
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_box
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_onduleur
+                name: Onduleur
+                icon: mdi:car-battery
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_onduleur
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_chambre_arnaud
+                name: Netatmo Arnaud
+                icon: mdi:thermometer
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_chambre_arnaud
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_chambre_matthieu
+                name: Netatmo Matthieu
+                icon: mdi:thermometer
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_chambre_matthieu
+
+          - !include ../includes/section_headers/lumieres.yaml
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_lampe_sejour
+                name: Lumière Séjour
+                icon: mdi:lamp
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_lampe_sejour
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_sejour_baies_vitrees
+                name: Lumière Sapin
+                icon: mdi:pine-tree
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_sejour_baies_vitrees
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_lampe_parents
+                name: Lampe chambre Parents
+                icon: mdi:lamp
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_lampe_parents
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_jardin
+                name: Eclairage Jardin
+                icon: mdi:tree
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_jardin
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔌 Électroménager
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_refrigerateur
+                name: Réfrigérateur
+                icon: mdi:fridge
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_refrigerateur
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_lave_vaisselle
+                name: Lave-vaisselle
+                icon: mdi:dishwasher
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_lave_vaisselle
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_buanderie
+                name: Machines linge
+                icon: mdi:washing-machine
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_buanderie
+
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Cave
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_bouclage
+                name: Bouclage
+                icon: mdi:water-pump
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_bouclage
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_deshumidificateur
+                name: Déshumidificateur
+                icon: mdi:air-humidifier
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_deshumidificateur
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔌📡 Prises relais
+
+          - type: grid
+            columns: 4
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_sdb_enfants
+                name: Veilleuse Arnaud
+                icon: mdi:flashlight
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_sdb_enfants
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_cage_escalier_rdc
+                name: Cage d'escaliers RDC
+                icon: mdi:access-point
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_cage_escalier_rdc
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_palier
+                name: Palier étage
+                icon: mdi:access-point
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_palier
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_sejour_placard
+                name: Séjour placards
+                icon: mdi:access-point
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_sejour_placard

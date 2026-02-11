@@ -1,0 +1,75 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme – Délai d’entrée (fin)
+#
+#  ID : 10020000000032
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation chargée de déclencher l’alarme
+#     lorsque le délai d’entrée expire sans
+#     désarmement préalable.
+#
+#  🧩 PRINCIPE
+#
+#     - Le timer du délai d’entrée arrive à échéance
+#     - L’alarme est toujours armée
+#     - Le déclenchement est exécuté
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne gère pas le démarrage du délai
+#     - Ne décide pas de l’armement
+#     - Ne modifie aucun état de présence
+#
+#  🛡️ ROBUSTESSE
+#
+#     - Zéro wait
+#     - Réaction événementielle
+#     - Post-reboot safe
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10020000000032"
+  alias: "Alarme - Délai entrée (fin)"
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.delai_entree
+
+  condition:
+    - condition: state
+      entity_id: alarm_control_panel.alarme_maison
+      state: "armed_away"
+
+  action:
+    # 🚨 Déclenchement de l’alarme
+    - action: alarm_control_panel.alarm_trigger
+      target:
+        entity_id: alarm_control_panel.alarme_maison
+
+    # 📲 Notification critique
+    - action: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🚨 Alarme déclenchée"
+        message: >
+          Aucun désarmement détecté après expiration
+          du délai d’entrée.
+        extra:
+          priority: high
+          importance: high
+
+    # 🔊 Sirène (hors mode test)
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.mode_test_alarme
+              state: "off"
+          sequence:
+            - action: script.sirene_brutale

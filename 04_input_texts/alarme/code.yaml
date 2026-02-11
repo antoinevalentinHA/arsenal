@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Code alarme
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker le code de désarmement de l’alarme utilisé
+#   comme référence par le clavier virtuel.
+#
+# 🧱 Nature :
+#   - Paramètre métier sensible
+#   - Mémoire persistante sécurisée (affichage masqué)
+#
+# 🚫 Ne fait PAS :
+#   - Ne valide aucune saisie utilisateur
+#   - Ne déclenche aucun changement d’état d’alarme
+#   - Ne contient aucune logique de sécurité
+#
+# 🔗 Utilisation :
+#   - Script :
+#       09_scripts/alarme/clavier.yaml
+#     → comparaison du code saisi avec cette valeur
+#
+# 🧠 Principe ARSENAL :
+#   - Séparation stricte stockage / validation
+#   - Les helpers stockent, les scripts décident
+#
+# 🔐 Sécurité :
+#   - Valeur initiale chargée depuis secrets.yaml
+#   - Le masquage d’affichage n’est PAS un chiffrement
+# ==========================================================
+
+
+alarm_code:
+  name: Code Alarme
+  initial: !secret code_alarme
+  mode: password
+  min: 4
+  max: 10

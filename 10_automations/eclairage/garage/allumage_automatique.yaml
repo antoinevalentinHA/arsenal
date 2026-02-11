@@ -1,0 +1,95 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Garage – Déclenchement conditionnel éclairage
+#
+#  ID : 10070000000012
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de déclenchement local conditionnel.
+#
+#     Elle réagit à des événements physiques dans le garage
+#     (mouvements ou ouverture de porte) afin de demander
+#     l’allumage de l’éclairage, uniquement lorsque
+#     l’automatisme est autorisé et que la lumière est éteinte.
+#
+#     Cette automation ne pilote PAS directement l’éclairage.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement sur événements physiques :
+#         • détection de mouvement (capteurs multiples)
+#         • ouverture de la porte du garage
+#     - Vérification des autorisations :
+#         • mode automatique activé
+#         • lumière actuellement éteinte
+#     - Délégation de l’action au script dédié
+#
+#  🧠 AUTORISATIONS & ÉTAT
+#
+#     - input_boolean.garage_auto_light
+#         → autorisation globale de l’éclairage automatique
+#
+#     - input_boolean.garage_light_state
+#         → état logique interne de l’éclairage garage
+#
+#  🧠 AUTORITÉ D’ACTION
+#
+#     script.garage_toggle
+#
+#     → script unique responsable du pilotage réel
+#       de l’éclairage et de la cohérence d’état.
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - N’éteint PAS la lumière
+#     - Ne gère AUCUNE temporisation
+#     - Ne décide PAS de la durée d’éclairage
+#     - Ne pilote PAS directement le matériel
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation d’interface événementielle :
+#     événement ≠ autorisation ≠ pilotage.
+#
+#     Elle traduit un contexte physique local
+#     en demande d’action, sans logique métier.
+# ==========================================================
+
+
+- id: "10070000000012"
+  alias: "Garage - Allumage auto"
+  mode: single
+
+  trigger:
+    # Capteur 1
+    - platform: state
+      entity_id: binary_sensor.capteur_mouvements_garage_1_occupancy
+      to: "on"
+
+    # Capteur 2
+    - platform: state
+      entity_id: binary_sensor.capteur_mouvements_garage_2_occupancy
+      to: "on"
+
+    # Capteur 3
+    - platform: state
+      entity_id: binary_sensor.capteur_mouvements_garage_3_occupancy
+      to: "on"
+
+    # Ouverture/fermeture de la porte du garage
+    - platform: state
+      entity_id: binary_sensor.capteur_porte_garage
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.garage_auto_light
+      state: "on"
+
+    - condition: state
+      entity_id: input_boolean.garage_light_state
+      state: "off"
+
+  action:
+    - action: script.garage_toggle

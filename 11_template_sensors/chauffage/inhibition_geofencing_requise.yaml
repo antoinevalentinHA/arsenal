@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — TRIGGERED BINARY SENSOR MÉTIER
+#     Chauffage — Inhibition géofencing requise (hystérésis)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Qualifier de manière déterministe si une inhibition
+#     géofencing est REQUISE physiquement selon :
+#
+#       - l’écart thermique à la consigne confort
+#       - les offsets d’hystérésis configurés
+#
+#     Ce capteur constitue :
+#       - la SOURCE UNIQUE DE VÉRITÉ
+#         de la zone ON / OFF d’inhibition géofencing
+#
+# 🚫 NE FAIT PAS
+#     - Ne mémorise rien
+#     - Ne décide aucun mode
+#     - N’écrit aucun helper
+#
+# 🔒 PROPRIÉTÉS
+#     - Anti-yo-yo structurel par hystérésis
+#     - Lecture pure
+#     - Recalcul uniquement sur changements pertinents
+#
+# ==========================================================
+
+- trigger:
+
+    - platform: state
+      entity_id:
+        - sensor.ecart_consigne_confort
+        - input_number.inhibition_geofencing_offset_on
+        - input_number.inhibition_geofencing_offset_off
+        - input_boolean.chauffage_inhibition_geofencing
+
+
+  binary_sensor:
+
+    - name: "Chauffage — Inhibition géofencing requise"
+      unique_id: chauffage_inhibition_geofencing_requise
+      device_class: safety
+
+      state: >
+        {% set ecart = states('sensor.ecart_consigne_confort') | float(none) %}
+        {% set offset_on = states('input_number.inhibition_geofencing_offset_on') | float(none) %}
+        {% set offset_off = states('input_number.inhibition_geofencing_offset_off') | float(none) %}
+        {% set actif = is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
+
+        {% if ecart is none or offset_on is none or offset_off is none %}
+          false
+        {% else %}
+          {{
+            (not actif and ecart < (offset_on * -1))
+            or
+            (actif and ecart <= (offset_off * -1))
+          }}
+        {% endif %}

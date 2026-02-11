@@ -1,0 +1,180 @@
+# ==============================================================
+# 🔍 TEMPLATE : carte_chauffage_decision
+# --------------------------------------------------------------
+# Carte décisionnelle du chauffage — UI Arsenal.
+#
+# Règle absolue :
+#   - Les BLOCAGES priment TOUJOURS
+#   - Le STANDBY est invisible si un blocage est actif
+# ==============================================================
+
+carte_chauffage_decision:
+  color_type: card
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+
+  name: Chauffage – État réel
+
+  #################################################################
+  # 🧠 ÉTAT PRINCIPAL
+  #################################################################
+  state_display: |
+    [[[
+      const map = {
+        'Confort': 'Confort actif',
+        'Eco': 'Réduit actif',
+        'Inconnu': 'État inconnu'
+      };
+      return map[entity.state] || entity.state;
+    ]]]
+
+  #################################################################
+  # 🧾 LIBELLÉ CONTEXTUEL
+  #################################################################
+  label: |
+    [[[
+      const intention = states['sensor.chauffage_mode_calcule']?.state || '—';
+      const raison = states['sensor.chauffage_raison_calculee']?.state || '';
+
+      const labels = {
+        blocage_poele: 'poêle actif',
+        aeration_en_cours: 'aération en cours',
+        blocage_aeration: 'post-aération',
+        fenetre_ouverte: 'fenêtre ouverte',
+        mode_maison_vacances: 'mode vacances',
+        chauffage_non_autorise: 'chauffage non autorisé',
+        absence_protection_thermique: 'protection thermique',
+        standby_force: 'attente thermique'
+      };
+
+      return `Intention : ${intention}${raison ? ' — ' + (labels[raison] || raison) : ''}`;
+    ]]]
+
+  #################################################################
+  # 🎨 QUALIFICATION VISUELLE — PRIORITÉ STRICTE
+  #################################################################
+  state:
+
+    #################################################################
+    # ⛔ BLOCAGES ABSOLUS (ÉCRASENT TOUT)
+    #################################################################
+    - operator: template
+      value: |
+        [[[
+          const r = states['sensor.chauffage_raison_calculee']?.state;
+          return [
+            'blocage_poele',
+            'aeration_en_cours',
+            'blocage_aeration',
+            'fenetre_ouverte',
+            'mode_maison_vacances',
+            'chauffage_non_autorise'
+          ].includes(r);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(255, 152, 0, 0.2)
+
+    #################################################################
+    # 🟠 PROTECTION THERMIQUE (ABSENCE)
+    #################################################################
+    - operator: template
+      value: |
+        [[[
+          return states['sensor.chauffage_raison_calculee']?.state === 'absence_protection_thermique';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(255, 152, 0, 0.2)
+
+    #################################################################
+    # 🔵 STANDBY — UNIQUEMENT SANS BLOCAGE
+    #################################################################
+    - operator: template
+      value: |
+        [[[
+          const r = states['sensor.chauffage_raison_calculee']?.state;
+
+          const blocage_actif = [
+            'blocage_poele',
+            'aeration_en_cours',
+            'blocage_aeration',
+            'fenetre_ouverte',
+            'mode_maison_vacances',
+            'chauffage_non_autorise'
+          ].includes(r);
+
+          return r === 'standby_force' && !blocage_actif;
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(33, 150, 243, 0.2)
+
+    #################################################################
+    # 🟢 COHÉRENCE NOMINALE
+    #################################################################
+    - operator: template
+      value: |
+        [[[
+          const intention = states['sensor.chauffage_mode_calcule']?.state;
+          const reel = entity.state;
+
+          if (reel === 'Inconnu') return false;
+          if (intention === reel) return true;
+          if (intention === 'Neutre' && (reel === 'Eco' || reel === 'Confort')) return true;
+
+          return false;
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    #################################################################
+    # 🔴 ANOMALIE RÉELLE
+    #################################################################
+    - operator: template
+      value: |
+        [[[
+          if (entity.state === 'Inconnu') return true;
+
+          const r = states['sensor.chauffage_raison_calculee']?.state;
+          return ![
+            'blocage_poele',
+            'aeration_en_cours',
+            'blocage_aeration',
+            'fenetre_ouverte',
+            'mode_maison_vacances',
+            'chauffage_non_autorise',
+            'absence_protection_thermique',
+            'standby_force'
+          ].includes(r);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)
+
+  #################################################################
+  # 🧱 STYLES GÉNÉRAUX
+  #################################################################
+  tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 72px
+      - border-radius: 12px
+      - padding: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 15px
+      - font-weight: 600
+      - color: '#111'
+    label:
+      - font-size: 12px
+      - color: '#555'

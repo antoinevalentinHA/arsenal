@@ -1,0 +1,34 @@
+# ==========================================================
+# 🪟 TEMPLATE BINARY SENSOR — Fenêtres étage (avec délai)
+# ----------------------------------------------------------
+# 💡 Logique Arsenal :
+#   ON si :
+#     - une fenêtre ENFANT est ouverte (immédiat)
+#     - OU une fenêtre PARENTS est ouverte ET timer expiré (idle)
+#
+#   OFF si :
+#     - tout est fermé
+#     - OU une fenêtre parents est ouverte mais timer encore actif
+#
+# 📍 Entité : binary_sensor.fenetre_ouverte_etage_avec_delai
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Fenêtres étage (avec délai)"
+      unique_id: fenetre_ouverte_etage_avec_delai
+      default_entity_id: binary_sensor.fenetre_ouverte_etage_avec_delai
+      device_class: opening
+
+      state: >
+        {# Fenêtres sans délai #}
+        {% set direct = [
+          'binary_sensor.capteur_chambre_arnaud',
+          'binary_sensor.capteur_chambre_matthieu'
+        ] %}
+
+        {{
+          (direct | select('is_state', 'on') | list | length > 0)
+          or
+          is_state('binary_sensor.fenetre_chambre_parents_ouverte_avec_delai', 'on')
+        }}

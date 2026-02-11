@@ -1,0 +1,70 @@
+# ==========================================================
+#  AUTOMATION : Aération – Invalidation tentative non confirmée
+#  ID : 10170000000010
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Annuler proprement une tentative d’aération lorsque
+#     toutes les ouvertures sont refermées AVANT la fin
+#     du délai de confirmation.
+#
+#  Cas couvert :
+#     - Ouverture détectée
+#     - Aération_episode_en_cours = on
+#     - Timer de grâce NON arrivé à terme
+#     - Fermeture complète des ouvrants
+#
+#  Effet :
+#     - Désactivation de l’état "aération en cours"
+#     - AUCUN blocage chauffage
+#     - AUCUNE analyse DeltaT
+#     - AUCUNE décision métier
+#
+#  ⚠️ Important :
+#     Cette automatisation est un garde-fou logique.
+#     Elle ne remplace PAS le pipeline maître.
+# ==========================================================
+
+- id: "10170000000010"
+  alias: "Aération - Invalidation tentative non confirmée"
+  mode: single
+
+  ##################################################################
+  #  TRIGGER
+  ##################################################################
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+      to: "off"
+
+  ##################################################################
+  #  CONDITIONS
+  ##################################################################
+
+  condition:
+
+    # Systeme stable uniquement
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+    # Une tentative d’aération est en cours
+    - condition: state
+      entity_id: input_boolean.aeration_episode_en_cours
+      state: "on"
+
+    # Aération NON confirmée
+    - condition: state
+      entity_id: input_boolean.aeration_confirmee
+      state: "off"
+
+  ##################################################################
+  #  ACTIONS
+  ##################################################################
+
+  action:
+
+    # Annulation propre de la tentative
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_episode_en_cours

@@ -1,0 +1,138 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Simulation de présence – Sonde de vigilance (lampe parents)
+#
+#  ID : 1007000000006
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de surveillance passive.
+#
+#     Elle détecte une situation potentiellement anormale
+#     lorsque la lampe de la chambre des parents reste
+#     allumée au-delà de la durée maximale attendue
+#     pendant une simulation de présence.
+#
+#     Cette automation n’intervient JAMAIS
+#     sur l’état de la lampe.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement sur allumage réel de la lampe
+#     - Attente volontairement longue :
+#         • durée maximale de simulation
+#         • + marge de sécurité fixe
+#     - Vérification différée :
+#         • si la lampe est toujours allumée
+#         • alors émission d’une alerte utilisateur
+#
+#     Aucune correction.
+#     Aucune action automatique.
+#
+#  🧠 CONTEXTE D’EXÉCUTION
+#
+#     La surveillance est active UNIQUEMENT si :
+#       • le mode maison est "Vacances"
+#         OU
+#       • le mode test de simulation est actif
+#
+#     En dehors de ces contextes, l’automation est inactive.
+#
+#  🧠 PARAMÈTRES UTILISÉS
+#
+#     - input_number.duree_max_cycle_simulation_presence
+#         → durée maximale attendue d’un cycle de simulation
+#
+#     - Marge fixe :
+#         + 15 minutes
+#
+#     Cette marge est volontairement tolérante
+#     afin d’éviter toute fausse alerte.
+#
+#  🧠 ÉLÉMENT SURVEILLÉ
+#
+#     switch.prise_lampe_parents
+#
+#     → état matériel réel de la lampe
+#
+#  📢 ACTION UNIQUE
+#
+#     - Notification mobile proactive
+#     - Aucune action corrective
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne pilote PAS la simulation
+#     - Ne modifie PAS l’état de la lampe
+#     - Ne corrige PAS une anomalie
+#     - Ne participe PAS à la logique métier
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de vigilance hors boucle :
+#     observation ≠ décision ≠ action.
+#
+#     Elle alerte l’utilisateur
+#     sans jamais influencer le système.
+# ==========================================================
+
+
+- id: '1007000000006'
+  alias: "Vacances - Alerte lampe parents restée allumée"
+  description: >
+    Alerte si la lampe des parents reste allumée plus longtemps que
+    la durée maximale autorisée par la simulation, en mode Vacances
+    ou Test. Inclut une marge de 15 minutes avant vérification.
+
+  mode: parallel
+
+  # ======================================================
+  # 🔔 Déclencheur — Allumage de la lampe
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: switch.prise_lampe_parents
+      to: 'on'
+
+  # ======================================================
+  # ✅ Conditions — Mode Vacances ou Test actif
+  # ======================================================
+  condition:
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: input_select.mode_maison
+          state: "Vacances"
+
+        - condition: state
+          entity_id: input_boolean.test_simulation_presence
+          state: "on"
+
+  # ======================================================
+  # 🔄 Action — Attente + vérification + notification
+  # ======================================================
+  action:
+    # 🧮 Calculs des durées
+    - variables:
+        duree_max: "{{ states('input_number.duree_max_cycle_simulation_presence') | int(26) }}"
+        marge: 15
+        attente: "{{ duree_max + marge }}"
+
+    # ⏱ Attente durée max + marge
+    - delay:
+        minutes: "{{ attente }}"
+
+    # ❗ Vérification et notification si lampe toujours allumée
+    - if:
+        - condition: state
+          entity_id: switch.prise_lampe_parents
+          state: 'on'
+      then:
+        - service: script.notification_envoyer
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "💡 Lampe potentiellement oubliée"
+            message: >
+              La lampe de la chambre des parents est allumée depuis plus de {{ attente }} minutes  
+              alors que le mode *Simulation de présence* est actif.  
+              Vérifie s’il ne s’agit pas d’un oubli.

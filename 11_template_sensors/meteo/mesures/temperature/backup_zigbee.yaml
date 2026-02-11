@@ -1,0 +1,127 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSORS — Températures consolidées
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Fournir une **température consolidée, locale et fiable**
+#   pour chaque pièce équipée de deux capteurs :
+#     • Capteur HomeKit (source principale)
+#     • Capteur Zigbee (fallback)
+#
+# ⚙️ Fonctionnement :
+#   - Priorité au **capteur HomeKit** (mesure locale stable).
+#   - Si la mesure HomeKit est indisponible :
+#         → bascule automatique sur le **capteur Zigbee**.
+#   - Si aucune mesure n’est disponible :
+#         → conservation de la **dernière valeur connue** via `this.state`.
+#
+# 🧮 Logique (par pièce) :
+#   - Arnaud   → sensor.temperature_chambre_arnaud_1 / _2
+#   - Matthieu → sensor.temperature_chambre_matthieu_1 / _2
+#   - Parents  → sensor.temperature_chambre_parents_1 / _2
+#   - Séjour   → sensor.temperature_sejour_1 / _2
+#   - Entrée   → sensor.temperature_entree_1 / _2
+#   - Petite maison → sensor.temperature_petite_maison_1 / _2
+#
+#   Chaque capteur :
+#     • Vérifie la validité numérique (floatable).
+#     • Utilise toujours la valeur **la plus fiable disponible**.
+#     • Applique un arrondi à 0.1 °C.
+#     • Utilise `this.state` comme mémoire persistante.
+#
+# 🧠 Déclencheurs :
+#   - Variation d’un capteur HomeKit ou Zigbee associé.
+#   - Redémarrage de Home Assistant.
+#
+# 📊 Type : Trigger Template Sensors
+# 🌡️ Unité : °C
+# 🏠 Classe : temperature
+# 🔒 Système : entièrement **local**, sans dépendance cloud Netatmo
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud_1
+        - sensor.temperature_chambre_arnaud_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température Chambre Arnaud"
+      unique_id: temperature_chambre_arnaud
+      state_class: measurement
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: &temperature_consolidee_logic >
+        {% set suffixe = this.entity_id | replace('sensor.temperature_', '') %}
+        {% set src1 = 'sensor.temperature_' ~ suffixe ~ '_1' %}
+        {% set src2 = 'sensor.temperature_' ~ suffixe ~ '_2' %}
+
+        {% set main = states(src1) | float(none) %}
+        {% set back = states(src2) | float(none) %}
+        {% set last = this.state | float(none) %}
+        {{ (main if main is not none else back if back is not none else last) | round(1) if (main is not none or back is not none or last is not none) else none }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu_1
+        - sensor.temperature_chambre_matthieu_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température Chambre Matthieu"
+      unique_id: temperature_chambre_matthieu
+      state_class: measurement
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_consolidee_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents_1
+        - sensor.temperature_chambre_parents_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température Chambre Parents"
+      unique_id: temperature_chambre_parents
+      state_class: measurement
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_consolidee_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour_1
+        - sensor.temperature_sejour_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température Séjour"
+      unique_id: temperature_sejour
+      state_class: measurement
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_consolidee_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree_1
+        - sensor.temperature_entree_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature entree"
+      unique_id: temperature_entree
+      state_class: measurement
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_consolidee_logic

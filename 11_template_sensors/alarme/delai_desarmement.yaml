@@ -1,0 +1,26 @@
+# ==========================================================
+# ⏳ TEMPLATE BINARY SENSOR — Délai de désarmement en cours
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si le délai d’entrée de l’alarme est actuellement actif.
+#   Ce capteur sert à bloquer temporairement certaines automatisations
+#   (comme l’armement automatique) pendant qu’un utilisateur entre dans la maison.
+#
+# ⚙️ Fonctionnement :
+#   - Observe l’état du timer : timer.delai_entree
+#   - Si le timer est "active", le capteur est vrai (on)
+#   - Sinon, il reste à "off"
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.delai_desarmement_en_cours
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Délai désarmement en cours"
+      unique_id: delai_desarmement_en_cours
+      default_entity_id: binary_sensor.delai_desarmement_en_cours
+      device_class: running
+
+      state: >
+        {{ is_state('timer.delai_entree', 'active') }}

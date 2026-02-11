@@ -1,0 +1,57 @@
+# ==========================================================
+# 📡 ARSENAL — BINARY SENSOR (triggered)
+#     Zigbee — Qualité radio dégradée
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Détecter si au moins UN lien Zigbee actif présente
+#   une qualité radio insuffisante.
+#
+# 🎯 Critère :
+#   - linkquality < 80
+#
+# 🚫 Exclus :
+#   - valeur = 0
+#   - unknown / unavailable
+#
+# 🟢 États :
+#   - off : aucun lien dégradé détecté
+#   - on  : au moins un lien radio dégradé
+#
+# 📊 Usage :
+#   - Diagnostic réseau Zigbee
+#   - Indicateur dashboard Système
+#
+# ⚠️ Important :
+#   - Diagnostic uniquement
+#   - Aucune automatisation critique ne doit dépendre de ce capteur
+#
+# 🧠 Arsenal :
+#   - Capteur déclenché (triggered)
+#   - Source unique : group.zigbee_linkquality_all
+#   - Agrégation booléenne multi-liens
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: group.zigbee_linkquality_all
+
+  binary_sensor:
+    - name: "Zigbee – Qualité radio dégradée"
+      unique_id: zigbee_qualite_radio_degradee
+
+      state: >
+        {% set seuil = 80 %}
+        {% set entites = state_attr('group.zigbee_linkquality_all', 'entity_id') or [] %}
+
+        {% set degrade = false %}
+
+        {% for e in entites %}
+          {% set val = states(e) %}
+          {% if val not in ['unknown', 'unavailable', '0', ''] %}
+            {% if val | int < seuil %}
+              {% set degrade = true %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {{ degrade }}

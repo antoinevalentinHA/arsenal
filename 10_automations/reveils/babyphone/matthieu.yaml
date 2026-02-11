@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Babyphone – Détection bruit chambre Matthieu
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Détecter un dépassement de seuil sonore dans la
+#     chambre de Matthieu et notifier l’utilisateur,
+#     lorsque la surveillance babyphone est activée.
+#
+# 🧱 PRINCIPE
+#
+#     - Surveillance conditionnelle activable
+#       via un booléen dédié
+#     - Comparaison du niveau sonore courant
+#       à un seuil paramétrable
+#     - Déclenchement non temporisé
+#
+# 📥 ENTRÉES
+#
+#     - sensor.bruit_chambre_matthieu
+#     - input_number.seuil_reveil_bruit
+#     - input_boolean.babyphone_matthieu
+#
+# 📤 SORTIE
+#
+#     - Notification utilisateur (mobile)
+#
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne confirme pas un réveil réel
+#     - Ne pilote aucun état de présence
+#     - Ne déclenche aucune action automatique
+#
+# ✅ ARCHITECTURE
+#
+#     Arsenal
+# ==========================================================
+
+
+- id: '1011000000006'
+  alias: "Babyphone Matthieu"
+  mode: single
+
+  trigger:
+    - platform: template
+      value_template: >
+        {{ states('sensor.bruit_chambre_matthieu') | float(0)
+           > states('input_number.seuil_reveil_bruit') | float(0) }}
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.babyphone_matthieu
+      state: 'on'
+
+  action:
+    - service: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "Matthieu"
+        message: "🌙 Bruit détecté dans sa chambre"

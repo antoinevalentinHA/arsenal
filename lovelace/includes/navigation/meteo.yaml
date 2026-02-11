@@ -1,0 +1,95 @@
+square: false
+type: grid
+cards:
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:thermometer
+    tap_action:
+      action: navigate
+      navigation_path: /meteo-temperature-dashboard/temperature
+    styles:
+      icon:
+        - color: '#B71C1C'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:water-percent
+    tap_action:
+      action: navigate
+      navigation_path: /meteo-humidite-relative-dashboard/humidite_relative
+    styles:
+      icon:
+        - color: '#1565C0'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:water
+    tap_action:
+      action: navigate
+      navigation_path: /meteo-humidite-absolue-dashboard/humidite_absolue
+    styles:
+      icon:
+        - color: '#1B5E20'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:thermometer-water
+    tap_action:
+      action: navigate
+      navigation_path: /meteo-humidex-dashboard/humidex
+    styles:
+      icon:
+        - color: '#E65100'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:molecule-co2
+    tap_action:
+      action: navigate
+      navigation_path: /meteo-co2-dashboard/co2
+    styles:
+      icon:
+        - color: '#3E2723'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:volume-high
+    tap_action:
+      action: navigate
+      navigation_path: /meteo-bruit-dashboard/bruit
+    styles:
+      icon:
+        - color: '#6A1B9A'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:weather-rainy
+    tap_action:
+      action: navigate
+      navigation_path: /meteo-precipitations-dashboard/precipitations
+    styles:
+      icon:
+        - color: '#0277BD'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:gauge
+    tap_action:
+      action: navigate
+      navigation_path: /meteo-pression-dashboard/pression
+    styles:
+      icon:
+        - color: '#455A64'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:weather-partly-cloudy
+    tap_action:
+      action: navigate
+      navigation_path: /meteo-publique-dashboard/meteo_publique
+    styles:
+      icon:
+        - color: '#00897B'
+
+columns: 9

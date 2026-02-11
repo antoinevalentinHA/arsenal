@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT
+#     Chauffage — Dernier mode décidé (RÉFÉRENCE SOUVERAINE)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Mémoire souveraine de référence du domaine Chauffage.
+#
+#     Cette entité sert à :
+#       - matérialiser la référence Arsenal (décision / abstention),
+#       - fournir un ancrage stable pour la cohérence post-matérielle,
+#       - tracer les transitions structurantes du système.
+#
+# 🧩 PÉRIMÈTRE
+#
+#     - Valeurs autorisées :
+#         • comfort  (référence confort)
+#         • reduced  (référence réduit)
+#         • neutre   (abstention explicite / pas d’action)
+#         • unknown  (indétermination / état non qualifiable)
+#
+#     - Interprétation :
+#         • comfort/reduced : états de référence applicables
+#         • neutre/unknown  : états NON exécutoires (aucune projection d’état)
+#
+# 🔗 RÔLE DANS LA SOUVERAINETÉ
+#
+#     - Sert de référence Arsenal comparée à :
+#         • sensor.programme_chauffage
+#       pour qualifier une divergence post-matérielle.
+#
+# 🚫 INTERDITS
+#
+#     - Ne doit jamais être utilisée comme source UI d’état.
+#       (La UI Chauffage lit exclusivement sensor.programme_chauffage.)
+#     - Aucun pilotage matériel direct depuis cette entité.
+#
+# 🧠 NATURE ARCHITECTURALE
+#
+#     - Type : Mémoire souveraine de référence (décision + abstention)
+#     - Statut : Invariant de gouvernance
+#
+# ==========================================================
+
+chauffage_dernier_mode_decide:
+  name: "Chauffage — Dernier mode décidé"
+  icon: mdi:brain
+  options:
+    - comfort
+    - reduced
+    - neutre
+    - unknown

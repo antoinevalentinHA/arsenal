@@ -1,0 +1,42 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Météo – Pluie en cours
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     État logique indiquant si un épisode de pluie
+#     est considéré comme en cours par le système.
+#
+#     Ce booléen constitue la vérité métier globale
+#     utilisée pour synchroniser les comportements
+#     dépendants de la pluie.
+#
+#  🧱 Nature :
+#     - État logique météo consolidé
+#     - Vérité fonctionnelle persistante
+#
+#  🔄 Cycle de vie :
+#     - ON  : un épisode de pluie est en cours
+#     - OFF : aucune pluie n’est considérée active
+#
+#  📥 N’effectue PAS :
+#     - aucune détection directe
+#     - aucune mesure d’intensité
+#     - aucune interrogation d’API météo
+#
+#  📤 Utilisation :
+#     - Écrit par :
+#         • automatisations de consolidation météo
+#           (Netatmo, capteurs, API)
+#     - Lu par :
+#         • binary_sensors d’aération (RDC / étage / global)
+#         • automatisations météo
+#         • dashboards et diagnostics
+#
+#  🧠 Principe Arsenal :
+#     - Les signaux météo sont consolidés
+#       en vérités métier stables
+# ==========================================================
+
+
+pluie_en_cours:
+  name: "Pluie en cours"
+  icon: mdi:weather-rainy

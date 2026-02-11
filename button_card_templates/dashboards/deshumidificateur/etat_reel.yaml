@@ -1,0 +1,60 @@
+#################################################################
+# 💧 DÉSHUMIDIFICATEUR — ÉTAT RÉEL (PRISE)
+# ---------------------------------------------------------------
+# Expose l’état réel du déshumidificateur tel que mesuré
+# par la prise (ON/OFF + puissance instantanée).
+#
+# Principe Arsenal :
+#   - Carte de diagnostic matériel
+#   - Lecture seule
+#   - Basée sur mesure réelle (prise)
+#   - Aucun pilotage utilisateur
+#################################################################
+
+carte_deshumidificateur_etat_reel:
+  template: carte_base
+
+  entity: binary_sensor.deshumidificateur_actif
+
+  show_state: true
+  show_name: true
+  show_label: true
+  show_icon: false
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  label: |
+    [[[
+      const p = states['sensor.prise_deshumidificateur_power']?.state ?? '—';
+      return `Puissance: ${p} W`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const st = entity.state;
+            if (st === 'on')  return "rgba(76, 175, 80, 0.2)";   // 🟢 actif
+            if (st === 'off') return "rgba(158, 158, 158, 0.2)"; // ⚪ arrêté
+            return "rgba(244, 67, 54, 0.2)";                     // 🔴 incohérent
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+    label:
+      - font-size: 12px
+      - color: '#111'

@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Intégrité paramètres — Éclairage
+# ==========================================================
+
+- binary_sensor:
+    - name: "Éclairage — Paramètres invalides"
+      unique_id: parametres_invalides_eclairage
+      default_entity_id: binary_sensor.parametres_invalides_eclairage
+      state: >
+        {{
+          not (
+            states('input_datetime.heure_allumage_jardin_matin')
+              < states('input_datetime.heure_extinction_jardin_matin_fixe')
+          and
+            states('input_datetime.debut_cycle_simulation_presence_matin')
+              < states('input_datetime.fin_cycle_simulation_presence_matin')
+          and
+            states('input_datetime.debut_cycle_simulation_presence_soir')
+              < states('input_datetime.fin_cycle_simulation_presence_soir')
+          and
+            states('input_datetime.debut_cycle_simulation_presence_garage_matin')
+              < states('input_datetime.fin_cycle_simulation_presence_garage_matin')
+          )
+        }}
+      icon: >
+        mdi:alert-circle-outline
+      attributes:
+
+        jardin_matin_invalide: >
+          {{
+            not (
+              states('input_datetime.heure_allumage_jardin_matin')
+                < states('input_datetime.heure_extinction_jardin_matin_fixe')
+            )
+          }}
+
+        simulation_matin_invalide: >
+          {{
+            not (
+              states('input_datetime.debut_cycle_simulation_presence_matin')
+                < states('input_datetime.fin_cycle_simulation_presence_matin')
+            )
+          }}
+
+        simulation_soir_invalide: >
+          {{
+            not (
+              states('input_datetime.debut_cycle_simulation_presence_soir')
+                < states('input_datetime.fin_cycle_simulation_presence_soir')
+            )
+          }}
+
+        simulation_garage_matin_invalide: >
+          {{
+            not (
+              states('input_datetime.debut_cycle_simulation_presence_garage_matin')
+                < states('input_datetime.fin_cycle_simulation_presence_garage_matin')
+            )
+          }}

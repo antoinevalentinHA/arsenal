@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Durées journalières climatisation
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Stocker les durées cumulées (en heures) de fonctionnement
+#    de la climatisation pour la journée en cours,
+#    séparément par mode :
+#      - COOL (froid)
+#      - DRY  (déshumidification)
+#      - HEAT (chauffage)
+#
+# 🧠 Lecture métier :
+#    Ces valeurs sont incrémentées automatiquement
+#    en fonction du temps réel passé dans chaque mode.
+#    Elles servent de base aux calculs :
+#      - de consommation énergétique journalière
+#      - de diagnostics climatisation
+#
+# ⚙️ Fonctionnement :
+#    - Mise à jour continue par automatisation
+#    - Réinitialisation quotidienne (début de journée)
+#    - Aucune modification manuelle attendue
+#
+# 📐 Unité :
+#    - Heures décimales (h)
+#    - Précision élevée (pas fin pour intégration temps)
+#
+# 🚫 Interdits :
+#    - Utilisation comme seuil ou condition directe
+#    - Modification manuelle hors recalage exceptionnel
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - registre journalier (climatisation)
+# ==========================================================
+
+
+clim_duree_cool_aujourdhui:
+  name: Clim - Durée Cool (h)
+  min: 0
+  max: 24
+  step: 0.0001
+  mode: box
+
+clim_duree_dry_aujourdhui:
+  name: Clim - Durée Dry (h)
+  min: 0
+  max: 24
+  step: 0.0001
+  mode: box
+
+clim_duree_heat_aujourdhui:
+  name: Clim - Durée Heat (h)
+  min: 0
+  max: 24
+  step: 0.0001
+  mode: box

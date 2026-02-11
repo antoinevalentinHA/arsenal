@@ -1,0 +1,48 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Réglages Ouvertures
+icon: mdi:door-open
+
+views:
+  - title: Réglages Ouvertures
+    path: reglages_ouvertures
+    icon: mdi:door-open
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /ouvertures-dashboard/portes_et_fenetres
+
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          # === ECS Maison ===
+          - type: custom:button-card
+            template: section_header
+            name: ⏱️ Délais d'ouverture temporisés
+
+          - type: markdown
+            content: |
+              Ajuste ici les délais d’ouverture qualifiée.
+              - **Séjour** : timer déclenché à l’ouverture, permet d’éviter les faux positifs.
+              - **Chambre parents** : même logique, délai configurable.
+              
+              Ces délais contrôlent *uniquement* l’ouverture.  
+              La fermeture reste instantanée.
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.delai_ouverture_sejour
+                name: "Délai ouverture séjour (s)"
+              - entity: input_number.delai_ouverture_chambre_parents
+                name: "Délai ouverture chambre parents (s)"

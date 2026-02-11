@@ -1,0 +1,42 @@
+# ==========================================================
+# 📶 TEMPLATE BINARY SENSOR — Présence Wi-Fi Maison
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer si un membre de la famille est connecté
+#   au réseau Wi-Fi de la maison (basé sur les BSSID connus).
+#
+# ⚙️ Fonctionnement :
+#   - Compare les BSSID des appareils utilisés
+#     avec la liste des BSSID de la maison.
+#   - ON  → au moins un appareil connecté au Wi-Fi domestique
+#   - OFF → aucun appareil connecté au réseau local
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.presence_wifi_maison
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Présence Wi-Fi maison"
+      unique_id: presence_wifi_maison
+      default_entity_id: binary_sensor.presence_wifi_maison
+      device_class: presence
+
+      state: >
+        {# --- BSSID considérés comme "maison" --- #}
+        {% set raw = states('input_text.bssid_maison') | lower %}
+        {% set bssids_maison = raw.split(',') | map('trim') | list %}
+
+        {# --- Entités des capteurs Wi-Fi via helpers --- #}
+        {% set wifi_antoine   = states('input_text.telephone_antoine_wifi_bssid') %}
+        {% set wifi_constance = states('input_text.telephone_constance_wifi_bssid') %}
+
+        {# --- BSSID actuels des téléphones --- #}
+        {% set bssid_antoine   = states(wifi_antoine)   | lower %}
+        {% set bssid_constance = states(wifi_constance) | lower %}
+
+        {# --- Présence si un téléphone est connecté à un BSSID "maison" --- #}
+        {{
+          bssid_antoine in bssids_maison
+          or bssid_constance in bssids_maison
+        }}

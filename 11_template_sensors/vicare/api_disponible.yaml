@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERNE)
+#     ViCare API disponible
+# ----------------------------------------------------------
+# Rôle :
+#   Indiquer si la connexion ViCare (cloud) est considérée comme disponible,
+#   sur la base de l'âge des données (sensor.vicare_age_donnees).
+#
+# Propriétés :
+#   - Informatif (ne bloque rien)
+#   - Préserve l'entity_id historique : binary_sensor.vicare_api_disponible
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "ViCare API disponible"
+      unique_id: vicare_api_disponible
+      default_entity_id: binary_sensor.vicare_api_disponible
+      device_class: connectivity
+
+      state: >
+        {% set age = states('sensor.vicare_age_donnees') | float(9999) %}
+        {{ age < 10800 }}
+
+      icon: >
+        {% set age = states('sensor.vicare_age_donnees') | float(9999) %}
+        {% if age < 900 %}
+          mdi:cloud-check
+        {% elif age < 3600 %}
+          mdi:cloud-clock-outline
+        {% elif age < 10800 %}
+          mdi:cloud-alert
+        {% else %}
+          mdi:cloud-off-outline
+        {% endif %}

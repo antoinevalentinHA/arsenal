@@ -1,0 +1,44 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Simulation de présence – Mode test
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation de test permettant à la simulation
+#     de présence de s’exécuter en dehors de ses
+#     conditions métier normales (absence réelle).
+#
+#     Ce booléen permet de valider et diagnostiquer
+#     les automatisations de simulation de présence
+#     sans attendre les conditions réelles.
+#
+#  🧱 Nature :
+#     - Autorisation de test
+#     - Dérogation temporaire
+#
+#  🔄 Fonctionnement :
+#     - ON  : la simulation de présence est autorisée
+#             même hors contexte d’absence
+#     - OFF : la simulation suit strictement
+#             les conditions métier normales
+#
+#  📥 N’effectue PAS :
+#     - aucun déclenchement direct
+#     - aucune simulation autonome
+#     - aucune commande d’éclairage
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations
+#       de simulation de présence
+#     - Utilisée pour :
+#         • validation fonctionnelle
+#         • diagnostic
+#         • notifications d’oubli
+#
+#  🧠 Principe Arsenal :
+#     - Une logique complexe doit
+#       disposer d’un mode test explicite
+# ==========================================================
+
+
+test_simulation_presence:
+  name: Test simulation presence
+  icon: mdi:test-tube

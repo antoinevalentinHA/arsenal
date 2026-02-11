@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Besoin déshumidification climatisation
+#
+# 🎯 Rôle :
+#   Exprimer un BESOIN MÉTIER de déshumidification (DRY),
+#   à partir des primitives hygrométriques existantes,
+#   avec hystérésis explicite et sans recalcul d’humidex.
+#
+# 🧱 Principe Arsenal :
+#   - Synthèse PURE de capteurs amont
+#   - Aucune action
+#   - Aucune temporisation
+#   - Aucune autorisation intégrée
+#
+# 🔌 Dépendances STRICTES :
+#   - binary_sensor.chambre_max_humidex_au_dessus_seuil
+#   - binary_sensor.chambre_max_humidex_en_dessous_seuil_off
+#
+# 🧠 Logique :
+#   - ON  si humidex au-dessus du seuil ON
+#   - OFF si humidex repassé sous le seuil OFF
+#   - Sinon : état inchangé (hystérésis métier)
+# ==========================================================
+
+- binary_sensor:
+    - name: "Besoin déshumidification climatisation"
+      unique_id: besoin_clim_dry
+      default_entity_id: binary_sensor.besoin_clim_dry
+      state: >
+        {% set on = is_state('binary_sensor.chambre_max_humidex_au_dessus_seuil', 'on') %}
+        {% set off = is_state('binary_sensor.chambre_max_humidex_en_dessous_seuil_off', 'on') %}
+
+        {% if on %}
+          true
+        {% elif off %}
+          false
+        {% else %}
+          {{ is_state(this.entity_id, 'on') }}
+        {% endif %}

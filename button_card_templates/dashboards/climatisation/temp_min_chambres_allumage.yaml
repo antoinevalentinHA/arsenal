@@ -1,0 +1,59 @@
+#################################################################
+# 🧊 CARTE CLIM — DIAGNOSTIC TEMPÉRATURE MIN CHAMBRES
+# ---------------------------------------------------------------
+# Indique si la température de la chambre la plus froide
+# autorise l’allumage de la climatisation.
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture seule
+#   - Aucune action directe
+#   - Décision portée par les capteurs métier
+#################################################################
+
+carte_clim_diagnostic_temperature_min_chambres:
+  template: carte_base
+
+  entity: sensor.temperature_min_chambres
+
+  show_state: true
+  show_name: true
+  show_label: true
+  show_icon: false
+  color_type: card
+
+  label: |
+    [[[
+      const s = states['sensor.seuil_allumage_clim_applique']?.state || '—';
+      return "Seuil ON : " + s;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const toNumber = (v) =>
+              parseFloat(String(v).replace(',', '.').replace(/[^\d.-]/g, ''));
+
+            const temp = toNumber(entity.state);
+            const seuilState = states['sensor.seuil_allumage_clim_applique']?.state;
+            const seuil = toNumber(seuilState);
+
+            if (isNaN(temp) || isNaN(seuil))
+              return "rgba(244, 67, 54, 0.2)";   // 🔴 indéterminé / incohérent
+
+            return temp >= seuil
+              ? "rgba(76, 175, 80, 0.2)"        // 🟢 autorisé
+              : "rgba(158, 158, 158, 0.2)";     // ⚪ non autorisé
+          ]]]
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - color: '#111'

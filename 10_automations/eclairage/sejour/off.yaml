@@ -1,0 +1,95 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Séjour – Extinction temporisée par absence
+#
+#  ID : 10070000000015
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’extinction conditionnelle par absence.
+#
+#     Elle coupe l’alimentation de la lampe du séjour
+#     après une absence de mouvement prolongée,
+#     uniquement si l’automatisme est autorisé
+#     et si la lampe est actuellement allumée.
+#
+#     Cette automation agit directement sur le matériel.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement après absence de mouvement confirmée
+#       sur l’ensemble des capteurs du séjour
+#     - Temporisation paramétrable par l’utilisateur
+#     - Vérification d’une autorisation explicite
+#     - Extinction directe de la prise concernée
+#
+#  🧠 PARAMÈTRE UTILISATEUR
+#
+#     input_number.duree_absence_sejour
+#
+#     → durée d’absence (en minutes) avant extinction
+#       automatique de la lampe du séjour
+#
+#  🧠 AUTORISATION
+#
+#     input_boolean.sejour_auto_light
+#
+#     → autorisation globale de l’extinction automatique
+#
+#  🧠 ACTION DIRECTE
+#
+#     switch.prise_lampe_sejour
+#
+#     → coupure physique de l’alimentation
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - N’allume JAMAIS la lampe
+#     - Ne gère AUCUN cycle d’éclairage
+#     - Ne maintient AUCUN état logique
+#     - Ne corrige PAS un état incohérent
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de sortie simple :
+#     absence prolongée ≠ scénario ≠ ambiance.
+#
+#     Elle applique une règle d’extinction
+#     claire, paramétrable et strictement locale.
+# ==========================================================
+
+
+- id: "10070000000015"
+  alias: "Séjour - Extinction auto"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_mouvements_sejour_1_occupancy
+        - binary_sensor.capteur_mouvements_sejour_2_occupancy
+      to: "off"
+      for:
+        minutes: >
+          {{ states('input_number.duree_absence_sejour') | int(20) }}
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.sejour_auto_light
+      state: "on"
+
+    - alias: "Aucune détection sur les 2 capteurs"
+      condition: template
+      value_template: >
+        {{ is_state('binary_sensor.capteur_mouvements_sejour_1_occupancy', 'off')
+           and is_state('binary_sensor.capteur_mouvements_sejour_2_occupancy', 'off') }}
+
+    - condition: state
+      entity_id: switch.prise_lampe_sejour
+      state: "on"
+
+  action:
+    - alias: "Éteindre la lumière du séjour"
+      action: switch.turn_off
+      target:
+        entity_id: switch.prise_lampe_sejour

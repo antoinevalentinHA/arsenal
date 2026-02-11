@@ -1,0 +1,166 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Simulation de présence – Garage – Matérialisation éclairage
+#
+#  ID : 10070000000024
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de matérialisation physique
+#     de la simulation de présence (garage).
+#
+#     Elle applique réellement l’allumage ou l’extinction
+#     de l’éclairage du garage en fonction d’une vérité
+#     métier unique exposée par un capteur composite.
+#
+#     Cette automation ne contient AUCUNE logique
+#     temporelle ni décisionnelle.
+#
+#  🧩 PRINCIPE
+#
+#     - Écoute exclusive de la vérité métier :
+#         binary_sensor.simulation_presence_plage_allumage_garage
+#
+#     - Réaction stricte aux transitions :
+#         • OFF → ON  → demande d’allumage réel
+#         • ON  → OFF → demande d’extinction réelle
+#
+#     - Réévaluation automatique au redémarrage
+#       (via input_boolean.systeme_stable)
+#
+#  🧠 CONTRAINTE MATÉRIELLE (GARAGE)
+#
+#     L’éclairage du garage est piloté via SwitchBot
+#     et ne supporte qu’une commande de type TOGGLE.
+#
+#     - Aucune commande ON / OFF directe possible
+#     - Toute action passe obligatoirement par :
+#         script.garage_toggle
+#
+#     L’état logique de référence est porté par :
+#         input_boolean.garage_light_state
+#
+#  🧠 AUTORISATION D’EXÉCUTION
+#
+#     L’action réelle n’est autorisée que si :
+#       • le mode maison est "Vacances"
+#         OU
+#       • le mode test de simulation est actif
+#
+#     En dehors de ces cas, la simulation est inopérante.
+#
+#  🧠 SOURCE MÉTIER
+#
+#     binary_sensor.simulation_presence_plage_allumage_garage
+#
+#     → capteur composite responsable :
+#       • du calcul horaire
+#       • de la logique de simulation de présence
+#
+#  🧠 ACTION RÉELLE
+#
+#     script.garage_toggle
+#
+#     → script unique responsable :
+#       • de la bascule physique
+#       • de la cohérence d’état logique
+#
+#  📢 NOTIFICATIONS
+#
+#     - Notification persistante synchronisée
+#     - Visible UNIQUEMENT lorsque la simulation est active
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule PAS les horaires
+#     - Ne choisit PAS quand simuler
+#     - Ne pilote PAS directement le matériel
+#     - Ne gère PAS l’état logique
+#     - Ne décide PAS de la stratégie de présence
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation réactive pure :
+#     vérité métier ≠ calcul ≠ action.
+#
+#     Elle matérialise une simulation décidée ailleurs,
+#     en respectant strictement les contraintes matérielles.
+# ==========================================================
+
+
+- id: "10070000000024"
+  alias: "Simulation présence - Garage - Pilotage lampe"
+  mode: single
+
+  # ======================================================
+  # 🔔 DÉCLENCHEUR — Vérité métier uniquement
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.simulation_presence_plage_allumage_garage
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ======================================================
+  # 🔐 CONDITIONS — Autorisation de la simulation
+  # ======================================================
+  condition:
+    - condition: or
+      conditions:
+        - condition: state
+          entity_id: input_select.mode_maison
+          state: "Vacances"
+
+        - condition: state
+          entity_id: input_boolean.test_simulation_presence
+          state: "on"
+
+  # ======================================================
+  # 🔄 ACTION — Application réelle + notifications
+  # ======================================================
+  action:
+    - choose:
+
+        # --------------------------------------------------
+        # 💡 CAS 1 — Entrée dans une plage de simulation
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.simulation_presence_plage_allumage_garage
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "off"
+
+          sequence:
+            - service: script.garage_toggle
+
+            - service: persistent_notification.create
+              data:
+                title: "💡 Simulation de présence – Garage"
+                message: >
+                  L’éclairage du garage est allumé
+                  dans le cadre de la simulation de présence.
+                notification_id: "simulation_presence_garage"
+
+        # --------------------------------------------------
+        # 🌑 CAS 2 — Sortie de plage de simulation
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.simulation_presence_plage_allumage_garage
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "on"
+
+          sequence:
+            - service: script.garage_toggle
+
+            - service: persistent_notification.dismiss
+              data:
+                notification_id: "simulation_presence_garage"

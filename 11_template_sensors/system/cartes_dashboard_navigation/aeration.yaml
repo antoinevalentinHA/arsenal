@@ -1,0 +1,24 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Aération
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Représenter l’état global d’aération recommandée
+#     pour le bouton du menu principal.
+#
+#  🎯 États :
+#     - alert → aération recommandée
+#     - off   → rien à faire
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_aeration_dashboard"
+      unique_id: etat_aeration_dashboard
+      state: >
+        {% set aer = states('binary_sensor.aeration_conseillee') %}
+
+        {% if aer == 'on' %}
+          alert
+        {% else %}
+          off
+        {% endif %}

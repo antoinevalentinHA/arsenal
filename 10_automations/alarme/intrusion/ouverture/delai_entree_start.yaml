@@ -1,0 +1,67 @@
+# ==========================================================
+#  AUTOMATION : Alarme – Delai entree (start)
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Lancer un délai d’entrée lorsqu’une porte surveillée
+#     est ouverte alors que l’alarme est armée.
+#
+#  🎯 Objectif :
+#     Donner un temps limité pour désarmer l’alarme
+#     avant déclenchement (clavier, badge, présence).
+#
+#  🧩 Principe Arsenal :
+#     - Cette automatisation NE DÉCIDE RIEN
+#     - Elle pose uniquement un état temporel :
+#         timer.delai_entree
+#     - Le cerveau V2 gère le reste (NOOP / TRIGGER)
+#
+#  ⚙️ Fonctionnement :
+#     - Déclenchement sur ouverture porte / garage
+#     - Démarrage du timer de délai d’entrée
+#     - Bip d’avertissement (hors mode test)
+#
+#  🛡️ Robustesse :
+#     - 100 % événementiel
+#     - Aucun wait
+#     - Post-reboot safe
+#
+#  🆔 ID : 10020000000031
+# ==========================================================
+
+- id: "10020000000031"
+  alias: "Alarme - Délai entrée (start)"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_porte_entree
+        - binary_sensor.capteur_porte_garage
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: alarm_control_panel.alarme_maison
+      state: "armed_away"
+
+    - condition: state
+      entity_id: timer.delai_entree
+      state: "idle"
+
+  action:
+    # ▶️ Démarrage du timer de délai d’entrée
+    - action: timer.start
+      target:
+        entity_id: timer.delai_entree
+      data:
+        duration:
+          seconds: "{{ states('input_number.alarme_delai_entree') | int(30) }}"
+
+    # 🔊 Bip d’avertissement (hors mode test)
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.mode_test_alarme
+              state: "off"
+          sequence:
+            - action: script.sirene_bip

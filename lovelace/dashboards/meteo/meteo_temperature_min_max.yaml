@@ -1,0 +1,728 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+title: Températures Min/Max
+views:
+  - title: Températures Min/Max
+    path: temperature_minmax
+    icon: mdi:chart-line
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          - !include ../../includes/navigation/meteo.yaml
+
+          # ======================================================
+          # 🌿 JARDIN
+          # ======================================================
+          - !include ../../includes/section_headers/jardin.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - !include ../../includes/sub_section_headers/min.yaml
+
+              - !include ../../includes/sub_section_headers/max.yaml
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 5
+                      color: "rgba(144, 202, 249, 0.9)"      # 🔵 très froid
+                    - from: 5
+                      to: 10
+                      color: "rgba(3, 169, 244, 0.85)"       # 🟦 froid
+                    - from: 10
+                      to: 15
+                      color: "rgba(76, 175, 80, 0.85)"       # 🟢 doux
+                    - from: 15
+                      to: 20
+                      color: "rgba(255, 235, 59, 0.85)"      # 🟡 tempéré
+                    - from: 20
+                      to: 40
+                      color: "rgba(255, 152, 0, 0.85)"       # 🟠 chaud
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: "sensor.temperature_min_jour_jardin*"
+
+                sort:
+                  method: state
+                  numeric: true
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Min Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -20
+                      to: 10
+                      color: "rgba(144, 202, 249, 0.9)"      # 🔵 très frais
+                    - from: 10
+                      to: 18
+                      color: "rgba(76, 175, 80, 0.85)"       # 🟢 confortable
+                    - from: 18
+                      to: 25
+                      color: "rgba(255, 235, 59, 0.85)"      # 🟡 chaud modéré
+                    - from: 25
+                      to: 30
+                      color: "rgba(255, 152, 0, 0.85)"       # 🟠 chaud
+                    - from: 30
+                      to: 45
+                      color: "rgba(244, 67, 54, 0.85)"       # 🔴 très chaud
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: "sensor.temperature_max_jour_jardin*"
+
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Max Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+          # ======================================================
+          # 🏠 RDC / PALIER
+          # ======================================================
+          - !include ../../includes/section_headers/rdc_palier.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - !include ../../includes/sub_section_headers/min.yaml
+
+              - !include ../../includes/sub_section_headers/max.yaml
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 8
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 8
+                      to: 14
+                      color: "rgba(3, 169, 244, 0.85)"
+                    - from: 14
+                      to: 18
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 18
+                      to: 22
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 22
+                      to: 35
+                      color: "rgba(255, 152, 0, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: sensor.temperature_min_jour_entree
+                    - entity_id: sensor.temperature_min_jour_sejour
+                    - entity_id: sensor.temperature_min_jour_palier
+
+                sort:
+                  method: state
+                  numeric: true
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Min Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 10
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 10
+                      to: 18
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 18
+                      to: 23
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 23
+                      to: 27
+                      color: "rgba(255, 152, 0, 0.85)"
+                    - from: 27
+                      to: 40
+                      color: "rgba(244, 67, 54, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: sensor.temperature_max_jour_entree
+                    - entity_id: sensor.temperature_max_jour_sejour
+                    - entity_id: sensor.temperature_max_jour_palier
+
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Max Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+          # ======================================================
+          # 🛏️ CHAMBRES
+          # ======================================================
+          - !include ../../includes/section_headers/chambres.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - !include ../../includes/sub_section_headers/min.yaml
+
+              - !include ../../includes/sub_section_headers/max.yaml
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 8
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 8
+                      to: 14
+                      color: "rgba(3, 169, 244, 0.85)"
+                    - from: 14
+                      to: 18
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 18
+                      to: 22
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 22
+                      to: 35
+                      color: "rgba(255, 152, 0, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: "sensor.temperature_min_jour_chambre_*"
+                sort:
+                  method: state
+                  numeric: true
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Min Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 10
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 10
+                      to: 18
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 18
+                      to: 23
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 23
+                      to: 27
+                      color: "rgba(255, 152, 0, 0.85)"
+                    - from: 27
+                      to: 40
+                      color: "rgba(244, 67, 54, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: "sensor.temperature_max_jour_chambre_*"
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Max Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+          # ======================================================
+          # 🚿 SALLES DE BAIN
+          # ======================================================
+          - !include ../../includes/section_headers/salles_de_bain.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - !include ../../includes/sub_section_headers/min.yaml
+
+              - !include ../../includes/sub_section_headers/max.yaml
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 10
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 10
+                      to: 16
+                      color: "rgba(3, 169, 244, 0.85)"
+                    - from: 16
+                      to: 19
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 19
+                      to: 22
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 22
+                      to: 35
+                      color: "rgba(255, 152, 0, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: sensor.temperature_min_jour_sdb_enfants
+                    - entity_id: sensor.temperature_min_jour_sdb_parents
+
+                sort:
+                  method: state
+                  numeric: true
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Min Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 15
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 15
+                      to: 20
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 20
+                      to: 24
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 24
+                      to: 28
+                      color: "rgba(255, 152, 0, 0.85)"
+                    - from: 28
+                      to: 40
+                      color: "rgba(244, 67, 54, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: sensor.temperature_max_jour_sdb_enfants
+                    - entity_id: sensor.temperature_max_jour_sdb_parents
+
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Max Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+          # ======================================================
+          # 🧱 CAVE & GARAGE
+          # ======================================================
+          - !include ../../includes/section_headers/cave_et_garage.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - !include ../../includes/sub_section_headers/min.yaml
+
+              - !include ../../includes/sub_section_headers/max.yaml
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 5
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 5
+                      to: 10
+                      color: "rgba(3, 169, 244, 0.85)"
+                    - from: 10
+                      to: 14
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 14
+                      to: 18
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 18
+                      to: 35
+                      color: "rgba(255, 152, 0, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: sensor.temperature_min_jour_cave
+                    - entity_id: sensor.temperature_min_jour_garage
+
+                sort:
+                  method: state
+                  numeric: true
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Min Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 10
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 10
+                      to: 15
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 15
+                      to: 20
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 20
+                      to: 25
+                      color: "rgba(255, 152, 0, 0.85)"
+                    - from: 25
+                      to: 40
+                      color: "rgba(244, 67, 54, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: sensor.temperature_max_jour_cave
+                    - entity_id: sensor.temperature_max_jour_garage
+
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": entity.attributes.friendly_name
+                        .replace("Température Max Jour ", ""),
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+          # ======================================================
+          # 🏡 PETITE MAISON
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🏡 Petite Maison
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - !include ../../includes/sub_section_headers/min.yaml
+
+              - !include ../../includes/sub_section_headers/max.yaml
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 8
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 8
+                      to: 14
+                      color: "rgba(3, 169, 244, 0.85)"
+                    - from: 14
+                      to: 18
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 18
+                      to: 22
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 22
+                      to: 35
+                      color: "rgba(255, 152, 0, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: sensor.temperature_min_jour_petite_maison
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": "Petite Maison",
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }
+
+              - type: custom:auto-entities
+                card:
+                  type: custom:bar-card
+                  unit_of_measurement: "°C"
+                  animation: off
+                  height: 32px
+                  positions:
+                    name: inside
+                    value: inside
+                  severity:
+                    - from: -50
+                      to: 10
+                      color: "rgba(144, 202, 249, 0.9)"
+                    - from: 10
+                      to: 18
+                      color: "rgba(76, 175, 80, 0.85)"
+                    - from: 18
+                      to: 23
+                      color: "rgba(255, 235, 59, 0.85)"
+                    - from: 23
+                      to: 27
+                      color: "rgba(255, 152, 0, 0.85)"
+                    - from: 27
+                      to: 40
+                      color: "rgba(244, 67, 54, 0.85)"
+                  style: |
+                    ha-card {
+                      border-radius: 12px !important;
+                      background: none !important;
+                      box-shadow: none !important;
+                      padding: 4px !important;
+                    }
+
+                filter:
+                  include:
+                    - entity_id: sensor.temperature_max_jour_petite_maison
+
+                card_param: entities
+                transform: |
+                  {
+                    {
+                      "entity": entity.entity_id,
+                      "name": "Petite Maison",
+                      "value": parseFloat(states[entity.entity_id])
+                    }
+                  }

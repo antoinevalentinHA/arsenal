@@ -1,0 +1,77 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Température max Chambres
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Déterminer la **température la plus élevée** parmi les chambres,
+#   en utilisant directement les capteurs consolidés :
+#     • sensor.temperature_chambre_arnaud
+#     • sensor.temperature_chambre_matthieu
+#     • sensor.temperature_chambre_parents
+#
+# ⚙️ Fonctionnement :
+#   - Utilise les capteurs consolidés (HomeKit + fallback Zigbee).
+#   - Ignore les valeurs non numériques.
+#   - Conserve la dernière valeur connue si tout est indisponible.
+#
+# 📦 Capteur créé :
+#   • sensor.temperature_max_chambres
+#
+# 🧠 Déclencheurs :
+#   - Variation d’un capteur consolidé.
+#   - Redémarrage de Home Assistant.
+#
+# 📊 Type : Trigger Template Sensor
+# 🌡️ Unité : °C
+# 🏠 Classe : temperature
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_chambre_parents
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Température max Chambres"
+      unique_id: temperature_max_chambres
+      unit_of_measurement: "°C"
+      state_class: measurement
+      device_class: temperature
+
+      state: >
+        {% set brut = {
+          'Chambre Arnaud': states('sensor.temperature_chambre_arnaud'),
+          'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
+          'Chambre Parents': states('sensor.temperature_chambre_parents')
+        } %}
+
+        {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
+        {% set last = this.state %}
+
+        {% if valides %}
+          {{ (valides | sort(attribute=1))[-1][1] | float | round(1) }}
+        {% else %}
+          {{ last }}
+        {% endif %}
+
+      attributes:
+        chambre_la_plus_chaude: >
+          {% set brut = {
+            'Chambre Arnaud': states('sensor.temperature_chambre_arnaud'),
+            'Chambre Matthieu': states('sensor.temperature_chambre_matthieu'),
+            'Chambre Parents': states('sensor.temperature_chambre_parents')
+          } %}
+          {% set valides = brut.items() | selectattr('1', 'is_number') | list %}
+          {% if valides %}
+            {{ (valides | sort(attribute=1))[-1][0] }}
+          {% else %}
+            {{ state_attr(this.entity_id, 'chambre_la_plus_chaude') or 'Mémoire' }}
+          {% endif %}
+
+        sources: >
+          - sensor.temperature_chambre_arnaud
+          - sensor.temperature_chambre_matthieu
+          - sensor.temperature_chambre_parents

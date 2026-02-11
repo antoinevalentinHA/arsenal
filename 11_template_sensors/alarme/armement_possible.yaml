@@ -1,0 +1,32 @@
+# ==========================================================
+# 🛡️ TEMPLATE BINARY SENSOR — Armement automatique alarme
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si l’alarme peut être armée automatiquement.
+#
+# ⚙️ Fonctionnement :
+#   - Vérifie que :
+#       • Le mode d’alarme est "Automatique"
+#       • Le panneau d’alarme est désarmé
+#       • Aucun blocage d’armement automatique n’est actif
+#       • Aucune présence de la famille n’est détectée
+#       • L’absence dure depuis au moins 5 minutes
+#       • Aucun délai de désarmement n’est en cours
+#
+# 📊 Type : Binary Sensor (valeur booléenne)
+# 📍 Entité générée : binary_sensor.armement_alarme_possible
+# ==========================================================
+
+- binary_sensor:
+    - name: "Armement possible"
+      unique_id: armement_alarme_possible
+      default_entity_id: binary_sensor.armement_alarme_possible
+      state: >
+        {{
+          is_state('input_select.mode_alarme', 'Automatique') and
+          is_state('alarm_control_panel.alarme_maison', 'disarmed') and
+          is_state('input_boolean.blocage_armement_auto', 'off') and
+          is_state('binary_sensor.presence_famille_securite', 'off') and
+          is_state('binary_sensor.presence_famille_securite_absent_depuis_5_min', 'on') and
+          is_state('binary_sensor.delai_desarmement_en_cours', 'off')
+        }}

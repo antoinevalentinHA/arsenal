@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Durée max cycle simulation présence
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir la durée MAXIMALE autorisée pour un cycle
+#    d’éclairage dans le cadre de la simulation de présence.
+#
+# 🧩 Principe :
+#    - La simulation de présence repose sur des cycles
+#      d’allumage/extinction pseudo-aléatoires.
+#    - Ce paramètre fixe une borne HAUTE stricte
+#      afin d’éviter des durées irréalistes ou suspectes.
+#
+# ⚙️ Fonctionnement :
+#    - Valeur exprimée en minutes
+#    - Utilisée comme limite supérieure dans les
+#      binary_sensors de décision
+#    - Sert également de référence pour les notifications
+#      de cycles anormalement longs
+#
+# 🔍 Utilisation :
+#    - Binary sensors :
+#        • eclairage/simulation_chambre_parents.yaml
+#        • eclairage/simulation_garage.yaml
+#    - Automatisation :
+#        • eclairage/simulation_presence/notification_oubli.yaml
+#    - Dashboards :
+#        • réglages éclairage
+#        • diagnostics simulation présence
+#
+# 🚫 Ne pas confondre avec :
+#    - Durée MIN d’un cycle
+#    - Délais d’absence
+#    - Durées d’éclairage fixes
+#
+# 📐 Unité :
+#    - minutes (borne haute d’un cycle)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Garde-fou simulation de présence
+# ==========================================================
+
+
+duree_max_cycle_simulation_presence:
+  name: Durée max d’un cycle
+  icon: mdi:timer-sand-full
+  min: 1
+  max: 90
+  step: 1
+  unit_of_measurement: "min"

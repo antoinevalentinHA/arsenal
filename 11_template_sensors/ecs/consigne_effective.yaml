@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧊 TEMPLATE TRIGGERED SENSOR — ECS (Consigne chaudière sécurisée)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Fournir la consigne ECS actuelle de la chaudière
+#   avec conservation locale en cas d’indisponibilité ViCare.
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement sur tout changement de la consigne ViCare
+#     ou au démarrage de Home Assistant.
+#   - Si la valeur est numérique → mise à jour directe.
+#   - Sinon → conservation de la dernière valeur valide.
+#
+# 🧮 Source : number.vscotho1_200_11_dhw_temperature
+# 📊 Type : Trigger Template Sensor
+# 📏 Unité : °C
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: number.vscotho1_200_11_dhw_temperature
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: systeme_stable
+
+  sensor:
+    - name: "ECS - Consigne chaudiere (securisee)"
+      unique_id: ecs_consigne_chaudiere_securisee
+      unit_of_measurement: "°C"
+      state_class: measurement
+      state: >
+        {% set v = states('number.vscotho1_200_11_dhw_temperature') %}
+        {% if v | is_number %}
+          {{ v | float }}
+        {% else %}
+          {{ this.state | float(0) }}
+        {% endif %}

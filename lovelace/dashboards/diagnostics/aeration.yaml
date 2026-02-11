@@ -1,0 +1,157 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Diagnostics Aération
+icon: mdi:window-open-variant
+
+views:
+  ####################################
+  # 🪟 DIAGNOSTICS AÉRATION
+  ####################################
+  - title: Aération
+    path: diagnostics-aeration
+    icon: mdi:window-open-variant
+
+    # ==========================================================
+    # 🧭 BADGES — Navigation & retour contextuel
+    # ==========================================================
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /aeration-dashboard/aeration
+
+    # ==========================================================
+    # 🧩 CONTENU PRINCIPAL
+    # ==========================================================
+    cards:
+      - type: vertical-stack
+        cards:
+
+          - type: custom:button-card
+            template: section_header
+            name: 🌬️🌡️ Aération – Diagnostics
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🪟 Statut de l’aération
+
+          - type: markdown
+            content: |
+              {% set episode = is_state('input_boolean.aeration_episode_en_cours','on') %}
+              {% set d_aer = states('input_datetime.aeration_debut') %}
+              {% set d_aer_fmt = (
+                as_timestamp(as_datetime(d_aer)) | timestamp_custom('%d/%m %H:%M')
+              ) if d_aer not in ['unknown','unavailable','none',''] else '—' %}
+
+              {% if episode %}
+              **🟦 Aération en cours**  
+              Depuis : **{{ d_aer_fmt }}**
+              {% else %}
+              **⚪ Pas d’aération en cours**  
+              Dernière aération : **{{ d_aer_fmt }}**
+              {% endif %}
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🔒 Blocage chauffage
+
+          - type: markdown
+            content: |
+              {% set blocage = is_state('input_boolean.chauffage_blocage_aeration','on') %}
+              {% set episode = is_state('input_boolean.aeration_episode_en_cours','on') %}
+
+              {% set d_bloc = states('input_datetime.chauffage_fin_blocage_aeration') %}
+              {% set d_bloc_fmt = (
+                as_timestamp(as_datetime(d_bloc)) | timestamp_custom('%d/%m %H:%M')
+              ) if d_bloc not in ['unknown','unavailable','none',''] else '—' %}
+
+              {% set d_ana = states('input_datetime.analyse_deltat_disponible') %}
+              {% set d_ana_fmt = (
+                as_timestamp(as_datetime(d_ana)) | timestamp_custom('%d/%m %H:%M')
+              ) if d_ana not in ['unknown','unavailable','none',''] else '—' %}
+
+              {% set override = is_state('input_boolean.mode_confort_chauffage','on') %}
+
+              {% if blocage and episode %}
+              **🟥 Chauffage suspendu (aération en cours)**  
+              Le chauffage est temporairement suspendu pendant l’aération.  
+
+              Fin prévue du blocage : **{{ d_bloc_fmt }}**  
+              Analyse ΔT programmée à : **{{ d_ana_fmt }}**
+
+              {% elif blocage and not episode %}
+              **🟧 Stabilisation thermique (post-aération)**  
+              L’aération est terminée, mais une phase d’inertie est encore active.  
+
+              Fin prévue du blocage : **{{ d_bloc_fmt }}**  
+              Analyse ΔT programmée à : **{{ d_ana_fmt }}**
+
+              {% elif override %}
+              **🟦 Override opérateur (confort forcé)**  
+              Le chauffage peut être imposé en Confort indépendamment des blocages.  
+
+              {% else %}
+              **🟢 Aucun blocage chauffage actif**
+              {% endif %}
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🌡️ Chute thermique (ΔT réel)
+
+          - type: markdown
+            content: |
+              {% set deltaT_max = states('input_number.delta_t_max_decisionnel_aeration') | float(0) %}
+
+              {% if deltaT_max > 0 %}
+              **🟥 Oui — ΔT max observé : {{ deltaT_max | round(2) }} °C**
+              {% else %}
+              **🟩 Aucune chute thermique significative**
+              {% endif %}
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 📉 Données
+
+          - type: markdown
+            content: |
+              {% set refs = [
+                states('input_number.ref_temp_entree') | float(0),
+                states('input_number.ref_temp_sejour') | float(0),
+                states('input_number.ref_temp_chambre_arnaud') | float(0),
+                states('input_number.ref_temp_chambre_matthieu') | float(0),
+                states('input_number.ref_temp_chambre_parents') | float(0),
+                states('input_number.ref_temp_palier') | float(0)
+              ] %}
+
+              {% set temp_ref = (refs | sum) / (refs | count) %}
+              {% set deltaT_max = states('input_number.delta_t_max_decisionnel_aeration') | float(0) %}
+
+              - Température de référence (moyenne) : **{{ temp_ref | round(2) }} °C**
+              - ΔT max observé : **{{ deltaT_max | round(2) }} °C**
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🧩 Synthèse
+
+          - type: markdown
+            content: |
+              {% set episode = is_state('input_boolean.aeration_episode_en_cours','on') %}
+              {% set blocage = is_state('input_boolean.chauffage_blocage_aeration','on') %}
+              {% set deltaT_max = states('input_number.delta_t_max_decisionnel_aeration') | float(0) %}
+
+              {% if blocage %}
+              • **Le chauffage est bloqué par l’aération** (post-aération active)  
+              {% elif episode %}
+              • Fenêtre ouverte → aération en cours  
+              {% elif deltaT_max > 0 %}
+              • Chute thermique résiduelle détectée  
+              {% else %}
+              • Situation nominale  
+              {% endif %}

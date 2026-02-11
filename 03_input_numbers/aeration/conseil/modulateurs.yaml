@@ -1,0 +1,115 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Modulateurs contextuels d’aération
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Ajuster dynamiquement les seuils d’aération (ΔHA, ΔT)
+#    en fonction de contextes environnementaux spécifiques
+#    : nuit, pluie, brouillard, grand froid, canicule.
+#
+# 🧠 Lecture métier :
+#    Ces helpers sont lus en temps réel par les capteurs
+#    binaires d’aération (RDC et étage).
+#    Ils ne définissent pas des seuils absolus, mais des
+#    MODULATIONS appliquées aux seuils principaux.
+#
+# 🌙 Nuit :
+#    - Abaisse les exigences ΔHA et ΔT
+#    - Autorise une aération plus souple et silencieuse
+#
+# 🌧️ Pluie / air saturé :
+#    - Peut bloquer l’aération (pluie)
+#    - Durcit les critères hygrométriques (ΔHA)
+#
+# ❄️ Grand froid :
+#    - Renforce l’exigence ΔT minimale
+#    - Limite les pertes thermiques
+#
+# ☀️ Canicule :
+#    - Bloque l’aération si l’air extérieur est trop chaud
+#
+# 🔗 Dépendances :
+#    - Binary sensors aération (RDC / étage)
+#    - Dashboards réglages aération
+#
+# 🚫 Interdits :
+#    - Les utiliser comme seuils absolus
+#    - Les modifier sans compréhension du contexte associé
+#    - Les considérer comme des réglages purement esthétiques
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - modulateurs décisionnels actifs (contextuels)
+# ==========================================================
+
+
+aeration_mod_nuit_delta_ha:
+  name: "Mod. nuit ΔHA (−)"
+  min: 0
+  max: 2
+  step: 0.1
+  unit_of_measurement: "g/m³"
+  mode: box
+  icon: mdi:weather-night
+
+aeration_mod_nuit_delta_t:
+  name: "Mod. nuit ΔT (−)"
+  min: 0
+  max: 3
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+aeration_rain_max_mm:
+  name: Aeration pluie max (1h)
+  min: 0
+  max: 5
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:weather-pouring
+
+aeration_pluie_rh_ext_seuil:
+  name: "Seuil pluie/brouillard (RH ext ≥)"
+  min: 70
+  max: 100
+  step: 1
+  unit_of_measurement: "%"
+  mode: slider
+  icon: mdi:water-percent
+
+aeration_mod_pluie_delta_ha:
+  name: "Mod. pluie ΔHA (+)"
+  min: 0
+  max: 2
+  step: 0.1
+  unit_of_measurement: "g/m³"
+  mode: box
+  icon: mdi:water-percent-alert
+
+aeration_grand_froid_seuil_ext:
+  name: "Seuil grand froid (T ext <)"
+  min: -20
+  max: 10
+  step: 0.5
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:snowflake
+
+aeration_mod_grand_froid_add_delta_t:
+  name: "Mod. grand froid ΔT (+)"
+  min: 0
+  max: 3
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:snowflake
+
+aeration_canicule_seuil_ext:
+  name: "Seuil canicule (T ext ≥)"
+  min: 20
+  max: 45
+  step: 0.5
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-sunny-alert

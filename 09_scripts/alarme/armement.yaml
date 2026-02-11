@@ -1,0 +1,101 @@
+# ==========================================================
+# 🔒 SCRIPT — Alarme : Armement unifié
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Point d’entrée UNIQUE pour l’armement de l’alarme
+#   en mode ABSENT.
+#
+#   Ce script centralise :
+#   - la condition d’armement
+#   - l’action d’armement réelle
+#   - le feedback utilisateur (bip)
+#   - la notification
+#   - la journalisation métier
+#
+# 🎯 Objectif :
+#   Garantir un armement cohérent, traçable et idempotent,
+#   quelle que soit l’origine de la demande
+#   (automatisation, clavier, application, scénario).
+#
+# ⚙️ Fonctionnement :
+#   - Vérifie que l’alarme est réellement désarmée.
+#   - Arme l’alarme en mode "away".
+#   - Enregistre la raison d’armement (mémoire métier).
+#   - Émet un bip de confirmation (hors mode test).
+#   - Envoie une notification enrichie (heure + origine).
+#
+# 🚫 Ce script NE FAIT PAS :
+#   - Ne décide PAS si l’alarme DOIT être armée
+#   - Ne gère PAS la logique de présence / absence
+#   - Ne force PAS un armement si l’alarme est déjà armée
+#   - Ne traite PAS les cas d’erreur ou d’échec matériel
+#
+# 🧱 Dépendances :
+#   - alarm_control_panel.alarme_maison
+#   - script.sirene_bip
+#   - script.notification_envoyer
+#   - input_text.alarme_raison
+#   - input_boolean.mode_test_alarme
+#
+# 📊 Type :
+#   Script d’exécution centralisée (action terminale)
+#
+# 📍 Entité :
+#   script.alarme_armer
+#
+# 🔁 Sémantique Arsenal :
+#   - Toute demande d’armement DOIT passer par ce script.
+#   - Aucune automatisation ne doit armer l’alarme directement.
+#   - La décision est externe, l’exécution est ici.
+#
+# ✅ Architecture :
+#   Arsenal v6+
+#   Home Assistant 2024.8+
+# ==========================================================
+
+
+alarme_armer:
+  alias: "Alarme - Armement unifié"
+  description: >
+    Arme l’alarme en mode Absent, joue un bip de confirmation,
+    envoie notification et log. Centralise toute la logique d’armement.
+  mode: single
+  fields:
+    origine:
+      description: Origine de l’armement (optionnel)
+      example: "Clavier, Armement auto, App mobile"
+
+  sequence:
+    # 1) Arme en mode Absent uniquement si désarmée
+    - condition: state
+      entity_id: alarm_control_panel.alarme_maison
+      state: disarmed
+
+    - action: alarm_control_panel.alarm_arm_away
+      target:
+        entity_id: alarm_control_panel.alarme_maison
+
+    # 1bis) Mémoire — raison d’armement (après succès réel)
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.alarme_raison
+      data:
+        value: "Armement automatique — absence confirmée"
+
+    # 2) Bip si pas en mode test
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.mode_test_alarme
+              state: 'off'
+          sequence:
+            - action: script.sirene_bip
+
+    # 3) Notification
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🔒 Alarme activée"
+        message: >
+          L'alarme a été activée {{ 'automatiquement' if origine is not defined else 'manuellement' }}
+          à {{ now().strftime('%H:%M') }}.

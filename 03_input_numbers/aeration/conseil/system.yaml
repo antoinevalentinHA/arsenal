@@ -1,0 +1,55 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Temporalité de recommandation d’aération
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir des paramètres temporels encadrant la fréquence
+#    et le déclenchement des recommandations d’aération.
+#
+# 🧠 Lecture métier :
+#    - Le délai de stabilisation est ACTIVEMENT utilisé
+#      par les automatisations de notification afin
+#      d’éviter des recommandations trop précoces ou instables.
+#
+#    - L’intervalle minimal entre aérations est un
+#      PARAMÈTRE DÉCLARATIF à ce stade :
+#      il n’est pas encore consommé par le moteur
+#      décisionnel ou les automatisations.
+#
+# 📐 Paramètres définis :
+#    - Stabilisation avant recommandation (minutes) :
+#        → délai après ouverture / fermeture
+#    - Intervalle minimal entre aérations (heures) :
+#        → garde-fou temporel inter-cycles (préparatoire)
+#
+# 🔗 Dépendances :
+#    - Automatisations notifications aération (RDC / étage)
+#    - Dashboards réglages aération
+#
+# 🚫 Interdits :
+#    - Confondre ces paramètres avec des seuils environnementaux
+#    - Supposer que l’intervalle minimal est déjà appliqué
+#    - Les utiliser comme modulateurs thermiques ou hygrométriques
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - temporalité métier (partiellement active)
+# ==========================================================
+
+
+aeration_stabilisation_minutes:
+  name: "Stabilisation avant recommandation"
+  min: 0
+  max: 10
+  step: 1
+  unit_of_measurement: "min"
+  mode: slider
+  icon: mdi:timer-outline
+
+aeration_intervalle_min_heures:
+  name: "Intervalle minimal entre aérations"
+  min: 0
+  max: 6
+  step: 0.5
+  unit_of_measurement: "h"
+  mode: slider
+  icon: mdi:hours-24

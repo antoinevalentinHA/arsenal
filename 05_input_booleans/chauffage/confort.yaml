@@ -1,0 +1,29 @@
+# ==========================================================
+# 🧠 INPUT BOOLEAN — Mode Confort Chauffage
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Permettre l’activation manuelle du mode Confort
+#   pour le chauffage, garantissant le maintien des
+#   consignes de température confort même si d’autres
+#   conditions (géofencing, horaires réduits, blocages)
+#   pourraient intervenir.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → le chauffage applique la consigne confort
+#   - OFF → le chauffage fonctionne selon la logique
+#           normale (automatique ou réduite)
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean
+#   - Nom : Mode Confort Chauffage
+#   - Icône : mdi:radiator
+#   - Usage : override manuel des logiques réduites ou automatiques
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.mode_confort_chauffage
+# ==========================================================
+
+
+mode_confort_chauffage:
+  name: Mode Confort Chauffage
+  icon: mdi:radiator

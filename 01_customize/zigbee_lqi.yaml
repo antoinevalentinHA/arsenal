@@ -1,0 +1,264 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : Zigbee Link Quality (diagnostic)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Centraliser l’affichage et l’identification des capteurs
+#    Zigbee de qualité de liaison (LQI).
+#
+# 🧠 Lecture métier :
+#    Les valeurs de Link Quality représentent l’état de santé
+#    du réseau Zigbee (portée, routage, stabilité radio).
+#    Elles sont STRICTEMENT diagnostiques.
+#
+# 🧩 Périmètre :
+#    - Définit les friendly_name et icônes
+#    - Facilite l’audit du maillage Zigbee
+#    - Sert au diagnostic de pertes ou latences
+#
+# 🔗 Dépendances :
+#    - Zigbee2MQTT
+#    - Capteurs physiques (boutons, prises, détecteurs)
+#    - Utilisés par :
+#      • dashboards Zigbee
+#      • audits réseau
+#
+# 🚫 Interdits :
+#    - Utiliser le LQI comme condition métier
+#    - Déclencher une action automatique
+#    - Dégrader une logique fonctionnelle
+#      en fonction de la qualité radio
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - diagnostic réseau / non décisionnel
+# ==========================================================
+
+
+############################################################
+# 🔘 BOUTONS
+############################################################
+
+sensor.bouton_cuisine_linkquality:
+  friendly_name: "Bouton cuisine"
+  icon: mdi:gesture-tap-button
+
+sensor.bouton_garage_1_linkquality:
+  friendly_name: "Bouton Garage 1"
+  icon: mdi:gesture-tap-button
+
+sensor.bouton_garage_2_linkquality:
+  friendly_name: "Bouton Garage 2"
+  icon: mdi:gesture-tap-button
+
+sensor.bouton_sdb_linkquality:
+  friendly_name: "Bouton SDB parents"
+  icon: mdi:gesture-tap-button
+
+
+############################################################
+# 🪟 OUVERTURES (FENÊTRES / PORTES)
+############################################################
+
+sensor.capteur_chambre_arnaud_linkquality:
+  friendly_name: "Capteur Zigbee Arnaud"
+  icon: mdi:window-closed
+
+sensor.capteur_chambre_matthieu_linkquality:
+  friendly_name: "Capteur Zigbee Matthieu"
+  icon: mdi:window-closed
+
+sensor.capteur_chambre_parents_gauche_linkquality:
+  friendly_name: "Fenêtre parents (gauche)"
+  icon: mdi:window-closed
+
+sensor.capteur_chambre_parents_milieu_linkquality:
+  friendly_name: "Fenêtre parents (milieu)"
+  icon: mdi:window-closed
+
+sensor.capteur_chambre_parents_droite_linkquality:
+  friendly_name: "Fenêtre parents (droite)"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_entree_linkquality:
+  friendly_name: "Fenêtre entrée"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_sejour_1_linkquality:
+  friendly_name: "Baie vitrée 1 séjour"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_sejour_2_linkquality:
+  friendly_name: "Baie vitrée 2 séjour"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_sejour_3_linkquality:
+  friendly_name: "Baie vitrée 3 séjour"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_sejour_4_linkquality:
+  friendly_name: "Baie vitrée 4 séjour"
+  icon: mdi:window-closed
+
+sensor.capteur_porte_entree_linkquality:
+  friendly_name: "Porte d’entrée"
+  icon: mdi:door-closed
+
+sensor.capteur_porte_garage_linkquality:
+  friendly_name: "Porte garage"
+  icon: mdi:door-closed
+
+
+############################################################
+# 🚶 MOUVEMENTS
+############################################################
+
+sensor.capteur_mouvements_entree_linkquality:
+  friendly_name: "Mouvements entrée"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_sejour_1_linkquality:
+  friendly_name: "Mouvements séjour 1"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_sejour_2_linkquality:
+  friendly_name: "Mouvements séjour 2"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_garage_1_linkquality:
+  friendly_name: "Mouvements garage 1"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_garage_2_linkquality:
+  friendly_name: "Mouvements garage 2"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_garage_3_linkquality:
+  friendly_name: "Mouvements garage 3"
+  icon: mdi:motion-sensor
+
+
+############################################################
+# 🌡️ CAPTEURS MÉTÉO / TEMPÉRATURE
+############################################################
+
+sensor.meteo_zigbee_entree_linkquality:
+  friendly_name: "Capteur Zigbee entrée"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_sejour_linkquality:
+  friendly_name: "Capteur Zigbee séjour"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_chambre_parents_linkquality:
+  friendly_name: "Capteur Zigbee parents"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_chambre_arnaud_linkquality:
+  friendly_name: "Capteur Zigbee Arnaud"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_chambre_matthieu_linkquality:
+  friendly_name: "Capteur Zigbee Matthieu"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_sdb_parents_linkquality:
+  friendly_name: "Capteur Zigbee SDB parents"
+  icon: mdi:thermometer
+
+sensor.zigbee_pluie_linkquality:
+  friendly_name: "Capteur pluie Zigbee"
+  icon: mdi:weather-rainy
+
+
+############################################################
+# 🔌 PRISES CONNECTÉES
+############################################################
+
+sensor.prise_bouclage_linkquality:
+  friendly_name: "Prise bouclage"
+  icon: mdi:power-socket-fr
+
+sensor.prise_box_linkquality:
+  friendly_name: "Prise box"
+  icon: mdi:power-socket-fr
+
+sensor.prise_buanderie_linkquality:
+  friendly_name: "Prise buanderie"
+  icon: mdi:power-socket-fr
+
+sensor.prise_cage_escalier_rdc_linkquality:
+  friendly_name: "Prise cage escalier RDC"
+  icon: mdi:power-socket-fr
+
+sensor.prise_chambre_arnaud_linkquality:
+  friendly_name: "Prise chambre Arnaud"
+  icon: mdi:power-socket-fr
+
+sensor.prise_chambre_matthieu_linkquality:
+  friendly_name: "Prise chambre Matthieu"
+  icon: mdi:power-socket-fr
+
+sensor.prise_chambre_parents_2_linkquality:
+  friendly_name: "Prise chambre parents"
+  icon: mdi:power-socket-fr
+
+sensor.prise_deshumidificateur_linkquality:
+  friendly_name: "Prise déshumidificateur"
+  icon: mdi:power-socket-fr
+
+sensor.prise_jardin_linkquality:
+  friendly_name: "Prise jardin"
+  icon: mdi:power-socket-fr
+
+sensor.prise_lampe_parents_linkquality:
+  friendly_name: "Lampe parents"
+  icon: mdi:power-socket-fr
+
+sensor.prise_lampe_sejour_linkquality:
+  friendly_name: "Lampe séjour"
+  icon: mdi:power-socket-fr
+
+sensor.prise_lave_vaisselle_linkquality:
+  friendly_name: "Lave-vaisselle"
+  icon: mdi:power-socket-fr
+
+sensor.prise_onduleur_linkquality:
+  friendly_name: "Onduleur"
+  icon: mdi:power-socket-fr
+
+sensor.prise_palier_linkquality:
+  friendly_name: "Prise palier"
+  icon: mdi:power-socket-fr
+
+sensor.prise_refrigerateur_linkquality:
+  friendly_name: "Réfrigérateur"
+  icon: mdi:power-socket-fr
+
+sensor.prise_sdb_enfants_linkquality:
+  friendly_name: "Prise SDB enfants"
+  icon: mdi:power-socket-fr
+
+sensor.prise_sejour_baies_vitrees_linkquality:
+  friendly_name: "Baies vitrées séjour"
+  icon: mdi:power-socket-fr
+
+sensor.prise_sejour_placard_linkquality:
+  friendly_name: "Placard séjour"
+  icon: mdi:power-socket-fr
+
+
+############################################################
+# 🚨 ALARME
+############################################################
+
+sensor.clavier_alarme_1_linkquality:
+  friendly_name: "Clavier alarme (entrée)"
+  icon: mdi:dialpad
+
+sensor.clavier_alarme_2_linkquality:
+  friendly_name: "Clavier alarme (garage)"
+  icon: mdi:dialpad
+
+sensor.sirene_alarm_linkquality:
+  friendly_name: "Sirène alarme"
+  icon: mdi:alarm-bell

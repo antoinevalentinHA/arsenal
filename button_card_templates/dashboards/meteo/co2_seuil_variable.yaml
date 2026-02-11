@@ -1,0 +1,65 @@
+#################################################################
+# 🌫️ CARTE CO₂ — SEUILS VARIABLES
+# ---------------------------------------------------------------
+# Affiche un niveau de CO₂ (ppm) avec code couleur paramétrable.
+#
+# Variables attendues :
+#   - seuil_ok    : air correct
+#   - seuil_warn  : air chargé
+#   - seuil_crit  : air dégradé
+#
+# Principe Arsenal :
+#   - Carte purement informationnelle
+#   - Seuils définis par la pièce
+#   - Aucune logique métier
+#################################################################
+
+carte_co2_seuils_variables:
+  template: carte_base
+
+  icon: mdi:molecule-co2
+  show_state: true
+
+  tap_action:
+    action: more-info
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${Math.round(v)} ppm`;
+    ]]]
+
+  styles:
+    card:
+      - height: 72px
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+            const ok   = variables?.seuil_ok;
+            const warn = variables?.seuil_warn;
+            const crit = variables?.seuil_crit;
+
+            if (isNaN(v)) return 'rgba(158, 158, 158, 0.1)';
+            if (crit !== undefined && v > crit) return 'rgba(244,67,54,0.2)';   // 🔴 critique
+            if (warn !== undefined && v >= warn) return 'rgba(144, 202, 249, 0.25)'; // 🔵 air chargé
+            return 'rgba(76,175,80,0.2)';                                       // 🟢 correct
+          ]]]
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'

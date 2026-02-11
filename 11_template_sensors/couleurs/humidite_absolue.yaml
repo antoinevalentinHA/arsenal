@@ -1,0 +1,373 @@
+# ==========================================================
+# 💧 TEMPLATE TRIGGERED SENSORS — Couleur Humidité Absolue
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Générer, pour chaque zone de la maison, une couleur indicative
+#   en fonction de la valeur d’humidité absolue mesurée et de ses seuils
+#   personnalisés (bas / haut).
+#
+# ⚙️ Fonctionnement :
+#   - Compare la valeur actuelle (sensor.humidite_absolue_<zone>)
+#     à ses seuils :
+#       • sensor.humidite_absolue_seuil_bas_<zone>
+#       • sensor.humidite_absolue_seuil_haut_<zone>
+#   - Calcule une "marge" dynamique (1/5 de l’écart haut-bas)
+#   - Détermine une couleur selon la position du niveau mesuré :
+#       blue        → très bas
+#       light_blue  → bas
+#       light_green → légèrement sous seuil
+#       green       → optimal
+#       yellow      → légèrement au-dessus
+#       red         → très élevé
+#       grey        → valeurs invalides ou seuils incohérents
+#
+# 🔁 Rafraîchissement :
+#   - Déclenché sur chaque changement d’une valeur surveillée
+#   - Réévalué au démarrage de Home Assistant
+#
+# 🧠 Détails techniques :
+#   - Conversion des virgules → points pour compatibilité numérique
+#   - Couleur renvoyée sous forme de chaîne texte (non hexadécimale)
+#   - Capteurs indépendants pour chaque zone
+#
+# 📊 Type : Trigger Template Sensors
+# 📍 Nom des entités : couleur_humidite_absolue_<zone>
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_arnaud
+        - sensor.humidite_absolue_seuil_bas_chambre_arnaud
+        - sensor.humidite_absolue_seuil_haut_chambre_arnaud
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Couleur Humidité absolue Chambre Arnaud"
+      unique_id: couleur_humidite_absolue_chambre_arnaud
+      state: &couleur_humidite_absolue_logic >
+        {% set suffixe = this.entity_id | replace('sensor.couleur_humidite_absolue_', '') %}
+        {% set src = 'sensor.humidite_absolue_' ~ suffixe %}
+        {% set src_bas = 'sensor.humidite_absolue_seuil_bas_' ~ suffixe %}
+        {% set src_haut = 'sensor.humidite_absolue_seuil_haut_' ~ suffixe %}
+
+        {% set raw = states(src) %}
+        {% set h = raw | replace(',', '.') | float(999) %}
+        {% set bas = states(src_bas) | replace(',', '.') | float(0) %}
+        {% set haut = states(src_haut) | replace(',', '.') | float(0) %}
+        {% set zone = states('input_number.humidite_absolue_couleur_zone_verte') | float(1.0) %}
+        {% set centre = (bas + haut) / 2 %}
+
+        {% if raw in ['unknown', 'unavailable', None] or h == 999 %}
+          grey
+        {% elif bas == 0 or haut == 0 or bas >= haut %}
+          grey
+        {% elif h < bas %}
+          blue
+        {% elif h < centre - zone %}
+          light_blue
+        {% elif h < centre %}
+          light_green
+        {% elif h <= centre + zone %}
+          green
+        {% elif h <= haut %}
+          yellow
+        {% else %}
+          red
+        {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_matthieu
+        - sensor.humidite_absolue_seuil_bas_chambre_matthieu
+        - sensor.humidite_absolue_seuil_haut_chambre_matthieu
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Chambre Matthieu"
+      unique_id: couleur_humidite_absolue_chambre_matthieu
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_chambre_parents
+        - sensor.humidite_absolue_seuil_bas_chambre_parents
+        - sensor.humidite_absolue_seuil_haut_chambre_parents
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Chambre Parents"
+      unique_id: couleur_humidite_absolue_chambre_parents
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_cave
+        - sensor.humidite_absolue_seuil_bas_cave
+        - sensor.humidite_absolue_seuil_haut_cave
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Cave"
+      unique_id: couleur_humidite_absolue_cave
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_entree
+        - sensor.humidite_absolue_seuil_bas_entree
+        - sensor.humidite_absolue_seuil_haut_entree
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Entrée"
+      unique_id: couleur_humidite_absolue_entree
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_garage
+        - sensor.humidite_absolue_seuil_bas_garage
+        - sensor.humidite_absolue_seuil_haut_garage
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Garage"
+      unique_id: couleur_humidite_absolue_garage
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_petite_maison
+        - sensor.humidite_absolue_seuil_bas_petite_maison
+        - sensor.humidite_absolue_seuil_haut_petite_maison
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Petite Maison"
+      unique_id: couleur_humidite_absolue_petite_maison
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sejour
+        - sensor.humidite_absolue_seuil_bas_sejour
+        - sensor.humidite_absolue_seuil_haut_sejour
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Séjour"
+      unique_id: couleur_humidite_absolue_sejour
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_enfants
+        - sensor.humidite_absolue_seuil_bas_sdb_enfants
+        - sensor.humidite_absolue_seuil_haut_sdb_enfants
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue SDB Enfants"
+      unique_id: couleur_humidite_absolue_sdb_enfants
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_sdb_parents
+        - sensor.humidite_absolue_seuil_bas_sdb_parents
+        - sensor.humidite_absolue_seuil_haut_sdb_parents
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue SDB Parents"
+      unique_id: couleur_humidite_absolue_sdb_parents
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_jardin
+        - sensor.humidite_absolue_seuil_bas_jardin
+        - sensor.humidite_absolue_seuil_haut_jardin
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Jardin"
+      unique_id: couleur_humidite_absolue_jardin
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_exterieur
+        - sensor.humidite_absolue_seuil_bas_exterieur
+        - sensor.humidite_absolue_seuil_haut_exterieur
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Extérieur"
+      unique_id: couleur_humidite_absolue_exterieur
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_direction
+        - sensor.humidite_absolue_seuil_bas_direction
+        - sensor.humidite_absolue_seuil_haut_direction
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Direction"
+      unique_id: couleur_humidite_absolue_direction
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_compta
+        - sensor.humidite_absolue_seuil_bas_compta
+        - sensor.humidite_absolue_seuil_haut_compta
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Compta"
+      unique_id: couleur_humidite_absolue_compta
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_qualite
+        - sensor.humidite_absolue_seuil_bas_qualite
+        - sensor.humidite_absolue_seuil_haut_qualite
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Qualité"
+      unique_id: couleur_humidite_absolue_qualite
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_devis
+        - sensor.humidite_absolue_seuil_bas_devis
+        - sensor.humidite_absolue_seuil_haut_devis
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Devis"
+      unique_id: couleur_humidite_absolue_devis
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_commercial
+        - sensor.humidite_absolue_seuil_bas_commercial
+        - sensor.humidite_absolue_seuil_haut_commercial
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Commercial"
+      unique_id: couleur_humidite_absolue_commercial
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_carton
+        - sensor.humidite_absolue_seuil_bas_stock_carton
+        - sensor.humidite_absolue_seuil_haut_stock_carton
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Stock Carton"
+      unique_id: couleur_humidite_absolue_stock_carton
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_stock_pf
+        - sensor.humidite_absolue_seuil_bas_stock_pf
+        - sensor.humidite_absolue_seuil_haut_stock_pf
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Stock PF"
+      unique_id: couleur_humidite_absolue_stock_pf
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_komori
+        - sensor.humidite_absolue_seuil_bas_komori
+        - sensor.humidite_absolue_seuil_haut_komori
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Komori"
+      unique_id: couleur_humidite_absolue_komori
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_bobst
+        - sensor.humidite_absolue_seuil_bas_bobst
+        - sensor.humidite_absolue_seuil_haut_bobst
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Bobst"
+      unique_id: couleur_humidite_absolue_bobst
+      state: *couleur_humidite_absolue_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_absolue_media
+        - sensor.humidite_absolue_seuil_bas_media
+        - sensor.humidite_absolue_seuil_haut_media
+        - input_number.humidite_absolue_couleur_zone_verte
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Humidité absolue Media"
+      unique_id: couleur_humidite_absolue_media
+      state: *couleur_humidite_absolue_logic

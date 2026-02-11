@@ -1,0 +1,82 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Guirlande / Baies vitrées – Allumage immédiat par présence
+#
+#  ID : 10070000000018
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’allumage réactif par présence locale.
+#
+#     Elle alimente la prise des baies vitrées dès qu’un
+#     mouvement est détecté dans le séjour, uniquement
+#     si l’automatisme est explicitement autorisé.
+#
+#     Cette automation agit directement sur le matériel.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement immédiat sur détection de mouvement
+#     - Vérification d’une autorisation utilisateur
+#     - Allumage direct de la prise concernée
+#
+#     Aucune temporisation.
+#     Aucune logique d’ambiance.
+#
+#  🧠 SOURCE D’ÉVÉNEMENT
+#
+#     - binary_sensor.capteur_mouvements_sejour_1_occupancy
+#     - binary_sensor.capteur_mouvements_sejour_2_occupancy
+#
+#     → événements physiques locaux
+#
+#  🧠 AUTORISATION
+#
+#     input_boolean.prise_baies_vitrees_auto
+#
+#     → autorisation globale de l’automatisme
+#
+#  🧠 ACTION DIRECTE
+#
+#     switch.prise_sejour_baies_vitrees
+#
+#     → alimentation électrique de la guirlande
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - N’éteint JAMAIS la prise
+#     - Ne gère AUCUNE temporisation
+#     - Ne maintient AUCUN état logique
+#     - Ne décide PAS d’une ambiance
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation d’entrée immédiate :
+#     événement ≠ durée ≠ scénario.
+#
+#     Elle assure une réactivité maximale,
+#     complétée par une extinction temporisée
+#     gérée séparément.
+# ==========================================================
+
+
+- id: "10070000000018"
+  alias: "Guirlande - Allumage presence"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_mouvements_sejour_1_occupancy
+        - binary_sensor.capteur_mouvements_sejour_2_occupancy
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.prise_baies_vitrees_auto
+      state: "on"
+
+  action:
+    - service: switch.turn_on
+      target:
+        entity_id: switch.prise_sejour_baies_vitrees

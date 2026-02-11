@@ -1,0 +1,74 @@
+# ==========================================================
+#  TEMPLATE SENSORS : DeltaT par pièce (V3)
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Mesurer exclusivement le “manque thermique” :
+#       ΔT = max(ref_temp - temp_actuelle, 0)
+#
+#  🎯 Avantages :
+#     - Plus de valeurs négatives
+#     - ΔT = 0 signifie “aucun manque” (récupéré ou surchauffe)
+#     - Cohérent avec la logique V3 (chute + reprise + hysteresis)
+#     - Base saine pour la future V4 inertielle
+#
+#  🔒 Robustesse :
+#     - Toujours numérique
+#     - Compatible HA 2024+
+# ==========================================================
+
+- sensor:
+
+    # ------------------------------------------------------
+    #  ΔT ENTREE
+    # ------------------------------------------------------
+    - name: "deltaT_entree"
+      unique_id: deltaT_entree
+      unit_of_measurement: "°C"
+      state: &deltat_logic >
+        {% set eid = this.entity_id | lower %}
+        {% set suffixe = eid | replace('sensor.deltat_', '') %}
+        {% set ref_raw = states('input_number.ref_temp_' ~ suffixe) %}
+        {% set t_raw   = states('sensor.temperature_' ~ suffixe) %}
+        {% set ref = ref_raw | float(0) if ref_raw not in ['unknown','unavailable','none','None',''] else 0 %}
+        {% set t   = t_raw   | float(0) if t_raw   not in ['unknown','unavailable','none','None',''] else 0 %}
+        {{ max(ref - t, 0) | round(2) }}
+
+    # ------------------------------------------------------
+    #  ΔT SEJOUR
+    # ------------------------------------------------------
+    - name: "deltaT_sejour"
+      unique_id: deltaT_sejour
+      unit_of_measurement: "°C"
+      state: *deltat_logic
+
+    # ------------------------------------------------------
+    #  ΔT CHAMBRE ARNAUD
+    # ------------------------------------------------------
+    - name: "deltaT_chambre_arnaud"
+      unique_id: deltaT_chambre_arnaud
+      unit_of_measurement: "°C"
+      state: *deltat_logic
+
+    # ------------------------------------------------------
+    #  ΔT CHAMBRE MATTHIEU
+    # ------------------------------------------------------
+    - name: "deltaT_chambre_matthieu"
+      unique_id: deltaT_chambre_matthieu
+      unit_of_measurement: "°C"
+      state: *deltat_logic
+
+    # ------------------------------------------------------
+    #  ΔT CHAMBRE PARENTS
+    # ------------------------------------------------------
+    - name: "deltaT_chambre_parents"
+      unique_id: deltaT_chambre_parents
+      unit_of_measurement: "°C"
+      state: *deltat_logic
+
+    # ------------------------------------------------------
+    #  ΔT PALIER
+    # ------------------------------------------------------
+    - name: "deltaT_palier"
+      unique_id: deltaT_palier
+      unit_of_measurement: "°C"
+      state: *deltat_logic

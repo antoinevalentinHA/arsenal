@@ -1,0 +1,77 @@
+#################################################################
+# 🔥 DIAGNOSTIC — BESOIN DE CHAUFFE (TEMPÉRATURE MIN CHAMBRES)
+# ---------------------------------------------------------------
+# Indique si la température de la chambre la plus froide
+# est inférieure au seuil de chauffe calculé
+# (consigne présence - offset Clim).
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture seule
+#   - Aucune action directe
+#   - Décision portée par les capteurs métier
+#################################################################
+
+carte_diagnostic_besoin_chauffe_temperature_min_chambres:
+  template: carte_base
+
+  entity: sensor.temperature_min_chambres
+
+  show_state: true
+  show_name: true
+  show_label: true
+  show_icon: false
+  color_type: card
+
+  label: |
+    [[[
+      const consigne = parseFloat(
+        states['input_number.chauffage_consigne_confort']?.state || "NaN"
+      );
+      const offset = parseFloat(
+        states['input_number.clim_offset_on']?.state || "NaN"
+      );
+
+      if (isNaN(consigne) || isNaN(offset))
+        return "Seuil ON : —";
+
+      const seuil = (consigne - offset).toFixed(1);
+      return "Seuil ON : " + seuil + "°C";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const temp = parseFloat(entity.state);
+            const consigne = parseFloat(
+              states['input_number.chauffage_consigne_confort']?.state || "NaN"
+            );
+            const offset = parseFloat(
+              states['input_number.clim_offset_on']?.state || "NaN"
+            );
+
+            if (isNaN(temp) || isNaN(consigne) || isNaN(offset))
+              return "rgba(158, 158, 158, 0.2)"; // ⚪ données manquantes
+
+            const seuil = consigne - offset;
+
+            return temp < seuil
+              ? "rgba(76, 175, 80, 0.2)"   // 🟢 besoin de chauffe
+              : "rgba(158, 158, 158, 0.2)"; // ⚪ pas de chauffe
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#000000'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - color: '#111'

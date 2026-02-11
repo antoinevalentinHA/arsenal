@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Jour désinfection ECS
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition du JOUR DE RÉFÉRENCE utilisé
+#   pour la programmation de la désinfection
+#   thermique de l’ECS.
+#
+#   Ce helper indique QUEL JOUR est ciblé
+#   pour la fenêtre de désinfection.
+#
+# 🧩 Nature :
+#   Paramètre MÉTIER — planification temporelle.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS la désinfection
+#   - Ne chauffe PAS l’ECS
+#   - Ne pilote PAS directement la chaudière
+#   - Ne garantit PAS l’exécution effective
+#
+# 🔄 Fonctionnement :
+#   - La valeur est définie manuellement
+#     via les dashboards de réglage ECS.
+#   - Les capteurs et automatisations
+#     comparent ce jour au jour courant
+#     pour déterminer une fenêtre autorisée.
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace :
+#       • Affichage du jour programmé
+#       • Paramétrage utilisateur
+#   - Capteurs binaires ECS :
+#       • Détection de la fenêtre
+#         de désinfection active
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_select)
+#       • Autorisation (capteurs / automatisations)
+#       • Action réelle (ViCare)
+#
+# ⚠️ Remarque :
+#   Modifier ce helper change la PLANIFICATION,
+#   pas le comportement immédiat de l’ECS.
+# ==========================================================
+
+ecs_desinfection_jour:
+  name: Jour désinfection ECS
+  options:
+    - Lundi
+    - Mardi
+    - Mercredi
+    - Jeudi
+    - Vendredi
+    - Samedi
+    - Dimanche
+  icon: mdi:calendar-week

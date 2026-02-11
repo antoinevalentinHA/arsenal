@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : Poele – Fin blocage chauffage
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Lever le blocage thermique du chauffage (et chauffage
+#   par clim) a l'issue du delai de blocage temporaire
+#   associe au poele.
+#
+# 🧱 Principe :
+#   - Cette automation est declenchee UNIQUEMENT par
+#     la fin du timer de blocage poele
+#   - Aucun lien direct avec l'etat du capteur poele
+#
+# ⚠️ IMPORTANT :
+#   - La fin du signal poele n'est JAMAIS prise en compte
+#   - Le timer est l'unique autorite de levee
+#
+# 📥 Entree :
+#   - timer.poele_blocage_chauffage (fin)
+#
+# 📤 Sorties :
+#   - input_boolean.blocage_chauffage_poele
+#   - input_boolean.blocage_clim_poele
+#
+# 🏷️ ID :
+#   10100000000006
+#
+# ✅ Architecture :
+#   Arsenal V6+
+# ==========================================================
+
+- id: "10100000000006"
+  alias: "Poêle – Fin blocage chauffage"
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.poele_blocage_chauffage
+
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.blocage_chauffage_poele
+          - input_boolean.blocage_clim_poele

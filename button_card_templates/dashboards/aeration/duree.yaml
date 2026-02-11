@@ -1,0 +1,61 @@
+#################################################################
+# ⏱️ Carte — Durée cumulée d’aération
+#################################################################
+carte_duree_aeration:
+  template: carte_base
+
+  color_type: card
+  show_icon: false
+  show_state: true
+  show_name: true
+  show_label: true
+
+  # ======================================================
+  # Libellé seuil
+  # ======================================================
+  label: |
+    [[[
+      const seuil = parseFloat(states['input_number.aeration_duree_cible_minutes']?.state);
+      if (Number.isFinite(seuil)) {
+        return `Temps > ${seuil.toFixed(0)} min`;
+      }
+      return 'Temps > 10 min';
+    ]]]
+
+  # ======================================================
+  # Affichage de l'état (FORCÉ, pas d'unité implicite)
+  # ======================================================
+  state_display: |
+    [[[
+      const minutes = parseFloat(entity.state);
+      if (!Number.isFinite(minutes)) return '–';
+      return `${minutes.toFixed(0)} min`;
+    ]]]
+
+  # ======================================================
+  # Couleur conditionnelle
+  # ======================================================
+  state:
+    - operator: template
+      value: |
+        [[[
+          const minutes = parseFloat(entity.state);
+          const seuil = parseFloat(states['input_number.aeration_duree_cible_minutes']?.state);
+          const seuilMin = Number.isFinite(seuil) ? seuil : 10;
+          return Number.isFinite(minutes) && minutes > seuilMin;
+        ]]]
+      color: rgba(76, 175, 80, 0.2)
+
+    - operator: default
+      color: rgba(244, 67, 54, 0.2)
+
+  tap_action:
+    action: none
+
+  # ======================================================
+  # Styles spécifiques
+  # ======================================================
+  styles:
+    label:
+      - font-size: 12px
+      - color: '#111'

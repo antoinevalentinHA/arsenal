@@ -1,0 +1,31 @@
+#################################################################
+# 🧱 CARTE DE BASE — SOCLE VISUEL
+# ---------------------------------------------------------------
+# Template parent pour toutes les cartes informatives.
+# Définit :
+#   - Dimensions
+#   - Typographie
+#   - Icônes
+#   - Ombres et arrondis
+#################################################################
+
+carte_base:
+  color_type: card
+  styles:
+    card:
+      - border-radius: 12px
+      - height: 72px
+      - padding: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'

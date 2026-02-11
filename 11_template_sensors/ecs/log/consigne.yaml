@@ -1,0 +1,41 @@
+# ==========================================================
+# 🎯 TEMPLATE SENSOR — ECS Consigne dernier cycle (sécurisé)
+# ----------------------------------------------------------
+# 🛡️ Version blindée contre :
+#   - résumés tronqués
+#   - valeurs non numérables
+#   - cycles vaisselle incomplets
+#   - erreurs HA "unknown as float"
+# ==========================================================
+
+- sensor:
+    - name: "ECS consigne dernier cycle"
+      unique_id: ecs_consigne_dernier_cycle
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+
+      availability: >
+        {% set resume = states('input_text.ecs_dernier_cycle_resume') %}
+        {{ resume not in ['unknown','unavailable','none','', None] }}
+
+      state: >
+        {% set resume = states('input_text.ecs_dernier_cycle_resume') %}
+        {% set parts = resume.split('|') %}
+        {% set mode = (parts[1] if parts|length > 1 else '') | lower %}
+        {% set previous = this.state | float(0) %}
+
+        {# --- Cas 1 : mode connu --- #}
+        {% if mode == 'ponctuel' %}
+          {{ states('input_number.ecs_consigne_temperature') | float(0) }}
+
+        {% elif mode in ['désinfection','desinfection'] %}
+          {{ states('input_number.ecs_temperature_desinfection') | float(0) }}
+
+        {% elif mode == 'vaisselle' %}
+          {{ states('input_number.ecs_consigne_vaisselle') | float(0) }}
+
+        {# --- Cas 2 : mode absent/invalide → on conserve l’ancien état valide #}
+        {% else %}
+          {{ previous }}
+
+        {% endif %}

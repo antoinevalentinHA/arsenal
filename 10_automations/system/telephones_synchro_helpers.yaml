@@ -1,0 +1,84 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Téléphones – Synchronisation automatique des helpers dérivés
+#
+#  ID : 10120000000017
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Synchroniser automatiquement les helpers dérivés d’un
+#     téléphone lorsque son nom logique (helper maître) est
+#     modifié.
+#
+#     Cette automation garantit la cohérence interne entre
+#     les entités de notification, de Wi-Fi (BSSID) et de
+#     tracking, à partir d’un point de configuration unique.
+#
+#  🚫 NE FAIT PAS
+#     - Ne détecte pas la présence ou l’absence d’un téléphone
+#     - Ne pilote aucun service de notification
+#     - Ne dépend d’aucun matériel ou identifiant physique
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • modification d’un helper maître de téléphone
+#     - Traitement :
+#         • construction dynamique des entités dérivées
+#           (notify, capteur Wi-Fi, device_tracker)
+#         • mise à jour automatique des helpers associés
+#     - Implémentation :
+#         • mapping dynamique
+#         • boucle générique (repeat) pour éviter la duplication
+#
+#  ✅ CONTRAINTES
+#     - Centralisation stricte de la configuration téléphone
+#     - Aucune logique de présence ou de sécurité intégrée
+#     - Indépendance totale vis-à-vis du matériel réel
+# ==========================================================
+
+
+- id: "10120000000017"
+  alias: "Téléphones - Sync helpers"
+  mode: parallel
+  max: 2
+
+  trigger:
+    - platform: state
+      entity_id:
+        - input_text.telephone_antoine
+        - input_text.telephone_constance
+
+  variables:
+    # Nom du téléphone (défini dans le helper maître)
+    tel: "{{ trigger.to_state.state | lower | trim }}"
+
+    # Détermine à qui appartient le téléphone modifié
+    prefix: >
+      {{ 'antoine' if trigger.entity_id.endswith('_antoine') else 'constance' }}
+
+    # Construit les entités dérivées automatiquement
+    notify_entity: "notify.mobile_app_{{ tel }}"
+    wifi_bssid_sensor: "sensor.{{ tel }}_wi_fi_bssid"
+    tracker_entity: "device_tracker.{{ tel }}"
+
+  action:
+
+    # ------------------------------------------------------
+    # Mapping dynamique des champs dérivés
+    # ------------------------------------------------------
+    - variables:
+        mapping:
+          notify: "{{ notify_entity }}"
+          wifi_bssid: "{{ wifi_bssid_sensor }}"
+          tracker: "{{ tracker_entity }}"
+
+    # ------------------------------------------------------
+    # Boucle générique : mise à jour automatique
+    # ------------------------------------------------------
+    - repeat:
+        for_each: "{{ mapping.keys() | list }}"
+        sequence:
+          - action: input_text.set_value
+            target:
+              entity_id: "input_text.telephone_{{ prefix }}_{{ repeat.item }}"
+            data:
+              value: "{{ mapping[repeat.item] }}"

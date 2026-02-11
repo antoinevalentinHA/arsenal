@@ -1,0 +1,180 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Atelier – Maintenance hebdomadaire des mémoires thermiques
+#
+#  ID : 10180000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de MAINTENANCE MÉTIER.
+#
+#     Elle assure, chaque semaine, la conservation
+#     d’un historique synthétique des conditions
+#     thermiques de l’atelier (Komori, Bobst, Media),
+#     puis réinitialise les mémoires min/max hebdomadaires.
+#
+#  🧱 NATURE
+#
+#     - Gestion de mémoire persistante
+#     - Archivage textuel volontaire (helpers)
+#     - Réinitialisation contrôlée d’états métier
+#
+#  ⚙️ PRINCIPE
+#
+#     - Exécution hebdomadaire (lundi 00:00)
+#     - Rotation d’historique sur 4 périodes :
+#         • décalage semaine N-3 → N-4
+#         • injection de la semaine écoulée en N-1
+#     - Archivage sous forme de texte lisible
+#     - Réinitialisation des min/max hebdomadaires
+#       depuis les capteurs de température courants
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne modifie pas les capteurs physiques
+#     - Ne calcule pas de statistiques temporelles
+#     - Ne touche pas aux min/max nocturnes
+#     - Ne remplace pas l’historique natif de Home Assistant
+#
+#  🔗 UTILISATION
+#
+#     - Alimente les dashboards atelier
+#     - Fournit un historique métier synthétique
+#     - Garantit un redémarrage propre des min/max hebdos
+#
+#  ⚠️ NOTE ARCHITECTURALE
+#
+#     Les helpers utilisés (input_text / input_number)
+#     sont considérés comme des mémoires métier,
+#     volontairement indépendantes du recorder HA.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10180000000005"
+  alias: "Atelier – Archivage hebdomadaire et reset min/max"
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "00:00:00"
+
+  condition:
+    - condition: template
+      value_template: "{{ now().isoweekday() == 1 }}"
+
+  variables:
+    periode: "{{ (now() - timedelta(days=7)).strftime('%d/%m') }} → {{ now().strftime('%d/%m') }}"
+
+    recap_komori: >
+      {% set tmin = states('input_number.atelier_komori_temperature_min') %}
+      {% set tmax = states('input_number.atelier_komori_temperature_max') %}
+      {% if tmin not in ['unknown','unavailable'] and tmax not in ['unknown','unavailable'] %}
+      📅 {{ periode }} | 🌡️ {{ tmin }}–{{ tmax }} °C
+      {% else %}
+      📅 {{ periode }} | Données non disponibles
+      {% endif %}
+
+    recap_bobst: >
+      {% set tmin = states('input_number.atelier_bobst_temperature_min') %}
+      {% set tmax = states('input_number.atelier_bobst_temperature_max') %}
+      {% if tmin not in ['unknown','unavailable'] and tmax not in ['unknown','unavailable'] %}
+      📅 {{ periode }} | 🌡️ {{ tmin }}–{{ tmax }} °C
+      {% else %}
+      📅 {{ periode }} | Données non disponibles
+      {% endif %}
+
+    recap_media: >
+      {% set tmin = states('input_number.atelier_media_temperature_min') %}
+      {% set tmax = states('input_number.atelier_media_temperature_max') %}
+      {% if tmin not in ['unknown','unavailable'] and tmax not in ['unknown','unavailable'] %}
+      📅 {{ periode }} | 🌡️ {{ tmin }}–{{ tmax }} °C
+      {% else %}
+      📅 {{ periode }} | Données non disponibles
+      {% endif %}
+
+  action:
+
+    # 🔁 Rotation Komori
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_komori_semaine_4
+        value: "{{ states('input_text.conditions_komori_semaine_3') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_komori_semaine_3
+        value: "{{ states('input_text.conditions_komori_semaine_2') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_komori_semaine_2
+        value: "{{ states('input_text.conditions_komori_semaine_1') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_komori_semaine_1
+        value: "{{ recap_komori }}"
+
+    # 🔁 Rotation Bobst
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_bobst_semaine_4
+        value: "{{ states('input_text.conditions_bobst_semaine_3') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_bobst_semaine_3
+        value: "{{ states('input_text.conditions_bobst_semaine_2') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_bobst_semaine_2
+        value: "{{ states('input_text.conditions_bobst_semaine_1') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_bobst_semaine_1
+        value: "{{ recap_bobst }}"
+
+    # 🔁 Rotation Media
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_media_semaine_4
+        value: "{{ states('input_text.conditions_media_semaine_3') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_media_semaine_3
+        value: "{{ states('input_text.conditions_media_semaine_2') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_media_semaine_2
+        value: "{{ states('input_text.conditions_media_semaine_1') }}"
+    - action: input_text.set_value
+      data:
+        entity_id: input_text.conditions_media_semaine_1
+        value: "{{ recap_media }}"
+
+    - delay: "00:00:02"
+
+    # ♻️ Reinitialisation min/max hebdo depuis capteurs
+    - action: input_number.set_value
+      target:
+        entity_id:
+          - input_number.atelier_komori_temperature_min
+          - input_number.atelier_komori_temperature_max
+      data:
+        value: "{{ states('sensor.temperature_komori') | float }}"
+
+    - action: input_number.set_value
+      target:
+        entity_id:
+          - input_number.atelier_bobst_temperature_min
+          - input_number.atelier_bobst_temperature_max
+      data:
+        value: "{{ states('sensor.temperature_bobst') | float }}"
+
+    - action: input_number.set_value
+      target:
+        entity_id:
+          - input_number.atelier_media_temperature_min
+          - input_number.atelier_media_temperature_max
+      data:
+        value: "{{ states('sensor.temperature_media') | float }}"

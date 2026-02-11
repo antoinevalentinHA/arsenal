@@ -1,0 +1,80 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Système – Mise à jour automatique de la saison
+#
+#  ID : 1012000000007
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Déterminer automatiquement la saison courante à partir
+#     du mois civil et maintenir à jour la valeur de référence
+#     utilisée par le système Home Assistant.
+#
+#     Cette automation garantit une cohérence saisonnière
+#     globale, sans intervention manuelle.
+#
+#  🚫 NE FAIT PAS
+#     - Ne mesure aucune donnée météorologique réelle
+#     - Ne décide pas des comportements chauffage ou clim
+#     - Ne force aucune action métier dépendante de la saison
+#
+#  🧩 UTILISATION
+#     - Déclenchement quotidien à minuit
+#     - Calcul de la saison théorique à partir du mois courant
+#     - Mise à jour uniquement en cas de changement effectif
+#     - Notification informative lors d’un changement de saison
+#
+#  ✅ CONTRAINTES
+#     - Basée exclusivement sur le calendrier civil
+#     - Aucune dépendance aux capteurs météo
+#     - Comportement déterministe et stable dans le temps
+# ==========================================================
+
+
+- id: '1012000000007'
+  alias: "Système – Actualisation de la saison"
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — a minuit pile
+  # ======================================================
+  trigger:
+    - platform: time
+      at: "00:00:00"
+
+  # ======================================================
+  # 🧩 Variables — Saison calculee sur base du mois courant
+  # ======================================================
+  variables:
+    saison_calculee: >
+      {% set m = now().month %}
+      {% if m in [12, 1, 2] %} Hiver
+      {% elif m in [3, 4, 5] %} Printemps
+      {% elif m in [6, 7, 8] %} Ete
+      {% else %} Automne
+      {% endif %}
+
+  # ======================================================
+  # ✅ Condition — Mise a jour uniquement si changement
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: "{{ states('input_select.saison') != saison_calculee }}"
+
+  # ======================================================
+  # 🔄 Action — Mise a jour + notification claire
+  # ======================================================
+  action:
+    # Maj saison
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.saison
+      data:
+        option: "{{ saison_calculee }}"
+
+    # Message utilisateur
+    - service: persistent_notification.create
+      data:
+        title: "🌦️ Saison mise a jour"
+        message: >
+          A {{ now().strftime('%H:%M') }}, la saison est passee de  
+          **{{ states('input_select.saison') }}** a **{{ saison_calculee }}**.

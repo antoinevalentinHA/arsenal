@@ -1,0 +1,28 @@
+# ==========================================================
+#  TEMPLATE SENSOR — Plateau thermostatique (affichage)
+# ----------------------------------------------------------
+#  Rôle :
+#    Affiche le plateau strict lorsqu'il existe.
+#    Sinon, utilise la valeur mémorisée.
+# ==========================================================
+
+- sensor:
+  - name: "plateau_thermostatique_piece_affichage"
+    unique_id: "plateau_thermostatique_piece_affichage"
+    unit_of_measurement: "°C"
+    icon: mdi:thermometer
+    state: >
+      {% set piece  = states('input_select.adjustment_piece') %}
+      {% set strict = states('sensor.plateau_thermostatique_chambre_' ~ piece) %}
+      
+      {% set memories = {
+        'chambre_parents':  states('input_number.plateau_chambre_parents'),
+        'chambre_arnaud':   states('input_number.plateau_chambre_arnaud'),
+        'chambre_matthieu': states('input_number.plateau_chambre_matthieu')
+      } %}
+
+      {% if strict not in ['unknown','unavailable',None] %}
+        {{ strict | float }}
+      {% else %}
+        {{ memories.get(piece, 0) | float }}
+      {% endif %}

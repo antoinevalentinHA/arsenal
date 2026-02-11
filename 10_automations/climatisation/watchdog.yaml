@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Clim — Watchdog cohérence décision / réel
+#
+# ID : 10030000000106
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Surveiller une incohérence persistante entre la
+#   décision centrale et l’état réel, puis déclencher
+#   l’exécution idempotente pour réalignement.
+#
+# 🧱 Principe Arsenal :
+#   - Aucune décision
+#   - Aucune logique thermique
+#   - Action unique : script.clim_execution
+# ==========================================================
+
+- id: "10030000000106"
+  alias: "Clim — Watchdog cohérence décision / réel"
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.clim_incoherence_decision_reel
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    - service: script.turn_on
+      target:
+        entity_id: script.clim_execution

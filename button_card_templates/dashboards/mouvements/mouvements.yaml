@@ -1,0 +1,58 @@
+# ==============================================================
+# 🎛️ TEMPLATE : carte_mouvement
+# --------------------------------------------------------------
+# Carte UI pour détecteurs de mouvement — lecture seule.
+#
+# 🧠 Rôle :
+#   - Indiquer visuellement la présence de mouvement
+#   - Offrir une lecture immédiate et non ambiguë
+#
+# 🧩 Principe Arsenal :
+#   - Aucune logique métier
+#   - Aucune action
+#   - Aucune temporisation
+#
+# 🎨 Codes couleur :
+#   - 🔴 Rouge : mouvement détecté (entity.state = on)
+#   - 🟢 Vert  : absence de mouvement (entity.state = off)
+#   - ⚪ Gris  : état inconnu / indisponible
+#
+# 🎯 Choix UI :
+#   - Icône forcée (mdi:motion-sensor)
+#   - Texte et icône noirs pour lisibilité maximale
+#
+# ==============================================================
+
+carte_mouvement:
+  template: carte_base
+  icon: mdi:motion-sensor
+  show_state: false
+  show_label: false
+  show_name: true
+  show_icon: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const rouge = "rgba(244, 67, 54, 0.2)";  // mouvement
+            const vert  = "rgba(76, 175, 80, 0.20)";  // calme
+            const gris  = "rgba(158, 158, 158, 0.2)";
+
+            if (!entity || !entity.state) return gris;
+
+            return entity.state === "on" ? rouge : vert;
+          ]]]
+      - height: 72px
+      - box-shadow: var(--ha-card-box-shadow)
+
+    icon:
+      - color: '#111'
+      - width: 26px
+      - height: 26px
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+

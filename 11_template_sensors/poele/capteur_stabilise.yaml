@@ -1,0 +1,26 @@
+# ==========================================================
+#  BINARY_SENSOR : Poele – Fonctionnement stabilise 24h
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Offrir une vision stable de l'influence du poele :
+#     - ON si le poele est actuellement detecte EN FONCTION
+#       ou s'il a ete utilise dans les 24 dernieres heures.
+#
+#  🎯 Objectif :
+#     Servir de garde-fou pour l'auto-ajustement du chauffage
+#     afin d'eviter toute correction influencee par le poele.
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Poele en fonctionnement (stable 24h)"
+      unique_id: poele_en_fonction_stable
+      default_entity_id: binary_sensor.poele_en_fonction_stable
+      device_class: heat
+      icon: "mdi:fire"
+
+      state: >
+        {{
+          is_state('binary_sensor.poele_en_fonction', 'on')
+          or is_state('input_boolean.poele_recent', 'on')
+        }}

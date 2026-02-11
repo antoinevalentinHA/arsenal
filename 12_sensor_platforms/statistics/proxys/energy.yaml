@@ -1,0 +1,50 @@
+# ==========================================================
+#  SENSOR PLATFORM : Proxy énergie – Statistiques Recorder
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#    Exposer des capteurs proxy "énergie" conformes aux
+#    exigences du Recorder Home Assistant (long-term stats),
+#    en contournant les limitations des template sensors.
+#
+#  🎯 Objectifs :
+#    - Fournir des capteurs compatibles avec :
+#        • unit_class
+#        • state_class
+#        • statistiques long terme
+#    - Supprimer les warnings Recorder liés à
+#      recorder/import_statistics (HA ≥ 2025.x / 2026.11)
+#    - Garantir la compatibilité future sans modifier
+#      les capteurs métiers existants.
+#
+#  🧩 Principe :
+#    - Source : capteurs locaux existants (template sensors)
+#    - Mécanisme : sensor.statistics (max sur valeur monotone)
+#    - Enrichissement : métadonnées via customize
+#
+#  🧱 Architecture Arsenal :
+#    input_number
+#        → template sensor (logique / fallback / stabilité)
+#            → sensor proxy énergie (statistiques Recorder)
+#                → utility_meter / graphes / énergie
+#
+#  ⚠️ Important :
+#    - Ces capteurs NE DOIVENT PAS être utilisés directement
+#      dans les dashboards ou la logique métier.
+#    - Ils sont réservés au Recorder et aux utility_meter.
+#
+#  ✅ Compatibilité :
+#    Home Assistant 2024.8+
+#    Conforme aux exigences HA Core 2026.11
+# ==========================================================
+
+- platform: statistics
+  name: "gaz_chauffage_total_proxy"
+  entity_id: sensor.gaz_chauffage_total_local
+  state_characteristic: mean
+  sampling_size: 1
+
+- platform: statistics
+  name: "clim_consommation_estimee_energy_proxy"
+  entity_id: sensor.clim_consommation_estimee_energie
+  state_characteristic: mean
+  sampling_size: 1

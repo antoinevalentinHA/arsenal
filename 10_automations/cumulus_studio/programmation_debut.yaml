@@ -1,0 +1,120 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS Petite Maison – Synchronisation début de séjour
+#
+#  ID : 1005000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de synchronisation calendaire.
+#
+#     Elle détecte le jour de début de séjour programmé
+#     pour la petite maison et déclenche le script ECS
+#     dédié à l’activation du mode Éco.
+#
+#     Cette automation ne pilote PAS directement
+#     le chauffe-eau.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement quotidien à heure fixe (00:05)
+#     - Vérification du cadre de validité :
+#         • programmation ECS active
+#         • date du jour = date de début programmée
+#     - Délégation intégrale de l’action
+#       au script métier fiabilisé
+#
+#  🧠 AUTORITÉ MÉTIER
+#
+#     script.ecs_petite_maison_mode_eco
+#
+#     → porte l’ensemble de la logique ECS :
+#       vérifications, sécurités, actions et notifications.
+#
+#  📦 PARAMÈTRES UTILISÉS
+#
+#     - input_boolean.ecs_petite_maison_programmation
+#     - input_datetime.debut_ecs_petite_maison_programmee
+#     - input_datetime.fin_ecs_petite_maison_programmee
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide PAS du mode ECS
+#     - Ne pilote PAS directement le chauffe-eau
+#     - Ne gère PAS la fin de séjour
+#     - Ne contient AUCUNE logique énergétique
+#
+#  📢 NOTIFICATION
+#
+#     - Notification mobile événementielle
+#     - Envoyée via la couche infrastructure
+#       `script.notification_envoyer`
+#     - Ne représente aucun état
+#     - Ne laisse aucune trace persistante
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation calendaire minimale :
+#     date ≠ décision ≠ pilotage.
+#
+#     Elle synchronise un événement temporel
+#     avec une logique ECS centralisée.
+# ==========================================================
+
+
+- id: "1005000000001"
+  alias: "ECS Petite Maison - Début séjour"
+  description: >
+    Passe le chauffe-eau en mode Éco à 00:05 le jour de début programmé,
+    en déclenchant le script fiabilisé `ecs_petite_maison_mode_eco`.
+
+  trigger:
+    - platform: time
+      at: "00:05:00"
+
+  condition:
+    ########################################################
+    # ✅ Programmation active
+    ########################################################
+    - condition: state
+      entity_id: input_boolean.ecs_petite_maison_programmation
+      state: "on"
+
+    ########################################################
+    # ✅ Date actuelle = date de début programmée
+    ########################################################
+    - condition: template
+      value_template: >
+        {{ now().date() == (states('input_datetime.debut_ecs_petite_maison_programmee') | as_datetime).date() }}
+
+  action:
+    ########################################################
+    # 🕒 Attente : chauffe-eau prêt (local)
+    ########################################################
+    - wait_template: >
+        {{ states('sensor.ecs_petite_maison_mode_fonctionnement_local') not in ['unknown', 'unavailable', '', None] }}
+      timeout: "00:05:00"
+      continue_on_timeout: true
+
+    ########################################################
+    # ▶️ Lancement du script local (fiabilisé)
+    ########################################################
+    - service: script.turn_on
+      target:
+        entity_id: script.ecs_petite_maison_mode_eco
+
+    ########################################################
+    # 📱 Notification mobile — Début séjour
+    ########################################################
+    - service: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "💧 ECS Petite Maison – Début séjour"
+        message: >
+          Chauffe programmée lancée à {{ now().strftime('%H:%M') }}.  
+          Passage en mode Éco en cours via script fiabilisé.
+
+          **Plage programmée :**  
+          {{ states('input_datetime.debut_ecs_petite_maison_programmee') }} → {{ states('input_datetime.fin_ecs_petite_maison_programmee') }}
+
+  mode: single

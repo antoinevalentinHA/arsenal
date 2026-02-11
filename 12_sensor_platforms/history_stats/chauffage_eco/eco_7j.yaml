@@ -1,0 +1,19 @@
+# ==========================================================
+# 🌿 HISTORY STATS — Duree consigne Eco (7 jours)
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Mesure le temps total passé en mode Eco sur les 7
+#   derniers jours.
+#
+# 🧩 Dépendances :
+#   - sensor.programme_chauffage
+# ==========================================================
+
+- platform: history_stats
+  name: "Duree consigne Eco 7j"
+  entity_id: sensor.programme_chauffage
+  state: "Eco"
+  type: time
+  duration:
+    days: 7
+  end: "{{ now() }}"

@@ -1,0 +1,61 @@
+# ==========================================================
+# 🔥 TEMPLATE TRIGGERED BINARY SENSOR — ECS Chauffe en cours (local)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Déterminer localement si un **cycle de chauffe ECS** est en cours,
+#   sans dépendre de l’API ViCare ni des états cloud.
+#
+# ⚙️ Fonctionnement :
+#   - Source : sensor.ecs_temperature_ballon_securisee
+#   - ON  → si T° monte de +0.2 °C en < 3 min
+#   - OFF → si T° baisse ou reste stable ≥ 4 min
+#   - Ignore les états `unavailable` ou `unknown`
+#   - Persiste après redémarrage (attributs internes)
+#
+# 💡 Avantages :
+#   - 100 % local et résilient aux pertes API
+#   - Évite les faux cycles dus aux indisponibilités
+#   - Détection thermique réelle et rapide
+#
+# 📊 Type : Triggered Template Binary Sensor
+# 📍 Entité : binary_sensor.ecs_chauffe_en_cours_local
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.ecs_temperature_ballon_securisee
+
+  binary_sensor:
+    - name: "ECS Chauffe en cours (local)"
+      unique_id: ecs_chauffe_en_cours_local
+      device_class: heat
+
+      state: >
+            {% set raw = states('sensor.ecs_temperature_ballon_securisee') %}
+            {% if raw in ['unavailable','unknown','none'] %}
+              {{ this.attributes.get('last_state', this.state | default(false)) }}
+            {% else %}
+              {% set current = raw | float(0) %}
+              {% set previous = this.attributes.last_temp | default(current) | float(0) %}
+              {% set last_update = this.attributes.last_update | default(as_timestamp(now())) | float(0) %}
+              {% set delta = current - previous %}
+              {% set elapsed = (as_timestamp(now()) - last_update) | float(0) %}
+              {% set new_state =
+                true  if delta > 0.2 and elapsed < 180 else
+                false if delta <= 0 and elapsed > 240 else
+                this.state | default(false)
+              %}
+              {{ new_state }}
+            {% endif %}
+
+      attributes:
+            last_temp: "{{ states('sensor.ecs_temperature_ballon_securisee') | float(0) }}"
+            last_update: >
+              {% set v = states('sensor.ecs_temperature_ballon_securisee') | float(0) %}
+              {% if v != this.attributes.get('last_temp', v) | float(0) %}
+                {{ as_timestamp(now()) }}
+              {% else %}
+                {{ this.attributes.get('last_update', as_timestamp(now())) }}
+              {% endif %}
+            last_state: "{{ this.state }}"

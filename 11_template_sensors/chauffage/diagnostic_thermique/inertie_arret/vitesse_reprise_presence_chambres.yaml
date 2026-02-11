@@ -1,0 +1,156 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Chauffage : Vitesse reprise Présence Chambres
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Mesurer la **vitesse réelle de remontée thermique**
+#   après une transition de reprise chauffage (reduced → comfort),
+#   exprimée en °C / heure.
+#
+#   Ce capteur quantifie directement :
+#     - la dynamique réelle bâtiment + émetteurs
+#     - l’influence effective de la courbe de chauffe
+#     - la capacité de récupération thermique du système
+#
+# 🔎 Déclencheurs :
+#   - Nouvelle reprise chauffage (capteur A1)
+#   - Variation de la température minimale Chambres
+#
+# ⚙️ Principe :
+#   - À chaque reprise valide :
+#       • référence = A1 canonique (T_reprise + t_reprise)
+#       • vitesse initiale nulle
+#   - Tant que la température **augmente strictement** :
+#       • vitesse = (T_actuelle – T_reprise) / (t_actuel – t_reprise)
+#   - Dès que la température cesse de monter :
+#       • figer la dernière vitesse valide
+#
+# 🔒 Invalidation stricte :
+#   - tout cycle impacté par aération est neutralisé
+#   - aucune mise à jour pendant aeration_pipeline_arme
+# 
+# 📌 Nature :
+#   - Diagnostic pur
+#   - Mesure intra-cycle uniquement
+#   - Aucun lissage
+#   - Aucune accumulation inter-cycle
+#
+# 🚫 Ne fait pas :
+#   - Ne décide rien
+#   - Ne déclenche aucun effet de bord
+#   - Ne produit aucun seuil
+#
+# 📦 Capteur créé :
+#   • sensor.vitesse_reprise_presence_chambres
+#
+# 📁 Dossier :
+#   /homeassistant/11_template_sensors/chauffage/diagnostic_thermique/inertie_reprise/
+# ==========================================================
+
+- trigger:
+
+    # Nouvelle reprise chauffage (A1)
+    - platform: state
+      entity_id: sensor.temperature_reprise_presence_chambres
+
+    # Variation thermique Chambres
+    - platform: state
+      entity_id: sensor.temperature_min_chambres
+
+
+  sensor:
+    - name: "Vitesse reprise Présence Chambres"
+      unique_id: vitesse_reprise_presence_chambres
+      unit_of_measurement: "°C/h"
+      icon: mdi:speedometer
+
+
+      state: >
+        {# -------------------------------------------------- #}
+        {# Invalidation aération / post-aération             #}
+        {# -------------------------------------------------- #}
+
+        {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+          {{ this.state }}
+
+        {% else %}
+
+          {% set reprise_valide = state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') %}
+          {% set t_reprise = state_attr('sensor.temperature_reprise_presence_chambres', 't_reprise') %}
+          {% set T_reprise = states('sensor.temperature_reprise_presence_chambres') | float(none) %}
+          {% set T = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set last = this.state | float(none) %}
+          {% set last_temp = state_attr('sensor.vitesse_reprise_presence_chambres', 'temperature_max') | float(none) %}
+
+          {# -------------------------------------------------- #}
+          {# Neutralisation si reprise invalide ou données absentes #}
+          {# -------------------------------------------------- #}
+
+          {% if not reprise_valide or t_reprise is none or T_reprise is none or T is none %}
+            {{ none }}
+
+          {% else %}
+
+            {# -------------------------------------------------- #}
+            {# Reset UNIQUEMENT lors d’une vraie reprise valide  #}
+            {# -------------------------------------------------- #}
+
+            {% if trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' %}
+              {{ 0 }}
+
+            {% else %}
+
+              {# -------------------------------------------------- #}
+              {# Phase de montée encore en cours (strictement croissante) #}
+              {# -------------------------------------------------- #}
+
+              {% if last_temp is none or T > last_temp %}
+
+                {% set dt_h = (now().timestamp() - t_reprise) / 3600 %}
+
+                {% if dt_h > 0 %}
+                  {{ ((T - T_reprise) / dt_h) | round(3) }}
+                {% else %}
+                  {% if last is not none %}
+                    {{ last }}
+                  {% else %}
+                    {{ none }}
+                  {% endif %}
+                {% endif %}
+
+              {# -------------------------------------------------- #}
+              {# Plateau ou descente détectée → figement automatique #}
+              {# -------------------------------------------------- #}
+
+              {% else %}
+
+                {% if last is not none %}
+                  {{ last }}
+                {% else %}
+                  {{ none }}
+                {% endif %}
+
+              {% endif %}
+
+            {% endif %}
+
+          {% endif %}
+
+        {% endif %}
+
+
+      attributes:
+
+        # --------------------------------------------------
+        # Température maximale atteinte pendant la montée
+        # --------------------------------------------------
+        temperature_max: >
+          {% set last = state_attr(this.entity_id, 'temperature_max') | float(none) %}
+          {% set T = states('sensor.temperature_min_chambres') | float(none) %}
+
+          {% if trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' %}
+            {{ T }}
+          {% elif last is none %}
+            {{ T }}
+          {% else %}
+            {{ [last, T] | max }}
+          {% endif %}

@@ -1,0 +1,54 @@
+# ==============================================================
+# 🔐 TEMPLATE : carte_alarme_etat
+# --------------------------------------------------------------
+# Carte d’état réel et de contrôle manuel de l’alarme.
+# Source unique : alarm_control_panel.
+# ==============================================================
+
+carte_alarme_etat:
+  template: carte_base
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  icon: mdi:shield-home
+  name: Alarme maison
+
+  state_display: |
+    [[[
+      const map = {
+        'armed_away': 'Armée (Absent)',
+        'disarmed': 'Désarmée'
+      };
+      return map[entity.state] || entity.state;
+    ]]]
+
+  state:
+    - value: disarmed
+      styles:
+        card:
+          - background-color: rgba(76,175,80,0.2)
+
+    - value: armed_away
+      styles:
+        card:
+          - background-color: rgba(244,67,54,0.2)
+
+  tap_action:
+    action: call-service
+    confirmation:
+      text: |
+        [[[
+          return entity.state === 'disarmed'
+            ? 'Armer l’alarme en mode Absent ?'
+            : 'Désarmer l’alarme ?';
+        ]]]
+    service: |
+      [[[
+        return entity.state === 'disarmed'
+          ? 'alarm_control_panel.alarm_arm_away'
+          : 'alarm_control_panel.alarm_disarm';
+      ]]]
+    service_data:
+      entity_id: alarm_control_panel.alarme_maison

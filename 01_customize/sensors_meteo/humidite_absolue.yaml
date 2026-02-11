@@ -1,0 +1,99 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : Humidité absolue (capteurs météo)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Centraliser l’affichage et l’iconographie des capteurs
+#    d’humidité absolue utilisés pour l’analyse hygrométrique
+#    et les décisions d’aération.
+#
+# 🧩 Périmètre :
+#    - Définit les friendly_name et icônes des capteurs
+#      d’humidité absolue
+#    - Ne calcule AUCUNE valeur
+#    - N’exerce AUCUNE logique décisionnelle
+#
+# 🔗 Dépendances :
+#    - Capteurs d’humidité absolue calculés ailleurs
+#      (template / conversions hygrométriques)
+#    - Utilisés par :
+#      • aération intelligente
+#      • diagnostics hygrométriques
+#      • dashboards météo / confort
+#
+# 🚫 Interdits :
+#    - Modifier les formules de calcul
+#    - Introduire une logique métier ou conditionnelle
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle / pure présentation
+# ==========================================================
+
+
+############################################################
+# 🏠 ESPACES DE VIE — INTÉRIEUR
+############################################################
+
+sensor.humidite_absolue_entree:
+  friendly_name: "Humidité absolue Entrée"
+  icon: mdi:water
+
+sensor.humidite_absolue_sejour:
+  friendly_name: "Humidité absolue Séjour"
+  icon: mdi:water
+
+
+############################################################
+# 🛏️ CHAMBRES
+############################################################
+
+sensor.humidite_absolue_chambre_arnaud:
+  friendly_name: "Humidité absolue Chambre Arnaud"
+  icon: mdi:water
+
+sensor.humidite_absolue_chambre_matthieu:
+  friendly_name: "Humidité absolue Chambre Matthieu"
+  icon: mdi:water
+
+sensor.humidite_absolue_chambre_parents:
+  friendly_name: "Humidité absolue Chambre Parents"
+  icon: mdi:water
+
+
+############################################################
+# 🚿 SALLES DE BAINS
+############################################################
+
+sensor.humidite_absolue_sdb_parents:
+  friendly_name: "Humidité absolue SDB Parents"
+  icon: mdi:water
+
+sensor.humidite_absolue_sdb_enfants:
+  friendly_name: "Humidité absolue SDB Enfants"
+  icon: mdi:water
+
+
+############################################################
+# 🏗️ ANNEXES & ZONES TECHNIQUES
+############################################################
+
+sensor.humidite_absolue_cave:
+  friendly_name: "Humidité absolue Cave"
+  icon: mdi:water
+
+sensor.humidite_absolue_garage:
+  friendly_name: "Humidité absolue Garage"
+  icon: mdi:water
+
+sensor.humidite_absolue_petite_maison:
+  friendly_name: "Humidité absolue Petite Maison"
+  icon: mdi:water
+
+
+############################################################
+# 🌿 EXTÉRIEUR
+############################################################
+
+sensor.humidite_absolue_jardin:
+  friendly_name: "Humidité absolue Jardin"
+  icon: mdi:water

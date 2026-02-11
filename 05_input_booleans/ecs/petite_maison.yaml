@@ -1,0 +1,27 @@
+# ==========================================================
+# 🔘 INPUT BOOLEAN — ECS Petite Maison : Programmation
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Permettre d’activer ou désactiver manuellement la
+#   programmation de chauffe ECS pour la Petite Maison.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → la programmation de chauffe ECS de la Petite
+#           Maison est active et peut être déclenchée.  
+#   - OFF → la programmation est désactivée, aucun cycle
+#           ECS ne sera lancé automatiquement.  
+#
+# 🧠 Détails techniques :
+#   - Domaine : input_boolean  
+#   - Nom : Programmation ECS Petite Maison  
+#   - Icône : mdi:water-boiler
+#   - Usage : interrupteur/actionneur pour automatisations ECS
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.ecs_petite_maison_programmation
+# ==========================================================
+
+
+ecs_petite_maison_programmation:
+  name: "Programmation ECS Petite Maison"
+  icon: mdi:water-boiler

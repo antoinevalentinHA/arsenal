@@ -1,0 +1,129 @@
+# ==========================================================
+# ⌨️ SCRIPT — Alarme : Traitement du code clavier
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Interpréter un code saisi sur un clavier Zigbee
+#   et router l’action correspondante (armement ou désarmement)
+#   vers les scripts UNIFIÉS de l’alarme.
+#
+# 🎯 Objectif :
+#   Centraliser la logique de traitement des codes clavier
+#   sans jamais implémenter directement :
+#   - l’armement
+#   - le désarmement
+#   - la gestion de la sirène
+#
+# ⚙️ Fonctionnement :
+#   - Récupère le code saisi depuis l’événement déclencheur.
+#   - Filtre les entrées non pertinentes (vide, badge NFC, bruit).
+#   - Vérifie l’égalité stricte avec le code attendu.
+#   - Selon l’état de l’alarme et les blocages actifs :
+#       → désarme via `script.alarme_desarmer`
+#       → arme via `script.alarme_armer`
+#       → ignore et notifie si action interdite
+#
+# 🚫 Ce script NE FAIT PAS :
+#   - Ne contient AUCUNE logique matérielle clavier
+#   - Ne décide PAS du moment où l’alarme doit être armée
+#   - Ne manipule PAS directement `alarm_control_panel`
+#   - Ne gère PAS les badges NFC ou identités avancées
+#
+# 🧱 Dépendances :
+#   - script.alarme_armer
+#   - script.alarme_desarmer
+#   - script.notification_envoyer
+#   - alarm_control_panel.alarme_maison
+#   - input_text.alarm_code
+#   - input_boolean.blocage_armement_auto
+#
+# 📊 Type :
+#   Script de routage sécuritaire (interpréteur d’intention)
+#
+# 📍 Entité :
+#   script.traitement_code_clavier
+#
+# 🔁 Sémantique Arsenal :
+#   - Tous les claviers physiques DOIVENT passer par ce script.
+#   - Aucune automatisation clavier ne doit armer/désarmer directement.
+#   - Le clavier exprime une intention, ce script la traduit.
+#
+# ✅ Architecture :
+#   Arsenal v6+
+#   Home Assistant 2024.8+
+# ==========================================================
+
+
+traitement_code_clavier:
+  alias: Alarme - Traitement du code clavier
+  description: >
+    Gère armement/désarmement selon contexte.
+    Utilise les scripts unifiés :
+    - `script.alarme_desarmer` pour le désarmement (coupe sirène, délai, bloque auto, log)
+    - `script.alarme_armer` pour l’armement (armement + bip + notification + log)
+  mode: queued
+
+  sequence:
+    - variables:
+        code_saisi: >-
+          {% if trigger is defined %}
+            {{ (states(trigger.entity_id) | default('', true) | string).strip() }}
+          {% else %}
+            ''
+          {% endif %}
+        code_attendu: >-
+          {{ (states('input_text.alarm_code') | default('', true) | string).strip() }}
+        alarme: alarm_control_panel.alarme_maison
+        blocage_auto: "{{ is_state('input_boolean.blocage_armement_auto', 'on') }}"
+        nom_clavier: >-
+          {% if trigger is defined %}
+            {% set e = trigger.entity_id | string %}
+            {% if e.endswith('_1_action_code') %}Clavier Entrée
+            {% elif e.endswith('_2_action_code') %}Clavier Garage
+            {% else %}Clavier inconnu{% endif %}
+          {% else %}
+            Clavier inconnu
+          {% endif %}
+
+    # 1) Si code vide / inconnu, on sort sans rien faire
+    - condition: template
+      value_template: "{{ code_saisi not in ['', 'unknown', 'unavailable', None] }}"
+
+    # 1b) Filtrer les badges NFC
+    - condition: template
+      value_template: >
+        {{ code_saisi | regex_match('^[0-9]+$', ignorecase=False) }}
+
+    # 2) Vérification du code
+    - condition: template
+      value_template: "{{ code_saisi == code_attendu }}"
+
+    - choose:
+        # 🔓 Cas 1 : Désarmement via clavier
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states(alarme) in ['armed_away','pending','triggered'] }}
+          sequence:
+            - action: script.alarme_desarmer
+              data:
+                origine: "Clavier ({{ nom_clavier }})"
+
+        # ℹ️ Cas 2 : Code ignoré car désarmement automatique récent (blocage actif)
+        - conditions:
+            - condition: template
+              value_template: "{{ states(alarme) == 'disarmed' and blocage_auto }}"
+          sequence:
+            - action: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "ℹ️ Code ignoré"
+                message: "Code saisi via {{ nom_clavier }} ignoré — alarme déjà désarmée automatiquement."
+
+        # 🔐 Cas 3 : Armement si désarmée et pas de blocage actif
+        - conditions:
+            - condition: template
+              value_template: "{{ states(alarme) == 'disarmed' and not blocage_auto }}"
+          sequence:
+            - action: script.alarme_armer
+              data:
+                origine: "Clavier ({{ nom_clavier }})"

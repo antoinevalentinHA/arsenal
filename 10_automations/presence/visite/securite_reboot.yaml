@@ -1,0 +1,96 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Visiteur – Reconstruction d’état au démarrage
+#
+#  ID : 10210000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de reconstruction d’état chargée de
+#     réaligner les états du mode visiteur après un
+#     redémarrage de Home Assistant.
+#
+#     Elle s’aligne strictement sur la vérité métier
+#     fournie par le capteur :
+#       • binary_sensor.creneau_visiteur_actif
+#
+#     Aucun calcul temporel ou décisionnel n’est
+#     effectué dans cette automation.
+#
+#  🧩 PRINCIPE
+#
+#     - S’exécute uniquement au retour à un système stable
+#     - Lit l’état du créneau visiteur
+#     - Reconstruit les états métier en conséquence :
+#         • présence visiteur
+#         • visite en cours
+#         • bouclage ECS (optionnel)
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule PAS le jour ou l’heure
+#     - Ne décide PAS du planning visiteur
+#     - Ne déclenche PAS une visite
+#     - Ne gère PAS la fin de visite en temps réel
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Le temps est un état, pas une logique
+#     - Une seule source de vérité (capteur métier)
+#     - Reconstruction déterministe post-reboot
+#     - Aucune dépendance à l’historique
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10210000000005"
+  alias: "Visiteur - Correction au démarrage"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  action:
+
+    # ---------------------------------------------
+    # 🧠 Reconstruction deterministe de l'etat visite
+    # ---------------------------------------------
+    - choose:
+
+        # ---------------------------------------------
+        # 🟢 Cas 1 : creneau visiteur actif
+        # ---------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.creneau_visiteur_actif
+              state: "on"
+          sequence:
+            - action: input_boolean.turn_on
+              target:
+                entity_id:
+                  - input_boolean.presence_visiteur
+                  - input_boolean.visite_en_cours
+
+            - condition: state
+              entity_id: input_boolean.bouclage_visiteur
+              state: "on"
+
+            - action: switch.turn_on
+              target:
+                entity_id: switch.prise_bouclage
+
+      # ---------------------------------------------
+      # 🔴 Cas 2 : aucun creneau valide
+      # ---------------------------------------------
+      default:
+        - action: input_boolean.turn_off
+          target:
+            entity_id:
+              - input_boolean.presence_visiteur
+              - input_boolean.visite_en_cours
+
+        - action: switch.turn_off
+          target:
+            entity_id: switch.prise_bouclage

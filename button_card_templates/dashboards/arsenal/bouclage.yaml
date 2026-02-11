@@ -1,0 +1,56 @@
+#################################################################
+# 🔁 CARTE ACTION ECS — BOUCLAGE
+# ---------------------------------------------------------------
+# Déclenche un bouclage ECS temporisé (5 minutes).
+# Affiche l’état actif / veille avec indication du timer.
+#
+# Principe Arsenal :
+#   - Carte d’action explicite
+#   - Feedback visuel simple
+#   - Aucune décision métier
+#################################################################
+
+carte_action_ecs_bouclage:
+  template: carte_base
+
+  show_label: true
+
+  label: |
+    [[[
+      const etat = states['switch.prise_bouclage']?.state;
+      const timer = states['timer.bouclage_ecs_5_minutes'];
+
+      if (etat === 'on') {
+        if (timer && timer.state === 'active') return 'Actif (5 min)';
+        return 'Actif';
+      }
+      return 'Veille';
+    ]]]
+
+  tap_action:
+    action: call-service
+    service: script.bouclage_ecs_5_minutes
+    confirmation:
+      text: Lancer le bouclage ECS pour 5 minutes ?
+
+  triggers_update:
+    - switch.prise_bouclage
+    - timer.bouclage_ecs_5_minutes
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const etat = states['switch.prise_bouclage']?.state;
+            return etat === 'on'
+              ? 'rgba(76, 175, 80, 0.2)'   // ✅ bouclage actif
+              : 'rgba(158, 158, 158, 0.2)'; // ⚪ veille
+          ]]]
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#000000'
+    label:
+      - font-size: 13px
+      - font-weight: 400
+      - color: '#000000'

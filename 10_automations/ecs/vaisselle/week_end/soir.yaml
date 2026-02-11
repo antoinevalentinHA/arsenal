@@ -1,0 +1,53 @@
+# ==========================================================
+#  AUTOMATION : vaisselle_weekend_soir
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Lancer automatiquement un cycle ECS spécial "vaisselle"
+#     aux horaires du soir pendant le week-end,
+#     si le mode dédié est activé.
+#
+#  💡 Avantages :
+#     - Aucun déclenchement manuel requis
+#     - Cadence optimisée pour besoins réels (week-end)
+#     - Logique métier centralisée dans le script wrapper
+#
+#  ⚙️ Comportement :
+#     - À 18:30, 20:00 et 21:30
+#     - Samedi et dimanche uniquement
+#     - Si mode vaisselle actif → script appelé
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '10250000000017'
+  alias: "ECS — Vaisselle — Week-end — Soir"
+  description: >
+    Déclenche à 18h30, 20h et 21h30 si mode vaisselle actif (le wrapper fait les vérifs).
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheurs — Horaires cibles du week-end
+  # ======================================================
+  trigger:
+    - platform: time
+      at: "18:30:00"
+    - platform: time
+      at: "20:00:00"
+    - platform: time
+      at: "21:30:00"
+
+  # ======================================================
+  # ✅ Conditions — Mode actif + uniquement week-end
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.mode_vaisselle
+      state: "on"
+    - condition: time
+      weekday: [sat, sun]
+
+  # ======================================================
+  # 🔄 Action — Appel du script wrapper de validation
+  # ======================================================
+  action:
+    - service: script.ecs_vaisselle_lancer_si_ok

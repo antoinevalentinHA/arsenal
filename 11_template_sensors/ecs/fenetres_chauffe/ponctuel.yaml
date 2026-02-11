@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 BINARY SENSORS — ECS : créneaux en cours (fenêtre 5 min)
+# ----------------------------------------------------------
+# 🧱 Rôle :
+#   Exposer des états booléens "en cours" pour :
+#   - un créneau ponctuel ECS (planning hebdo matin/soir)
+#   - un créneau désinfection ECS (jour + heure)
+#
+# 🎯 Modèle :
+#   Chaque horaire programmé représente une micro-plage fixe
+#   de 5 minutes : [HH:MM → HH:MM + 5 min)
+#
+# 🧩 Principe Arsenal :
+#   - Calcul pur (stateless)
+#   - Tolérant au redémarrage
+#   - Aucune action / aucun déclenchement
+# ==========================================================
+
+- binary_sensor:
+    - name: "ECS créneau ponctuel en cours"
+      unique_id: ecs_creneau_ponctuel_en_cours
+      default_entity_id: binary_sensor.ecs_creneau_ponctuel_en_cours
+      state: >
+        {% set day_map = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'] %}
+        {% set day = day_map[now().weekday()] %}
+        {% set now_ts = as_timestamp(now()) %}
+        {% set ns = namespace(active=false) %}
+
+        {% set slots = [
+          {
+            'type': 'matin',
+            'heure': states('input_datetime.ecs_' ~ day ~ '_matin_heure'),
+            'active': is_state('input_boolean.ecs_' ~ day ~ '_matin_active', 'on'),
+            'autorise': true
+          },
+          {
+            'type': 'soir',
+            'heure': states('input_datetime.ecs_' ~ day ~ '_soir_heure'),
+            'active': is_state('input_boolean.ecs_' ~ day ~ '_soir_active', 'on'),
+            'autorise': is_state('input_boolean.mode_enfants', 'on')
+          }
+        ] %}
+
+        {% for slot in slots %}
+          {% if slot.active and slot.autorise and slot.heure not in ['unknown','unavailable','none',''] %}
+            {% set start_ts = as_timestamp(today_at(slot.heure[0:5])) %}
+            {% set end_ts = start_ts + 300 %}
+            {% if start_ts <= now_ts < end_ts %}
+              {% set ns.active = true %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {{ ns.active }}
+      icon: >
+        mdi:water-boiler

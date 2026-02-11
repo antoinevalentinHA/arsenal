@@ -1,0 +1,142 @@
+#################################################################
+# 🌐 INTÉGRATIONS CRITIQUES — SUPERVISION UI
+#################################################################
+#
+# 🧠 Rôle :
+#   Templates button-card dédiés à la surveillance des
+#   intégrations critiques de Home Assistant.
+#
+# 🎯 Objectifs :
+#   - Détecter rapidement les intégrations défaillantes
+#   - Visualiser l’état réel ou l’ancienneté des données
+#   - Offrir une action manuelle de récupération
+#
+# 🧩 Principe Arsenal :
+#   - Aucune logique métier
+#   - Aucune décision automatique
+#   - Supervision humaine uniquement
+#
+# ⚙️ Logique d’affichage :
+#   - Intégrations binaires :
+#       • ON  → OK
+#       • OFF → erreur
+#   - Intégrations numériques :
+#       • valeur < seuil → OK
+#       • valeur ≥ seuil → erreur
+#   - États inconnus → neutre / alerte visuelle
+#
+# 🧪 Seuils UI (indicatifs, non bloquants) :
+#   - Netatmo     : 60 min
+#   - ViCare      : 300 min
+#   - Fujitsu     : 420 min
+#   - SwitchBot  : 60 min
+#   - Synology   : 360 min
+#   - Audi       : 2880 min
+#   - Cumulus    : 360 min
+#
+# 🎨 Codes couleur :
+#   - 🟢 Vert  : intégration fonctionnelle
+#   - 🔴 Rouge : intégration défaillante ou données obsolètes
+#   - ⚪ Gris  : état inconnu / indisponible
+#
+# 🚫 Ne fait PAS :
+#   - Aucun redémarrage automatique
+#   - Aucun rechargement implicite
+#
+#################################################################
+
+carte_integration_critique:
+  color_type: card
+  show_state: true
+  show_icon: true
+  confirmation:
+    text: "Recharger l’intégration ?"
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity?.state ?? 'unknown';
+            const eid = entity.entity_id;
+
+            // Seuils (minutes)
+            let seuil = 180;
+            if (eid.includes('netatmo')) seuil = 60;
+            else if (eid.includes('vicare')) seuil = 300;
+            else if (eid.includes('fujitsu')) seuil = 420;
+            else if (eid.includes('switchbot')) seuil = 60;
+            else if (eid.includes('synology')) seuil = 360;
+            else if (eid.includes('audi')) seuil = 2880;
+            else if (eid.includes('cumulus')) seuil = 360;
+
+            // Cas binaire (Zigbee2MQTT bridge)
+            if (s === 'on') return 'rgba(76,175,80,0.2)';
+            if (s === 'off') return 'rgba(244,67,54,0.2)';
+
+            // Cas numérique (âge)
+            const val = parseFloat(s);
+            if (!isNaN(val))
+              return val < seuil ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.2)';
+
+            // Cas inconnu
+            return 'rgba(158,158,158,0.2)';
+          ]]]
+      - border-radius: 12px
+      - height: 72px
+      - padding: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: "#111"
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: "#111"
+    state:
+      - font-size: 13px
+      - font-weight: 500
+      - justify-self: center
+      - align-self: end
+      - color: |
+          [[[ 
+            const s = entity?.state ?? 'unknown';
+            if (s === 'off' || s === 'unknown' || s === 'unavailable') return '#b71c1c';  // rouge pour les erreurs
+            return '#111';  // noir par défaut
+          ]]]
+
+  state_display: |
+    [[[
+      const s = entity?.state ?? 'unknown';
+      const val = parseFloat(s);
+      if (s === 'on') return 'OK';
+      if (s === 'off') return 'OFF';
+      if (!isNaN(val)) return val.toFixed(0) + ' min';
+      return '—';
+    ]]]
+
+#################################################################
+# 🔁 VARIANTES AVEC ACTION MANUELLE
+# ---------------------------------------------------------------
+# Déclenchées uniquement par interaction utilisateur.
+# Aucune action automatique n’est jamais lancée.
+#################################################################
+
+# 🔄 Variante générique : recharge l’intégration
+carte_integration_critique_reload:
+  template: carte_integration_critique
+  tap_action:
+    action: call-service
+    service: homeassistant.reload_config_entry
+    data:
+      entry_id: >
+        [[[ return '!secret entry_id_placeholder'; ]]]
+
+# 🧠 Variante Zigbee : redémarre le bridge MQTT
+carte_integration_critique_zigbee:
+  template: carte_integration_critique
+  tap_action:
+    action: call-service
+    service: mqtt.publish
+    data:
+      topic: zigbee2mqtt/bridge/restart
+      payload: ""

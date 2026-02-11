@@ -1,0 +1,107 @@
+# ==========================================================
+# 🔥 SCRIPT ARSENAL — Chauffage : Application pente de chauffe
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Appliquer la pente de la courbe de chauffe Viessmann
+#   (ViCare) de manière robuste, bornée et vérifiable.
+#
+# 🧠 Nature du script :
+#   - Script STRICTEMENT exécutif
+#   - Aucune logique décisionnelle intégrée
+#   - Aucun déclenchement direct par l’utilisateur
+#
+# ⚙️ Comportement :
+#   - Lit la consigne cible depuis un helper
+#   - Compare à la valeur cloud actuelle
+#   - Applique la consigne uniquement si nécessaire
+#   - Effectue des tentatives limitées et temporisées
+#   - Valide le résultat par observation côté cloud
+#
+# 🔒 Garanties :
+#   - Idempotence stricte
+#   - Nombre d’appels API ViCare maîtrisé
+#   - Aucune hypothèse sur le succès d’un service
+#
+# ⚠️ Limites connues :
+#   - Absence d’ACK fiable côté ViCare
+#   - Valeur potentiellement réécrasée par la chaudière
+#
+# 📌 Usage :
+#   - Appelé exclusivement par des automatisations
+#     de décision ou de correction thermique
+#
+# 🗓️ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+chauffage_appliquer_pente:
+  alias: "Chauffage – Appliquer pente de chauffe"
+  mode: restart
+  sequence:
+
+    # ======================================================
+    # 1️⃣ Capture état initial et consigne cible
+    # ======================================================
+    - variables:
+        pente_cible: "{{ states('input_number.chauffage_pente_consigne') | float }}"
+        pente_initiale: "{{ states('number.vscotho1_200_11_heating_curve_slope') | float }}"
+        tolerance: 0.01
+
+    # ======================================================
+    # 2️⃣ Sortie immédiate si déjà conforme
+    # ======================================================
+    - condition: template
+      value_template: >
+        {{ (pente_cible - pente_initiale) | abs > tolerance }}
+
+    # ======================================================
+    # 3️⃣ Tentatives ViCare bornées (max 3)
+    # ======================================================
+    - repeat:
+        count: 3
+        sequence:
+
+          # 📡 Envoi de la consigne au cloud ViCare
+          - service: number.set_value
+            target:
+              entity_id: number.vscotho1_200_11_heating_curve_slope
+            data:
+              value: "{{ pente_cible }}"
+
+          # ⏳ Attente propagation cloud
+          - delay: "00:00:20"
+
+          # 🔄 Rafraîchissement explicite
+          - service: homeassistant.update_entity
+            target:
+              entity_id: number.vscotho1_200_11_heating_curve_slope
+
+          # ⏳ Stabilisation lecture
+          - delay: "00:00:30"
+
+          # ✅ Sortie anticipée si conforme
+          - condition: template
+            value_template: >
+              {{ ((states('number.vscotho1_200_11_heating_curve_slope') | float - pente_cible) | abs) < tolerance }}
+            enabled: true
+
+    # ======================================================
+    # 4️⃣ Vérification finale factuelle
+    # ======================================================
+    - variables:
+        pente_finale: "{{ states('number.vscotho1_200_11_heating_curve_slope') | float }}"
+
+    - condition: template
+      value_template: >
+        {{ (pente_finale - pente_cible) | abs < tolerance }}
+
+    # ======================================================
+    # 5️⃣ Journalisation factuelle (cloud confirmé)
+    # ======================================================
+    - service: logbook.log
+      data:
+        name: "ViCare"
+        message: >
+          📈 Pente CONFIRMEE cote cloud :
+          {{ pente_initiale }} → {{ pente_finale }}
+        entity_id: number.vscotho1_200_11_heating_curve_slope

@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Réglages – Synchronisation consigne Réduite chauffage
+#
+#  ID : 10240000000013
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Déclencher l’application de la consigne Réduite
+#   souveraine vers ViCare lors d’une modification utilisateur.
+#
+#   Cette automation :
+#     - ne valide aucune valeur
+#     - ne touche jamais ViCare directement
+#     - délègue intégralement au script d’application
+#
+# 🔒 CHAÎNE
+#   input_number.chauffage_consigne_reduite
+#        ↓
+#   automation (déclencheur)
+#        ↓
+#   script.chauffage_appliquer_consigne_reduite
+# ==========================================================
+
+- id: '10240000000013'
+  alias: "Chauffage – Sync consigne Réduite"
+  description: >
+    Déclenche l’application de la consigne Réduite souveraine
+    vers ViCare lors d’une modification de
+    input_number.chauffage_consigne_reduite.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_number.chauffage_consigne_reduite
+
+  action:
+    - service: script.chauffage_appliquer_consigne_reduite

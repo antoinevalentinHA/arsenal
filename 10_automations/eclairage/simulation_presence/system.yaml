@@ -1,0 +1,101 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Simulation de présence – Orchestration temporelle (génération horaires)
+#
+#  ID : 1007000000008
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’orchestration temporelle pure.
+#
+#     Elle déclenche, à un moment précis de la journée,
+#     la génération des horaires de simulation de présence
+#     en déléguant TOUTE la logique au script dédié.
+#
+#     Cette automation ne contient AUCUNE logique métier.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement quotidien automatique
+#     - Basé exclusivement sur un événement solaire
+#     - Anticipation volontaire :
+#         • exécution 90 minutes avant le lever du soleil
+#
+#     Le choix des horaires générés,
+#     leur répartition matin / soir,
+#     et leur cohérence métier
+#     relèvent EXCLUSIVEMENT du script appelé.
+#
+#  🧠 RESPONSABILITÉS
+#
+#     Cette automation est responsable UNIQUEMENT de :
+#       • déterminer QUAND lancer la génération
+#
+#     Elle n’est PAS responsable de :
+#       • décider des horaires
+#       • vérifier le mode maison
+#       • interpréter la présence
+#       • piloter des équipements
+#
+#  🧠 LOGIQUE MÉTIER
+#
+#     Intégralement déléguée à :
+#       script.generer_horaires_simulation_presence
+#
+#  🧠 CONTEXTE D’EXÉCUTION
+#
+#     - Exécutée tous les jours
+#     - Sans condition
+#     - Sans état interne
+#
+#     Toute condition éventuelle
+#     doit être portée par le script,
+#     jamais par cette automation.
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne génère PAS elle-même les horaires
+#     - Ne contient PAS de logique conditionnelle
+#     - Ne pilote PAS la simulation
+#     - Ne dépend PAS du mode maison
+#     - Ne corrige PAS d’état
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Orchestration temporelle stricte :
+#     temps ≠ logique ≠ action.
+#
+#     Cette automation est un déclencheur,
+#     pas un décideur.
+# ==========================================================
+
+
+- id: "1007000000008"
+  alias: "Simulation présence - Génération horaires"
+  description: >
+    Génère chaque jour les horaires de simulation de présence
+    (matin et soir) via un script dédié, 90 minutes avant
+    le lever du soleil.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Lever du soleil - 90 min
+  # ======================================================
+  trigger:
+    - platform: sun
+      event: sunrise
+      offset: "-01:30:00"
+
+  # ======================================================
+  # ✅ Condition — (aucune, toujours exécutée)
+  # ======================================================
+  condition: []
+
+  # ======================================================
+  # 🔄 Action — Lancement du script de génération
+  # ======================================================
+  action:
+    - action: script.turn_on
+      target:
+        entity_id: script.generer_horaires_simulation_presence

@@ -1,0 +1,201 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles d’humidité relative
+# ----------------------------------------------------------
+#  🧠 Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de l’humidité relative (%) pour chaque pièce
+#     domestique et zone professionnelle.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Analyse l’historique des entités cibles
+#     - Utilise la caractéristique `mean` (moyenne arithmétique)
+#
+#  📅 Fenêtre d’analyse :
+#     - Durée : 30 jours glissants
+#     - Échantillons maximum : 10 000
+#
+#  📊 Sortie :
+#     - Valeur moyenne d’humidité relative sur 30 jours
+#
+#  🏡 Regroupement :
+#     - Zones domestiques : chambres, séjour, SDB, etc.
+#     - Zones professionnelles : bureaux, stock, ateliers
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🏠 Chambres et pièces domestiques
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative Moyenne Chambre Arnaud"
+  entity_id: sensor.humidite_relative_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_10000 10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Chambre Matthieu"
+  entity_id: sensor.humidite_relative_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Chambre Parents"
+  entity_id: sensor.humidite_relative_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Séjour"
+  entity_id: sensor.humidite_relative_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Entrée"
+  entity_id: sensor.humidite_relative_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Cave"
+  entity_id: sensor.humidite_relative_cave
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Garage"
+  entity_id: sensor.humidite_relative_garage
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Petite Maison"
+  entity_id: sensor.humidite_relative_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 🚿 Salles de bains
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative Moyenne SDB Enfants"
+  entity_id: sensor.humidite_relative_sdb_enfants
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne SDB Parents"
+  entity_id: sensor.humidite_relative_sdb_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 🌳 Extérieur / jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative Moyenne Jardin"
+  entity_id: sensor.humidite_relative_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Extérieur"
+  entity_id: sensor.humidite_relative_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 🏢 Bureaux et zones administratives
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative Moyenne Direction"
+  entity_id: sensor.humidite_relative_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Compta"
+  entity_id: sensor.humidite_relative_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Qualité"
+  entity_id: sensor.humidite_relative_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Devis"
+  entity_id: sensor.humidite_relative_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Commercial"
+  entity_id: sensor.humidite_relative_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 📦 Zones de stockage
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative Moyenne Stock Carton"
+  entity_id: sensor.humidite_relative_stock_carton
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Stock PF"
+  entity_id: sensor.humidite_relative_stock_pf
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 🏭 Zones industrielles / atelier
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative Moyenne Komori"
+  entity_id: sensor.humidite_relative_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Bobst"
+  entity_id: sensor.humidite_relative_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Humidité relative Moyenne Media"
+  entity_id: sensor.humidite_relative_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000

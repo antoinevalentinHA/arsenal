@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Vacances – Gestion du timer longue durée ECS
+#
+#  ID : 10090000000010
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#   Gérer le cycle de vie du timer mesurant la durée
+#   CONTINUE des vacances, utilisé pour déterminer
+#   l’autorisation d’une désinfection ECS au retour.
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
+#
+#   - À l’entrée en mode *Vacances* :
+#       → démarrage du timer `vacances_longues_ecs`
+#
+#   - À la sortie du mode *Vacances* :
+#       → annulation immédiate du timer
+#
+# ----------------------------------------------------------
+# ⏱️ RÈGLE MÉTIER PORTÉE
+#
+#   - Toute interruption des vacances
+#     remet implicitement le compteur à zéro.
+#
+#   - La durée est mesurée par le timer,
+#     pas par cette automation.
+#
+# ----------------------------------------------------------
+# 🧩 NATURE
+#
+#   - Automation de support temporel
+#   - Aucune décision métier
+#   - Aucun pilotage ECS
+#   - Aucun effet de contexte
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne déclenche aucune action sanitaire
+#   - Ne décide pas de l’autorisation ECS
+#   - Ne journalise rien
+#
+# ----------------------------------------------------------
+# 🔗 UTILISATION
+#
+#   - Consommée indirectement par :
+#       binary_sensor.ecs_desinfection_retour_vacances_autorisee
+#
+# ----------------------------------------------------------
+# ✅ COMPATIBILITÉ
+#
+#   Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10090000000010"
+  alias: "Vacances – Gestion du timer longue durée ECS"
+  description: >
+    Démarre ou annule le timer mesurant la durée continue
+    des vacances, utilisé pour l’autorisation de désinfection ECS.
+
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: input_select.mode_maison
+
+  action:
+    - choose:
+
+        # ▶️ Entrée en mode Vacances → démarrage du timer
+        - conditions:
+            - condition: state
+              entity_id: input_select.mode_maison
+              state: "Vacances"
+          sequence:
+            - action: timer.start
+              target:
+                entity_id: timer.vacances_longues_ecs
+
+        # ⏹️ Sortie du mode Vacances → annulation du timer
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('input_select.mode_maison') != 'Vacances' }}
+          sequence:
+            - action: timer.cancel
+              target:
+                entity_id: timer.vacances_longues_ecs

@@ -1,0 +1,39 @@
+#################################################################
+# 🔘 BADGE ACTION — UI
+# ---------------------------------------------------------------
+# Badge circulaire pour action manuelle critique ou semi-critique.
+#
+# Variables attendues :
+#   - bg_color    : couleur de fond
+#   - icon_color  : couleur icône
+#   - confirm     : texte de confirmation
+#
+# Principe Arsenal :
+#   - Action volontaire
+#   - Confirmation obligatoire
+#   - Zéro logique métier
+#################################################################
+
+badge_action_confirmee:
+  template: bouton_navigation_badge_carre
+
+  show_name: false
+  show_state: false
+
+  styles:
+    card:
+      - border-radius: 50%
+      - height: 42px
+      - width: 42px
+      - box-shadow: var(--ha-card-box-shadow)
+      - background-color: |
+          [[[
+            return variables?.bg_color || 'rgba(158, 158, 158, 0.2)';
+          ]]]
+    icon:
+      - width: 22px
+      - height: 22px
+      - color: |
+          [[[
+            return variables?.icon_color || '#111';
+          ]]]

@@ -1,0 +1,75 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBERS : Chauffage — Seuils extérieurs ON / OFF
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir les seuils de température EXTÉRIEURE
+#   conditionnant l’AUTORISATION GLOBALE du chauffage.
+#
+#   Ces seuils déterminent si le chauffage est
+#   structurellement pertinent ou non, indépendamment
+#   des températures intérieures.
+#
+# 🧱 Principe :
+#   - Basé UNIQUEMENT sur la température extérieure
+#   - Fonctionne avec une hystérésis météo explicite :
+#
+#     • Seuil ON :
+#         → le chauffage devient AUTORISABLE si
+#           T° extérieure < seuil_ext_on
+#
+#     • Seuil OFF :
+#         → le chauffage devient NON AUTORISABLE si
+#           T° extérieure > seuil_ext_off
+#
+# 🧠 Principe Arsenal :
+#   - Ces helpers ne déclenchent rien
+#   - Ils ne coupent rien
+#   - Ils définissent un CADRE MÉTÉO
+#     dans lequel le chauffage a le droit d’exister
+#
+# 🧱 Hiérarchie décisionnelle :
+#   1. Autorisation extérieure (ces seuils)
+#   2. Autorisation intérieure (consigne / offsets)
+#   3. Décisions contextuelles (présence, poêle, aération…)
+#
+# ⚠️ Règles fondamentales :
+#   - Aucun calcul embarqué
+#   - Aucune logique temporelle
+#   - Aucune interaction directe avec les actionneurs
+#
+# 🔗 Utilisation :
+#   - Consommés par :
+#     - sensor.autorisation_chauffage_selon_temperature
+#   - Affichés dans :
+#     - dashboards diagnostics / réglages chauffage
+#
+# 📐 Unité :
+#   - Degrés Celsius (°C)
+#
+# 🎯 Objectif :
+#   - Éviter toute activation de chauffage
+#     par météo douce ou intersaison
+#   - Stabiliser les décisions globales
+#   - Rendre le cadre météo explicite et ajustable
+# ==========================================================
+
+
+chauffage_seuil_ext_on:
+  name: "Seuil activation chauffage"
+  min: 5
+  max: 18
+  step: 0.5
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-chevron-down
+  mode: box
+  #initial: 14
+
+chauffage_seuil_ext_off:
+  name: "Seuil désactivation chauffage"
+  min: 10
+  max: 24
+  step: 0.5
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-chevron-up
+  mode: box
+  #initial: 17

@@ -1,0 +1,113 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+title: Humidex
+views:
+  - title: Humidex
+    path: humidex
+    icon: mdi:server
+
+    badges: !include ../../includes/badges/meteo.yaml
+
+    # ======================================================
+    # 🌡️ CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    # ======================================================
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          # ------------------------------------------------------
+          # 🧭 Navigation météo
+          # ------------------------------------------------------
+          - !include ../../includes/navigation/meteo.yaml
+
+          # ======================================================
+          # 🌿 JARDIN
+          # ======================================================
+          - !include ../../includes/section_headers/jardin.yaml
+
+          - square: false
+            type: grid
+            columns: 1
+            cards:
+
+              - type: custom:button-card
+                template: carte_humidex
+                entity: sensor.humidex_jardin
+                name: Humidex
+                triggers_update:
+                  - sensor.humidex_jardin
+                  - sensor.couleur_humidex_jardin
+
+          # ======================================================
+          # 🏠 RDC
+          # ======================================================
+          - !include ../../includes/section_headers/rdc.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - type: custom:button-card
+                template: carte_humidex
+                entity: sensor.humidex_entree
+                name: Entrée
+                triggers_update:
+                  - sensor.humidex_entree
+                  - sensor.couleur_humidex_entree
+
+              - type: custom:button-card
+                template: carte_humidex
+                entity: sensor.humidex_sejour
+                name: Séjour
+                icon: mdi:thermometer-water
+                triggers_update:
+                  - sensor.humidex_sejour
+                  - sensor.couleur_humidex_sejour
+
+          # ======================================================
+          # 🛏️ CHAMBRES
+          # ======================================================
+          - !include ../../includes/section_headers/chambres.yaml
+
+          - square: false
+            type: grid
+            columns: 2
+            cards:
+
+              - type: custom:button-card
+                template: carte_humidex
+                entity: sensor.humidex_chambre_arnaud
+                name: Chambre Arnaud
+                triggers_update:
+                  - sensor.humidex_chambre_arnaud
+                  - sensor.couleur_humidex_chambre_arnaud
+
+              - type: custom:button-card
+                template: carte_humidex
+                entity: sensor.humidex_chambre_matthieu
+                name: Chambre Matthieu
+                triggers_update:
+                  - sensor.humidex_chambre_matthieu
+                  - sensor.couleur_humidex_chambre_matthieu
+
+              - type: custom:button-card
+                template: carte_humidex
+                entity: sensor.humidex_chambre_parents
+                name: Chambre Parents
+                triggers_update:
+                  - sensor.humidex_chambre_parents
+                  - sensor.couleur_humidex_chambre_parents
+
+              - type: custom:button-card
+                template: carte_humidex
+                entity: sensor.humidex_petite_maison
+                name: Petite Maison
+                icon: mdi:thermometer-water
+                triggers_update:
+                  - sensor.humidex_petite_maison
+                  - sensor.couleur_humidex_petite_maison

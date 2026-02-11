@@ -1,0 +1,46 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION : Maintenance – Batteries faibles – Reset notification quotidien
+# ----------------------------------------------------------
+#  🎯 Rôle :
+#     Réinitialiser le verrou journalier de notification
+#     des batteries faibles afin d’autoriser une nouvelle
+#     alerte le jour suivant.
+#
+#  🧱 Principe Arsenal :
+#     - La notification batterie est volontairement limitée
+#       à une fois par jour
+#     - Cette automation NE détecte PAS de batteries faibles
+#     - Elle ne fait QUE lever le verrou temporel
+#
+#  ⚙️ Comportement :
+#     - Tous les jours à 00:00:00 :
+#         → input_boolean.batteries_notifiees = OFF
+#
+#  📥 Entrée :
+#     - Horloge système (minuit)
+#
+#  📤 Sortie :
+#     - input_boolean.batteries_notifiees
+#
+#  🏷️ ID :
+#     1012000000002
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1012000000002'
+  alias: Maintenance - Batteries faibles - Réinitialisation quotidienne
+  description: Réinitialise le booléen chaque nuit à minuit.
+  mode: single
+
+  # 🔔 Déclencheur — minuit pile
+  trigger:
+    - platform: time
+      at: '00:00:00'
+
+  # 🔄 Action — reset du flag
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.batteries_notifiees

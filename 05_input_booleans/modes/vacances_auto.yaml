@@ -1,0 +1,35 @@
+# ==========================================================
+#  INPUT BOOLEAN — Programmation vacances active
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Signale qu’une **programmation de mode Vacances** est prévue,
+#     sans mettre la maison réellement en mode vacances.
+#
+#     Ce boolean NE DÉCIDE RIEN et NE DÉCLENCHE AUCUNE ACTION
+#     directement. Il sert uniquement de **flag métier global**.
+#
+#  🔄 Cycle de vie :
+#     - Activé : une programmation vacances est planifiée
+#     - Désactivé : aucune action anticipée n’est requise
+#
+#  📥 Pilotage :
+#     - Manuel via dashboard
+#     - Automatisations liées à la planification des vacances
+#
+#  📤 Consommation :
+#     - Scripts / automations qui anticipent :
+#         • ECS  
+#         • simulation de présence  
+#         • vérifications d’état
+#
+#  🧱 Principe Arsenal :
+#     - Les capteurs mesurent
+#     - Les scripts et automatisations décident
+#     - Les input_booleans autorisent ou verrouillent
+#       les actions métier
+# ==========================================================
+
+
+mode_vacances_auto:
+  name: Programmation vacances active
+  icon: mdi:calendar-clock

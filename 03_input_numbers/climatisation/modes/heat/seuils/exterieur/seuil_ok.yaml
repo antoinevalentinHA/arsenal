@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Seuil extérieur mini (clim COOL)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir la température extérieure minimale
+#    à partir de laquelle la climatisation
+#    est AUTORISÉE à fonctionner en mode COOL.
+#
+# 🌤️ Problématique traitée :
+#    - Éviter un refroidissement inutile par temps doux
+#    - Prévenir les cycles aberrants (mi-saison)
+#    - Garantir une logique cohérente avec l’ouverture naturelle
+#
+# ⚙️ Fonctionnement :
+#    - Sert de FILTRE D’AUTORISATION
+#    - Si T° extérieure < seuil :
+#        → mode COOL interdit
+#    - Si T° extérieure ≥ seuil :
+#        → mode COOL autorisable (pas déclenché)
+#
+# 🔍 Utilisation :
+#    - Script :
+#        • climatisation/decision_centrale.yaml
+#          (arbitrage global COOL / DRY / HEAT / OFF)
+#    - Dashboards :
+#        • affichage seuil actif
+#        • réglage utilisateur explicite
+#
+# 🚫 Interdits :
+#    - Ne PAS utiliser comme seuil de déclenchement
+#    - Ne PAS interpréter comme consigne
+#    - Ne PAS modifier automatiquement
+#
+# 📐 Unité :
+#    - °C (température extérieure réelle)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Garde-fou thermique climatisation COOL
+# ==========================================================
+
+
+clim_seuil_temperature_exterieure_minimum:
+  name: Seuil température extérieure mini (clim)
+  min: 15
+  max: 35
+  step: 0.5
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-low

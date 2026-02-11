@@ -1,0 +1,26 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN :
+#     ECS – Signal fin de cycle (canonique)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#     Porter le signal explicite et univoque indiquant
+#     qu’un cycle ECS vient d’être reconnu comme terminé.
+#
+# 🧱 PRINCIPE ARSENAL
+#     - Ce booléen représente un ÉVÉNEMENT, pas un état
+#     - Il est positionné par une automation décisionnelle
+#     - Il est réinitialisé par le consommateur (ACK)
+#
+# 🚫 NE FAIT PAS
+#     - Ne détecte rien
+#     - Ne se réinitialise jamais seul
+#     - Ne pilote aucun équipement
+#
+# ⚠️ IMPORTANT
+#     - Tant que ce booléen est à ON, le signal n’est
+#       pas acquitté
+# ==========================================================
+
+ecs_fin_cycle_signal:
+  name: "ECS – Signal fin de cycle"
+  icon: mdi:flag-checkered

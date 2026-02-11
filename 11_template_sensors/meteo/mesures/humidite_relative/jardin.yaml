@@ -1,0 +1,81 @@
+# ==========================================================
+# 🌿 TEMPLATE SENSOR — Humidité relative Jardin (HomeKit consolidé)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Fournir une **humidité extérieure unifiée (%)** en utilisant :
+#     • HomeKit (2 sondes) → source principale
+#     • SwitchBot → secours local
+#     • Mémoire → dernier état valide
+#
+# ⚙️ Fonctionnement :
+#   - HomeKit : prend la **valeur minimale** entre `_1` et `_2`
+#     pour éviter les biais d’ensoleillement.
+#   - Si HomeKit est indisponible → fallback SwitchBot.
+#   - Si aucune donnée valide → conserve la dernière valeur.
+#
+# 📦 Capteur créé : sensor.humidite_relative_jardin
+# 📊 Type : Template Sensor
+# 📏 Unité : %
+# 💨 Device class : humidity
+# ==========================================================
+
+- sensor:
+    - name: "Humidité relative Jardin"
+      unique_id: humidite_relative_jardin
+      unit_of_measurement: "%"
+      device_class: humidity
+
+      state: >
+        {% set h1 = states('sensor.humidite_relative_jardin_1') | float(none) %}
+        {% set h2 = states('sensor.humidite_relative_jardin_2') | float(none) %}
+        {% set h3 = states('sensor.humidite_relative_jardin_3') | float(none) %}
+        {% set last = this.state | float(none) %}
+
+        {# 1. HomeKit : deux valides → min() #}
+        {% if h1 is not none and 0 < h1 <= 100 and h2 is not none and 0 < h2 <= 100 %}
+          {{ [h1, h2] | min | round(0) }}
+
+        {# 2. HomeKit : un seul valide #}
+        {% elif h1 is not none and 0 < h1 <= 100 %}
+          {{ h1 | round(0) }}
+        {% elif h2 is not none and 0 < h2 <= 100 %}
+          {{ h2 | round(0) }}
+
+        {# 3. Fallback SwitchBot #}
+        {% elif h3 is not none and 0 < h3 <= 100 %}
+          {{ h3 | round(0) }}
+
+        {# 4. Memory fallback #}
+        {% elif last is not none %}
+          {{ last | round(0) }}
+
+        {# 5. KO total #}
+        {% else %}
+          none
+        {% endif %}
+
+      attributes:
+        capteur_utilise: >
+          {% set h1 = states('sensor.humidite_relative_jardin_1') | float(none) %}
+          {% set h2 = states('sensor.humidite_relative_jardin_2') | float(none) %}
+          {% set h3 = states('sensor.humidite_relative_jardin_3') | float(none) %}
+          {% set last = states('sensor.humidite_relative_jardin') | float(none) %}
+
+          {% if h1 is not none and 0 < h1 <= 100 and h2 is not none and 0 < h2 <= 100 %}
+            HomeKit (min)
+          {% elif h1 is not none and 0 < h1 <= 100 %}
+            HomeKit (1)
+          {% elif h2 is not none and 0 < h2 <= 100 %}
+            HomeKit (2)
+          {% elif h3 is not none and 0 < h3 <= 100 %}
+            SwitchBot
+          {% elif last is not none %}
+            Mémoire
+          {% else %}
+            Aucun
+          {% endif %}
+
+        sources: >
+          sensor.humidite_relative_jardin_1,
+          sensor.humidite_relative_jardin_2,
+          sensor.humidite_relative_jardin_3

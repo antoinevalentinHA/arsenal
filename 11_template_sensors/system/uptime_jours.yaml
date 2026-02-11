@@ -1,0 +1,36 @@
+# ==========================================================
+# ⏱️ TEMPLATE SENSOR — Uptime (jours)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer depuis combien de jours Home Assistant fonctionne
+#   sans redémarrage, à partir du capteur natif `sensor.uptime`.
+#
+# ⚙️ Fonctionnement :
+#   - Récupère la valeur de `sensor.uptime` (horodatage du dernier démarrage).  
+#   - Calcule la différence entre la date actuelle (`now()`) et cette valeur.  
+#   - Convertit le résultat en jours (secondes ÷ 86400).  
+#   - Arrondit à une décimale pour plus de lisibilité.  
+#   - Si la valeur est inconnue ou indisponible :
+#       → retourne `unknown`.
+#
+# 🧠 Détails techniques :
+#   - Unité : jours
+#   - Domaine : Template Sensor
+#   - Source : sensor.uptime
+#
+# 📊 Type : Template Sensor
+# 📍 Entité : sensor.uptime_jours
+# ==========================================================
+
+- sensor:
+    - name: "Uptime jours"
+      unique_id: uptime_jours
+      unit_of_measurement: "j"
+      state: >
+        {% set t = states('sensor.uptime') %}
+        {% if t not in ['unknown','unavailable'] %}
+          {% set diff = (as_datetime(now()) - as_datetime(t)).total_seconds() / 86400 %}
+          {{ diff | round(1) }}
+        {% else %}
+          unknown
+        {% endif %}

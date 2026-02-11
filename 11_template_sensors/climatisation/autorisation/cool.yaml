@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Autorisation refroidissement climatisation
+#
+# 🎯 Rôle :
+#   Indiquer si le mode COOL est AUTORISÉ
+#   indépendamment du besoin thermique.
+#
+# 🧱 Principe Arsenal :
+#   - Lecture PURE
+#   - Aucune décision
+#   - Aucune action
+#
+# 🔌 Contraintes prises en compte :
+#   - conditions extérieures
+#   - aération
+#   - ouvertures
+#   - blocage horaire
+#   - absence prolongée (refroidissement interdit)
+# ==========================================================
+
+- binary_sensor:
+    - name: "Autorisation refroidissement climatisation"
+      unique_id: autorisation_clim_cool
+      default_entity_id: binary_sensor.autorisation_clim_cool
+      state: >
+        {{
+          states('sensor.temperature_jardin') | float(0)
+            >= states('input_number.clim_seuil_temperature_exterieure_minimum') | float(99)
+          and is_state('binary_sensor.aeration_preferable_etage', 'off')
+          and is_state('binary_sensor.fenetre_ouverte_maison', 'off')
+          and is_state('input_boolean.clim_blocage_horaire_actif', 'off')
+          and is_state('binary_sensor.clim_extinction_absence_prolongee_autorisee', 'off')
+        }}

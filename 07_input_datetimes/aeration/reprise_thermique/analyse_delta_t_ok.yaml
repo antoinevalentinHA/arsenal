@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Analyse deltaT disponible
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mémorisation de la DATE ET HEURE
+#   à partir desquelles une analyse de deltaT
+#   est considérée comme DISPONIBLE et exploitable.
+#
+#   Ce helper sert de REPÈRE TEMPOREL
+#   dans le pipeline d’aération / reprise thermique.
+#
+# 🧩 Nature :
+#   Mémoire PERSISTANTE — horodatage de référence.
+#
+# ❌ Ne fait PAS :
+#   - Ne calcule PAS le deltaT
+#   - Ne décide PAS d’aérer ou de chauffer
+#   - Ne déclenche AUCUNE action
+#   - Ne représente PAS un état instantané
+#
+# 🔄 Fonctionnement :
+#   - La valeur est positionnée par des automatisations
+#     lorsque les conditions d’analyse sont réunies.
+#   - Les scripts et automatisations la COMPARAIENT
+#     à l’instant courant pour raisonner dans le temps.
+#
+# 🔗 Utilisation :
+#   - Automatisations aération / blocage chauffage :
+#       • Vérification de validité temporelle
+#         d’une analyse deltaT
+#       • Gestion de la reprise thermique
+#   - Dashboards diagnostics :
+#       • Lecture et compréhension du contexte temporel
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Mesure (capteurs)
+#       • Analyse (calculs deltaT)
+#       • Mémoire (input_datetime)
+#       • Décision (scripts centraux)
+#
+# ⚠️ Remarque :
+#   Ce helper n’a de sens QUE comme mémoire.
+#   Toute tentative de l’utiliser comme déclencheur
+#   ou autorisation directe est une erreur d’architecture.
+# ==========================================================
+
+
+analyse_deltat_disponible:
+  name: "analyse deltaT dispo"
+  has_date: true
+  has_time: true

@@ -1,0 +1,36 @@
+# ==========================================================
+# 🔥 INPUT BOOLEAN — Chauffage – Neutralisation par poêle
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Indique que le chauffage principal (chaudière) ou la climatisation
+#   en mode HEAT ne doit pas être activé, car un apport thermique
+#   interne significatif est fourni par le poêle.
+#
+# 🎯 Principe Arsenal :
+#   - Ce boolean NE DÉTECTE RIEN
+#   - Ce boolean NE DÉCIDE RIEN
+#   - Il est PILOTÉ par une automatisation dédiée (Poêle)
+#   - Il est CONSOMMÉ par les logiques décisionnelles de chauffage
+#
+# 📌 Contrat logique :
+#   - ON  → chauffage/clim HEAT neutralisé
+#   - OFF → comportement chauffage normal
+#
+# 🚫 Interdictions :
+#   - Aucune action directe sur la chaudière ou climatisation
+#   - Aucun seuil de température ou consigne
+#   - Pas de mémoire longue : état uniquement “actuel”
+#
+# 🧩 Usage :
+#   - Script ViCare / décision chauffage : lecture du boolean
+#   - Dashboards de diagnostic : affichage uniquement
+#   - Automatisations Poêle : mise à jour de l’état
+#
+# ✅ Architecture :
+#   Arsenal V5+
+# ==========================================================
+
+
+blocage_chauffage_poele:
+  name: "Blocage chauffage poele"
+  icon: mdi:fire

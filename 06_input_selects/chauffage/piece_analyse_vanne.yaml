@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Pièce analysée (diagnostic vannes)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Sélection de la PIÈCE CIBLE pour les outils de
+#   diagnostic et d’analyse du réglage des vannes
+#   thermostatiques.
+#
+#   Ce helper permet de focaliser les calculs,
+#   affichages et actions de diagnostic
+#   sur une pièce donnée.
+#
+# 🧩 Nature :
+#   Paramètre de DIAGNOSTIC / CONTEXTE D’ANALYSE.
+#
+# ❌ Ne fait PAS :
+#   - Ne pilote AUCUNE vanne
+#   - Ne modifie AUCUNE consigne
+#   - Ne déclenche AUCUNE régulation
+#   - Ne représente PAS un état thermique réel
+#
+# 🔄 Fonctionnement :
+#   - La valeur est sélectionnée manuellement
+#     via le dashboard de diagnostic.
+#   - Les scripts et capteurs concernés
+#     se contentent de la LIRE.
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace (diagnostic chauffage) :
+#       • Sélection de la pièce analysée
+#       • Affichage ciblé des plateaux et indicateurs
+#   - Capteurs template :
+#       • Calculs dépendants de la pièce sélectionnée
+#   - Scripts de diagnostic :
+#       • Réinitialisation ou recalcul de données
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Diagnostic (outils d’analyse)
+#       • Décision (scripts centraux)
+#       • Action (pilotage réel)
+#
+# ⚠️ Remarque :
+#   Ce helper est STRICTEMENT réservé
+#   aux fonctions de diagnostic.
+#   Toute utilisation hors de ce cadre
+#   constitue une dérive architecturale.
+# ==========================================================
+
+
+adjustment_piece:
+  name: "Pièce à analyser"
+  options:
+    - chambre_arnaud
+    - chambre_matthieu
+    - chambre_parents
+  icon: mdi:home-thermometer

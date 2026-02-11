@@ -1,0 +1,24 @@
+# ==========================================================
+# 🌿 TEMPLATE SENSOR — Pourcentage consigne Eco (7 jours)
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Calcule le pourcentage du temps passé en mode Eco sur
+#   les 7 derniers jours.
+#
+# 🧩 Dépendances :
+#   - sensor.duree_consigne_eco_7j
+# ==========================================================
+
+- sensor:
+    - name: "Pourcentage consigne Eco 7j"
+      unique_id: pourcentage_consigne_eco_7j
+      unit_of_measurement: "%"
+      icon: mdi:leaf
+      state: >
+        {% set duree = states('sensor.duree_consigne_eco_7j') | float(0) %}
+        {% set heures_totales = 7 * 24 %}
+        {{ (duree / heures_totales * 100) | round(1) }}
+      attributes:
+        friendly_name: "Pourcentage du temps Eco (7 jours)"
+        source: "sensor.programme_chauffage"
+        reference: "Basé sur les 7 derniers jours"

@@ -1,0 +1,33 @@
+# ==========================================================
+# 🔥 INPUT BOOLEAN — Poêle – Mémoire 24h
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Indique qu’un poêle a été utilisé récemment.
+#   Sert à **suspendre les auto-ajustements à la baisse**
+#   de la courbe de chauffe pendant 24 heures après chaque détection.
+#
+# 🎯 Principe Arsenal :
+#   - Ce boolean NE DÉTECTE RIEN
+#   - Ce boolean NE DÉCIDE RIEN
+#   - Il est PILOTÉ par les automatisations de suivi du poêle
+#   - Il est CONSOMMÉ par :
+#       • auto-ajustements de la courbe de chauffe
+#       • blocage chauffage poêle
+#
+# 📌 Contrat logique :
+#   - ON  → poêle utilisé récemment, auto-ajustements à la baisse suspendus
+#   - OFF → aucun blocage, auto-ajustements normaux autorisés
+#
+# 🚫 Interdictions :
+#   - Aucune action directe sur le chauffage
+#   - Aucun seuil métier
+#   - Pas de décision locale
+#
+# ✅ Architecture :
+#   Arsenal V5+
+# ==========================================================
+
+
+poele_recent:
+  name: "Poele utilise recemment"
+  icon: mdi:fire-alert

@@ -1,0 +1,27 @@
+# ==========================================================
+# 🌐 TEMPLATE SENSOR — IP Raspberry Pi
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Fournir une référence statique de l’adresse IP locale
+#   du Raspberry Pi hébergeant Home Assistant.
+#
+# ⚙️ Fonctionnement :
+#   - Retourne une valeur fixe correspondant à l’adresse IP définie.  
+#   - Utile pour :
+#       • l’affichage dans une carte Lovelace,  
+#       • la vérification de connectivité réseau,  
+#       • ou comme variable dans des scripts automatisés.
+#
+# 🧠 Détails techniques :
+#   - Adresse : 192.168.1.117
+#   - Domaine : Template Sensor
+#   - Source : Valeur statique
+#
+# 📊 Type : Template Sensor
+# 📍 Entité : sensor.ip_raspberry_pi
+# ==========================================================
+
+- sensor:
+    - name: "IP Raspberry Pi"
+      unique_id: ip_raspberry_pi
+      state: "{{ '192.168.1.117' }}"

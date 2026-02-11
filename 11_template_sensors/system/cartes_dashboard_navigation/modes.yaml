@@ -1,0 +1,24 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Modes
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Convertir le mode de la maison en indicateur visuel
+#     pour le dashboard.
+#
+#  🎯 États :
+#     - normal → bleu (#1976D2)
+#     - alert  → couleur alternative (à définir)
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_modes_dashboard"
+      unique_id: etat_modes_dashboard
+      state: >
+        {% set mode = states('input_select.mode_maison') %}
+
+        {% if mode == 'Normal' %}
+          normal
+        {% else %}
+          alert
+        {% endif %}

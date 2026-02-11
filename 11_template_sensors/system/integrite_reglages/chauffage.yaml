@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Intégrité paramètres — Chauffage
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Détecter toute incohérence logique dans les paramètres
+#   structurants du sous-système Chauffage.
+#
+# 🧱 Principe Arsenal :
+#   - Observation pure
+#   - Aucune correction automatique
+#   - Aucune action
+#   - Aucune dépendance métier
+#
+# 🚨 Invariants surveillés :
+#   1) seuil_ext_off  > seuil_ext_on
+#   2) consigne_presence > consigne_absence
+#   3) inhibition_offset_on > inhibition_offset_off
+#
+# 🔴 Toute violation = paramètres INVALIDES
+# ==========================================================
+
+- binary_sensor:
+    - name: "Chauffage — Paramètres invalides"
+      unique_id: parametres_invalides_chauffage
+      default_entity_id: binary_sensor.parametres_invalides_chauffage
+      state: >
+        {{
+          not (
+            states('input_number.chauffage_seuil_ext_off') | float(0)
+              > states('input_number.chauffage_seuil_ext_on') | float(0)
+          and
+            states('input_number.chauffage_consigne_confort') | float(0)
+              > states('input_number.chauffage_consigne_reduite') | float(0)
+          and
+            states('input_number.inhibition_geofencing_offset_on') | float(0)
+              > states('input_number.inhibition_geofencing_offset_off') | float(0)
+          )
+        }}
+      icon: >
+        mdi:alert-circle-outline
+      attributes:
+
+        seuils_exterieurs_invalides: >
+          {{
+            not (
+              states('input_number.chauffage_seuil_ext_off') | float(0)
+                > states('input_number.chauffage_seuil_ext_on') | float(0)
+            )
+          }}
+
+        consignes_invalides: >
+          {{
+            not (
+              states('input_number.chauffage_consigne_confort') | float(0)
+                > states('input_number.chauffage_consigne_reduite') | float(0)
+            )
+          }}
+
+        inhibition_geofencing_invalide: >
+          {{
+            not (
+              states('input_number.inhibition_geofencing_offset_on') | float(0)
+                > states('input_number.inhibition_geofencing_offset_off') | float(0)
+            )
+          }}

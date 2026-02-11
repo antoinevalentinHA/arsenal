@@ -1,0 +1,34 @@
+# ==========================================================
+# ⚡ TEMPLATE BINARY SENSOR — Déshumidificateur actif
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Déterminer si le déshumidificateur est actuellement en marche
+#   en se basant sur la puissance instantanée mesurée par la prise
+#   connectée (en watts).
+#
+# ⚙️ Fonctionnement :
+#   - Source : sensor.prise_deshumidificateur_power
+#   - Seuil d’activation : 100 W
+#   - Si la puissance > 100 W → capteur actif (on)
+#     sinon → inactif (off)
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.deshumidificateur_actif
+# ==========================================================
+
+- binary_sensor:
+
+    # ------------------------------------------------------
+    # ⚙️ Détection : déshumidificateur en fonctionnement
+    # ------------------------------------------------------
+    - name: "Déshumidificateur actif"
+      unique_id: deshumidificateur_actif
+      default_entity_id: binary_sensor.deshumidificateur_actif
+      device_class: power
+
+      # --------------------------------------------------
+      # 🧮 Active si la consommation dépasse 100 W
+      # --------------------------------------------------
+      state: >
+        {% set p = states('sensor.prise_deshumidificateur_power') | float(0) %}
+        {{ p > 100 }}

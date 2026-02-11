@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Délai d’entrée alarme
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir le délai accordé après l’ouverture d’un accès
+#    protégé avant le déclenchement de l’alarme intrusion.
+#
+# 🧠 Lecture métier :
+#    Cette valeur est utilisée DIRECTEMENT par les
+#    automatisations d’alarme.
+#    Elle conditionne le temps laissé à l’utilisateur
+#    pour désarmer le système sans déclenchement.
+#
+# 🚪 Accès concernés :
+#    - Porte d’entrée
+#    - Porte de garage
+#
+# 🔗 Dépendances :
+#    - Automatisations intrusion (délai d’entrée)
+#    - Dashboards réglages alarme
+#    - Dashboards diagnostics alarme
+#
+# 🚫 Interdits :
+#    - Réduire excessivement ce délai sans test réel
+#    - Le confondre avec un délai de sortie
+#    - Le modifier sans vérifier l’ergonomie clavier
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - paramètre de sécurité actif (alarme)
+# ==========================================================
+
+
+alarme_delai_entree:
+  name: Délai entrée (s)
+  min: 10
+  max: 120
+  step: 5
+  unit_of_measurement: "s"
+  icon: mdi:timer-outline
+  mode: slider

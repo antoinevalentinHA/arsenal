@@ -1,0 +1,129 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : ECS (planning hebdomadaire)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition des HEURES DE RÉFÉRENCE utilisées
+#   pour le planning hebdomadaire de production ECS.
+#
+#   Ces helpers définissent QUAND la chauffe ECS
+#   est AUTORISÉE selon :
+#     • le jour de la semaine
+#     • le créneau (matin / soir)
+#
+# 🧩 Nature :
+#   Paramètres MÉTIER — planification horaire hebdomadaire.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS directement la chauffe ECS
+#   - Ne pilote PAS la chaudière
+#   - Ne garantit PAS l’exécution d’un cycle
+#   - Ne remplace PAS la décision centrale ECS
+#
+# 🔍 Spécificité technique :
+#   - Heure uniquement (pas de date)
+#   - Planning réutilisé chaque semaine
+#   - Accès dynamique par jour :
+#       ecs_<day>_matin_heure
+#       ecs_<day>_soir_heure
+#
+# 🔄 Fonctionnement :
+#   - Les heures sont définies manuellement
+#     via les dashboards de réglage ECS.
+#   - Les capteurs et automatisations :
+#       • comparent le jour courant
+#       • comparent l’heure courante
+#       • déterminent une fenêtre ECS autorisée
+#
+# 🔗 Utilisation :
+#   - Capteurs binaires ECS :
+#       • Fenêtre de chauffe ponctuelle active
+#   - Automatisations ECS :
+#       • Gardien consigne
+#       • Autorisations conditionnelles
+#   - Dashboards :
+#       • Paramétrage hebdomadaire
+#       • Lecture du planning
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_datetime)
+#       • Autorisation (capteurs)
+#       • Décision (logique ECS)
+#       • Action réelle (ViCare)
+#
+# ⚠️ Remarque :
+#   Modifier ces valeurs change le PLANNING
+#   autorisé, jamais l’état immédiat
+#   de la production ECS.
+# ==========================================================
+
+
+ecs_monday_matin_heure:
+  name: ECS - Lundi matin
+  has_time: true
+  has_date: false
+
+ecs_monday_soir_heure:
+  name: ECS - Lundi soir
+  has_time: true
+  has_date: false
+
+ecs_tuesday_matin_heure:
+  name: ECS - Mardi matin
+  has_time: true
+  has_date: false
+
+ecs_tuesday_soir_heure:
+  name: ECS - Mardi soir
+  has_time: true
+  has_date: false
+
+ecs_wednesday_matin_heure:
+  name: ECS - Mercredi matin
+  has_time: true
+  has_date: false
+
+ecs_wednesday_soir_heure:
+  name: ECS - Mercredi soir
+  has_time: true
+  has_date: false
+
+ecs_thursday_matin_heure:
+  name: ECS - Jeudi matin
+  has_time: true
+  has_date: false
+
+ecs_thursday_soir_heure:
+  name: ECS - Jeudi soir
+  has_time: true
+  has_date: false
+
+ecs_friday_matin_heure:
+  name: ECS - Vendredi matin
+  has_time: true
+  has_date: false
+
+ecs_friday_soir_heure:
+  name: ECS - Vendredi soir
+  has_time: true
+  has_date: false
+
+ecs_saturday_matin_heure:
+  name: ECS - Samedi matin
+  has_time: true
+  has_date: false
+
+ecs_saturday_soir_heure:
+  name: ECS - Samedi soir
+  has_time: true
+  has_date: false
+
+ecs_sunday_matin_heure:
+  name: ECS - Dimanche matin
+  has_time: true
+  has_date: false
+
+ecs_sunday_soir_heure:
+  name: ECS - Dimanche soir
+  has_time: true
+  has_date: false

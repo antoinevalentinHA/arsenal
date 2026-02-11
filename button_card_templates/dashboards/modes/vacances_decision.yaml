@@ -1,0 +1,71 @@
+# ==============================================================
+# 🏖️ TEMPLATE : carte_vacances_decision
+# --------------------------------------------------------------
+# Carte décisionnelle Vacances — UI Arsenal.
+#
+# 📡 Source :
+#   - binary_sensor.vacances_actives
+# ==============================================================
+
+carte_vacances_decision:
+  template: carte_base
+  color_type: card
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+
+  name: Vacances – État réel
+
+  state_display: |
+    [[[ 
+      return entity.state === 'on'
+        ? 'Vacances actives'
+        : 'Vacances inactives';
+    ]]]
+
+  label: |
+    [[[ 
+      const raison = states['sensor.vacances_raison']?.state || '';
+      const map = {
+        'mode_maison_normal': 'Mode maison non positionné sur Vacances',
+        'presence_famille': 'Présence famille détectée',
+        'visite_en_cours': 'Visite en cours',
+        'vacances_actives': 'Toutes les conditions sont réunies'
+      };
+      return map[raison] || '—';
+    ]]]
+
+  state:
+    # 🟢 VACANCES EFFECTIVES
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(255,235,59,0.2)
+
+    # ⚪ VACANCES INACTIVES
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+
+  tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 72px
+      - border-radius: 12px
+      - padding: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    state:
+      - font-size: 15px
+      - font-weight: 600
+      - color: '#111'
+    label:
+      - font-size: 12px
+      - color: '#555'

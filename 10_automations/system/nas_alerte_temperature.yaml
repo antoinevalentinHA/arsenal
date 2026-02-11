@@ -1,0 +1,66 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     NAS – Alerte surchauffe disque persistante
+#
+#  ID : 1012000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Surveiller la température moyenne du disque du NAS
+#     et avertir l’utilisateur lorsqu’une surchauffe
+#     persistante est détectée.
+#
+#     Cette automation vise à prévenir un risque matériel
+#     (ventilation insuffisante, environnement inadapté)
+#     avant apparition de dommages.
+#
+#  🚫 NE FAIT PAS
+#     - Ne pilote pas le NAS
+#     - Ne déclenche aucune action corrective automatique
+#     - Ne réagit pas aux pics thermiques brefs
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • température moyenne du disque ≥ 40 °C
+#           maintenue pendant au moins 10 minutes
+#     - Action :
+#         • envoi d’une notification mobile prioritaire
+#           avec tag dédié pour persistance
+#
+#  ✅ CONTRAINTES
+#     - Aucune logique énergétique ou matérielle intégrée
+#     - Aucune dépendance au contexte utilisateur
+#     - Notification unique par dépassement durable
+# ==========================================================
+
+
+- id: '1012000000005'
+  alias: "NAS – Alerte surchauffe disque"
+  description: >
+    Notifie le téléphone si la température du disque NAS dépasse 40°C
+    pendant au moins 10 minutes.
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Surchauffe durable
+  # ======================================================
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.nas_valentin_volume_1_temperature_moyenne_du_disque
+      above: 40
+      for: "00:10:00"
+
+  # ======================================================
+  # 🔄 Action — Notification mobile prioritaire
+  # ======================================================
+  action:
+    - service: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "💽 NAS – Température disque élevée"
+        message: >
+          ⚠️ Température moyenne du disque : {{ states('sensor.nas_valentin_volume_1_temperature_moyenne_du_disque') }} °C (≥ 40 °C).  
+          Vérifie la ventilation et l’emplacement du NAS.
+        extra:
+          tag: "alert_nas_disks_temp"
+          ttl: 0
+          priority: high

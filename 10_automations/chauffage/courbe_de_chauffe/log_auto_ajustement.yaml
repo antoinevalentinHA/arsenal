@@ -1,0 +1,89 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Journalisation des auto-ajustements
+#
+#  ID : 10240000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Capturer chaque événement `chauffage_adjustment`
+#     (simulation ou décision réelle) et le transformer
+#     en une ligne lisible, stockée dans un helper texte
+#     dédié.
+#
+#     Cette automation assure une traçabilité immédiate
+#     et synthétique des décisions d’auto-ajustement.
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide aucun ajustement
+#     - Ne modifie aucune consigne de chauffage
+#     - Ne pilote pas la chaudière
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • réception d’un événement `chauffage_adjustment`
+#     - Traitement :
+#         • extraction sécurisée des données événementielles
+#         • construction d’une ligne compacte et lisible
+#         • écriture dans un helper de mémoire
+#     - Format :
+#         • horodatage • mode (simulation/réel)
+#           • pente avant→après • parallèle avant→après
+#
+#  ✅ CONTRAINTES
+#     - Automation purement documentaire
+#     - Tolérance aux champs manquants (fallback propre)
+#     - Stockage volontairement limité au dernier événement
+# ==========================================================
+
+
+- id: "10240000000011"
+  alias: "Chauffage - Logger auto-ajustement"
+  description: >
+    Transforme l'événement chauffage_adjustment en une ligne
+    lisible et la stocke dans un helper dédié.
+
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: chauffage_adjustment
+
+  action:
+
+    # ------------------------------------------------------
+    # Extraction sécurisée des données de l'événement
+    # ------------------------------------------------------
+    - variables:
+        mode_evt: "{{ trigger.event.data.mode | default('inconnu') }}"
+        pente_before: "{{ trigger.event.data.pente_before | default('?') }}"
+        pente_after: "{{ trigger.event.data.pente_after | default('?') }}"
+        para_before: "{{ trigger.event.data.para_before | default('?') }}"
+        para_after: "{{ trigger.event.data.para_after | default('?') }}"
+
+        # Timestamp envoyé → priorité
+        # Si absent → fallback propre (now() formaté)
+        timestamp: >
+          {% set t = trigger.event.data.timestamp %}
+          {% if t is defined and t|string not in ['','none','null'] %}
+            {{ t }}
+          {% else %}
+            {{ now().strftime("%d/%m %H:%M") }}
+          {% endif %}
+
+    # ------------------------------------------------------
+    # Construction de la ligne finale
+    # ------------------------------------------------------
+    - variables:
+        ligne: >
+          {{ timestamp }} • {{ mode_evt }} •
+          pente {{ pente_before }}→{{ pente_after }} •
+          para {{ para_before }}→{{ para_after }}
+
+    # ------------------------------------------------------
+    # Écriture dans le helper texte
+    # ------------------------------------------------------
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.chauffage_last_adjustment
+      data:
+        value: "{{ ligne }}"

@@ -1,0 +1,92 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Babysitting – Correction immédiate des mémoires de présence enfants
+#
+#  ID : 10090000000009
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de CORRECTION DE LATENCE MÉTIER.
+#
+#     Elle réinitialise immédiatement les indicateurs
+#     de présence des enfants lors de la désactivation
+#     du mode Babysitting, afin d’éviter le délai
+#     inhérent au moteur de présence unifié.
+#
+#     Elle permet un recalcul instantané des états
+#     dépendants (chauffage, modes, etc.).
+#
+#  🧱 NATURE
+#
+#     - Correction ponctuelle de mémoire métier
+#     - Déclenchement événementiel (sortie de mode)
+#     - Aucune décision métier directe
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement lors du passage du mode
+#       Babysitting de ON à OFF
+#     - Désactivation immédiate des booléens :
+#         • presence_arnaud
+#         • presence_matthieu
+#     - Laisse les moteurs supérieurs
+#       recalculer les décisions normalement
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas de l’état de chauffage
+#     - Ne modifie pas les règles de présence
+#     - Ne court-circuite pas le moteur décisionnel
+#     - Ne force aucun état final
+#
+#  🔗 UTILISATION
+#
+#     - Évite les délais artificiels après sortie
+#       du mode Babysitting
+#     - Garantit une cohérence immédiate
+#       des états de présence enfants
+#
+#  🛡️ INTENTION
+#
+#     Cette automation assume volontairement
+#     une intervention directe sur la mémoire,
+#     afin de corriger une latence connue
+#     et maîtrisée du système.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10090000000009"
+  alias: "Babysitting – Reset mémoire présence enfants"
+  description: >
+    Reinitialise immediatement les presences enfants lorsque
+    le mode babysitting est coupe, sans attendre les delais
+    du capteur unifie.
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.mode_babysitting
+      from: "on"
+      to: "off"
+
+  action:
+    # ------------------------------------------------------
+    # 👶 Reset immediate presences enfants
+    # ------------------------------------------------------
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.presence_arnaud
+          - input_boolean.presence_matthieu
+
+    # ------------------------------------------------------
+    # 🔄 Laisse le script recalculer automatiquement
+    # ------------------------------------------------------
+    # Pas d'appel direct au chauffage ici : c'est volontaire.
+    # Le drop de presence va declencher l'automatisation,
+    # qui prendra la bonne decision (reduced) proprement.

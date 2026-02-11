@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Bouclage ECS — Autorisation temporelle & présence
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Exposer un état logique durable indiquant si
+#     le bouclage ECS est autorisé par :
+#       - la fenêtre temporelle,
+#       - la présence confort unifiée.
+#
+# 🧩 PÉRIMÈTRE
+#
+#     - Lundi à vendredi uniquement
+#     - Heure courante ∈ [début ; fin]
+#     - Présence requise : presence_famille_unifiee = on
+#     - Plages chevauchant minuit interdites
+#
+# 🔗 DÉPENDANCES
+#
+#     - input_datetime.heure_debut_bouclage_ecs
+#     - input_datetime.heure_fin_bouclage_ecs
+#     - binary_sensor.presence_famille_unifiee
+#
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage matériel
+#     - Aucune décision métier ECS
+#     - Aucune écriture dans un capteur de présence
+#
+# 🧠 STATUT
+#
+#     Capteur logique — Invariant temporel & contexte
+# ==========================================================
+
+- binary_sensor:
+    - name: "Autorisation Bouclage ECS"
+      unique_id: bouclage_autorise
+      default_entity_id: binary_sensor.bouclage_autorise
+      state: >
+        {% set debut = states('input_datetime.heure_debut_bouclage_ecs') %}
+        {% set fin = states('input_datetime.heure_fin_bouclage_ecs') %}
+        {% set presence = states('binary_sensor.presence_famille_unifiee') %}
+        {% if debut in ['unknown', 'unavailable']
+              or fin in ['unknown', 'unavailable']
+              or presence in ['unknown', 'unavailable'] %}
+          false
+        {% else %}
+          {% set now_time = now().strftime('%H:%M:%S') %}
+          {% set weekday = now().weekday() %}
+          {% if presence == 'on'
+                and weekday >= 0 and weekday <= 4
+                and debut < fin
+                and now_time >= debut and now_time < fin %}
+            true
+          {% else %}
+            false
+          {% endif %}
+        {% endif %}

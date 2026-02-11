@@ -1,0 +1,89 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Redémarrage manuel de la box Internet
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Point UNIQUE de redémarrage manuel de l’infrastructure
+#   réseau domestique (box Internet).
+#
+#   Ce script est une ACTION volontaire.
+#   Il n’est jamais déclenché automatiquement.
+#
+# ----------------------------------------------------------
+# 🧱 POSITION DANS L’ARCHITECTURE
+#
+#   - Script d’intervention manuelle
+#   - Niveau : infrastructure / réseau
+#
+#   ➜ Toute action de redémarrage manuel de la box
+#     DOIT passer par ce script.
+#
+# ----------------------------------------------------------
+# ⚙️ COMPORTEMENT
+#
+#   - Déclenche un cycle d’alimentation physique
+#     via le script bas niveau dédié
+#
+#   - Trace explicitement l’action :
+#       • notification persistante (historique local)
+#       • notification mobile (information utilisateur)
+#
+# ----------------------------------------------------------
+# 🔒 GARANTIES
+#
+#   - Aucun redémarrage automatique
+#   - Aucun test de connectivité
+#   - Aucun retry caché
+#
+#   ➜ Le script orchestre une action volontaire,
+#     une seule fois.
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne surveille pas l’état Internet
+#   - Ne décide pas quand redémarrer
+#   - Ne vérifie pas le retour de connexion
+#   - Ne manipule pas directement la prise
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script d’intervention manuelle — infrastructure réseau
+#
+# 📍 Entité :
+#   script.redemarrer_box
+#
+# 🔗 Dépendances :
+#   - script.cycle_alimentation_box
+#   - script.notification_envoyer
+#   - persistent_notification
+#
+# 🧩 Pipeline :
+#   Système / Réseau / Intervention manuelle
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+redemarrer_box:
+  alias: Redémarrer la box manuellement
+  description: Déclenche un cycle d’alimentation de la box avec traçabilité utilisateur
+  mode: single
+  sequence:
+    - action: script.cycle_alimentation_box
+
+    - action: persistent_notification.create
+      data:
+        title: "🔄 Redémarrage box"
+        message: >
+          {{ now().strftime('%d/%m %H:%M') }}
+          La box Internet a été redémarrée manuellement.
+
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🔄 Redémarrage box"
+        message: >
+          {{ now().strftime('%d/%m %H:%M') }}
+          La box Internet a été redémarrée manuellement.

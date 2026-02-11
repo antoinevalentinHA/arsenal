@@ -1,0 +1,53 @@
+# ==========================================================
+#  AUTOMATION : vaisselle_semaine_midi
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Lancer automatiquement le cycle ECS “vaisselle”
+#     durant les créneaux déjeuner de la semaine,
+#     uniquement si le mode dédié est actif.
+#
+#  💡 Avantages :
+#     - Automatisation ciblée selon les besoins
+#     - Jours ouvrés uniquement
+#     - Logique métier centralisée dans le script wrapper
+#
+#  ⚙️ Comportement :
+#     - À 12:30, 13:00 et 13:30
+#     - Du lundi au vendredi
+#     - Si l’input_boolean de mode est actif → validation par script
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '10250000000013'
+  alias: "ECS — Vaisselle — Semaine — Midi"
+  description: >
+    Déclenche à 12h30, 13h et 13h30 si mode vaisselle actif (le wrapper fait les vérifs).
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheurs — Créneaux déjeuner en semaine
+  # ======================================================
+  trigger:
+    - platform: time
+      at: "12:30:00"
+    - platform: time
+      at: "13:00:00"
+    - platform: time
+      at: "13:30:00"
+
+  # ======================================================
+  # ✅ Conditions — Mode vaisselle actif + jours ouvrés
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.mode_vaisselle
+      state: "on"
+    - condition: time
+      weekday: [mon, tue, wed, thu, fri]
+
+  # ======================================================
+  # 🔄 Action — Appel du script de contrôle
+  # ======================================================
+  action:
+    - service: script.ecs_vaisselle_lancer_si_ok

@@ -1,0 +1,101 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : Capteurs Netatmo
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Regrouper l’ensemble des capteurs issus de l’écosystème
+#    Netatmo afin de fournir une vue cohérente et centralisée
+#    des mesures environnementales.
+#
+# 🧠 Lecture métier :
+#    Ce groupe constitue une SOURCE DE MESURE,
+#    pas une source de décision.
+#    Les capteurs Netatmo alimentent les diagnostics,
+#    les templates et les pipelines, mais ne décident jamais.
+#
+# 🧩 Périmètre :
+#    - Capteurs physiques Netatmo uniquement
+#    - Température, humidité, CO₂, pression, bruit, pluie
+#    - Regroupement logique par zones
+#
+# 🔗 Dépendances :
+#    - Intégration Netatmo
+#    - Utilisé par :
+#      • capteurs système de contrôle de fraîcheur des données
+#      • templates d’audit (âge des données Netatmo)
+#      • dashboards environnement (lecture)
+#
+# 🚫 Interdits :
+#    - Ajouter des capteurs non Netatmo
+#    - Utiliser ce groupe comme condition directe
+#    - Introduire une logique métier ici
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle mesures / interface
+# ==========================================================
+
+
+netatmo_capteurs:
+  name: "Capteurs Netatmo"
+  entities:
+
+    ########################################################
+    # 🛋️ SÉJOUR
+    ########################################################
+    - sensor.temperature_sejour_1
+    - sensor.humidite_relative_sejour_1
+    - sensor.co2_sejour
+
+
+    ########################################################
+    # 🚪 ENTRÉE
+    ########################################################
+    - sensor.temperature_entree
+    - sensor.humidite_relative_entree
+    - sensor.co2_entree
+
+
+    ########################################################
+    # 🛏️ CHAMBRE PARENTS
+    ########################################################
+    - sensor.temperature_chambre_parents_1
+    - sensor.humidite_relative_chambre_parents_1
+    - sensor.co2_chambre_parents
+
+
+    ########################################################
+    # 🧸 CHAMBRE MATTHIEU
+    ########################################################
+    - sensor.temperature_chambre_matthieu_1
+    - sensor.humidite_relative_chambre_matthieu_1
+    - sensor.co2_chambre_matthieu
+    - sensor.pression_chambre_matthieu
+    - sensor.bruit_chambre_matthieu
+
+
+    ########################################################
+    # 🧸 CHAMBRE ARNAUD
+    ########################################################
+    - sensor.temperature_chambre_arnaud_1
+    - sensor.humidite_relative_chambre_arnaud_1
+    - sensor.co2_chambre_arnaud
+    - sensor.pression_chambre_arnaud
+    - sensor.bruit_chambre_arnaud
+
+
+    ########################################################
+    # 🏠 PETITE MAISON
+    ########################################################
+    - sensor.temperature_petite_maison
+    - sensor.humidite_relative_petite_maison
+    - sensor.co2_petite_maison
+
+
+    ########################################################
+    # 🌿 EXTÉRIEUR & MÉTÉO
+    ########################################################
+    - sensor.temperature_jardin_1
+    - sensor.humidite_relative_jardin_1
+    - sensor.temperature_jardin_2
+    - sensor.humidite_relative_jardin_2
+    - sensor.pluviometre_precipitation

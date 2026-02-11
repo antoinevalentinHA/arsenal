@@ -1,0 +1,317 @@
+# ==========================================================
+# 💧 TEMPLATE TRIGGERED SENSORS — Points de rosée (fixes)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Calculer le **point de rosée (°C)** pour différentes zones
+#   ne dépendant pas de la logique Netatmo/Zigbee, à partir :
+#     • de la température ambiante (°C)
+#     • du taux d’humidité relative (%)
+#
+# ⚙️ Fonctionnement :
+#   - Déclenchement à chaque variation de température ou d’humidité
+#     dans la zone concernée, ainsi qu’au démarrage de Home Assistant.
+#   - Ignore les valeurs non valides (`unknown`, `unavailable`, `none`, etc.)
+#     et les taux d’humidité hors plage (≤0 / >100 %).
+#   - Si aucune donnée exploitable, conserve la dernière valeur connue.
+#
+# 🧮 Formule utilisée (Magnus-Tetens) :
+#   ```
+#   Td = (b * γ(T, RH)) / (a - γ(T, RH))
+#   avec γ = (a*T)/(b+T) + ln(RH/100)
+#   ```
+#   où a = 17.62 et b = 243.12
+#
+# 📦 Capteurs créés :
+#   • sensor.point_de_rosee_jardin  
+#   • sensor.point_de_rosee_cave  
+#   • sensor.point_de_rosee_entree  
+#   • (... et autres capteurs similaires non listés ici)
+#
+# 🧠 Détails techniques :
+#   - Chaque capteur indique dans ses attributs les entités sources :
+#       `temperature_source` et `humidite_source`
+#   - Les valeurs sont arrondies à 0.1°C
+#
+# 📊 Type : Trigger Template Sensors  
+# 🌡️ Unité : °C  
+# 💧 Icône : mdi:thermometer-water  
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_jardin
+        - sensor.humidite_relative_jardin
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée jardin"
+      unique_id: point_de_rosee_jardin
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: &dewpoint_logic >
+        {% set T = states(this.attributes.temperature_source) | float(none) %}
+        {% set RH_temp = states(this.attributes.humidite_source) | float(none) %}
+        {% if T is not none and RH_temp is not none and 0 < RH_temp <= 100 %}
+          {% set a, b = 17.62, 243.12 %}
+          {% set gamma = (a * T / (b + T)) + log(RH_temp / 100) %}
+          {{ ((b * gamma) / (a - gamma)) | round(1) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+      attributes:
+        temperature_source: sensor.temperature_jardin
+        humidite_source: sensor.humidite_relative_jardin
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_cave
+        - sensor.humidite_relative_cave
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée cave"
+      unique_id: point_de_rosee_cave
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_cave
+        humidite_source: sensor.humidite_relative_cave
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree
+        - sensor.humidite_relative_entree
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée entrée"
+      unique_id: point_de_rosee_entree
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_entree
+        humidite_source: sensor.humidite_relative_entree
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_garage
+        - sensor.humidite_relative_garage
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée garage"
+      unique_id: point_de_rosee_garage
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_garage
+        humidite_source: sensor.humidite_relative_garage
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_petite_maison
+        - sensor.humidite_relative_petite_maison
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée petite maison"
+      unique_id: point_de_rosee_petite_maison
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_petite_maison
+        humidite_source: sensor.humidite_relative_petite_maison
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_enfants
+        - sensor.humidite_relative_sdb_enfants
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée SDB Enfants"
+      unique_id: point_de_rosee_sdb_enfants
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_sdb_enfants
+        humidite_source: sensor.humidite_relative_sdb_enfants
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_parents
+        - sensor.humidite_relative_sdb_parents
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée SDB Parents"
+      unique_id: point_de_rosee_sdb_parents
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_sdb_parents
+        humidite_source: sensor.humidite_relative_sdb_parents
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_bobst
+        - sensor.humidite_relative_bobst
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée Bobst"
+      unique_id: point_de_rosee_bobst
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_bobst
+        humidite_source: sensor.humidite_relative_bobst
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_commercial
+        - sensor.humidite_relative_commercial
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée Commercial"
+      unique_id: point_de_rosee_commercial
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_commercial
+        humidite_source: sensor.humidite_relative_commercial
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_compta
+        - sensor.humidite_relative_compta
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée Compta"
+      unique_id: point_de_rosee_compta
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_compta
+        humidite_source: sensor.humidite_relative_compta
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_devis
+        - sensor.humidite_relative_devis
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée Devis"
+      unique_id: point_de_rosee_devis
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_devis
+        humidite_source: sensor.humidite_relative_devis
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_direction
+        - sensor.humidite_relative_direction
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée Direction"
+      unique_id: point_de_rosee_direction
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_direction
+        humidite_source: sensor.humidite_relative_direction
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_komori
+        - sensor.humidite_relative_komori
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée Komori"
+      unique_id: point_de_rosee_komori
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_komori
+        humidite_source: sensor.humidite_relative_komori
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_media
+        - sensor.humidite_relative_media
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée Media"
+      unique_id: point_de_rosee_media
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_media
+        humidite_source: sensor.humidite_relative_media
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_qualite
+        - sensor.humidite_relative_qualite
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée Qualité"
+      unique_id: point_de_rosee_qualite
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_qualite
+        humidite_source: sensor.humidite_relative_qualite

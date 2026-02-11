@@ -1,0 +1,66 @@
+# ==========================================================
+#  AUTOMATION : Bouclage ECS – Arrêt automatique (fin timer)
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Arrêter automatiquement la pompe de bouclage ECS à la
+#     fin d’un cycle manuel temporisé, sous réserve qu’aucune
+#     plage automatique ne soit en cours.
+#
+#  💡 Avantages :
+#     - Fonctionnement autonome du cycle manuel
+#     - Protection contre les oublis d’arrêt
+#     - Respect de la souveraineté du bouclage automatique
+#     - Absence d’interruption inter-contexte
+#
+#  ⚙️ Comportement :
+#     - Déclenché à l’expiration du timer 5 minutes
+#     - Vérifie qu’aucune plage automatique n’est en cours
+#     - Si autorisé :
+#         • extinction de la prise
+#         • fin du mode bouclage manuel
+#     - Sinon :
+#         • événement ignoré (AUTO souverain)
+#
+#  🔒 Gouvernance :
+#     - Priorité AUTO > MANUEL
+#     - Arrêt interdit si `binary_sensor.bouclage_autorise = on`
+#     - Idempotence garantie en superposition de contextes
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '10260000000002'
+  alias: Bouclage ECS - Arrêt automatique (fin timer)
+  description: Eteint la prise et marque la fin du bouclage lorsque le timer se termine
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Fin du timer
+  # ======================================================
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.bouclage_ecs_5_minutes
+
+  # ======================================================
+  # 🔒 Condition — Arrêt autorisé uniquement hors plage automatique
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: binary_sensor.bouclage_autorise
+      state: 'off'
+
+  # ======================================================
+  # 🔄 Actions — Arrêt légitime du bouclage manuel
+  # ======================================================
+  action:
+    - alias: Eteindre la prise
+      service: switch.turn_off
+      target:
+        entity_id: switch.prise_bouclage
+
+    - alias: Marquer fin du bouclage 5 minutes
+      target:
+        entity_id: input_boolean.bouclage_ecs_5_minutes_en_cours
+      service: input_boolean.turn_off

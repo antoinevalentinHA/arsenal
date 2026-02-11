@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER : Chute de température (référence)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Stocker une valeur de référence intermédiaire
+#    utilisée par le pipeline d’aération pour le calcul
+#    de la chute de température.
+#
+# 🧠 Lecture métier :
+#    Ce helper contient une valeur CALCULÉE et MAINTENUE
+#    par l’automatisation d’aération.
+#    Il ne s’agit ni d’un seuil, ni d’un réglage utilisateur,
+#    mais d’une référence de travail interne au pipeline.
+#
+# 🧩 Périmètre :
+#    - Valeur exprimée en °C
+#    - Utilisée uniquement dans le pipeline aération
+#
+# 🔗 Dépendances :
+#    - Automatisation aération / blocage chauffage
+#
+# 🚫 Interdits :
+#    - Modifier manuellement cette valeur
+#    - L’utiliser comme seuil ou consigne
+#    - L’exposer comme réglage utilisateur
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - référence interne / calcul thermique
+# ==========================================================
+
+
+chute_temp_reference:
+  name: chute_temp_reference
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"

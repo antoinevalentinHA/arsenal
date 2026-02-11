@@ -1,0 +1,130 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Pluie – Décision de fin d’épisode météo
+#
+#  ID : 1016000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de DÉCISION MÉTÉO.
+#
+#     Elle détermine la fin effective d’un épisode
+#     de pluie au sens métier, et désactive l’état
+#     global `pluie_en_cours` lorsque la pluie
+#     est absente de façon confirmée.
+#
+#     La source de vérité utilisée est Netatmo,
+#     considérée comme référence météo fiable.
+#
+#  🧱 NATURE
+#
+#     - Décision métier (fin d’état)
+#     - Basée sur une mesure météo normalisée
+#     - Résiliente aux redémarrages Home Assistant
+#
+#  ⚙️ PRINCIPE
+#
+#     - Condition préalable : pluie en cours active
+#     - Source unique : pluviomètre Netatmo
+#     - Deux mécanismes complémentaires :
+#         • Détection directe : pluie < 0.1 mm/h maintenue 5 min
+#         • Watchdog temporel : vérification périodique
+#           en cas de redémarrage HA
+#     - Désactivation de l’état `pluie_en_cours`
+#       lorsque l’absence de pluie est confirmée
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne détecte pas le début de la pluie
+#     - Ne s’appuie pas sur les capteurs Zigbee
+#     - Ne génère pas d’impulsion logique
+#     - Ne décide rien en cas de capteur indisponible
+#
+#  🔗 UTILISATION
+#
+#     - Autorité unique de sortie de l’état pluie
+#     - Consommée par les scénarios dépendants
+#       (aération, arrosage, protections, etc.)
+#
+#  🛡️ ROBUSTESSE
+#
+#     Le watchdog temporel garantit un état
+#     cohérent même après redémarrage
+#     de Home Assistant.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1016000000003"
+  alias: "Pluie – Décision de fin d’épisode"
+  description: >
+    Désactive `pluie_en_cours` si Netatmo ne détecte plus de pluie
+    depuis au moins 5 minutes, en ignorant les indisponibilités du capteur.
+
+  mode: single
+  max_exceeded: silent
+
+  # ======================================================
+  # 🔔 Déclencheurs — Netatmo < 0.1 mm/h ou watchdog
+  # ======================================================
+  trigger:
+    # Détection principale
+    - platform: numeric_state
+      id: netatmo
+      entity_id: sensor.pluviometre_precipitation
+      below: 0.1
+      for: "00:05:00"
+
+    # Watchdog (cas redémarrage HA)
+    - platform: time_pattern
+      id: watchdog
+      minutes: "/1"
+
+  # ======================================================
+  # ✅ Conditions globales
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.pluie_en_cours
+      state: "on"
+    - condition: template
+      alias: "Capteur Netatmo valide"
+      value_template: >
+        {{ states('sensor.pluviometre_precipitation') not in ['unavailable','unknown','none'] }}
+
+  # ======================================================
+  # 🔄 Action — Arrêt pluie selon type de déclencheur
+  # ======================================================
+  action:
+    - choose:
+
+        # ✅ Cas 1 : Netatmo sous seuil depuis 5 min
+        - conditions:
+            - condition: trigger
+              id: netatmo
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.pluie_en_cours
+
+        # ✅ Cas 2 : Watchdog (vérification manuelle)
+        - conditions:
+            - condition: trigger
+              id: watchdog
+            - condition: template
+              alias: "Watchdog - Vérifie pluie absente depuis ≥5 min"
+              value_template: >
+                {% set s = states.sensor.pluviometre_precipitation %}
+                {% if not s or s.state in ['unavailable','unknown','none'] %}
+                  false
+                {% else %}
+                  {{ (s.state | float(999)) <= 0.1 and
+                     (now() - s.last_changed).total_seconds() >= 5*60 }}
+                {% endif %}
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.pluie_en_cours

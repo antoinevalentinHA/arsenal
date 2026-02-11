@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 BINARY SENSOR — Clim : bloquée (survol fiable)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer uniquement les blocages STRUCTURELS
+#   empêchant réellement la climatisation d’agir.
+#
+# 🧱 Principe Arsenal :
+#   - Voyant de survol (fiabilité > exhaustivité)
+#   - Aucun contexte thermique fin
+#   - Aucun raisonnement métier
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim bloquée"
+      unique_id: clim_bloquee
+      default_entity_id: binary_sensor.clim_bloquee
+      state: >
+        {{
+          is_state('input_boolean.blocage_clim_poele', 'on')
+          or is_state('input_boolean.chauffage_blocage_aeration', 'on')
+          or is_state('binary_sensor.clim_blocage_horaire_reel', 'on')
+          or is_state('binary_sensor.fenetre_ouverte_maison', 'on')
+          or is_state('binary_sensor.fenetre_ouverte_etage', 'on')
+        }}
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:lock
+        {% else %}
+          mdi:lock-open
+        {% endif %}

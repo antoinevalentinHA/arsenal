@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Bouclage ponctuel (5 minutes)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Point d’entrée UNIQUE pour déclencher un cycle court
+#   de bouclage d’eau chaude sanitaire.
+#
+#   Ce script ne décide pas.
+#   Il exécute une demande explicite.
+#
+# ----------------------------------------------------------
+# 🧩 PRINCIPE DE FONCTIONNEMENT
+#
+#   - Démarre un timer de durée FIXE (5 minutes)
+#   - Marque l’état "bouclage en cours" via un helper
+#   - Active physiquement la prise du bouclage ECS
+#
+#   La fin du cycle est gérée ailleurs
+#   (automation basée sur l’expiration du timer).
+#
+# ----------------------------------------------------------
+# 🧠 CONTEXTE MÉTIER
+#
+#   Le bouclage ECS est :
+#     - ponctuel
+#     - volontaire
+#     - non automatique par défaut
+#
+#   Ce script permet une montée rapide en confort
+#   sans perturber les logiques ECS globales
+#   (planning, modes, absences).
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucun calcul de besoin ECS
+#   - Aucune décision horaire
+#   - Aucune gestion de fin de cycle
+#   - Aucun appel direct au chauffe-eau
+#
+# ----------------------------------------------------------
+# 🔒 GARANTIES
+#
+#   - Idempotent sur la durée (restart)
+#   - Durée centralisée et observable (timer)
+#   - État explicite via input_boolean
+#   - Aucun toggle implicite
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#   - timer.bouclage_ecs_5_minutes
+#   - input_boolean.bouclage_ecs_5_minutes_en_cours
+#   - switch.prise_bouclage
+#
+# ----------------------------------------------------------
+# 🎛️ USAGES TYPIQUES
+#
+#   - Bouton mural (cuisine / SDB)
+#   - Commande vocale
+#   - Dashboard ECS
+#   - Appel depuis une automatisation ponctuelle
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+bouclage_ecs_5_minutes:
+  alias: "Bouclage ECS 5 minutes"
+  description: "Force le bouclage de l'eau chaude pendant 5 minutes via prise connectée"
+  mode: restart
+
+  sequence:
+    # ▶️ Démarre le timer 5 minutes
+    - alias: "Démarrer le timer"
+      action: timer.start
+      target:
+        entity_id: timer.bouclage_ecs_5_minutes
+
+    # 🟢 Marque le début du bouclage
+    - alias: "Marquer début du bouclage"
+      action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.bouclage_ecs_5_minutes_en_cours
+
+    # ⚡ Allume la prise de bouclage
+    - alias: "Allumer la prise"
+      action: switch.turn_on
+      target:
+        entity_id: switch.prise_bouclage

@@ -1,0 +1,202 @@
+# ==========================================================
+# 🌡️ TEMPLATE SENSORS — Température “Seuil Bas”
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Calculer pour chaque zone la **température minimale de confort**
+#   (ou “seuil bas”) en tenant compte :
+#     - de la période météorologique actuelle (`sensor.periode_meteo`),
+#     - de la température moyenne filtrée correspondante,
+#     - et d’un **offset saisonnier adaptatif** (plus strict en hiver).
+#
+# ⚙️ Fonctionnement :
+#   - Source principale : `sensor.temperature_filtre_<periode>_moyenne_<zone>`
+#   - Périodes météo possibles : `aube`, `matin`, `jour`, `crepuscule`, `nuit`
+#   - Offset saisonnier :
+#       • Hiver  (Déc, Jan, Fév)     → -1.3 °C  
+#       • Inter-saisons (Mar, Avr, Oct, Nov) → -1.0 °C  
+#       • Été   (Mai à Sep)          → -3.0 °C  
+#     (la tolérance est plus large en été pour éviter les alertes inutiles)
+#
+#   ➜ Formule :
+#        seuil_bas = moyenne - offset
+#
+# 🧮 Logique :
+#   1️⃣ Identifier la période météo active (`sensor.periode_meteo`).
+#   2️⃣ Charger la moyenne filtrée du capteur correspondant à la zone.
+#   3️⃣ Déterminer l’offset en fonction du mois (adaptation saisonnière).
+#   4️⃣ Calculer la température minimale acceptable.
+#
+# 🧩 Capteurs / Zones concernées :
+#   ▪️ Résidentiel :
+#      - Chambre Arnaud  
+#      - Chambre Matthieu  
+#      - Chambre Parents  
+#      - Séjour  
+#      - Entrée  
+#      - Cave  
+#      - Garage  
+#      - Palier  
+#      - Petite Maison  
+#      - SDB Enfants  
+#      - SDB Parents  
+#      - Jardin  
+#      - Extérieur  
+#
+#   ▪️ Professionnel / Technique :
+#      - Direction  
+#      - Compta  
+#      - Qualité  
+#      - Devis  
+#      - Commercial  
+#      - Stock Carton  
+#      - Stock PF  
+#      - Komori  
+#      - Bobst  
+#      - Media
+#
+# 💡 Interprétation :
+#   - Si température < Seuil Bas :
+#       → Risque d’inconfort thermique (air trop froid ou chauffage insuffisant).  
+#   - Si température ≈ Seuil Bas :
+#       → Zone limite du confort thermique.  
+#   - Si température > Seuil Bas :
+#       → Confort thermique acceptable ou optimal.
+#
+# ⚠️ Remarques :
+#   - Le **système s’adapte dynamiquement** : chaque pièce possède sa propre
+#     courbe de confort selon la période et la saison.  
+#   - L’offset d’été plus élevé permet d’absorber les variations naturelles 
+#     sans générer de fausse alerte.  
+#   - Ces seuils servent souvent de **base à des automatisations intelligentes** :
+#       ex. déclenchement du chauffage, envoi d’alerte, ou ajustement de ventilation.
+#   - Couplés aux “Température Seuil Haut”, ils forment un **cadre thermique complet**.
+#
+# 📊 Type : Template Sensor  
+# 🔥 Domaine : Thermique / Confort / Pilotage intelligent  
+# ==========================================================
+
+- sensor:
+    - name: "Température Seuil Bas Chambre Arnaud"
+      unique_id: temperature_seuil_bas_chambre_arnaud
+      state: &temperature_seuil_bas_logic >
+        {% set periode = states('sensor.periode_meteo') %}
+        {% set suffixe = this.entity_id | replace('sensor.temperature_seuil_bas_', '') %}
+        {% set moyenne = states('sensor.temperature_filtre_' ~ periode ~ '_moyenne_' ~ suffixe) | float(0) %}
+        {% set mois = now().month %}
+
+        {# Offset saisonnier : plus strict en hiver #}
+        {% set offset =
+          1.3 if mois in [12, 1, 2] else
+          1.0 if mois in [3, 4, 10, 11] else
+          3 %}
+        {{ (moyenne - offset) | round(1) }}
+
+- sensor:
+    - name: "Température Seuil Bas Entrée"
+      unique_id: temperature_seuil_bas_entree
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Jardin"
+      unique_id: temperature_seuil_bas_jardin
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Chambre Matthieu"
+      unique_id: temperature_seuil_bas_chambre_matthieu
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Chambre Parents"
+      unique_id: temperature_seuil_bas_chambre_parents
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Petite Maison"
+      unique_id: temperature_seuil_bas_petite_maison
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Séjour"
+      unique_id: temperature_seuil_bas_sejour
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Cave"
+      unique_id: temperature_seuil_bas_cave
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas SDB Parents"
+      unique_id: temperature_seuil_bas_sdb_parents
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas SDB Enfants"
+      unique_id: temperature_seuil_bas_sdb_enfants
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Garage"
+      unique_id: temperature_seuil_bas_garage
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Palier"
+      unique_id: temperature_seuil_bas_palier
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Extérieur"
+      unique_id: temperature_seuil_bas_exterieur
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Direction"
+      unique_id: temperature_seuil_bas_direction
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Compta"
+      unique_id: temperature_seuil_bas_compta
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Qualité"
+      unique_id: temperature_seuil_bas_qualite
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Devis"
+      unique_id: temperature_seuil_bas_devis
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Commercial"
+      unique_id: temperature_seuil_bas_commercial
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Stock Carton"
+      unique_id: temperature_seuil_bas_stock_carton
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Stock PF"
+      unique_id: temperature_seuil_bas_stock_pf
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Komori"
+      unique_id: temperature_seuil_bas_komori
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Bobst"
+      unique_id: temperature_seuil_bas_bobst
+      state: *temperature_seuil_bas_logic
+
+- sensor:
+    - name: "Température Seuil Bas Media"
+      unique_id: temperature_seuil_bas_media
+      state: *temperature_seuil_bas_logic

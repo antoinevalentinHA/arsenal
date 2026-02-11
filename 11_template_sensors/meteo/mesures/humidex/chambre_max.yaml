@@ -1,0 +1,87 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Humidex maximum des chambres
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Identifier **la chambre la plus chaude** en termes d’humidex,
+#   et en donner la valeur maximale ainsi que son origine.
+#
+# ⚙️ Fonctionnement :
+#   - Capte les variations des humidex individuels :
+#       • sensor.humidex_chambre_arnaud  
+#       • sensor.humidex_chambre_matthieu  
+#       • sensor.humidex_chambre_parents
+#   - Se met également à jour au démarrage de Home Assistant.
+#
+# 🧮 Calcul :
+#   1️⃣ Ignore les valeurs `unknown`, `unavailable`, `none`, etc.  
+#   2️⃣ Trie les valeurs valides et conserve la plus élevée.  
+#   3️⃣ Retourne :
+#        • l’humidex maximal (dans l’état du capteur)  
+#        • le nom de la chambre correspondante (dans l’attribut `chambre_max`)
+#
+# 🧠 Détails techniques :
+#   - Gestion robuste des cas où certaines valeurs sont manquantes.  
+#   - Si aucune valeur valide n’est trouvée → conserve l’état précédent.  
+#   - L’attribut `chambre_max` conserve le dernier nom connu
+#     pour éviter les trous de données.
+#
+# 📏 Unité : °C (degré Celsius)
+# 📊 Type : Trigger Template Sensor
+# 📍 Nom de l’entité : sensor.humidex_max_chambres
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidex_chambre_arnaud
+        - sensor.humidex_chambre_matthieu
+        - sensor.humidex_chambre_parents
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Humidex max Chambres"
+      unique_id: humidex_max_chambres
+      unit_of_measurement: "°C"
+      state: >
+        {% set sources = {
+          'Chambre Arnaud': states('sensor.humidex_chambre_arnaud'),
+          'Chambre Matthieu': states('sensor.humidex_chambre_matthieu'),
+          'Chambre Parents': states('sensor.humidex_chambre_parents')
+        } %}
+        {% set ns = namespace(valeurs=[]) %}
+        {% for nom, val in sources.items() %}
+          {% if val not in ['unknown','unavailable','none','None',''] %}
+            {% set v = val | float(999) %}
+            {% if v > 0 %}
+              {% set ns.valeurs = ns.valeurs + [[nom, v]] %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.valeurs %}
+          {% set sorted = ns.valeurs | sort(attribute=1) %}
+          {{ sorted[-1][1] | round(1) }}
+        {% else %}
+          {{ states(this.entity_id) }}
+        {% endif %}
+      attributes:
+        chambre_max: >
+          {% set sources = {
+            'Chambre Arnaud': states('sensor.humidex_chambre_arnaud'),
+            'Chambre Matthieu': states('sensor.humidex_chambre_matthieu'),
+            'Chambre Parents': states('sensor.humidex_chambre_parents')
+          } %}
+          {% set ns = namespace(valeurs=[]) %}
+          {% for nom, val in sources.items() %}
+            {% if val not in ['unknown','unavailable','none','None',''] %}
+              {% set v = val | float(999) %}
+              {% if v > 0 %}
+                {% set ns.valeurs = ns.valeurs + [[nom, v]] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {% if ns.valeurs %}
+            {% set sorted = ns.valeurs | sort(attribute=1) %}
+            {{ sorted[-1][0] }}
+          {% else %}
+            {{ state_attr(this.entity_id, 'chambre_max') or 'Mémoire' }}
+          {% endif %}

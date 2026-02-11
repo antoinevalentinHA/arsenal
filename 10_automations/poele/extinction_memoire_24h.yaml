@@ -1,0 +1,42 @@
+# ==========================================================
+#  AUTOMATION : Poele – Extinction memoire 24h
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Quand le timer 24h arrive à échéance, considérer que
+#     la fenêtre de mémoire associée au poêle est terminée
+#     et désactiver la mémoire poele_recent.
+#
+#  🏷️ ID : 10100000000002
+# ==========================================================
+
+- id: "10100000000002"
+  alias: "Poele - Extinction mémoire 24h"
+  description: >
+    Désactive la mémoire poele_recent lorsque le timer 24h
+    arrive à échéance.
+
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.poele_24h
+
+  condition:
+    # ------------------------------------------------------
+    # La mémoire doit encore être active (garde-fou utile)
+    # ------------------------------------------------------
+    - condition: state
+      entity_id: input_boolean.poele_recent
+      state: "on"
+
+  action:
+
+    # ------------------------------------------------------
+    # Désactiver la mémoire
+    # ------------------------------------------------------
+    - alias: "Désactiver la mémoire poêle récent"
+      action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.poele_recent

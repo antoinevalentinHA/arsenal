@@ -1,0 +1,50 @@
+#################################################################
+# 🌤️ CARTE TEMPÉRATURE EXTÉRIEURE — SPÉCIALISATION UI LOCALE
+# ---------------------------------------------------------------
+# 🎯 Rôle :
+#   Afficher la température extérieure en réutilisant intégralement
+#   la logique couleur canonique Arsenal, avec une icône météo
+#   dynamique dépendante de l’état courant du weather entity.
+#
+# 🧱 Périmètre :
+#   - UI uniquement
+#   - Lecture seule
+#   - Spécialisation locale "Extérieur"
+#
+# 🚫 Interdits :
+#   - Aucun pilotage
+#   - Aucune logique météo métier
+#   - Aucune modification de la logique couleur
+#   - Aucune dépendance implicite
+#
+# 🏷️ Statut :
+#   Spécialisation UI locale — non canonique
+#################################################################
+
+carte_temperature_exterieure:
+  template: carte_temperature
+
+  icon: |
+    [[[
+      const icones = {
+        sunny: "mdi:weather-sunny",
+        clear: "mdi:weather-sunny",
+        "clear-night": "mdi:weather-night",
+        cloudy: "mdi:weather-cloudy",
+        partlycloudy: "mdi:weather-partly-cloudy",
+        rainy: "mdi:weather-rainy",
+        pouring: "mdi:weather-pouring",
+        lightning: "mdi:weather-lightning",
+        "lightning-rainy": "mdi:weather-lightning-rainy",
+        snowy: "mdi:weather-snowy",
+        "snowy-rainy": "mdi:weather-snowy-rainy",
+        windy: "mdi:weather-windy",
+        fog: "mdi:weather-fog"
+      };
+
+      return icones[states['weather.forecast_maison']?.state]
+        || "mdi:weather-cloudy";
+    ]]]
+
+  triggers_update:
+    - weather.forecast_maison

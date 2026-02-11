@@ -1,0 +1,78 @@
+# ==========================================================
+#  TEMPLATE BINARY SENSORS : Fenetres – Unification par piece
+#  ----------------------------------------------------------
+#  🧠 Role :
+#     Offrir une base uniforme pour le systeme d’aeration V2 :
+#     chaque piece expose un capteur unique, indicateur de
+#     l’ouverture de ses fenetres.
+#
+#  🎯 Objectifs :
+#     - Normaliser la nomenclature : fenetres_ouvertes_<piece>
+#     - Simplifier l’evaluation piece-par-piece (PHASE 4)
+#     - Supprimer toute manipulation de capteurs bruts
+#
+#  💡 Note :
+#     - Aucune logique thermique ici
+#     - Pure unification, strictement structurelle
+# ==========================================================
+
+- binary_sensor:
+
+    # ------------------------------------------------------
+    #  🪟 Séjour – agregation des 4 ouvrants
+    # ------------------------------------------------------
+    - name: "Fenetres ouvertes - Sejour"
+      unique_id: fenetres_ouvertes_sejour
+      default_entity_id: binary_sensor.fenetres_ouvertes_sejour
+      device_class: opening
+      state: >
+        {{
+          is_state('binary_sensor.capteur_fenetre_sejour_1', 'on') or
+          is_state('binary_sensor.capteur_fenetre_sejour_2', 'on') or
+          is_state('binary_sensor.capteur_fenetre_sejour_3', 'on') or
+          is_state('binary_sensor.capteur_fenetre_sejour_4', 'on')
+        }}
+
+    # ------------------------------------------------------
+    #  🪟 Chambre parents – agregation des 3 ouvrants
+    # ------------------------------------------------------
+    - name: "Fenetres ouvertes - Chambre parents"
+      unique_id: fenetres_ouvertes_parents
+      default_entity_id: binary_sensor.fenetres_ouvertes_parents
+      device_class: opening
+      state: >
+        {{
+          is_state('binary_sensor.capteur_chambre_parents_droite', 'on') or
+          is_state('binary_sensor.capteur_chambre_parents_gauche', 'on') or
+          is_state('binary_sensor.capteur_chambre_parents_milieu', 'on')
+        }}
+
+    # ------------------------------------------------------
+    #  🪟 Entree – alias logique
+    # ------------------------------------------------------
+    - name: "Fenetres ouvertes - Entree"
+      unique_id: fenetres_ouvertes_entree
+      default_entity_id: binary_sensor.fenetres_ouvertes_entree
+      device_class: opening
+      state: >
+        {{ is_state('binary_sensor.capteur_fenetre_entree', 'on') }}
+
+    # ------------------------------------------------------
+    #  🪟 Chambre Arnaud – alias logique
+    # ------------------------------------------------------
+    - name: "Fenetres ouvertes - Chambre Arnaud"
+      unique_id: fenetres_ouvertes_arnaud
+      default_entity_id: binary_sensor.fenetres_ouvertes_arnaud
+      device_class: opening
+      state: >
+        {{ is_state('binary_sensor.capteur_chambre_arnaud', 'on') }}
+
+    # ------------------------------------------------------
+    #  🪟 Chambre Matthieu – alias logique
+    # ------------------------------------------------------
+    - name: "Fenetres ouvertes - Chambre Matthieu"
+      unique_id: fenetres_ouvertes_matthieu
+      default_entity_id: binary_sensor.fenetres_ouvertes_matthieu
+      device_class: opening
+      state: >
+        {{ is_state('binary_sensor.capteur_chambre_matthieu', 'on') }}

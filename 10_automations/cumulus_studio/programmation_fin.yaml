@@ -1,0 +1,131 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS Petite Maison – Clôture calendaire de fin de séjour
+#
+#  ID : 1005000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de clôture calendaire.
+#
+#     Elle détecte le jour de fin de séjour programmé
+#     pour la petite maison et déclenche le script ECS
+#     dédié à l’arrêt du chauffe-eau et au passage
+#     en mode absence.
+#
+#     Cette automation ne pilote PAS directement
+#     le chauffe-eau.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement quotidien à heure fixe (23:55)
+#     - Vérification du cadre de validité :
+#         • programmation ECS toujours active
+#         • date du jour = date de fin programmée
+#     - Délégation intégrale de l’action
+#       au script métier fiabilisé
+#     - Désactivation automatique de la programmation
+#
+#  🧠 AUTORITÉ MÉTIER
+#
+#     script.ecs_petite_maison_arret_absence
+#
+#     → porte l’ensemble de la logique ECS :
+#       arrêt, sécurités, vérifications et notifications.
+#
+#  📦 PARAMÈTRES UTILISÉS
+#
+#     - input_boolean.ecs_petite_maison_programmation
+#     - input_datetime.debut_ecs_petite_maison_programmee
+#     - input_datetime.fin_ecs_petite_maison_programmee
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide PAS du mode ECS
+#     - Ne pilote PAS directement le chauffe-eau
+#     - Ne gère PAS le début de séjour
+#     - Ne contient AUCUNE logique énergétique
+#
+#  📢 NOTIFICATION
+#
+#     - Notification mobile événementielle
+#     - Envoyée via la couche infrastructure
+#       `script.notification_envoyer`
+#     - Ne représente aucun état
+#     - Ne laisse aucune trace persistante
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de clôture temporelle :
+#     date ≠ décision ≠ pilotage.
+#
+#     Elle termine proprement un cycle ECS
+#     en s’appuyant sur une logique métier centralisée.
+# ==========================================================
+
+
+- id: "1005000000002"
+  alias: "ECS Petite Maison - Fin séjour"
+  description: >
+    Passe le chauffe-eau en OFF et réactive le mode absence
+    à 23:55 le jour de fin programmé, en déclenchant le
+    script fiabilisé `ecs_petite_maison_arret_absence`.
+
+  trigger:
+    - platform: time
+      at: "23:55:00"
+
+  condition:
+    ########################################################
+    # ✅ Programmation toujours active
+    ########################################################
+    - condition: state
+      entity_id: input_boolean.ecs_petite_maison_programmation
+      state: "on"
+
+    ########################################################
+    # ✅ Date actuelle = date de fin programmée
+    ########################################################
+    - condition: template
+      value_template: >
+        {{ now().date() == (states('input_datetime.fin_ecs_petite_maison_programmee') | as_datetime).date() }}
+
+  action:
+    ########################################################
+    # 🕒 Attente : chauffe-eau prêt (local)
+    ########################################################
+    - wait_template: >
+        {{ states('sensor.ecs_petite_maison_mode_fonctionnement_local') not in ['unknown','unavailable','','none'] }}
+      timeout: "00:05:00"
+      continue_on_timeout: true
+
+    ########################################################
+    # ▶️ Lancement du script local (fiabilisé)
+    ########################################################
+    - service: script.turn_on
+      target:
+        entity_id: script.ecs_petite_maison_arret_absence
+
+    ########################################################
+    # ⛔ Fin automatique de la programmation
+    ########################################################
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.ecs_petite_maison_programmation
+
+    ########################################################
+    # 📱 Notification mobile — Fin séjour
+    ########################################################
+    - service: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "💧 ECS Petite Maison – Fin séjour"
+        message: >
+          Chauffe coupée à {{ now().strftime('%H:%M') }}.  
+          Passage en **mode absence** exécuté via script local.  
+
+          **Programmation automatiquement désactivée.**  
+          **Plage programmée :**  
+          {{ states('input_datetime.debut_ecs_petite_maison_programmee') }} → {{ states('input_datetime.fin_ecs_petite_maison_programmee') }}
+
+  mode: single

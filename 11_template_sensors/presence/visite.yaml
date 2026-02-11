@@ -1,0 +1,59 @@
+# ==========================================================
+#  🧠 ARSENAL — TEMPLATE SENSOR :
+#     Créneau visiteur actif
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Capteur de contexte chargé d’indiquer si le créneau
+#     visiteur planifié est actuellement actif.
+#
+#     Il synthétise plusieurs paramètres de configuration
+#     en un état binaire unique, consommable par les
+#     automatisations du mode visiteur.
+#
+#  🧩 PRINCIPE
+#
+#     - Combine :
+#         • l’activation du mode visiteur
+#         • le jour sélectionné
+#         • le créneau horaire configuré
+#     - Retourne true uniquement si TOUTES les conditions
+#       sont simultanément réunies
+#
+#  🚫 CE QUE CE CAPTEUR NE FAIT PAS
+#
+#     - Ne déclenche aucune action
+#     - Ne modifie aucun état
+#     - Ne décide pas de l’activation ou de la fin de visite
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Centralisation de la logique de créneau
+#     - Séparation stricte calcul / action
+#     - Capteur de contexte lisible et réutilisable
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Créneau visiteur actif"
+      unique_id: creneau_visiteur_actif
+      default_entity_id: binary_sensor.creneau_visiteur_actif
+
+      icon: mdi:account-clock
+
+      state: >-
+        {% set mode = is_state('input_boolean.mode_visiteur', 'on') %}
+        {% set jour_selectionne = states('input_select.jour_visiteur') %}
+        {% set jour_actuel = now().weekday() %}
+        {% set correspondance = {
+          'Lundi': 0, 'Mardi': 1, 'Mercredi': 2,
+          'Jeudi': 3, 'Vendredi': 4,
+          'Samedi': 5, 'Dimanche': 6 } %}
+        {% set jour_ok = correspondance.get(jour_selectionne) == jour_actuel %}
+        {% set start = states('input_datetime.visiteur_start') %}
+        {% set end = states('input_datetime.visiteur_end') %}
+        {% set now_time = now().time() %}
+        {% set heure_ok = start <= now_time|string <= end %}
+        {{ mode and jour_ok and heure_ok }}

@@ -1,0 +1,79 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Préfixe d’identifiant (IDs)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Sélection du PRÉFIXE NUMÉRIQUE utilisé pour
+#   la génération et la synchronisation des identifiants
+#   (IDs) du système Arsenal.
+#
+#   Ce helper permet d’associer explicitement
+#   un domaine fonctionnel à un espace d’IDs.
+#
+# 🧩 Nature :
+#   Outil d’ARCHITECTURE / MÉTA-CONFIGURATION.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche AUCUNE automatisation métier
+#   - Ne pilote AUCUN équipement
+#   - Ne représente PAS un état fonctionnel de la maison
+#   - Ne contient AUCUNE logique de décision
+#
+# 🔍 Sémantique des valeurs :
+#   - Chaque option correspond à :
+#       • un préfixe numérique (ex: 1001)
+#       • un domaine fonctionnel Arsenal (ex: aeration)
+#   - Le préfixe est utilisé comme racine
+#     pour les identifiants d’automatisations.
+#
+# 🔄 Traitement associé :
+#   - Une automatisation dédiée extrait
+#     le préfixe numérique (4 premiers caractères)
+#     et le synchronise vers les mécanismes internes.
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace :
+#       • Outil de sélection assistée des préfixes d’IDs
+#   - Automatisations système :
+#       • Synchronisation du préfixe actif
+#       • Normalisation des identifiants Arsenal
+#
+# 🧠 Principe Arsenal associé :
+#   - Traçabilité et cohérence des IDs
+#   - Séparation stricte entre :
+#       • Architecture interne
+#       • Logique métier
+#       • Comportements fonctionnels
+#
+# ⚠️ Remarque :
+#   Ce helper est un OUTIL TECHNIQUE.
+#   Il n’a aucun impact fonctionnel direct
+#   sur le comportement de la maison.
+# ==========================================================
+
+prefix_id_select:
+  name: Prefix ID
+  options:
+    - "1001 - aeration"
+    - "1002 - alarme"
+    - "1026 - bouclage"
+    - "1014 - boutons"
+    - "1024 - chauffage"
+    - "1003 - climatisation"
+    - "1005 - cumulus_studio"
+    - "1006 - deshumidificateur"
+    - "1007 - eclairage"
+    - "1025 - ecs"
+    - "1008 - electromenager"
+    - "1018 - imprimerie"
+    - "1016 - meteo"
+    - "1009 - modes"
+    - "1017 - ouvertures"
+    - "1004 - panne"
+    - "1010 - poele"
+    - "1021 - presence"
+    - "1011 - reveils"
+    - "1020 - sante"
+    - "1012 - system"
+    - "1013 - vicare"
+    - "1019 - vmc"
+    - "1015 - voiture"

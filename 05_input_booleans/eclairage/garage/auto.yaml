@@ -1,0 +1,41 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Garage – Éclairage automatique
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation du fonctionnement automatique
+#     de l’éclairage du garage.
+#
+#     Ce booléen détermine si les automatisations
+#     d’allumage et d’extinction du garage
+#     sont autorisées à s’exécuter.
+#
+#  🧱 Nature :
+#     - Autorisation locale de service
+#     - Commutateur d’automatismes
+#
+#  🔄 Fonctionnement :
+#     - ON  : l’éclairage du garage est piloté
+#             automatiquement
+#     - OFF : aucun automatisme d’éclairage
+#             ne s’exécute
+#
+#  📥 N’effectue PAS :
+#     - aucune détection de présence
+#     - aucune analyse de luminosité
+#     - aucune commande directe des lumières
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations
+#       d’éclairage automatique du garage
+#     - Pilotée via les dashboards
+#       de réglages éclairage
+#
+#  🧠 Principe Arsenal :
+#     - Tout automatisme doit pouvoir
+#       être explicitement autorisé
+# ==========================================================
+
+
+garage_auto_light:
+  name: Garage Lumière Auto
+  icon: mdi:auto-mode

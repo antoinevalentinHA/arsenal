@@ -1,0 +1,134 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Déshumidificateur — Synchronisation d’état forcée
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Orchestrateur UNIQUE de synchronisation entre :
+#     - l’état réel du déshumidificateur (capteur)
+#     - l’état cible demandé (ON / OFF)
+#
+#   Ce script ne “commande” pas un appareil.
+#   Il garantit une COHÉRENCE d’état.
+#
+# ----------------------------------------------------------
+# 🧱 CONTRAINTE MATÉRIELLE
+#
+#   Le déshumidificateur :
+#     - n’est PAS pilotable directement
+#     - ne fournit PAS de retour de commande
+#     - est contrôlé via un bouton physique (SwitchBot)
+#
+#   ➜ Toute action est donc :
+#     - aveugle
+#     - potentiellement non déterministe
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPE DE VÉRITÉ
+#
+#   La SEULE source de vérité est :
+#     - binary_sensor.deshumidificateur_actif
+#
+#   Le bouton SwitchBot n’est :
+#     - ni une confirmation
+#     - ni un état
+#     - uniquement un moyen d’action
+#
+# ----------------------------------------------------------
+# 🧠 LOGIQUE D’ORCHESTRATION
+#
+#   Séquence imposée :
+#     1️⃣ Lecture de l’état réel
+#     2️⃣ Comparaison avec l’état cible
+#     3️⃣ AUCUNE action si déjà conforme
+#     4️⃣ Appui physique si divergence
+#     5️⃣ Vérification de l’état réel
+#     6️⃣ Seconde tentative si nécessaire
+#
+# ----------------------------------------------------------
+# 🛑 CE SCRIPT NE FAIT PAS
+#
+#   - Aucune décision d’humidité
+#   - Aucune planification horaire
+#   - Aucun pilotage direct depuis Lovelace
+#
+#   ➜ Il applique une demande claire :
+#     « rendre l’état réel conforme à l’état voulu »
+#
+# ----------------------------------------------------------
+# 🧩 ARCHITECTURE ARSENAL
+#
+#   - Les automatisations décident QUAND
+#   - Ce script décide COMMENT
+#   - Le SwitchBot n’est JAMAIS appelé ailleurs
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script critique — Synchronisation état physique non pilotable
+#
+# 📍 Entité :
+#   script.set_deshumidificateur_state
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+set_deshumidificateur_state:
+  alias: "Déshumidificateur - Forcer un état (via SwitchBot)"
+  description: "Appuie sur le bouton uniquement si l'état réel diffère. Double tentative + validation."
+  mode: single
+
+  fields:
+    target_state:
+      description: "État souhaité : 'on' ou 'off'"
+      example: "on"
+
+  sequence:
+
+    # ======================================================
+    # 1️⃣ Variables de contexte
+    # ======================================================
+    - variables:
+        want_on: "{{ target_state | default('on') | lower == 'on' }}"
+        is_on: "{{ is_state('binary_sensor.deshumidificateur_actif','on') }}"
+
+    # ======================================================
+    # 2️⃣ Vérification préalable : si déjà conforme, on sort
+    # ======================================================
+    - choose:
+        - conditions: "{{ want_on and is_on }}"
+          sequence:
+            - stop: "Déjà ON - pas d'action nécessaire"
+        - conditions: "{{ (not want_on) and (not is_on) }}"
+          sequence:
+            - stop: "Déjà OFF - pas d'action nécessaire"
+
+    # ======================================================
+    # 3️⃣ Première tentative d’appui
+    # ======================================================
+    - action: button.press
+      target:
+        entity_id: button.deshumidificateur
+
+    - delay: "00:00:05"
+
+    # Attente de la mise à jour du capteur d’état
+    - wait_template: >
+        {{ (want_on and is_state('binary_sensor.deshumidificateur_actif','on')) or
+           ((not want_on) and is_state('binary_sensor.deshumidificateur_actif','off')) }}
+      timeout: "00:01:00"
+      continue_on_timeout: true
+
+    # ======================================================
+    # 4️⃣ Seconde tentative si l’état n’a pas encore changé
+    # ======================================================
+    - if:
+        - condition: template
+          value_template: >
+            {{ (want_on and not is_state('binary_sensor.deshumidificateur_actif','on')) or
+               ((not want_on) and not is_state('binary_sensor.deshumidificateur_actif','off')) }}
+      then:
+        - action: button.press
+          target:
+            entity_id: button.deshumidificateur
+        - delay: "00:00:10"

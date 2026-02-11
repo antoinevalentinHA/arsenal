@@ -1,0 +1,95 @@
+# ==========================================================
+# 🌤 TEMPLATE TRIGGERED SENSOR — Humidité relative extérieure
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Fournir une **mesure extérieure d’humidité relative (%)** fiable,
+#   calculée automatiquement à partir de plusieurs capteurs placés dehors.
+#
+# ⚙️ Fonctionnement :
+#   - Agrège deux sources :
+#       • `sensor.humidite_relative_exterieur_1` → Komori NO  
+#       • `sensor.humidite_relative_exterieur_2` → Bobst SO
+#   - Le capteur retient **la valeur la plus faible** parmi celles valides,
+#     car elle représente en général la zone la moins humide et la plus ventilée.
+#
+# 🧮 Logique :
+#   ```
+#   Pour chaque capteur :
+#       - Ignorer valeurs invalides ou hors plage (≤0 ou ≥100)
+#       - Conserver la valeur la plus basse trouvée
+#   Si aucune valeur valide → conserver l’ancien état
+#   ```
+#
+# 🧠 Détails techniques :
+#   - Déclenchement sur changement d’un des deux capteurs ou au démarrage de Home Assistant.  
+#   - Valeurs filtrées : `unknown`, `unavailable`, `none`, `None`.  
+#   - L’attribut `capteur_le_moins_humide` indique quelle station a fourni la mesure.
+#
+# 📊 Type : Trigger Template Sensor  
+# 📏 Unité : %  
+# 💨 Device class : humidity  
+# 📍 Entité : sensor.humidite_relative_exterieur  
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_exterieur_2
+        - sensor.humidite_relative_exterieur_1
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidité relative Extérieur"
+      unique_id: humidite_relative_exterieur
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: >
+        {% set capteurs = {
+          'Bobst SO': states('sensor.humidite_relative_exterieur_2'),
+          'Komori NO': states('sensor.humidite_relative_exterieur_1')
+        } %}
+
+        {% set best = namespace(valeur=none, nom=none) %}
+
+        {% for nom, brut in capteurs.items() %}
+          {% if brut not in ['unknown','unavailable','none',None] %}
+            {% set val = brut | float(none) %}
+            {% if val is not none and 0 < val < 100 %}
+              {% if best.valeur is none or val < best.valeur %}
+                {% set best.valeur = val %}
+                {% set best.nom = nom %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {% if best.valeur is not none %}
+          {{ best.valeur | round(0) }}
+        {% elif this.state not in ['unknown','unavailable','none',None] %}
+          {{ this.state }}
+        {% else %}
+          none
+        {% endif %}
+
+      attributes:
+        capteur_le_moins_humide: >
+          {% set capteurs = {
+            'Bobst SO': states('sensor.humidite_relative_exterieur_2'),
+            'Komori NO': states('sensor.humidite_relative_exterieur_1')
+          } %}
+          {% set best = namespace(valeur=none, nom=none) %}
+
+          {% for nom, brut in capteurs.items() %}
+            {% if brut not in ['unknown','unavailable','none',None] %}
+              {% set val = brut | float(none) %}
+              {% if val is not none and 0 < val < 100 %}
+                {% if best.valeur is none or val < best.valeur %}
+                  {% set best.valeur = val %}
+                  {% set best.nom = nom %}
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {{ best.nom if best.nom is not none else (state_attr(this.entity_id, 'capteur_le_moins_humide') or 'Mémoire') }}

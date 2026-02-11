@@ -1,0 +1,26 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Alarme
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Indiquer si l’alarme est armée ou désarmée pour
+#     colorer automatiquement le bouton du menu Navigation.
+#
+#  🎯 États :
+#     - alert → armée (away/home)
+#     - off   → désarmée
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_alarme_dashboard"
+      unique_id: etat_alarme_dashboard
+      state: >
+        {% set etat = states('alarm_control_panel.alarme_maison') %}
+
+        {% if etat in ['armed_away', 'armed_home', 'armed_night', 'triggered'] %}
+          alert
+        {% elif etat == 'disarmed' %}
+          off
+        {% else %}
+          off
+        {% endif %}

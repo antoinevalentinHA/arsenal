@@ -1,0 +1,36 @@
+# ==========================================================
+# 🪟 TEMPLATE BINARY SENSOR — Fenêtres RDC (direct)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si une ou plusieurs fenêtres du rez-de-chaussée
+#   sont actuellement ouvertes (sans délai de grâce).
+#
+# ⚙️ Fonctionnement :
+#   - Regroupe les capteurs suivants :
+#       • Entrée
+#       • Séjour (4 ouvrants)
+#   - Statut :
+#       • ON  → au moins une fenêtre du RDC ouverte
+#       • OFF → toutes les fenêtres du RDC fermées
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.fenetre_ouverte_rdc
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Fenêtres RDC"
+      unique_id: fenetre_ouverte_rdc
+      default_entity_id: binary_sensor.fenetre_ouverte_rdc
+      device_class: opening
+
+      state: >
+        {% set fenetres_rdc = [
+          'binary_sensor.capteur_fenetre_entree',
+          'binary_sensor.capteur_fenetre_sejour_1',
+          'binary_sensor.capteur_fenetre_sejour_2',
+          'binary_sensor.capteur_fenetre_sejour_3',
+          'binary_sensor.capteur_fenetre_sejour_4'
+        ] %}
+
+        {{ fenetres_rdc | select('is_state', 'on') | list | length > 0 }}

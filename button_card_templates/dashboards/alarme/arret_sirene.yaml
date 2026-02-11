@@ -1,0 +1,24 @@
+#################################################################
+# 🚨 CARTE ACTION — ARRÊT SIRÈNE
+# ---------------------------------------------------------------
+# Carte d’arrêt immédiat de la sirène.
+#
+# Principe Arsenal :
+#   - Action critique
+#   - Aucun état lu
+#   - Confirmation obligatoire
+#   - Effet global immédiat
+#################################################################
+
+carte_action_arret_sirene:
+  template: carte_base
+
+  tap_action:
+    action: call-service
+    service: script.arret_sirene
+    confirmation:
+      text: Arrêter immédiatement la sirène ?
+
+  styles:
+    card:
+      - background-color: rgba(244, 67, 54, 0.2)

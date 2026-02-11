@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERNE)
+#     Bruleur chauffage actif (local + physique)
+# ----------------------------------------------------------
+# Rôle :
+#   Actif uniquement si :
+#     - Programme = "Confort"
+#     - ECS non active
+#     - Brûleur physique local allumé ou allumé récemment
+#   Avec temporisations :
+#     - delay_on  = 00:02:00
+#     - delay_off = 00:00:10
+#
+# Préservation :
+#   - entity_id historique : binary_sensor.bruleur_chauffage_actif
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Bruleur chauffage actif"
+      unique_id: bruleur_chauffage_actif
+      default_entity_id: binary_sensor.bruleur_chauffage_actif
+      device_class: heat
+
+      delay_on: "00:02:00"
+      delay_off: "00:00:10"
+
+      state: >
+        {% set prog = states('sensor.programme_chauffage') %}
+        {% set ecs = is_state('binary_sensor.ecs_chauffe_en_cours_local', 'on') %}
+        {% set bruleur_phys = is_state('binary_sensor.bruleur_physique_local', 'on') %}
+        {% set last = states.binary_sensor.bruleur_physique_local.last_changed %}
+        {% set last_ts = (as_timestamp(last) | default(0)) %}
+        {% set recent = (now().timestamp() - last_ts) < 45 %}
+        {{ prog == 'Confort' and not ecs and (bruleur_phys or recent) }}
+
+      icon: >
+        {% if is_state('binary_sensor.bruleur_chauffage_actif', 'on') %}
+          mdi:fire
+        {% else %}
+          mdi:fire-off
+        {% endif %}

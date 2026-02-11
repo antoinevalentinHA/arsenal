@@ -1,0 +1,50 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+title: Diagnostics Sommeil
+icon: mdi:sleep
+
+views:
+  ####################################
+  # 😴 SOMMEIL / RÉVEILS NOCTURNES
+  ####################################
+  - title: Réveils
+    path: reveils
+    icon: mdi:sleep
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /meteo-bruit-dashboard/bruit
+
+    ########################################################
+    # 🔧 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+
+          ########################################################
+          # ⏰ SECTION : Réveils nocturnes
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: ⏰ Réveils nocturnes
+
+          - type: markdown
+            content: |
+              **Seuil bruit** : {{ states('input_number.seuil_reveil_bruit') }} dB  
+              **Heure détection** : {{ states('input_datetime.heure_reveil_nuit_debut') }} → {{ states('input_datetime.heure_reveil_nuit_fin') }}  
+              **Heure reset** : {{ states('input_datetime.heure_reset_reveils') }}  
+
+              ### 👶 Arnaud
+              **Réveils détectés** : {{ states('input_number.reveils_nocturnes_arnaud') }}  
+
+              ### 🧸 Matthieu
+              **Réveils détectés** : {{ states('input_number.reveils_nocturnes_matthieu') }}  

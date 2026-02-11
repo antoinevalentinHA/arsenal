@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : ECS – Dernier cycle (résumé)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Conserver un RÉSUMÉ TEXTUEL du dernier cycle ECS
+#   observé, à des fins de lisibilité et de diagnostic.
+#
+# 🧱 Nature :
+#   - Synthèse événementielle
+#   - Mémoire dérivée post-cycle
+#
+# 🚫 Ne fait PAS :
+#   - Ne déclenche aucun cycle ECS
+#   - Ne pilote aucune consigne
+#   - Ne reflète pas l’état ECS en temps réel
+#   - Ne constitue pas une source de vérité fonctionnelle
+#
+# 🔗 Alimentation :
+#   - Automatisations de log ECS (début / fin / diagnostic)
+#
+# 🔗 Utilisation :
+#   - Dashboards ECS / Arsenal (lecture humaine)
+#   - Capteurs template de diagnostic
+#   - Notifications contextuelles (alerte rebond)
+#
+# 🧠 Principe ARSENAL :
+#   - Les cycles sont mesurés ailleurs
+#   - Ce helper n’en conserve que le résumé lisible
+#
+# ⚠️ Sémantique :
+#   - Contenu libre, non structuré
+#   - Valeur descriptive uniquement
+# ==========================================================
+
+
+ecs_dernier_cycle_resume:
+  name: ECS - Dernier cycle (résumé)
+  max: 255

@@ -1,0 +1,94 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Pluie – Réarmement temporisé de l’impulsion logique
+#
+#  ID : 1016000000006
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de RÉARMEMENT TECHNIQUE.
+#
+#     Elle remet à l’état OFF le booléen virtuel
+#     représentant l’impulsion pluie, à l’issue
+#     du délai de blocage imposé par le timer.
+#
+#     Elle garantit la capacité à détecter
+#     des épisodes de pluie successifs,
+#     sans redéclenchement parasite.
+#
+#  🧱 NATURE
+#
+#     - Réarmement temporel piloté par timer
+#     - Gestion d’un état logique virtuel
+#     - Composant technique de l’adaptation pluie
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement sur fin du timer de réarmement
+#     - Vérification de l’état courant du booléen :
+#         • ON  → extinction normale
+#         • OFF → aucune action, simple journalisation
+#     - Tolérance explicite aux états incohérents
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne détecte pas la pluie
+#     - Ne génère pas l’impulsion initiale
+#     - Ne décide d’aucun scénario métier
+#     - Ne modifie pas le capteur Zigbee
+#
+#  🔗 UTILISATION
+#
+#     - Complément indissociable de :
+#         Pluie – Adaptation Zigbee en impulsion logique
+#     - Garantit la répétabilité des détections pluie
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1016000000006"
+  alias: "Pluie – Réarmement logique après temporisation"
+  description: >
+    Réarme le booléen virtuel utilisé pour simuler une impulsion pluie,
+    en le repassant à OFF à la fin du timer. Ignore les états invalides
+    et logue les réarmements anticipés.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Fin du timer
+  # ======================================================
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.pluie_zigbee_rearm
+
+  # ======================================================
+  # ✅ Condition — Timer valide et capteur exploitable
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: >
+        {{ states('input_boolean.pluie_zigbee_virtuel') not in ['unknown','unavailable','none'] }}
+
+  # ======================================================
+  # 🔄 Action — Réinitialisation avec sécurité
+  # ======================================================
+  action:
+    - choose:
+
+        # ------------------------------------------------------------------
+        # 🟢 Booléen encore actif → extinction normale
+        # ------------------------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.pluie_zigbee_virtuel
+              state: "on"
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.pluie_zigbee_virtuel

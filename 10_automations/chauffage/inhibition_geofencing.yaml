@@ -1,0 +1,106 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Inhibition geofencing (mémoire d’hystérésis)
+#
+# ID : 10240000000003
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#   Mémoriser l’état `input_boolean.chauffage_inhibition_geofencing`
+#   conformément à la qualification physique fournie par :
+#
+#     binary_sensor.chauffage_inhibition_geofencing_requise
+#
+#   Cette automation :
+#     - NE CALCULE AUCUN SEUIL
+#     - N’APPLIQUE AUCUNE HYSTÉRÉSIS
+#     - NE DÉCIDE AUCUN MODE
+#     - N’APPLIQUE AUCUNE CONSIGNE
+#
+#   Elle se contente de :
+#     - refléter fidèlement un état qualifié
+#     - stabiliser la mémoire métier correspondante
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE ARSENAL
+#
+#   - Les capteurs MESURENT
+#   - Les capteurs QUALIFIENT
+#   - Cette automation MÉMORISE un fait
+#   - La Décision Centrale CONSOMME ce fait
+#
+# ----------------------------------------------------------
+# 🔁 HYSTÉRÉSIS
+#
+#   L’hystérésis thermique est intégralement portée par :
+#
+#     binary_sensor.chauffage_inhibition_geofencing_requise
+#
+#   Cette automation n’interprète :
+#     - ni écart thermique
+#     - ni offset
+#     - ni zone intermédiaire
+#
+#   Toute la physique est qualifiée en amont.
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne calcule aucun seuil
+#   - Ne lit aucun offset
+#   - Ne décide aucun mode chauffage
+#   - Ne modifie aucune consigne
+#   - Ne contourne aucun blocage
+#   - N’intègre aucune logique métier
+#
+# ----------------------------------------------------------
+# ✅ GARANTIES
+#
+#   - Mémoire pure
+#   - Idempotente
+#   - Zéro effet yo-yo
+#   - Zéro oscillation
+#   - Zéro écriture inutile
+#   - Reload YAML et redémarrage HA sûrs
+#
+# ----------------------------------------------------------
+# 🧠 NATURE ARCHITECTURALE
+#
+#   - Type   : Mémoire d’hystérésis qualifiée
+#   - Statut : Brique subordonnée
+#   - Autorité :
+#       • binary_sensor.chauffage_inhibition_geofencing_requise (qualification)
+#       • Décision Centrale Chauffage (consommation)
+#
+# ==========================================================
+
+- id: "10240000000003"
+  alias: "Chauffage – Inhibition geofencing (hysteresis)"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.chauffage_inhibition_geofencing_requise
+
+  action:
+    - choose:
+
+        # 🔴 Activation inhibition
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.chauffage_inhibition_geofencing_requise
+              state: "on"
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.chauffage_inhibition_geofencing
+
+        # 🟢 Levée inhibition
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.chauffage_inhibition_geofencing_requise
+              state: "off"
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.chauffage_inhibition_geofencing

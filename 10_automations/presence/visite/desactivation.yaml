@@ -1,0 +1,83 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Visiteur – Fin de visite
+#
+#  ID : 10210000000004
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de sortie de contexte chargée de
+#     clore proprement le mode visiteur lorsque
+#     le contexte "créneau visiteur actif" devient
+#     invalide.
+#
+#     Elle nettoie l’ensemble des états métier
+#     associés à la visite afin de permettre un
+#     retour à un fonctionnement normal des systèmes
+#     de présence, alarme et énergie.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchée lors de l’invalidation du
+#       capteur :
+#         • binary_sensor.creneau_visiteur_actif
+#     - N’agit que si une visite est effectivement
+#       en cours
+#     - Désactive systématiquement les états métier
+#       associés à la visite :
+#         • bouclage ECS visiteur
+#         • visite en cours
+#         • présence visiteur
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule PAS le jour ou l’heure
+#     - Ne décide PAS du planning visiteur
+#     - Ne gère PAS l’activation du mode visite
+#     - Ne prend AUCUNE décision autonome d’armement
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Sortie de contexte explicite
+#     - Une seule source de vérité (capteur métier)
+#     - Nettoyage systématique des états transitoires
+#     - Séparation stricte activation / désactivation
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '10210000000004'
+  alias: Alarme - Visiteur - Réactivation armement auto
+  description: >
+    Sort du mode visiteur lorsque le créneau visiteur
+    devient invalide, et nettoie l’ensemble des états
+    métier associés.
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.creneau_visiteur_actif
+      from: "on"
+      to: "off"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.visite_en_cours
+      state: "on"
+
+  action:
+    - alias: Éteindre la prise de bouclage ECS
+      action: switch.turn_off
+      target:
+        entity_id: switch.prise_bouclage
+
+    - alias: Désactiver le capteur "visite en cours"
+      action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.visite_en_cours
+
+    - alias: Désactiver la présence visiteur
+      action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.presence_visiteur

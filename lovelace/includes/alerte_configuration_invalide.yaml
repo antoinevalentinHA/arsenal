@@ -1,0 +1,15 @@
+type: grid
+square: false
+columns: 1
+cards:
+
+  - type: conditional
+    conditions:
+      - entity: binary_sensor.parametres_invalides_global
+        state: "on"
+
+    card:
+      type: custom:button-card
+      template: carte_alerte_binaire_critique
+      entity: binary_sensor.parametres_invalides_global
+      name: "⚠️ CONFIGURATION INVALIDE"

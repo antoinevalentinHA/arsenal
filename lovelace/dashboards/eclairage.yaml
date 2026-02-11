@@ -1,0 +1,113 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Home
+
+views:
+  - title: Home
+    path: home
+    icon: mdi:server
+
+    # ======================================================
+    # 🔔 BADGES — Accès rapides & navigation globale
+    # ======================================================
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-eclairage-dashboard/eclairage
+
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-eclairage-dashboard/eclairage
+
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ==================================================
+          # 💡 LUMIÈRES — COMMANDES PRINCIPALES
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/lumieres.yaml
+
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+
+                  # 🌳 Jardin — commande directe
+                  - type: custom:button-card
+                    template: carte_action_eclairage
+                    name: Jardin
+                    icon: mdi:lightbulb
+                    entity: switch.prise_jardin
+
+                  # 🛋️ Lampe séjour
+                  - type: custom:button-card
+                    template: carte_action_eclairage
+                    name: Lampe séjour
+                    icon: mdi:lamp
+                    entity: switch.prise_lampe_sejour
+
+                  # 🛏️ Lampe parents
+                  - type: custom:button-card
+                    template: carte_action_eclairage
+                    name: Lampe parents
+                    icon: mdi:lamp
+                    entity: switch.prise_lampe_parents
+
+                  # 🚗 Garage — pilotage via script
+                  - type: custom:button-card
+                    template: carte_action_eclairage_script
+                    name: Garage
+                    icon: mdi:lightbulb
+                    entity: input_boolean.garage_light_state
+
+
+          # ==================================================
+          # 🎄 BAIES VITRÉES / SAPIN — CONDITIONNEL
+          # ==================================================
+          - type: conditional
+            conditions:
+              - entity: input_boolean.prise_baies_vitrees_auto
+                state: "on"
+            card:
+              type: grid
+              square: false
+              columns: 1
+              cards:
+
+                - type: custom:button-card
+                  template: carte_action_eclairage
+                  name: Sapin
+                  icon: mdi:pine-tree
+                  entity: switch.prise_sejour_baies_vitrees
+
+
+          # ==================================================
+          # 🌳 JARDIN — INTENTION
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - !include ../includes/section_headers/jardin.yaml
+
+              - type: custom:button-card
+                template: carte_jardin_intention_eclairage
+                entity: sensor.jardin_intention_eclairage

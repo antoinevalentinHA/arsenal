@@ -1,0 +1,43 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Jardin – Éclairage automatique (soir)
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation du scénario d’éclairage automatique
+#     du jardin pour la période du soir.
+#
+#     Ce booléen conditionne l’exécution de
+#     l’automatisme d’allumage du jardin
+#     après le coucher du soleil.
+#
+#  🧱 Nature :
+#     - Autorisation de scénario
+#     - Commutateur d’automatismes
+#
+#  🔄 Fonctionnement :
+#     - ON  : le scénario soir du jardin
+#             est autorisé à s’exécuter
+#     - OFF : aucune gestion automatique
+#             du jardin le soir
+#
+#  📥 N’effectue PAS :
+#     - aucun calcul solaire
+#     - aucune détection de présence
+#     - aucune commande directe des lampes
+#
+#  📤 Utilisation :
+#     - Lue par l’automatisation :
+#         • 1820000000004 (allumage soir)
+#     - Utilisée par les capteurs
+#       de cohérence d’extinction
+#     - Pilotée via les dashboards
+#       de réglages éclairage
+#
+#  🧠 Principe Arsenal :
+#     - Un scénario temporel doit pouvoir
+#       être explicitement autorisé ou neutralisé
+# ==========================================================
+
+
+auto_lumiere_jardin_soir:
+  name: Lumière jardin - auto soir
+  icon: mdi:weather-sunset-down

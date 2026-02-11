@@ -1,0 +1,71 @@
+# ==========================================================
+# 🔊 SCRIPT — Sirène : Déclenchement brutal (mode intrusion)
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Déclencher la sirène Zigbee en mode "burglar" à volume
+#   maximal, pour une durée configurable dynamiquement.
+#
+# 🎯 Objectif :
+#   Produire une alerte sonore forte et dissuasive en cas
+#   d’intrusion confirmée, selon les règles de décision
+#   établies par le système d’alarme.
+#
+# ⚙️ Fonctionnement :
+#   - Publie une commande MQTT Zigbee2MQTT complète vers la sirène.
+#   - Utilise le mode "burglar" avec niveau sonore "very_high".
+#   - La durée d’activation est lue dynamiquement depuis
+#     `number.sirene_max_duration`.
+#   - Aucun redémarrage automatique ni répétition.
+#
+# 🚫 Ce script NE FAIT PAS :
+#   - Ne décide PAS du déclenchement de l’alarme
+#   - Ne valide PAS la présence d’une intrusion
+#   - Ne gère PAS la temporisation d’entrée
+#   - Ne coupe PAS la sirène (arrêt géré ailleurs)
+#
+# 🧱 Dépendances :
+#   - MQTT / Zigbee2MQTT
+#   - Sirène Zigbee compatible mode "warning"
+#   - Helper : number.sirene_max_duration
+#
+# 📊 Type :
+#   Script d’exécution directe (action terminale)
+#
+# 📍 Entité :
+#   script.sirene_brutale
+#
+# 🔁 Remarque sémantique :
+#   - Ce script est volontairement simple et non conditionnel.
+#   - Toute logique de sécurité, de délai ou de validation
+#     est externalisée dans les automatisations appelantes.
+#
+# ✅ Architecture :
+#   Arsenal v6+
+#   Home Assistant 2024.8+
+# ==========================================================
+
+
+sirene_brutale:
+  alias: Déclencher la sirène - Mode burglar (durée dynamique)
+  mode: single
+
+  sequence:
+    - action: mqtt.publish
+      data:
+        topic: zigbee2mqtt/sirene/set
+        payload: >
+          {{
+            {
+              "warning": {
+                "mode": "burglar",
+                "level": "very_high",
+                "strobe": false,
+                "strobe_level": "high",
+                "strobe_duty_cycle": 5,
+                "duration": states('number.sirene_max_duration') | int
+              }
+            } | to_json
+          }}
+        qos: 0
+        retain: false
+        evaluate_payload: true

@@ -1,0 +1,53 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : ECS / Bouclage — Limitation de durée
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Borner STRICTEMENT la durée d’activation du bouclage ECS
+#   afin d’éviter tout fonctionnement prolongé inutile
+#   de la pompe de recirculation.
+#
+# 🧩 Nature :
+#   Minuterie de fonctionnement volontaire (auto-arrêt).
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS le bouclage ECS
+#   - Ne décide PAS quand lancer le bouclage
+#   - Ne mesure PAS la température ECS
+#   - N’est PAS un mécanisme de sécurité
+#
+# ⚙️ Fonctionnement :
+#   - Démarré explicitement lors d’une demande de bouclage ECS.
+#   - Tant que le timer est ACTIF :
+#       → le bouclage est autorisé à fonctionner.
+#   - À l’expiration :
+#       → une action d’arrêt du bouclage DOIT être exécutée.
+#
+# 🔄 Persistance :
+#   - restore: true
+#   - Un redémarrage de Home Assistant ne doit JAMAIS
+#     prolonger artificiellement un bouclage en cours.
+#
+# 🔗 Utilisation :
+#   - Script :
+#       • ecs/bouclage.yaml
+#   - Automatisation :
+#       • arrêt automatique du bouclage à expiration
+#   - Dashboards :
+#       • affichage du temps restant
+#
+# 🧠 Principe Arsenal associé :
+#   - Tout actionneur énergétique doit être :
+#       • explicitement déclenché
+#       • temporellement borné
+#       • automatiquement arrêté
+#
+# ⚠️ Remarque :
+#   Ce timer limite une action VOLONTAIRE.
+#   Il ne constitue PAS un mécanisme de sûreté.
+# ==========================================================
+
+
+bouclage_ecs_5_minutes:
+  name: "Bouclage ECS (5 min)"
+  duration: "00:05:00"
+  restore: true

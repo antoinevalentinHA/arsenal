@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : Créneau mode silencieux (Clim)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition du CRÉNEAU HORAIRE pendant lequel
+#   la climatisation est AUTORISÉE à fonctionner
+#   en mode silencieux.
+#
+#   Ces helpers encadrent QUAND le mode silencieux
+#   peut être activé ou levé.
+#
+# 🧩 Nature :
+#   Paramètres MÉTIER — autorisation temporelle.
+#
+# ❌ Ne fait PAS :
+#   - N’active PAS directement le mode silencieux
+#   - Ne pilote PAS la climatisation
+#   - Ne décide PAS du mode thermique (COOL / DRY / HEAT)
+#   - Ne déclenche AUCUNE action immédiate
+#
+# 🔍 Spécificité technique :
+#   - Heure uniquement (pas de date)
+#   - Créneau applicable quotidiennement
+#   - La logique d’activation / désactivation
+#     est portée par les automatisations dédiées
+#
+# 🔄 Fonctionnement :
+#   - Les heures sont définies manuellement
+#     via les dashboards de réglage.
+#   - Les automatisations :
+#       • activent le mode silencieux au début
+#       • le désactivent à la fin
+#
+# 🔗 Utilisation :
+#   - Automatisations climatisation :
+#       • Gestion du mode silencieux
+#   - Dashboards :
+#       • Paramétrage et lecture du créneau
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Planification (input_datetime)
+#       • Décision (automatisations)
+#       • Action réelle (intégration clim)
+#
+# ⚠️ Remarque :
+#   Modifier ces valeurs change le CADRE
+#   d’autorisation, pas l’état immédiat
+#   de la climatisation.
+# ==========================================================
+
+
+clim_heure_silencieux_on:
+  name: Début mode silencieux
+  has_time: true
+  has_date: false
+  icon: mdi:volume-minus
+
+clim_heure_silencieux_off:
+  name: Fin mode silencieux
+  has_time: true
+  has_date: false
+  icon: mdi:volume-high

@@ -1,0 +1,210 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Météo intérieure
+#              Calibration ponctuelle des capteurs Zigbee
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Script de calibration MANUELLE et PONCTUELLE des capteurs
+#   Zigbee de température et d’humidité, par comparaison avec
+#   une référence considérée comme fiable (capteurs HK).
+#
+#   Ce script MODIFIE les offsets de calibration Zigbee.
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE MÉTIER
+#
+#   Pour chaque pièce :
+#     - comparaison capteur HK (référence)
+#     - comparaison capteur Zigbee (corrigé)
+#     - calcul de l’écart réel
+#     - ajustement progressif de l’offset Zigbee
+#
+#   ➜ Objectif : cohérence inter-capteurs, pas exactitude absolue.
+#
+# ----------------------------------------------------------
+# ⚠️ ACTION STRUCTURANTE — À FORTE RESPONSABILITÉ
+#
+#   - Les valeurs de calibration Zigbee sont modifiées
+#   - Les offsets influencent TOUS les usages en aval :
+#       • chauffage
+#       • climatisation
+#       • aération
+#       • humidité
+#       • dashboards
+#
+#   ➜ Ce script DOIT être exécuté :
+#     - à température stabilisée
+#     - hors transition thermique
+#     - en conditions normales d’habitation
+#
+# ----------------------------------------------------------
+# 🧠 STRATÉGIE DE SÉCURITÉ
+#
+#   - Filtrage strict des valeurs aberrantes :
+#       • Température : 10 → 35 °C
+#       • Humidité : 0 → 100 %
+#
+#   - Seuils minimaux d’intervention :
+#       • ΔT > 0.3 °C
+#       • ΔH > 1 %
+#
+#   - Bornes de calibration :
+#       • Température : ±5 °C
+#       • Humidité : ±10 %
+#
+#   ➜ Aucun ajustement violent ou incontrôlé possible.
+#
+# ----------------------------------------------------------
+# 🔁 MODE D’EXÉCUTION
+#
+#   - Exécution pièce par pièce (boucle maîtrisée)
+#   - Ajustement incrémental (pas de reset brutal)
+#   - Mode `restart` :
+#       → une seule calibration active à la fois
+#
+# ----------------------------------------------------------
+# 🧾 TRAÇABILITÉ
+#
+#   - Chaque correction appliquée est loguée :
+#       • pièce concernée
+#       • écart mesuré
+#       • nouvelle calibration appliquée
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucun déclenchement automatique
+#   - Aucun recalage forcé à zéro
+#   - Aucun apprentissage continu
+#   - Aucun ajustement sans référence valide
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script de calibration manuelle — impact global système
+#
+# 📍 Entité :
+#   script.calibration_capteurs_zigbee
+#
+# ⏱️ Fréquence :
+#   Exceptionnelle / à la demande uniquement
+#
+# 🔗 Script associé :
+#   script.reset_calibration_capteurs_zigbee
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+calibration_capteurs_zigbee:
+  alias: "Calibration ponctuelle des capteurs Zigbee"
+  mode: restart
+
+  sequence:
+
+    - alias: "Calibration Zigbee pièce par pièce"
+      repeat:
+        for_each:
+          - name: "Séjour"
+            hk_temp: sensor.temperature_sejour_1
+            zb_temp: sensor.temperature_sejour_2
+            hk_hum: sensor.humidite_relative_sejour_1
+            zb_hum: sensor.humidite_relative_sejour_2
+            calib_t: number.meteo_zigbee_sejour_temperature_calibration
+            calib_h: number.meteo_zigbee_sejour_humidity_calibration
+
+          - name: "Chambre Arnaud"
+            hk_temp: sensor.temperature_chambre_arnaud_1
+            zb_temp: sensor.temperature_chambre_arnaud_2
+            hk_hum: sensor.humidite_relative_chambre_arnaud_1
+            zb_hum: sensor.humidite_relative_chambre_arnaud_2
+            calib_t: number.meteo_zigbee_chambre_arnaud_temperature_calibration
+            calib_h: number.meteo_zigbee_chambre_arnaud_humidity_calibration
+
+          - name: "Chambre Matthieu"
+            hk_temp: sensor.temperature_chambre_matthieu_1
+            zb_temp: sensor.temperature_chambre_matthieu_2
+            hk_hum: sensor.humidite_relative_chambre_matthieu_1
+            zb_hum: sensor.humidite_relative_chambre_matthieu_2
+            calib_t: number.meteo_zigbee_chambre_matthieu_temperature_calibration
+            calib_h: number.meteo_zigbee_chambre_matthieu_humidity_calibration
+
+          - name: "Chambre Parents"
+            hk_temp: sensor.temperature_chambre_parents_1
+            zb_temp: sensor.temperature_chambre_parents_2
+            hk_hum: sensor.humidite_relative_chambre_parents_1
+            zb_hum: sensor.humidite_relative_chambre_parents_2
+            calib_t: number.meteo_zigbee_chambre_parents_temperature_calibration
+            calib_h: number.meteo_zigbee_chambre_parents_humidity_calibration
+
+          - name: "Entrée"
+            hk_temp: sensor.temperature_entree_1
+            zb_temp: sensor.temperature_entree_2
+            hk_hum: sensor.humidite_relative_entree_1
+            zb_hum: sensor.humidite_relative_entree_2
+            calib_t: number.meteo_zigbee_entree_temperature_calibration
+            calib_h: number.meteo_zigbee_entree_humidity_calibration
+
+        sequence:
+
+          - alias: "Récupérer valeurs"
+            variables:
+              T_hk: "{{ states(repeat.item.hk_temp) | float(none) }}"
+              T_zb: "{{ states(repeat.item.zb_temp) | float(none) }}"
+              H_hk: "{{ states(repeat.item.hk_hum) | float(none) }}"
+              H_zb: "{{ states(repeat.item.zb_hum) | float(none) }}"
+
+          - alias: "Filtrer mesures invalides"
+            condition: template
+            value_template: >
+              {{ T_hk is not none and 10 < T_hk < 35
+                 and T_zb is not none and 10 < T_zb < 35
+                 and H_hk is not none and 0 < H_hk <= 100
+                 and H_zb is not none and 0 < H_zb <= 100 }}
+
+          - alias: "Calcul écarts"
+            variables:
+              dT: "{{ (T_hk - T_zb) | round(2) }}"
+              dH: "{{ (H_hk - H_zb) | round(2) }}"
+
+          - alias: "Correction température si nécessaire"
+            choose:
+              - conditions: "{{ dT | abs > 0.3 }}"
+                sequence:
+                  - variables:
+                      newCalT: >
+                        {% set corr = (states(repeat.item.calib_t)|float(0) + dT) %}
+                        {% if corr > 5 %} 5
+                        {% elif corr < -5 %} -5
+                        {% else %} {{ corr }}
+                        {% endif %}
+                  - action: number.set_value
+                    data:
+                      entity_id: "{{ repeat.item.calib_t }}"
+                      value: "{{ newCalT }}"
+                  - action: logbook.log
+                    data:
+                      name: "Calibration Zigbee TEMP"
+                      message: >
+                        {{ repeat.item.name }} → ΔT={{ dT }}°C → calibration={{ newCalT }}°C
+
+          - alias: "Correction humidité si nécessaire"
+            choose:
+              - conditions: "{{ dH | abs > 1.0 }}"
+                sequence:
+                  - variables:
+                      newCalH: >
+                        {% set corr = (states(repeat.item.calib_h)|float(0) + dH) %}
+                        {% if corr > 10 %} 10
+                        {% elif corr < -10 %} -10
+                        {% else %} {{ corr }}
+                        {% endif %}
+                  - action: number.set_value
+                    data:
+                      entity_id: "{{ repeat.item.calib_h }}"
+                      value: "{{ newCalH }}"
+                  - action: logbook.log
+                    data:
+                      name: "Calibration Zigbee HUM"
+                      message: >
+                        {{ repeat.item.name }} → ΔH={{ dH }}% → calibration={{ newCalH }}%

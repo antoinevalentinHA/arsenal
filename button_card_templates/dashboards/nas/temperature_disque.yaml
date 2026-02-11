@@ -1,0 +1,50 @@
+#################################################################
+# 🌡️ CARTE NAS — TEMPÉRATURE DISQUE
+# ---------------------------------------------------------------
+# Affiche la température d’un disque NAS avec seuils visuels.
+#
+# Seuils standards :
+#   - < 45°C  → OK
+#   - 45–55°C → Alerte
+#   - ≥ 55°C  → Critique
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture immédiate
+#   - Zéro logique métier
+#################################################################
+
+carte_nas_temperature_disque:
+  template: carte_base
+
+  show_state: true
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? "N/A" : `${v.toFixed(0)}°C`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const t = parseFloat(entity.state);
+            if (isNaN(t)) return "rgba(224, 224, 224, 0.2)";
+            if (t >= 55) return "rgba(244, 67, 54, 0.2)";   // 🔴 critique
+            if (t >= 45) return "rgba(255, 152, 0, 0.2)";   // 🟠 alerte
+            return "rgba(76, 175, 80, 0.2)";                // 🟢 OK
+          ]]]
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'
+
+    icon:
+      - color: '#111'

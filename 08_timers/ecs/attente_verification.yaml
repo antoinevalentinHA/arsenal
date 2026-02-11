@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : ECS / Gardien — Attente vérification
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Introduire une TEMPORISATION AVANT VALIDATION de la
+#   consigne ECS afin d’éviter toute conclusion hâtive
+#   du gardien ECS immédiatement après une action.
+#
+#   Ce timer laisse le temps :
+#     - à la consigne ECS d’être réellement appliquée
+#     - aux états ViCare de se synchroniser
+#     - aux températures ECS de commencer à évoluer
+#
+# 🧩 Nature :
+#   Temporisation LOGIQUE de validation (post-action),
+#   distincte d’un anti-rebond capteur pur.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS de chauffe ECS
+#   - Ne modifie PAS de consigne
+#   - Ne décide PAS si l’ECS est conforme
+#   - Ne remplace PAS le raisonnement du gardien ECS
+#
+# ⚙️ Fonctionnement :
+#   - Démarré lors d’un changement de consigne ECS
+#     (auto ou forcé).
+#   - Tant que le timer est ACTIF :
+#       → toute vérification de conformité ECS
+#         est volontairement suspendue.
+#   - À l’expiration :
+#       → le gardien ECS est autorisé à analyser
+#         l’état réel de la production.
+#
+# 🔄 Persistance :
+#   - restore: false
+#   - Timer strictement contextuel :
+#     aucune restauration après redémarrage.
+#
+# 🔗 Utilisation :
+#   - Automatisations ECS :
+#       • Vérification post-consigne
+#       • Gardien consigne réduite / normale
+#   - Protection contre :
+#       • faux échecs
+#       • diagnostics trop précoces
+#
+# 🧠 Principe Arsenal associé :
+#   - La validation d’un état ECS ne peut se faire
+#     qu’après un délai MINIMAL d’observabilité réelle.
+#
+# ⚠️ Remarque :
+#   Ce timer protège la QUALITÉ DU DIAGNOSTIC,
+#   pas la production ECS elle-même.
+# ==========================================================
+
+
+ecs_gardien_consigne_verification:
+  name: "ECS Gardien attente verification"
+  duration: "00:00:20"
+  restore: false

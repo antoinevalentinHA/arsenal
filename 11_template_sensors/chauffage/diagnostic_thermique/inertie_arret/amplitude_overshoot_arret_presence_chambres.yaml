@@ -1,0 +1,126 @@
+# ==========================================================
+# 🌡️ ARSENAL — TEMPLATE TRIGGERED SENSOR
+#     Diagnostic thermique — Inertie arrêt
+#
+# 🧠 RÔLE
+#     Mesurer l’**amplitude maximale de surchauffe inertielle**
+#     observée après une transition d’arrêt chauffage
+#     (comfort → reduced), à partir du point d’arrêt figé.
+#
+# 🎯 FINALITÉ
+#     - Quantification directe de l’inertie hydraulique / chaudière
+#     - Base canonique de :
+#         • stabilité cycles
+#         • offsets OFF présence
+#
+# 🧩 PÉRIMÈTRE
+#     - Intra-cycle strict
+#     - Ancré exclusivement sur B0
+#     - Aucune accumulation inter-cycle
+#
+# 🚫 NE FAIT PAS
+#     - Ne décide rien
+#     - Ne lit aucun offset
+#     - Ne déclenche aucun effet de bord
+#
+# 🔒 Invalidation stricte :
+#   - tout cycle impacté par aération est neutralisé
+#   - aucune mise à jour pendant aeration_pipeline_arme
+#
+# 🔗 DÉPENDANCES
+#     - sensor.temperature_arret_presence_chambres   (B0)
+#     - sensor.temperature_min_chambres
+#     - input_boolean.aeration_pipeline_arme
+#
+# 🧠 STATUT
+#     - Diagnostic thermique
+#     - Phénomène canonique T2
+#     - Impact système : nul
+# ==========================================================
+
+- trigger:
+
+    # Nouvel arrêt chauffage (B0)
+    - platform: state
+      entity_id: sensor.temperature_arret_presence_chambres
+
+    # Variation thermique Chambres
+    - platform: state
+      entity_id: sensor.temperature_min_chambres
+
+
+  sensor:
+    - name: "Amplitude overshoot arrêt Présence Chambres"
+      unique_id: amplitude_overshoot_arret_presence_chambres
+      unit_of_measurement: "°C"
+      device_class: temperature
+      icon: mdi:arrow-collapse-up
+
+
+      state: >
+        {# -------------------------------------------------- #}
+        {# Invalidation aération / post-aération             #}
+        {# -------------------------------------------------- #}
+
+        {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+          {{ this.state }}
+
+        {% else %}
+
+          {% set arret_valide = state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') %}
+          {% set t_arret = state_attr('sensor.temperature_arret_presence_chambres', 't_arret') %}
+          {% set T_arret = states('sensor.temperature_arret_presence_chambres') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set last = this.state | float(none) %}
+
+          {# -------------------------------------------------- #}
+          {# Neutralisation si arrêt invalide ou données absentes #}
+          {# -------------------------------------------------- #}
+
+          {% if not arret_valide or t_arret is none or T_arret is none or T_cur is none %}
+            {{ none }}
+
+          {% else %}
+
+            {# -------------------------------------------------- #}
+            {# Reset UNIQUEMENT lors d’un vrai arrêt valide      #}
+            {# -------------------------------------------------- #}
+
+            {% if trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+              {{ 0 }}
+
+            {% else %}
+
+              {% set rise = (T_cur - T_arret) | float %}
+
+              {# -------------------------------------------------- #}
+              {# Pas encore d’overshoot réel                      #}
+              {# -------------------------------------------------- #}
+
+              {% if rise <= 0 %}
+
+                {% if last is not none %}
+                  {{ last }}
+                {% else %}
+                  {{ 0 }}
+                {% endif %}
+
+              {# -------------------------------------------------- #}
+              {# Overshoot réel observé                           #}
+              {# -------------------------------------------------- #}
+
+              {% else %}
+
+                {% if last is not none %}
+                  {{ [last, rise] | max | round(3) }}
+                {% else %}
+                  {{ rise | round(3) }}
+                {% endif %}
+
+              {% endif %}
+
+            {% endif %}
+
+          {% endif %}
+
+        {% endif %}

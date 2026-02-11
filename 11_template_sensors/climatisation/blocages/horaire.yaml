@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 BINARY SENSOR — Clim : blocage horaire réel
+# ----------------------------------------------------------
+# 🧱 Rôle :
+#   Exposer l’état RÉEL du blocage horaire de la climatisation.
+#
+# 🎯 Vérité métier :
+#   ON  → la clim est effectivement bloquée maintenant (horaire)
+#   OFF → aucun blocage horaire actif à l’instant T
+#
+# 🧩 Principe Arsenal :
+#   - Calculé en continu
+#   - Aucun état persistant
+#   - Lecture UNIQUE pour l’UI et les capteurs explicatifs
+#
+# ❌ Ne fait PAS :
+#   - Aucune décision
+#   - Aucune action
+#   - Aucune mémoire
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim blocage horaire réel"
+      unique_id: clim_blocage_horaire_reel
+      default_entity_id: binary_sensor.clim_blocage_horaire_reel
+      state: >
+        {% set blocage_active =
+             is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
+        {% set h_on  = states('input_datetime.clim_heure_blocage_autom_on')[:5] %}
+        {% set h_off = states('input_datetime.clim_heure_blocage_autom_off')[:5] %}
+        {% set now_h = now().strftime('%H:%M') %}
+
+        {% if blocage_active and h_on and h_off %}
+          {{ (h_on <= now_h < h_off)
+             if (h_on < h_off)
+             else (now_h >= h_on or now_h < h_off) }}
+        {% else %}
+          false
+        {% endif %}
+      icon: >
+        mdi:clock-lock-outline

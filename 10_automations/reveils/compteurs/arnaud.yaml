@@ -1,0 +1,86 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Réveils nocturnes – Comptage bruit chambre Arnaud
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Comptabiliser les occurrences de bruit nocturne
+#     dans la chambre d’Arnaud lorsque le seuil sonore
+#     configuré est dépassé.
+#
+#     Chaque occurrence est enregistrée comme un
+#     réveil potentiel, avec traçabilité horaire.
+#
+# 🧱 PRINCIPE
+#
+#     - Déclenchement sur dépassement du seuil sonore
+#     - Filtrage strict sur une plage horaire nocturne
+#       paramétrable (gestion du passage de minuit)
+#     - Incrément borné du compteur (anti-spam)
+#     - Journalisation des heures détectées
+#
+# 📥 ENTRÉES
+#
+#     - sensor.bruit_chambre_arnaud
+#     - input_number.seuil_reveil_bruit
+#     - input_datetime.heure_reveil_nuit_debut
+#     - input_datetime.heure_reveil_nuit_fin
+#
+# 📤 SORTIES
+#
+#     - input_number.reveils_nocturnes_arnaud
+#     - input_text.reveils_arnaud_heures
+#
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne confirme pas un réveil réel
+#     - Ne déclenche aucune notification
+#     - Ne pilote aucun état de présence
+#     - Ne remet pas les compteurs à zéro
+#
+# ✅ ARCHITECTURE
+#
+#     Arsenal
+# ==========================================================
+
+
+- id: '1011000000001'
+  alias: "Réveils - Compteur Arnaud"
+  mode: single
+
+  # 🔔 Trigger : bruit dépassant le seuil
+  trigger:
+    - platform: template
+      value_template: >
+        {{ states('sensor.bruit_chambre_arnaud') | float(0)
+           > states('input_number.seuil_reveil_bruit') | float(40) }}
+
+  # 🎚️ Condition : surveillance active uniquement la nuit
+  condition:
+    - condition: template
+      value_template: >
+        {% set now_t = now().strftime('%H:%M:%S') %}
+        {% set start = states('input_datetime.heure_reveil_nuit_debut') %}
+        {% set end = states('input_datetime.heure_reveil_nuit_fin') %}
+        {# Gestion de la nuit passant minuit #}
+        {{ start <= now_t or now_t <= end if start > end else start <= now_t <= end }}
+
+  # ✅ Action : incrément + log horodaté
+  action:
+    # 🔢 Incrément compteur (max 10)
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.reveils_nocturnes_arnaud
+      data:
+        value: >
+          {{ [ (states('input_number.reveils_nocturnes_arnaud') | int) + 1, 10 ] | min }}
+
+    # 📒 Historique des heures
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.reveils_arnaud_heures
+      data:
+        value: >
+          {% set old = states('input_text.reveils_arnaud_heures') %}
+          {% set stamp = now().strftime('%H:%M') %}
+          {{ old ~ ', ' ~ stamp if old else stamp }}

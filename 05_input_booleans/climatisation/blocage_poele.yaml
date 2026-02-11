@@ -1,0 +1,33 @@
+#################################################################
+# ❄️ CLIMATISATION — BLOCAGE PAR POÊLE
+#################################################################
+#
+# 🧠 Rôle :
+#   Verrou métier interdisant l’utilisation de la climatisation
+#   en mode HEAT lorsque le poêle fournit déjà
+#   un apport thermique suffisant.
+#
+# 🎯 Principe Arsenal :
+#   - Ce boolean NE DÉTECTE RIEN
+#   - Ce boolean NE DÉCIDE RIEN
+#   - Il est piloté par une automatisation dédiée
+#   - Il est consommé par la décision centrale de la climatisation
+#
+# 📥 Pilotage :
+#   - Synchronisé sur l’état stabilisé du poêle
+#     (binary_sensor.poele_en_fonction_stable)
+#
+# 📤 Consommation :
+#   - binary_sensor.autorisation_clim_heat
+#   - sensor.clim_target_mode
+#   - binary_sensor.clim_incoherence_decision_reel (diagnostic)
+#
+# 📌 Contrat logique :
+#   - ON  : le chauffage par clim est bloqué par le poêle
+#   - OFF : la clim est libre de fonctionner
+#
+#################################################################
+
+blocage_clim_poele:
+  name: "Blocage clim par poele"
+  icon: mdi:fire-off

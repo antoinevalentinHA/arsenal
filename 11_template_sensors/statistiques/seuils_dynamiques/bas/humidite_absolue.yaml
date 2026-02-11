@@ -1,0 +1,197 @@
+# ==========================================================
+# 💧 TEMPLATE SENSORS — Humidité Absolue “Seuil Bas”
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Définir pour chaque zone le **seuil bas d’humidité absolue (g/m³)**,  
+#   en dessous duquel l’air devient **trop sec** et peut nuire au confort 
+#   (dessèchement de la peau, gêne respiratoire, électricité statique).  
+#   Ces capteurs servent à :
+#     - détecter les risques d’air trop sec,  
+#     - déclencher des actions correctives (humidificateur, VMC, etc.),  
+#     - adapter les seuils selon la saison et la période du jour.
+#
+# ⚙️ Fonctionnement :
+#   - Dépend de la **période météorologique courante** (`sensor.periode_meteo`) :
+#       → `aube`, `matin`, `jour`, `crepuscule`, `nuit`.
+#   - Récupère la **moyenne d’humidité absolue filtrée** pour la période :
+#       → `sensor.humidite_absolue_filtre_<periode>_moyenne_<zone>`.
+#   - Applique un **offset saisonnier** selon le mois en cours :
+#         - Déc, Jan, Fév → -1.0 g/m³  (air plus sec, seuil plus bas)
+#         - Mar, Avr, Oct, Nov → -0.8 g/m³
+#         - Mai à Sep → -0.6 g/m³  (air plus humide)
+#   - Calcule le seuil bas :  
+#       → `seuil_bas = moyenne - offset`
+#
+# 🧮 Logique :
+#   1️⃣ Identifier la période météo active.  
+#   2️⃣ Récupérer la moyenne filtrée correspondante.  
+#   3️⃣ Ajuster avec l’offset saisonnier.  
+#   4️⃣ Retourner le seuil bas (arrondi à 0.01 g/m³).
+#
+# 🧩 Capteurs / Zones concernées :
+#   ▪️ Résidentiel :
+#      - Chambre Arnaud  
+#      - Chambre Matthieu  
+#      - Chambre Parents  
+#      - Entrée  
+#      - Séjour  
+#      - Cave  
+#      - Garage  
+#      - Petite Maison  
+#      - SDB Enfants  
+#      - SDB Parents  
+#      - Jardin  
+#      - Extérieur  
+#
+#   ▪️ Professionnel / Technique :
+#      - Direction  
+#      - Compta  
+#      - Qualité  
+#      - Devis  
+#      - Commercial  
+#      - Stock Carton  
+#      - Stock PF  
+#      - Komori  
+#      - Bobst  
+#      - Media
+#
+# 💡 Interprétation :
+#   - Si humidité absolue < Seuil Bas :
+#       → Air trop sec, possible inconfort ou besoin d’humidification.  
+#   - Si humidité absolue ≈ Seuil Bas :
+#       → Zone limite de confort hygrométrique.  
+#   - Si humidité absolue > Seuil Bas :
+#       → Conditions de confort acceptables.
+#
+# ⚠️ Remarques :
+#   - Ces seuils s’adaptent automatiquement à la **période du jour** et 
+#     aux **conditions saisonnières**.  
+#   - L’offset peut être ajusté individuellement selon la zone 
+#     (ex. cave plus humide, pièce chauffée plus sèche).  
+#   - Associés aux capteurs “Seuil Haut”, ils définissent un 
+#     **cadre complet de confort hygrométrique dynamique**.
+#
+# 📊 Type : Template Sensor  
+# 💧 Domaine : Hygrométrie / Confort / Air intérieur intelligent  
+# ==========================================================
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas Chambre Arnaud"
+      unique_id: humidite_absolue_seuil_bas_chambre_arnaud
+      state: &humidite_absolue_seuil_bas_logic >
+        {% set periode = states('sensor.periode_meteo') %}
+        {% set suffixe = this.entity_id | replace('sensor.humidite_absolue_seuil_bas_', '') %}
+        {% set moyenne = states('sensor.humidite_absolue_filtre_' ~ periode ~ '_moyenne_' ~ suffixe) | float(0) %}
+        {% set mois = now().month %}
+
+        {# Offset saisonnier : plus strict en hiver #}
+        {% set offset =
+          1.0 if mois in [12, 1, 2] else
+          0.8 if mois in [3, 4, 10, 11] else
+          0.6 %}
+        {{ (moyenne - offset) | round(2) }}
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas Entrée"
+      unique_id: humidite_absolue_seuil_bas_entree
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas Jardin"
+      unique_id: humidite_absolue_seuil_bas_jardin
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas Chambre Matthieu"
+      unique_id: humidite_absolue_seuil_bas_chambre_matthieu
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas Chambre Parents"
+      unique_id: humidite_absolue_seuil_bas_chambre_parents
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas Petite Maison"
+      unique_id: humidite_absolue_seuil_bas_petite_maison
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas Séjour"
+      unique_id: humidite_absolue_seuil_bas_sejour
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas Cave"
+      unique_id: humidite_absolue_seuil_bas_cave
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas SDB Parents"
+      unique_id: humidite_absolue_seuil_bas_sdb_parents
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas SDB Enfants"
+      unique_id: humidite_absolue_seuil_bas_sdb_enfants
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité absolue Seuil Bas Garage"
+      unique_id: humidite_absolue_seuil_bas_garage
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Extérieur"
+      unique_id: humidite_absolue_seuil_bas_exterieur
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Direction"
+      unique_id: humidite_absolue_seuil_bas_direction
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Compta"
+      unique_id: humidite_absolue_seuil_bas_compta
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Qualité"
+      unique_id: humidite_absolue_seuil_bas_qualite
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Devis"
+      unique_id: humidite_absolue_seuil_bas_devis
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Commercial"
+      unique_id: humidite_absolue_seuil_bas_commercial
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Stock Carton"
+      unique_id: humidite_absolue_seuil_bas_stock_carton
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Stock PF"
+      unique_id: humidite_absolue_seuil_bas_stock_pf
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Komori"
+      unique_id: humidite_absolue_seuil_bas_komori
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Bobst"
+      unique_id: humidite_absolue_seuil_bas_bobst
+      state: *humidite_absolue_seuil_bas_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Bas Media"
+      unique_id: humidite_absolue_seuil_bas_media
+      state: *humidite_absolue_seuil_bas_logic

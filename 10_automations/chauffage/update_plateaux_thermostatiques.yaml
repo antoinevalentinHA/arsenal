@@ -1,0 +1,69 @@
+# ==========================================================
+#  AUTOMATION : Update plateau memorise (strict par piece)
+# ----------------------------------------------------------
+#  Role :
+#    Met a jour l'input_number correspondant *uniquement lorsque*
+#    un plateau strict reel est detecte et suffisamment different
+#    du plateau memorise (> 0.1°C).
+#
+#  Logique :
+#    - Un trigger par plateau strict
+#    - On determine la piece automatiquement
+#    - On exige variance < 0.02
+#    - On exige variation > 0.1°C
+#
+#  Objectif :
+#    -> Eviter les ecritures inutiles
+#    -> Eviter les boucles d'auto-memorisation
+#    -> Stabiliser completement la detection
+# ==========================================================
+
+- id: "10240000000007"
+  alias: Chauffage – Mémorisation plateau thermique (par pièce)
+
+  trigger:
+    - platform: state
+      entity_id:
+        - sensor.plateau_thermostatique_chambre_parents
+        - sensor.plateau_thermostatique_chambre_arnaud
+        - sensor.plateau_thermostatique_chambre_matthieu
+
+  variables:
+    mapping:
+      sensor.plateau_thermostatique_chambre_parents:
+        mem: input_number.plateau_chambre_parents
+        var: sensor.temperature_stats_12h_variance_chambre_parents
+
+      sensor.plateau_thermostatique_chambre_arnaud:
+        mem: input_number.plateau_chambre_arnaud
+        var: sensor.temperature_stats_12h_variance_chambre_arnaud
+
+      sensor.plateau_thermostatique_chambre_matthieu:
+        mem: input_number.plateau_chambre_matthieu
+        var: sensor.temperature_stats_12h_variance_chambre_matthieu
+
+    current_value: "{{ trigger.to_state.state | float(0) }}"
+    memory_value: "{{ states( mapping[trigger.entity_id].mem ) | float(0) }}"
+    variance: "{{ states( mapping[trigger.entity_id].var ) | float(99) }}"
+    delta: "{{ (current_value - memory_value) | abs }}"
+
+  condition:
+
+    # 1) nouveau plateau strict doit être > 0 (protection totale)
+    - condition: template
+      value_template: "{{ current_value > 0 }}"
+
+    # 2) variance < 0.02 -> vrai plateau reel
+    - condition: template
+      value_template: "{{ variance < 0.02 }}"
+
+    # 3) différence > 0.1°C -> on evite la sur-ecriture
+    - condition: template
+      value_template: "{{ delta > 0.1 }}"
+
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: "{{ mapping[trigger.entity_id].mem }}"
+      data:
+        value: "{{ current_value }}"

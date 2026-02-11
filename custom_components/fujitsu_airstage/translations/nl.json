@@ -1,0 +1,48 @@
+{
+  "options": {
+    "step": {
+      "init": {
+        "data": {
+          "conf_turn_on_before_set_temp": "Het toestel inschakelen alvorens de temperatuur in te stellen"
+        }
+      }
+    }
+  },
+  "config": {
+    "step": {
+      "details": {
+        "data": {
+          "local": "Lokaal",
+          "cloud": "Cloud",
+          "select_polling_desc": "BESCHR 1",
+          "username": "Gebruikersnaam",
+          "password": "Wachtwoord",
+          "country": "Country",
+          "device_id": "Toestel ID",
+          "ip_address": "IP adres"
+        }
+      },
+      "user": {
+        "data": {
+          "device_id": "Toestel ID",
+          "ip_address": "IP adres",
+          "conf_turn_on_before_set_temp": "Het toestel inschakelen alvorens de temperatuur in te stellen"
+        }
+      },
+      "reconfigure": {
+        "data": {
+          "ip_address": "IP adres"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Verbinding is mislukt",
+      "invalid_auth": "Ongeldige authenticatie",
+      "unknown": "Onverwachte fout"
+    },
+    "abort": {
+      "already_configured": "Toestel is reeds ingesteld",
+      "not_a_fujitsu_airstage": "Dit apparaat is geen Fujitsu Airstage"
+    }
+  }
+}

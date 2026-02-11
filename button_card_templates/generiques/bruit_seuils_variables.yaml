@@ -1,0 +1,86 @@
+#################################################################
+# 🔊 CARTE BRUIT — SEUILS VARIABLES
+# ---------------------------------------------------------------
+# Affiche un niveau sonore (dB) avec code couleur paramétrable.
+#
+# Variables attendues :
+#   - seuil_1 : niveau confortable
+#   - seuil_2 : niveau acceptable
+#   - seuil_3 : niveau gênant
+#   - seuil_4 : niveau élevé
+#   - seuil_5 : niveau critique
+#
+# Principe Arsenal :
+#   - Carte purement informationnelle
+#   - Seuils définis par le contexte (atelier, pièce, usage)
+#   - Aucune interaction
+#################################################################
+
+carte_bruit_seuils_variables:
+  template: carte_base
+
+  show_state: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${Math.round(v)} dB`;
+    ]]]
+
+  styles:
+    card:
+      - height: 72px
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+
+            const s1 = variables?.seuil_1;
+            const s2 = variables?.seuil_2;
+            const s3 = variables?.seuil_3;
+            const s4 = variables?.seuil_4;
+            const s5 = variables?.seuil_5;
+
+            // ⚪ Indisponible
+            if (isNaN(v)) return 'rgba(224, 224, 224, 0.2)';
+
+            // 🟢 OK
+            if (s1 !== undefined && v <= s1)
+              return 'rgba(76, 175, 80, 0.2)';
+
+            // 🟡 Attention
+            if (s2 !== undefined && v <= s2)
+              return 'rgba(255, 193, 7, 0.25)';
+
+            // 🟠 Warning
+            if (s3 !== undefined && v <= s3)
+              return 'rgba(255, 152, 0, 0.25)';
+
+            // 🔴 Alerte
+            if (s4 !== undefined && v <= s4)
+              return 'rgba(244, 67, 54, 0.2)';
+
+            // 🔴 Critique (au-delà de tous seuils)
+            return 'rgba(244, 67, 54, 0.2)';
+          ]]]
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'

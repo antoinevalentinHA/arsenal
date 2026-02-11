@@ -1,0 +1,31 @@
+# ==========================================================
+# 🪟 TEMPLATE BINARY SENSOR — Chambre parents (grâce)
+# ----------------------------------------------------------
+# 💡 Logique Arsenal :
+#   ON SEULEMENT si :
+#     1) une fenêtre parents est ouverte
+#     2) ET le timer fenetre_chambre_parents_grace est idle
+#
+#   Pendant le délai (active) → reste OFF.
+#
+# 📍 Entité : binary_sensor.fenetre_chambre_parents_ouverte_avec_delai
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Fenêtre chambre parents (grâce)"
+      unique_id: fenetre_chambre_parents_ouverte_avec_delai
+      default_entity_id: binary_sensor.fenetre_chambre_parents_ouverte_avec_delai
+      device_class: opening
+
+      state: >
+        {% set fenetres = [
+          'binary_sensor.capteur_chambre_parents_droite',
+          'binary_sensor.capteur_chambre_parents_gauche',
+          'binary_sensor.capteur_chambre_parents_milieu'
+        ] %}
+
+        {{
+          (fenetres | select('is_state', 'on') | list | length > 0)
+          and is_state('timer.fenetre_chambre_parents_grace', 'idle')
+        }}

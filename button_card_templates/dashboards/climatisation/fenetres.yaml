@@ -1,0 +1,49 @@
+#################################################################
+# 🪟 CARTE CLIM — DIAGNOSTIC FENÊTRES MAISON
+# ---------------------------------------------------------------
+# Indique si l’état global des fenêtres autorise
+# le fonctionnement de la climatisation.
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture seule
+#   - Aucune action directe
+#   - Décision portée par le binary_sensor
+#################################################################
+
+carte_clim_diagnostic_fenetres_maison:
+  template: carte_base
+
+  entity: binary_sensor.fenetre_ouverte_maison
+
+  show_state: false
+  show_name: true
+  show_label: true
+  color_type: card
+
+  label: |
+    [[[
+      return entity.state === "off"
+        ? "Fermées"
+        : "Au moins une ouverte";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity.state === "off"
+              ? "rgba(76, 175, 80, 0.2)"   // 🟢 fenêtres fermées → clim autorisée
+              : "rgba(158, 158, 158, 0.2)"; // ⚪ fenêtres ouvertes → clim bloquée
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#000000'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - color: '#111'

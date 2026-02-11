@@ -1,0 +1,34 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – ECS
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un état visuel simplifié (2 états) pour le
+#     bouton ECS du tableau de bord Navigation.
+#
+#  🎯 États normalisés :
+#     - eco    → ballon à chauffer (bleu)
+#     - alert  → ballon chaud (≥ 39 °C)
+#     - off    → gris (valeur invalide ou inconnue)
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_ecs_dashboard"
+      unique_id: etat_ecs_dashboard
+      state: >
+        {% set raw = states('sensor.ecs_temperature_ballon_securisee') %}
+
+        {# ⚠️ Valeurs invalides #}
+        {% if raw in ['unavailable', 'unknown', 'none'] %}
+          off
+        {% else %}
+          {% set t = raw | float(0) %}
+
+          {% if t < 39 %}
+            eco
+          {% elif t >= 39 %}
+            alert
+          {% else %}
+            off
+          {% endif %}
+        {% endif %}

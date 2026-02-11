@@ -1,0 +1,26 @@
+# ==========================================================
+# 🌡️ TEMPLATE SENSOR — Seuil allumage chauffage clim
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Calculer le seuil de température à partir duquel le chauffage
+#   (mode HEAT de la climatisation) doit s’allumer.
+#
+# ⚙️ Fonctionnement :
+#   - Base : sensor.temperature_de_consigne_appliquee_locale
+#   - Ajustement : soustraction de input_number.clim_offset_on
+#   - Résultat : consigne - offset_on
+#
+# 🧠 Détails techniques :
+#   - Unité : °C
+#   - Icône : mdi:thermometer-chevron-down
+# ==========================================================
+
+- sensor:
+    - name: "Seuil allumage chauffage clim"
+      unique_id: seuil_allumage_chauffage_clim
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-chevron-down
+      state: >
+        {% set consigne = states('sensor.temperature_de_consigne_appliquee_locale') | float(20) %}
+        {% set offset_on = states('input_number.clim_offset_on') | float(0.5) %}
+        {{ (consigne - offset_on) | round(1) }}

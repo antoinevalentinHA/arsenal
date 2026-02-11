@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     Inhibition géofencing chauffage (absence)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#
+#   Représenter l’ÉTAT MÉTIER de protection thermique
+#   en situation d’absence.
+#
+#   Ce booléen indique si la réduction de chauffage
+#   liée au geofencing est TEMPORAIREMENT INHIBÉE
+#   pour des raisons thermiques.
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#
+#   - État métier persistant
+#   - Piloté EXCLUSIVEMENT par automatisation
+#   - Ne contient AUCUNE logique
+#   - Ne déclenche AUCUNE action par lui-même
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPE ARSENAL
+#
+#   - Le geofencing propose une réduction (absence)
+#   - La protection thermique peut l’inhiber
+#   - Ce booléen matérialise cette inhibition
+#
+#   ⚠️ IMPORTANT :
+#     - ON  → réduction absence inhibée
+#     - OFF → réduction absence autorisée
+#
+# ----------------------------------------------------------
+# 🚫 INTERDICTIONS
+#
+#   - Ne doit JAMAIS être manipulé manuellement
+#   - Ne doit JAMAIS être modifié par la décision centrale
+#   - Ne doit JAMAIS piloter directement la chaudière
+#
+# ----------------------------------------------------------
+# 🔗 UTILISATION
+#
+#   - Lu par :
+#       • Décision centrale chauffage
+#       • Capteurs canoniques (diagnostic / UI)
+#   - Piloté par :
+#       • Automatisation 10240000000001
+#
+# ----------------------------------------------------------
+# 📊 UI
+#
+#   - Visible dans dashboards diagnostics chauffage
+#   - Jamais exposé comme commande utilisateur
+# ==========================================================
+
+chauffage_inhibition_geofencing:
+  name: Chauffage – Inhibition absence active
+  icon: mdi:shield-thermometer

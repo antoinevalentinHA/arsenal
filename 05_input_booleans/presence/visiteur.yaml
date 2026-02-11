@@ -1,0 +1,24 @@
+# ==========================================================
+# 🧍 INPUT BOOLEAN — Présence visiteur
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Représenter la présence d’un visiteur dans la maison,
+#   afin qu’il ait le même effet qu’un membre de la famille
+#   sur le chauffage, la climatisation et l’alarme.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → visiteur considéré présent (maison occupée)
+#   - OFF → aucun visiteur pris en compte
+#
+# 🧩 Utilisation :
+#   - Sera piloté par le mode Visiteur (automatisations)
+#   - Sera intégré dans les capteurs de présence famille
+#
+# 📊 Type : Helper (Input Boolean)
+# 📍 Entité : input_boolean.presence_visiteur
+# ==========================================================
+
+
+presence_visiteur:
+  name: "Presence visiteur"
+  icon: mdi:account-tie

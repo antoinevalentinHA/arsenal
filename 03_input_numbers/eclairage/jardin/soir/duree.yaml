@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Durée éclairage jardin (soir)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir la durée maximale pendant laquelle
+#    l’éclairage extérieur du jardin reste allumé
+#    le soir, après son allumage automatique.
+#
+# 🧩 Principe :
+#    - Le chronomètre démarre à l’ALLUMAGE effectif
+#      de l’éclairage du jardin
+#    - L’extinction est autorisée uniquement après
+#      écoulement complet de cette durée
+#
+# ⚙️ Fonctionnement :
+#    - Valeur exprimée en minutes
+#    - Convertie en secondes dans les capteurs décisionnels
+#    - Sert de référence pour l’extinction automatique
+#
+# 🔍 Utilisation :
+#    - Binary sensor :
+#        • eclairage/jardin_extinction_soir_autorisee.yaml
+#    - Dashboards :
+#        • réglages éclairage
+#        • diagnostics éclairage
+#
+# 🚫 Ne pas confondre avec :
+#    - Délais d’absence
+#    - Horaires astronomiques
+#    - Scènes manuelles d’éclairage
+#
+# 📐 Unité :
+#    - minutes (durée post-allumage)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Paramètre éclairage jardin (soir)
+# ==========================================================
+
+
+duree_lumiere_jardin_soir:
+  name: Durée éclairage jardin soir (min)
+  icon: mdi:lightbulb-on-10
+  min: 5
+  max: 180
+  step: 5
+  unit_of_measurement: min
+  mode: slider

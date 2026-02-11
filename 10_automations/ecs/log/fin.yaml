@@ -1,0 +1,124 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Gel et validation des données de fin de cycle
+#
+#  ID : 10250000000010
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Capturer, valider et figer l’ensemble des données
+#     diagnostiques d’un cycle ECS à sa clôture effective,
+#     afin de garantir une lecture persistante, fiable et
+#     exploitable dans les dashboards Arsenal.
+#
+#     Cette automation constitue l’étape finale de
+#     consolidation documentaire d’un cycle ECS.
+#
+#  🧱 PRINCIPE ARSENAL
+#     - Les données dynamiques sont instables à chaud
+#     - La consolidation doit être différée et explicite
+#     - Les valeurs figées deviennent la référence durable
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide pas de la validité thermique du cycle
+#     - Ne modifie aucune consigne ou stratégie ECS
+#     - Ne déclenche aucun cycle
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • fin effective du cycle ECS (verrou OFF)
+#     - Séquence :
+#         • temporisation longue de stabilisation (30 s)
+#         • mise à jour forcée des capteurs dynamiques
+#         • calcul de la durée réelle du cycle
+#         • lecture de la température maximale atteinte
+#         • validation explicite du résumé (pending → oui / non)
+#         • écriture des valeurs figées dans des helpers persistants
+#         • miroir du résumé validé pour affichage immédiat
+#
+#  ⚠️ IMPORTANT
+#     - Les valeurs figées sont la seule source fiable
+#       pour les dashboards et bilans post-cycle
+#     - La validation dépend du retour effectif
+#       de la consigne basse (10 °C)
+#
+#  ✅ CONTRAINTES
+#     - Consolidation post-stabilisation uniquement
+#     - Séparation stricte données dynamiques / figées
+#     - Traçabilité complète et non ambiguë
+# ==========================================================
+
+
+- id: "10250000000010"
+  alias: "ECS – Gel données fin de cycle"
+  description: >
+    À la fin du cycle ECS, capture les données essentielles pour une
+    lecture persistante dans les dashboards (température max, durée, résumé validé).
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      from: "on"
+      to: "off"
+
+  action:
+    # ⏳ 1️⃣ Temporisation renforcée (stabilisation sensors)
+    - delay: "00:00:30"
+
+    # ♻️ 2️⃣ Mise à jour des capteurs dynamiques requis
+    - service: homeassistant.update_entity
+      target:
+        entity_id:
+          - sensor.ecs_temperature_max_cycle
+          - sensor.ecs_dernier_cycle_resume
+
+    # 🧮 3️⃣ Variables intermédiaires + validation résumé
+    - variables:
+        duree: >
+          {% set start = as_timestamp(states('input_datetime.ecs_dernier_cycle_datetime')) %}
+          {% set end   = as_timestamp(states('input_datetime.ecs_tmax_timestamp')) %}
+          {% if start and end and end > start %}
+            {{ ((end - start) / 60) | round(1) }}
+          {% else %}
+            0
+          {% endif %}
+        temp_max: "{{ states('sensor.ecs_temperature_max_cycle') | float(0) }}"
+        resume_brut: "{{ states('input_text.ecs_dernier_cycle_resume') }}"
+        consigne_reelle: "{{ states('sensor.ecs_consigne_chaudiere_securisee') | float(0) }}"
+        resume_valide: >
+          {{ resume_brut.replace('|pending', '|oui')
+             if consigne_reelle <= 10
+             else resume_brut.replace('|pending', '|non') }}
+
+    # 💾 4️⃣ Écriture des valeurs figées
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.ecs_duree_dernier_cycle_figee
+      data:
+        value: "{{ duree }}"
+
+    # 💾 Sauvegarde persistante de la durée réelle
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.ecs_duree_chauffe_reel_backup
+      data:
+        value: "{{ duree }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.ecs_temperature_max_figee
+      data:
+        value: "{{ temp_max }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.ecs_resume_dernier_cycle_fige
+      data:
+        value: "{{ resume_valide }}"
+
+    # 🧩 5️⃣ Miroir du résumé validé
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.ecs_dernier_cycle_resume
+      data:
+        value: "{{ resume_valide }}"

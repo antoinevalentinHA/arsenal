@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Délai extinction jardin (matin)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir le délai appliqué APRÈS le lever du soleil
+#    avant extinction automatique de l’éclairage
+#    extérieur du jardin.
+#
+# 🧩 Principe :
+#    - Le lever du soleil est fourni par Home Assistant
+#    - Ce délai permet d’éviter une extinction trop
+#      brutale (pénombre résiduelle, météo, saison)
+#
+# ⚙️ Fonctionnement :
+#    - Valeur exprimée en minutes
+#    - Utilisée pour calculer une heure d’extinction cible
+#    - La logique d’extinction se base sur cette heure
+#
+# 🔍 Utilisation :
+#    - Automatisation :
+#        • eclairage/jardin/matin/maj_heure_extinction.yaml
+#    - Dashboards :
+#        • réglages éclairage
+#        • diagnostics éclairage
+#
+# 🚫 Ne pas confondre avec :
+#    - Horaires fixes
+#    - Délais d’absence
+#    - Gestion crépusculaire du soir
+#
+# 📐 Unité :
+#    - minutes (post lever du soleil)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Paramètre éclairage jardin (matin)
+# ==========================================================
+
+
+delai_extinction_jardin_matin:
+  name: Délai après lever du jour (min)
+  icon: mdi:weather-sunset-up
+  min: 0
+  max: 30
+  step: 1
+  unit_of_measurement: min
+  mode: slider

@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Réglages – Synchronisation consigne Confort chauffage
+#
+#  ID : 10240000000012
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Déclencher l’application de la consigne Confort
+#   souveraine vers ViCare lors d’une modification utilisateur.
+#
+#   Cette automation :
+#     - ne valide aucune valeur
+#     - ne touche jamais ViCare directement
+#     - délègue intégralement au script d’application
+#
+# 🔒 CHAÎNE
+#   input_number.chauffage_consigne_confort
+#        ↓
+#   automation (déclencheur)
+#        ↓
+#   script.chauffage_appliquer_consigne_confort
+# ==========================================================
+
+- id: '10240000000012'
+  alias: "Chauffage – Sync consigne Confort"
+  description: >
+    Déclenche l’application de la consigne Confort souveraine
+    vers ViCare lors d’une modification de
+    input_number.chauffage_consigne_confort.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_number.chauffage_consigne_confort
+
+  action:
+    - service: script.chauffage_appliquer_consigne_confort

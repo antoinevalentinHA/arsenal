@@ -1,0 +1,53 @@
+#################################################################
+# 🗺️ CARTE ACTIVITÉ — DISTANCE QUOTIDIENNE
+# ---------------------------------------------------------------
+# Carte qualitative d’affichage de la distance parcourue
+# sur la journée (en mètres).
+#
+# Interprétation visuelle :
+#   - Très faible → Rouge
+#   - Faible → Orange
+#   - Moyen → Jaune
+#   - Bon → Vert
+#   - Très bon → Bleu
+#
+# Principe Arsenal :
+#   - Lecture seule
+#   - Aucune logique métier
+#   - Seuils purement UI
+#################################################################
+
+carte_activite_distance_quotidienne:
+  template: carte_base
+
+  show_state: true
+  show_icon: true
+
+  state_display: |
+    [[[
+      const val = parseFloat(entity?.state);
+      if (isNaN(val)) return "—";
+      return `${Math.round(val)} m`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const dist = parseFloat(entity?.state);
+
+            if (isNaN(dist))   return "rgba(158, 158, 158, 0.2)";   // ⚪ inconnu
+            if (dist < 2500)   return "rgba(244, 67, 54, 0.2)";     // 🔴 très faible
+            if (dist < 5000)   return "rgba(255, 152, 0, 0.2)";    // 🟠 faible
+            if (dist < 7000)   return "rgba(255, 235, 59, 0.2)";   // 🟡 moyen
+            if (dist < 9000)   return "rgba(76, 175, 80, 0.2)";     // 🟢 bon
+            return "rgba(144, 202, 249, 0.25)";                      // 🔵 excellent
+          ]]]
+    state:
+      - font-size: 18px
+      - font-weight: bold
+      - color: '#111'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'

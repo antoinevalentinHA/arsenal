@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBER : VMC — Durée minimale haute vitesse
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir la durée MINIMALE pendant laquelle la VMC
+#   doit rester en haute vitesse une fois activée.
+#
+# 🧱 Principe :
+#   - Ce helper ne déclenche rien
+#   - Il ne commande pas la VMC
+#   - Il ne contient aucune logique
+#
+#   → Il fournit uniquement une valeur de durée plancher
+#     utilisée par la logique VMC.
+#
+# ❌ Ne fait PAS :
+#   - minuterie autonome
+#   - anti-rebond direct
+#   - priorité de ventilation
+#
+# 🔗 Utilisation :
+#   - Consommé par :
+#       • automation : vmc/gestion_auto.yaml
+#   - Affiché dans :
+#       • dashboards diagnostics VMC
+#       • dashboards réglages VMC
+#
+# 🧠 Principe Arsenal :
+#   - Décision ≠ Paramétrage ≠ Action
+#   - Les durées sont explicites, réglables, traçables
+#
+# 📐 Unité :
+#   - Minutes
+# ==========================================================
+
+
+vmc_duree_min_haute:
+  name: "VMC - Durée min haute vitesse"
+  min: 5
+  max: 60
+  step: 1
+  unit_of_measurement: "min"
+  icon: mdi:timer-outline
+  mode: slider
+  #initial: 15

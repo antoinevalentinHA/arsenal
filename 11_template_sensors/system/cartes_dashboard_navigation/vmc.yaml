@@ -1,0 +1,26 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – VMC
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Indiquer si la VMC fonctionne en vitesse haute ou
+#     normale, afin de colorer le bouton du menu Navigation.
+#
+#  🎯 États :
+#     - alert   → Haute vitesse (rouge)
+#     - confort → Vitesse normale (vert)
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_vmc_dashboard"
+      unique_id: etat_vmc_dashboard
+      state: >
+        {% set hv = states('input_boolean.vmc_haute_vitesse') %}
+
+        {% if hv == 'on' %}
+          alert         {# Rouge : haute vitesse #}
+        {% elif hv == 'off' %}
+          confort       {# Vert : vitesse normale #}
+        {% else %}
+          off           {# Gris : incohérent #}
+        {% endif %}

@@ -1,0 +1,81 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY_SENSOR :
+#     Clim – Silencieux autorisé (plage horaire & présence)
+#
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Capteur de DÉCISION MÉTIER.
+#
+#     Il détermine si, à l’instant T, le mode silencieux
+#     de la climatisation DOIT être actif.
+#
+#     Ce capteur est la vérité fonctionnelle utilisée
+#     par les automatisations d’exécution.
+#
+# ----------------------------------------------------------
+# 🧩 PRINCIPE
+#
+#     Le capteur passe à ON lorsque :
+#       - la maison est occupée
+#       - l’heure actuelle est comprise dans la plage
+#         définie par l’utilisateur
+#
+#     La plage horaire peut :
+#       - être diurne (ON < OFF)
+#       - chevaucher minuit (ON > OFF)
+#
+# ----------------------------------------------------------
+# 🧠 PARAMÈTRES UTILISATEUR
+#
+#     - input_datetime.clim_heure_silencieux_on
+#     - input_datetime.clim_heure_silencieux_off
+#
+# ----------------------------------------------------------
+# 📦 SOURCES TECHNIQUES
+#
+#     - binary_sensor.presence_famille_unifiee
+#     - sensor.time
+#
+# ----------------------------------------------------------
+# 🚫 CE QUE CE CAPTEUR NE FAIT PAS
+#
+#     - N’active PAS la climatisation
+#     - Ne pilote AUCUN switch
+#     - Ne modifie PAS le mode HVAC
+#     - Ne déclenche AUCUNE action
+#
+# ----------------------------------------------------------
+# 🧠 ARCHITECTURE ARSENAL
+#
+#     Décision ≠ Action.
+#
+#     Ce capteur incarne une règle métier stable
+#     et observable, indépendante de toute automation.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim – Silencieux autorisé"
+      unique_id: clim_silencieux_autorise
+      default_entity_id: binary_sensor.clim_silencieux_autorise
+      state: >
+
+        {% set presence = is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+
+        {% set on_time = states('input_datetime.clim_heure_silencieux_on') %}
+        {% set off_time = states('input_datetime.clim_heure_silencieux_off') %}
+        {% set now_time = states('sensor.time') %}
+
+        {% if not presence %}
+          false
+
+        {% elif on_time == off_time %}
+          false
+
+        {% elif on_time < off_time %}
+          {{ on_time <= now_time < off_time }}
+
+        {% else %}
+          {{ now_time >= on_time or now_time < off_time }}
+
+        {% endif %}

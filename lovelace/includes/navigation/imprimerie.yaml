@@ -1,0 +1,65 @@
+type: horizontal-stack
+cards:
+
+  - type: custom:button-card
+    template: bouton_spacer
+    color_type: blank-card
+
+  - type: custom:button-card
+    template: bouton_spacer
+    color_type: blank-card
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:magnify
+    tap_action:
+      action: navigate
+      navigation_path: /imprimerie-dashboard/menu
+    styles:
+      icon:
+        - color: '#424242'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:thermometer
+    tap_action:
+      action: navigate
+      navigation_path: /imprimerie-meteo-dashboard/meteo
+    styles:
+      icon:
+        - color: '#B71C1C'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:volume-high
+    tap_action:
+      action: navigate
+      navigation_path: /imprimerie-bruit-dashboard/bruit
+    styles:
+      icon:
+        - color: '#1565C0'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:warehouse
+    tap_action:
+      action: navigate
+      navigation_path: /imprimerie-stockage-dashboard/stockage
+    styles:
+      icon:
+        - color: '#1B5E20'
+
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:factory
+    tap_action:
+      action: navigate
+      navigation_path: /imprimerie-atelier-dashboard/atelier
+    styles:
+      icon:
+        - color: '#1B5E20'
+
+  # marge droite
+  - type: custom:button-card
+    template: bouton_spacer
+    color_type: blank-card

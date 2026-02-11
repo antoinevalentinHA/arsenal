@@ -1,0 +1,47 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Chauffage
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Fournir un état visuel unique destiné aux dashboards.
+#
+#  🎯 États possibles :
+#     - alert     → brûleur actif
+#     - confort   → programme Confort
+#     - eco       → programme Éco
+#     - standby   → mode veille
+#     - off       → programme Off ou inactif
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_chauffage_dashboard"
+      unique_id: etat_chauffage_dashboard
+      state: >
+        {% set bruleur = states('binary_sensor.bruleur_chauffage_actif') %}
+        {% set prog = states('sensor.programme_chauffage') %}
+        {% set mode = state_attr('sensor.programme_chauffage', 'active_vicare_mode') %}
+
+        {# 🔥 1) Brûleur actif -> état ALERTE #}
+        {% if bruleur == 'on' %}
+          alert
+
+        {# 🟩 2) Programme Confort #}
+        {% elif prog == 'Confort' %}
+          confort
+
+        {# 🟦 3) Programme Éco #}
+        {% elif prog == 'Éco' %}
+          eco
+
+        {# ⚪ 4) Standby #}
+        {% elif mode == 'standby' %}
+          standby
+
+        {# ⚪ 5) Programme Off #}
+        {% elif prog == 'Off' %}
+          off
+
+        {# Default #}
+        {% else %}
+          off
+        {% endif %}

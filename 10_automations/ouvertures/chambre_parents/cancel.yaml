@@ -1,0 +1,83 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Chambre parents – Levée du délai fenêtres
+#
+#  ID : 10170000000008
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de LEVÉE DE BLOCAGE TEMPORAIRE.
+#
+#     Elle annule le timer de grâce associé aux fenêtres
+#     de la chambre parents dès que toutes les ouvertures
+#     sont refermées.
+#
+#     Elle permet au moteur chauffage de reprendre
+#     immédiatement son fonctionnement normal,
+#     sans attendre l’expiration du délai.
+#
+#  🧱 NATURE
+#
+#     - Synchronisation ouvertures ↔ chauffage
+#     - Annulation conditionnelle de temporisation
+#     - Aucune décision thermique autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement à chaque fermeture de fenêtre
+#       de la chambre parents
+#     - Vérification globale :
+#         • aucune fenêtre parents encore ouverte
+#     - Annulation du timer :
+#         • timer.fenetre_chambre_parents_grace
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas d’allumer ou d’éteindre le chauffage
+#     - Ne démarre pas le timer de grâce
+#     - Ne gère pas les ouvertures individuellement
+#     - Ne force aucune consigne
+#
+#  🔗 UTILISATION
+#
+#     - Complément des automatisations de blocage chauffage
+#       liées aux fenêtres
+#     - Garantit une reprise rapide dès fermeture complète
+#
+#  🧠 PRINCIPE ARSENAL
+#
+#     Les temporisations protègent.
+#     Leur levée doit être explicite,
+#     globale et immédiatement réversible.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10170000000008"
+  alias: "Chauffage – Chambre parents – Levée délai fenêtres"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_chambre_parents_droite
+        - binary_sensor.capteur_chambre_parents_gauche
+        - binary_sensor.capteur_chambre_parents_milieu
+      to: "off"
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ expand([
+          'binary_sensor.capteur_chambre_parents_droite',
+          'binary_sensor.capteur_chambre_parents_gauche',
+          'binary_sensor.capteur_chambre_parents_milieu'
+        ]) | selectattr('state','eq','on') | list | count == 0 }}
+
+  action:
+    - service: timer.cancel
+      target:
+        entity_id: timer.fenetre_chambre_parents_grace

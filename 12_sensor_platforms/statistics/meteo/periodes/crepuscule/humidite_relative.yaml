@@ -1,0 +1,203 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles d’humidité relative (filtrée au crépuscule)
+# ----------------------------------------------------------
+#  🧠 Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de l’humidité relative (%) mesurée au **crépuscule**,
+#     période clé où la température ambiante baisse et
+#     l’humidité relative augmente naturellement.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Source : capteurs `sensor.humidite_relative_filtre_crepuscule_*`
+#     - Caractéristique calculée : moyenne (`mean`)
+#
+#  📅 Fenêtre d’analyse :
+#     - Période : 30 jours glissants
+#     - Taille d’échantillon : 5 000 points maximum
+#
+#  📊 Sortie :
+#     - Moyenne mensuelle de l’humidité relative mesurée au crépuscule
+#
+#  🏡 Zones couvertes :
+#     - Chambres, pièces à vivre, locaux techniques,
+#       bureaux, ateliers et zones extérieures.
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🏠 Chambres
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Chambre Arnaud"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_5000 5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Chambre Matthieu"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Chambre Parents"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏡 Espaces de vie et communs
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Entrée"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Séjour"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Petite Maison"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🚿 Salles de bains
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne SDB Enfants"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_sdb_enfants
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne SDB Parents"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_sdb_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🌳 Extérieur et jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Jardin"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Extérieur"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏢 Zones administratives
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Direction"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Compta"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Qualité"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Devis"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Commercial"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 🏭 Zones industrielles / ateliers
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Komori"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Bobst"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Media"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# 📦 Zones de stockage
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Stock Carton"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_stock_carton
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Stock PF"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_stock_pf
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+# ----------------------------------------------------------
+# ⚙️ Locaux techniques
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Cave"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_cave
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000
+
+- platform: statistics
+  name: "Humidité relative filtre crepuscule Moyenne Garage"
+  entity_id: sensor.humidite_relative_filtre_crepuscule_garage
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_5000

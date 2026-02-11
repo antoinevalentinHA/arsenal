@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim – Seuil allumage COOL atteint
+#
+# 🎯 Rôle :
+#   Indiquer si la température maximale intérieure
+#   a atteint ou dépassé le seuil d’allumage COOL
+#   appliqué par le système.
+#
+# 🧱 Principe Arsenal :
+#   - Lecture PURE
+#   - Aucune temporisation
+#   - Aucune action
+#   - Seuil déjà calculé ailleurs
+#
+# 🔌 Consommateurs typiques :
+#   - Automation "Clim – Analyse complète et décision"
+#   - UI diagnostic clim
+#
+# ⚠️ IMPORTANT :
+#   - Strictement équivalent à la condition :
+#       temperature_max_chambres >= seuil_allumage_clim_applique
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim – Seuil allumage COOL atteint"
+      unique_id: clim_seuil_allumage_cool_atteint
+      default_entity_id: binary_sensor.clim_seuil_allumage_cool_atteint
+      state: >
+        {{
+          states('sensor.temperature_max_chambres') | float(-99)
+          >=
+          states('sensor.seuil_allumage_clim_applique') | float(999)
+        }}

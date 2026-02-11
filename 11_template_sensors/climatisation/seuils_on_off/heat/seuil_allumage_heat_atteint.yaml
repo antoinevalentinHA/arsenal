@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim – Seuil allumage HEAT atteint
+#
+# 🎯 Rôle :
+#   Indiquer si la température minimale intérieure
+#   est passée sous le seuil d’allumage HEAT
+#   appliqué par le système.
+#
+# 🧱 Principe Arsenal :
+#   - Lecture PURE
+#   - Aucune temporisation
+#   - Aucune action
+#   - Seuil déjà calculé ailleurs
+#
+# 🔌 Consommateurs typiques :
+#   - Automation "Clim – Analyse complète et décision"
+#   - UI diagnostic clim
+#
+# ⚠️ IMPORTANT :
+#   - Strictement équivalent à la condition :
+#       temperature_min_chambres < seuil_allumage_chauffage_clim
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim – Seuil allumage HEAT atteint"
+      unique_id: clim_seuil_allumage_heat_atteint
+      default_entity_id: binary_sensor.clim_seuil_allumage_heat_atteint
+      state: >
+        {{
+          states('sensor.temperature_min_chambres') | float(999)
+          <
+          states('sensor.seuil_allumage_chauffage_clim') | float(-999)
+        }}

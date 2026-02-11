@@ -1,0 +1,240 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Réglages ECS
+icon: mdi:water-pump
+
+views:
+  - title: Réglages ECS
+    path: ecs
+    icon: mdi:water-pump
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /ecs-dashboard/home
+
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          # === ECS Maison ===
+          - type: custom:button-card
+            template: section_header
+            name: 🚿 ECS Maison
+
+          - type: horizontal-stack
+            cards:
+
+              - type: custom:button-card
+                template: carte_toggle
+                entity: input_boolean.ecs_blocage_planifiee
+                name: "Chauffe planifiée"
+                icon: mdi:water-boiler
+                show_state: true
+                state_display: >
+                  [[[ return entity.state === 'on' ? 'Désactivée' : 'Activée' ]]]
+                styles:
+                  card:
+                    - background-color: >
+                        [[[ return entity.state === 'on'
+                          ? 'rgba(244, 67, 54, 0.2)'   // 🔴 désactivée
+                          : 'rgba(76, 175, 80, 0.2)';  // 🟢 activée
+                        ]]]
+    
+              - type: custom:button-card
+                template: bouton_navigation
+                name: 🗓️ Planning ECS
+                icon: mdi:calendar-clock
+                tap_action:
+                  action: navigate
+                  navigation_path: /reglages-ecs-planning-dashboard/ecs_planning
+
+          # === Bouclage automatique ===
+          - type: custom:button-card
+            template: section_header
+            name: 🔁 Bouclage automatique
+
+          - type: markdown
+            content: |
+              Actif du lundi au vendredi sur la plage horaire définie si présence. 
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_boolean.bouclage_plage_active
+                name: Activé
+
+          - type: conditional
+            conditions:
+              - entity: input_boolean.bouclage_plage_active
+                state: "on"
+            card:
+              type: entities
+              show_header_toggle: false
+              entities:
+                - entity: input_datetime.heure_debut_bouclage_ecs
+                  name: Début
+                - entity: input_datetime.heure_fin_bouclage_ecs
+                  name: Fin
+
+          - type: custom:button-card
+            template: section_header
+            name: 📋 Modes
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_boolean.mode_enfants
+                name: Bains le soir
+              - entity: input_boolean.ecs_desinfection_active
+                name: Désinfection
+              - entity: input_boolean.mode_vaisselle
+                name: Mode vaisselle
+
+          - type: custom:button-card
+            template: section_header
+            name: 📏 Consignes
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.ecs_consigne_temperature
+                name: Température normale
+              - entity: input_number.ecs_consigne_vaisselle
+                name: Température vaisselle
+              - entity: input_number.ecs_temperature_desinfection
+                name: Température désinfection
+
+          - type: custom:button-card
+            template: section_header
+            name: 🧼 Désinfection
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_select.ecs_desinfection_jour
+                name: Jour
+              - entity: input_datetime.ecs_desinfection_heure
+                name: Heure
+
+          # === Réglages avancés ===
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Réglages avancés
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🎯 Offsets anticipés (consigne − X)
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.ecs_off_tiny
+                name: Offset tiny ΔT
+              - entity: input_number.ecs_off_medium
+                name: Offset medium ΔT
+              - entity: input_number.ecs_off_normal
+                name: Offset normal ΔT
+              - entity: input_number.ecs_off_desinfection
+                name: Offset désinfection
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🔁 Amorçage & seuils d’arrêt
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.ecs_trigger_ceiling_tiny_medium
+                name: Plafond amorçage tiny/medium
+              - entity: input_number.ecs_eps_ponctuel
+                name: Epsilon ponctuel
+              - entity: input_number.ecs_eps_desinfection
+                name: Epsilon désinfection
+
+          # === Sauvegarde & restauration ===
+          - type: custom:button-card
+            template: sub_section_header
+            name: 💾 Sauvegarde / restauration réglages
+          
+          - type: horizontal-stack
+            cards:
+          
+              # === Bouton Sauvegarde ===
+              - type: custom:button-card
+                template: badge_action_confirmee
+                icon: mdi:content-save
+                name: Sauvegarder
+                tap_action:
+                  action: call-service
+                  confirmation:
+                    text: 💾 Sauvegarder tous les réglages ECS ?
+                  service: pyscript.ecs_sauvegarde_reglages
+                variables:
+                 bg_color: rgba(33, 150, 243, 0.2)
+                 icon_color: '#1565C0'
+          
+              # === Bouton Restauration ===
+              - type: custom:button-card
+                template: badge_action_confirmee
+                icon: mdi:backup-restore
+                name: Restaurer
+                tap_action:
+                  action: call-service
+                  confirmation:
+                    text: ♻️ Restaurer les réglages ECS depuis la sauvegarde ?
+                  service: pyscript.ecs_restore_reglages
+                variables:
+                 bg_color: rgba(76, 175, 80, 0.2)
+                 icon_color: '#2E7D32'
+
+          # === Auto-ajustement Offsets ===
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🔁 Auto-ajustement des offsets
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_boolean.ecs_autocorrect_active
+                name: Auto-ajustement
+
+          # === ECS Petite Maison ===
+          - !include ../../includes/section_headers/ecs_petite_maison.yaml
+
+          - type: horizontal-stack
+            cards:
+
+              - type: custom:button-card
+                template: carte_action_standard
+                entity: script.ecs_petite_maison_mode_eco
+                name: Mode Auto
+                icon: mdi:water-boiler
+                variables:
+                  confirmation: "⚠️ Activer le mode Auto (Éco) du chauffe-eau ?"
+
+              - type: custom:button-card
+                template: carte_action_critique
+                entity: script.ecs_petite_maison_arret_absence
+                name: Absence
+                icon: mdi:home-outline
+                variables:
+                  confirmation: "⚠️ Passer le chauffe-eau en mode Absence ?"
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_boolean.ecs_petite_maison_programmation
+                name: "Programmation ECS"
+              - entity: input_datetime.debut_ecs_petite_maison_programmee
+                name: "Début"
+              - entity: input_datetime.fin_ecs_petite_maison_programmee
+                name: "Fin"

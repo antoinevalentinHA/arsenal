@@ -1,0 +1,82 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Mode enfants (activation restaurée)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Réactive le mode ECS "enfants" en restaurant
+#   les soirs précédemment sauvegardés.
+#
+#   Ce script rejoue strictement un état mémorisé,
+#   sans aucune logique décisionnelle.
+#
+# ----------------------------------------------------------
+# 🧩 PRINCIPE DE FONCTIONNEMENT
+#
+#   - Lit la sauvegarde des soirs actifs depuis :
+#       input_text.mode_enfants_ecs_soirs_sauvegarde
+#
+#   - Reconstruit dynamiquement les entités :
+#       input_boolean.ecs_<jour>_soir_active
+#
+#   - Réactive uniquement les jours sauvegardés
+#
+# ----------------------------------------------------------
+# 🧠 CONTEXTE MÉTIER
+#
+#   Le mode "enfants" ECS correspond à :
+#     - une configuration spécifique de chauffe le soir
+#     - temporairement désactivable
+#     - restaurable à l’identique
+#
+#   Ce script permet une reprise fidèle
+#   après sortie de mode ou suspension temporaire.
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucune décision horaire
+#   - Aucune commande ECS directe
+#   - Aucun calcul de besoin
+#   - Aucune modification de sauvegarde
+#
+# ----------------------------------------------------------
+# 🔒 GARANTIES
+#
+#   - Action strictement idempotente
+#   - Réactivation ciblée uniquement
+#   - Aucun effet sur les jours non sauvegardés
+#
+# ----------------------------------------------------------
+# 🎛️ MODE D’UTILISATION
+#
+#   - Appelé par automatisation de sortie de mode
+#   - Jamais déclenché seul ou périodiquement
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+mode_enfants_ecs_activer:
+  alias: "Mode enfants ECS - Activer"
+  mode: single
+  sequence:
+    # Lire la sauvegarde
+    - variables:
+        sauvegarde: "{{ states('input_text.mode_enfants_ecs_soirs_sauvegarde') }}"
+        jours: >
+          {{ sauvegarde.split(',') | select('ne','') | list }}
+
+    # Construire les entités correspondantes
+    - variables:
+        entites_a_activer: >
+          {{ jours
+              | map('regex_replace','^(.*)$','input_boolean.ecs_\\1_soir_active')
+              | list }}
+
+    # Réactiver les soirs sauvegardés
+    - repeat:
+        for_each: "{{ entites_a_activer }}"
+        sequence:
+          - service: input_boolean.turn_on
+            data:
+              entity_id: "{{ repeat.item }}"

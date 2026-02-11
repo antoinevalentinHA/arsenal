@@ -1,0 +1,160 @@
+# ==========================================================
+# 🌡️ ARSENAL — TEMPLATE TRIGGERED SENSOR
+#     Chauffage : Vitesse refroidissement Présence Chambres
+#
+#  ✅ Version renforcée (cast bool strict, anti-"false truthy")
+#  ✅ Zéro uniquement sur reset B0 (arrêt valide)
+#  ✅ Aucune valeur "fantôme" : fige seulement sur plateau/remontée
+# ==========================================================
+
+- trigger:
+
+    # Nouvel arrêt chauffage (B0)
+    - platform: state
+      entity_id: sensor.temperature_arret_presence_chambres
+
+    # Variation thermique Chambres
+    - platform: state
+      entity_id: sensor.temperature_min_chambres
+
+
+  sensor:
+    - name: "Vitesse refroidissement Présence Chambres"
+      unique_id: vitesse_refroidissement_presence_chambres
+      unit_of_measurement: "°C/h"
+      icon: mdi:snowflake-thermometer
+
+
+      state: >
+        {% set last = this.state | float(0) %}
+
+        {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+          {{ last }}
+        {% else %}
+
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set t_arret = state_attr('sensor.temperature_arret_presence_chambres', 't_arret') | float(none) %}
+          {% set T_arret = states('sensor.temperature_arret_presence_chambres') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+
+          {% set last_temp = state_attr(this.entity_id, 'temperature_min') | float(none) %}
+          {% set t0 = state_attr(this.entity_id, 't0') | float(none) %}
+          {% set T0 = state_attr(this.entity_id, 'T0') | float(none) %}
+
+          {% set finished = (state_attr(this.entity_id, 'refroidissement_finished') | int(0)) == 1 %}
+
+          {# -------------------------------------------------- #}
+          {# Si refroidissement déjà terminé → valeur figée     #}
+          {# -------------------------------------------------- #}
+
+          {% if finished %}
+            {{ last }}
+
+          {# -------------------------------------------------- #}
+          {# Neutralisation si arrêt invalide ou données absentes #}
+          {# -------------------------------------------------- #}
+
+          {% elif not arret_valide or t_arret is none or T_arret is none or T_cur is none or t0 is none or T0 is none %}
+            {{ last }}
+
+          {# -------------------------------------------------- #}
+          {# Reset UNIQUEMENT lors d’un vrai arrêt valide        #}
+          {# -------------------------------------------------- #}
+
+          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+            0
+
+          {% else %}
+
+            {# -------------------------------------------------- #}
+            {# Calcul uniquement en refroidissement strict        #}
+            {# -------------------------------------------------- #}
+
+            {% if last_temp is none or (T_cur is not none and T_cur < last_temp) %}
+
+              {% set dt_h = (now().timestamp() - t0) / 3600 %}
+
+              {% if dt_h > 0 %}
+                {{ ((T0 - T_cur) / dt_h) | round(3) }}
+              {% else %}
+                {{ last }}
+              {% endif %}
+
+            {# -------------------------------------------------- #}
+            {# Plateau ou remontée → figer vitesse                #}
+            {# -------------------------------------------------- #}
+
+            {% else %}
+              {{ last }}
+            {% endif %}
+
+          {% endif %}
+
+        {% endif %}
+
+
+      attributes:
+
+        # --------------------------------------------------
+        # Température de référence à l’arrêt
+        # --------------------------------------------------
+        T0: >
+          {% if trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+            {% set v = states('sensor.temperature_min_chambres') | float(none) %}
+            {% if v is none %}
+              {{ state_attr(this.entity_id, 'T0') }}
+            {% else %}
+              {{ v }}
+            {% endif %}
+          {% else %}
+            {{ state_attr(this.entity_id, 'T0') }}
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Horodatage t0 de début de refroidissement
+        # --------------------------------------------------
+        t0: >
+          {% if trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+            {{ now().timestamp() }}
+          {% else %}
+            {{ state_attr(this.entity_id, 't0') }}
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Température minimale atteinte pendant refroidissement
+        # --------------------------------------------------
+        temperature_min: >
+          {% set last = state_attr(this.entity_id, 'temperature_min') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+
+          {% if trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+            {{ T_cur }}
+
+          {% elif last is none %}
+            {{ T_cur }}
+
+          {% elif T_cur is none %}
+            {{ last }}
+
+          {% else %}
+            {{ [last, T_cur] | min }}
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Indicateur de fin de refroidissement (1/0)
+        # --------------------------------------------------
+        refroidissement_finished: >
+          {% set last_temp = state_attr(this.entity_id, 'temperature_min') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set finished = (state_attr(this.entity_id, 'refroidissement_finished') | int(0)) == 1 %}
+
+          {% if finished %}
+            1
+          {% elif last_temp is not none and T_cur is not none and T_cur > last_temp %}
+            1
+          {% else %}
+            0
+          {% endif %}

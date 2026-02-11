@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME : ECS – Dernier cycle
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Mémorisation de l’HORODATAGE (date + heure)
+#   du dernier cycle EFFECTIF de chauffe de l’ECS.
+#
+#   Ce helper constitue une RÉFÉRENCE TEMPORELLE
+#   centrale pour l’analyse du fonctionnement ECS.
+#
+# 🧩 Nature :
+#   Mémoire PERSISTANTE — source de vérité temporelle.
+#
+# ❌ Ne fait PAS :
+#   - Ne déclenche PAS un cycle de chauffe
+#   - Ne pilote PAS la chaudière
+#   - Ne décide PAS de la production d’ECS
+#   - Ne représente PAS une consigne
+#
+# 🔄 Fonctionnement :
+#   - Écrit automatiquement par les automatisations
+#     de journalisation ECS (début / fin de cycle).
+#   - Lu par :
+#       • capteurs de durée de chauffe
+#       • automatisations de détection d’anomalies
+#
+# 🔗 Utilisation :
+#   - Capteurs template ECS :
+#       • Calcul des durées de chauffe
+#       • Analyse de fréquence des cycles
+#   - Automatisations ECS :
+#       • Détection de rebonds
+#       • Diagnostics de fonctionnement
+#
+# 🧠 Principe Arsenal associé :
+#   - Séparation stricte entre :
+#       • Événement (cycle ECS)
+#       • Mémoire (input_datetime)
+#       • Analyse (capteurs / scripts)
+#       • Décision (logique centrale)
+#
+# ⚠️ Remarque :
+#   Ce helper ne doit JAMAIS être modifié manuellement.
+# ==========================================================
+
+
+ecs_dernier_cycle_datetime:
+  name: ECS – Dernier cycle
+  has_date: true
+  has_time: true
+  icon: mdi:clock-time-four

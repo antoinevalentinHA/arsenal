@@ -1,0 +1,57 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Mode Enfants – Désactivation du planning bains ECS
+#
+#  ID : 10250000000004
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Désactiver automatiquement les créneaux ECS du soir
+#     associés aux bains des enfants lorsque le mode
+#     Enfants est désactivé.
+#
+#     Cette automation assure également la sauvegarde
+#     de l’état initial du planning afin de permettre
+#     une restauration ultérieure à l’identique.
+#
+#  🧱 PRINCIPE ARSENAL
+#     - Le contexte décide (mode Enfants OFF)
+#     - Les scripts gèrent la sauvegarde et l’application
+#     - Les automatismes restent non décisionnels
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide pas quels soirs sont des soirs de bain
+#     - Ne déclenche aucun cycle ECS
+#     - Ne modifie aucune consigne thermique
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • désactivation du mode Enfants
+#     - Action :
+#         • appel du script chargé de :
+#             – détecter les soirs ECS actifs
+#             – sauvegarder l’état du planning
+#             – désactiver proprement les créneaux concernés
+#
+#  ⚠️ IMPORTANT
+#     - La restauration du planning est assurée
+#       par l’automation inverse (mode Enfants ON)
+#     - Toute modification de logique doit être faite
+#       dans le script dédié
+#
+#  ✅ CONTRAINTES
+#     - Automation strictement contextuelle
+#     - Réversibilité garantie par conception
+# ==========================================================
+
+
+- id: '10250000000004'
+  alias: Mode Enfants – Désactiver planning bains ECS
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.mode_enfants
+      to: "off"
+
+  action:
+    - service: script.mode_enfants_ecs_desactiver

@@ -1,0 +1,158 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS Petite Maison — Absence robuste
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Orchestrateur UNIQUE du passage en mode absence
+#   du chauffe-eau de la petite maison (Atlantic / Overkiz).
+#
+#   Ce script est le SEUL point autorisé pour :
+#     - appliquer le mode absence
+#     - garantir une combinaison d’états VALIDE
+#     - vérifier localement le succès réel
+#
+# ----------------------------------------------------------
+# 🧱 CONTRAINTE MÉTIER CRITIQUE (OVERKIZ)
+#
+#   La combinaison suivante est INTERDITE / instable :
+#     → away_mode = true
+#     → operation_mode ≠ eco
+#
+#   Ce script :
+#     - nettoie toute combinaison invalide existante
+#     - applique les états dans un ordre compatible API
+#     - refuse de laisser un état ambigu
+#
+# ----------------------------------------------------------
+# 🧠 LOGIQUE D’ORCHESTRATION
+#
+#   Séquence imposée :
+#     1️⃣ Désactivation préalable de away_mode si actif
+#     2️⃣ Application explicite du mode ECO
+#     3️⃣ Activation du mode absence (away_mode)
+#     4️⃣ Vérification LOCALE des états réels
+#
+#   ➜ Aucune étape n’est optionnelle
+#
+# ----------------------------------------------------------
+# ⏳ VÉRIFICATION & TRANSACTION
+#
+#   - Attente active avec timeout (2 minutes)
+#   - Succès confirmé uniquement si :
+#       • mode local = eco
+#       • away_mode = true
+#
+#   - En cas d’échec :
+#       • aucune hypothèse optimiste
+#       • notification mobile événementielle
+#       • état invalide évité
+#
+# ----------------------------------------------------------
+# 🛑 CE SCRIPT NE FAIT PAS
+#
+#   - Aucune planification horaire
+#   - Aucune décision de contexte (présence / absence)
+#   - Aucun appel conditionnel depuis les dashboards
+#
+#   ➜ Il applique une demande claire :
+#     « passer en absence de manière sûre »
+#
+# ----------------------------------------------------------
+# 🧩 ARCHITECTURE ARSENAL
+#
+#   - Les automatisations décident QUAND appeler ce script
+#   - Ce script décide COMMENT appliquer l’absence
+#   - Les dashboards ne pilotent JAMAIS Overkiz directement
+#
+# ----------------------------------------------------------
+# 🧾 TRAÇABILITÉ
+#
+#   - Aucune notification en cas de succès
+#   - Notification mobile événementielle uniquement
+#     en cas d’échec de confirmation d’absence
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script critique — Orchestration ECS / Overkiz
+#
+# 📍 Entité :
+#   script.ecs_petite_maison_arret_absence
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+ecs_petite_maison_arret_absence:
+  alias: "ECS Petite Maison - Arrêt logique + Absence"
+  sequence:
+
+    # ======================================================
+    # 🔒 SECURISATION ETAT — suppression combinaison invalide
+    # ======================================================
+    - choose:
+        - conditions: >
+            {{ state_attr('water_heater.petite_maison', 'away_mode') == true }}
+          sequence:
+            - service: water_heater.set_away_mode
+              target:
+                entity_id: water_heater.petite_maison
+              data:
+                away_mode: "off"
+
+    # ======================================================
+    # 🔽 MODE ABSENCE ROBUSTE (API Atlantic-compatible)
+    # ======================================================
+    - service: water_heater.set_operation_mode
+      target:
+        entity_id: water_heater.petite_maison
+      data:
+        operation_mode: eco
+
+    - service: water_heater.set_away_mode
+      target:
+        entity_id: water_heater.petite_maison
+      data:
+        away_mode: "on"
+
+    # ======================================================
+    # ⏳ VERIFICATION LOCALE
+    # ======================================================
+    - wait_template: >
+        {{
+          states('sensor.ecs_petite_maison_mode_fonctionnement_local') == 'eco'
+          and state_attr('water_heater.petite_maison', 'away_mode') == true
+        }}
+      timeout: "00:02:00"
+      continue_on_timeout: false
+
+    # ======================================================
+    # 🎯 CONFIRMATION / ECHEC
+    # ======================================================
+    - choose:
+
+        # ✅ Succès confirmé
+        - conditions: >
+            {{
+              states('sensor.ecs_petite_maison_mode_fonctionnement_local') == 'eco'
+              and state_attr('water_heater.petite_maison', 'away_mode') == true
+            }}
+          sequence:
+            []
+
+        # ❌ Échec sécurisé → notification mobile
+        - conditions: >
+            {{
+              states('sensor.ecs_petite_maison_mode_fonctionnement_local') != 'eco'
+              or state_attr('water_heater.petite_maison', 'away_mode') != true
+            }}
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "⚠️ ECS Petite Maison – Absence non confirmée"
+                message: >
+                  La mise en mode absence n’a pas pu être confirmée
+                  après 2 minutes.
+                  Aucun état invalide n’a été appliqué.
+  mode: single

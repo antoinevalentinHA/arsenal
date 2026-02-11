@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Autorisation déshumidification climatisation
+#
+# 🎯 Rôle :
+#   Indiquer si le mode DRY est AUTORISÉ
+#   indépendamment du besoin hygrométrique.
+#
+# 🧱 Principe Arsenal :
+#   - Lecture PURE
+#   - Aucune décision
+#   - Aucune action
+#
+# 🔌 Dérivé STRICTEMENT de :
+#   - presence / babysitting
+#   - windows_ok
+#   - aer_ok
+#   - blocage_horaire
+# ==========================================================
+
+- binary_sensor:
+    - name: "Autorisation déshumidification climatisation"
+      unique_id: autorisation_clim_dry
+      default_entity_id: binary_sensor.autorisation_clim_dry
+      state: >
+        {{
+          ( is_state('binary_sensor.presence_famille_unifiee', 'on')
+            or is_state('input_boolean.mode_babysitting', 'on') )
+          and is_state('binary_sensor.fenetre_ouverte_maison', 'off')
+          and is_state('binary_sensor.aeration_preferable_etage', 'off')
+          and is_state('input_boolean.clim_blocage_horaire_actif', 'off')
+        }}

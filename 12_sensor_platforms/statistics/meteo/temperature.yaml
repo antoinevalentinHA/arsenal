@@ -1,0 +1,214 @@
+# ==========================================================
+#  STATISTICS SENSORS — Moyennes mensuelles de température
+# ----------------------------------------------------------
+#  🧠 Objectif :
+#     Calculer la **moyenne glissante sur 30 jours**
+#     de la température (°C) dans chaque zone suivie :
+#     chambres, pièces de vie, extérieurs, bureaux, ateliers.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Calcule des statistiques depuis l’historique des capteurs.
+#     - Ici, seule la **moyenne (mean)** est utilisée.
+#
+#  📅 Fenêtre d’analyse :
+#     - Période glissante de 30 jours.
+#     - Échantillons conservés : 10 000 max.
+#
+#  📊 Sortie :
+#     - Moyenne mensuelle de température (°C)
+#
+#  🏡 Zones couvertes :
+#     - Habitation principale
+#     - Espaces extérieurs
+#     - Locaux professionnels et ateliers
+# ==========================================================
+
+
+# ----------------------------------------------------------
+# 🏠 Chambres
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température Chambre Moyenne Chambre Arnaud"
+  entity_id: sensor.temperature_chambre_arnaud
+  state_characteristic: mean
+  max_age: &max_age_30d
+    days: 30
+  sampling_size: &sampling_size_10000 10000
+
+- platform: statistics
+  name: "Température Chambre Moyenne Chambre Matthieu"
+  entity_id: sensor.temperature_chambre_matthieu
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Chambre Moyenne Chambre Parents"
+  entity_id: sensor.temperature_chambre_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 🏡 Espaces de vie et communs
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température Moyenne Séjour"
+  entity_id: sensor.temperature_sejour
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Entrée"
+  entity_id: sensor.temperature_entree
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Palier"
+  entity_id: sensor.temperature_palier
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Cave"
+  entity_id: sensor.temperature_cave
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Garage"
+  entity_id: sensor.temperature_garage
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Petite Maison"
+  entity_id: sensor.temperature_petite_maison
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 🚿 Salles de bains
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température Moyenne SDB Enfants"
+  entity_id: sensor.temperature_sdb_enfants
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne SDB Parents"
+  entity_id: sensor.temperature_sdb_parents
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 🌳 Extérieur et jardin
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température Moyenne Jardin"
+  entity_id: sensor.temperature_jardin
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Extérieur"
+  entity_id: sensor.temperature_exterieur
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 🏢 Bureaux et zones administratives
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température Moyenne Direction"
+  entity_id: sensor.temperature_direction
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Compta"
+  entity_id: sensor.temperature_compta
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Qualité"
+  entity_id: sensor.temperature_qualite
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Devis"
+  entity_id: sensor.temperature_devis
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Commercial"
+  entity_id: sensor.temperature_commercial
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 📦 Zones de stockage
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température Moyenne Stock Carton"
+  entity_id: sensor.temperature_stock_carton
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Stock PF"
+  entity_id: sensor.temperature_stock_pf
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+
+# ----------------------------------------------------------
+# 🏭 Zones techniques et ateliers
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Température Moyenne Komori"
+  entity_id: sensor.temperature_komori
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Bobst"
+  entity_id: sensor.temperature_bobst
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000
+
+- platform: statistics
+  name: "Température Moyenne Media"
+  entity_id: sensor.temperature_media
+  state_characteristic: mean
+  max_age: *max_age_30d
+  sampling_size: *sampling_size_10000

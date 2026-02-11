@@ -1,0 +1,41 @@
+#################################################################
+# 👶 CARTE MODE BABYSITTING — UI
+# ---------------------------------------------------------------
+# Carte d’activation du mode Babysitting.
+#
+# Rôle :
+#   - Activer / désactiver le mode Babysitting
+#   - Demande de confirmation explicite
+#   - Accès aux réglages associés
+#
+# Principe Arsenal :
+#   - UI uniquement
+#   - Aucune logique métier
+#   - Traduction visuelle directe de l’état exposé
+#################################################################
+
+carte_mode_babysitting:
+  template: carte_toggle
+
+  tap_action:
+    action: toggle
+    confirmation:
+      text: |
+        [[[
+          return entity?.state === 'on'
+            ? "Désactiver le mode Babysitting ?"
+            : "Activer le mode Babysitting ?";
+        ]]]
+
+  hold_action:
+    action: navigate
+    navigation_path: /reglages-dashboard/maison
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity?.state === 'on'
+              ? 'rgba(76, 175, 80, 0.2)'    // 🟢 actif
+              : 'rgba(158, 158, 158, 0.2)'; // ⚪ inactif
+          ]]]

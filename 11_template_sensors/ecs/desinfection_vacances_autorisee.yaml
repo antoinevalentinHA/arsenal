@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR :
+#     ECS – Désinfection autorisée au retour de vacances
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#   Exposer une vérité métier UNIQUE :
+#
+#     → Une désinfection ECS est-elle AUTORISÉE
+#       lors de la sortie du mode Vacances ?
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
+#
+#   Ce capteur est ON lorsque :
+#     - le timer mesurant la durée continue
+#       des vacances est ARRIVÉ À TERME
+#
+#   Il est OFF dans tous les autres cas.
+#
+# ----------------------------------------------------------
+# ⏱️ SOURCE TEMPORELLE
+#
+#   - timer.vacances_longues_ecs
+#
+#   Ce timer est :
+#     - démarré à l’entrée en mode Vacances
+#     - annulé à la sortie du mode Vacances
+#     - restauré après redémarrage Home Assistant
+#
+# ----------------------------------------------------------
+# 🧩 NATURE
+#
+#   - Capteur de vérité métier
+#   - Stateless (aucune mémoire propre)
+#   - 100 % déterministe
+#   - Robuste aux redémarrages
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne déclenche aucune action
+#   - Ne pilote aucun équipement
+#   - Ne dépend d’aucun capteur de présence
+#   - Ne dépend pas de l’état "Vacances actives"
+#
+# ----------------------------------------------------------
+# 🔗 UTILISATION
+#
+#   - Consommé par :
+#       ECS – Désinfection au retour de Vacances
+#
+# ----------------------------------------------------------
+# ✅ COMPATIBILITÉ
+#
+#   Home Assistant 2024.8+
+# ==========================================================
+
+- binary_sensor:
+    - name: "ECS – Désinfection autorisée au retour de vacances"
+      unique_id: ecs_desinfection_retour_vacances_autorisee
+      default_entity_id: binary_sensor.ecs_desinfection_retour_vacances_autorisee
+      state: >
+        {{ is_state('timer.vacances_longues_ecs', 'idle')
+           and state_attr('timer.vacances_longues_ecs', 'remaining') == '0:00:00' }}

@@ -1,0 +1,171 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR
+#     Chauffage : Durée cycle moyenne Présence Chambres
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#     Mesurer la **période propre moyenne réelle** du système thermique
+#     en régime Présence (temps entre deux reprises valides),
+#     figée par journée civile.
+#
+# 🔒 Propriétés :
+#   - Journalier strict
+#   - Basé uniquement sur reprises valides
+#   - Périodes = Δt entre deux reprises successives
+#   - Moyenne calculée sur périodes réelles uniquement
+#   - Reload-safe / restart-safe / runtime-safe
+#
+# ==========================================================
+
+- trigger:
+
+    # Reset journalier (figement jour précédent)
+    - platform: time
+      at: "00:00:00"
+
+    # Reprise chauffage (A1)
+    - platform: state
+      entity_id: sensor.temperature_reprise_presence_chambres
+
+
+  sensor:
+    - name: "Durée cycle moyenne Présence Chambres"
+      unique_id: duree_cycle_moyenne_presence_chambres
+      icon: mdi:timer-outline
+      unit_of_measurement: "min"
+      state_class: measurement
+
+
+      state: >
+        {# -------------------------------------------------- #}
+        {# Invalidation aération / post-aération             #}
+        {# -------------------------------------------------- #}
+
+        {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+          {{ none }}
+
+        {% else %}
+
+          {% set reprise_valide = state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') %}
+          {% set arret_valide = state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') %}
+
+          {% if trigger.platform == 'time' %}
+            {{ none }}
+
+          {% elif trigger.platform == 'state' and reprise_valide and arret_valide %}
+
+            {% set now_ts = now().timestamp() %}
+            {% set last = this.attributes.get('arsenal_ts_last_reprise', none) %}
+            {% set cumul = this.attributes.get('arsenal_cumulated_duration', 0) | float(0) %}
+            {% set count = this.attributes.get('arsenal_periods_count', 0) | int(0) %}
+
+            {% if last is none %}
+              {{ none }}
+
+            {% else %}
+
+              {% set period = now_ts - last %}
+              {% set new_cumul = cumul + period %}
+              {% set new_count = count + 1 %}
+
+              {{ (new_cumul / new_count / 60) | round(2) }}
+
+            {% endif %}
+
+          {% else %}
+            {% if this.state not in ['unknown','unavailable',''] %}
+              {{ this.state | float }}
+            {% else %}
+              {{ none }}
+            {% endif %}
+          {% endif %}
+
+        {% endif %}
+
+
+      attributes:
+
+        # --------------------------------------------------
+        # Statut de validité Arsenal
+        # --------------------------------------------------
+        arsenal_valid: >
+          {% set count = this.attributes.get('arsenal_periods_count', 0) | int(0) %}
+          {{ count >= 1 }}
+
+        arsenal_status: >
+          {% set count = this.attributes.get('arsenal_periods_count', 0) | int(0) %}
+          {% if count == 0 %}
+            no_data
+          {% elif count < 1 %}
+            insufficient_periods
+          {% else %}
+            valid
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Horodatages et accumulateurs
+        # --------------------------------------------------
+
+        arsenal_ts_last_reset: >
+          {% if trigger.platform == 'time' %}
+            {{ now().timestamp() }}
+          {% else %}
+            {{ this.attributes.get('arsenal_ts_last_reset', none) }}
+          {% endif %}
+
+
+        arsenal_ts_last_reprise: >
+          {% if trigger.platform == 'state'
+                and state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide')
+                and state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')
+                and states('input_boolean.aeration_pipeline_arme') != 'on' %}
+
+            {{ now().timestamp() }}
+
+          {% else %}
+            {{ this.attributes.get('arsenal_ts_last_reprise', none) }}
+          {% endif %}
+
+
+        arsenal_periods_count: >
+          {% if trigger.platform == 'time' %}
+            0
+
+          {% elif trigger.platform == 'state'
+                and state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide')
+                and state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')
+                and states('input_boolean.aeration_pipeline_arme') != 'on' %}
+
+            {% set last = this.attributes.get('arsenal_ts_last_reprise', none) %}
+            {% if last is none %}
+              0
+            {% else %}
+              {{ (this.attributes.get('arsenal_periods_count', 0) | int(0)) + 1 }}
+            {% endif %}
+
+          {% else %}
+            {{ this.attributes.get('arsenal_periods_count', 0) | int(0) }}
+          {% endif %}
+
+
+        arsenal_cumulated_duration: >
+          {% if trigger.platform == 'time' %}
+            0
+
+          {% elif trigger.platform == 'state'
+                and state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide')
+                and state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')
+                and states('input_boolean.aeration_pipeline_arme') != 'on' %}
+
+            {% set now_ts = now().timestamp() %}
+            {% set last = this.attributes.get('arsenal_ts_last_reprise', none) %}
+
+            {% if last is none %}
+              0
+            {% else %}
+              {{ (this.attributes.get('arsenal_cumulated_duration', 0) | float(0)) + (now_ts - last) }}
+            {% endif %}
+
+          {% else %}
+            {{ this.attributes.get('arsenal_cumulated_duration', 0) | float(0) }}
+          {% endif %}

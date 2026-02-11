@@ -1,0 +1,96 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Babysitting – Garde-fou horaire de sortie du mode
+#
+#  ID : 1009000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de GARDE-FOU TEMPOREL.
+#
+#     Elle force la sortie du mode Babysitting
+#     chaque jour à une heure fixe (05h),
+#     si celui-ci est encore actif et si le
+#     retour automatique est explicitement autorisé.
+#
+#     Elle garantit un retour à l’état nominal
+#     de la maison en cas d’oubli du mode.
+#
+#  🧱 NATURE
+#
+#     - Sécurité temporelle
+#     - Sortie de mode métier
+#     - Déclenchement horaire fixe
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement quotidien à 05:00
+#     - Conditions préalables :
+#         • mode Babysitting actif
+#         • retour automatique autorisé
+#     - Actions exécutées :
+#         • désactivation du mode Babysitting
+#         • réinitialisation des présences enfants
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne gère pas le timer Babysitting
+#     - Ne décide pas de la durée du mode
+#     - Ne modifie pas les règles de chauffage
+#     - Ne s’exécute pas sans autorisation explicite
+#
+#  🔗 UTILISATION
+#
+#     - Filet de sécurité quotidien
+#       contre l’oubli du mode Babysitting
+#     - Complément de la sortie automatique par timer
+#
+#  🛡️ SÉCURITÉ
+#
+#     Le déclenchement horaire fixe garantit
+#     qu’aucun mode Babysitting ne persiste
+#     au-delà de la nuit.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1009000000001'
+  alias: "Babysitting – Sortie forcée quotidienne"
+
+  trigger:
+    - platform: time
+      at: "05:00:00"
+
+  # ======================================================
+  # ✅ Conditions — Mode actif + reset auto autorisé
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.mode_babysitting
+      state: "on"
+
+    - condition: state
+      entity_id: input_boolean.reset_mode_babysitting_auto
+      state: "on"
+
+  # ======================================================
+  # 🔄 Actions — Retour à la normale
+  # ======================================================
+  action:
+
+    # 🔄 Désactiver le mode babysitting
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.mode_babysitting
+
+    # 👶 Réinitialiser les présences enfants
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.presence_arnaud
+          - input_boolean.presence_matthieu
+
+  mode: single

@@ -1,0 +1,102 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Garage – Extinction conditionnelle temporisée
+#
+#  ID : 10070000000013
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’extinction conditionnelle.
+#
+#     Elle demande l’extinction de l’éclairage du garage
+#     lorsqu’aucun mouvement n’est détecté pendant
+#     une durée configurable, uniquement si l’éclairage
+#     automatique est autorisé et actuellement actif.
+#
+#     Cette automation ne pilote PAS directement la lumière.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement après absence de mouvement prolongée
+#       sur l’ensemble des capteurs du garage
+#     - Vérification des autorisations :
+#         • mode automatique activé
+#         • éclairage logique actuellement allumé
+#     - Vérification globale :
+#         • tous les capteurs de mouvement sont à OFF
+#     - Délégation de l’action au script dédié
+#
+#  🧠 PARAMÈTRE UTILISATEUR
+#
+#     input_number.duree_absence_garage
+#
+#     → durée d’absence (en minutes) avant extinction
+#       automatique de l’éclairage
+#
+#  🧠 AUTORISATIONS & ÉTAT
+#
+#     - input_boolean.garage_auto_light
+#         → autorisation globale de l’éclairage automatique
+#
+#     - input_boolean.garage_light_state
+#         → état logique interne de l’éclairage garage
+#
+#  🧠 AUTORITÉ D’ACTION
+#
+#     script.garage_toggle
+#
+#     → script unique responsable du pilotage réel
+#       de l’éclairage et de la cohérence d’état.
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - N’allume JAMAIS la lumière
+#     - Ne décide PAS de la durée d’éclairage
+#     - Ne pilote PAS directement le matériel
+#     - Ne gère PAS d’allumage ou de réactivation
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de sortie temporisée :
+#     temporisation ≠ autorisation ≠ pilotage.
+#
+#     Elle complète l’allumage automatique
+#     en assurant une extinction propre,
+#     paramétrable et cohérente.
+# ==========================================================
+
+
+- id: "10070000000013"
+  alias: "Garage - Extinction auto"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_mouvements_garage_1_occupancy
+        - binary_sensor.capteur_mouvements_garage_2_occupancy
+        - binary_sensor.capteur_mouvements_garage_3_occupancy
+      to: "off"
+      for:
+        seconds: >
+          {{ (states('input_number.duree_absence_garage') | int(1)) * 60 }}
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.garage_auto_light
+      state: "on"
+
+    - condition: state
+      entity_id: input_boolean.garage_light_state
+      state: "on"
+
+    - alias: "Tous les capteurs garage sont à off"
+      condition: template
+      value_template: >
+        {{ is_state('binary_sensor.capteur_mouvements_garage_1_occupancy', 'off')
+           and is_state('binary_sensor.capteur_mouvements_garage_2_occupancy', 'off')
+           and is_state('binary_sensor.capteur_mouvements_garage_3_occupancy', 'off') }}
+
+  action:
+    - alias: "Basculer la lumière via script"
+      action: script.garage_toggle

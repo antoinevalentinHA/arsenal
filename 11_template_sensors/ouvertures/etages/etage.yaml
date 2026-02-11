@@ -1,0 +1,37 @@
+# ==========================================================
+# 🪟 TEMPLATE BINARY SENSOR — Fenêtres étage (direct)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si une ou plusieurs fenêtres de l’étage sont ouvertes,
+#   sans tenir compte d’un éventuel délai de grâce.
+#
+# ⚙️ Fonctionnement :
+#   - Regroupe les capteurs suivants :
+#       • Chambre Arnaud
+#       • Chambre Matthieu
+#       • Chambre Parents (3 ouvrants)
+#   - Statut :
+#       • ON  → au moins une fenêtre ouverte
+#       • OFF → toutes les fenêtres fermées
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.fenetre_ouverte_etage
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Fenêtres étage"
+      unique_id: fenetre_ouverte_etage
+      default_entity_id: binary_sensor.fenetre_ouverte_etage
+      device_class: opening
+
+      state: >
+        {% set fenetres_etage = [
+          'binary_sensor.capteur_chambre_arnaud',
+          'binary_sensor.capteur_chambre_matthieu',
+          'binary_sensor.capteur_chambre_parents_droite',
+          'binary_sensor.capteur_chambre_parents_milieu',
+          'binary_sensor.capteur_chambre_parents_gauche'
+        ] %}
+
+        {{ fenetres_etage | select('is_state', 'on') | list | length > 0 }}

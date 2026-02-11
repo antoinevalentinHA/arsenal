@@ -1,0 +1,69 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Bouton SDB – Déclenchement manuel bouclage ECS
+#
+#  ID : 1014000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’interface utilisateur directe.
+#
+#     Elle traduit un appui simple sur le bouton
+#     Zigbee de la salle de bain en déclenchement
+#     explicite du script de bouclage ECS.
+#
+#     Cette automation agit comme un bouton filaire :
+#     un geste → une action.
+#
+#  🧩 PRINCIPE
+#
+#     - Détection d’un appui simple (single)
+#     - Aucune distinction d’état ou de durée
+#     - Déclenchement immédiat du script ECS
+#
+#  📦 ACTION DÉCLENCHÉE
+#
+#     - script.bouclage_ecs_5_minutes
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide PAS si un bouclage ECS est pertinent
+#     - Ne vérifie AUCUNE condition de température
+#     - Ne gère PAS la durée du bouclage
+#     - Ne mémorise AUCUN état
+#     - Ne bloque PAS les appels successifs
+#
+#  📍 USAGE
+#
+#     - Déclenchement manuel volontaire
+#     - Confort ponctuel (salle de bain)
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation volontairement minimale :
+#     interface physique ≠ logique métier ≠ stratégie ECS.
+#
+#     Toute intelligence ECS est externalisée
+#     dans les scripts et pipelines dédiés.
+# ==========================================================
+
+
+- id: '1014000000001'
+  alias: Bouton SDB - Lancer bouclage ECS 5 minutes
+  mode: restart
+
+  trigger:
+    # 📡 Catch-all Zigbee2MQTT (JSON ou texte, root ou /action)
+    - id: single
+      platform: mqtt
+      topic: zigbee2mqtt/bouton_sdb/#
+      value_template: >-
+        {% if value_json is mapping and value_json.get('action') is not none %}
+          {{ value_json.get('action') }}
+        {% else %}
+          {{ value }}
+        {% endif %}
+      payload: "single"
+
+  action:
+    - service: script.bouclage_ecs_5_minutes

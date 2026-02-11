@@ -1,0 +1,36 @@
+# ==========================================================
+# 🌡️ TEMPLATE SENSOR — Chauffage consigne CONFORT (local)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Fournir une lecture locale fiable de la consigne "Confort"
+#   de ViCare, indépendante du cloud et tolérante aux erreurs.
+#
+# ⚙️ Fonctionnement :
+#   - Source principale : number.vscotho1_200_11_temperature_de_confort
+#   - Valeur utilisée seulement si numérique et valide
+#   - Sinon → conserve la dernière valeur connue
+#   - Mise à jour immédiate au démarrage HA
+#
+# 📍 Entité : sensor.chauffage_consigne_confort_local
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: systeme_stable
+    - platform: state
+      entity_id: number.vscotho1_200_11_temperature_de_confort
+  sensor:
+    - name: "Chauffage consigne CONFORT (local)"
+      unique_id: chauffage_consigne_confort_local
+      unit_of_measurement: "°C"
+      state: >
+        {% set v = states('number.vscotho1_200_11_temperature_de_confort') %}
+        {% if v not in ['unknown','unavailable','none',''] and (v | float(0)) > 0 %}
+          {{ v | float }}
+        {% elif this.state not in ['unknown','unavailable','none'] %}
+          {{ this.state | float(0) }}
+        {% else %}
+          0
+        {% endif %}

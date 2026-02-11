@@ -1,0 +1,313 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Cycle thermique unifié
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Orchestrateur UNIQUE d’un cycle ECS complet.
+#
+#   Ce script est l’autorité d’exécution du cycle thermique
+#   ECS, de l’armement à la libération du verrou.
+#
+#   Il ne planifie pas.
+#   Il n’anticipe pas.
+#   Il exécute un cycle demandé.
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉS COUVERTES
+#
+#   - Verrouillage exclusif du cycle ECS
+#   - Réveil non bloquant de la chaudière
+#   - Calcul et application d’une consigne EFFECTIVE
+#   - Lancement du prélèvement unique
+#   - Surveillance de l’atteinte thermique
+#   - Gestion des timeouts et boosts de sécurité
+#   - Rabaissement et protection post-chauffe
+#   - Libération contrôlée du verrou
+#
+# ----------------------------------------------------------
+# 🧠 MODES SUPPORTÉS
+#
+#   Le comportement thermique est ajusté selon le mode :
+#
+#     - ponctuel       → confort immédiat
+#     - vaisselle      → cycle court optimisé
+#     - desinfection   → montée haute sécurisée
+#
+#   Le choix du mode est un PARAMÈTRE d’entrée,
+#   jamais une décision interne.
+#
+# ----------------------------------------------------------
+# 🔁 GARANTIES D’EXÉCUTION
+#
+#   - Un seul cycle ECS à la fois
+#   - Anti-rebond par verrou + watchdog
+#   - Aucun appel infini
+#   - Aucun succès supposé
+#   - Décisions basées uniquement sur mesures réelles
+#
+# ----------------------------------------------------------
+# ❌ CE SCRIPT NE FAIT PAS
+#
+#   - Aucun déclenchement horaire
+#   - Aucun arbitrage planning / présence
+#   - Aucune décision métier ECS globale
+#   - Aucune logique de bouclage sanitaire
+#
+# ----------------------------------------------------------
+# 🧾 OBSERVABILITÉ
+#
+#   - Cible thermique de session mémorisée
+#   - Timers visibles et traçables
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES CLÉS
+#
+#   - input_boolean.ecs_cycle_en_cours
+#   - timer.ecs_cycle_watchdog
+#   - timer.ecs_gardien_post_prelevement
+#   - sensor.ecs_temperature_ballon_securisee
+#   - number.vscotho1_200_11_dhw_temperature
+#   - button.vscotho1_200_11_activer_le_prelevement_unique
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+chauffage_ecs_cycle:
+  alias: "Chauffage ECS ‑ Cycle unifié"
+  description: >
+    Cycle ECS fiable : chauffe jusqu'à consigne effective,
+    rabaissement confirmé à 10 °C, verrouillage via boolean, protection anti‑rebond,
+    vérification démarrage et fin de chauffe.
+  mode: single
+  max_exceeded: silent
+
+  fields:
+    mode:
+      name: Mode
+      description: "Type de cycle : 'ponctuel', 'vaisselle' ou 'desinfection'"
+      required: true
+
+  sequence:
+    # ======================================================
+    # 🧩 Étape 0 : Vérification de cycle en cours
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.ecs_cycle_en_cours
+              state: "on"
+          sequence:
+            - variables:
+                last_change: "{{ as_timestamp(states.input_boolean.ecs_cycle_en_cours.last_changed) | default(0) }}"
+                age_min: "{{ ((now().timestamp() - last_change) / 60) | round(1) }}"
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ age_min > 5 }}"
+                  sequence:
+                    - action: persistent_notification.create
+                      data:
+                        title: "⚠️ Déblocage ECS forcé"
+                        message: >
+                          {{ now().strftime('%d/%m %H:%M') }} — verrou ECS actif depuis {{ age_min }} min → reset automatique.
+                    - action: input_boolean.turn_off
+                      target:
+                        entity_id: input_boolean.ecs_cycle_en_cours
+
+                - conditions:
+                    - condition: template
+                      value_template: "{{ age_min <= 5 }}"
+                  sequence:
+                    - action: logbook.log
+                      data:
+                        name: "ECS"
+                        message: "Cycle ECS déjà en cours (moins de 5 min) → pas de relance"
+
+    # ======================================================
+    # 🟢 Étape 1 : Activation du verrou et démarrage du watchdog
+    # ======================================================
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.ecs_cycle_en_cours
+
+    - action: timer.start
+      target:
+        entity_id: timer.ecs_cycle_watchdog
+
+    # ======================================================
+    # 🔗 Étape 2 : Réveil de la chaudière (non bloquant)
+    # ======================================================
+    - variables:
+        sensor_temp: "sensor.ecs_temperature_ballon_securisee"
+        number_setpoint: "number.vscotho1_200_11_dhw_temperature"
+        btn_one_shot: "button.vscotho1_200_11_activer_le_prelevement_unique"
+
+    - action: number.set_value
+      target:
+        entity_id: "{{ number_setpoint }}"
+      data:
+        value: 45
+
+    - delay: "00:00:10"
+
+    # ======================================================
+    # 📊 Étape 3 : Définition des variables dynamiques
+    # ======================================================
+    - variables:
+        target_temp: >
+          {% if mode == 'desinfection' %}
+            {{ states('input_number.ecs_temperature_desinfection') | float }}
+          {% elif mode == 'vaisselle' %}
+            {{ states('input_number.ecs_consigne_vaisselle') | float }}
+          {% else %}
+            {{ states('input_number.ecs_consigne_temperature') | float }}
+          {% endif %}
+        retour_temp: 10
+        sensor_temp: sensor.ecs_temperature_ballon_securisee
+        number_setpoint: number.vscotho1_200_11_dhw_temperature
+        btn_one_shot: button.vscotho1_200_11_activer_le_prelevement_unique
+        start_temp: >
+          {% set v = states(sensor_temp) %}
+          {% if v not in ['unknown', 'unavailable', '', none] and (v | float(0)) > 0 %}
+            {{ v | float(0) }}
+          {% else %}
+            0
+          {% endif %}
+        delta_t: "{{ (target_temp | float) - (start_temp | float) }}"
+        tiny_delta: "{{ (delta_t | float) < 2.5 }}"
+        medium_delta: "{{ (delta_t | float) >= 2.5 and (delta_t | float) < 7.0 }}"
+        off_tiny: "{{ states('input_number.ecs_off_tiny') | float(2.2) }}"
+        off_medium: "{{ states('input_number.ecs_off_medium') | float(2.6) }}"
+        off_normal: "{{ states('input_number.ecs_off_normal') | float(3.2) }}"
+        off_desinf: "{{ states('input_number.ecs_off_desinfection') | float(1.0) }}"
+        eps_ponctuel: "{{ states('input_number.ecs_eps_ponctuel') | float(1.6) }}"
+        eps_desinf: "{{ states('input_number.ecs_eps_desinfection') | float(0.7) }}"
+        trig_ceiling_tm: "{{ states('input_number.ecs_trigger_ceiling_tiny_medium') | float(1.1) }}"
+        raw_effective_target: >
+          {% if mode == 'desinfection' %}
+            {{ (target_temp | float) - (off_desinf | float) }}
+          {% else %}
+            {% if tiny_delta | bool %}
+              {{ (target_temp | float) - (off_tiny | float) }}
+            {% elif medium_delta | bool %}
+              {{ (target_temp | float) - (off_medium | float) }}
+            {% else %}
+              {{ (target_temp | float) - (off_normal | float) }}
+            {% endif %}
+          {% endif %}
+        min_target: "{{ (start_temp | float) + (trig_ceiling_tm | float) }}"
+        effective_target: >
+          {% set candidate = raw_effective_target | float %}
+          {% set floor = min_target | float %}
+          {{ candidate if candidate > floor else floor }}
+        effective_target_int: "{{ (effective_target | float) | round(0, 'floor') | int }}"
+        epsilon: "{{ eps_desinf if mode == 'desinfection' else eps_ponctuel }}"
+
+    # ======================================================
+    # 💾 Étape 4 : Sauvegarde de la consigne cible (session)
+    # ======================================================
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.ecs_target_temp_session
+      data:
+        value: "{{ effective_target_int }}"
+
+    # ======================================================
+    # 🔥 Étape 5 : Démarrage de la chauffe (mode local)
+    # ======================================================
+    - action: number.set_value
+      target:
+        entity_id: "{{ number_setpoint }}"
+      data:
+        value: "{{ effective_target_int }}"
+
+    # Pause de stabilisation — 10 s pour laisser la chaudière enregistrer la consigne
+    - delay: "00:00:10"
+
+    # Appui physique simulé sur le bouton ViCare pour lancer la chauffe
+    - action: button.press
+      target:
+        entity_id: "{{ btn_one_shot }}"
+
+    # ======================================================
+    # ♻️ Étape 6 : Attente d’atteinte de la consigne (sécurité fin de chauffe)
+    # ======================================================
+    - wait_template: >
+        {{ states(sensor_temp) | float(0) >= (target_temp | float) - (epsilon | float) }}
+      timeout: >
+        {% if mode == 'desinfection' %}
+          00:40:00
+        {% else %}
+          00:20:00
+        {% endif %}
+      continue_on_timeout: true
+
+    # Si la température est insuffisante après timeout → boost de sécurité
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states(sensor_temp) | float(0) < (target_temp | float) - (epsilon | float) }}
+          sequence:
+            - variables:
+                boost2: "{{ [ (effective_target | float) + 1.2, 60.0 ] | min | round(1) }}"
+            - service: number.set_value
+              target:
+                entity_id: "{{ number_setpoint }}"
+              data:
+                value: "{{ boost2 }}"
+
+    # ======================================================
+    # ⏱️ Étape 7 : Démarrage du timer de gardien post-prélèvement
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ mode == 'ponctuel' }}"
+          sequence:
+            - action: timer.start
+              target:
+                entity_id: timer.ecs_gardien_post_prelevement
+              data:
+                duration: "00:25:00"
+
+        - conditions:
+            - condition: template
+              value_template: "{{ mode == 'desinfection' }}"
+          sequence:
+            - action: timer.start
+              target:
+                entity_id: timer.ecs_gardien_post_prelevement
+              data:
+                duration: "00:45:00"
+
+        - conditions:
+            - condition: template
+              value_template: "{{ mode == 'vaisselle' }}"
+          sequence:
+            - action: timer.start
+              target:
+                entity_id: timer.ecs_gardien_post_prelevement
+              data:
+                duration: "00:12:00"
+
+    # ======================================================
+    # 🧹 Étape 8 : Nettoyage et libération du verrou
+    # ======================================================
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.ecs_target_temp_session
+      data:
+        value: ""
+
+    - action: timer.cancel
+      target:
+        entity_id: timer.ecs_cycle_watchdog
+
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.ecs_cycle_en_cours
+
+    - variables:
+        t_finale: "{{ states('sensor.ecs_temperature_ballon_securisee') | float(0) }}"

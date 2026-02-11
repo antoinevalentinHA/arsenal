@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Sécurisation batterie ScanWatch (local)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Fournir un état local sécurisé et autoritaire
+#     de la batterie ScanWatch, issu d’une intégration externe.
+#
+#     Ce capteur garantit :
+#       - la continuité d’état,
+#       - la conservation stricte du dernier état valide,
+#       - l’absence totale de propagation d’états indéterminés.
+#
+#     Il ne qualifie pas la donnée.
+#     Il n’interprète pas la valeur.
+#     Il ne porte aucune logique métier.
+#
+# 🧩 PÉRIMÈTRE
+#
+#     - Source externe observée :
+#         • sensor.scanwatch_2_battery
+#
+#     - États acceptés :
+#         • toute valeur valide fournie par la source
+#
+#     - États rejetés :
+#         • unknown
+#         • unavailable
+#
+# ==========================================================
+
+- sensor:
+    - name: "ScanWatch — Batterie (local)"
+      unique_id: scanwatch_2_battery_local
+      state: >
+        {% set src = states('sensor.scanwatch_2_battery') %}
+        {% set old = this.state %}
+        {% if src not in ['unknown', 'unavailable', '', None] %}
+          {{ src }}
+        {% else %}
+          {{ old }}
+        {% endif %}

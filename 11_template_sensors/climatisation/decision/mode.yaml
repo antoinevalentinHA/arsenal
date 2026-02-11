@@ -1,0 +1,57 @@
+# ==========================================================
+# 🌡️ TEMPLATE TRIGGERED SENSOR — Mode climatisation (local)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Fournir une lecture locale du mode actif de la climatisation
+#   (off / cool / heat / dry / auto), persistante en cas d'arrêt API,
+#   avec icône dynamique compatible Android Auto.
+#
+# 📍 Entité : sensor.clim_mode_local
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: climate.clim
+
+    # 🚀 Stabilisation Home Assistant
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: systeme_stable
+
+  sensor:
+    - name: "Clim mode (local)"
+      unique_id: clim_mode_local
+
+      icon: >
+        {% set mode = states('climate.clim') %}
+        {% if mode in ['unknown','unavailable','none',''] %}
+          {% set mode = this.state %}
+        {% endif %}
+
+        {% if mode == 'off' %}
+          mdi:power
+        {% elif mode == 'cool' %}
+          mdi:snowflake
+        {% elif mode == 'dry' %}
+          mdi:water-percent
+        {% elif mode == 'heat' %}
+          mdi:fire
+        {% elif mode == 'fan_only' %}
+          mdi:fan
+        {% elif mode == 'auto' %}
+          mdi:autorenew
+        {% else %}
+          mdi:help-circle-outline
+        {% endif %}
+
+      state: >
+        {% set mode = states('climate.clim') %}
+
+        {% if mode not in ['unknown','unavailable','none',''] %}
+          {{ mode }}
+        {% elif this.state not in ['unknown','unavailable','none',''] %}
+          {{ this.state }}
+        {% else %}
+          off
+        {% endif %}

@@ -1,0 +1,202 @@
+# ==========================================================
+# 💧 TEMPLATE SENSORS — Humidité Absolue “Seuil Haut”
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Calculer pour chaque zone la **limite supérieure de confort en humidité absolue (g/m³)**,
+#   permettant d’anticiper les risques :
+#     - d’air trop humide,
+#     - de condensation sur les parois froides,
+#     - ou de dégradation du confort et des matériaux.
+#
+# ⚙️ Fonctionnement :
+#   - Source principale :
+#       → `sensor.humidite_absolue_filtre_<periode>_moyenne_<zone>`
+#   - Période météo active :
+#       → `sensor.periode_meteo` (aube, matin, jour, crépuscule, nuit)
+#   - Offset saisonnier :
+#       • Hiver  (Déc, Jan, Fév)     → +1.2 g/m³  
+#       • Inter-saisons (Mar, Avr, Oct, Nov) → +1.0 g/m³  
+#       • Été   (Mai à Sep)          → +0.8 g/m³  
+#     (tolérance plus large en hiver, car la condensation est mieux contrôlée par la température)
+#
+#   ➜ Formule :
+#        seuil_haut = moyenne + offset
+#
+# 🧮 Logique :
+#   1️⃣ Identifier la période météo active via `sensor.periode_meteo`.  
+#   2️⃣ Récupérer la moyenne filtrée d’humidité absolue correspondante.  
+#   3️⃣ Calculer l’offset selon le mois (adaptation saisonnière).  
+#   4️⃣ Déterminer le seuil haut dynamique.  
+#   5️⃣ Arrondir à 0,02 g/m³ pour précision.
+#
+# 🧩 Capteurs / Zones concernées :
+#   ▪️ Résidentiel :
+#      - Chambre Arnaud  
+#      - Chambre Matthieu  
+#      - Chambre Parents  
+#      - Entrée  
+#      - Séjour  
+#      - Cave  
+#      - Garage  
+#      - Palier  
+#      - Petite Maison  
+#      - SDB Enfants  
+#      - SDB Parents  
+#      - Jardin  
+#      - Extérieur  
+#
+#   ▪️ Professionnel / Technique :
+#      - Direction  
+#      - Compta  
+#      - Qualité  
+#      - Devis  
+#      - Commercial  
+#      - Stock Carton  
+#      - Stock PF  
+#      - Komori  
+#      - Bobst  
+#      - Media
+#
+# 💡 Interprétation :
+#   - Si humidité absolue > Seuil Haut :
+#       → Risque d’humidité excessive (condensation, air saturé, inconfort).  
+#   - Si humidité absolue ≈ Seuil Haut :
+#       → Zone limite de confort hygrométrique.  
+#   - Si humidité absolue < Seuil Haut :
+#       → Air dans la zone de confort acceptable.
+#
+# ⚠️ Remarques :
+#   - L’humidité absolue est **indépendante de la température**, 
+#     ce qui en fait une mesure fiable pour piloter la ventilation ou la déshumidification.  
+#   - L’offset saisonnier permet une adaptation automatique selon la période de l’année.  
+#   - En association avec les capteurs “Humidité Absolue Seuil Bas”, 
+#     ces seuils permettent de tracer une **enveloppe hygrométrique optimale dynamique**.  
+#   - Ces valeurs peuvent servir à :
+#       • déclencher ou moduler la VMC,  
+#       • ajuster la ventilation double flux,  
+#       • surveiller la conservation de matériaux ou produits sensibles.
+#
+# 📊 Type : Template Sensor  
+# 💧 Domaine : Hygrométrie / Qualité de l’air / Confort climatique  
+# ==========================================================
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Chambre Arnaud"
+      unique_id: humidite_absolue_seuil_haut_chambre_arnaud
+      state: &humidite_absolue_seuil_haut_logic >
+        {% set periode = states('sensor.periode_meteo') %}
+        {% set suffixe = this.entity_id | replace('sensor.humidite_absolue_seuil_haut_', '') %}
+        {% set moyenne = states('sensor.humidite_absolue_filtre_' ~ periode ~ '_moyenne_' ~ suffixe) | float(0) %}
+        {% set mois = now().month %}
+
+        {# Offset saisonnier : plus humide en été #}
+        {% set offset =
+          1.0 if mois in [6, 7, 8] else
+          0.8 if mois in [3, 4, 9, 10] else
+          0.6 %}
+        {{ (moyenne + offset) | round(2) }}
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Cave"
+      unique_id: humidite_absolue_seuil_haut_cave
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Entrée"
+      unique_id: humidite_absolue_seuil_haut_entree
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Jardin"
+      unique_id: humidite_absolue_seuil_haut_jardin
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Garage"
+      unique_id: humidite_absolue_seuil_haut_garage
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Chambre Matthieu"
+      unique_id: humidite_absolue_seuil_haut_chambre_matthieu
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Chambre Parents"
+      unique_id: humidite_absolue_seuil_haut_chambre_parents
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Petite Maison"
+      unique_id: humidite_absolue_seuil_haut_petite_maison
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut SDB Enfants"
+      unique_id: humidite_absolue_seuil_haut_sdb_enfants
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut SDB Parents"
+      unique_id: humidite_absolue_seuil_haut_sdb_parents
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Séjour"
+      unique_id: humidite_absolue_seuil_haut_sejour
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Extérieur"
+      unique_id: humidite_absolue_seuil_haut_exterieur
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Direction"
+      unique_id: humidite_absolue_seuil_haut_direction
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Compta"
+      unique_id: humidite_absolue_seuil_haut_compta
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Qualité"
+      unique_id: humidite_absolue_seuil_haut_qualite
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Devis"
+      unique_id: humidite_absolue_seuil_haut_devis
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Commercial"
+      unique_id: humidite_absolue_seuil_haut_commercial
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Stock Carton"
+      unique_id: humidite_absolue_seuil_haut_stock_carton
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Stock PF"
+      unique_id: humidite_absolue_seuil_haut_stock_pf
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Komori"
+      unique_id: humidite_absolue_seuil_haut_komori
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Bobst"
+      unique_id: humidite_absolue_seuil_haut_bobst
+      state: *humidite_absolue_seuil_haut_logic
+
+- sensor:
+    - name: "Humidité Absolue Seuil Haut Media"
+      unique_id: humidite_absolue_seuil_haut_media
+      state: *humidite_absolue_seuil_haut_logic

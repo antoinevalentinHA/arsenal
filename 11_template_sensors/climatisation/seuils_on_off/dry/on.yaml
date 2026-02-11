@@ -1,0 +1,34 @@
+# ==========================================================
+# 💧 TEMPLATE BINARY SENSOR — Humidex au-dessus du seuil de déshumidification
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si l’humidex le plus élevé dans les chambres
+#   dépasse la valeur cible de déshumidification.
+#   Ce capteur peut être utilisé pour déclencher le mode “Dry” de la clim.
+#
+# ⚙️ Fonctionnement :
+#   - Compare :
+#       • sensor.humidex_max_chambres
+#       • input_number.seuil_humidex_deshumidification
+#   - Si humidex max > seuil → capteur actif (on)
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.clim_humidex_sup_cible_dry
+# ==========================================================
+
+- binary_sensor:
+
+    # ------------------------------------------------------
+    # 💨 Détection : humidex trop élevé (demande de “Dry”)
+    # ------------------------------------------------------
+    - name: "Demande"
+      unique_id: clim_humidex_sup_cible_dry
+      default_entity_id: binary_sensor.clim_humidex_sup_cible_dry
+
+      # --------------------------------------------------
+      # 🧮 Compare humidex max et seuil de déshumidification
+      # --------------------------------------------------
+      state: >
+        {% set humidex = states('sensor.humidex_max_chambres') | float(0) %}
+        {% set cible = states('input_number.seuil_humidex_deshumidification') | float(0) %}
+        {{ humidex > cible }}

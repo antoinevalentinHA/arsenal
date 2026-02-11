@@ -1,0 +1,65 @@
+# ==========================================================
+# 🔔 AUTOMATION — Notifications — Pré-confort retour Vacances
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Exposer de manière persistante l’état métier
+#   "Pré-confort retour Vacances actif".
+#
+# 🧩 Périmètre :
+#   - Affiche la notification lorsque pre_confort_actif = on
+#   - Supprime la notification lorsque pre_confort_actif = off
+#
+# 🔒 Statut informationnel :
+#   Notification persistante = PROJECTION D’ÉTAT
+#
+# 🛑 Interdits :
+#   - Aucun événement
+#   - Aucun timestamp
+#   - Aucune mémoire
+#   - Aucun empilement
+#
+# 🏷️ Statut :
+#   Arsenal — Socle Notifications Chauffage
+# ==========================================================
+
+- id: "10240000000017"
+  alias: "Notifications — Chauffage — Pré-confort retour Vacances"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.pre_confort_actif
+
+  action:
+    - choose:
+
+        # --------------------------------------------------
+        # 🔔 Apparition notification (pré-confort actif)
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.pre_confort_actif
+              state: "on"
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: "chauffage_pre_confort_vacances"
+                title: "🔥 Chauffage – Pré-confort fin Vacances"
+                message: >
+                  Anticipation thermique active avant retour utilisateur.
+
+                  • Régime : Vacances maintenu
+                  • Autorisation simulée : comfort
+                  • Décision toujours souveraine
+
+        # --------------------------------------------------
+        # 📴 Extinction notification (fin pré-confort)
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.pre_confort_actif
+              state: "off"
+          sequence:
+            - service: persistent_notification.dismiss
+              data:
+                notification_id: "chauffage_pre_confort_vacances"

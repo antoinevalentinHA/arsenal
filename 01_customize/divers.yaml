@@ -1,0 +1,127 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : États système & intentions
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Centraliser le nommage lisible des entités représentant
+#    des états LOGIQUES du système et des intentions utilisateur.
+#
+# 🧠 Lecture métier :
+#    Ce fichier regroupe des entités qui ne sont pas de simples
+#    capteurs physiques, mais des représentations de :
+#    - l’état réel du système (brûleur, ouvertures, présence)
+#    - des autorisations ou blocages logiques
+#    - des intentions explicites de l’utilisateur
+#
+# 🧩 Périmètre :
+#    - Définit uniquement les friendly_name
+#    - Améliore la lisibilité des dashboards et diagnostics
+#    - Ne contient AUCUNE logique de décision
+#
+# 🔗 Dépendances :
+#    - Automatisations et scripts Arsenal
+#    - Pipelines chauffage / clim / aération / sécurité
+#
+# 🚫 Interdits :
+#    - Modifier la logique métier ici
+#    - Déplacer une décision dans le customize
+#    - Utiliser ces entités comme capteurs physiques
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle logique / pilotage
+# ==========================================================
+
+
+############################################################
+# 🔥 CHAUFFAGE / ECS — ÉTATS RÉELS
+############################################################
+
+binary_sensor.bruleur_mode_chauffage:
+  friendly_name: "Brûleur Chauffage"
+
+binary_sensor.bruleur_mode_ecs:
+  friendly_name: "Brûleur ECS"
+
+
+############################################################
+# 🚪 OUVERTURES & AÉRATION
+############################################################
+
+binary_sensor.fenetre_ouverte_maison:
+  friendly_name: "Ouvertures Maison"
+
+input_boolean.chauffage_blocage_aeration:
+  friendly_name: "Blocage Aération"
+
+input_boolean.aeration_confirmee:
+  friendly_name: "Aération qualifiée"
+
+input_boolean.aeration_episode_en_cours:
+  friendly_name: "Aération en cours"
+
+
+############################################################
+# 👥 PRÉSENCE — MODÈLES LOGIQUES
+############################################################
+
+binary_sensor.presence_famille_unifiee:
+  friendly_name: "Présence Réconciliée"
+
+binary_sensor.presence_famille_securite:
+  friendly_name: "Présence Sécurité"
+
+binary_sensor.presence_famille:
+  friendly_name: "Présence Confort"
+
+
+############################################################
+# 💡 ÉCLAIRAGE
+############################################################
+
+switch.prise_lampe_sejour:
+  friendly_name: "Lumière Séjour"
+
+input_boolean.auto_lumiere_jardin_matin:
+  friendly_name: "Éclairage auto Jardin (matin)"
+
+input_boolean.auto_lumiere_jardin_soir:
+  friendly_name: "Éclairage auto Jardin (soir)"
+
+
+############################################################
+# 🌬️ DÉSHUMIDIFICATION
+############################################################
+
+input_boolean.auto_deshumidification_active:
+  friendly_name: "Deshum. active (étage)"
+
+
+############################################################
+# 👶 CONFORT / ENFANTS
+############################################################
+
+input_boolean.babyphone_arnaud:
+  friendly_name: "Babyphone Arnaud"
+
+input_boolean.babyphone_matthieu:
+  friendly_name: "Babyphone Matthieu"
+
+
+############################################################
+# 🔥♨️ CHAUFFAGE / CLIM — AUTORISATIONS & BLOCAGES
+############################################################
+
+input_boolean.blocage_chauffage_poele:
+  friendly_name: "Blocage chauffage (poêle)"
+
+input_boolean.blocage_chauffage_aeration_active:
+  frienly_name: "Blocage chauffage aération (réglage)"
+
+input_boolean.blocage_clim_poele:
+  friendly_name: "Blocage clim (poêle)"
+
+input_boolean.chauffage_clim_active_en_hiver:
+  friendly_name: "Clim - Autorisation heat"
+
+input_boolean.chauffage_standby_force:
+  friendly_name: "Chauffage - Standby forcé"

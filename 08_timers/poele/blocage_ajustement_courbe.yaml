@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : Mémoire poêle (24h)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir une FENÊTRE TEMPORELLE persistante indiquant
+#   qu’une utilisation récente du poêle a eu lieu.
+#
+# 🧩 Nature :
+#   Mémoire TEMPORELLE post-événement (poêle).
+#
+# ❌ Ne fait PAS :
+#   - Ne neutralise PAS le chauffage
+#   - Ne bloque PAS l’auto-ajustement
+#   - Ne modifie AUCUNE consigne
+#   - Ne prend AUCUNE décision thermique
+#
+# 🔍 Spécificités techniques :
+#   - Durée fixe : 24 heures
+#   - Timer restaurable (`restore: true`)
+#   - États exploitables : active / idle
+#
+# 🔄 Fonctionnement :
+#   - Démarré lors d’un événement lié au poêle
+#   - Tant que le timer est actif :
+#       • le poêle est considéré comme
+#         RÉCEMMENT UTILISÉ
+#   - À l’expiration :
+#       • l’événement poêle sort de la mémoire
+#
+# 🔗 Utilisation :
+#   - Automatisations chauffage
+#   - Auto-ajustement de courbe
+#   - Décision thermique centrale
+#   - Diagnostics énergie / chauffage
+#
+# 🧠 Principe Arsenal associé :
+#   - Le timer définit le TEMPS
+#   - L’interprétation est EXTERNE
+#
+# ⚠️ Remarque :
+#   L’expiration du timer n’entraîne
+#   AUCUNE reprise automatique.
+# ==========================================================
+
+
+poele_24h:
+  name: "Poele neutralisation 24h"
+  duration: "24:00:00"
+  restore: true

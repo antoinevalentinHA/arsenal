@@ -1,0 +1,304 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : État des batteries (capteurs)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Centraliser l’affichage, le nommage et l’identification
+#    de l’ensemble des capteurs de niveau de batterie
+#    du système Home Assistant Arsenal.
+#
+# 🧠 Lecture métier :
+#    Les capteurs de batterie sont des INDICATEURS DE SANTÉ
+#    du système, pas des capteurs métier.
+#    Ils servent à anticiper les défaillances matérielles
+#    et à garantir la fiabilité des automatisations.
+#
+# 🧩 Périmètre :
+#    - Définit les friendly_name et icônes
+#    - Regroupe tous les capteurs battery (Zigbee, Netatmo,
+#      SwitchBot, alarmes, boutons, etc.)
+#    - Fournit une lecture claire par zone et par usage
+#
+# 🔗 Dépendances :
+#    - Capteurs battery exposés par les intégrations
+#    - Utilisés par :
+#      • dashboards de maintenance
+#      • alertes batterie faible
+#      • audits de fiabilité
+#
+# 🚫 Interdits :
+#    - Prendre une décision métier basée sur ces capteurs
+#    - Modifier des seuils ou déclencher des actions ici
+#    - Introduire de la logique conditionnelle
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - maintenance / fiabilité système
+# ==========================================================
+
+############################################################
+# 🔘 BOUTONS ZIGBEE
+############################################################
+
+sensor.bouton_garage_1_battery:
+  friendly_name: "Bouton Garage 1"
+  icon: mdi:gesture-tap-button
+
+sensor.bouton_garage_2_battery:
+  friendly_name: "Bouton Garage 2"
+  icon: mdi:gesture-tap-button
+
+sensor.bouton_cuisine_battery:
+  friendly_name: "Bouton cuisine"
+  icon: mdi:gesture-tap-button
+
+sensor.bouton_sdb_battery:
+  friendly_name: "Bouton SDB parents"
+  icon: mdi:gesture-tap-button
+
+############################################################
+# 🔘 BOUTONS SWITCHBOT
+############################################################
+
+sensor.vmc_batterie:
+  friendly_name: "Bouton VMC"
+  icon: mdi:gesture-tap-button
+
+sensor.jardin_batterie:
+  friendly_name: "Bouton jardin"
+  icon: mdi:gesture-tap-button
+
+sensor.chambre_batterie:
+  friendly_name: "Bouton chambre parents"
+  icon: mdi:gesture-tap-button
+
+sensor.deshumidificateur_batterie:
+  friendly_name: "Bouton déshumidificateur"
+  icon: mdi:gesture-tap-button
+
+sensor.alarme_batterie:
+  friendly_name: "Bouton alarme Imprimerie"
+  icon: mdi:gesture-tap-button
+
+############################################################
+# 🧲 CAPTEURS ZIGBEE CONTACT
+############################################################
+
+sensor.capteur_porte_garage_battery:
+  friendly_name: "Porte garage"
+  icon: mdi:door-closed
+
+sensor.capteur_porte_entree_battery:
+  friendly_name: "Porte d’entrée"
+  icon: mdi:door-closed
+
+sensor.capteur_fenetre_entree_battery:
+  friendly_name: "Fenêtre entrée"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_sejour_1_battery:
+  friendly_name: "Baie vitrée 1 séjour"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_sejour_2_battery:
+  friendly_name: "Baie vitrée 2 séjour"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_sejour_3_battery:
+  friendly_name: "Baie vitrée 3 séjour"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_sejour_4_battery:
+  friendly_name: "Baie vitrée 4 séjour"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_parents_gauche_battery:
+  friendly_name: "Fenêtre parents (gauche)"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_parents_milieu_battery:
+  friendly_name: "Fenêtre parents (milieu)"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_parents_droite_battery:
+  friendly_name: "Fenêtre parents (droite)"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_arnaud_battery:
+  friendly_name: "Fenêtre Arnaud"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_matthieu_battery:
+  friendly_name: "Fenêtre Matthieu"
+  icon: mdi:window-closed
+
+############################################################
+# 👁️ CAPTEURS ZIGBEE MOUVEMENTS
+############################################################
+
+sensor.capteur_mouvements_garage_1_battery:
+  friendly_name: "Mouvements garage 1"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_garage_2_battery:
+  friendly_name: "Mouvements garage 2"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_garage_3_battery:
+  friendly_name: "Mouvements garage 3"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_entree_battery:
+  friendly_name: "Mouvements entrée"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_sejour_1_battery:
+  friendly_name: "Mouvements séjour 1"
+  icon: mdi:motion-sensor
+
+sensor.capteur_mouvements_sejour_2_battery:
+  friendly_name: "Mouvements séjour 2"
+  icon: mdi:motion-sensor
+
+############################################################
+# 🌡️ CAPTEURS METEO ZIGBEE
+############################################################
+
+sensor.zigbee_pluie_battery:
+  friendly_name: "Capteur pluie Zigbee"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_entree_battery:
+  friendly_name: "Capteur Zigbee entrée"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_sejour_battery:
+  friendly_name: "Capteur Zigbee séjour"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_chambre_parents_battery:
+  friendly_name: "Capteur Zigbee parents"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_chambre_arnaud_battery:
+  friendly_name: "Capteur Zigbee Arnaud"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_chambre_matthieu_battery:
+  friendly_name: "Capteur Zigbee Matthieu"
+  icon: mdi:thermometer
+
+sensor.meteo_zigbee_sdb_parents_battery:
+  friendly_name: "Capteur Zigbee SDB Parents"
+  icon: mdi:thermometer
+
+############################################################
+# 🌡️ CAPTEURS METEO NETATMO
+############################################################
+
+sensor.pluviometre_batterie:
+  friendly_name: "Pluviomètre Netatmo"
+  icon: mdi:thermometer
+
+sensor.jardin_no_batterie:
+  friendly_name: "Jardin Nord-Ouest"
+  icon: mdi:thermometer
+
+sensor.jardin_se_batterie:
+  friendly_name: "Jardin Sud-Est"
+  icon: mdi:thermometer
+
+sensor.petite_maison_batterie:
+  friendly_name: "Capteur Netatmo petite maison"
+  icon: mdi:thermometer
+
+sensor.entree_batterie:
+  friendly_name: "Capteur Netatmo entrée"
+  icon: mdi:thermometer
+
+sensor.sejour_batterie:
+  friendly_name: "Capteur Netatmo séjour"
+  icon: mdi:thermometer
+
+sensor.chambre_parents_batterie:
+  friendly_name: "Capteur Netatmo parents"
+  icon: mdi:thermometer
+
+sensor.bobst_102_exterieur_so_batterie:
+  friendly_name: "Capteur Bobst extérieur SO"
+  icon: mdi:thermometer
+
+sensor.komori_exterieur_no_batterie:
+  friendly_name: "Capteur Komori extérieur NO"
+  icon: mdi:thermometer
+
+############################################################
+# 🌡️ CAPTEURS METEO SWITCHBOT
+############################################################
+
+sensor.exterieur_batterie:
+  friendly_name: "SwitchBot extérieur"
+  icon: mdi:thermometer
+
+sensor.sdb_enfants_batterie:
+  friendly_name: "Capteur SDB enfants"
+  icon: mdi:thermometer
+
+sensor.garage_batterie:
+  friendly_name: "SwitchBot garage"
+  icon: mdi:thermometer
+
+sensor.cave_batterie:
+  friendly_name: "Capteur cave"
+  icon: mdi:thermometer
+
+sensor.direction_batterie:
+  friendly_name: "Capteur bureau direction"
+  icon: mdi:thermometer
+
+sensor.compta_batterie:
+  friendly_name: "Capteur comptabilité"
+  icon: mdi:thermometer
+
+sensor.qualite_batterie:
+  friendly_name: "Capteur qualité"
+  icon: mdi:thermometer
+
+sensor.devis_commandes_batterie:
+  friendly_name: "Capteur devis / commandes"
+  icon: mdi:thermometer
+
+sensor.commercial_batterie:
+  friendly_name: "Capteur commercial"
+  icon: mdi:thermometer
+
+sensor.stock_carton_batterie:
+  friendly_name: "Capteur stock carton"
+  icon: mdi:thermometer
+
+sensor.stock_pf_batterie:
+  friendly_name: "Capteur stock produits finis"
+  icon: mdi:thermometer
+
+sensor.mezzanine_batterie:
+  friendly_name: "Capteur mezzanine"
+  icon: mdi:thermometer
+
+############################################################
+# 🔢 CLAVIERS
+############################################################
+
+sensor.clavier_alarme_1_battery:
+  friendly_name: "Clavier alarme (entrée)"
+  icon: mdi:dialpad
+
+sensor.clavier_alarme_2_battery:
+  friendly_name: "Clavier alarme (garage)"
+  icon: mdi:dialpad
+
+############################################################
+# 🚨 SIRENE
+############################################################
+
+sensor.sirene_battery:
+  friendly_name: "Sirène alarme"
+  icon: mdi:alarm-bell

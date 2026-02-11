@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN
+# ----------------------------------------------------------
+# 🔁 ECS : Bouclage 5 minutes en cours
+#
+# 🎯 Rôle :
+#   Indiquer l’état d’un cycle de bouclage ECS de 5 minutes
+#   afin que les automatisations ou scripts puissent en tenir
+#   compte sans piloter directement le chauffage ou l’ECS.
+#
+# 🧱 Principe Arsenal :
+#   - Activé → cycle de recirculation actif
+#   - Désactivé → aucun bouclage en cours
+#   - Ne pilote rien, ne déclenche rien directement
+#
+# 🔌 Dépendances :
+#   - Automatisations ECS : démarrage/arrêt bouclage
+#   - Scripts ECS : bouclage
+#
+# ⚠️ Important :
+#   - Ce boolean sert uniquement à reporter l’état
+#     du bouclage ECS de 5 minutes
+#
+# 📍 Entité : input_boolean.bouclage_ecs_5_minutes_en_cours
+# ==========================================================
+
+
+bouclage_ecs_5_minutes_en_cours:
+  name: Bouclage ECS – 5 min en cours
+  icon: mdi:clock-start

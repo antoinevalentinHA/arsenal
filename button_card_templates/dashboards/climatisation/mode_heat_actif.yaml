@@ -1,0 +1,59 @@
+#################################################################
+# 🔥❄️ CARTE CLIM — DIAGNOSTIC CHAUFFAGE HIVER ACTIF
+# ---------------------------------------------------------------
+# Indique si le chauffage via la climatisation est autorisé
+# en mode hiver (flag métier explicite).
+#
+# Principe Arsenal :
+#   - Carte de diagnostic
+#   - Lecture seule
+#   - Aucune action utilisateur
+#   - Décision portée par un input_boolean métier
+#################################################################
+
+carte_clim_diagnostic_chauffage_hiver_actif:
+  template: carte_base
+
+  entity: input_boolean.chauffage_clim_active_en_hiver
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  icon: mdi:radiator
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  label: |
+    [[[
+      return entity.state === "on"
+        ? "Actif"
+        : "Désactivé";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity.state === "on"
+              ? "rgba(76, 175, 80, 0.2)"   // 🟢 chauffage clim autorisé
+              : "rgba(158, 158, 158, 0.2)"; // ⚪ chauffage clim interdit
+          ]]]
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#000000'
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+    label:
+      - font-size: 13px
+      - color: '#111'

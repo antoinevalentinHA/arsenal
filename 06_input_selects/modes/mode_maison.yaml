@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Mode de la maison
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définition du CONTEXTE GLOBAL de fonctionnement
+#   de la maison.
+#
+#   Ce mode influence transversalement :
+#     • chauffage
+#     • climatisation
+#     • éclairage
+#     • alarme
+#     • automatisations système
+#
+# 🧩 Nature :
+#   Paramètre MÉTIER GLOBAL.
+#
+# ❌ Ne fait PAS :
+#   - Ne représente PAS un état réel (présence, alarme, chauffage)
+#   - Ne déclenche AUCUNE action directe
+#   - Ne pilote AUCUN équipement
+#   - Ne contient AUCUNE logique décisionnelle
+#
+# 🔍 Sémantique des valeurs :
+#   - Normal :
+#       Fonctionnement standard de la maison.
+#   - Vacances :
+#       Mode d’absence prolongée.
+#       Autorise des comportements spécifiques
+#       (économies, sécurisation, simulations).
+#
+# 🔄 Gestion du cycle :
+#   - La valeur est définie :
+#       • manuellement
+#       • ou via des automatisations dédiées (programmation vacances)
+#   - Les autres composants se contentent de la LIRE.
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace :
+#       • Lecture et sélection du mode actif
+#   - Capteurs template :
+#       • Dérivation d’états (vacances actives, raisons, diagnostics)
+#   - Scripts & automatisations :
+#       • Entrée de contexte pour les décisions centrales
+#       • Conditions d’autorisation ou d’inhibition
+#
+# 🧠 Principe Arsenal associé :
+#   - Centralisation du CONTEXTE GLOBAL
+#   - Lecture omniprésente, écriture contrôlée
+#   - Un mode n’est jamais une action
+#
+# ⚠️ Remarque :
+#   Toute extension (nouveau mode)
+#   implique une mise à jour coordonnée :
+#     • des scripts de décision
+#     • des automatisations transverses
+#     • des dashboards
+# ==========================================================
+
+mode_maison:
+  name: Mode de la maison
+  icon: mdi:home-switch
+  options:
+    - Normal
+    - Vacances

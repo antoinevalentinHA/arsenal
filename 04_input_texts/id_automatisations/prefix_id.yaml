@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Prefix ID
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker le PRÉFIXE D’IDENTIFIANT actuellement sélectionné,
+#   sous forme textuelle, pour usage utilitaire.
+#
+# 🧱 Nature :
+#   - Cache technique synchronisé
+#   - Miroir d’un input_select
+#
+# 🚫 Ne fait PAS :
+#   - Ne choisit aucun préfixe
+#   - Ne génère aucun identifiant
+#   - Ne garantit aucune unicité
+#   - Ne modifie aucune automatisation
+#
+# 🔗 Écrit par :
+#   - Automatisation :
+#       10_automations/system/sync_prefix_id_automations.yaml
+#     → synchronisation depuis input_select.prefix_id_select
+#
+# 🔗 Utilisation :
+#   - Dashboards d’aide à la génération d’IDs
+#   - Outils utilitaires (lecture humaine)
+#
+# 🧠 Principe ARSENAL :
+#   - Séparation stricte :
+#       sélection ≠ stockage ≠ génération
+#
+# ⚠️ Sémantique :
+#   - Valeur indicative
+#   - Peut être modifiée indirectement uniquement
+# ==========================================================
+
+
+prefix_id:
+  name: Prefix ID
+  mode: text
+  max: 10

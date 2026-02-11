@@ -1,0 +1,108 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Déshumidificateur – Activation différée sur recommandation
+#
+#  ID : 1006000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de discipline d’activation.
+#
+#     Elle met en marche le déshumidificateur lorsque
+#     la recommandation logique de fonctionnement est
+#     confirmée et stable, afin de garantir que l’état
+#     recommandé soit effectivement appliqué.
+#
+#     Cette automation n’est PAS un garde-fou invariant.
+#
+#  🧩 PRINCIPE
+#
+#     - Détection d’une recommandation logique persistante
+#     - Vérification que l’appareil est actuellement à l’arrêt
+#     - Activation contrôlée et assumée
+#
+#     Une tolérance temporelle est volontairement appliquée
+#     pour éviter des démarrages intempestifs.
+#
+#  🕒 TEMPORISATIONS APPLIQUÉES
+#
+#     - Recommandation active ≥ 5 minutes
+#
+#     Cette durée constitue une politique d’usage,
+#     pas une règle logique absolue.
+#
+#  🧠 DÉCLENCHEURS UTILISÉS
+#
+#     - Stabilisation de la recommandation
+#     - Redémarrage stabilisé du système
+#     - Vérification périodique (polling volontaire)
+#
+#     Le polling est assumé pour garantir
+#     qu’aucune activation légitime ne soit manquée.
+#
+#  🧠 AUTORITÉ D’EXÉCUTION
+#
+#     script.set_deshumidificateur_state
+#
+#     → script unique responsable de l’état réel
+#       du déshumidificateur.
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule PAS l’humidité
+#     - Ne définit AUCUN seuil
+#     - Ne décide PAS quand déshumidifier
+#     - Ne remplace PAS le GUARD invariant
+#     - Ne force PAS une activation immédiate
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de gestion d’entrée :
+#     recommandation ≠ invariant.
+#
+#     Elle complète le GUARD défensif
+#     en assurant qu’un état recommandé
+#     devienne effectif de manière robuste
+#     et tolérante au bruit système.
+# ==========================================================
+
+
+- id: '1006000000001'
+  alias: "Déshumidificateur ON si recommandé"
+  description: >
+    Met le déshumidificateur en marche si la recommandation
+    est active depuis 5 min ou déjà active au démarrage HA.
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheurs — Recommandation stable / Reboot HA / Vérification périodique
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
+      to: 'on'
+      for: '00:05:00'
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+    - platform: time_pattern
+      minutes: "/10"
+
+  # ======================================================
+  # ✅ Conditions — Recommandation active + appareil OFF
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: >
+        {{ is_state('binary_sensor.deshumidificateur_cave_demarrage_recommande', 'on')
+           and is_state('binary_sensor.deshumidificateur_actif', 'off') }}
+
+  # ======================================================
+  # 🔄 Action — Allumage + log + notification
+  # ======================================================
+  action:
+    - action: script.set_deshumidificateur_state
+      data:
+        target_state: "on"

@@ -1,0 +1,92 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBERS : ECS — Offsets de pilotage chaudière
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Ajuster la CONSIGNE DE CHAUFFE envoyée à la chaudière
+#   afin de maîtriser la dynamique thermique du cycle ECS,
+#   sans modifier l’objectif thermique réel du cycle.
+#
+# 🧱 Principe :
+#   - La consigne envoyée à la chaudière est volontairement
+#     inférieure à la consigne métier cible.
+#   - Home Assistant valide ensuite le cycle sur la
+#     consigne réelle (± epsilon).
+#
+#   → Pilotage ≠ Verdict thermique
+#
+# 📌 Fonctionnement :
+#   consigne envoyée = target_temp - offset
+#
+#   avec :
+#   - offsets différents selon le profil thermique du cycle
+#   - protection via plancher dynamique (trigger ceiling)
+#
+# 📊 Profils :
+#   - ecs_off_tiny :
+#       • petits ΔT, limitation du sur-shoot
+#   - ecs_off_medium :
+#       • cycles intermédiaires
+#   - ecs_off_normal :
+#       • cycles à forte inertie
+#   - ecs_off_desinfection :
+#       • pilotage spécifique cycle critique
+#
+# ⚠️ Important :
+#   - Ces offsets n’affectent PAS la condition de fin de cycle
+#   - La validation thermique repose uniquement sur :
+#       • la consigne cible réelle
+#       • l’epsilon associé
+#
+# 🔗 Utilisation :
+#   - Script :
+#       • chauffage_ecs_cycle (Cycle unifié ECS)
+#
+# 🧠 Principe Arsenal :
+#   - On pilote la chaudière avec prudence
+#   - On juge le résultat avec exigence
+#
+# 📐 Unité :
+#   - degrés Celsius (°C)
+# ==========================================================
+
+
+ecs_off_tiny:
+  name: ECS — Offset Tiny ΔT (consigne - X)
+  min: 0.5
+  max: 4.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:tune-variant
+  # initial: 2.2
+
+
+ecs_off_normal:
+  name: ECS — Offset Normal ΔT (consigne - X)
+  min: 1.0
+  max: 6.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:tune-variant
+  # initial: 3.2
+
+ecs_off_medium:
+  name: ECS — Offset Medium ΔT (consigne - X)
+  min: 0.5
+  max: 4.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:tune-variant
+  # initial: 2.6
+
+ecs_off_desinfection:
+  name: ECS — Offset Désinfection (consigne - X)
+  min: 0.0
+  max: 3.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:tune-variant
+  # initial: 1.0

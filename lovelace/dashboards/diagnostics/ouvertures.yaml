@@ -1,0 +1,79 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Diagnostics Ouvertures
+icon: mdi:radar
+
+views:
+  ####################################
+  # 🪟 OUVERTURES ET TIMERS
+  ####################################
+  - title: Ouvertures
+    path: diagnostics-ouvertures
+    icon: mdi:radar
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /ouvertures-dashboard/ouvertures
+
+    ########################################################
+    # 🔧 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+
+          ##############################################
+          # 🧠 SECTION : ÉTATS LOGIQUES — SANS ET AVEC DÉLAI
+          ##############################################
+          - type: custom:button-card
+            template: section_header
+            name: 🪟 Ouvertures
+
+          - type: markdown
+            content: |
+              ## 🔍 États instantanés
+              • **Ouvertures maison :** {{ '🟢 Ouvert' if is_state('binary_sensor.ouvertures_maison', 'on') else '⚪ Fermé' }}  
+              • **Fenêtres RDC :** {{ '🟢 Ouvert' if is_state('binary_sensor.fenetre_ouverte_rdc', 'on') else '⚪ Fermé' }}  
+              • **Fenêtres étage :** {{ '🟢 Ouvert' if is_state('binary_sensor.fenetre_ouverte_etage', 'on') else '⚪ Fermé' }}  
+              • **Fenêtres maison :** {{ '🟢 Ouvert' if is_state('binary_sensor.fenetre_ouverte_maison', 'on') else '⚪ Fermé' }}  
+              • **Portes maison :** {{ '🟢 Ouvert' if is_state('binary_sensor.portes_ouvertes_maison', 'on') else '⚪ Fermé' }}  
+
+              ---
+
+              ## ⏳ Etats avec délais 
+              • **Séjour :** {{ '🟢 ON' if is_state('binary_sensor.fenetre_sejour_ouverte_avec_delai','on') else '⚪ OFF' }}  
+              • **Chambre parents :** {{ '🟢 ON' if is_state('binary_sensor.fenetre_chambre_parents_ouverte_avec_delai','on') else '⚪ OFF' }}  
+              • **Étage :** {{ '🟢 ON' if is_state('binary_sensor.fenetre_ouverte_etage_avec_delai','on') else '⚪ OFF' }}  
+              • **Maison :** {{ '🟢 ON' if is_state('binary_sensor.fenetre_ouverte_maison_avec_delai','on') else '⚪ OFF' }}  
+
+
+          ##############################################
+          # ⏱️ SECTION : Minuteries en cours
+          ##############################################
+          - type: custom:button-card
+            template: section_header
+            name: ⏱️ Minuteries
+
+          - type: markdown
+            content: |
+              {% set timers = {
+                'Chambre parents': 'timer.fenetre_chambre_parents_grace',
+                'Séjour': 'timer.fenetre_sejour_ouverte_grace'
+              } %}
+
+              {% for label, entity in timers.items() %}
+                {% if is_state(entity, 'active') %}
+                • ⏳ **{{ label }}** : actif  
+                {% else %}
+                • 🟢 **{{ label }}** : idle  
+                {% endif %}
+              {% endfor %}

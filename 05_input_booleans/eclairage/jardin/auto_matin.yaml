@@ -1,0 +1,42 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Jardin – Éclairage automatique (matin)
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation du scénario d’éclairage automatique
+#     du jardin pour la période matinale.
+#
+#     Ce booléen conditionne l’exécution des
+#     automatismes d’allumage avant le lever du jour
+#     et d’extinction au lever du soleil.
+#
+#  🧱 Nature :
+#     - Autorisation de scénario
+#     - Commutateur d’automatismes
+#
+#  🔄 Fonctionnement :
+#     - ON  : le scénario matin du jardin
+#             est autorisé à s’exécuter
+#     - OFF : aucune gestion automatique
+#             du jardin le matin
+#
+#  📥 N’effectue PAS :
+#     - aucun calcul solaire
+#     - aucune décision horaire
+#     - aucune commande directe des lampes
+#
+#  📤 Utilisation :
+#     - Lue par les automatisations :
+#         • 1820000000002 (allumage matin)
+#         • 1820000000003 (extinction lever du jour)
+#     - Pilotée via les dashboards
+#       de réglages éclairage
+#
+#  🧠 Principe Arsenal :
+#     - Un scénario temporel doit pouvoir
+#       être explicitement autorisé ou neutralisé
+# ==========================================================
+
+
+auto_lumiere_jardin_matin:
+  name: Lumière jardin - auto matin (inclut extinction lever)
+  icon: mdi:weather-sunset-up

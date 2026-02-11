@@ -1,0 +1,68 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Capture du pic thermique de cycle
+#
+#  ID : 10250000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Enregistrer l’horodatage exact auquel le ballon ECS
+#     atteint une nouvelle température maximale pendant
+#     un cycle en cours.
+#
+#     Cette automation fournit un repère temporel fiable
+#     et indépendant pour le calcul de la durée réelle
+#     de chauffe (début de cycle → pic thermique).
+#
+#  🧱 PRINCIPE ARSENAL
+#     - Le pic thermique est un fait physique mesurable
+#     - Il ne dépend ni de l’arrêt du brûleur ni des verrous
+#     - Un seul événement doit produire un seul timestamp
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide pas du début ou de la fin d’un cycle ECS
+#     - Ne pilote aucune consigne ou équipement
+#     - Ne calcule aucune durée directement
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • toute augmentation de la température maximale
+#           atteinte durant le cycle ECS
+#     - Condition :
+#         • nouvelle valeur strictement supérieure à la précédente
+#     - Action :
+#         • écriture immédiate de l’horodatage courant
+#           dans un helper `input_datetime`
+#
+#  ⚠️ IMPORTANT
+#     - Un seul timestamp est conservé : le dernier pic réel
+#     - Cette donnée est utilisée par la consolidation
+#       finale de fin de cycle ECS
+#
+#  ✅ CONTRAINTES
+#     - Détection purement monotone (pas de bruit)
+#     - Aucune dépendance aux états logiques
+#     - Simplicité volontaire et robuste
+# ==========================================================
+
+
+- id: "10250000000011"
+  alias: "ECS - Capture pic thermique"
+  description: "Stocke l'heure du pic thermique ECS (nouvelle T° max)"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: sensor.ecs_temperature_max_cycle
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ trigger.to_state.state | float(0) >
+           trigger.from_state.state | float(0) }}
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.ecs_tmax_timestamp
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

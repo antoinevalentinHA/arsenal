@@ -1,0 +1,114 @@
+# ==========================================================
+#  STATISTICS SENSORS — Withings : Activité physique
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Calculer les moyennes mobiles des indicateurs d’activité
+#     mesurés par les capteurs Withings fiabilisés localement.
+#
+#  ⚙️ Composant : `platform: statistics`
+#     - Agrège les valeurs journalières (pas, distance, calories)
+#     - Fournit des tendances à court, moyen et long terme.
+#
+#  🧩 Entrées surveillées :
+#     - sensor.withings_steps_today_local
+#     - sensor.withings_distance_travelled_today_local
+#     - sensor.withings_total_calories_burnt_today_local
+#
+#  📊 Objectif :
+#     - Suivre l’évolution de l’activité quotidienne
+#     - Identifier les tendances sur 7 / 14 / 30 jours
+#     - Alimenter le futur “Coach Santé”
+#
+#  ✅ Périodes : 7 j / 14 j / 30 j
+#  ✅ Échantillons : 1000 / 2000 / 4000
+# ==========================================================
+
+# ----------------------------------------------------------
+# 🚶‍♂️ NOMBRE DE PAS — Moyennes glissantes
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Withings Pas Moyenne 7j"
+  unique_id: withings_pas_moyenne_7j
+  entity_id: sensor.withings_steps_today_local
+  state_characteristic: mean
+  max_age:
+    days: 7
+  sampling_size: 1000
+
+- platform: statistics
+  name: "Withings Pas Moyenne 14j"
+  unique_id: withings_pas_moyenne_14j
+  entity_id: sensor.withings_steps_today_local
+  state_characteristic: mean
+  max_age:
+    days: 14
+  sampling_size: 2000
+
+- platform: statistics
+  name: "Withings Pas Moyenne 30j"
+  unique_id: withings_pas_moyenne_30j
+  entity_id: sensor.withings_steps_today_local
+  state_characteristic: mean
+  max_age:
+    days: 30
+  sampling_size: 4000
+
+# ----------------------------------------------------------
+# 📏 DISTANCE PARCOURUE — Moyennes glissantes
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Withings Distance Moyenne 7j"
+  unique_id: withings_distance_moyenne_7j
+  entity_id: sensor.withings_distance_travelled_today_local
+  state_characteristic: mean
+  max_age:
+    days: 7
+  sampling_size: 1000
+
+- platform: statistics
+  name: "Withings Distance Moyenne 14j"
+  unique_id: withings_distance_moyenne_14j
+  entity_id: sensor.withings_distance_travelled_today_local
+  state_characteristic: mean
+  max_age:
+    days: 14
+  sampling_size: 2000
+
+- platform: statistics
+  name: "Withings Distance Moyenne 30j"
+  unique_id: withings_distance_moyenne_30j
+  entity_id: sensor.withings_distance_travelled_today_local
+  state_characteristic: mean
+  max_age:
+    days: 30
+  sampling_size: 4000
+
+# ----------------------------------------------------------
+# 🔥 CALORIES BRÛLÉES — Moyennes glissantes
+# ----------------------------------------------------------
+- platform: statistics
+  name: "Withings Calories Moyenne 7j"
+  unique_id: withings_calories_moyenne_7j
+  entity_id: sensor.withings_total_calories_burnt_today_local
+  state_characteristic: mean
+  max_age:
+    days: 7
+  sampling_size: 1000
+
+- platform: statistics
+  name: "Withings Calories Moyenne 14j"
+  unique_id: withings_calories_moyenne_14j
+  entity_id: sensor.withings_total_calories_burnt_today_local
+  state_characteristic: mean
+  max_age:
+    days: 14
+  sampling_size: 2000
+
+- platform: statistics
+  name: "Withings Calories Moyenne 30j"
+  unique_id: withings_calories_moyenne_30j
+  entity_id: sensor.withings_total_calories_burnt_today_local
+  state_characteristic: mean
+  max_age:
+    days: 30
+  sampling_size: 4000

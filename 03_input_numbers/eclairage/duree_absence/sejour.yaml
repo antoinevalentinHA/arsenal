@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Durée absence séjour
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir le délai d’inactivité requis dans le séjour
+#    avant extinction automatique de l’éclairage.
+#
+# 🧩 Principe :
+#    - Le décompte commence après la DERNIÈRE détection
+#      de présence ou de mouvement dans le séjour.
+#    - L’éclairage reste allumé tant que l’activité
+#      reprend avant l’expiration du délai.
+#
+# ⚙️ Fonctionnement :
+#    - Valeur exprimée en minutes
+#    - Utilisée directement par l’automatisation
+#    - Conversion explicite dans la logique OFF
+#
+# 🔍 Utilisation :
+#    - Automatisation :
+#        • eclairage/sejour/off.yaml
+#    - Dashboard :
+#        • réglages éclairage
+#
+# 🚫 Ne pas confondre avec :
+#    - Éclairages décoratifs (guirlande)
+#    - Éclairages techniques (garage)
+#    - Scènes manuelles
+#
+# 📐 Unité :
+#    - minutes
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Paramètre éclairage séjour
+# ==========================================================
+
+
+duree_absence_sejour:
+  name: Durée absence séjour (min)
+  icon: mdi:timer-outline
+  min: 1
+  max: 60
+  step: 5
+  unit_of_measurement: min
+  mode: slider

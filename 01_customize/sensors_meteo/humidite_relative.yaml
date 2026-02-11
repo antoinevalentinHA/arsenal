@@ -1,0 +1,102 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : Humidité relative (capteurs météo)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Centraliser l’affichage des capteurs d’humidité relative
+#    à des fins d’observation, de diagnostic et d’interface.
+#
+# ⚠️ Note métier importante :
+#    L’humidité relative est une grandeur DÉPENDANTE
+#    de la température.
+#    Elle n’est PAS utilisée comme critère décisionnel
+#    principal dans Arsenal (aération, chauffage, clim).
+#
+# 🧩 Périmètre :
+#    - Définit les friendly_name et icônes
+#    - Fournit une lecture intuitive pour l’utilisateur
+#    - N’est PAS une base de décision autonome
+#
+# 🔗 Dépendances :
+#    - Capteurs d’humidité issus des sondes physiques
+#    - Complétés / interprétés via :
+#      • humidité absolue
+#      • humidex
+#
+# 🚫 Interdits :
+#    - Prendre une décision métier basée uniquement
+#      sur l’humidité relative
+#    - Introduire une logique conditionnelle ici
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle / indicateur contextuel
+# ==========================================================
+
+
+############################################################
+# 🏠 ESPACES DE VIE — INTÉRIEUR
+############################################################
+
+sensor.humidite_relative_entree:
+  friendly_name: "Humidité relative Entrée"
+  icon: mdi:water-percent
+
+sensor.humidite_relative_sejour:
+  friendly_name: "Humidité relative Séjour"
+  icon: mdi:water-percent
+
+
+############################################################
+# 🛏️ CHAMBRES
+############################################################
+
+sensor.humidite_relative_chambre_arnaud:
+  friendly_name: "Humidité relative Chambre Arnaud"
+  icon: mdi:water-percent
+
+sensor.humidite_relative_chambre_matthieu:
+  friendly_name: "Humidité relative Chambre Matthieu"
+  icon: mdi:water-percent
+
+sensor.humidite_relative_chambre_parents:
+  friendly_name: "Humidité relative Chambre Parents"
+  icon: mdi:water-percent
+
+
+############################################################
+# 🚿 SALLES DE BAINS
+############################################################
+
+sensor.humidite_relative_sdb_parents:
+  friendly_name: "Humidité relative SDB Parents"
+  icon: mdi:water-percent
+
+sensor.humidite_relative_sdb_enfants:
+  friendly_name: "Humidité relative SDB Enfants"
+  icon: mdi:water-percent
+
+
+############################################################
+# 🏗️ ANNEXES & ZONES TECHNIQUES
+############################################################
+
+sensor.humidite_relative_cave:
+  friendly_name: "Humidité relative Cave"
+  icon: mdi:water-percent
+
+sensor.humidite_relative_garage:
+  friendly_name: "Humidité relative Garage"
+  icon: mdi:water-percent
+
+sensor.humidite_relative_petite_maison:
+  friendly_name: "Humidité relative Petite Maison"
+  icon: mdi:water-percent
+
+
+############################################################
+# 🌿 EXTÉRIEUR
+############################################################
+
+sensor.humidite_relative_jardin:
+  friendly_name: "Humidité relative Jardin"
+  icon: mdi:water-percent

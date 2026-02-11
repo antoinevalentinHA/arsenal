@@ -1,0 +1,103 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Visiteur – Activation du mode visite
+#
+#  ID : 10210000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de mise en contexte chargée d’activer
+#     automatiquement le mode visiteur lorsqu’un créneau
+#     planifié est atteint.
+#
+#     Elle marque l’entrée en état "visite en cours" et
+#     active les états nécessaires à un comportement
+#     cohérent des systèmes de la maison.
+#
+#  🧩 PRINCIPE
+#
+#     - Vérifie périodiquement qu’un créneau visiteur est actif
+#     - S’assure qu’aucune visite n’est déjà en cours
+#     - Active les états métier associés à la visite :
+#         • présence visiteur
+#         • visite en cours
+#         • bouclage ECS (optionnel)
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas du planning visiteur
+#     - Ne gère pas la fin de visite
+#     - Ne prend aucune décision de sécurité autonome
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Contextualisation explicite (visite / absence / présence)
+#     - Séparation stricte planning / activation / désactivation
+#     - États métier consommés par les autres cerveaux
+#
+#  ⚙️ EXÉCUTION
+#
+#     - Déclenchement strictement événementiel
+#     - Aucun polling temporel
+#     - Activation idempotente
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '10210000000003'
+  alias: Alarme - Visiteur - Désactivation sécurité
+  description: >
+    Désarme l'alarme, désactive l'armement auto, active le bouclage ECS si activé,
+    et marque la visite en cours, uniquement lors du début effectif du créneau visiteur.
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.creneau_visiteur_actif
+      from: "off"
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.visite_en_cours
+      state: "off"
+
+  action:
+    - alias: Activer la prise de bouclage ECS si souhaité
+      if:
+        - condition: state
+          entity_id: input_boolean.bouclage_visiteur
+          state: "on"
+      then:
+        - action: switch.turn_on
+          target:
+            entity_id: switch.prise_bouclage
+
+    - alias: Activer le capteur "visite en cours"
+      action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.visite_en_cours
+
+    - alias: Activer la présence visiteur
+      action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.presence_visiteur
+
+    - alias: Notification mobile
+      action: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🔐 Mode visiteur activé"
+        message: >
+          Le mode visiteur a été activé à {{ now().strftime('%H:%M') }}.
+          {% if is_state('input_boolean.bouclage_visiteur', 'on') %}
+          Bouclage ECS : activé.
+          {% endif %}
+        extra:
+          group: "visiteur"
+          tag: "visiteur_securite"
+          ttl: 0
+          priority: high
+          importance: high

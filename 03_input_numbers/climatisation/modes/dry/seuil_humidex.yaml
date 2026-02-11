@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Seuil Humidex (déshumidification)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir le seuil d’humidex à partir duquel
+#    la déshumidification (mode DRY) devient
+#    thermiquement et hygrométriquement justifiée.
+#
+# 🌡️ Principe :
+#    - Le seuil est exprimé en humidex (°C équivalent)
+#    - Il représente le niveau d’inconfort ressenti,
+#      et non une température réelle
+#
+# ⚙️ Fonctionnement :
+#    - Utilisé comme seuil ON explicite
+#      → humidex ≥ seuil → DRY autorisé
+#    - Le seuil OFF est dérivé dynamiquement :
+#      → seuil_humidex - 1 °C
+#    - L’hystérésis est volontairement implicite
+#
+# 🔍 Utilisation :
+#    - Capteurs template :
+#        • humidex_on.yaml
+#        • humidex_off.yaml
+#        • deshumidification.yaml
+#    - Dashboards (visualisation uniquement)
+#
+# 🚫 Interdits :
+#    - Utilisation comme consigne cible
+#    - Modification automatique
+#    - Déclenchement direct d’automatisation
+#
+# 📐 Unité :
+#    - °C (indice humidex)
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Seuil décisionnel DRY (central)
+# ==========================================================
+
+
+seuil_humidex_deshumidification:
+  name: "Seuil Humidex déshumidification"
+  min: 20
+  max: 35
+  step: 0.1
+  mode: box
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-alert

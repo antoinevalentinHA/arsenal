@@ -1,0 +1,162 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Stock
+#              Reset historique hebdomadaire & recalage min/max
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Outil de maintenance MANUEL permettant de :
+#     - purger les historiques hebdomadaires de température
+#       et d’humidité du stock
+#     - recalibrer les min/max servant de référence qualité
+#
+#   Ce script redéfinit un NOUVEAU CADRE D’ANALYSE
+#   pour le suivi environnemental des zones de stockage.
+#
+# ----------------------------------------------------------
+# 🧱 PÉRIMÈTRE MÉTIER
+#
+#   Zones concernées :
+#     - Stock carton
+#     - Stock produits finis (PF)
+#
+#   Grandeurs suivies :
+#     - Température
+#     - Humidité relative
+#
+#   Données impactées :
+#     - historiques texte (rolling 4 semaines)
+#     - min / max hebdomadaires
+#
+# ----------------------------------------------------------
+# ⚠️ ACTION DESTRUCTIVE ASSUMÉE
+#
+#   - Les historiques précédents sont définitivement effacés
+#   - Aucune sauvegarde ni archivage n’est effectué
+#
+#   ➜ Script à exécuter UNIQUEMENT :
+#     - en début de nouvelle période d’analyse
+#     - après dérive ou incohérence de lecture
+#     - lors d’un changement de référentiel qualité
+#
+# ----------------------------------------------------------
+# 🔒 PROTECTIONS ET GARANTIES
+#
+#   - Recalage min/max effectué UNIQUEMENT
+#     si le capteur courant est valide
+#   - En cas de capteur indisponible :
+#       → la valeur précédente est conservée
+#   - Aucun forçage de valeur arbitraire
+#
+# ----------------------------------------------------------
+# 🧠 SÉPARATION DES RÔLES
+#
+#   - Les capteurs mesurent
+#   - Les dashboards affichent
+#   - Ce script RÉINITIALISE le cadre d’analyse
+#
+# ----------------------------------------------------------
+# ❌ NE FAIT PAS
+#
+#   - Aucun déclenchement automatique
+#   - Aucun calcul statistique
+#   - Aucun archivage long terme
+#   - Aucune modification des capteurs
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script de maintenance métier — destructif contrôlé
+#
+# 📍 Entité :
+#   script.reset_stock_historique
+#
+# ⏱️ Fréquence :
+#   Exceptionnelle / manuelle uniquement
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+reset_stock_historique:
+  alias: "Stock – Reset historique hebdo + min/max"
+  mode: single
+  sequence:
+    # 1) Vider l'historique des semaines
+    - action: input_text.set_value
+      data:
+        value: ""
+      target:
+        entity_id:
+          - input_text.conditions_carton_semaine_1
+          - input_text.conditions_carton_semaine_2
+          - input_text.conditions_carton_semaine_3
+          - input_text.conditions_carton_semaine_4
+          - input_text.conditions_pf_semaine_1
+          - input_text.conditions_pf_semaine_2
+          - input_text.conditions_pf_semaine_3
+          - input_text.conditions_pf_semaine_4
+
+    # 2) Réinitialiser les min/max uniquement si le capteur a une valeur valide
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_carton_temperature_min
+      data:
+        value: >
+          {% set v = states('sensor.temperature_stock_carton') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_carton_temperature_min') }}
+
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_carton_temperature_max
+      data:
+        value: >
+          {% set v = states('sensor.temperature_stock_carton') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_carton_temperature_max') }}
+
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_carton_humidite_min
+      data:
+        value: >
+          {% set v = states('sensor.humidite_relative_stock_carton') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_carton_humidite_min') }}
+
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_carton_humidite_max
+      data:
+        value: >
+          {% set v = states('sensor.humidite_relative_stock_carton') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_carton_humidite_max') }}
+
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_pf_temperature_min
+      data:
+        value: >
+          {% set v = states('sensor.temperature_stock_pf') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_pf_temperature_min') }}
+
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_pf_temperature_max
+      data:
+        value: >
+          {% set v = states('sensor.temperature_stock_pf') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_pf_temperature_max') }}
+
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_pf_humidite_min
+      data:
+        value: >
+          {% set v = states('sensor.humidite_relative_stock_pf') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_pf_humidite_min') }}
+
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.stock_pf_humidite_max
+      data:
+        value: >
+          {% set v = states('sensor.humidite_relative_stock_pf') | float(none) %}
+          {{ v if v is not none else states('input_number.stock_pf_humidite_max') }}

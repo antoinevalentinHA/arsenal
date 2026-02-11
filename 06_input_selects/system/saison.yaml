@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Saison (référence métier)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Représentation SIMPLIFIÉE et CENTRALISÉE de la saison,
+#   utilisée comme CONTEXTE MÉTIER global dans le système.
+#
+#   Cette saison sert de référence commune pour :
+#     • l’aération
+#     • les seuils thermiques
+#     • les lectures météo
+#     • les dashboards pédagogiques
+#
+# 🧩 Nature :
+#   Paramètre MÉTIER transversal.
+#
+# ❌ Ne fait PAS :
+#   - Ne mesure PAS une saison astronomique réelle
+#   - Ne dépend PAS directement d’un capteur météo
+#   - Ne prend AUCUNE décision à lui seul
+#   - Ne pilote AUCUN système (chauffage, clim, aération)
+#
+# 🔄 Mise à jour :
+#   - La valeur est MAINTENUE par des automatisations dédiées
+#     (calcul saisonnier centralisé).
+#   - Les autres composants ne font que la CONSOMMER.
+#
+# 🔗 Utilisation :
+#   - Dashboards Lovelace :
+#       • Affichage explicite de la saison active
+#       • Adaptation visuelle des seuils et graphiques
+#   - Capteurs template (aération) :
+#       • Sélection de seuils saisonniers
+#       • Lecture cohérente des conditions
+#   - Automatisations système :
+#       • Synchronisation saison calculée / saison active
+#
+# 🧠 Principe Arsenal associé :
+#   - Centralisation du CONTEXTE :
+#       • Une seule source de vérité
+#       • Zéro recalcul local dispersé
+#   - Simplification volontaire du réel
+#     au profit de la lisibilité et de la robustesse.
+#
+# ⚠️ Remarque :
+#   Toute modification de la logique saisonnière
+#   doit être faite dans les automatisations dédiées,
+#   jamais par manipulation directe de ce helper.
+# ==========================================================
+
+saison:
+  name: Saison actuelle
+  options:
+    - Hiver
+    - Printemps
+    - Été
+    - Automne

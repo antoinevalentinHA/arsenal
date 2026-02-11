@@ -1,0 +1,52 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Desinfection au retour de Vacances
+#  ----------------------------------------------------------
+#  🎯 RÔLE :
+#     Lancer une désinfection ECS UNIQUE lors d’un retour
+#     de vacances, uniquement si ce retour est légitime
+#     au regard de la durée d’absence.
+#
+#  🧱 PRINCIPE :
+#     - Déclenchement sur sortie explicite du mode Vacances
+#     - Autorisation portée par un capteur métier dédié
+#     - Aucun raisonnement temporel interne
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10250000000021"
+  alias: "ECS - Désinfection au retour de Vacances"
+  description: >
+    Lance une désinfection ECS unique au retour de vacances,
+    uniquement si la durée d’absence le justifie.
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_select.mode_maison
+      from: "Vacances"
+      to: "Normal"
+
+  condition:
+    # 🧠 Autorisation métier (vacances longues validées)
+    - condition: state
+      entity_id: binary_sensor.ecs_desinfection_retour_vacances_autorisee
+      state: "on"
+
+  action:
+    # ⏳ Délai de stabilisation post-retour
+    - delay: "00:05:00"
+
+    # 🚀 Lancement du cycle ECS en mode désinfection
+    - service: script.chauffage_ecs_cycle
+      data:
+        mode: "desinfection"
+
+    # 🧾 Journalisation
+    - service: logbook.log
+      data:
+        name: "ECS Désinfection"
+        message: "💧 Cycle de désinfection lancé automatiquement au retour de vacances."
+        entity_id: script.chauffage_ecs_cycle

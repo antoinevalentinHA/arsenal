@@ -1,0 +1,1218 @@
+# ==========================================================
+#  TEMPLATE SENSORS — Température “Filtre Période” (multipériode)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Capturer et mémoriser la **température** par période météo
+#   (aube / matin / jour / crepuscule / nuit), afin de conserver des
+#   références thermiques comparables sur une même journée.
+#
+# ⚙️ Fonctionnement :
+#   - Chaque entité `sensor.temperature_filtre_<periode>_<zone>` surveille :
+#       • son capteur source (ex : `sensor.temperature_chambre_arnaud`)
+#       • l’état du capteur `sensor.periode_meteo`
+#   - Lorsque `sensor.periode_meteo` = `<periode>` (période portée par le nom
+#     de l’entité), la valeur courante du capteur source est copiée.
+#   - En dehors de cette période, le capteur conserve la dernière valeur capturée
+#     (mémoire via `states(this.entity_id)`).
+#
+# 🧩 Capteurs couverts :
+#   - Généré pour plusieurs zones (chambres, cave, séjour, entrée, extérieur, etc.)
+#   - Chaque zone existe pour plusieurs périodes, selon un schéma strictement identique.
+#
+# 🧮 Logique :
+#   1️⃣ Déduire la période cible depuis le nom de l’entité (`...filtre_<periode>_...`).
+#   2️⃣ Construire la source attendue (`sensor.temperature_<zone>`) par transformation
+#      déterministe de `this.entity_id`.
+#   3️⃣ Si `sensor.periode_meteo` = période cible → copie la valeur de la source.
+#   4️⃣ Sinon → conserve la dernière valeur (`states(this.entity_id)`).
+#
+# ⚠️ Cas particuliers :
+#   - Aucun. Tous les capteurs du fichier utilisent strictement la même logique
+#     via `state: *temperature_filtre_logic`.
+#
+# 🧾 Exemple de rendu :
+#   **État :** `19.8`
+#
+# 📊 Type : Trigger-based Template Sensor
+# 🌡️ Domaine : Confort / Climat / Température par période
+# ==========================================================
+
+
+####################################################
+# 🌅 AUBE
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Chambre Arnaud"
+      unique_id: temperature_filtre_aube_chambre_arnaud
+      state: &temperature_filtre_logic >
+        {%- set eid = this.entity_id -%}
+        {%- set prefix = 'sensor.temperature_filtre_' -%}
+        {%- set periode = eid.split(prefix)[1].split('_')[0] -%}
+        {%- set src = eid | replace(prefix ~ periode ~ '_', 'sensor.temperature_') -%}
+        {%- if is_state('sensor.periode_meteo', periode) -%}
+          {{ states(src) }}
+        {%- else -%}
+          {{ states(eid) }}
+        {%- endif -%}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Cave"
+      unique_id: temperature_filtre_aube_cave
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Entree"
+      unique_id: temperature_filtre_aube_entree
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Jardin"
+      unique_id: temperature_filtre_aube_jardin
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Garage"
+      unique_id: temperature_filtre_aube_garage
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Chambre Matthieu"
+      unique_id: temperature_filtre_aube_chambre_matthieu
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_palier
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Palier"
+      unique_id: temperature_filtre_aube_palier
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Chambre Parents"
+      unique_id: temperature_filtre_aube_chambre_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Petite Maison"
+      unique_id: temperature_filtre_aube_petite_maison
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube SDB Enfants"
+      unique_id: temperature_filtre_aube_sdb_enfants
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube SDB Parents"
+      unique_id: temperature_filtre_aube_sdb_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Séjour"
+      unique_id: temperature_filtre_aube_sejour
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Extérieur"
+      unique_id: temperature_filtre_aube_exterieur
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Direction"
+      unique_id: temperature_filtre_aube_direction
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Compta"
+      unique_id: temperature_filtre_aube_compta
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Qualité"
+      unique_id: temperature_filtre_aube_qualite
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Devis"
+      unique_id: temperature_filtre_aube_devis
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Commercial"
+      unique_id: temperature_filtre_aube_commercial
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Stock Carton"
+      unique_id: temperature_filtre_aube_stock_carton
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Stock PF"
+      unique_id: temperature_filtre_aube_stock_pf
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Komori"
+      unique_id: temperature_filtre_aube_komori
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Bobst"
+      unique_id: temperature_filtre_aube_bobst
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Aube Media"
+      unique_id: temperature_filtre_aube_media
+      state: *temperature_filtre_logic
+
+####################################################
+# 🌤 MATIN
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Chambre Arnaud"
+      unique_id: temperature_filtre_matin_chambre_arnaud
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Cave"
+      unique_id: temperature_filtre_matin_cave
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Entree"
+      unique_id: temperature_filtre_matin_entree
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Jardin"
+      unique_id: temperature_filtre_matin_jardin
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Garage"
+      unique_id: temperature_filtre_matin_garage
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Chambre Matthieu"
+      unique_id: temperature_filtre_matin_chambre_matthieu
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_palier
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Palier"
+      unique_id: temperature_filtre_matin_palier
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Chambre Parents"
+      unique_id: temperature_filtre_matin_chambre_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Petite Maison"
+      unique_id: temperature_filtre_matin_petite_maison
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin SDB Enfants"
+      unique_id: temperature_filtre_matin_sdb_enfants
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin SDB Parents"
+      unique_id: temperature_filtre_matin_sdb_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Séjour"
+      unique_id: temperature_filtre_matin_sejour
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Extérieur"
+      unique_id: temperature_filtre_matin_exterieur
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Direction"
+      unique_id: temperature_filtre_matin_direction
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Compta"
+      unique_id: temperature_filtre_matin_compta
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Qualité"
+      unique_id: temperature_filtre_matin_qualite
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Devis"
+      unique_id: temperature_filtre_matin_devis
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Commercial"
+      unique_id: temperature_filtre_matin_commercial
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Stock Carton"
+      unique_id: temperature_filtre_matin_stock_carton
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Stock PF"
+      unique_id: temperature_filtre_matin_stock_pf
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Komori"
+      unique_id: temperature_filtre_matin_komori
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Bobst"
+      unique_id: temperature_filtre_matin_bobst
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Matin Media"
+      unique_id: temperature_filtre_matin_media
+      state: *temperature_filtre_logic
+
+####################################################
+# ☀️ JOUR
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Chambre Arnaud"
+      unique_id: temperature_filtre_jour_chambre_arnaud
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Cave"
+      unique_id: temperature_filtre_jour_cave
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Entree"
+      unique_id: temperature_filtre_jour_entree
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Jardin"
+      unique_id: temperature_filtre_jour_jardin
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Garage"
+      unique_id: temperature_filtre_jour_garage
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Chambre Matthieu"
+      unique_id: temperature_filtre_jour_chambre_matthieu
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Chambre Parents"
+      unique_id: temperature_filtre_jour_chambre_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Petite Maison"
+      unique_id: temperature_filtre_jour_petite_maison
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour SDB Enfants"
+      unique_id: temperature_filtre_jour_sdb_enfants
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour SDB Parents"
+      unique_id: temperature_filtre_jour_sdb_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Séjour"
+      unique_id: temperature_filtre_jour_sejour
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_palier
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Palier"
+      unique_id: temperature_filtre_jour_palier
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Extérieur"
+      unique_id: temperature_filtre_jour_exterieur
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Direction"
+      unique_id: temperature_filtre_jour_direction
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Compta"
+      unique_id: temperature_filtre_jour_compta
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Qualité"
+      unique_id: temperature_filtre_jour_qualite
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Devis"
+      unique_id: temperature_filtre_jour_devis
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Commercial"
+      unique_id: temperature_filtre_jour_commercial
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Stock Carton"
+      unique_id: temperature_filtre_jour_stock_carton
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Stock PF"
+      unique_id: temperature_filtre_jour_stock_pf
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Komori"
+      unique_id: temperature_filtre_jour_komori
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Bobst"
+      unique_id: temperature_filtre_jour_bobst
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Jour Media"
+      unique_id: temperature_filtre_jour_media
+      state: *temperature_filtre_logic
+
+####################################################
+# 🌇 CREPUSCULE
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Chambre Arnaud"
+      unique_id: temperature_filtre_crepuscule_chambre_arnaud
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Cave"
+      unique_id: temperature_filtre_crepuscule_cave
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Entree"
+      unique_id: temperature_filtre_crepuscule_entree
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Jardin"
+      unique_id: temperature_filtre_crepuscule_jardin
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Garage"
+      unique_id: temperature_filtre_crepuscule_garage
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Chambre Matthieu"
+      unique_id: temperature_filtre_crepuscule_chambre_matthieu
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_palier
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Palier"
+      unique_id: temperature_filtre_crepuscule_palier
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Chambre Parents"
+      unique_id: temperature_filtre_crepuscule_chambre_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Petite Maison"
+      unique_id: temperature_filtre_crepuscule_petite_maison
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule SDB Enfants"
+      unique_id: temperature_filtre_crepuscule_sdb_enfants
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule SDB Parents"
+      unique_id: temperature_filtre_crepuscule_sdb_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crepuscule Séjour"
+      unique_id: temperature_filtre_crepuscule_sejour
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Extérieur"
+      unique_id: temperature_filtre_crepuscule_exterieur
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Direction"
+      unique_id: temperature_filtre_crepuscule_direction
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Compta"
+      unique_id: temperature_filtre_crepuscule_compta
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Qualité"
+      unique_id: temperature_filtre_crepuscule_qualite
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Devis"
+      unique_id: temperature_filtre_crepuscule_devis
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Commercial"
+      unique_id: temperature_filtre_crepuscule_commercial
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Stock Carton"
+      unique_id: temperature_filtre_crepuscule_stock_carton
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Stock PF"
+      unique_id: temperature_filtre_crepuscule_stock_pf
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Komori"
+      unique_id: temperature_filtre_crepuscule_komori
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Bobst"
+      unique_id: temperature_filtre_crepuscule_bobst
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Crépuscule Media"
+      unique_id: temperature_filtre_crepuscule_media
+      state: *temperature_filtre_logic
+
+####################################################
+# 🌙 NUIT
+####################################################
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Chambre Arnaud"
+      unique_id: temperature_filtre_nuit_chambre_arnaud
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_cave
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Cave"
+      unique_id: temperature_filtre_nuit_cave
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Entree"
+      unique_id: temperature_filtre_nuit_entree
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_jardin
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Jardin"
+      unique_id: temperature_filtre_nuit_jardin
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_garage
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Garage"
+      unique_id: temperature_filtre_nuit_garage
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Chambre Matthieu"
+      unique_id: temperature_filtre_nuit_chambre_matthieu
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_palier
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Palier"
+      unique_id: temperature_filtre_nuit_palier
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Chambre Parents"
+      unique_id: temperature_filtre_nuit_chambre_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_petite_maison
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Petite Maison"
+      unique_id: temperature_filtre_nuit_petite_maison
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_enfants
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit SDB Enfants"
+      unique_id: temperature_filtre_nuit_sdb_enfants
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sdb_parents
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit SDB Parents"
+      unique_id: temperature_filtre_nuit_sdb_parents
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Séjour"
+      unique_id: temperature_filtre_nuit_sejour
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_exterieur
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Extérieur"
+      unique_id: temperature_filtre_nuit_exterieur
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_direction
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Direction"
+      unique_id: temperature_filtre_nuit_direction
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_compta
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Compta"
+      unique_id: temperature_filtre_nuit_compta
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_qualite
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Qualité"
+      unique_id: temperature_filtre_nuit_qualite
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_devis
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Devis"
+      unique_id: temperature_filtre_nuit_devis
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_commercial
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Commercial"
+      unique_id: temperature_filtre_nuit_commercial
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_carton
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Stock Carton"
+      unique_id: temperature_filtre_nuit_stock_carton
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_pf
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Stock PF"
+      unique_id: temperature_filtre_nuit_stock_pf
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_komori
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Komori"
+      unique_id: temperature_filtre_nuit_komori
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_bobst
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Bobst"
+      unique_id: temperature_filtre_nuit_bobst
+      state: *temperature_filtre_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_media
+        - sensor.periode_meteo
+  sensor:
+    - name: "Température Filtre Nuit Media"
+      unique_id: temperature_filtre_nuit_media
+      state: *temperature_filtre_logic

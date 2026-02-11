@@ -1,0 +1,23 @@
+# ==========================================================
+# 🌿 TEMPLATE SENSOR — Pourcentage consigne Eco (24h)
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Calcule le pourcentage du temps passé en mode Eco sur
+#   les 24 dernières heures.
+#
+# 🧩 Dépendances :
+#   - sensor.duree_consigne_eco_24h
+# ==========================================================
+
+- sensor:
+    - name: "Pourcentage consigne Eco 24h"
+      unique_id: pourcentage_consigne_eco_24h
+      unit_of_measurement: "%"
+      icon: mdi:leaf
+      state: >
+        {% set duree = states('sensor.duree_consigne_eco_24h') | float(0) %}
+        {{ (duree / 24 * 100) | round(1) }}
+      attributes:
+        friendly_name: "Pourcentage du temps Eco (24h)"
+        source: "sensor.programme_chauffage"
+        reference: "Basé sur les 24 dernières heures"

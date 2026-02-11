@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Simulation de présence (horaires)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Stocker des plages horaires DECLARATIVES utilisées
+#   pour la simulation de présence (éclairage).
+#
+# 🧱 Nature :
+#   - Paramètres métier descriptifs
+#   - Données textuelles interprétées ailleurs
+#
+# 🚫 Ne fait PAS :
+#   - Ne déclenche aucune action
+#   - Ne planifie aucun événement
+#   - Ne pilote aucun éclairage
+#   - Ne prend aucune décision
+#
+# 🔗 Utilisation :
+#   - Capteurs template (interprétation horaires)
+#   - Scripts de simulation de présence
+#   - Dashboards diagnostics
+#
+# 🧠 Principe ARSENAL :
+#   - Séparation stricte :
+#       données déclaratives ≠ interprétation ≠ action
+#
+# ⚠️ Convention :
+#   - Format libre mais cohérent attendu
+#   - Toute logique de parsing est EXTERNE à ces helpers
+# ==========================================================
+
+
+# ==========================================================
+# 📅 Horaires simulation chambre matin
+# ==========================================================
+horaires_simulation_presence_matin:
+  name: Horaires simulation matin
+  icon: mdi:weather-sunset-up
+  max: 255
+
+# ==========================================================
+# 📅 Horaires simulation chambre soir
+# ==========================================================
+horaires_simulation_presence_soir:
+  name: Horaires simulation soir
+  icon: mdi:weather-sunset-down
+  max: 255
+
+# ==========================================================
+# 📅 Horaires simulation garage matin
+# ==========================================================
+horaires_simulation_presence_garage_matin:
+  name: Horaires simulation garage matin
+  icon: mdi:garage
+  max: 255
+
+# ==========================================================
+# 📅 Horaires simulation garage soir
+# ==========================================================
+horaires_simulation_presence_garage_soir:
+  name: Horaires simulation garage soir
+  icon: mdi:garage
+  max: 255

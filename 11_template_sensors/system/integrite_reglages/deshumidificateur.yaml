@@ -1,0 +1,27 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Intégrité paramètres — Déshumidificateur
+# ==========================================================
+
+- binary_sensor:
+    - name: "Déshumidificateur — Paramètres invalides"
+      unique_id: parametres_invalides_deshumidificateur
+      default_entity_id: binary_sensor.parametres_invalides_deshumidificateur
+      state: >
+        {{
+          not (
+            states('input_number.cave_rh_cible_on') | float(0)
+              > states('input_number.cave_rh_cible_off') | float(0)
+          )
+        }}
+      icon: >
+        mdi:alert-circle-outline
+      attributes:
+
+        seuils_humidite_invalides: >
+          {{
+            not (
+              states('input_number.cave_rh_cible_on') | float(0)
+                > states('input_number.cave_rh_cible_off') | float(0)
+            )
+          }}

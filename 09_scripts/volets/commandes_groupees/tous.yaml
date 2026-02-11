@@ -1,0 +1,79 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPTS : Volets maison (commandes globales)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Fournir des commandes GLOBALES et strictement exécutives
+#   pour l’ouverture et la fermeture de l’ensemble des volets
+#   principaux de la maison.
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ
+#
+#   - Orchestrer les scripts groupés par zone :
+#       • volets enfants
+#       • volets séjour
+#
+#   - Garantir une exécution séquentielle fiable
+#   - Appliquer une temporisation inter-groupes HomeKit-safe
+#
+# ----------------------------------------------------------
+# ⚙️ MODE DE FONCTIONNEMENT
+#
+#   - Appels successifs des scripts de niveau inférieur
+#   - Délai volontaire entre groupes pour :
+#       • éviter collisions radio / HomeKit
+#       • assurer une exécution déterministe
+#
+# ----------------------------------------------------------
+# 🧠 PHILOSOPHIE ARSENAL
+#
+#   - Aucune logique métier
+#   - Aucune condition
+#   - Aucune décision
+#
+#   ➜ Ces scripts exécutent.
+#   ➜ Toute décision est externe.
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#   - Scripts groupés :
+#       • script.ouvrir_volets_enfants
+#       • script.ouvrir_volets_sejour
+#       • script.fermer_volets_enfants
+#       • script.fermer_volets_sejour
+#
+# ----------------------------------------------------------
+# ❌ CE QUE CES SCRIPTS NE FONT PAS
+#
+#   - Ne vérifient pas l’état réel des volets
+#   - Ne gèrent aucun contexte (soleil, pluie, présence, horaires)
+#   - Ne compensent aucun échec matériel
+#
+# ----------------------------------------------------------
+# 🧩 CAS D’USAGE
+#
+#   - Boutons globaux Lovelace
+#   - Scénarios maison (départ, retour, nuit)
+#   - Appels depuis automatismes de niveau supérieur
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+ouvrir_tous_les_volets:
+  alias: "Ouvrir tous les volets"
+  mode: single
+  sequence:
+    - service: script.ouvrir_volets_enfants
+    - delay: "00:00:01"
+    - service: script.ouvrir_volets_sejour
+
+fermer_tous_les_volets:
+  alias: "Fermer tous les volets"
+  mode: single
+  sequence:
+    - service: script.fermer_volets_enfants
+    - delay: "00:00:01"
+    - service: script.fermer_volets_sejour

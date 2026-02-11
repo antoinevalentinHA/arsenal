@@ -1,0 +1,33 @@
+# ==========================================================
+# 🚿 TEMPLATE TRIGGERED SENSOR — Couleur Température ECS
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Représenter visuellement la température du ballon d’eau chaude
+#   sanitaire (ECS) à l’aide d’un code couleur simple.
+#
+# ⚙️ Fonctionnement :
+#   - Source : sensor.ecs_temperature_ballon_securisee
+#   - Interprétation :
+#       • < 35°C  → blue   → eau tiède / insuffisante
+#       • < 40°C  → orange → en cours de chauffe
+#       • ≥ 40°C  → red    → température correcte
+#
+# 🔁 Rafraîchissement :
+#   - À chaque changement de température ECS
+#
+# 📊 Type : Trigger Template Sensor
+# 📍 Nom de l’entité : temperature_ecs_couleur
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.ecs_temperature_ballon_securisee
+  sensor:
+    - name: "Température ECS - couleur"
+      unique_id: temperature_ecs_couleur
+      state: >
+        {% set t = states('sensor.ecs_temperature_ballon_securisee') | float %}
+        {% if t < 35 %} blue
+        {% elif t < 40 %} orange
+        {% else %} red
+        {% endif %}

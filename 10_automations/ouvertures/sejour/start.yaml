@@ -1,0 +1,73 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Séjour – Démarrage du délai fenêtres
+#
+#  ID : 10170000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de MISE EN GARDE TEMPORAIRE.
+#
+#     Elle déclenche immédiatement le timer de grâce
+#     associé aux fenêtres du séjour dès qu’au moins
+#     une ouverture est détectée.
+#
+#     Elle permet au moteur chauffage de suspendre
+#     temporairement ses décisions, le temps de
+#     confirmer l’état réel des ouvertures.
+#
+#  🧱 NATURE
+#
+#     - Synchronisation ouvertures ↔ chauffage
+#     - Déclenchement immédiat de temporisation
+#     - Délégation complète au script de gestion du timer
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement à chaque ouverture de fenêtre
+#       du séjour
+#     - Démarrage du timer :
+#         • timer.fenetre_sejour_ouverte_grace
+#       via le script dédié
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas d’éteindre le chauffage
+#     - Ne gère pas la fermeture des fenêtres
+#     - Ne vérifie pas l’état global des ouvertures
+#     - Ne force aucune consigne thermique
+#
+#  🔗 UTILISATION
+#
+#     - Complément direct de l’automation de levée
+#       du délai à la fermeture complète
+#     - Protection contre les ouvertures brèves
+#       ou transitoires
+#
+#  🧠 PRINCIPE ARSENAL
+#
+#     Toute ouverture déclenche une protection.
+#     La reprise n’est autorisée qu’après
+#     vérification globale explicite.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "10170000000005"
+  alias: "Chauffage – Fenêtres séjour – Démarrage délai"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_fenetre_sejour_1
+        - binary_sensor.capteur_fenetre_sejour_2
+        - binary_sensor.capteur_fenetre_sejour_3
+        - binary_sensor.capteur_fenetre_sejour_4
+      to: "on"
+
+  action:
+    - action: script.timer_ouverture_sejour_start

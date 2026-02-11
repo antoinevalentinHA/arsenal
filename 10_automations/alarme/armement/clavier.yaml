@@ -1,0 +1,55 @@
+# ==========================================================
+#  AUTOMATION : Alarme – Armement par clavier
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Transmettre la saisie d’un code PIN Frient au script
+#     centralisé qui gère l’armement ou le désarmement.
+#
+#  🎯 Objectifs :
+#     - Centraliser toute la logique d’alarme
+#     - Gérer plusieurs claviers sans duplication
+#     - Exclure totalement les badges RFID
+#
+#  ⚙️ Fonctionnement :
+#     - Déclenchement sur changement de action_code
+#     - Filtrage : uniquement les valeurs 0–9 (code PIN)
+#     - Appel du script `traitement_code_clavier`
+#
+#  🏷️ ID : 1002000000005
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "1002000000005"
+  alias: "Alarme – Armement par clavier"
+  description: >
+    Déclenche le script central `traitement_code_clavier` à chaque
+    saisie d’un code PIN sur l’un des claviers Frient de la maison.
+
+  mode: queued
+
+  # ======================================================
+  # 🎛️ Déclencheur — Code saisi (action_code)
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id:
+        - sensor.clavier_alarme_1_action_code
+        - sensor.clavier_alarme_2_action_code
+
+  # ======================================================
+  # 🔍 Condition — Filtrer les badges RFID
+  # ------------------------------------------------------
+  #  - Accepte uniquement les codes composés de chiffres
+  #  - Ignore totalement les valeurs hexadécimales (+XXXX)
+  # ======================================================
+  condition:
+    - condition: template
+      value_template: "{{ states(trigger.entity_id) | regex_match('^[0-9]+$') }}"
+
+  # ======================================================
+  # ▶️ Action — Appel du script unifié
+  # ======================================================
+  action:
+    - action: script.turn_on
+      target:
+        entity_id: script.traitement_code_clavier

@@ -1,0 +1,67 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme – Sirène forte sur état triggered
+#
+#  ID : 1002000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation chargée de déclencher la sirène forte
+#     lorsque l’alarme passe à l’état `triggered`.
+#
+#     Le déclenchement est inhibé lorsque le système
+#     est en mode test.
+#
+#  🧩 PRINCIPE
+#
+#     - Réagit à tout passage de l’alarme à l’état triggered
+#     - Vérifie l’état du mode test
+#     - Délègue l’émission sonore à un script dédié
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas du déclenchement de l’alarme
+#     - Ne modifie aucun état de sécurité
+#     - Ne gère aucun délai
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Centralisation du déclenchement sonore
+#     - Séparation stricte détection / exécution
+#     - Mode test non intrusif
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1002000000011'
+  alias: "Alarme - Sirène forte sur état triggered"
+  description: >
+    Déclenche automatiquement la sirène forte si l’alarme passe à `triggered`,
+    sauf si le mode test est actif.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Alarme déclenchée
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarme_maison
+      to: triggered
+
+  # ======================================================
+  # 🛡️ Condition — Ne pas être en mode test
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.mode_test_alarme
+      state: 'off'
+
+  # ======================================================
+  # ▶️ Action — Script de sirène forte
+  # ======================================================
+  action:
+    - action: script.turn_on
+      target:
+        entity_id: script.sirene_brutale

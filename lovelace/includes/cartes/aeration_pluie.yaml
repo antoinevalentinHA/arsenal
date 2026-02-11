@@ -1,0 +1,5 @@
+type: custom:button-card
+template: carte_pluie
+entity: input_boolean.pluie_en_cours
+name: Pluie en cours
+icon: mdi:weather-pouring

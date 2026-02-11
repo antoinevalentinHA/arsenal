@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBERS : ECS — Epsilon thermiques
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir les marges de tolérance thermiques (ε)
+#   utilisées lors de la prise de décision de FIN
+#   de cycle ECS.
+#
+# 🧱 Principe :
+#   - L’epsilon représente une zone morte décisionnelle
+#   - Il permet d’absorber les fluctuations physiques
+#     (inertie, oscillations, bruit capteur)
+#   - Il évite les micro-cycles et relances inutiles
+#
+# 📌 Contextes distincts :
+#   - ecs_eps_ponctuel :
+#       • cycles ECS normaux / ponctuels
+#   - ecs_eps_desinfection :
+#       • cycles de désinfection
+#       • tolérance plus stricte et contrôlée
+#
+# ⚠️ Important :
+#   - Ce ne sont PAS des consignes
+#   - Ce ne sont PAS des offsets permanents
+#   - Ces valeurs ne vivent QUE dans la logique de cycle ECS
+#
+# 🔗 Utilisation :
+#   - Script :
+#       • 09_scripts/vicare/ecs/cycle.yaml
+#
+# 🧠 Principe Arsenal :
+#   - La physique fluctue
+#   - La décision s’adapte
+#
+# 📐 Unité :
+#   - degrés Celsius (°C)
+# ==========================================================
+
+
+ecs_eps_ponctuel:
+  name: ECS- Epsilon Ponctuel
+  min: 0.0
+  max: 3.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer
+  # initial: 1.6
+
+ecs_eps_desinfection:
+  name: ECS- Epsilon Désinfection
+  min: 0.3
+  max: 2.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer
+  # initial: 0.7

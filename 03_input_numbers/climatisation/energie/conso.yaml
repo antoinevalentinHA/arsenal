@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Consommation cumulée climatisation
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Stocker la consommation électrique cumulée de la
+#    climatisation, utilisée comme registre persistant
+#    pour les calculs énergétiques.
+#
+# 🧠 Lecture métier :
+#    Cette valeur est mise à jour automatiquement par
+#    les automatisations de suivi énergétique.
+#    Elle sert de source principale pour les capteurs
+#    dérivés (journaliers, mensuels, diagnostics).
+#
+# ⚡ Nature de la donnée :
+#    - Valeur cumulée (kWh)
+#    - Persistée via un helper
+#    - Réinitialisable uniquement par action volontaire
+#
+# 🔗 Dépendances :
+#    - Automatisations énergie climatisation
+#    - Capteurs template de consommation cumulée
+#
+# 🚫 Interdits :
+#    - Modifier manuellement sans recalcul associé
+#    - L’utiliser comme seuil ou limite
+#    - La confondre avec une consommation instantanée
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - registre énergétique (climatisation)
+# ==========================================================
+
+
+clim_consommation_cumulee:
+  name: Clim - Consommation cumulée
+  unit_of_measurement: "kWh"
+  min: 0
+  max: 10000
+  step: 0.01
+  mode: box
+  icon: mdi:counter

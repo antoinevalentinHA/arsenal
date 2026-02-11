@@ -1,0 +1,75 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : VMC – Retour en basse vitesse
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Script exécutif de retour à l’état nominal de la VMC.
+#
+#   Il replace la VMC en basse vitesse UNIQUEMENT si
+#   une phase de haute vitesse était précédemment active.
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ UNIQUE
+#
+#   - Vérifier que la VMC est bien déclarée en haute vitesse
+#   - Actionner le relais physique (SwitchBot) vers OFF
+#   - Mettre à jour l’état interne de suivi
+#
+# ----------------------------------------------------------
+# 🔁 IDÉMPOTENCE & SÉCURITÉ
+#
+#   - Aucune action si la VMC est déjà en basse vitesse
+#   - Aucun toggle aveugle
+#   - Aucune supposition sur l’état réel du moteur
+#
+# ----------------------------------------------------------
+# ⚙️ NATURE DE L’ACTION
+#
+#   - Commande PHYSIQUE via SwitchBot
+#   - Pas de calcul métier
+#   - Pas de temporisation
+#   - Pas de logique décisionnelle
+#
+# ----------------------------------------------------------
+# ❌ CE SCRIPT NE FAIT PAS
+#
+#   - Ne décide jamais du passage en haute vitesse
+#   - Ne mesure pas l’efficacité de la ventilation
+#   - Ne corrige pas d’état incohérent
+#
+# ----------------------------------------------------------
+# 🧠 PHILOSOPHIE ARSENAL
+#
+#   - La décision appartient aux automatisations
+#   - Le script exécute, rien de plus
+#   - L’état interne est un reflet, pas une vérité absolue
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#   - switch.vmc
+#   - input_boolean.vmc_haute_vitesse
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+vmc_basse_vitesse:
+  alias: "VMC - Retour en basse vitesse"
+  mode: single
+
+  sequence:
+    # 1️⃣ Vérifie que la VMC est actuellement en haute vitesse
+    - condition: state
+      entity_id: input_boolean.vmc_haute_vitesse
+      state: "on"
+
+    # 2️⃣ Commande SwitchBot → bascule en vitesse basse (OFF)
+    - action: switch.turn_off
+      target:
+        entity_id: switch.vmc
+
+    # 3️⃣ Mise à jour de l’état interne
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.vmc_haute_vitesse

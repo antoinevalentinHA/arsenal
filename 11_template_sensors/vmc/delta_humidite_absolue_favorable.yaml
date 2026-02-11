@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERNE)
+#     Delta HA favorable étage
+# ----------------------------------------------------------
+# Rôle :
+#   ON si delta_humidite_absolue > 0 sur binary_sensor.aeration_preferable_etage
+#   (extérieur plus sec que l’intérieur).
+#
+# Préservation :
+#   - entity_id historique : binary_sensor.delta_ha_favorable_etage
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Delta HA favorable"
+      unique_id: delta_ha_favorable_etage
+      default_entity_id: binary_sensor.delta_ha_favorable_etage
+      device_class: running
+
+      state: >
+        {{
+          (state_attr('binary_sensor.aeration_preferable_etage', 'delta_humidite_absolue') | float(0)) > 0
+        }}
+
+      icon: >
+        {% if (state_attr('binary_sensor.aeration_preferable_etage', 'delta_humidite_absolue') | float(0)) > 0 %}
+          mdi:fan-chevron-up
+        {% else %}
+          mdi:fan-chevron-down
+        {% endif %}
+
+      attributes:
+
+        delta_ha: >
+          {{ state_attr('binary_sensor.aeration_preferable_etage', 'delta_humidite_absolue') | float(0) }}

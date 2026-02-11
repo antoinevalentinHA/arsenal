@@ -1,0 +1,166 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Stock – Maintien temps réel des mémoires min/max
+#
+#  ID : 1018000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de MAINTIEN DE MÉMOIRE MÉTIER.
+#
+#     Elle met à jour en continu les valeurs
+#     minimales et maximales de température
+#     et d’humidité pour les zones Stock
+#     (Carton et PF), à chaque nouvelle mesure valide.
+#
+#  🧱 NATURE
+#
+#     - Mémoire persistante (helpers input_number)
+#     - Mise à jour monotone (min ↓ / max ↑ uniquement)
+#     - Déclenchement événementiel sur variation capteur
+#
+#  ⚙️ PRINCIPE
+#
+#     - Surveillance des capteurs Stock (température / humidité)
+#     - À chaque changement :
+#         • validation de la mesure
+#         • comparaison avec les valeurs mémorisées
+#         • écrasement uniquement si un nouvel extrême est atteint
+#     - Aucune remise à zéro automatique
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne calcule pas de statistiques temporelles
+#     - Ne génère pas d’historique long terme
+#     - Ne remet jamais à zéro les min/max
+#     - Ne corrige pas des valeurs incohérentes existantes
+#
+#  🔗 UTILISATION
+#
+#     - Alimente les dashboards Stock
+#     - Sert de base aux cycles hebdomadaires
+#       d’archivage et de réinitialisation
+#
+#  🧩 COHÉRENCE SYSTÈME
+#
+#     Pattern strictement identique
+#     aux mémoires temps réel Atelier.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: "1018000000001"
+  alias: "Stock – Mémoire temps réel des min/max"
+  description: >
+    Met à jour dynamiquement les extrêmes de température et d’humidité
+    pour les stocks Carton et PF à chaque changement de mesure.
+
+  mode: queued
+
+  # ======================================================
+  # 🔔 Déclencheurs — Changements de mesure
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_stock_carton
+        - sensor.humidite_relative_stock_carton
+        - sensor.temperature_stock_pf
+        - sensor.humidite_relative_stock_pf
+
+  # ======================================================
+  # 🔄 Action — Mise à jour min/max selon capteur modifié
+  # ======================================================
+  action:
+    - choose:
+
+        # 📌 Température Carton
+        - conditions: "{{ trigger.entity_id == 'sensor.temperature_stock_carton' }}"
+          sequence:
+            - variables:
+                value: "{{ states('sensor.temperature_stock_carton') | float(none) }}"
+            - condition: template
+              value_template: "{{ value is not none }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.stock_carton_temperature_min
+              data:
+                value: >
+                  {% set current = states('input_number.stock_carton_temperature_min') | float(999) %}
+                  {{ value if value < current else current }}
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.stock_carton_temperature_max
+              data:
+                value: >
+                  {% set current = states('input_number.stock_carton_temperature_max') | float(-999) %}
+                  {{ value if value > current else current }}
+
+        # 💧 Humidité Carton
+        - conditions: "{{ trigger.entity_id == 'sensor.humidite_relative_stock_carton' }}"
+          sequence:
+            - variables:
+                value: "{{ states('sensor.humidite_relative_stock_carton') | float(none) }}"
+            - condition: template
+              value_template: "{{ value is not none }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.stock_carton_humidite_min
+              data:
+                value: >
+                  {% set current = states('input_number.stock_carton_humidite_min') | float(999) %}
+                  {{ value if value < current else current }}
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.stock_carton_humidite_max
+              data:
+                value: >
+                  {% set current = states('input_number.stock_carton_humidite_max') | float(-999) %}
+                  {{ value if value > current else current }}
+
+        # 📌 Température PF
+        - conditions: "{{ trigger.entity_id == 'sensor.temperature_stock_pf' }}"
+          sequence:
+            - variables:
+                value: "{{ states('sensor.temperature_stock_pf') | float(none) }}"
+            - condition: template
+              value_template: "{{ value is not none }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.stock_pf_temperature_min
+              data:
+                value: >
+                  {% set current = states('input_number.stock_pf_temperature_min') | float(999) %}
+                  {{ value if value < current else current }}
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.stock_pf_temperature_max
+              data:
+                value: >
+                  {% set current = states('input_number.stock_pf_temperature_max') | float(-999) %}
+                  {{ value if value > current else current }}
+
+        # 💧 Humidité PF
+        - conditions: "{{ trigger.entity_id == 'sensor.humidite_relative_stock_pf' }}"
+          sequence:
+            - variables:
+                value: "{{ states('sensor.humidite_relative_stock_pf') | float(none) }}"
+            - condition: template
+              value_template: "{{ value is not none }}"
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.stock_pf_humidite_min
+              data:
+                value: >
+                  {% set current = states('input_number.stock_pf_humidite_min') | float(999) %}
+                  {{ value if value < current else current }}
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.stock_pf_humidite_max
+              data:
+                value: >
+                  {% set current = states('input_number.stock_pf_humidite_max') | float(-999) %}
+                  {{ value if value > current else current }}

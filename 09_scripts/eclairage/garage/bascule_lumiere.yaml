@@ -1,0 +1,87 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Garage — Bascule éclairage synchronisée
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Orchestrateur UNIQUE de bascule de l’éclairage du garage,
+#   basé sur un état logique mémorisé.
+#
+#   Ce script ne lit PAS l’état réel du relais.
+#   Il applique une bascule cohérente entre :
+#     - un état logique de référence
+#     - une action physique aveugle
+#
+# ----------------------------------------------------------
+# 🧱 CONTRAINTE MATÉRIELLE
+#
+#   L’éclairage du garage est commandé via :
+#     - un actionneur de type SwitchBot / relais impulsionnel
+#     - sans retour d’état fiable
+#
+#   Le relais est matériellement inversé :
+#     - switch.turn_off  → ALLUME physiquement
+#     - switch.turn_on   → ÉTEINT physiquement
+#
+#   ➜ Le switch N’EST PAS une source de vérité.
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPE DE VÉRITÉ
+#
+#   La SEULE source de vérité est :
+#     - input_boolean.garage_light_state
+#
+# ----------------------------------------------------------
+# 🧠 LOGIQUE DE BASCULE (LOGIQUE CANONIQUE)
+#
+#   - OFF → ON  : demande ALLUMAGE
+#   - ON  → OFF : demande EXTINCTION
+#
+#   ➜ L’inversion matérielle est absorbée ici
+#
+# ----------------------------------------------------------
+# 📍 Entité :
+#   script.garage_toggle
+# ==========================================================
+
+garage_toggle:
+  alias: "Garage - Toggle lumière"
+  mode: single
+
+  sequence:
+    - choose:
+
+        # 🟢 Passage OFF → ON (ALLUMAGE LOGIQUE)
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "off"
+          sequence:
+            # Allumage réel (relais inversé)
+            - service: switch.turn_off
+              target:
+                entity_id: switch.garage
+
+            - delay: "00:00:00.200"
+
+            # Mise à jour vérité logique
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.garage_light_state
+
+
+        # 🔴 Passage ON → OFF (EXTINCTION LOGIQUE)
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "on"
+          sequence:
+            # Extinction réel (relais inversé)
+            - service: switch.turn_on
+              target:
+                entity_id: switch.garage
+
+            - delay: "00:00:00.200"
+
+            # Mise à jour vérité logique
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.garage_light_state

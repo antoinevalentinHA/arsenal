@@ -1,0 +1,89 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Jardin – Activation éclairage (matin)
+#
+#  ID : 1007000000001
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Automation réactive d’activation EFFECTIVE
+#     de l’éclairage du jardin le matin.
+#
+#     L’éclairage est allumé lorsque :
+#       • la fenêtre d’éclairage matin est valide
+#       • une présence est détectée dans la maison
+#
+#     ⚠️ Aucune notification persistante :
+#     - La fenêtre est une décision abstraite
+#     - La notification persistante est réservée
+#       à l’état matériel vécu (géré ailleurs)
+#
+# ----------------------------------------------------------
+# 🧠 SOURCES
+#
+#     - binary_sensor.jardin_cycle_matin_actif
+#     - binary_sensor.presence_famille_securite
+#
+# ----------------------------------------------------------
+# 🧠 AUTORITÉ D’ACTION
+#
+#     - script.jardin_on
+#
+# ==========================================================
+
+- id: '1007000000001'
+  alias: "Lumière jardin - Activation cycle matin"
+  description: >
+    Allume l’éclairage du jardin le matin lorsque
+    la fenêtre de pertinence lumineuse est valide
+    ET qu’une présence est détectée dans la maison.
+    Aucune notification persistante n’est émise.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheurs
+  # ======================================================
+  trigger:
+    # Ouverture de la fenêtre matin
+    - platform: state
+      entity_id: binary_sensor.jardin_cycle_matin_actif
+      to: 'on'
+
+    # Arrivée de la présence pendant la fenêtre
+    - platform: state
+      entity_id: binary_sensor.presence_famille_securite
+      to: 'on'
+
+  # ======================================================
+  # 🔒 Conditions
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: binary_sensor.jardin_cycle_matin_actif
+      state: 'on'
+
+    - condition: state
+      entity_id: binary_sensor.presence_famille_securite
+      state: 'on'
+
+    # Idempotence matérielle
+    - condition: state
+      entity_id: switch.prise_jardin
+      state: 'off'
+
+  # ======================================================
+  # 🔄 Action
+  # ======================================================
+  action:
+    # -----------------------------------------------
+    # 💡 Allumage effectif
+    # -----------------------------------------------
+    - action: script.jardin_on
+
+    # -----------------------------------------------
+    # 🧠 Mémoire métier transitoire
+    # -----------------------------------------------
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.jardin_eclairage_matin_actif

@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 TEMPLATE SENSOR — Clim : cohérence globale
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Indiquer si le comportement observé de la climatisation
+#   est cohérent avec la raison affichée.
+#
+# 🧱 Principe Arsenal :
+#   - Capteur de survol
+#   - Aucune logique métier
+#   - Détection simple d’anomalie visible
+# ==========================================================
+
+- sensor:
+    - name: "Clim coherence"
+      unique_id: clim_coherence
+      icon: mdi:check-circle-outline
+      state: >
+        {% if is_state('binary_sensor.clim_bloquee', 'on') %}
+          attente
+        {% elif is_state('sensor.clim_action_en_cours', 'arret')
+              and is_state('sensor.clim_raison_decision', 'ok') %}
+          coherent
+        {% elif is_state('sensor.clim_action_en_cours', 'arret')
+              and not is_state('sensor.clim_raison_decision', 'ok') %}
+          attente
+        {% elif not is_state('sensor.clim_action_en_cours', 'arret')
+              and is_state('sensor.clim_raison_decision', 'ok') %}
+          anormal
+        {% else %}
+          coherent
+        {% endif %}

@@ -1,0 +1,19 @@
+# ==========================================================
+#  INPUT BOOLEAN : Chauffage - Blocage aeration
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#    Indiquer qu’un blocage temporaire du chauffage est actif
+#    suite à une longue aération de la maison.
+#
+# 💡 Utilisation :
+#    - Activé par l’automatisation "Chauffage – Blocage aeration"
+#    - Désactivé automatiquement à la fin du délai (recovery)
+#    - Suspend l’automatisation principale (10240000000001)
+#
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+chauffage_blocage_aeration:
+  name: Blocage aeration
+  icon: mdi:heat-wave

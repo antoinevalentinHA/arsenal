@@ -1,0 +1,132 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Wi-Fi — Nouveau BSSID (candidat apprentissage)
+# ==========================================================
+#
+# 🎯 RÔLE
+#
+#   Détecter qu’un téléphone, présent en présence sécurité,
+#   est connecté à un BSSID non encore enregistré dans
+#   input_text.bssid_maison.
+#
+#   Capteur STRICTEMENT DIAGNOSTIQUE :
+#     - ne décide rien
+#     - ne déclenche aucune action
+#     - ne modifie aucune donnée
+#
+#   Recalcul événementiel :
+#     - changement BSSID Antoine
+#     - changement BSSID Constance
+#     - changement présence sécurité
+#
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.telephone_antoine_bssid_dynamic
+        - sensor.telephone_constance_bssid_dynamic
+
+    - platform: state
+      entity_id: binary_sensor.presence_maison_securite
+
+  binary_sensor:
+
+    - name: "Wifi Nouveau BSSID"
+      unique_id: wifi_nouveau_bssid
+      device_class: problem
+
+      state: >
+
+        {# -------------------------------------------------- #}
+        {# Garde-fou principal : présence sécurité           #}
+        {# -------------------------------------------------- #}
+
+        {% if states('binary_sensor.presence_maison_securite') != 'on' %}
+          false
+
+        {% else %}
+
+          {# ---------------------------------------------- #}
+          {# Entrées & normalisation                        #}
+          {# ---------------------------------------------- #}
+
+          {% set bad = ['unknown','unavailable','none','<not connected>',''] %}
+
+          {% set bssid_a = states('sensor.telephone_antoine_bssid_dynamic') | string | lower | replace('-',':') | trim %}
+          {% set bssid_c = states('sensor.telephone_constance_bssid_dynamic') | string | lower | replace('-',':') | trim %}
+
+          {% set raw_list = states('input_text.bssid_maison') | string %}
+          {% set maison = raw_list.split(',') | map('trim') | map('lower') | map('replace','-',':') | reject('in', bad) | list %}
+
+          {# ---------------------------------------------- #}
+          {# Validation minimale format MAC                 #}
+          {# ---------------------------------------------- #}
+
+          {% set re = '^[0-9a-f]{2}(:[0-9a-f]{2}){5}$' %}
+
+          {% set ok_a = bssid_a not in bad and bssid_a | regex_match(re) %}
+          {% set ok_c = bssid_c not in bad and bssid_c | regex_match(re) %}
+
+          {# ---------------------------------------------- #}
+          {# Détection candidats                            #}
+          {# ---------------------------------------------- #}
+
+          {% set candidats = [] %}
+
+          {% if ok_a and bssid_a not in maison %}
+            {% set candidats = candidats + [bssid_a] %}
+          {% endif %}
+
+          {% if ok_c and bssid_c not in maison %}
+            {% set candidats = candidats + [bssid_c] %}
+          {% endif %}
+
+          {{ candidats | length > 0 }}
+
+        {% endif %}
+
+      attributes:
+
+        bssid_antoine: >
+          {{ states('sensor.telephone_antoine_bssid_dynamic') | string | lower | replace('-',':') | trim }}
+
+        bssid_constance: >
+          {{ states('sensor.telephone_constance_bssid_dynamic') | string | lower | replace('-',':') | trim }}
+
+        candidats: >
+
+          {% if states('binary_sensor.presence_maison_securite') != 'on' %}
+            []
+
+          {% else %}
+
+            {% set bad = ['unknown','unavailable','none','<not connected>',''] %}
+
+            {% set bssid_a = states('sensor.telephone_antoine_bssid_dynamic') | string | lower | replace('-',':') | trim %}
+            {% set bssid_c = states('sensor.telephone_constance_bssid_dynamic') | string | lower | replace('-',':') | trim %}
+
+            {% set raw_list = states('input_text.bssid_maison') | string %}
+            {% set maison = raw_list.split(',') | map('trim') | map('lower') | map('replace','-',':') | reject('in', bad) | list %}
+
+            {% set re = '^[0-9a-f]{2}(:[0-9a-f]{2}){5}$' %}
+
+            {% set ok_a = bssid_a not in bad and bssid_a | regex_match(re) %}
+            {% set ok_c = bssid_c not in bad and bssid_c | regex_match(re) %}
+
+            {% set candidats = [] %}
+
+            {% if ok_a and bssid_a not in maison %}
+              {% set candidats = candidats + [bssid_a] %}
+            {% endif %}
+
+            {% if ok_c and bssid_c not in maison %}
+              {% set candidats = candidats + [bssid_c] %}
+            {% endif %}
+
+            {{ candidats | unique | list }}
+
+          {% endif %}
+
+        liste_maison: >
+          {{ states('input_text.bssid_maison') }}

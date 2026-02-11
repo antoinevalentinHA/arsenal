@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBER : ECS — Plafond amorçage Tiny / Medium
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Définir le DELTA maximal (en °C) sous la consigne ECS
+#   à partir duquel un cycle ECS de type Tiny / Medium
+#   est autorisé à s’amorcer.
+#
+# 🧱 Principe métier :
+#   - Le déclenchement ECS n’attend pas la consigne stricte
+#   - Un amorçage anticipé est autorisé si :
+#       température_ballon ≥ (consigne - plafond)
+#
+# 📌 Spécificité :
+#   - S’applique UNIQUEMENT aux cycles Tiny / Medium
+#   - N’impacte pas les cycles Heavy / Forcés
+#
+# ⚙️ Utilisation réelle :
+#   - Consommé par :
+#       • 09_scripts/vicare/ecs/cycle.yaml
+#
+# 🧠 Principe Arsenal :
+#   - Helper RELATIF (delta)
+#   - Pas une consigne
+#   - Pas un seuil absolu
+#   - Sert à lisser et anticiper intelligemment l’ECS
+#
+# 📐 Unité :
+#   - Degrés Celsius (°C)
+# ==========================================================
+
+
+ecs_trigger_ceiling_tiny_medium:
+  name: ECS — Plafond Amorçage Tiny/Medium (consigne - X)
+  min: 0.0
+  max: 2.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: slider
+  icon: mdi:arrow-up-bold
+  # initial: 1.1

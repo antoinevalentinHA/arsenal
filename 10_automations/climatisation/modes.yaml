@@ -1,0 +1,134 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Mode Maison – Gouvernance chauffage clim (hiver)
+#
+#  ID : 1003000000015
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de gouvernance métier.
+#
+#     Elle détermine si le chauffage par climatisation
+#     est AUTORISÉ ou INTERDIT en période hivernale,
+#     en fonction du mode de la maison et du contexte
+#     babysitting.
+#
+#     Cette automation ne pilote AUCUN équipement.
+#
+#  🧩 PRINCIPE
+#
+#     - Écoute des changements de contexte global :
+#         • mode de la maison
+#         • état du mode babysitting
+#
+#     - Calcul explicite de l’état d’autorisation cible :
+#         • Babysitting actif         → autorisé (prioritaire)
+#         • Mode Maison = Normal      → autorisé
+#         • Mode Maison = Vacances    → interdit
+#         • Babysitting OFF + mode ≠ Normal → interdit
+#
+#     - Comparaison systématique :
+#         • état cible vs état courant
+#
+#     - Écriture STRICTEMENT conditionnelle :
+#         • écriture uniquement en cas de divergence
+#         • aucune écriture neutre
+#         • aucun service call parasite
+#
+#  🧠 SORTIE MÉTIER
+#
+#     input_boolean.chauffage_clim_active_en_hiver
+#
+#     → drapeau d’autorisation consommé par
+#       les pipelines décisionnels chauffage / clim.
+#
+#     Cette automation est l’AUTORITÉ D’ÉCRITURE UNIQUE
+#     de ce booléen.
+#
+#  🔒 INVARIANTS DE GOUVERNANCE
+#
+#     - Calcul déterministe de l’état cible
+#     - Idempotence forte
+#     - Zéro écriture inutile
+#     - Zéro transition fantôme
+#     - Recalculable à partir du seul état courant
+#
+#     Toute écriture correspond à un
+#     CHANGEMENT RÉEL DE VÉRITÉ MÉTIER.
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne déclenche PAS le chauffage
+#     - Ne lit AUCUNE température
+#     - Ne décide PAS du confort
+#     - Ne force PAS un mode climatique
+#     - Ne remplace PAS la décision thermique centrale
+#     - Ne produit AUCUNE notification
+#
+#  🧠 ARCHITECTURE ARSENAL
+#
+#     Automation de gouvernance de capacité :
+#     autorisation ≠ décision ≠ pilotage.
+#
+#     Elle fixe le cadre souverain.
+#     Les scripts décisionnels agissent à l’intérieur.
+#
+#     Gouvernance silencieuse.
+#     Événement = changement réel uniquement.
+# ==========================================================
+
+- id: '1003000000015'
+  alias: Mode Maison - Gestion chauffage clim hiver
+
+  trigger:
+    # 🎛️ Changement du mode maison
+    - platform: state
+      entity_id: input_select.mode_maison
+
+    # 👶 Activation/désactivation babysitting
+    - platform: state
+      entity_id: input_boolean.mode_babysitting
+
+  action:
+
+    # ------------------------------------------------------
+    # 🧠 Calcul de l’autorisation cible
+    # ------------------------------------------------------
+    - variables:
+        autorisation_cible: >
+          {% if is_state('input_boolean.mode_babysitting', 'on') %}
+            on
+          {% elif is_state('input_select.mode_maison', 'Normal') %}
+            on
+          {% else %}
+            off
+          {% endif %}
+
+    # ------------------------------------------------------
+    # 🔍 Écriture uniquement en cas de divergence
+    # ------------------------------------------------------
+    - choose:
+
+        # ✅ Doit être ON et ne l’est pas encore
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ autorisation_cible == 'on'
+                   and not is_state('input_boolean.chauffage_clim_active_en_hiver', 'on') }}
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.chauffage_clim_active_en_hiver
+
+        # ⛔ Doit être OFF et ne l’est pas encore
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ autorisation_cible == 'off'
+                   and not is_state('input_boolean.chauffage_clim_active_en_hiver', 'off') }}
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.chauffage_clim_active_en_hiver
+
+  mode: single

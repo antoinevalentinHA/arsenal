@@ -1,0 +1,93 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Babysitting – Entrée en mode et application du contexte
+#
+#  ID : 1009000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’ENTRÉE EN MODE MÉTIER.
+#
+#     Elle applique immédiatement les effets
+#     associés à l’activation du mode Babysitting,
+#     dès que celui-ci est déclaré actif.
+#
+#     Elle initialise les états nécessaires
+#     au bon fonctionnement du mode.
+#
+#  🧱 NATURE
+#
+#     - Orchestration d’entrée en mode
+#     - Déclenchement événementiel (changement d’état)
+#     - Aucune décision métier autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement lorsque `mode_babysitting` passe à ON
+#     - Actions appliquées :
+#         • forçage des présences enfants
+#         • démarrage du timer Babysitting si autorisé
+#         • notification utilisateur
+#     - Les moteurs décisionnels (chauffage, alarme)
+#       réagissent ensuite aux états modifiés
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas de l’activation du mode Babysitting
+#     - Ne gère pas la durée du mode
+#     - Ne désactive pas le mode
+#     - Ne contient aucune logique de chauffage ou d’alarme
+#
+#  🔗 UTILISATION
+#
+#     - Point d’entrée unique du mode Babysitting
+#     - Garantit une application cohérente
+#       et immédiate du contexte associé
+#
+#  🛡️ INTENTION
+#
+#     La séparation stricte entre activation du mode
+#     et application de ses effets évite toute
+#     logique implicite ou circulaire.
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+
+- id: '1009000000003'
+  alias: "Babysitting – Activation du mode"
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Activation du mode babysitting
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_boolean.mode_babysitting
+      to: "on"
+
+  # ======================================================
+  # 🔄 Action — Application des effets
+  # ======================================================
+  action:
+
+    # 👶 Forcer présence enfants
+    - action: input_boolean.turn_on
+      target:
+        entity_id:
+          - input_boolean.presence_arnaud
+          - input_boolean.presence_matthieu
+
+    # ⏱ Lancer le timer si reset automatique activé
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.reset_mode_babysitting_auto
+              state: "on"
+          sequence:
+            - action: timer.start
+              target:
+                entity_id: timer.babysitting

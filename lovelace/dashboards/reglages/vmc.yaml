@@ -1,0 +1,73 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Réglages VMC
+icon: mdi:fan
+
+views:
+  - title: VMC
+    path: vmc
+    icon: mdi:fan
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /vmc-dashboard/home
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          - type: custom:button-card
+            template: section_header
+            name: 💨 Vitesse
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: switch.vmc
+                name: Bascule vitesse (SwitchBot)
+              - entity: input_boolean.vmc_haute_vitesse
+                name: État mémorisé (haute vitesse)
+              - entity: input_boolean.vmc_force_haute_vitesse
+                name: Forcer haute vitesse (manuel)
+
+          - type: custom:button-card
+            template: section_header
+            name: 🎯 Seuils
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.vmc_seuil_on
+                name: Seuil déclenchement HR (%)
+              - entity: input_number.vmc_seuil_off
+                name: Seuil arrêt HR (%)
+
+          - type: custom:button-card
+            template: section_header
+            name: ⏱️ Durée minimale
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.vmc_duree_min_haute
+                name: Durée minimale haute vitesse (min)
+
+          - type: custom:button-card
+            template: section_header
+            name: 🫁 CO₂
+
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: input_number.vmc_co2_seuil_on
+                name: Seuil déclenchement CO₂ (ppm)
+              - entity: input_number.vmc_co2_seuil_off
+                name: Seuil arrêt CO₂ (ppm)

@@ -1,0 +1,74 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : VMC – Gestion automatique humidite
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Appliquer la vitesse de la VMC (haute / basse)
+#   selon la décision métier centralisée fournie par
+#   binary_sensor.vmc_haute_vitesse_requise.
+#
+# 🧱 Principe d’architecture :
+#   - Aucune logique métier ici
+#   - Aucun polling
+#   - Application stricte et immédiate de la décision
+#
+# 🔁 Hystérésis temporelle :
+#   - ON  → haute vitesse immédiate
+#   - OFF → retour en basse vitesse après durée minimale
+#
+#   ➜ Toute nouvelle demande ON pendant le délai
+#     annule implicitement la descente.
+#
+# ⚙️ Garanties :
+#   - Pas d’oscillation rapide
+#   - Pas de décision locale
+#   - Comportement déterministe
+#
+# ✅ Boot-safe + Reload-template-safe
+# ==========================================================
+
+
+- id: "1019000000001"
+  alias: "VMC - Gestion automatique humidité"
+  description: >
+    Applique automatiquement la haute ou la basse vitesse de la VMC
+    en fonction de la décision métier fournie par
+    binary_sensor.vmc_haute_vitesse_requise, en respectant une durée
+    minimale de fonctionnement en haute vitesse.
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.vmc_haute_vitesse_requise
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  variables:
+    duree_min: "{{ states('input_number.vmc_duree_min_haute') | int(15) }}"
+
+  action:
+    - choose:
+
+        # ==================================================
+        # 🚀 HAUTE VITESSE
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('binary_sensor.vmc_haute_vitesse_requise') == 'on' }}
+          sequence:
+            - service: script.vmc_haute_vitesse
+
+        # ==================================================
+        # 🔽 BASSE VITESSE
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('binary_sensor.vmc_haute_vitesse_requise') == 'off' }}
+          sequence:
+            - delay:
+                seconds: "{{ (duree_min * 60) | int }}"
+            - service: script.vmc_basse_vitesse

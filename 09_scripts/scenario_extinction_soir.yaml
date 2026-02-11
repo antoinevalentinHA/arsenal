@@ -1,0 +1,82 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Extinction soir maison
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Scénario GLOBAL de fermeture et d’extinction
+#   de la maison en fin de journée.
+#
+#   Ce script orchestre plusieurs actions unitaires
+#   afin de garantir un état nocturne cohérent.
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ
+#
+#   - Éteindre les éclairages extérieurs et intérieurs ciblés
+#   - Fermer les volets du séjour via scripts groupés
+#
+#   Il constitue un POINT D’ENTRÉE UNIQUE pour :
+#     • automatisations du soir
+#     • déclenchement manuel utilisateur
+#     • scénarios de sécurité ou de routine
+#
+# ----------------------------------------------------------
+# ⚙️ ACTIONS ORCHESTRÉES
+#
+#   - Éclairage jardin → OFF
+#   - Volets séjour → fermeture complète
+#   - Éclairage décoratif séjour (sapin) → OFF
+#   - Éclairage principal séjour → OFF
+#
+# ----------------------------------------------------------
+# 🧠 PHILOSOPHIE ARSENAL
+#
+#   - Script d’ORCHESTRATION
+#   - Aucun pilotage direct complexe
+#   - Aucune logique métier conditionnelle
+#   - Délégation systématique aux scripts spécialisés
+#
+#   ➜ Ce script DÉCLENCHE.
+#   ➜ Les sous-scripts EXÉCUTENT.
+#
+# ----------------------------------------------------------
+# ❌ CE QUE CE SCRIPT NE FAIT PAS
+#
+#   - Ne vérifie pas l’état courant des équipements
+#   - Ne prend aucune décision contextuelle (présence, météo)
+#   - Ne remplace pas les automatisations horaires
+#
+# ----------------------------------------------------------
+# 📍 CAS D’USAGE
+#
+#   - Automatisation de fin de journée
+#   - Bouton Lovelace "Extinction maison"
+#   - Scénarios de départ ou de sécurité
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+
+extinction_soir_maison:
+  alias: Extinction soir maison
+  mode: single
+
+  sequence:
+
+    # 🌿 Éteindre la lumière du jardin
+    - service: switch.turn_off
+      target:
+        entity_id: switch.prise_jardin
+
+    # 🪟 Fermer les volets du séjour
+    - service: script.fermer_volets_sejour
+
+    # 🎄 Éteindre la lumière du sapin
+    - service: switch.turn_off
+      target:
+        entity_id: switch.prise_sejour_baies_vitrees
+
+    # 💡 Éteindre la lumière du séjour
+    - service: switch.turn_off
+      target:
+        entity_id: switch.prise_lampe_sejour

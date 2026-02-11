@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Éclairage Jardin — Extinction stable
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Point UNIQUE et volontaire d’extinction de l’éclairage jardin.
+#
+#   Ce script garantit une extinction :
+#     - sans effet de bord
+#     - sans bascule inutile
+#     - sans dépendance au contexte appelant
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE DE STABILITÉ
+#
+#   - Si l’éclairage est déjà éteint :
+#       → aucune action
+#
+#   - Si l’éclairage est allumé :
+#       → extinction explicite
+#
+#   ➜ Comportement idempotent
+#
+# ----------------------------------------------------------
+# 🧠 SÉPARATION DES RÔLES
+#
+#   - Les automatisations décident QUAND éteindre
+#     (matin, lever du jour, absence, fin de présence, etc.)
+#
+#   - Ce script applique COMMENT éteindre,
+#     sans interprétation ni logique métier.
+#
+# ----------------------------------------------------------
+# 🛑 CE SCRIPT NE FAIT PAS
+#
+#   - Aucun calcul horaire
+#   - Aucune détection de présence
+#   - Aucun toggle
+#   - Aucune logique inverse
+#
+#   ➜ Il exécute une extinction sûre, point final.
+#
+# ----------------------------------------------------------
+# 🧩 ARCHITECTURE ARSENAL
+#
+#   - Centralise toutes les extinctions jardin
+#   - Évite les appels directs à `switch.prise_jardin`
+#   - Garantit un comportement homogène et lisible
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script utilitaire — action stable
+#
+# 📍 Entité :
+#   script.jardin_off
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v6+
+# ==========================================================
+
+
+jardin_off:
+  alias: "Éclairage Jardin - Extinction"
+  mode: single
+  sequence:
+    - condition: state
+      entity_id: switch.prise_jardin
+      state: "on"
+
+    - action: switch.turn_off
+      target:
+        entity_id: switch.prise_jardin

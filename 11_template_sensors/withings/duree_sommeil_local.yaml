@@ -1,0 +1,89 @@
+# ==========================================================
+#  TEMPLATE SENSOR — Withings : Durée totale de sommeil
+#  ----------------------------------------------------------
+#  🧠 Rôle :
+#     Calculer la durée totale de sommeil (en heures) à partir
+#     des trois phases de sommeil issues de Withings :
+#       - Sommeil profond
+#       - Sommeil léger
+#       - Sommeil paradoxal (REM)
+#
+#  💡 Avantages :
+#     - Donnée unifiée, exploitable pour statistiques et graphes
+#     - Arrondi à 2 décimales (ex : 5.72 h)
+#     - Résilient : conserve la dernière valeur valide
+#     - Complémentaire des capteurs de phases individuelles
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- sensor:
+    - name: "withings_sommeil_total_local"
+      unique_id: "withings_sommeil_total_local"
+      icon: mdi:bed
+      unit_of_measurement: "h"
+      state: >
+        {% set profond = states('sensor.withings_sommeil_profond_local') | float(0) %}
+        {% set leger   = states('sensor.withings_sommeil_leger_local')   | float(0) %}
+        {% set rem     = states('sensor.withings_rem_sleep_local')       | float(0) %}
+        {% set total = profond + leger + rem %}
+        {% if total > 0 %}
+          {{ total | round(2) }}
+        {% else %}
+          {{ this.state | float(default=0) }}
+        {% endif %}
+
+
+    ########################################################
+    # 🕰️ DURÉE TOTALE (FORMAT TEXTE)
+    ########################################################
+    - name: "withings_sommeil_total_texte"
+      unique_id: "withings_sommeil_total_texte"
+      icon: mdi:bed-clock
+      state: >
+        {% set total = states('sensor.withings_sommeil_total_local') | float(0) %}
+        {% set h = total | int %}
+        {% set m = ((total - h) * 60) | round(0) %}
+        {{ "%d h %02d min" | format(h, m) }}
+
+    ########################################################
+    # 📊 RÉPARTITION DES PHASES DE SOMMEIL (%)
+    ########################################################
+    - name: "withings_sommeil_profond_pourcentage"
+      unique_id: "withings_sommeil_profond_pourcentage"
+      icon: mdi:power-sleep
+      unit_of_measurement: "%"
+      state: >
+        {% set total = states('sensor.withings_sommeil_total_local') | float(0) %}
+        {% set profond = states('sensor.withings_sommeil_profond_local') | float(0) %}
+        {% if total > 0 %}
+          {{ ((profond / total) * 100) | round(1) }}
+        {% else %}
+          {{ this.state | float(default=0) }}
+        {% endif %}
+
+    - name: "withings_sommeil_leger_pourcentage"
+      unique_id: "withings_sommeil_leger_pourcentage"
+      icon: mdi:weather-night
+      unit_of_measurement: "%"
+      state: >
+        {% set total = states('sensor.withings_sommeil_total_local') | float(0) %}
+        {% set leger = states('sensor.withings_sommeil_leger_local') | float(0) %}
+        {% if total > 0 %}
+          {{ ((leger / total) * 100) | round(1) }}
+        {% else %}
+          {{ this.state | float(default=0) }}
+        {% endif %}
+
+    - name: "withings_sommeil_rem_pourcentage"
+      unique_id: "withings_sommeil_rem_pourcentage"
+      icon: mdi:brain
+      unit_of_measurement: "%"
+      state: >
+        {% set total = states('sensor.withings_sommeil_total_local') | float(0) %}
+        {% set rem = states('sensor.withings_rem_sleep_local') | float(0) %}
+        {% if total > 0 %}
+          {{ ((rem / total) * 100) | round(1) }}
+        {% else %}
+          {{ this.state | float(default=0) }}
+        {% endif %}

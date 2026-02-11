@@ -1,0 +1,105 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Notifications – Synchronisation booléens d’aération
+#
+#  ID : 1001000000006
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de synchronisation d’état assurant la
+#     cohérence entre le booléen global d’activation des
+#     notifications d’aération et les booléens zonés
+#     (RDC et étage).
+#
+#  🧩 PRINCIPE
+#
+#     - Réagit uniquement à un changement du booléen global
+#     - Active ou désactive les zones si nécessaire
+#     - Évite toute commande redondante
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - N’envoie aucune notification
+#     - Ne décide pas de l’aération
+#     - Ne modifie aucune logique thermique
+#
+#  🧠 PRINCIPES ARSENAL
+#
+#     - Synchronisation d’état déterministe
+#     - Séparation stricte logique / interface
+#     - Aucune action inutile
+#
+#  ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: '1001000000006'
+  alias: "Notifications aération - Synchronisation booléen global"
+  description: >
+    Synchronise automatiquement les booléens de notification
+    par zone (RDC + étage) en fonction de l’état global activé
+    ou désactivé, sans redondance de commande.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Changement du booléen global
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: input_boolean.notifications_aeration_actives
+
+  # ======================================================
+  # 🔄 Action — Synchronisation conditionnelle
+  # ======================================================
+  action:
+    - choose:
+
+        # ✅ Global = ON → activer les zones inactives
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.notifications_aeration_actives
+              state: 'on'
+          sequence:
+
+            - if:
+                - condition: state
+                  entity_id: input_boolean.notifications_aeration_rdc
+                  state: 'off'
+              then:
+                - action: input_boolean.turn_on
+                  target:
+                    entity_id: input_boolean.notifications_aeration_rdc
+
+            - if:
+                - condition: state
+                  entity_id: input_boolean.notifications_aeration_etage
+                  state: 'off'
+              then:
+                - action: input_boolean.turn_on
+                  target:
+                    entity_id: input_boolean.notifications_aeration_etage
+
+        # ⛔ Global = OFF → désactiver les zones actives
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.notifications_aeration_actives
+              state: 'off'
+          sequence:
+
+            - if:
+                - condition: state
+                  entity_id: input_boolean.notifications_aeration_rdc
+                  state: 'on'
+              then:
+                - action: input_boolean.turn_off
+                  target:
+                    entity_id: input_boolean.notifications_aeration_rdc
+
+            - if:
+                - condition: state
+                  entity_id: input_boolean.notifications_aeration_etage
+                  state: 'on'
+              then:
+                - action: input_boolean.turn_off
+                  target:
+                    entity_id: input_boolean.notifications_aeration_etage

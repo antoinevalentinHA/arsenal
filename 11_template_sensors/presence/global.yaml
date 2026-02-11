@@ -1,0 +1,35 @@
+# ==========================================================
+# 🏡 TEMPLATE BINARY SENSOR — Présence famille unifiée
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Créer une entité de présence consolidée, combinant
+#   les différentes sources de détection (zone sécurité,
+#   présence générale) avec temporisation anti-fluctuations.
+#
+# ⚙️ Fonctionnement :
+#   - ON  → si au moins une des présences (famille ou sécurité) est active
+#   - OFF → si aucune présence détectée, après délai de 2 minutes
+#   - Délai ON : 3 secondes  → évite les détections trop brèves
+#   - Délai OFF : 30 secondes   → évite les faux négatifs temporaires
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.presence_famille_unifiee
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Présence (Famille - Corrigée)"
+      unique_id: presence_famille_unifiee
+      default_entity_id: binary_sensor.presence_famille_unifiee
+      device_class: presence
+
+      delay_on: "00:00:03"
+      delay_off: "00:00:30"
+
+      state: >
+        {% set sources = [
+          'binary_sensor.presence_famille',
+          'binary_sensor.presence_famille_securite'
+        ] %}
+
+        {{ sources | select('is_state', 'on') | list | length > 0 }}

@@ -1,0 +1,122 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Gardien de réapplication de la consigne après prélèvement
+#
+#  ID : 10250000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Réappliquer et vérifier automatiquement la consigne ECS
+#     de sécurité (10 °C) à l’issue d’un prélèvement forcé,
+#     afin d’éviter tout rebond thermique non souhaité.
+#
+#     Cette automation agit comme un gardien post-événement,
+#     garantissant le retour effectif à l’état nominal.
+#
+#  🧱 PRINCIPE ARSENAL
+#     - La décision de prélèvement est prise ailleurs
+#     - Le gardien vérifie et corrige a posteriori
+#     - La sécurité prime sur l’optimisation
+#
+#  🚫 NE FAIT PAS
+#     - Ne déclenche aucun prélèvement ECS
+#     - Ne modifie pas la stratégie ECS globale
+#     - Ne s’exécute pas si un cycle ECS est en cours
+#
+#  🧩 UTILISATION
+#     - Déclenchement :
+#         • fin du timer post-prélèvement ECS
+#     - Pré-requis :
+#         • aucun cycle ECS actif (verrou logique)
+#     - Séquence :
+#         • temporisation de stabilisation chaudière
+#         • deux tentatives de réapplication espacées
+#         • vérification réelle de la consigne effective
+#         • fallback matériel (bouton physique) en dernier recours
+#         • notification critique si échec persistant
+#
+#  ⚠️ IMPORTANT
+#     - Cette automation applique une consigne de sécurité
+#     - Toute modification de la valeur cible ou de la stratégie
+#       doit être réfléchie au niveau système ECS
+#
+#  ✅ CONTRAINTES
+#     - Sécurité prioritaire sur toute autre considération
+#     - Vérification basée sur l’état réel chaudière
+#     - Aucune sortie silencieuse en cas d’échec
+# ==========================================================
+
+
+- id: "10250000000005"
+  alias: "ECS – Gardien post-prélèvement"
+  description: >
+    Applique et vérifie la consigne 10 °C après un prélèvement forcé.
+    Double tentative + fallback bouton si la consigne n'est pas appliquée.
+    Ne s'exécute pas si un cycle ECS est en cours (verrou).
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.ecs_gardien_post_prelevement
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "off"
+
+  action:
+    - variables:
+        retour_temp: 10
+        btn_one_shot: button.vscotho1_200_11_activer_le_prelevement_unique
+        number_setpoint: number.vscotho1_200_11_dhw_temperature
+        sensor_consigne: sensor.ecs_consigne_chaudiere_securisee
+
+    # 🕐 Délai initial avant tentative (stabilisation chaudière)
+    - delay: "00:00:05"
+
+    # 🔁 Tentatives 1 & 2
+    - repeat:
+        count: 2
+        sequence:
+          - delay: "00:00:05"
+          - service: number.set_value
+            target:
+              entity_id: "{{ number_setpoint }}"
+            data:
+              value: "{{ retour_temp }}"
+
+          - wait_template: >
+              {{ states(sensor_consigne) | float(0) == retour_temp }}
+            timeout: "00:01:00"
+            continue_on_timeout: true
+
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: >
+                      {{ states(sensor_consigne) | float(0) == retour_temp }}
+                sequence:
+                  - stop: "Consigne confirmée, fin du gardien"
+
+    # 🚨 Dernier recours : bouton physique + nouvelle écriture + Alerte
+    - service: button.press
+      target:
+        entity_id: "{{ btn_one_shot }}"
+
+    - delay: "00:00:15"
+
+    - service: number.set_value
+      target:
+        entity_id: "{{ number_setpoint }}"
+      data:
+        value: "{{ retour_temp }}"
+
+    - service: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🚨 ECS – Consigne non appliquée"
+        message: >
+          À {{ now().strftime('%H:%M') }}, après deux tentatives et un appui sur le bouton matériel,
+          la consigne n’est toujours pas passée à 10 °C.  
+          Risque de rebond détecté.

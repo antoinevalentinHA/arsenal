@@ -1,0 +1,74 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : Proxys énergie (Recorder uniquement)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir les métadonnées officielles des capteurs proxy
+#    d’énergie afin d’assurer leur compatibilité stricte
+#    avec le Recorder et les statistiques long terme.
+#
+# 🧠 Lecture métier :
+#    Ces capteurs sont des PROXYS techniques internes.
+#    Ils servent de couche de sécurisation et de normalisation
+#    des données énergétiques issues de calculs Arsenal.
+#
+# ⚠️ RÈGLE ARCHITECTURALE FONDAMENTALE :
+#    Ces capteurs NE DOIVENT PAS être utilisés directement
+#    comme sources du dashboard Énergie.
+#
+# 🧩 Périmètre :
+#    - Définit uniquement :
+#      • unit_of_measurement
+#      • device_class
+#      • state_class
+#      • unit_class
+#    - Garantit l’enregistrement correct à long terme
+#      via le Recorder
+#
+# 🔗 Dépendances :
+#    - Capteurs source calculés ailleurs (gaz, ECS, clim)
+#    - Utilisés par :
+#      • utility_meter
+#      • statistiques long terme
+#
+# 🚫 Interdits :
+#    - Exposer ces capteurs au dashboard Énergie
+#    - Modifier les calculs de consommation ici
+#    - Utiliser ces capteurs pour une décision métier
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - couche technique interne / intégrité des données
+# ==========================================================
+
+
+############################################################
+# 🔥 GAZ — CHAUFFAGE
+############################################################
+
+sensor.gaz_chauffage_total_proxy:
+  unit_of_measurement: "kWh"
+  device_class: energy
+  state_class: total
+  unit_class: energy
+
+
+############################################################
+# 🚿 GAZ — EAU CHAUDE SANITAIRE (ECS)
+############################################################
+
+sensor.gaz_ecs_total_proxy:
+  unit_of_measurement: "kWh"
+  device_class: energy
+  state_class: total
+  unit_class: energy
+
+
+############################################################
+# ❄️ CLIMATISATION — CONSOMMATION ESTIMÉE
+############################################################
+
+sensor.clim_consommation_estimee_energy_proxy:
+  unit_of_measurement: "kWh"
+  device_class: energy
+  state_class: total_increasing
+  unit_class: energy
