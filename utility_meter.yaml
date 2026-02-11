@@ -335,3 +335,15 @@ audi_e_tron_distance_an:
   source: sensor.audi_e_tron_kilometrage_local
   cycle: yearly
   name: "Distance Audi e-tron (annuelle)"
+
+
+############################################################
+# 🌧️ MÉTÉO — PRÉCIPITATIONS
+############################################################
+
+# Pluie cumulée hebdomadaire
+
+pluie_semaine:
+  source: sensor.pluie_total_local
+  cycle: weekly
+  name: "Pluie (hebdomadaire)"

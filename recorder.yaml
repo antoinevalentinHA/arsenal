@@ -90,6 +90,9 @@ include:
     # =====================================================
     - sensor.pluviometre_precipitation
     - binary_sensor.zigbee_pluie_water_leak
+    - sensor.pluie_aujourdhui_local
+    - sensor.pluie_total_local
+    - sensor.pluie_hebdomadaire
     - sensor.pression_chambre_arnaud
 
     # =====================================================
