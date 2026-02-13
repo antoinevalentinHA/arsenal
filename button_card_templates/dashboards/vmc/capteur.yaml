@@ -3,8 +3,8 @@
 #################################################################
 
 vmc_capteur:
-  template: socle_diagnostic_compact_readonly_72
-  show_icon: true
+  template: socle_diagnostic_compact
+  show_icon: false
   show_name: true
   show_state: true
   show_label: true

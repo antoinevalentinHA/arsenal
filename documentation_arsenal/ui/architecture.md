@@ -32,28 +32,18 @@ Les templates `button-card` Arsenal sont organisés selon une structure
 - les briques **génériques** (réutilisables partout)
 - les briques **spécifiques à un dashboard** (présentation d’un domaine)
 
-### 1) Templates génériques (socle transversal)
+### 1) Socle
 
-Le dossier `generiques/` contient les composants UI **agnostiques du domaine** :
-- cartes de base
-- alertes
-- seuils / variables
-- modes binaires interprétés
-- navigation
-- badges
-- compteurs / indicateurs génériques
+Le dossier `socle/` contient les composants UI **agnostiques du domaine** :
 
-Ces templates sont conçus pour être :
-- réutilisables
-- combinables
-- non métiers
-- stables dans le temps
+### 2) Templates génériques (socle transversal)
 
-### 2) Templates de dashboards (spécialisation par écran)
+Le dossier `generiques/` contient des templates transversaux
+
+### 3) Templates de dashboards (spécialisation par écran)
 
 Le dossier `dashboards/` contient les templates **spécifiques** à un dashboard.
-Ils implémentent des cartes “métier” au sens UI (mise en forme, lecture,
-noms, icônes, agencements), tout en restant strictement **sans décision**.
+Ils implémentent des cartes “métier”, tout en restant strictement **sans décision**.
 
 Chaque sous-dossier correspond à un dashboard (liste non exhaustive) :
 - `aeration/`
@@ -97,14 +87,9 @@ Chaque sous-dossier correspond à un dashboard (liste non exhaustive) :
 │   ├── system/
 │   ├── vmc/
 │   └── volets/
+└── socle/
+│   └── …
 └── generiques/
-    ├── base.yaml
-    ├── navigation.yaml
-    ├── mode_binaire_interprete.yaml
-    ├── compteur_seuil.yaml
-    ├── compteur_alerte.yaml
-    ├── bruit_seuils_variables.yaml
-    ├── badge_action_confirmee.yaml
     └── …
 
 ## 🎨 Typologie des cartes capteur

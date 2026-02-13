@@ -72,19 +72,16 @@ views:
                     template: vmc_capteur
                     entity: sensor.humidite_relative_sdb_parents
                     name: SDB Parents
-                    icon: mdi:water-percent
 
                   - type: custom:button-card
                     template: vmc_capteur
                     entity: sensor.humidite_relative_sdb_enfants
                     name: SDB Enfants
-                    icon: mdi:water-percent
 
                   - type: custom:button-card
                     template: vmc_capteur
                     entity: sensor.humidite_relative_sejour
                     name: Séjour
-                    icon: mdi:water-percent
 
               - type: grid
                 columns: 2
@@ -95,7 +92,6 @@ views:
                     template: vmc_capteur
                     entity: sensor.co2_sejour
                     name: CO₂ Séjour
-                    icon: mdi:molecule-co2
 
                   - type: custom:button-card
                     template: carte_etat_binaire_interprete_inverse
