@@ -3,10 +3,11 @@
 #################################################################
 
 carte_co2_seuils_variables:
-  template: carte_base_v2
+  template: socle_kpi_72
+
+  icon: mdi:molecule-co2
 
   show_state: true
-  show_icon: false
 
   tap_action:
     action: more-info

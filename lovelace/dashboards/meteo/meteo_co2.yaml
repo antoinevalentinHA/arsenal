@@ -57,7 +57,7 @@ views:
 
           - square: false
             type: grid
-            columns: 2
+            columns: 3
             cards:
 
               - type: custom:button-card
@@ -84,10 +84,16 @@ views:
                   seuil_warn: 500
                   seuil_crit: 800
 
-              - type: custom:button-card
-                template: carte_co2_seuils_variables
-                entity: sensor.co2_petite_maison
-                name: Petite Maison
-                variables:
-                  seuil_warn: 600
-                  seuil_crit: 1000
+          # ======================================================
+          # 🛏️ PETITE MAISON
+          # ======================================================
+
+          - !include ../../includes/section_headers/petite_maison.yaml
+
+          - type: custom:button-card
+            template: carte_co2_seuils_variables
+            entity: sensor.co2_petite_maison
+            name: Petite Maison
+            variables:
+              seuil_warn: 600
+              seuil_crit: 1000
