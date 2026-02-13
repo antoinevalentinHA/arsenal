@@ -48,13 +48,6 @@ views:
                 square: false
                 cards:
 
-                  # 🌳 Jardin — commande directe
-                  - type: custom:button-card
-                    template: carte_action_eclairage
-                    name: Jardin
-                    icon: mdi:lightbulb
-                    entity: switch.prise_jardin
-
                   # 🛋️ Lampe séjour
                   - type: custom:button-card
                     template: carte_action_eclairage
@@ -68,13 +61,6 @@ views:
                     name: Lampe parents
                     icon: mdi:lamp
                     entity: switch.prise_lampe_parents
-
-                  # 🚗 Garage — pilotage via script
-                  - type: custom:button-card
-                    template: carte_action_eclairage_script
-                    name: Garage
-                    icon: mdi:lightbulb
-                    entity: input_boolean.garage_light_state
 
 
           # ==================================================
@@ -107,6 +93,29 @@ views:
 
               - !include ../includes/section_headers/jardin.yaml
 
+              # 🌳 Jardin — commande directe
+              - type: custom:button-card
+                template: carte_action_eclairage
+                name: Jardin
+                icon: mdi:lightbulb
+                entity: switch.prise_jardin
+
+              - !include ../includes/sub_section_headers/intention.yaml
+
               - type: custom:button-card
                 template: carte_jardin_intention_eclairage
                 entity: sensor.jardin_intention_eclairage
+
+
+          # ==================================================
+          # 🚗 GARAGE
+          # ==================================================
+
+              - !include ../includes/section_headers/garage.yaml
+
+              # 🚗 Garage — pilotage via script
+              - type: custom:button-card
+                template: carte_action_eclairage_script
+                name: Garage
+                icon: mdi:lightbulb
+                entity: input_boolean.garage_light_state

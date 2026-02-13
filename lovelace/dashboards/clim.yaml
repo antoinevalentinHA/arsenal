@@ -25,7 +25,6 @@ views:
           action: navigate
           navigation_path: /diagnostics-climatisation-dashboard/diagnostics-climatisation
 
-
     cards:
       - type: vertical-stack
         cards:

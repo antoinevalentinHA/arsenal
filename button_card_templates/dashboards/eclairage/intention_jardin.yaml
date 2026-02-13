@@ -13,7 +13,7 @@
 # ==============================================================
 
 carte_jardin_intention_eclairage:
-  template: socle_status_label
+  template: socle_status_label_sans_nom
 
   name: Intention éclairage jardin
 

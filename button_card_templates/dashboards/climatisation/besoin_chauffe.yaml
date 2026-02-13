@@ -3,7 +3,7 @@
 #################################################################
 
 carte_diagnostic_besoin_chauffe_temperature_min_chambres:
-  template: socle_kpi_label_72
+  template: socle_kpi_label_72_sans_icone
 
   entity: sensor.temperature_min_chambres
 
