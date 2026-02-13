@@ -46,97 +46,96 @@
 #################################################################
 
 carte_integration_critique:
+  template: carte_base_v2
   color_type: card
-  show_state: true
+
   show_icon: true
-  confirmation:
-    text: "Recharger l’intégration ?"
+  show_name: true
+  show_state: true
+  show_label: false
+
+  variables:
+    action_service: null
+    action_data: {}
+    confirmation_text: "Confirmer l’action ?"
+    seuil_minutes: null
+
+  tap_action:
+    action: |
+      [[[
+        return variables?.action_service ? "call-service" : "none";
+      ]]]
+    service: |
+      [[[
+        return variables?.action_service || "";
+      ]]]
+    service_data: |
+      [[[
+        return variables?.action_data || {};
+      ]]]
+    confirmation:
+      text: |
+        [[[
+          return variables?.confirmation_text || "Confirmer l’action ?";
+        ]]]
+
+  hold_action:
+    action: more-info
+
+  double_tap_action:
+    action: none
+
   styles:
     card:
       - background-color: |
           [[[
-            const s = entity?.state ?? 'unknown';
-            const eid = entity.entity_id;
+            const s = entity?.state ?? "unknown";
 
-            // Seuils (minutes)
-            let seuil = 180;
-            if (eid.includes('netatmo')) seuil = 60;
-            else if (eid.includes('vicare')) seuil = 300;
-            else if (eid.includes('fujitsu')) seuil = 420;
-            else if (eid.includes('switchbot')) seuil = 60;
-            else if (eid.includes('synology')) seuil = 360;
-            else if (eid.includes('audi')) seuil = 2880;
-            else if (eid.includes('cumulus')) seuil = 360;
+            // Seuil (minutes) : paramétrable par carte (fallback 180)
+            const seuil = Number.isFinite(parseFloat(variables?.seuil_minutes))
+              ? parseFloat(variables.seuil_minutes)
+              : 180;
 
-            // Cas binaire (Zigbee2MQTT bridge)
-            if (s === 'on') return 'rgba(76,175,80,0.2)';
-            if (s === 'off') return 'rgba(244,67,54,0.2)';
+            // Cas indispo
+            if (s === "unknown" || s === "unavailable" || s === null || s === undefined) {
+              return "rgba(224, 224, 224, 0.2)";
+            }
+
+            // Cas binaire
+            if (s === "on")  return "rgba(76, 175, 80, 0.2)";
+            if (s === "off") return "rgba(244, 67, 54, 0.2)";
 
             // Cas numérique (âge)
             const val = parseFloat(s);
-            if (!isNaN(val))
-              return val < seuil ? 'rgba(76,175,80,0.2)' : 'rgba(244,67,54,0.2)';
+            if (!isNaN(val)) {
+              return val < seuil
+                ? "rgba(76, 175, 80, 0.2)"
+                : "rgba(244, 67, 54, 0.2)";
+            }
 
-            // Cas inconnu
-            return 'rgba(158,158,158,0.2)';
+            // Fallback
+            return "rgba(224, 224, 224, 0.2)";
           ]]]
-      - border-radius: 12px
-      - height: 72px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: "#111"
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: "#111"
+
     state:
-      - font-size: 14px
-      - font-weight: 400
       - justify-self: center
       - align-self: end
       - color: |
-          [[[ 
-            const s = entity?.state ?? 'unknown';
-            if (s === 'off' || s === 'unknown' || s === 'unavailable') return '#b71c1c';  // rouge pour les erreurs
-            return '#111';  // noir par défaut
+          [[[
+            const s = entity?.state ?? "unknown";
+
+            // Erreurs (OFF) en rouge ; le reste en noir
+            if (s === "off") return "#b71c1c";
+            return "#111";
           ]]]
 
   state_display: |
     [[[
-      const s = entity?.state ?? 'unknown';
+      const s = entity?.state ?? "unknown";
       const val = parseFloat(s);
-      if (s === 'on') return 'OK';
-      if (s === 'off') return 'OFF';
-      if (!isNaN(val)) return val.toFixed(0) + ' min';
-      return '—';
+
+      if (s === "on") return "OK";
+      if (s === "off") return "OFF";
+      if (!isNaN(val)) return `${val.toFixed(0)} min`;
+      return "—";
     ]]]
-
-#################################################################
-# 🔁 VARIANTES AVEC ACTION MANUELLE
-# ---------------------------------------------------------------
-# Déclenchées uniquement par interaction utilisateur.
-# Aucune action automatique n’est jamais lancée.
-#################################################################
-
-# 🔄 Variante générique : recharge l’intégration
-carte_integration_critique_reload:
-  template: carte_integration_critique
-  tap_action:
-    action: call-service
-    service: homeassistant.reload_config_entry
-    data:
-      entry_id: >
-        [[[ return '!secret entry_id_placeholder'; ]]]
-
-# 🧠 Variante Zigbee : redémarre le bridge MQTT
-carte_integration_critique_zigbee:
-  template: carte_integration_critique
-  tap_action:
-    action: call-service
-    service: mqtt.publish
-    data:
-      topic: zigbee2mqtt/bridge/restart
-      payload: ""

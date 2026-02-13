@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — BUTTON-CARD TEMPLATE
+#     UI — SOCLE : Diagnostic compact read-only (72px)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Fournir un socle UI "capteur + label" compact en 72px,
+#     STRICTEMENT en lecture seule, destiné aux tuiles de
+#     diagnostic compact (TPL-03/TPL-05) nécessitant :
+#       - une emphase de valeur (state),
+#       - un contexte court (label),
+#       - aucune interaction utilisateur (anti-accident).
+#
+# 🧠 STATUT ARCHITECTURAL
+#
+#     - Nature : SOCLE_UI
+#     - Rôle : PRESENTATION (UI pure)
+#     - Autorité : locale UI (aucune autorité métier)
+#
+# 🏷️ STATUT
+#
+#     - Arsenal : SOCLES UI (V1/V2)
+#     - Compat : custom:button-card
+# ==========================================================
+
+socle_diagnostic_compact_readonly_72:
+  template: socle_diagnostic_compact
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none

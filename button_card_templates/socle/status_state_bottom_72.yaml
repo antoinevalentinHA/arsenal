@@ -1,0 +1,18 @@
+# ==========================================================
+# 🧱 ARSENAL — SOCLE STATUS (72) — STATE BAS
+#     socle_status_state_bottom_72
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Variante du socle_status_72 avec state aligné en bas-centre,
+#   pour les cartes "statut synthèse" (Normal / Incident, etc.).
+# ==========================================================
+
+socle_status_state_bottom_72:
+  template: socle_status_72
+
+  styles:
+    state:
+      - justify-self: center
+      - align-self: end
+      - font-size: 13px
+      - font-weight: 400

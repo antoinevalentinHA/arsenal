@@ -11,53 +11,38 @@
 #################################################################
 
 carte_uptime_systeme:
-  template: carte_base
+  template: socle_status_72
 
+  show_icon: true
+  show_name: true
   show_state: true
-
-  tap_action:
-    action: none
+  show_label: false
 
   styles:
     card:
       - background-color: |
           [[[
-            const state = states['sensor.uptime_jours']?.state;
+            const rawState = states["sensor.uptime_jours"]?.state;
 
-            // ⚪ Donnée indisponible
-            if (state === undefined || state === null || state === "unknown" || state === "unavailable") {
-              return "rgba(158, 158, 158, 0.1)";
+            // Gris indispo canon (unknown/unavailable/absent/NaN)
+            if (
+              rawState === undefined ||
+              rawState === null ||
+              rawState === "unknown" ||
+              rawState === "unavailable"
+            ) {
+              return "rgba(224, 224, 224, 0.2)";
             }
 
-            const jours = parseFloat(state);
+            const jours = parseFloat(rawState);
+            if (isNaN(jours)) return "rgba(224, 224, 224, 0.2)";
 
-            // ⚪ Reboot très récent : neutre
-            if (jours < 1) {
-              return "rgba(158, 158, 158, 0.2)";
-            }
+            // Gris neutre OFF/Repos canon
+            if (jours < 1) return "rgba(158, 158, 158, 0.2)";
 
-            // 🔵 Stabilité en cours : information motivante
-            if (jours < 3) {
-              return "rgba(33, 150, 243, 0.2)";
-            }
+            // Bleu info canon
+            if (jours < 3) return "rgba(144, 202, 249, 0.25)";
 
-            // 🟢 Stabilité établie
-            if (jours < 14) {
-              return "rgba(76, 175, 80, 0.2)";
-            }
-
-            // 🟢 Stabilité forte / remarquable
+            // Vert OK canon
             return "rgba(76, 175, 80, 0.2)";
           ]]]
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: "#111"
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: "#111"
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: "#111"

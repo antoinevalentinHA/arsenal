@@ -194,73 +194,100 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: carte_integration_critique_zigbee
+                template: carte_integration_critique
                 entity: binary_sensor.zigbee2mqtt_bridge_connection_state
                 name: Zigbee2MQTT
                 icon: mdi:lan
+                variables:
+                  action_service: mqtt.publish
+                  action_data:
+                    topic: zigbee2mqtt/bridge/restart
+                    payload: ""
+                  confirmation_text: "Redémarrer Zigbee2MQTT ?"
 
               - type: custom:button-card
-                template: carte_integration_critique_reload
+                template: carte_integration_critique
                 entity: sensor.synology_age_donnees
                 name: Synology
                 icon: mdi:nas
-                tap_action:
-                  data:
+                variables:
+                  seuil_minutes: 360
+                  action_service: homeassistant.reload_config_entry
+                  action_data:
                     entry_id: !secret synology_entry_id
+                  confirmation_text: "Recharger Synology ?"
 
               - type: custom:button-card
-                template: carte_integration_critique_reload
+                template: carte_integration_critique
                 entity: sensor.netatmo_age_donnees
                 name: Netatmo
                 icon: mdi:cloud-outline
-                tap_action:
-                  data:
+                variables:
+                  seuil_minutes: 60
+                  action_service: homeassistant.reload_config_entry
+                  action_data:
                     entry_id: !secret netatmo_entry_id
+                  confirmation_text: "Recharger Netatmo ?"
 
               - type: custom:button-card
-                template: carte_integration_critique_reload
+                template: carte_integration_critique
                 entity: sensor.switchbot_age_donnees
                 name: SwitchBot
                 icon: mdi:bluetooth-connect
-                tap_action:
-                  data:
+                variables:
+                  seuil_minutes: 60
+                  action_service: homeassistant.reload_config_entry
+                  action_data:
                     entry_id: !secret switchbot_entry_id
+                  confirmation_text: "Recharger SwitchBot ?"
 
               - type: custom:button-card
-                template: carte_integration_critique_reload
+                template: carte_integration_critique
                 entity: sensor.vicare_age_donnees
                 name: Viessmann
                 icon: mdi:fire
-                tap_action:
-                  data:
+                variables:
+                  seuil_minutes: 300
+                  action_service: homeassistant.reload_config_entry
+                  action_data:
                     entry_id: !secret vicare_entry_id
+                  confirmation_text: "Recharger ViCare ?"
 
               - type: custom:button-card
-                template: carte_integration_critique_reload
+                template: carte_integration_critique
                 entity: sensor.fujitsu_age_donnees
                 name: Fujitsu
                 icon: mdi:air-conditioner
-                tap_action:
-                  data:
+                variables:
+                  seuil_minutes: 420
+                  action_service: homeassistant.reload_config_entry
+                  action_data:
                     entry_id: !secret fujitsu_entry_id
+                  confirmation_text: "Recharger Fujitsu ?"
 
               - type: custom:button-card
-                template: carte_integration_critique_reload
+                template: carte_integration_critique
                 entity: sensor.petite_maison_cumulus_age_donnees
                 name: Cumulus
                 icon: mdi:water-boiler
-                tap_action:
-                  data:
+                variables:
+                  seuil_minutes: 360
+                  action_service: homeassistant.reload_config_entry
+                  action_data:
                     entry_id: !secret petite_maison_cumulus_entry_id
+                  confirmation_text: "Recharger Cumulus ?"
 
               - type: custom:button-card
-                template: carte_integration_critique_reload
+                template: carte_integration_critique
                 entity: sensor.audi_age_donnees
                 name: Audi
                 icon: mdi:car
-                tap_action:
-                  data:
+                variables:
+                  seuil_minutes: 2880
+                  action_service: homeassistant.reload_config_entry
+                  action_data:
                     entry_id: !secret audi_entry_id
+                  confirmation_text: "Recharger Audi ?"
 
           ####################################################
           # 🔌 CONNECTIVITÉ NETATMO HOMEKIT

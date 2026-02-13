@@ -3,28 +3,22 @@
 #################################################################
 
 vmc_capteur:
-  template: carte_base_v2
+  template: socle_diagnostic_compact_readonly_72
   show_icon: true
   show_name: true
   show_state: true
   show_label: true
-
-  tap_action:
-    action: none
-  hold_action:
-    action: none
-  double_tap_action:
-    action: none
 
   styles:
     card:
       - background-color: |
           [[[
             const eid = entity?.entity_id;
-            const st = hass.states[eid];
-            if (!st) return "rgba(158, 158, 158, 0.1)";
+            const st = eid ? hass.states[eid] : null;
+            if (!st) return "rgba(224, 224, 224, 0.2)";
+
             const raw = parseFloat(st.state);
-            if (isNaN(raw)) return "rgba(158, 158, 158, 0.1)";
+            if (isNaN(raw)) return "rgba(224, 224, 224, 0.2)";
 
             const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
             const isCO2 = unit.includes("ppm");
@@ -36,30 +30,22 @@ vmc_capteur:
               ? "input_number.vmc_co2_seuil_off"
               : "input_number.vmc_seuil_off"]?.state);
 
-            if (isNaN(seuilOn) || isNaN(seuilOff)) return "rgba(158, 158, 158, 0.1)";
+            if (isNaN(seuilOn) || isNaN(seuilOff)) return "rgba(224, 224, 224, 0.2)";
 
             const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
 
             if (vmcOn) {
               return raw > seuilOff ? "rgba(244, 67, 54, 0.2)" : "rgba(76, 175, 80, 0.2)";
-            } else {
-              return raw >= seuilOn ? "rgba(244, 67, 54, 0.2)" : "rgba(76, 175, 80, 0.2)";
             }
+            return raw >= seuilOn ? "rgba(244, 67, 54, 0.2)" : "rgba(76, 175, 80, 0.2)";
           ]]]
-
-    state:
-      - font-size: 16px
-      - font-weight: 700
-
-    label:
-      - font-size: 13px
-      - font-weight: 400
 
   label: |
     [[[
       const eid = entity?.entity_id;
-      const st = hass.states[eid];
+      const st = eid ? hass.states[eid] : null;
       if (!st) return "Seuil : —";
+
       const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
       const isCO2 = unit.includes("ppm");
 

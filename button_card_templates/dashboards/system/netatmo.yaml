@@ -31,13 +31,18 @@
 #
 # 🧪 Robustesse :
 #   - Icône par état (sémantique forte)
-#   - Fallback implicite via carte_base
+#   - Fallback implicite via socle_status_72
 #
 #################################################################
 
 netatmo_diagnostic:
-  template: carte_base
+  template: socle_status_72
+
+  show_icon: true
+  show_name: true
   show_state: true
+  show_label: false
+
   icon: mdi:weather-cloudy
 
   styles:
@@ -55,10 +60,22 @@ netatmo_diagnostic:
       icon: mdi:lan-disconnect
       styles:
         card:
-          - background-color: "rgba(158, 158, 158, 0.2)"
+          - background-color: "rgba(224, 224, 224, 0.2)"
 
     - value: "ko_homekit"
       icon: mdi:apple
       styles:
         card:
           - background-color: "rgba(244, 67, 54, 0.2)"
+
+    - value: "unknown"
+      icon: mdi:help-circle
+      styles:
+        card:
+          - background-color: "rgba(224, 224, 224, 0.2)"
+
+    - value: "unavailable"
+      icon: mdi:help-circle
+      styles:
+        card:
+          - background-color: "rgba(224, 224, 224, 0.2)"
