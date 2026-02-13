@@ -44,73 +44,145 @@ Arsenal repose sur la séparation stricte suivante :
 | Scripts / automations | Action matérielle |
 | **UI (Lovelace)** | **Lecture + action volontaire** |
 
-L’UI **consomme** les décisions.
+L’UI **consomme** les décisions.  
 Elle **ne les fabrique jamais**.
 
 ---
 
 ## 📁 STRUCTURE DU DOSSIER
 
-```
-documentation_arsenal/ui_arsenal/
-│
+```text
+/homeassistant/documentation_arsenal/ui/
 ├── README.md
-├── principes_ui.md
-├── invariants_ui.md
-├── templates_button_card.md
-└── dashboards/
-    ├── arsenal.md
-    ├── chauffage.md
-    ├── aeration.md
-    ├── diagnostics.md
-    └── navigation.md
-```
+├── architecture.md
+├── couleurs.md
+├── navigation.md
+├── pattern_dashboard.md
+└── socle_ui/
+    ├── 00_index.md
+    ├── 00_synthese.md
+    ├── 01_carte_base.md
+    ├── 02_action.md
+    ├── 03_decision.md
+    ├── 04_etat.md
+    ├── 05_info.md
+    ├── 06_kpi.md
+    ├── 07_status.md
+    ├── 08_toggle.md
+    └── 09_diagnostic.md
 
 ---
 
 ## 📘 CONTENU DES FICHIERS
 
-### `principes_ui.md`
-Décrit les **principes architecturaux UI** :
-- lecture seule par défaut
-- action explicite uniquement
-- absence totale de logique métier
-- clarté immédiate (3 secondes)
+### `architecture.md`
+Document de référence des **principes architecturaux UI Arsenal** :
+- rôle de l’UI (lecture / action volontaire)
+- interdits (pas de décision, pas de logique métier)
+- organisation des templates `button-card` (socle / génériques / métier)
+- typologies de lecture (stratégies UI)
 
 ---
 
-### `invariants_ui.md`
-Liste les **règles non négociables** :
-- couleurs et sémantique
-- clic autorisé / interdit
-- confirmation obligatoire
-- comportements impossibles
-
-Ce fichier est le **garde-fou UI** d’Arsenal.
+### `couleurs.md`
+Charte contractuelle **Couleurs & Sémantique** :
+- palette officielle Arsenal
+- cas strictement délimités (gris neutre / gris indisponibilité)
+- règles de priorité sémantique
+- interdits (variations, décoratif, couleurs non justifiées)
 
 ---
 
-### `templates_button_card.md`
-Contrat de tous les **templates button-card** :
-- rôle fonctionnel
-- variables attendues
-- types de cartes (info / action / critique)
-- usages autorisés et interdits
-
-Aucun template ne doit exister sans être décrit ici.
+### `navigation.md`
+Référence de navigation du système :
+- structure globale (points d’entrée, articulation entre dashboards)
+- mécanismes invariants (badges, navigation contextuelle)
+- règles non négociables (navigation sans action métier)
 
 ---
 
-### `dashboards/*.md`
-Documentation **fonctionnelle** de chaque dashboard :
-- intention utilisateur
-- public visé
-- lecture attendue
-- ce que le dashboard ne fera jamais
+### `pattern_dashboard.md`
+Document normatif du **pattern canonique** des dashboards Arsenal :
+- racine unique `cards:` avec `vertical-stack` unique
+- flux vertical strict (autorisé/interdit)
+- pattern officiel de navigation par domaine via fichiers d’includes
+- composants autorisés / interdits (structurels)
+- règle d’alignement vertical et ordre canonique (badges → navigation → contenu)
 
-❌ Pas de YAML  
-❌ Pas de capture  
-✅ Du sens, des règles, des limites
+---
+
+### `socle_ui/00_index.md`
+**Inventaire constaté** de l’arborescence réelle des templates `socle/`
+(`/homeassistant/button_card_templates/socle/`) et des écarts factuels
+doc ↔ implémentation (si présents).
+
+---
+
+### `socle_ui/00_synthese.md`
+**Liste & synthèse de repérage** du socle UI :
+- inventaire des documents `socle_ui/`
+- cartographie de repérage (socles / rattachements / axes de variation)
+- document à tenir **exhaustif** par rapport au socle réel.
+
+---
+
+### `socle_ui/01_carte_base.md`
+Socle canonique `carte_base_v2` : styles, métriques, actions UI par défaut,
+et interdits (pas de logique métier, pas de `background-color` dynamique).
+
+---
+
+### `socle_ui/02_action.md`
+Inventaire & catégorisation des socles **Action** (tuiles d’action),
+et leurs variantes.
+
+---
+
+### `socle_ui/03_decision.md`
+Inventaire & catégorisation des socles **Decision** (lecture seule décisionnelle).
+
+---
+
+### `socle_ui/04_etat.md`
+Inventaire & catégorisation des socles **Etat** (lecture / état réel),
+incluant les briques typographiques associées.
+
+---
+
+### `socle_ui/05_info.md`
+Inventaire & catégorisation des socles **Info** (lecture seule “info système”).
+
+---
+
+### `socle_ui/06_kpi.md`
+Inventaire & catégorisation des socles **KPI** (avec/sans couleur, variantes label,
+variantes “sans icône”).
+
+---
+
+### `socle_ui/07_status.md`
+Inventaire & catégorisation des socles **Status** (interactif / read-only / compact /
+label / XL / variantes d’alignement, et variantes “sans nom”).
+
+---
+
+### `socle_ui/08_toggle.md`
+Inventaire & catégorisation des socles **Toggle** (standard / compact / confirmé).
+
+---
+
+### `socle_ui/09_diagnostic.md`
+Inventaire & catégorisation des socles **Diagnostic** (XL / compact / variantes associées).
+
+---
+
+### `socle_ui/10_badge.md`
+Inventaire & catégorisation des socles **Badge** (barre d’icônes / en-têtes de vues).
+
+---
+
+### `socle_ui/11_header.md`
+Inventaire & catégorisation des socles **Header** (titres de sections / sous-sections).
 
 ---
 

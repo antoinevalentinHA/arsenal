@@ -27,23 +27,48 @@ L’UI doit **montrer**, jamais **décider**.
 ## 🧱 Organisation générale
 
 Les templates `button-card` Arsenal sont organisés selon une structure
-**à deux niveaux**, afin de séparer clairement :
+**à trois niveaux**, afin de séparer clairement :
 
-- les briques **génériques** (réutilisables partout)
-- les briques **spécifiques à un dashboard** (présentation d’un domaine)
+- le **socle** (UI pure : géométrie / typo / comportements sûrs)
+- les templates **génériques** (catalogue TPL : réutilisables partout)
+- les templates **métier** (spécialisation par dashboard / domaine)
 
 ### 1) Socle
 
-Le dossier `socle/` contient les composants UI **agnostiques du domaine** :
+Le dossier `socle/` contient les composants UI **agnostiques du domaine**.
+Ces templates fixent la **présentation** et les comportements UI de base,
+sans porter de logique métier ni de décision.
 
-### 2) Templates génériques (socle transversal)
+Exemples (non exhaustif) :
+- socles de tuiles (KPI / Status / Action / Toggle / Diagnostic)
+- socles structurels (badges, headers)
 
-Le dossier `generiques/` contient des templates transversaux
+### 2) Templates génériques (catalogue TPL)
 
-### 3) Templates de dashboards (spécialisation par écran)
+Le dossier `generiques/` contient les templates transversaux.
+Ils implémentent les **modèles Arsenal (TPL)** à partir du socle :
+- structure d’affichage,
+- conventions de lecture (libellés UI, placeholders),
+- actions explicites (le cas échéant),
+tout en restant strictement **sans décision**.
+
+Exemples de rattachement :
+- **TPL-01 — tpl_nav_bar (NAV_BAR)** : badges / navigation
+- **TPL-02 — tpl_section_header (SECTION_HEADER)** : en-têtes de section
+- **TPL-03 — tpl_tile_kpi (TILE_KPI)**
+- **TPL-05 — tpl_tile_status (TILE_STATUS)**
+- **TPL-06 — tpl_tile_action (TILE_ACTION)**
+- **TPL-12 — tpl_card_diagnostic (CARD_DIAGNOSTIC)**
+
+### 3) Templates métier (spécialisation par écran)
 
 Le dossier `dashboards/` contient les templates **spécifiques** à un dashboard.
-Ils implémentent des cartes “métier”, tout en restant strictement **sans décision**.
+Ils spécialisent les templates génériques (TPL) pour un domaine donné
+(aération, alarme, chauffage, etc.) en apportant :
+- des mappings UI de libellés,
+- des conventions de lecture propres au domaine,
+- des actions explicitement déclenchées,
+sans introduire de logique métier ni de décision.
 
 Chaque sous-dossier correspond à un dashboard (liste non exhaustive) :
 - `aeration/`
@@ -92,6 +117,8 @@ Chaque sous-dossier correspond à un dashboard (liste non exhaustive) :
 └── generiques/
     └── …
 
+---
+
 ## 🎨 Typologie des cartes capteur
 
 Arsenal distingue explicitement **plusieurs stratégies UI**
@@ -105,9 +132,9 @@ Aucune n’est considérée comme supérieure aux autres.
 
 ### 🟦 Carte capteur à couleur externalisée
 
-Exemple : `carte_capteur`
+Exemple : `carte_bruit_seuils_variables`
 
-- La carte n’effectue **aucun calcul de seuil**
+- La carte n’effectue **aucun calcul de seuil** pour déterminer une couleur “métier”
 - La couleur affichée repose sur une **convention UI externe**
 - Convention attendue :
 
@@ -150,7 +177,6 @@ Cette stratégie est privilégiée pour :
 - Aucune mutualisation implicite n’est souhaitée
 - Le choix de la stratégie relève de l’**intention de lecture**, jamais du hasard
 
-
 ---
 
 ### 🚨 Carte d’alerte binaire critique
@@ -168,7 +194,7 @@ Caractéristiques :
 
 - carte purement informationnelle
 - aucune logique métier
-- aucune interaction de pilotage
+- aucune interaction de pilotage (hors `more-info`)
 - lecture immédiate et non ambiguë
 
 Cette carte est utilisée pour :
@@ -179,126 +205,24 @@ Cette carte est utilisée pour :
 Elle ne repose sur aucun seuil et ne doit
 pas être utilisée pour des valeurs numériques.
 
-
 ---
 
-## 🔘 Badges d’action
+## 🔘 Badges UI
 
-Les badges d’action sont des éléments UI dédiés
-au déclenchement **manuel et volontaire** d’actions
-critiques ou semi-critiques.
-
-Ils ne représentent **aucun état** et ne portent
-**aucune logique métier**.
-
----
-
-### 🔘 Badge d’action confirmée
-
-Exemple : `badge_action_confirmee`
+Les badges sont des éléments UI compacts, utilisés en en-tête de vues.
+Ils relèvent du **TPL-01 — NAV_BAR** et reposent sur un socle dédié.
 
 Caractéristiques :
 
-- action manuelle explicite
-- confirmation utilisateur obligatoire
-- aucun affichage d’état
-- aucune décision implicite
-
-Ce type de badge est utilisé pour :
-- actions de maintenance
-- actions de sécurité
-- commandes exceptionnelles
-
-Toute action déclenchée via ce badge doit
-être compréhensible, volontaire et confirmée.
-
-
----
-
-### 🟩 Cartes à seuils locaux — variantes spécialisées
-
-Certaines cartes à seuils locaux sont volontairement
-**spécialisées** pour des lectures contextuelles spécifiques.
-
----
-
-#### 🔊 Carte bruit à seuils variables
-
-Exemple : `carte_bruit_seuils_variables`
-
-Cette carte est dédiée à l’affichage d’un niveau sonore (dB)
-avec un **codage couleur multi-seuils** entièrement paramétrable.
-
-Caractéristiques :
-
-- seuils définis par le contexte appelant
-- granularité fine (plusieurs niveaux)
-- aucune dépendance externe
+- rôle structurel (navigation / raccourcis / actions explicites)
+- aucun affichage d’état imposé par le socle
 - aucune logique métier
+- aucune action implicite
 
-Elle est utilisée lorsque :
-- les seuils ne sont pas universels
-- la lecture dépend fortement du contexte
-- une simple alerte binaire ou à deux seuils est insuffisante
-
-Cette carte est volontairement spécialisée
-et n’a pas vocation à être généralisée.
-
-
----
-
-### 🔢 Carte compteur d’alerte
-
-Exemple : `carte_compteur_alerte`
-
-Cette carte affiche un **compteur numérique**
-représentant le nombre d’anomalies détectées
-dans un sous-système.
-
-Sémantique :
-
-- 0   → situation normale (vert)
-- > 0 → anomalie détectée (rouge)
-- autre état → indéterminé
-
-Caractéristiques :
-
-- carte purement informationnelle
-- aucune logique métier
-- aucune qualification de l’anomalie
-- lecture synthétique immédiate
-
-Cette carte est utilisée pour :
-- superviser des volumes d’erreurs
-- signaler des dégradations globales
-- servir de point d’entrée vers un diagnostic détaillé
-
-
----
-
-### 🌙 Carte compteur à seuils variables
-
-Exemple : `carte_compteur_seuils_variables`
-
-Cette carte affiche un **compteur entier**
-avec un **codage couleur gradué** basé
-sur des seuils définis par le contexte appelant.
-
-Caractéristiques :
-
-- seuils entièrement paramétrables
-- lecture progressive (normal → vigilance → alerte → critique)
-- aucune logique métier
-- aucune interaction utilisateur
-
-Cette carte est utilisée lorsque :
-- la valeur évolue dans le temps
-- la gravité est progressive
-- un simple signal binaire est insuffisant
-
-Elle ne doit pas être utilisée pour signaler
-une anomalie globale unique (voir `carte_compteur_alerte`).
-
+Toute action déclenchée via un badge doit être :
+- explicite
+- volontaire
+- compréhensible
 
 ---
 
@@ -355,4 +279,3 @@ Elle permet de signaler visuellement :
 
 La navigation reste toujours explicite
 et volontaire.
-
