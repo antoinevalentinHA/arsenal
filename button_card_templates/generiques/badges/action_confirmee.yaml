@@ -1,0 +1,36 @@
+#################################################################
+# 🔘 BADGE ACTION — UI (CONFIRMÉ)
+#################################################################
+
+badge_action_confirmee:
+  template: socle_badge_42
+
+  variables:
+    bg_color: "rgba(158, 158, 158, 0.2)"
+    icon_color: "#111"
+    border_radius: "50%"
+
+  tap_action:
+    action: |
+      [[[
+        return variables?.action_service ? "call-service" : "none";
+      ]]]
+    service: |
+      [[[
+        return variables?.action_service || "";
+      ]]]
+    service_data: |
+      [[[
+        return variables?.action_data || {};
+      ]]]
+    confirmation:
+      text: |
+        [[[
+          return variables?.confirm || "Confirmer l’action ?";
+        ]]]
+
+  hold_action:
+    action: none
+
+  double_tap_action:
+    action: none

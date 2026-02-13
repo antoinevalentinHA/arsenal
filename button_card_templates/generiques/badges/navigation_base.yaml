@@ -1,0 +1,11 @@
+#################################################################
+# 🧭 NAVIGATION — BOUTONS DE BASE (badge 42)
+#################################################################
+
+bouton_navigation_base:
+  template: socle_badge_42
+
+  variables:
+    bg_color: "rgba(0, 0, 0, 0)"
+    icon_color: "#111"
+    border_radius: "12px"

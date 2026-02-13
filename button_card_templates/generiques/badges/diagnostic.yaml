@@ -1,0 +1,7 @@
+bouton_diagnostics_badge_carre:
+  template: bouton_navigation_base
+  name: Diagnostics
+  icon: mdi:stethoscope
+  tap_action:
+    action: navigate
+    navigation_path: /diagnostics-dashboard/diagnostics

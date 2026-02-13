@@ -68,13 +68,10 @@ views:
           - type: custom:button-card
             template: badge_action_confirmee
             icon: mdi:restart
-            tap_action:
-              action: call-service
-              confirmation:
-                text: >
-                  🔄 Réinitialiser le plateau thermostatique
-                  pour la pièce sélectionnée ?
-              service: script.reset_plateau_piece
             variables: 
+              action_service: script.reset_plateau_piece
+              confirm: >
+                🔄 Réinitialiser le plateau thermostatique
+                pour la pièce sélectionnée ?
               bg_color: rgba(255, 152, 0, 0.2)
               icon_color: '#EF6C00'

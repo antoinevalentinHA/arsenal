@@ -1,0 +1,7 @@
+bouton_parametres_badge_carre:
+  template: bouton_navigation_base
+  name: Paramètres
+  icon: mdi:cog
+  tap_action:
+    action: navigate
+    navigation_path: /dashboard-reglages/0

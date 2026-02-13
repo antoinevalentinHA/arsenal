@@ -1,0 +1,11 @@
+#################################################################
+# 🧭 BOUTONS DE NAVIGATION — ACCÈS DIRECTS (nettoyés)
+#################################################################
+
+bouton_accueil_badge_carre:
+  template: bouton_navigation_base
+  name: Accueil
+  icon: mdi:home
+  tap_action:
+    action: navigate
+    navigation_path: /arsenal-dashboard/arsenal

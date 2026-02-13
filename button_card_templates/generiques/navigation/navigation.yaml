@@ -1,0 +1,8 @@
+#################################################################
+# 🔁 BOUTONS DE NAVIGATION — GÉNÉRIQUE (72px, socle-first)
+#################################################################
+
+bouton_navigation:
+  template: socle_action_simple
+  tap_action:
+    action: navigate

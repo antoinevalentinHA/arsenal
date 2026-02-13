@@ -107,25 +107,19 @@ views:
               - type: custom:button-card
                 template: badge_action_confirmee
                 icon: mdi:delete-outline
-                tap_action:
-                  action: call-service
-                  confirmation:
-                    text: 🗑️ Réinitialiser l’historique hebdo des stocks ?
-                  service: script.reset_stock_historique
                 variables:
+                  action_service: script.reset_stock_historique
+                  confirm: 🗑️ Réinitialiser l’historique hebdo des stocks ?
                   bg_color: rgba(244, 67, 54, 0.2)
                   icon_color: '#B71C1C'
 
               - type: custom:button-card
                 template: badge_action_confirmee
                 icon: mdi:playlist-edit
-                tap_action:
-                  action: call-service
-                  confirmation:
-                    text: 📋 Forcer l’archivage hebdo des conditions de stock ?
-                  service: automation.trigger
-                  service_data:
-                    entity_id: automation.stock_archive_hebdo_reset_min_max
                 variables:
+                  action_service: automation.trigger
+                  action_data:
+                    entity_id: automation.stock_archive_hebdo_reset_min_max
+                  confirm: 📋 Forcer l’archivage hebdo des conditions de stock ?
                   bg_color: rgba(33, 150, 243, 0.2)
                   icon_color: '#1565C0'

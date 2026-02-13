@@ -6,36 +6,25 @@
 #################################################################
 
 section_header:
-  show_icon: false
-  show_name: true
-  tap_action:
-    action: none
+  template: socle_header_base
+
   styles:
     card:
-      - background: none
-      - box-shadow: none
-      - padding: 6px 0 4px 0     # nouveau padding
-      - margin: 10px 0 2px 0     # nouvelle marge
+      - padding: 6px 0 4px 0
+      - margin: 10px 0 2px 0
     name:
-      - font-size: 19px          # nouvelle taille uniforme
+      - font-size: 19px
       - font-weight: 700
       - line-height: 1.35
-      - color: var(--primary-text-color)
-      - text-align: left
 
 sub_section_header:
-  show_icon: false
-  show_name: true
-  tap_action:
-    action: none
+  template: socle_header_base
+
   styles:
     card:
-      - background: none
-      - box-shadow: none
       - padding: 4px 0 2px 0
       - margin: 6px 0 0 0
     name:
       - font-size: 16px
       - font-weight: 500
       - line-height: 1.2
-      - color: "#000000"

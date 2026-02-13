@@ -173,12 +173,9 @@ views:
                 template: badge_action_confirmee
                 icon: mdi:content-save
                 name: Sauvegarder
-                tap_action:
-                  action: call-service
-                  confirmation:
-                    text: 💾 Sauvegarder tous les réglages ECS ?
-                  service: pyscript.ecs_sauvegarde_reglages
                 variables:
+                 action_service: pyscript.ecs_sauvegarde_reglages
+                 confirm: 💾 Sauvegarder tous les réglages ECS ?
                  bg_color: rgba(33, 150, 243, 0.2)
                  icon_color: '#1565C0'
           
@@ -187,12 +184,9 @@ views:
                 template: badge_action_confirmee
                 icon: mdi:backup-restore
                 name: Restaurer
-                tap_action:
-                  action: call-service
-                  confirmation:
-                    text: ♻️ Restaurer les réglages ECS depuis la sauvegarde ?
-                  service: pyscript.ecs_restore_reglages
                 variables:
+                 action_service: pyscript.ecs_restore_reglages
+                 confirm: ♻️ Restaurer les réglages ECS depuis la sauvegarde ?
                  bg_color: rgba(76, 175, 80, 0.2)
                  icon_color: '#2E7D32'
 

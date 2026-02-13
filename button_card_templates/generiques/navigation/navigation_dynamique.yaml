@@ -1,0 +1,29 @@
+#################################################################
+# 🔁 BOUTONS DE NAVIGATION — GÉNÉRIQUE (72px, socle-first)
+#################################################################
+
+bouton_navigation_dynamique:
+  template: bouton_navigation
+
+  styles:
+    icon:
+      - color: |
+          [[[
+            const sensor = variables?.etat_dashboard;
+            if (!sensor || !states[sensor]) {
+              return "rgb(158, 158, 158)";
+            }
+
+            const st = states[sensor].state;
+
+            const map = {
+              alert:   "rgb(244, 67, 54)",
+              normal:  "rgb(25, 118, 210)",
+              confort: "rgb(76, 175, 80)",
+              eco:     "rgb(144, 202, 249)",
+              standby: "rgb(158, 158, 158)",
+              off:     "rgb(158, 158, 158)"
+            };
+
+            return map[st] ?? "rgb(158, 158, 158)";
+          ]]]

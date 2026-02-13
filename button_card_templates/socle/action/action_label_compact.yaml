@@ -11,6 +11,7 @@
 #   - UI uniquement : métriques + typo
 #   - ne fixe pas l’action (tap/hold override carte métier)
 # ==========================================================
+
 socle_action_label_compact:
   template: carte_base_v2
 

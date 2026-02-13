@@ -1,0 +1,7 @@
+bouton_navigation_badge_carre:
+  template: bouton_navigation_base
+  name: Navigation
+  icon: mdi:apps
+  tap_action:
+    action: navigate
+    navigation_path: /navigation-dashboard/home

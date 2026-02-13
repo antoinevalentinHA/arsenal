@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — BUTTON-CARD TEMPLATE
+#     UI — SOCLE : Badge 42 (base geometrie + iconographie)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Socle UI standard pour badges 42x42 utilisés en en-tête
+#     de vues (badges de navigation, badges d'action, etc.).
+#
+# 🧩 PÉRIMÈTRE
+#
+#     - Fixe la géométrie (42x42), centrage, box-shadow
+#     - Fixe l'iconographie (22px)
+#     - Permet la variation purement UI via variables :
+#         • bg_color
+#         • icon_color
+#         • border_radius
+#
+# 🚫 INTERDITS / NE FAIT PAS
+#
+#     - Ne définit aucune action (navigate/call-service/etc.)
+#     - Ne porte aucune logique métier
+#     - Ne mappe aucun état
+#
+# 🧠 STATUT ARCHITECTURAL
+#
+#     - Nature : SOCLE_UI
+#     - Rôle : PRESENTATION (UI pure)
+#
+# ==========================================================
+
+socle_badge_42:
+  entity: none
+  show_name: false
+  show_state: false
+  show_icon: true
+
+  styles:
+    card:
+      - height: 42px
+      - width: 42px
+      - box-shadow: var(--ha-card-box-shadow)
+      - background-color: |
+          [[[
+            return variables?.bg_color || "rgba(0, 0, 0, 0)";
+          ]]]
+      - border-radius: |
+          [[[
+            return variables?.border_radius || "12px";
+          ]]]
+      - display: flex
+      - align-items: center
+      - justify-content: center
+      - padding: 0
+      - margin: 0
+
+    icon:
+      - width: 22px
+      - height: 22px
+      - color: |
+          [[[
+            return variables?.icon_color || "#111";
+          ]]]

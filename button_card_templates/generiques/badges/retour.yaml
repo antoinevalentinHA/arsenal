@@ -1,0 +1,6 @@
+bouton_retour_badge_carre:
+  template: bouton_navigation_base
+  icon: mdi:arrow-left
+  tap_action:
+    action: navigate
+    navigation_path: /arsenal-dashboard/arsenal
