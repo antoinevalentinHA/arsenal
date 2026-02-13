@@ -50,17 +50,16 @@ views:
                 columns: 2
                 cards:
                   - type: custom:button-card
-                    template: clim_option_toggle
+                    template: socle_toggle_compact_68
                     entity: switch.clim_quiet_fan
                     name: Ventilation silencieuse
                     icon: mdi:fan
 
                   - type: custom:button-card
-                    template: clim_option_toggle
+                    template: socle_toggle_compact_68
                     entity: switch.clim_outdoor_unit_low_noise
                     name: Réduire bruit extérieur
                     icon: mdi:volume-off
-
 
           # ==================================================
           # 🧠 DÉCISION

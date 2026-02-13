@@ -83,7 +83,6 @@ views:
                     entity: input_number.duree_aeration_rdc_stock
                     name: Durée RDC
 
-
           # ==================================================
           # 🪟 AÉRATION ÉTAGE
           # ==================================================

@@ -1,22 +1,9 @@
 #################################################################
 # 🚨 CARTE ALERTE BINAIRE CRITIQUE — UI
-# ---------------------------------------------------------------
-# Affiche une alerte basée sur un binary_sensor critique.
-#
-# États :
-#   - ON  → 🔴 Alerte active
-#   - OFF → 🟢 OK
-#   - autre → ⚪ Indéterminé
-#
-# Principe Arsenal :
-#   - Carte d’alerte pure
-#   - Lecture immédiate
-#   - Aucun pilotage
-#   - Réutilisable (NAS, secteur, disques, sécurité, etc.)
 #################################################################
 
 carte_alerte_binaire_critique:
-  template: carte_base
+  template: carte_base_v2
 
   show_state: true
 
@@ -28,23 +15,10 @@ carte_alerte_binaire_critique:
       - background-color: |
           [[[
             if (entity.state === 'on')
-              return 'rgba(244, 67, 54, 0.2)';   // 🔴 alerte
+              return 'rgba(244, 67, 54, 0.2)';
 
             if (entity.state === 'off')
-              return 'rgba(76, 175, 80, 0.2)';   // 🟢 ok
+              return 'rgba(76, 175, 80, 0.2)';
 
-            return 'rgba(158, 158, 158, 0.1)';   // ⚪ inconnu
+            return 'rgba(158, 158, 158, 0.1)';
           ]]]
-
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: '#111'
-
-    icon:
-      - color: '#111'

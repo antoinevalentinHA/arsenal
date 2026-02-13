@@ -11,7 +11,10 @@
 #################################################################
 
 carte_action_arret_sirene:
-  template: carte_base
+  template: socle_action_critical
+
+  name: Arrêt sirène
+  icon: mdi:alarm-off
 
   tap_action:
     action: call-service

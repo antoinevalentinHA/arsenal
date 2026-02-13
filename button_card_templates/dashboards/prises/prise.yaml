@@ -29,22 +29,29 @@
 #################################################################
 
 prise_template:
-  template: carte_base
+  template: socle_toggle_confirme
+
   tap_action:
     action: toggle
+    confirmation:
+      text: Basculer la prise ON / OFF ?
+
   state:
     - value: 'on'
       styles:
         card:
           - background-color: rgba(76, 175, 80, 0.2)
+
     - value: 'off'
       styles:
         card:
-          - background-color: rgba(158,158,158,0.2)
-  styles:
-    icon:
-      - width: 26px
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#000000'
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    - operator: template
+      value: |
+        [[[
+          return ['unknown','unavailable','none'].includes(entity?.state);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(224, 224, 224, 0.2)

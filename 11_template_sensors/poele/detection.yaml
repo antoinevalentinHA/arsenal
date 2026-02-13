@@ -15,15 +15,22 @@
       device_class: heat
       icon: "mdi:fire"
 
+      delay_on: "00:01:15"
+      delay_off: "00:03:00"
+
       state: >
-        {% set d10 = states('sensor.sejour_delta_10min')  | float(0) %}
-        {% set d30 = states('sensor.sejour_delta_30min') | float(0) %}
+        {% set d10s = states('sensor.sejour_delta_10min') %}
+        {% set d30s = states('sensor.sejour_delta_30min') %}
 
-        {# --- Si déjà ALLUMÉ : appliquer l'hystérésis (seuils bas) --- #}
-        {% if is_state(this.entity_id, 'on') %}
-          {{ d10 >= 0.05 and d30 >= 0.10 }}
-
-        {# --- Détection rapide et fiable (seuils hauts) --- #}
+        {% if d10s in ['unknown','unavailable','none',''] or d30s in ['unknown','unavailable','none',''] %}
+          false
         {% else %}
-          {{ d10 >= 0.12 and d30 >= 0.15 }}
+          {% set d10 = d10s | float(0) %}
+          {% set d30 = d30s | float(0) %}
+
+          {% if is_state(this.entity_id, 'on') %}
+            {{ d10 >= 0.05 and d30 >= 0.10 }}
+          {% else %}
+            {{ d10 >= 0.12 and d30 >= 0.15 and d30 >= (d10 * 0.60) }}
+          {% endif %}
         {% endif %}

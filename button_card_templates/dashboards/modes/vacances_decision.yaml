@@ -8,12 +8,7 @@
 # ==============================================================
 
 carte_vacances_decision:
-  template: carte_base
-  color_type: card
-  show_icon: false
-  show_name: true
-  show_state: true
-  show_label: true
+  template: socle_status_label
 
   name: Vacances – État réel
 
@@ -37,35 +32,12 @@ carte_vacances_decision:
     ]]]
 
   state:
-    # 🟢 VACANCES EFFECTIVES
     - value: 'on'
       styles:
         card:
           - background-color: rgba(255,235,59,0.2)
 
-    # ⚪ VACANCES INACTIVES
     - value: 'off'
       styles:
         card:
           - background-color: rgba(158,158,158,0.2)
-
-  tap_action:
-    action: none
-
-  styles:
-    card:
-      - height: 72px
-      - border-radius: 12px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 15px
-      - font-weight: 600
-      - color: '#111'
-    label:
-      - font-size: 12px
-      - color: '#555'

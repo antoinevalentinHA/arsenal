@@ -29,7 +29,6 @@ views:
           action: navigate
           navigation_path: /diagnostics-eclairage-dashboard/eclairage
 
-
     cards:
       - type: vertical-stack
         cards:

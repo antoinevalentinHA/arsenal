@@ -1,24 +1,19 @@
 #################################################################
 # 🫁 CARTE FRÉQUENCE RESPIRATOIRE — UI
-# ---------------------------------------------------------------
-# Carte qualitative pour l’affichage de la fréquence respiratoire
-# moyenne (RPM) avec interprétation visuelle par paliers.
-#
-# Exemples :
-#   - FR moyenne nocturne
-#   - FR de repos
-#
-# Principe Arsenal :
-#   - Lecture seule
-#   - Aucune logique métier
-#   - Interprétation UI uniquement
 #################################################################
 
 carte_frequence_respiratoire_qualitative:
-  template: carte_base
+  template: socle_kpi_72
 
   show_state: true
   show_icon: true
+
+  state_display: |
+    [[[
+      const rpm = parseFloat(entity?.state);
+      if (isNaN(rpm)) return "—";
+      return `${Math.round(rpm)} rpm`;
+    ]]]
 
   styles:
     card:
@@ -26,18 +21,12 @@ carte_frequence_respiratoire_qualitative:
           [[[
             const rpm = parseFloat(entity?.state);
 
-            if (isNaN(rpm)) return "rgba(158, 158, 158, 0.2)";   // ⚪ inconnu
-            if (rpm < 11)  return "rgba(144, 202, 249, 0.25)";    // 🔵 basse
-            if (rpm < 17)  return "rgba(76, 175, 80, 0.2)";      // 🟢 normale
-            if (rpm < 20)  return "rgba(255, 235, 59, 0.2)";    // 🟡 élevée
-            if (rpm < 23)  return "rgba(255, 152, 0, 0.2)";     // 🟠 haute
-            return "rgba(244, 67, 54, 0.2)";                     // 🔴 anormale
+            // Indisponible (charte)
+            if (isNaN(rpm)) return "rgba(224, 224, 224, 0.2)";
+
+            if (rpm < 11) return "rgba(144, 202, 249, 0.25)";   // 🔵 basse
+            if (rpm < 17) return "rgba(76, 175, 80, 0.2)";      // 🟢 normale
+            if (rpm < 20) return "rgba(255, 235, 59, 0.2)";     // 🟡 élevée
+            if (rpm < 23) return "rgba(255, 152, 0, 0.2)";      // 🟠 haute
+            return "rgba(244, 67, 54, 0.2)";                   // 🔴 anormale
           ]]]
-    state:
-      - font-size: 18px
-      - font-weight: bold
-      - color: '#111'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'

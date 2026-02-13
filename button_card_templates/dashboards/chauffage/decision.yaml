@@ -1,25 +1,12 @@
 # ==============================================================
 # 🔍 TEMPLATE : carte_chauffage_decision
-# --------------------------------------------------------------
-# Carte décisionnelle du chauffage — UI Arsenal.
-#
-# Règle absolue :
-#   - Les BLOCAGES priment TOUJOURS
-#   - Le STANDBY est invisible si un blocage est actif
 # ==============================================================
 
 carte_chauffage_decision:
-  color_type: card
-  show_icon: false
-  show_name: true
-  show_state: true
-  show_label: true
+  template: socle_decision_72
 
   name: Chauffage – État réel
 
-  #################################################################
-  # 🧠 ÉTAT PRINCIPAL
-  #################################################################
   state_display: |
     [[[
       const map = {
@@ -30,9 +17,6 @@ carte_chauffage_decision:
       return map[entity.state] || entity.state;
     ]]]
 
-  #################################################################
-  # 🧾 LIBELLÉ CONTEXTUEL
-  #################################################################
   label: |
     [[[
       const intention = states['sensor.chauffage_mode_calcule']?.state || '—';
@@ -52,14 +36,7 @@ carte_chauffage_decision:
       return `Intention : ${intention}${raison ? ' — ' + (labels[raison] || raison) : ''}`;
     ]]]
 
-  #################################################################
-  # 🎨 QUALIFICATION VISUELLE — PRIORITÉ STRICTE
-  #################################################################
   state:
-
-    #################################################################
-    # ⛔ BLOCAGES ABSOLUS (ÉCRASENT TOUT)
-    #################################################################
     - operator: template
       value: |
         [[[
@@ -77,9 +54,6 @@ carte_chauffage_decision:
         card:
           - background-color: rgba(255, 152, 0, 0.2)
 
-    #################################################################
-    # 🟠 PROTECTION THERMIQUE (ABSENCE)
-    #################################################################
     - operator: template
       value: |
         [[[
@@ -89,9 +63,6 @@ carte_chauffage_decision:
         card:
           - background-color: rgba(255, 152, 0, 0.2)
 
-    #################################################################
-    # 🔵 STANDBY — UNIQUEMENT SANS BLOCAGE
-    #################################################################
     - operator: template
       value: |
         [[[
@@ -112,9 +83,6 @@ carte_chauffage_decision:
         card:
           - background-color: rgba(33, 150, 243, 0.2)
 
-    #################################################################
-    # 🟢 COHÉRENCE NOMINALE
-    #################################################################
     - operator: template
       value: |
         [[[
@@ -131,9 +99,6 @@ carte_chauffage_decision:
         card:
           - background-color: rgba(76, 175, 80, 0.2)
 
-    #################################################################
-    # 🔴 ANOMALIE RÉELLE
-    #################################################################
     - operator: template
       value: |
         [[[
@@ -154,27 +119,3 @@ carte_chauffage_decision:
       styles:
         card:
           - background-color: rgba(244, 67, 54, 0.2)
-
-  #################################################################
-  # 🧱 STYLES GÉNÉRAUX
-  #################################################################
-  tap_action:
-    action: none
-
-  styles:
-    card:
-      - height: 72px
-      - border-radius: 12px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 15px
-      - font-weight: 600
-      - color: '#111'
-    label:
-      - font-size: 12px
-      - color: '#555'

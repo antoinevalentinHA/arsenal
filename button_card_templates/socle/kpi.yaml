@@ -1,0 +1,136 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE KPI (V1)
+#     socle_kpi  (TPL-03)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Modèle canon KPI :
+#   - valeur mise en avant (state typographié fort)
+#   - nom lisible (name)
+#   - compat totale météo : l’UI observe la couleur fournie
+#
+# 🧩 ENTRÉES (OPTIONNELLES)
+#   variables:
+#     - couleur:
+#         Entité couleur explicite (ex: sensor.couleur_temperature_entree)
+#         Si absent : dérivation automatique sensor.couleur_<suffixe>
+#     - ui_profile:
+#         Profil palette (défaut: meteo_legacy)
+#         Objectif :
+#           - meteo_legacy : conserver exactement le rendu météo historique
+#           - arsenal      : palette contractuelle Arsenal
+#           - ecs          : palette ECS (compat capteur couleur ecs)
+#
+# 🚫 CE QUE CE SOCLE NE FAIT PAS
+#   - Ne calcule pas les couleurs métier
+#   - Ne calcule pas de seuils
+#   - Ne modifie pas les entités
+# ==========================================================
+
+socle_kpi:
+  template: carte_base_v2
+
+  show_icon: true
+  show_state: true
+  show_name: true
+
+  styles:
+    state:
+      - font-size: 18px
+      - font-weight: 700
+
+    card:
+      - background-color: |
+          [[[
+            const profile = variables?.ui_profile || "meteo_legacy";
+
+            const palettes = {
+
+              // ----------------------------------------------------------
+              // Palette "meteo_legacy" : RGBA conservés tels qu’observés
+              // (profil par défaut, pour ne PAS changer le rendu météo)
+              // ----------------------------------------------------------
+              meteo_legacy: {
+                red: "rgba(244, 67, 54, 0.2)",
+                yellow: "rgba(255, 235, 59, 0.2)",
+                green: "rgba(76, 175, 80, 0.2)",
+                light_green: "rgba(139, 195, 74, 0.2)",
+                light_blue: "rgba(3, 169, 244, 0.2)",
+                blue: "rgba(144, 202, 249, 0.25)",
+                grey: "rgba(224, 224, 224, 0.2)",
+
+                unavailable: "rgba(158, 158, 158, 0.1)"
+              },
+
+              // ----------------------------------------------------------
+              // Palette "arsenal" : charte contractuelle Arsenal
+              // ----------------------------------------------------------
+              arsenal: {
+                green: "rgba(76, 175, 80, 0.2)",
+                red: "rgba(244, 67, 54, 0.2)",
+                orange: "rgba(255, 152, 0, 0.2)",
+                blue: "rgba(33, 150, 243, 0.2)",
+                grey: "rgba(158, 158, 158, 0.2)",
+
+                // Jaune conservé (cas existants / legacy)
+                yellow: "rgba(255, 193, 7, 0.25)",
+
+                // Compat éventuelle avec des clés météo existantes
+                light_green: "rgba(76, 175, 80, 0.2)",
+                light_blue: "rgba(33, 150, 243, 0.2)",
+
+                unavailable: "rgba(158, 158, 158, 0.1)"
+              },
+
+              // ----------------------------------------------------------
+              // Palette "ecs" : pour capteurs couleur ECS
+              // (clés attendues : blue / orange / red)
+              // ----------------------------------------------------------
+              ecs: {
+                blue: "rgba(33, 150, 243, 0.2)",
+                orange: "rgba(255, 152, 0, 0.2)",
+                red: "rgba(244, 67, 54, 0.2)",
+
+                // Fallbacks génériques si une clé inattendue arrive
+                green: "rgba(76, 175, 80, 0.2)",
+                grey: "rgba(158, 158, 158, 0.2)",
+
+                unavailable: "rgba(158, 158, 158, 0.1)"
+              }
+            };
+
+            const p = palettes[profile] || palettes.meteo_legacy;
+
+            // ----------------------------------------------------------
+            // 1) Robustesse : indispo / entity absente
+            // ----------------------------------------------------------
+            if (!entity || !entity.entity_id) return p.unavailable;
+
+            // ----------------------------------------------------------
+            // 2) Détermination de l’entité "couleur_*"
+            //    - priorité : variables.couleur (explicite)
+            //    - sinon : dérivation sensor.couleur_<suffixe>
+            // ----------------------------------------------------------
+            const explicitColorEntity = variables?.couleur;
+            const derivedColorEntity = entity.entity_id.replace(
+              /^sensor\.(.*)/,
+              "sensor.couleur_$1"
+            );
+            const colorEntity = explicitColorEntity || derivedColorEntity;
+
+            const rawKey = states[colorEntity]?.state;
+
+            // ----------------------------------------------------------
+            // 3) Gestion indispo (unknown/unavailable/absent)
+            // ----------------------------------------------------------
+            if (rawKey === undefined || rawKey === null) return p.unavailable;
+
+            const key = String(rawKey).trim();
+
+            if (key === "unknown" || key === "unavailable" || key === "")
+              return p.unavailable;
+
+            // ----------------------------------------------------------
+            // 4) Retour palette
+            // ----------------------------------------------------------
+            return p[key] || p.grey;
+          ]]]

@@ -11,9 +11,7 @@
 #################################################################
 
 carte_duree_stationnement:
-  template: carte_base
-
-  show_state: true
+  template: socle_status
 
   tap_action:
     action: none
@@ -24,28 +22,12 @@ carte_duree_stationnement:
 
   styles:
     card:
-      - height: 72px
       - background-color: |
           [[[
-            const s = entity.state;
+            const s = entity?.state;
 
-            if (s === 'unknown' || s === 'unavailable')
-              return 'rgba(158, 158, 158, 0.1)';   // ⚪ donnée absente
+            if (["unknown","unavailable",null].includes(s))
+              return "rgba(158, 158, 158, 0.1)";   // ⚪ indispo
 
-            return 'rgba(33, 150, 243, 0.2)';    // 🔵 info neutre
+            return "rgba(33, 150, 243, 0.2)";     // 🔵 info
           ]]]
-
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: '#111'
-
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#111'

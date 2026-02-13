@@ -1,17 +1,9 @@
 #################################################################
 # ❄️ CARTE CLIMATISATION — ÉTAT RÉEL
-# ---------------------------------------------------------------
-# Affiche l’état réel de la climatisation locale en fonction
-# du mode actif et de la consigne appliquée.
-#
-# Principe Arsenal :
-#   - Carte d’état réel
-#   - Aucune décision métier
-#   - Lecture lisible et contextualisée
 #################################################################
 
 carte_clim_etat:
-  template: carte_base
+  template: socle_action_label_compact
 
   show_label: true
   show_state: false
@@ -44,20 +36,8 @@ carte_clim_etat:
       - background-color: |
           [[[
             const mode = (entity.state || '').toLowerCase();
-            if (mode === 'cool') return 'rgba(33, 150, 243, 0.2)';  // 🧊 Refroidissement
-            if (mode === 'dry')  return 'rgba(76, 175, 80, 0.2)';     // ✅ Déshumidification
-            if (mode === 'heat') return 'rgba(244, 67, 54, 0.2)';    // 🔥 Chauffage
-            return 'rgba(158, 158, 158, 0.2)';                        // ⚪ Veille / autre
+            if (mode === 'cool') return 'rgba(33, 150, 243, 0.2)';
+            if (mode === 'dry')  return 'rgba(76, 175, 80, 0.2)';
+            if (mode === 'heat') return 'rgba(244, 67, 54, 0.2)';
+            return 'rgba(158, 158, 158, 0.2)';
           ]]]
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#000000'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#000000'
-    label:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#000000'

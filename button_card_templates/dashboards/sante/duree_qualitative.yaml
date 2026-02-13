@@ -1,25 +1,19 @@
 #################################################################
 # 🛌 CARTE DURÉE QUALITATIVE — UI
-# ---------------------------------------------------------------
-# Carte générique d’affichage d’une durée (en heures)
-# avec interprétation visuelle par paliers.
-#
-# Exemples :
-#   - Sommeil total
-#   - Temps de repos
-#   - Durée d’activité
-#
-# Principe Arsenal :
-#   - Lecture seule
-#   - Aucune logique métier
-#   - Interprétation UI uniquement
 #################################################################
 
 carte_duree_qualitative:
-  template: carte_base
+  template: socle_kpi_72
 
   show_state: true
   show_icon: true
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity?.state);
+      if (isNaN(v)) return "—";
+      return `${v.toFixed(1)} h`;
+    ]]]
 
   styles:
     card:
@@ -27,18 +21,12 @@ carte_duree_qualitative:
           [[[
             const v = parseFloat(entity?.state);
 
-            if (isNaN(v)) return "rgba(158, 158, 158, 0.2)";     // ⚪ inconnu
-            if (v < 6.0)  return "rgba(244, 67, 54, 0.2)";        // 🔴 très court
-            if (v < 6.75) return "rgba(255, 152, 0, 0.2)";       // 🟠 court
-            if (v < 7.25) return "rgba(255, 235, 59, 0.2)";      // 🟡 limite
-            if (v < 8.0)  return "rgba(76, 175, 80, 0.2)";        // 🟢 correct
-            return "rgba(144, 202, 249, 0.25)";                   // 🔵 excellent
+            // Indisponible (charte)
+            if (isNaN(v)) return "rgba(224, 224, 224, 0.2)";
+
+            if (v < 6.0)  return "rgba(244, 67, 54, 0.2)";     // 🔴 très court
+            if (v < 6.75) return "rgba(255, 152, 0, 0.2)";     // 🟠 court
+            if (v < 7.25) return "rgba(255, 235, 59, 0.2)";    // 🟡 limite
+            if (v < 8.0)  return "rgba(76, 175, 80, 0.2)";     // 🟢 correct
+            return "rgba(144, 202, 249, 0.25)";               // 🔵 excellent
           ]]]
-    state:
-      - font-size: 18px
-      - font-weight: bold
-      - color: '#111'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'

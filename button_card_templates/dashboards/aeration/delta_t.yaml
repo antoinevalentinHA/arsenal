@@ -1,16 +1,17 @@
 #################################################################
 # 🌡️ Carte — Delta température (ΔT)
 #################################################################
-carte_delta_t:
-  template: carte_base
 
-  color_type: card
-  show_state: true
-  show_name: true
-  show_label: true
+carte_delta_t:
+  template: socle_status_label
+
   show_icon: false
 
   tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
     action: none
 
   state_display: |
@@ -85,7 +86,3 @@ carte_delta_t:
               ? "rgba(76, 175, 80, 0.2)"
               : "rgba(244, 67, 54, 0.2)";
           ]]]
-
-    label:
-      - font-size: 13px
-      - color: '#111'

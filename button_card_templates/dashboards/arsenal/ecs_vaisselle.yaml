@@ -1,17 +1,9 @@
 #################################################################
 # 🍽️ CARTE ACTION ECS — VAISSELLE
-# ---------------------------------------------------------------
-# Déclenche un cycle ECS dédié à la vaisselle avec bouclage.
-# Affiche un retour visuel si un cycle vaisselle est en cours.
-#
-# Principe Arsenal :
-#   - Carte d’action explicite
-#   - Feedback visuel minimal
-#   - Aucune décision métier
 #################################################################
 
 carte_action_ecs_vaisselle:
-  template: carte_base
+  template: socle_action_label_compact
 
   show_label: true
 
@@ -43,15 +35,6 @@ carte_action_ecs_vaisselle:
             const parts = resume.split("|");
             const mode = parts.length > 1 ? parts[1].toLowerCase() : "";
             return (en_cours && mode === 'vaisselle')
-              ? 'rgba(76, 175, 80, 0.2)'   // ✅ cycle vaisselle en cours
-              : 'rgba(158, 158, 158, 0.2)'; // ⚪ inactif
+              ? 'rgba(76, 175, 80, 0.2)'
+              : 'rgba(158, 158, 158, 0.2)';
           ]]]
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    label:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'
-      - line-height: 1.3

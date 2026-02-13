@@ -13,7 +13,7 @@
 #################################################################
 
 carte_mode_maison:
-  template: carte_toggle
+  template: socle_toggle
 
   tap_action:
     action: navigate
@@ -25,6 +25,6 @@ carte_mode_maison:
           [[[
             const mode = (entity?.state || '').toLowerCase();
             return mode === 'normal'
-              ? 'rgba(76, 175, 80, 0.2)'   // 🟢 Mode nominal
-              : 'rgba(244, 67, 54, 0.2)'; // 🔴 Mode dégradé / spécial
+              ? 'rgba(76, 175, 80, 0.2)'
+              : 'rgba(244, 67, 54, 0.2)';
           ]]]

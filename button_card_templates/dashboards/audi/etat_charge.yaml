@@ -14,9 +14,10 @@
 #################################################################
 
 carte_etat_charge_vehicule:
-  template: carte_base
+  template: socle_status
 
   show_state: false
+  show_icon: true
 
   tap_action:
     action: none
@@ -27,21 +28,15 @@ carte_etat_charge_vehicule:
 
   styles:
     card:
-      - height: 72px
       - background-color: |
           [[[
             const s = (entity?.state || '').toLowerCase();
-            return s === 'charging'
-              ? 'rgba(76, 175, 80, 0.2)'    // 🟢 en charge
-              : 'rgba(158, 158, 158, 0.2)'; // ⚪ pas en charge
+
+            if (["unknown","unavailable",null].includes(s)) {
+              return "rgba(158, 158, 158, 0.1)";   // ⚪ indispo
+            }
+
+            return s === "charging"
+              ? "rgba(76, 175, 80, 0.2)"          // 🟢 en charge
+              : "rgba(158, 158, 158, 0.2)";       // ⚪ arrêt
           ]]]
-
-    name:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'
-
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#111'

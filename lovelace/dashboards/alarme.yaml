@@ -25,7 +25,6 @@ views:
           action: navigate
           navigation_path: /diagnostics-alarme-dashboard/alarme
 
-
     cards:
       - type: vertical-stack
         cards:
@@ -47,7 +46,6 @@ views:
               - type: custom:button-card
                 entity: alarm_control_panel.alarme_maison
                 template: carte_alarme_decision
-
 
           # ==================================================
           # 🚨 SIRÈNE

@@ -1,45 +1,12 @@
 #################################################################
 # 🟢 CARTE MODE — TOGGLE
-# ---------------------------------------------------------------
-# Carte de bascule pour modes globaux (babysitting, vacances…)
-#
-# Principe Arsenal :
-#   - Toggle explicite
-#   - État visible
-#   - Pas de confirmation
-#   - Pas de logique métier
 #################################################################
 
 carte_mode_toggle:
-  template: carte_base
+  template: socle_toggle
 
   show_state: true
   show_icon: true
 
   tap_action:
     action: toggle
-
-  styles:
-    card:
-      - border-radius: 12px
-      - height: 72px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-      - background-color: |
-          [[[ 
-            return entity.state === 'on'
-              ? 'rgba(76, 175, 80, 0.2)'
-              : 'rgba(158, 158, 158, 0.2)';
-          ]]]
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: "#111"
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: "#111"
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: "#111"

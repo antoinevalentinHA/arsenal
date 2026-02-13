@@ -1,18 +1,9 @@
 #################################################################
 # 🔒🔥 DIAGNOSTIC — BLOCAGE CHAUFFAGE POST-AÉRATION
-# ---------------------------------------------------------------
-# Indique si le chauffage est actuellement bloqué suite
-# à une phase d’aération (verrou de sécurité thermique).
-#
-# Principe Arsenal :
-#   - Carte de diagnostic
-#   - Lecture seule
-#   - Aucun contrôle utilisateur
-#   - Sécurité prioritaire sur toute demande de chauffe
 #################################################################
 
 carte_diagnostic_chauffage_blocage_aeration:
-  template: carte_base
+  template: socle_status_label_72
 
   entity: input_boolean.chauffage_blocage_aeration
 
@@ -23,13 +14,6 @@ carte_diagnostic_chauffage_blocage_aeration:
   color_type: card
 
   icon: mdi:lock-alert
-
-  tap_action:
-    action: none
-  hold_action:
-    action: none
-  double_tap_action:
-    action: none
 
   label: |
     [[[
@@ -43,18 +27,6 @@ carte_diagnostic_chauffage_blocage_aeration:
       - background-color: |
           [[[
             return entity.state === "on"
-              ? "rgba(244, 67, 54, 0.2)"   // 🔴 chauffage bloqué
-              : "rgba(76, 175, 80, 0.2)"; // 🟢 chauffage autorisé
+              ? "rgba(244, 67, 54, 0.2)"
+              : "rgba(76, 175, 80, 0.2)";
           ]]]
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#000000'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    label:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'

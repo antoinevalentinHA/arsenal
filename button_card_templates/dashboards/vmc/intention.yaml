@@ -20,11 +20,9 @@
 # ==========================================================
 
 carte_vmc_intention:
-  template: carte_base
+  template: socle_status_label
+
   show_icon: false
-  show_name: true
-  show_state: true
-  show_label: true
 
   name: Intention VMC
 
@@ -39,42 +37,21 @@ carte_vmc_intention:
     ]]]
 
   state:
-    # 🟢 EXTRACTION UTILE DEMANDÉE
     - value: Extraction utile demandée
       styles:
         card:
           - background-color: rgba(76, 175, 80, 0.2)
 
-    # ⚪ FONCTIONNEMENT NOMINAL
     - value: Fonctionnement nominal demandé
       styles:
         card:
           - background-color: rgba(158,158,158,0.2)
 
-    # ⚪ ÉTAT INATTENDU / FALLBACK
     - operator: default
       styles:
         card:
           - background-color: rgba(158,158,158,0.2)
 
-  tap_action:
-    action: none
-
   styles:
-    card:
-      - height: 72px
-      - border-radius: 12px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 15px
-      - font-weight: 600
-      - color: '#111'
     label:
-      - font-size: 12px
-      - font-weight: 400
       - color: '#444'

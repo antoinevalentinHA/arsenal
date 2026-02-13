@@ -1,26 +1,16 @@
 #################################################################
 # 🔥 DIAGNOSTIC — BESOIN DE CHAUFFE (TEMPÉRATURE MIN CHAMBRES)
-# ---------------------------------------------------------------
-# Indique si la température de la chambre la plus froide
-# est inférieure au seuil de chauffe calculé
-# (consigne présence - offset Clim).
-#
-# Principe Arsenal :
-#   - Carte de diagnostic
-#   - Lecture seule
-#   - Aucune action directe
-#   - Décision portée par les capteurs métier
 #################################################################
 
 carte_diagnostic_besoin_chauffe_temperature_min_chambres:
-  template: carte_base
+  template: socle_kpi_label_72
 
   entity: sensor.temperature_min_chambres
 
+  show_icon: false
   show_state: true
   show_name: true
   show_label: true
-  show_icon: false
   color_type: card
 
   label: |
@@ -52,27 +42,11 @@ carte_diagnostic_besoin_chauffe_temperature_min_chambres:
             );
 
             if (isNaN(temp) || isNaN(consigne) || isNaN(offset))
-              return "rgba(158, 158, 158, 0.2)"; // ⚪ données manquantes
+              return "rgba(158, 158, 158, 0.2)";
 
             const seuil = consigne - offset;
 
             return temp < seuil
-              ? "rgba(76, 175, 80, 0.2)"   // 🟢 besoin de chauffe
-              : "rgba(158, 158, 158, 0.2)"; // ⚪ pas de chauffe
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
           ]]]
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#000000'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 18px
-      - font-weight: 700
-      - color: '#111'
-    label:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'

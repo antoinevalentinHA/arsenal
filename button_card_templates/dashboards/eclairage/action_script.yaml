@@ -1,51 +1,12 @@
 #################################################################
 # 💡 ACTION — ÉCLAIRAGE VIA SCRIPT (CONFIRMÉ)
-# ---------------------------------------------------------------
-# Carte de commande utilisateur pour un éclairage
-# piloté via un script autoritaire.
-#
-# Principe Arsenal :
-#   - Carte d’action explicite
-#   - Pilotage indirect (script)
-#   - Confirmation utilisateur
-#   - Aucune logique métier en UI
 #################################################################
 
 carte_action_eclairage_script:
-  template: carte_base
-
-  show_state: false
-  show_icon: true
-  show_name: true
-  color_type: card
+  template: socle_action_script_confirme
 
   tap_action:
     action: call-service
     service: script.garage_toggle
     confirmation:
       text: Allumer/éteindre l’éclairage ?
-
-  state:
-    - value: 'on'
-      styles:
-        card:
-          - background-color: rgba(76, 175, 80, 0.2)
-    - value: 'off'
-      styles:
-        card:
-          - background-color: rgba(158, 158, 158, 0.2)
-
-  styles:
-    card:
-      - border-radius: 12px
-      - padding: 8px
-      - height: 72px
-      - box-shadow: var(--ha-card-box-shadow)
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#000000'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#000000'

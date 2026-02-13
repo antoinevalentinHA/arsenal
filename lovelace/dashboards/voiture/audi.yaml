@@ -43,7 +43,7 @@ views:
 
           - type: vertical-stack
             cards:
-    
+
               # ==========================================================
               # ⚡ SECTION : Batterie & Autonomie
               # ==========================================================
@@ -141,10 +141,12 @@ views:
                     icon: mdi:car-clock
 
                   - type: custom:button-card
-                    template: carte_derniere_mise_a_jour
+                    template: audi_etat_info
                     entity: sensor.audi_e_tron_derniere_mise_a_jour_local
                     name: Dernière MAJ
                     icon: mdi:cloud-refresh
+                    tap_action: none
+                    hold_action: none
 
               # ======================================================
               # ⚙️ SECTION : Distance et révision
@@ -165,17 +167,16 @@ views:
                     icon: mdi:counter
 
                   - type: custom:button-card
-                    template: audi_info_metrique
+                    template: audi_etat_info
                     entity: sensor.distance_audi_e_tron_mensuelle
                     name: Distance mois
                     icon: mdi:calendar-month
                 
                   - type: custom:button-card
-                    template: audi_info_metrique
+                    template: audi_etat_info
                     entity: sensor.distance_audi_e_tron_annuelle
                     name: Distance année
                     icon: mdi:calendar
-        
 
               - type: grid
                 columns: 2

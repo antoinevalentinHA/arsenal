@@ -14,9 +14,9 @@
 #################################################################
 
 carte_mode_maison_synthese:
-  template: carte_base
+  template: socle_status
 
-  show_state: true
+  show_name: false
 
   tap_action:
     action: more-info
@@ -31,6 +31,6 @@ carte_mode_maison_synthese:
           [[[
             const mode = (entity?.state || '').toLowerCase();
             return mode === 'normal'
-              ? 'rgba(76, 175, 80, 0.2)'   // 🟢 Nominal
-              : 'rgba(244, 67, 54, 0.2)'; // 🔴 Mode spécial
+              ? 'rgba(76, 175, 80, 0.2)'
+              : 'rgba(244, 67, 54, 0.2)';
           ]]]

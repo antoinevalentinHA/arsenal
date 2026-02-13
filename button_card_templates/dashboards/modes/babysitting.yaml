@@ -16,7 +16,7 @@
 #################################################################
 
 carte_mode_babysitting_synthese:
-  template: carte_toggle
+  template: socle_toggle
 
   show_state: true
 
@@ -39,6 +39,6 @@ carte_mode_babysitting_synthese:
       - background-color: |
           [[[
             return entity.state === 'on'
-              ? 'rgba(76, 175, 80, 0.2)'    // 🟢 Babysitting actif
-              : 'rgba(158, 158, 158, 0.2)'; // ⚪ Inactif
+              ? 'rgba(76, 175, 80, 0.2)'
+              : 'rgba(158, 158, 158, 0.2)';
           ]]]

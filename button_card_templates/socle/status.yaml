@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE STATUS (V1)
+#     socle_status  (TPL-05)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Modèle canon pour tuiles "statut" :
+#   - affiche un état court (Ferme / Verrouillé / Veille / Désactivé…)
+#   - typographie/métriques héritées du socle UI
+#   - actions UI sûres par défaut (more-info)
+#
+# 🧩 PÉRIMÈTRE
+#   - UI uniquement : aucune logique métier, aucun seuil
+#   - pas de background-color dynamique intégré
+#   - état affiché : state brut OU state_display surchargé par la carte métier
+#
+# ✅ USAGE
+#   - cartes de statut (alarme, vmc, modes, prises, chauffage…)
+#   - mapping FR éventuel au niveau carte métier (state_display),
+#     pas dans le socle.
+# ==========================================================
+
+socle_status:
+  template: carte_base_v2
+
+  show_icon: true
+  show_state: true
+  show_name: true
+  show_label: false
+
+  tap_action:
+    action: more-info
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'

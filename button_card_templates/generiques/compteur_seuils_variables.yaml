@@ -1,22 +1,9 @@
 #################################################################
 # 🌙 CARTE COMPTEUR — SEUILS VARIABLES
-# ---------------------------------------------------------------
-# Affiche un compteur (entier) avec code couleur paramétrable.
-#
-# Variables attendues :
-#   - seuil_1 : valeur normale (vert)
-#   - seuil_2 : vigilance (jaune)
-#   - seuil_3 : alerte (orange)
-#   - seuil_4 : critique (rouge)
-#
-# Principe Arsenal :
-#   - Carte purement informationnelle
-#   - Seuils définis par le contexte (enfant, usage)
-#   - Aucune logique métier
 #################################################################
 
 carte_compteur_seuils_variables:
-  template: carte_base
+  template: socle_diagnostic
 
   show_state: true
 
@@ -35,7 +22,6 @@ carte_compteur_seuils_variables:
 
   styles:
     card:
-      - height: 72px
       - background-color: |
           [[[
             const v = parseInt(entity.state);
@@ -45,22 +31,18 @@ carte_compteur_seuils_variables:
             const s3 = variables?.seuil_3;
             const s4 = variables?.seuil_4;
 
-            if (isNaN(v)) return 'rgba(224,224,224,0.2)';
-            if (s4 !== undefined && v >= s4) return 'rgba(244, 67, 54, 0.2)';   // 🔴 critique
-            if (s3 !== undefined && v >= s3) return 'rgba(255, 152, 0, 0.2)';   // 🟠 alerte
-            if (s2 !== undefined && v >= s2) return 'rgba(255, 235, 59, 0.2)';  // 🟡 vigilance
-            return 'rgba(76, 175, 80, 0.2)';                                     // 🟢 normal
-          ]]]
+            // ⚪ Indisponible (charte)
+            if (isNaN(v)) return 'rgba(158, 158, 158, 0.1)';
 
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#111'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 18px
-      - font-weight: 700
-      - color: '#111'
+            // 🔴 Critique
+            if (s4 !== undefined && v >= s4) return 'rgba(244, 67, 54, 0.2)';
+
+            // 🟠 Alerte
+            if (s3 !== undefined && v >= s3) return 'rgba(255, 152, 0, 0.2)';
+
+            // 🟡 Vigilance (conservé volontairement)
+            if (s2 !== undefined && v >= s2) return 'rgba(255, 235, 59, 0.2)';
+
+            // 🟢 Normal
+            return 'rgba(76, 175, 80, 0.2)';
+          ]]]

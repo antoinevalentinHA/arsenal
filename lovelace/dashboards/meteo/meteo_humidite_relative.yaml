@@ -52,7 +52,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_jardin
                 name: Humidité
                 icon: mdi:water-percent
@@ -72,7 +72,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_entree
                 name: Entrée
                 icon: mdi:water-percent
@@ -82,7 +82,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_sejour
                 name: Séjour
                 icon: mdi:water-percent
@@ -102,7 +102,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_chambre_arnaud
                 name: Arnaud
                 icon: mdi:water-percent
@@ -112,7 +112,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_chambre_matthieu
                 name: Matthieu
                 icon: mdi:water-percent
@@ -122,7 +122,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_chambre_parents
                 name: Parents
                 icon: mdi:water-percent
@@ -132,7 +132,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_petite_maison
                 name: Petite Maison
                 icon: mdi:water-percent
@@ -152,7 +152,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_sdb_parents
                 name: Parents
                 icon: mdi:water-percent
@@ -162,7 +162,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_sdb_enfants
                 name: Enfants
                 icon: mdi:water-percent
@@ -182,7 +182,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 entity: sensor.humidite_relative_garage
                 name: Garage
                 icon: mdi:water-percent
@@ -192,7 +192,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_humidite
+                template: socle_kpi
                 name: Cave
                 icon: mdi:water-percent
                 entity: sensor.humidite_relative_cave

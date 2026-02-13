@@ -8,7 +8,6 @@ views:
 
     badges: !include ../includes/badges/base.yaml
 
-
     cards:
       - type: vertical-stack
         cards:
@@ -119,7 +118,7 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: carte_etat_texte_interprete
+                    template: carte_capteur_etat_textuel
                     entity: sensor.nas_valentin_volume_1_etat
                     name: État
                     icon: mdi:database

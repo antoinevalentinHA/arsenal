@@ -15,24 +15,9 @@
 #################################################################
 
 carte_alarme:
-  template: carte_base
+  template: socle_toggle
 
   show_state: true
-
-  styles:
-    card:
-      - height: 72px
-      - padding: 8px
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - justify-self: center
-      - text-align: center
-    state:
-      - font-size: 13px
-      - font-weight: 400
-      - justify-self: center
-      - text-align: center
 
   state_display: |
     [[[
@@ -64,11 +49,15 @@ carte_alarme:
     action: navigate
     navigation_path: /alarme-dashboard/alarme
 
+  double_tap_action:
+    action: none
+
   state:
     - value: disarmed
       styles:
         card:
           - background-color: rgba(76, 175, 80, 0.2)   # 🟢 Désarmée
+
     - value: armed_away
       styles:
         card:

@@ -29,7 +29,7 @@ views:
             name: 🔥 Mode Confort forcé
 
           - type: custom:button-card
-            template: carte_toggle
+            template: socle_toggle
             entity: input_boolean.mode_confort_chauffage
             name: Confort forcé
             icon: mdi:radiator

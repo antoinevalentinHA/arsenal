@@ -1,45 +1,36 @@
 #################################################################
-# 🛡️ CARTE ÉTAT DE SÉCURITÉ — UI
+# 🛡️ CARTE — ÉTAT DE SÉCURITÉ (BINAIRE)
 # ---------------------------------------------------------------
-# Carte d’affichage d’un état de sécurité binaire.
-#
-# Rôle :
-#   - Indiquer visuellement un état sain ou dégradé
-#   - Alerter sans ambiguïté
+# Carte générique pour indicateurs de sécurité :
+#   intrusion, panne, défaut, sabotage, alarme, etc.
 #
 # Principe Arsenal :
-#   - Carte purement informationnelle
-#   - Aucune interaction
-#   - Couleur = sémantique forte
+#   - Lecture seule
+#   - Sémantique binaire claire
+#   - UI = restitution fidèle
 #################################################################
 
 carte_etat_securite:
-  template: carte_base
+  template: socle_status_72
 
   show_state: true
-
-  tap_action:
-    action: none
-  hold_action:
-    action: none
-  double_tap_action:
-    action: none
 
   styles:
     card:
       - background-color: |
-          [[[ 
-            return entity.state === "off"
-              ? "rgba(76, 175, 80, 0.2)"   // 🟢 Sécurité OK
-              : "rgba(244, 67, 54, 0.2)"; // 🔴 Problème détecté
+          [[[
+            const st = entity.state;
+
+            // 🟢 OK
+            if (st === 'off') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            // 🔴 Défaut / alerte / intrusion
+            if (st === 'on') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            // ⚪ Inconnu / indispo
+            return 'rgba(158, 158, 158, 0.1)';
           ]]]
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: '#111'
-    icon:
-      - color: '#111'

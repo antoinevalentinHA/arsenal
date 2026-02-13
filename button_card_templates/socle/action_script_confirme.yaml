@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧱 ARSENAL — SOCLE ACTION SCRIPT CONFIRMÉ (72)
+#     socle_action_script_confirme
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Carte d’action indirecte :
+#   - déclenche un script / service
+#   - confirmation utilisateur
+#   - feedback visuel ON / OFF
+#   - aucun métier
+# ==========================================================
+
+socle_action_script_confirme:
+  template: carte_base_v2
+
+  show_state: false
+  show_icon: true
+  show_name: true
+  color_type: card
+
+  tap_action:
+    action: call-service
+    confirmation:
+      text: Confirmer l’action ?
+
+  styles:
+    icon:
+      - color: '#111'
+
+    name:
+      - color: '#111'
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)

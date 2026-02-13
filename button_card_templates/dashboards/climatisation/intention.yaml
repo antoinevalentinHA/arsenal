@@ -1,36 +1,14 @@
 # ==============================================================
 # 🧠 TEMPLATE : carte_clim_intention
-# --------------------------------------------------------------
-# Carte d’intention de la climatisation — UI Arsenal (lecture seule).
-#
-# 🧠 Rôle :
-#   - Afficher la raison logique DOMINANTE
-#     du comportement climatique courant
-#   - Rendre visible l’intention du système
-#
-# 🧩 Principe Arsenal :
-#   - Le backend décide
-#   - La carte reflète uniquement l’intention
-#   - Aucune action, aucun recalcul
-#
-# 📡 Source :
-#   - sensor.clim_raison_decision
-#
-# 🎨 Codes couleur :
-#   - 🟢 Vert  : demande active (cool / heat)
-#   - ⚪ Gris  : repos / ok
-#   - 🔴 Rouge : blocage
 # ==============================================================
 
 carte_clim_intention:
-  template: carte_base
-  show_icon: true
-  show_name: true
-  show_state: true
-  show_label: false
+  template: socle_decision_72
 
   icon: mdi:brain
   name: Intention clim
+
+  show_icon: true
 
   state_display: |
     [[[
@@ -46,7 +24,6 @@ carte_clim_intention:
     ]]]
 
   state:
-    # 🟢 DEMANDE ACTIVE
     - value: demande_refroidissement
       styles:
         card:
@@ -57,7 +34,6 @@ carte_clim_intention:
         card:
           - background-color: rgba(255,152,0,0.2)
 
-    # 🔴 BLOCAGE
     - operator: template
       value: |
         [[[
@@ -67,13 +43,11 @@ carte_clim_intention:
         card:
           - background-color: rgba(244,67,54,0.2)
 
-    # ⚪ AUCUNE DEMANDE (repos nominal)
     - value: ok
       styles:
         card:
           - background-color: rgba(158,158,158,0.2)
 
-    # ⚪ PROBLÈME TECHNIQUE / ÉTAT INATTENDU
     - operator: default
       styles:
         card:
@@ -81,18 +55,3 @@ carte_clim_intention:
 
   tap_action:
     action: none
-
-  styles:
-    card:
-      - height: 72px
-      - border-radius: 12px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 15px
-      - font-weight: 600
-      - color: '#111'

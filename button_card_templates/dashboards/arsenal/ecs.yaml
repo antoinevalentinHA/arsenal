@@ -1,18 +1,9 @@
 #################################################################
 # 🚿 CARTE ECS — ÉTAT BALLON
-# ---------------------------------------------------------------
-# Affichage de la température sécurisée du ballon ECS
-# avec indication visuelle de l’état thermique et
-# possibilité de lancer un cycle ponctuel.
-#
-# Principe Arsenal :
-#   - Carte d’état réel
-#   - Aucune décision métier
-#   - Action utilisateur explicite et confirmée
 #################################################################
 
-carte_ecs_etat_ballon:
-  template: carte_base
+carte_ecs_action:
+  template: socle_etat_action_secondaire
 
   show_state: true
 
@@ -38,7 +29,6 @@ carte_ecs_etat_ballon:
       text: Lancer un cycle de chauffage ECS ponctuel ?
 
   state:
-    # 🔶 Chauffe en cours → ORANGE
     - operator: template
       value: |
         [[[
@@ -48,7 +38,6 @@ carte_ecs_etat_ballon:
         card:
           - background-color: rgba(255, 152, 0, 0.2)
 
-    # 🟦 Température basse → à chauffer
     - operator: template
       value: |
         [[[
@@ -59,7 +48,6 @@ carte_ecs_etat_ballon:
         card:
           - background-color: rgba(144, 202, 249, 0.25)
 
-    # 🔴 Température suffisante → ballon chaud
     - operator: template
       value: |
         [[[
@@ -70,7 +58,6 @@ carte_ecs_etat_ballon:
         card:
           - background-color: rgba(244, 67, 54, 0.2)
 
-    # ⚪ Valeur invalide
     - operator: template
       value: |
         [[[
@@ -84,20 +71,7 @@ carte_ecs_etat_ballon:
         card:
           - background-color: rgba(158, 158, 158, 0.2)
 
-    # 💤 Cas par défaut
     - operator: default
       styles:
         card:
           - background-color: rgba(158, 158, 158, 0.2)
-
-  styles:
-    name:
-      - color: var(--primary-text-color)
-      - font-weight: 500
-      - font-size: 13px
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: var(--primary-text-color)
-      - justify-self: center
-      - align-self: center

@@ -11,7 +11,6 @@ views:
       - type: custom:button-card
         template: bouton_navigation_badge_carre
 
-
     cards:
       - type: vertical-stack
         cards:
@@ -80,7 +79,7 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: carte_ecs_etat_ballon
+                    template: carte_ecs_action
                     entity: sensor.ecs_temperature_ballon_securisee
                     name: Eau chaude
                     icon: mdi:water-thermometer
@@ -141,12 +140,12 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: carte_temperature_exterieure
+                    template: socle_kpi
                     entity: sensor.temperature_jardin
                     name: Extérieur
 
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     name: Séjour
                     entity: sensor.temperature_sejour
 

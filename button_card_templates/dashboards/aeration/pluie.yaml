@@ -1,13 +1,17 @@
 #################################################################
 # 🌧️ Carte — Pluie (sources Zigbee + Netatmo)
 #################################################################
+
 carte_pluie:
-  color_type: card
-  show_icon: true
-  show_name: true
-  show_state: true
+  template: socle_status
+
+  show_label: false
 
   tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
     action: none
 
   state_display: |
@@ -15,47 +19,13 @@ carte_pluie:
       return entity.state === "on" ? "Oui" : "Non";
     ]]]
 
-  label: |
-    [[[
-      const zigbee = states['binary_sensor.zigbee_pluie_water_leak']?.state;
-      const netatmo = parseFloat(states['sensor.pluviometre_precipitation']?.state || 0);
-      const netatmoTxt = isNaN(netatmo) ? "—" : netatmo.toFixed(1) + " mm/h";
-      return `Zigbee: ${zigbee === "on" ? "ON" : "OFF"} · Netatmo: ${netatmoTxt}`;
-    ]]]
-
   state:
-    - value: 'on'
+    - value: "on"
       styles:
         card:
           - background-color: rgba(244, 67, 54, 0.2)
-    - value: 'off'
+
+    - value: "off"
       styles:
         card:
           - background-color: rgba(76, 175, 80, 0.2)
-
-  styles:
-    card:
-      - border-radius: 12px
-      - padding: 8px
-      - height: 72px
-      - box-shadow: var(--ha-card-box-shadow)
-
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#111'
-
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-
-    state:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'
-
-    label:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'

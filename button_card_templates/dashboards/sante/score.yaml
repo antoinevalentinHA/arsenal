@@ -1,25 +1,19 @@
 #################################################################
 # 💤 CARTE SCORE QUALITATIF — UI
-# ---------------------------------------------------------------
-# Carte générique d’affichage d’un score (0–100) avec
-# interprétation visuelle par paliers.
-#
-# Exemples :
-#   - Score sommeil
-#   - Indice de qualité
-#   - Note synthétique
-#
-# Principe Arsenal :
-#   - Lecture seule
-#   - Aucune logique métier
-#   - Interprétation UI uniquement
 #################################################################
 
 carte_score_qualitatif:
-  template: carte_base
+  template: socle_kpi_72
 
   show_state: true
   show_icon: true
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity?.state);
+      if (isNaN(v)) return "—";
+      return `${Math.round(v)} / 100`;
+    ]]]
 
   styles:
     card:
@@ -27,18 +21,12 @@ carte_score_qualitatif:
           [[[
             const v = parseFloat(entity?.state);
 
-            if (isNaN(v)) return "rgba(158, 158, 158, 0.2)";     // ⚪ inconnu
-            if (v < 70)  return "rgba(244, 67, 54, 0.2)";        // 🔴 très mauvais
-            if (v < 76)  return "rgba(255, 152, 0, 0.2)";       // 🟠 mauvais
-            if (v < 81)  return "rgba(255, 235, 59, 0.2)";      // 🟡 moyen
-            if (v < 86)  return "rgba(76, 175, 80, 0.2)";        // 🟢 bon
-            return "rgba(144, 202, 249, 0.25)";                   // 🔵 excellent
+            // Indisponible (charte)
+            if (isNaN(v)) return "rgba(224, 224, 224, 0.2)";
+
+            if (v < 70) return "rgba(244, 67, 54, 0.2)";        // 🔴 très mauvais
+            if (v < 76) return "rgba(255, 152, 0, 0.2)";        // 🟠 mauvais
+            if (v < 81) return "rgba(255, 235, 59, 0.2)";       // 🟡 moyen
+            if (v < 86) return "rgba(76, 175, 80, 0.2)";        // 🟢 bon
+            return "rgba(144, 202, 249, 0.25)";                 // 🔵 excellent
           ]]]
-    state:
-      - font-size: 18px
-      - font-weight: bold
-      - color: '#111'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'

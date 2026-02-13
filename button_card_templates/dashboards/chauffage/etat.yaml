@@ -21,20 +21,8 @@
 #################################################################
 
 carte_chauffage_synthese:
-  template: carte_base
+  template: socle_status_label_xl
   entity: sensor.programme_chauffage
-
-  show_icon: true
-  show_name: false
-  show_state: true
-  show_label: true
-
-  tap_action:
-    action: none
-  hold_action:
-    action: none
-  double_tap_action:
-    action: none
 
   #################################################################
   # 🔥 ICÔNE — PRIORITÉ À L’ACTIVITÉ RÉELLE
@@ -178,8 +166,6 @@ carte_chauffage_synthese:
   #################################################################
   # 🎨 COULEURS — CHARTE ARSENAL STRICTE
   #################################################################
-  color_type: card
-
   state:
     # 🔥 Chauffage actif → ROUGE
     - operator: template
@@ -251,25 +237,3 @@ carte_chauffage_synthese:
       styles:
         card:
           - background-color: rgba(158, 158, 158, 0.2)
-
-  #################################################################
-  # 🎨 STYLES GÉNÉRAUX
-  #################################################################
-  styles:
-    card:
-      - height: 80px
-      - border-radius: 12px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-    icon:
-      - width: 28px
-      - height: 28px
-      - color: '#000000'
-    state:
-      - font-weight: 600
-      - font-size: 15px
-      - color: '#000000'
-    label:
-      - font-weight: 400
-      - font-size: 13px
-      - color: '#000000'

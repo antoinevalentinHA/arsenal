@@ -1,25 +1,13 @@
 #################################################################
 # 🔊 CARTE BRUIT — SEUILS VARIABLES
-# ---------------------------------------------------------------
-# Affiche un niveau sonore (dB) avec code couleur paramétrable.
-#
-# Variables attendues :
-#   - seuil_1 : niveau confortable
-#   - seuil_2 : niveau acceptable
-#   - seuil_3 : niveau gênant
-#   - seuil_4 : niveau élevé
-#   - seuil_5 : niveau critique
-#
-# Principe Arsenal :
-#   - Carte purement informationnelle
-#   - Seuils définis par le contexte (atelier, pièce, usage)
-#   - Aucune interaction
 #################################################################
 
 carte_bruit_seuils_variables:
-  template: carte_base
+  template: socle_kpi
 
   show_state: true
+  show_name: true
+  show_icon: true
 
   tap_action:
     action: none
@@ -36,7 +24,6 @@ carte_bruit_seuils_variables:
 
   styles:
     card:
-      - height: 72px
       - background-color: |
           [[[
             const v = parseFloat(entity.state);
@@ -48,7 +35,7 @@ carte_bruit_seuils_variables:
             const s5 = variables?.seuil_5;
 
             // ⚪ Indisponible
-            if (isNaN(v)) return 'rgba(224, 224, 224, 0.2)';
+            if (isNaN(v)) return 'rgba(158, 158, 158, 0.1)';
 
             // 🟢 OK
             if (s1 !== undefined && v <= s1)
@@ -69,16 +56,3 @@ carte_bruit_seuils_variables:
             // 🔴 Critique (au-delà de tous seuils)
             return 'rgba(244, 67, 54, 0.2)';
           ]]]
-
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#111'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 18px
-      - font-weight: 700
-      - color: '#111'

@@ -30,7 +30,7 @@ views:
                 name: Domaine d'automatisations
 
               - type: custom:button-card
-                template: carte_capteur
+                template: socle_action_simple
                 name: Générer prochain ID
                 icon: mdi:calculator
                 tap_action:

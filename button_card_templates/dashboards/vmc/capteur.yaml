@@ -1,68 +1,30 @@
 #################################################################
-# 💨 VMC — TEMPLATES UI (CAPTEURS)
-#################################################################
-#
-# 🧠 Rôle :
-#   Template button-card destiné à l’affichage des capteurs
-#   pilotant la VMC (humidité relative ou CO₂).
-#
-# 🎯 Objectifs :
-#   - Visualiser la valeur mesurée
-#   - Contextualiser l’état par rapport aux seuils ON / OFF
-#   - Expliquer visuellement le comportement de la VMC
-#
-# 🧩 Principe Arsenal :
-#   - Aucune décision métier
-#   - Aucune action sur la VMC
-#   - Lecture seule des états et seuils calculés ailleurs
-#
-# ⚙️ Logique d’affichage (UI uniquement) :
-#   - Seuils dépendants du type de capteur :
-#       • humidité relative (%)
-#       • CO₂ (ppm)
-#   - Couleur basée sur :
-#       • valeur mesurée
-#       • seuil ON / OFF
-#       • état réel de la VMC (haute vitesse)
-#
-# 📡 Dépendances :
-#   - input_boolean.vmc_haute_vitesse
-#   - input_number.vmc_seuil_on / off
-#   - input_number.vmc_co2_seuil_on / off
-#
-# 🎨 Codes couleur :
-#   - 🟢 Vert  : valeur revenue sous seuil pertinent
-#   - 🔴 Rouge : valeur excessive
-#   - ⚪ Gris  : données indisponibles
-#
-# 🧪 Robustesse :
-#   - Tolérance aux états unknown / unavailable
-#   - Fallback visuel neutre
-#
-#################################################################
-
-#################################################################
 # 📊 Carte — Capteur VMC (HR / CO₂)
-# ---------------------------------------------------------------
-# Carte générique utilisée pour les capteurs
-# influençant le régime de ventilation.
 #################################################################
 
 vmc_capteur:
-  template: carte_base
+  template: carte_base_v2
   show_icon: true
   show_name: true
   show_state: true
   show_label: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
   styles:
     card:
       - background-color: |
           [[[
             const eid = entity?.entity_id;
             const st = hass.states[eid];
-            if (!st) return "rgba(158,158,158,0.2)";
+            if (!st) return "rgba(158, 158, 158, 0.1)";
             const raw = parseFloat(st.state);
-            if (isNaN(raw)) return "rgba(158,158,158,0.2)";
+            if (isNaN(raw)) return "rgba(158, 158, 158, 0.1)";
 
             const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
             const isCO2 = unit.includes("ppm");
@@ -74,30 +36,25 @@ vmc_capteur:
               ? "input_number.vmc_co2_seuil_off"
               : "input_number.vmc_seuil_off"]?.state);
 
-            if (isNaN(seuilOn) || isNaN(seuilOff)) return "rgba(158,158,158,0.2)";
+            if (isNaN(seuilOn) || isNaN(seuilOff)) return "rgba(158, 158, 158, 0.1)";
 
             const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
 
             if (vmcOn) {
-              return raw > seuilOff ? "rgba(244,67,54,0.2)" : "rgba(76,175,80,0.2)";
+              return raw > seuilOff ? "rgba(244, 67, 54, 0.2)" : "rgba(76, 175, 80, 0.2)";
             } else {
-              return raw >= seuilOn ? "rgba(244,67,54,0.2)" : "rgba(76,175,80,0.2)";
+              return raw >= seuilOn ? "rgba(244, 67, 54, 0.2)" : "rgba(76, 175, 80, 0.2)";
             }
           ]]]
-    icon:
-      - color: '#111'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
+
     state:
       - font-size: 16px
       - font-weight: 700
-      - color: '#111'
+
     label:
       - font-size: 13px
       - font-weight: 400
-      - color: '#111'
+
   label: |
     [[[
       const eid = entity?.entity_id;
@@ -118,6 +75,6 @@ vmc_capteur:
       const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
 
       return vmcOn
-        ? `Seuil Off : ${seuilOff.toFixed(0)}${isCO2 ? " ppm" : " %"}` 
+        ? `Seuil Off : ${seuilOff.toFixed(0)}${isCO2 ? " ppm" : " %"}`
         : `Seuil On : ${seuilOn.toFixed(0)}${isCO2 ? " ppm" : " %"}`;
     ]]]

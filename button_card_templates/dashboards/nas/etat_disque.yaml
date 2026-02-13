@@ -11,11 +11,11 @@
 # Principe Arsenal :
 #   - Carte de diagnostic
 #   - Lecture immédiate
-#   - Aucune logique métier
+#   - Aucune logique métier (hors mapping UI)
 #################################################################
 
 carte_nas_drive_etat:
-  template: carte_base
+  template: socle_status_72
 
   show_state: true
 
@@ -34,18 +34,5 @@ carte_nas_drive_etat:
             if (v.includes('normal') || v.includes('ok'))
               return 'rgba(76, 175, 80, 0.2)';   // 🟢 normal
 
-            return 'rgba(224, 224, 224, 0.2)';   // ⚪ inconnu
+            return 'rgba(158, 158, 158, 0.1)';   // ⚪ inconnu/indisponible (charte)
           ]]]
-
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: '#111'
-
-    icon:
-      - color: '#111'

@@ -1,0 +1,14 @@
+socle_etat_action_secondaire:
+  template:
+    - carte_base_v2
+    - socle_etat_lecture_principale
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  styles:
+    state:
+      - justify-self: center
+      - align-self: center

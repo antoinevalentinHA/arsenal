@@ -2,22 +2,10 @@
 # 🚨 CARTE ACTION CRITIQUE — UI
 # ---------------------------------------------------------------
 # Carte d’action manuelle sensible (redémarrage, arrêt, reset…)
-#
-# Rôle :
-#   - Exécuter une action critique
-#   - Imposer une confirmation utilisateur
-#
-# Principe Arsenal :
-#   - Action explicite
-#   - Aucun état affiché
-#   - Couleur rouge systématique
 #################################################################
 
 carte_action_critique:
-  template: carte_base
-
-  show_state: false
-  show_icon: true
+  template: socle_action_critical
 
   tap_action:
     action: call-service
@@ -30,13 +18,3 @@ carte_action_critique:
         ]]]
     service_data:
       entity_id: '[[[ return entity.entity_id ]]]'
-
-  styles:
-    card:
-      - background-color: rgba(244, 67, 54, 0.2)   # 🔴 critique
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    icon:
-      - color: '#111'

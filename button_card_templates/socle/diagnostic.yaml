@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE DIAGNOSTIC (V2)
+#     socle_diagnostic
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Carte diagnostic décisionnel :
+#   - name + state + label
+#   - lecture seule
+#   - format XL (88px)
+#   - typographie standard (pas d’emphase)
+# ==========================================================
+
+socle_diagnostic:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 88px
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'
+
+    label:
+      - font-size: 12px
+      - font-weight: 400
+      - color: '#111'
+      - opacity: 0.85

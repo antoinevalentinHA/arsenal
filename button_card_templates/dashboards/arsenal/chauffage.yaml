@@ -1,17 +1,9 @@
 #################################################################
 # 🔥 CARTE CHAUFFAGE — ÉTAT RÉEL
-# ---------------------------------------------------------------
-# Affiche l’état réel du chauffage à partir du programme
-# actif, de l’action HVAC et de l’état du brûleur.
-#
-# Principe Arsenal :
-#   - Carte d’état réel
-#   - Priorité aux états physiques
-#   - Aucune décision métier
 #################################################################
 
 carte_chauffage_etat:
-  template: carte_base
+  template: socle_etat_action_secondaire
 
   show_state: true
 
@@ -33,14 +25,7 @@ carte_chauffage_etat:
   hold_action:
     action: more-info
 
-  styles:
-    state:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'
-
   state:
-    # 🔥 PRIORITÉ ABSOLUE — Brûleur actif
     - operator: template
       value: |
         [[[
@@ -50,7 +35,6 @@ carte_chauffage_etat:
         card:
           - background-color: rgba(244, 67, 54, 0.2)
 
-    # ⚪ Chaudière OFF / Standby
     - operator: template
       value: |
         [[[
@@ -61,7 +45,6 @@ carte_chauffage_etat:
         card:
           - background-color: rgba(158, 158, 158, 0.2)
 
-    # ✅ Programme Confort (chaudière active)
     - operator: template
       value: |
         [[[
@@ -73,7 +56,6 @@ carte_chauffage_etat:
         card:
           - background-color: rgba(76, 175, 80, 0.2)
 
-    # 🧊 Programme Éco (chaudière active)
     - operator: template
       value: |
         [[[
@@ -85,7 +67,6 @@ carte_chauffage_etat:
         card:
           - background-color: rgba(144, 202, 249, 0.25)
 
-    # 💤 Cas par défaut
     - operator: default
       styles:
         card:

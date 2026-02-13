@@ -1,0 +1,25 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE ACTION CRITIQUE (TPL-06)
+# ==========================================================
+
+socle_action_critical:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: false
+  show_label: false
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)
+    name:
+      - font-weight: 600

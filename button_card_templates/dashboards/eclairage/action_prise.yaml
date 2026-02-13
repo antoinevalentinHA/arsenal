@@ -1,49 +1,11 @@
 #################################################################
 # 💡 ACTION — ÉCLAIRAGE (TOGGLE CONFIRMÉ)
-# ---------------------------------------------------------------
-# Carte de commande utilisateur pour un éclairage.
-#
-# Principe Arsenal :
-#   - Carte d’action explicite
-#   - Interaction volontaire
-#   - Confirmation utilisateur
-#   - Aucune logique métier
 #################################################################
 
 carte_action_eclairage:
-  template: carte_base
-
-  show_state: false
-  show_icon: true
-  show_name: true
-  color_type: card
+  template: socle_toggle_confirme
 
   tap_action:
     action: toggle
     confirmation:
       text: Allumer/éteindre l’éclairage ?
-
-  state:
-    - value: 'on'
-      styles:
-        card:
-          - background-color: rgba(76, 175, 80, 0.2)
-    - value: 'off'
-      styles:
-        card:
-          - background-color: rgba(158, 158, 158, 0.2)
-
-  styles:
-    card:
-      - border-radius: 12px
-      - padding: 8px
-      - height: 72px
-      - box-shadow: var(--ha-card-box-shadow)
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#000000'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#000000'

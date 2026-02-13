@@ -1,36 +1,17 @@
 #################################################################
 # 📊 CARTE CAPTEUR À SEUILS — UI
-# ---------------------------------------------------------------
-# Carte d’affichage d’un capteur numérique avec seuils visuels.
-#
-# Variables attendues :
-#   - unit        : unité affichée (°C, %, etc.)
-#   - seuil_warn  : seuil alerte (orange)
-#   - seuil_crit  : seuil critique (rouge)
-#
-# Principe Arsenal :
-#   - Carte purement informationnelle
-#   - Aucune interaction
-#   - Seuils définis par la carte appelante
 #################################################################
 
 carte_capteur_seuils:
-  template: carte_base
+  template: carte_base_v2
 
   show_state: true
-
-  tap_action:
-    action: none
-  hold_action:
-    action: none
-  double_tap_action:
-    action: none
 
   state_display: |
     [[[
       const v = parseFloat(entity.state);
       const unit = variables?.unit || '';
-      return isNaN(v) ? 'N/A' : `${v.toFixed(0)} ${unit}`;
+      return isNaN(v) ? '—' : `${v.toFixed(0)} ${unit}`;
     ]]]
 
   styles:
@@ -41,19 +22,15 @@ carte_capteur_seuils:
             const warn = parseFloat(variables?.seuil_warn);
             const crit = parseFloat(variables?.seuil_crit);
 
+            // ⚪ Indisponible (charte Arsenal)
             if (isNaN(v)) return "rgba(158, 158, 158, 0.1)";
+
+            // 🔴 Critique
             if (!isNaN(crit) && v > crit) return "rgba(244, 67, 54, 0.2)";
+
+            // 🟠 Warning
             if (!isNaN(warn) && v > warn) return "rgba(255, 152, 0, 0.2)";
+
+            // 🟢 OK
             return "rgba(76, 175, 80, 0.2)";
           ]]]
-
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: '#111'
-    icon:
-      - color: '#111'

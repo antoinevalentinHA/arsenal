@@ -34,7 +34,6 @@ views:
           action: navigate
           navigation_path: /id-automatisations-dashboard/id-automatisations
 
-
     ########################################################
     # 🧱 VERTICAL STACK PRINCIPAL
     ########################################################
@@ -68,6 +67,11 @@ views:
                 entity: binary_sensor.internet_disponible
                 name: Internet
                 icon: mdi:web
+
+          - type: grid
+            columns: 4
+            square: false
+            cards:
 
               # Supervisor CPU
               - type: custom:button-card

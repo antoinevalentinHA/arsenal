@@ -19,7 +19,6 @@ views:
           action: navigate
           navigation_path: /reglages-maison-dashboard/maison
 
-
     cards:
       - type: vertical-stack
         cards:

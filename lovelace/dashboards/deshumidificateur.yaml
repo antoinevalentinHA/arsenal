@@ -19,7 +19,6 @@ views:
           action: navigate
           navigation_path: /reglages-deshumidificateur-dashboard/deshumidificateur
 
-
     cards:
       - type: vertical-stack
         cards:
@@ -61,7 +60,6 @@ views:
                     color: '#FF9800'
                   - value: 70
                     color: '#F44336'
-
 
           # ==================================================
           # ⚖️ CONDITIONS DE DÉSHUMIDIFICATION

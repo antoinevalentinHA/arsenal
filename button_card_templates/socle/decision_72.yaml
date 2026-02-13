@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE DECISION (V1)
+#     socle_decision_72
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Socle UI pour cartes décisionnelles (lecture seule) :
+#   - name + state + label
+#   - format 72px
+#   - typographie décisionnelle (state 15/600, label 12/400)
+# ==========================================================
+
+socle_decision_72:
+  template: carte_base_v2
+
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    state:
+      - font-size: 15px
+      - font-weight: 600
+
+    label:
+      - font-size: 12px
+      - font-weight: 400
+      - color: '#111'

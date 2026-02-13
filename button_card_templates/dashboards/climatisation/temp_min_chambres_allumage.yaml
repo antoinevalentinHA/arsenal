@@ -1,26 +1,11 @@
 #################################################################
 # 🧊 CARTE CLIM — DIAGNOSTIC TEMPÉRATURE MIN CHAMBRES
-# ---------------------------------------------------------------
-# Indique si la température de la chambre la plus froide
-# autorise l’allumage de la climatisation.
-#
-# Principe Arsenal :
-#   - Carte de diagnostic
-#   - Lecture seule
-#   - Aucune action directe
-#   - Décision portée par les capteurs métier
 #################################################################
 
 carte_clim_diagnostic_temperature_min_chambres:
-  template: carte_base
+  template: socle_kpi_label_72
 
   entity: sensor.temperature_min_chambres
-
-  show_state: true
-  show_name: true
-  show_label: true
-  show_icon: false
-  color_type: card
 
   label: |
     [[[
@@ -40,21 +25,9 @@ carte_clim_diagnostic_temperature_min_chambres:
             const seuil = toNumber(seuilState);
 
             if (isNaN(temp) || isNaN(seuil))
-              return "rgba(244, 67, 54, 0.2)";   // 🔴 indéterminé / incohérent
+              return "rgba(244, 67, 54, 0.2)";
 
             return temp >= seuil
-              ? "rgba(76, 175, 80, 0.2)"        // 🟢 autorisé
-              : "rgba(158, 158, 158, 0.2)";     // ⚪ non autorisé
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
           ]]]
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 18px
-      - font-weight: 700
-      - color: '#111'
-    label:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'

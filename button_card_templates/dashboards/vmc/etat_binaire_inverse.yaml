@@ -16,7 +16,7 @@
 #################################################################
 
 carte_etat_binaire_interprete_inverse:
-  template: carte_base
+  template: socle_status
 
   show_state: true
 
@@ -35,17 +35,3 @@ carte_etat_binaire_interprete_inverse:
               ? (variables?.color_on || 'rgba(244, 67, 54, 0.2)')
               : (variables?.color_off || 'rgba(76, 175, 80, 0.2)');
           ]]]
-
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: '#111'
-
-    icon:
-      - width: 26px
-      - color: '#000'

@@ -25,7 +25,6 @@ views:
           action: navigate
           navigation_path: /diagnostics-chauffage-dashboard/diagnostics-chauffage
 
-
     cards:
       - type: vertical-stack
         cards:
@@ -55,7 +54,6 @@ views:
             cards:
 
               - !include ../includes/section_headers/decision.yaml
-
 
           # ==================================================
           # 🎯 INTENTION / DÉCISION

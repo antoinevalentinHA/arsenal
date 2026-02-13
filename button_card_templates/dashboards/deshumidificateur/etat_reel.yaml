@@ -12,22 +12,19 @@
 #################################################################
 
 carte_deshumidificateur_etat_reel:
-  template: carte_base
+  template: socle_status_label
 
   entity: binary_sensor.deshumidificateur_actif
 
-  show_state: true
-  show_name: true
-  show_label: true
   show_icon: false
-  color_type: card
 
-  tap_action:
-    action: none
-  hold_action:
-    action: none
-  double_tap_action:
-    action: none
+  state_display: |
+    [[[
+      if (!entity) return 'Inconnu';
+      if (entity.state === 'on')  return 'Actif';
+      if (entity.state === 'off') return 'Arrêté';
+      return 'Inconnu';
+    ]]]
 
   label: |
     [[[
@@ -39,23 +36,9 @@ carte_deshumidificateur_etat_reel:
     card:
       - background-color: |
           [[[
+            if (!entity) return "rgba(244, 67, 54, 0.2)";
             const st = entity.state;
-            if (st === 'on')  return "rgba(76, 175, 80, 0.2)";   // 🟢 actif
-            if (st === 'off') return "rgba(158, 158, 158, 0.2)"; // ⚪ arrêté
-            return "rgba(244, 67, 54, 0.2)";                     // 🔴 incohérent
+            if (st === 'on')  return "rgba(76, 175, 80, 0.2)";
+            if (st === 'off') return "rgba(158, 158, 158, 0.2)";
+            return "rgba(244, 67, 54, 0.2)";
           ]]]
-    icon:
-      - width: 26px
-      - height: 26px
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 18px
-      - font-weight: 700
-      - color: '#111'
-    label:
-      - font-size: 12px
-      - font-weight: 400
-      - color: '#111'

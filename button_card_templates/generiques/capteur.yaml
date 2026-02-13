@@ -29,7 +29,7 @@ carte_capteur:
           ]]]
     state:
       - font-size: 18px
-      - font-weight: bold
+      - font-weight: 700
       - color: '#111'
     name:
       - font-size: 13px
@@ -37,4 +37,5 @@ carte_capteur:
       - color: '#444'
     label:
       - font-size: 13px
+      - font-weight: 400
       - color: '#111'

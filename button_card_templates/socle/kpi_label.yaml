@@ -1,0 +1,16 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE KPI + LABEL (V1)
+#     socle_kpi_label
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   KPI (state 18/700) + label (ligne 2) sans logique métier.
+#   Hérite de la couleur observée (socle_kpi).
+# ==========================================================
+
+socle_kpi_label:
+  template: socle_kpi
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true

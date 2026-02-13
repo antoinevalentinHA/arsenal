@@ -1,18 +1,9 @@
 #################################################################
 # 🚪 CARTE OUVERTURES — DIAGNOSTIC
-# ---------------------------------------------------------------
-# Indique si des ouvertures (portes / fenêtres) sont ouvertes
-# dans la maison et fournit un résumé lisible.
-#
-# Principe Arsenal :
-#   - Carte de diagnostic agrégée
-#   - Lecture seule
-#   - Décision portée par le capteur
-#   - UI = restitution fidèle
 #################################################################
 
 carte_ouvertures_diagnostic:
-  template: carte_base
+  template: socle_action_label_compact
 
   entity: binary_sensor.ouvertures_maison
 
@@ -31,9 +22,9 @@ carte_ouvertures_diagnostic:
 
   state:
     - value: 'on'
-      color: rgba(244, 67, 54, 0.2)   # 🔴 Ouvertures ouvertes
+      color: rgba(244, 67, 54, 0.2)
     - value: 'off'
-      color: rgba(76, 175, 80, 0.2)   # 🟢 Tout fermé
+      color: rgba(76, 175, 80, 0.2)
 
   label: |
     [[[
@@ -54,16 +45,3 @@ carte_ouvertures_diagnostic:
 
       return "Ouvert";
     ]]]
-
-  styles:
-    icon:
-      - width: 26px
-      - height: 26px
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    label:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'

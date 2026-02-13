@@ -1,27 +1,24 @@
 #################################################################
 # 🔁 CARTE MODE BINAIRE INTERPRÉTÉ — UI
-# ---------------------------------------------------------------
-# Carte affichant un état binaire avec libellés explicites
-# et code couleur lisible.
-#
-# Exemples :
-#   - VMC Normal / High
-#   - Régime réduit / confort
-#   - Mode forcé / auto
-#
-# Principe Arsenal :
-#   - Carte purement informationnelle
-#   - Traduction humaine d’un booléen
-#   - Aucun pilotage
 #################################################################
 
 carte_mode_binaire_interprete:
-  template: carte_base
+  template: socle_status
 
   show_state: true
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
 
   state_display: |
     [[[
+      if (!entity || entity.state === 'unknown' || entity.state === 'unavailable') return '—';
+
       return entity.state === 'on'
         ? (variables?.label_on || 'Actif')
         : (variables?.label_off || 'Normal');
@@ -29,27 +26,20 @@ carte_mode_binaire_interprete:
 
   styles:
     card:
-      - height: 72px
-      - padding: 8px
-
       - background-color: |
           [[[
+            if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
             return entity.state === 'on'
               ? (variables?.color_on || 'rgba(244, 67, 54, 0.2)')
               : (variables?.color_off || 'rgba(76, 175, 80, 0.2)');
           ]]]
 
     name:
-      - font-size: 13px
-      - font-weight: 500
       - justify-self: center
       - text-align: center
-  
+
     state:
-      - font-size: 13px
-      - font-weight: 400
       - justify-self: center
       - text-align: center
-  
-    icon:
-      - width: 26px

@@ -1,24 +1,9 @@
 #################################################################
 # 🔥 CARTE ACTIVITÉ — CALORIES QUOTIDIENNES
-# ---------------------------------------------------------------
-# Carte qualitative d’affichage de la dépense calorique
-# journalière (kcal).
-#
-# Interprétation visuelle :
-#   - Très faible → Rouge
-#   - Faible → Orange
-#   - Moyen → Jaune
-#   - Bon → Vert
-#   - Très bon → Bleu
-#
-# Principe Arsenal :
-#   - Lecture seule
-#   - Aucune logique métier
-#   - Seuils purement UI
 #################################################################
 
 carte_activite_calories_quotidiennes:
-  template: carte_base
+  template: socle_kpi_72
 
   show_state: true
   show_icon: true
@@ -36,18 +21,12 @@ carte_activite_calories_quotidiennes:
           [[[
             const kcal = parseFloat(entity?.state);
 
-            if (isNaN(kcal))    return "rgba(158, 158, 158, 0.2)";   // ⚪ inconnu
+            // Indisponible (charte Arsenal)
+            if (isNaN(kcal))    return "rgba(224, 224, 224, 0.2)";
+
             if (kcal < 1800)    return "rgba(244, 67, 54, 0.2)";     // 🔴 très faible
-            if (kcal < 2200)    return "rgba(255, 152, 0, 0.2)";    // 🟠 faible
-            if (kcal < 2600)    return "rgba(255, 235, 59, 0.2)";   // 🟡 moyen
+            if (kcal < 2200)    return "rgba(255, 152, 0, 0.2)";     // 🟠 faible
+            if (kcal < 2600)    return "rgba(255, 235, 59, 0.2)";    // 🟡 moyen
             if (kcal < 3000)    return "rgba(76, 175, 80, 0.2)";     // 🟢 bon
             return "rgba(144, 202, 249, 0.25)";                       // 🔵 excellent
           ]]]
-    state:
-      - font-size: 18px
-      - font-weight: bold
-      - color: '#111'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'

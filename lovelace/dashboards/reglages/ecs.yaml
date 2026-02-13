@@ -34,7 +34,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_toggle
+                template: socle_toggle
                 entity: input_boolean.ecs_blocage_planifiee
                 name: "Chauffe planifiée"
                 icon: mdi:water-boiler

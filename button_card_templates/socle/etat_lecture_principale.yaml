@@ -1,0 +1,24 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE LECTURE ÉTAT PRINCIPAL (V1)
+#     socle_etat_lecture_principale
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Typographie unifiée pour l’état principal affiché :
+#   - chauffage (state)
+#   - climatisation (label)
+#   - autres états majeurs
+#
+# ✅ CANON
+#   - size: 14px
+#   - weight: 400
+# ==========================================================
+
+socle_etat_lecture_principale:
+  styles:
+    state:
+      - font-size: 14px
+      - font-weight: 400
+
+    label:
+      - font-size: 14px
+      - font-weight: 400

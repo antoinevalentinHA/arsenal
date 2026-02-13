@@ -39,11 +39,7 @@
 # ==============================================================
 
 carte_alarme_decision:
-  color_type: card
-  show_icon: true
-  show_name: true
-  show_state: true
-  show_label: true
+  template: socle_diagnostic
 
   icon: mdi:shield-home
 
@@ -93,24 +89,3 @@ carte_alarme_decision:
       styles:
         card:
           - background-color: rgba(244,67,54,0.2)
-
-  tap_action:
-    action: none
-
-  styles:
-    card:
-      - border-radius: 12px
-      - padding: 8px
-      - height: 88px
-      - box-shadow: var(--ha-card-box-shadow)
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 18px
-      - font-weight: bold
-      - color: '#111'
-    label:
-      - font-size: 12px
-      - color: '#555'

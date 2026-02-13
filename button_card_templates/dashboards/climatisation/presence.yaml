@@ -1,35 +1,20 @@
 #################################################################
 # 👨‍👩‍👧‍👦 CARTE CLIM — DIAGNOSTIC PRÉSENCE / BABYSITTING
-# ---------------------------------------------------------------
-# Indique si la présence (ou le mode Babysitting) autorise
-# le fonctionnement de la climatisation.
-#
-# Principe Arsenal :
-#   - Carte de diagnostic
-#   - Lecture seule
-#   - Aucune action directe
-#   - Décision portée par les entités métier
 #################################################################
 
 carte_clim_diagnostic_presence_babysitting:
-  template: carte_base
+  template: socle_status_label_72
 
   entity: binary_sensor.presence_famille_unifiee
-
-  show_state: false
-  show_name: true
-  show_label: true
-  show_icon: true
-  color_type: card
 
   icon: |
     [[[
       const presence = entity.state === "on";
       const babysitting = states['input_boolean.mode_babysitting']?.state === "on";
 
-      if (presence)    return "mdi:account-group";    // 👥 Présence détectée
-      if (babysitting) return "mdi:account-child";    // 👶 Babysitting
-      return "mdi:account-off";                       // ⚪ Absence
+      if (presence)    return "mdi:account-group";
+      if (babysitting) return "mdi:account-child";
+      return "mdi:account-off";
     ]]]
 
   label: |
@@ -50,18 +35,6 @@ carte_clim_diagnostic_presence_babysitting:
             const babysitting = states['input_boolean.mode_babysitting']?.state === "on";
 
             return (presence || babysitting)
-              ? "rgba(76, 175, 80, 0.2)"    // 🟢 autorisé
-              : "rgba(158, 158, 158, 0.2)"; // ⚪ bloqué
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
           ]]]
-    icon:
-      - width: 26px
-      - height: 26px
-      - color: '#000000'
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    label:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'

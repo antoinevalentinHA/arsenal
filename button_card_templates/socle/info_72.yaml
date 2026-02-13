@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE INFO (72)
+#     socle_info_72
+# ----------------------------------------------------------
+# Carte information système / infra :
+# - lecture seule
+# - bleu info
+# - typo canon
+# ==========================================================
+
+socle_info_72:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 72px
+      - background-color: rgba(33, 150, 243, 0.25)
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'

@@ -43,7 +43,7 @@ views:
                 square: false
                 cards:
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_exterieur
                     name: Température
                     icon: mdi:thermometer
@@ -53,7 +53,7 @@ views:
                       - sensor.temperature_exterieur
                       - sensor.couleur_temperature_exterieur
                   - type: custom:button-card
-                    template: carte_humidite
+                    template: socle_kpi
                     entity: sensor.humidite_relative_exterieur
                     name: Humidité relative
                     icon: mdi:water-percent
@@ -61,7 +61,7 @@ views:
                       - sensor.humidite_relative_exterieur
                       - sensor.couleur_humidite_relative_exterieur
                   - type: custom:button-card
-                    template: carte_humidite_absolue
+                    template: socle_kpi
                     entity: sensor.humidite_absolue_exterieur
                     name: Humidité absolue
                     icon: mdi:water
@@ -83,7 +83,7 @@ views:
                 square: false
                 cards:
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_direction
                     name: Température
                     icon: mdi:thermometer
@@ -93,7 +93,7 @@ views:
                       - sensor.temperature_direction
                       - sensor.couleur_temperature_direction
                   - type: custom:button-card
-                    template: carte_humidite
+                    template: socle_kpi
                     entity: sensor.humidite_relative_direction
                     name: Humidité relative
                     icon: mdi:water-percent
@@ -101,7 +101,7 @@ views:
                       - sensor.humidite_relative_direction
                       - sensor.couleur_humidite_relative_direction
                   - type: custom:button-card
-                    template: carte_humidite_absolue
+                    template: socle_kpi
                     entity: sensor.humidite_absolue_direction
                     name: Humidité absolue
                     icon: mdi:water
@@ -110,7 +110,7 @@ views:
                       - sensor.couleur_humidite_absolue_direction
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_direction
                 name: Humidex Bureau
                 triggers_update:
@@ -131,7 +131,7 @@ views:
                 square: false
                 cards:
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_compta
                     name: Compta
                     icon: mdi:thermometer
@@ -140,7 +140,7 @@ views:
                       - sensor.temperature_compta
                       - sensor.couleur_temperature_compta
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_qualite
                     name: Qualité
                     icon: mdi:thermometer
@@ -149,7 +149,7 @@ views:
                       - sensor.temperature_qualite
                       - sensor.couleur_temperature_qualite
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_devis
                     name: Devis
                     icon: mdi:thermometer
@@ -158,7 +158,7 @@ views:
                       - sensor.temperature_devis
                       - sensor.couleur_temperature_devis
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_commercial
                     name: Commercial
                     icon: mdi:thermometer
@@ -180,7 +180,7 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_stock_carton
                     name: Stock Carton
                     icon: mdi:thermometer
@@ -190,7 +190,7 @@ views:
                       - sensor.couleur_temperature_stock_carton
 
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_stock_pf
                     name: Stock PF
                     icon: mdi:thermometer
@@ -200,7 +200,7 @@ views:
                       - sensor.couleur_temperature_stock_pf
 
                   - type: custom:button-card
-                    template: carte_humidite
+                    template: socle_kpi
                     entity: sensor.humidite_relative_stock_carton
                     name: Stock Carton
                     icon: mdi:water-percent
@@ -209,7 +209,7 @@ views:
                       - sensor.couleur_humidite_relative_stock_carton
 
                   - type: custom:button-card
-                    template: carte_humidite
+                    template: socle_kpi
                     entity: sensor.humidite_relative_stock_pf
                     name: Stock PF
                     icon: mdi:water-percent
@@ -230,7 +230,7 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_komori
                     name: Komori
                     icon: mdi:thermometer
@@ -240,7 +240,7 @@ views:
                       - sensor.couleur_temperature_komori
 
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_bobst
                     name: Bobst
                     icon: mdi:thermometer
@@ -250,7 +250,7 @@ views:
                       - sensor.couleur_temperature_bobst
 
                   - type: custom:button-card
-                    template: carte_temperature
+                    template: socle_kpi
                     entity: sensor.temperature_media
                     name: Media
                     icon: mdi:thermometer
@@ -260,7 +260,7 @@ views:
                       - sensor.couleur_temperature_media
 
                   - type: custom:button-card
-                    template: carte_humidite
+                    template: socle_kpi
                     entity: sensor.humidite_relative_komori
                     name: Komori
                     icon: mdi:water-percent
@@ -269,7 +269,7 @@ views:
                       - sensor.couleur_humidite_relative_komori
 
                   - type: custom:button-card
-                    template: carte_humidite
+                    template: socle_kpi
                     entity: sensor.humidite_relative_bobst
                     name: Bobst
                     icon: mdi:water-percent
@@ -278,7 +278,7 @@ views:
                       - sensor.couleur_humidite_relative_bobst
 
                   - type: custom:button-card
-                    template: carte_humidite
+                    template: socle_kpi
                     entity: sensor.humidite_relative_media
                     name: Media
                     icon: mdi:water-percent

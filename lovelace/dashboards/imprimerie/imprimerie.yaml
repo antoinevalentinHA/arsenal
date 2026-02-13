@@ -37,27 +37,27 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_direction
                 name: Direction
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_compta
                 name: Compta
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_qualite
                 name: Qualité
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_devis
                 name: Devis
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_commercial
                 name: Commercial
 
@@ -67,17 +67,17 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_komori
                 name: Komori
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_bobst
                 name: Bobst
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_media
                 name: Media
 

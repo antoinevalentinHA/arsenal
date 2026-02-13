@@ -16,14 +16,9 @@
 #################################################################
 
 carte_clim_synthese:
-  template: carte_base
+  template: socle_status_label_xl_interactif
 
   entity: sensor.clim_mode_local
-
-  show_icon: true
-  show_name: false
-  show_state: true
-  show_label: true
 
   tap_action:
     action: navigate
@@ -64,8 +59,6 @@ carte_clim_synthese:
       if (mode === 'heat') return 'Chauffage léger';
       return 'État : ' + (mode || '-');
     ]]]
-
-  color_type: card
 
   state:
     # 🧊 COOL
@@ -113,21 +106,3 @@ carte_clim_synthese:
       styles:
         card:
           - background-color: rgba(158,158,158,0.2)
-
-  styles:
-    card:
-      - height: 80px
-      - border-radius: 12px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-    icon:
-      - width: 28px
-      - height: 28px
-      - color: '#000000'
-    state:
-      - font-weight: 600
-      - font-size: 15px
-      - color: '#000000'
-    label:
-      - font-size: 13px
-      - color: '#000000'

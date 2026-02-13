@@ -64,7 +64,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_jardin
                 name: Température
                 icon: mdi:thermometer
@@ -88,7 +88,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_entree
                 name: Entrée
                 icon: mdi:thermometer
@@ -100,7 +100,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_sejour
                 name: Séjour
                 icon: mdi:thermometer
@@ -112,7 +112,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_palier
                 name: Palier
                 icon: mdi:thermometer
@@ -134,7 +134,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_chambre_arnaud
                 name: Arnaud
                 icon: mdi:thermometer
@@ -146,7 +146,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_chambre_matthieu
                 name: Matthieu
                 icon: mdi:thermometer
@@ -158,7 +158,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_chambre_parents
                 name: Parents
                 icon: mdi:thermometer
@@ -170,7 +170,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 name: Petite Maison
                 icon: mdi:thermometer
                 entity: sensor.temperature_petite_maison
@@ -192,7 +192,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_sdb_parents
                 name: Parents
                 icon: mdi:thermometer
@@ -204,7 +204,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_sdb_enfants
                 name: Enfants
                 icon: mdi:thermometer
@@ -226,7 +226,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_garage
                 name: Garage
                 icon: mdi:thermometer
@@ -238,7 +238,7 @@ views:
                   - input_select.saison
 
               - type: custom:button-card
-                template: carte_temperature
+                template: socle_kpi
                 entity: sensor.temperature_cave
                 name: Cave
                 icon: mdi:thermometer

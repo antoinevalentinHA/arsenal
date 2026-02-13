@@ -35,7 +35,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_jardin
                 name: Humidex
                 triggers_update:
@@ -53,7 +53,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_entree
                 name: Entrée
                 triggers_update:
@@ -61,7 +61,7 @@ views:
                   - sensor.couleur_humidex_entree
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_sejour
                 name: Séjour
                 icon: mdi:thermometer-water
@@ -80,7 +80,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_chambre_arnaud
                 name: Arnaud
                 triggers_update:
@@ -88,7 +88,7 @@ views:
                   - sensor.couleur_humidex_chambre_arnaud
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_chambre_matthieu
                 name: Matthieu
                 triggers_update:
@@ -96,7 +96,7 @@ views:
                   - sensor.couleur_humidex_chambre_matthieu
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_chambre_parents
                 name: Parents
                 triggers_update:
@@ -104,7 +104,7 @@ views:
                   - sensor.couleur_humidex_chambre_parents
 
               - type: custom:button-card
-                template: carte_humidex
+                template: socle_kpi
                 entity: sensor.humidex_petite_maison
                 name: Petite Maison
                 icon: mdi:thermometer-water

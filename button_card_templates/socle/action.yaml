@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE ACTION SIMPLE (V1)
+#     socle_action_simple  (72px)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Socle pour actions globales volontaires :
+#   - name + icon
+#   - pas d’état
+#   - pas de label
+#   - confirmation gérée par les cartes dérivées
+#
+# 🧩 PÉRIMÈTRE
+#   - UI uniquement
+#   - ne fixe pas l’action
+# ==========================================================
+
+socle_action_simple:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: false
+  show_label: false
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)

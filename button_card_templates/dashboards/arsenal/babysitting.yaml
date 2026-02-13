@@ -15,7 +15,7 @@
 #################################################################
 
 carte_mode_babysitting:
-  template: carte_toggle
+  template: socle_toggle
 
   tap_action:
     action: toggle
@@ -31,11 +31,16 @@ carte_mode_babysitting:
     action: navigate
     navigation_path: /reglages-dashboard/maison
 
-  styles:
-    card:
-      - background-color: |
-          [[[
-            return entity?.state === 'on'
-              ? 'rgba(76, 175, 80, 0.2)'    // 🟢 actif
-              : 'rgba(158, 158, 158, 0.2)'; // ⚪ inactif
-          ]]]
+  double_tap_action:
+    action: none
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)

@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE TOGGLE (V1)
+#     socle_toggle  (TPL-06 - toggle)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Modèle canon pour tuiles "toggle" :
+#   - action principale : toggle
+#   - action longue     : more-info
+#   - typographie/métriques héritées du socle UI
+#   - coloration on/off via state (comme ton carte_toggle actuel)
+#
+# 🧩 PÉRIMÈTRE
+#   - UI uniquement : pas de logique métier (seuils, mapping)
+#   - Ne gère pas de background-color dynamique par entité autre
+#     que les couleurs on/off déclarées ci-dessous.
+#
+# ✅ COMPATIBILITÉ
+#   Cible : remplacer progressivement `carte_toggle` par `socle_toggle`
+#   sans changement visuel (typographie, taille, centrage).
+# ==========================================================
+
+socle_toggle:
+  template: carte_base_v2
+
+  show_icon: true
+  show_state: true
+  show_name: true
+  color_type: card
+
+  tap_action:
+    action: toggle
+  hold_action:
+    action: more-info
+  double_tap_action:
+    action: none
+
+  state:
+    - value: 'on'
+      color: rgba(76, 175, 80, 0.2)
+    - value: 'off'
+      color: rgba(158, 158, 158, 0.2)
+
+  styles:
+    name:
+      - justify-self: center
+      - text-align: center
+
+    state:
+      - justify-self: center
+      - text-align: center

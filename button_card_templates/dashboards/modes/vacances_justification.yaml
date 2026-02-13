@@ -8,11 +8,7 @@
 # ==============================================================
 
 carte_vacances_justification:
-  template: carte_base
-  show_icon: false
-  show_name: true
-  show_state: true
-  show_label: false
+  template: socle_status_compact
 
   name: Vacances – Justification
 
@@ -27,21 +23,6 @@ carte_vacances_justification:
       return map[entity.state] || entity.state;
     ]]]
 
-  tap_action:
-    action: none
-
   styles:
     card:
-      - height: 64px
-      - border-radius: 12px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
       - background-color: rgba(33,150,243,0.12)
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 14px
-      - font-weight: 400
-      - color: '#333'

@@ -1,34 +1,9 @@
 # ==============================================================
 # 🔍 TEMPLATE : carte_clim_decision
-# --------------------------------------------------------------
-# Carte décisionnelle de la climatisation — UI Arsenal.
-#
-# 🧠 Rôle :
-#   - Afficher l’état RÉEL de la climatisation
-#   - Vérifier la cohérence avec l’intention logique
-#   - Signaler visuellement toute divergence
-#
-# 🧩 Principe Arsenal :
-#   - Le backend décide et applique
-#   - La carte observe, compare et alerte
-#
-# 📡 Sources :
-#   - Intention : sensor.clim_raison_decision
-#   - Réel      : sensor.clim_action_en_cours
-#   - Blocage   : binary_sensor.clim_bloquee
-#
-# 🎨 Codes couleur :
-#   - 🟢 Vert  : cohérence
-#   - 🟠 Orange : attente / blocage
-#   - 🔴 Rouge : incohérence
 # ==============================================================
 
 carte_clim_decision:
-  color_type: card
-  show_icon: false
-  show_name: true
-  show_state: true
-  show_label: true
+  template: socle_decision_72
 
   name: Clim – État réel
 
@@ -51,34 +26,28 @@ carte_clim_decision:
     ]]]
 
   state:
-    # 🟢 COHÉRENCE — action réelle alignée avec la raison calculée
     - operator: template
       value: |
         [[[
           const action = entity.state;
           const raison = states['sensor.clim_raison_decision']?.state || '';
 
-          // Cas 1 : aucune demande → clim à l'arrêt ou bloquée = cohérent
           if (raison === 'aucune_demande' && (action === 'arret' || action === 'bloquee')) {
             return true;
           }
 
-          // Cas 2 : blocage structurel → bloquée ou arrêt = cohérent
           if (raison.startsWith('blocage') && (action === 'bloquee' || action === 'arret')) {
             return true;
           }
 
-          // Cas 3 : humidité élevée → déshumidification active
           if (raison === 'humidite_elevee' && action === 'dry_actif') {
             return true;
           }
 
-          // Cas 4 : température élevée → refroidissement actif
           if (raison === 'temperature_elevee' && action === 'cool_actif') {
             return true;
           }
 
-          // Cas 5 : soutien chauffage → chauffage actif
           if (raison === 'soutien_chauffage' && action === 'heat_actif') {
             return true;
           }
@@ -89,7 +58,6 @@ carte_clim_decision:
         card:
           - background-color: rgba(76,175,80,0.2)
 
-    # 🟠 ATTENTE / BLOCAGE — situation cohérente mais inhibée
     - operator: template
       value: |
         [[[
@@ -97,7 +65,6 @@ carte_clim_decision:
           const raison = states['sensor.clim_raison_decision']?.state || '';
           const bloquee = states['binary_sensor.clim_bloquee']?.state === 'on';
 
-          // Blocage structurel assumé
           if (bloquee && (action === 'bloquee' || action === 'arret')) {
             return true;
           }
@@ -108,29 +75,7 @@ carte_clim_decision:
         card:
           - background-color: rgba(255, 152, 0, 0.25)
 
-    # 🔴 DIVERGENCE — tout le reste
     - operator: default
       styles:
         card:
           - background-color: rgba(244,67,54,0.2)
-
-  tap_action:
-    action: none
-
-  styles:
-    card:
-      - height: 72px
-      - border-radius: 12px
-      - padding: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    state:
-      - font-size: 15px
-      - font-weight: 600
-      - color: '#111'
-    label:
-      - font-size: 12px
-      - color: '#555'

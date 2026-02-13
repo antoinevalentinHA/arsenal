@@ -1,18 +1,9 @@
 #################################################################
 # 🌬️ CARTE CLIM — DIAGNOSTIC AÉRATION ÉTAGE
-# ---------------------------------------------------------------
-# Indique si l’aération est préférable à l’étage dans le contexte
-# du fonctionnement de la climatisation (ex : mode Dry bloqué).
-#
-# Principe Arsenal :
-#   - Carte de diagnostic
-#   - Lecture seule
-#   - Aucune action directe
-#   - Décision portée par le binary_sensor
 #################################################################
 
 carte_clim_diagnostic_aeration_etage:
-  template: carte_base
+  template: socle_action_label_compact
 
   entity: binary_sensor.aeration_preferable_etage
 
@@ -33,14 +24,6 @@ carte_clim_diagnostic_aeration_etage:
       - background-color: |
           [[[
             return entity.state === "off"
-              ? "rgba(76, 175, 80, 0.2)"   // 🟢 pas d’aération recommandée
-              : "rgba(158, 158, 158, 0.2)"; // ⚪ aération préférable
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
           ]]]
-    name:
-      - font-size: 13px
-      - font-weight: 500
-      - color: '#111'
-    label:
-      - font-size: 13px
-      - font-weight: 400
-      - color: '#111'
