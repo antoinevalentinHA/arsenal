@@ -604,6 +604,19 @@ sensor: !include_dir_merge_list 12_sensor_platforms/
 
 ## 5.13 — button_card_templates
 
+### Gouvernance / Références normatives
+
+Les templates `button-card` sont des briques UI réutilisables.
+Ils relèvent de la gouvernance UI d’Arsenal et sont documentés dans :
+
+- `/homeassistant/documentation_arsenal/ui/architecture.md`
+
+Ce présent document ne décrit que :
+- la forme structurelle des fichiers,
+- et les règles d’inclusion.
+
+---
+
 ### Include
 
 ```yaml
@@ -683,7 +696,13 @@ lovelace:
 
 Bibliothèque UI structurelle Arsenal.
 
+Ce dossier contient des **briques UI réutilisables** destinées à :
+- factoriser les éléments transverses communs,
+- réduire la duplication dans les dashboards,
+- garantir une structure uniforme (navigation, alertes, barres, blocs répétitifs).
+
 Aucune logique métier.
+Aucune vue complète (dashboard) ne doit y être déclarée.
 
 ---
 
