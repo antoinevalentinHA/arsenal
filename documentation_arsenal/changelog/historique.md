@@ -42,15 +42,61 @@ Ce document décrit **l’évolution du système ARSENAL dans le temps** (lectur
 | 04/02/2026 22:17 | v8.3.2         | Templates : **factorisation par ancres YAML** ; Modes maison recentrés sur ECS ; déparasitage effets de bord. |
 | 08/02/2026 12:03 | v9.0.0         | Extinction complète legacy templates ; assainissement arborescences ; modernisation loader Lovelace ; UI Chauffage rebuild fiable. |
 | 08/02/2026 23:38 | v9.0.1         | Consolidation doctrinale : **override opérateur souverain (N0)** ; UI Chauffage “observable only” ; ECS au niveau constitutionnel (corpus). |
+| 14/02/2026 14:45 | v9.1           | UI : architecture **socle → génériques → métier** + factorisation Lovelace ; migration port externe **8443→9443** (webhooks). |
+| 14/02/2026 15:23 | v9.1.1         | Consolidation post-upgrade HA Core (2026.2.2) + compat webhooks ; **aucun** changement métier (bruit `.storage`/Git). |
 
 ---
 
 # 1) Grandes phases (lecture “évolution” plutôt que “versions”)
 
-## Phase A — Pré-Arsenal (2025-08 → 20251010)
-**Objectif global présumé :** stabiliser une base HA avant institution Arsenal.  
-**Données disponibles dans cet échange :** jalons temporels uniquement (pas de contenu).  
-➡️ Cette phase est conservée comme **repère historique** (pas d’analyse doctrinale possible ici).
+## Phase A — Pré-Arsenal (2025-08 → 20251010) : bascule vers “système gouvernable”
+
+### 2025_08_final (31/08)
+- Repère historique : contenu non détaillé ici.
+
+### 20250920_final (20/09) — **Consolidation structurante (G1)**
+**Signal (doctrine/gouvernance)**
+- Migration des includes vers **répertoires canoniques** :
+  - `automatisations/` → `automations/`
+  - `sensors/` → `template_sensors/`
+  - `binary_sensors/` → `template_binary_sensors/`
+  - `alarm_control_panel/` → `template_alarm_panels/`
+- Retrait du chargement `scene: !include scenes.yaml` (sortie explicite d’un tiroir historique).
+
+**Signal (UI)**
+- Refonte navigation : vues “Accueil” + badges nav.
+- Apparition de gabarits `button-card` structurants (boutons nav + status batterie).
+
+**Signal (mesure/énergie)**
+- Extension `utility_meter` (industrialisation des cycles) + périmètre mobilité (autonomie Audi).
+
+**Signal (Zigbee / Secrets)**
+- Ajouts devices Zigbee2MQTT (prises + météo) + backup coordinateur.
+- Secrets : `entry_id` intégrations (Netatmo/ViCare/MQTT).
+
+**Point clé**
+- Transition d’ère : l’essentiel devient **cohérence de chargement + chemins stables**, pas “feature par feature”.
+
+### 20251010_final (10/10) — **Industrialisation / durcissement (G4-like, volume massif)**
+**Signal (infrastructure)**
+- `timer:` devient un pilier (watchdogs/anti-rebond) + remplacement progressif des `delay`.
+- Découplage : automatisations “orchestratrices” → **scripts unifiés** (alarme, ECS, chauffage, panne secteur).
+
+**Signal (Sécurité / Alarme)**
+- Délai d’entrée sur **timer** (`timer.delai_entree`) piloté par `input_number.alarme_delai_entree`.
+- Durcissements : confirmations anti-faux positifs, correction post-reboot, logique plus défensive (responsabilité portée par scripts).
+
+**Signal (Chauffage / ViCare / ECS / Clim)**
+- Chauffage geoloc : programme COMFORT↔REDUCED, anti-rebond via timer, dépendance attribut `active_vicare_program`.
+- ECS : cycle unifié durci (verrou + watchdog) + mode vaisselle ; fin sécurisée (abaissement 10°C confirmé).
+- Clim : séquences d’exécution plus robustes (wait mode appliqué) + notifications structurées.
+
+**Point clé**
+- Naissance de la “discipline” Arsenal : **timers + scripts souverains + états de verrou** comme primitives.
+
+➡️ **Inflexion Phase A :** préparation du terrain “Arsenal” : sources uniques, primitives robustes, structure par domaines.
+
+---
 
 ## Phase B — Arsenal v1 → v5 (01/12/2025 → 22/12/2025)
 **Objectif global :** naissance Arsenal, premières règles, montée en structuration.  
@@ -166,6 +212,35 @@ Ce document décrit **l’évolution du système ARSENAL dans le temps** (lectur
 
 ➡️ **Inflexion v9 :** “modernisation technique totale + clarification politique : qui est souverain, et que l’UI a le droit de dire”.
 
+## v9.1.0 (UI socle 3 niveaux + factorisation + compat webhooks)
+- **UI (architecture 3 niveaux) :**
+  - stabilisation explicite du triptyque **socle UI → templates génériques → templates métier**,
+  - renforcement du socle : nouvelles variantes KPI (ex. sans icône), STATUS (ex. sans nom), alignements appliqués sur plusieurs dashboards (CO₂, Clim diag, VMC, etc.).
+- **Lovelace (factorisation structurelle) :**
+  - includes dédiés pour `section_header` / `sub_section_header`,
+  - refactor de dashboards (réorganisation des sections, réduction de duplication).
+- **Accès / compat :**
+  - migration du port externe Home Assistant **8443 → 9443** (objectif : continuité des webhooks Netatmo/Withings et stabilité d’accès).
+- **Documentation :**
+  - refonte UI (corpus socle_ui/),
+  - documentation “architecture des includes”,
+  - retrait de docs “évolutions futures” devenues obsolètes.
+- **Invariant :** aucun changement de décision métier — c’est une consolidation de lecture + structure.
+
+## v9.1.1 (post-upgrade HA Core 2026.2.2 — consolidation technique)
+- **Chronologie canonique :**
+  1) migration port **8443 → 9443**,
+  2) stabilisation/enregistrement v9.1.0,
+  3) upgrade **Home Assistant Core 2026.2.2**,
+  4) stabilisation/enregistrement **v9.1.1**.
+- **Portée réelle :**
+  - ajustements strictement techniques pour permettre l’upgrade + lever un blocage webhook,
+  - variations majoritairement **`.storage/*` + artefacts Git** (bruit post-upgrade),
+  - **aucun** ajout/modification “métier Arsenal”.
+- **Statut :** patch de compat/stabilisation (pas une évolution fonctionnelle).
+
+➡️ **Inflexion v9.1.x :** “industrialiser l’UI (socle → génériques → métier) + factoriser Lovelace, tout en sécurisant l’accès externe (webhooks) sans toucher au moteur.”
+
 ---
 
 # 3) Matrice transversale (où se déplacent les responsabilités)
@@ -183,6 +258,7 @@ Ce document décrit **l’évolution du système ARSENAL dans le temps** (lectur
 - v8.2 : includes navigation (structure factorisée).
 - v9.0.0 : persistantes Chauffage découplées des scripts.
 - v9.0.1 : projection “observable only” pour Chauffage (programme réel).
+- v9.1.0 : **UI à 3 niveaux (socle → génériques → métier)** + includes Lovelace (headers) → réduction de duplication, meilleure gouvernance visuelle.
 
 ## C) Observabilité
 - v7.3 : ECS fin de cycle = événement consommable (ACK).
@@ -200,6 +276,7 @@ Ce document décrit **l’évolution du système ARSENAL dans le temps** (lectur
 - v8.x : extension “outils externes” + prompts/guides.
 - v8.1.1 : découpage contrats Chauffage.
 - v9.0.1 : ECS “constitutionnel” (corpus spécialisé + changelog).
+- v9.1.0 : **corpus socle_ui** + doc “architecture includes” + purge docs obsolètes.
 
 ==================================================
 FIN DU DOCUMENT
