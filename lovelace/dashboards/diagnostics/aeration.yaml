@@ -60,7 +60,7 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
-            name: 🔒 Blocage chauffage
+            name: 🔒 Effet sur chauffage
 
           - type: markdown
             content: |
@@ -98,7 +98,7 @@ views:
               Le chauffage peut être imposé en Confort indépendamment des blocages.  
 
               {% else %}
-              **🟢 Aucun blocage chauffage actif**
+              **🟢 Aucun verrou chauffage lié à l’aération**
               {% endif %}
 
           - type: custom:button-card

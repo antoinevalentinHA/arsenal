@@ -113,14 +113,18 @@ views:
               Le chauffage est volontairement **interdit** par le système.
 
               - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}
+              - **Intention :** {{ intention }}  
               - **Cause :**
                 {% if poele %}poêle actif{% endif %}
                 {% if aeration %}aération / post-aération{% endif %}
                 {% if non_autorise %}chauffage non autorisé{% endif %}
 
+              {% if aeration %}
+              🔁 Une reprise automatique est attendue après la fin du verrou post-aération.  
+              {% else %}
               ⚖️ Aucun seuil thermique n’est surveillé.  
               🔕 Aucune reprise automatique n’est attendue.
+              {% endif %}
 
               {# =======================================================
                  🔵 STANDBY — HYSTERESIS THERMIQUE
@@ -217,6 +221,53 @@ views:
 
               Aucune action utilisateur n’est requise.
 
+              {% endif %}
+
+          ########################################################
+          # 🔒 1bis) Verrou aération / post-aération (diagnostic)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔒 Verrou post-aération
+
+          - type: markdown
+            content: |
+              {% set blocage = is_state('input_boolean.chauffage_blocage_aeration','on') %}
+              {% set episode = is_state('input_boolean.aeration_episode_en_cours','on') %}
+
+              {% set d_bloc = states('input_datetime.chauffage_fin_blocage_aeration') %}
+              {% set d_bloc_fmt = (
+                as_timestamp(as_datetime(d_bloc)) | timestamp_custom('%d/%m %H:%M')
+              ) if d_bloc not in ['unknown','unavailable','none',''] else '—' %}
+
+              {% set d_ana = states('input_datetime.analyse_deltat_disponible') %}
+              {% set d_ana_fmt = (
+                as_timestamp(as_datetime(d_ana)) | timestamp_custom('%d/%m %H:%M')
+              ) if d_ana not in ['unknown','unavailable','none',''] else '—' %}
+
+              {% set override = is_state('input_boolean.mode_confort_chauffage','on') %}
+
+              {% if blocage and episode %}
+              **🟥 Chauffage suspendu (aération en cours)**  
+              Le chauffage est temporairement suspendu pendant l’aération.  
+
+              Fin prévue du blocage : **{{ d_bloc_fmt }}**  
+              Analyse ΔT programmée à : **{{ d_ana_fmt }}**
+
+              {% elif blocage and not episode %}
+              **🟧 Stabilisation thermique (post-aération)**  
+              L’aération est terminée, mais une phase d’inertie est encore active.  
+
+              Fin prévue du blocage : **{{ d_bloc_fmt }}**  
+              Analyse ΔT programmée à : **{{ d_ana_fmt }}**
+
+              {% elif override %}
+              **🟦 Override opérateur (confort forcé)**  
+              Le chauffage peut être imposé en Confort indépendamment des blocages.  
+
+              {% else %}
+              **🟢 Aucun verrou post-aération actif**
               {% endif %}
 
           ########################################################
