@@ -39,6 +39,19 @@
 - Couverture typique :
   - KPI “bruts” (valeurs techniques, compteurs, dB, ppm) quand la couleur est gérée ailleurs ou inutile
 
+#### Variante : `socle_kpi_72_sans_icone`
+- Type : **SOCLE_KPI_NEUTRE / KPI_TILE (72px, sans icone)**
+- Cible catalogue : **TPL-03 — TILE_KPI** (variante “neutre / sans icone / sans couleur”)
+- Profil UI :
+  - Affiche : **name + state**
+  - Masque : **icon + label**
+  - Actions : **neutralisées** (tap/hold/double_tap = none)
+- Typo KPI canon :
+  - `state: 18px / 700`
+  - textes strict `#111`
+- Couverture typique :
+  - KPI “bruts” lorsque l’icone est inutile ou volontairement supprimée, et que la couleur n’est pas souhaitée
+
 ---
 
 ### Socle : `socle_kpi_label`
@@ -66,11 +79,27 @@
 - Couverture typique :
   - KPI “capteur + contexte” quand tu veux **une UI strictement neutre** (pas de palette/couleur)
 
+#### Variante : `socle_kpi_label_72_sans_icone`
+- Type : **SOCLE_KPI_LABEL_NEUTRE / KPI_TILE + LABEL (72px, sans icone, sans couleur)**
+- Cible catalogue : **TPL-03 — TILE_KPI** (variante “neutre + label / sans icone”)
+- Profil UI :
+  - Affiche : **name + state + label**
+  - Masque : **icon**
+  - Actions : **neutralisées** (tap/hold/double_tap = none)
+- Typo :
+  - `state: 18px / 700`
+  - `label: 13px / 400`
+  - textes strict `#111`
+- Couverture typique :
+  - KPI “capteur + contexte” en UI strictement neutre, lorsque l’icone est inutile ou volontairement supprimée
+
 ---
 
 ## Synthese — rattachement au catalogue (templates)
 - **TPL-03 / TILE_KPI**
   - `socle_kpi` : socle KPI canon (state emphase + couleur issue capteur couleur)
   - `socle_kpi_72` : KPI neutre (sans couleur)
+  - `socle_kpi_72_sans_icone` : KPI neutre (sans couleur, sans icone)
   - `socle_kpi_label` : KPI + label (avec couleur via `socle_kpi`)
   - `socle_kpi_label_72` : KPI + label neutre (sans couleur)
+  - `socle_kpi_label_72_sans_icone` : KPI + label neutre (sans couleur, sans icone)

@@ -62,6 +62,19 @@
 - Usage typique :
   - statuts avec “raison courte / justification / détail” en 2e ligne
 
+#### Variante : `socle_status_label_sans_nom`
+- Type : **SOCLE_STATUS_LABEL / STATUS_TILE + LABEL (read-only, sans nom)**
+- Cible catalogue : **TPL-05 — TILE_STATUS** (variante “enrichie : state + label, sans name”)
+- Profil UI :
+  - Affiche : **state + label**
+  - Masque : **name**
+- Actions : neutralisées (tap/hold/double = none)
+- Typo spécifique :
+  - `state: 15px / 600 / #111` (emphase)
+  - `label: 12px / 400 / #111 / opacity 0.85`
+- Usage typique :
+  - synthèses où le contexte “name” est redondant (car déjà porté par la section, une carte parente, ou une ligne de titre) et où seule la lecture **state + label** est requise
+
 ---
 
 ### Socle : `socle_status_label_72`
@@ -112,6 +125,7 @@
   - `socle_status_72` : read-only, icon+name+state, 72px
   - `socle_status_compact` : read-only, name+state, 64px
   - `socle_status_label` : read-only, name+state+label, emphase state
+  - `socle_status_label_sans_nom` : read-only, state+label (sans name), emphase state
   - `socle_status_label_72` : icon+name+label (sans state)
   - `socle_status_label_xl` : icon+state+label (sans name) + XL 80px
   - `socle_status_label_xl_interactif` : idem + more-info

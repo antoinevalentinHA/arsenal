@@ -14,6 +14,20 @@
 
 ---
 
+### Socle : `socle_action_simple_sans_couleur`
+- Type : **SOCLE_ACTION / ACTION_TILE (72px) — STRUCTUREL**
+- Cible catalogue : **TPL-06 — tpl_tile_action** (variante “structurelle / neutre”)
+- Profil UI :
+  - Affiche : **icon + name**
+  - Masque : **state + label**
+  - Actions : **neutralisées** (tap/hold/double_tap = none)
+- Severity / couleur :
+  - **Aucune** (ne fixe pas de `background-color`)
+- Usage typique (couverture) :
+  - Socle de base pour cartes métier qui imposent leur fond (ex : `bouton_navigation`)
+
+---
+
 ### Socle : `socle_action_critical`
 - Type : **SOCLE_ACTION_CRITIQUE / ACTION_TILE (72px)**
 - Cible catalogue : **TPL-06 — tpl_tile_action** (variante “critique”)
@@ -65,6 +79,7 @@
 ## Synthèse — rattachement au catalogue (templates)
 - **TPL-06 / TILE_ACTION**
   - `socle_action_simple` : variante “action volontaire”
+  - `socle_action_simple_sans_couleur` : variante “structurelle / sans fond”
   - `socle_action_critical` : variante “action critique”
   - `socle_action_label_compact` : variante “action + feedback label”
   - `socle_action_script_confirme` : variante “action confirmée + feedback ON/OFF”

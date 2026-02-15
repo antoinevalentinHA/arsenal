@@ -1,0 +1,18 @@
+#################################################################
+# 🏷️ HEADERS — STRUCTURE VISUELLE
+# ---------------------------------------------------------------
+# Titres de sections et sous-sections.
+# Lecture seule, aucune interaction utilisateur.
+#################################################################
+
+section_header:
+  template: socle_header_base
+
+  styles:
+    card:
+      - padding: 6px 0 4px 0
+      - margin: 10px 0 2px 0
+    name:
+      - font-size: 19px
+      - font-weight: 700
+      - line-height: 1.35

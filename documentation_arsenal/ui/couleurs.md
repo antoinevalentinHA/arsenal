@@ -23,8 +23,8 @@ ou harmonisation UI.
 - **Le backend décide**
 - **L’UI observe, traduit et rend lisible**
 
-👉 Toute couleur affichée **doit traduire une réalité métier unique,
-stable et documentée**.
+👉 Toute couleur affichée doit traduire une réalité unique, stable et documentée
+(métier ou structure UI contractuelle).
 
 ---
 
@@ -86,6 +86,36 @@ stable et documentée**.
 
 ---
 
+## 🧭 COULEURS DE STRUCTURE UI (HORS SÉMANTIQUE MÉTIER)
+
+Ces couleurs ne traduisent **pas** un état métier (OK/KO/WARN/OFF/unknown).  
+Elles traduisent une **fonction UI stable** et opposable (navigation, structure, repères).
+
+Elles sont :
+- **statiques**
+- **non décisionnelles**
+- **réservées à l’UI**
+- **interdites** pour encoder un statut ou une condition
+
+---
+
+### 🧭 NAV/HUB — NAVIGATION STRUCTURELLE
+
+**Sémantique unique :**
+- Élément de **navigation**
+- Point d’entrée / hub
+- Regroupement structurel (menu, tuiles d’accès)
+
+**Couleur officielle :**
+`rgba(90, 110, 130, 0.08)`
+
+**Règles d’usage :**
+- Réservé aux **tuiles de navigation** (menu/hub)
+- Ne doit jamais encoder un état (OK/KO/WARN/OFF/unknown)
+- Compatible avec icônes colorées (l’icône reste porteuse d’état si applicable)
+
+---
+
 ## ⚪ GRIS — CAS STRICTEMENT DÉLIMITÉS
 
 ### ⚪ GRIS NEUTRE — INACTIF / AUCUNE DEMANDE
@@ -125,9 +155,8 @@ stable et documentée**.
 ## 🚫 COULEURS ET VARIATIONS INTERDITES
 
 Sont **interdites sans exception** :
-
-- Multiplication de gris intermédiaires
-- Gris décoratifs
+- Multiplication de gris intermédiaires (hors **NAV/HUB** défini ci-dessus)
+- Gris décoratifs (hors **couleurs de structure UI** contractuelles)
 - Couleurs pleines opaques (`#FFFFFF`, `#F0F0F0`, etc.)
 - Dégradés non sémantiques
 - Couleurs “esthétiques” sans rôle fonctionnel
