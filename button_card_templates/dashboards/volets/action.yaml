@@ -1,48 +1,35 @@
 #################################################################
-# 🪟 VOLETS — TEMPLATES UI (ACTIONS)
+# 🪟 VOLETS — TEMPLATES UI (ACTIONS 72 CANON)
 #################################################################
 #
 # 🧠 Rôle :
-#   Template button-card générique destiné aux actions
-#   manuelles sur les volets roulants.
+#   Tuiles d’action volets 72px sans retour d’état.
 #
 # 🎯 Objectifs :
-#   - Centraliser la logique d’appel de service
-#   - Garantir une UI cohérente et sécurisée
-#   - Éviter toute duplication dans les dashboards
-#
-# 🧩 Principe Arsenal :
-#   - Action explicite uniquement (interaction utilisateur)
+#   - UI canonique 72px
+#   - Couleurs Arsenal strictes
 #   - Aucune logique métier
-#   - Aucune décision automatique
-#
-# ⚙️ Fonctionnement :
-#   - Service, cible et données fournis via variables
-#   - Gestion spécifique du service cover.stop_cover
-#   - Confirmation optionnelle avant exécution
-#
-# 🎨 Codes visuels :
-#   - success → action positive (ouvrir / monter)
-#   - danger  → action critique (fermer / descendre)
-#   - neutral → action neutre (stop)
-#
-# 🧪 Robustesse :
-#   - Fallbacks sûrs si variables absentes
-#   - Aucun effet de bord sans interaction humaine
 #
 #################################################################
 
-shutter_action:
+# =============================================================
+# 🧱 BASE FONCTIONNELLE (hérite du socle KPI 72)
+# =============================================================
+shutter_action_base:
+  template: socle_kpi_72
+
   show_state: false
-  show_name: true
+  show_label: false
+
   tap_action:
     action: call-service
     service: |
-      [[[ return variables.service || null ]]]
+      [[[ return variables.service || null; ]]]
     service_data: |
-      [[[ 
+      [[[
         const data = {};
         if (variables.data) Object.assign(data, variables.data);
+
         if (variables.target) {
           if (variables.service?.startsWith("cover.stop_cover")) {
             if (variables.target.entity_id) data.entity_id = variables.target.entity_id;
@@ -50,40 +37,39 @@ shutter_action:
             data.target = variables.target;
           }
         }
+
         return data;
       ]]]
     confirmation:
       text: |
-        [[[ return variables.confirm || null ]]]
+        [[[ return variables.confirm || null; ]]]
+
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
   name: |
-    [[[ return variables.name || '' ]]]
+    [[[ return variables.name || ''; ]]]
   icon: |
-    [[[ return variables.icon || 'mdi:window-shutter' ]]]
+    [[[ return variables.icon || 'mdi:window-shutter'; ]]]
+
+# =============================================================
+# 🟢 OUVRIR — SUCCESS (VERT CANON)
+# =============================================================
+shutter_action_open:
+  template:
+    - shutter_action_base
   styles:
     card:
-      - padding: 4px 6px
-      - border-radius: 8px
-      - box-shadow: var(--ha-card-box-shadow)
-      - height: 60px
-      - background-color: |
-          [[[ 
-            const tone = (variables.tone || 'neutral').toLowerCase();
-            if (tone === 'success') return 'rgba(76,175,80,0.2)';
-            if (tone === 'danger')  return 'rgba(244,67,54,0.2)';
-            return 'rgba(158,158,158,0.2)';
-          ]]]
-    grid:
-      - grid-template-rows: 1fr auto
-      - grid-template-columns: auto
-      - justify-items: center
-      - align-items: center
-    name:
-      - font-weight: 500
-      - font-size: 12px
-      - text-align: center
-      - line-height: 1.1
-      - color: '#111'
-    icon:
-      - width: 28px
-      - height: 28px
-      - color: '#111'
+      - background-color: rgba(76, 175, 80, 0.2)
+
+# =============================================================
+# 🔴 FERMER — DANGER (ROUGE CANON)
+# =============================================================
+shutter_action_close:
+  template:
+    - shutter_action_base
+  styles:
+    card:
+      - background-color: rgba(244, 67, 54, 0.2)

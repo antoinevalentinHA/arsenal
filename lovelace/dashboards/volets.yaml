@@ -31,6 +31,9 @@ views:
       - type: vertical-stack
         cards:
 
+          ##################################################
+          # 🏠 TOUS
+          ##################################################
           - type: custom:button-card
             template: section_header
             name: 🏠 Tous
@@ -40,161 +43,156 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: shutter_action
+                template: shutter_action_open
                 variables:
                   name: Ouvrir
                   icon: mdi:window-shutter-open
-                  tone: success
                   service: script.ouvrir_tous_les_volets
                   confirm: Confirmez-vous l’ouverture de tous les volets ?
+
               - type: custom:button-card
-                template: shutter_action
+                template: shutter_action_close
                 variables:
                   name: Fermer
                   icon: mdi:window-shutter
-                  tone: danger
                   service: script.fermer_tous_les_volets
 
-          - !include ../includes/section_headers/sejour.yaml
+          ##################################################
+          # 🛋️ SÉJOUR
+          ##################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🛋️ Séjour
 
           - type: grid
             columns: 2
             square: false
             cards:
               - type: custom:button-card
-                template: shutter_action
+                template: sub_section_header
+                name: ⬅️ Gauche
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: ➡️ Droit
+
+          - type: grid
+            columns: 4
+            square: false
+            cards:
+              - type: custom:button-card
+                template: shutter_action_open
                 variables:
                   name: Ouvrir
                   icon: mdi:sofa
-                  tone: success
-                  service: script.ouvrir_volets_sejour
+                  service: script.ouvrir_volets_sejour_gauche
                   confirm: Confirmez-vous l’ouverture des volets du séjour ?
+
               - type: custom:button-card
-                template: shutter_action
+                template: shutter_action_close
                 variables:
                   name: Fermer
                   icon: mdi:sofa-outline
-                  tone: danger
+                  service: script.fermer_volets_sejour_gauche
+                  confirm: Confirmez-vous la fermeture des volets du séjour ?
+
+              - type: custom:button-card
+                template: shutter_action_open
+                variables:
+                  name: Ouvrir
+                  icon: mdi:sofa
+                  service: script.ouvrir_volets_sejour_droit
+                  confirm: Confirmez-vous l’ouverture des volets du séjour ?
+
+              - type: custom:button-card
+                template: shutter_action_close
+                variables:
+                  name: Fermer
+                  icon: mdi:sofa-outline
+                  service: script.fermer_volets_sejour_droit
+                  confirm: Confirmez-vous la fermeture des volets du séjour ?
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🛋️ Séjour
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: shutter_action_open
+                variables:
+                  name: Ouvrir
+                  icon: mdi:sofa
+                  service: script.ouvrir_volets_sejour
+                  confirm: Confirmez-vous l’ouverture des volets du séjour ?
+
+              - type: custom:button-card
+                template: shutter_action_close
+                variables:
+                  name: Fermer
+                  icon: mdi:sofa-outline
                   service: script.fermer_volets_sejour
                   confirm: Confirmez-vous la fermeture des volets du séjour ?
 
+          ######################################################
+          # 🛏️ CHAMBRES
+          ######################################################
           - type: custom:button-card
             template: section_header
             name: 🛏️ Chambres
 
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: shutter_action
-                variables:
-                  name: Ouvrir
-                  icon: mdi:window-shutter-open
-                  tone: success
-                  service: script.ouvrir_volets_enfants
-                  confirm: Confirmez-vous l’ouverture des volets de l’étage ?
-              - type: custom:button-card
-                template: shutter_action
-                variables:
-                  name: Fermer
-                  icon: mdi:window-shutter
-                  tone: danger
-                  service: script.fermer_volets_enfants
-                  confirm: Confirmez-vous la fermeture des volets de l’étage ?
-
+          ##################################################
+          # 🛏️ ARNAUD
+          ##################################################
           - type: custom:button-card
-            template: section_header
-            name: 🛋️ Séjour Gauche
+            template: sub_section_header
+            name: 🛏️ Arnaud
 
           - type: grid
             columns: 2
             square: false
             cards:
               - type: custom:button-card
-                template: shutter_action
+                template: shutter_action_open
                 variables:
                   name: Ouvrir
                   icon: mdi:window-shutter-open
-                  tone: success
-                  service: script.ouvrir_volet_sejour_gauche
-                  confirm: Confirmez-vous l’ouverture du volet du séjour ?
-              - type: custom:button-card
-                template: shutter_action
-                variables:
-                  name: Fermer
-                  icon: mdi:window-shutter
-                  tone: danger
-                  service: script.fermer_volet_sejour_gauche
-                  confirm: Confirmez-vous la fermeture du volet du séjour ?
-
-          - type: custom:button-card
-            template: section_header
-            name: 🛋️ Séjour Droit
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: shutter_action
-                variables:
-                  name: Ouvrir
-                  icon: mdi:window-shutter-open
-                  tone: success
-                  service: script.ouvrir_volet_sejour_droit
-                  confirm: Confirmez-vous l’ouverture du volet droit du séjour ?
-              - type: custom:button-card
-                template: shutter_action
-                variables:
-                  name: Fermer
-                  icon: mdi:window-shutter
-                  tone: danger
-                  service: script.fermer_volet_sejour_droit
-                  confirm: Confirmez-vous la fermeture du volet droit du séjour ?
-
-          - !include ../includes/section_headers/chambre_arnaud.yaml
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: shutter_action
-                variables:
-                  name: Ouvrir
-                  icon: mdi:window-shutter-open
-                  tone: success
                   service: script.ouvrir_volet_arnaud
                   confirm: Confirmez-vous l’ouverture du volet de la chambre d’Arnaud ?
+
               - type: custom:button-card
-                template: shutter_action
+                template: shutter_action_close
                 variables:
                   name: Fermer
                   icon: mdi:window-shutter
-                  tone: danger
                   service: script.fermer_volet_arnaud
                   confirm: Confirmez-vous la fermeture du volet de la chambre d’Arnaud ?
 
-          - !include ../includes/section_headers/chambre_matthieu.yaml
+          ##################################################
+          # 🛏️ MATTHIEU
+          ##################################################
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🛏️ Matthieu
 
           - type: grid
             columns: 2
             square: false
             cards:
               - type: custom:button-card
-                template: shutter_action
+                template: shutter_action_open
                 variables:
                   name: Ouvrir
                   icon: mdi:window-shutter-open
-                  tone: success
                   service: script.ouvrir_volet_matthieu
                   confirm: Confirmez-vous l’ouverture du volet de la chambre de Matthieu ?
+
               - type: custom:button-card
-                template: shutter_action
+                template: shutter_action_close
                 variables:
                   name: Fermer
                   icon: mdi:window-shutter
-                  tone: danger
                   service: script.fermer_volet_matthieu
                   confirm: Confirmez-vous la fermeture du volet de la chambre de Matthieu ?
