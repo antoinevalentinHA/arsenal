@@ -84,14 +84,18 @@ views:
 
 
           # ==================================================
-          # 🌳 JARDIN — INTENTION
+          # 🌳 JARDIN
           # ==================================================
+          - !include ../includes/section_headers/jardin.yaml
+
           - type: grid
             square: false
-            columns: 1
+            columns: 2
             cards:
 
-              - !include ../includes/section_headers/jardin.yaml
+              - type: custom:button-card
+                template: carte_jardin_intention_eclairage
+                entity: sensor.jardin_intention_eclairage
 
               # 🌳 Jardin — commande directe
               - type: custom:button-card
@@ -100,22 +104,15 @@ views:
                 icon: mdi:lightbulb
                 entity: switch.prise_jardin
 
-              - !include ../includes/sub_section_headers/intention.yaml
-
-              - type: custom:button-card
-                template: carte_jardin_intention_eclairage
-                entity: sensor.jardin_intention_eclairage
-
-
           # ==================================================
           # 🚗 GARAGE
           # ==================================================
 
-              - !include ../includes/section_headers/garage.yaml
+          - !include ../includes/section_headers/garage.yaml
 
-              # 🚗 Garage — pilotage via script
-              - type: custom:button-card
-                template: carte_action_eclairage_script
-                name: Garage
-                icon: mdi:lightbulb
-                entity: input_boolean.garage_light_state
+          # 🚗 Garage — pilotage via script
+          - type: custom:button-card
+            template: carte_action_eclairage_script
+            name: Garage
+            icon: mdi:lightbulb
+            entity: input_boolean.garage_light_state

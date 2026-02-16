@@ -24,11 +24,13 @@ views:
       - type: vertical-stack
         cards:
 
-          - !include ../../includes/section_headers/cave.yaml
+          - type: custom:button-card
+            template: section_header
+            name: 💧 Humidité relative
 
           - type: tile
             entity: input_number.cave_rh_cible_on
-            name: HR cible ON (%)
+            name: Cible ON
             features_position: inline
             features:
               - type: numeric-input
@@ -36,7 +38,7 @@ views:
 
           - type: tile
             entity: input_number.cave_rh_cible_off
-            name: HR cible OFF (%)
+            name: Cible OFF
             features_position: inline
             features:
               - type: numeric-input

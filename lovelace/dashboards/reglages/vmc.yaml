@@ -28,6 +28,10 @@ views:
             template: section_header
             name: 🎯 Seuils
 
+          - type: custom:button-card
+            template: sub_section_header
+            name: 💧 Humidité relative
+
           - type: grid
             square: false
             columns: 2
@@ -35,7 +39,7 @@ views:
 
               - type: tile
                 entity: input_number.vmc_seuil_on
-                name: on (%)
+                name: "on"
                 features_position: inline
                 features:
                   - type: numeric-input
@@ -43,27 +47,15 @@ views:
 
               - type: tile
                 entity: input_number.vmc_seuil_off
-                name: off (%)
+                name: "off"
                 features_position: inline
                 features:
                   - type: numeric-input
                     style: buttons
 
           - type: custom:button-card
-            template: section_header
-            name: ⏱️ Durée minimale (min)
-
-          - type: tile
-            entity: input_number.vmc_duree_min_haute
-            name: Durée
-            features_position: inline
-            features:
-              - type: numeric-input
-                style: buttons
-
-          - type: custom:button-card
-            template: section_header
-            name: 🫁 Seuils CO₂ (ppm)
+            template: sub_section_header
+            name: 🫁 CO₂
 
           - type: grid
             square: false
@@ -85,3 +77,15 @@ views:
                 features:
                   - type: numeric-input
                     style: buttons
+
+          - type: custom:button-card
+            template: section_header
+            name: ⏱️ Durée minimale
+
+          - type: tile
+            entity: input_number.vmc_duree_min_haute
+            name: Durée
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
