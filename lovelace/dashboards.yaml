@@ -425,13 +425,6 @@ diagnostics-eclairage-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/eclairage.yaml
 
-diagnostics-sommeil-dashboard:
-  mode: yaml
-  title: Diagnostics Sommeil
-  icon: mdi:sleep
-  show_in_sidebar: false
-  filename: lovelace/dashboards/diagnostics/sommeil.yaml
-
 diagnostics-ouvertures-dashboard:
   mode: yaml
   title: Diagnostics Ouvertures

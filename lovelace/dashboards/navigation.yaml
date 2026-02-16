@@ -70,7 +70,7 @@ views:
                     icon: mdi:air-conditioner
                     tap_action:
                       action: navigate
-                      navigation_path: /clim-dashboard/climatisation_
+                      navigation_path: /clim-dashboard/climatisation
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique

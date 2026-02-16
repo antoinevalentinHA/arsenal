@@ -18,12 +18,6 @@ views:
           action: navigate
           navigation_path: /reglages-sommeil-dashboard/sommeil
 
-      - type: custom:button-card
-        template: bouton_diagnostics_badge_carre
-        tap_action:
-          action: navigate
-          navigation_path: /diagnostics-sommeil-dashboard/reveils
-
     # ======================================================
     # 🔊 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
     # ------------------------------------------------------

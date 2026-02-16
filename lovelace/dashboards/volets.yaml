@@ -85,7 +85,7 @@ views:
                 variables:
                   name: Ouvrir
                   icon: mdi:sofa
-                  service: script.ouvrir_volets_sejour_gauche
+                  service: script.ouvrir_volet_sejour_gauche
                   confirm: Confirmez-vous l’ouverture des volets du séjour ?
 
               - type: custom:button-card
@@ -93,7 +93,7 @@ views:
                 variables:
                   name: Fermer
                   icon: mdi:sofa-outline
-                  service: script.fermer_volets_sejour_gauche
+                  service: script.fermer_volet_sejour_gauche
                   confirm: Confirmez-vous la fermeture des volets du séjour ?
 
               - type: custom:button-card
@@ -101,7 +101,7 @@ views:
                 variables:
                   name: Ouvrir
                   icon: mdi:sofa
-                  service: script.ouvrir_volets_sejour_droit
+                  service: script.ouvrir_volet_sejour_droit
                   confirm: Confirmez-vous l’ouverture des volets du séjour ?
 
               - type: custom:button-card
@@ -109,12 +109,12 @@ views:
                 variables:
                   name: Fermer
                   icon: mdi:sofa-outline
-                  service: script.fermer_volets_sejour_droit
+                  service: script.fermer_volet_sejour_droit
                   confirm: Confirmez-vous la fermeture des volets du séjour ?
 
           - type: custom:button-card
             template: sub_section_header
-            name: 🛋️ Séjour
+            name: 🛋️ Global
 
           - type: grid
             columns: 2

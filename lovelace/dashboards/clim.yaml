@@ -1,8 +1,8 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: 'Climatisation '
+title: 'Climatisation'
 views:
-  - title: 'Climatisation '
+  - title: 'Climatisation'
     path: climatisation
     icon: mdi:server
 
@@ -63,12 +63,12 @@ views:
           # ==================================================
           # 🧠 DÉCISION
           # ==================================================
+          - !include ../includes/section_headers/decision.yaml
+
           - type: grid
             square: false
-            columns: 1
+            columns: 2
             cards:
-
-              - !include ../includes/section_headers/decision.yaml
 
               - type: custom:button-card
                 template: carte_clim_intention

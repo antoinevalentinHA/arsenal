@@ -1,0 +1,41 @@
+#################################################################
+# 📊 CARTE CAPTEUR À SEUILS / SANS ACTION — UI
+#################################################################
+
+carte_capteur_seuils_sans_action:
+  template: carte_base_v2
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+
+  show_state: true
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      const unit = variables?.unit || '';
+      return isNaN(v) ? '—' : `${v.toFixed(0)} ${unit}`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+            const warn = parseFloat(variables?.seuil_warn);
+            const crit = parseFloat(variables?.seuil_crit);
+
+            // ⚪ Indisponible (charte Arsenal)
+            if (isNaN(v)) return "rgba(158, 158, 158, 0.1)";
+
+            // 🔴 Critique
+            if (!isNaN(crit) && v > crit) return "rgba(244, 67, 54, 0.2)";
+
+            // 🟠 Warning
+            if (!isNaN(warn) && v > warn) return "rgba(255, 152, 0, 0.2)";
+
+            // 🟢 OK
+            return "rgba(76, 175, 80, 0.2)";
+          ]]]

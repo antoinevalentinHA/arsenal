@@ -26,7 +26,7 @@ carte_clim_etat:
 
   tap_action:
     action: navigate
-    navigation_path: /clim-dashboard/climatisation_
+    navigation_path: /clim-dashboard/climatisation
 
   hold_action:
     action: more-info

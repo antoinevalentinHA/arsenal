@@ -22,7 +22,7 @@ carte_clim_synthese:
 
   tap_action:
     action: navigate
-    navigation_path: /clim-dashboard/climatisation_
+    navigation_path: /clim-dashboard/climatisation
 
   hold_action:
     action: more-info

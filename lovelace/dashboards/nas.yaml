@@ -60,7 +60,7 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils
+                    template: carte_capteur_seuils_sans_action
                     entity: sensor.nas_valentin_temperature
                     name: Température
                     icon: mdi:server
@@ -70,7 +70,7 @@ views:
                       seuil_crit: 60
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils
+                    template: carte_capteur_seuils_sans_action
                     entity: sensor.nas_valentin_utilisation_de_la_memoire_reelle
                     name: Mém. utilisée
                     icon: mdi:memory
@@ -80,7 +80,7 @@ views:
                       seuil_crit: 90
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils
+                    template: carte_capteur_seuils_sans_action
                     entity: sensor.nas_valentin_utilisation_du_processeur_autre
                     name: CPU
                     icon: mdi:chip
@@ -90,7 +90,7 @@ views:
                       seuil_crit: 75
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils
+                    template: carte_capteur_seuils_sans_action
                     entity: sensor.nas_valentin_charge_moyenne_du_processeur_15_min
                     name: Charge CPU
                     icon: mdi:cpu-64-bit
@@ -124,7 +124,7 @@ views:
                     icon: mdi:database
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils
+                    template: carte_capteur_seuils_sans_action
                     entity: sensor.nas_valentin_volume_1_volume_utilise
                     name: Utilisation (%)
                     icon: mdi:chart-pie
@@ -134,7 +134,7 @@ views:
                       seuil_crit: 90
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils
+                    template: carte_capteur_seuils_sans_action
                     entity: sensor.nas_valentin_volume_1_temperature_moyenne_du_disque
                     name: T° moy.
                     icon: mdi:thermometer
@@ -144,7 +144,7 @@ views:
                       seuil_crit: 55
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils
+                    template: carte_capteur_seuils_sans_action
                     entity: sensor.nas_valentin_volume_1_temperature_maximale_du_disque
                     name: T° max.
                     icon: mdi:thermometer-alert
@@ -172,7 +172,7 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils
+                    template: carte_capteur_seuils_sans_action
                     entity: sensor.nas_valentin_drive_1_temperature
                     name: Température
                     icon: mdi:thermometer
