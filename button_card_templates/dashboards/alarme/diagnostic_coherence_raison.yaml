@@ -1,0 +1,24 @@
+alarme_diagnostic_coherence_raison:
+  template: socle_info_72
+
+  show_state: false
+  show_label: true
+  name: Raison
+
+  label: >
+    [[[
+      const r = entity.attributes?.raison;
+
+      if (!r || r === "unknown" || r === "unavailable")
+        return "Indisponible";
+
+      const map = {
+        "coherent": "Fonctionnement nominal",
+        "force_on": "Mode test / babysitting actif",
+        "blocage_actif": "Blocage armement automatique actif",
+        "armed_away_avec_presence": "Alarme armée avec présence détectée",
+        "desarme_maison_vide": "Alarme désarmée alors que maison vide"
+      };
+
+      return map[r] || r;
+    ]]]

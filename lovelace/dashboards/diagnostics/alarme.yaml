@@ -34,139 +34,95 @@ views:
       - type: vertical-stack
         cards:
 
-          # ======================================================
-          # 🔐 SECTION : Alarme – Données internes
-          # ------------------------------------------------------
-          #  Architecture :
-          #   - Cerveau central (decision / etat_cible / raison)
-          #   - Application idempotente
-          #   - États purement déclaratifs
-          #
-          #  Objectif :
-          #   - Lisibilité immédiate
-          #   - Debug post-reboot
-          #   - Zéro héritage V1
-          # ======================================================
-
+          # ==========================================================
+          # 🧠 COHÉRENCE SYSTÈME
+          # ==========================================================
           - type: custom:button-card
             template: section_header
-            name: 🔐 Alarme – Diagnostics
+            name: 🧠 Cohérence système
+    
+          - type: custom:button-card
+            entity: binary_sensor.alarme_systeme_coherent
+            template: alarme_diagnostic_coherence
+    
+          - type: custom:button-card
+            entity: binary_sensor.alarme_systeme_coherent
+            template: alarme_diagnostic_coherence_raison
+    
+    
+          # ==========================================================
+          # ⏳ ÉTATS TEMPORELS
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: ⏳ États temporels
 
-          # ======================================================
-          # 🧠 DÉCISION CENTRALE
-          # ======================================================
+          - type: grid
+            square: false
+            columns: 3
+            cards:
+        
+              - type: custom:button-card
+                entity: binary_sensor.delai_desarmement_en_cours
+                template: status_72_info_transitoire
+                name: Délai désarmement
+        
+              - type: custom:button-card
+                entity: timer.delai_entree
+                template: status_72_info_transitoire
+                name: Délai entrée
+        
+              - type: custom:button-card
+                entity: binary_sensor.alarme_armee_auto_recentement
+                template: status_72_info_transitoire
+                name: Armement récent
+    
+    
+          # ==========================================================
+          # 🚨 DIVERGENCE PERSISTANTE
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🚨 Divergence persistante
+    
+          - type: custom:button-card
+            entity: automation.alarme_alerte_divergence_etat_reel_cible
+            template: alarme_diagnostic_divergence_persistante
+    
+    
+          # ==========================================================
+          # 🔒 SANTÉ DES AUTORITÉS
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔒 Santé autorités
 
           - type: custom:button-card
-            template: sub_section_header
-            name: ⚖️ Décision du système
+            entity: alarm_control_panel.alarme_maison
+            template: alarme_diagnostic_autorite_compact
+            name: Panneau alarme
 
-          - type: markdown
-            content: |
-              {% set decision = states('input_text.alarme_decision') %}
-              {% set cible = states('input_text.alarme_etat_cible') %}
-              {% set raison = states('input_text.alarme_raison') %}
-              {% set reel = states('alarm_control_panel.alarme_maison') %}
+          - type: grid
+            columns: 2
+            square: false
+            cards:
 
-              {% set indispo = (decision in ['unknown','unavailable','', none])
-                               or (cible in ['unknown','unavailable','', none])
-                               or (raison in ['unknown','unavailable','', none])
-                               or (reel in ['unknown','unavailable','', none]) %}
+              - type: custom:button-card
+                entity: script.alarme_decision_centrale
+                template: alarme_diagnostic_autorite_compact
+                name: Cerveau décision
 
-              {% set attendu = 'none' %}
-              {% if cible == 'ARMED_AWAY' %}
-                {% set attendu = 'armed_away' %}
-              {% elif cible == 'DISARMED' %}
-                {% set attendu = 'disarmed' %}
-              {% elif cible == 'NOOP' %}
-                {% set attendu = 'noop' %}
-              {% else %}
-                {% set attendu = 'invalide' %}
-              {% endif %}
+              - type: custom:button-card
+                entity: automation.alarme_application_decision_centrale
+                template: alarme_diagnostic_autorite_application_compact
+                name: Application décision
 
-              {# =======================================================
-                 ⚪ DONNEES INDISPONIBLES
-                 ======================================================= #}
-              {% if indispo %}
-
-              ⚪ **Alarme — Diagnostic indisponible**
-
-              Certaines données centrales sont **unknown/unavailable**.
-
-              - **Décision :** {{ decision }}
-              - **Cible :** {{ cible }}
-              - **Raison :** {{ raison }}
-              - **État réel :** {{ reel }}
-
-              {# =======================================================
-                 🔴 CIBLE INVALIDE
-                 ======================================================= #}
-              {% elif attendu == 'invalide' %}
-
-              🚨 **Alarme — Cible invalide**
-
-              La cible demandée n’est pas reconnue.
-
-              - **Décision :** `{{ decision }}`
-              - **Cible brute :** `{{ cible }}`
-              - **Raison :** {{ raison }}
-              - **État réel :** {{ reel }}
-
-              {# =======================================================
-                 🟢 NOOP
-                 ======================================================= #}
-              {% elif attendu == 'noop' %}
-
-              🟢 **Alarme — Aucune action demandée (NOOP)**
-
-              Le système ne demande **aucun changement** d’état.
-
-              - **Décision :** `{{ decision }}`
-              - **Cible :** NOOP
-              - **Raison :** {{ raison }}
-              - **État réel :** {{ reel }}
-
-              {# =======================================================
-                 🟢 ALIGNEMENT CONFORME
-                 ======================================================= #}
-              {% elif reel == attendu %}
-
-              🟢 **Alarme — Application conforme**
-
-              La décision centrale est **correctement appliquée**.
-
-              - **Décision :** `{{ decision }}`
-              - **Cible :** {{ cible }} → attendu `{{ attendu }}`
-              - **Raison :** {{ raison }}
-              - **État réel :** `{{ reel }}`
-
-              {# =======================================================
-                 🚨 DIVERGENCE
-                 ======================================================= #}
-              {% else %}
-
-              🚨 **Alarme — Divergence détectée**
-
-              La décision centrale n’est **pas appliquée**.
-
-              - **Décision :** `{{ decision }}`
-              - **Cible :** {{ cible }} → attendu `{{ attendu }}`
-              - **Raison :** {{ raison }}
-              - **État réel :** `{{ reel }}`
-
-              {% endif %}
-
-          # ======================================================
-          # 🧪 MODE TEST
-          # ======================================================
-
-          - type: custom:button-card
-            template: sub_section_header
-            name: 🧪 Mode test
-
-          - type: markdown
-            content: |
-              {% if is_state('input_boolean.mode_test_alarme','on') %}
-              🧪 Activé
-              {% else %}
-              ✅ Désactivé
-              {% endif %}
+              - type: custom:button-card
+                entity: script.alarme_armer
+                template: alarme_diagnostic_autorite_compact
+                name: Script armer
+    
+              - type: custom:button-card
+                entity: script.alarme_desarmer
+                template: alarme_diagnostic_autorite_compact
+                name: Script désarmer

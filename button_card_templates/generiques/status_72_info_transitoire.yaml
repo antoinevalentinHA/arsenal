@@ -1,0 +1,27 @@
+status_72_info_transitoire:
+  template: socle_status_72
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)
+
+  state:
+    # 🔵 Actif (binary_sensor on OU timer active)
+    - operator: template
+      value: >
+        [[[
+          return entity.state === "on" || entity.state === "active";
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(33, 150, 243, 0.2)
+
+    # ⚪ Indisponible
+    - operator: template
+      value: >
+        [[[
+          return entity.state === "unknown" || entity.state === "unavailable";
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.1)

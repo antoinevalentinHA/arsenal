@@ -1,0 +1,39 @@
+alarme_diagnostic_divergence_persistante:
+  template: socle_status_72
+
+  name: Alerte divergence réel / cible
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)
+
+  state_display: >
+    [[[
+      const lt = entity.attributes?.last_triggered;
+      if (!lt) return "Jamais";
+      const d = new Date(lt);
+      if (isNaN(d.getTime())) return "—";
+      const mins = Math.round((Date.now() - d.getTime()) / 60000);
+      if (mins < 1) return "À l’instant";
+      if (mins < 60) return `Il y a ${mins} min`;
+      const hrs = Math.round(mins / 60);
+      if (hrs < 48) return `Il y a ${hrs} h`;
+      const days = Math.round(hrs / 24);
+      return `Il y a ${days} j`;
+    ]]]
+
+  label: >
+    [[[
+      return entity.state === "on" ? "Automation activée" : "Automation désactivée";
+    ]]]
+
+  show_icon: false
+  show_label: true
+
+  state:
+    - operator: template
+      value: >
+        [[[ return entity.state === "unknown" || entity.state === "unavailable"; ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.1)

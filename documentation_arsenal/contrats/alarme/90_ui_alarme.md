@@ -1,69 +1,79 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Notifications & feedback
+#     Alarme — UI (projection & actions explicites)
 # ==========================================================
 
 ## 📌 Statut
 
 - **Contrat normatif et opposable**
-- Domaine : **Sécurité / Alarme**
-- Chemin : `homeassistant/documentation_arsenal/contrats/alarme/80_notifications_et_feedback.md`
+- Domaine : **UI / Sécurité / Alarme**
+- Chemin : `homeassistant/documentation_arsenal/contrats/alarme/90_ui_alarme.md`
 
 ---
 
 ## 🎯 Objet
 
-Définir les notifications comme **projections UX** :
+Définir les règles UI pour :
 
-- persistantes (état)
-- mobiles (événements / alertes)
-
----
-
-## 🧱 Principes
-
-- Une notification persistante représente un **état métier**.
-- Une notification mobile représente un **événement** ou une **alerte**.
-- Chaque notification persistante doit avoir :
-  - un identifiant (`notification_id`) stable,
-  - un point unique de création / dismissal.
+- lecture claire : état réel / intention / divergence,
+- actions manuelles : explicites, confirmées, traçables,
+- cohérence graphique Arsenal.
 
 ---
 
-## ✅ Notifications persistantes (unicité stricte)
+## 🧠 Principe
 
-### Alarme armée
-
-- `notification_id: alarme_etat`
-- gérée uniquement par :
-  - `/homeassistant/10_automations/alarme/notification.yaml`
-
-### Visiteur actif
-
-- `notification_id: visiteur_etat`
-- gérée uniquement par :
-  - `/homeassistant/10_automations/alarme/visite/notification_persistante.yaml`
+- UI = projection (lecture) + action (explicite).
+- UI ne calcule aucune logique métier.
+- UI ne déduit aucun contexte.
 
 ---
 
-## ✅ Notifications mobiles
+## ✅ Cartes canoniques (button-card)
 
-Les scripts de notification sont des applicateurs UX :
+### Projection décisionnelle (lecture seule)
 
-- `script.notification_envoyer`
-- `script.notification_envoyer_avance`
+- `carte_alarme_intention`
+  - source : `input_text.alarme_etat_cible`
+- `carte_alarme_decision`
+  - source : `alarm_control_panel.alarme_maison`
+  - compare à `input_text.alarme_etat_cible` (NOOP toléré)
 
-Le domaine alarme peut les appeler pour :
+### Action critique
 
-- armement / désarmement (info)
-- intrusion (critique)
-- divergence réel/cible (critique)
-- badge inconnu (alerte)
+- `carte_action_arret_sirene`
+  - appelle `script.arret_sirene`
+  - confirmation obligatoire
 
 ---
 
-## 🛑 Interdictions
+## 🎨 Couleurs canon Arsenal (UI)
 
-- Créer / supprimer une notification persistante depuis plusieurs fichiers.
-- Utiliser une notification persistante comme mécanisme de logique.
-- Émettre des notifications “bruit” sur des retriggers idempotents.
+- Vert OK : `rgba(76, 175, 80, 0.2)`
+- Rouge KO : `rgba(244, 67, 54, 0.2)`
+- Bleu info : `rgba(144, 202, 249, 0.25)`
+- Jaune attention : `rgba(255, 193, 7, 0.25)`
+- Orange warn : `rgba(255, 152, 0, 0.25)`
+- Gris OFF/repos : `rgba(158, 158, 158, 0.2)`
+- Gris unknown/unavailable : `rgba(224, 224, 224, 0.2)`
+
+---
+
+## 🔒 Règles d’action UI
+
+- Toute action critique doit exiger une confirmation.
+- Aucun toggle implicite “dangereux”.
+- L’UI doit éviter les actions qui contournent la traçabilité.
+
+---
+
+## ⚠️ Clause de conformité (recommandation forte)
+
+Pour garantir une trace et un feedback homogènes :
+
+- l’armement et le désarmement manuels devraient privilégier :
+  - `script.alarme_armer`
+  - `script.alarme_desarmer`
+
+Toute action UI directe sur `alarm_control_panel.*` doit être considérée
+comme un contournement (tolérable uniquement si assumé).

@@ -1,0 +1,26 @@
+alarme_diagnostic_autorite_compact:
+  template: socle_status_compact
+
+  show_icon: false
+  show_label: false
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)
+
+  state_display: >
+    [[[
+      const s = entity.state;
+      if (s === "unknown" || s === "unavailable") return "INDISPO";
+      return "OK";
+    ]]]
+
+  state:
+    - operator: template
+      value: >
+        [[[
+          return entity.state === "unknown" || entity.state === "unavailable";
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.1)

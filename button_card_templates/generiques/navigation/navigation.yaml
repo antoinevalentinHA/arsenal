@@ -3,6 +3,10 @@
 #################################################################
 
 bouton_navigation:
-  template: socle_action_simple
+  template: socle_action_simple_sans_couleur
   tap_action:
     action: navigate
+
+  styles:
+    card:
+      - background-color: rgba(90, 110, 130, 0.08)
