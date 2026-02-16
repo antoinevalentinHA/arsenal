@@ -26,8 +26,8 @@
 poele_duree_blocage_chauffage_minutes:
   name: "Poele - Duree blocage chauffage (minutes)"
   icon: mdi:timer-outline
-  min: 5
-  max: 360
+  min: 30
+  max: 180
   step: 5
   unit_of_measurement: min
   mode: slider

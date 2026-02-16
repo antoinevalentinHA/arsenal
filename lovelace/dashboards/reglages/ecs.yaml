@@ -62,14 +62,19 @@ views:
             template: section_header
             name: 🔁 Bouclage automatique
 
-          - type: markdown
-            content: |
-              Actif du lundi au vendredi sur la plage horaire définie si présence. 
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.bouclage_plage_active
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: markdown
+                content: |
+                  Actif du lundi au vendredi sur la plage horaire définie si présence.
+
+              - type: tile
+                entity: input_boolean.bouclage_plage_active
                 name: Activé
 
           - type: conditional
@@ -77,53 +82,87 @@ views:
               - entity: input_boolean.bouclage_plage_active
                 state: "on"
             card:
-              type: entities
-              show_header_toggle: false
-              entities:
-                - entity: input_datetime.heure_debut_bouclage_ecs
+              type: grid
+              square: false
+              columns: 2
+              cards:
+
+                - type: tile
+                  entity: input_datetime.heure_debut_bouclage_ecs
                   name: Début
-                - entity: input_datetime.heure_fin_bouclage_ecs
+
+                - type: tile
+                  entity: input_datetime.heure_fin_bouclage_ecs
                   name: Fin
 
           - type: custom:button-card
             template: section_header
             name: 📋 Modes
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.mode_enfants
-                name: Bains le soir
-              - entity: input_boolean.ecs_desinfection_active
+          - type: grid
+            square: false
+            columns: 3
+            cards:
+
+              - type: tile
+                entity: input_boolean.mode_enfants
+                name: Bains
+
+              - type: tile
+                entity: input_boolean.ecs_desinfection_active
                 name: Désinfection
-              - entity: input_boolean.mode_vaisselle
-                name: Mode vaisselle
+
+              - type: tile
+                entity: input_boolean.mode_vaisselle
+                name: Vaisselle
 
           - type: custom:button-card
             template: section_header
             name: 📏 Consignes
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.ecs_consigne_temperature
-                name: Température normale
-              - entity: input_number.ecs_consigne_vaisselle
-                name: Température vaisselle
-              - entity: input_number.ecs_temperature_desinfection
-                name: Température désinfection
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_number.ecs_consigne_temperature
+                name: Normal
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.ecs_consigne_vaisselle
+                name: Vaisselle
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: custom:button-card
             template: section_header
             name: 🧼 Désinfection
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_select.ecs_desinfection_jour
-                name: Jour
-              - entity: input_datetime.ecs_desinfection_heure
-                name: Heure
+          - type: tile
+            entity: input_number.ecs_temperature_desinfection
+            name: Désinfection
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: input_select.ecs_desinfection_jour
+            name: Jour
+            features_position: bottom
+            features:
+              - type: select-options
+
+          - type: tile
+            entity: input_datetime.ecs_desinfection_heure
+            name: Heure
 
           # === Réglages avancés ===
           - type: custom:button-card
@@ -134,31 +173,75 @@ views:
             template: sub_section_header
             name: 🎯 Offsets anticipés (consigne − X)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.ecs_off_tiny
-                name: Offset tiny ΔT
-              - entity: input_number.ecs_off_medium
-                name: Offset medium ΔT
-              - entity: input_number.ecs_off_normal
-                name: Offset normal ΔT
-              - entity: input_number.ecs_off_desinfection
-                name: Offset désinfection
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_number.ecs_off_tiny
+                name: Tiny ΔT
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.ecs_off_medium
+                name: Medium ΔT
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.ecs_off_normal
+                name: Normal ΔT
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.ecs_off_desinfection
+                name: Désinfection
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: custom:button-card
             template: sub_section_header
             name: 🔁 Amorçage & seuils d’arrêt
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.ecs_trigger_ceiling_tiny_medium
-                name: Plafond amorçage tiny/medium
-              - entity: input_number.ecs_eps_ponctuel
+          - type: tile
+            entity: input_number.ecs_trigger_ceiling_tiny_medium
+            name: Plafond amorçage tiny/medium
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_number.ecs_eps_ponctuel
                 name: Epsilon ponctuel
-              - entity: input_number.ecs_eps_desinfection
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.ecs_eps_desinfection
                 name: Epsilon désinfection
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           # === Sauvegarde & restauration ===
           - type: custom:button-card
@@ -195,11 +278,9 @@ views:
             template: sub_section_header
             name: 🔁 Auto-ajustement des offsets
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.ecs_autocorrect_active
-                name: Auto-ajustement
+          - type: tile
+            entity: input_boolean.ecs_autocorrect_active
+            name: Auto-ajustement
 
           # === ECS Petite Maison ===
           - !include ../../includes/section_headers/ecs_petite_maison.yaml
@@ -223,12 +304,19 @@ views:
                 variables:
                   confirmation: "⚠️ Passer le chauffe-eau en mode Absence ?"
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.ecs_petite_maison_programmation
-                name: "Programmation ECS"
-              - entity: input_datetime.debut_ecs_petite_maison_programmee
+          - type: tile
+            entity: input_boolean.ecs_petite_maison_programmation
+            name: "Programmation ECS"
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_datetime.debut_ecs_petite_maison_programmee
                 name: "Début"
-              - entity: input_datetime.fin_ecs_petite_maison_programmee
+
+              - type: tile
+                entity: input_datetime.fin_ecs_petite_maison_programmee
                 name: "Fin"

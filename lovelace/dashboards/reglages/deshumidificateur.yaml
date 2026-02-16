@@ -26,10 +26,18 @@ views:
 
           - !include ../../includes/section_headers/cave.yaml
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.cave_rh_cible_on
-                name: HR cible ON (%)
-              - entity: input_number.cave_rh_cible_off
-                name: HR cible OFF (%)
+          - type: tile
+            entity: input_number.cave_rh_cible_on
+            name: HR cible ON (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: input_number.cave_rh_cible_off
+            name: HR cible OFF (%)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons

@@ -28,71 +28,107 @@ views:
             template: section_header
             name: 💡 Éclairage auto
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.garage_auto_light
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_boolean.garage_auto_light
                 name: Garage 🚘
-              - entity: input_number.duree_absence_garage
+
+              - type: tile
+                entity: input_number.duree_absence_garage
                 name: Délai extinction garage (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.sejour_auto_light
+              - type: tile
+                entity: input_boolean.sejour_auto_light
                 name: Séjour 🛋️
-              - entity: input_number.duree_absence_sejour
-                name: Délai extinction séjour (min)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.prise_baies_vitrees_auto
+              - type: tile
+                entity: input_number.duree_absence_sejour
+                name: Délai extinction séjour (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_boolean.prise_baies_vitrees_auto
                 name: Allumage auto Sapin 🎄
-              - entity: input_number.duree_absence_guirlande
+
+              - type: tile
+                entity: input_number.duree_absence_guirlande
                 name: Délai extinction sapin (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: custom:button-card
             template: section_header
-            name: 💡 Éclairage extérieur – Jardin
+            name: 💡 Jardin
 
           - type: custom:button-card
             template: sub_section_header
             name: 🔘 Activation des automatismes
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.auto_lumiere_jardin_matin
-                name: Allumage automatique le matin
-              - entity: input_boolean.auto_lumiere_jardin_soir
-                name: Allumage automatique le soir
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_boolean.auto_lumiere_jardin_matin
+                name: Matin
+
+              - type: tile
+                entity: input_boolean.auto_lumiere_jardin_soir
+                name: Soir
 
           - type: custom:button-card
             template: sub_section_header
             name: 🌅 Réglages du matin
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_datetime.heure_allumage_jardin_matin
-                name: Heure d’allumage
-              - entity: input_number.delai_extinction_jardin_matin
-                name: Délai après lever du jour (min)
-              - entity: input_datetime.heure_extinction_jardin_matin_fixe
-                name: Heure d’extinction fixe
+          - type: tile
+            entity: input_datetime.heure_allumage_jardin_matin
+            name: Heure d’allumage
+
+          - type: tile
+            entity: input_number.delai_extinction_jardin_matin
+            name: Délai après lever du jour (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: input_datetime.heure_extinction_jardin_matin_fixe
+            name: Heure d’extinction fixe
 
           - type: custom:button-card
             template: sub_section_header
             name: 🌇 Réglages du soir
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.delai_allumage_jardin_soir
-                name: Délai après coucher du soleil (min)
-              - entity: input_number.duree_lumiere_jardin_soir
-                name: Durée de l’éclairage
+          - type: tile
+            entity: input_number.delai_allumage_jardin_soir
+            name: Délai après coucher du soleil (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: input_number.duree_lumiere_jardin_soir
+            name: Durée de l’éclairage
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: section_header
@@ -101,47 +137,84 @@ views:
           # ⏱️ Durée
           - type: custom:button-card
             template: sub_section_header
-            name: ⏱️ Réglages de durée
+            name: ⏱️ Durée (min)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.duree_min_cycle_simulation_presence
-                name: Durée minimale d’un cycle (min)
-              - entity: input_number.duree_max_cycle_simulation_presence
-                name: Durée maximale d’un cycle (min)
-              - entity: input_boolean.test_simulation_presence
-                name: Activer le mode test
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_number.duree_min_cycle_simulation_presence
+                name: min
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.duree_max_cycle_simulation_presence
+                name: max
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+          - type: tile
+            entity: input_boolean.test_simulation_presence
+            name: Activer le mode test
 
           # 🌅 Réglages matin - Parents
           - type: custom:button-card
             template: sub_section_header
             name: 🌅 Réglages du matin (Parents)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_datetime.debut_cycle_simulation_presence_matin
-                name: Début des cycles matin
-              - entity: input_datetime.fin_cycle_simulation_presence_matin
-                name: Fin des cycles matin
-              - entity: input_number.nb_cycles_simulation_presence_matin
-                name: Nombre de cycles (matin)
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_datetime.debut_cycle_simulation_presence_matin
+                name: "de"
+
+              - type: tile
+                entity: input_datetime.fin_cycle_simulation_presence_matin
+                name: "à"
+
+          - type: tile
+            entity: input_number.nb_cycles_simulation_presence_matin
+            name: Cycles
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           # 🌇 Réglages soir - Parents
           - type: custom:button-card
             template: sub_section_header
             name: 🌇 Réglages du soir (Parents)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_datetime.debut_cycle_simulation_presence_soir
-                name: Début des cycles soir
-              - entity: input_datetime.fin_cycle_simulation_presence_soir
-                name: Fin des cycles soir
-              - entity: input_number.nb_cycles_simulation_presence_soir
-                name: Nombre de cycles (soir)
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_datetime.debut_cycle_simulation_presence_soir
+                name: "de"
+
+              - type: tile
+                entity: input_datetime.fin_cycle_simulation_presence_soir
+                name: "à"
+
+          - type: tile
+            entity: input_number.nb_cycles_simulation_presence_soir
+            name: Cycles
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           # 🏠 Garage
           - type: custom:button-card
@@ -153,27 +226,49 @@ views:
             template: sub_section_header
             name: 🌅 Réglages du matin (Garage)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_datetime.debut_cycle_simulation_presence_garage_matin
-                name: Début garage matin
-              - entity: input_datetime.fin_cycle_simulation_presence_garage_matin
-                name: Fin garage matin
-              - entity: input_number.nb_cycles_simulation_presence_garage_matin
-                name: Nombre de cycles (matin)
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_datetime.debut_cycle_simulation_presence_garage_matin
+                name: "de"
+
+              - type: tile
+                entity: input_datetime.fin_cycle_simulation_presence_garage_matin
+                name: "à"
+
+          - type: tile
+            entity: input_number.nb_cycles_simulation_presence_garage_matin
+            name: Cycles
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           # 🌇 Réglages soir - Garage
           - type: custom:button-card
             template: sub_section_header
             name: 🌇 Réglages du soir (Garage)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_datetime.debut_cycle_simulation_presence_garage_soir
-                name: Début garage soir
-              - entity: input_datetime.fin_cycle_simulation_presence_garage_soir
-                name: Fin garage soir
-              - entity: input_number.nb_cycles_simulation_presence_garage_soir
-                name: Nombre de cycles (soir)
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_datetime.debut_cycle_simulation_presence_garage_soir
+                name: "de"
+
+              - type: tile
+                entity: input_datetime.fin_cycle_simulation_presence_garage_soir
+                name: "à"
+
+          - type: tile
+            entity: input_number.nb_cycles_simulation_presence_garage_soir
+            name: Cycles
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons

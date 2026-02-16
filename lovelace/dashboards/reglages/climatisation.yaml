@@ -28,11 +28,13 @@ views:
             template: section_header
             name: ❄️ Mode Cool
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.clim_seuil_temperature_exterieure_minimum
-                name: Seuil mini extérieur
+          - type: tile
+            entity: input_number.clim_seuil_temperature_exterieure_minimum
+            name: Seuil mini extérieur
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: sub_section_header
@@ -43,17 +45,21 @@ views:
             columns: 2
             cards:
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.clim_consigne_presence
-                    name: Présence
+              - type: tile
+                entity: input_number.clim_consigne_presence
+                name: Présence
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.clim_consigne_absence
-                    name: Absence
+              - type: tile
+                entity: input_number.clim_consigne_absence
+                name: Absence
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: custom:button-card
             template: sub_section_header
@@ -64,17 +70,21 @@ views:
             columns: 2
             cards:
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.clim_offset_on
-                    name: "ON"
+              - type: tile
+                entity: input_number.clim_offset_on
+                name: "ON"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.clim_offset_off
-                    name: "OFF"
+              - type: tile
+                entity: input_number.clim_offset_off
+                name: "OFF"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: markdown
             content: |
@@ -101,37 +111,37 @@ views:
             template: sub_section_header
             name: 🔒 Blocage Aération
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.clim_ignore_aeration
-                name: Ignorer « Aération préférée »
+          - type: tile
+            entity: input_boolean.clim_ignore_aeration
+            name: Ignorer « Aération préférée »
 
           - type: custom:button-card
             template: section_header
             name: 🔥 Mode HEAT
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.chauffage_clim_active_en_hiver
-                name: Activer le chauffage par clim
+          - type: tile
+            entity: input_boolean.chauffage_clim_active_en_hiver
+            name: Activer le chauffage par clim
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.clim_hiver_seuil_temperature_exterieure
-                name: Seuil mini extérieur
+          - type: tile
+            entity: input_number.clim_hiver_seuil_temperature_exterieure
+            name: Seuil mini extérieur
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: sub_section_header
             name: Consigne
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.clim_hiver_seuil_temperature_exterieure
-                name: T° ext. mini
+          - type: tile
+            entity: input_number.clim_hiver_seuil_temperature_exterieure
+            name: T° ext. mini
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: sub_section_header
@@ -142,17 +152,21 @@ views:
             columns: 2
             cards:
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.clim_offset_on
-                    name: "ON"
+              - type: tile
+                entity: input_number.clim_offset_on
+                name: "ON"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.clim_offset_off
-                    name: "OFF"
+              - type: tile
+                entity: input_number.clim_offset_off
+                name: "OFF"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: markdown
             content: |
@@ -177,13 +191,22 @@ views:
             template: section_header
             name: 💦️ Déshumidification
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.auto_deshumidification_active
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_boolean.auto_deshumidification_active
                 name: Activer déshumidification auto
-              - entity: input_number.seuil_humidex_deshumidification
+
+              - type: tile
+                entity: input_number.seuil_humidex_deshumidification
                 name: Seuil On (Humidex)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: custom:button-card
             template: section_header
@@ -194,41 +217,31 @@ views:
             columns: 2
             cards:
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_datetime.clim_heure_silencieux_on
-                    name: de
+              - type: tile
+                entity: input_datetime.clim_heure_silencieux_on
+                name: de
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_datetime.clim_heure_silencieux_off
-                    name: à
+              - type: tile
+                entity: input_datetime.clim_heure_silencieux_off
+                name: à
 
           - type: custom:button-card
             template: section_header
             name: ⏱️ Arrêt programmé
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.clim_blocage_horaire_actif
-                name: Blocage actif
+          - type: tile
+            entity: input_boolean.clim_blocage_horaire_actif
+            name: Blocage actif
 
           - type: grid
             square: false
             columns: 2
             cards:
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_datetime.clim_heure_blocage_autom_on
-                    name: de
+              - type: tile
+                entity: input_datetime.clim_heure_blocage_autom_on
+                name: de
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_datetime.clim_heure_blocage_autom_off
-                    name: à
+              - type: tile
+                entity: input_datetime.clim_heure_blocage_autom_off
+                name: à

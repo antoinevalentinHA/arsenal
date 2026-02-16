@@ -26,48 +26,62 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 💨 Vitesse
-
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: switch.vmc
-                name: Bascule vitesse (SwitchBot)
-              - entity: input_boolean.vmc_haute_vitesse
-                name: État mémorisé (haute vitesse)
-              - entity: input_boolean.vmc_force_haute_vitesse
-                name: Forcer haute vitesse (manuel)
-
-          - type: custom:button-card
-            template: section_header
             name: 🎯 Seuils
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.vmc_seuil_on
-                name: Seuil déclenchement HR (%)
-              - entity: input_number.vmc_seuil_off
-                name: Seuil arrêt HR (%)
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_number.vmc_seuil_on
+                name: on (%)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.vmc_seuil_off
+                name: off (%)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: custom:button-card
             template: section_header
-            name: ⏱️ Durée minimale
+            name: ⏱️ Durée minimale (min)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.vmc_duree_min_haute
-                name: Durée minimale haute vitesse (min)
+          - type: tile
+            entity: input_number.vmc_duree_min_haute
+            name: Durée
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: section_header
-            name: 🫁 CO₂
+            name: 🫁 Seuils CO₂ (ppm)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.vmc_co2_seuil_on
-                name: Seuil déclenchement CO₂ (ppm)
-              - entity: input_number.vmc_co2_seuil_off
-                name: Seuil arrêt CO₂ (ppm)
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_number.vmc_co2_seuil_on
+                name: "on"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.vmc_co2_seuil_off
+                name: "off"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons

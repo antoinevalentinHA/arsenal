@@ -62,37 +62,61 @@ views:
                 template: sub_section_header
                 name: ☀️ Été
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_delta_ha_min_ete
-                    name: ∆HA min (été)
-                  - entity: input_number.aeration_seuil_ecart_temperature_min
-                    name: ∆T min (été)
+              - type: tile
+                entity: input_number.aeration_delta_ha_min_ete
+                name: ∆HA min (été)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_seuil_ecart_temperature_min
+                name: ∆T min (été)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
               - type: custom:button-card
                 template: sub_section_header
                 name: 🍂 Inter-saison
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_delta_ha_min_inter
-                    name: ∆HA min (inter)
-                  - entity: input_number.aeration_delta_t_min_inter
-                    name: ∆T min (inter)
+              - type: tile
+                entity: input_number.aeration_delta_ha_min_inter
+                name: ∆HA min (inter)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_delta_t_min_inter
+                name: ∆T min (inter)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
               - type: custom:button-card
                 template: sub_section_header
                 name: ❄️ Hiver
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_delta_ha_min_hiver
-                    name: ∆HA min (hiver)
-                  - entity: input_number.aeration_delta_t_min_hiver
-                    name: ∆T min (hiver)
+              - type: tile
+                entity: input_number.aeration_delta_ha_min_hiver
+                name: ∆HA min (hiver)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_delta_t_min_hiver
+                name: ∆T min (hiver)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           # === Bloc 2 : 🎛️ Modulateurs ===
           - type: vertical-stack
@@ -106,61 +130,101 @@ views:
                 template: sub_section_header
                 name: 🌙 Nuit (22:00 → 09:00)
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_mod_nuit_delta_ha
-                    name: Réduction ∆HA la nuit (g/m³)
-                  - entity: input_number.aeration_mod_nuit_delta_t
-                    name: Réduction ∆T la nuit (°C)
+              - type: tile
+                entity: input_number.aeration_mod_nuit_delta_ha
+                name: Réduction ∆HA la nuit (g/m³)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_mod_nuit_delta_t
+                name: Réduction ∆T la nuit (°C)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
               - type: custom:button-card
                 template: sub_section_header
                 name: 🌧️ Pluie / Brouillard
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_pluie_rh_ext_seuil
-                    name: RH ext ≥ (seuil %)
-                  - entity: input_number.aeration_mod_pluie_delta_ha
-                    name: Majoration ∆HA si RH ext élevée (g/m³)
-                  - entity: input_number.aeration_rain_max_mm
-                    name: Pluie max admissible (mm sur 1h)
+              - type: tile
+                entity: input_number.aeration_pluie_rh_ext_seuil
+                name: RH ext ≥ (seuil %)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_mod_pluie_delta_ha
+                name: Majoration ∆HA si RH ext élevée (g/m³)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_rain_max_mm
+                name: Pluie max admissible (mm sur 1h)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
               - type: custom:button-card
                 template: sub_section_header
                 name: 🥶 Grand froid
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_grand_froid_seuil_ext
-                    name: T° ext < (seuil °C)
-                  - entity: input_number.aeration_mod_grand_froid_add_delta_t
-                    name: Majoration ∆T en grand froid (°C)
+              - type: tile
+                entity: input_number.aeration_grand_froid_seuil_ext
+                name: T° ext < (seuil °C)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_mod_grand_froid_add_delta_t
+                name: Majoration ∆T en grand froid (°C)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
               - type: custom:button-card
                 template: sub_section_header
                 name: ☀️ Canicule
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_canicule_seuil_ext
-                    name: T° ext ≥ (seuil °C)
+              - type: tile
+                entity: input_number.aeration_canicule_seuil_ext
+                name: T° ext ≥ (seuil °C)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
               - type: custom:button-card
                 template: sub_section_header
                 name: 🧪 Modulateur – CO₂
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_co2_seuil
-                    name: Seuil CO₂ (priorité)
-                  - entity: input_number.aeration_co2_seuil_fort
-                    name: Seuil CO₂ fort
+              - type: tile
+                entity: input_number.aeration_co2_seuil
+                name: Seuil CO₂ (priorité)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_co2_seuil_fort
+                name: Seuil CO₂ fort
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           # === Bloc 3 : ⚙️ Comportement général ===
           - type: vertical-stack
@@ -174,42 +238,79 @@ views:
                 template: sub_section_header
                 name: ⏱️ Durées & Fréquence
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_duree_cible_minutes
-                    name: Durée cible (min)
-                  - entity: input_number.aeration_duree_grand_froid_max_minutes
-                    name: Durée max en grand froid (min)
-                  - entity: input_number.aeration_intervalle_min_heures
-                    name: Intervalle minimal entre aérations (h)
+              - type: tile
+                entity: input_number.aeration_duree_cible_minutes
+                name: Durée cible (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_duree_grand_froid_max_minutes
+                name: Durée max en grand froid (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_intervalle_min_heures
+                name: Intervalle minimal entre aérations (h)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
               - type: custom:button-card
                 template: sub_section_header
                 name: 🧽 Stabilité & anti-flapping
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.aeration_stabilisation_minutes
-                    name: Stabilisation avant reco (min)
-                  - entity: input_number.aeration_hysteresis_ha
-                    name: Hystérésis ∆HA (arrêt reco)
-                  - entity: input_number.aeration_hysteresis_t
-                    name: Hystérésis ∆T (arrêt reco)
+              - type: tile
+                entity: input_number.aeration_stabilisation_minutes
+                name: Stabilisation avant reco (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_hysteresis_ha
+                name: Hystérésis ∆HA (arrêt reco)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_hysteresis_t
+                name: Hystérésis ∆T (arrêt reco)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
               - type: custom:button-card
                 template: section_header
                 name: 🧩 Options
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_boolean.clim_ignore_aeration
-                    name: Ignorer la condition d’aération
-                  - entity: input_boolean.notifications_aeration_actives
-                    name: Notifications (globales)
-                  - entity: input_boolean.notifications_aeration_rdc
+              - type: tile
+                entity: input_boolean.clim_ignore_aeration
+                name: Ignorer la condition d’aération
+
+              - type: tile
+                entity: input_boolean.notifications_aeration_actives
+                name: Notifications (globales)
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+
+                  - type: tile
+                    entity: input_boolean.notifications_aeration_rdc
                     name: Notifications RDC
-                  - entity: input_boolean.notifications_aeration_etage
+
+                  - type: tile
+                    entity: input_boolean.notifications_aeration_etage
                     name: Notifications Étage

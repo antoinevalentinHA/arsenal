@@ -279,26 +279,22 @@ views:
             name: 📊 Performance & sobriété
 
           - type: custom:bar-card
-            entity: sensor.pourcentage_consigne_eco_24h_proxy
-            name: "Temps en mode Eco (24h)"
-            icon: mdi:leaf
+            columns: 1
+            entities:
+              - entity: sensor.pourcentage_consigne_eco_24h_proxy
+                name: "Temps en mode Eco (24h)"
+                icon: mdi:leaf
+              - entity: sensor.pourcentage_consigne_eco_7j_proxy
+                name: "Temps en mode Eco (7j)"
+                icon: mdi:leaf
             unit_of_measurement: "%"
+            max: 100
             direction: right
             height: 36px
             positions:
               icon: inside
               name: inside
               value: inside
-            severity:
-              - from: 0
-                to: 25
-                color: "#f44336"
-              - from: 25
-                to: 60
-                color: "#ffeb3b"
-              - from: 60
-                to: 100
-                color: "#4caf50"
             animation:
               state: 'off'
               speed: 2
@@ -308,57 +304,37 @@ views:
                   border-radius: 16px;
                   box-shadow: var(--ha-card-box-shadow);
                   padding: 8px 10px;
-                }
-                bar-card-value {
-                  font-weight: 700;
-                }
-                bar-card-name {
-                  font-weight: 600;
-                }
-                bar-card-icon {
-                  transform: scale(1.05);
                 }
 
-          - type: custom:bar-card
-            entity: sensor.pourcentage_consigne_eco_7j_proxy
-            name: "Temps en mode Eco (7j)"
-            icon: mdi:leaf
-            unit_of_measurement: "%"
-            direction: right
-            height: 36px
-            positions:
-              icon: inside
-              name: inside
-              value: inside
-            severity:
-              - from: 0
-                to: 25
-                color: "#f44336"
-              - from: 25
-                to: 60
-                color: "#ffeb3b"
-              - from: 60
-                to: 100
-                color: "#4caf50"
-            animation:
-              state: 'off'
-              speed: 2
-            card_mod:
-              style: |
-                ha-card {
-                  border-radius: 16px;
-                  box-shadow: var(--ha-card-box-shadow);
-                  padding: 8px 10px;
+                /* 🔵 Barre remplie = BLEU info canon */
+                bar-card-currentbar {
+                  background-color: rgba(33, 150, 243, 0.2) !important;
                 }
+
+                /* ⚪ Fond de barre = GRIS neutre canon */
+                bar-card-backgroundbar {
+                  background-color: rgba(158, 158, 158, 0.2) !important;
+                }
+
+                /* Compact : espace entre les 2 barres */
+                bar-card-card { margin-top: 6px; }
+                bar-card-card:first-child { margin-top: 0px; }
+
+                /* Typo */
+                bar-card-value { font-weight: 700; }
+                bar-card-name  { font-weight: 600; }
+
+                /* ✅ Lisibilité sans trahir Arsenal :
+                   "chips" NAV/HUB derrière le texte (structure UI) */
+                bar-card-name,
                 bar-card-value {
-                  font-weight: 700;
+                  background: rgba(90, 110, 130, 0.08);
+                  padding: 2px 8px;
+                  border-radius: 999px;
                 }
-                bar-card-name {
-                  font-weight: 600;
-                }
-                bar-card-icon {
-                  transform: scale(1.05);
-                }
+
+                /* Icône : reste sur la couleur texte (noir chez toi) */
+                ha-icon { color: var(--primary-text-color); }
 
           ########################################################
           # 🎯 3) Consignes & Écarts

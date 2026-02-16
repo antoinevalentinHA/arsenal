@@ -29,11 +29,12 @@ views:
             template: section_header
             name: 🏠 Modes maison
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_select.mode_maison
-                name: Mode actuel
+          - type: tile
+            entity: input_select.mode_maison
+            name: Mode actuel
+            features_position: bottom
+            features:
+              - type: select-options
 
           # === Babysitting ===
           - type: custom:button-card
@@ -46,26 +47,24 @@ views:
             name: Activer Babysitting
             icon: mdi:account-child
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.reset_mode_babysitting_auto
-                name: Réinit auto à 5h
-                icon: mdi:clock-check
+          - type: tile
+            entity: input_boolean.reset_mode_babysitting_auto
+            name: Réinit auto à 5h
+            icon: mdi:clock-check
 
           # === Vacances ===
           - type: custom:button-card
             template: section_header
             name: 🧳 Vacances
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.mode_vacances_auto
-                name: Activer la programmation
-              - type: section
-                label: 📆 Programmation des vacances
-              - entity: input_datetime.debut_vacances
-                name: Début des vacances
-              - entity: input_datetime.fin_vacances
-                name: Fin des vacances
+          - type: tile
+            entity: input_boolean.mode_vacances_auto
+            name: Activer la programmation
+
+          - type: tile
+            entity: input_datetime.debut_vacances
+            name: Début des vacances
+
+          - type: tile
+            entity: input_datetime.fin_vacances
+            name: Fin des vacances

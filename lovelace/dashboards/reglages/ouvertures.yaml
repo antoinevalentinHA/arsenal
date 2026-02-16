@@ -30,19 +30,18 @@ views:
             template: section_header
             name: ⏱️ Délais d'ouverture temporisés
 
-          - type: markdown
-            content: |
-              Ajuste ici les délais d’ouverture qualifiée.
-              - **Séjour** : timer déclenché à l’ouverture, permet d’éviter les faux positifs.
-              - **Chambre parents** : même logique, délai configurable.
-              
-              Ces délais contrôlent *uniquement* l’ouverture.  
-              La fermeture reste instantanée.
+          - type: tile
+            entity: input_number.delai_ouverture_sejour
+            name: "Séjour"
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.delai_ouverture_sejour
-                name: "Délai ouverture séjour (s)"
-              - entity: input_number.delai_ouverture_chambre_parents
-                name: "Délai ouverture chambre parents (s)"
+          - type: tile
+            entity: input_number.delai_ouverture_chambre_parents
+            name: "Chambre parents"
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons

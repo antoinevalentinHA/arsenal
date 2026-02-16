@@ -43,27 +43,25 @@ views:
             columns: 2
             cards:
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.chauffage_consigne_confort
-                    name: Confort
+              - type: tile
+                entity: input_number.chauffage_consigne_confort
+                name: Confort
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.chauffage_consigne_reduite
-                    name: Réduite
+              - type: tile
+                entity: input_number.chauffage_consigne_reduite
+                name: Réduite
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: custom:button-card
             template: section_header
             name: ⚙️ Autorisation automatique
-
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_select.chauffage_mode
-                name: Mode chauffage
 
           - type: custom:button-card
             template: sub_section_header
@@ -74,17 +72,21 @@ views:
             columns: 2
             cards:
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.chauffage_seuil_ext_on
-                    name: "ON"
+              - type: tile
+                entity: input_number.chauffage_seuil_ext_on
+                name: "ON"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.chauffage_seuil_ext_off
-                    name: "OFF"
+              - type: tile
+                entity: input_number.chauffage_seuil_ext_off
+                name: "OFF"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: markdown
             content: |
@@ -119,17 +121,21 @@ views:
             columns: 2
             cards:
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.chauffage_offset_on
-                    name: "ON"
+              - type: tile
+                entity: input_number.chauffage_offset_on
+                name: "ON"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.chauffage_offset_off
-                    name: "OFF"
+              - type: tile
+                entity: input_number.chauffage_offset_off
+                name: "OFF"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: markdown
             content: |
@@ -165,28 +171,30 @@ views:
             template: section_header
             name: 🛡️ Protection thermique (offsets)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.blocage_geofencing
-                name: ✅ Protection thermique en absence
+          - type: tile
+            entity: input_boolean.blocage_geofencing
+            name: ✅ Protection thermique en absence
 
           - type: grid
             square: false
             columns: 2
             cards:
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.inhibition_geofencing_offset_on
-                    name: "ON"
-    
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_number.inhibition_geofencing_offset_off
-                    name: "OFF"
+              - type: tile
+                entity: input_number.inhibition_geofencing_offset_on
+                name: "ON"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.inhibition_geofencing_offset_off
+                name: "OFF"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: markdown
             content: |
@@ -226,38 +234,65 @@ views:
             template: sub_section_header
             name: 💨 Aération
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_boolean.blocage_chauffage_aeration_active
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+
+              - type: tile
+                entity: input_boolean.blocage_chauffage_aeration_active
                 name: Système de blocage actif
 
               # --- Délai de stabilisation des capteurs ---
-              - entity: input_number.delai_stabilisation_capteurs
+              - type: tile
+                entity: input_number.delai_stabilisation_capteurs
                 name: Délai de stabilisation (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: custom:button-card
             template: sub_section_header
             name: 🔥 Poêle
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.poele_duree_blocage_chauffage_minutes
-                name: Duree blocage apres poele (min)
+          - type: tile
+            entity: input_number.poele_duree_blocage_chauffage_minutes
+            name: Duree blocage (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: section_header
             name: 📈 Courbe de chauffe
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.chauffage_pente_consigne
-                name: Pente
-              - entity: input_number.chauffage_parallele_consigne
-                name: Parallèle
-              - entity: input_boolean.chauffage_reglages_auto
-                name: Ajustement automatique
-              - entity: input_boolean.courbe_auto_simulation
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_boolean.chauffage_reglages_auto
+                name: Réglage auto
+
+              - type: tile
+                entity: input_boolean.courbe_auto_simulation
                 name: Mode simulation
+
+              - type: tile
+                entity: input_number.chauffage_pente_consigne
+                name: Pente
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.chauffage_parallele_consigne
+                name: Parallèle
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
