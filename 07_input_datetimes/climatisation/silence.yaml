@@ -54,10 +54,8 @@ clim_heure_silencieux_on:
   name: Début mode silencieux
   has_time: true
   has_date: false
-  icon: mdi:volume-minus
 
 clim_heure_silencieux_off:
   name: Fin mode silencieux
   has_time: true
   has_date: false
-  icon: mdi:volume-high

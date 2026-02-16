@@ -56,10 +56,8 @@ clim_heure_blocage_autom_on:
   name: Début blocage autom. clim
   has_time: true
   has_date: false
-  icon: mdi:power-off
 
 clim_heure_blocage_autom_off:
   name: Fin blocage autom. clim
   has_time: true
   has_date: false
-  icon: mdi:power-on

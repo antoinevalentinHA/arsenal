@@ -368,35 +368,6 @@ views:
             template: section_header
             name: 📐 Réglage thermique
 
-          - type: custom:mini-graph-card
-            name: Écart consigne (24 h)
-            entities:
-              - entity: sensor.ecart_consigne_instantane
-                name: Écart instantané
-            hours_to_show: 24
-            points_per_hour: 6
-            line_width: 3
-            lower_bound: -1
-            upper_bound: 1
-            show:
-              fill: false
-              icon: false
-              name: true
-              labels: true
-            color_thresholds:
-              - value: -0.8
-                color: "#2196F3"     # bleu — vraiment trop froid
-              - value: -0.4
-                color: "#03A9F4"     # bleu clair — un peu froid
-              - value: -0.15
-                color: "#4CAF50"     # vert — confortable
-              - value: 0.15
-                color: "#4CAF50"     # vert — confortable
-              - value: 0.4
-                color: "#FFB300"     # jaune — un peu chaud
-              - value: 0.8
-                color: "#F44336"     # rouge — trop chaud
-
           - type: markdown
             content: |
               {% set e_24 = states('sensor.ecart_consigne_moyenne_24h') | float(0) %}

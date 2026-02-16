@@ -51,7 +51,6 @@ views:
           - type: markdown
             content: |
               ### 🔥 État général
-              **Température actuelle ECS** : {{ states('sensor.vscotho1_200_11_dhw_storage_temperature') }} °C  
               **ECS en chauffe ?** : {{ iif(is_state('binary_sensor.vscotho1_200_11_chargement_de_l_ecs', 'on'), "✅ Oui", "⛔ Non") }}  
               **ViCare disponible ?** : {{ iif(is_state('binary_sensor.vicare_api_disponible', 'on'), "✅ Oui", "⛔ Non") }}  
               {% if states('number.vscotho1_200_11_dhw_temperature') | float(0) == 10 %}

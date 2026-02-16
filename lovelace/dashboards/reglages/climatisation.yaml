@@ -38,25 +38,43 @@ views:
             template: sub_section_header
             name: 📋 Consignes
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.clim_consigne_presence
-                name: Présence
-              - entity: input_number.clim_consigne_absence
-                name: Absence
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.clim_consigne_presence
+                    name: Présence
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.clim_consigne_absence
+                    name: Absence
 
           - type: custom:button-card
             template: sub_section_header
             name: Offsets
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.clim_offset_on
-                name: Offset ON
-              - entity: input_number.clim_offset_off
-                name: Offset OFF
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.clim_offset_on
+                    name: "ON"
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.clim_offset_off
+                    name: "OFF"
 
           - type: markdown
             content: |
@@ -113,18 +131,28 @@ views:
             show_header_toggle: false
             entities:
               - entity: input_number.clim_hiver_seuil_temperature_exterieure
+                name: T° ext. mini
 
           - type: custom:button-card
             template: sub_section_header
             name: Offsets
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.clim_offset_on
-                name: Offset ON
-              - entity: input_number.clim_offset_off
-                name: Offset OFF
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.clim_offset_on
+                    name: "ON"
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.clim_offset_off
+                    name: "OFF"
 
           - type: markdown
             content: |
@@ -155,19 +183,28 @@ views:
               - entity: input_boolean.auto_deshumidification_active
                 name: Activer déshumidification auto
               - entity: input_number.seuil_humidex_deshumidification
-                name: Seuil déclenchement (Humidex °C)
+                name: Seuil On (Humidex)
 
           - type: custom:button-card
             template: section_header
             name: 🤫 Mode silencieux
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_datetime.clim_heure_silencieux_on
-                name: Début silencieux
-              - entity: input_datetime.clim_heure_silencieux_off
-                name: Fin silencieux
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_datetime.clim_heure_silencieux_on
+                    name: de
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_datetime.clim_heure_silencieux_off
+                    name: à
 
           - type: custom:button-card
             template: section_header
@@ -178,7 +215,20 @@ views:
             entities:
               - entity: input_boolean.clim_blocage_horaire_actif
                 name: Blocage actif
-              - entity: input_datetime.clim_heure_blocage_autom_on
-                name: De
-              - entity: input_datetime.clim_heure_blocage_autom_off
-                name: À
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_datetime.clim_heure_blocage_autom_on
+                    name: de
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_datetime.clim_heure_blocage_autom_off
+                    name: à

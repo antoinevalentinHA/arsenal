@@ -38,13 +38,22 @@ views:
             template: section_header
             name: 📋 Consignes
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.chauffage_consigne_confort
-                name: Consigne Confort
-              - entity: input_number.chauffage_consigne_reduite
-                name: Consigne Réduite
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.chauffage_consigne_confort
+                    name: Confort
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.chauffage_consigne_reduite
+                    name: Réduite
 
           - type: custom:button-card
             template: section_header
@@ -60,13 +69,22 @@ views:
             template: sub_section_header
             name: 🌡️ Température extérieure
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.chauffage_seuil_ext_on
-                name: Seuil ON
-              - entity: input_number.chauffage_seuil_ext_off
-                name: Seuil OFF
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.chauffage_seuil_ext_on
+                    name: "ON"
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.chauffage_seuil_ext_off
+                    name: "OFF"
 
           - type: markdown
             content: |
@@ -94,15 +112,24 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
-            name: 🌡️ Température intérieure
+            name: 🌡️ Température intérieure (offsets)
 
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: input_number.chauffage_offset_on
-                name: Offset ON
-              - entity: input_number.chauffage_offset_off
-                name: Offset OFF
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.chauffage_offset_on
+                    name: "ON"
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.chauffage_offset_off
+                    name: "OFF"
 
           - type: markdown
             content: |
@@ -136,17 +163,30 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 🛡️ Protection thermique
+            name: 🛡️ Protection thermique (offsets)
 
           - type: entities
             show_header_toggle: false
             entities:
               - entity: input_boolean.blocage_geofencing
                 name: ✅ Protection thermique en absence
-              - entity: input_number.inhibition_geofencing_offset_on
-                name: Offset ON
-              - entity: input_number.inhibition_geofencing_offset_off
-                name: Offset OFF
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.inhibition_geofencing_offset_on
+                    name: "ON"
+    
+              - type: entities
+                show_header_toggle: false
+                entities:
+                  - entity: input_number.inhibition_geofencing_offset_off
+                    name: "OFF"
 
           - type: markdown
             content: |
