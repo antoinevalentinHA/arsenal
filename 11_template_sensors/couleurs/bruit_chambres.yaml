@@ -1,0 +1,68 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     BRUIT — COULEUR (SEUILS ABSOLUS)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer un état couleur à partir de :
+#   sensor.bruit_<suffixe>
+#
+# 📌 SEUILS (dB)
+#   30 / 35 / 38 / 40 / 45
+#
+# 🧠 MAPPING (6 niveaux, utilise TOUS les seuils)
+#   < 30  -> blue
+#   < 35  -> light_blue
+#   < 38  -> green
+#   < 40  -> yellow
+#   < 45  -> orange
+#   >=45  -> red
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.bruit_chambre_arnaud
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Bruit Chambre Arnaud"
+      unique_id: couleur_bruit_chambre_arnaud
+      state: &couleur_bruit_logic >
+        {% set suffixe = this.entity_id | replace('sensor.couleur_bruit_', '') %}
+        {% set src = 'sensor.bruit_' ~ suffixe %}
+
+        {% set raw = states(src) %}
+        {% set v = raw | replace(',', '.') | float(999) %}
+
+        {% set s1 = 30 %}
+        {% set s2 = 35 %}
+        {% set s3 = 38 %}
+        {% set s4 = 40 %}
+        {% set s5 = 45 %}
+
+        {% if raw in ['unknown', 'unavailable', None] or v == 999 %}
+          grey
+        {% elif v < s1 %}
+          blue
+        {% elif v < s2 %}
+          light_blue
+        {% elif v < s3 %}
+          green
+        {% elif v < s4 %}
+          yellow
+        {% elif v < s5 %}
+          orange
+        {% else %}
+          red
+        {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.bruit_chambre_matthieu
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Bruit Chambre Matthieu"
+      unique_id: couleur_bruit_chambre_matthieu
+      state: *couleur_bruit_logic

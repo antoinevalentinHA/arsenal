@@ -3,10 +3,17 @@
 #################################################################
 
 carte_activite_calories_quotidiennes:
-  template: socle_kpi_72
+  template: socle_kpi
 
   show_state: true
   show_icon: true
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_sante_calories_quotidiennes
+
+  triggers_update:
+    - sensor.couleur_sante_calories_quotidiennes
 
   state_display: |
     [[[
@@ -14,19 +21,3 @@ carte_activite_calories_quotidiennes:
       if (isNaN(val)) return "—";
       return `${Math.round(val)} kcal`;
     ]]]
-
-  styles:
-    card:
-      - background-color: |
-          [[[
-            const kcal = parseFloat(entity?.state);
-
-            // Indisponible (charte Arsenal)
-            if (isNaN(kcal))    return "rgba(224, 224, 224, 0.2)";
-
-            if (kcal < 1800)    return "rgba(244, 67, 54, 0.2)";     // 🔴 très faible
-            if (kcal < 2200)    return "rgba(255, 152, 0, 0.2)";     // 🟠 faible
-            if (kcal < 2600)    return "rgba(255, 235, 59, 0.2)";    // 🟡 moyen
-            if (kcal < 3000)    return "rgba(76, 175, 80, 0.2)";     // 🟢 bon
-            return "rgba(144, 202, 249, 0.25)";                       // 🔵 excellent
-          ]]]

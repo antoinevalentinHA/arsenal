@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     SANTE — COULEUR (CALORIES QUOTIDIENNES)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer une couleur canonique (red/orange/yellow/green/blue)
+#   à partir du capteur calories quotidiennes.
+#
+# 📌 SEUILS (kcal)
+#   < 1800 : red
+#   < 2200 : orange
+#   < 2600 : yellow
+#   < 3000 : green
+#   >=3000 : blue
+#
+# 🧩 SORTIE
+#   sensor.couleur_activite_calories_quotidiennes
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.withings_total_calories_burnt_today_local
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Santé — Calories quotidiennes"
+      unique_id: couleur_sante_calories_quotidiennes
+      state: >
+        {% set raw = states('sensor.withings_total_calories_burnt_today_local') %}
+        {% set kcal = raw | replace(',', '.') | float(999) %}
+
+        {% if raw in ['unknown', 'unavailable', None] or kcal == 999 %}
+          unavailable
+        {% elif kcal < 1800 %}
+          red
+        {% elif kcal < 2200 %}
+          orange
+        {% elif kcal < 2600 %}
+          yellow
+        {% elif kcal < 3000 %}
+          green
+        {% else %}
+          blue
+        {% endif %}

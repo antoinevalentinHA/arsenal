@@ -1,0 +1,26 @@
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.withings_average_respiratory_rate_local
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Santé — Fréquence respiratoire"
+      unique_id: couleur_sante_frequence_respiratoire
+      state: >
+        {% set raw = states('sensor.withings_average_respiratory_rate_local') %}
+        {% set rpm = raw | replace(',', '.') | float(999) %}
+
+        {% if raw in ['unknown', 'unavailable', None] or rpm == 999 %}
+          unavailable
+        {% elif rpm < 11 %}
+          blue
+        {% elif rpm < 17 %}
+          green
+        {% elif rpm < 20 %}
+          yellow
+        {% elif rpm < 23 %}
+          orange
+        {% else %}
+          red
+        {% endif %}

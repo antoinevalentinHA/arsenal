@@ -1,0 +1,26 @@
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.withings_average_heart_rate_local
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Santé — Fréquence cardiaque"
+      unique_id: couleur_sante_frequence_cardiaque
+      state: >
+        {% set raw = states('sensor.withings_average_heart_rate_local') %}
+        {% set bpm = raw | replace(',', '.') | float(999) %}
+
+        {% if raw in ['unknown', 'unavailable', None] or bpm == 999 %}
+          unavailable
+        {% elif bpm < 55 %}
+          blue
+        {% elif bpm < 70 %}
+          green
+        {% elif bpm < 80 %}
+          yellow
+        {% elif bpm < 90 %}
+          orange
+        {% else %}
+          red
+        {% endif %}

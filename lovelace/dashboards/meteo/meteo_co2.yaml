@@ -35,20 +35,24 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_co2_seuils_variables
+                template: socle_kpi
                 entity: sensor.co2_entree
                 name: Entrée
+                icon: mdi:molecule-co2
                 variables:
-                  seuil_warn: 500
-                  seuil_crit: 800
+                  ui_profile: arsenal
+                triggers_update:
+                  - sensor.couleur_co2_entree
 
               - type: custom:button-card
-                template: carte_co2_seuils_variables
+                template: socle_kpi
                 entity: sensor.co2_sejour
                 name: Séjour
+                icon: mdi:molecule-co2
                 variables:
-                  seuil_warn: 500
-                  seuil_crit: 800
+                  ui_profile: arsenal
+                triggers_update:
+                  - sensor.couleur_co2_sejour
 
           # ======================================================
           # 🛏️ CHAMBRES
@@ -61,28 +65,34 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_co2_seuils_variables
+                template: socle_kpi
                 entity: sensor.co2_chambre_arnaud
                 name: Arnaud
+                icon: mdi:molecule-co2
                 variables:
-                  seuil_warn: 500
-                  seuil_crit: 800
+                  ui_profile: arsenal
+                triggers_update:
+                  - sensor.couleur_co2_chambre_arnaud
 
               - type: custom:button-card
-                template: carte_co2_seuils_variables
+                template: socle_kpi
                 entity: sensor.co2_chambre_matthieu
                 name: Matthieu
+                icon: mdi:molecule-co2
                 variables:
-                  seuil_warn: 500
-                  seuil_crit: 800
+                  ui_profile: arsenal
+                triggers_update:
+                  - sensor.couleur_co2_chambre_matthieu
 
               - type: custom:button-card
-                template: carte_co2_seuils_variables
+                template: socle_kpi
                 entity: sensor.co2_chambre_parents
                 name: Parents
+                icon: mdi:molecule-co2
                 variables:
-                  seuil_warn: 500
-                  seuil_crit: 800
+                  ui_profile: arsenal
+                triggers_update:
+                  - sensor.couleur_co2_chambre_parents
 
           # ======================================================
           # 🛏️ PETITE MAISON
@@ -91,9 +101,11 @@ views:
           - !include ../../includes/section_headers/petite_maison.yaml
 
           - type: custom:button-card
-            template: carte_co2_seuils_variables
+            template: socle_kpi
             entity: sensor.co2_petite_maison
             name: Petite Maison
+            icon: mdi:molecule-co2
             variables:
-              seuil_warn: 600
-              seuil_crit: 1000
+              ui_profile: arsenal
+            triggers_update:
+              - sensor.couleur_co2_petite_maison

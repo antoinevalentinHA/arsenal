@@ -1,0 +1,26 @@
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.withings_steps_today_local
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Santé — Pas quotidiens"
+      unique_id: couleur_sante_pas_quotidiens
+      state: >
+        {% set raw = states('sensor.withings_steps_today_local') %}
+        {% set steps = raw | replace(',', '.') | float(999) %}
+
+        {% if raw in ['unknown', 'unavailable', None] or steps == 999 %}
+          unavailable
+        {% elif steps < 4000 %}
+          red
+        {% elif steps < 7000 %}
+          orange
+        {% elif steps < 9000 %}
+          yellow
+        {% elif steps < 12000 %}
+          green
+        {% else %}
+          blue
+        {% endif %}

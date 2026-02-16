@@ -3,10 +3,17 @@
 #################################################################
 
 carte_activite_pas_quotidiens:
-  template: socle_kpi_72
+  template: socle_kpi
 
   show_state: true
   show_icon: true
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_sante_pas_quotidiens
+
+  triggers_update:
+    - sensor.couleur_sante_pas_quotidiens
 
   state_display: |
     [[[
@@ -14,19 +21,3 @@ carte_activite_pas_quotidiens:
       if (isNaN(steps)) return "—";
       return `${Math.round(steps)} pas`;
     ]]]
-
-  styles:
-    card:
-      - background-color: |
-          [[[
-            const steps = parseFloat(entity?.state);
-
-            // Indisponible (charte)
-            if (isNaN(steps)) return "rgba(224, 224, 224, 0.2)";
-
-            if (steps < 4000)  return "rgba(244, 67, 54, 0.2)";   // 🔴 très faible
-            if (steps < 7000)  return "rgba(255, 152, 0, 0.2)";   // 🟠 faible
-            if (steps < 9000)  return "rgba(255, 235, 59, 0.2)";  // 🟡 moyen
-            if (steps < 12000) return "rgba(76, 175, 80, 0.2)";   // 🟢 bon
-            return "rgba(144, 202, 249, 0.25)";                  // 🔵 excellent
-          ]]]

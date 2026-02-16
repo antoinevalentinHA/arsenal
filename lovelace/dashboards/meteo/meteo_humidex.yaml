@@ -39,7 +39,6 @@ views:
                 entity: sensor.humidex_jardin
                 name: Humidex
                 triggers_update:
-                  - sensor.humidex_jardin
                   - sensor.couleur_humidex_jardin
 
           # ======================================================
@@ -57,7 +56,6 @@ views:
                 entity: sensor.humidex_entree
                 name: Entrée
                 triggers_update:
-                  - sensor.humidex_entree
                   - sensor.couleur_humidex_entree
 
               - type: custom:button-card
@@ -66,7 +64,6 @@ views:
                 name: Séjour
                 icon: mdi:thermometer-water
                 triggers_update:
-                  - sensor.humidex_sejour
                   - sensor.couleur_humidex_sejour
 
           # ======================================================
@@ -84,7 +81,6 @@ views:
                 entity: sensor.humidex_chambre_arnaud
                 name: Arnaud
                 triggers_update:
-                  - sensor.humidex_chambre_arnaud
                   - sensor.couleur_humidex_chambre_arnaud
 
               - type: custom:button-card
@@ -92,7 +88,6 @@ views:
                 entity: sensor.humidex_chambre_matthieu
                 name: Matthieu
                 triggers_update:
-                  - sensor.humidex_chambre_matthieu
                   - sensor.couleur_humidex_chambre_matthieu
 
               - type: custom:button-card
@@ -100,7 +95,6 @@ views:
                 entity: sensor.humidex_chambre_parents
                 name: Parents
                 triggers_update:
-                  - sensor.humidex_chambre_parents
                   - sensor.couleur_humidex_chambre_parents
 
               - type: custom:button-card
@@ -109,5 +103,4 @@ views:
                 name: Petite Maison
                 icon: mdi:thermometer-water
                 triggers_update:
-                  - sensor.humidex_petite_maison
                   - sensor.couleur_humidex_petite_maison

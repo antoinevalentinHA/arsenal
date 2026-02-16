@@ -1,0 +1,105 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     CO2 — COULEUR (WARN / CRIT)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer un état couleur (green/orange/red) à partir de :
+#   sensor.co2_<suffixe>
+#
+# 📌 SEUILS
+#   warn = 500
+#   crit = 800
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.co2_sejour
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur CO2 Séjour"
+      unique_id: couleur_co2_sejour
+      availability: &couleur_co2_availability >
+        {% set suffixe = this.entity_id | replace('sensor.couleur_co2_', '') %}
+        {% set src = 'sensor.co2_' ~ suffixe %}
+        {{ states(src) not in ['unknown', 'unavailable', None] }}
+      state: &couleur_co2_logic >
+        {% set suffixe = this.entity_id | replace('sensor.couleur_co2_', '') %}
+        {% set src = 'sensor.co2_' ~ suffixe %}
+
+        {% set raw = states(src) %}
+        {% set v = raw | replace(',', '.') | float(999) %}
+
+        {% set warn = 500 %}
+        {% set crit = 800 %}
+
+        {% if raw in ['unknown', 'unavailable', None] or v == 999 %}
+          grey
+        {% elif v >= crit %}
+          red
+        {% elif v >= warn %}
+          orange
+        {% else %}
+          green
+        {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.co2_petite_maison
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur CO2 Petite maison"
+      unique_id: couleur_co2_petite_maison
+      availability: *couleur_co2_availability
+      state: *couleur_co2_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.co2_entree
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur CO2 Entrée"
+      unique_id: couleur_co2_entree
+      availability: *couleur_co2_availability
+      state: *couleur_co2_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.co2_chambre_parents
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur CO2 Chambre parents"
+      unique_id: couleur_co2_chambre_parents
+      availability: *couleur_co2_availability
+      state: *couleur_co2_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.co2_chambre_matthieu
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur CO2 Chambre Matthieu"
+      unique_id: couleur_co2_chambre_matthieu
+      availability: *couleur_co2_availability
+      state: *couleur_co2_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.co2_chambre_arnaud
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur CO2 Chambre Arnaud"
+      unique_id: couleur_co2_chambre_arnaud
+      availability: *couleur_co2_availability
+      state: *couleur_co2_logic

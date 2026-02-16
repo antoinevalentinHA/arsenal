@@ -1,0 +1,26 @@
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.withings_sleep_score_local
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Santé — Score sommeil"
+      unique_id: couleur_sante_score_sommeil
+      state: >
+        {% set raw = states('sensor.withings_sleep_score_local') %}
+        {% set v = raw | replace(',', '.') | float(999) %}
+
+        {% if raw in ['unknown', 'unavailable', None] or v == 999 %}
+          unavailable
+        {% elif v < 70 %}
+          red
+        {% elif v < 76 %}
+          orange
+        {% elif v < 81 %}
+          yellow
+        {% elif v < 86 %}
+          green
+        {% else %}
+          blue
+        {% endif %}

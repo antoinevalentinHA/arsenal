@@ -3,10 +3,17 @@
 #################################################################
 
 carte_duree_qualitative:
-  template: socle_kpi_72
+  template: socle_kpi
 
   show_state: true
   show_icon: true
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_sante_duree_sommeil
+
+  triggers_update:
+    - sensor.couleur_sante_duree_sommeil
 
   state_display: |
     [[[
@@ -14,19 +21,3 @@ carte_duree_qualitative:
       if (isNaN(v)) return "—";
       return `${v.toFixed(1)} h`;
     ]]]
-
-  styles:
-    card:
-      - background-color: |
-          [[[
-            const v = parseFloat(entity?.state);
-
-            // Indisponible (charte)
-            if (isNaN(v)) return "rgba(224, 224, 224, 0.2)";
-
-            if (v < 6.0)  return "rgba(244, 67, 54, 0.2)";     // 🔴 très court
-            if (v < 6.75) return "rgba(255, 152, 0, 0.2)";     // 🟠 court
-            if (v < 7.25) return "rgba(255, 235, 59, 0.2)";    // 🟡 limite
-            if (v < 8.0)  return "rgba(76, 175, 80, 0.2)";     // 🟢 correct
-            return "rgba(144, 202, 249, 0.25)";               // 🔵 excellent
-          ]]]

@@ -46,28 +46,24 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_bruit_seuils_variables
+                template: socle_kpi
                 entity: sensor.bruit_chambre_arnaud
                 name: Arnaud
                 icon: mdi:volume-high
                 variables:
-                  seuil_1: 30
-                  seuil_2: 35
-                  seuil_3: 38
-                  seuil_4: 40
-                  seuil_5: 45
+                  ui_profile: arsenal
+                triggers_update:
+                  - sensor.couleur_bruit_chambre_arnaud
 
               - type: custom:button-card
-                template: carte_bruit_seuils_variables
+                template: socle_kpi
                 entity: sensor.bruit_chambre_matthieu
                 name: Matthieu
                 icon: mdi:volume-high
                 variables:
-                  seuil_1: 30
-                  seuil_2: 35
-                  seuil_3: 38
-                  seuil_4: 40
-                  seuil_5: 45
+                  ui_profile: arsenal
+                triggers_update:
+                  - sensor.couleur_bruit_chambre_matthieu
 
           # ======================================================
           # 📈 GRAPHIQUES BRUIT

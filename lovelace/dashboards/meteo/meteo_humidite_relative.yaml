@@ -57,9 +57,7 @@ views:
                 name: Humidité
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_jardin
                   - sensor.couleur_humidite_relative_jardin
-                  - input_select.saison
 
           # ======================================================
           # 🏠 RDC
@@ -77,9 +75,7 @@ views:
                 name: Entrée
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_entree
                   - sensor.couleur_humidite_relative_entree
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
@@ -87,9 +83,7 @@ views:
                 name: Séjour
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_sejour
                   - sensor.couleur_humidite_relative_sejour
-                  - input_select.saison
 
           # ======================================================
           # 🛏️ CHAMBRES
@@ -107,9 +101,7 @@ views:
                 name: Arnaud
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_chambre_arnaud
                   - sensor.couleur_humidite_relative_chambre_arnaud
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
@@ -117,9 +109,7 @@ views:
                 name: Matthieu
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_chambre_matthieu
                   - sensor.couleur_humidite_relative_chambre_matthieu
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
@@ -127,9 +117,7 @@ views:
                 name: Parents
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_chambre_parents
                   - sensor.couleur_humidite_relative_chambre_parents
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
@@ -137,9 +125,7 @@ views:
                 name: Petite Maison
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_petite_maison
                   - sensor.couleur_humidite_relative_petite_maison
-                  - input_select.saison
 
           # ======================================================
           # 🚿 SALLES DE BAIN
@@ -157,9 +143,7 @@ views:
                 name: Parents
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_sdb_parents
                   - sensor.couleur_humidite_relative_sdb_parents
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
@@ -167,9 +151,7 @@ views:
                 name: Enfants
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_sdb_enfants
                   - sensor.couleur_humidite_relative_sdb_enfants
-                  - input_select.saison
 
           # ======================================================
           # 🧱 CAVE & GARAGE
@@ -187,18 +169,12 @@ views:
                 name: Garage
                 icon: mdi:water-percent
                 triggers_update:
-                  - sensor.humidite_relative_garage
                   - sensor.couleur_humidite_relative_garage
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
                 name: Cave
                 icon: mdi:water-percent
                 entity: sensor.humidite_relative_cave
-                variables:
-                  couleur: sensor.couleur_humidite_relative_cave
                 triggers_update:
-                  - sensor.humidite_relative_cave
                   - sensor.couleur_humidite_relative_cave
-                  - input_select.saison

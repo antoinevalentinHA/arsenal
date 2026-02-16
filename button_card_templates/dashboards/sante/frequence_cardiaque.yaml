@@ -3,10 +3,17 @@
 #################################################################
 
 carte_frequence_cardiaque_qualitative:
-  template: socle_kpi_72
+  template: socle_kpi
 
   show_state: true
   show_icon: true
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_sante_frequence_cardiaque
+
+  triggers_update:
+    - sensor.couleur_sante_frequence_cardiaque
 
   state_display: |
     [[[
@@ -14,19 +21,3 @@ carte_frequence_cardiaque_qualitative:
       if (isNaN(bpm)) return "—";
       return `${Math.round(bpm)} bpm`;
     ]]]
-
-  styles:
-    card:
-      - background-color: |
-          [[[
-            const bpm = parseFloat(entity?.state);
-
-            // Indisponible (charte)
-            if (isNaN(bpm)) return "rgba(224, 224, 224, 0.2)";
-
-            if (bpm < 55) return "rgba(144, 202, 249, 0.25)";   // 🔵 bas (repos)
-            if (bpm < 70) return "rgba(76, 175, 80, 0.2)";      // 🟢 idéal
-            if (bpm < 80) return "rgba(255, 235, 59, 0.2)";     // 🟡 modéré
-            if (bpm < 90) return "rgba(255, 152, 0, 0.2)";      // 🟠 élevé
-            return "rgba(244, 67, 54, 0.2)";                   // 🔴 trop élevé
-          ]]]

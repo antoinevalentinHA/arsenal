@@ -70,12 +70,8 @@ views:
                 icon: mdi:thermometer
                 tap_action:
                   action: more-info
-                variables:
-                  couleur: sensor.couleur_temperature_jardin
                 triggers_update:
-                  - sensor.temperature_jardin
                   - sensor.couleur_temperature_jardin
-                  - input_select.saison
 
           # ======================================================
           # 🏠 RDC / PALIER
@@ -92,36 +88,24 @@ views:
                 entity: sensor.temperature_entree
                 name: Entrée
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_entree
                 triggers_update:
-                  - sensor.temperature_entree
                   - sensor.couleur_temperature_entree
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
                 entity: sensor.temperature_sejour
                 name: Séjour
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_sejour
                 triggers_update:
-                  - sensor.temperature_sejour
                   - sensor.couleur_temperature_sejour
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
                 entity: sensor.temperature_palier
                 name: Palier
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_palier
                 triggers_update:
-                  - sensor.temperature_palier
                   - sensor.couleur_temperature_palier
-                  - input_select.saison
 
           # ======================================================
           # 🛏️ CHAMBRES
@@ -138,48 +122,32 @@ views:
                 entity: sensor.temperature_chambre_arnaud
                 name: Arnaud
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_chambre_arnaud
                 triggers_update:
-                  - sensor.temperature_chambre_arnaud
                   - sensor.couleur_temperature_chambre_arnaud
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
                 entity: sensor.temperature_chambre_matthieu
                 name: Matthieu
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_chambre_matthieu
                 triggers_update:
-                  - sensor.temperature_chambre_matthieu
                   - sensor.couleur_temperature_chambre_matthieu
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
                 entity: sensor.temperature_chambre_parents
                 name: Parents
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_chambre_parents
                 triggers_update:
-                  - sensor.temperature_chambre_parents
                   - sensor.couleur_temperature_chambre_parents
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
                 name: Petite Maison
                 icon: mdi:thermometer
                 entity: sensor.temperature_petite_maison
-                variables:
-                  couleur: sensor.couleur_temperature_petite_maison
                 triggers_update:
-                  - sensor.temperature_petite_maison
                   - sensor.couleur_temperature_petite_maison
-                  - input_select.saison
 
           # ======================================================
           # 🚿 SALLES DE BAIN
@@ -196,24 +164,16 @@ views:
                 entity: sensor.temperature_sdb_parents
                 name: Parents
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_sdb_parents
                 triggers_update:
-                  - sensor.temperature_sdb_parents
                   - sensor.couleur_temperature_sdb_parents
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
                 entity: sensor.temperature_sdb_enfants
                 name: Enfants
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_sdb_enfants
                 triggers_update:
-                  - sensor.temperature_sdb_enfants
                   - sensor.couleur_temperature_sdb_enfants
-                  - input_select.saison
 
           # ======================================================
           # 🧱 CAVE & GARAGE
@@ -230,21 +190,13 @@ views:
                 entity: sensor.temperature_garage
                 name: Garage
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_garage
                 triggers_update:
-                  - sensor.temperature_garage
                   - sensor.couleur_temperature_garage
-                  - input_select.saison
 
               - type: custom:button-card
                 template: socle_kpi
                 entity: sensor.temperature_cave
                 name: Cave
                 icon: mdi:thermometer
-                variables:
-                  couleur: sensor.couleur_temperature_cave
                 triggers_update:
-                  - sensor.temperature_cave
                   - sensor.couleur_temperature_cave
-                  - input_select.saison

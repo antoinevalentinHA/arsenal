@@ -31,14 +31,12 @@ views:
 
     badges: !include ../includes/badges/base.yaml
 
-
     # ==========================================================
     # 🧩 CONTENEUR PRINCIPAL
     # ----------------------------------------------------------
     cards:
       - type: vertical-stack
         cards:
-
           ########################################################
           # 💤 SOMMEIL & RÉCUPÉRATION
           ########################################################
@@ -47,12 +45,11 @@ views:
               - type: custom:button-card
                 template: section_header
                 name: 💤 Sommeil & récupération
-    
+
               - type: grid
                 columns: 2
                 square: false
                 cards:
-    
                   # Score de sommeil
                   - type: custom:button-card
                     template: carte_score_qualitatif
@@ -91,13 +88,13 @@ views:
             severity:
               - from: 0
                 to: 25
-                color: "rgba(76, 175, 80, 0.85)"      # 🟢 faible proportion
+                color: "rgba(76, 175, 80, 0.85)" # 🟢 faible proportion
               - from: 25
                 to: 60
-                color: "rgba(255, 193, 7, 0.85)"      # 🟡 dominante
+                color: "rgba(255, 193, 7, 0.85)" # 🟡 dominante
               - from: 60
                 to: 100
-                color: "rgba(144, 202, 249, 0.9)"     # 🔵 très dominante
+                color: "rgba(144, 202, 249, 0.9)" # 🔵 très dominante
             style: |
               bar-card-background {
                 background: rgba(158, 158, 158, 0.2);
@@ -109,7 +106,6 @@ views:
           ########################################################
           - type: vertical-stack
             cards:
-
               - type: custom:button-card
                 template: section_header
                 name: ❤️ Santé / activité physiologique
@@ -118,7 +114,6 @@ views:
                 columns: 2
                 square: false
                 cards:
-
                   # Fréquence cardiaque moyenne
                   - type: custom:button-card
                     template: carte_frequence_cardiaque_qualitative
@@ -146,7 +141,6 @@ views:
                 columns: 3
                 square: false
                 cards:
-
                   # Nombre de pas
                   - type: custom:button-card
                     template: carte_activite_pas_quotidiens

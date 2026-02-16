@@ -1,0 +1,26 @@
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.withings_distance_travelled_today_local
+    - platform: homeassistant
+      event: start
+  sensor:
+    - name: "Couleur Santé — Distance quotidienne"
+      unique_id: couleur_sante_distance_quotidienne
+      state: >
+        {% set raw = states('sensor.withings_distance_travelled_today_local') %}
+        {% set dist = raw | replace(',', '.') | float(999) %}
+
+        {% if raw in ['unknown', 'unavailable', None] or dist == 999 %}
+          unavailable
+        {% elif dist < 2500 %}
+          red
+        {% elif dist < 5000 %}
+          orange
+        {% elif dist < 7000 %}
+          yellow
+        {% elif dist < 9000 %}
+          green
+        {% else %}
+          blue
+        {% endif %}
