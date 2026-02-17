@@ -115,11 +115,7 @@ views:
                 name: Vaisselle
                 icon: mdi:silverware-clean
 
-              - type: custom:button-card
-                template: carte_action_ecs_bouclage
-                entity: switch.prise_bouclage
-                name: Bouclage ECS
-                icon: mdi:play-circle
+              - !include ../includes/cartes/bouclage.yaml
 
 
           # ==========================================================

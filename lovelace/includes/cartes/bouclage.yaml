@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE METIER (INCLUDE)
+#     ECS — Bouclage : Action ↔ Timer
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Afficher une seule carte selon l’état du timer :
+#   - timer inactive → carte_action_ecs_bouclage (interactive)
+#   - timer active   → carte_ecs_bouclage_timer (transitoire)
+# ==========================================================
+
+type: vertical-stack
+cards:
+
+  # ------------------------------
+  # ACTION (timer non actif)
+  # ------------------------------
+  - type: conditional
+    conditions:
+      - entity: timer.bouclage_ecs_5_minutes
+        state_not: active
+    card:
+      type: custom:button-card
+      template: carte_action_ecs_bouclage
+      name: Bouclage ECS
+      icon: mdi:play-circle
+
+  # ------------------------------
+  # TRANSITOIRE (timer actif)
+  # ------------------------------
+  - type: conditional
+    conditions:
+      - entity: timer.bouclage_ecs_5_minutes
+        state: active
+    card:
+      type: custom:button-card
+      template: carte_ecs_bouclage_timer
+      entity: timer.bouclage_ecs_5_minutes
+      name: Bouclage ECS
+      icon: mdi:play-circle
