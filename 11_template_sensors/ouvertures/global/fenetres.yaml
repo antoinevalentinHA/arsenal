@@ -10,11 +10,11 @@
 # ==========================================================
 
 - binary_sensor:
-
     - name: "Fenêtre ouverte (Maison)"
       unique_id: fenetre_ouverte_maison
       default_entity_id: binary_sensor.fenetre_ouverte_maison
       device_class: opening
+      icon: mdi:window-open
 
       state: >
         {% set fenetres = [

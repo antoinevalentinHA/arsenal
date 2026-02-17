@@ -1,0 +1,33 @@
+status_72_on_off:
+  template: socle_status_72
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)
+
+  state_display: |
+    [[[
+      const s = entity?.state;
+      if (s === "on") return "ON";
+      if (s === "off") return "OFF";
+      return "—";
+    ]]]
+
+  state:
+    - operator: template
+      value: >
+        [[[
+          return entity.state === "on";
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - operator: template
+      value: >
+        [[[
+          return entity.state === "unknown" || entity.state === "unavailable";
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(224, 224, 224, 0.2)

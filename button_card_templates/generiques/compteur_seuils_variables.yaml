@@ -3,7 +3,7 @@
 #################################################################
 
 carte_compteur_seuils_variables:
-  template: socle_diagnostic
+  template: socle_diagnostic_compact
 
   show_state: true
 

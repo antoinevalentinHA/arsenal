@@ -1,0 +1,38 @@
+status_72_timer_info_transitoire:
+  template: socle_status_72
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)
+
+  state_display: |
+    [[[
+      const s = entity?.state;
+      if (s === "active") {
+        const r = entity?.attributes?.remaining;
+        return r ? `Actif • ${r}` : "Actif";
+      }
+      if (s === "idle") return "Idle";
+      return s || "—";
+    ]]]
+
+  state:
+    # 🔵 Actif
+    - operator: template
+      value: >
+        [[[
+          return entity.state === "active";
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(144, 202, 249, 0.25)
+
+    # ⚪ Indisponible (charte Arsenal)
+    - operator: template
+      value: >
+        [[[
+          return entity.state === "unknown" || entity.state === "unavailable";
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(224, 224, 224, 0.2)

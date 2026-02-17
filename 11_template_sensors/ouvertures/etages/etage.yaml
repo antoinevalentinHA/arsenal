@@ -19,11 +19,11 @@
 # ==========================================================
 
 - binary_sensor:
-
     - name: "Fenêtres étage"
       unique_id: fenetre_ouverte_etage
       default_entity_id: binary_sensor.fenetre_ouverte_etage
       device_class: opening
+      icon: mdi:window-open
 
       state: >
         {% set fenetres_etage = [

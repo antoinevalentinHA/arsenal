@@ -10,8 +10,6 @@ carte_action_ecs_bouclage:
   show_name: true
   show_label: true
 
-  icon: mdi:water-boiler
-
   label: |
     [[[
       const etat = states['switch.prise_bouclage']?.state;
@@ -53,8 +51,6 @@ carte_ecs_bouclage_timer:
   show_name: true
   show_state: true
   show_label: false
-
-  icon: mdi:water-boiler
 
   styles:
     card:

@@ -25,6 +25,7 @@
       unique_id: ouvertures_maison
       default_entity_id: binary_sensor.ouvertures_maison
       device_class: opening
+      icon: mdi:lock
 
       state: >
         {% set ouvertures = [

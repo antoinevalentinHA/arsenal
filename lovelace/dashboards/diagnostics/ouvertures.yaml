@@ -30,50 +30,68 @@ views:
     cards:
       - type: vertical-stack
         cards:
+          - type: custom:button-card
+            template: contact_sensor
+            entity: binary_sensor.ouvertures_maison
+            name: Ouvertures maison
 
-          ##############################################
-          # 🧠 SECTION : ÉTATS LOGIQUES — SANS ET AVEC DÉLAI
-          ##############################################
           - type: custom:button-card
             template: section_header
-            name: 🪟 Ouvertures
+            name: 🪟 Fenêtres
 
-          - type: markdown
-            content: |
-              ## 🔍 États instantanés
-              • **Ouvertures maison :** {{ '🟢 Ouvert' if is_state('binary_sensor.ouvertures_maison', 'on') else '⚪ Fermé' }}  
-              • **Fenêtres RDC :** {{ '🟢 Ouvert' if is_state('binary_sensor.fenetre_ouverte_rdc', 'on') else '⚪ Fermé' }}  
-              • **Fenêtres étage :** {{ '🟢 Ouvert' if is_state('binary_sensor.fenetre_ouverte_etage', 'on') else '⚪ Fermé' }}  
-              • **Fenêtres maison :** {{ '🟢 Ouvert' if is_state('binary_sensor.fenetre_ouverte_maison', 'on') else '⚪ Fermé' }}  
-              • **Portes maison :** {{ '🟢 Ouvert' if is_state('binary_sensor.portes_ouvertes_maison', 'on') else '⚪ Fermé' }}  
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: contact_sensor
+                entity: binary_sensor.fenetre_ouverte_rdc
+                name: Fenêtres RDC
 
-              ---
+              - type: custom:button-card
+                template: contact_sensor
+                entity: binary_sensor.fenetre_ouverte_etage
+                name: Fenêtres étage
 
-              ## ⏳ Etats avec délais 
-              • **Séjour :** {{ '🟢 ON' if is_state('binary_sensor.fenetre_sejour_ouverte_avec_delai','on') else '⚪ OFF' }}  
-              • **Chambre parents :** {{ '🟢 ON' if is_state('binary_sensor.fenetre_chambre_parents_ouverte_avec_delai','on') else '⚪ OFF' }}  
-              • **Étage :** {{ '🟢 ON' if is_state('binary_sensor.fenetre_ouverte_etage_avec_delai','on') else '⚪ OFF' }}  
-              • **Maison :** {{ '🟢 ON' if is_state('binary_sensor.fenetre_ouverte_maison_avec_delai','on') else '⚪ OFF' }}  
+          - type: custom:button-card
+            template: contact_sensor
+            entity: binary_sensor.fenetre_ouverte_maison
+            name: Fenêtres maison
 
-
-          ##############################################
-          # ⏱️ SECTION : Minuteries en cours
-          ##############################################
           - type: custom:button-card
             template: section_header
-            name: ⏱️ Minuteries
+            name: ⏳ États avec délais
 
-          - type: markdown
-            content: |
-              {% set timers = {
-                'Chambre parents': 'timer.fenetre_chambre_parents_grace',
-                'Séjour': 'timer.fenetre_sejour_ouverte_grace'
-              } %}
+          - type: grid
+            columns: 2
+            square: false
+            cards:
 
-              {% for label, entity in timers.items() %}
-                {% if is_state(entity, 'active') %}
-                • ⏳ **{{ label }}** : actif  
-                {% else %}
-                • 🟢 **{{ label }}** : idle  
-                {% endif %}
-              {% endfor %}
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: binary_sensor.fenetre_ouverte_maison_avec_delai
+                name: Maison
+                icon: mdi:home-clock-outline
+
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: binary_sensor.fenetre_ouverte_etage_avec_delai
+                name: Étage
+                icon: mdi:stairs-up
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: status_72_info_transitoire
+                entity: timer.fenetre_sejour_ouverte_grace
+                name: Séjour
+                icon: mdi:sofa
+
+              - type: custom:button-card
+                template: status_72_info_transitoire
+                entity: timer.fenetre_chambre_parents_grace
+                name: Chambre parents
+                icon: mdi:bed-king-outline
