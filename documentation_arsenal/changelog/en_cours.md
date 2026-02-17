@@ -44,33 +44,55 @@
 # 📌 Dernière consolidation officielle
 # ----------------------------------------------------------
 #
-# 🧠 ARSENAL HA v9.2.0 — STABLE
+# 🧠 ARSENAL HA v9.2.3 — STABLE
 #
-# - UI — Réglages (ergonomie) :
-#     • refonte massive des dashboards Réglages : `entities` → `grid` + `tile`
-#     • ajout des contrôles `numeric-input` inline sur les helpers (réglages rapides)
+# - UI — Santé (Sommeil) :
+#     • refactor du dashboard Sommeil (titre simplifié, grille densifiée 2 → 3 colonnes)
+#     • ajout de KPI : Réveils + Ronflements (épisodes + durée)
+#     • bar-card phases : masquage des libellés d’entités pour sobriété visuelle
 #
-# - UI — Pipeline couleur (industrialisation) :
-#     • standardisation : la couleur est fournie par des capteurs dédiés (`sensor.couleur_*`)
-#     • simplification des `triggers_update` sur Météo / CO2 / Bruit / Santé
+# - Capteurs — Withings “_local” (robustesse / factorisation) :
+#     • suppression de la duplication : la source est dérivée automatiquement (suppression suffixe `_local`)
+#     • fallback stabilisé : conservation de l’état précédent si source `unknown/unavailable`
+#     • introduction d’ancres YAML pour standardiser les conversions (int/float, valeurs par défaut)
 #
-# - Diagnostics — Alarme :
-#     • renforcement de l’observabilité (cohérence système, raison)
-#     • refactor de la divergence persistante : carte dédiée (fin du long markdown)
+# - UI — Button-card templates :
+#     • ajout `button_card_templates/dashboards/sante/duree_ronflements.yaml`
+#     • suppression `button_card_templates/generiques/status_72_timer_info_transitoire.yaml`
 #
-# - Chauffage — Nettoyage & robustesse :
-#     • suppression du helper `input_select.chauffage_mode` (obsolète)
-#     • resserrage des bornes du blocage poêle (anti-valeurs extrêmes)
+# - UI — Navigation (sobriété) :
+#     • simplification du menu Arsenal (retrait de raccourcis “outillage”)
+#     • ajustement : ajout d’un accès “Logs HA” / retrait File Editor / réordonnancement
+#     • retrait des actions critiques depuis la navigation (ex : reboot)
 #
-# - Zigbee2MQTT — Résilience :
-#     • rafraîchissement du backup coordinateur (`zigbee2mqtt/coordinator_backup.json`)
+# - UI — ECS / Bouclage (factorisation) :
+#     • centralisation de la carte Bouclage via include `lovelace/includes/cartes/bouclage.yaml`
+#     • ajout template générique `button_card_templates/generiques/bouclage_timer.yaml`
+#     • suppression de l’ancien template spécifique “arsenal/bouclage”
+#
+# - UI — Diagnostics Ouvertures (lisibilité) :
+#     • refactor complet : disparition des blocs markdown au profit de cartes statut (socle)
+#     • ajout des états temporisés + timers “grâce” sous forme de grilles homogènes
+#
+# - UI — Socle / Templates génériques :
+#     • ajout `status_72_on_off.yaml`
+#     • ajout `status_72_timer_info_transitoire.yaml`
+#     • ajustement : `compteur_seuils_variables` → `socle_diagnostic_compact`
+#
+# - Capteurs métier — Ouvertures :
+#     • ajout d’icônes sur les binary_sensors fenêtres / ouvertures (lisibilité UI)
+#
+# - Core — Secrets / Intégrations :
+#     • mise à jour `vicare_entry_id` dans `secrets.yaml`
 #
 # - Home Assistant — Runtime :
 #     • mises à jour `storage/` (artefacts internes HA, non fonctionnels)
 #
 # - Documentation :
-#     • mise à jour du contrat UI Alarme (`documentation_arsenal/contrats/alarme/90_ui_alarme.md`)
-#     • ajout des changelogs v9.1.4 et v9.1.5 (historisation)
+#     • ajout `documentation_arsenal/changelog/changelogs/v09_2.md`
+#     • ajout `documentation_arsenal/changelog/changelogs/v09_2_1.md`
+#     • ajout `documentation_arsenal/changelog/changelogs/v09_2_2.md`
+#     • mise à jour `documentation_arsenal/changelog/en_cours.md` (alignement consolidation)
 #
 # Date de consolidation : 2026-02-17
 #

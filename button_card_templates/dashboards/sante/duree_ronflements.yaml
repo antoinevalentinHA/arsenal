@@ -1,0 +1,13 @@
+#################################################################
+# 🛌 CARTE DURÉE RONFLEMENTS — UI
+#################################################################
+
+carte_duree_ronflements:
+  template: socle_kpi_label_72
+
+  show_state: true
+  show_icon: true
+
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)

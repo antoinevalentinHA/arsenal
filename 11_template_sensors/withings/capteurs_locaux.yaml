@@ -22,9 +22,13 @@
       unique_id: "withings_sleep_score_local"
       icon: mdi:sleep
       unit_of_measurement: "pts"
-      state: >
-        {% set src = states('sensor.withings_sleep_score') %}
-        {% set old = this.state | float(default=None) %}
+      state: &withings_state_float_0 >
+        {% set src_entity = this.entity_id %}
+        {% if src_entity.endswith('_local') %}
+          {% set src_entity = src_entity[:-6] %}
+        {% endif %}
+        {% set src = states(src_entity) %}
+        {% set old = this.state | float(default=0) %}
         {% if src not in ['unknown','unavailable','',None] %}
           {{ src | float | round(0) }}
         {% else %}
@@ -35,8 +39,12 @@
       unique_id: "withings_sommeil_profond_local"
       icon: mdi:power-sleep
       unit_of_measurement: "h"
-      state: >
-        {% set src = states('sensor.withings_sommeil_profond') %}
+      state: &withings_state_float_2 >
+        {% set src_entity = this.entity_id %}
+        {% if src_entity.endswith('_local') %}
+          {% set src_entity = src_entity[:-6] %}
+        {% endif %}
+        {% set src = states(src_entity) %}
         {% set old = this.state | float(default=0) %}
         {% if src not in ['unknown','unavailable','',None] %}
           {{ src | float | round(2) }}
@@ -48,33 +56,23 @@
       unique_id: "withings_sommeil_leger_local"
       icon: mdi:weather-night
       unit_of_measurement: "h"
-      state: >
-        {% set src = states('sensor.withings_sommeil_leger') %}
-        {% set old = this.state | float(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | float | round(2) }}
-        {% else %}
-          {{ old }}
-        {% endif %}
+      state: *withings_state_float_2
 
     - name: "withings_rem_sleep_local"
       unique_id: "withings_rem_sleep_local"
       icon: mdi:brain
       unit_of_measurement: "h"
-      state: >
-        {% set src = states('sensor.withings_rem_sleep') %}
-        {% set old = this.state | float(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | float | round(2) }}
-        {% else %}
-          {{ old }}
-        {% endif %}
+      state: *withings_state_float_2
 
     - name: "withings_wakeup_count_local"
       unique_id: "withings_wakeup_count_local"
       icon: mdi:sleep-off
-      state: >
-        {% set src = states('sensor.withings_wakeup_count') %}
+      state: &withings_state_int >
+        {% set src_entity = this.entity_id %}
+        {% if src_entity.endswith('_local') %}
+          {% set src_entity = src_entity[:-6] %}
+        {% endif %}
+        {% set src = states(src_entity) %}
         {% set old = this.state | int(default=0) %}
         {% if src not in ['unknown','unavailable','',None] %}
           {{ src | int }}
@@ -83,17 +81,42 @@
         {% endif %}
 
     ########################################################
-    # ❤️ SANTÉ / ACTIVITÉ PHYSIOLOGIQUE (FIABILISÉS)
+    # ❤️ FRÉQUENCE CARDIAQUE — MIN / MOYENNE / MAX (FIABILISÉS)
     ########################################################
+    - name: "withings_frequence_cardiaque_minimale_local"
+      unique_id: "withings_frequence_cardiaque_minimale_local"
+      icon: mdi:heart-off
+      unit_of_measurement: "bpm"
+      state: *withings_state_int
+
     - name: "withings_average_heart_rate_local"
       unique_id: "withings_average_heart_rate_local"
       icon: mdi:heart-pulse
       unit_of_measurement: "bpm"
-      state: >
-        {% set src = states('sensor.withings_average_heart_rate') %}
-        {% set old = this.state | int(default=0) %}
+      state: *withings_state_int
+
+    - name: "withings_frequence_cardiaque_maximale_local"
+      unique_id: "withings_frequence_cardiaque_maximale_local"
+      icon: mdi:heart-flash
+      unit_of_measurement: "bpm"
+      state: *withings_state_int
+
+    ########################################################
+    # ❤️ SANTÉ / FREQUENCE RESPIRATOIRE (FIABILISÉS)
+    ########################################################
+    - name: "withings_minimum_respiratory_rate_local"
+      unique_id: "withings_minimum_respiratory_rate_local"
+      icon: mdi:lungs
+      unit_of_measurement: "rpm"
+      state: &withings_state_float_1 >
+        {% set src_entity = this.entity_id %}
+        {% if src_entity.endswith('_local') %}
+          {% set src_entity = src_entity[:-6] %}
+        {% endif %}
+        {% set src = states(src_entity) %}
+        {% set old = this.state | float(default=0) %}
         {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | int }}
+          {{ src | float | round(1) }}
         {% else %}
           {{ old }}
         {% endif %}
@@ -102,14 +125,13 @@
       unique_id: "withings_average_respiratory_rate_local"
       icon: mdi:lungs
       unit_of_measurement: "rpm"
-      state: >
-        {% set src = states('sensor.withings_average_respiratory_rate') %}
-        {% set old = this.state | float(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | float | round(1) }}
-        {% else %}
-          {{ old }}
-        {% endif %}
+      state: *withings_state_float_1
+
+    - name: "withings_maximum_respiratory_rate_local"
+      unique_id: "withings_maximum_respiratory_rate_local"
+      icon: mdi:lungs
+      unit_of_measurement: "rpm"
+      state: *withings_state_float_1
 
     ########################################################
     # 🏃 ACTIVITÉ PHYSIQUE / CALORIES (FIABILISÉS)
@@ -118,40 +140,19 @@
       unique_id: "withings_steps_today_local"
       icon: mdi:walk
       unit_of_measurement: "pas"
-      state: >
-        {% set src = states('sensor.withings_steps_today') %}
-        {% set old = this.state | int(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | int }}
-        {% else %}
-          {{ old }}
-        {% endif %}
+      state: *withings_state_int
 
     - name: "withings_total_calories_burnt_today_local"
       unique_id: "withings_total_calories_burnt_today_local"
       icon: mdi:fire
       unit_of_measurement: "kcal"
-      state: >
-        {% set src = states('sensor.withings_total_calories_burnt_today') %}
-        {% set old = this.state | int(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | int }}
-        {% else %}
-          {{ old }}
-        {% endif %}
+      state: *withings_state_int
 
     - name: "withings_distance_travelled_today_local"
       unique_id: "withings_distance_travelled_today_local"
       icon: mdi:map-marker-distance
       unit_of_measurement: "m"
-      state: >
-        {% set src = states('sensor.withings_distance_travelled_today') %}
-        {% set old = this.state | int(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | int }}
-        {% else %}
-          {{ old }}
-        {% endif %}
+      state: *withings_state_int
 
     ########################################################
     # 🌙 SOMMEIL — INDICATEURS SECONDAIRES (FIABILISÉS)
@@ -159,66 +160,16 @@
     - name: "withings_snoring_episode_count_local"
       unique_id: "withings_snoring_episode_count_local"
       icon: mdi:weather-windy
-      state: >
-        {% set src = states('sensor.withings_snoring_episode_count') %}
-        {% set old = this.state | int(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | int }}
-        {% else %}
-          {{ old }}
-        {% endif %}
+      state: *withings_state_int
 
     - name: "withings_ronflement_local"
       unique_id: "withings_ronflement_local"
       icon: mdi:volume-high
       unit_of_measurement: "min"
-      state: >
-        {% set src = states('sensor.withings_ronflement') %}
-        {% set old = this.state | int(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | int }}
-        {% else %}
-          {{ old }}
-        {% endif %}
+      state: *withings_state_int
 
     - name: "withings_breathing_disturbances_intensity_local"
       unique_id: "withings_breathing_disturbances_intensity_local"
       icon: mdi:lungs
       unit_of_measurement: "index"
-      state: >
-        {% set src = states('sensor.withings_breathing_disturbances_intensity') %}
-        {% set old = this.state | int(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | int }}
-        {% else %}
-          {{ old }}
-        {% endif %}
-
-    ########################################################
-    # ❤️ FRÉQUENCE CARDIAQUE — MIN / MAX (FIABILISÉS)
-    ########################################################
-    - name: "withings_frequence_cardiaque_minimale_local"
-      unique_id: "withings_frequence_cardiaque_minimale_local"
-      icon: mdi:heart-off
-      unit_of_measurement: "bpm"
-      state: >
-        {% set src = states('sensor.withings_frequence_cardiaque_minimale') %}
-        {% set old = this.state | int(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | int }}
-        {% else %}
-          {{ old }}
-        {% endif %}
-
-    - name: "withings_frequence_cardiaque_maximale_local"
-      unique_id: "withings_frequence_cardiaque_maximale_local"
-      icon: mdi:heart-flash
-      unit_of_measurement: "bpm"
-      state: >
-        {% set src = states('sensor.withings_frequence_cardiaque_maximale') %}
-        {% set old = this.state | int(default=0) %}
-        {% if src not in ['unknown','unavailable','',None] %}
-          {{ src | int }}
-        {% else %}
-          {{ old }}
-        {% endif %}
+      state: *withings_state_int
