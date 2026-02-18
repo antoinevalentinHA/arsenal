@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     aeration_synthese_72
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Phrase synthese priorisee :
+#   blocage > episode > deltaT > nominal
+# ==========================================================
+
+aeration_synthese_72:
+  template: socle_status_label_72
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  icon: mdi:window-open-variant
+
+  label: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const blocage = st('input_boolean.chauffage_blocage_aeration');
+      const episode = st('input_boolean.aeration_episode_en_cours');
+      const delta   = st('input_number.delta_t_max_decisionnel_aeration');
+
+      if ([blocage, episode, delta].some(v => UNAV.includes(v)))
+        return "Indisponible";
+
+      const v = parseFloat(delta);
+
+      if (blocage === 'on')
+        return "Chauffage bloqué (post-aération)";
+
+      if (episode === 'on')
+        return "Aération en cours";
+
+      if (!Number.isNaN(v) && v > 0)
+        return "Chute thermique résiduelle";
+
+      return "Situation nominale";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const st = (id) => states[id]?.state;
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+            const blocage = st('input_boolean.chauffage_blocage_aeration');
+            const episode = st('input_boolean.aeration_episode_en_cours');
+            const delta   = st('input_number.delta_t_max_decisionnel_aeration');
+
+            if ([blocage, episode, delta].some(v => UNAV.includes(v)))
+              return "rgba(158, 158, 158, 0.1)";
+
+            const v = parseFloat(delta);
+
+            if (blocage === 'on')
+              return "rgba(244, 67, 54, 0.2)";   // rouge
+
+            if (episode === 'on')
+              return "rgba(33, 150, 243, 0.2)";   // bleu info
+
+            if (!Number.isNaN(v) && v > 0)
+              return "rgba(255, 152, 0, 0.2)";   // orange avertissement
+
+            return "rgba(76, 175, 80, 0.2)";     // vert nominal
+          ]]]

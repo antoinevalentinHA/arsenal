@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     aeration_reference_thermique_72
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Afficher :
+#   - Température de référence moyenne
+#   - ΔT max observé
+#   Carte purement informative (bleu INFO).
+# ==========================================================
+
+aeration_reference_thermique_72:
+  template: socle_info_72
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+
+  icon: mdi:thermometer
+
+  label: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const num = (id) => {
+        const s = states[id]?.state;
+        if (UNAV.includes(s)) return null;
+        const v = parseFloat(s);
+        return Number.isNaN(v) ? null : v;
+      };
+
+      const refs = [
+        num('input_number.ref_temp_entree'),
+        num('input_number.ref_temp_sejour'),
+        num('input_number.ref_temp_chambre_arnaud'),
+        num('input_number.ref_temp_chambre_matthieu'),
+        num('input_number.ref_temp_chambre_parents'),
+        num('input_number.ref_temp_palier')
+      ];
+
+      if (refs.some(v => v === null)) return "Indisponible";
+
+      const temp_ref = refs.reduce((a,b) => a+b, 0) / refs.length;
+      const deltaT = num('input_number.delta_t_max_decisionnel_aeration');
+
+      if (deltaT === null) return "Indisponible";
+
+      return `Réf ${temp_ref.toFixed(2)} °C  •  ΔT ${deltaT.toFixed(2)} °C`;
+    ]]]

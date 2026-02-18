@@ -44,57 +44,32 @@
 # 📌 Dernière consolidation officielle
 # ----------------------------------------------------------
 #
-# 🧠 ARSENAL HA v9.2.3 — STABLE
+# 🧠 ARSENAL HA v9.2.5 — STABLE
 #
-# - UI — Santé (Sommeil) :
-#     • refactor du dashboard Sommeil (titre simplifié, grille densifiée 2 → 3 colonnes)
-#     • ajout de KPI : Réveils + Ronflements (épisodes + durée)
-#     • bar-card phases : masquage des libellés d’entités pour sobriété visuelle
+# - UI — Diagnostics (industrialisation + lisibilité) :
+#     • refactor massif des dashboards Diagnostics (Chauffage / Climatisation / ECS) :
+#         - disparition des longs blocs markdown au profit de grilles + cartes statut (socle)
+#         - lecture métier “synthèse” via cartes homogènes (ex : `clim_synthese_status_72`)
+#     • harmonisation des titres de vues : “Diagnostics X” (Chauffage / Climatisation / ECS / Éclairage / Ouvertures)
 #
-# - Capteurs — Withings “_local” (robustesse / factorisation) :
-#     • suppression de la duplication : la source est dérivée automatiquement (suppression suffixe `_local`)
-#     • fallback stabilisé : conservation de l’état précédent si source `unknown/unavailable`
-#     • introduction d’ancres YAML pour standardiser les conversions (int/float, valeurs par défaut)
+# - UI — Templates (socle diagnostics) :
+#     • ajout de templates dédiés “dashboards/diagnostic” pour factoriser les cartes Diagnostics
 #
-# - UI — Button-card templates :
-#     • ajout `button_card_templates/dashboards/sante/duree_ronflements.yaml`
-#     • suppression `button_card_templates/generiques/status_72_timer_info_transitoire.yaml`
+# - Chauffage — Diagnostics (sobriété) :
+#     • ajustement de la section “mode éco” : libellés simplifiés (24h / 7j) + focus lisibilité
 #
-# - UI — Navigation (sobriété) :
-#     • simplification du menu Arsenal (retrait de raccourcis “outillage”)
-#     • ajustement : ajout d’un accès “Logs HA” / retrait File Editor / réordonnancement
-#     • retrait des actions critiques depuis la navigation (ex : reboot)
+# - Climatisation — Robustesse d’exécution :
+#     • durcissement du script `09_scripts/climatisation/execution_mode_cible.yaml` :
+#         - lecture de l’état réel via `states('climate.clim')` (au lieu d’un attribut)
+#         - abstention si `climate.clim` ou `switch.clim_power` en `unknown` / `unavailable`
 #
-# - UI — ECS / Bouclage (factorisation) :
-#     • centralisation de la carte Bouclage via include `lovelace/includes/cartes/bouclage.yaml`
-#     • ajout template générique `button_card_templates/generiques/bouclage_timer.yaml`
-#     • suppression de l’ancien template spécifique “arsenal/bouclage”
-#
-# - UI — Diagnostics Ouvertures (lisibilité) :
-#     • refactor complet : disparition des blocs markdown au profit de cartes statut (socle)
-#     • ajout des états temporisés + timers “grâce” sous forme de grilles homogènes
-#
-# - UI — Socle / Templates génériques :
-#     • ajout `status_72_on_off.yaml`
-#     • ajout `status_72_timer_info_transitoire.yaml`
-#     • ajustement : `compteur_seuils_variables` → `socle_diagnostic_compact`
-#
-# - Capteurs métier — Ouvertures :
-#     • ajout d’icônes sur les binary_sensors fenêtres / ouvertures (lisibilité UI)
-#
-# - Core — Secrets / Intégrations :
-#     • mise à jour `vicare_entry_id` dans `secrets.yaml`
+# - Documentation :
+#     • ajout du changelog `documentation_arsenal/changelog/changelogs/v09_2_4.md`
 #
 # - Home Assistant — Runtime :
 #     • mises à jour `storage/` (artefacts internes HA, non fonctionnels)
 #
-# - Documentation :
-#     • ajout `documentation_arsenal/changelog/changelogs/v09_2.md`
-#     • ajout `documentation_arsenal/changelog/changelogs/v09_2_1.md`
-#     • ajout `documentation_arsenal/changelog/changelogs/v09_2_2.md`
-#     • mise à jour `documentation_arsenal/changelog/en_cours.md` (alignement consolidation)
-#
-# Date de consolidation : 2026-02-17
+# Date de consolidation : 2026-02-18
 #
 # ==========================================================
 

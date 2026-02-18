@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     aeration_episode_status_72
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Synthese episode d'aeration + date debut/derniere.
+#   Remplace markdown par tuile canon Arsenal.
+# ==========================================================
+
+aeration_episode_status_72:
+  template: socle_status_label_72
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  icon: mdi:window-open-variant
+
+  label: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const episode = states['input_boolean.aeration_episode_en_cours']?.state;
+      const d = states['input_datetime.aeration_debut']?.state;
+
+      const fmt = (s) => {
+        if (UNAV.includes(s)) return "—";
+        const t = Date.parse(s);
+        if (Number.isNaN(t)) return "—";
+        const dt = new Date(t);
+        const dd = String(dt.getDate()).padStart(2,'0');
+        const mm = String(dt.getMonth()+1).padStart(2,'0');
+        const hh = String(dt.getHours()).padStart(2,'0');
+        const mi = String(dt.getMinutes()).padStart(2,'0');
+        return `${dd}/${mm} ${hh}:${mi}`;
+      };
+
+      if (UNAV.includes(episode)) return "Indisponible";
+
+      if (episode === 'on') {
+        return `En cours  •  ${fmt(d)}`;
+      }
+
+      return `Au repos  •  ${fmt(d)}`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = states['input_boolean.aeration_episode_en_cours']?.state;
+            if (s === 'unknown' || s === 'unavailable' || s === undefined)
+              return "rgba(158, 158, 158, 0.1)";
+
+            if (s === 'on')
+              return "rgba(33, 150, 243, 0.2)";
+
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]

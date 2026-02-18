@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     aeration_deltat_chute_72
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Indiquer si une chute thermique significative a été observée
+#   via deltaT_max_decisionnel_aeration.
+# ==========================================================
+
+aeration_deltat_chute_72:
+  template: socle_status_label_72
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  icon: mdi:thermometer-chevron-down
+
+  label: |
+    [[[
+      const s = states['input_number.delta_t_max_decisionnel_aeration']?.state;
+      if (s === undefined || s === null || s === 'unknown' || s === 'unavailable' || s === '') {
+        return "Indisponible";
+      }
+
+      const v = parseFloat(s);
+      if (Number.isNaN(v)) return "Indisponible";
+
+      if (v > 0) return `Oui • ΔT max ${v.toFixed(2)} °C`;
+      return "Aucune chute significative";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = states['input_number.delta_t_max_decisionnel_aeration']?.state;
+            if (s === undefined || s === null || s === 'unknown' || s === 'unavailable' || s === '') {
+              return "rgba(158, 158, 158, 0.1)";
+            }
+
+            const v = parseFloat(s);
+            if (Number.isNaN(v)) return "rgba(158, 158, 158, 0.1)";
+
+            if (v > 0) return "rgba(244, 67, 54, 0.2)";
+            return "rgba(76, 175, 80, 0.2)";
+          ]]]
