@@ -7,7 +7,7 @@ views:
   ####################################
   # 🛡️ DIAGNOSTICS ALARME
   ####################################
-  - title: Alarme
+  - title: Diagnostics Alarme
     path: alarme
     icon: mdi:shield-home
 

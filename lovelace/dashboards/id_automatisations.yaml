@@ -4,7 +4,7 @@ title: Numérotation
 icon: mdi:numeric
 
 views:
-  - title: id Automatisations
+  - title: ID automatisations
     path: id-automatisations
     icon: mdi:format-list-numbered
 
@@ -24,18 +24,21 @@ views:
             template: section_header
             name: 🆔 Création d'ID pour automatisations
 
-          - type: entities
-            entities:
-              - entity: input_select.prefix_id_select
-                name: Domaine d'automatisations
+          - type: tile
+            entity: input_select.prefix_id_select
+            name: Domaine d'automatisations
+            features_position: bottom
+            features:
+              - type: select-options
 
-              - type: custom:button-card
-                template: socle_action_simple
-                name: Générer prochain ID
-                icon: mdi:calculator
-                tap_action:
-                  action: call-service
-                  service: pyscript.generate_next_id_from_prefix
+          - type: custom:button-card
+            template: socle_action_simple
+            name: Générer prochain ID
+            icon: mdi:calculator
+            tap_action:
+              action: call-service
+              service: pyscript.generate_next_id_from_prefix
 
-              - entity: input_text.next_id_result
-                name: Prochain ID disponible
+          - type: tile
+            entity: input_text.next_id_result
+            name: Prochain ID disponible

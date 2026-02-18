@@ -89,11 +89,12 @@ views:
 
               - !include ../includes/section_headers/conditions.yaml
 
-              - type: entities
-                show_header_toggle: false
-                entities:
-                  - entity: input_select.clim_conditions_mode
-                    name: Mode affiché
+              - type: tile
+                entity: input_select.clim_conditions_mode
+                name: Mode affiché
+                features_position: bottom
+                features:
+                  - type: select-options
 
 
           # ==================================================

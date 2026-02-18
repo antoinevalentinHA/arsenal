@@ -4,7 +4,7 @@ title: Réglages Aération
 icon: mdi:window-open-variant
 
 views:
-  - title: Aération
+  - title: Réglages Aération
     path: aeration
     icon: mdi:window-open-variant
 

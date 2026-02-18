@@ -4,7 +4,7 @@ title: Réglages VMC
 icon: mdi:fan
 
 views:
-  - title: VMC
+  - title: Réglages VMC
     path: vmc
     icon: mdi:fan
     badges:

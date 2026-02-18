@@ -70,7 +70,7 @@ views:
           - type: custom:button-card
             template: section_header
             name: 🧾 Contexte
-    
+
           - type: markdown
             content: |
               **Mode décidé :** `{{ states('input_select.chauffage_dernier_mode_decide') }}`

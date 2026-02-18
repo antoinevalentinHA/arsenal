@@ -4,7 +4,7 @@ title: Réglages Éclairage
 icon: mdi:lightbulb
 
 views:
-  - title: Éclairage
+  - title: Réglages Éclairage
     path: eclairage
     icon: mdi:lightbulb
     badges:

@@ -1,0 +1,77 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     chauffage_auto_courbe_status_72
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Remplacer markdown "auto-ajustement courbe" par tuiles
+#   diagnostics canon Arsenal.
+#
+# 🧩 VARIABLES
+#   - kind: "auto" | "last"
+# ==========================================================
+
+chauffage_auto_courbe_status_72:
+  template: socle_status_label_72
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  icon: |
+    [[[
+      const kind = variables.kind;
+      if (kind === 'auto') return 'mdi:autorenew';
+      if (kind === 'last') return 'mdi:note-text-outline';
+      return 'mdi:autorenew';
+    ]]]
+
+  label: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const kind = variables.kind;
+
+      if (kind === 'auto') {
+        const auto = states['input_boolean.chauffage_reglages_auto']?.state;
+        const simu = states['input_boolean.courbe_auto_simulation']?.state;
+
+        if (UNAV.includes(auto)) return "Indisponible";
+
+        if (auto !== 'on') return "Inactif";
+        if (UNAV.includes(simu)) return "Actif";
+        return (simu === 'on') ? "Simulation" : "Appliqué";
+      }
+
+      // kind === 'last'
+      const last = states['input_text.chauffage_last_adjustment']?.state;
+      if (UNAV.includes(last) || last === '') return "Aucun";
+      return last;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            const kind = variables.kind;
+
+            if (kind === 'auto') {
+              const auto = states['input_boolean.chauffage_reglages_auto']?.state;
+              const simu = states['input_boolean.courbe_auto_simulation']?.state;
+
+              if (UNAV.includes(auto)) return "rgba(158, 158, 158, 0.1)";
+              if (auto !== 'on') return "rgba(244, 67, 54, 0.2)";
+
+              if (UNAV.includes(simu)) return "rgba(76, 175, 80, 0.2)";
+              return (simu === 'on')
+                ? "rgba(33, 150, 243, 0.2)"
+                : "rgba(76, 175, 80, 0.2)";
+            }
+
+            // kind === 'last'
+            const last = states['input_text.chauffage_last_adjustment']?.state;
+            if (UNAV.includes(last)) return "rgba(158, 158, 158, 0.1)";
+            if (last === '') return "rgba(158, 158, 158, 0.2)";
+            return "rgba(33, 150, 243, 0.2)";
+          ]]]

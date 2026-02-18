@@ -4,7 +4,7 @@ title: Réglages Volets
 icon: mdi:window-shutter
 
 views:
-  - title: Volets
+  - title: Réglages Volets
     path: volets
     icon: mdi:window-shutter
     badges:

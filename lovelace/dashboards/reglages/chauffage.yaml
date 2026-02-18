@@ -4,7 +4,7 @@ title: Réglages Chauffage
 icon: mdi:fire
 
 views:
-  - title: Chauffage
+  - title: Réglages Chauffage
     path: chauffage
     icon: mdi:fire
     badges:

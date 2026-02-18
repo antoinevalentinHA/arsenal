@@ -4,7 +4,7 @@ title: Réglages Alarme
 icon: mdi:shield-home
 
 views:
-  - title: Alarme
+  - title: Réglages Alarme
     path: alarme
     icon: mdi:shield-home
     badges:

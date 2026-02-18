@@ -7,7 +7,7 @@ views:
   ####################################
   # 🪟 DIAGNOSTICS AÉRATION
   ####################################
-  - title: Aération
+  - title: Diagnostics Aération
     path: diagnostics-aeration
     icon: mdi:window-open-variant
 
@@ -36,7 +36,7 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 🌬️🌡️ Aération – Diagnostics
+            name: 🌬️🌡️ Aération
 
           - type: custom:button-card
             template: sub_section_header

@@ -35,10 +35,10 @@ views:
             template: section_header
             name: 📱 Téléphones
 
-          - type: entities
-            entities:
-              - entity: input_text.telephone_antoine
-                name: Téléphone Antoine
+          - type: tile
+            entity: input_text.telephone_antoine
+            name: Téléphone Antoine
 
-              - entity: input_text.telephone_constance
-                name: Téléphone Constance
+          - type: tile
+            entity: input_text.telephone_constance
+            name: Téléphone Constance

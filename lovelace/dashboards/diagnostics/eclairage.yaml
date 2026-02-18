@@ -6,7 +6,7 @@ views:
   ####################################
   # 💡 ÉCLAIRAGE
   ####################################
-  - title: Éclairage
+  - title: Diagnostics Éclairage
     path: eclairage
     icon: mdi:lightbulb
 

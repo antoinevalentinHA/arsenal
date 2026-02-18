@@ -1,0 +1,117 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     chauffage_synthese_blocage_aeration_xl
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Synthese chauffage post-aeration / episode / override.
+#   Remplace le markdown par une carte canon Arsenal.
+#
+# 📌 ENTREES (entites)
+#   - input_boolean.chauffage_blocage_aeration
+#   - input_boolean.aeration_episode_en_cours
+#   - input_boolean.mode_confort_chauffage
+#   - input_datetime.chauffage_fin_blocage_aeration
+#   - input_datetime.analyse_deltat_disponible
+#
+# 🎨 COULEURS (charte)
+#   - rouge   : blocage + episode
+#   - orange  : blocage sans episode
+#   - bleu    : override operateur
+#   - vert    : aucun verrou
+#   - gris indispo : donnees manquantes
+# ==========================================================
+
+chauffage_synthese_blocage_aeration_xl:
+  template: socle_status_label_xl
+
+  icon: mdi:lock-alert
+
+  state_display: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const b = st('input_boolean.chauffage_blocage_aeration');
+      const e = st('input_boolean.aeration_episode_en_cours');
+      const o = st('input_boolean.mode_confort_chauffage');
+
+      if (UNAV.includes(b) || UNAV.includes(e) || UNAV.includes(o)) return "Chauffage";
+
+      const blocage  = (b === 'on');
+      const episode  = (e === 'on');
+      const override = (o === 'on');
+
+      if (blocage && episode) return "Suspendu";
+      if (blocage && !episode) return "Stabilisation";
+      if (override) return "Override";
+      return "OK";
+    ]]]
+
+  label: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const b = st('input_boolean.chauffage_blocage_aeration');
+      const e = st('input_boolean.aeration_episode_en_cours');
+      const o = st('input_boolean.mode_confort_chauffage');
+
+      const d_bloc = st('input_datetime.chauffage_fin_blocage_aeration');
+      const d_ana  = st('input_datetime.analyse_deltat_disponible');
+
+      if (UNAV.includes(b) || UNAV.includes(e) || UNAV.includes(o)) return "Indisponible";
+
+      const blocage  = (b === 'on');
+      const episode  = (e === 'on');
+      const override = (o === 'on');
+
+      const fmt = (s) => {
+        if (UNAV.includes(s)) return "—";
+        const t = Date.parse(s);
+        if (Number.isNaN(t)) return "—";
+        const d = new Date(t);
+        const dd = String(d.getDate()).padStart(2,'0');
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const hh = String(d.getHours()).padStart(2,'0');
+        const mi = String(d.getMinutes()).padStart(2,'0');
+        return `${dd}/${mm} ${hh}:${mi}`;
+      };
+
+      if (blocage && episode) {
+        return `Aération en cours\nFin: ${fmt(d_bloc)}  •  ΔT: ${fmt(d_ana)}`;
+      }
+
+      if (blocage && !episode) {
+        return `Post-aération\nFin: ${fmt(d_bloc)}  •  ΔT: ${fmt(d_ana)}`;
+      }
+
+      if (override) {
+        return "Confort forcé opérateur";
+      }
+
+      return "Aucun verrou actif";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const st = (id) => states[id]?.state;
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+            const b = st('input_boolean.chauffage_blocage_aeration');
+            const e = st('input_boolean.aeration_episode_en_cours');
+            const o = st('input_boolean.mode_confort_chauffage');
+
+            if (UNAV.includes(b) || UNAV.includes(e) || UNAV.includes(o))
+              return "rgba(158, 158, 158, 0.1)";
+
+            const blocage  = (b === 'on');
+            const episode  = (e === 'on');
+            const override = (o === 'on');
+
+            if (blocage && episode) return "rgba(244, 67, 54, 0.2)";
+            if (blocage && !episode) return "rgba(255, 152, 0, 0.2)";
+            if (override) return "rgba(33, 150, 243, 0.2)";
+            return "rgba(76, 175, 80, 0.2)";
+          ]]]

@@ -4,7 +4,7 @@ title: Diagnostics Chauffage
 icon: mdi:fire
 
 views:
-  - title: Chauffage
+  - title: Diagnostics Chauffage
     path: diagnostics-chauffage
     icon: mdi:fire
 
@@ -46,246 +46,21 @@ views:
         cards:
 
           ########################################################
-          # 🧩 1) Diagnostic local
+          # 📊 1) Performances chauffage
           ########################################################
 
           - type: custom:button-card
             template: section_header
-            name: 🔥 État global
-
-          - type: markdown
-            content: |
-              {% set programme = states('sensor.programme_chauffage') %}
-              {% set intention = states('sensor.chauffage_mode_calcule') %}
-              {% set raison = states('sensor.chauffage_raison_calculee') %}
-
-              {% set geo_arme = is_state('input_boolean.blocage_geofencing','on') %}
-              {% set inhibition = is_state('input_boolean.chauffage_inhibition_geofencing','on') %}
-              {% set standby = is_state('input_boolean.chauffage_standby_force','on') %}
-              {% set poele = is_state('input_boolean.blocage_chauffage_poele','on') %}
-              {% set aeration = is_state('input_boolean.chauffage_blocage_aeration','on') %}
-              {% set non_autorise = raison == 'chauffage_non_autorise' %}
-              {% set override = raison == 'confort_force' %}
-
-              {% set programme_l = (programme | lower) if programme not in ['unknown','unavailable',''] else '' %}
-
-              {# =======================================================
-                 ⚪ DONNEES INDISPONIBLES
-                 ======================================================= #}
-              {% if programme in ['unknown','unavailable'] or intention in ['unknown','unavailable'] or raison in ['unknown','unavailable'] %}
-
-              ⚪ **Données indisponibles**
-
-              Certaines informations Chauffage sont **unknown/unavailable**.
-
-              - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}
-              - **Raison :** {{ raison }}
-
-              {# =======================================================
-                 🔵 OVERRIDE OPERATEUR — CONFORT FORCE
-                 ======================================================= #}
-              {% elif override %}
-
-              🔵 **Override opérateur — confort forcé**
-
-              Le chauffage est **imposé en Confort** par commande opérateur,  
-              indépendamment des blocages et des abstentions automatiques.
-
-              - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}
-              - **Raison :** {{ raison }}
-
-              {% if poele or aeration or non_autorise %}
-              **Contexte contourné :**
-                {% if poele %}poêle actif{% endif %}
-                {% if aeration %}aération / post-aération{% endif %}
-                {% if non_autorise %}chauffage non autorisé{% endif %}
-              {% endif %}
-
-              {# =======================================================
-                 🔴 BLOCAGES ABSOLUS
-                 ======================================================= #}
-              {% elif poele or aeration or non_autorise %}
-
-              ⛔ **Blocage thermique actif**
-
-              Le chauffage est volontairement **interdit** par le système.
-
-              - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}  
-              - **Cause :**
-                {% if poele %}poêle actif{% endif %}
-                {% if aeration %}aération / post-aération{% endif %}
-                {% if non_autorise %}chauffage non autorisé{% endif %}
-
-              {% if aeration %}
-              🔁 Une reprise automatique est attendue après la fin du verrou post-aération.  
-              {% else %}
-              ⚖️ Aucun seuil thermique n’est surveillé.  
-              🔕 Aucune reprise automatique n’est attendue.
-              {% endif %}
-
-              {# =======================================================
-                 🔵 STANDBY — HYSTERESIS THERMIQUE
-                 ======================================================= #}
-              {% elif raison == 'standby_force' %}
-
-              🔵 **Chauffage en attente thermique**
-
-              Le chauffage est **temporairement suspendu**  
-              conformément à la décision automatique.
-
-              - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}
-              - **Raison :** {{ raison }}
-
-              🌡️ Les températures intérieure et extérieure sont surveillées.  
-              🔁 La reprise du chauffage est **automatique** dès que le seuil bas est atteint.
-
-              {# =======================================================
-                 🔵 ABSENCE — CHAUFFE DE PROTECTION (INHIBITION ACTIVE)
-                 ======================================================= #}
-              {% elif raison == 'absence' and geo_arme and inhibition %}
-
-              🔵 **Chauffe de protection — absence**
-
-              Le chauffage chauffe **ponctuellement** afin d’éviter  
-              une dérive thermique excessive.
-
-              - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}
-              - **Raison :** protection thermique (inhibition geofencing)
-
-              ⚖️ Ce n’est **pas** un retour au confort.  
-              🏠 La logique d’absence reste active.
-
-              {# =======================================================
-                 🔵 ABSENCE — PROTECTION ARMEE (SURVEILLANCE)
-                 ======================================================= #}
-              {% elif raison == 'absence' and geo_arme and not inhibition %}
-
-              🔵 **Attente thermique — protection (absence)**
-
-              Le chauffage est **autorisé**, mais ne chauffe pas.
-
-              - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}
-              - **Raison :** absence avec protection armée
-
-              ⚖️ Le système surveille le seuil de protection.  
-              🔔 Une chauffe sera déclenchée **uniquement si nécessaire**.
-
-              {# =======================================================
-                 🟢 PRESENCE — CONFORT SATISFAIT (REPOS NOMINAL)
-                 ======================================================= #}
-              {% elif intention == 'Neutre' and programme_l == 'confort' %}
-
-              🟢 **Confort satisfait — chauffage au repos**
-
-              Le chauffage est **autorisé**, mais le confort est jugé suffisant.
-
-              - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}
-              - **Raison :** {{ raison }}
-
-              {# =======================================================
-                 🔵 PRESENCE — CONFORT AUTORISE (ATTENTE)
-                 ======================================================= #}
-              {% elif intention == 'Neutre' %}
-
-              🔵 **Attente thermique — confort**
-
-              Le chauffage est **autorisé**, mais aucune chauffe n’est justifiée.
-
-              - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}
-              - **Raison :** {{ raison }}
-
-              ⚖️ Le confort est jugé suffisant.  
-              🌡️ Une chauffe sera déclenchée au **premier signe de dérive**.
-
-              {# =======================================================
-                 🧘 ETAT STABLE
-                 ======================================================= #}
-              {% else %}
-
-              🧘 **État système stable**
-
-              Le comportement observé est **cohérent**  
-              avec le contrat Chauffage Arsenal.
-
-              - **Programme :** {{ programme }}
-              - **Intention :** {{ intention }}
-              - **Raison :** {{ raison }}
-
-              Aucune action utilisateur n’est requise.
-
-              {% endif %}
-
-          ########################################################
-          # 🔒 1bis) Verrou aération / post-aération (diagnostic)
-          ########################################################
-
-          - type: custom:button-card
-            template: section_header
-            name: 🔒 Verrou post-aération
-
-          - type: markdown
-            content: |
-              {% set blocage = is_state('input_boolean.chauffage_blocage_aeration','on') %}
-              {% set episode = is_state('input_boolean.aeration_episode_en_cours','on') %}
-
-              {% set d_bloc = states('input_datetime.chauffage_fin_blocage_aeration') %}
-              {% set d_bloc_fmt = (
-                as_timestamp(as_datetime(d_bloc)) | timestamp_custom('%d/%m %H:%M')
-              ) if d_bloc not in ['unknown','unavailable','none',''] else '—' %}
-
-              {% set d_ana = states('input_datetime.analyse_deltat_disponible') %}
-              {% set d_ana_fmt = (
-                as_timestamp(as_datetime(d_ana)) | timestamp_custom('%d/%m %H:%M')
-              ) if d_ana not in ['unknown','unavailable','none',''] else '—' %}
-
-              {% set override = is_state('input_boolean.mode_confort_chauffage','on') %}
-
-              {% if blocage and episode %}
-              **🟥 Chauffage suspendu (aération en cours)**  
-              Le chauffage est temporairement suspendu pendant l’aération.  
-
-              Fin prévue du blocage : **{{ d_bloc_fmt }}**  
-              Analyse ΔT programmée à : **{{ d_ana_fmt }}**
-
-              {% elif blocage and not episode %}
-              **🟧 Stabilisation thermique (post-aération)**  
-              L’aération est terminée, mais une phase d’inertie est encore active.  
-
-              Fin prévue du blocage : **{{ d_bloc_fmt }}**  
-              Analyse ΔT programmée à : **{{ d_ana_fmt }}**
-
-              {% elif override %}
-              **🟦 Override opérateur (confort forcé)**  
-              Le chauffage peut être imposé en Confort indépendamment des blocages.  
-
-              {% else %}
-              **🟢 Aucun verrou post-aération actif**
-              {% endif %}
-
-          ########################################################
-          # 📊 2) Performances chauffage
-          ########################################################
-
-          - type: custom:button-card
-            template: section_header
-            name: 📊 Performance & sobriété
+            name: 🍃 Utilisation mode éco
 
           - type: custom:bar-card
             columns: 1
             entities:
               - entity: sensor.pourcentage_consigne_eco_24h_proxy
-                name: "Temps en mode Eco (24h)"
+                name: "24h"
                 icon: mdi:leaf
               - entity: sensor.pourcentage_consigne_eco_7j_proxy
-                name: "Temps en mode Eco (7j)"
+                name: "7j"
                 icon: mdi:leaf
             unit_of_measurement: "%"
             max: 100
@@ -337,6 +112,28 @@ views:
                 ha-icon { color: var(--primary-text-color); }
 
           ########################################################
+          # 🧩 2) Diagnostic local
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔥 État global
+
+          - type: custom:button-card
+            template: chauffage_diagnostic_global_compact
+
+          ########################################################
+          # 🔒 2bis) Verrou aération / post-aération (diagnostic)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔒 Verrou post-aération
+
+          - type: custom:button-card
+            template: chauffage_synthese_blocage_aeration_xl
+
+          ########################################################
           # 🎯 3) Consignes & Écarts
           ########################################################
 
@@ -344,77 +141,40 @@ views:
             template: section_header
             name: 📐 Réglage thermique
 
-          - type: markdown
-            content: |
-              {% set e_24 = states('sensor.ecart_consigne_moyenne_24h') | float(0) %}
-              {% set e_froid = states('sensor.ecart_consigne_moyenne_froid') | float(0) %}
-              {% set e_doux = states('sensor.ecart_consigne_moyenne_doux') | float(0) %}
-          
-              {% set pente_act = states('input_number.chauffage_pente_consigne') | float(0) %}
-              {% set pente_sugg = states('sensor.chauffage_pente_suggeree') | float(0) %}
-              {% set parall_act = states('input_number.chauffage_parallele_consigne') | float(0) %}
-              {% set parall_sugg = states('sensor.chauffage_parallele_suggeree') | float(0) %}
-          
-              **📊 Tendance 24 h** :  
-              {% if e_24 > 0.4 %}
-                🔻 {{ e_24 | round(1) }} °C – trop chaud → envisager parallèle −1
-              {% elif e_24 < -0.4 %}
-                🔺 {{ e_24 | round(1) }} °C – trop froid → envisager parallèle +1
-              {% else %}
-                ✅ {{ e_24 | round(1) }} °C – réglage satisfaisant
-              {% endif %}
-          
-              **📈 Diagnostic réglage :**
-              
-              {# --- DIAGNOSTIC GLOBAL --- #}
-              {% if e_froid > 0.4 and e_doux > 0.4 %}
-                🔻 Trop chaud en moyenne → Baisser le parallèle (−1)
-              
-              {% elif e_froid < -0.4 and e_doux < -0.4 %}
-                🔺 Trop froid en moyenne → Monter le parallèle (+1)
-              
-              {% elif e_froid < -0.5 and e_doux > 0.5 %}
-                ❗ Déséquilibre : froid en période froide / chaud en période douce  
-                → **Augmenter la pente (+0.1)**
-              
-              {% elif e_froid > 0.5 and e_doux < -0.5 %}
-                ❗ Déséquilibre : chaud en période froide / froid en période douce  
-                → **Diminuer la pente (−0.1)**
-              
-              {% else %}
-                ✅ Réglage globalement cohérent
-              {% endif %}
-              
-              ---
-              
-              **🌡️ Diagnostic spécifique période froide (T_ext ≤ 5°C)**  
-              Écart froid 24h : {{ e_froid | round(2) }} °C  
-              {% if e_froid < -0.5 %}
-                🔺 Sous-chauffe notable → pente suggérée : {{ states('sensor.chauffage_pente_suggeree') }}
-              {% elif e_froid > 0.5 %}
-                🔻 Surchauffe notable → pente suggérée : {{ states('sensor.chauffage_pente_suggeree') }}
-              {% else %}
-                ✔ Période froide équilibrée → Aucun ajustement nécessaire
-              {% endif %}
+          - type: custom:button-card
+            template: chauffage_reglage_courbe_diag_72
+            name: Réglages
+            variables:
+              kind: global
 
-          - type: markdown
-            content: |
-              ### 🔁 Auto-ajustement de la courbe de chauffe
-              
-              {% set auto = is_state('input_boolean.chauffage_reglages_auto','on') %}
-              {% set simu = is_state('input_boolean.courbe_auto_simulation','on') %}
-          
-              **Auto-ajustement actif ?** : {{ '🟢 Oui' if auto else '🔴 Non' }}
-              
-              {% if auto %}
-                **Mode simulation ?** : {{ '🧪 Oui (aucun changement réel)' if simu else '🔧 Non (réglages appliqués)' }}
-              {% endif %}
-          
-              ### 📝 Dernier ajustement appliqué
-          
-              {% set last = states('input_text.chauffage_last_adjustment') %}
-              {% if last in ['unknown','unavailable','',none] %}
-              _Aucun ajustement enregistré._
-              {% else %}
-              **{{ last }}**
-              {% endif %}
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: chauffage_reglage_courbe_diag_72
+                name: Tendance 24h
+                variables:
+                  kind: tendance_24h
+
+              - type: custom:button-card
+                template: chauffage_reglage_courbe_diag_72
+                name: Froid
+                variables:
+                  kind: froid
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔁 Auto-ajustement courbe de chauffe
+
+          - type: custom:button-card
+            template: chauffage_auto_courbe_status_72
+            name: Auto-ajustement
+            variables:
+              kind: auto
+
+          - type: custom:button-card
+            template: chauffage_auto_courbe_status_72
+            name: Dernier ajustement
+            variables:
+              kind: last

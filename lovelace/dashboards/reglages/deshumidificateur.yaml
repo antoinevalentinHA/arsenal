@@ -4,7 +4,7 @@ title: Réglages Déshumidificateur
 icon: mdi:air-filter
 
 views:
-  - title: Déshumidificateur
+  - title: Réglages Déshumidificateur
     path: deshumidificateur
     icon: mdi:air-filter
     badges:

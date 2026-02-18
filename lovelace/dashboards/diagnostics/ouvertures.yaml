@@ -7,7 +7,7 @@ views:
   ####################################
   # 🪟 OUVERTURES ET TIMERS
   ####################################
-  - title: Ouvertures
+  - title: Diagnostics Ouvertures
     path: diagnostics-ouvertures
     icon: mdi:radar
 

@@ -4,7 +4,7 @@ title: Diagnostics Climatisation
 icon: mdi:snowflake
 
 views:
-  - title: Climatisation
+  - title: Diagnostics Climatisation
     path: diagnostics-climatisation
     icon: mdi:snowflake
 
@@ -87,37 +87,36 @@ views:
             template: section_header
             name: 🔎 Lecture métier
 
-          - type: markdown
-            content: |
-              {% macro fmt(v) -%}
-              {{ '—' if v in ['unknown','unavailable',None,'none',''] else (v | float | round(1)) }}
-              {%- endmacro %}
+          - type: grid
+            columns: 3
+            square: false
+            cards:
 
-              {% set t_ext = states('sensor.temperature_jardin') | float(0) %}
-              {% set t_max = states('sensor.temperature_max_chambres') | float(0) %}
-              {% set t_min = states('sensor.temperature_min_chambres') | float(0) %}
+              - type: custom:button-card
+                template: clim_synthese_status_72
+                name: Cool
+                icon: mdi:snowflake
+                variables:
+                  kind: cool
+                  entity_on: binary_sensor.clim_seuil_allumage_cool_atteint
+                  entity_off: binary_sensor.clim_seuil_extinction_cool_atteint
 
-              {% set seuil_cool = states('sensor.seuil_allumage_clim_applique') | float(0) %}
-              {% set seuil_cool_off = states('sensor.seuil_extinction_clim_applique') | float(0) %}
-              {% set seuil_heat = states('sensor.seuil_allumage_chauffage_clim') | float(0) %}
-              {% set seuil_heat_off = states('sensor.seuil_extinction_chauffage_clim') | float(0) %}
+              - type: custom:button-card
+                template: clim_synthese_status_72
+                name: Heat
+                icon: mdi:fire
+                variables:
+                  kind: heat
+                  entity_on: binary_sensor.clim_seuil_allumage_heat_atteint
+                  entity_off: binary_sensor.clim_seuil_extinction_heat_atteint
 
-              {% set cool_on = is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
-              {% set cool_off = is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
-              {% set heat_on = is_state('binary_sensor.clim_seuil_allumage_heat_atteint', 'on') %}
-              {% set heat_off = is_state('binary_sensor.clim_seuil_extinction_heat_atteint', 'on') %}
-              {% set dry_ok = is_state('binary_sensor.clim_humidex_sup_cible_dry', 'on') %}
-
-              - ❄️ **COOL** :
-                {{ '🟢 Allumage OK' if cool_on else '⚪ Allumage non atteint' }}
-                {{ '🟢 Maintien OK' if cool_off else '🔴 Sortie requise' }}
-
-              - 🔥 **HEAT** :
-                {{ '🟢 Allumage OK' if heat_on else '⚪ Allumage non atteint' }}
-                {{ '🟢 Maintien OK' if heat_off else '🔴 Sortie requise' }}
-
-              - 💧 **DRY** :
-                {{ '🟢 Autorisé (humidex)' if dry_ok else '⚪ Non requis' }}
+              - type: custom:button-card
+                template: clim_synthese_status_72
+                name: Dry
+                icon: mdi:water-percent
+                variables:
+                  kind: dry
+                  entity_on: binary_sensor.clim_humidex_sup_cible_dry
 
           ########################################################
           # 🚫 SECTION : Blocages clim & Saison

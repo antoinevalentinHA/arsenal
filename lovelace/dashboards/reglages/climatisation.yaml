@@ -4,7 +4,7 @@ title: Réglages Climatisation
 icon: mdi:snowflake
 
 views:
-  - title: Climatisation
+  - title: Réglages Climatisation
     path: climatisation
     icon: mdi:snowflake
     badges:

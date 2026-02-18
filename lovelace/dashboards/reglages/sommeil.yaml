@@ -4,7 +4,7 @@ title: Réglages Sommeil
 icon: mdi:sleep
 
 views:
-  - title: Sommeil
+  - title: Réglages Sommeil
     path: sommeil
     icon: mdi:sleep
     badges:

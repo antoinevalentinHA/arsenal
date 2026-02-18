@@ -4,7 +4,7 @@ title: Réglages Maison
 icon: mdi:home-variant
 
 views:
-  - title: Maison
+  - title: Réglages Modes
     path: maison
     icon: mdi:home-variant
     badges:

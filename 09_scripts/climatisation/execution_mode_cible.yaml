@@ -35,15 +35,19 @@ clim_execution:
     # ======================================================
     - variables:
         target: "{{ states('sensor.clim_target_mode') }}"
-        hvac: "{{ state_attr('climate.clim', 'hvac_mode') }}"
+        hvac: "{{ states('climate.clim') }}"
         power: "{{ states('switch.clim_power') }}"
 
     # ======================================================
-    # 2️⃣ ABSTENTION — Mode inconnu ou stable
+    # 2️⃣ ABSTENTION — Décision invalide ou état indisponible
     # ======================================================
     - condition: template
       value_template: >
         {{ target in ['cool', 'dry', 'heat', 'off'] }}
+
+    - condition: template
+      value_template: >
+        {{ hvac not in ['unknown', 'unavailable'] and power not in ['unknown', 'unavailable'] }}
 
     # ======================================================
     # 3️⃣ APPLICATION — Selon le mode cible

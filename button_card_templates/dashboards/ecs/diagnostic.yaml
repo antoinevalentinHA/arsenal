@@ -1,0 +1,69 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     ecs_synthese_status_72
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Tuiles ECS synthese (72px) : label court + couleur charte.
+#   Dashboard = variables uniquement.
+#
+# 🧩 VARIABLES
+#   - kind: "bool" | "dhw_setpoint_10"
+#   - entity: entite source (binary_sensor.* ou number.*)
+#   - label_on / label_off (pour kind: bool)
+# ==========================================================
+
+ecs_synthese_status_72:
+  template: socle_status_label_72
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  label: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const kind = variables.kind;
+      const id   = variables.entity;
+
+      const s = states[id]?.state;
+
+      if (UNAV.includes(s)) return "Indisponible";
+
+      if (kind === 'dhw_setpoint_10') {
+        const v = parseFloat(s);
+        if (Number.isNaN(v)) return "Indisponible";
+        return (v === 10) ? "Rabaissée" : "Non rabaissée";
+      }
+
+      // kind === 'bool'
+      const on = (s === 'on');
+      return on ? (variables.label_on || "Actif") : (variables.label_off || "Inactif");
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            const kind = variables.kind;
+            const id   = variables.entity;
+
+            const s = states[id]?.state;
+
+            if (UNAV.includes(s)) return "rgba(158, 158, 158, 0.1)";
+
+            if (kind === 'dhw_setpoint_10') {
+              const v = parseFloat(s);
+              if (Number.isNaN(v)) return "rgba(158, 158, 158, 0.1)";
+              return (v === 10)
+                ? "rgba(76, 175, 80, 0.2)"
+                : "rgba(255, 152, 0, 0.2)";
+            }
+
+            // kind === 'bool'
+            return (s === 'on')
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]
