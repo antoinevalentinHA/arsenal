@@ -271,6 +271,72 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
+                    name: Sauvegardes
+                    icon: mdi:backup-restore
+                    styles:
+                      icon:
+                        - color: '#E53935'
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/backup/overview
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Automations
+                    icon: mdi:cogs
+                    styles:
+                      icon:
+                        - color: '#F9A825'
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/automation/dashboard
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Scripts
+                    icon: mdi:script-text
+                    styles:
+                      icon:
+                        - color: '#D84315'
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/script/dashboard
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Logs HA
+                    icon: mdi:clipboard-text
+                    styles:
+                      icon:
+                        - color: '#8E24AA'
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/logs
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: États
+                    icon: mdi:state-machine
+                    styles:
+                      icon:
+                        - color: '#3949AB'
+                    tap_action:
+                      action: navigate
+                      navigation_path: /developer-tools/state
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Entités
+                    icon: mdi:database-eye
+                    styles:
+                      icon:
+                        - color: '#3F51B5'
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/entities
+
+                  - type: custom:button-card
+                    template: bouton_navigation
                     name: Historique
                     icon: mdi:chart-line
                     styles:
@@ -282,14 +348,47 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Sauvegardes
-                    icon: mdi:backup-restore
+                    name: File Editor
+                    icon: mdi:wrench
                     styles:
                       icon:
-                        - color: '#E53935'
+                        - color: '#0288D1'
                     tap_action:
                       action: navigate
-                      navigation_path: /config/backup/overview
+                      navigation_path: /hassio/ingress/core_configurator
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Dashboards
+                    icon: mdi:view-dashboard
+                    styles:
+                      icon:
+                        - color: '#009688'
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/lovelace/dashboards
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Intégrations
+                    icon: mdi:puzzle-outline
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/integrations/dashboard
+                    styles:
+                      icon:
+                        - color: '#1E88E5'
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Templates
+                    icon: mdi:code-tags
+                    styles:
+                      icon:
+                        - color: '#6A1B9A'
+                    tap_action:
+                      action: navigate
+                      navigation_path: /developer-tools/template
 
                   - type: custom:button-card
                     template: bouton_navigation
@@ -302,13 +401,33 @@ views:
                       action: navigate
                       navigation_path: /developer-tools/yaml
 
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Logs HA
-                    icon: mdi:clipboard-text
+                    name: Reboot HA
+                    icon: mdi:restart
                     styles:
                       icon:
-                        - color: '#8E24AA'
+                        - color: '#F57C00'
+                    tap_action:
+                      action: call-service
+                      service: homeassistant.restart
+                    confirmation:
+                      text: ❓ Redémarrer Home Assistant maintenant ?
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Ressources
+                    icon: mdi:cog-refresh
+                    styles:
+                      icon:
+                        - color: '#009688'
                     tap_action:
                       action: navigate
-                      navigation_path: /config/logs
+                      navigation_path: /config/lovelace/resources
+
+

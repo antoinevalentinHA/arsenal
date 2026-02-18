@@ -55,4 +55,4 @@
 
 chauffage_inhibition_geofencing:
   name: Chauffage – Inhibition absence active
-  icon: mdi:shield-thermometer
+  icon: mdi:shield-check

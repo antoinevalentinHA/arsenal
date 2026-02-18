@@ -41,6 +41,9 @@ views:
               - type: custom:button-card
                 template: bouton_spacer
                 color_type: blank-card
+              - type: custom:button-card
+                template: bouton_spacer
+                color_type: blank-card
 
               # sauvegarde
               - type: custom:button-card
@@ -86,46 +89,40 @@ views:
             template: section_header
             name: 📅 Lundi
 
-          - type: horizontal-stack
+          - type: grid
+            square: false
+            columns: 2
             cards:
 
-              - type: entities
-                title: "🛁 Matin"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_monday_matin_active
-                    name: Actif
-                  - entity: input_datetime.ecs_monday_matin_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+              - type: vertical-stack
+                cards:
 
-              - type: entities
-                title: "🛀 Soir"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_monday_soir_active
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛁 Matin"
+
+                  - type: tile
+                    entity: input_boolean.ecs_monday_matin_active
                     name: Actif
-                  - entity: input_datetime.ecs_monday_soir_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+
+                  - type: tile
+                    entity: input_datetime.ecs_monday_matin_heure
+                    name: "⏰"
+
+              - type: vertical-stack
+                cards:
+
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛀 Soir"
+
+                  - type: tile
+                    entity: input_boolean.ecs_monday_soir_active
+                    name: Actif
+
+                  - type: tile
+                    entity: input_datetime.ecs_monday_soir_heure
+                    name: "⏰"
 
 
           # ======================================================
@@ -135,46 +132,40 @@ views:
             template: section_header
             name: 📅 Mardi
 
-          - type: horizontal-stack
+          - type: grid
+            square: false
+            columns: 2
             cards:
 
-              - type: entities
-                title: "🛁 Matin"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_tuesday_matin_active
-                    name: Actif
-                  - entity: input_datetime.ecs_tuesday_matin_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+              - type: vertical-stack
+                cards:
 
-              - type: entities
-                title: "🛀 Soir"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_tuesday_soir_active
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛁 Matin"
+
+                  - type: tile
+                    entity: input_boolean.ecs_tuesday_matin_active
                     name: Actif
-                  - entity: input_datetime.ecs_tuesday_soir_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+
+                  - type: tile
+                    entity: input_datetime.ecs_tuesday_matin_heure
+                    name: "⏰"
+
+              - type: vertical-stack
+                cards:
+
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛀 Soir"
+
+                  - type: tile
+                    entity: input_boolean.ecs_tuesday_soir_active
+                    name: Actif
+
+                  - type: tile
+                    entity: input_datetime.ecs_tuesday_soir_heure
+                    name: "⏰"
 
 
           # ======================================================
@@ -184,46 +175,40 @@ views:
             template: section_header
             name: 📅 Mercredi
 
-          - type: horizontal-stack
+          - type: grid
+            square: false
+            columns: 2
             cards:
 
-              - type: entities
-                title: "🛁 Matin"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_wednesday_matin_active
-                    name: Actif
-                  - entity: input_datetime.ecs_wednesday_matin_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+              - type: vertical-stack
+                cards:
 
-              - type: entities
-                title: "🛀 Soir"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_wednesday_soir_active
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛁 Matin"
+
+                  - type: tile
+                    entity: input_boolean.ecs_wednesday_matin_active
                     name: Actif
-                  - entity: input_datetime.ecs_wednesday_soir_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+
+                  - type: tile
+                    entity: input_datetime.ecs_wednesday_matin_heure
+                    name: "⏰"
+
+              - type: vertical-stack
+                cards:
+
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛀 Soir"
+
+                  - type: tile
+                    entity: input_boolean.ecs_wednesday_soir_active
+                    name: Actif
+
+                  - type: tile
+                    entity: input_datetime.ecs_wednesday_soir_heure
+                    name: "⏰"
 
 
           # ======================================================
@@ -233,46 +218,40 @@ views:
             template: section_header
             name: 📅 Jeudi
 
-          - type: horizontal-stack
+          - type: grid
+            square: false
+            columns: 2
             cards:
 
-              - type: entities
-                title: "🛁 Matin"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_thursday_matin_active
-                    name: Actif
-                  - entity: input_datetime.ecs_thursday_matin_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+              - type: vertical-stack
+                cards:
 
-              - type: entities
-                title: "🛀 Soir"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_thursday_soir_active
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛁 Matin"
+
+                  - type: tile
+                    entity: input_boolean.ecs_thursday_matin_active
                     name: Actif
-                  - entity: input_datetime.ecs_thursday_soir_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+
+                  - type: tile
+                    entity: input_datetime.ecs_thursday_matin_heure
+                    name: "⏰"
+
+              - type: vertical-stack
+                cards:
+
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛀 Soir"
+
+                  - type: tile
+                    entity: input_boolean.ecs_thursday_soir_active
+                    name: Actif
+
+                  - type: tile
+                    entity: input_datetime.ecs_thursday_soir_heure
+                    name: "⏰"
 
 
           # ======================================================
@@ -282,46 +261,40 @@ views:
             template: section_header
             name: 📅 Vendredi
 
-          - type: horizontal-stack
+          - type: grid
+            square: false
+            columns: 2
             cards:
 
-              - type: entities
-                title: "🛁 Matin"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_friday_matin_active
-                    name: Actif
-                  - entity: input_datetime.ecs_friday_matin_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+              - type: vertical-stack
+                cards:
 
-              - type: entities
-                title: "🛀 Soir"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_friday_soir_active
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛁 Matin"
+
+                  - type: tile
+                    entity: input_boolean.ecs_friday_matin_active
                     name: Actif
-                  - entity: input_datetime.ecs_friday_soir_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+
+                  - type: tile
+                    entity: input_datetime.ecs_friday_matin_heure
+                    name: "⏰"
+
+              - type: vertical-stack
+                cards:
+
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛀 Soir"
+
+                  - type: tile
+                    entity: input_boolean.ecs_friday_soir_active
+                    name: Actif
+
+                  - type: tile
+                    entity: input_datetime.ecs_friday_soir_heure
+                    name: "⏰"
 
 
           # ======================================================
@@ -331,46 +304,40 @@ views:
             template: section_header
             name: 📅 Samedi
 
-          - type: horizontal-stack
+          - type: grid
+            square: false
+            columns: 2
             cards:
 
-              - type: entities
-                title: "🛁 Matin"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_saturday_matin_active
-                    name: Actif
-                  - entity: input_datetime.ecs_saturday_matin_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+              - type: vertical-stack
+                cards:
 
-              - type: entities
-                title: "🛀 Soir"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_saturday_soir_active
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛁 Matin"
+
+                  - type: tile
+                    entity: input_boolean.ecs_saturday_matin_active
                     name: Actif
-                  - entity: input_datetime.ecs_saturday_soir_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+
+                  - type: tile
+                    entity: input_datetime.ecs_saturday_matin_heure
+                    name: "⏰"
+
+              - type: vertical-stack
+                cards:
+
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛀 Soir"
+
+                  - type: tile
+                    entity: input_boolean.ecs_saturday_soir_active
+                    name: Actif
+
+                  - type: tile
+                    entity: input_datetime.ecs_saturday_soir_heure
+                    name: "⏰"
 
 
           # ======================================================
@@ -380,43 +347,37 @@ views:
             template: section_header
             name: 📅 Dimanche
 
-          - type: horizontal-stack
+          - type: grid
+            square: false
+            columns: 2
             cards:
 
-              - type: entities
-                title: "🛁 Matin"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_sunday_matin_active
-                    name: Actif
-                  - entity: input_datetime.ecs_sunday_matin_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+              - type: vertical-stack
+                cards:
 
-              - type: entities
-                title: "🛀 Soir"
-                show_header_toggle: false
-                card_mod:
-                  style: |
-                    .card-header {
-                      font-size: 15px !important;
-                      font-weight: 500 !important;
-                      color: #444;
-                    }
-                entities:
-                  - entity: input_boolean.ecs_sunday_soir_active
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛁 Matin"
+
+                  - type: tile
+                    entity: input_boolean.ecs_sunday_matin_active
                     name: Actif
-                  - entity: input_datetime.ecs_sunday_soir_heure
-                    name: " "
-                    card_mod:
-                      style: |
-                        hui-generic-entity-row .name { display: none; }
+
+                  - type: tile
+                    entity: input_datetime.ecs_sunday_matin_heure
+                    name: "⏰"
+
+              - type: vertical-stack
+                cards:
+
+                  - type: custom:button-card
+                    template: sub_section_header
+                    name: "🛀 Soir"
+
+                  - type: tile
+                    entity: input_boolean.ecs_sunday_soir_active
+                    name: Actif
+
+                  - type: tile
+                    entity: input_datetime.ecs_sunday_soir_heure
+                    name: "⏰"

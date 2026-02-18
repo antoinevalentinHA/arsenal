@@ -54,22 +54,6 @@ shutter_action_base:
   icon: |
     [[[ return variables.icon || 'mdi:window-shutter'; ]]]
 
-# =============================================================
-# 🟢 OUVRIR — SUCCESS (VERT CANON)
-# =============================================================
-shutter_action_open:
-  template:
-    - shutter_action_base
   styles:
     card:
-      - background-color: rgba(76, 175, 80, 0.2)
-
-# =============================================================
-# 🔴 FERMER — DANGER (ROUGE CANON)
-# =============================================================
-shutter_action_close:
-  template:
-    - shutter_action_base
-  styles:
-    card:
-      - background-color: rgba(244, 67, 54, 0.2)
+      - background-color: "rgba(158, 158, 158, 0.2)"
