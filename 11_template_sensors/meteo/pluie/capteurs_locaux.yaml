@@ -33,17 +33,26 @@
     # ------------------------------------------------------------
     - name: "pluie_aujourdhui_local"
       unique_id: pluie_aujourdhui_local
-      default_entity_id: sensor.pluie_aujourdhui_local
       unit_of_measurement: "mm"
       device_class: precipitation
       state_class: measurement
       icon: mdi:weather-rainy
-      state: >
-        {% set v = states('sensor.pluviometre_precipitation_aujourd_hui') %}
-        {% if v in ['unknown','unavailable','none','None',''] %}
-          {{ states('sensor.pluie_aujourdhui_local') }}
+      state: &pluie_mm_local_fallback >
+        {% set map = {
+          'sensor.pluie_aujourdhui_local': 'sensor.pluviometre_precipitation_aujourd_hui',
+          'sensor.pluie_total_local': 'input_number.pluie_total_local_store'
+        } %}
+        {% set src = map.get(this.entity_id) %}
+        {% set fallback = this.state | float(0) %}
+        {% if not src %}
+          {{ fallback }}
         {% else %}
-          {{ v | float(0) }}
+          {% set v = states(src) %}
+          {% if v in ['unknown','unavailable','none','None',''] %}
+            {{ fallback }}
+          {% else %}
+            {{ v | float(fallback) }}
+          {% endif %}
         {% endif %}
 
     # ------------------------------------------------------------
@@ -51,15 +60,8 @@
     # ------------------------------------------------------------
     - name: "pluie_total_local"
       unique_id: pluie_total_local
-      default_entity_id: sensor.pluie_total_local
       unit_of_measurement: "mm"
       device_class: precipitation
       state_class: total
       icon: mdi:weather-pouring
-      state: >
-        {% set v = states('input_number.pluie_total_local_store') %}
-        {% if v in ['unknown','unavailable','none','None',''] %}
-          {{ states('sensor.pluie_total_local') }}
-        {% else %}
-          {{ v | float(0) }}
-        {% endif %}
+      state: *pluie_mm_local_fallback

@@ -113,6 +113,6 @@ sensor.temperature_jardin:
 # 📊 CAPTEURS AGRÉGÉS / SYNTHÈSE
 ############################################################
 
-sensor.temperature_maison_moyenne_jour:
+sensor.temperature_moyenne_maison:
   friendly_name: "Température moyenne Maison"
   icon: mdi:thermometer

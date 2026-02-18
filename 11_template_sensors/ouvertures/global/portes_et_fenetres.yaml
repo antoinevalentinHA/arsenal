@@ -25,7 +25,15 @@
       unique_id: ouvertures_maison
       default_entity_id: binary_sensor.ouvertures_maison
       device_class: opening
-      icon: mdi:lock
+
+      icon: >
+        {% if is_state('binary_sensor.ouvertures_maison', 'on') %}
+          mdi:lock-open-variant
+        {% elif is_state('binary_sensor.ouvertures_maison', 'off') %}
+          mdi:lock
+        {% else %}
+          mdi:lock
+        {% endif %}
 
       state: >
         {% set ouvertures = [

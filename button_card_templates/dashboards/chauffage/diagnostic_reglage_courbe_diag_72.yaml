@@ -11,7 +11,6 @@
 # 🧩 VARIABLES
 #   - kind: "tendance_24h" | "global" | "froid"
 # ==========================================================
-
 chauffage_reglage_courbe_diag_72:
   template: socle_status_label_72
 
@@ -20,6 +19,52 @@ chauffage_reglage_courbe_diag_72:
   show_label: true
   show_icon: true
   color_type: card
+
+  variables:
+    diag: |
+      [[[
+        const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+        const num = (id) => {
+          const s = states[id]?.state;
+          if (UNAV.includes(s)) return null;
+          const v = parseFloat(s);
+          return Number.isNaN(v) ? null : v;
+        };
+
+        const e24   = num('sensor.ecart_consigne_moyenne_24h');
+        const ef    = num('sensor.ecart_consigne_moyenne_froid');
+        const ed    = num('sensor.ecart_consigne_moyenne_doux');
+
+        if (e24 === null || ef === null || ed === null) {
+          return { ok: false };
+        }
+
+        const r1 = (v, d=1) => (Math.round(v * (10**d)) / (10**d)).toFixed(d);
+
+        const kind = variables.kind;
+
+        if (kind === 'tendance_24h') {
+          if (e24 > 0.4)  return { ok: true, kind, label: `${r1(e24)}°C  •  Trop chaud  •  Parallèle −1`, level: 'warn' };
+          if (e24 < -0.4) return { ok: true, kind, label: `${r1(e24)}°C  •  Trop froid  •  Parallèle +1`, level: 'warn' };
+          return { ok: true, kind, label: `${r1(e24)}°C  •  Satisfaisant`, level: 'ok' };
+        }
+
+        if (kind === 'global') {
+          if (ef > 0.4 && ed > 0.4)   return { ok: true, kind, label: "Trop chaud  •  Parallèle −1", level: 'warn' };
+          if (ef < -0.4 && ed < -0.4) return { ok: true, kind, label: "Trop froid  •  Parallèle +1", level: 'warn' };
+
+          if (ef < -0.5 && ed > 0.5)  return { ok: true, kind, label: "Déséquilibre  •  Pente +0.1", level: 'warn' };
+          if (ef > 0.5 && ed < -0.5)  return { ok: true, kind, label: "Déséquilibre  •  Pente −0.1", level: 'warn' };
+
+          return { ok: true, kind, label: "Cohérent", level: 'ok' };
+        }
+
+        // kind === 'froid'
+        if (ef < -0.5) return { ok: true, kind, label: `Écart: ${r1(ef,2)}°C  •  Sous-chauffe`, level: 'warn' };
+        if (ef > 0.5)  return { ok: true, kind, label: `Écart: ${r1(ef,2)}°C  •  Sur-chauffe`, level: 'warn' };
+        return { ok: true, kind, label: `Écart: ${r1(ef,2)}°C  •  Équilibré`, level: 'ok' };
+      ]]]
 
   icon: |
     [[[
@@ -32,83 +77,23 @@ chauffage_reglage_courbe_diag_72:
 
   label: |
     [[[
-      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
-      const num = (id) => {
-        const s = states[id]?.state;
-        if (UNAV.includes(s)) return null;
-        const v = parseFloat(s);
-        return Number.isNaN(v) ? null : v;
-      };
-
-      const e24   = num('sensor.ecart_consigne_moyenne_24h');
-      const ef    = num('sensor.ecart_consigne_moyenne_froid');
-      const ed    = num('sensor.ecart_consigne_moyenne_doux');
-
-      if (e24 === null || ef === null || ed === null) return "Indisponible";
-
-      const r1 = (v, d=1) => (Math.round(v * (10**d)) / (10**d)).toFixed(d);
-
-      const kind = variables.kind;
-
-      if (kind === 'tendance_24h') {
-        if (e24 > 0.4)  return `${r1(e24)}°C  •  Trop chaud  •  Parallèle −1`;
-        if (e24 < -0.4) return `${r1(e24)}°C  •  Trop froid  •  Parallèle +1`;
-        return `${r1(e24)}°C  •  Satisfaisant`;
-      }
-
-      if (kind === 'global') {
-        if (ef > 0.4 && ed > 0.4)   return "Trop chaud  •  Parallèle −1";
-        if (ef < -0.4 && ed < -0.4) return "Trop froid  •  Parallèle +1";
-
-        if (ef < -0.5 && ed > 0.5)  return "Déséquilibre  •  Pente +0.1";
-        if (ef > 0.5 && ed < -0.5)  return "Déséquilibre  •  Pente −0.1";
-
-        return "Cohérent";
-      }
-
-      // kind === 'froid'
-      if (ef < -0.5) return `Écart: ${r1(ef,2)}°C  •  Sous-chauffe`;
-      if (ef > 0.5)  return `Écart: ${r1(ef,2)}°C  •  Sur-chauffe`;
-      return `Écart: ${r1(ef,2)}°C  •  Équilibré`;
+      const d = variables.diag;
+      if (!d?.ok) return "Indisponible";
+      return d.label || "Indisponible";
     ]]]
 
   styles:
     card:
       - background-color: |
           [[[
-            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
-            const num = (id) => {
-              const s = states[id]?.state;
-              if (UNAV.includes(s)) return null;
-              const v = parseFloat(s);
-              return Number.isNaN(v) ? null : v;
-            };
+            const d = variables.diag;
 
-            const e24 = num('sensor.ecart_consigne_moyenne_24h');
-            const ef  = num('sensor.ecart_consigne_moyenne_froid');
-            const ed  = num('sensor.ecart_consigne_moyenne_doux');
+            // Indisponible (charte)
+            if (!d?.ok) return "rgba(158, 158, 158, 0.1)";
 
-            if (e24 === null || ef === null || ed === null) return "rgba(158, 158, 158, 0.1)";
+            // Orange (charte)
+            if (d.level === 'warn') return "rgba(255, 152, 0, 0.2)";
 
-            const kind = variables.kind;
-
-            // Rouge = action critique immédiate ? (ici non)
-            // Orange = avertissement / réglage à envisager
-            // Vert = nominal
-            // Gris = neutre (si tu veux, mais on reste simple)
-
-            if (kind === 'tendance_24h') {
-              if (e24 > 0.4 || e24 < -0.4) return "rgba(255, 152, 0, 0.2)";
-              return "rgba(76, 175, 80, 0.2)";
-            }
-
-            if (kind === 'global') {
-              if ((ef > 0.4 && ed > 0.4) || (ef < -0.4 && ed < -0.4)) return "rgba(255, 152, 0, 0.2)";
-              if ((ef < -0.5 && ed > 0.5) || (ef > 0.5 && ed < -0.5)) return "rgba(255, 152, 0, 0.2)";
-              return "rgba(76, 175, 80, 0.2)";
-            }
-
-            // froid
-            if (ef < -0.5 || ef > 0.5) return "rgba(255, 152, 0, 0.2)";
+            // Vert OK (charte)
             return "rgba(76, 175, 80, 0.2)";
           ]]]

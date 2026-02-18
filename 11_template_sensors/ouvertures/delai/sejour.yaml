@@ -18,6 +18,26 @@
       default_entity_id: binary_sensor.fenetre_sejour_ouverte_avec_delai
       device_class: opening
 
+      icon: >
+        {% set sejour = [
+          'binary_sensor.capteur_fenetre_sejour_1',
+          'binary_sensor.capteur_fenetre_sejour_2',
+          'binary_sensor.capteur_fenetre_sejour_3',
+          'binary_sensor.capteur_fenetre_sejour_4'
+        ] %}
+        {% set any_open = (sejour | select('is_state', 'on') | list | length > 0) %}
+        {% set timer = states('timer.fenetre_sejour_ouverte_grace') %}
+
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:window-open-variant
+        {% elif any_open and timer == 'active' %}
+          mdi:timer-sand
+        {% elif is_state(this.entity_id, 'off') %}
+          mdi:window-closed-variant
+        {% else %}
+          mdi:window-closed-variant
+        {% endif %}
+
       state: >
         {% set sejour = [
           'binary_sensor.capteur_fenetre_sejour_1',

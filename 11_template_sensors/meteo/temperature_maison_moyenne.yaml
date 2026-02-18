@@ -1,27 +1,43 @@
 # ==========================================================
-# 🌡 TEMPLATE SENSOR — Température maison moyenne (jour)
+# 🌡 ARSENAL — TEMPLATE SENSOR
+#     temperature_moyenne_maison
 # ----------------------------------------------------------
-#  Rôle :
-#    Calculer une température intérieure moyenne représentative
-#    de l'ensemble de la maison pour les usages thermiques
-#    (dont l'indice énergétique jour).
+# 🎯 RÔLE
+#   Fournir une température intérieure moyenne représentative
+#   + une sémantique thermique contractuelle (couleur).
 #
-#  Principe :
-#    Moyenne simple de tous les capteurs de température
-#    fiables et pertinents dans les pièces chauffées.
+# 🧩 SOURCES (températures)
+#   - sensor.temperature_entree
+#   - sensor.temperature_sejour
+#   - sensor.temperature_palier
+#   - sensor.temperature_chambre_arnaud
+#   - sensor.temperature_chambre_matthieu
+#   - sensor.temperature_chambre_parents
+#   - sensor.temperature_sdb_parents
+#   - sensor.temperature_sdb_enfants
 #
-#  Avantages :
-#    - Très stable
-#    - Représentatif du volume thermique global
-#    - Parfait pour les comparaisons météo / charge thermique
+# 🧩 SOURCES (seuils contractuels)
+#   - input_number.chauffage_consigne_confort
+#   - input_number.chauffage_offset_on
+#   - input_number.clim_consigne_presence
+#   - input_number.clim_offset_on
 #
-#  Compatibilité :
-#    - Tous les capteurs listés ci-dessous
+# 🎨 COULEURS (canon Arsenal)
+#   - indispo -> gris indispo
+#   - trop froid (chauffage ON requis) -> bleu info
+#   - zone autorisée -> vert OK
+#   - trop chaud (clim ON requise) -> rouge KO
+#
+# 📐 RÈGLES (alignées cartes min/max chambres)
+#   - Bleu  : T < (consigne chauffage confort - offset chauffage)
+#   - Rouge : T > (consigne clim cool + offset clim)
+#   - Vert  : sinon
 # ==========================================================
 
 - sensor:
-    - name: "temperature_maison_moyenne_jour"
-      unique_id: temperature_maison_moyenne_jour
+
+    - name: "temperature_moyenne_maison"
+      unique_id: temperature_moyenne_maison
       unit_of_measurement: "°C"
       icon: mdi:home-thermometer
       state: >
@@ -47,3 +63,50 @@
         {% else %}
           unknown
         {% endif %}
+
+      attributes:
+
+        # ------------------------------------------------------
+        # 🧠 Arsenal — Seuils calculés (observabilité)
+        # ------------------------------------------------------
+        seuil_chauff_on: >
+          {% set cons_chauff = states('input_number.chauffage_consigne_confort') | float(default=none) %}
+          {% set off_chauff  = states('input_number.chauffage_offset_on') | float(default=none) %}
+          {% if cons_chauff is none or off_chauff is none %}
+            unknown
+          {% else %}
+            {{ (cons_chauff - off_chauff) | round(2) }}
+          {% endif %}
+
+        seuil_clim_on: >
+          {% set cons_clim = states('input_number.clim_consigne_presence') | float(default=none) %}
+          {% set off_clim  = states('input_number.clim_offset_on') | float(default=none) %}
+          {% if cons_clim is none or off_clim is none %}
+            unknown
+          {% else %}
+            {{ (cons_clim + off_clim) | round(2) }}
+          {% endif %}
+
+        # ------------------------------------------------------
+        # 🎨 Arsenal — Couleur contractuelle
+        # ------------------------------------------------------
+        arsenal_bg: >
+          {% set t = this.state | float(default=none) %}
+          {% set cons_chauff = states('input_number.chauffage_consigne_confort') | float(default=none) %}
+          {% set off_chauff  = states('input_number.chauffage_offset_on') | float(default=none) %}
+          {% set cons_clim   = states('input_number.clim_consigne_presence') | float(default=none) %}
+          {% set off_clim    = states('input_number.clim_offset_on') | float(default=none) %}
+
+          {% if t is none or cons_chauff is none or off_chauff is none or cons_clim is none or off_clim is none %}
+            rgba(224, 224, 224, 0.2)
+          {% else %}
+            {% set seuil_chauff_on = cons_chauff - off_chauff %}
+            {% set seuil_clim_on   = cons_clim + off_clim %}
+            {% if t < seuil_chauff_on %}
+              rgba(144, 202, 249, 0.25)
+            {% elif t > seuil_clim_on %}
+              rgba(244, 67, 54, 0.2)
+            {% else %}
+              rgba(76, 175, 80, 0.2)
+            {% endif %}
+          {% endif %}

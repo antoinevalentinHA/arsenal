@@ -9,10 +9,11 @@
       unique_id: couleur_sante_duree_sommeil
       state: >
         {% set raw = states('sensor.withings_sommeil_total_texte') %}
-        {% set num = raw | regex_findall_index('[0-9]+(?:[\\.,][0-9]+)?', 0) %}
+        {% set m = raw | regex_findall('[0-9]+(?:[\\.,][0-9]+)?') %}
+        {% set num = (m | first) | default('') %}
         {% set h = (num | replace(',', '.') | float(999)) %}
 
-        {% if raw in ['unknown', 'unavailable', None] or h == 999 %}
+        {% if raw in ['unknown', 'unavailable', None, ''] or h == 999 %}
           unavailable
         {% elif h < 6.0 %}
           red

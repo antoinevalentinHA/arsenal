@@ -14,7 +14,15 @@
       unique_id: fenetre_ouverte_maison
       default_entity_id: binary_sensor.fenetre_ouverte_maison
       device_class: opening
-      icon: mdi:window-open
+
+      icon: >
+        {% if is_state('binary_sensor.ouvertures_maison', 'on') %}
+          mdi:window-open-variant
+        {% elif is_state('binary_sensor.ouvertures_maison', 'off') %}
+          mdi:window-closed-variant
+        {% else %}
+          mdi:window-closed-variant
+        {% endif %}
 
       state: >
         {% set fenetres = [

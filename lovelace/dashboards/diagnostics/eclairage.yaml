@@ -41,29 +41,75 @@ views:
             template: sub_section_header
             name: 🛠️ Paramètres globaux
 
-          - type: markdown
-            content: |
-              **Mode** : {% if is_state('input_select.mode_maison', 'Vacances') %} Vacances 🏖️ {% else %} Normal 🏡 {% endif %}
-              **Test activé** : {% if is_state('input_boolean.test_simulation_presence', 'on') %} 🟢 Oui {% else %} 🔴 Non {% endif %}
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_select.mode_maison
+                name: Mode maison
+                icon: mdi:home-switch
+
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: input_boolean.test_simulation_presence
+                name: Test simulation présence
+                icon: mdi:test-tube
 
           # 🛏️ Zone : Parents
           - type: custom:button-card
             template: sub_section_header
             name: 🛏️ Simulation parents
 
-          - type: markdown
-            content: |
-              Lampes : {% if is_state('switch.prise_lampe_parents', 'on') %} 🟢 ON {% else %} 🔴 OFF {% endif %}
-              Horaires matin : {{ states('input_text.horaires_simulation_presence_matin') or '_aucun_' }}
-              Horaires soir : {{ states('input_text.horaires_simulation_presence_soir') or '_aucun_' }}
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: switch.prise_lampe_parents
+                name: Lampes
+                icon: mdi:lightbulb
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_text.horaires_simulation_presence_matin
+                name: Horaires matin
+                icon: mdi:weather-sunset-up
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_text.horaires_simulation_presence_soir
+                name: Horaires soir
+                icon: mdi:weather-sunset-down
 
           # 🏠 Zone : Garage
           - type: custom:button-card
             template: sub_section_header
             name: 🏠 Simulation garage
 
-          - type: markdown
-            content: |
-              Lampes : {% if is_state('input_boolean.garage_light_state', 'on') %} 🟢 ON {% else %} 🔴 OFF {% endif %}
-              Horaires matin : {{ states('input_text.horaires_simulation_presence_garage_matin') or '_aucun_' }}
-              Horaires soir : {{ states('input_text.horaires_simulation_presence_garage_soir') or '_aucun_' }}
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: input_boolean.garage_light_state
+                name: Lampes
+                icon: mdi:lightbulb
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_text.horaires_simulation_presence_garage_matin
+                name: Horaires matin
+                icon: mdi:weather-sunset-up
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_text.horaires_simulation_presence_garage_soir
+                name: Horaires soir
+                icon: mdi:weather-sunset-down

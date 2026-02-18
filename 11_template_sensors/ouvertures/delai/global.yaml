@@ -18,6 +18,47 @@
       default_entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
       device_class: opening
 
+      icon: >
+        {# ---------------------------------------------------
+           Fenêtres immédiates (entrée)
+           --------------------------------------------------- #}
+        {% set entree_open = is_state('binary_sensor.capteur_fenetre_entree', 'on') %}
+
+        {# ---------------------------------------------------
+           Grâce Étage (parents) : parents_open + timer active
+           (car le capteur "avec_delai" reste OFF pendant la grâce)
+           --------------------------------------------------- #}
+        {% set parents_fenetres = [
+          'binary_sensor.capteur_chambre_parents_droite',
+          'binary_sensor.capteur_chambre_parents_gauche',
+          'binary_sensor.capteur_chambre_parents_milieu'
+        ] %}
+        {% set parents_open = (parents_fenetres | select('is_state', 'on') | list | length > 0) %}
+        {% set parents_timer = states('timer.fenetre_chambre_parents_grace') %}
+        {% set grace_etage = parents_open and parents_timer == 'active' %}
+
+        {# ---------------------------------------------------
+           Grâce Séjour : si tu as aussi un timer de grâce séjour
+           et des capteurs bruts séjour, on peut la détecter.
+           👉 À défaut d’info, on ne “devine” pas.
+           --------------------------------------------------- #}
+        {% set grace_sejour = false %}
+
+        {# ---------------------------------------------------
+           Décision d’icône (pure lecture)
+           --------------------------------------------------- #}
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:window-open-variant
+        {% elif entree_open %}
+          mdi:window-open-variant
+        {% elif grace_etage or grace_sejour %}
+          mdi:timer-sand
+        {% elif is_state(this.entity_id, 'off') %}
+          mdi:window-closed-variant
+        {% else %}
+          mdi:window-closed-variant
+        {% endif %}
+
       state: >
         {% set capteurs = [
           'binary_sensor.capteur_fenetre_entree',

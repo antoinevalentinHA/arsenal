@@ -39,6 +39,11 @@ views:
             template: section_header
             name: 🪟 Fenêtres
 
+          - type: custom:button-card
+            template: contact_sensor
+            entity: binary_sensor.fenetre_ouverte_maison
+            name: Fenêtres maison
+
           - type: grid
             columns: 2
             square: false
@@ -52,11 +57,6 @@ views:
                 template: contact_sensor
                 entity: binary_sensor.fenetre_ouverte_etage
                 name: Fenêtres étage
-
-          - type: custom:button-card
-            template: contact_sensor
-            entity: binary_sensor.fenetre_ouverte_maison
-            name: Fenêtres maison
 
           - type: custom:button-card
             template: section_header

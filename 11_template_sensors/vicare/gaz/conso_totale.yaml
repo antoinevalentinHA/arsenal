@@ -1,0 +1,47 @@
+# ==========================================================
+#  TEMPLATE SENSOR : Gaz – Total cumulatif local
+# ----------------------------------------------------------
+#  Rôle :
+#    Exposer le compteur persistant
+#    input_number.gaz_chauffage_total_local_store
+#    comme un sensor energy compatible statistiques.
+# ==========================================================
+
+- sensor:
+
+    # ----------------------------------------------------------
+    # Gaz Chauffage – Total cumulatif local
+    # ----------------------------------------------------------
+    - name: "gaz_chauffage_total_local"
+      unique_id: gaz_chauffage_total_local
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: total
+      icon: mdi:fire
+      state: &kwh_total_from_store >
+        {% set map = {
+          'sensor.gaz_chauffage_total_local': 'input_number.gaz_chauffage_total_local_store',
+          'sensor.gaz_ecs_total_local': 'input_number.gaz_ecs_total_local_store'
+        } %}
+        {% set store = map.get(this.entity_id) %}
+        {% if not store %}
+          {{ this.state }}
+        {% else %}
+          {% set v = states(store) %}
+          {% if v in ['unknown','unavailable','none','None',''] %}
+            {{ this.state }}
+          {% else %}
+            {{ v | float(0) }}
+          {% endif %}
+        {% endif %}
+
+    # ----------------------------------------------------------
+    # Gaz ECS – Total cumulatif local
+    # ----------------------------------------------------------
+    - name: "gaz_ecs_total_local"
+      unique_id: gaz_ecs_total_local
+      unit_of_measurement: "kWh"
+      device_class: energy
+      state_class: total
+      icon: mdi:water-boiler
+      state: *kwh_total_from_store

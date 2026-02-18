@@ -60,10 +60,16 @@ chauffage_auto_courbe_status_72:
               const auto = states['input_boolean.chauffage_reglages_auto']?.state;
               const simu = states['input_boolean.courbe_auto_simulation']?.state;
 
+              // Indispo
               if (UNAV.includes(auto)) return "rgba(158, 158, 158, 0.1)";
+
+              // Inactif (tu avais rouge avant : je conserve)
               if (auto !== 'on') return "rgba(244, 67, 54, 0.2)";
 
+              // Actif
               if (UNAV.includes(simu)) return "rgba(76, 175, 80, 0.2)";
+
+              // Simulation = bleu / Appliqué = vert
               return (simu === 'on')
                 ? "rgba(33, 150, 243, 0.2)"
                 : "rgba(76, 175, 80, 0.2)";
@@ -71,7 +77,13 @@ chauffage_auto_courbe_status_72:
 
             // kind === 'last'
             const last = states['input_text.chauffage_last_adjustment']?.state;
+
+            // Historique : unknown/unavailable => gris indispo
             if (UNAV.includes(last)) return "rgba(158, 158, 158, 0.1)";
+
+            // Vide => gris neutre
             if (last === '') return "rgba(158, 158, 158, 0.2)";
+
+            // Valeur => bleu info
             return "rgba(33, 150, 243, 0.2)";
           ]]]

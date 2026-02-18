@@ -8,7 +8,7 @@ include:
     # =====================================================
     # ==== 🌡️ TEMPÉRATURES – MAISON / PIÈCES ====
     # =====================================================
-    - sensor.temperature_maison_moyenne_jour
+    - sensor.temperature_moyenne_maison
     - sensor.temperature_exterieure_moyenne_jour
     - sensor.temperature_min_chambres
     - sensor.temperature_max_chambres

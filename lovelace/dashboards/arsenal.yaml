@@ -132,7 +132,7 @@ views:
 
               - type: grid
                 square: false
-                columns: 2
+                columns: 3
                 cards:
 
                   - type: custom:button-card
@@ -144,6 +144,18 @@ views:
                     template: socle_kpi
                     name: Séjour
                     entity: sensor.temperature_sejour
+
+                  - type: custom:button-card
+                    template: socle_kpi
+                    name: Maison
+                    entity: sensor.temperature_moyenne_maison
+                    variables:
+                      ui_profile: arsenal
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
 
                   - type: custom:button-card
                     template: carte_temperature_min_chambres
@@ -202,7 +214,6 @@ views:
                   - type: custom:button-card
                     template: carte_ouvertures_diagnostic
                     name: Ouvertures
-                    icon: mdi:door-open
 
 
           # ==========================================================

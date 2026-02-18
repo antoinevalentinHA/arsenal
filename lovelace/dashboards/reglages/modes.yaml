@@ -61,10 +61,15 @@ views:
             entity: input_boolean.mode_vacances_auto
             name: Activer la programmation
 
-          - type: tile
-            entity: input_datetime.debut_vacances
-            name: Début des vacances
+          - type: grid
+            columns: 2
+            square: false
+            cards:
 
-          - type: tile
-            entity: input_datetime.fin_vacances
-            name: Fin des vacances
+              - type: tile
+                entity: input_datetime.debut_vacances
+                name: Début des vacances
+    
+              - type: tile
+                entity: input_datetime.fin_vacances
+                name: Fin des vacances

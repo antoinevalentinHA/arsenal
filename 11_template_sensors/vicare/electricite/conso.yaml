@@ -20,32 +20,37 @@
 
 - sensor:
 
-    # ------------------------------------------------------------
-    # Electricité chaudière – Semaine (local, fallback)
-    # ------------------------------------------------------------
+    # ==========================================================
+    # 🧠 ARSENAL — ANCRE JINJA : ViCare kWh local fallback
+    # ----------------------------------------------------------
+    # Principe :
+    #   - source déterminée par mapping via this.entity_id
+    #   - fallback = this.state si source indispo
+    # ==========================================================
+
     - name: "electricite_chaudiere_semaine_local"
       unique_id: electricite_chaudiere_semaine_local
       unit_of_measurement: "kWh"
       icon: mdi:flash
-      state: >
-        {% set v = states('sensor.vscotho1_200_11_consommation_d_electricite_cette_semaine') %}
-        {% if v in ['unknown','unavailable','none','None',''] %}
-          {{ states('sensor.electricite_chaudiere_semaine_local') }}
+      state: &vicare_kwh_local_fallback >
+        {% set map = {
+          'sensor.electricite_chaudiere_semaine_local': 'sensor.vscotho1_200_11_consommation_d_electricite_cette_semaine',
+          'sensor.electricite_chaudiere_annee_local': 'sensor.vscotho1_200_11_consommation_d_electricite_cette_annee'
+        } %}
+        {% set src = map.get(this.entity_id) %}
+        {% if not src %}
+          {{ this.state }}
         {% else %}
-          {{ v | float }}
+          {% set v = states(src) %}
+          {% if v in ['unknown','unavailable','none','None',''] %}
+            {{ this.state }}
+          {% else %}
+            {{ v | float }}
+          {% endif %}
         {% endif %}
 
-    # ------------------------------------------------------------
-    # Electricité chaudière – Année (local, fallback)
-    # ------------------------------------------------------------
     - name: "electricite_chaudiere_annee_local"
       unique_id: electricite_chaudiere_annee_local
       unit_of_measurement: "kWh"
       icon: mdi:flash
-      state: >
-        {% set v = states('sensor.vscotho1_200_11_consommation_d_electricite_cette_annee') %}
-        {% if v in ['unknown','unavailable','none','None',''] %}
-          {{ states('sensor.electricite_chaudiere_annee_local') }}
-        {% else %}
-          {{ v | float }}
-        {% endif %}
+      state: *vicare_kwh_local_fallback

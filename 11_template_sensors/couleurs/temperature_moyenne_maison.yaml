@@ -1,0 +1,45 @@
+# ==========================================================
+# 🎨 ARSENAL — TEMPLATE SENSOR (COULEUR)
+#     couleur_temperature_moyenne_maison
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Fournir une clé couleur (palette) pour `socle_kpi`,
+#   pilotée par consignes + offsets (contrat thermique).
+#
+# 🔗 SOCLE KPI
+#   - dérive automatiquement : sensor.couleur_<suffixe>
+#     => pour sensor.temperature_moyenne_maison
+#        attend sensor.couleur_temperature_moyenne_maison
+#
+# 📐 RÈGLES (alignées min/max chambres)
+#   - blue  : T < (consigne chauffage confort - offset chauffage)
+#   - red   : T > (consigne clim cool + offset clim)
+#   - green : sinon
+#   - unavailable : si une donnée est manquante
+# ==========================================================
+
+- sensor:
+
+    - name: "couleur_temperature_moyenne_maison"
+      unique_id: couleur_temperature_moyenne_maison
+      icon: mdi:palette
+      state: >
+        {% set t = states('sensor.temperature_moyenne_maison') | float(default=none) %}
+        {% set cons_chauff = states('input_number.chauffage_consigne_confort') | float(default=none) %}
+        {% set off_chauff  = states('input_number.chauffage_offset_on') | float(default=none) %}
+        {% set cons_clim   = states('input_number.clim_consigne_presence') | float(default=none) %}
+        {% set off_clim    = states('input_number.clim_offset_on') | float(default=none) %}
+
+        {% if t is none or cons_chauff is none or off_chauff is none or cons_clim is none or off_clim is none %}
+          unavailable
+        {% else %}
+          {% set seuil_chauff_on = cons_chauff - off_chauff %}
+          {% set seuil_clim_on   = cons_clim + off_clim %}
+          {% if t < seuil_chauff_on %}
+            blue
+          {% elif t > seuil_clim_on %}
+            red
+          {% else %}
+            green
+          {% endif %}
+        {% endif %}

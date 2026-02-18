@@ -7,6 +7,72 @@ carte_chauffage_decision:
 
   name: Chauffage – État réel
 
+  variables:
+    diag: |
+      [[[
+        const reel = entity?.state;
+        const intention = states['sensor.chauffage_mode_calcule']?.state;
+        const raison = states['sensor.chauffage_raison_calculee']?.state || '';
+
+        const labels = {
+          blocage_poele: 'poêle actif',
+          aeration_en_cours: 'aération en cours',
+          blocage_aeration: 'post-aération',
+          fenetre_ouverte: 'fenêtre ouverte',
+          mode_maison_vacances: 'mode vacances',
+          chauffage_non_autorise: 'chauffage non autorisé',
+          absence_protection_thermique: 'protection thermique',
+          standby_force: 'attente thermique'
+        };
+
+        const blocages = [
+          'blocage_poele',
+          'aeration_en_cours',
+          'blocage_aeration',
+          'fenetre_ouverte',
+          'mode_maison_vacances',
+          'chauffage_non_autorise'
+        ];
+
+        const r = raison;
+        const is_inconnu = (reel === 'Inconnu');
+        const is_blocage = blocages.includes(r);
+        const is_absence_protection = (r === 'absence_protection_thermique');
+        const is_standby = (r === 'standby_force' && !is_blocage);
+
+        const coherent = (() => {
+          if (is_inconnu) return false;
+          if (intention === reel) return true;
+          if (intention === 'Neutre' && (reel === 'Eco' || reel === 'Confort')) return true;
+          return false;
+        })();
+
+        const category = (() => {
+          if (is_blocage || is_absence_protection) return 'warn';
+          if (is_standby) return 'info';
+          if (coherent) return 'ok';
+          return 'ko';
+        })();
+
+        const bg = (() => {
+          if (category === 'warn') return "rgba(255, 152, 0, 0.2)";
+          if (category === 'info') return "rgba(33, 150, 243, 0.2)";
+          if (category === 'ok')   return "rgba(76, 175, 80, 0.2)";
+          return "rgba(244, 67, 54, 0.2)";
+        })();
+
+        const reason_txt = r ? (labels[r] || r) : '';
+
+        return {
+          reel,
+          intention: intention || '—',
+          raison: r,
+          reason_txt,
+          category,
+          bg
+        };
+      ]]]
+
   state_display: |
     [[[
       const map = {
@@ -19,103 +85,13 @@ carte_chauffage_decision:
 
   label: |
     [[[
-      const intention = states['sensor.chauffage_mode_calcule']?.state || '—';
-      const raison = states['sensor.chauffage_raison_calculee']?.state || '';
-
-      const labels = {
-        blocage_poele: 'poêle actif',
-        aeration_en_cours: 'aération en cours',
-        blocage_aeration: 'post-aération',
-        fenetre_ouverte: 'fenêtre ouverte',
-        mode_maison_vacances: 'mode vacances',
-        chauffage_non_autorise: 'chauffage non autorisé',
-        absence_protection_thermique: 'protection thermique',
-        standby_force: 'attente thermique'
-      };
-
-      return `Intention : ${intention}${raison ? ' — ' + (labels[raison] || raison) : ''}`;
+      const d = variables.diag;
+      return `Intention : ${d.intention}${d.reason_txt ? ' — ' + d.reason_txt : ''}`;
     ]]]
 
-  state:
-    - operator: template
-      value: |
-        [[[
-          const r = states['sensor.chauffage_raison_calculee']?.state;
-          return [
-            'blocage_poele',
-            'aeration_en_cours',
-            'blocage_aeration',
-            'fenetre_ouverte',
-            'mode_maison_vacances',
-            'chauffage_non_autorise'
-          ].includes(r);
-        ]]]
-      styles:
-        card:
-          - background-color: rgba(255, 152, 0, 0.2)
-
-    - operator: template
-      value: |
-        [[[
-          return states['sensor.chauffage_raison_calculee']?.state === 'absence_protection_thermique';
-        ]]]
-      styles:
-        card:
-          - background-color: rgba(255, 152, 0, 0.2)
-
-    - operator: template
-      value: |
-        [[[
-          const r = states['sensor.chauffage_raison_calculee']?.state;
-
-          const blocage_actif = [
-            'blocage_poele',
-            'aeration_en_cours',
-            'blocage_aeration',
-            'fenetre_ouverte',
-            'mode_maison_vacances',
-            'chauffage_non_autorise'
-          ].includes(r);
-
-          return r === 'standby_force' && !blocage_actif;
-        ]]]
-      styles:
-        card:
-          - background-color: rgba(33, 150, 243, 0.2)
-
-    - operator: template
-      value: |
-        [[[
-          const intention = states['sensor.chauffage_mode_calcule']?.state;
-          const reel = entity.state;
-
-          if (reel === 'Inconnu') return false;
-          if (intention === reel) return true;
-          if (intention === 'Neutre' && (reel === 'Eco' || reel === 'Confort')) return true;
-
-          return false;
-        ]]]
-      styles:
-        card:
-          - background-color: rgba(76, 175, 80, 0.2)
-
-    - operator: template
-      value: |
-        [[[
-          if (entity.state === 'Inconnu') return true;
-
-          const r = states['sensor.chauffage_raison_calculee']?.state;
-          return ![
-            'blocage_poele',
-            'aeration_en_cours',
-            'blocage_aeration',
-            'fenetre_ouverte',
-            'mode_maison_vacances',
-            'chauffage_non_autorise',
-            'absence_protection_thermique',
-            'standby_force'
-          ].includes(r);
-        ]]]
-      styles:
-        card:
-          - background-color: rgba(244, 67, 54, 0.2)
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return variables.diag.bg;
+          ]]]

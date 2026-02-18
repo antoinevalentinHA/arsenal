@@ -51,7 +51,7 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 🍃 Utilisation mode éco
+            name: 🍃 Mode économique
 
           - type: custom:bar-card
             columns: 1

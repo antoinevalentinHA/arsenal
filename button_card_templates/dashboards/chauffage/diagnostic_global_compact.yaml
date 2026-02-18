@@ -33,143 +33,137 @@ chauffage_diagnostic_global_compact:
   show_label: true
   color_type: card
 
+  variables:
+    diagnostic: |
+      [[[
+        const st = (id) => states[id]?.state;
+        const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+        const programme = st('sensor.programme_chauffage');
+        const intention = st('sensor.chauffage_mode_calcule');
+        const raison    = st('sensor.chauffage_raison_calculee');
+
+        if ([programme,intention,raison].some(v => UNAV.includes(v))) {
+          return { type: 'indisponible' };
+        }
+
+        const geo_arme  = st('input_boolean.blocage_geofencing') === 'on';
+        const inhib     = st('input_boolean.chauffage_inhibition_geofencing') === 'on';
+        const standby_b = st('input_boolean.chauffage_standby_force') === 'on';
+        const poele     = st('input_boolean.blocage_chauffage_poele') === 'on';
+        const aeration  = st('input_boolean.chauffage_blocage_aeration') === 'on';
+
+        const non_autorise = (raison === 'chauffage_non_autorise');
+        const override     = (raison === 'confort_force');
+
+        if (override) {
+          return { type: 'override', poele, aeration, non_autorise };
+        }
+
+        if (poele || aeration || non_autorise) {
+          return { type: 'blocage', poele, aeration, non_autorise };
+        }
+
+        if (raison === 'standby_force' || standby_b) {
+          return { type: 'standby' };
+        }
+
+        if (raison === 'absence') {
+          return { type: 'absence', geo_arme, inhib };
+        }
+
+        const prog_l = (programme || '').toLowerCase();
+
+        if (intention === 'Neutre' && prog_l === 'confort') {
+          return { type: 'confort_ok' };
+        }
+
+        if (intention === 'Neutre') {
+          return { type: 'attente' };
+        }
+
+        return { type: 'stable' };
+      ]]]
+      
   icon: |
-    [[[
-      const st = (id) => states[id]?.state;
-      const r = st('sensor.chauffage_raison_calculee');
+    [[[ 
+      const d = variables.diagnostic;
 
-      const poele = st('input_boolean.blocage_chauffage_poele') === 'on';
-      const aeration = st('input_boolean.chauffage_blocage_aeration') === 'on';
-
-      if (r === 'confort_force') return 'mdi:account-alert';
-      if (poele) return 'mdi:fireplace';
-      if (aeration) return 'mdi:window-open-variant';
-      if (r === 'chauffage_non_autorise') return 'mdi:lock-alert';
-      if (r === 'standby_force') return 'mdi:pause-circle';
-      if (r === 'absence') return 'mdi:home-export-outline';
+      if (d.type === 'override') return 'mdi:account-alert';
+      if (d.type === 'blocage') return 'mdi:lock-alert';
+      if (d.type === 'standby') return 'mdi:pause-circle';
+      if (d.type === 'absence') return 'mdi:home-export-outline';
+      if (d.type === 'confort_ok') return 'mdi:shield-check';
+      if (d.type === 'indisponible') return 'mdi:shield-off';
       return 'mdi:shield-check';
     ]]]
 
   state_display: |
-    [[[
-      const st = (id) => states[id]?.state;
-      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+    [[[ 
+      const d = variables.diagnostic;
 
-      const programme = st('sensor.programme_chauffage');
-      const intention = st('sensor.chauffage_mode_calcule');
-      const raison    = st('sensor.chauffage_raison_calculee');
-
-      if ([programme,intention,raison].some(v => UNAV.includes(v))) return "Chauffage";
-
-      if (raison === 'confort_force') return "Override";
-      if (st('input_boolean.blocage_chauffage_poele') === 'on') return "Bloqué";
-      if (st('input_boolean.chauffage_blocage_aeration') === 'on') return "Bloqué";
-      if (raison === 'chauffage_non_autorise') return "Bloqué";
-
-      if (raison === 'standby_force') return "Standby";
-      if (raison === 'absence') return "Absence";
-
-      const prog_l = (programme || '').toLowerCase();
-      if (intention === 'Neutre' && prog_l === 'confort') return "Confort OK";
-      if (intention === 'Neutre') return "Attente";
-
-      return "Stable";
+      switch (d.type) {
+        case 'indisponible': return "Chauffage";
+        case 'override': return "Override";
+        case 'blocage': return "Bloqué";
+        case 'standby': return "Standby";
+        case 'absence': return "Absence";
+        case 'confort_ok': return "Confort OK";
+        case 'attente': return "Attente";
+        default: return "Stable";
+      }
     ]]]
 
   label: |
-    [[[
-      const st = (id) => states[id]?.state;
-      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+    [[[ 
+      const d = variables.diagnostic;
 
-      const programme = st('sensor.programme_chauffage');
-      const intention = st('sensor.chauffage_mode_calcule');
-      const raison    = st('sensor.chauffage_raison_calculee');
+      if (d.type === 'indisponible')
+        return "Données indisponibles";
 
-      if ([programme,intention,raison].some(v => UNAV.includes(v))) {
-        return `Données indisponibles\nProg: ${programme} • Int: ${intention} • R: ${raison}`;
-      }
+      if (d.type === 'override')
+        return "Confort forcé • Priorité opérateur";
 
-      const geo_arme  = st('input_boolean.blocage_geofencing') === 'on';
-      const inhib     = st('input_boolean.chauffage_inhibition_geofencing') === 'on';
-      const standby_b = st('input_boolean.chauffage_standby_force') === 'on';
-      const poele     = st('input_boolean.blocage_chauffage_poele') === 'on';
-      const aeration  = st('input_boolean.chauffage_blocage_aeration') === 'on';
+      if (d.type === 'blocage')
+        return "Blocage thermique • Cause active";
 
-      const non_autorise = (raison === 'chauffage_non_autorise');
-      const override     = (raison === 'confort_force');
+      if (d.type === 'standby')
+        return "Attente thermique • Reprise automatique";
 
-      if (override) {
-        const cont = [];
-        if (poele) cont.push('poêle');
-        if (aeration) cont.push('aération');
-        if (non_autorise) cont.push('non autorisé');
-        return cont.length
-          ? `Confort forcé\nContourné: ${cont.join(' • ')}`
-          : `Confort forcé\nPriorité opérateur`;
-      }
+      if (d.type === 'absence')
+        return "Protection absence • Surveillance";
 
-      if (poele || aeration || non_autorise) {
-        const cause = [];
-        if (poele) cause.push('poêle actif');
-        if (aeration) cause.push('post-aération');
-        if (non_autorise) cause.push('non autorisé');
-        return `Blocage thermique\nCause: ${cause.join(' • ')}`;
-      }
+      if (d.type === 'confort_ok')
+        return "Confort satisfait • Au repos";
 
-      if (raison === 'standby_force' || standby_b) {
-        return `Attente thermique\nReprise automatique`;
-      }
+      if (d.type === 'attente')
+        return "Attente confort • Surveillance dérive";
 
-      if (raison === 'absence' && geo_arme && inhib) {
-        return `Protection absence\nChauffe ponctuelle`;
-      }
-
-      if (raison === 'absence' && geo_arme && !inhib) {
-        return `Protection absence\nSurveillance seuil`;
-      }
-
-      const prog_l = (programme || '').toLowerCase();
-      if (intention === 'Neutre' && prog_l === 'confort') {
-        return `Confort satisfait\nAu repos`;
-      }
-
-      if (intention === 'Neutre') {
-        return `Attente confort\nSurveillance dérive`;
-      }
-
-      return `Cohérent contrat\nAucune action requise`;
+      return "Cohérent contrat • Aucune action requise";
     ]]]
 
   styles:
     card:
-      - background-color: |
-          [[[
-            const st = (id) => states[id]?.state;
-            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+    - background-color: |
+          [[[ 
+            const d = variables.diagnostic;
 
-            const programme = st('sensor.programme_chauffage');
-            const intention = st('sensor.chauffage_mode_calcule');
-            const raison    = st('sensor.chauffage_raison_calculee');
-
-            if ([programme,intention,raison].some(v => UNAV.includes(v)))
+            // Indisponible (charte)
+            if (d.type === 'indisponible')
               return "rgba(158, 158, 158, 0.1)";
 
-            const poele     = st('input_boolean.blocage_chauffage_poele') === 'on';
-            const aeration  = st('input_boolean.chauffage_blocage_aeration') === 'on';
-            const non_autor = (raison === 'chauffage_non_autorise');
-            const override  = (raison === 'confort_force');
+            // Override (charte)
+            if (d.type === 'override')
+              return "rgba(33, 150, 243, 0.2)";
 
-            if (override) return "rgba(33, 150, 243, 0.2)";
-            if (poele || aeration || non_autor) return "rgba(244, 67, 54, 0.2)";
+            // Blocage absolu (charte)
+            if (d.type === 'blocage')
+              return "rgba(244, 67, 54, 0.2)";
 
-            const standby_b = st('input_boolean.chauffage_standby_force') === 'on';
-            if (raison === 'standby_force' || standby_b) return "rgba(33, 150, 243, 0.2)";
+            // Standby / absence / attente (charte)
+            if (d.type === 'standby' || d.type === 'absence' || d.type === 'attente')
+              return "rgba(33, 150, 243, 0.2)";
 
-            if (raison === 'absence') return "rgba(33, 150, 243, 0.2)";
-
-            const prog_l = (programme || '').toLowerCase();
-            if (intention === 'Neutre' && prog_l === 'confort') return "rgba(76, 175, 80, 0.2)";
-            if (intention === 'Neutre') return "rgba(33, 150, 243, 0.2)";
-
+            // Nominal (charte)
             return "rgba(76, 175, 80, 0.2)";
           ]]]
