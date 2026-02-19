@@ -1,0 +1,41 @@
+type: markdown
+content: |
+  {%- macro num(entity_id, digits=2, suffix='') -%}
+    {%- set s = states(entity_id) -%}
+    {%- if s in ['unknown','unavailable','none','None',''] -%}
+      n/a
+    {%- else -%}
+      {%- set v = s | float(none) -%}
+      {%- if v is none -%}n/a{%- else -%}{{ v | round(digits) }}{{ suffix }}{%- endif -%}
+    {%- endif -%}
+  {%- endmacro -%}
+
+  {%- macro intv(entity_id, suffix='') -%}
+    {%- set s = states(entity_id) -%}
+    {%- if s in ['unknown','unavailable','none','None',''] -%}
+      n/a
+    {%- else -%}
+      {%- set v = s | int(none) -%}
+      {%- if v is none -%}n/a{%- else -%}{{ v }}{{ suffix }}{%- endif -%}
+    {%- endif -%}
+  {%- endmacro -%}
+
+  {%- set osc = 'sensor.amplitude_oscillation_cycle_presence_chambres' -%}
+  {%- set d2  = 'sensor.nombre_cycles_jour_presence_chambres' -%}
+  {%- set d3  = 'sensor.duree_cycle_moyenne_presence_chambres' -%}
+
+  {%- set d2f = states(d2) | float(none) -%}
+  {%- set d3f = states(d3) | float(none) -%}
+
+  - **Amplitude oscillation cycle** : `{{ num(osc, 2, ' °C') }}`
+  - **Nombre de cycles aujourd’hui** : `{{ intv(d2) }}`
+  - **Durée cycle moyenne** : `{{ num(d3, 2, ' min') }}`
+
+  **Cohérence (D2 × D3 ≈ 1440 min)**
+  {% if d2f is not none and d3f is not none and d2f > 0 and d3f > 0 %}
+  {%- set prod = d2f * d3f -%}
+  - ratio : `{{ (prod / 1440) | round(2) }}`
+  - écart : `{{ (prod - 1440) | round(0) }} min`
+  {% else %}
+  - `n/a`
+  {% endif %}

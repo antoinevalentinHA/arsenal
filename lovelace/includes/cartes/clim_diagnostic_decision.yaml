@@ -1,0 +1,44 @@
+type: markdown
+content: |
+  {% set mode = states('sensor.clim_mode_local') %}
+  {% set raison = states('input_text.climatisation_raison') %}
+
+  {% macro badge_mode(mode) -%}
+  {% if mode == 'cool' %}❄️ COOL
+  {% elif mode == 'heat' %}🔥 HEAT
+  {% elif mode == 'dry' %}💧 DRY
+  {% elif mode == 'off' %}⚪ AUCUNE
+  {% else %}⛔ {{ mode|upper }}
+  {% endif %}
+  {%- endmacro %}
+
+  {# -----------------------------------------------------------
+     Statut décisionnel synthétique
+     ----------------------------------------------------------- #}
+  {% if mode in ['cool','heat','dry'] %}
+    {% set statut = 'active' %}
+  {% elif mode == 'off' %}
+    {% set statut = 'repos' %}
+  {% else %}
+    {% set statut = 'inconnu' %}
+  {% endif %}
+
+  {% if statut == 'active' %}
+  🟢 **Décision active**
+
+  Action décidée : {{ badge_mode(mode) }}  
+  Cause principale : {{ raison if raison not in ['unknown','unavailable',''] else '—' }}
+
+  {% elif statut == 'repos' %}
+  ⚪ **Aucune action en cours**
+
+  Le système est au repos.  
+  Aucune condition ne justifie une action à cet instant.
+
+  {% else %}
+  🟠 **Décision indéterminée**
+
+  État décisionnel non interprétable.  
+  Mode brut : `{{ mode }}`
+
+  {% endif %}

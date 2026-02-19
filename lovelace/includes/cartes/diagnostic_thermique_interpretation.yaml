@@ -1,0 +1,33 @@
+type: markdown
+content: |
+  {% set reg  = states('sensor.diagnostic_chauffage_regulation') %}
+  {% set rep  = states('sensor.diagnostic_chauffage_reprise') %}
+  {% set ine  = states('sensor.diagnostic_chauffage_inertie') %}
+  {% set stab = states('sensor.diagnostic_chauffage_stabilite') %}
+
+  {% set na = ['unknown','unavailable','none','None',''] %}
+
+  {# =======================================================
+     ⚪ DONNÉES INDISPONIBLES
+     ======================================================= #}
+  {% if reg in na or rep in na or ine in na or stab in na %}
+
+  ⚪ **Interprétation indisponible**
+
+  Une ou plusieurs synthèses diagnostic sont **unknown/unavailable**.
+
+  - **Régulation :** {{ reg }}
+  - **Reprise :** {{ rep }}
+  - **Inertie / isolation :** {{ ine }}
+  - **Stabilité (cyclage) :** {{ stab }}
+
+  {% else %}
+
+  🧠 **Interprétation indicative**
+
+  - {% if 'très stable' in reg %}🟢{% elif 'correcte' in reg %}🔵{% elif 'instable' in reg %}🟠{% else %}🔵{% endif %} **Régulation :** {{ reg }}
+  - {% if 'rapide' in rep %}🟢{% elif 'modérée' in rep %}🔵{% elif 'lente' in rep %}🟠{% else %}🔵{% endif %} **Reprise :** {{ rep }}
+  - {% if 'Très bonne' in ine %}🟢{% elif 'normale' in ine %}🔵{% elif 'très dissipatif' in ine %}🟠{% else %}🔵{% endif %} **Inertie / isolation :** {{ ine }}
+  - {% if 'très stable' in stab %}🟢{% elif 'correcte' in stab %}🔵{% elif 'Nervosité' in stab %}🟠{% else %}🔵{% endif %} **Stabilité (cyclage) :** {{ stab }}
+
+  {% endif %}

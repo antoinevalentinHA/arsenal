@@ -1,0 +1,52 @@
+type: custom:auto-entities
+card:
+  type: custom:bar-card
+  unit_of_measurement: "°C"
+  animation: off
+  height: 32px
+  positions:
+    name: inside
+    value: inside
+  severity:
+    - from: -20
+      to: 10
+      color: "rgba(144, 202, 249, 0.9)"      # 🔵 très frais
+    - from: 10
+      to: 18
+      color: "rgba(76, 175, 80, 0.85)"       # 🟢 confortable
+    - from: 18
+      to: 25
+      color: "rgba(255, 235, 59, 0.85)"      # 🟡 chaud modéré
+    - from: 25
+      to: 30
+      color: "rgba(255, 152, 0, 0.85)"       # 🟠 chaud
+    - from: 30
+      to: 45
+      color: "rgba(244, 67, 54, 0.85)"       # 🔴 très chaud
+  style: |
+    ha-card {
+      border-radius: 12px !important;
+      background: none !important;
+      box-shadow: none !important;
+      padding: 4px !important;
+    }
+
+filter:
+  include:
+    - entity_id: "sensor.temperature_max_jour_jardin*"
+
+sort:
+  method: state
+  numeric: true
+  reverse: true
+
+card_param: entities
+transform: |
+  {
+    {
+      "entity": entity.entity_id,
+      "name": entity.attributes.friendly_name
+        .replace("Température Max Jour ", ""),
+      "value": parseFloat(states[entity.entity_id])
+    }
+  }

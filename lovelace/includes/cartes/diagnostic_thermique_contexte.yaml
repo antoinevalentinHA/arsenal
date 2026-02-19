@@ -1,0 +1,5 @@
+type: markdown
+content: |
+  **Mode décidé :** `{{ states('input_select.chauffage_dernier_mode_decide') }}`
+  **Aération pipeline armé :** `{{ states('input_boolean.aeration_pipeline_arme') }}`
+  **Blocage chauffage (aération) :** `{{ states('input_boolean.chauffage_blocage_aeration') }}`

@@ -1,0 +1,15 @@
+type: markdown
+content: >
+  **Komori :**
+
+  🌡️ Température : **{{ states('sensor.temperature_komori') }} °C**
+
+
+  **Bobst :**
+
+  🌡️ Température : **{{ states('sensor.temperature_bobst') }} °C**
+
+
+  **Media :**
+
+  🌡️ Température : **{{ states('sensor.temperature_media') }} °C**

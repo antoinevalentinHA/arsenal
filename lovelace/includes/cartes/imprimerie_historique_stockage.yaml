@@ -1,0 +1,24 @@
+type: markdown
+content: |
+  **Carton :**
+  1️⃣ {{ states('input_text.conditions_carton_semaine_1') }}
+
+  2️⃣ {{ states('input_text.conditions_carton_semaine_2') }}
+
+  3️⃣ {{ states('input_text.conditions_carton_semaine_3') }}
+
+  4️⃣ {{ states('input_text.conditions_carton_semaine_4') }}
+
+  **Produits finis :**
+  1️⃣ {{ states('input_text.conditions_pf_semaine_1') }}
+
+  2️⃣ {{ states('input_text.conditions_pf_semaine_2') }}
+
+  3️⃣ {{ states('input_text.conditions_pf_semaine_3') }}
+
+  4️⃣ {{ states('input_text.conditions_pf_semaine_4') }}
+card_mod:
+  style: |
+    ha-card {
+      padding: 8px 12px;
+      font-size: 14px;

@@ -1,0 +1,29 @@
+type: custom:mini-graph-card
+name: Pression atmosphérique (24h)
+icon: mdi:gauge
+entities:
+  - entity: sensor.pression_chambre_arnaud
+hours_to_show: 24
+points_per_hour: 6
+line_width: 3
+height: 100
+show:
+  fill: true
+  extrema: true
+  average: false
+  name: true
+  icon: true
+  state: true
+color_thresholds:
+  - value: 990
+    color: '#0D47A1'
+  - value: 1000
+    color: '#2196F3'
+  - value: 1013
+    color: '#4CAF50'
+  - value: 1020
+    color: '#FFEB3B'
+  - value: 1030
+    color: '#FF9800'
+  - value: 1040
+    color: '#F44336'

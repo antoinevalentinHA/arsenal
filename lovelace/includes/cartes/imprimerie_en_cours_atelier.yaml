@@ -1,0 +1,27 @@
+type: markdown
+content: >
+  **Komori :**
+
+  • 🌡️ Température min : **{{ states('input_number.atelier_komori_temperature_min') }} °C**  
+
+  • 🌡️ Température max : **{{ states('input_number.atelier_komori_temperature_max') }} °C**
+
+
+  **Bobst :**
+
+  • 🌡️ Température min : **{{ states('input_number.atelier_bobst_temperature_min') }} °C**  
+
+  • 🌡️ Température max : **{{ states('input_number.atelier_bobst_temperature_max') }} °C**
+
+
+  **Media :**
+
+  • 🌡️ Température min : **{{ states('input_number.atelier_media_temperature_min') }} °C**  
+
+  • 🌡️ Température max : **{{ states('input_number.atelier_media_temperature_max') }} °C**
+card_mod:
+  style: |
+    ha-card {
+      padding: 8px 12px;
+      font-size: 14px;
+    }

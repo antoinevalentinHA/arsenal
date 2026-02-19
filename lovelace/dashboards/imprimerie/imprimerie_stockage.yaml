@@ -28,79 +28,15 @@ views:
 
           - !include ../../includes/section_headers/conditions_actuelles.yaml
 
-          - type: markdown
-            content: >
-              **Carton :**
-
-              🌡️ Température : **{{ states('sensor.temperature_stock_carton') }} °C**  
-
-              💧 Humidité : **{{ states('sensor.humidite_relative_stock_carton') }} %**
-
-
-              **Produits finis :**
-
-              🌡️ Température : **{{ states('sensor.temperature_stock_pf') }} °C**  
-
-              💧 Humidité : **{{ states('sensor.humidite_relative_stock_pf') }} %**
+          - !include ../../includes/cartes/imprimerie_conditions_stockage.yaml
 
           - !include ../../includes/section_headers/min_max_semaine.yaml
 
-          - type: markdown
-            content: >
-              **Carton :**
-
-              • 🌡️ Température min : **{{ states('input_number.stock_carton_temperature_min') }} °C**  
-
-              • 🌡️ Température max : **{{ states('input_number.stock_carton_temperature_max') }} °C**  
-
-              • 💧 HR min : **{{ states('input_number.stock_carton_humidite_min') }} %**  
-
-              • 💧 HR max : **{{ states('input_number.stock_carton_humidite_max') }} %**
-
-
-              **Produits finis :**
-
-              • 🌡️ Température min : **{{ states('input_number.stock_pf_temperature_min') }} °C**  
-
-              • 🌡️ Température max : **{{ states('input_number.stock_pf_temperature_max') }} °C**  
-
-              • 💧 HR min : **{{ states('input_number.stock_pf_humidite_min') }} %**  
-
-              • 💧 HR max : **{{ states('input_number.stock_pf_humidite_max') }} %**
-            card_mod:
-              style: |
-                ha-card {
-                  padding: 8px 12px;
-                  font-size: 14px;
-                }
+          - !include ../../includes/cartes/imprimerie_en_cours_stockage.yaml
 
           - !include ../../includes/section_headers/historique_4_semaines.yaml
 
-          - type: markdown
-            content: |
-              **Carton :**
-              1️⃣ {{ states('input_text.conditions_carton_semaine_1') }}
-
-              2️⃣ {{ states('input_text.conditions_carton_semaine_2') }}
-
-              3️⃣ {{ states('input_text.conditions_carton_semaine_3') }}
-
-              4️⃣ {{ states('input_text.conditions_carton_semaine_4') }}
-
-              **Produits finis :**
-              1️⃣ {{ states('input_text.conditions_pf_semaine_1') }}
-
-              2️⃣ {{ states('input_text.conditions_pf_semaine_2') }}
-
-              3️⃣ {{ states('input_text.conditions_pf_semaine_3') }}
-
-              4️⃣ {{ states('input_text.conditions_pf_semaine_4') }}
-            card_mod:
-              style: |
-                ha-card {
-                  padding: 8px 12px;
-                  font-size: 14px;
-                }
+          - !include ../../includes/cartes/imprimerie_historique_stockage.yaml
 
           - type: horizontal-stack
             cards:

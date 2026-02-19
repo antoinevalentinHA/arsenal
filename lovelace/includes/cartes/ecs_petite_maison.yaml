@@ -1,0 +1,6 @@
+type: markdown
+content: |
+  ### 🔥 État général
+  **Température actuelle ECS** : {{ states('sensor.ecs_petite_maison_temperature_eau_locale') }} °C  
+  **Mode actuel** : {{ states('sensor.ecs_petite_maison_mode_fonctionnement_local') | title }}  
+  **Mode absence actif ?** : {{ iif(state_attr('water_heater.petite_maison','away_mode') == 'on', "✅ Oui", "⛔ Non") }}  

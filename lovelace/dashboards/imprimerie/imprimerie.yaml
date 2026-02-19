@@ -134,34 +134,11 @@ views:
           ########################################################
           - !include ../../includes/section_headers/stockage.yaml
 
-          - type: markdown
-            content: >
-              **Carton :**
-
-              🌡️ Température : **{{ states('sensor.temperature_stock_carton') }} °C**  
-
-
-              **Produits finis :**
-
-              🌡️ Température : **{{ states('sensor.temperature_stock_pf') }} °C**  
+          - !include ../../includes/cartes/imprimerie_conditions_stockage.yaml
 
           ########################################################
           # 🏭 ATELIER
           ########################################################
           - !include ../../includes/section_headers/atelier.yaml
 
-          - type: markdown
-            content: >
-              **Komori :**
-
-              🌡️ Température : **{{ states('sensor.temperature_komori') }} °C**
-
-
-              **Bobst :**
-
-              🌡️ Température : **{{ states('sensor.temperature_bobst') }} °C**
-
-
-              **Media :**
-
-              🌡️ Température : **{{ states('sensor.temperature_media') }} °C**
+          - !include ../../includes/cartes/imprimerie_conditions_atelier.yaml

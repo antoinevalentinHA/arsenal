@@ -1,0 +1,36 @@
+type: markdown
+content: |
+  **Komori :**
+  1️⃣ {{ states('input_text.conditions_komori_semaine_1') }}
+
+  2️⃣ {{ states('input_text.conditions_komori_semaine_2') }}
+
+  3️⃣ {{ states('input_text.conditions_komori_semaine_3') }}
+
+  4️⃣ {{ states('input_text.conditions_komori_semaine_4') }}
+
+
+  **Bobst :**
+  1️⃣ {{ states('input_text.conditions_bobst_semaine_1') }}
+
+  2️⃣ {{ states('input_text.conditions_bobst_semaine_2') }}
+
+  3️⃣ {{ states('input_text.conditions_bobst_semaine_3') }}
+
+  4️⃣ {{ states('input_text.conditions_bobst_semaine_4') }}
+
+
+  **Media :**
+  1️⃣ {{ states('input_text.conditions_media_semaine_1') }}
+
+  2️⃣ {{ states('input_text.conditions_media_semaine_2') }}
+
+  3️⃣ {{ states('input_text.conditions_media_semaine_3') }}
+
+  4️⃣ {{ states('input_text.conditions_media_semaine_4') }}
+card_mod:
+  style: |
+    ha-card {
+      padding: 8px 12px;
+      font-size: 14px;
+    }

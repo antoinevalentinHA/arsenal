@@ -1,0 +1,51 @@
+type: custom:auto-entities
+card:
+  type: custom:bar-card
+  unit_of_measurement: "°C"
+  animation: off
+  height: 32px
+  positions:
+    name: inside
+    value: inside
+  severity:
+    - from: -50
+      to: 5
+      color: "rgba(144, 202, 249, 0.9)"      # 🔵 très froid
+    - from: 5
+      to: 10
+      color: "rgba(3, 169, 244, 0.85)"       # 🟦 froid
+    - from: 10
+      to: 15
+      color: "rgba(76, 175, 80, 0.85)"       # 🟢 doux
+    - from: 15
+      to: 20
+      color: "rgba(255, 235, 59, 0.85)"      # 🟡 tempéré
+    - from: 20
+      to: 40
+      color: "rgba(255, 152, 0, 0.85)"       # 🟠 chaud
+  style: |
+    ha-card {
+      border-radius: 12px !important;
+      background: none !important;
+      box-shadow: none !important;
+      padding: 4px !important;
+    }
+
+filter:
+  include:
+    - entity_id: "sensor.temperature_min_jour_jardin*"
+
+sort:
+  method: state
+  numeric: true
+
+card_param: entities
+transform: |
+  {
+    {
+      "entity": entity.entity_id,
+      "name": entity.attributes.friendly_name
+        .replace("Température Min Jour ", ""),
+      "value": parseFloat(states[entity.entity_id])
+    }
+  }

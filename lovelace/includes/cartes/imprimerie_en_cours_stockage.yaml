@@ -1,0 +1,27 @@
+type: markdown
+content: >
+  **Carton :**
+
+  • 🌡️ Température min : **{{ states('input_number.stock_carton_temperature_min') }} °C**  
+
+  • 🌡️ Température max : **{{ states('input_number.stock_carton_temperature_max') }} °C**  
+
+  • 💧 HR min : **{{ states('input_number.stock_carton_humidite_min') }} %**  
+
+  • 💧 HR max : **{{ states('input_number.stock_carton_humidite_max') }} %**
+
+
+  **Produits finis :**
+
+  • 🌡️ Température min : **{{ states('input_number.stock_pf_temperature_min') }} °C**  
+
+  • 🌡️ Température max : **{{ states('input_number.stock_pf_temperature_max') }} °C**  
+
+  • 💧 HR min : **{{ states('input_number.stock_pf_humidite_min') }} %**  
+
+  • 💧 HR max : **{{ states('input_number.stock_pf_humidite_max') }} %**
+card_mod:
+  style: |
+    ha-card {
+      padding: 8px 12px;
+      font-size: 14px;

@@ -1,0 +1,14 @@
+type: markdown
+content: >
+  **Carton :**
+
+  🌡️ Température : **{{ states('sensor.temperature_stock_carton') }} °C**  
+
+  💧 Humidité : **{{ states('sensor.humidite_relative_stock_carton') }} %**
+
+
+  **Produits finis :**
+
+  🌡️ Température : **{{ states('sensor.temperature_stock_pf') }} °C**  
+
+  💧 Humidité : **{{ states('sensor.humidite_relative_stock_pf') }} %**

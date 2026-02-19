@@ -1,0 +1,60 @@
+type: custom:bar-card
+columns: 1
+entities:
+  - entity: sensor.pourcentage_consigne_eco_24h_proxy
+    name: "24h"
+    icon: mdi:leaf
+  - entity: sensor.pourcentage_consigne_eco_7j_proxy
+    name: "7j"
+    icon: mdi:leaf
+unit_of_measurement: "%"
+max: 100
+direction: right
+height: 36px
+positions:
+  icon: inside
+  name: inside
+  value: inside
+animation:
+  state: 'off'
+  speed: 2
+card_mod:
+  style: |
+    ha-card {
+      border-radius: 16px;
+      box-shadow: var(--ha-card-box-shadow);
+      padding: 8px 10px;
+    }
+
+    /* 🔵 Barre remplie = BLEU info canon */
+    bar-card-currentbar {
+      background-color: rgba(144, 202, 249, 0.25) !important;
+      border-radius: 999px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.08);
+    }
+
+    /* ⚪ Fond de barre = GRIS neutre canon */
+    bar-card-backgroundbar {
+      background-color: rgba(158, 158, 158, 0.2) !important;
+      border-radius: 999px;
+    }
+
+    /* Compact : espace entre les 2 barres */
+    bar-card-card { margin-top: 6px; }
+    bar-card-card:first-child { margin-top: 0px; }
+
+    /* Typo */
+    bar-card-value { font-weight: 700; }
+    bar-card-name  { font-weight: 600; }
+
+    /* ✅ Lisibilité sans trahir Arsenal :
+       "chips" NAV/HUB derrière le texte (structure UI) */
+    bar-card-name,
+    bar-card-value {
+      background: rgba(90, 110, 130, 0.08);
+      padding: 2px 8px;
+      border-radius: 999px;
+    }
+
+    /* Icône : reste sur la couleur texte */
+    ha-icon { color: var(--primary-text-color); }

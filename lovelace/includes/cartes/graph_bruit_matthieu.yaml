@@ -1,0 +1,27 @@
+type: custom:mini-graph-card
+name: Matthieu (12h)
+icon: mdi:volume-high
+entities:
+  - entity: sensor.bruit_chambre_matthieu
+hours_to_show: 12
+points_per_hour: 6
+line_width: 3
+height: 75
+show:
+  fill: true
+  extrema: false
+  average: false
+  name: true
+  icon: false
+  state: true
+color_thresholds:
+  - value: 0
+    color: '#4CAF50'
+  - value: 34
+    color: '#8BC34A'
+  - value: 40
+    color: '#FFEB3B'
+  - value: 45
+    color: '#FF9800'
+  - value: 50
+    color: '#F44336'

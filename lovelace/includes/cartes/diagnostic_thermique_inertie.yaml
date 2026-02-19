@@ -1,0 +1,27 @@
+type: markdown
+content: |
+  {%- macro num(entity_id, digits=2, suffix='') -%}
+    {%- set s = states(entity_id) -%}
+    {%- if s in ['unknown','unavailable','none','None',''] -%}
+      n/a
+    {%- else -%}
+      {%- set v = s | float(none) -%}
+      {%- if v is none -%}n/a{%- else -%}{{ v | round(digits) }}{{ suffix }}{%- endif -%}
+    {%- endif -%}
+  {%- endmacro -%}
+
+  {%- macro dur_h_from_s(entity_id, digits=2) -%}
+    {%- set s = states(entity_id) -%}
+    {%- if s in ['unknown','unavailable','none','None',''] -%}
+      non atteinte sur ce cycle
+    {%- else -%}
+      {%- set v = s | float(none) -%}
+      {%- if v is none -%}non atteinte sur ce cycle{%- else -%}{{ ((v / 3600) | round(digits)) }} h{%- endif -%}
+    {%- endif -%}
+  {%- endmacro -%}
+
+  {%- set tmin = 'sensor.temperature_plancher_absence_chambres' -%}
+  {%- set dstb = 'sensor.duree_stabilisation_absence_chambres' -%}
+
+  - **Température plancher atteinte** : `{{ num(tmin, 2, ' °C') }}`
+  - **Durée stabilisation thermique** : `{{ dur_h_from_s(dstb, 2) }}`

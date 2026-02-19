@@ -1,0 +1,9 @@
+type: markdown
+content: |
+  {% if is_state('input_boolean.ecs_blocage_planifiee', 'on') %}
+  🔴 **Blocage chauffe planifiée actif**  
+  *(La programmation ECS est temporairement désactivée)*
+  {% else %}
+  🟢 **Chauffe planifiée active**  
+  *(La programmation ECS suit son planning normal)*
+  {% endif %}

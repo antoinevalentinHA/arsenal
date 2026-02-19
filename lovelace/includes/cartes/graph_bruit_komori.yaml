@@ -1,0 +1,22 @@
+type: custom:mini-graph-card
+name: Komori (24h)
+entities:
+  - entity: sensor.bruit_komori
+hours_to_show: 24
+points_per_hour: 4
+line_width: 3
+height: 150
+show:
+  fill: true
+  extrema: true
+  average: true
+  name: true
+  icon: true
+  state: true
+color_thresholds:
+  - value: 80
+    color: '#E53935'
+  - value: 65
+    color: '#FFB300'
+  - value: 40
+    color: '#43A047'

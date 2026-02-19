@@ -1,0 +1,51 @@
+type: markdown
+content: |
+  {%- macro num(entity_id, digits=2, suffix='') -%}
+    {%- set s = states(entity_id) -%}
+    {%- if s in ['unknown','unavailable','none','None',''] -%}
+      n/a
+    {%- else -%}
+      {%- set v = s | float(none) -%}
+      {%- if v is none -%}n/a{%- else -%}{{ v | round(digits) }}{{ suffix }}{%- endif -%}
+    {%- endif -%}
+  {%- endmacro -%}
+
+  {%- macro intv(entity_id, suffix='') -%}
+    {%- set s = states(entity_id) -%}
+    {%- if s in ['unknown','unavailable','none','None',''] -%}
+      n/a
+    {%- else -%}
+      {%- set v = s | int(none) -%}
+      {%- if v is none -%}n/a{%- else -%}{{ v }}{{ suffix }}{%- endif -%}
+    {%- endif -%}
+  {%- endmacro -%}
+
+  {%- macro dur_min(entity_id, digits=1) -%}
+    {%- set s = states(entity_id) -%}
+    {%- if s in ['unknown','unavailable','none','None',''] -%}
+      n/a
+    {%- else -%}
+      {%- set v = s | float(none) -%}
+      {%- if v is none -%}n/a{%- else -%}{{ v | round(digits) }} min{%- endif -%}
+    {%- endif -%}
+  {%- endmacro -%}
+
+  {%- set a1 = 'sensor.temperature_reprise_presence_chambres' -%}
+  {%- set c1 = 'sensor.amplitude_chute_reprise_presence_chambres' -%}
+  {%- set c2 = 'sensor.duree_chute_reprise_presence_chambres' -%}
+  {%- set c3 = 'sensor.vitesse_reprise_presence_chambres' -%}
+
+  {%- set b0 = 'sensor.temperature_arret_presence_chambres' -%}
+  {%- set o1 = 'sensor.amplitude_overshoot_arret_presence_chambres' -%}
+  {%- set o2 = 'sensor.duree_overshoot_arret_presence_chambres' -%}
+  {%- set o3 = 'sensor.vitesse_refroidissement_presence_chambres' -%}
+
+  **Reprise (A1)**
+  - **Température (A1)** : `{{ num(a1, 2, ' °C') }}`
+  - **Chute post-reprise** : `{{ num(c1, 2, ' °C') }}` • `{{ dur_min(c2, 1) }}`
+  - **Vitesse réelle de reprise** : `{{ num(c3, 2, ' °C/h') }}`
+
+  **Arrêt (B0)**
+  - **Température (B0)** : `{{ num(b0, 2, ' °C') }}`
+  - **Overshoot post-arrêt** : `{{ num(o1, 2, ' °C') }}` • `{{ dur_min(o2, 1) }}`
+  - **Vitesse refroidissement présence** : `{{ num(o3, 2, ' °C/h') }}`

@@ -38,15 +38,7 @@ views:
             template: section_header
             name: 🚿 ECS – Données internes
 
-          - type: markdown
-            content: |
-              {% if is_state('input_boolean.ecs_blocage_planifiee', 'on') %}
-              🔴 **Blocage chauffe planifiée actif**  
-              *(La programmation ECS est temporairement désactivée)*
-              {% else %}
-              🟢 **Chauffe planifiée active**  
-              *(La programmation ECS suit son planning normal)*
-              {% endif %}
+          - !include ../../includes/cartes/ecs_etat_programmation.yaml
 
           - type: grid
             columns: 3
@@ -81,55 +73,7 @@ views:
                   kind: dhw_setpoint_10
                   entity: number.vscotho1_200_11_dhw_temperature
 
-          - type: markdown
-            content: |
-              ### 🔍 Dernier cycle
-
-              {% set resume = states('input_text.ecs_resume_dernier_cycle_fige') %}
-              {% if resume in ['unknown','unavailable','none','', None] %}
-              _Aucun cycle enregistré._
-              {% else %}
-
-              {% set parts = resume.split('|') %}
-              {% set have = parts | length %}
-
-              {% set date = parts[0] if have > 0 else '—' %}
-              {% set mode = parts[1] | title if have > 1 else 'Inconnu' %}
-              {% set consigne = parts[2] | float(0) if have > 2 else 0 %}
-              {% set t0 = parts[3] | float(0) if have > 3 else 0 %}
-
-              {% set tmax = states('input_number.ecs_temperature_max_figee') | float(0) %}
-              {% set duree = states('input_number.ecs_duree_dernier_cycle_figee') | float(0) %}
-              {% set delta = (tmax - consigne) | round(1) %}
-
-              **Début** : {{ date }}  
-              **Mode** : {{ mode }}  
-              **Consigne** : {{ consigne }} °C  
-              **Température max** : {{ tmax }} °C  
-              **Durée** : {{ duree | round(1) }} min  
-
-              {% if t0 >= consigne %}
-              ⚪ Cycle annulé (cuve déjà chaude)
-
-              {% else %}
-
-                {% if delta >= -0.3 and delta <= 0.3 %}
-                🟢 Cycle conforme  
-                Écart final : {{ delta }} °C
-
-                {% elif delta > 0.3 %}
-                🟠 Cycle trop haut  
-                Écart final : +{{ delta }} °C
-
-                {% else %}
-                🟠 Cycle insuffisant  
-                Écart final : {{ delta }} °C
-
-                {% endif %}
-
-              {% endif %}
-
-              {% endif %}
+          - !include ../../includes/cartes/ecs_dernier_cycle.yaml
 
           ########################################################
           # 🏠 SECTION : ECS – Petite Maison
@@ -137,9 +81,4 @@ views:
 
           - !include ../../includes/section_headers/ecs_petite_maison.yaml
 
-          - type: markdown
-            content: |
-              ### 🔥 État général
-              **Température actuelle ECS** : {{ states('sensor.ecs_petite_maison_temperature_eau_locale') }} °C  
-              **Mode actuel** : {{ states('sensor.ecs_petite_maison_mode_fonctionnement_local') | title }}  
-              **Mode absence actif ?** : {{ iif(state_attr('water_heater.petite_maison','away_mode') == 'on', "✅ Oui", "⛔ Non") }}  
+          - !include ../../includes/cartes/ecs_petite_maison.yaml

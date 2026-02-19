@@ -60,7 +60,6 @@ views:
                     name: Alarme
                     icon: mdi:shield-home
 
-
           # ==========================================================
           # 🔥❄️ CONFORT THERMIQUE
           # ==========================================================
@@ -96,7 +95,6 @@ views:
                     name: Climatisation
                     icon: mdi:snowflake
 
-
           # ==========================================================
           # 🌙 NUIT & EAU CHAUDE SANITAIRE
           # ==========================================================
@@ -116,7 +114,6 @@ views:
                 icon: mdi:silverware-clean
 
               - !include ../includes/cartes/bouclage.yaml
-
 
           # ==========================================================
           # 🌡️ TEMPÉRATURES
@@ -149,8 +146,6 @@ views:
                     template: socle_kpi
                     name: Maison
                     entity: sensor.temperature_moyenne_maison
-                    variables:
-                      ui_profile: arsenal
 
               - type: grid
                 square: false
@@ -166,7 +161,6 @@ views:
                     template: carte_temperature_max_chambres
                     entity: sensor.temperature_max_chambres
                     name: Température maximale
-
 
           # ==========================================================
           # 🪟 VENTILATION & OUVERTURES
@@ -214,7 +208,6 @@ views:
                   - type: custom:button-card
                     template: carte_ouvertures_diagnostic
                     name: Ouvertures
-
 
           # ==========================================================
           # 💡 ÉCLAIRAGE INTÉRIEUR & EXTÉRIEUR
