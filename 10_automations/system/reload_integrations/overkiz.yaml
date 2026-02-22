@@ -1,105 +1,89 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Overkiz – Relance automatique de l’intégration sur gel prolongé
+#     Overkiz – Relance intégration (auto) sur gel données
 #
 #  ID : 1012000000012
 # ----------------------------------------------------------
 #  🎯 RÔLE
-#     Surveiller la fraîcheur des données issues de l’intégration
-#     Overkiz (Cozytouch) et relancer automatiquement celle-ci
-#     lorsque les données restent figées pendant une durée
-#     anormalement longue.
+#     Détection + orchestration minimale :
+#     - détecte le gel / backoff / retour OK
+#     - délègue la procédure au script canon :
+#       script.resilience_integration_recover
 #
-#     Automation de résilience SILENCIEUSE.
+#  ✅ PRINCIPE
+#     - Gel avéré :
+#         • sensor.petite_maison_cumulus_age_donnees >= 90 min pendant 5 min
+#     - Succès :
+#         • âge < 10 min pendant 2 min
+#     - Backoff :
+#         • timer.overkiz_reload_backoff (durée gérée par le script)
 #
-#  🚫 NE FAIT PAS
-#     - Ne pilote pas le cumulus
-#     - Ne déclenche aucune action ECS
-#     - Ne produit aucune notification
-#
-#  🧩 PRINCIPE
-#     - Surveillance périodique
-#     - Relance automatique si données figées
-#     - Backoff progressif via compteur
-#     - Reset automatique dès retour de données fraîches
-#
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - Exécution uniquement si systeme_stable = on
 # ==========================================================
 
 - id: '1012000000012'
   alias: "Overkiz – Relance intégration (auto)"
   description: >
-    Recharge automatiquement l’intégration Overkiz (Atlantic Cozytouch)
-    si aucune donnée n’a été mise à jour depuis longtemps.
-    Mécanisme de résilience silencieux avec compteur de tentatives
-    et reset automatique dès retour de données fraîches.
+    Orchestration légère : déclenche la procédure de résilience Overkiz
+    (reload config_entry) sur gel données, avec backoff et plafond
+    gérés par le script canon.
 
   mode: single
   max_exceeded: silent
 
-  # ======================================================
-  # ⏱️ Déclencheur périodique
-  # ======================================================
   trigger:
-    - platform: time_pattern
-      hours: "/2"
+    - platform: state
+      entity_id: binary_sensor.gel_avere_overkiz
+      to: "on"
+      id: gel
 
-  # ======================================================
-  # ✅ Condition — Données figées ≥ 180 min
-  # ======================================================
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.overkiz_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_overkiz
+      to: "on"
+      id: retour_ok
+
   condition:
-    - condition: template
-      alias: "Données Cozytouch figées"
-      value_template: >
-        {% set age = states('sensor.petite_maison_cumulus_age_donnees') | float(0) %}
-        {{ age >= 180 }}
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
 
-  # ======================================================
-  # 🔄 Actions — reload + suivi
-  # ======================================================
   action:
-    # ------------------------------------------------------
-    # 🧮 Variables locales
-    # ------------------------------------------------------
-    - variables:
-        tentative: "{{ states('input_number.overkiz_reload_tentatives') | int(0) }}"
-        prochain_delai: >
-          {% set base = [ (tentative + 1) * 10, 60 ] | min %}
-          {{ base }}
-
-    # ------------------------------------------------------
-    # 📈 Incrémenter compteur de tentatives
-    # ------------------------------------------------------
-    - action: input_number.set_value
-      target:
-        entity_id: input_number.overkiz_reload_tentatives
-      data:
-        value: "{{ tentative + 1 }}"
-
-    # ------------------------------------------------------
-    # 🔧 Recharger l’intégration Overkiz
-    # ------------------------------------------------------
-    - action: homeassistant.reload_config_entry
-      data:
-        entry_id: !secret overkiz_entry_id
-
-    # ------------------------------------------------------
-    # 🕦 Attente courte du retour des données
-    # ------------------------------------------------------
-    - delay: "00:02:00"
-
-    # ------------------------------------------------------
-    # 🔍 Vérification post-reload
-    # ------------------------------------------------------
     - choose:
-        # ✅ Succès → reset compteur
-        - conditions: >
-            {{ states('sensor.petite_maison_cumulus_age_donnees') | float(999) < 10 }}
+        # ✅ Reset auto si retour données fraîches
+        - conditions:
+            - condition: trigger
+              id: retour_ok
           sequence:
-            - action: input_number.set_value
-              target:
-                entity_id: input_number.overkiz_reload_tentatives
+            - service: script.resilience_integration_recover
               data:
-                value: 0
+                op: reset
+                notify_title_prefix: "Overkiz"
+                age_entity: sensor.petite_maison_cumulus_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 90
+                attempts_entity: input_number.overkiz_reload_tentatives
+                backoff_timer: timer.overkiz_reload_backoff
+                backoff_minutes_cap: 60
 
-    # ❌ Échec → silence volontaire
-    #    (état observable via le compteur et l’âge des données)
+      default:
+        - service: script.resilience_integration_recover
+          data:
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "Overkiz"
+            age_entity: sensor.petite_maison_cumulus_age_donnees
+            seuil_minutes: 90
+            ok_minutes: 10
+            attempts_entity: input_number.overkiz_reload_tentatives
+            backoff_timer: timer.overkiz_reload_backoff
+            entry_id: !secret overkiz_entry_id
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

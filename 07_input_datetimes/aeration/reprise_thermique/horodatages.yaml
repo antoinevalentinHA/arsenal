@@ -39,8 +39,17 @@
 #   - Noms bruts, sans accents, sans décorations
 # ==========================================================
 
-
 aeration_debut:
   name: "aeration_debut"
+  has_date: true
+  has_time: true
+
+reprise_thermique_debut:
+  name: Reprise thermique debut
+  has_date: true
+  has_time: true
+
+reprise_thermique_fin:
+  name: Reprise thermique fin
   has_date: true
   has_time: true

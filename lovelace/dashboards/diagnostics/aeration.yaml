@@ -53,13 +53,18 @@ views:
             template: section_header
             name: 🌡️ Chute thermique (ΔT réel)
 
-          - type: custom:button-card
-            template: aeration_deltat_chute_72
-            name: Chute thermique
+          - type: grid
+            columns: 2
+            square: false
+            cards:
 
-          - type: custom:button-card
-            template: aeration_reference_thermique_72
-            name: Référence thermique
+              - type: custom:button-card
+                template: aeration_deltat_chute_72
+                name: Chute thermique
+    
+              - type: custom:button-card
+                template: aeration_reference_thermique_72
+                name: Référence thermique
 
           - type: custom:button-card
             template: section_header

@@ -1,0 +1,13 @@
+#################################################################
+# KPI / SANS ACTION
+#################################################################
+
+kpi_no_action:
+  template: socle_kpi
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none

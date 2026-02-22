@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER SYSTÈME : Compteur tentatives reload Vicare
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Comptabiliser le nombre de tentatives de rechargement
+#   de l’intégration Vicare afin de prévenir :
+#     - les boucles de reload
+#     - les surcharges API
+#     - les comportements instables persistants
+#
+# 🧠 Nature :
+#   - Compteur de SÉCURITÉ SYSTÈME
+#   - État interne de supervision
+#   - Non exposé comme information utilisateur
+#
+# ⚙️ Fonctionnement :
+#   - Incrémenté à chaque tentative de reload
+#   - Lu par l’automatisation de supervision Netatmo
+#   - Comparé à un seuil maximal autorisé
+#   - Réinitialisé explicitement :
+#       • après un reload réussi
+#       • via reset contrôlé
+#
+# ⚠️ Important :
+#   - Ce helper NE représente PAS l’état de Netatmo
+#   - Il NE mesure PAS la qualité des données
+#   - Il sert UNIQUEMENT de garde-fou logique
+#
+# 🔗 Utilisé par :
+#   - Automatisations :
+#       • 10_automations/system/reload_integrations/vicare.yaml
+#
+# 📐 Unité :
+#   - Tentatives (compteur entier)
+#
+# 🧠 Principe Arsenal :
+#   - Les intégrations cloud sont instables par nature.
+#   - Les APIs ont des limites strictes.
+#   - Le système DOIT se protéger.
+#
+# ==========================================================
+
+vicare_reload_tentatives:
+  name: "Vicare – Tentatives reload"
+  icon: mdi:reload
+  min: 0
+  max: 50
+  step: 1
+  mode: box

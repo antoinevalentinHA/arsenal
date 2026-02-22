@@ -47,7 +47,7 @@ binary_sensor.bruleur_mode_ecs:
 # 🚪 OUVERTURES & AÉRATION
 ############################################################
 
-binary_sensor.fenetre_ouverte_maison:
+binary_sensor.contact_maison:
   friendly_name: "Ouvertures Maison"
 
 input_boolean.chauffage_blocage_aeration:

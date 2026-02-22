@@ -1,112 +1,89 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     SwitchBot – Relance automatique de l’intégration sur gel
+#     SwitchBot – Relance intégration (auto) sur gel données
 #
 #  ID : 1012000000011
 # ----------------------------------------------------------
 #  🎯 RÔLE
-#     Surveiller la fraîcheur des données issues de l’intégration
-#     SwitchBot et relancer automatiquement celle-ci lorsque
-#     les données cessent d’être mises à jour pendant une
-#     durée significative.
+#     Détection + orchestration minimale :
+#     - détecte le gel / backoff / retour OK
+#     - délègue la procédure au script canon :
+#       script.resilience_integration_recover
 #
-#     Cette automation agit comme un mécanisme de résilience
-#     face aux gels d’API ou aux blocages Bluetooth.
+#  ✅ PRINCIPE
+#     - Gel avéré :
+#         • sensor.switchbot_age_donnees >= 45 min pendant 5 min
+#     - Succès :
+#         • âge < 10 min pendant 2 min
+#     - Backoff :
+#         • timer.switchbot_reload_backoff (durée gérée par le script)
 #
-#  🚫 NE FAIT PAS
-#     - Ne pilote aucun appareil SwitchBot
-#     - Ne déclenche aucune action métier dépendante des données
-#     - Ne force pas la mise à jour des états
-#
-#  🧩 UTILISATION
-#     - Surveillance périodique (toutes les 10 minutes)
-#     - Condition principale :
-#         • âge des données SwitchBot ≥ 60 minutes
-#     - Action :
-#         • reload de la config_entry SwitchBot
-#     - Suivi :
-#         • compteur de tentatives
-#         • backoff progressif plafonné
-#         • reset automatique dès retour de données fraîches
-#         • notification persistante selon succès ou échec
-#
-#  ✅ CONTRAINTES
-#     - Aucune logique métier intégrée
-#     - Aucune dépendance au contexte utilisateur
-#     - Comportement stable après redémarrage Home Assistant
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - Exécution uniquement si systeme_stable = on
 # ==========================================================
-
 
 - id: '1012000000011'
   alias: "SwitchBot – Relance intégration (auto)"
+  description: >
+    Orchestration légère : déclenche la procédure de résilience SwitchBot
+    (reload config_entry) sur gel données, avec backoff et plafond
+    gérés par le script canon.
+
   mode: single
   max_exceeded: silent
 
-  # ======================================================
-  # ⏱️ Déclencheur périodique
-  # ======================================================
   trigger:
-    - platform: time_pattern
-      minutes: "/10"
+    - platform: state
+      entity_id: binary_sensor.gel_avere_switchbot
+      to: "on"
+      id: gel
 
-  # ======================================================
-  # ✅ Condition : données figées ≥ 60 min
-  # ======================================================
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.switchbot_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_switchbot
+      to: "on"
+      id: retour_ok
+
   condition:
-    - condition: template
-      value_template: >
-        {{ states('sensor.switchbot_age_donnees') | float(0) >= 60 }}
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
 
-  # ======================================================
-  # 🔄 Action : incrément + reload + contrôle du succès
-  # ======================================================
   action:
-    - variables:
-        tentative: "{{ states('input_number.switchbot_reload_tentatives') | int(0) }}"
-        prochain_delai: >
-          {% set base = [ (tentative + 1) * 10, 60 ] | min %}
-          {{ base }}
-
-    # 📈 Incrément des tentatives
-    - service: input_number.set_value
-      target:
-        entity_id: input_number.switchbot_reload_tentatives
-      data:
-        value: "{{ tentative + 1 }}"
-
-    # 🔧 Rechargement de la config SwitchBot
-    - service: homeassistant.reload_config_entry
-      data:
-        entry_id: !secret switchbot_entry_id
-
-    # 🕦 Petit délai avant vérification
-    - delay: "00:02:00"
-
     - choose:
-
-        # ✅ Succès : compteur réinitialisé
-        - conditions: >
-            {{ states('sensor.switchbot_age_donnees') | float(999) < 10 }}
+        # ✅ Reset auto si retour données fraîches
+        - conditions:
+            - condition: trigger
+              id: retour_ok
           sequence:
-            - service: input_number.set_value
-              target:
-                entity_id: input_number.switchbot_reload_tentatives
+            - service: script.resilience_integration_recover
               data:
-                value: 0
+                op: reset
+                notify_title_prefix: "SwitchBot"
+                age_entity: sensor.switchbot_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 45
+                attempts_entity: input_number.switchbot_reload_tentatives
+                backoff_timer: timer.switchbot_reload_backoff
+                backoff_minutes_cap: 60
 
-            - service: persistent_notification.create
-              data:
-                title: "✅ SwitchBot relancé"
-                message: >
-                  {{ now().strftime('%d/%m %H:%M') }}  
-                  Les données SwitchBot sont de nouveau fraîches.
-
-      # ❌ Échec : avertissement
       default:
-        - service: persistent_notification.create
+        - service: script.resilience_integration_recover
           data:
-            title: "🚨 Relance SwitchBot échouée"
-            message: >
-              {{ now().strftime('%d/%m %H:%M') }}  
-              Tentative n°{{ tentative + 1 }} échouée  
-              (nouvelle tentative dans ~{{ prochain_delai }} min).
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "SwitchBot"
+            age_entity: sensor.switchbot_age_donnees
+            seuil_minutes: 45
+            ok_minutes: 10
+            attempts_entity: input_number.switchbot_reload_tentatives
+            backoff_timer: timer.switchbot_reload_backoff
+            entry_id: !secret switchbot_entry_id
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

@@ -1,0 +1,102 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Diagnostics Volets / Pluie
+icon: mdi:weather-pouring
+
+views:
+  - title: Volets / Pluie
+    path: diagnostics_volets_pluie
+    icon: mdi:weather-pouring
+
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /volets-dashboard/general
+
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          # ==================================================
+          # 🌧️ Décision — Pluie (source + intentions)
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🌧️ Décision — Pluie
+
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: socle_decision_72
+                entity: binary_sensor.pluie_recente
+                name: Pluie récente
+                icon: mdi:weather-rainy
+
+              - type: custom:button-card
+                template: socle_decision_72
+                entity: binary_sensor.intention_pluie_forte
+                name: Pluie forte
+                icon: mdi:weather-pouring
+
+          # ==================================================
+          # 🪟 Exposition — Fenêtres concernées
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🪟 Exposition — Fenêtres concernées
+
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: socle_decision_72
+                entity: binary_sensor.intention_fenetres_concernees_ouvertes_pluie
+                name: Fenêtres concernées ouvertes
+                icon: mdi:window-open-variant
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.resume_fenetres_concernees_ouvertes_pluie
+                name: Résumé ouvertures
+                icon: mdi:message-text
+
+          # ==================================================
+          # 🎯 Cibles — Volets (calcul)
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🎯 Cibles — Volets à fermer
+
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: socle_kpi_label_72
+                entity: sensor.cibles_volets_pluie_sejour
+                name: Cibles séjour
+                icon: mdi:window-shutter
+                label: |
+                  [[[
+                    const s = states['sensor.cibles_volets_pluie_sejour']?.state;
+                    if (!s || s === 'unknown' || s === 'unavailable') return "Indisponible";
+                    return `${s} volet(s)`;
+                  ]]]
+
+              - type: custom:button-card
+                template: socle_kpi_label_72
+                entity: sensor.cibles_volets_pluie_chambres
+                name: Cibles chambres
+                icon: mdi:window-shutter
+                label: |
+                  [[[
+                    const s = states['sensor.cibles_volets_pluie_chambres']?.state;
+                    if (!s || s === 'unknown' || s === 'unavailable') return "Indisponible";
+                    return `${s} volet(s)`;
+                  ]]]

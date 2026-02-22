@@ -17,23 +17,79 @@
 #   - off : aucun lien dégradé détecté
 #   - on  : au moins un lien radio dégradé
 #
-# 📊 Usage :
-#   - Diagnostic réseau Zigbee
-#   - Indicateur dashboard Système
-#
-# ⚠️ Important :
-#   - Diagnostic uniquement
-#   - Aucune automatisation critique ne doit dépendre de ce capteur
-#
-# 🧠 Arsenal :
-#   - Capteur déclenché (triggered)
-#   - Source unique : group.zigbee_linkquality_all
-#   - Agrégation booléenne multi-liens
+# 📊 Attributs :
+#   - worst_entity_id   : entité la plus faible (min)
+#   - worst_linkquality : valeur min observée
+#   - count_degrades    : nb d'entités sous seuil
+#   - degrades          : liste (entity_id -> valeur) sous seuil
 # ==========================================================
 
 - trigger:
     - platform: state
-      entity_id: group.zigbee_linkquality_all
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: "systeme_stable"
+
+    - platform: state
+      entity_id:
+        - sensor.bouton_cuisine_linkquality
+        - sensor.bouton_garage_1_linkquality
+        - sensor.bouton_garage_2_linkquality
+        - sensor.bouton_sdb_linkquality
+
+        - sensor.capteur_chambre_arnaud_linkquality
+        - sensor.capteur_chambre_matthieu_linkquality
+        - sensor.capteur_chambre_parents_gauche_linkquality
+        - sensor.capteur_chambre_parents_milieu_linkquality
+        - sensor.capteur_chambre_parents_droite_linkquality
+
+        - sensor.capteur_fenetre_entree_linkquality
+        - sensor.capteur_fenetre_sejour_1_linkquality
+        - sensor.capteur_fenetre_sejour_2_linkquality
+        - sensor.capteur_fenetre_sejour_3_linkquality
+        - sensor.capteur_fenetre_sejour_4_linkquality
+
+        - sensor.capteur_mouvements_entree_linkquality
+        - sensor.capteur_mouvements_garage_1_linkquality
+        - sensor.capteur_mouvements_garage_2_linkquality
+        - sensor.capteur_mouvements_garage_3_linkquality
+        - sensor.capteur_mouvements_sejour_1_linkquality
+        - sensor.capteur_mouvements_sejour_2_linkquality
+
+        - sensor.capteur_porte_entree_linkquality
+        - sensor.capteur_porte_garage_linkquality
+
+        - sensor.clavier_alarme_1_linkquality
+        - sensor.clavier_alarme_2_linkquality
+
+        - sensor.meteo_zigbee_chambre_arnaud_linkquality
+        - sensor.meteo_zigbee_chambre_matthieu_linkquality
+        - sensor.meteo_zigbee_chambre_parents_linkquality
+        - sensor.meteo_zigbee_entree_linkquality
+        - sensor.meteo_zigbee_sejour_linkquality
+        - sensor.meteo_zigbee_sdb_parents_linkquality
+
+        - sensor.prise_bouclage_linkquality
+        - sensor.prise_box_linkquality
+        - sensor.prise_buanderie_linkquality
+        - sensor.prise_cage_escalier_rdc_linkquality
+        - sensor.prise_chambre_arnaud_linkquality
+        - sensor.prise_chambre_matthieu_linkquality
+        - sensor.prise_deshumidificateur_linkquality
+        - sensor.prise_jardin_linkquality
+        - sensor.prise_lampe_parents_linkquality
+        - sensor.prise_lampe_sejour_linkquality
+        - sensor.prise_lave_vaisselle_linkquality
+        - sensor.prise_onduleur_linkquality
+        - sensor.prise_palier_linkquality
+        - sensor.prise_refrigerateur_linkquality
+        - sensor.prise_sdb_enfants_linkquality
+        - sensor.prise_sejour_baies_vitrees_linkquality
+        - sensor.prise_sejour_placard_linkquality
+
+        - sensor.sirene_alarm_linkquality
+        - sensor.zigbee_pluie_linkquality
+      id: "any_linkquality_change"
 
   binary_sensor:
     - name: "Zigbee – Qualité radio dégradée"
@@ -43,15 +99,83 @@
         {% set seuil = 80 %}
         {% set entites = state_attr('group.zigbee_linkquality_all', 'entity_id') or [] %}
 
-        {% set degrade = false %}
+        {% set ns = namespace(any_degrade=false) %}
 
         {% for e in entites %}
-          {% set val = states(e) %}
-          {% if val not in ['unknown', 'unavailable', '0', ''] %}
-            {% if val | int < seuil %}
-              {% set degrade = true %}
+          {% set s = states(e) %}
+          {% if s not in ['unknown','unavailable','0',''] %}
+            {% if (s | int(0)) < seuil %}
+              {% set ns.any_degrade = true %}
             {% endif %}
           {% endif %}
         {% endfor %}
 
-        {{ degrade }}
+        {{ ns.any_degrade }}
+
+      attributes:
+        worst_entity_id: >
+          {% set entites = state_attr('group.zigbee_linkquality_all', 'entity_id') or [] %}
+          {% set ns = namespace(worst_val=999, worst_id='') %}
+
+          {% for e in entites %}
+            {% set s = states(e) %}
+            {% if s not in ['unknown','unavailable','0',''] %}
+              {% set v = s | int(0) %}
+              {% if v > 0 and v < ns.worst_val %}
+                {% set ns.worst_val = v %}
+                {% set ns.worst_id = e %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {{ ns.worst_id if ns.worst_id != '' else none }}
+
+        worst_linkquality: >
+          {% set entites = state_attr('group.zigbee_linkquality_all', 'entity_id') or [] %}
+          {% set ns = namespace(worst_val=999, worst_id='') %}
+
+          {% for e in entites %}
+            {% set s = states(e) %}
+            {% if s not in ['unknown','unavailable','0',''] %}
+              {% set v = s | int(0) %}
+              {% if v > 0 and v < ns.worst_val %}
+                {% set ns.worst_val = v %}
+                {% set ns.worst_id = e %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {{ ns.worst_val if ns.worst_val != 999 else none }}
+
+        count_degrades: >
+          {% set seuil = 80 %}
+          {% set entites = state_attr('group.zigbee_linkquality_all', 'entity_id') or [] %}
+          {% set ns = namespace(n=0) %}
+
+          {% for e in entites %}
+            {% set s = states(e) %}
+            {% if s not in ['unknown','unavailable','0',''] %}
+              {% if (s | int(0)) < seuil %}
+                {% set ns.n = ns.n + 1 %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {{ ns.n }}
+
+        degrades: >
+          {% set seuil = 80 %}
+          {% set entites = state_attr('group.zigbee_linkquality_all', 'entity_id') or [] %}
+          {% set ns = namespace(items=[]) %}
+
+          {% for e in entites %}
+            {% set s = states(e) %}
+            {% if s not in ['unknown','unavailable','0',''] %}
+              {% set v = s | int(0) %}
+              {% if v < seuil %}
+                {% set ns.items = ns.items + [e ~ ' -> ' ~ v] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {{ ns.items }}

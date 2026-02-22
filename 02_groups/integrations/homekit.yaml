@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : Capteurs Homekit
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Regrouper l’ensemble des capteurs issus de l’écosystème
+#    Homekit afin de fournir une vue cohérente et centralisée
+#    des mesures environnementales.
+#
+# 🧠 Lecture métier :
+#    Ce groupe constitue une SOURCE DE MESURE,
+#    pas une source de décision.
+#    Les capteurs Netatmo alimentent les diagnostics,
+#    les templates et les pipelines, mais ne décident jamais.
+#
+# 🧩 Périmètre :
+#    - Capteurs physiques Netatmo uniquement
+#    - Température, humidité, CO₂, pression, bruit, pluie
+#    - Regroupement logique par zones
+#
+# 🔗 Dépendances :
+#    - Intégration Homekit
+#    - Utilisé par :
+#      • capteurs système de contrôle de fraîcheur des données
+#      • templates d’audit (âge des données Homekit)
+#      • dashboards environnement (lecture)
+#
+# 🚫 Interdits :
+#    - Ajouter des capteurs non Homekit
+#    - Utiliser ce groupe comme condition directe
+#    - Introduire une logique métier ici
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle mesures / interface
+# ==========================================================
+
+
+homekit_capteurs:
+  name: "Capteurs Homekit"
+  entities:
+
+    - sensor.bruit_chambre_arnaud
+    - sensor.co2_chambre_arnaud
+    - sensor.humidite_relative_chambre_arnaud_1
+    - sensor.air_quality_chambre_arnaud
+    - sensor.temperature_chambre_arnaud_1
+    - sensor.humidite_relative_chambre_parents_1
+    - sensor.co2_chambre_parents
+    - sensor.air_quality_chambre_parents
+    - sensor.temperature_chambre_parents_1
+    - sensor.humidite_relative_jardin_1
+    - sensor.temperature_jardin_1
+    - sensor.co2_petite_maison
+    - sensor.humidite_relative_petite_maison
+    - sensor.air_quality_petite_maison
+    - sensor.temperature_petite_maison
+    - sensor.co2_sejour
+    - sensor.humidite_relative_sejour_1
+    - sensor.air_quality_sejour
+    - sensor.temperature_sejour_1
+    - sensor.air_quality_chambre_matthieu
+    - sensor.co2_chambre_matthieu
+    - sensor.humidite_relative_chambre_matthieu_1
+    - sensor.bruit_chambre_matthieu
+    - sensor.temperature_chambre_matthieu_1
+    - sensor.air_quality_entree
+    - sensor.co2_entree
+    - sensor.humidite_relative_entree_1
+    - sensor.temperature_entree_1
+    - sensor.humidite_relative_jardin_2
+    - sensor.temperature_jardin_2

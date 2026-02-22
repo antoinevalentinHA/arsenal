@@ -39,16 +39,24 @@ vicare_capteurs:
   name: "Capteurs ViCare"
   entities:
 
-    ########################################################
-    # 🔥 CHAUFFAGE
-    ########################################################
-    - sensor.programme_chauffage
-    - binary_sensor.bruleur_chauffage_actif
-
-
-    ########################################################
-    # 🚿 EAU CHAUDE SANITAIRE (ECS)
-    ########################################################
-    - sensor.ecs_consigne_chaudiere_securisee
-    - sensor.ecs_temperature_ballon_securisee
-    - binary_sensor.ecs_chauffe_en_cours_local
+    - button.vscotho1_200_11_activer_le_prelevement_unique
+    - binary_sensor.vscotho1_200_11_bruleur
+    - binary_sensor.vscotho1_200_11_chargement_de_l_ecs
+    - climate.vscotho1_200_11_chauffage
+    - sensor.vscotho1_200_11_consommation_d_electricite_cette_annee
+    - sensor.vscotho1_200_11_consommation_d_electricite_cette_semaine
+    - sensor.vscotho1_200_11_consommation_de_gaz_de_chauffage_aujourd_hui
+    - sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_aujourd_hui
+    - sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_ce_mois_ci
+    - sensor.vscotho1_200_11_consommation_de_gaz_pour_l_ecs_cette_annee
+    - number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
+    - sensor.vscotho1_200_11_dhw_storage_temperature
+    - number.vscotho1_200_11_dhw_temperature
+    - number.vscotho1_200_11_heating_curve_slope
+    - sensor.vscotho1_200_11_heating_gas_consumption_this_month
+    - sensor.vscotho1_200_11_heating_gas_consumption_this_year
+    - number.vscotho1_200_11_normal_temperature
+    - number.vscotho1_200_11_reduced_temperature
+    - sensor.vscotho1_200_11_supply_temperature
+    - number.vscotho1_200_11_temperature_de_confort
+    - sensor.vscotho1_200_11_temperature_exterieure

@@ -136,6 +136,7 @@ views:
             columns: 4
             square: false
             cards:
+
               # État secteur
               - type: custom:button-card
                 template: carte_alerte_binaire_critique
@@ -194,100 +195,92 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: carte_integration_critique
-                entity: binary_sensor.zigbee2mqtt_bridge_connection_state
-                name: Zigbee2MQTT
-                icon: mdi:lan
+                template: kpi_no_action
+                entity: sensor.homekit_age_donnees
+                name: HomeKit
+                icon: mdi:apple
                 variables:
-                  action_service: mqtt.publish
-                  action_data:
-                    topic: zigbee2mqtt/bridge/restart
-                    payload: ""
-                  confirmation_text: "Redémarrer Zigbee2MQTT ?"
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_homekit
+                triggers_update:
+                  - sensor.couleur_age_homekit
 
               - type: custom:button-card
-                template: carte_integration_critique
-                entity: sensor.synology_age_donnees
-                name: Synology
-                icon: mdi:nas
-                variables:
-                  seuil_minutes: 360
-                  action_service: homeassistant.reload_config_entry
-                  action_data:
-                    entry_id: !secret synology_entry_id
-                  confirmation_text: "Recharger Synology ?"
-
-              - type: custom:button-card
-                template: carte_integration_critique
+                template: kpi_no_action
                 entity: sensor.netatmo_age_donnees
                 name: Netatmo
                 icon: mdi:cloud-outline
                 variables:
-                  seuil_minutes: 60
-                  action_service: homeassistant.reload_config_entry
-                  action_data:
-                    entry_id: !secret netatmo_entry_id
-                  confirmation_text: "Recharger Netatmo ?"
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_netatmo
+                triggers_update:
+                  - sensor.couleur_age_netatmo
 
               - type: custom:button-card
-                template: carte_integration_critique
+                template: kpi_no_action
                 entity: sensor.switchbot_age_donnees
                 name: SwitchBot
                 icon: mdi:bluetooth-connect
                 variables:
-                  seuil_minutes: 60
-                  action_service: homeassistant.reload_config_entry
-                  action_data:
-                    entry_id: !secret switchbot_entry_id
-                  confirmation_text: "Recharger SwitchBot ?"
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_switchbot
+                triggers_update:
+                  - sensor.couleur_age_switchbot
 
               - type: custom:button-card
-                template: carte_integration_critique
+                template: kpi_no_action
                 entity: sensor.vicare_age_donnees
-                name: Viessmann
+                name: ViCare
                 icon: mdi:fire
                 variables:
-                  seuil_minutes: 300
-                  action_service: homeassistant.reload_config_entry
-                  action_data:
-                    entry_id: !secret vicare_entry_id
-                  confirmation_text: "Recharger ViCare ?"
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_vicare
+                triggers_update:
+                  - sensor.couleur_age_vicare
 
               - type: custom:button-card
-                template: carte_integration_critique
+                template: kpi_no_action
                 entity: sensor.fujitsu_age_donnees
                 name: Fujitsu
                 icon: mdi:air-conditioner
                 variables:
-                  seuil_minutes: 420
-                  action_service: homeassistant.reload_config_entry
-                  action_data:
-                    entry_id: !secret fujitsu_entry_id
-                  confirmation_text: "Recharger Fujitsu ?"
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_fujitsu
+                triggers_update:
+                  - sensor.couleur_age_fujitsu
 
               - type: custom:button-card
-                template: carte_integration_critique
+                template: kpi_no_action
                 entity: sensor.petite_maison_cumulus_age_donnees
                 name: Cumulus
                 icon: mdi:water-boiler
                 variables:
-                  seuil_minutes: 360
-                  action_service: homeassistant.reload_config_entry
-                  action_data:
-                    entry_id: !secret petite_maison_cumulus_entry_id
-                  confirmation_text: "Recharger Cumulus ?"
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_cumulus
+                triggers_update:
+                  - sensor.couleur_age_cumulus
 
               - type: custom:button-card
-                template: carte_integration_critique
+                template: kpi_no_action
+                entity: sensor.synology_age_donnees
+                name: Synology
+                icon: mdi:nas
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_synology
+                triggers_update:
+                  - sensor.couleur_age_synology
+
+              - type: custom:button-card
+                template: kpi_no_action
                 entity: sensor.audi_age_donnees
                 name: Audi
                 icon: mdi:car
                 variables:
-                  seuil_minutes: 2880
-                  action_service: homeassistant.reload_config_entry
-                  action_data:
-                    entry_id: !secret audi_entry_id
-                  confirmation_text: "Recharger Audi ?"
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_audi
+                triggers_update:
+                  - sensor.couleur_age_audi
 
           ####################################################
           # 🔌 CONNECTIVITÉ NETATMO HOMEKIT

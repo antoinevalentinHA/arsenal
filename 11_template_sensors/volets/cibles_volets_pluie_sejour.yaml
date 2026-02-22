@@ -1,0 +1,26 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (moteur moderne)
+#     Cibles volets pluie Séjour
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la liste des covers "séjour" à fermer en pluie forte.
+#
+# 🧱 ARCHITECTURE
+#   - Décision uniquement (stateless, recalculable)
+#   - Aucune action, aucune notification
+#
+# 🚫 NE FAIT PAS
+#   - aucun service
+#   - aucune temporisation active
+# ==========================================================
+
+- sensor:
+    - name: "Cibles volets pluie Séjour"
+      unique_id: cibles_volets_pluie_sejour
+      default_entity_id: sensor.cibles_volets_pluie_sejour
+      icon: mdi:window-shutter
+      state: >
+        {{ 2 }}
+      attributes:
+        entity_ids: >
+          {{ ['cover.volet_sejour_gauche', 'cover.volet_sejour_droit'] }}

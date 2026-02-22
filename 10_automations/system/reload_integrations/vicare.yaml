@@ -1,105 +1,89 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Chauffage – Relance automatique de l’intégration ViCare sur gel
+#     Chauffage – Relance ViCare (auto) sur gel données
 #
 #  ID : 1012000000014
 # ----------------------------------------------------------
 #  🎯 RÔLE
-#     Surveiller la fraîcheur des données issues de l’intégration
-#     Viessmann ViCare et relancer automatiquement celle-ci lorsque
-#     les données restent figées pendant une durée prolongée.
+#     Détection + orchestration minimale :
+#     - détecte le gel / backoff / retour OK
+#     - délègue la procédure au script canon :
+#       script.resilience_integration_recover
 #
-#     Cette automation vise exclusivement à restaurer un flux
-#     de données bloqué, dans un objectif de résilience système.
+#  ✅ PRINCIPE
+#     - Gel avéré :
+#         • sensor.vicare_age_donnees >= 45 min pendant 5 min
+#     - Succès :
+#         • âge < 10 min pendant 2 min
+#     - Backoff :
+#         • timer.vicare_reload_backoff (durée gérée par le script)
 #
-#  🚫 NE FAIT PAS
-#     - Ne pilote pas le chauffage
-#     - Ne modifie aucune consigne, courbe ou état ECS
-#     - Ne force pas la mise à jour des données
-#     - Ne s’exécute pas en mode Vacances
-#     - Ne s’exécute pas en cas de standby chauffage forcé
-#
-#  🧩 UTILISATION
-#     - Surveillance périodique (toutes les 3 heures)
-#     - Condition principale :
-#         • âge des données ViCare ≥ 180 minutes
-#     - Garde-fous contextuels :
-#         • exclusion du mode Vacances
-#         • exclusion du standby chauffage forcé
-#     - Action :
-#         • reload de la config_entry ViCare
-#     - Vérification post-reload et notification explicite
-#       selon succès ou échec
-#
-#  ✅ CONTRAINTES
-#     - Aucune logique métier chauffage intégrée
-#     - Aucune interaction avec les décisions thermiques
-#     - Comportement déterministe et stable après redémarrage HA
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - Exécution uniquement si systeme_stable = on
 # ==========================================================
-
 
 - id: "1012000000014"
   alias: "Chauffage – Relance ViCare (auto)"
   description: >
-    Relance Viessmann uniquement si aucune donnée n’a été mise à jour
-    depuis plus de 3 heures. Vérifie chaque heure, notifie le résultat,
-    et s’interrompt en mode Vacances ou standby forcé.
+    Orchestration légère : déclenche la procédure de résilience ViCare
+    (reload config_entry) sur gel données, avec backoff et plafond
+    gérés par le script canon.
 
   mode: single
   max_exceeded: silent
 
   trigger:
-    - platform: time_pattern
-      hours: "/3"
+    - platform: state
+      entity_id: binary_sensor.gel_avere_vicare
+      to: "on"
+      id: gel
+
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.vicare_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_vicare
+      to: "on"
+      id: retour_ok
 
   condition:
-    - condition: template
-      alias: Données figées depuis 3 h
-      value_template: >
-        {{ states('sensor.vicare_age_donnees') | float(0) >= 180 }}
-    - condition: not
-      conditions:
-        - condition: state
-          entity_id: input_select.mode_maison
-          state: "Vacances"
-        - condition: state
-          entity_id: input_boolean.chauffage_standby_force
-          state: "on"
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
 
   action:
-    # ======================================================
-    # 🔧 Reload ViCare
-    # ======================================================
-    - service: homeassistant.reload_config_entry
-      data:
-        entry_id: !secret vicare_entry_id
-
-    - delay: "00:02:00"
-
     - choose:
-
-        # =======================
-        #  ✅ Succès relance
-        # =======================
-        - conditions: >
-            {{ states('sensor.vicare_age_donnees') | float(999) < 10 }}
+        # ✅ Reset auto si retour données fraîches
+        - conditions:
+            - condition: trigger
+              id: retour_ok
           sequence:
-            - service: script.notification_envoyer
+            - service: script.resilience_integration_recover
               data:
-                cible: input_text.telephone_antoine_notify
-                titre: "✅ ViCare relancé"
-                message: >
-                  {{ now().strftime('%d/%m %H:%M') }} — Intégration ViCare relancée
-                  avec succès, données à nouveau fraîches.
+                op: reset
+                notify_title_prefix: "ViCare"
+                age_entity: sensor.vicare_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 45
+                attempts_entity: input_number.vicare_reload_tentatives
+                backoff_timer: timer.vicare_reload_backoff
+                backoff_minutes_cap: 60
 
-      # =======================
-      #  ❌ Échec relance
-      # =======================
       default:
-        - service: script.notification_envoyer
+        - service: script.resilience_integration_recover
           data:
-            cible: input_text.telephone_antoine_notify
-            titre: "⚠️ ViCare toujours figé"
-            message: >
-              {{ now().strftime('%d/%m %H:%M') }} — Tentative de relance échouée.
-              Les données n’ont pas été mises à jour après 2 minutes.
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "ViCare"
+            age_entity: sensor.vicare_age_donnees
+            seuil_minutes: 45
+            ok_minutes: 10
+            attempts_entity: input_number.vicare_reload_tentatives
+            backoff_timer: timer.vicare_reload_backoff
+            entry_id: !secret vicare_entry_id
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

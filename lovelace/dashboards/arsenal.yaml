@@ -133,7 +133,7 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: socle_kpi
+                    template: kpi_icone_meteo
                     entity: sensor.temperature_jardin
                     name: Extérieur
 

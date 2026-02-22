@@ -432,6 +432,13 @@ diagnostics-ouvertures-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/ouvertures.yaml
 
+diagnostics-volets-dashboard:
+  mode: yaml
+  title: Diagnostics Volets
+  icon: mdi:weather-pouring
+  show_in_sidebar: false
+  filename: lovelace/dashboards/diagnostics/volets.yaml
+
 diagnostics-automatisations-dashboard:
   mode: yaml
   title: Diagnostics Automatisations

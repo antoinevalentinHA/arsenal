@@ -1,0 +1,123 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Volets / Fermeture (exécution)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Fermer une liste de volets (cover.*) de manière idempotente.
+#
+# ✅ GARDE-FOUS
+#   - ignore unknown/unavailable
+#   - n'appelle close_cover que si le volet n'est pas déjà "closed"
+#
+# 🚫 NE FAIT PAS
+#   - aucune décision (pluie, présence, fenêtres, seuils)
+#   - aucune notification
+# ==========================================================
+
+volets_fermeture_execute:
+  alias: "Volets – Fermeture (exécution idempotente)"
+  mode: queued
+  max: 10
+  sequence:
+    - variables:
+        presence_securisee: "{{ states('binary_sensor.presence_famille_securite') == 'on' }}"
+        pluie_detectee: "{{ states('binary_sensor.intention_pluie_detectee') == 'on' }}"
+        pluie_forte: "{{ states('binary_sensor.intention_pluie_forte') == 'on' }}"
+        fenetres_ouvertes: "{{ states('binary_sensor.intention_fenetres_concernees_ouvertes_pluie') == 'on' }}"
+        fenetres_resume: "{{ states('sensor.resume_fenetres_concernees_ouvertes_pluie') }}"
+        autorisation_sejour: "{{ states('binary_sensor.autorisation_fermeture_volets_pluie_sejour') == 'on' }}"
+
+        cibles_sejour: "{{ state_attr('sensor.cibles_volets_pluie_sejour','entity_ids') or [] }}"
+        cibles_chambres: "{{ state_attr('sensor.cibles_volets_pluie_chambres','entity_ids') or [] }}"
+
+        volets_fermes_zone: []
+
+    - condition: template
+      alias: "Garde-fou : pluie détectée"
+      value_template: "{{ pluie_detectee }}"
+
+    - choose:
+
+        # ==================================================
+        # A) Présence sécurisée ON
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ presence_securisee }}"
+          sequence:
+
+            # A1) Notification exposition (fenêtres ouvertes)
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ fenetres_ouvertes }}"
+                  sequence:
+                    - service: script.notification_envoyer
+                      data:
+                        cible: input_text.telephone_antoine_notify
+                        titre: "🌧️ Pluie détectée – fenêtres ouvertes"
+                        message: >
+                          Présence sécurisée = ON.
+                          Fenêtres ouvertes : {{ fenetres_resume }}.
+
+            # A2) Exception : pluie forte + autorisation séjour -> fermeture séjour
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ pluie_forte and autorisation_sejour and (cibles_sejour | length > 0) }}"
+                  sequence:
+                    - service: script.volets_fermeture_execute
+                      data:
+                        covers: "{{ cibles_sejour }}"
+                    - variables:
+                        volets_fermes_zone: "{{ volets_fermes_zone + ['séjour'] }}"
+
+        # ==================================================
+        # B) Présence sécurisée OFF
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ not presence_securisee }}"
+          sequence:
+
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ (cibles_sejour | length) > 0 }}"
+                  sequence:
+                    - service: script.volets_fermeture_execute
+                      data:
+                        covers: "{{ cibles_sejour }}"
+                    - variables:
+                        volets_fermes_zone: "{{ volets_fermes_zone + ['séjour'] }}"
+
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ (cibles_chambres | length) > 0 }}"
+                  sequence:
+                    - service: script.volets_fermeture_execute
+                      data:
+                        covers: "{{ cibles_chambres }}"
+                    - variables:
+                        volets_fermes_zone: "{{ volets_fermes_zone + ['chambres exposées'] }}"
+
+    # ======================================================
+    # 🔔 Notification distincte si des volets sont fermés
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ volets_fermes_zone | length > 0 }}"
+          sequence:
+            - service: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🌧️ Volets fermés automatiquement"
+                message: >
+                  Fermeture automatique des volets à {{ now().strftime('%H:%M') }}
+                  en raison de {{ 'pluie forte' if pluie_forte else 'pluie détectée' }}.
+
+                  Zone(s) : {{ volets_fermes_zone | join(', ') }}.
+                extra:
+                  group: "volets"
+                  tag: "fermeture_volets_pluie"

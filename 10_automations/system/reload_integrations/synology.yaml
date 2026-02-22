@@ -1,0 +1,89 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Synology – Relance intégration (auto) sur gel données
+#
+#  ID : 10120000000021
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Détection + orchestration minimale :
+#     - détecte le gel / backoff / retour OK
+#     - délègue la procédure au script canon :
+#       script.resilience_integration_recover
+#
+#  ✅ PRINCIPE
+#     - Gel avéré :
+#         • sensor.synology_age_donnees >= 45 min pendant 5 min
+#     - Succès :
+#         • âge < 10 min pendant 2 min
+#     - Backoff :
+#         • timer.synology_reload_backoff (durée gérée par le script)
+#
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - Exécution uniquement si systeme_stable = on
+# ==========================================================
+
+- id: '10120000000021'
+  alias: "Synology – Relance intégration (auto)"
+  description: >
+    Orchestration légère : déclenche la procédure de résilience Synology
+    (reload config_entry) sur gel données, avec backoff et plafond
+    gérés par le script canon.
+
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.gel_avere_synology
+      to: "on"
+      id: gel
+
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.synology_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_synology
+      to: "on"
+      id: retour_ok
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    - choose:
+        # ✅ Reset auto si retour données fraîches
+        - conditions:
+            - condition: trigger
+              id: retour_ok
+          sequence:
+            - service: script.resilience_integration_recover
+              data:
+                op: reset
+                notify_title_prefix: "Synology"
+                age_entity: sensor.synology_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 45
+                attempts_entity: input_number.synology_reload_tentatives
+                backoff_timer: timer.synology_reload_backoff
+                backoff_minutes_cap: 60
+
+      default:
+        - service: script.resilience_integration_recover
+          data:
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "Synology"
+            age_entity: sensor.synology_age_donnees
+            seuil_minutes: 45
+            ok_minutes: 10
+            attempts_entity: input_number.synology_reload_tentatives
+            backoff_timer: timer.synology_reload_backoff
+            entry_id: !secret synology_entry_id
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

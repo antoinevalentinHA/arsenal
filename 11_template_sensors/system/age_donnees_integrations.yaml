@@ -1,0 +1,111 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS : AGE DES DONNEES (CANON)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Normaliser le calcul "age des donnees" (minutes) pour
+#   toutes les integrations basees sur un group.* de capteurs.
+#
+# ✅ SORTIE CANON
+#   - Valeur : entier (minutes)
+#   - Unité  : "min"
+#   - Plafond: 300
+#   - Fallback : conserve la derniere valeur numerique (999 si vide)
+#
+# ⚠️ NOTE UI
+#   - Pas de device_class: duration
+#     (sinon l'UI peut afficher 4:00 au lieu de 240 min)
+# ==========================================================
+
+- sensor:
+    - &age_donnees_canon
+      unit_of_measurement: "min"
+      state_class: measurement
+
+      state: >
+        {% set UNAV = ['unknown','unavailable','', none] %}
+        {% set MAX_MINUTES = 300 %}
+        {% set grp = state_attr(this.entity_id, 'source_group') %}
+
+        {% if grp in UNAV %}
+          {{ this.state | float(999) }}
+        {% else %}
+          {% set items = expand(grp) %}
+          {% if items | count > 0 %}
+            {% set entites = items
+                | rejectattr('state', 'in', ['unknown','unavailable'])
+                | selectattr('last_updated', 'defined')
+                | list %}
+            {% if entites | count > 0 %}
+              {% set last = entites | map(attribute='last_updated') | map('as_timestamp') | max %}
+              {% set age = ((now().timestamp() - last) / 60) | int(0) %}
+              {{ [age, MAX_MINUTES] | min }}
+            {% else %}
+              {{ this.state | float(999) }}
+            {% endif %}
+          {% else %}
+            {{ this.state | float(999) }}
+          {% endif %}
+        {% endif %}
+
+    - <<: *age_donnees_canon
+      name: "Audi Age Donnees"
+      unique_id: audi_age_donnees
+      icon: mdi:car-clock
+      attributes:
+        source_group: "group.audi_capteurs"
+
+    - <<: *age_donnees_canon
+      name: "Petite Maison Cumulus Age Donnees"
+      unique_id: petite_maison_cumulus_age_donnees
+      icon: mdi:water-boiler
+      attributes:
+        source_group: "group.petite_maison_cumulus"
+
+    - <<: *age_donnees_canon
+      name: "Fujitsu Age donnees"
+      unique_id: fujitsu_age_donnees
+      icon: mdi:air-conditioner
+      attributes:
+        source_group: "group.fujitsu_capteurs"
+
+    - <<: *age_donnees_canon
+      name: "Homekit Age Donnees"
+      unique_id: homekit_age_donnees
+      icon: mdi:home-assistant
+      attributes:
+        source_group: "group.homekit_capteurs"
+
+    - <<: *age_donnees_canon
+      name: "Netatmo Age Donnees"
+      unique_id: netatmo_age_donnees
+      icon: mdi:weather-cloudy
+      attributes:
+        source_group: "group.netatmo_capteurs"
+
+    - <<: *age_donnees_canon
+      name: "SwitchBot Age Donnees"
+      unique_id: switchbot_age_donnees
+      icon: mdi:remote
+      attributes:
+        source_group: "group.switchbot_capteurs"
+
+    - <<: *age_donnees_canon
+      name: "Synology Age Donnees"
+      unique_id: synology_age_donnees
+      icon: mdi:nas
+      attributes:
+        source_group: "group.synology_capteurs"
+
+    - <<: *age_donnees_canon
+      name: "ViCare Age donnees"
+      unique_id: vicare_age_donnees
+      icon: mdi:fire
+      attributes:
+        source_group: "group.vicare_capteurs"
+
+    - <<: *age_donnees_canon
+      name: "Withings Age donnees"
+      unique_id: withings_age_donnees
+      icon: mdi:scale-bathroom
+      attributes:
+        source_group: "group.withings_capteurs"

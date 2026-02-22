@@ -1,0 +1,23 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : Capteurs Fujitsu (fraîcheur données locales)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Regrouper les entités locales Fujitsu servant de source
+#   pour mesurer la fraîcheur des données Airstage.
+#
+# 🚫 Interdits :
+#   - Ajouter des entités non Fujitsu
+#   - Ajouter des entités "métadonnées" (uptime, rssi, etc.)
+# ==========================================================
+
+fujitsu_capteurs:
+  name: "Capteurs Fujitsu"
+  entities:
+    - switch.clim_power
+    - climate.clim
+    - switch.clim_economy_mode
+    - switch.clim_outdoor_unit_low_noise
+    - switch.clim_energy_saving_fan
+    - switch.clim_quiet_fan
+    - sensor.clim_outdoor_temperature
+    - sensor.clim_indoor_temperature

@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (moteur moderne)
+#     Intention Pluie forte
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer l’intention métier "pluie forte" (booléen)
+#   selon un seuil paramétré (input_number).
+#
+# 🧱 ARCHITECTURE
+#   - Décision uniquement (stateless, recalculable)
+#   - Aucune action, aucune notification
+#
+# 🚫 NE FAIT PAS
+#   - aucun service
+#   - aucune temporisation active
+# ==========================================================
+
+- binary_sensor:
+    - name: "Intention Pluie forte"
+      unique_id: intention_pluie_forte
+      default_entity_id: binary_sensor.intention_pluie_forte
+      icon: mdi:weather-pouring
+      state: >
+        {% set v = states('sensor.pluviometre_precipitation') %}
+        {% set seuil = states('input_number.seuil_pluie_fermeture_volets') %}
+        {% if v in ['unknown','unavailable','none',''] %}
+          false
+        {% else %}
+          {{ (v | float(0)) >= (seuil | float(2.5)) }}
+        {% endif %}
+      attributes:
+        source: "sensor.pluviometre_precipitation"
+        seuil_mm: "{{ states('input_number.seuil_pluie_fermeture_volets') }}"
+        valeur: "{{ states('sensor.pluviometre_precipitation') }}"

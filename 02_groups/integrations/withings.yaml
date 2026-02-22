@@ -41,30 +41,24 @@ withings_capteurs:
   name: "Capteurs Withings"
   entities:
 
-    ########################################################
-    # 😴 SOMMEIL
-    ########################################################
-    - sensor.withings_sleep_score_local
-    - sensor.withings_heure_de_dormir_local
-    - sensor.withings_heure_de_reveil_local
-    - sensor.withings_sommeil_profond_local
-    - sensor.withings_sommeil_leger_local
-    - sensor.withings_rem_sleep_local
-    - sensor.withings_wakeup_count_local
-
-
-    ########################################################
-    # ❤️ SIGNES VITAUX
-    ########################################################
-    - sensor.withings_temperature_du_corps_local
-    - sensor.withings_average_heart_rate_local
-    - sensor.withings_average_respiratory_rate_local
-    - sensor.withings_temperature_local
-
-
-    ########################################################
-    # 🚶 ACTIVITÉ QUOTIDIENNE
-    ########################################################
-    - sensor.withings_steps_today_local
-    - sensor.withings_total_calories_burnt_today_local
-    - sensor.withings_distance_travelled_today_local
+    - sensor.scanwatch_2_battery
+    - sensor.withings_average_heart_rate
+    - sensor.withings_average_respiratory_rate
+    - sensor.withings_breathing_disturbances_intensity
+    - sensor.withings_distance_travelled_today
+    - sensor.withings_frequence_cardiaque_maximale
+    - sensor.withings_frequence_cardiaque_minimale
+    - sensor.withings_heure_de_dormir
+    - sensor.withings_heure_de_reveil
+    - sensor.withings_maximum_respiratory_rate
+    - sensor.withings_minimum_respiratory_rate
+    - sensor.withings_rem_sleep
+    - sensor.withings_ronflement
+    - sensor.withings_sleep_score
+    - sensor.withings_snoring_episode_count
+    - sensor.withings_sommeil_leger
+    - sensor.withings_sommeil_profond
+    - sensor.withings_steps_today
+    - sensor.withings_total_calories_burnt_today
+    - sensor.withings_wakeup_count
+    - sensor.thermo_battery

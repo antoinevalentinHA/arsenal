@@ -1,0 +1,279 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSORS (CONTACTS)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   - Couche NORMALISATION : binary_sensor.contact_* (miroir stable)
+#   - Couche AGREGATION    : binary_sensor.contact_<zone> (OR)
+#
+# 🧱 PRINCIPE
+#   - Les capteurs matériels (binary_sensor.capteur_*) ne sont jamais utilisés ailleurs.
+#   - Les entités Arsenal restent toujours évaluables (pas de unknown/unavailable).
+#   - L’indispo est exposée en attribut pour les décisions (alarme, etc.).
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_chambre_arnaud
+        - binary_sensor.capteur_chambre_matthieu
+        - binary_sensor.capteur_chambre_parents_gauche
+        - binary_sensor.capteur_chambre_parents_milieu
+        - binary_sensor.capteur_chambre_parents_droite
+        - binary_sensor.capteur_fenetre_entree
+        - binary_sensor.capteur_porte_entree
+        - binary_sensor.capteur_porte_garage
+        - binary_sensor.capteur_fenetre_sejour_1
+        - binary_sensor.capteur_fenetre_sejour_2
+        - binary_sensor.capteur_fenetre_sejour_3
+        - binary_sensor.capteur_fenetre_sejour_4
+    - platform: homeassistant
+      event: start
+
+  binary_sensor:
+
+    # ------------------------------------------------------
+    # ANCRE 1 — NORMALISATION (source -> contact stable)
+    # ------------------------------------------------------
+    - name: "Contact Chambre Arnaud"
+      unique_id: contact_chambre_arnaud
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_chambre_arnaud
+        kind: window
+      state: &contact_norm_state >
+        {% set s = states(src) %}
+        {% if s in ['on','off'] %}
+          {{ s }}
+        {% else %}
+          off
+        {% endif %}
+      icon: &contact_norm_icon >
+        {% set s = states(this.entity_id) %}
+        {% if kind == 'door' %}
+          {{ 'mdi:door-open' if s == 'on' else 'mdi:door-closed' }}
+        {% else %}
+          {{ 'mdi:window-open-variant' if s == 'on' else 'mdi:window-closed-variant' }}
+        {% endif %}
+      attributes: &contact_norm_attr
+        source_entity: "{{ src }}"
+        source_state: "{{ states(src) }}"
+        unavailable: "{{ states(src) in ['unknown','unavailable', None] }}"
+
+    - name: "Contact Chambre Matthieu"
+      unique_id: contact_chambre_matthieu
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_chambre_matthieu
+        kind: window
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Chambre Parents Gauche"
+      unique_id: contact_chambre_parents_gauche
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_chambre_parents_gauche
+        kind: window
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Chambre Parents Milieu"
+      unique_id: contact_chambre_parents_milieu
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_chambre_parents_milieu
+        kind: window
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Chambre Parents Droite"
+      unique_id: contact_chambre_parents_droite
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_chambre_parents_droite
+        kind: window
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Fenetre Entree"
+      unique_id: contact_fenetre_entree
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_fenetre_entree
+        kind: window
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Porte Entree"
+      unique_id: contact_porte_entree
+      device_class: door
+      variables:
+        src: binary_sensor.capteur_porte_entree
+        kind: door
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Porte Garage"
+      unique_id: contact_porte_garage
+      device_class: garage_door
+      variables:
+        src: binary_sensor.capteur_porte_garage
+        kind: door
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Sejour 1"
+      unique_id: contact_sejour_1
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_fenetre_sejour_1
+        kind: window
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Sejour 2"
+      unique_id: contact_sejour_2
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_fenetre_sejour_2
+        kind: window
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Sejour 3"
+      unique_id: contact_sejour_3
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_fenetre_sejour_3
+        kind: window
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+
+    - name: "Contact Sejour 4"
+      unique_id: contact_sejour_4
+      device_class: opening
+      variables:
+        src: binary_sensor.capteur_fenetre_sejour_4
+        kind: window
+      state: *contact_norm_state
+      icon: *contact_norm_icon
+      attributes: *contact_norm_attr
+    # ------------------------------------------------------
+    # ANCRE 2 — AGREGATION OR (liste -> zone) + ICON LOCK
+    # ------------------------------------------------------
+    - name: "Contact Sejour"
+      unique_id: contact_sejour
+      device_class: opening
+      variables:
+        members:
+          - binary_sensor.contact_sejour_1
+          - binary_sensor.contact_sejour_2
+          - binary_sensor.contact_sejour_3
+          - binary_sensor.contact_sejour_4
+
+      state: &contact_or_state >
+        {% set ns = namespace(any_on=false, any_unav=false) %}
+        {% for e in members %}
+          {% set s = states(e) %}
+          {% if s == 'on' %}
+            {% set ns.any_on = true %}
+          {% elif s in ['unknown','unavailable', None] %}
+            {% set ns.any_unav = true %}
+          {% endif %}
+        {% endfor %}
+        {{ 'on' if ns.any_on else 'off' }}
+
+      attributes: &contact_or_attr
+        members: "{{ members }}"
+        any_unavailable: >
+          {% set ns = namespace(any_unav=false) %}
+          {% for e in members %}
+            {% if states(e) in ['unknown','unavailable', None] %}
+              {% set ns.any_unav = true %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.any_unav }}
+
+      icon: &contact_or_icon >
+        {% set ns = namespace(any_on=false, any_unav=false) %}
+        {% for e in members %}
+          {% set s = states(e) %}
+          {% if s == 'on' %}
+            {% set ns.any_on = true %}
+          {% elif s in ['unknown','unavailable', None] %}
+            {% set ns.any_unav = true %}
+          {% endif %}
+        {% endfor %}
+        {{ 'mdi:lock-alert'
+           if ns.any_unav
+           else ('mdi:lock-open-variant' if ns.any_on else 'mdi:lock') }}
+
+    - name: "Contact Chambre Parents"
+      unique_id: contact_chambre_parents
+      device_class: opening
+      variables:
+        members:
+          - binary_sensor.contact_chambre_parents_gauche
+          - binary_sensor.contact_chambre_parents_milieu
+          - binary_sensor.contact_chambre_parents_droite
+      state: *contact_or_state
+      attributes: *contact_or_attr
+      icon: *contact_or_icon
+
+    - name: "Contact Entree"
+      unique_id: contact_entree
+      device_class: opening
+      variables:
+        members:
+          - binary_sensor.contact_porte_entree
+          - binary_sensor.contact_fenetre_entree
+      state: *contact_or_state
+      attributes: *contact_or_attr
+      icon: *contact_or_icon
+
+    - name: "Contact Chambres"
+      unique_id: contact_chambres
+      device_class: opening
+      variables:
+        members:
+          - binary_sensor.contact_chambre_arnaud
+          - binary_sensor.contact_chambre_matthieu
+          - binary_sensor.contact_chambre_parents
+      state: *contact_or_state
+      attributes: *contact_or_attr
+      icon: *contact_or_icon
+
+    - name: "Contact Fenetres Maison"
+      unique_id: contact_fenetres_maison
+      device_class: opening
+      variables:
+        members:
+          - binary_sensor.contact_sejour
+          - binary_sensor.contact_chambres
+          - binary_sensor.contact_fenetre_entree
+      state: *contact_or_state
+      attributes: *contact_or_attr
+      icon: *contact_or_icon
+
+    - name: "Contact Maison"
+      unique_id: contact_maison
+      device_class: opening
+      variables:
+        members:
+          - binary_sensor.contact_sejour
+          - binary_sensor.contact_entree
+          - binary_sensor.contact_chambres
+          - binary_sensor.contact_porte_garage
+      state: *contact_or_state
+      attributes: *contact_or_attr
+      icon: *contact_or_icon

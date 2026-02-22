@@ -2,7 +2,7 @@
 v0.13.0
 
 # 🔘 Button Card
-v0.13.0
+v7.0.1
 
 # 📊 Bar Card
 v3.2.0

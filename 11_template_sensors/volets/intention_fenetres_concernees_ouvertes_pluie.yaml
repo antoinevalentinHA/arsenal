@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (moteur moderne)
+#     Intention Fenêtres concernées ouvertes (pluie)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer l’intention métier "au moins une fenêtre concernée
+#   est ouverte" pour la logique Pluie → Volets.
+#
+# 🧱 ARCHITECTURE
+#   - Décision uniquement (stateless, recalculable)
+#   - Aucune action, aucune notification
+#
+# 🚫 NE FAIT PAS
+#   - aucun service
+#   - aucune temporisation active
+# ==========================================================
+
+- binary_sensor:
+    - name: "Intention Fenêtres concernées ouvertes (pluie)"
+      unique_id: intention_fenetres_concernees_ouvertes_pluie
+      default_entity_id: binary_sensor.intention_fenetres_concernees_ouvertes_pluie
+      icon: mdi:window-open-variant
+      state: >
+        {% set fenetres = [
+          'binary_sensor.contact_chambre_arnaud',
+          'binary_sensor.contact_chambre_matthieu',
+          'binary_sensor.contact_sejour_1',
+          'binary_sensor.contact_sejour_2',
+          'binary_sensor.contact_sejour_3',
+          'binary_sensor.contact_sejour_4'
+        ] %}
+        {{ fenetres | select('is_state','on') | list | length > 0 }}
+      attributes:
+        ouvertes_entity_ids: >
+          {% set fenetres = [
+            'binary_sensor.contact_chambre_arnaud',
+            'binary_sensor.contact_chambre_matthieu',
+            'binary_sensor.contact_sejour_1',
+            'binary_sensor.contact_sejour_2',
+            'binary_sensor.contact_sejour_3',
+            'binary_sensor.contact_sejour_4'
+          ] %}
+          {{ fenetres | select('is_state','on') | list }}

@@ -1,0 +1,27 @@
+# ==========================================================
+#  🧠 ARSENAL — TIMER TECHNIQUE
+#     vicare_reload_backoff
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Timer de backoff pour l’automatisation :
+#     "Chauffage – Relance ViCare (auto)"
+#
+#     Ce timer :
+#       - n’embarque aucune logique métier
+#       - sert uniquement à espacer les tentatives
+#       - est déclenché uniquement par l’automatisation
+#
+#  ⚙️ FONCTIONNEMENT
+#     - Démarré en cas d’échec de relance
+#     - Déclenche un nouvel essai via event timer.finished
+#     - Annulé en cas de succès
+#
+#  📎 NOTE
+#     La durée est définie dynamiquement par l’automatisation.
+# ==========================================================
+
+vicare_reload_backoff:
+  name: "ViCare Reload Backoff"
+  icon: mdi:timer-sand
+  duration: "01:00:00"
+  restore: true

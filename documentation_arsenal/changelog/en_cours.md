@@ -41,35 +41,41 @@
 # /homeassistant/changelog_arsenal/changelog.md
 #
 # ----------------------------------------------------------
-# 📌 Dernière consolidation officielle
+# 📌 Dernière consolidation officielle (bloc prêt à coller)
 # ----------------------------------------------------------
 #
-# 🧠 ARSENAL HA v9.2.5 — STABLE
+# 🧠 ARSENAL HA v9.2.6 — STABLE
 #
-# - UI — Diagnostics (industrialisation + lisibilité) :
-#     • refactor massif des dashboards Diagnostics (Chauffage / Climatisation / ECS) :
-#         - disparition des longs blocs markdown au profit de grilles + cartes statut (socle)
-#         - lecture métier “synthèse” via cartes homogènes (ex : `clim_synthese_status_72`)
-#     • harmonisation des titres de vues : “Diagnostics X” (Chauffage / Climatisation / ECS / Éclairage / Ouvertures)
+# - UI — Diagnostics Éclairage :
+#     • remplacement des blocs markdown “Simulation” (séjour/garage) par grilles homogènes
+#     • ajout `status_72_on_off` (état lampes) + `socle_info_72` (horaires matin/soir)
 #
-# - UI — Templates (socle diagnostics) :
-#     • ajout de templates dédiés “dashboards/diagnostic” pour factoriser les cartes Diagnostics
+# - UI — Réglages / Modes :
+#     • section Vacances : regroupement Début/Fin en `grid` 2 colonnes (compact)
 #
-# - Chauffage — Diagnostics (sobriété) :
-#     • ajustement de la section “mode éco” : libellés simplifiés (24h / 7j) + focus lisibilité
+# - UI — Diagnostics Ouvertures :
+#     • réordonnancement : mise en tête de `binary_sensor.fenetre_ouverte_maison_avec_delai`
 #
-# - Climatisation — Robustesse d’exécution :
-#     • durcissement du script `09_scripts/climatisation/execution_mode_cible.yaml` :
-#         - lecture de l’état réel via `states('climate.clim')` (au lieu d’un attribut)
-#         - abstention si `climate.clim` ou `switch.clim_power` en `unknown` / `unavailable`
+# - Chauffage — Templates UI :
+#     • refactor : décision + diagnostics (global / réglage courbe / auto courbe / blocage aération)
+#     • normalisation : “Indisponible”, labels, et backgrounds pilotés par diagnostics structurés
 #
-# - Documentation :
-#     • ajout du changelog `documentation_arsenal/changelog/changelogs/v09_2_4.md`
+# - Capteurs métier — Ouvertures :
+#     • ajout d’icônes dynamiques (open/closed variants + `timer-sand` pendant la grâce)
+#
+# - Capteurs robustes — Pluie :
+#     • fallback unifié via ancre Jinja (mapping par `this.entity_id`) + suppression `default_entity_id`
+#
+# - Viessmann / ViCare :
+#     • électricité : fallback kWh unifié via ancre Jinja
+#     • gaz : remplacement templates (chauffage/ecs) par `conso_periodique` + `conso_totale`
 #
 # - Home Assistant — Runtime :
 #     • mises à jour `storage/` (artefacts internes HA, non fonctionnels)
 #
-# Date de consolidation : 2026-02-18
+# - Documentation :
+#     • ajout `documentation_arsenal/changelog/changelogs/v09_2_5.md`
+#
+# Date de consolidation : 2026-02-19
 #
 # ==========================================================
-

@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (moteur moderne)
+#     Cibles volets pluie Chambres
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la liste des covers "chambres" à fermer
+#   uniquement si la fenêtre correspondante est ouverte.
+#
+# 🧱 ARCHITECTURE
+#   - Décision uniquement (stateless, recalculable)
+#   - Aucune action, aucune notification
+#
+# 🚫 NE FAIT PAS
+#   - aucun service
+#   - aucune temporisation active
+# ==========================================================
+
+- sensor:
+    - name: "Cibles volets pluie Chambres"
+      unique_id: cibles_volets_pluie_chambres
+      default_entity_id: sensor.cibles_volets_pluie_chambres
+      icon: mdi:window-shutter
+      state: >
+        {% set n = 0 %}
+        {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}{% set n = n + 1 %}{% endif %}
+        {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}{% set n = n + 1 %}{% endif %}
+        {{ n }}
+      attributes:
+        entity_ids: >
+          {% set lst = [] %}
+          {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}
+            {% set lst = lst + ['cover.volet_arnaud'] %}
+          {% endif %}
+          {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
+            {% set lst = lst + ['cover.volet_matthieu'] %}
+          {% endif %}
+          {{ lst }}

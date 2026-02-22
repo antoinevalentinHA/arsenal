@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (moteur moderne)
+#     Autorisation Fermeture volets pluie Séjour
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer l’autorisation métier de fermeture automatique
+#   des volets du séjour en cas de pluie (policy helpers).
+#
+# 🧱 ARCHITECTURE
+#   - Décision uniquement (stateless, recalculable)
+#   - Aucune action, aucune notification
+#
+# 🚫 NE FAIT PAS
+#   - aucun service
+#   - aucune temporisation active
+# ==========================================================
+
+- binary_sensor:
+    - name: "Autorisation Fermeture volets pluie Séjour"
+      unique_id: autorisation_fermeture_volets_pluie_sejour
+      default_entity_id: binary_sensor.autorisation_fermeture_volets_pluie_sejour
+      icon: mdi:shield-check
+      state: >
+        {% set enabled = (states('input_boolean.fermeture_volets_pluie') == 'on') %}
+        {% set mode = states('input_select.activation_volets_pluie') %}
+        {% set presence = (states('binary_sensor.presence_famille_securite') == 'on') %}
+        {{ enabled and (
+             mode == 'Toujours'
+             or (mode == 'En présence uniquement' and presence)
+             or (mode == 'En absence uniquement' and not presence)
+           ) }}
+      attributes:
+        enabled: "{{ states('input_boolean.fermeture_volets_pluie') }}"
+        mode: "{{ states('input_select.activation_volets_pluie') }}"
+        presence: "{{ states('binary_sensor.presence_famille_securite') }}"

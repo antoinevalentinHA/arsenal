@@ -52,30 +52,18 @@ views:
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_porte_garage
+                    entity: binary_sensor.contact_porte_garage
                     name: Garage
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:garage-open-variant
-                      icon_off: mdi:garage
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_porte_entree
+                    entity: binary_sensor.contact_porte_entree
                     name: Porte
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:door-open
-                      icon_off: mdi:door-closed
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_fenetre_entree
+                    entity: binary_sensor.contact_fenetre_entree
                     name: Fenêtre
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:window-open-variant
-                      icon_off: mdi:window-closed-variant
 
           # 🛋️ Séjour
           - type: grid
@@ -91,36 +79,23 @@ views:
                 cards:
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_fenetre_sejour_1
+                    entity: binary_sensor.contact_sejour_1
                     name: Baie vitrée 1
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:window-open-variant
-                      icon_off: mdi:window-closed-variant
+
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_fenetre_sejour_2
+                    entity: binary_sensor.contact_sejour_2
                     name: Baie vitrée 2
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:window-open-variant
-                      icon_off: mdi:window-closed-variant
+
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_fenetre_sejour_3
+                    entity: binary_sensor.contact_sejour_3
                     name: Baie vitrée 3
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:window-open-variant
-                      icon_off: mdi:window-closed-variant
+
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_fenetre_sejour_4
+                    entity: binary_sensor.contact_sejour_4
                     name: Baie vitrée 4
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:window-open-variant
-                      icon_off: mdi:window-closed-variant
 
           # 🛏️ Chambre parents
           - type: grid
@@ -137,30 +112,18 @@ views:
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_chambre_parents_gauche
+                    entity: binary_sensor.contact_chambre_parents_gauche
                     name: Dressing
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:wardrobe
-                      icon_off: mdi:wardrobe-outline
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_chambre_parents_milieu
+                    entity: binary_sensor.contact_chambre_parents_milieu
                     name: Fenêtre Gauche
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:window-open-variant
-                      icon_off: mdi:window-closed-variant
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_chambre_parents_droite
+                    entity: binary_sensor.contact_chambre_parents_droite
                     name: Fenêtre Droite
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:window-open-variant
-                      icon_off: mdi:window-closed-variant
 
           # 🛏️ Chambre enfants
           - type: grid
@@ -174,19 +137,13 @@ views:
                 columns: 2
                 square: false
                 cards:
+
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_chambre_matthieu
+                    entity: binary_sensor.contact_chambre_matthieu
                     name: Fenêtre Matthieu
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:window-open-variant
-                      icon_off: mdi:window-closed-variant
+
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.capteur_chambre_arnaud
+                    entity: binary_sensor.contact_chambre_arnaud
                     name: Fenêtre Arnaud
-                    tap_action: none
-                    variables:
-                      icon_on: mdi:window-open-variant
-                      icon_off: mdi:window-closed-variant

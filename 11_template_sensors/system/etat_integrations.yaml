@@ -1,0 +1,274 @@
+# ==========================================================
+#  🧠 ARSENAL — TEMPLATE BINARY SENSORS
+#     Age des donnees — ETATS METIER (gel / retour ok)
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Stabiliser les triggers des automations de resilience :
+#       - gel_avere       : incident confirme (debounce)
+#       - recovery_en_cours : contexte incident (timer backoff actif)
+#       - retour_ok       : retour donnees fraiches, uniquement si recovery_en_cours
+#
+#  ✅ PRINCIPE
+#     - Les automations ne doivent plus declencher sur numeric_state + for
+#       mais sur transition d'etat (off -> on) de ces binary_sensors.
+#
+#  🧱 NOTE
+#     - Fichier monolithique requis si usage d'ancres YAML.
+# ==========================================================
+
+- binary_sensor:
+
+    # -------------------------
+    # Constantes (ancres)
+    # -------------------------
+    - name: "_internal_dummy_anchor_holder"
+      unique_id: age_donnees_internal_dummy_anchor_holder
+      state: >
+        {{ false }}
+      attributes:
+        _age_ok_delay: &age_ok_delay "00:02:00"
+        _age_gel_delay_5: &age_gel_delay_5 "00:05:00"
+        _age_gel_delay_10: &age_gel_delay_10 "00:10:00"
+
+    # ==========================================================
+    # AUDI
+    # ==========================================================
+
+    - name: "Recovery en cours — Audi"
+      unique_id: recovery_en_cours_audi
+      default_entity_id: binary_sensor.recovery_en_cours_audi
+      state: >
+        {{ is_state('timer.audi_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — Audi"
+      unique_id: gel_avere_audi
+      default_entity_id: binary_sensor.gel_avere_audi
+      delay_on: *age_gel_delay_10
+      state: >
+        {{ (states('sensor.audi_age_donnees') | int(999)) >= 120 }}
+
+    - name: "Retour OK — Audi"
+      unique_id: retour_ok_audi
+      default_entity_id: binary_sensor.retour_ok_audi
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_audi', 'on')
+          and (states('sensor.audi_age_donnees') | int(999)) < 10
+        }}
+
+    # ==========================================================
+    # OVERKIZ (PETITE MAISON — CUMULUS)
+    # ==========================================================
+
+    - name: "Recovery en cours — Overkiz"
+      unique_id: recovery_en_cours_overkiz
+      default_entity_id: binary_sensor.recovery_en_cours_overkiz
+      state: >
+        {{ is_state('timer.overkiz_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — Overkiz"
+      unique_id: gel_avere_overkiz
+      default_entity_id: binary_sensor.gel_avere_overkiz
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.petite_maison_cumulus_age_donnees') | int(999)) >= 90 }}
+
+    - name: "Retour OK — Overkiz"
+      unique_id: retour_ok_overkiz
+      default_entity_id: binary_sensor.retour_ok_overkiz
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_overkiz', 'on')
+          and (states('sensor.petite_maison_cumulus_age_donnees') | int(999)) < 10
+        }}
+
+    # ==========================================================
+    # AIRSTAGE (FUJITSU)
+    # ==========================================================
+
+    - name: "Recovery en cours — Airstage"
+      unique_id: recovery_en_cours_airstage
+      default_entity_id: binary_sensor.recovery_en_cours_airstage
+      state: >
+        {{ is_state('timer.airstage_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — Airstage"
+      unique_id: gel_avere_airstage
+      default_entity_id: binary_sensor.gel_avere_airstage
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.fujitsu_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Retour OK — Airstage"
+      unique_id: retour_ok_airstage
+      default_entity_id: binary_sensor.retour_ok_airstage
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_airstage', 'on')
+          and (states('sensor.fujitsu_age_donnees') | int(999)) < 10
+        }}
+
+    # ==========================================================
+    # HOMEKIT
+    # ==========================================================
+
+    - name: "Recovery en cours — HomeKit"
+      unique_id: recovery_en_cours_homekit
+      default_entity_id: binary_sensor.recovery_en_cours_homekit
+      state: >
+        {{ is_state('timer.homekit_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — HomeKit"
+      unique_id: gel_avere_homekit
+      default_entity_id: binary_sensor.gel_avere_homekit
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.homekit_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Retour OK — HomeKit"
+      unique_id: retour_ok_homekit
+      default_entity_id: binary_sensor.retour_ok_homekit
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_homekit', 'on')
+          and (states('sensor.homekit_age_donnees') | int(999)) < 10
+        }}
+
+    # ==========================================================
+    # NETATMO
+    # ==========================================================
+
+    - name: "Recovery en cours — Netatmo"
+      unique_id: recovery_en_cours_netatmo
+      default_entity_id: binary_sensor.recovery_en_cours_netatmo
+      state: >
+        {{ is_state('timer.netatmo_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — Netatmo"
+      unique_id: gel_avere_netatmo
+      default_entity_id: binary_sensor.gel_avere_netatmo
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.netatmo_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Retour OK — Netatmo"
+      unique_id: retour_ok_netatmo
+      default_entity_id: binary_sensor.retour_ok_netatmo
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_netatmo', 'on')
+          and (states('sensor.netatmo_age_donnees') | int(999)) < 10
+        }}
+
+    # ==========================================================
+    # SWITCHBOT
+    # ==========================================================
+
+    - name: "Recovery en cours — SwitchBot"
+      unique_id: recovery_en_cours_switchbot
+      default_entity_id: binary_sensor.recovery_en_cours_switchbot
+      state: >
+        {{ is_state('timer.switchbot_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — SwitchBot"
+      unique_id: gel_avere_switchbot
+      default_entity_id: binary_sensor.gel_avere_switchbot
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.switchbot_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Retour OK — SwitchBot"
+      unique_id: retour_ok_switchbot
+      default_entity_id: binary_sensor.retour_ok_switchbot
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_switchbot', 'on')
+          and (states('sensor.switchbot_age_donnees') | int(999)) < 10
+        }}
+
+    # ==========================================================
+    # VICARE
+    # ==========================================================
+
+    - name: "Recovery en cours — ViCare"
+      unique_id: recovery_en_cours_vicare
+      default_entity_id: binary_sensor.recovery_en_cours_vicare
+      state: >
+        {{ is_state('timer.vicare_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — ViCare"
+      unique_id: gel_avere_vicare
+      default_entity_id: binary_sensor.gel_avere_vicare
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.vicare_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Retour OK — ViCare"
+      unique_id: retour_ok_vicare
+      default_entity_id: binary_sensor.retour_ok_vicare
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_vicare', 'on')
+          and (states('sensor.vicare_age_donnees') | int(999)) < 10
+        }}
+
+    # ==========================================================
+    # SYNOLOGY
+    # ==========================================================
+
+    - name: "Recovery en cours — Synology"
+      unique_id: recovery_en_cours_synology
+      default_entity_id: binary_sensor.recovery_en_cours_synology
+      state: >
+        {{ is_state('timer.synology_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — Synology"
+      unique_id: gel_avere_synology
+      default_entity_id: binary_sensor.gel_avere_synology
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.synology_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Retour OK — Synology"
+      unique_id: retour_ok_synology
+      default_entity_id: binary_sensor.retour_ok_synology
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_synology', 'on')
+          and (states('sensor.synology_age_donnees') | int(999)) < 10
+        }}
+
+    # ==========================================================
+    # WITHINGS
+    # ==========================================================
+
+    - name: "Recovery en cours — Withings"
+      unique_id: recovery_en_cours_withings
+      default_entity_id: binary_sensor.recovery_en_cours_withings
+      state: >
+        {{ is_state('timer.withings_reload_backoff', 'active') }}
+
+    - name: "Gel avéré — Withings"
+      unique_id: gel_avere_withings
+      default_entity_id: binary_sensor.gel_avere_withings
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ (states('sensor.withings_age_donnees') | int(999)) >= 45 }}
+
+    - name: "Retour OK — Withings"
+      unique_id: retour_ok_withings
+      default_entity_id: binary_sensor.retour_ok_withings
+      delay_on: *age_ok_delay
+      state: >
+        {{
+          is_state('binary_sensor.recovery_en_cours_withings', 'on')
+          and (states('sensor.withings_age_donnees') | int(999)) < 10
+        }}

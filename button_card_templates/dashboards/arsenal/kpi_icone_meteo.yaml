@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — BUTTON-CARD TEMPLATE (DASHBOARD)
+#     kpi_icone_meteo
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Variante de KPI basée sur `socle_kpi`, qui RESTAURE une
+#   icône dynamique issue d’une entité météo (state météo).
+#
+# 🧩 UTILISATION
+#   - template: kpi_icone_meteo
+#   - entity: sensor.temperature_jardin (ou autre KPI)
+#
+# 🧩 VARIABLES (OPTIONNELLES)
+#   - weather_entity:
+#       Entité météo source (défaut: weather.forecast_maison)
+#
+# 🔒 CONTRAINTES
+#   - UI uniquement (aucune logique métier)
+#   - Ne modifie pas `socle_kpi`
+# ==========================================================
+
+kpi_icone_meteo:
+  template: socle_kpi
+
+  variables:
+    weather_entity: weather.forecast_maison
+
+  icon: |
+    [[[
+      const we = variables?.weather_entity || 'weather.forecast_maison';
+      const code = states[we]?.state;
+
+      const icones = {
+        sunny: "mdi:weather-sunny",
+        clear: "mdi:weather-sunny",
+        "clear-night": "mdi:weather-night",
+        cloudy: "mdi:weather-cloudy",
+        partlycloudy: "mdi:weather-partly-cloudy",
+        rainy: "mdi:weather-rainy",
+        pouring: "mdi:weather-pouring",
+        lightning: "mdi:weather-lightning",
+        "lightning-rainy": "mdi:weather-lightning-rainy",
+        snowy: "mdi:weather-snowy",
+        "snowy-rainy": "mdi:weather-snowy-rainy",
+        windy: "mdi:weather-windy",
+        fog: "mdi:weather-fog"
+      };
+
+      return icones[code] || "mdi:weather-cloudy";
+    ]]]

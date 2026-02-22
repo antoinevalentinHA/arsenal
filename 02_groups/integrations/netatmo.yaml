@@ -39,63 +39,26 @@ netatmo_capteurs:
   name: "Capteurs Netatmo"
   entities:
 
-    ########################################################
-    # 🛋️ SÉJOUR
-    ########################################################
-    - sensor.temperature_sejour_1
-    - sensor.humidite_relative_sejour_1
-    - sensor.co2_sejour
-
-
-    ########################################################
-    # 🚪 ENTRÉE
-    ########################################################
-    - sensor.temperature_entree
-    - sensor.humidite_relative_entree
-    - sensor.co2_entree
-
-
-    ########################################################
-    # 🛏️ CHAMBRE PARENTS
-    ########################################################
-    - sensor.temperature_chambre_parents_1
-    - sensor.humidite_relative_chambre_parents_1
-    - sensor.co2_chambre_parents
-
-
-    ########################################################
-    # 🧸 CHAMBRE MATTHIEU
-    ########################################################
-    - sensor.temperature_chambre_matthieu_1
-    - sensor.humidite_relative_chambre_matthieu_1
-    - sensor.co2_chambre_matthieu
-    - sensor.pression_chambre_matthieu
-    - sensor.bruit_chambre_matthieu
-
-
-    ########################################################
-    # 🧸 CHAMBRE ARNAUD
-    ########################################################
-    - sensor.temperature_chambre_arnaud_1
-    - sensor.humidite_relative_chambre_arnaud_1
-    - sensor.co2_chambre_arnaud
     - sensor.pression_chambre_arnaud
-    - sensor.bruit_chambre_arnaud
-
-
-    ########################################################
-    # 🏠 PETITE MAISON
-    ########################################################
-    - sensor.temperature_petite_maison
-    - sensor.humidite_relative_petite_maison
-    - sensor.co2_petite_maison
-
-
-    ########################################################
-    # 🌿 EXTÉRIEUR & MÉTÉO
-    ########################################################
-    - sensor.temperature_jardin_1
-    - sensor.humidite_relative_jardin_1
-    - sensor.temperature_jardin_2
-    - sensor.humidite_relative_jardin_2
+    - sensor.bruit_bobst
+    - sensor.bobst_102_dioxyde_de_carbone
+    - sensor.humidite_relative_bobst
+    - sensor.bobst_102_pression_atmospherique
+    - sensor.temperature_bobst
+    - sensor.humidite_relative_exterieur_2
+    - sensor.temperature_exterieur_2
+    - sensor.bruit_komori
+    - sensor.komori_dioxyde_de_carbone
+    - sensor.humidite_relative_komori
+    - sensor.komori_pression_atmospherique
+    - sensor.temperature_komori
+    - sensor.humidite_relative_exterieur_1
+    - sensor.temperature_exterieur_1
+    - sensor.bruit_media
+    - sensor.media_dioxyde_de_carbone
+    - sensor.humidite_relative_media
+    - sensor.media_pression_atmospherique
+    - sensor.temperature_media
     - sensor.pluviometre_precipitation
+    - sensor.pluviometre_precipitation_aujourd_hui
+    - sensor.pluviometre_precipitation_last_hour

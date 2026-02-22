@@ -32,7 +32,7 @@ views:
         cards:
           - type: custom:button-card
             template: contact_sensor
-            entity: binary_sensor.ouvertures_maison
+            entity: binary_sensor.contact_maison
             name: Ouvertures maison
 
           - type: custom:button-card

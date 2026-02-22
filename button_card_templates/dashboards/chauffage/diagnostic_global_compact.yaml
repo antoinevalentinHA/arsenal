@@ -33,6 +33,11 @@ chauffage_diagnostic_global_compact:
   show_label: true
   color_type: card
 
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+
   variables:
     diagnostic: |
       [[[

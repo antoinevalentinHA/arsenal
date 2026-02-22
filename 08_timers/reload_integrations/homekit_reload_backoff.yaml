@@ -1,0 +1,21 @@
+# ==========================================================
+#  🧠 ARSENAL — TIMER TECHNIQUE
+#     homekit_reload_backoff
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Timer de backoff pour l’automatisation :
+#     "HomeKit – Relance intégration (auto)"
+#
+#     - Espace les tentatives de reload en cas d’échec
+#     - Déclenche via event timer.finished
+#     - Annulé automatiquement en cas de succès
+#
+#  📎 NOTE
+#     La durée est redéfinie dynamiquement par l’automatisation.
+# ==========================================================
+
+homekit_reload_backoff:
+  name: "HomeKit Reload Backoff"
+  icon: mdi:timer-sand
+  duration: "01:00:00"
+  restore: true

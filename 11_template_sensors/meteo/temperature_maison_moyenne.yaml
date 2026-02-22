@@ -59,7 +59,7 @@
           | list %}
 
         {% if values | length > 0 %}
-          {{ (values | sum / (values | length)) | round(2) }}
+          {{ (values | sum / (values | length)) | round(1) }}
         {% else %}
           unknown
         {% endif %}

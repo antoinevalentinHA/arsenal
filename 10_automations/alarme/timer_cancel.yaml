@@ -1,0 +1,42 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Alarme - Délai entrée (cancel sur désarmement)
+#
+#  ID : 10020000000033
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Purger timer.delai_entree lors du désarmement afin
+#     d’éviter tout délai résiduel (UI / restore / reboot).
+#
+#  🧩 PRINCIPE
+#     - Désarmement détecté
+#     - Si timer actif : cancel
+#
+#  🚫 NE FAIT PAS
+#     - Ne décide pas du déclenchement
+#     - Ne modifie pas l’armement
+#
+#  🛡️ ROBUSTESSE
+#     - Zéro wait
+#     - Événementiel
+#     - Post-reboot safe
+# ==========================================================
+
+- id: "10020000000033"
+  alias: "Alarme - Délai entrée (cancel sur désarmement)"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: alarm_control_panel.alarme_maison
+      to: "disarmed"
+
+  condition:
+    - condition: state
+      entity_id: timer.delai_entree
+      state: "active"
+
+  action:
+    - action: timer.cancel
+      target:
+        entity_id: timer.delai_entree

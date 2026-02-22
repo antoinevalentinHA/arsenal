@@ -1,5 +1,6 @@
 square: false
 type: grid
+columns: 9
 cards:
 
   - type: custom:button-card
@@ -91,5 +92,3 @@ cards:
     styles:
       icon:
         - color: '#00897B'
-
-columns: 9

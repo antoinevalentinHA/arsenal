@@ -1,0 +1,18 @@
+# ==========================================================
+#  🧠 ARSENAL — TIMER TECHNIQUE
+#     audi_reload_backoff
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Timer de backoff pour l’automatisation :
+#     "Audi – Relance intégration (auto)"
+#
+#     - Espace les tentatives de reload en cas d’échec
+#     - Déclenche via event timer.finished
+#     - Annulé automatiquement en cas de succès
+# ==========================================================
+
+audi_reload_backoff:
+  name: "Audi Reload Backoff"
+  icon: mdi:timer-sand
+  duration: "02:00:00"
+  restore: true

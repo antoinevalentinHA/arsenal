@@ -91,16 +91,16 @@ pluie_detectee:
   sequence:
     - variables:
         fenetres:
-          Chambre Arnaud: binary_sensor.capteur_chambre_arnaud
-          Chambre Matthieu: binary_sensor.capteur_chambre_matthieu
-          Séjour 1: binary_sensor.capteur_fenetre_sejour_1
-          Séjour 2: binary_sensor.capteur_fenetre_sejour_2
-          Séjour 3: binary_sensor.capteur_fenetre_sejour_3
-          Séjour 4: binary_sensor.capteur_fenetre_sejour_4
-          Entrée: binary_sensor.capteur_fenetre_entree
-          Chambre parents - gauche: binary_sensor.capteur_chambre_parents_gauche
-          Chambre parents - milieu: binary_sensor.capteur_chambre_parents_milieu
-          Chambre parents - droite: binary_sensor.capteur_chambre_parents_droite
+          Chambre Arnaud: binary_sensor.contact_chambre_arnaud
+          Chambre Matthieu: binary_sensor.contact_chambre_matthieu
+          Séjour 1: binary_sensor.contact_sejour_1
+          Séjour 2: binary_sensor.contact_sejour_2
+          Séjour 3: binary_sensor.contact_sejour_3
+          Séjour 4: binary_sensor.contact_sejour_4
+          Entrée: binary_sensor.contact_fenetre_entree
+          Chambre parents - gauche: binary_sensor.contact_chambre_parents_gauche
+          Chambre parents - milieu: binary_sensor.contact_chambre_parents_milieu
+          Chambre parents - droite: binary_sensor.contact_chambre_parents_droite
 
     - variables:
         fenetres_ouvertes: >
@@ -144,13 +144,13 @@ pluie_detectee:
 
             # Chambres → seulement si fenêtres ouvertes
             - choose:
-                - conditions: "{{ is_state('binary_sensor.capteur_chambre_arnaud','on') }}"
+                - conditions: "{{ is_state('binary_sensor.contact_chambre_arnaud','on') }}"
                   sequence:
                     - action: script.fermer_volet_arnaud
                     - variables:
                         volets_fermes: "{{ volets_fermes + ['chambre Arnaud'] }}"
 
-                - conditions: "{{ is_state('binary_sensor.capteur_chambre_matthieu','on') }}"
+                - conditions: "{{ is_state('binary_sensor.contact_chambre_matthieu','on') }}"
                   sequence:
                     - action: script.fermer_volet_matthieu
                     - variables:
@@ -160,8 +160,8 @@ pluie_detectee:
             - choose:
                 - conditions: >
                     {{ pluie_forte or
-                       is_state('binary_sensor.capteur_fenetre_sejour_1','on') or
-                       is_state('binary_sensor.capteur_fenetre_sejour_2','on') }}
+                       is_state('binary_sensor.contact_sejour_1','on') or
+                       is_state('binary_sensor.contact_sejour_2','on') }}
                   sequence:
                     - action: script.fermer_volet_sejour_gauche
                     - variables:
@@ -169,8 +169,8 @@ pluie_detectee:
 
                 - conditions: >
                     {{ pluie_forte or
-                       is_state('binary_sensor.capteur_fenetre_sejour_3','on') or
-                       is_state('binary_sensor.capteur_fenetre_sejour_4','on') }}
+                       is_state('binary_sensor.contact_sejour_3','on') or
+                       is_state('binary_sensor.contact_sejour_4','on') }}
                   sequence:
                     - action: script.fermer_volet_sejour_droit
                     - variables:

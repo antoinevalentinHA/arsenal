@@ -1,0 +1,84 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP : Capteurs Audi
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Regrouper l’ensemble des capteurs issus de l’écosystème
+#    Audi. 
+#
+# 🧠 Lecture métier :
+#    Ce groupe constitue une SOURCE DE MESURE,
+#    pas une source de décision.
+#    Les capteurs Audi alimentent les diagnostics,
+#    les templates et les pipelines, mais ne décident jamais.
+#
+# 🧩 Périmètre :
+#    - Capteurs physiques Audi uniquement
+#
+# 🔗 Dépendances :
+#    - Intégration Audi
+#    - Utilisé par :
+#      • capteurs système de contrôle de fraîcheur des données
+#      • templates d’audit (âge des données Audi)
+#      • dashboards environnement (lecture)
+#
+# 🚫 Interdits :
+#    - Ajouter des capteurs non Audi
+#    - Utiliser ce groupe comme condition directe
+#    - Introduire une logique métier ici
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - socle mesures / interface
+# ==========================================================
+
+
+audi_capteurs:
+  name: "Capteurs Audi"
+  entities:
+
+    - sensor.audi_a3_sportback_e_tron_car_type
+    - sensor.audi_a3_sportback_e_tron_charging_complete_time
+    - sensor.audi_a3_sportback_e_tron_charging_mode
+    - sensor.audi_a3_sportback_e_tron_charging_state
+    - sensor.audi_a3_sportback_e_tron_climatisation_state
+    - binary_sensor.audi_a3_sportback_e_tron_doors
+    - binary_sensor.audi_a3_sportback_e_tron_doors_lock
+    - sensor.audi_a3_sportback_e_tron_doors_trunk_state
+    - sensor.audi_a3_sportback_e_tron_external_power
+    - binary_sensor.audi_a3_sportback_e_tron_hood
+    - sensor.audi_a3_sportback_e_tron_hybrid_range
+    - binary_sensor.audi_a3_sportback_e_tron_is_moving
+    - sensor.audi_a3_sportback_e_tron_last_update
+    - binary_sensor.audi_a3_sportback_e_tron_left_front_door
+    - binary_sensor.audi_a3_sportback_e_tron_left_front_window
+    - binary_sensor.audi_a3_sportback_e_tron_left_rear_door
+    - binary_sensor.audi_a3_sportback_e_tron_left_rear_window
+    - sensor.audi_a3_sportback_e_tron_longterm_trip_data
+    - sensor.audi_a3_sportback_e_tron_longterm_trip_user_reset
+    - sensor.audi_a3_sportback_e_tron_mileage
+    - sensor.audi_a3_sportback_e_tron_model
+    - sensor.audi_a3_sportback_e_tron_park_time
+    - binary_sensor.audi_a3_sportback_e_tron_parking_light
+    - sensor.audi_a3_sportback_e_tron_plug_led_color
+    - binary_sensor.audi_a3_sportback_e_tron_plug_lock_state
+    - binary_sensor.audi_a3_sportback_e_tron_plug_state
+    - sensor.audi_a3_sportback_e_tron_primary_engine_percent
+    - sensor.audi_a3_sportback_e_tron_primary_engine_range
+    - sensor.audi_a3_sportback_e_tron_primary_engine_type
+    - sensor.audi_a3_sportback_e_tron_range
+    - sensor.audi_a3_sportback_e_tron_remaining_charge_time
+    - sensor.audi_a3_sportback_e_tron_remaining_climatisation_time
+    - binary_sensor.audi_a3_sportback_e_tron_right_front_door
+    - binary_sensor.audi_a3_sportback_e_tron_right_front_window
+    - binary_sensor.audi_a3_sportback_e_tron_right_rear_door
+    - binary_sensor.audi_a3_sportback_e_tron_right_rear_window
+    - sensor.audi_a3_sportback_e_tron_secondary_engine_type
+    - sensor.audi_a3_sportback_e_tron_service_inspection_distance
+    - sensor.audi_a3_sportback_e_tron_service_inspection_time
+    - sensor.audi_a3_sportback_e_tron_shortterm_trip_data
+    - sensor.audi_a3_sportback_e_tron_shortterm_trip_user_reset
+    - sensor.audi_a3_sportback_e_tron_state_of_charge
+    - binary_sensor.audi_a3_sportback_e_tron_sun_roof
+    - binary_sensor.audi_a3_sportback_e_tron_trunk
+    - binary_sensor.audi_a3_sportback_e_tron_trunk_lock
+    - binary_sensor.audi_a3_sportback_e_tron_windows

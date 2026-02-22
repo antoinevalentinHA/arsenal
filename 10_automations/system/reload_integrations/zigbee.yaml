@@ -1,127 +1,211 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Zigbee2MQTT – Redémarrage automatique du bridge hors-ligne
+#     Zigbee2MQTT – Relance bridge (auto) sur hors-ligne persistant
 #
 #  ID : 1012000000010
 # ----------------------------------------------------------
 #  🎯 RÔLE
-#     Surveiller l’état de connectivité du bridge Zigbee2MQTT
-#     et redémarrer automatiquement l’add-on lorsque celui-ci
-#     est détecté hors-ligne de manière persistante.
+#     Surveiller l’état du bridge Zigbee2MQTT et redémarrer
+#     automatiquement l’add-on lorsque le bridge est détecté
+#     hors-ligne de manière persistante.
 #
-#     Cette automation constitue un mécanisme de résilience
-#     visant à rétablir la communication Zigbee sans
-#     intervention manuelle.
-#
-#  🚫 NE FAIT PAS
-#     - Ne pilote aucun équipement Zigbee
-#     - Ne modifie pas le réseau Zigbee (appairage, routes)
-#     - Ne déclenche aucune action métier dépendante des états
-#
-#  🧩 UTILISATION
-#     - Surveillance périodique (toutes les 10 minutes)
-#     - Condition principale :
-#         • bridge Zigbee2MQTT à l’état OFF ou UNAVAILABLE
+#  ✅ PRINCIPE
+#     - Déclenchement sur hors-ligne avéré :
+#         • bridge_state ∈ {off, unavailable} pendant 5 min
 #     - Action :
-#         • redémarrage de l’add-on Zigbee2MQTT
-#     - Suivi :
-#         • compteur de tentatives
-#         • backoff progressif (espacement des relances)
-#         • reset automatique dès retour en ligne
-#         • notification persistante en cas d’échec ou de succès
+#         • hassio.addon_restart (Zigbee2MQTT)
+#     - Vérification post-restart :
+#         • attente active du retour ON (wait_template)
+#         • timeout 3 min (échec si pas de retour)
+#     - Backoff réel (sans horloge) :
+#         • timer.zigbee2mqtt_reload_backoff
+#         • délai progressif : 10/20/30/40/50/60 min (cap 60)
+#     - Plafond :
+#         • blocage après 5 tentatives consécutives
+#     - Reset automatique :
+#         • dès que le bridge repasse ON (2 min stables)
 #
-#  ✅ CONTRAINTES
-#     - Aucune logique métier Zigbee intégrée
-#     - Aucune dépendance au contexte utilisateur
-#     - Comportement stable et déterministe après redémarrage HA
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - Exécution uniquement si systeme_stable = on
 # ==========================================================
 
 - id: "1012000000010"
   alias: "Zigbee2MQTT – Relance bridge (auto)"
   description: >
-    Redémarre automatiquement l'add-on Zigbee2MQTT si le bridge est
-    OFF ou UNAVAILABLE de façon persistante. Utilise un compteur
-    pour limiter la fréquence des relances et éviter toute boucle.
+    Redémarre automatiquement l'add-on Zigbee2MQTT si le bridge reste
+    OFF/UNAVAILABLE de façon persistante. Backoff via timer, plafond
+    5 tentatives, reset automatique dès retour en ligne.
+
   mode: single
   max_exceeded: silent
 
-  # ======================================================
-  # ⏱️ Vérification périodique (toutes les 10 minutes)
-  # ======================================================
   trigger:
-    - platform: time_pattern
-      minutes: "/10"
-
-  # ======================================================
-  # ✅ Condition — Bridge réellement hors-ligne
-  # ======================================================
-  condition:
-    - condition: template
-      alias: "Bridge Zigbee2MQTT non connecté"
+    # Hors-ligne avéré (persistant)
+    - platform: template
       value_template: >
-        {{ not is_state('binary_sensor.zigbee2mqtt_bridge_connection_state','on') }}
+        {{ states('binary_sensor.zigbee2mqtt_bridge_connection_state') in ['off','unavailable'] }}
+      for: "00:05:00"
+      id: offline
 
-  # ======================================================
-  # 🔄 Action — Restart contrôlé + suivi
-  # ======================================================
+    # Backoff écoulé -> nouvelle tentative si toujours hors-ligne
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.zigbee2mqtt_reload_backoff
+      id: backoff
+
+    # Retour en ligne stable -> reset
+    - platform: state
+      entity_id: binary_sensor.zigbee2mqtt_bridge_connection_state
+      to: "on"
+      for: "00:02:00"
+      id: retour_ok
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
   action:
-
     - variables:
         tentative: "{{ states('input_number.zigbee_reload_tentatives') | int(0) }}"
+        plafond: "{{ (states('input_number.zigbee_reload_tentatives') | int(0)) >= 5 }}"
         delai_min: >
           {% set d = (tentative + 1) * 10 %}
-          {{ [ d, 60 ] | min }}
+          {{ [d, 60] | min }}
 
-    # ------------------------------------------------------
-    # ⛔ Backoff réel : ne pas relancer trop tôt
-    # ------------------------------------------------------
-    - condition: template
-      alias: "Respect du backoff"
-      value_template: >
-        {% set last = state_attr(this.entity_id,'last_triggered') %}
-        {% if last is none %}
-          true
-        {% else %}
-          {{ (as_timestamp(now()) - as_timestamp(last)) / 60 > delai_min }}
-        {% endif %}
-
-    # 📈 Incrémenter le compteur
-    - service: input_number.set_value
-      target:
-        entity_id: input_number.zigbee_reload_tentatives
-      data:
-        value: "{{ tentative + 1 }}"
-
-    # 🔑 Relancer l’add-on Zigbee2MQTT
-    - service: hassio.addon_restart
-      data:
-        addon: a0d7b954_zigbee2mqtt
-
-    # 🕦 Laisser 1 min au bridge
-    - delay: "00:01:00"
-
+    # ======================================================
+    # ✅ Reset auto si retour en ligne stable
+    # ======================================================
     - choose:
-
-        # --------------------------------------------------
-        # ✅ Succès → reset propre
-        # --------------------------------------------------
-        - conditions: >
-            {{ is_state('binary_sensor.zigbee2mqtt_bridge_connection_state','on') }}
+        - conditions:
+            - condition: trigger
+              id: retour_ok
           sequence:
+            - service: timer.cancel
+              target:
+                entity_id: timer.zigbee2mqtt_reload_backoff
+
             - service: input_number.set_value
               target:
                 entity_id: input_number.zigbee_reload_tentatives
               data:
                 value: 0
 
-        # --------------------------------------------------
-        # 🚨 Échec → simple trace persistante
-        # --------------------------------------------------
+            - stop: "Z2M OK — reset"
+
+    # ======================================================
+    # 🧠 Gardien : si backoff finit mais bridge déjà OK -> annule et stop
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: backoff
+            - condition: template
+              value_template: >
+                {{ is_state('binary_sensor.zigbee2mqtt_bridge_connection_state','on') }}
+          sequence:
+            - service: timer.cancel
+              target:
+                entity_id: timer.zigbee2mqtt_reload_backoff
+            - stop: "Backoff termine mais bridge OK"
+
+    # ======================================================
+    # ⛔ Blocage plafond
+    # ======================================================
+    - choose:
+        - conditions: "{{ plafond }}"
+          sequence:
+            - service: timer.cancel
+              target:
+                entity_id: timer.zigbee2mqtt_reload_backoff
+
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "⛔ Zigbee2MQTT — blocage sécurité"
+                message: >
+                  {{ now().strftime('%d/%m %H:%M') }}
+                  5 tentatives consécutives échouées.
+                  Arrêt des relances automatiques.
+
+            - stop: "Plafond atteint"
+
+    # ======================================================
+    # Si on vient d’un nouveau offline, on annule un backoff pendu
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: offline
+          sequence:
+            - service: timer.cancel
+              target:
+                entity_id: timer.zigbee2mqtt_reload_backoff
+
+    # ======================================================
+    # 📈 Incrément tentatives
+    # ======================================================
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.zigbee_reload_tentatives
+      data:
+        value: "{{ tentative + 1 }}"
+
+    # ======================================================
+    # 🔧 Restart add-on Zigbee2MQTT
+    # ======================================================
+    - service: hassio.addon_restart
+      data:
+        addon: a0d7b954_zigbee2mqtt
+
+    # ======================================================
+    # 🕦 Attendre le retour réel du bridge (max 3 min)
+    # ======================================================
+    - wait_template: >
+        {{ is_state('binary_sensor.zigbee2mqtt_bridge_connection_state','on') }}
+      timeout: "00:03:00"
+      continue_on_timeout: true
+
+    - choose:
+        # ✅ Succès
+        - conditions: >
+            {{ is_state('binary_sensor.zigbee2mqtt_bridge_connection_state','on') }}
+          sequence:
+            - service: timer.cancel
+              target:
+                entity_id: timer.zigbee2mqtt_reload_backoff
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.zigbee_reload_tentatives
+              data:
+                value: 0
+
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "✅ Zigbee2MQTT relancé"
+                message: >
+                  {{ now().strftime('%d/%m %H:%M') }}
+                  Bridge de nouveau en ligne après redémarrage automatique.
+
       default:
-        - service: persistent_notification.create
+        # ❌ Échec -> backoff + notification
+        - service: timer.start
+          target:
+            entity_id: timer.zigbee2mqtt_reload_backoff
           data:
-            title: "Zigbee2MQTT hors-ligne"
+            duration: >
+              {% set m = delai_min | int(10) %}
+              {{ '%02d:%02d:%02d' | format((m // 60), (m % 60), 0) }}
+
+        - service: script.notification_envoyer
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "🚨 Zigbee2MQTT hors-ligne"
             message: >
               {{ now().strftime('%d/%m %H:%M') }}
-              Tentative n°{{ tentative + 1 }} échouée.
+              Tentative n°{{ tentative + 1 }} échouée (timeout).
               Prochaine relance autorisée dans {{ delai_min }} min.

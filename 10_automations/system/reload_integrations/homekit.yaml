@@ -1,0 +1,65 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     HomeKit – Relance intégration (auto)
+#
+#  ID : 10120000000019
+# ==========================================================
+
+- id: "10120000000019"
+  alias: "HomeKit – Relance intégration (auto)"
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.gel_avere_homekit
+      to: "on"
+      id: gel
+
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.homekit_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_homekit
+      to: "on"
+      id: retour_ok
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: retour_ok
+          sequence:
+            - service: script.resilience_integration_recover
+              data:
+                op: reset
+                notify_title_prefix: "HomeKit"
+                age_entity: sensor.homekit_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 45
+                attempts_entity: input_number.homekit_reload_tentatives
+                backoff_timer: timer.homekit_reload_backoff
+                backoff_minutes_cap: 60
+
+      default:
+        - service: script.resilience_integration_recover
+          data:
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "HomeKit"
+            age_entity: sensor.homekit_age_donnees
+            seuil_minutes: 45
+            ok_minutes: 10
+            attempts_entity: input_number.homekit_reload_tentatives
+            backoff_timer: timer.homekit_reload_backoff
+            entry_id: !secret homekit_entry_id
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

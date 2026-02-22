@@ -1,0 +1,21 @@
+# ==========================================================
+#  🧠 ARSENAL — TIMER TECHNIQUE
+#     synology_reload_backoff
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Timer de backoff pour l’automatisation :
+#     "Withings – Relance intégration (auto)"
+#
+#     - Espace les tentatives de reload en cas d’échec
+#     - Déclenche via event timer.finished
+#     - Annulé automatiquement en cas de succès
+#
+#  📎 NOTE
+#     La durée est redéfinie dynamiquement par l’automatisation.
+# ==========================================================
+
+synology_reload_backoff:
+  name: "Synology Reload Backoff"
+  icon: mdi:timer-sand
+  duration: "01:00:00"
+  restore: true

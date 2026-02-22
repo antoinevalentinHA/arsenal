@@ -1,0 +1,44 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER SYSTÈME : Compteur tentatives reload Homekit
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Comptabiliser le nombre de tentatives de rechargement
+#   de l’intégration Homekit
+#   afin de prévenir :
+#     - les boucles de reload
+#     - les comportements instables prolongés
+#
+# 🧠 Nature :
+#   - Compteur de SÉCURITÉ SYSTÈME
+#   - État interne de supervision
+#   - Non exposé comme information utilisateur
+#
+# ⚙️ Fonctionnement :
+#   - Incrémenté à chaque tentative de reload Overkiz
+#   - Lu par l’automatisation de supervision dédiée
+#   - Comparé à un seuil maximal autorisé
+#   - Réinitialisé explicitement :
+#       • après un reload réussi
+#       • via un reset contrôlé
+#
+# ⚠️ Important :
+#   - Ce helper NE représente PAS l’état des volets
+#   - Il NE mesure PAS la disponibilité du cloud
+#   - Il sert UNIQUEMENT de garde-fou logique
+#
+# 🔗 Utilisé par :
+#   - Automatisations :
+#       • 10_automations/system/reload_integrations/homekit.yaml
+#
+# 📐 Unité :
+#   - Tentatives (compteur entier)
+#
+# ==========================================================
+
+homekit_reload_tentatives:
+  name: "Homekit – Tentatives reload"
+  icon: mdi:reload
+  min: 0
+  max: 50
+  step: 1
+  mode: box

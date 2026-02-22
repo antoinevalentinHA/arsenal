@@ -63,3 +63,21 @@ switchbot_capteurs:
     - sensor.humidite_relative_garage
     - sensor.temperature_cave
     - sensor.humidite_relative_cave
+
+    ########################################################
+    # 🏭️ IMPRIMERIE
+    ########################################################
+    - sensor.humidite_relative_commercial
+    - sensor.temperature_commercial
+    - sensor.humidite_relative_compta
+    - sensor.temperature_compta
+    - sensor.humidite_relative_devis
+    - sensor.temperature_devis
+    - sensor.humidite_relative_direction
+    - sensor.temperature_direction
+    - sensor.humidite_relative_qualite
+    - sensor.temperature_qualite
+    - sensor.humidite_relative_stock_carton
+    - sensor.temperature_stock_carton
+    - sensor.humidite_relative_stock_pf
+    - sensor.temperature_stock_pf

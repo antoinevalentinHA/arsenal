@@ -1,0 +1,154 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Age des donnees — COULEUR (centre / battement)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer une couleur (green/blue/orange/red/grey) par intégration :
+#     sensor.couleur_age_<integration>
+#
+# 🧠 Principe "centre" :
+#   - centre_minutes : rythme nominal attendu
+#   - band_minutes   : zone verte autour du centre (battement)
+#   - seuil_minutes  : KO (incident)
+#
+# 🎨 Sorties :
+#   - blue   : plus frais que centre - band (très vivant)
+#   - green  : dans [centre-band ; centre+band]
+#   - orange : au-dessus de centre+band (ralentit)
+#   - red    : >= seuil_minutes (incident)
+#   - grey   : unknown/unavailable/non numérique
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.homekit_age_donnees
+        - sensor.netatmo_age_donnees
+        - sensor.switchbot_age_donnees
+        - sensor.vicare_age_donnees
+        - sensor.fujitsu_age_donnees
+        - sensor.petite_maison_cumulus_age_donnees
+        - sensor.synology_age_donnees
+        - sensor.audi_age_donnees
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Couleur age HomeKit"
+      unique_id: couleur_age_homekit
+      availability: &couleur_age_availability >
+        {% set integration = this.entity_id | replace('sensor.couleur_age_', '') %}
+        {% set src_map = {
+          'homekit': 'sensor.homekit_age_donnees',
+          'netatmo': 'sensor.netatmo_age_donnees',
+          'switchbot': 'sensor.switchbot_age_donnees',
+          'vicare': 'sensor.vicare_age_donnees',
+          'fujitsu': 'sensor.fujitsu_age_donnees',
+          'cumulus': 'sensor.petite_maison_cumulus_age_donnees',
+          'synology': 'sensor.synology_age_donnees',
+          'audi': 'sensor.audi_age_donnees'
+        } %}
+        {% set src = src_map.get(integration) %}
+        {{ src is not none and states(src) not in ['unknown','unavailable',None] }}
+
+      state: &couleur_age_logic >
+        {% set integration = this.entity_id | replace('sensor.couleur_age_', '') %}
+
+        {% set src_map = {
+          'homekit': 'sensor.homekit_age_donnees',
+          'netatmo': 'sensor.netatmo_age_donnees',
+          'switchbot': 'sensor.switchbot_age_donnees',
+          'vicare': 'sensor.vicare_age_donnees',
+          'fujitsu': 'sensor.fujitsu_age_donnees',
+          'cumulus': 'sensor.petite_maison_cumulus_age_donnees',
+          'synology': 'sensor.synology_age_donnees',
+          'audi': 'sensor.audi_age_donnees'
+        } %}
+
+        {% set centre_map = {
+          'homekit': 1.0,
+          'netatmo': 1.0,
+          'switchbot': 1.0,
+          'vicare': 2.0,
+          'fujitsu': 2.0,
+          'cumulus': 2.0,
+          'synology': 2.0,
+          'audi': 5.0
+        } %}
+
+        {% set seuil_map = {
+          'homekit': 15,
+          'netatmo': 15,
+          'switchbot': 15,
+          'vicare': 30,
+          'fujitsu': 45,
+          'cumulus': 60,
+          'synology': 30,
+          'audi': 120
+        } %}
+
+        {% set band_map = {
+          'homekit': 0.5,
+          'netatmo': 0.5,
+          'switchbot': 0.5,
+          'vicare': 1.0,
+          'fujitsu': 1.0,
+          'cumulus': 1.0,
+          'synology': 1.0,
+          'audi': 2.0
+        } %}
+
+        {% set src = src_map.get(integration) %}
+        {% set raw = states(src) if src is not none else 'unknown' %}
+        {% set age = raw | replace(',', '.') | float(default=none) %}
+
+        {% set centre = centre_map.get(integration, 2.0) | float(2.0) %}
+        {% set band = band_map.get(integration, 1.0) | float(1.0) %}
+        {% set seuil = seuil_map.get(integration, 60) | float(60) %}
+
+        {% if age is none %}
+          grey
+        {% elif age >= seuil %}
+          red
+        {% elif age < (centre - band) %}
+          blue
+        {% elif age <= (centre + band) %}
+          green
+        {% else %}
+          orange
+        {% endif %}
+
+    - name: "Couleur age Netatmo"
+      unique_id: couleur_age_netatmo
+      availability: *couleur_age_availability
+      state: *couleur_age_logic
+
+    - name: "Couleur age SwitchBot"
+      unique_id: couleur_age_switchbot
+      availability: *couleur_age_availability
+      state: *couleur_age_logic
+
+    - name: "Couleur age ViCare"
+      unique_id: couleur_age_vicare
+      availability: *couleur_age_availability
+      state: *couleur_age_logic
+
+    - name: "Couleur age Fujitsu"
+      unique_id: couleur_age_fujitsu
+      availability: *couleur_age_availability
+      state: *couleur_age_logic
+
+    - name: "Couleur age Cumulus"
+      unique_id: couleur_age_cumulus
+      availability: *couleur_age_availability
+      state: *couleur_age_logic
+
+    - name: "Couleur age Synology"
+      unique_id: couleur_age_synology
+      availability: *couleur_age_availability
+      state: *couleur_age_logic
+
+    - name: "Couleur age Audi"
+      unique_id: couleur_age_audi
+      availability: *couleur_age_availability
+      state: *couleur_age_logic

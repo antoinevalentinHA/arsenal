@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (moteur moderne)
+#     Résumé fenêtres concernées ouvertes (pluie)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer un résumé lisible (texte) des fenêtres concernées
+#   actuellement ouvertes.
+#
+# 🧱 ARCHITECTURE
+#   - Décision uniquement (stateless, recalculable)
+#   - Aucune action, aucune notification
+#
+# 🚫 NE FAIT PAS
+#   - aucun service
+#   - aucune temporisation active
+# ==========================================================
+
+- sensor:
+    - name: "Résumé fenêtres concernées ouvertes (pluie)"
+      unique_id: resume_fenetres_concernees_ouvertes_pluie
+      default_entity_id: sensor.resume_fenetres_concernees_ouvertes_pluie
+      icon: mdi:message-text
+      state: >
+        {% set mapping = {
+          'binary_sensor.contact_chambre_arnaud':'Chambre Arnaud',
+          'binary_sensor.contact_chambre_matthieu':'Chambre Matthieu',
+          'binary_sensor.contact_sejour_1':'Séjour 1',
+          'binary_sensor.contact_sejour_2':'Séjour 2',
+          'binary_sensor.contact_sejour_3':'Séjour 3',
+          'binary_sensor.contact_sejour_4':'Séjour 4'
+        } %}
+        {% set ouvertes = mapping.keys() | select('is_state','on') | list %}
+        {% if ouvertes | length == 0 %}
+          Aucune
+        {% else %}
+          {% set noms = [] %}
+          {% for e in ouvertes %}
+            {% set noms = noms + [mapping[e]] %}
+          {% endfor %}
+          {{ noms | join(', ') }}
+        {% endif %}
+      attributes:
+        ouvertes_entity_ids: >
+          {% set fenetres = [
+            'binary_sensor.contact_chambre_arnaud',
+            'binary_sensor.contact_chambre_matthieu',
+            'binary_sensor.contact_sejour_1',
+            'binary_sensor.contact_sejour_2',
+            'binary_sensor.contact_sejour_3',
+            'binary_sensor.contact_sejour_4'
+          ] %}
+          {{ fenetres | select('is_state','on') | list }}

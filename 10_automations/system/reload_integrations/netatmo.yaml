@@ -1,141 +1,89 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Netatmo – Relance automatique de l’intégration sur gel
+#     Netatmo – Relance intégration (auto) sur gel données
 #
 #  ID : 1012000000008
 # ----------------------------------------------------------
 #  🎯 RÔLE
-#     Surveiller la fraîcheur des données issues de l’intégration
-#     Netatmo et relancer automatiquement celle-ci lorsque les
-#     données restent figées au-delà d’un seuil temporel.
+#     Détection + orchestration minimale :
+#     - détecte le gel / backoff / retour OK
+#     - délègue la procédure au script canon :
+#       script.resilience_integration_recover
 #
-#     Cette automation constitue un mécanisme de résilience
-#     autonome visant à restaurer un flux de données bloqué.
+#  ✅ PRINCIPE
+#     - Gel avéré :
+#         • sensor.netatmo_age_donnees >= 45 min pendant 5 min
+#     - Succès :
+#         • âge < 10 min pendant 2 min
+#     - Backoff :
+#         • timer.netatmo_reload_backoff (durée gérée par le script)
 #
-#  🚫 NE FAIT PAS
-#     - Ne pilote aucun équipement Netatmo
-#     - Ne force pas la mise à jour des données
-#     - Ne déclenche aucune action métier dépendante des mesures
-#
-#  🧩 UTILISATION
-#     - Surveillance périodique (time_pattern)
-#     - Condition principale :
-#         • âge des données Netatmo ≥ 60 minutes
-#     - Garde-fous intégrés :
-#         • anti-boucle temporelle (1 reload / 90 min)
-#         • blocage après 5 tentatives consécutives
-#     - Réinitialisation automatique du compteur dès retour
-#       de données fraîches
-#     - Notifications explicites selon succès, échec ou blocage
-#
-#  ✅ CONTRAINTES
-#     - Aucune logique métier déportée ici
-#     - Aucune dépendance à la présence ou au contexte utilisateur
-#     - Comportement déterministe, stable après redémarrage HA
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - Exécution uniquement si systeme_stable = on
 # ==========================================================
-
 
 - id: "1012000000008"
   alias: "Netatmo – Relance intégration (auto)"
   description: >
-    Recharge automatiquement l’intégration Netatmo si aucune donnée
-    n’a été mise à jour depuis plus de 60 minutes. Évite les boucles
-    en limitant la fréquence des reloads et le nombre de tentatives.
+    Orchestration légère : déclenche la procédure de résilience Netatmo
+    (reload config_entry) sur gel données, avec backoff et plafond
+    gérés par le script canon.
+
   mode: single
   max_exceeded: silent
 
   trigger:
-    - platform: time_pattern
-      minutes: "/10"
+    - platform: state
+      entity_id: binary_sensor.gel_avere_netatmo
+      to: "on"
+      id: gel
 
-  variables:
-    tentative: "{{ states('input_number.netatmo_reload_tentatives') | int(0) }}"
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.netatmo_reload_backoff
+      id: backoff
 
-    dernier_reload: >
-      {{ state_attr('automation.netatmo_relance_integration_auto', 'last_triggered')
-         | default(0)
-         | as_timestamp }}
-
-    temps_ecoule: >
-      {{ (as_timestamp(now()) - dernier_reload) / 60 | float(9999) }}
-
-    blocage: "{{ tentative >= 5 }}"
-    anti_spam: "{{ temps_ecoule < 90 }}"
+    - platform: state
+      entity_id: binary_sensor.retour_ok_netatmo
+      to: "on"
+      id: retour_ok
 
   condition:
-    - condition: template
-      alias: "Données Netatmo figées"
-      value_template: >
-        {{ states('sensor.netatmo_age_donnees') | float(0) >= 60 }}
-
-    # ⛔ Stop si on est en backoff ou blocage
-    - condition: template
-      value_template: >
-        {{ not blocage and not anti_spam }}
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
 
   action:
-    - variables:
-        prochain_delai: >
-          {% set base = [ (tentative + 1) * 10, 60 ] | min %}
-          {{ base }}
-
-    # 📈 Incrément tentative
-    - service: input_number.set_value
-      target:
-        entity_id: input_number.netatmo_reload_tentatives
-      data:
-        value: "{{ tentative + 1 }}"
-
-    # 🔧 Rechargement de l’intégration
-    - service: homeassistant.reload_config_entry
-      data:
-        entry_id: !secret netatmo_entry_id
-
-    # 🕦 Attente puis contrôle
-    - delay: "00:02:00"
-
     - choose:
-
-        # ✅ Succès : remise à zéro
-        - conditions: >
-            {{ states('sensor.netatmo_age_donnees') | float(999) < 10 }}
+        # ✅ Reset auto si retour données fraîches
+        - conditions:
+            - condition: trigger
+              id: retour_ok
           sequence:
-            - service: input_number.set_value
-              target:
-                entity_id: input_number.netatmo_reload_tentatives
+            - service: script.resilience_integration_recover
               data:
-                value: 0
+                op: reset
+                notify_title_prefix: "Netatmo"
+                age_entity: sensor.netatmo_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 45
+                attempts_entity: input_number.netatmo_reload_tentatives
+                backoff_timer: timer.netatmo_reload_backoff
+                backoff_minutes_cap: 60
 
-            - service: script.notification_envoyer
-              data:
-                cible: input_text.telephone_antoine_notify
-                titre: "✅ Netatmo relancé"
-                message: >
-                  {{ now().strftime('%d/%m %H:%M') }}  
-                  Données à nouveau fraîches après reload automatique.
-
-        # 🚨 Échec mais pas encore bloqué
-        - conditions: >
-            {{ tentative + 1 < 5 }}
-          sequence:
-            - service: script.notification_envoyer
-              data:
-                cible: input_text.telephone_antoine_notify
-                titre: "🚨 Relance Netatmo échouée"
-                message: >
-                  {{ now().strftime('%d/%m %H:%M') }}  
-                  Tentative n°{{ tentative + 1 }} échouée.  
-                  Nouvelle tentative prévue dans ~{{ prochain_delai }} min.
-
-        # 🧱 Blocage après 5 tentatives
-        - conditions: >
-            {{ tentative + 1 >= 5 }}
-          sequence:
-            - service: script.notification_envoyer
-              data:
-                cible: input_text.telephone_antoine_notify
-                titre: "⛔ Blocage sécurité Netatmo"
-                message: >
-                  {{ now().strftime('%d/%m %H:%M') }}  
-                  5 tentatives de relance infructueuses.  
-                  Arrêt automatique du script jusqu’à retour des données Netatmo.
+      default:
+        - service: script.resilience_integration_recover
+          data:
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "Netatmo"
+            age_entity: sensor.netatmo_age_donnees
+            seuil_minutes: 45
+            ok_minutes: 10
+            attempts_entity: input_number.netatmo_reload_tentatives
+            backoff_timer: timer.netatmo_reload_backoff
+            entry_id: !secret netatmo_entry_id
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

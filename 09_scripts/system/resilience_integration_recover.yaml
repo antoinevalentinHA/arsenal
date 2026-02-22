@@ -1,0 +1,205 @@
+# ==========================================================
+#  🧠 ARSENAL — SCRIPT (CANON)
+#     resilience_integration_recover
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Procédure unique de résilience pour intégrations critiques :
+#     - attempt : tentative de récupération (reload/restart)
+#     - reset   : remise à zéro (retour OK)
+#     - block   : blocage plafond (sécurité)
+#
+#  🧱 PRINCIPE
+#     - Aucun trigger ici (piloté par automations)
+#     - Paramétré via fields (entités, seuils, action)
+#     - Notifications mobiles via script.notification_envoyer
+# ==========================================================
+
+resilience_integration_recover:
+  alias: "Resilience – Integration recover (canon)"
+  mode: single
+
+  fields:
+    op:
+      description: "attempt | reset | block"
+    kind:
+      description: "reload_entry | restart_addon"
+    notify_title_prefix:
+      description: "Ex: ViCare, Netatmo, Zigbee2MQTT"
+    age_entity:
+      description: "Ex: sensor.vicare_age_donnees"
+    seuil_minutes:
+      description: "Gel si age >= seuil"
+    ok_minutes:
+      description: "Succes si age < ok"
+    attempts_entity:
+      description: "Ex: input_number.vicare_reload_tentatives"
+    backoff_timer:
+      description: "Ex: timer.vicare_reload_backoff"
+    entry_id:
+      description: "Config entry_id (si kind=reload_entry)"
+    addon_slug:
+      description: "Addon slug (si kind=restart_addon)"
+    backoff_minutes_cap:
+      description: "Cap backoff minutes (ex: 60)"
+    wait_timeout:
+      description: "Timeout wait_template (ex: 00:03:00)"
+
+  sequence:
+
+    # =========================
+    # 🧱 GARDE PARAMETRES
+    # =========================
+    - variables:
+        age_entity_safe: "{{ age_entity | default('') }}"
+        prefix: "{{ notify_title_prefix | default('Integration') }}"
+
+    - choose:
+        - conditions: "{{ age_entity_safe | length > 0 }}"
+          sequence: []
+      default:
+        - service: logbook.log
+          data:
+            name: "Resilience – Integration recover (canon)"
+            message: "Paramètre manquant : age_entity (script appelé sans age_entity)."
+            domain: script
+        - stop: "age_entity manquant"
+
+    - variables:
+        UNAV: ['unknown','unavailable',None,'none','']
+        age_state: "{{ states(age_entity_safe) }}"
+        age: "{{ states(age_entity_safe) | float(default=none) }}"
+        seuil: "{{ seuil_minutes | float(default=45) }}"
+        ok: "{{ ok_minutes | float(default=10) }}"
+        tentative: "{{ states(attempts_entity) | int(0) }}"
+        cap: "{{ backoff_minutes_cap | int(60) }}"
+        timeout: "{{ wait_timeout | default('00:03:00') }}"
+        plafond: "{{ tentative >= 5 }}"
+        delai_min: >
+          {% set d = (tentative + 1) * 10 %}
+          {{ [d, cap] | min }}
+
+    - choose:
+
+        # =========================
+        # ✅ RESET (retour OK)
+        # =========================
+        - conditions: "{{ op == 'reset' }}"
+          sequence:
+            - service: timer.cancel
+              target:
+                entity_id: "{{ backoff_timer }}"
+            - service: input_number.set_value
+              target:
+                entity_id: "{{ attempts_entity }}"
+              data:
+                value: 0
+            - stop: "reset"
+
+        # =========================
+        # ⛔ BLOCK (plafond)
+        # =========================
+        - conditions: "{{ op == 'block' }}"
+          sequence:
+            - service: timer.cancel
+              target:
+                entity_id: "{{ backoff_timer }}"
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "⛔ {{ prefix }} — blocage sécurité"
+                message: >
+                  {{ now().strftime('%d/%m %H:%M') }}
+                  5 tentatives consécutives échouées.
+                  Arrêt des relances automatiques.
+            - stop: "block"
+
+    # =========================
+    # ATTEMPT (tentative)
+    # =========================
+    - choose:
+        - conditions: "{{ plafond }}"
+          sequence:
+            - service: script.resilience_integration_recover
+              data:
+                op: block
+                notify_title_prefix: "{{ prefix }}"
+                attempts_entity: "{{ attempts_entity }}"
+                backoff_timer: "{{ backoff_timer }}"
+            - stop: "plafond"
+
+    # Si gel non confirmé / valeur non numérique : on ne fait rien
+    - condition: template
+      value_template: >
+        {{ age is not none and age >= seuil }}
+
+    # Annule un backoff pendu (si on relance à cause d’un nouveau gel)
+    - service: timer.cancel
+      target:
+        entity_id: "{{ backoff_timer }}"
+
+    # Incrément tentative
+    - service: input_number.set_value
+      target:
+        entity_id: "{{ attempts_entity }}"
+      data:
+        value: "{{ tentative + 1 }}"
+
+    # Action : reload_entry ou restart_addon
+    - choose:
+        - conditions: "{{ kind == 'reload_entry' }}"
+          sequence:
+            - service: homeassistant.reload_config_entry
+              data:
+                entry_id: "{{ entry_id }}"
+        - conditions: "{{ kind == 'restart_addon' }}"
+          sequence:
+            - service: hassio.addon_restart
+              data:
+                addon: "{{ addon_slug }}"
+
+    # Attente “retour réel”
+    - wait_template: >
+        {% set v = states(age_entity_safe) | float(default=none) %}
+        {{ v is not none and v < ok }}
+      timeout: "{{ timeout }}"
+      continue_on_timeout: true
+
+    # Succès ?
+    - choose:
+        - conditions: >
+            {% set v = states(age_entity_safe) | float(default=none) %}
+            {{ v is not none and v < ok }}
+          sequence:
+            - service: timer.cancel
+              target:
+                entity_id: "{{ backoff_timer }}"
+            - service: input_number.set_value
+              target:
+                entity_id: "{{ attempts_entity }}"
+              data:
+                value: 0
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "✅ {{ prefix }} — relance OK"
+                message: >
+                  {{ now().strftime('%d/%m %H:%M') }}
+                  Données à nouveau fraîches ({{ states(age_entity_safe) }} min).
+
+      default:
+        - service: timer.start
+          target:
+            entity_id: "{{ backoff_timer }}"
+          data:
+            duration: >
+              {% set m = delai_min | int(10) %}
+              {{ '%02d:%02d:%02d' | format((m // 60), (m % 60), 0) }}
+
+        - service: script.notification_envoyer
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "🚨 {{ prefix }} — relance en échec"
+            message: >
+              {{ now().strftime('%d/%m %H:%M') }}
+              Tentative n°{{ tentative + 1 }} échouée (timeout).
+              Prochaine tentative après backoff (~{{ delai_min }} min).

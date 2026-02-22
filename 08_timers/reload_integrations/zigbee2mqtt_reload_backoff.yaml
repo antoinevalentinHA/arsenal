@@ -1,0 +1,10 @@
+# ==========================================================
+#  🧠 ARSENAL — TIMER TECHNIQUE
+#     zigbee2mqtt_reload_backoff
+# ==========================================================
+
+zigbee2mqtt_reload_backoff:
+  name: "Zigbee2MQTT Reload Backoff"
+  icon: mdi:timer-sand
+  duration: "01:00:00"
+  restore: true

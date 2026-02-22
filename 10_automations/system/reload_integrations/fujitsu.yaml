@@ -1,113 +1,89 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Airstage – Relance manuelle de l’intégration
+#     Airstage – Relance intégration (auto) sur gel données
 #
 #  ID : 1012000000013
 # ----------------------------------------------------------
 #  🎯 RÔLE
-#     Permet de relancer manuellement l’intégration Fujitsu
-#     Airstage afin de tenter de restaurer un flux de données
-#     figé ou dégradé.
+#     Détection + orchestration minimale :
+#     - détecte le gel / backoff / retour OK
+#     - délègue la procédure au script canon :
+#       script.resilience_integration_recover
 #
-#     Cette automation est conçue exclusivement comme un
-#     outil de maintenance et de diagnostic.
+#  ✅ PRINCIPE
+#     - Gel avéré :
+#         • sensor.fujitsu_age_donnees >= 45 min pendant 5 min
+#     - Succès :
+#         • âge < 10 min pendant 2 min
+#     - Backoff :
+#         • timer.airstage_reload_backoff (durée gérée par le script)
 #
-#  🚫 NE FAIT PAS
-#     - Ne se déclenche jamais automatiquement
-#     - Ne planifie aucune relance périodique
-#     - Ne pilote pas la climatisation
-#     - Ne force pas la mise à jour des données
-#
-#  🧩 UTILISATION
-#     - Déclenchement volontaire uniquement :
-#         • bouton « Exécuter » dans Home Assistant
-#         • service automation.trigger
-#         • bouton dédié dans un dashboard
-#     - Vérifie l’état de fraîcheur des données avant et après
-#       relance
-#     - Gère un compteur de tentatives et notifie le résultat
-#
-#  ✅ CONTRAINTES
-#     - Aucune logique automatique ou conditionnelle globale
-#     - Aucune interaction avec des règles métier
-#     - Fonctionne indépendamment des automatisations
-#       de résilience automatique
+#  🧱 GARDE-FOUS
+#     - Pas de time_pattern
+#     - Exécution uniquement si systeme_stable = on
 # ==========================================================
 
-
 - id: '1012000000013'
-  alias: "Airstage – Relance intégration (manuel)"
+  alias: "Airstage – Relance intégration (auto)"
   description: >
-    Relance manuellement l’intégration Fujitsu Airstage.
-    Ne se déclenche jamais automatiquement : exécution à la demande uniquement.
+    Orchestration légère : déclenche la procédure de résilience Airstage
+    (reload config_entry) sur gel données, avec backoff et plafond
+    gérés par le script canon.
+
   mode: single
   max_exceeded: silent
 
-  # ======================================================
-  # 🚫 Déclencheur — Toujours faux (aucun lancement automatique)
-  # ======================================================
   trigger:
-    - platform: template
-      value_template: "{{ false }}"
+    - platform: state
+      entity_id: binary_sensor.gel_avere_airstage
+      to: "on"
+      id: gel
 
-  # ======================================================
-  # ✅ Condition — Données figées ≥ 60 min (contrôle à la main)
-  # ======================================================
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.airstage_reload_backoff
+      id: backoff
+
+    - platform: state
+      entity_id: binary_sensor.retour_ok_airstage
+      to: "on"
+      id: retour_ok
+
   condition:
-    - condition: template
-      alias: "Données Airstage figées"
-      value_template: >
-        {{ states('sensor.fujitsu_age_donnees') | float(0) >= 60 }}
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
 
-  # ======================================================
-  # 🔄 Actions — Reload + notifications
-  # ======================================================
   action:
-    - variables:
-        tentative: "{{ states('input_number.airstage_reload_tentatives') | int(0) }}"
-        prochain_delai: >
-          {% set base = [ (tentative + 1) * 10, 60 ] | min %}
-          {{ base }}
-
-    # 📈 Incrément du compteur de tentatives
-    - service: input_number.set_value
-      target:
-        entity_id: input_number.airstage_reload_tentatives
-      data:
-        value: "{{ tentative + 1 }}"
-
-    # 🔧 Rechargement de l’intégration Airstage
-    - service: homeassistant.reload_config_entry
-      data:
-        entry_id: !secret airstage_entry_id
-
-    # ⏳ Délai de 2 min avant vérification de fraîcheur
-    - delay: "00:02:00"
-
     - choose:
-
-        # ❌ Échec → notification mobile prioritaire
-        - conditions: >
-            {{ states('sensor.fujitsu_age_donnees') | float(999) >= 10 }}
+        # ✅ Reset auto si retour données fraîches
+        - conditions:
+            - condition: trigger
+              id: retour_ok
           sequence:
-            - service: script.notification_envoyer_avance
+            - service: script.resilience_integration_recover
               data:
-                cible: input_text.telephone_antoine_notify
-                titre: "🚨 Relance Airstage échouée"
-                message: >
-                  {{ now().strftime('%d/%m %H:%M') }}  
-                  La relance manuelle d’Airstage n’a pas réussi.  
-                  Vérifie la connectivité du module ou du réseau local.
-                extra:
-                  ttl: 0
-                  priority: high
-                  importance: high
+                op: reset
+                notify_title_prefix: "Airstage"
+                age_entity: sensor.fujitsu_age_donnees
+                ok_minutes: 10
+                seuil_minutes: 45
+                attempts_entity: input_number.airstage_reload_tentatives
+                backoff_timer: timer.airstage_reload_backoff
+                backoff_minutes_cap: 60
 
       default:
-
-        # ✅ Succès → compteur réinitialisé, silence UI
-        - service: input_number.set_value
-          target:
-            entity_id: input_number.airstage_reload_tentatives
+        - service: script.resilience_integration_recover
           data:
-            value: 0
+            op: attempt
+            kind: reload_entry
+            notify_title_prefix: "Airstage"
+            age_entity: sensor.fujitsu_age_donnees
+            seuil_minutes: 45
+            ok_minutes: 10
+            attempts_entity: input_number.airstage_reload_tentatives
+            backoff_timer: timer.airstage_reload_backoff
+            entry_id: !secret airstage_entry_id
+            backoff_minutes_cap: 60
+            wait_timeout: "00:03:00"

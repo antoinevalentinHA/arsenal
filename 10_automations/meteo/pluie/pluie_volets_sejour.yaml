@@ -1,0 +1,110 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Pluie forte – Fermeture volets Séjour
+#
+#  ID : 10160000000010
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’ORCHESTRATION MÉTIER (événementielle).
+#
+#     Ferme automatiquement les volets du séjour
+#     UNIQUEMENT lors du passage à "pluie forte",
+#     conformément au contrat : "Séjour = pluie forte only".
+#
+#  🧱 NATURE
+#
+#     - Orchestration événementielle
+#     - Décision déléguée aux capteurs template
+#     - Exécution déléguée au script idempotent
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement principal :
+#         • binary_sensor.intention_pluie_forte -> ON
+#     - Déclenchement de reprise :
+#         • systeme_stable -> ON si pluie forte déjà active
+#
+#  ✅ CONDITIONS
+#
+#     - Présence sécurisée = OFF (absence)
+#     - Autorisation séjour = ON (helpers)
+#     - Cibles séjour disponibles (liste non vide)
+#
+#  🚫 NE FAIT PAS
+#
+#     - Ne détecte pas la pluie
+#     - Ne décide pas du "fort" (capteur décide)
+#     - Ne ferme aucun autre volet que le séjour
+# ==========================================================
+
+- id: "10160000000010"
+  alias: "Pluie forte – Fermeture volets Séjour"
+  description: >
+    Ferme les volets du séjour uniquement lors du passage à "pluie forte",
+    en absence (présence sécurisée OFF) et si l’autorisation séjour est active.
+
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      id: pluie_forte
+      entity_id: binary_sensor.intention_pluie_forte
+      to: "on"
+
+    - platform: state
+      id: demarrage
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: template
+      alias: "Garde-fou : pluie forte active"
+      value_template: "{{ states('binary_sensor.intention_pluie_forte') == 'on' }}"
+
+    - condition: template
+      alias: "Condition : présence sécurisée OFF (absence)"
+      value_template: "{{ states('binary_sensor.presence_famille_securite') == 'off' }}"
+
+    - condition: template
+      alias: "Condition : autorisation séjour ON"
+      value_template: "{{ states('binary_sensor.autorisation_fermeture_volets_pluie_sejour') == 'on' }}"
+
+    - condition: template
+      alias: "Condition : cibles séjour non vides"
+      value_template: >
+        {{ (state_attr('sensor.cibles_volets_pluie_sejour','entity_ids') or []) | length > 0 }}
+
+    - condition: or
+      conditions:
+        - condition: trigger
+          id: pluie_forte
+        - condition: and
+          conditions:
+            - condition: trigger
+              id: demarrage
+            - condition: template
+              alias: "Reprise : pluie forte déjà active"
+              value_template: "{{ states('binary_sensor.intention_pluie_forte') == 'on' }}"
+
+  action:
+    - variables:
+        cibles_sejour: "{{ state_attr('sensor.cibles_volets_pluie_sejour','entity_ids') or [] }}"
+
+    - service: script.volets_fermeture_execute
+      data:
+        covers: "{{ cibles_sejour }}"
+
+    - service: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🌧️ Pluie forte – Volets séjour fermés"
+        message: >
+          Pluie forte détectée.
+          Fermeture automatique des volets du séjour à {{ now().strftime('%H:%M') }}.
+
+          Cibles : {{ cibles_sejour | join(', ') }}.
+        extra:
+          group: "volets"
+          tag: "fermeture_volets_pluie_forte_sejour"
