@@ -1,68 +1,91 @@
 # ==========================================================
-#  🧠 ARSENAL — AUTOMATION :
-#     Chauffage – Sécurité blocage au démarrage (V3)
+# 🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Blocage aération – Sécurité démarrage (V3 PRO)
 #
-#  ID : 10010000000022
+# ID : 10010000000022
 # ----------------------------------------------------------
-#  🎯 RÔLE
+# 🎯 RÔLE
 #
-#     Garde-fou de démarrage garantissant qu’un blocage
-#     chauffage lié à une aération n’est jamais conservé
-#     à tort après un redémarrage Home Assistant.
+#   Garde-fou de démarrage garantissant qu’un blocage chauffage
+#   lié à une aération n’est jamais conservé à tort après reboot.
 #
-#  🧩 PRINCIPE
+# ----------------------------------------------------------
+# 🧩 PRINCIPE
 #
-#     - S’exécute uniquement au retour à un système stable
-#     - Vérifie si l’horodatage de fin de blocage est dépassé
-#     - Coupe immédiatement le blocage si nécessaire
+#   - S’exécute uniquement au retour à un système stable.
+#   - Si un blocage est actif alors que sa fin théorique est dépassée
+#     (via input_datetime), il est coupé immédiatement.
 #
-#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#   ⚠️ Extension V3 PRO (timers) :
+#     - annule aussi les timers aération pour éviter un réveil fantôme
+#       (timer.finished) après remise en cohérence.
 #
-#     - N’initie aucune aération
-#     - Ne décide pas d’une reprise thermique
-#     - Ne modifie aucun datetime
-#     - N’interfère pas avec les pipelines actifs
+# ----------------------------------------------------------
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
-#  🛡️ ROBUSTESSE
+#   - N’initie aucune aération
+#   - Ne décide pas d’une reprise thermique
+#   - N’interfère pas avec un épisode actif (fenêtre ouverte / épisode on)
 #
-#     - Protège contre reboot, crash et restore
-#     - Évite tout blocage "zombie" persistant
-#     - Complémentaire des pipelines d’aération
-#
-#  🔗 POSITION ARCHITECTURALE
-#
-#     Cette automation est un garde-fou de démarrage.
-#     Toute reprise thermique reste déléguée aux
-#     scripts de décision centrale.
-#
-#  ✅ Compatibilité : Home Assistant 2024.8+
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
-
 
 - id: "10010000000022"
   alias: "Chauffage - Blocage aération - Sécurite démarrage"
   mode: single
 
   trigger:
-    # Exécution après chaque démarrage Home Assistant
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
 
   condition:
-    # Le blocage doit être actif
+
+    # Blocage actif
     - condition: state
       entity_id: input_boolean.chauffage_blocage_aeration
       state: "on"
 
-    # La date/heure de fin doit être dépassée
+    # Ne pas toucher si épisode en cours ou ouvertures encore actives
+    - condition: state
+      entity_id: input_boolean.aeration_episode_en_cours
+      state: "off"
+
+    - condition: state
+      entity_id: binary_sensor.fenetre_ouverte_maison
+      state: "off"
+
+    # Date/heure fin blocage dépassée (input_datetime conservé)
     - condition: template
       value_template: >
         {{ now().timestamp() >
            (state_attr('input_datetime.chauffage_fin_blocage_aeration', 'timestamp') | float(0)) }}
 
   action:
+
     # Coupure immédiate du blocage
     - action: input_boolean.turn_off
       target:
+        entity_id: input_boolean.chauffage_blocage_aeration
+
+    # Annulation timers résiduels (anti réveil fantôme)
+    - action: timer.cancel
+      target:
+        entity_id:
+          - timer.aeration_analyse_delta_t
+          - timer.aeration_blocage
+
+    # Désarmement pipeline (cohérence globale)
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_pipeline_arme
+
+    # Journalisation
+    - action: logbook.log
+      data:
+        name: "Chauffage - Blocage aération - Sécurité démarrage"
+        message: >
+          Blocage aération coupé au démarrage : fin de blocage dépassée.
+          Timers aération annulés. Pipeline désarmé.
         entity_id: input_boolean.chauffage_blocage_aeration

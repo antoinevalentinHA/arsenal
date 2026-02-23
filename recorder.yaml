@@ -130,9 +130,8 @@ include:
     - input_boolean.chauffage_blocage_aeration
     - input_boolean.aeration_pipeline_arme
     - input_boolean.aeration_confirmee
+    - input_number.delta_t_max_decisionnel_aeration
     - input_datetime.aeration_debut
-    - input_datetime.chauffage_fin_blocage_aeration
-    - input_datetime.analyse_deltat_disponible
     - input_number.ref_temp_entree
     - input_number.ref_temp_sejour
     - input_number.ref_temp_chambre_arnaud

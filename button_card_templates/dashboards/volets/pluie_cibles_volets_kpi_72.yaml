@@ -1,0 +1,41 @@
+#################################################################
+# 🧠 ARSENAL — TEMPLATE MÉTIER
+#     Volets / Pluie — KPI Cibles volets (72, sans icône)
+#
+# Rôle :
+#   Compteur coloré + label canon "X volet(s)" sans duplication.
+#
+# Couleurs :
+#   - 0                -> Vert OK
+#   - >0               -> Orange warn
+#   - unknown/unavail  -> Gris indispo
+#################################################################
+
+pluie_cibles_volets_kpi_72:
+  template: socle_kpi_label_72_sans_icone
+  show_state: true
+  show_label: true
+  label: >
+    [[[
+      const s = entity?.state;
+      if (!s || s === "unknown" || s === "unavailable") return "Indisponible";
+
+      const n = Number(s);
+      if (!Number.isFinite(n)) return "Indisponible";
+
+      return `${n} volet(s)`;
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity?.state;
+
+            if (!s || s === "unknown" || s === "unavailable") return "rgba(224, 224, 224, 0.2)";
+
+            const n = Number(s);
+            if (!Number.isFinite(n)) return "rgba(224, 224, 224, 0.2)";
+
+            if (n <= 0) return "rgba(76, 175, 80, 0.2)";
+            return "rgba(255, 152, 0, 0.25)";
+          ]]]

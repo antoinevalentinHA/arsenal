@@ -12,8 +12,8 @@ max: 100
 direction: right
 height: 36px
 positions:
-  icon: inside
-  name: inside
+  icon: outside
+  name: outside
   value: inside
 animation:
   state: 'off'
@@ -43,18 +43,24 @@ card_mod:
     bar-card-card { margin-top: 6px; }
     bar-card-card:first-child { margin-top: 0px; }
 
-    /* Typo */
-    bar-card-value { font-weight: 700; }
-    bar-card-name  { font-weight: 600; }
+    /* -----------------------------
+       ✅ Outside FIXÉ = pas de “déséquilibre”, pas de changement d’échelle
+       ----------------------------- */
+    bar-card-icon  { width: 26px; }
+    bar-card-name  { width: 42px; }
 
-    /* ✅ Lisibilité sans trahir Arsenal :
-       "chips" NAV/HUB derrière le texte (structure UI) */
-    bar-card-name,
-    bar-card-value {
-      background: rgba(90, 110, 130, 0.08);
-      padding: 2px 8px;
-      border-radius: 999px;
+    bar-card-icon,
+    bar-card-name {
+      color: var(--primary-text-color);
+      font-weight: 700;
     }
 
-    /* Icône : reste sur la couleur texte */
+    /* Valeur inside : lisible sur toute longueur sans pastille moche */
+    bar-card-value {
+      font-weight: 800;
+      color: var(--primary-text-color);
+      text-shadow: 0 1px 0 rgba(255,255,255,0.80), 0 0 2px rgba(0,0,0,0.20);
+    }
+
+    /* Icône */
     ha-icon { color: var(--primary-text-color); }

@@ -3,7 +3,11 @@
 #     Cibles volets pluie Séjour
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Exposer la liste des covers "séjour" à fermer en pluie forte.
+#   Exposer la liste des covers "séjour" à fermer
+#   UNIQUEMENT si :
+#     - autorisation métier active
+#     - pluie forte (intention) active
+#     - au moins une fenêtre séjour concernée est ouverte
 #
 # 🧱 ARCHITECTURE
 #   - Décision uniquement (stateless, recalculable)
@@ -19,8 +23,50 @@
       unique_id: cibles_volets_pluie_sejour
       default_entity_id: sensor.cibles_volets_pluie_sejour
       icon: mdi:window-shutter
+
       state: >
-        {{ 2 }}
+        {% set autorise = is_state('binary_sensor.autorisation_fermeture_volets_pluie_sejour','on') %}
+        {% set pluie_forte = is_state('binary_sensor.intention_pluie_forte','on') %}
+        {% set fenetres_sejour = [
+          'binary_sensor.contact_sejour_1',
+          'binary_sensor.contact_sejour_2',
+          'binary_sensor.contact_sejour_3',
+          'binary_sensor.contact_sejour_4'
+        ] %}
+        {% set exposition = (fenetres_sejour | select('is_state','on') | list | length > 0) %}
+
+        {% if autorise and pluie_forte and exposition %}
+          2
+        {% else %}
+          0
+        {% endif %}
+
       attributes:
         entity_ids: >
-          {{ ['cover.volet_sejour_gauche', 'cover.volet_sejour_droit'] }}
+          {% set autorise = is_state('binary_sensor.autorisation_fermeture_volets_pluie_sejour','on') %}
+          {% set pluie_forte = is_state('binary_sensor.intention_pluie_forte','on') %}
+          {% set fenetres_sejour = [
+            'binary_sensor.contact_sejour_1',
+            'binary_sensor.contact_sejour_2',
+            'binary_sensor.contact_sejour_3',
+            'binary_sensor.contact_sejour_4'
+          ] %}
+          {% set exposition = (fenetres_sejour | select('is_state','on') | list | length > 0) %}
+
+          {% if autorise and pluie_forte and exposition %}
+            {{ ['cover.volet_sejour_gauche', 'cover.volet_sejour_droit'] }}
+          {% else %}
+            {{ [] }}
+          {% endif %}
+
+        exposition_fenetres_entity_ids: >
+          {% set fenetres_sejour = [
+            'binary_sensor.contact_sejour_1',
+            'binary_sensor.contact_sejour_2',
+            'binary_sensor.contact_sejour_3',
+            'binary_sensor.contact_sejour_4'
+          ] %}
+          {{ fenetres_sejour | select('is_state','on') | list }}
+
+        autorisation: "{{ states('binary_sensor.autorisation_fermeture_volets_pluie_sejour') }}"
+        pluie_forte: "{{ states('binary_sensor.intention_pluie_forte') }}"

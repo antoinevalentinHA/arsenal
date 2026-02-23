@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     Aération — M3 — Maintien blocage (ΔT faible)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Branche ΔT faible dans la stratégie :
+#     "Le blocage appartient au pire épisode"
+#
+#   - Ne lève jamais un blocage existant
+#   - Neutralise l'analyse pour éviter re-déclenchement
+#   - Journalise la décision
+# ==========================================================
+
+aeration_m3_maintenir_blocage:
+  alias: "Aération — M3 — Maintien blocage (ΔT faible)"
+  mode: single
+
+  fields:
+    delta_max:
+      description: "DeltaT max global"
+      example: 0.35
+
+  sequence:
+
+    - variables:
+        d: "{{ delta_max | float(0) }}"
+
+    # Neutralisation analyse ΔT
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.analyse_deltat_disponible
+      data:
+        datetime: "{{ now().date().isoformat() ~ ' 00:00:00' }}"
+
+    - action: logbook.log
+      data:
+        name: "Chauffage - Analyse DeltaT"
+        message: >
+          DeltaT faible ({{ d | round(2) }} degC).
+          Blocage maintenu (pire épisode prioritaire).
+        entity_id: input_boolean.chauffage_blocage_aeration

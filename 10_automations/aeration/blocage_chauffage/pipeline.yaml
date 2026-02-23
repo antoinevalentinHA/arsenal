@@ -1,0 +1,374 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Aération – Pipeline Maître (V3 PRO)
+#
+# ID : 10010000000023
+# ----------------------------------------------------------
+# 🎯 RÔLE NORMATIF
+#
+#   Orchestrateur décisionnel d’un ÉPISODE D’AÉRATION
+#   impactant le chauffage.
+#
+#   Cette automation :
+#     - valide les conditions d’entrée / sortie,
+#     - sélectionne l’étape normative M1..M5,
+#     - délègue l’exécution atomique aux scripts dédiés.
+#
+#   ➜ Aucun actionneur thermique n’est piloté ici.
+#   ➜ Aucune décision métier n’est exécutée localement.
+#
+# ----------------------------------------------------------
+# 🧱 MODÈLE CONCEPTUEL
+#
+#   Un épisode d’aération est un cycle borné :
+#     ouverture → clôture → blocage → analyse ΔT → fin.
+#
+#   Les références thermiques (T_REF) sont figées en M1.
+#   Le blocage thermique est monotone :
+#     - sa date de fin ne peut jamais être avancée,
+#     - elle peut uniquement être maintenue ou repoussée.
+#
+# ----------------------------------------------------------
+# 🔁 MACHINE À ÉTATS (ROUTAGE UNIQUEMENT)
+#
+#   M1 — Début épisode
+#        → script.aeration_m1_debut_episode
+#
+#   M2 — Fin épisode
+#        → script.aeration_m2_fin_episode
+#
+#   M3 — Analyse ΔT différée
+#        → script.aeration_m3_analyse_deltat
+#
+#   M4 — Fin blocage horaire (unique levée autorisée)
+#        → script.aeration_m4_fin_blocage_horaire
+#
+#   M5 — Réouverture pendant blocage (informatif)
+#        → script.aeration_m5_reouverture_pendant_blocage
+#
+# ----------------------------------------------------------
+# 🛡️ INVARIANTS STRUCTURELS
+#
+#   - Séparation stricte décision (automation) / exécution (scripts)
+#   - Déclenchements événementiels ou horodatés uniquement
+#   - Aucun redémarrage thermique direct
+#   - La levée du blocage est exclusivement réalisée en M4
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#   Scripts requis :
+#     - script.aeration_m1_debut_episode
+#     - script.aeration_m2_fin_episode
+#     - script.aeration_m3_analyse_deltat
+#     - script.aeration_m4_fin_blocage_horaire
+#     - script.aeration_m5_reouverture_pendant_blocage
+#
+#   La reprise thermique relève exclusivement du
+#   script "Chauffage – Décision Centrale".
+#
+# ----------------------------------------------------------
+# 📌 ALIGNEMENT CONTRACTUEL
+#
+#   Conforme au contrat :
+#     "AÉRATION — PÉRIMÈTRE STRICT"
+#
+#   Toute modification structurelle de M1..M5
+#   nécessite une mise à jour contractuelle.
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10010000000023"
+  alias: "Chauffage - Aération - Pipeline maître"
+  mode: queued
+
+  ##################################################################
+  #  TRIGGERS
+  ##################################################################
+
+  trigger:
+
+    # --------------------------------------------------------------
+    #  M1 - Debut aeration : ouverture fenetres "immediates"
+    # --------------------------------------------------------------
+    - id: ouverture_immediate
+      platform: state
+      entity_id:
+        - binary_sensor.capteur_fenetre_entree
+        - binary_sensor.capteur_chambre_arnaud
+        - binary_sensor.capteur_chambre_matthieu
+      to: "on"
+
+    # --------------------------------------------------------------
+    #  M1 - Debut aeration : ouverture fenetres "avec delai"
+    #    (ces binary_sensors encapsulent deja les timers de grace)
+    # --------------------------------------------------------------
+    - id: ouverture_differee
+      platform: state
+      entity_id:
+        - binary_sensor.fenetre_sejour_ouverte_avec_delai
+        - binary_sensor.fenetre_chambre_parents_ouverte_avec_delai
+      to: "on"
+
+    # --------------------------------------------------------------
+    #  M1 - Debut aeration : tentative "avec delai" (pendant grâce)
+    # --------------------------------------------------------------
+    - id: ouverture_grace
+      platform: state
+      entity_id: binary_sensor.tentative_aeration_en_grace
+      to: "on"
+
+    # --------------------------------------------------------------
+    #  M2 - Fin aeration : fermeture globale
+    # --------------------------------------------------------------
+    - id: fermeture
+      platform: state
+      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+      to: "off"
+
+    # --------------------------------------------------------------
+    #  M5 - Reouverture pendant blocage
+    # --------------------------------------------------------------
+    - id: reouverture_pendant_blocage
+      platform: state
+      entity_id: binary_sensor.fenetre_ouverte_maison
+      to: "on"
+
+    # --------------------------------------------------------------
+    #  M3 - Analyse DeltaT : timer atteint
+    # --------------------------------------------------------------
+    - id: analyse_deltat
+      platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.aeration_analyse_delta_t
+
+    # --------------------------------------------------------------
+    #  M4 - Fin blocage horaire : timer atteint
+    # --------------------------------------------------------------
+    - id: fin_blocage_horaire
+      platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.aeration_blocage
+
+    # --------------------------------------------------------------
+    #  RECOVER - Demande de remediation (coherence KO)
+    # --------------------------------------------------------------
+    - id: recover_requested
+      platform: state
+      entity_id: input_boolean.aeration_recover_requested
+      to: "on"
+
+  ##################################################################
+  #  CONDITIONS GLOBALES
+  ##################################################################
+
+  condition:
+
+    # Systeme de blocage active ?
+    - condition: state
+      entity_id: input_boolean.blocage_chauffage_aeration_active
+      state: "on"
+
+  ##################################################################
+  #  ACTIONS - MACHINE A ETATS INTERNE
+  ##################################################################
+
+  action:
+
+    - choose:
+
+        ##################################################################
+        #  RECOVER — REMEDIATION (AUTORITE PIPELINE)
+        ##################################################################
+        - conditions:
+
+            - condition: template
+              value_template: "{{ trigger.id == 'recover_requested' }}"
+
+            - condition: state
+              entity_id: input_boolean.systeme_stable
+              state: "on"
+
+          sequence:
+
+            - action: script.aeration_m4_fin_blocage_horaire
+
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aeration_recover_requested
+
+            - action: logbook.log
+              data:
+                name: "Chauffage - Aération - Pipeline maître"
+                message: "Recover exécuté (M4 forcé) suite demande aeration_recover_requested."
+                entity_id: input_boolean.aeration_recover_requested
+
+        ##################################################################
+        #  M1 — DEBUT AERATION
+        ##################################################################
+        - conditions:
+
+            - condition: state
+              entity_id: input_boolean.systeme_stable
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.aeration_episode_en_cours
+              state: "off"
+
+            - condition: template
+              value_template: >
+                {{ trigger.id in ['ouverture_immediate','ouverture_differee','ouverture_grace'] }}
+
+          sequence:
+
+            - choose:
+
+                - conditions:
+
+                    - condition: template
+                      value_template: "{{ trigger.id == 'ouverture_immediate' }}"
+
+                    - condition: state
+                      entity_id: input_boolean.aeration_confirmee
+                      state: "off"
+
+                  sequence:
+                    - action: input_boolean.turn_on
+                      target:
+                        entity_id: input_boolean.aeration_confirmee
+
+              default: []
+
+            - action: script.aeration_m1_debut_episode
+
+        ##################################################################
+        #  M2 — FIN AERATION (VERSION SYNCRO DELTA T)
+        ##################################################################
+        - conditions:
+
+            - condition: state
+              entity_id: input_boolean.systeme_stable
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.aeration_confirmee
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {{
+                  states('input_datetime.aeration_debut') not in
+                  ['unknown','unavailable','none','None','']
+                }}
+
+            - condition: template
+              value_template: "{{ trigger.id == 'fermeture' }}"
+
+            - condition: state
+              entity_id: input_boolean.aeration_episode_en_cours
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.aeration_pipeline_arme
+              state: "on"
+
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+              state: "off"
+
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_maison
+              state: "off"
+
+            - condition: template
+              value_template: >
+                {{ trigger.from_state.state == 'on'
+                   and trigger.to_state.state == 'off' }}
+
+          sequence:
+            - action: script.aeration_m2_fin_episode
+
+        ##################################################################
+        #  M3 — ANALYSE DELTAT
+        ##################################################################
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.id == 'analyse_deltat' }}"
+
+            - condition: state
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.aeration_pipeline_arme
+              state: "on"
+
+            # Garde-fou M5 : ne pas analyser trop tôt après une réouverture
+            - condition: template
+              value_template: >
+                {% set last = states('input_datetime.aeration_reouverture_last') | as_datetime %}
+                {% set cap = states('input_number.delai_stabilisation_capteurs') | int(0) %}
+                {% if last is none %}
+                  true
+                {% else %}
+                  {{
+                    (now().replace(tzinfo=None) - last).total_seconds()
+                    >= (cap * 60)
+                  }}
+                {% endif %}
+
+          sequence:
+            - action: script.aeration_m3_analyse_deltat
+
+        ##################################################################
+        #  M4 — FIN BLOCAGE HORAIRE (VERSION SYNCHRO DELTAT)
+        ##################################################################
+        - conditions:
+            # Déclencheur correct ?
+            - condition: template
+              value_template: "{{ trigger.id == 'fin_blocage_horaire' }}"
+
+            # Blocage encore actif ?
+            - condition: state
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.aeration_pipeline_arme
+              state: "on"
+
+            # L'analyse DeltaT ne doit plus être active
+            - condition: template
+              value_template: >
+                {{ states('timer.aeration_analyse_delta_t') != 'active' }}
+
+          sequence:
+            - action: script.aeration_m4_fin_blocage_horaire
+
+        ##################################################################
+        #  M5 — REOUVERTURE PENDANT BLOCAGE (INFORMATIF)
+        ##################################################################
+        - conditions:
+
+            - condition: template
+              value_template: "{{ trigger.id == 'reouverture_pendant_blocage' }}"
+
+            - condition: state
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.aeration_pipeline_arme
+              state: "on"
+
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+              state: "on"
+
+          sequence:
+            - action: script.aeration_m5_reouverture_pendant_blocage

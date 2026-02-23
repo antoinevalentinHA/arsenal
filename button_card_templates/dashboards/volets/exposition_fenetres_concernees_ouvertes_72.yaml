@@ -1,0 +1,35 @@
+#################################################################
+# 🧠 ARSENAL — TEMPLATE MÉTIER
+#     Volets / Pluie — Exposition — Fenêtres concernées ouvertes (72)
+#
+# Rôle :
+#   Gate d'exposition : ON si une fenêtre concernée est ouverte.
+#
+# Couleurs :
+#   - ON  -> Rouge KO
+#   - OFF -> Vert OK
+#   - unknown/unavailable -> Gris indispo
+#################################################################
+
+exposition_fenetres_concernees_ouvertes_72:
+  template: socle_decision_72
+  show_icon: true
+  icon: >
+    [[[
+      const s = entity?.state;
+      if (s === "on") return "mdi:window-open-variant";
+      if (s === "off") return "mdi:window-closed-variant";
+      return "mdi:help-circle-outline";
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity?.state;
+
+            if (s === undefined || s === null) return "rgba(224, 224, 224, 0.2)";
+            if (s === "unknown" || s === "unavailable") return "rgba(224, 224, 224, 0.2)";
+
+            if (s === "on") return "rgba(244, 67, 54, 0.2)";
+            return "rgba(76, 175, 80, 0.2)";
+          ]]]

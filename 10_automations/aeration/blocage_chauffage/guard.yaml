@@ -1,30 +1,29 @@
 # ==========================================================
-#  AUTOMATION : Chauffage - Aeration - Mini-guard pipeline
-#  ID : 10010000000024
+# 🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Aération – Mini-guard pipeline (anti-zombie)
+#
+# ID : 10010000000024
 # ----------------------------------------------------------
-#  Rôle :
-#    Empêcher tout état "pipeline zombie" où le pipeline
-#    d’aération resterait armé alors qu’aucune aération,
-#    aucun blocage et aucune ouverture ne sont actifs.
+# 🎯 RÔLE
 #
-#  Principe :
-#    - Cette automatisation N’INITIE RIEN.
-#    - Elle ne fait que désarmer le pipeline si l’état
-#      global est incohérent.
+#   Empêcher tout état "pipeline zombie" :
+#     - pipeline armé alors qu’aucune aération n’est active
+#     - aucun blocage chauffage n’est actif
+#     - aucune ouverture physique n’est active
 #
-#  Condition de désarmement :
-#    - aeration_episode_en_cours = off
-#    - chauffage_blocage_aeration = off
-#    - fenetre_ouverte_maison = off
-#    - aeration_pipeline_arme = on
+#   ⚠️ Extension V3 PRO (timers) :
+#     - neutralise aussi les timers aération
+#       pour éviter des triggers fantômes timer.finished.
 #
-#  Objectif :
-#    - Éviter les déclenchements fantômes (M2, blocage initial)
-#    - Garantir une sortie propre d’épisode
+# ----------------------------------------------------------
+# 🧩 PRINCIPE
 #
-#  Compatibilité :
-#    - Home Assistant 2024.8+
-#    - Arsenal V3 / V4
+#   - N’initie RIEN.
+#   - Ne fait que remettre en cohérence en désarmant
+#     et en annulant les timers résiduels.
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
 - id: "10010000000024"
@@ -37,6 +36,7 @@
 
   trigger:
 
+    # État fonctionnel aération
     - platform: state
       entity_id:
         - input_boolean.aeration_episode_en_cours
@@ -44,6 +44,13 @@
         - binary_sensor.fenetre_ouverte_maison
         - input_boolean.aeration_pipeline_arme
 
+    # Timers aération (éviter timer.finished fantôme)
+    - platform: state
+      entity_id:
+        - timer.aeration_analyse_delta_t
+        - timer.aeration_blocage
+
+    # Post-boot : revalider cohérence dès retour stable
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
@@ -54,10 +61,12 @@
 
   condition:
 
+    # Pipeline armé = prérequis
     - condition: state
       entity_id: input_boolean.aeration_pipeline_arme
       state: "on"
 
+    # Aucun épisode / blocage / ouverture
     - condition: state
       entity_id: input_boolean.aeration_episode_en_cours
       state: "off"
@@ -76,6 +85,23 @@
 
   action:
 
+    # Annulation timers résiduels (anti triggers fantômes)
+    - action: timer.cancel
+      target:
+        entity_id:
+          - timer.aeration_analyse_delta_t
+          - timer.aeration_blocage
+
+    # Désarmement pipeline
     - action: input_boolean.turn_off
       target:
+        entity_id: input_boolean.aeration_pipeline_arme
+
+    # Journalisation minimale (audit)
+    - action: logbook.log
+      data:
+        name: "Chauffage - Aération - Mini-guard"
+        message: >
+          Pipeline désarmé (anti-zombie) : épisode OFF, blocage OFF, ouvertures OFF.
+          Timers aération annulés.
         entity_id: input_boolean.aeration_pipeline_arme

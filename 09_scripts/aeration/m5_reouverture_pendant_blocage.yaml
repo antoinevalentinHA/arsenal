@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     Aération — M5 — Réouverture pendant blocage (trace)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Tracer une réouverture de fenêtre pendant un blocage
+#   chauffage lié à une aération :
+#     - horodatage de la dernière réouverture
+#
+# 🧩 PRINCIPE
+#   Informatif : aucune décision, aucune action extérieure.
+#   Appelé par le pipeline uniquement lorsque M5 est autorisé.
+#
+# 🛡️ ROBUSTESSE
+#   - Zéro wait
+#   - Post-reboot safe
+# ==========================================================
+
+aeration_m5_reouverture_pendant_blocage:
+  alias: "Aération — M5 — Réouverture pendant blocage"
+  mode: single
+
+  sequence:
+
+    # Enregistrement horodatage de la réouverture
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.aeration_reouverture_last
+      data:
+        datetime: "{{ now().replace(tzinfo=None).strftime('%Y-%m-%d %H:%M:%S') }}"

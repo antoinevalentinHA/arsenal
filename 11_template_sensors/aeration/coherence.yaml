@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR :
+#     Chauffage – Aération – Cohérence (KO)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Détecter une incohérence structurelle du pipeline
+#   Chauffage/Aération (post-crash / exécution interrompue /
+#   état orphelin) afin de servir de base à une remédiation.
+#
+# ✅ Incohérences couvertes (KO si au moins une vraie)
+#   A) Blocage chauffage ON mais timer.aeration_blocage non actif
+#   B) Pipeline armé ON alors qu’aucun épisode, aucun blocage,
+#      aucune ouverture n’est actif (pipeline zombie)
+#   C) Blocage ON mais trace input_datetime.fin_blocage neutralisée (00:00:00)
+#
+# 🧩 PRINCIPE
+#   Capteur diagnostique uniquement : aucune action.
+#
+# 🛡️ ROBUSTESSE
+#   - Tolère unknown/unavailable
+#   - Sentinelle datetime "00:00:00" = invalide (conforme contrat existant)
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Chauffage – Aération – Cohérence KO"
+      unique_id: chauffage_aeration_coherence_ko
+      default_entity_id: binary_sensor.chauffage_aeration_coherence_ko
+      device_class: problem
+
+      state: >
+        {% set blocage = is_state('input_boolean.chauffage_blocage_aeration','on') %}
+        {% set t_blocage_active = is_state('timer.aeration_blocage','active') %}
+        {% set pipeline = is_state('input_boolean.aeration_pipeline_arme','on') %}
+        {% set episode = is_state('input_boolean.aeration_episode_en_cours','on') %}
+        {% set fenetres = is_state('binary_sensor.fenetre_ouverte_maison_avec_delai','on') %}
+
+        {% set fin = states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime %}
+        {% set fin_valide = fin is not none and not (fin.hour == 0 and fin.minute == 0 and fin.second == 0) %}
+
+        {% set ko_blocage_orphelin = blocage and not t_blocage_active %}
+        {% set ko_pipeline_zombie = pipeline and (not episode) and (not blocage) and (not fenetres) %}
+        {% set ko_trace = blocage and (not fin_valide) %}
+
+        {{ ko_blocage_orphelin or ko_pipeline_zombie or ko_trace }}

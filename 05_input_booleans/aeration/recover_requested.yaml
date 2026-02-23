@@ -1,0 +1,23 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN :
+#     Aération — Recover requested
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Signal technique émis par le mécanisme de cohérence
+#   lorsqu’une incohérence structurelle est détectée.
+#
+#   ⚠️ Ce helper ne déclenche aucune action directe.
+#   Le pipeline maître reste l’unique autorité décisionnelle.
+#
+# 🧩 PRINCIPE
+#   - ON  : demande de remédiation émise
+#   - OFF : aucun recover demandé
+#
+# 🛡️ GOUVERNANCE
+#   - Ne doit JAMAIS être manipulé manuellement en exploitation
+#   - Exclusivement piloté par l’automatisation de cohérence
+# ==========================================================
+
+aeration_recover_requested:
+  name: "Aération — Recover requested"
+  icon: mdi:shield-refresh

@@ -21,7 +21,9 @@ aeration_deltat_chute_72:
   label: |
     [[[
       const s = states['input_number.delta_t_max_decisionnel_aeration']?.state;
-      if (s === undefined || s === null || s === 'unknown' || s === 'unavailable' || s === '') {
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      if (UNAV.includes(s)) {
         return "Indisponible";
       }
 
@@ -37,13 +39,17 @@ aeration_deltat_chute_72:
       - background-color: |
           [[[
             const s = states['input_number.delta_t_max_decisionnel_aeration']?.state;
-            if (s === undefined || s === null || s === 'unknown' || s === 'unavailable' || s === '') {
-              return "rgba(158, 158, 158, 0.1)";
-            }
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+            if (UNAV.includes(s))
+              return "rgba(158, 158, 158, 0.2)";
 
             const v = parseFloat(s);
-            if (Number.isNaN(v)) return "rgba(158, 158, 158, 0.1)";
+            if (Number.isNaN(v))
+              return "rgba(158, 158, 158, 0.2)";
 
-            if (v > 0) return "rgba(244, 67, 54, 0.2)";
+            if (v > 0)
+              return "rgba(244, 67, 54, 0.2)";
+
             return "rgba(76, 175, 80, 0.2)";
           ]]]

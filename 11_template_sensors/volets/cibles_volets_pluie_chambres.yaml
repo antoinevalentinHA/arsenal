@@ -21,17 +21,21 @@
       default_entity_id: sensor.cibles_volets_pluie_chambres
       icon: mdi:window-shutter
       state: >
-        {% set n = 0 %}
-        {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}{% set n = n + 1 %}{% endif %}
-        {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}{% set n = n + 1 %}{% endif %}
-        {{ n }}
+        {% set ns = namespace(n=0) %}
+        {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}
+          {% set ns.n = ns.n + 1 %}
+        {% endif %}
+        {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
+          {% set ns.n = ns.n + 1 %}
+        {% endif %}
+        {{ ns.n }}
       attributes:
         entity_ids: >
-          {% set lst = [] %}
+          {% set ns = namespace(lst=[]) %}
           {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}
-            {% set lst = lst + ['cover.volet_arnaud'] %}
+            {% set ns.lst = ns.lst + ['cover.volet_arnaud'] %}
           {% endif %}
           {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
-            {% set lst = lst + ['cover.volet_matthieu'] %}
+            {% set ns.lst = ns.lst + ['cover.volet_matthieu'] %}
           {% endif %}
-          {{ lst }}
+          {{ ns.lst }}

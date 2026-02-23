@@ -1,0 +1,31 @@
+#################################################################
+# 🧠 ARSENAL — TEMPLATE MÉTIER
+#     Volets / Pluie — Décision (72)
+#
+# Rôle :
+#   Tuile décisionnelle pluie avec couleur métier.
+#
+# Couleurs :
+#   - ON (pluie forte)   -> Rouge KO
+#   - ON (pluie récente) -> Orange warn
+#   - OFF                -> Gris neutre
+#################################################################
+
+pluie_decision_72:
+  template: socle_decision_72
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity?.state;
+
+            if (s === "unknown" || s === "unavailable") return "rgba(224, 224, 224, 0.2)";
+
+            if (s === "on") {
+              const id = entity?.entity_id || "";
+              if (id.includes("pluie_forte")) return "rgba(244, 67, 54, 0.2)";
+              return "rgba(255, 152, 0, 0.25)";
+            }
+
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]

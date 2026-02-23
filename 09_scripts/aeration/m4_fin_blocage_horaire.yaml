@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     Aération — M4 — Fin blocage horaire (clôture totale)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exécuter l’étape M4 du pipeline aération :
+#     - levée du blocage chauffage
+#     - annulation explicite des timers
+#     - neutralisation des datetimes (anti traces résiduelles)
+#     - désarmement du pipeline (fin totale épisode)
+#     - journalisation
+#
+# 🧩 PRINCIPE
+#   Aucune décision métier ici.
+#   Le pipeline appelle ce script uniquement lorsque M4 est autorisé.
+#
+# 🛡️ ROBUSTESSE
+#   - Zéro wait
+#   - Aucun timer résiduel
+#   - Aucun horodatage actif
+# ==========================================================
+
+aeration_m4_fin_blocage_horaire:
+  alias: "Aération — M4 — Fin blocage horaire"
+  mode: single
+
+  sequence:
+
+    # Levée du blocage chauffage
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.chauffage_blocage_aeration
+
+    # Annulation explicite des timers
+    - action: timer.cancel
+      target:
+        entity_id:
+          - timer.aeration_blocage
+          - timer.aeration_analyse_delta_t
+
+    # Neutraliser datetime fin blocage (trace)
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.chauffage_fin_blocage_aeration
+      data:
+        datetime: "{{ (now().date().isoformat() ~ ' 00:00:00') | trim }}"
+
+    # Neutraliser datetime analyse ΔT (trace)
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.analyse_deltat_disponible
+      data:
+        datetime: "{{ (now().date().isoformat() ~ ' 00:00:00') | trim }}"
+
+    # Désarmement du pipeline (fin totale épisode)
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_pipeline_arme
+
+    - action: logbook.log
+      data:
+        name: "Chauffage - Fin blocage horaire"
+        message: "Blocage chauffage levé (fin blocage horaire)."
+        entity_id: input_boolean.chauffage_blocage_aeration

@@ -1,0 +1,20 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER :
+#     Aération — Analyse ΔT (échéance M3)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Timer canonique déclenchant l’étape M3 (Analyse ΔT)
+#   via l’évènement `timer.finished`.
+#
+# 🧩 PRINCIPE
+#   - La durée réelle est fournie par `timer.start` (pipeline M2).
+#   - La valeur par défaut est neutre (00:00:00).
+#
+# 🛡️ ROBUSTESSE
+#   - restore: true : maintien de l’état / restant post-reboot
+# ==========================================================
+
+aeration_analyse_delta_t:
+  name: "Aération — Analyse ΔT"
+  duration: "00:00:00"
+  restore: true

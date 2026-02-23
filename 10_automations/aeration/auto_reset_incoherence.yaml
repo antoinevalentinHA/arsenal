@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Aération – Cohérence — Signal recover
+#
+#  ID : 10010000000029
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Émettre une demande de remédiation au pipeline maître
+#   lorsque l’état Chauffage/Aération est incohérent.
+#
+# 🧩 PRINCIPE
+#   - Déclenchement si incohérence persiste 30s (anti-pic)
+#   - Action : input_boolean.aeration_recover_requested = ON
+#   - Aucune remédiation directe (pas d’appel M4)
+#
+# 🛡️ GOUVERNANCE
+#   Le pipeline maître reste l’unique autorité qui exécute
+#   une remise en ordre (M4).
+# ==========================================================
+
+- id: "10010000000029"
+  alias: "Chauffage - Aération - Cohérence - Signal recover"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.chauffage_aeration_coherence_ko
+      to: "on"
+      for: "00:00:30"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.aeration_recover_requested
+
+    - action: logbook.log
+      data:
+        name: "Chauffage - Aération - Cohérence"
+        message: "Incohérence détectée -> demande recover émise (aeration_recover_requested=on)."
+        entity_id: input_boolean.aeration_recover_requested

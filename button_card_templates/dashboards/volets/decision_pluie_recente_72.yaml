@@ -1,0 +1,35 @@
+#################################################################
+# 🧠 ARSENAL — TEMPLATE MÉTIER
+#     Volets / Pluie — Décision — Pluie récente (72)
+#
+# Rôle :
+#   Tuile décisionnelle : pluie récente (ON/OFF) + couleur métier.
+#
+# Couleurs :
+#   - ON  -> Orange warn
+#   - OFF -> Gris neutre
+#   - unknown/unavailable -> Gris indispo
+#################################################################
+
+decision_pluie_recente_72:
+  template: socle_decision_72
+  show_icon: true
+  icon: >
+    [[[
+      const s = entity?.state;
+      if (s === "on") return "mdi:weather-rainy";
+      if (s === "off") return "mdi:weather-rainy-off";
+      return "mdi:help-circle-outline";
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity?.state;
+
+            if (s === undefined || s === null) return "rgba(224, 224, 224, 0.2)";
+            if (s === "unknown" || s === "unavailable") return "rgba(224, 224, 224, 0.2)";
+
+            if (s === "on") return "rgba(255, 152, 0, 0.25)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]

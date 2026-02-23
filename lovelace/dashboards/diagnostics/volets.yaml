@@ -36,13 +36,13 @@ views:
           - type: horizontal-stack
             cards:
               - type: custom:button-card
-                template: socle_decision_72
+                template: decision_pluie_recente_72
                 entity: binary_sensor.pluie_recente
                 name: Pluie récente
                 icon: mdi:weather-rainy
 
               - type: custom:button-card
-                template: socle_decision_72
+                template: decision_pluie_forte_72
                 entity: binary_sensor.intention_pluie_forte
                 name: Pluie forte
                 icon: mdi:weather-pouring
@@ -57,16 +57,15 @@ views:
           - type: horizontal-stack
             cards:
               - type: custom:button-card
-                template: socle_decision_72
+                template: exposition_fenetres_concernees_ouvertes_72
                 entity: binary_sensor.intention_fenetres_concernees_ouvertes_pluie
                 name: Fenêtres concernées ouvertes
                 icon: mdi:window-open-variant
 
               - type: custom:button-card
-                template: socle_info_72
+                template: pluie_exposition_resume_72
                 entity: sensor.resume_fenetres_concernees_ouvertes_pluie
                 name: Résumé ouvertures
-                icon: mdi:message-text
 
           # ==================================================
           # 🎯 Cibles — Volets (calcul)
@@ -78,7 +77,7 @@ views:
           - type: horizontal-stack
             cards:
               - type: custom:button-card
-                template: socle_kpi_label_72
+                template: pluie_cibles_volets_kpi_72
                 entity: sensor.cibles_volets_pluie_sejour
                 name: Cibles séjour
                 icon: mdi:window-shutter
@@ -90,7 +89,7 @@ views:
                   ]]]
 
               - type: custom:button-card
-                template: socle_kpi_label_72
+                template: pluie_cibles_volets_kpi_72
                 entity: sensor.cibles_volets_pluie_chambres
                 name: Cibles chambres
                 icon: mdi:window-shutter

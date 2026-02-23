@@ -1,0 +1,194 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     Aération — M2 — Fin épisode (syncro délais / DeltaT)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exécuter l’étape M2 du pipeline aération :
+#     - clôture de l’épisode
+#     - activation du blocage chauffage
+#     - calcul et programmation des délais (blocage initial + analyse DeltaT)
+#     - démarrage / extension monotone des timers M3 et M4
+#     - reset du booléen aeration_confirmee
+#     - journalisation
+#
+# 🧩 PRINCIPE
+#   Aucune décision métier ici.
+#   Le pipeline appelle ce script uniquement lorsque M2 est autorisé.
+#
+# 🛡️ ROBUSTESSE
+#   - Calcul des délais relu depuis les helpers (pas de variables transmises)
+#   - Timers monotones : ne jamais raccourcir une échéance déjà en cours
+#   - Zéro wait
+#   - Post-reboot safe
+# ==========================================================
+
+aeration_m2_fin_episode:
+  alias: "Aération — M2 — Fin épisode"
+  mode: single
+
+  sequence:
+
+    # Fin épisode aération
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_episode_en_cours
+
+    # Activation blocage chauffage
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.chauffage_blocage_aeration
+
+    # ------------------------------------------------------
+    # Synchronisation des délais (monotone : max)
+    # ------------------------------------------------------
+    - variables:
+        delai_analyse: "{{ states('input_number.delai_stabilisation_capteurs') | int(0) }}"
+        blocage_initial: "{{ (delai_analyse | int(0)) + 1 }}"
+
+        fin_blocage_proposee: >
+          {{
+            (now() + timedelta(minutes = blocage_initial))
+            .replace(tzinfo=None)
+          }}
+
+        analyse_proposee: >
+          {{
+            (now() + timedelta(minutes = delai_analyse))
+            .replace(tzinfo=None)
+          }}
+
+        fin_blocage_actuelle: >
+          {{
+            states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime
+          }}
+
+        analyse_actuelle: >
+          {{
+            states('input_datetime.analyse_deltat_disponible') | as_datetime
+          }}
+
+        fin_blocage_actuelle_valide: >
+          {{
+            fin_blocage_actuelle is not none
+            and not (
+              fin_blocage_actuelle.hour == 0
+              and fin_blocage_actuelle.minute == 0
+              and fin_blocage_actuelle.second == 0
+            )
+          }}
+
+        analyse_actuelle_valide: >
+          {{
+            analyse_actuelle is not none
+            and not (
+              analyse_actuelle.hour == 0
+              and analyse_actuelle.minute == 0
+              and analyse_actuelle.second == 0
+            )
+          }}
+
+        fin_blocage_cible: >
+          {{
+            fin_blocage_actuelle
+            if fin_blocage_actuelle_valide and fin_blocage_actuelle > fin_blocage_proposee
+            else fin_blocage_proposee
+          }}
+
+        analyse_cible: >
+          {{
+            analyse_actuelle
+            if analyse_actuelle_valide and analyse_actuelle > analyse_proposee
+            else analyse_proposee
+          }}
+
+        # --------------------------------------------------
+        # Timers — monotone sur remaining (en secondes)
+        # --------------------------------------------------
+        analyse_timer_active: "{{ is_state('timer.aeration_analyse_delta_t', 'active') }}"
+        blocage_timer_active: "{{ is_state('timer.aeration_blocage', 'active') }}"
+
+        analyse_remaining: >
+          {{ state_attr('timer.aeration_analyse_delta_t','remaining') if analyse_timer_active else '00:00:00' }}
+
+        blocage_remaining: >
+          {{ state_attr('timer.aeration_blocage','remaining') if blocage_timer_active else '00:00:00' }}
+
+        analyse_remaining_s: >
+          {% set r = analyse_remaining %}
+          {% if r in ['unknown','unavailable','none','None',''] %}
+            0
+          {% else %}
+            {% set p = r.split(':') %}
+            {{ (p[0] | int(0)) * 3600 + (p[1] | int(0)) * 60 + (p[2] | int(0)) }}
+          {% endif %}
+
+        blocage_remaining_s: >
+          {% set r = blocage_remaining %}
+          {% if r in ['unknown','unavailable','none','None',''] %}
+            0
+          {% else %}
+            {% set p = r.split(':') %}
+            {{ (p[0] | int(0)) * 3600 + (p[1] | int(0)) * 60 + (p[2] | int(0)) }}
+          {% endif %}
+
+        analyse_proposee_s: "{{ (delai_analyse | int(0)) * 60 }}"
+        blocage_proposee_s: "{{ (blocage_initial | int(0)) * 60 }}"
+
+        analyse_start_s: "{{ analyse_proposee_s if analyse_proposee_s > analyse_remaining_s else analyse_remaining_s }}"
+        blocage_start_s: "{{ blocage_proposee_s if blocage_proposee_s > blocage_remaining_s else blocage_remaining_s }}"
+
+        analyse_start_hh: "{{ (analyse_start_s // 3600) | int }}"
+        analyse_start_mm: "{{ ((analyse_start_s % 3600) // 60) | int }}"
+        analyse_start_ss: "{{ (analyse_start_s % 60) | int }}"
+
+        blocage_start_hh: "{{ (blocage_start_s // 3600) | int }}"
+        blocage_start_mm: "{{ ((blocage_start_s % 3600) // 60) | int }}"
+        blocage_start_ss: "{{ (blocage_start_s % 60) | int }}"
+
+        analyse_duration: "{{ '%02d:%02d:%02d' | format(analyse_start_hh, analyse_start_mm, analyse_start_ss) }}"
+        blocage_duration: "{{ '%02d:%02d:%02d' | format(blocage_start_hh, blocage_start_mm, blocage_start_ss) }}"
+
+    # ------------------------------------------------------
+    # Trace / diagnostic : input_datetime (monotone : max)
+    # ------------------------------------------------------
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.chauffage_fin_blocage_aeration
+      data:
+        datetime: "{{ fin_blocage_cible | trim }}"
+
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.analyse_deltat_disponible
+      data:
+        datetime: "{{ analyse_cible | trim }}"
+
+    # ------------------------------------------------------
+    # Timers : démarrage / extension monotone
+    # ------------------------------------------------------
+    - action: timer.start
+      target:
+        entity_id: timer.aeration_analyse_delta_t
+      data:
+        duration: "{{ analyse_duration }}"
+
+    - action: timer.start
+      target:
+        entity_id: timer.aeration_blocage
+      data:
+        duration: "{{ blocage_duration }}"
+
+    # Reset aeration_confirmee
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_confirmee
+
+    # Journalisation
+    - action: logbook.log
+      data:
+        name: "Chauffage - Fin aeration"
+        message: >
+          Aération terminée -> blocage chauffage activé.
+          Blocage initial calculé : {{ blocage_initial }} min.
+          Analyse DeltaT dans : {{ delai_analyse }} min.
+        entity_id: input_boolean.chauffage_blocage_aeration

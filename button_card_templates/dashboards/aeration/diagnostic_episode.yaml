@@ -3,8 +3,8 @@
 #     aeration_episode_status_72
 # ----------------------------------------------------------
 # 🎯 ROLE
-#   Synthese episode d'aeration + date debut/derniere.
-#   Remplace markdown par tuile canon Arsenal.
+#   Synthese episode d'aeration + temps ecoule depuis debut.
+#   Remplace l'affichage d'une date par une duree utile.
 # ==========================================================
 
 aeration_episode_status_72:
@@ -16,33 +16,57 @@ aeration_episode_status_72:
   show_icon: true
   color_type: card
 
-  icon: mdi:window-open-variant
+  icon: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const episode = states['input_boolean.aeration_episode_en_cours']?.state;
+      const tentative = states['binary_sensor.tentative_aeration_en_grace']?.state;
+
+      if (UNAV.includes(episode) || UNAV.includes(tentative))
+        return 'mdi:help-circle-outline';
+
+      if (episode === 'on')
+        return 'mdi:window-open-variant';
+
+      if (tentative === 'on')
+        return 'mdi:timer-sand';
+
+      return 'mdi:window-closed-variant';
+    ]]]
 
   label: |
     [[[
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
       const episode = states['input_boolean.aeration_episode_en_cours']?.state;
+      const tentative = states['binary_sensor.tentative_aeration_en_grace']?.state;
       const d = states['input_datetime.aeration_debut']?.state;
 
-      const fmt = (s) => {
-        if (UNAV.includes(s)) return "—";
-        const t = Date.parse(s);
-        if (Number.isNaN(t)) return "—";
-        const dt = new Date(t);
-        const dd = String(dt.getDate()).padStart(2,'0');
-        const mm = String(dt.getMonth()+1).padStart(2,'0');
-        const hh = String(dt.getHours()).padStart(2,'0');
-        const mi = String(dt.getMinutes()).padStart(2,'0');
-        return `${dd}/${mm} ${hh}:${mi}`;
+      const fmt_duree = (seconds) => {
+        const s = Math.max(0, Math.floor(seconds));
+        const hh = String(Math.floor(s / 3600)).padStart(2,'0');
+        const mm = String(Math.floor((s % 3600) / 60)).padStart(2,'0');
+        const ss = String(s % 60).padStart(2,'0');
+        return `${hh}:${mm}:${ss}`;
       };
 
-      if (UNAV.includes(episode)) return "Indisponible";
+      const since = (iso) => {
+        if (UNAV.includes(iso)) return "—";
+        const t = Date.parse(iso);
+        if (Number.isNaN(t)) return "—";
+        const sec = (Date.now() - t) / 1000;
+        return fmt_duree(sec);
+      };
 
-      if (episode === 'on') {
-        return `En cours  •  ${fmt(d)}`;
-      }
+      if (UNAV.includes(episode) || UNAV.includes(tentative))
+        return "Indisponible";
 
-      return `Au repos  •  ${fmt(d)}`;
+      if (episode === 'on')
+        return `En cours  •  depuis ${since(d)}`;
+
+      if (tentative === 'on')
+        return "Tentative  •  grâce en cours";
+
+      return "Au repos";
     ]]]
 
   styles:
@@ -50,13 +74,17 @@ aeration_episode_status_72:
       - background-color: |
           [[[
             const UNAV = ['unknown','unavailable',undefined,null,'none',''];
-            const s = states['input_boolean.aeration_episode_en_cours']?.state;
+            const episode = states['input_boolean.aeration_episode_en_cours']?.state;
+            const tentative = states['binary_sensor.tentative_aeration_en_grace']?.state;
 
-            if (UNAV.includes(s))
+            if (UNAV.includes(episode) || UNAV.includes(tentative))
               return "rgba(158, 158, 158, 0.1)";
 
-            if (s === 'on')
+            if (episode === 'on')
               return "rgba(33, 150, 243, 0.2)";
+
+            if (tentative === 'on')
+              return "rgba(255, 152, 0, 0.2)";
 
             return "rgba(158, 158, 158, 0.2)";
           ]]]

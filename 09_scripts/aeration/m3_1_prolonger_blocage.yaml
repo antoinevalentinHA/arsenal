@@ -1,0 +1,122 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     Aération — M3 — Prolonger blocage chauffage
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Prolonger le blocage chauffage suite à une analyse ΔT forte.
+#
+#   - Prolongation monotone : ne raccourcit jamais une échéance existante
+#   - Met à jour :
+#       • input_datetime.chauffage_fin_blocage_aeration (trace/diag)
+#       • timer.aeration_blocage (pilotage M4)
+# ==========================================================
+
+aeration_m3_prolonger_blocage:
+  alias: "Aération — M3 — Prolonger blocage"
+  mode: single
+
+  fields:
+    delta_max:
+      description: "DeltaT max global"
+      example: 1.25
+    prolongation_heures:
+      description: "Nombre d'heures de prolongation"
+      example: 2
+
+  sequence:
+
+    - variables:
+        d: "{{ delta_max | float(0) }}"
+        h: "{{ prolongation_heures | int(0) }}"
+
+        fin_blocage_proposee: >
+          {{
+            (now() + timedelta(hours = h))
+            .replace(tzinfo=None)
+          }}
+
+        fin_blocage_actuelle: >
+          {{
+            states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime
+          }}
+
+        fin_blocage_actuelle_valide: >
+          {{
+            fin_blocage_actuelle is not none
+            and not (
+              fin_blocage_actuelle.hour == 0
+              and fin_blocage_actuelle.minute == 0
+              and fin_blocage_actuelle.second == 0
+            )
+          }}
+
+        fin_blocage_cible: >
+          {{
+            fin_blocage_actuelle
+            if fin_blocage_actuelle_valide
+               and fin_blocage_actuelle > fin_blocage_proposee
+            else fin_blocage_proposee
+          }}
+
+        # --------------------------------------------------
+        # Timer blocage — monotone sur remaining
+        # --------------------------------------------------
+        blocage_timer_active: "{{ is_state('timer.aeration_blocage', 'active') }}"
+
+        blocage_remaining: >
+          {{ state_attr('timer.aeration_blocage','remaining') if blocage_timer_active else '00:00:00' }}
+
+        blocage_remaining_s: >
+          {% set r = blocage_remaining %}
+          {% if r in ['unknown','unavailable','none','None',''] %}
+            0
+          {% else %}
+            {% set p = r.split(':') %}
+            {{ (p[0] | int(0)) * 3600 + (p[1] | int(0)) * 60 + (p[2] | int(0)) }}
+          {% endif %}
+
+        # Cible timer = durée jusqu'à fin_blocage_cible
+        blocage_cible_s: >
+          {% set dt = as_datetime(fin_blocage_cible) %}
+          {% if dt is none %}
+            0
+          {% else %}
+            {% set s = (dt - now().replace(tzinfo=None)).total_seconds() %}
+            {{ 0 if s < 0 else (s | int(0)) }}
+          {% endif %}
+
+        blocage_start_s: "{{ blocage_cible_s if blocage_cible_s > blocage_remaining_s else blocage_remaining_s }}"
+
+        blocage_start_hh: "{{ (blocage_start_s // 3600) | int }}"
+        blocage_start_mm: "{{ ((blocage_start_s % 3600) // 60) | int }}"
+        blocage_start_ss: "{{ (blocage_start_s % 60) | int }}"
+
+        blocage_duration: "{{ '%02d:%02d:%02d' | format(blocage_start_hh, blocage_start_mm, blocage_start_ss) }}"
+
+        blocage_timer_do_start: "{{ blocage_start_s > blocage_remaining_s }}"
+
+    # Trace/diagnostic
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.chauffage_fin_blocage_aeration
+      data:
+        datetime: "{{ fin_blocage_cible | trim }}"
+
+    # Timer blocage : étendre uniquement si ça repousse
+    - if:
+        - condition: template
+          value_template: "{{ blocage_timer_do_start }}"
+      then:
+        - action: timer.start
+          target:
+            entity_id: timer.aeration_blocage
+          data:
+            duration: "{{ blocage_duration }}"
+
+    - action: logbook.log
+      data:
+        name: "Chauffage - Blocage prolonge"
+        message: >
+          DeltaT = {{ d | round(2) }} degC
+          -> prolongation {{ h }} h.
+        entity_id: input_boolean.chauffage_blocage_aeration

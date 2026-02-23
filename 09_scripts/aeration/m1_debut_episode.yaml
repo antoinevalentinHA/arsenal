@@ -1,0 +1,85 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     Aération — M1 — Début épisode (snapshots T_REF)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exécuter l’étape M1 du pipeline aération :
+#     - démarrage de l’épisode
+#     - horodatage de début
+#     - snapshots des températures de référence (T_REF)
+#     - armement post-boot du pipeline
+#
+# 🧩 PRINCIPE
+#   Aucune décision métier ici.
+#   Le pipeline appelle ce script uniquement lorsque M1 est autorisé.
+#
+# 🛡️ ROBUSTESSE
+#   - Snapshots conservateurs : si capteur unknown/unavailable -> on garde la valeur existante
+#   - Zéro wait
+#   - Idempotent raisonnable
+# ==========================================================
+
+aeration_m1_debut_episode:
+  alias: "Aération — M1 — Début épisode"
+  mode: single
+
+  sequence:
+
+    # Activation épisode d'aération
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.aeration_episode_en_cours
+
+    # Horodatage début d'aération
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.aeration_debut
+      data:
+        datetime: "{{ now().replace(tzinfo=None).isoformat() }}"
+
+    # Snapshots T_REF individuels
+    - repeat:
+        for_each:
+          - sensor: sensor.temperature_entree
+            input: input_number.ref_temp_entree
+          - sensor: sensor.temperature_sejour
+            input: input_number.ref_temp_sejour
+          - sensor: sensor.temperature_chambre_arnaud
+            input: input_number.ref_temp_chambre_arnaud
+          - sensor: sensor.temperature_chambre_matthieu
+            input: input_number.ref_temp_chambre_matthieu
+          - sensor: sensor.temperature_chambre_parents
+            input: input_number.ref_temp_chambre_parents
+          - sensor: sensor.temperature_palier
+            input: input_number.ref_temp_palier
+
+        sequence:
+          - action: input_number.set_value
+            target:
+              entity_id: "{{ repeat.item.input }}"
+            data:
+              value: >
+                {% set t = states(repeat.item.sensor) %}
+                {% if t in ['unknown','unavailable','none','None',''] %}
+                  {{ states(repeat.item.input) | float(0) }}
+                {% else %}
+                  {{ t | float(0) }}
+                {% endif %}
+
+    # Température de référence globale pour DeltaT mini chambres
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.chute_temp_reference
+      data:
+        value: >
+          {% set t = states('sensor.temperature_min_chambres') %}
+          {% if t in ['unknown','unavailable','none','None',''] %}
+            {{ states('input_number.chute_temp_reference') | float(0) }}
+          {% else %}
+            {{ t | float(0) }}
+          {% endif %}
+
+    # Armement explicite du pipeline post-boot
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.aeration_pipeline_arme

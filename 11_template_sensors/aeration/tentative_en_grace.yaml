@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Tentative aération en grâce (Séjour + Parents)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Signal transitoire (N0) pour détecter une TENTATIVE
+#   d’aération avant confirmation (pendant les délais).
+#
+# ✅ ON si :
+#   - au moins une fenêtre brute Séjour est ouverte ET timer séjour = active
+#     OU
+#   - au moins une fenêtre brute Parents est ouverte ET timer parents = active
+#
+# 🚫 Hors périmètre
+#   - Fenêtres enfants (Arnaud / Matthieu) : immédiat, donc pas une "tentative"
+#
+# 📍 Entité : binary_sensor.tentative_aeration_en_grace
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Tentative aération en grâce"
+      unique_id: tentative_aeration_en_grace
+      default_entity_id: binary_sensor.tentative_aeration_en_grace
+
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:timer-sand
+        {% else %}
+          mdi:timer-sand-empty
+        {% endif %}
+
+      state: >
+        {# ---------------------------------------------------
+           Séjour (brut + timer active)
+           --------------------------------------------------- #}
+        {% set sejour = [
+          'binary_sensor.capteur_fenetre_sejour_1',
+          'binary_sensor.capteur_fenetre_sejour_2',
+          'binary_sensor.capteur_fenetre_sejour_3',
+          'binary_sensor.capteur_fenetre_sejour_4'
+        ] %}
+        {% set sejour_open = (sejour | select('is_state', 'on') | list | length > 0) %}
+        {% set sejour_grace = is_state('timer.fenetre_sejour_ouverte_grace', 'active') %}
+
+        {# ---------------------------------------------------
+           Parents (brut + timer active)
+           --------------------------------------------------- #}
+        {% set parents = [
+          'binary_sensor.capteur_chambre_parents_droite',
+          'binary_sensor.capteur_chambre_parents_gauche',
+          'binary_sensor.capteur_chambre_parents_milieu'
+        ] %}
+        {% set parents_open = (parents | select('is_state', 'on') | list | length > 0) %}
+        {% set parents_grace = is_state('timer.fenetre_chambre_parents_grace', 'active') %}
+
+        {{ (sejour_open and sejour_grace) or (parents_open and parents_grace) }}

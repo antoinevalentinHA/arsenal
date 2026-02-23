@@ -33,36 +33,39 @@ chauffage_blocage_aeration_xl:
   label: |
     [[[
       const st = (id) => states[id]?.state;
+      const attr = (id, a) => states[id]?.attributes?.[a];
+
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
 
       const blocage = st('input_boolean.chauffage_blocage_aeration');
       const episode = st('input_boolean.aeration_episode_en_cours');
       const override = st('input_boolean.mode_confort_chauffage');
 
-      const d_bloc = st('input_datetime.chauffage_fin_blocage_aeration');
-      const d_ana  = st('input_datetime.analyse_deltat_disponible');
+      const t_bloc_state = st('timer.aeration_blocage');
+      const t_ana_state  = st('timer.aeration_analyse_delta_t');
 
-      const fmt = (s) => {
-        if (UNAV.includes(s)) return "—";
-        const t = Date.parse(s);
-        if (Number.isNaN(t)) return "—";
-        const d = new Date(t);
-        const dd = String(d.getDate()).padStart(2,'0');
-        const mm = String(d.getMonth()+1).padStart(2,'0');
-        const hh = String(d.getHours()).padStart(2,'0');
-        const mi = String(d.getMinutes()).padStart(2,'0');
-        return `${dd}/${mm} ${hh}:${mi}`;
+      const rem_bloc = attr('timer.aeration_blocage', 'remaining');
+      const rem_ana  = attr('timer.aeration_analyse_delta_t', 'remaining');
+
+      const fmt_rem = (timer_state, remaining) => {
+        if (UNAV.includes(timer_state)) return "—";
+        if (timer_state !== 'active') return "—";
+        if (UNAV.includes(remaining)) return "—";
+        return String(remaining);
       };
+
+      const bloc_txt = fmt_rem(t_bloc_state, rem_bloc);
+      const ana_txt  = fmt_rem(t_ana_state,  rem_ana);
 
       if ([blocage, episode, override].some(v => UNAV.includes(v)))
         return "Indisponible";
 
       if (blocage === 'on' && episode === 'on') {
-        return `Aération en cours\nFin: ${fmt(d_bloc)}  •  ΔT: ${fmt(d_ana)}`;
+        return `Aération en cours\nReste: ${bloc_txt}  •  ΔT: ${ana_txt}`;
       }
 
       if (blocage === 'on') {
-        return `Post-aération\nFin: ${fmt(d_bloc)}  •  ΔT: ${fmt(d_ana)}`;
+        return `Post-aération\nReste: ${bloc_txt}  •  ΔT: ${ana_txt}`;
       }
 
       if (override === 'on') {
@@ -84,7 +87,7 @@ chauffage_blocage_aeration_xl:
             const override = st('input_boolean.mode_confort_chauffage');
 
             if ([blocage, episode, override].some(v => UNAV.includes(v)))
-              return "rgba(158, 158, 158, 0.1)";
+              return "rgba(158, 158, 158, 0.2)";
 
             if (blocage === 'on' && episode === 'on')
               return "rgba(244, 67, 54, 0.2)";

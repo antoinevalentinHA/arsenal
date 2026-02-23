@@ -8,10 +8,10 @@
 #     du délai de confirmation.
 #
 #  Cas couvert :
-#     - Ouverture détectée
+#     - Tentative en grâce (Séjour / Parents)
 #     - Aération_episode_en_cours = on
-#     - Timer de grâce NON arrivé à terme
-#     - Fermeture complète des ouvrants
+#     - Aération NON confirmée
+#     - Fermeture complète des ouvrants concernés
 #
 #  Effet :
 #     - Désactivation de l’état "aération en cours"
@@ -34,7 +34,8 @@
 
   trigger:
     - platform: state
-      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+      entity_id: binary_sensor.tentative_aeration_en_grace
+      from: "on"
       to: "off"
 
   ##################################################################
