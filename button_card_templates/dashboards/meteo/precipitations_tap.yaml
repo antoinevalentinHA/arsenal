@@ -1,0 +1,39 @@
+#################################################################
+# 🌧️ CARTE PRÉCIPITATIONS — SEUILS VARIABLES AVEC TAP ACTION 
+#################################################################
+
+carte_precipitations_seuils_variables_tap:
+  template: carte_base_v2
+  icon: mdi:water
+  show_state: true
+  show_icon: true
+
+  tap_action:
+    action: more-info
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${v.toFixed(1)} mm`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+
+            const f = variables?.seuil_faible;
+            const m = variables?.seuil_modere;
+            const s = variables?.seuil_forte;
+
+            if (isNaN(v)) return 'rgba(158, 158, 158, 0.1)';
+            if (s !== undefined && v >= s) return 'rgba(30, 136, 229, 0.35)';
+            if (m !== undefined && v >= m) return 'rgba(100, 181, 246, 0.3)';
+            if (f !== undefined && v >= f) return 'rgba(187, 222, 251, 0.3)';
+            return 'rgba(158, 158, 158, 0.2)';
+          ]]]

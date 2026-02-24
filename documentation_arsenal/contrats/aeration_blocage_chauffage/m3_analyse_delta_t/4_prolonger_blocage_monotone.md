@@ -1,0 +1,112 @@
+# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M3)
+#     PROLONGER LE BLOCAGE — MONOTONICITÉ
+# ==========================================================
+
+## 🎯 OBJET
+
+Définir le comportement normatif du script :
+
+- `script.aeration_m3_prolonger_blocage`
+
+Ce script est appelé par l’orchestrateur M3 lorsque
+`prolongation_heures > 0`.
+
+Il a deux responsabilités :
+
+- mettre à jour la trace/diagnostic `input_datetime.chauffage_fin_blocage_aeration`,
+- prolonger le timer `timer.aeration_blocage` de façon strictement monotone.
+
+---
+
+## 🧩 ENTRÉES
+
+Champs attendus :
+
+- `delta_max` (float)
+- `prolongation_heures` (int)
+
+Normalisation interne :
+
+- `d = delta_max | float(0)`
+- `h = prolongation_heures | int(0)`
+
+---
+
+## 📆 CALCUL D’ÉCHÉANCE (TRACE) — MONOTONE MAX
+
+Échéance proposée :
+
+- `fin_blocage_proposee = now + h heures`
+
+Échéance actuelle :
+
+- `fin_blocage_actuelle = input_datetime.chauffage_fin_blocage_aeration | as_datetime`
+
+Validité “actuelle” :
+
+- considérée invalide si `none`,
+- ou si heure/minute/seconde = `00:00:00`.
+
+Échéance cible (monotone) :
+
+- si l’échéance actuelle est valide et strictement postérieure à la proposition :
+  → conserver l’échéance actuelle
+- sinon :
+  → adopter la proposition
+
+Ce mécanisme interdit toute réduction de fin de blocage.
+
+---
+
+## ⏱ TIMER BLOCAGE — MONOTONE SUR REMAINING
+
+Le script lit :
+
+- `timer.aeration_blocage` état `active` ou non
+- `remaining` si actif, sinon `00:00:00`
+- conversion en secondes : `blocage_remaining_s`
+
+Puis calcule une cible timer basée sur l’échéance cible :
+
+- `blocage_cible_s = max(0, fin_blocage_cible - now)` en secondes
+
+Durée réellement appliquée (monotone) :
+
+- `blocage_start_s = max(blocage_cible_s, blocage_remaining_s)`
+
+Démarrage effectif :
+
+- le timer n’est relancé que si `blocage_start_s > blocage_remaining_s`
+  (sinon maintien strict du timer actuel)
+
+---
+
+## 🔧 EFFETS NORMATIFS
+
+1. Mise à jour trace :
+
+- `input_datetime.chauffage_fin_blocage_aeration = fin_blocage_cible`
+
+2. Prolongation timer (si et seulement si repousse) :
+
+- `timer.start(timer.aeration_blocage, duration=blocage_duration)`
+
+3. Logbook :
+
+- name : "Chauffage - Blocage prolonge"
+- message : ΔT arrondi + prolongation h
+
+---
+
+## 🛑 INTERDITS
+
+Le script ne doit jamais :
+
+- lever le blocage (`chauffage_blocage_aeration`),
+- désarmer le pipeline,
+- raccourcir le timer blocage,
+- modifier le timer analyse ΔT,
+- initier une action thermique.
+
+# ==========================================================

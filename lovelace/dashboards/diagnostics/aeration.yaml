@@ -33,7 +33,6 @@ views:
     cards:
       - type: vertical-stack
         cards:
-
           - type: custom:button-card
             template: section_header
             name: 🪟 Statut de l’aération
@@ -46,8 +45,7 @@ views:
             template: section_header
             name: 🔒 Effet sur chauffage
 
-          - type: custom:button-card
-            template: chauffage_blocage_aeration_xl
+          - !include ../../includes/cartes/aeration_timers.yaml
 
           - type: custom:button-card
             template: section_header
@@ -57,11 +55,10 @@ views:
             columns: 2
             square: false
             cards:
-
               - type: custom:button-card
                 template: aeration_deltat_chute_72
                 name: Chute thermique
-    
+
               - type: custom:button-card
                 template: aeration_reference_thermique_72
                 name: Référence thermique

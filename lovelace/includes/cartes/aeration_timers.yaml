@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE METIER (INCLUDE)
+#     Chauffage — Aération : Timers (1 carte par timer)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Afficher un rendu robuste et dynamique des décomptes :
+#   - Nominal : 1 carte synthèse (pas de timer affiché)
+#   - Verrou actif : 1 carte "Blocage" (timer.aeration_blocage)
+#   - Analyse ΔT active : 1 carte "ΔT" (timer.aeration_analyse_delta_t)
+#
+# 🧠 PRINCIPE
+#   Une carte button-card est "pilotée" par SON timer via entity: timer.xxx
+#   => remaining se rafraîchit nativement (comme ECS).
+# ==========================================================
+
+type: grid
+columns: 2
+square: false
+cards:
+
+  - type: custom:button-card
+    template: carte_aeration_blocage_timer
+    entity: timer.aeration_blocage
+    name: Blocage chauffage
+    icon: mdi:lock-alert
+
+  - type: custom:button-card
+    template: carte_aeration_delta_t_timer
+    entity: timer.aeration_analyse_delta_t
+    name: Analyse ΔT
+    icon: mdi:chart-bell-curve

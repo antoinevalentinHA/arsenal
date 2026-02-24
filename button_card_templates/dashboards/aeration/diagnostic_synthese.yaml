@@ -56,7 +56,7 @@ aeration_synthese_72:
             const delta   = st('input_number.delta_t_max_decisionnel_aeration');
 
             if ([blocage, episode, delta].some(v => UNAV.includes(v)))
-              return "rgba(158, 158, 158, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             const v = parseFloat(delta);
 

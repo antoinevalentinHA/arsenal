@@ -20,36 +20,43 @@ aeration_deltat_chute_72:
 
   label: |
     [[[
-      const s = states['input_number.delta_t_max_decisionnel_aeration']?.state;
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const s = states['input_number.delta_t_max_decisionnel_aeration']?.state;
 
-      if (UNAV.includes(s)) {
-        return "Indisponible";
-      }
+      if (UNAV.includes(s)) return "Indisponible";
 
       const v = parseFloat(s);
       if (Number.isNaN(v)) return "Indisponible";
 
-      if (v > 0) return `Oui • ΔT max ${v.toFixed(2)} °C`;
-      return "Aucune chute significative";
+      if (v === 0) return "Aucune chute";
+      if (v < 0.8) return `Chute faible • ${v.toFixed(2)} °C`;
+      if (v < 1.2) return `Chute modérée • ${v.toFixed(2)} °C`;
+
+      return `Chute importante • ${v.toFixed(2)} °C`;
     ]]]
 
   styles:
     card:
       - background-color: |
           [[[
-            const s = states['input_number.delta_t_max_decisionnel_aeration']?.state;
             const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            const s = states['input_number.delta_t_max_decisionnel_aeration']?.state;
 
             if (UNAV.includes(s))
-              return "rgba(158, 158, 158, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             const v = parseFloat(s);
             if (Number.isNaN(v))
-              return "rgba(158, 158, 158, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
-            if (v > 0)
-              return "rgba(244, 67, 54, 0.2)";
+            if (v === 0)
+              return "rgba(76, 175, 80, 0.2)";
 
-            return "rgba(76, 175, 80, 0.2)";
+            if (v < 0.8)
+              return "rgba(255, 235, 59, 0.2)";
+
+            if (v < 1.2)
+              return "rgba(255, 152, 0, 0.2)";
+
+            return "rgba(244, 67, 54, 0.2)";
           ]]]

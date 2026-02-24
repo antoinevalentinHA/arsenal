@@ -95,6 +95,7 @@
     # Aération épisode en cours (entrée / sortie)
     - platform: state
       entity_id: input_boolean.aeration_episode_en_cours
+      id: "aeration_episode"
 
     # Blocage post-aération (entrée / sortie)
     - platform: state
@@ -206,21 +207,68 @@
   action:
 
     # ==================================================
+    #  🧱 FILTRE — ÉPISODE AÉRATION NON QUALIFIÉ
+    #     - ouverture tentative  (off -> on, confirmee off)
+    #     - clôture tentative    (on -> off, confirmee off)
+    # ==================================================
+    - choose:
+
+        # --------------------------
+        # Tentative : ouverture
+        # --------------------------
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  trigger.platform == 'state'
+                  and trigger.entity_id == 'input_boolean.aeration_episode_en_cours'
+                  and trigger.from_state is not none
+                  and trigger.to_state is not none
+                  and trigger.from_state.state == 'off'
+                  and trigger.to_state.state == 'on'
+                }}
+            - condition: state
+              entity_id: input_boolean.aeration_confirmee
+              state: "off"
+          sequence:
+            - stop: "Aération non qualifiée (tentative) -> pas de décision chauffage (ouverture)."
+
+        # --------------------------
+        # Tentative : fermeture
+        # --------------------------
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  trigger.platform == 'state'
+                  and trigger.entity_id == 'input_boolean.aeration_episode_en_cours'
+                  and trigger.from_state is not none
+                  and trigger.to_state is not none
+                  and trigger.from_state.state == 'on'
+                  and trigger.to_state.state == 'off'
+                }}
+            - condition: state
+              entity_id: input_boolean.aeration_confirmee
+              state: "off"
+            - condition: state
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "off"
+          sequence:
+            - stop: "Aération non qualifiée (tentative) -> pas de décision chauffage (fermeture)."
+
+      default: []
+
+    # ==================================================
     #  🕒 STABILISATION CONDITIONNELLE
-    #     - Override prioritaire : immédiat
-    #     - Autres cas : délai 2 s
     # ==================================================
     - alias: "Stabilisation conditionnelle"
       choose:
-        # 🔥 Override chauffage prioritaire
         - conditions:
             - condition: template
               value_template: "{{ trigger.id == 'mode_confort_chauffage' }}"
           sequence: []
       default:
-        # 🕒 Cas général : stabilisation courte
         - delay: "00:00:02"
-
 
     # ==================================================
     #  🧠 APPEL DU CERVEAU CENTRAL DU CHAUFFAGE

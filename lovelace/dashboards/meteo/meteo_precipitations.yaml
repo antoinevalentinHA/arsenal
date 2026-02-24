@@ -58,7 +58,7 @@ views:
                   seuil_forte: 20
 
               - type: custom:button-card
-                template: carte_precipitations_seuils_variables
+                template: carte_precipitations_seuils_variables_tap
                 entity: sensor.pluviometre_precipitation
                 name: Intensité
                 variables:

@@ -8,7 +8,6 @@
 #   - ΔT max observé
 #   Carte purement informative (bleu INFO).
 # ==========================================================
-
 aeration_reference_thermique_72:
   template: socle_info_72
 
@@ -16,6 +15,15 @@ aeration_reference_thermique_72:
   show_name: true
   show_label: true
   show_icon: true
+
+  triggers_update:
+    - input_number.ref_temp_entree
+    - input_number.ref_temp_sejour
+    - input_number.ref_temp_chambre_arnaud
+    - input_number.ref_temp_chambre_matthieu
+    - input_number.ref_temp_chambre_parents
+    - input_number.ref_temp_palier
+    - input_number.delta_t_max_decisionnel_aeration
 
   icon: mdi:thermometer
 

@@ -3,8 +3,9 @@
 #     aeration_episode_status_72
 # ----------------------------------------------------------
 # 🎯 ROLE
-#   Synthese episode d'aeration + temps ecoule depuis debut.
-#   Remplace l'affichage d'une date par une duree utile.
+#   Synthese episode d'aeration.
+#   Aucun calcul temporel UI.
+#   100% backend-driven.
 # ==========================================================
 
 aeration_episode_status_72:
@@ -15,6 +16,10 @@ aeration_episode_status_72:
   show_label: true
   show_icon: true
   color_type: card
+
+  triggers_update:
+    - input_boolean.aeration_episode_en_cours
+    - binary_sensor.tentative_aeration_en_grace
 
   icon: |
     [[[
@@ -39,32 +44,15 @@ aeration_episode_status_72:
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
       const episode = states['input_boolean.aeration_episode_en_cours']?.state;
       const tentative = states['binary_sensor.tentative_aeration_en_grace']?.state;
-      const d = states['input_datetime.aeration_debut']?.state;
-
-      const fmt_duree = (seconds) => {
-        const s = Math.max(0, Math.floor(seconds));
-        const hh = String(Math.floor(s / 3600)).padStart(2,'0');
-        const mm = String(Math.floor((s % 3600) / 60)).padStart(2,'0');
-        const ss = String(s % 60).padStart(2,'0');
-        return `${hh}:${mm}:${ss}`;
-      };
-
-      const since = (iso) => {
-        if (UNAV.includes(iso)) return "—";
-        const t = Date.parse(iso);
-        if (Number.isNaN(t)) return "—";
-        const sec = (Date.now() - t) / 1000;
-        return fmt_duree(sec);
-      };
 
       if (UNAV.includes(episode) || UNAV.includes(tentative))
         return "Indisponible";
 
       if (episode === 'on')
-        return `En cours  •  depuis ${since(d)}`;
+        return "Épisode • ouverture qualifiée";
 
       if (tentative === 'on')
-        return "Tentative  •  grâce en cours";
+        return "Tentative • délai de grâce";
 
       return "Au repos";
     ]]]

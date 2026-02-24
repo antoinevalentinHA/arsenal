@@ -15,7 +15,7 @@
     - name: "etat_aeration_dashboard"
       unique_id: etat_aeration_dashboard
       state: >
-        {% set aer = states('binary_sensor.aeration_conseillee') %}
+        {% set aer = states('input_boolean.aeration_episode_en_cours') %}
 
         {% if aer == 'on' %}
           alert

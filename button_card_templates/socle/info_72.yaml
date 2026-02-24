@@ -27,7 +27,7 @@ socle_info_72:
   styles:
     card:
       - height: 72px
-      - background-color: rgba(33, 150, 243, 0.25)
+      - background-color: rgba(33, 150, 243, 0.2)
 
     icon:
       - width: 26px

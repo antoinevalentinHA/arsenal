@@ -118,6 +118,7 @@
     - id: ouverture_grace
       platform: state
       entity_id: binary_sensor.tentative_aeration_en_grace
+      from: "off"
       to: "on"
 
     # --------------------------------------------------------------
@@ -182,7 +183,7 @@
     - choose:
 
         ##################################################################
-        #  RECOVER — REMEDIATION (AUTORITE PIPELINE)
+        #  RECOVER — ROUTAGE UNIQUEMENT
         ##################################################################
         - conditions:
 
@@ -194,18 +195,7 @@
               state: "on"
 
           sequence:
-
-            - action: script.aeration_m4_fin_blocage_horaire
-
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.aeration_recover_requested
-
-            - action: logbook.log
-              data:
-                name: "Chauffage - Aération - Pipeline maître"
-                message: "Recover exécuté (M4 forcé) suite demande aeration_recover_requested."
-                entity_id: input_boolean.aeration_recover_requested
+            - action: script.aeration_m0_recover
 
         ##################################################################
         #  M1 — DEBUT AERATION

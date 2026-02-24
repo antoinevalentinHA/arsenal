@@ -5,12 +5,30 @@
 # 🎯 ROLE
 #   Synthese verrou chauffage lie a l'aeration.
 #   Remplace markdown narratif par carte canon XL.
+#
+# 🧩 SEMANTIQUE
+#   - "Suspendu"      : blocage ON + episode ON
+#   - "Stabilisation" : blocage ON
+#   - "Override"      : mode_confort_chauffage ON
+#   - "Aucun verrou"  : nominal
+#
+# 🛡️ DYNAMIQUE
+#   - Affichage des timers via attribut 'remaining'
+#   - Refresh force via triggers_update
 # ==========================================================
 
 chauffage_blocage_aeration_xl:
   template: socle_status_label_xl
 
   icon: mdi:lock-alert
+
+  triggers_update:
+    - sensor.time
+    - input_boolean.chauffage_blocage_aeration
+    - input_boolean.aeration_episode_en_cours
+    - input_boolean.mode_confort_chauffage
+    - timer.aeration_blocage
+    - timer.aeration_analyse_delta_t
 
   state_display: |
     [[[
@@ -87,7 +105,7 @@ chauffage_blocage_aeration_xl:
             const override = st('input_boolean.mode_confort_chauffage');
 
             if ([blocage, episode, override].some(v => UNAV.includes(v)))
-              return "rgba(158, 158, 158, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             if (blocage === 'on' && episode === 'on')
               return "rgba(244, 67, 54, 0.2)";

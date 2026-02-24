@@ -1,0 +1,128 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     Aération — M0 — Remédiation incohérence (Recover)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exécuter une remédiation ciblée (idempotente) lorsque
+#   le système Chauffage/Aération est détecté incohérent.
+#
+# 🧩 PRINCIPE
+#   - Applique uniquement des corrections "soft" de cohérence :
+#       • pipeline zombie -> désarmement pipeline
+#       • aeration_confirmee orpheline -> reset flag
+#       • blocage orphelin -> délégation à M4 (cas strict)
+#   - Ack systématique : aeration_recover_requested -> OFF
+#   - Trace logbook
+#
+# 🚫 NE FAIT PAS
+#   - Ne déclenche aucun épisode
+#   - Ne pilote aucun actionneur thermique
+#   - Ne force pas M4 hors cas "blocage orphelin"
+# ==========================================================
+
+aeration_m0_recover:
+  alias: "Aération — M0 — Remédiation incohérence"
+  mode: single
+
+  sequence:
+
+    # ----------------------------------------------------------
+    #  Recover ciblé : pipeline zombie
+    #  (pipeline=on mais rien d'actif)
+    # ----------------------------------------------------------
+    - choose:
+
+        - conditions:
+
+            - condition: state
+              entity_id: input_boolean.aeration_pipeline_arme
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.aeration_episode_en_cours
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "off"
+
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+              state: "off"
+
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_maison
+              state: "off"
+
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aeration_pipeline_arme
+
+        # ------------------------------------------------------
+        #  Recover ciblé : aeration_confirmee orpheline
+        #  (flag figé alors que tout est fermé et rien n'est actif)
+        # ------------------------------------------------------
+        - conditions:
+
+            - condition: state
+              entity_id: input_boolean.aeration_confirmee
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.aeration_episode_en_cours
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.aeration_pipeline_arme
+              state: "off"
+
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+              state: "off"
+
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_maison
+              state: "off"
+
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.aeration_confirmee
+
+        # ------------------------------------------------------
+        #  Recover ciblé : blocage orphelin
+        #  (blocage=on mais timer.aeration_blocage non actif)
+        #  -> ici SEULEMENT, M4 peut être légitime
+        # ------------------------------------------------------
+        - conditions:
+
+            - condition: state
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "on"
+
+            - condition: state
+              entity_id: timer.aeration_blocage
+              state: "idle"
+
+          sequence:
+            - action: script.aeration_m4_fin_blocage_horaire
+
+      default: []
+
+    # ----------------------------------------------------------
+    #  Ack request (anti-boucle)
+    # ----------------------------------------------------------
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_recover_requested
+
+    - action: logbook.log
+      data:
+        name: "Aération — M0 — Recover"
+        message: "Recover exécuté (remédiation ciblée) suite demande aeration_recover_requested."
+        entity_id: input_boolean.aeration_recover_requested

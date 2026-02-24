@@ -72,10 +72,9 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 🔒 Verrou post-aération
+            name: 🪟 Aération
 
-          - type: custom:button-card
-            template: chauffage_synthese_blocage_aeration_xl
+          - !include ../../includes/cartes/aeration_timers.yaml
 
           ########################################################
           # 🎯 3) Consignes & Écarts

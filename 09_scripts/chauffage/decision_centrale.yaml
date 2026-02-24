@@ -157,7 +157,8 @@ chauffage_decision_centrale:
           {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
             reduced
 
-          {% elif is_state('input_boolean.aeration_episode_en_cours', 'on') %}
+          {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
+                 and is_state('input_boolean.aeration_confirmee', 'on') %}
             reduced
 
           {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
@@ -173,7 +174,12 @@ chauffage_decision_centrale:
             reduced
 
           {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
-            {{ states('sensor.chauffage_autorisation_cible') }}
+            {% set cible = states('sensor.chauffage_autorisation_cible') %}
+            {% if cible in ['comfort','neutre','reduced'] %}
+              {{ cible }}
+            {% else %}
+              neutre
+            {% endif %}
 
           {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
             comfort
@@ -189,7 +195,8 @@ chauffage_decision_centrale:
           {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
             chauffage_non_autorise
 
-          {% elif is_state('input_boolean.aeration_episode_en_cours', 'on') %}
+          {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
+                 and is_state('input_boolean.aeration_confirmee', 'on') %}
             aeration_en_cours
 
           {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
@@ -210,8 +217,10 @@ chauffage_decision_centrale:
               besoin_thermique
             {% elif cible == 'neutre' %}
               presence_on
-            {% else %}
+            {% elif cible == 'reduced' %}
               confort_suffisant
+            {% else %}
+              presence_on
             {% endif %}
 
           {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}

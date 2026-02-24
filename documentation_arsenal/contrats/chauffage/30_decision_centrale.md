@@ -120,7 +120,7 @@ Effet normatif :
 Causes imposant la sobriété :
 
 - poêle actif (instantané ou mémoire),
-- épisode d’aération en cours,
+- blocage aération actif,
 - blocage post-aération,
 - fenêtre ouverte avec délai,
 - mode maison = Vacances.

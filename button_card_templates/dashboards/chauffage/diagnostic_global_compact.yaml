@@ -38,6 +38,16 @@ chauffage_diagnostic_global_compact:
   hold_action:
     action: none
 
+  triggers_update:
+    - sensor.programme_chauffage
+    - sensor.chauffage_mode_calcule
+    - sensor.chauffage_raison_calculee
+    - input_boolean.blocage_geofencing
+    - input_boolean.chauffage_inhibition_geofencing
+    - input_boolean.chauffage_standby_force
+    - input_boolean.blocage_chauffage_poele
+    - input_boolean.chauffage_blocage_aeration
+
   variables:
     diagnostic: |
       [[[
@@ -78,20 +88,21 @@ chauffage_diagnostic_global_compact:
         }
 
         const prog_l = (programme || '').toLowerCase();
+        const intention_l = (intention || '').toLowerCase();
 
-        if (intention === 'Neutre' && prog_l === 'confort') {
+        if (intention_l === 'neutre' && prog_l === 'confort') {
           return { type: 'confort_ok' };
         }
 
-        if (intention === 'Neutre') {
+        if (intention_l === 'neutre') {
           return { type: 'attente' };
         }
 
         return { type: 'stable' };
       ]]]
-      
+
   icon: |
-    [[[ 
+    [[[
       const d = variables.diagnostic;
 
       if (d.type === 'override') return 'mdi:account-alert';
@@ -104,7 +115,7 @@ chauffage_diagnostic_global_compact:
     ]]]
 
   state_display: |
-    [[[ 
+    [[[
       const d = variables.diagnostic;
 
       switch (d.type) {
@@ -120,7 +131,7 @@ chauffage_diagnostic_global_compact:
     ]]]
 
   label: |
-    [[[ 
+    [[[
       const d = variables.diagnostic;
 
       if (d.type === 'indisponible')
@@ -133,7 +144,7 @@ chauffage_diagnostic_global_compact:
         return "Blocage thermique • Cause active";
 
       if (d.type === 'standby')
-        return "Attente thermique • Reprise automatique";
+        return "Standby • Action inhibée";
 
       if (d.type === 'absence')
         return "Protection absence • Surveillance";
@@ -149,8 +160,8 @@ chauffage_diagnostic_global_compact:
 
   styles:
     card:
-    - background-color: |
-          [[[ 
+      - background-color: |
+          [[[
             const d = variables.diagnostic;
 
             // Indisponible (charte)
