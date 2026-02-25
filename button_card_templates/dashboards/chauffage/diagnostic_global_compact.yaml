@@ -68,22 +68,42 @@ chauffage_diagnostic_global_compact:
         const poele     = st('input_boolean.blocage_chauffage_poele') === 'on';
         const aeration  = st('input_boolean.chauffage_blocage_aeration') === 'on';
 
-        const non_autorise = (raison === 'chauffage_non_autorise');
-        const override     = (raison === 'confort_force');
+        const r = raison;
+
+        const override = (r === 'confort_force');
+
+        const blocages_raison = [
+          'blocage_poele',
+          'blocage_aeration',
+          'aeration_en_cours',
+          'fenetre_ouverte',
+          'mode_maison_vacances'
+        ];
+
+        const is_blocage_raison = blocages_raison.includes(r);
+        const is_blocage = poele || aeration || is_blocage_raison;
+
+        const is_absence_protection = (r === 'absence_protection_thermique');
+        const is_standby = standby_b || (r === 'standby_force') || (r === 'autorisation_en_attente');
+        const is_anticipation = (r === 'anticipation_meteo');
 
         if (override) {
-          return { type: 'override', poele, aeration, non_autorise };
+          return { type: 'override' };
         }
 
-        if (poele || aeration || non_autorise) {
-          return { type: 'blocage', poele, aeration, non_autorise };
+        if (is_blocage) {
+          return { type: 'blocage', r };
         }
 
-        if (raison === 'standby_force' || standby_b) {
+        if (is_absence_protection) {
+          return { type: 'absence_protection', geo_arme, inhib };
+        }
+
+        if (is_standby) {
           return { type: 'standby' };
         }
 
-        if (raison === 'absence') {
+        if (r === 'absence') {
           return { type: 'absence', geo_arme, inhib };
         }
 
@@ -92,6 +112,10 @@ chauffage_diagnostic_global_compact:
 
         if (intention_l === 'neutre' && prog_l === 'confort') {
           return { type: 'confort_ok' };
+        }
+
+        if (is_anticipation) {
+          return { type: 'anticipation' };
         }
 
         if (intention_l === 'neutre') {
@@ -107,8 +131,10 @@ chauffage_diagnostic_global_compact:
 
       if (d.type === 'override') return 'mdi:account-alert';
       if (d.type === 'blocage') return 'mdi:lock-alert';
+      if (d.type === 'absence_protection') return 'mdi:shield-home';
       if (d.type === 'standby') return 'mdi:pause-circle';
       if (d.type === 'absence') return 'mdi:home-export-outline';
+      if (d.type === 'anticipation') return 'mdi:weather-sunny';
       if (d.type === 'confort_ok') return 'mdi:shield-check';
       if (d.type === 'indisponible') return 'mdi:shield-off';
       return 'mdi:shield-check';
@@ -122,8 +148,10 @@ chauffage_diagnostic_global_compact:
         case 'indisponible': return "Chauffage";
         case 'override': return "Override";
         case 'blocage': return "Bloqué";
+        case 'absence_protection': return "Protection";
         case 'standby': return "Standby";
         case 'absence': return "Absence";
+        case 'anticipation': return "Anticipation";
         case 'confort_ok': return "Confort OK";
         case 'attente': return "Attente";
         default: return "Stable";
@@ -143,11 +171,17 @@ chauffage_diagnostic_global_compact:
       if (d.type === 'blocage')
         return "Blocage thermique • Cause active";
 
+      if (d.type === 'absence_protection')
+        return "Protection absence • Thermique";
+
       if (d.type === 'standby')
         return "Standby • Action inhibée";
 
       if (d.type === 'absence')
         return "Protection absence • Surveillance";
+
+      if (d.type === 'anticipation')
+        return "Confort différé • Météo favorable";
 
       if (d.type === 'confort_ok')
         return "Confort satisfait • Au repos";
@@ -164,22 +198,27 @@ chauffage_diagnostic_global_compact:
           [[[
             const d = variables.diagnostic;
 
-            // Indisponible (charte)
+            // Indisponible
+            // Arsenal : gris indispo unknown/unavailable
             if (d.type === 'indisponible')
-              return "rgba(158, 158, 158, 0.1)";
+              return "rgba(224, 224, 224, 0.2)";
 
-            // Override (charte)
-            if (d.type === 'override')
-              return "rgba(33, 150, 243, 0.2)";
-
-            // Blocage absolu (charte)
+            // Blocage / critique
             if (d.type === 'blocage')
               return "rgba(244, 67, 54, 0.2)";
 
-            // Standby / absence / attente (charte)
-            if (d.type === 'standby' || d.type === 'absence' || d.type === 'attente')
+            // Avertissement / dégradé
+            if (d.type === 'absence_protection')
+              return "rgba(255, 152, 0, 0.2)";
+
+            // Information / technique
+            if (d.type === 'override'
+                || d.type === 'standby'
+                || d.type === 'absence'
+                || d.type === 'attente'
+                || d.type === 'anticipation')
               return "rgba(33, 150, 243, 0.2)";
 
-            // Nominal (charte)
+            // OK / nominal
             return "rgba(76, 175, 80, 0.2)";
           ]]]

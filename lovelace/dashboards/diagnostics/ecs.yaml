@@ -38,7 +38,8 @@ views:
             template: section_header
             name: 🚿 ECS – Données internes
 
-          - !include ../../includes/cartes/ecs_etat_programmation.yaml
+          - type: custom:button-card
+            template: ecs_chauffe_planifiee_status
 
           - type: grid
             columns: 3

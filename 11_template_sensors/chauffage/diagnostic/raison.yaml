@@ -117,6 +117,12 @@
         {% elif is_state('binary_sensor.pre_confort_actif', 'on') %}
           pre_confort_retour_vacances
 
+        {% elif is_state('input_boolean.chauffage_anticipation_meteo', 'on')
+              and is_state('binary_sensor.meteo_favorable_chauffage', 'on')
+              and is_state('sensor.chauffage_autorisation_cible', 'neutre')
+              and is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+          anticipation_meteo
+
         {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
           presence_on
 

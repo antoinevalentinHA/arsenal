@@ -1,0 +1,157 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATES METIER (UI) — DIAGNOSTIC — READ ONLY
+#     thermo_plateau_* (5 tuiles)
+# ----------------------------------------------------------
+# Dépendances :
+# - input_select.adjustment_piece
+# - sensor.plateau_thermostatique_<piece>
+# - sensor.plateau_thermostatique_piece_affichage
+# - sensor.temperature_stats_12h_mean_<piece>
+# - sensor.temperature_stats_12h_variance_<piece>
+# ==========================================================
+
+thermo_plateau_strict_72:
+  template: socle_kpi_label_72_sans_icone
+  entity: input_select.adjustment_piece
+  tap_action: { action: none }
+  hold_action: { action: none }
+  double_tap_action: { action: none }
+  name: "Plateau strict"
+  state_display: |
+    [[[
+      const piece = states['input_select.adjustment_piece']?.state;
+      if (!piece || ['unknown','unavailable'].includes(piece)) return '—';
+      const id = `sensor.plateau_thermostatique_${piece}`;
+      const v = states[id]?.state;
+      return (v && !['unknown','unavailable'].includes(v)) ? String(v) : '—';
+    ]]]
+  label: "Détection stricte"
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)
+
+thermo_plateau_affichage_72:
+  template: socle_kpi_label_72_sans_icone
+  entity: input_select.adjustment_piece
+  tap_action: { action: none }
+  hold_action: { action: none }
+  double_tap_action: { action: none }
+  name: "Plateau"
+  state_display: |
+    [[[
+      const v = states['sensor.plateau_thermostatique_piece_affichage']?.state;
+      if (!v || ['unknown','unavailable'].includes(v)) return '—';
+      return `${v} °C`;
+    ]]]
+  label: "Valeur affichée"
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)
+
+thermo_mean_12h_72:
+  template: socle_kpi_label_72_sans_icone
+  entity: input_select.adjustment_piece
+  tap_action: { action: none }
+  hold_action: { action: none }
+  double_tap_action: { action: none }
+  name: "Moyenne 12h"
+  state_display: |
+    [[[
+      const piece = states['input_select.adjustment_piece']?.state;
+      if (!piece || ['unknown','unavailable'].includes(piece)) return '—';
+      const id = `sensor.temperature_stats_12h_mean_${piece}`;
+      const v = states[id]?.state;
+      if (!v || ['unknown','unavailable'].includes(v)) return '—';
+      return `${v} °C`;
+    ]]]
+  label: "Température"
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)
+
+thermo_variance_12h_72:
+  template: socle_kpi_label_72_sans_icone
+  entity: input_select.adjustment_piece
+  tap_action: { action: none }
+  hold_action: { action: none }
+  double_tap_action: { action: none }
+  name: "Variance 12h"
+  state_display: |
+    [[[
+      const piece = states['input_select.adjustment_piece']?.state;
+      if (!piece || ['unknown','unavailable'].includes(piece)) return '—';
+      const id = `sensor.temperature_stats_12h_variance_${piece}`;
+      const v = states[id]?.state;
+      return (v && !['unknown','unavailable'].includes(v)) ? String(v) : '—';
+    ]]]
+  label: "Dispersion"
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)
+
+thermo_stabilite_12h_status:
+  template: socle_status_72
+  entity: input_select.adjustment_piece
+
+  name: "Stabilité 12h"
+
+  icon: |
+    [[[
+      const piece = states['input_select.adjustment_piece']?.state;
+      if (!piece || ['unknown','unavailable'].includes(piece))
+        return 'mdi:help-circle-outline';
+
+      const id = `sensor.temperature_stats_12h_variance_${piece}`;
+      const raw = states[id]?.state;
+      const v = Number.parseFloat(raw);
+      if (!Number.isFinite(v))
+        return 'mdi:help-circle-outline';
+
+      if (v < 0.02) return 'mdi:check-circle-outline';
+      if (v < 0.05) return 'mdi:alert-circle-outline';
+      return 'mdi:close-circle-outline';
+    ]]]
+
+  state_display: |
+    [[[
+      const piece = states['input_select.adjustment_piece']?.state;
+      if (!piece || ['unknown','unavailable'].includes(piece))
+        return "Indisponible";
+
+      const id = `sensor.temperature_stats_12h_variance_${piece}`;
+      const raw = states[id]?.state;
+      const v = Number.parseFloat(raw);
+      if (!Number.isFinite(v))
+        return "Variance indisponible";
+
+      if (v < 0.02)
+        return "Très stable";
+
+      if (v < 0.05)
+        return "Modérément stable";
+
+      return "Instable";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const piece = states['input_select.adjustment_piece']?.state;
+            if (!piece || ['unknown','unavailable'].includes(piece))
+              return 'rgba(224, 224, 224, 0.2)';
+
+            const id = `sensor.temperature_stats_12h_variance_${piece}`;
+            const raw = states[id]?.state;
+            const v = Number.parseFloat(raw);
+            if (!Number.isFinite(v))
+              return 'rgba(224, 224, 224, 0.2)';
+
+            if (v < 0.02)
+              return 'rgba(76, 175, 80, 0.2)';
+
+            if (v < 0.05)
+              return 'rgba(255, 152, 0, 0.2)';
+
+            return 'rgba(244, 67, 54, 0.2)';
+          ]]]

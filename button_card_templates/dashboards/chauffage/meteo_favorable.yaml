@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     meteo_favorable_chauffage_72
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Afficher l'indicateur "météo favorable (chauffage)"
+#   comme contexte décisionnel externe.
+#
+# 🧩 SOURCE
+#   - binary_sensor.meteo_favorable_chauffage
+#   - sensor.temperature_prevue
+#   - input_number.meteo_horizon_prevision_heures
+#   - input_number.chauffage_consigne_confort
+#   - input_number.meteo_favorable_offset
+#
+# 🧱 NATURE
+#   Tuile 72px de lecture seule (diagnostic).
+# ==========================================================
+
+meteo_favorable_chauffage_72:
+  template: socle_status_label_72
+
+  entity: binary_sensor.meteo_favorable_chauffage
+  name: "Météo favorable"
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  icon: |
+    [[[
+      const s = entity?.state;
+      if (s === 'on') return 'mdi:weather-sunny';
+      if (s === 'off') return 'mdi:weather-cloudy';
+      return 'mdi:weather-cloudy-alert';
+    ]]]
+
+  label: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const h = st('input_number.meteo_horizon_prevision_heures');
+      const tprev = st('sensor.temperature_prevue');
+      const cons = st('input_number.chauffage_consigne_confort');
+      const off = st('input_number.meteo_favorable_offset');
+
+      const toNum = (v) => {
+        if (UNAV.includes(v)) return NaN;
+        const n = parseFloat(String(v).replace(',', '.'));
+        return Number.isFinite(n) ? n : NaN;
+      };
+
+      const hh = toNum(h);
+      const tp = toNum(tprev);
+      const cc = toNum(cons);
+      const oo = toNum(off);
+
+      const parts = [];
+
+      if (Number.isFinite(hh)) parts.push(`T+${hh}h`);
+      if (Number.isFinite(tp)) parts.push(`${tp.toFixed(1)}°C`);
+
+      if (Number.isFinite(cc) && Number.isFinite(oo)) {
+        const seuil = cc - oo;
+        parts.push(`seuil ${seuil.toFixed(1)}°C`);
+      }
+
+      return parts.length ? parts.join(' • ') : '—';
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            const s = entity?.state;
+
+            if (UNAV.includes(s)) return "rgba(224, 224, 224, 0.2)";
+            if (s === 'on') return "rgba(76, 175, 80, 0.2)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]

@@ -36,7 +36,7 @@ carte_aeration_preferable:
     - value: 'off'
       styles:
         card:
-          - background-color: rgba(244, 67, 54, 0.2)
+          - background-color: rgba(158, 158, 158, 0.2)
 
   tap_action:
     action: none

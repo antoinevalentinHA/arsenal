@@ -1,0 +1,17 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER :
+#     Aération — M3 — Prolongation tiny
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Durée (minutes) appliquée lorsque la chute ΔT est qualifiée
+#   comme "tiny" (niveau 1 post-seuil).
+# ==========================================================
+
+aeration_m3_prolongation_tiny:
+  name: "Aération — M3 — Prolongation tiny"
+  min: 20
+  max: 60
+  step: 5
+  unit_of_measurement: "min"
+  mode: slider
+  icon: mdi:timer-outline

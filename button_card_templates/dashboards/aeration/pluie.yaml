@@ -23,7 +23,7 @@ carte_pluie:
     - value: "on"
       styles:
         card:
-          - background-color: rgba(244, 67, 54, 0.2)
+          - background-color: rgba(158, 158, 158, 0.2)
 
     - value: "off"
       styles:

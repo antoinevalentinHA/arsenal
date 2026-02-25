@@ -1,0 +1,21 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     metno_temperature_prevue_plus_xh
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Exposer la temperature exterieure prevue a +X heures,
+#   avec X = input_number.meteo_horizon_prevision_heures.
+#
+# 🧩 SOURCE
+#   - weather.forecast_maison (Met.no)
+#   - weather.get_forecasts (hourly)
+# ==========================================================
+
+meteo_horizon_prevision_heures:
+  name: "Météo — Horizon prévision (h)"
+  min: 0
+  max: 12
+  step: 1
+  unit_of_measurement: h
+  mode: slider
+  icon: mdi:clock-outline

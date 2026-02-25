@@ -21,11 +21,25 @@ aeration_m3_analyse_deltat:
               states('sensor.deltaT_palier') | float(0)
             ] | max
           }}
+
+        seuil_tiny: "{{ states('input_number.aeration_m3_seuil_tiny') | float(0.4) }}"
+        seuil_medium: "{{ states('input_number.aeration_m3_seuil_medium') | float(0.8) }}"
+        seuil_high: "{{ states('input_number.aeration_m3_seuil_high') | float(1.2) }}"
+
+        prolong_tiny_min: "{{ states('input_number.aeration_m3_prolongation_tiny') | float(60) }}"
+        prolong_medium_min: "{{ states('input_number.aeration_m3_prolongation_medium') | float(120) }}"
+        prolong_high_min: "{{ states('input_number.aeration_m3_prolongation_high') | float(180) }}"
+
         prolongation_heures: >
-          {% if delta_max < 0.4 %} 0
-          {% elif delta_max < 0.8 %} 1
-          {% elif delta_max < 1.2 %} 2
-          {% else %} 3
+          {% set d = delta_max | float(0) %}
+          {% if d < (seuil_tiny | float(0.4)) %}
+            0
+          {% elif d < (seuil_medium | float(0.8)) %}
+            {{ (prolong_tiny_min | float(60)) / 60 }}
+          {% elif d < (seuil_high | float(1.2)) %}
+            {{ (prolong_medium_min | float(120)) / 60 }}
+          {% else %}
+            {{ (prolong_high_min | float(180)) / 60 }}
           {% endif %}
 
     - action: input_number.set_value
@@ -34,11 +48,27 @@ aeration_m3_analyse_deltat:
       data:
         value: "{{ delta_max | round(2) }}"
 
+    # ------------------------------------------------------
+    # UI — ΔT utilisé (monotone max sur l'épisode)
+    #   Peut empirer : on conserve le max
+    # ------------------------------------------------------
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.aeration_delta_t_utilise
+      data:
+        value: >
+          {{
+            [
+              states('input_number.aeration_delta_t_utilise') | float(0),
+              delta_max | float(0)
+            ] | max
+          }}
+
     - choose:
 
         - conditions:
             - condition: template
-              value_template: "{{ prolongation_heures | int(0) > 0 }}"
+              value_template: "{{ prolongation_heures | float(0) > 0 }}"
           sequence:
 
             - action: script.aeration_m3_prolonger_blocage

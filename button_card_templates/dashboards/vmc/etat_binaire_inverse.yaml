@@ -32,6 +32,6 @@ carte_etat_binaire_interprete_inverse:
       - background-color: |
           [[[
             return entity.state === 'on'
-              ? (variables?.color_on || 'rgba(244, 67, 54, 0.2)')
+              ? (variables?.color_on || 'rgba(158, 158, 158, 0.2)')
               : (variables?.color_off || 'rgba(76, 175, 80, 0.2)');
           ]]]

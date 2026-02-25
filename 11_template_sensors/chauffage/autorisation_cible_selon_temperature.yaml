@@ -127,40 +127,57 @@
     - name: "Chauffage – Autorisation cible"
       unique_id: chauffage_autorisation_cible
       state: >
+        {% set UNAV = ['unknown','unavailable','none',''] %}
+      
         {% set ext = states('sensor.temperature_jardin') | float(99) %}
         {% set cold = states('sensor.temperature_min_chambres') | float(99) %}
-
+      
+        {% set mode_maison = states('input_select.mode_maison') %}
+        {% set poele = is_state('input_boolean.blocage_chauffage_poele', 'on') %}
+      
         {% set consigne = states('input_number.chauffage_consigne_confort') | float(19) %}
         {% set offset_on = states('input_number.chauffage_offset_on') | float(0.5) %}
         {% set offset_off = states('input_number.chauffage_offset_off') | float(0.5) %}
-
+      
         {% set seuil_on = consigne - offset_on %}
         {% set seuil_off = consigne + offset_off %}
-
+      
         {% set seuil_ext_on = states('input_number.chauffage_seuil_ext_on') | float(15) %}
         {% set seuil_ext_off = states('input_number.chauffage_seuil_ext_off') | float(18) %}
-
-        {% set poele = is_state('input_boolean.blocage_chauffage_poele', 'on') %}
-        {% set mode_maison = states('input_select.mode_maison') | default('Normale') %}
-
-        {% if ext == 99 or cold == 99 %}
-          unknown
+      
+        {% set anticipation = is_state('input_boolean.chauffage_anticipation_meteo', 'on') %}
+        {% set meteo_fav = is_state('binary_sensor.meteo_favorable_chauffage', 'on') %}
+      
+        {% set cible = 'unknown' %}
+      
+        {% if ext == 99 or cold == 99 or mode_maison in UNAV %}
+          {% set cible = 'unknown' %}
         {% elif mode_maison == 'Vacances' %}
-          reduced
+          {% set cible = 'reduced' %}
         {% elif poele %}
-          reduced
+          {% set cible = 'reduced' %}
         {% elif ext >= seuil_ext_off %}
-          reduced
-        {% elif ext < seuil_ext_on and cold < seuil_on %}
-          comfort
-        {% elif ext < seuil_ext_on and cold >= seuil_off %}
-          reduced
+          {% set cible = 'reduced' %}
+        {% elif ext < seuil_ext_on %}
+          {% if cold < seuil_on %}
+            {% set cible = 'comfort' %}
+          {% elif cold >= seuil_off %}
+            {% set cible = 'reduced' %}
+          {% else %}
+            {% set cible = 'neutre' %}
+          {% endif %}
         {% else %}
           {% if cold >= seuil_off %}
-            reduced
+            {% set cible = 'reduced' %}
           {% elif cold < seuil_on %}
-            comfort
+            {% set cible = 'comfort' %}
           {% else %}
-            neutre
+            {% set cible = 'neutre' %}
           {% endif %}
+        {% endif %}
+      
+        {% if cible == 'comfort' and anticipation and meteo_fav %}
+          neutre
+        {% else %}
+          {{ cible }}
         {% endif %}

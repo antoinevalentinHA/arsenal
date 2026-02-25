@@ -84,5 +84,5 @@ carte_delta_ha:
             if (isNaN(v)) return "rgba(158, 158, 158, 0.1)";
             return v >= seuil
               ? "rgba(76, 175, 80, 0.2)"
-              : "rgba(244, 67, 54, 0.2)";
+              : "rgba(158, 158, 158, 0.2)";
           ]]]

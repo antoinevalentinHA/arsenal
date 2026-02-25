@@ -67,7 +67,18 @@ views:
             template: chauffage_diagnostic_global_compact
 
           ########################################################
-          # 🔒 2bis) Verrou aération / post-aération (diagnostic)
+          # 🔒 2bis) Contexte météo (anticipation)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 🌤️ Anticipation météo
+
+          - type: custom:button-card
+            template: meteo_favorable_chauffage_72
+
+          ########################################################
+          # 🔒 2ter) Verrou aération / post-aération (diagnostic)
           ########################################################
 
           - type: custom:button-card

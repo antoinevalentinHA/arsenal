@@ -81,6 +81,26 @@ Ils ne décident rien.
 - Lu par : M2, M3 (garde-fou délai)
 - Jamais modifié par script
 
+## input_number.aeration_m3_seuil_tiny
+## input_number.aeration_m3_seuil_medium
+## input_number.aeration_m3_seuil_high
+- Paramètres utilisateur (°C)
+- Définissent les seuils de qualification ΔT
+- Lus exclusivement par : M3 orchestrateur
+- Jamais modifiés par script
+- Doivent respecter l’ordre :
+  seuil_tiny < seuil_medium < seuil_high
+
+## input_number.aeration_m3_prolongation_tiny
+## input_number.aeration_m3_prolongation_medium
+## input_number.aeration_m3_prolongation_high
+- Paramètres utilisateur (minutes)
+- Définissent les durées de prolongation associées aux niveaux ΔT
+- Lus exclusivement par : M3 orchestrateur
+- Jamais modifiés par script
+- Exprimés en minutes côté UI
+- Convertis en heures (fraction possible) pour M3_prolonger
+
 ## input_number.ref_temp_*
 - Snapshots T_REF
 - Écrits par : M1

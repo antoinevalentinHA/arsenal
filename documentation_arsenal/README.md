@@ -46,7 +46,6 @@ documentation_arsenal/
 │
 ├── changelog_arsenal/
 │ ├── changelog.md
-│ ├── en_cours.md
 │ └── archives/
 │
 ├── contrats_arsenal/

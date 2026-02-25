@@ -12,7 +12,7 @@ Définir le comportement normatif du script :
 Ce script est appelé lorsque :
 
 - `prolongation_heures = 0`
-- donc `delta_max < 0.4 °C`
+- donc `delta_max < input_number.aeration_m3_seuil_tiny`
 
 Il implémente la règle stratégique :
 
@@ -22,12 +22,18 @@ Il implémente la règle stratégique :
 
 ## 🧩 PRINCIPE STRUCTUREL
 
-En cas de ΔT faible :
+En cas de ΔT inférieur au seuil *tiny* :
 
 - le blocage existant est maintenu,
 - aucune prolongation n’est appliquée,
 - aucune réduction n’est autorisée,
 - aucune levée n’est exécutée.
+
+Le seuil utilisé est gouverné par :
+
+- `input_number.aeration_m3_seuil_tiny`
+
+Aucune valeur codée en dur n’est autorisée dans M3.
 
 ---
 
@@ -72,7 +78,8 @@ Le script ne doit jamais :
 - modifier `timer.aeration_blocage`,
 - modifier `aeration_pipeline_arme`,
 - relancer un timer analyse,
-- déclencher une action thermique.
+- déclencher une action thermique,
+- introduire une valeur seuil codée en dur.
 
 ---
 
@@ -80,7 +87,7 @@ Le script ne doit jamais :
 
 Le blocage est attaché au **pire épisode thermique observé**.
 
-Un ΔT faible :
+Un ΔT inférieur au seuil *tiny* :
 
 - ne peut jamais raccourcir un blocage existant,
 - ne peut jamais forcer une reprise thermique,

@@ -16,6 +16,8 @@
 #   1) seuil_ext_off  > seuil_ext_on
 #   2) consigne_presence > consigne_absence
 #   3) inhibition_offset_on > inhibition_offset_off
+#   4) aeration_m3_seuil_tiny < aeration_m3_seuil_medium < aeration_m3_seuil_high
+#   5) aeration_m3_prolongation_tiny ≤ aeration_m3_prolongation_medium ≤ aeration_m3_prolongation_high
 #
 # 🔴 Toute violation = paramètres INVALIDES
 # ==========================================================
@@ -24,6 +26,7 @@
     - name: "Chauffage — Paramètres invalides"
       unique_id: parametres_invalides_chauffage
       default_entity_id: binary_sensor.parametres_invalides_chauffage
+
       state: >
         {{
           not (
@@ -35,10 +38,24 @@
           and
             states('input_number.inhibition_geofencing_offset_on') | float(0)
               > states('input_number.inhibition_geofencing_offset_off') | float(0)
+          and
+            states('input_number.aeration_m3_seuil_tiny') | float(0)
+              < states('input_number.aeration_m3_seuil_medium') | float(0)
+          and
+            states('input_number.aeration_m3_seuil_medium') | float(0)
+              < states('input_number.aeration_m3_seuil_high') | float(0)
+          and
+            states('input_number.aeration_m3_prolongation_tiny') | float(0)
+              <= states('input_number.aeration_m3_prolongation_medium') | float(0)
+          and
+            states('input_number.aeration_m3_prolongation_medium') | float(0)
+              <= states('input_number.aeration_m3_prolongation_high') | float(0)
           )
         }}
+
       icon: >
         mdi:alert-circle-outline
+
       attributes:
 
         seuils_exterieurs_invalides: >
@@ -62,5 +79,27 @@
             not (
               states('input_number.inhibition_geofencing_offset_on') | float(0)
                 > states('input_number.inhibition_geofencing_offset_off') | float(0)
+            )
+          }}
+
+        aeration_seuils_invalides: >
+          {{
+            not (
+              states('input_number.aeration_m3_seuil_tiny') | float(0)
+                < states('input_number.aeration_m3_seuil_medium') | float(0)
+            and
+              states('input_number.aeration_m3_seuil_medium') | float(0)
+                < states('input_number.aeration_m3_seuil_high') | float(0)
+            )
+          }}
+        
+        aeration_prolongations_invalides: >
+          {{
+            not (
+              states('input_number.aeration_m3_prolongation_tiny') | float(0)
+                <= states('input_number.aeration_m3_prolongation_medium') | float(0)
+            and
+              states('input_number.aeration_m3_prolongation_medium') | float(0)
+                <= states('input_number.aeration_m3_prolongation_high') | float(0)
             )
           }}

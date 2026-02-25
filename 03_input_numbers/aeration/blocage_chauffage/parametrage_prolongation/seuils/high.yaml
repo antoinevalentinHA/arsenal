@@ -1,0 +1,18 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER :
+#     Aération — M3 — Seuil ΔT high
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Seuil ΔT (°C) définissant la limite haute :
+#   si seuil_medium <= ΔT < seuil_high => prolongation medium
+#   si ΔT >= seuil_high => prolongation high
+# ==========================================================
+
+aeration_m3_seuil_high:
+  name: "Aération — M3 — Seuil ΔT high"
+  min: 1.0
+  max: 2.5
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: slider
+  icon: mdi:thermometer

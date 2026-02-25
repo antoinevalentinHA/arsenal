@@ -1,0 +1,17 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER :
+#     Aération — M3 — Seuil ΔT tiny
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Seuil ΔT (°C) définissant la limite basse :
+#   si ΔT < seuil_tiny => aucune prolongation.
+# ==========================================================
+
+aeration_m3_seuil_tiny:
+  name: "Aération — M3 — Seuil ΔT tiny"
+  min: 0.0
+  max: 1.0
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: slider
+  icon: mdi:thermometer

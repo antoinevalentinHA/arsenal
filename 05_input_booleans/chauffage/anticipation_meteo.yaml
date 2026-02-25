@@ -1,0 +1,18 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER
+#     chauffage_anticipation_meteo
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Activer ou desactiver l'integration de la strategie
+#   d'anticipation meteo dans la decision chauffage.
+#
+# 🧱 NATURE
+#   Feature flag metier
+#
+# 📌 STATUT
+#   Controle explicite de comportement
+# ==========================================================
+
+chauffage_anticipation_meteo:
+  name: "Chauffage — Anticipation météo"
+  icon: mdi:weather-sunny

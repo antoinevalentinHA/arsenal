@@ -1,0 +1,83 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     clim_decision_synthetique_72
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Tuile décisionnelle clim (sans titre)
+#   state + label uniquement.
+# ==========================================================
+
+clim_decision_synthetique_72:
+  template: socle_decision_72
+
+  show_name: false
+  show_state: true
+  show_label: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const mode = states['sensor.clim_mode_local']?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      if (UNAV.includes(mode)) return "Décision indéterminée";
+      if (['cool','heat','dry'].includes(mode)) return "Décision active";
+      if (mode === 'off') return "Aucune action en cours";
+      return "Décision indéterminée";
+    ]]]
+
+  label: |
+    [[[
+      const mode = states['sensor.clim_mode_local']?.state;
+      const raison = states['input_text.climatisation_raison']?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const badgeMode = (m) => {
+        if (m === 'cool') return '❄️ COOL';
+        if (m === 'heat') return '🔥 HEAT';
+        if (m === 'dry')  return '💧 DRY';
+        if (m === 'off')  return '⚪ AUCUNE';
+        if (UNAV.includes(m)) return '—';
+        return '⛔ ' + String(m).toUpperCase();
+      };
+
+      const r = (UNAV.includes(raison) || raison === '') ? '—' : raison;
+
+      if (UNAV.includes(mode)) {
+        return "État décisionnel non interprétable<br>Mode brut : —";
+      }
+
+      if (['cool','heat','dry'].includes(mode)) {
+        return "Action décidée : " + badgeMode(mode) + "<br>" +
+               "Cause principale : " + r;
+      }
+
+      if (mode === 'off') {
+        return "Le système est au repos.<br>Aucune condition ne justifie une action.";
+      }
+
+      return "État décisionnel non interprétable<br>Mode brut : `" + mode + "`";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const mode = states['sensor.clim_mode_local']?.state;
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+            if (UNAV.includes(mode)) return 'rgba(158, 158, 158, 0.1)';
+
+            if (mode === 'cool') return 'rgba(33, 150, 243, 0.2)';
+            if (mode === 'dry')  return 'rgba(76, 175, 80, 0.2)';
+            if (mode === 'heat') return 'rgba(244, 67, 54, 0.2)';
+            if (mode === 'off')  return 'rgba(158, 158, 158, 0.2)';
+
+            return 'rgba(255, 152, 0, 0.2)';
+          ]]]

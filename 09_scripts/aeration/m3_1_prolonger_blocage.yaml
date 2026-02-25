@@ -27,7 +27,7 @@ aeration_m3_prolonger_blocage:
 
     - variables:
         d: "{{ delta_max | float(0) }}"
-        h: "{{ prolongation_heures | int(0) }}"
+        h: "{{ prolongation_heures | float(0) }}"
 
         fin_blocage_proposee: >
           {{
@@ -118,5 +118,5 @@ aeration_m3_prolonger_blocage:
         name: "Chauffage - Blocage prolonge"
         message: >
           DeltaT = {{ d | round(2) }} degC
-          -> prolongation {{ h }} h.
+          -> prolongation {{ (h * 60) | round(0) | int }} min ({{ h | round(2) }} h).
         entity_id: input_boolean.chauffage_blocage_aeration

@@ -12,7 +12,6 @@
 #
 #   - Vérifier que la haute vitesse n’est pas déjà active
 #   - Actionner le relais physique SwitchBot vers ON
-#   - Mettre à jour l’état interne de suivi
 #
 # ----------------------------------------------------------
 # 🔁 IDÉMPOTENCE & SÉCURITÉ
@@ -41,13 +40,11 @@
 #
 #   - Les automatisations décident
 #   - Les scripts exécutent
-#   - L’état interne est déclaratif, pas une vérité physique
 #
 # ----------------------------------------------------------
 # 🔗 DÉPENDANCES
 #
 #   - switch.vmc
-#   - input_boolean.vmc_haute_vitesse
 #
 # ----------------------------------------------------------
 # ✅ Compatibilité : Home Assistant 2024.8+
@@ -68,8 +65,3 @@ vmc_haute_vitesse:
     - action: switch.turn_on
       target:
         entity_id: switch.vmc
-
-    # 3️⃣ Mise à jour de l’état interne
-    - action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.vmc_haute_vitesse

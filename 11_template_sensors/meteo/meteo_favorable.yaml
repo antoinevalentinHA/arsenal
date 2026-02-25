@@ -1,0 +1,75 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     meteo_favorable_chauffage
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Indiquer si la meteo a court terme est favorable
+#   a une strategie chauffage (confort differe) :
+#   temperature exterieure prevue a +Xh suffisamment
+#   elevee par rapport a la consigne confort.
+#
+# 🧩 SOURCES
+#   - sensor.temperature_prevue
+#   - input_number.meteo_horizon_prevision_heures
+#   - input_number.chauffage_consigne_confort
+#   - input_number.meteo_favorable_offset
+#
+# 🧱 NATURE
+#   Binary sensor continu (state-based)
+#   Lecture seule — aucune decision
+#
+# 📌 STATUT
+#   Socle thermique transversal
+# ==========================================================
+
+- binary_sensor:
+    - name: "Météo — Favorable (chauffage)"
+      unique_id: meteo_favorable_chauffage
+      default_entity_id: binary_sensor.meteo_favorable_chauffage
+
+      icon: >
+        {% if is_state('binary_sensor.meteo_favorable_chauffage','on') %}
+          mdi:weather-sunny
+        {% else %}
+          mdi:weather-cloudy
+        {% endif %}
+
+      availability: >
+        {% set UNAV = ['unknown','unavailable','none',''] %}
+        {% set tprev = states('sensor.temperature_prevue') %}
+        {% set cons  = states('input_number.chauffage_consigne_confort') %}
+        {% set off   = states('input_number.meteo_favorable_offset') %}
+        {{ not (tprev in UNAV or cons in UNAV or off in UNAV) }}
+
+      state: >
+        {% set tprev = states('sensor.temperature_prevue') | float(none) %}
+        {% set cons  = states('input_number.chauffage_consigne_confort') | float(none) %}
+        {% set off   = states('input_number.meteo_favorable_offset') | float(none) %}
+
+        {% if tprev is none or cons is none or off is none %}
+          false
+        {% else %}
+          {{ tprev >= (cons - off) }}
+        {% endif %}
+
+      attributes:
+        horizon_heures: >
+          {{ states('input_number.meteo_horizon_prevision_heures') }}
+
+        temperature_prevue: >
+          {{ states('sensor.temperature_prevue') }}
+
+        consigne_confort: >
+          {{ states('input_number.chauffage_consigne_confort') }}
+
+        offset_c: >
+          {{ states('input_number.meteo_favorable_offset') }}
+
+        seuil_favorable: >
+          {% set cons = states('input_number.chauffage_consigne_confort') | float(none) %}
+          {% set off  = states('input_number.meteo_favorable_offset') | float(none) %}
+          {% if cons is none or off is none %}
+            none
+          {% else %}
+            {{ (cons - off) | round(2) }}
+          {% endif %}

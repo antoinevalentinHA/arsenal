@@ -1,0 +1,17 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER :
+#     Aération — M3 — Prolongation medium
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Durée (minutes) appliquée lorsque la chute ΔT est qualifiée
+#   comme "medium" (niveau 2 post-seuil).
+# ==========================================================
+
+aeration_m3_prolongation_medium:
+  name: "Aération — M3 — Prolongation medium"
+  min: 60
+  max: 120
+  step: 5
+  unit_of_measurement: "min"
+  mode: slider
+  icon: mdi:timer-outline

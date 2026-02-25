@@ -1,0 +1,17 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER :
+#     aeration_delta_t_utilise
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Trace UI : ΔT "utilisé" pour l'épisode d'aération.
+#   Monotone max : peut empirer au fil de l'épisode.
+# ==========================================================
+
+aeration_delta_t_utilise:
+  name: "Aération — ΔT utilisé"
+  min: 0
+  max: 10
+  step: 0.01
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down

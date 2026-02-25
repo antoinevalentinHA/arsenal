@@ -35,7 +35,8 @@ views:
             template: section_header
             name: ⚖️ Décision du système
 
-          - !include ../../includes/cartes/clim_diagnostic_decision.yaml
+          - type: custom:button-card
+            template: clim_decision_synthetique_72
 
           ########################################################
           # 🌡 SECTION : Conditions actuelles & seuils
@@ -83,4 +84,5 @@ views:
             template: section_header
             name: 🚫 Blocages
 
-          - !include ../../includes/cartes/clim_diagnostic_blocage.yaml
+          - type: custom:button-card
+            template: clim_blocages_synthese_xl

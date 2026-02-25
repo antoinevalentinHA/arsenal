@@ -23,8 +23,6 @@ content: |
 
   {% else %}
 
-  🧠 **Interprétation indicative**
-
   - {% if 'très stable' in reg %}🟢{% elif 'correcte' in reg %}🔵{% elif 'instable' in reg %}🟠{% else %}🔵{% endif %} **Régulation :** {{ reg }}
   - {% if 'rapide' in rep %}🟢{% elif 'modérée' in rep %}🔵{% elif 'lente' in rep %}🟠{% else %}🔵{% endif %} **Reprise :** {{ rep }}
   - {% if 'Très bonne' in ine %}🟢{% elif 'normale' in ine %}🔵{% elif 'très dissipatif' in ine %}🟠{% else %}🔵{% endif %} **Inertie / isolation :** {{ ine }}

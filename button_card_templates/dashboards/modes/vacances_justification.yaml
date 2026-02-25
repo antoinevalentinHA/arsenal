@@ -25,4 +25,4 @@ carte_vacances_justification:
 
   styles:
     card:
-      - background-color: rgba(33,150,243,0.12)
+      - background-color: rgba(33, 150, 243, 0.2)

@@ -4,10 +4,11 @@
 # ----------------------------------------------------------
 # 🎯 ROLE
 #   Afficher :
-#   - Température de référence moyenne
-#   - ΔT max observé
+#   - Référence thermique utilisée (snapshot M1)
+#   - ΔT utilisé (monotone max épisode)
 #   Carte purement informative (bleu INFO).
 # ==========================================================
+
 aeration_reference_thermique_72:
   template: socle_info_72
 
@@ -17,13 +18,8 @@ aeration_reference_thermique_72:
   show_icon: true
 
   triggers_update:
-    - input_number.ref_temp_entree
-    - input_number.ref_temp_sejour
-    - input_number.ref_temp_chambre_arnaud
-    - input_number.ref_temp_chambre_matthieu
-    - input_number.ref_temp_chambre_parents
-    - input_number.ref_temp_palier
-    - input_number.delta_t_max_decisionnel_aeration
+    - input_number.aeration_reference_thermique_utilisee
+    - input_number.aeration_delta_t_utilise
 
   icon: mdi:thermometer
 
@@ -38,21 +34,10 @@ aeration_reference_thermique_72:
         return Number.isNaN(v) ? null : v;
       };
 
-      const refs = [
-        num('input_number.ref_temp_entree'),
-        num('input_number.ref_temp_sejour'),
-        num('input_number.ref_temp_chambre_arnaud'),
-        num('input_number.ref_temp_chambre_matthieu'),
-        num('input_number.ref_temp_chambre_parents'),
-        num('input_number.ref_temp_palier')
-      ];
+      const ref = num('input_number.aeration_reference_thermique_utilisee');
+      const deltaT = num('input_number.aeration_delta_t_utilise');
 
-      if (refs.some(v => v === null)) return "Indisponible";
+      if (ref === null || deltaT === null) return "Indisponible";
 
-      const temp_ref = refs.reduce((a,b) => a+b, 0) / refs.length;
-      const deltaT = num('input_number.delta_t_max_decisionnel_aeration');
-
-      if (deltaT === null) return "Indisponible";
-
-      return `Réf ${temp_ref.toFixed(2)} °C  •  ΔT ${deltaT.toFixed(2)} °C`;
+      return `Réf ${ref.toFixed(2)} °C  •  ΔT ${deltaT.toFixed(2)} °C`;
     ]]]

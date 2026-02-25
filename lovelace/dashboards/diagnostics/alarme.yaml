@@ -59,13 +59,8 @@ views:
 
           - type: grid
             square: false
-            columns: 3
+            columns: 2
             cards:
-        
-              - type: custom:button-card
-                entity: binary_sensor.delai_desarmement_en_cours
-                template: status_72_info_transitoire
-                name: Délai désarmement
         
               - type: custom:button-card
                 entity: timer.delai_entree
@@ -73,9 +68,9 @@ views:
                 name: Délai entrée
         
               - type: custom:button-card
-                entity: binary_sensor.alarme_armee_auto_recentement
+                entity: timer.blocage_armement_auto
                 template: status_72_info_transitoire
-                name: Armement récent
+                name: Blocage armement auto
     
     
           # ==========================================================

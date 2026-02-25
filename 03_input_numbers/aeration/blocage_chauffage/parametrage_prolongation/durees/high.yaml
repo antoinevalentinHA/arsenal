@@ -1,0 +1,17 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER :
+#     Aération — M3 — Prolongation high
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Durée (minutes) appliquée lorsque la chute ΔT est qualifiée
+#   comme "high" (niveau 3 post-seuil).
+# ==========================================================
+
+aeration_m3_prolongation_high:
+  name: "Aération — M3 — Prolongation high"
+  min: 120
+  max: 180
+  step: 5
+  unit_of_measurement: "min"
+  mode: slider
+  icon: mdi:timer-outline

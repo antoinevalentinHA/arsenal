@@ -39,6 +39,8 @@
     - name: "temperature_moyenne_maison"
       unique_id: temperature_moyenne_maison
       unit_of_measurement: "°C"
+      state_class: measurement
+      device_class: temperature
       icon: mdi:home-thermometer
       state: >
         {% set sensors = [

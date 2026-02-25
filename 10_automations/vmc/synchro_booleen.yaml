@@ -1,0 +1,82 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : VMC – Sync reflet haute vitesse
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Script/automation de DIAGNOSTIC (reflet) :
+#   synchroniser input_boolean.vmc_haute_vitesse à partir de
+#   l’état rapporté par switch.vmc.
+#
+# ----------------------------------------------------------
+# 🧱 RESPONSABILITÉ UNIQUE
+#
+#   - Observer switch.vmc
+#   - Mettre à jour le reflet interne input_boolean.vmc_haute_vitesse
+#     uniquement lorsque l’état du switch est exploitable (on/off)
+#
+# ----------------------------------------------------------
+# 🔁 IDÉMPOTENCE & SÉCURITÉ
+#
+#   - Aucune action si switch.vmc est unknown/unavailable
+#   - Aucune logique métier
+#   - Pas de temporisation
+#   - Pas de décision locale
+#
+# ----------------------------------------------------------
+# ❌ CE FICHIER NE FAIT PAS
+#
+#   - Ne décide jamais d’activer/désactiver la haute vitesse
+#   - Ne commande jamais le relais physique
+#   - Ne corrige pas le moteur : met à jour un reflet uniquement
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#   - switch.vmc
+#   - input_boolean.vmc_haute_vitesse
+#   - input_boolean.systeme_stable
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10190000000002"
+  alias: "VMC - Sync reflet haute vitesse"
+  description: >
+    Synchronise l’état interne input_boolean.vmc_haute_vitesse à partir de
+    l’état rapporté par switch.vmc. Si switch.vmc n’est pas exploitable
+    (unknown/unavailable), ne fait rien.
+  mode: queued
+
+  trigger:
+    - platform: state
+      entity_id: switch.vmc
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+  action:
+    # 🧱 Tête de garde : sinon rien
+    - condition: template
+      value_template: >
+        {{ states('switch.vmc') in ['on', 'off'] }}
+
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: switch.vmc
+              state: "on"
+          sequence:
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.vmc_haute_vitesse
+
+        - conditions:
+            - condition: state
+              entity_id: switch.vmc
+              state: "off"
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.vmc_haute_vitesse

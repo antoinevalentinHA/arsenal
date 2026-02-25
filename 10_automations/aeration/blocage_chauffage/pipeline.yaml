@@ -126,8 +126,16 @@
     # --------------------------------------------------------------
     - id: fermeture
       platform: state
-      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+      entity_id: binary_sensor.fenetre_ouverte_maison
+      from: "on"
       to: "off"
+
+    - id: fermeture
+      platform: state
+      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+      from: "on"
+      to: "off"
+      for: "00:00:01"
 
     # --------------------------------------------------------------
     #  M5 - Reouverture pendant blocage
@@ -267,18 +275,17 @@
               entity_id: input_boolean.aeration_pipeline_arme
               state: "on"
 
+            - condition: template
+              value_template: "{{ trigger.entity_id in ['binary_sensor.fenetre_ouverte_maison','binary_sensor.fenetre_ouverte_maison_avec_delai'] }}"
+
             - condition: state
               entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
               state: "off"
+              for: "00:00:05"
 
             - condition: state
               entity_id: binary_sensor.fenetre_ouverte_maison
               state: "off"
-
-            - condition: template
-              value_template: >
-                {{ trigger.from_state.state == 'on'
-                   and trigger.to_state.state == 'off' }}
 
           sequence:
             - action: script.aeration_m2_fin_episode

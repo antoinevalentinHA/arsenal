@@ -15,14 +15,19 @@ carte_chauffage_decision:
         const raison = states['sensor.chauffage_raison_calculee']?.state || '';
 
         const labels = {
+          confort_force: 'override opérateur',
           blocage_poele: 'poêle actif',
           aeration_en_cours: 'aération en cours',
           blocage_aeration: 'post-aération',
           fenetre_ouverte: 'fenêtre ouverte',
           mode_maison_vacances: 'mode vacances',
-          chauffage_non_autorise: 'chauffage non autorisé',
+          autorisation_en_attente: 'autorisation en attente',
+          standby_force: 'standby forcé',
+          pre_confort_retour_vacances: 'pré-confort',
+          anticipation_meteo: 'anticipation météo',
+          presence_on: 'présence',
           absence_protection_thermique: 'protection thermique',
-          standby_force: 'attente thermique'
+          absence: 'absence'
         };
 
         const blocages = [
@@ -30,15 +35,15 @@ carte_chauffage_decision:
           'aeration_en_cours',
           'blocage_aeration',
           'fenetre_ouverte',
-          'mode_maison_vacances',
-          'chauffage_non_autorise'
+          'mode_maison_vacances'
         ];
 
         const r = raison;
         const is_inconnu = (reel === 'Inconnu');
         const is_blocage = blocages.includes(r);
         const is_absence_protection = (r === 'absence_protection_thermique');
-        const is_standby = (r === 'standby_force' && !is_blocage);
+        const is_standby = (r === 'standby_force' || r === 'autorisation_en_attente');
+        const is_info = (r === 'anticipation_meteo' || r === 'pre_confort_retour_vacances');
 
         const coherent = (() => {
           if (is_inconnu) return false;
@@ -49,14 +54,14 @@ carte_chauffage_decision:
 
         const category = (() => {
           if (is_blocage || is_absence_protection) return 'warn';
-          if (is_standby) return 'info';
+          if (is_standby || is_info) return 'info';
           if (coherent) return 'ok';
           return 'ko';
         })();
 
         const bg = (() => {
-          if (category === 'warn') return "rgba(255, 152, 0, 0.2)";
-          if (category === 'info') return "rgba(33, 150, 243, 0.2)";
+          if (category === 'warn') return "rgba(255, 152, 0, 0.25)";
+          if (category === 'info') return "rgba(144, 202, 249, 0.25)";
           if (category === 'ok')   return "rgba(76, 175, 80, 0.2)";
           return "rgba(244, 67, 54, 0.2)";
         })();

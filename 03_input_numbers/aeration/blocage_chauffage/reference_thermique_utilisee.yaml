@@ -1,0 +1,17 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER :
+#     aeration_reference_thermique_utilisee
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Trace UI : référence thermique globale utilisée (T_REF).
+#   Calculée en M1 à partir des snapshots ref_temp_*.
+# ==========================================================
+
+aeration_reference_thermique_utilisee:
+  name: "Aération — Référence thermique utilisée"
+  min: -20
+  max: 50
+  step: 0.01
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer

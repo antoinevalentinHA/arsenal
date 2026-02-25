@@ -65,6 +65,36 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
+            name: 🕒 Anticipation météo
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_boolean.chauffage_anticipation_meteo
+                name: "Activer"
+                icon: mdi:weather-sunny
+
+              - type: tile
+                entity: input_number.meteo_horizon_prevision_heures
+                name: "Horizon (+h)"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+          - type: tile
+            entity: input_number.meteo_favorable_offset
+            name: "Offset (°C) — sous consigne"
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: custom:button-card
+            template: sub_section_header
             name: 🌡️ Température extérieure
 
           - type: grid
@@ -228,11 +258,7 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 🔒 Blocages
-
-          - type: custom:button-card
-            template: sub_section_header
-            name: 💨 Aération
+            name: 💨 Blocage Aération
 
           - type: grid
             square: false
@@ -252,9 +278,74 @@ views:
                   - type: numeric-input
                     style: buttons
 
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: 🌡️ ΔT constaté
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: ⏱️ Durée du blocage
+
+              - type: tile
+                entity: input_number.aeration_m3_seuil_tiny
+                name: Tiny
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_m3_prolongation_tiny
+                name: Tiny
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_m3_seuil_medium
+                name: Medium
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_m3_prolongation_medium
+                name: Medium
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_m3_seuil_high
+                name: High
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_m3_prolongation_high
+                name: High
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+          - type: markdown
+            content: |
+              **Règle :** si ΔT < seuil **Tiny** → **aucune prolongation** (**0 min**)
+
           - type: custom:button-card
-            template: sub_section_header
-            name: 🔥 Poêle
+            template: section_header
+            name: 🔥 Blocage Poêle
 
           - type: tile
             entity: input_number.poele_duree_blocage_chauffage_minutes

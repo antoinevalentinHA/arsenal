@@ -79,6 +79,28 @@ aeration_m1_debut_episode:
             {{ t | float(0) }}
           {% endif %}
 
+    # ------------------------------------------------------
+    # UI — Référence thermique utilisée (globale)
+    #   Basée sur les snapshots ref_temp_* (M1)
+    # ------------------------------------------------------
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.aeration_reference_thermique_utilisee
+      data:
+        value: >
+          {{
+            (
+              [
+                states('input_number.ref_temp_entree') | float(0),
+                states('input_number.ref_temp_sejour') | float(0),
+                states('input_number.ref_temp_chambre_arnaud') | float(0),
+                states('input_number.ref_temp_chambre_matthieu') | float(0),
+                states('input_number.ref_temp_chambre_parents') | float(0),
+                states('input_number.ref_temp_palier') | float(0)
+              ] | sum
+            ) / 6
+          }}
+
     # Armement explicite du pipeline post-boot
     - action: input_boolean.turn_on
       target:

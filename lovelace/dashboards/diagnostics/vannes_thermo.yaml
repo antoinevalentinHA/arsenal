@@ -33,12 +33,28 @@ views:
             template: section_header
             name: 🧰 Diagnostic vannes thermostatiques
 
-          - type: entities
-            entities:
-              - entity: input_select.adjustment_piece
-                name: Pièce sélectionnée
+          - type: tile
+            entity: input_select.adjustment_piece
+            name: Pièce sélectionnée
+            features_position: bottom
+            features:
+              - type: select-options
 
-          - !include ../../includes/cartes/vannes_thermo.yaml
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: thermo_plateau_strict_72
+              - type: custom:button-card
+                template: thermo_plateau_affichage_72
+              - type: custom:button-card
+                template: thermo_mean_12h_72
+              - type: custom:button-card
+                template: thermo_variance_12h_72
+
+          - type: custom:button-card
+            template: thermo_stabilite_12h_status
 
           - type: custom:button-card
             template: badge_action_confirmee

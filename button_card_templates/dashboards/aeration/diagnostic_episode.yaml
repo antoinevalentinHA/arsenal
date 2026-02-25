@@ -8,6 +8,24 @@
 #   100% backend-driven.
 # ==========================================================
 
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE METIER (UI)
+#     aeration_episode_status_72
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Synthese "aeration / ouverture qualifiee" backend-driven.
+#   Source de verite unique :
+#     - binary_sensor.fenetre_ouverte_maison_avec_delai
+#
+#   Optionnel :
+#     - si ouverture brute detectee mais non qualifiee -> jaune "delai"
+#
+# 🛡️ INVARIANTS
+#   - Aucun calcul temporel UI
+#   - Aucun jugement non fonde (pas de "qualifiee" sans le capteur qualifie)
+#   - Indisponibilite prioritaire (gris 0.1)
+# ==========================================================
+
 aeration_episode_status_72:
   template: socle_status_label_72
 
@@ -18,22 +36,22 @@ aeration_episode_status_72:
   color_type: card
 
   triggers_update:
-    - input_boolean.aeration_episode_en_cours
-    - binary_sensor.tentative_aeration_en_grace
+    - binary_sensor.fenetre_ouverte_maison_avec_delai
+    - binary_sensor.fenetre_ouverte_maison
 
   icon: |
     [[[
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
-      const episode = states['input_boolean.aeration_episode_en_cours']?.state;
-      const tentative = states['binary_sensor.tentative_aeration_en_grace']?.state;
+      const qual = states['binary_sensor.fenetre_ouverte_maison_avec_delai']?.state;
+      const brut = states['binary_sensor.fenetre_ouverte_maison']?.state;
 
-      if (UNAV.includes(episode) || UNAV.includes(tentative))
+      if (UNAV.includes(qual) || UNAV.includes(brut))
         return 'mdi:help-circle-outline';
 
-      if (episode === 'on')
+      if (qual === 'on')
         return 'mdi:window-open-variant';
 
-      if (tentative === 'on')
+      if (brut === 'on')
         return 'mdi:timer-sand';
 
       return 'mdi:window-closed-variant';
@@ -42,17 +60,17 @@ aeration_episode_status_72:
   label: |
     [[[
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
-      const episode = states['input_boolean.aeration_episode_en_cours']?.state;
-      const tentative = states['binary_sensor.tentative_aeration_en_grace']?.state;
+      const qual = states['binary_sensor.fenetre_ouverte_maison_avec_delai']?.state;
+      const brut = states['binary_sensor.fenetre_ouverte_maison']?.state;
 
-      if (UNAV.includes(episode) || UNAV.includes(tentative))
+      if (UNAV.includes(qual) || UNAV.includes(brut))
         return "Indisponible";
 
-      if (episode === 'on')
-        return "Épisode • ouverture qualifiée";
+      if (qual === 'on')
+        return "Ouverture qualifiée";
 
-      if (tentative === 'on')
-        return "Tentative • délai de grâce";
+      if (brut === 'on')
+        return "Ouverture • délai";
 
       return "Au repos";
     ]]]
@@ -62,17 +80,17 @@ aeration_episode_status_72:
       - background-color: |
           [[[
             const UNAV = ['unknown','unavailable',undefined,null,'none',''];
-            const episode = states['input_boolean.aeration_episode_en_cours']?.state;
-            const tentative = states['binary_sensor.tentative_aeration_en_grace']?.state;
+            const qual = states['binary_sensor.fenetre_ouverte_maison_avec_delai']?.state;
+            const brut = states['binary_sensor.fenetre_ouverte_maison']?.state;
 
-            if (UNAV.includes(episode) || UNAV.includes(tentative))
+            if (UNAV.includes(qual) || UNAV.includes(brut))
               return "rgba(158, 158, 158, 0.1)";
 
-            if (episode === 'on')
+            if (qual === 'on')
               return "rgba(33, 150, 243, 0.2)";
 
-            if (tentative === 'on')
-              return "rgba(255, 152, 0, 0.2)";
+            if (brut === 'on')
+              return "rgba(255, 235, 59, 0.2)";
 
             return "rgba(158, 158, 158, 0.2)";
           ]]]
