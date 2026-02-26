@@ -22,176 +22,204 @@
 
 ## 1. 🎯 RÔLE ARCHITECTURAL DU SOUS-SYSTÈME OUVERTURES
 
-Le sous-système **Ouvertures** constitue un **pipeline d’observation
-et de qualification** des événements physiques liés aux portes
-et fenêtres de la maison.
+Le sous-système **Ouvertures** constitue un pipeline structuré
+d’observation, de transformation et de qualification des
+événements physiques liés aux portes et fenêtres.
 
-Il a pour rôle exclusif de :
-- capter des **événements physiques bruts**,
-- les transformer en **états logiques exploitables**,
-- poser des **faits métier explicites**,
-- exposer ces états à des **moteurs décisionnels externes**,
-- fournir une **observabilité complète** via l’UI.
+Il transforme :
 
-Il ne prend **aucune décision métier**.
+- des signaux physiques bruts,
+- en états structurellement stables,
+- puis en agrégats exploitables,
+- puis en faits métier explicites.
 
+Il expose ces états aux moteurs décisionnels externes.
 
-## 2. 🧱 POSITIONNEMENT DANS L’ARCHITECTURE ARSENAL
+Il ne prend aucune décision métier.
 
-Le sous-système Ouvertures est **transversal**.
-
-Il se situe :
-- **en amont** des moteurs décisionnels (chauffage, aération, alarme),
-- **en aval** des capteurs physiques,
-- **en parallèle** des autres pipelines d’observation (présence, météo).
-
-Il agit comme un **fournisseur de faits et d’états qualifiés**,
-jamais comme un décideur.
-
-
-## 3. 🧩 COMPOSANTS ARCHITECTURAUX
-
-### 3.1 Capteurs physiques
-- Capteurs de contact (portes, fenêtres)
-- Responsabilité :
-  - fournir un signal brut
-- Aucune logique embarquée
 
 ---
 
-### 3.2 Capteurs logiques
-- Unification par pièce
-- Agrégations par zone (RDC, étage, maison)
-- Responsabilité :
-  - abstraction
-  - normalisation
-- Aucun délai
-- Aucune qualification
+# 🧱 2. ARCHITECTURE EN COUCHES
+
+Le sous-système est organisé en couches distinctes.
 
 ---
 
-### 3.3 Cadres temporels
+## 2.1 N0 — Détection physique (signal brut)
+
+- Capteurs matériels `binary_sensor.capteur_*`
+- Rôle :
+  - fournir un état physique brut
+- Caractéristiques :
+  - dépend du matériel
+  - peut être indisponible
+  - aucune logique embarquée
+
+N0 constitue l’entrée physique du pipeline.
+
+---
+
+## 2.2 N1 — Normalisation (contact stable)
+
+- Entités `binary_sensor.contact_*`
+- Rôle :
+  - produire un état structurellement stable
+  - encapsuler l’indisponibilité
+  - découpler le reste du système des capteurs bruts
+
+Caractéristiques :
+
+- état toujours exploitable
+- pas de délai
+- pas de qualification
+- abstraction pure
+
+N1 stabilise la structure.
+
+---
+
+## 2.3 N2 — Agrégation (OR logique)
+
+- Entités `binary_sensor.contact_<zone>`
+- Rôle :
+  - agréger les ouvertures par pièce / zone / maison
+  - exposer un état instantané consolidé
+
+Caractéristiques :
+
+- dépend uniquement de N1
+- calcul instantané
+- sans temporisation
+- sans interprétation
+
+N2 consolide la topologie.
+
+---
+
+## 2.4 Canons d’orchestration (stabilisation locale)
+
+Certaines entités dérivées (ex. fermeture stable) fournissent
+des signaux robustes destinés aux moteurs externes.
+
+Rôle :
+
+- stabilisation temporelle localisée
+- prévention des oscillations rapides
+- simplification des consommateurs en aval
+
+Ces entités restent structurelles :
+elles ne qualifient aucun fait métier.
+
+---
+
+## 2.5 Cadres temporels
+
 - Timers de grâce
-- Responsabilité :
-  - fournir une référence temporelle
-- Aucun déclenchement métier
-- Aucune interprétation
+- Rôle :
+  - fournir un cadre temporel
+- Aucun calcul
+- Aucune décision
+
+Ils introduisent la dimension temps dans le pipeline.
 
 ---
 
-### 3.4 Scripts techniques
-- Scripts de temporisation
-- Responsabilité :
-  - orchestration technique
-  - paramétrage dynamique
-- Aucun calcul métier
-- Aucun effet de bord
+## 2.6 Automatisations de qualification
+
+Les automatisations :
+
+- surveillent les états stabilisés,
+- s’appuient sur les timers,
+- posent explicitement des faits métier (helpers).
+
+Elles constituent la jonction entre :
+
+structure → temporalité → qualification.
 
 ---
 
-### 3.5 Automatisations
-- Synchronisation ouvertures ↔ temporisation
-- Qualification de faits métier
-- Responsabilité :
-  - poser explicitement un état
-- Aucun pilotage matériel
+## 2.7 Helpers
+
+Les helpers matérialisent :
+
+- des paramètres temporels,
+- des faits métier explicites.
+
+Ils servent de points d’ancrage pour les moteurs externes.
 
 ---
 
-### 3.6 Helpers
-- Helpers temporels
-- Helpers de qualification
-- Responsabilité :
-  - paramétrage utilisateur
-  - matérialisation d’états
-- Aucun pouvoir décisionnel
+## 2.8 UI (Restitution)
+
+Les dashboards :
+
+- exposent les états N1 / N2 / canons / helpers,
+- fournissent observabilité et diagnostic,
+- ne modifient jamais la structure interne.
+
 
 ---
 
-### 3.7 UI (Restitution)
-- Dashboards :
-  - Arsenal
-  - Ouvertures
-  - Réglages
-  - Diagnostics
-- Responsabilité :
-  - restitution fidèle
-  - observabilité
-- Lecture seule
+# 🔄 3. FLUX ARCHITECTURAL GLOBAL
 
+Flux conceptuel détaillé :
 
-## 4. 🔄 FLUX ARCHITECTURAL GLOBAL
-
-Flux conceptuel simplifié :
-
-  Capteur physique
-         ↓
-  Capteur logique (unification / agrégation)
-         ↓
+  N0  Capteur physique brut
+            ↓
+  N1  Normalisation structurelle
+            ↓
+  N2  Agrégation topologique
+            ↓
+  Canon (stabilisation locale)
+            ↓
   Timer (cadre temporel)
-         ↓
+            ↓
   Automation de qualification
-         ↓
-  Fait métier explicite (helper)
-         ↓
-  Consommation par moteurs externes
-         ↓
+            ↓
+  Helper (fait métier explicite)
+            ↓
+  Moteurs externes (chauffage / aération / alarme)
+            ↓
   Restitution UI
 
+Chaque couche :
 
-Chaque étage du flux :
 - a une responsabilité unique,
-- ne dépend pas du contexte métier global,
-- ne produit aucun effet de bord hors de son rôle.
-
-
-## 5. 🔗 RELATIONS AVEC LES AUTRES DOMAINES
-
-### 5.1 Chauffage
-- Consomme des états d’ouverture qualifiés
-- Le pipeline Ouvertures :
-  - ne connaît pas les règles chauffage
-  - ne pilote jamais le chauffage
+- ne connaît pas les règles métier globales,
+- n’agit pas hors de son rôle.
 
 ---
 
-### 5.2 Aération
-- Consomme le fait métier `aeration_confirmee`
-- Le pipeline Ouvertures :
-  - ne décide pas de la validité d’une aération
-  - ne déclenche aucune action d’aération
+# 🔗 4. RELATIONS AVEC LES AUTRES DOMAINES
+
+### Chauffage
+Consomme des états qualifiés issus du pipeline Ouvertures.
+
+### Aération
+Consomme le fait métier explicite.
+
+### Alarme
+Consomme les états d’ouverture stabilisés.
+
+Le sous-système Ouvertures reste neutre :
+il fournit des faits, il ne décide pas.
 
 ---
 
-### 5.3 Alarme
-- Peut consommer des états d’ouverture
-- Le pipeline Ouvertures :
-  - n’applique aucun délai d’entrée
-  - n’arme ni ne désarme rien
+# 🧠 5. PRINCIPES ARCHITECTURAUX CLÉS
 
+- Découplage matériel / logique
+- Stabilisation avant qualification
+- Qualification explicite
+- Séparation observation / décision
+- Responsabilité unique par couche
 
-## 6. 🧠 PRINCIPES ARCHITECTURAUX CLÉS
+Ce document décrit la structure et le flux.
+Les règles et interdictions relèvent exclusivement
+du contrat Ouvertures.
 
-- **Séparation stricte des responsabilités**
-- **Un composant = un rôle**
-- **Aucun composant ne décide seul**
-- **Les faits métier sont posés explicitement**
-- **L’UI n’est jamais source de vérité**
-
-Ce document décrit le **“où”** et le **“qui”**.  
-Le **“quoi”** et les **interdictions** relèvent exclusivement du
-contrat Ouvertures.
-
-
-## 7. 🛑 FRONTIÈRE NORMATIVE
-
-Toute règle, invariant, ou évolution fonctionnelle :
-- relève du contrat Ouvertures,
-- suit le mode opératoire Arsenal,
-- ne peut être introduite ici.
-
-Ce fichier est **descriptif**, **structurel** et **non normatif**.
-
+---
 
 # ==========================================================
 # 📐 ARCHITECTURE OUVERTURES — DOCUMENT DE RÉFÉRENCE

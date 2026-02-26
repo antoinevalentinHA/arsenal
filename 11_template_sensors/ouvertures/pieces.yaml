@@ -19,36 +19,28 @@
 - binary_sensor:
 
     # ------------------------------------------------------
-    #  🪟 Séjour – agregation des 4 ouvrants
+    #  🪟 Séjour
     # ------------------------------------------------------
     - name: "Fenetres ouvertes - Sejour"
       unique_id: fenetres_ouvertes_sejour
       default_entity_id: binary_sensor.fenetres_ouvertes_sejour
       device_class: opening
       state: >
-        {{
-          is_state('binary_sensor.capteur_fenetre_sejour_1', 'on') or
-          is_state('binary_sensor.capteur_fenetre_sejour_2', 'on') or
-          is_state('binary_sensor.capteur_fenetre_sejour_3', 'on') or
-          is_state('binary_sensor.capteur_fenetre_sejour_4', 'on')
+        {{ is_state('binary_sensor.contact_sejour', 'on') }}
         }}
 
     # ------------------------------------------------------
-    #  🪟 Chambre parents – agregation des 3 ouvrants
+    #  🪟 Chambre parents
     # ------------------------------------------------------
     - name: "Fenetres ouvertes - Chambre parents"
       unique_id: fenetres_ouvertes_parents
       default_entity_id: binary_sensor.fenetres_ouvertes_parents
       device_class: opening
       state: >
-        {{
-          is_state('binary_sensor.capteur_chambre_parents_droite', 'on') or
-          is_state('binary_sensor.capteur_chambre_parents_gauche', 'on') or
-          is_state('binary_sensor.capteur_chambre_parents_milieu', 'on')
-        }}
+        {{ is_state('binary_sensor.contact_chambre_parents', 'on') }}
 
     # ------------------------------------------------------
-    #  🪟 Entree – alias logique
+    #  🪟 Entree
     # ------------------------------------------------------
     - name: "Fenetres ouvertes - Entree"
       unique_id: fenetres_ouvertes_entree
@@ -58,7 +50,7 @@
         {{ is_state('binary_sensor.capteur_fenetre_entree', 'on') }}
 
     # ------------------------------------------------------
-    #  🪟 Chambre Arnaud – alias logique
+    #  🪟 Chambre Arnaud
     # ------------------------------------------------------
     - name: "Fenetres ouvertes - Chambre Arnaud"
       unique_id: fenetres_ouvertes_arnaud
@@ -68,7 +60,7 @@
         {{ is_state('binary_sensor.capteur_chambre_arnaud', 'on') }}
 
     # ------------------------------------------------------
-    #  🪟 Chambre Matthieu – alias logique
+    #  🪟 Chambre Matthieu
     # ------------------------------------------------------
     - name: "Fenetres ouvertes - Chambre Matthieu"
       unique_id: fenetres_ouvertes_matthieu

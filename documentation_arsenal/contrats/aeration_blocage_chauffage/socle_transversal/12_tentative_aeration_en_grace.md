@@ -18,9 +18,9 @@ uniquement pour les zones disposant d’un délai de grâce.
 
 Le capteur est `on` si, et seulement si :
 
-- (au moins une fenêtre brute Séjour est ouverte) ET (le timer Séjour de grâce est actif)
+- (`binary_sensor.contact_sejour` est `on`) ET (le timer Séjour de grâce est `active`)
 OU
-- (au moins une fenêtre brute Parents est ouverte) ET (le timer Parents de grâce est actif)
+- (`binary_sensor.contact_chambre_parents` est `on`) ET (le timer Parents de grâce est `active`)
 
 Les fenêtres enfants (Arnaud / Matthieu) sont hors périmètre :
 elles déclenchent une aération immédiate et ne constituent pas une "tentative".
@@ -29,16 +29,13 @@ elles déclenchent une aération immédiate et ne constituent pas une "tentative
 
 ## 📦 PÉRIMÈTRE SÉJOUR
 
-Fenêtres brutes (Séjour) :
+Source canon (Séjour) :
 
-- `binary_sensor.capteur_fenetre_sejour_1`
-- `binary_sensor.capteur_fenetre_sejour_2`
-- `binary_sensor.capteur_fenetre_sejour_3`
-- `binary_sensor.capteur_fenetre_sejour_4`
+- `binary_sensor.contact_sejour`
 
 État "ouverte" :
 
-- `sejour_open = au moins une entité ci-dessus = on`
+- `sejour_open = (binary_sensor.contact_sejour == on)`
 
 Timer de grâce Séjour :
 
@@ -52,15 +49,13 @@ Condition Séjour :
 
 ## 📦 PÉRIMÈTRE PARENTS
 
-Fenêtres brutes (Parents) :
+Source canon (Parents) :
 
-- `binary_sensor.capteur_chambre_parents_droite`
-- `binary_sensor.capteur_chambre_parents_gauche`
-- `binary_sensor.capteur_chambre_parents_milieu`
+- `binary_sensor.contact_chambre_parents`
 
 État "ouverte" :
 
-- `parents_open = au moins une entité ci-dessus = on`
+- `parents_open = (binary_sensor.contact_chambre_parents == on)`
 
 Timer de grâce Parents :
 
@@ -98,6 +93,7 @@ Ce signal est consommé par :
 - Signal transitoire (N0) : ne constitue pas un épisode confirmé.
 - Aucun effet direct : pure observation.
 - Dépendance explicite aux timers de grâce.
+- Dépend uniquement de sources canoniques `contact_*` et des timers.
 
 ---
 

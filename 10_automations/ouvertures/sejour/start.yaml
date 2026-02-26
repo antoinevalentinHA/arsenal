@@ -55,18 +55,13 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10170000000005"
   alias: "Chauffage – Fenêtres séjour – Démarrage délai"
   mode: restart
 
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.contact_sejour_1
-        - binary_sensor.contact_sejour_2
-        - binary_sensor.contact_sejour_3
-        - binary_sensor.contact_sejour_4
+      entity_id: binary_sensor.contact_sejour
       to: "on"
 
   action:

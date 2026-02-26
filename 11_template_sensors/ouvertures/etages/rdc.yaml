@@ -24,21 +24,15 @@
       device_class: opening
 
       icon: >
-        {% if is_state('binary_sensor.ouvertures_maison', 'on') %}
+        {% if is_state(this.entity_id, 'on') %}
           mdi:window-open-variant
-        {% elif is_state('binary_sensor.ouvertures_maison', 'off') %}
-          mdi:window-closed-variant
         {% else %}
           mdi:window-closed-variant
         {% endif %}
 
       state: >
         {% set fenetres_rdc = [
-          'binary_sensor.capteur_fenetre_entree',
-          'binary_sensor.capteur_fenetre_sejour_1',
-          'binary_sensor.capteur_fenetre_sejour_2',
-          'binary_sensor.capteur_fenetre_sejour_3',
-          'binary_sensor.capteur_fenetre_sejour_4'
+          'binary_sensor.contact_fenetre_entree',
+          'binary_sensor.contact_sejour'
         ] %}
-
         {{ fenetres_rdc | select('is_state', 'on') | list | length > 0 }}

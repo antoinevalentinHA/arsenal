@@ -50,27 +50,18 @@
   mode: queued
   max: 10
 
-  # ======================================================
-  # 🔔 Déclencheur — Ouverture d’un capteur
-  # ======================================================
   trigger:
     - platform: state
       entity_id:
-        - binary_sensor.capteur_chambre_arnaud
-        - binary_sensor.capteur_chambre_matthieu
-        - binary_sensor.capteur_chambre_parents_droite
-        - binary_sensor.capteur_chambre_parents_gauche
-        - binary_sensor.capteur_chambre_parents_milieu
-        - binary_sensor.capteur_fenetre_entree
-        - binary_sensor.capteur_fenetre_sejour_1
-        - binary_sensor.capteur_fenetre_sejour_2
-        - binary_sensor.capteur_fenetre_sejour_3
-        - binary_sensor.capteur_fenetre_sejour_4
+        - binary_sensor.contact_chambre_arnaud
+        - binary_sensor.contact_chambre_matthieu
+        - binary_sensor.contact_chambre_parents
+        - binary_sensor.contact_sejour
+        - binary_sensor.contact_fenetre_entree
+        - binary_sensor.contact_porte_entree
+        - binary_sensor.contact_porte_garage
       to: 'on'
 
-  # ======================================================
-  # ✅ Conditions — Armement valide + anti-faux positifs
-  # ======================================================
   condition:
     - condition: template
       alias: "Capteur valide (pas unknown/unavailable)"
@@ -89,13 +80,8 @@
       entity_id: binary_sensor.delai_desarmement_en_cours
       state: 'off'
 
-  # ======================================================
-  # ▶️ Action — Déclenchement réel ou test
-  # ======================================================
   action:
     - choose:
-
-        # 🔐 Mode actif → Sirène + Notification
         - conditions:
             - condition: state
               entity_id: input_boolean.mode_test_alarme
@@ -119,7 +105,6 @@
                   priority: high
                   importance: high
 
-        # 🧪 Mode test → Notification uniquement
       default:
         - action: script.notification_envoyer_avance
           data:

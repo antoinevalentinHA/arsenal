@@ -41,12 +41,6 @@ views:
 
           - !include ../../includes/cartes/diagnostic_thermique_contexte.yaml
 
-          - type: markdown
-            content: |
-              **Mode décidé :** `{{ states('input_select.chauffage_dernier_mode_decide') }}`
-              **Aération pipeline armé :** `{{ states('input_boolean.aeration_pipeline_arme') }}`
-              **Blocage chauffage (aération) :** `{{ states('input_boolean.chauffage_blocage_aeration') }}`
-
           - type: custom:button-card
             template: section_header
             name: 🔥 Dynamiques Présence — Reprise / Arrêt

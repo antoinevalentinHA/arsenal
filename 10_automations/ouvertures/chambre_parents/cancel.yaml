@@ -55,27 +55,14 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10170000000008"
   alias: "Chauffage – Chambre parents – Levée délai fenêtres"
   mode: restart
 
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.contact_chambre_parents_droite
-        - binary_sensor.contact_chambre_parents_gauche
-        - binary_sensor.contact_chambre_parents_milieu
+      entity_id: binary_sensor.contact_chambre_parents
       to: "off"
-
-  condition:
-    - condition: template
-      value_template: >
-        {{ expand([
-          'binary_sensor.capteur_chambre_parents_droite',
-          'binary_sensor.capteur_chambre_parents_gauche',
-          'binary_sensor.capteur_chambre_parents_milieu'
-        ]) | selectattr('state','eq','on') | list | count == 0 }}
 
   action:
     - service: timer.cancel

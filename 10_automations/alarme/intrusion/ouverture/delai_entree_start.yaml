@@ -35,8 +35,8 @@
   trigger:
     - platform: state
       entity_id:
-        - binary_sensor.capteur_porte_entree
-        - binary_sensor.capteur_porte_garage
+        - binary_sensor.contact_porte_entree
+        - binary_sensor.contact_porte_garage
       to: "on"
 
   condition:
@@ -49,7 +49,6 @@
       state: "idle"
 
   action:
-    # ▶️ Démarrage du timer de délai d’entrée
     - action: timer.start
       target:
         entity_id: timer.delai_entree
@@ -57,7 +56,6 @@
         duration:
           seconds: "{{ states('input_number.alarme_delai_entree') | int(30) }}"
 
-    # 🔊 Bip d’avertissement (hors mode test)
     - choose:
         - conditions:
             - condition: state

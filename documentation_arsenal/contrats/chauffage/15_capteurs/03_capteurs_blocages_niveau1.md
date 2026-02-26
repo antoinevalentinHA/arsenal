@@ -96,6 +96,53 @@
 #
 # ==========================================================
 
+### 🔒 binary_sensor.fenetres_maison_fermees_stable (NOUVEAU — FRONTIÈRE FINALE N1)
+
+- Domaine : Blocages / Enveloppe / Clôture stable
+- Autorité : FRONTIÈRE NIVEAU 1 FINALE
+
+🎯 Rôle :  
+Fournir le signal canonique de clôture stable de l’enveloppe (toutes fenêtres fermées),
+garantissant une sortie de contexte aération sans oscillation ni faux OFF temporaires.
+
+Ce capteur est la frontière officielle de clôture utilisée pour :
+
+- déclencher la fin d’épisode aération (M2),
+- déclencher les invalidations / reprises sûres,
+- déclencher les invalidations / reprises sûres,
+
+🧭 Périmètre d’influence autorisé :
+- Déclenchement de clôture du pipeline aération (M2)
+- Déclenchement des reprises / recalculs sûrs (chauffage) à bon escient
+- Protection contre les états transitoires (anti-faux “tout fermé”)
+
+⛔ Interdictions absolues :
+- Ne qualifie pas une aération
+- Ne produit pas de blocage direct
+- Ne remplace pas binary_sensor.fenetre_ouverte_maison
+- Ne participe à aucune décision de mode thermique
+
+🔒 Garanties exigées :
+- Signal stable, déterministe, restart-safe
+- Autorité de clôture unique pour M2
+- Pas de dépendance à des capteurs physiques hors couche Ouvertures
+- Absence d’effet de bord
+
+🔗 Dépendances :
+- Agrégats/contacts gouvernés (N1/N2 Ouvertures)
+- Timers de grâce / temporisation (si utilisé)
+
+Consommateurs contractuels attendus :
+- Pipelines aération normatifs (M2)
+- Triggers décisionnels chauffage (clôture globale)
+- Triggers décisionnels chauffage (clôture globale)
+
+⚠️ Risques :
+- Faux positifs de “fermé” si agrégat incomplet
+- Blocage de clôture si un contact reste figé ouvert
+
+# ----------------------------------------------------------
+
 ### 🔒 binary_sensor.poele_en_fonction
 
 - Domaine : Blocage / Contexte thermique externe / Détection apports non pilotés  
@@ -438,43 +485,28 @@ Classe : Capteur STRUCTURANT
 
 ### 🔒 binary_sensor.fenetre_ouverte_maison_avec_delai
 
-- Domaine : Blocages / Aération qualifiée / Temporisation de protection  
-- Autorité : STRUCTURANT  
+- Domaine : Aération / Qualification / Temporisation
+- Autorité : STRUCTURANT (qualification) 
 
 🎯 Rôle :  
-Fournir le **signal canonique d’ouverture qualifiée de fenêtres**,
-intégrant des **délais de grâce différenciés selon les zones**,
-afin de distinguer :
+Fournir le signal canonique de qualification temporelle des ouvertures,
+pour distinguer :
 
-- ouvertures brèves tolérables,  
-- véritables épisodes d’aération thermique significative.
+- ouvertures brèves tolérables (grâce),
+- épisodes d’aération qualifiés.
 
-Ce capteur constitue la **frontière officielle entre ouverture instantanée brute**
-et **aération effective impactant le moteur thermique**.
-
-Il est la **source normative de déclenchement du pipeline d’aération**.
+Ce capteur constitue la **source normative** d’armement / progression du pipeline aération
+(confirmation / déclenchement d’épisode), mais n’est pas une frontière N1 d’interdiction chauffage à lui seul.
 
 🧭 Périmètre d’influence autorisé :
-- Déclenchement officiel des épisodes d’aération qualifiés  
-- Activation des blocages post-aération  
-- Invalidation différée des décisions centrales  
-- Déclenchement des snapshots thermiques d’aération  
-- Condition primaire de :
-  - 40_blocages.md (blocage aération)  
-  - contrats aération normatifs  
-  - pipelines post-aération  
-- Filtrage des ouvertures transitoires non thermiquement pertinentes  
+- Déclenchement/armement pipelines aération (M1 / M5)
+- Qualification “aération effective” 
+- Support UI (tentative vs qualifiée)
 
 ⛔ Interdictions absolues :
-- Ne décide jamais d’un mode thermique  
-- Ne modifie jamais une consigne  
-- Ne modifie jamais un offset  
-- Ne conditionne jamais une autorisation thermostat  
-- Ne pilote jamais directement la chaudière  
-- Ne sert jamais de seuil thermique  
-- Ne déclenche jamais un auto-ajustement  
-- Ne participe jamais à la table de décision  
-- Ne produit jamais de diagnostic calibrant  
+- Ne déclenche pas directement la décision centrale chauffage
+- Ne sert pas de condition unique d’interdiction N1 du chauffage
+- Ne remplace pas binary_sensor.fenetre_ouverte_maison (frontière brute)
 
 🔒 Garanties exigées :
 - Agrégation **hiérarchisée de sous-capteurs qualifiés**  
@@ -498,10 +530,7 @@ Sous-systèmes temporisés :
 
 Consommateurs contractuels majeurs :
 - Pipelines aération normatifs  
-- 40_blocages.md (blocage post-aération)  
-- 20_triggers_decisionnels.md  
-- 60_absence_inhibition_geofencing.md  
-- Diagnostics thermiques structurants  
+- UI aération (tentative/qualifiée) 
 
 ⚠️ Risques :
 - Faux négatifs si délais trop longs  

@@ -2,13 +2,13 @@
 #  TEMPLATE SENSOR : État Dashboard – Aération
 # ----------------------------------------------------------
 #  🧠 Rôle :
-#     Représenter l’état global d’aération / post-aération
+#     Représenter STRICTEMENT l’état d’épisode d’aération
 #     pour le bouton du menu principal.
 #
 #  🎯 États :
-#     - alert → épisode actif, blocage actif ou ΔT résiduel
-#     - off   → situation nominale
-#     - unknown → données indisponibles
+#     - alert   → épisode actif
+#     - off     → aucun épisode
+#     - unknown → indisponibilité source
 # ==========================================================
 
 - sensor:
@@ -17,23 +17,12 @@
       unique_id: etat_aeration_dashboard
       state: >
         {% set UNAV = ['unknown','unavailable','none','None',''] %}
-
         {% set episode = states('input_boolean.aeration_episode_en_cours') %}
-        {% set blocage = states('input_boolean.chauffage_blocage_aeration') %}
-        {% set delta = states('input_number.aeration_delta_t_utilise') %}
 
-        {% if episode in UNAV or blocage in UNAV or delta in UNAV %}
+        {% if episode in UNAV %}
           unknown
-
         {% elif episode == 'on' %}
           alert
-
-        {% elif blocage == 'on' %}
-          alert
-
-        {% elif (delta | float(0)) > 0 %}
-          alert
-
         {% else %}
           off
         {% endif %}

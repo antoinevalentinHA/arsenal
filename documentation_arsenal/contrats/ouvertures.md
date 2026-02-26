@@ -5,8 +5,8 @@
 #   Ouvertures (portes / fenêtres)
 #
 # Portée :
-#   Détection, agrégation, temporisation, qualification
-#   de fait métier, restitution UI, helpers associés
+#   Détection, normalisation, agrégation, temporisation,
+#   qualification de fait métier, restitution UI
 #
 # Nature :
 #   Contrat NORMATIF — aucun pilotage, aucune décision
@@ -22,16 +22,21 @@ Ce contrat définit **exhaustivement** le cadre Arsenal relatif
 aux **ouvertures de la maison** (portes et fenêtres).
 
 Il couvre :
-- la **détection physique**,
-- l’**agrégation logique**,
-- les **temporisations de grâce**,
-- la **qualification explicite d’un fait métier**,
-- la **restitution UI**,
-- les **helpers nécessaires** à ces mécanismes.
+
+- la détection physique,
+- la normalisation structurelle,
+- l’agrégation logique,
+- les temporisations de grâce,
+- la qualification explicite d’un fait métier,
+- la restitution UI,
+- les helpers nécessaires.
 
 Il établit une séparation stricte entre :
-- événement physique,
-- état transitoire,
+
+- événement physique (N0),
+- état normalisé (N1),
+- état agrégé (N2),
+- canon d’orchestration,
 - fait métier qualifié,
 - décision métier (**hors périmètre**),
 - restitution UI.
@@ -39,168 +44,215 @@ Il établit une séparation stricte entre :
 Aucune interprétation métier n’est autorisée dans ce contrat.
 
 
-## 2. 🧱 PÉRIMÈTRE COUVERT
+---
 
-Le présent contrat couvre **sans exception** :
+# 🧱 2. ARCHITECTURE EN COUCHES
 
-1. La détection des ouvertures (portes et fenêtres)
-2. L’agrégation :
-   - par pièce
-   - par étage
-   - à l’échelle de la maison
-3. Les temporisations :
-   - timers de grâce
-   - scripts de temporisation
-   - automatisations associées
-4. La qualification de fait métier :
-   - `aeration_confirmee`
-5. Les helpers :
-   - helpers temporels
-   - helpers de qualification
-6. La restitution UI :
-   - dashboard Arsenal
-   - dashboard Ouvertures
-   - dashboard Réglages
-   - dashboard Diagnostics
+---
 
-Sont **explicitement exclus** :
-- toute décision chauffage,
-- toute décision climatisation,
-- toute décision d’alarme,
-- toute action matérielle.
+## 2.1 N0 — Détection physique (source brute)
 
+Les capteurs matériels `binary_sensor.capteur_*` constituent :
 
-## 3. 🔎 DÉTECTION DES OUVERTURES
+> la source unique de vérité physique.
 
-### 3.1 Capteurs physiques
+Caractéristiques :
 
-Les capteurs de contact (portes, fenêtres, ouvrants) constituent
-la **source unique de vérité physique**.
+- retour brut du matériel,
+- potentiellement `unknown` / `unavailable`,
+- sans logique,
+- sans temporisation,
+- sans qualification.
 
-Ils ne portent :
-- aucune logique métier,
-- aucune temporisation,
-- aucune qualification.
+### Usage actuel
+
+À ce jour, certaines entités N0 peuvent encore être
+référencées directement dans d’autres domaines
+(historique Arsenal).
+
+### Cible architecturale
+
+La cible contractuelle est :
+
+> Toute consommation d’un capteur physique doit passer par N1.
+
+Cette cible ne constitue pas une obligation rétroactive,
+mais un principe directeur pour toute évolution future.
 
 
-### 3.2 Capteurs logiques d’unification
+---
 
-Des capteurs binaires unifiés exposent l’état d’ouverture
-par pièce.
+## 2.2 N1 — NORMALISATION (contact stable)
+
+Les entités `binary_sensor.contact_*` constituent la couche N1.
 
 Rôle :
-- abstraction structurelle
-- suppression de toute dépendance aux capteurs bruts
 
-Interdictions absolues :
-- aucune temporisation
-- aucune qualification
-- aucune décision
+- abstraction structurelle,
+- encapsulation de l’indisponibilité,
+- production d’un état **toujours évaluable**,
+- suppression de toute dépendance directe aux capteurs bruts.
+
+Invariants N1 :
+
+- Dépend exclusivement de N0.
+- État toujours `on` ou `off`.
+- Si la source est indisponible → état forcé `off`.
+- L’indisponibilité est exposée uniquement en attribut.
+- Aucun délai.
+- Aucune qualification.
+- Aucune décision.
+
+Principe :
+
+> N1 stabilise la structure, pas le temps.
 
 
-### 3.3 Agrégations globales
+---
 
-Des capteurs agrégés exposent l’état :
-- du rez-de-chaussée,
-- de l’étage,
-- de la maison,
-- des ouvertures maison (portes + fenêtres).
+## 2.3 N2 — AGRÉGATION (OR logique)
 
-Ces états sont :
-- instantanés,
-- sans délai,
+Les entités `binary_sensor.contact_<zone>` constituent la couche N2.
+
+Rôle :
+
+- agrégation OR de N1,
+- exposition par pièce, étage, maison,
+- calcul instantané,
+- sans trigger-based,
+- sans temporisation,
 - sans interprétation.
 
+Invariants N2 :
 
-## 4. ⏱️ TEMPORISATION — FENÊTRES DE GRÂCE
+- Dépend exclusivement de N1.
+- État :
+  - `on` si au moins un membre est `on`
+  - sinon `off`
+- Aucun délai.
+- Aucune qualification.
+- Indisponibilité exposée en attribut uniquement.
 
-### 4.1 Timers
+Principe :
 
-Les timers définissent **exclusivement le temps**.
+> N2 agrège, n’interprète pas.
 
-Caractéristiques contractuelles :
-- rôle : cadre temporel
-- états exploitables : `active` / `idle`
-- restaurables
-- aucune action automatique à l’expiration
 
-Invariant fondamental :
+---
+
+## 2.4 CANONS OUVERTURES (stabilisation locale)
+
+Les canons (ex. `fenetres_maison_fermees_stable`) fournissent
+des signaux robustes pour l’orchestration.
+
+Rôle :
+
+- stabilisation temporelle localisée,
+- suppression des "OFF furtifs",
+- prévention des guards dispersés.
+
+Invariants :
+
+- Dépend exclusivement de N2.
+- Délai localisé (delay_on / delay_off).
+- Aucune qualification métier.
+- Aucun effet de bord.
+
+Principe fondamental :
+
+> La stabilisation appartient aux canons, pas aux pipelines.
+
+
+---
+
+# ⏱️ 3. TEMPORISATION — FENÊTRES DE GRÂCE
+
+## 3.1 Timers
+
+Les timers définissent exclusivement le temps.
+
+Caractéristiques :
+
+- rôle : cadre temporel,
+- états : `active` / `idle`,
+- restaurables,
+- aucune action automatique à expiration.
+
+Invariant :
 
 > Le timer définit le temps.  
 > L’interprétation est externe.
 
 
-### 4.2 Scripts de temporisation
+## 3.2 Scripts de temporisation
 
 Les scripts :
-- démarrent ou redémarrent un timer,
-- lisent une durée depuis un helper utilisateur,
-- n’embarquent **aucune logique métier**.
 
-Ils sont des **middlewares techniques**.
+- démarrent / redémarrent les timers,
+- lisent les durées via helpers,
+- n’embarquent aucune logique métier.
 
-Ils ne :
-- décident rien,
-- évaluent rien,
-- produisent aucun effet de bord.
+Ils sont des middlewares techniques.
 
-
-### 4.3 Automatisations de temporisation
+## 3.3 Automatisations de temporisation
 
 Les automatisations :
-- déclenchent les scripts à l’ouverture,
-- annulent les timers à la fermeture complète,
-- ne prennent **aucune décision métier**.
+
+- déclenchent les scripts,
+- annulent les timers à fermeture complète,
+- ne prennent aucune décision métier.
 
 Toute temporisation :
+
 - est déclenchée explicitement,
 - est levée explicitement,
 - est immédiatement réversible.
 
 
-## 5. 🧠 QUALIFICATION DE FAIT MÉTIER
+---
 
-### 5.1 Principe fondamental
+# 🧠 4. QUALIFICATION DE FAIT MÉTIER
+
+## 4.1 Principe fondamental
 
 Un fait métier :
+
 - n’est jamais implicite,
 - n’est jamais déduit,
 - n’est jamais supposé.
 
-Il doit être **posé explicitement**.
+Il est posé explicitement.
 
+## 4.2 Aération confirmée
 
-### 5.2 Aération confirmée
+`aeration_confirmee` :
 
-Le fait métier `aeration_confirmee` est posé par une
-automation dédiée :
-
-- déclenchée à la fin d’un timer de grâce,
-- conditionnée à la stabilité du système,
+- déclenché après timer de grâce,
+- conditionné à stabilité,
 - sans déclencher aucune action métier.
 
-Invariant fondamental :
+Invariant :
 
 > Un fait métier est posé explicitement,  
-> sans interprétation ni effet de bord.
+> sans effet de bord.
 
 
-## 6. 🧩 HELPERS (INCLUS AU CONTRAT)
+---
 
-### 6.1 Helpers temporels
+# 🧩 5. HELPERS
 
-Les helpers de type `input_number` :
-- définissent les durées de temporisation,
-- sont lus dynamiquement à l’exécution,
-- ne déclenchent aucune action directe.
+## 5.1 Helpers temporels
 
+- `input_number`
+- définissent des durées
+- lus dynamiquement
+- ne déclenchent rien
 
-### 6.2 Helpers de qualification
+## 5.2 Helpers de qualification
 
-Les helpers de type `input_boolean` :
-- matérialisent un fait métier,
-- ne portent aucune décision,
-- servent de **source de vérité** pour les moteurs externes.
+- `input_boolean`
+- matérialisent un fait métier
+- ne décident rien
 
 Invariant :
 
@@ -208,57 +260,68 @@ Invariant :
 > jamais des décideurs.
 
 
-## 7. 🖥️ RESTITUTION UI
+---
 
-### 7.1 Principe général
+# 🖥️ 6. RESTITUTION UI
 
-L’UI est :
-- strictement en lecture seule,
+Principe :
+
+- lecture seule,
 - sans logique métier,
 - sans correction,
 - sans interprétation.
 
+Dashboards couverts :
 
-### 7.2 Dashboards couverts
+- carte synthétique Arsenal,
+- dashboard Ouvertures,
+- dashboard Réglages,
+- dashboard Diagnostics.
 
-Le contrat inclut :
-- carte globale Arsenal (état synthétique),
-- dashboard Ouvertures (détail physique),
-- dashboard Réglages (helpers),
-- dashboard Diagnostics (états + timers).
-
-La navigation est **informative uniquement**.
+La navigation est informative uniquement.
 
 
-## 8. 🔒 INVARIANTS CONTRACTUELS
+---
 
-Les règles suivantes sont **absolues** :
+# 🔒 7. INVARIANTS CONTRACTUELS
 
-- Aucune décision métier n’est prise dans ce contrat.
-- Aucune action matérielle n’est déclenchée.
-- Les délais concernent **uniquement l’ouverture**.
-- La fermeture est **instantanée**.
+- Aucune décision métier n’est prise ici.
+- Aucune action matérielle.
+- Les délais concernent uniquement l’ouverture.
+- La fermeture est instantanée.
+- N0 n’est jamais utilisé ailleurs.
+- N1 stabilise la structure.
+- N2 agrège sans interpréter.
+- Les canons stabilisent localement.
 - Les timers n’interprètent rien.
 - Les scripts n’évaluent rien.
 - L’UI ne décide rien.
-- Tout fait métier est **posé explicitement**.
+- Tout fait métier est posé explicitement.
 
 
-## 9. 🚫 HORS PÉRIMÈTRE
+---
 
-Le présent contrat n’autorise pas :
-- la modification de consignes,
-- le pilotage chauffage / clim / alarme,
-- l’optimisation comportementale,
-- l’inférence de contexte.
+# 🚫 8. HORS PÉRIMÈTRE
+
+Sont exclus :
+
+- décision chauffage,
+- décision clim,
+- décision alarme,
+- optimisation comportementale,
+- inférence contextuelle,
+- pilotage matériel.
 
 
-## 10. 🛑 CLAUSE DE STABILITÉ
+---
 
-Toute évolution future :
-- nécessite une demande explicite,
-- suit le mode opératoire Arsenal,
-- respecte l’intégralité des invariants.
+# 🛑 9. CLAUSE DE STABILITÉ
+
+Toute évolution :
+
+- nécessite demande explicite,
+- respecte les couches N0 / N1 / N2 / CANON,
+- conserve les invariants.
 
 Aucune extension implicite n’est autorisée.
 

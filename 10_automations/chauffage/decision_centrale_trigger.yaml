@@ -88,14 +88,6 @@
     # 🛑 NIVEAU 1 — BLOCAGES ABSOLUS
     # ======================================================
 
-    # Standby mécanique hiérarchique
-    - platform: state
-      entity_id: input_boolean.chauffage_standby_force
-
-    # Blocage post-aération (entrée / sortie)
-    - platform: state
-      entity_id: input_boolean.chauffage_blocage_aeration
-
     # Fenêtres qualifiées avec délai (ouverture qualifiée)
     - platform: state
       entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai

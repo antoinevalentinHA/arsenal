@@ -31,27 +31,11 @@
         {% endif %}
 
       state: >
-        {# ---------------------------------------------------
-           Séjour (brut + timer active)
-           --------------------------------------------------- #}
-        {% set sejour = [
-          'binary_sensor.capteur_fenetre_sejour_1',
-          'binary_sensor.capteur_fenetre_sejour_2',
-          'binary_sensor.capteur_fenetre_sejour_3',
-          'binary_sensor.capteur_fenetre_sejour_4'
-        ] %}
-        {% set sejour_open = (sejour | select('is_state', 'on') | list | length > 0) %}
+
+        {% set sejour_open  = is_state('binary_sensor.contact_sejour', 'on') %}
         {% set sejour_grace = is_state('timer.fenetre_sejour_ouverte_grace', 'active') %}
 
-        {# ---------------------------------------------------
-           Parents (brut + timer active)
-           --------------------------------------------------- #}
-        {% set parents = [
-          'binary_sensor.capteur_chambre_parents_droite',
-          'binary_sensor.capteur_chambre_parents_gauche',
-          'binary_sensor.capteur_chambre_parents_milieu'
-        ] %}
-        {% set parents_open = (parents | select('is_state', 'on') | list | length > 0) %}
+        {% set parents_open  = is_state('binary_sensor.contact_chambre_parents', 'on') %}
         {% set parents_grace = is_state('timer.fenetre_chambre_parents_grace', 'active') %}
 
         {{ (sejour_open and sejour_grace) or (parents_open and parents_grace) }}

@@ -55,29 +55,14 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10170000000006"
   alias: "Chauffage – Séjour – Levée délai fenêtres"
   mode: restart
 
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.contact_sejour_1
-        - binary_sensor.contact_sejour_2
-        - binary_sensor.contact_sejour_3
-        - binary_sensor.contact_sejour_4
+      entity_id: binary_sensor.contact_sejour
       to: "off"
-
-  condition:
-    - condition: template
-      value_template: >
-        {{ expand([
-          'binary_sensor.capteur_fenetre_sejour_1',
-          'binary_sensor.capteur_fenetre_sejour_2',
-          'binary_sensor.capteur_fenetre_sejour_3',
-          'binary_sensor.capteur_fenetre_sejour_4'
-        ]) | selectattr('state','eq','on') | list | count == 0 }}
 
   action:
     - service: timer.cancel

@@ -22,7 +22,7 @@
 #################################################################
 
 carte_temperature_exterieure:
-  template: carte_temperature
+  template: socle_kpi
 
   icon: |
     [[[

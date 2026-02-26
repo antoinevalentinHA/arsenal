@@ -55,17 +55,13 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10170000000007"
   alias: "Chauffage – Fenêtres chambre parents – Démarrage délai"
   mode: restart
 
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.contact_chambre_parents_droite
-        - binary_sensor.contact_chambre_parents_gauche
-        - binary_sensor.contact_chambre_parents_milieu
+      entity_id: binary_sensor.contact_chambre_parents
       to: "on"
 
   action:

@@ -27,28 +27,20 @@
       device_class: opening
 
       icon: >
-        {% if is_state('binary_sensor.ouvertures_maison', 'on') %}
+        {% if is_state(this.entity_id, 'on') %}
           mdi:lock-open-variant
-        {% elif is_state('binary_sensor.ouvertures_maison', 'off') %}
-          mdi:lock
         {% else %}
           mdi:lock
         {% endif %}
 
       state: >
         {% set ouvertures = [
-          'binary_sensor.capteur_chambre_arnaud',
-          'binary_sensor.capteur_chambre_matthieu',
-          'binary_sensor.capteur_chambre_parents_droite',
-          'binary_sensor.capteur_chambre_parents_gauche',
-          'binary_sensor.capteur_chambre_parents_milieu',
-          'binary_sensor.capteur_fenetre_entree',
-          'binary_sensor.capteur_fenetre_sejour_1',
-          'binary_sensor.capteur_fenetre_sejour_2',
-          'binary_sensor.capteur_fenetre_sejour_3',
-          'binary_sensor.capteur_fenetre_sejour_4',
-          'binary_sensor.capteur_porte_entree',
-          'binary_sensor.capteur_porte_garage'
+          'binary_sensor.contact_chambre_arnaud',
+          'binary_sensor.contact_chambre_matthieu',
+          'binary_sensor.contact_chambre_parents',
+          'binary_sensor.contact_sejour',
+          'binary_sensor.contact_fenetre_entree',
+          'binary_sensor.contact_porte_entree',
+          'binary_sensor.contact_porte_garage'
         ] %}
-
         {{ ouvertures | select('is_state', 'on') | list | length > 0 }}

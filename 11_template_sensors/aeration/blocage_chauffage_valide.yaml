@@ -156,73 +156,44 @@
       device_class: problem
 
       state: >
-        {# -------------------------------------------------- #}
-        {# 1) Pipeline armé ?                                #}
-        {# -------------------------------------------------- #}
-
         {% if states('input_boolean.aeration_pipeline_arme') != 'on' %}
           false
-
         {% else %}
-
-          {# -------------------------------------------------- #}
-          {# 2) Fenêtre temporelle atteinte ?                  #}
-          {# -------------------------------------------------- #}
 
           {% set dt = states('input_datetime.analyse_deltat_disponible') | as_datetime %}
           {% if dt is none or now().replace(tzinfo=None) < dt %}
             false
-
           {% else %}
-
-            {# -------------------------------------------------- #}
-            {# 3) Détermination des zones ouvertes              #}
-            {# -------------------------------------------------- #}
 
             {% set zones = [] %}
 
-            {# Entrée #}
-            {% if is_state('binary_sensor.capteur_fenetre_entree', 'on') %}
+            {% if is_state('binary_sensor.contact_fenetre_entree', 'on') %}
               {% set zones = zones + ['entree'] %}
             {% endif %}
 
-            {# Séjour (au moins une baie ouverte) #}
             {% if is_state('binary_sensor.fenetre_sejour_ouverte_avec_delai', 'on') %}
               {% set zones = zones + ['sejour'] %}
             {% endif %}
 
-            {# Chambre parents #}
             {% if is_state('binary_sensor.fenetre_chambre_parents_ouverte_avec_delai', 'on') %}
               {% set zones = zones + ['chambre_parents'] %}
             {% endif %}
 
-            {# Chambre Arnaud #}
-            {% if is_state('binary_sensor.capteur_chambre_arnaud', 'on') %}
+            {% if is_state('binary_sensor.contact_chambre_arnaud', 'on') %}
               {% set zones = zones + ['chambre_arnaud'] %}
             {% endif %}
 
-            {# Chambre Matthieu #}
-            {% if is_state('binary_sensor.capteur_chambre_matthieu', 'on') %}
+            {% if is_state('binary_sensor.contact_chambre_matthieu', 'on') %}
               {% set zones = zones + ['chambre_matthieu'] %}
             {% endif %}
 
-            {# -------------------------------------------------- #}
-            {# 4) Aucune zone ouverte → incohérent              #}
-            {# -------------------------------------------------- #}
-
             {% if zones | length == 0 %}
               false
-
             {% else %}
-
-              {# -------------------------------------------------- #}
-              {# 5) Lecture des ΔT par zone ouverte              #}
-              {# -------------------------------------------------- #}
 
               {% set valid = false %}
 
               {% for z in zones %}
-
                 {% if z == 'entree' %}
                   {% set dtz = states('sensor.deltaT_entree') | float(0) %}
                 {% elif z == 'sejour' %}
@@ -237,17 +208,13 @@
                   {% set dtz = 0 %}
                 {% endif %}
 
-                {# Seuil physique minimal contractuel #}
                 {% if dtz >= 0.2 %}
                   {% set valid = true %}
                 {% endif %}
-
               {% endfor %}
 
               {{ valid }}
 
             {% endif %}
-
           {% endif %}
-
         {% endif %}

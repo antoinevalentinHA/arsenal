@@ -38,19 +38,19 @@ Ce domaine est hors périmètre du présent contrat Aération/Blocage Chauffage.
 Le domaine Aération/Blocage Chauffage consomme uniquement les entités suivantes,
 telles que définies par le contrat Ouvertures :
 
-### Ouvertures — état brut maison
+### Ouvertures — état brut agrégé maison
 - `binary_sensor.fenetre_ouverte_maison`
 
 ### Ouvertures — état qualifié avec temporisation
 - `binary_sensor.fenetre_ouverte_maison_avec_delai`
 
-### Tentative en grâce (pré-qualification)
+### Tentative en grâce (pré-qualification N0)
 - `binary_sensor.tentative_aeration_en_grace`
 
-### Capteurs bruts (déclencheurs M1 immédiats)
-- `binary_sensor.capteur_fenetre_entree`
-- `binary_sensor.capteur_chambre_arnaud`
-- `binary_sensor.capteur_chambre_matthieu`
+### Contacts pièce (déclencheurs immédiats hors grâce)
+- `binary_sensor.contact_chambre_arnaud`
+- `binary_sensor.contact_chambre_matthieu`
+- `binary_sensor.contact_fenetre_entree`
 
 ---
 
@@ -58,6 +58,7 @@ telles que définies par le contrat Ouvertures :
 
 Il est strictement interdit :
 
+- de consommer des entités `capteur_*` dans ce domaine,
 - de dupliquer la logique Ouvertures dans le présent domaine,
 - de modifier l’interprétation des timers de grâce ici,
 - de redéfinir les agrégations ici.
