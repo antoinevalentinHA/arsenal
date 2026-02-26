@@ -4,7 +4,7 @@
 # ----------------------------------------------------------
 # 🎯 ROLE
 #   Phrase synthese priorisee :
-#   blocage > episode > deltaT > nominal
+#   blocage > episode > nominal
 # ==========================================================
 
 aeration_synthese_72:
@@ -25,21 +25,15 @@ aeration_synthese_72:
 
       const blocage = st('input_boolean.chauffage_blocage_aeration');
       const episode = st('input_boolean.aeration_episode_en_cours');
-      const delta   = st('input_number.delta_t_max_decisionnel_aeration');
 
-      if ([blocage, episode, delta].some(v => UNAV.includes(v)))
+      if ([blocage, episode].some(v => UNAV.includes(v)))
         return "Indisponible";
-
-      const v = parseFloat(delta);
 
       if (blocage === 'on')
         return "Chauffage bloqué (post-aération)";
 
       if (episode === 'on')
         return "Aération en cours";
-
-      if (!Number.isNaN(v) && v > 0)
-        return "Chute thermique résiduelle";
 
       return "Situation nominale";
     ]]]
@@ -53,21 +47,15 @@ aeration_synthese_72:
 
             const blocage = st('input_boolean.chauffage_blocage_aeration');
             const episode = st('input_boolean.aeration_episode_en_cours');
-            const delta   = st('input_number.delta_t_max_decisionnel_aeration');
 
-            if ([blocage, episode, delta].some(v => UNAV.includes(v)))
-              return "rgba(158, 158, 158, 0.1)";
-
-            const v = parseFloat(delta);
+            if ([blocage, episode].some(v => UNAV.includes(v)))
+              return "rgba(224, 224, 224, 0.2)";
 
             if (blocage === 'on')
               return "rgba(244, 67, 54, 0.2)";
 
             if (episode === 'on')
-              return "rgba(33, 150, 243, 0.2)";
-
-            if (!Number.isNaN(v) && v > 0)
-              return "rgba(255, 152, 0, 0.2)";
+              return "rgba(144, 202, 249, 0.25)";
 
             return "rgba(76, 175, 80, 0.2)";
           ]]]
