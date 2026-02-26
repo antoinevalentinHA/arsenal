@@ -22,9 +22,46 @@ aeration_m5_reouverture_pendant_blocage:
 
   sequence:
 
-    # Enregistrement horodatage de la réouverture
+    # ------------------------------------------------------
+    # Horodatage réouverture
+    # ------------------------------------------------------
     - action: input_datetime.set_datetime
       target:
         entity_id: input_datetime.aeration_reouverture_last
       data:
         datetime: "{{ now().replace(tzinfo=None).strftime('%Y-%m-%d %H:%M:%S') }}"
+
+    # ------------------------------------------------------
+    # Réarmement analyse ΔT (monotone)
+    # Objectif : éviter de rater M3 (timer.finished one-shot)
+    # ------------------------------------------------------
+    - variables:
+        cap_min: "{{ states('input_number.delai_stabilisation_capteurs') | int(0) }}"
+        cap_s: "{{ (cap_min | int(0)) * 60 }}"
+
+        analyse_active: "{{ is_state('timer.aeration_analyse_delta_t', 'active') }}"
+        analyse_remaining: >
+          {{ state_attr('timer.aeration_analyse_delta_t','remaining') if analyse_active else '00:00:00' }}
+
+        analyse_remaining_s: >
+          {% set r = analyse_remaining %}
+          {% if r in ['unknown','unavailable','none','None',''] %}
+            0
+          {% else %}
+            {% set p = r.split(':') %}
+            {{ (p[0] | int(0)) * 3600 + (p[1] | int(0)) * 60 + (p[2] | int(0)) }}
+          {% endif %}
+
+        analyse_start_s: "{{ cap_s if cap_s > analyse_remaining_s else analyse_remaining_s }}"
+
+        analyse_hh: "{{ (analyse_start_s // 3600) | int }}"
+        analyse_mm: "{{ ((analyse_start_s % 3600) // 60) | int }}"
+        analyse_ss: "{{ (analyse_start_s % 60) | int }}"
+
+        analyse_duration: "{{ '%02d:%02d:%02d' | format(analyse_hh, analyse_mm, analyse_ss) }}"
+
+    - action: timer.start
+      target:
+        entity_id: timer.aeration_analyse_delta_t
+      data:
+        duration: "{{ analyse_duration }}"

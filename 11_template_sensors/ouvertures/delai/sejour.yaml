@@ -2,13 +2,11 @@
 # 🪟 TEMPLATE BINARY SENSOR — Séjour (grâce / délai expiré)
 # ----------------------------------------------------------
 # 💡 Logique Arsenal :
-#   Ce capteur N’EST ON que lorsque :
-#     1) au moins une fenêtre du séjour est ouverte
-#     2) ET que le timer de grâce est expiré (timer = idle)
+#   ON SEULEMENT si :
+#     1) au moins une fenêtre séjour est ouverte (N1 : contact_*)
+#     2) ET timer de grâce = idle
 #
-#   Pendant le délai (timer = active), ce capteur doit rester OFF.
-#
-# 📍 Entité : binary_sensor.fenetre_sejour_ouverte_avec_delai
+#   Pendant le délai (active) → reste OFF.
 # ==========================================================
 
 - binary_sensor:
@@ -20,33 +18,61 @@
 
       icon: >
         {% set sejour = [
-          'binary_sensor.capteur_fenetre_sejour_1',
-          'binary_sensor.capteur_fenetre_sejour_2',
-          'binary_sensor.capteur_fenetre_sejour_3',
-          'binary_sensor.capteur_fenetre_sejour_4'
+          'binary_sensor.contact_sejour_1',
+          'binary_sensor.contact_sejour_2',
+          'binary_sensor.contact_sejour_3',
+          'binary_sensor.contact_sejour_4'
         ] %}
-        {% set any_open = (sejour | select('is_state', 'on') | list | length > 0) %}
-        {% set timer = states('timer.fenetre_sejour_ouverte_grace') %}
+
+        {% set open_entities = sejour | select('is_state','on') | list %}
+        {% set any_open = (open_entities | length > 0) %}
+
+        {% set t = 'timer.fenetre_sejour_ouverte_grace' %}
+        {% set t_state = states(t) %}
+        {% set t_lc = as_timestamp(states[t].last_changed) if states[t] is not none else 0 %}
+
+        {% set last_open = 0 %}
+        {% for e in open_entities %}
+          {% set lc = as_timestamp(states[e].last_changed) %}
+          {% if lc > last_open %}
+            {% set last_open = lc %}
+          {% endif %}
+        {% endfor %}
+
+        {% set grace_pending = any_open and (t_state == 'active' or (t_state == 'idle' and t_lc <= last_open)) %}
 
         {% if is_state(this.entity_id, 'on') %}
           mdi:window-open-variant
-        {% elif any_open and timer == 'active' %}
+        {% elif grace_pending %}
           mdi:timer-sand
-        {% elif is_state(this.entity_id, 'off') %}
-          mdi:window-closed-variant
+        {% elif any_open %}
+          mdi:window-open-variant
         {% else %}
           mdi:window-closed-variant
         {% endif %}
 
       state: >
         {% set sejour = [
-          'binary_sensor.capteur_fenetre_sejour_1',
-          'binary_sensor.capteur_fenetre_sejour_2',
-          'binary_sensor.capteur_fenetre_sejour_3',
-          'binary_sensor.capteur_fenetre_sejour_4'
+          'binary_sensor.contact_sejour_1',
+          'binary_sensor.contact_sejour_2',
+          'binary_sensor.contact_sejour_3',
+          'binary_sensor.contact_sejour_4'
         ] %}
 
-        {{
-          (sejour | select('is_state', 'on') | list | length > 0)
-          and is_state('timer.fenetre_sejour_ouverte_grace', 'idle')
-        }}
+        {% set open_entities = sejour | select('is_state','on') | list %}
+        {% set any_open = (open_entities | length > 0) %}
+
+        {% set t = 'timer.fenetre_sejour_ouverte_grace' %}
+        {% set t_state = states(t) %}
+        {% set t_lc = as_timestamp(states[t].last_changed) if states[t] is not none else 0 %}
+
+        {% set last_open = 0 %}
+        {% for e in open_entities %}
+          {% set lc = as_timestamp(states[e].last_changed) %}
+          {% if lc > last_open %}
+            {% set last_open = lc %}
+          {% endif %}
+        {% endfor %}
+
+        {% set ok = any_open and t_state == 'idle' and t_lc > last_open %}
+        {{ 'on' if ok else 'off' }}

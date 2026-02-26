@@ -1,16 +1,9 @@
 # ==========================================================
 # 🪟 TEMPLATE BINARY SENSOR — Fenêtres étage (avec délai)
 # ----------------------------------------------------------
-# 💡 Logique Arsenal :
-#   ON si :
-#     - une fenêtre ENFANT est ouverte (immédiat)
-#     - OU une fenêtre PARENTS est ouverte ET timer expiré (idle)
-#
-#   OFF si :
-#     - tout est fermé
-#     - OU une fenêtre parents est ouverte mais timer encore actif
-#
-# 📍 Entité : binary_sensor.fenetre_ouverte_etage_avec_delai
+# ON si :
+#   - une fenêtre ENFANT est ouverte (immédiat)
+#   - OU parents qualifié est ON
 # ==========================================================
 
 - binary_sensor:
@@ -20,43 +13,11 @@
       default_entity_id: binary_sensor.fenetre_ouverte_etage_avec_delai
       device_class: opening
 
-      icon: >
-        {% set direct = [
-          'binary_sensor.capteur_chambre_arnaud',
-          'binary_sensor.capteur_chambre_matthieu'
-        ] %}
-
-        {% set direct_open = (direct | select('is_state', 'on') | list | length > 0) %}
-
-        {% set parents_fenetres = [
-          'binary_sensor.capteur_chambre_parents_droite',
-          'binary_sensor.capteur_chambre_parents_gauche',
-          'binary_sensor.capteur_chambre_parents_milieu'
-        ] %}
-        {% set parents_open = (parents_fenetres | select('is_state', 'on') | list | length > 0) %}
-        {% set timer = states('timer.fenetre_chambre_parents_grace') %}
-
-        {% if is_state(this.entity_id, 'on') %}
-          mdi:window-open-variant
-        {% elif direct_open %}
-          mdi:window-open-variant
-        {% elif parents_open and timer == 'active' %}
-          mdi:timer-sand
-        {% elif is_state(this.entity_id, 'off') %}
-          mdi:window-closed-variant
-        {% else %}
-          mdi:window-closed-variant
-        {% endif %}
-
       state: >
-        {# Fenêtres sans délai #}
         {% set direct = [
-          'binary_sensor.capteur_chambre_arnaud',
-          'binary_sensor.capteur_chambre_matthieu'
+          'binary_sensor.contact_chambre_arnaud',
+          'binary_sensor.contact_chambre_matthieu'
         ] %}
-
-        {{
-          (direct | select('is_state', 'on') | list | length > 0)
-          or
-          is_state('binary_sensor.fenetre_chambre_parents_ouverte_avec_delai', 'on')
-        }}
+        {% set direct_open = (direct | select('is_state', 'on') | list | length > 0) %}
+        {% set ok = direct_open or is_state('binary_sensor.fenetre_chambre_parents_ouverte_avec_delai', 'on') %}
+        {{ 'on' if ok else 'off' }}

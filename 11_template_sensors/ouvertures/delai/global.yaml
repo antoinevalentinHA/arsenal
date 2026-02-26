@@ -9,6 +9,10 @@
 #
 # Préservation :
 #   - entity_id historique : binary_sensor.fenetre_ouverte_maison_avec_delai
+#
+# 🧱 Invariants :
+#   - Aucune dépendance aux capteurs physiques (capteur_*) : N1 uniquement
+#   - State explicite on/off (pas de booléen)
 # ==========================================================
 
 - binary_sensor:
@@ -20,29 +24,34 @@
 
       icon: >
         {# ---------------------------------------------------
-           Fenêtres immédiates (entrée)
+           Entrée (immédiat) — N1
            --------------------------------------------------- #}
-        {% set entree_open = is_state('binary_sensor.capteur_fenetre_entree', 'on') %}
+        {% set entree_open = is_state('binary_sensor.contact_fenetre_entree', 'on') %}
 
         {# ---------------------------------------------------
            Grâce Étage (parents) : parents_open + timer active
-           (car le capteur "avec_delai" reste OFF pendant la grâce)
            --------------------------------------------------- #}
         {% set parents_fenetres = [
-          'binary_sensor.capteur_chambre_parents_droite',
-          'binary_sensor.capteur_chambre_parents_gauche',
-          'binary_sensor.capteur_chambre_parents_milieu'
+          'binary_sensor.contact_chambre_parents_droite',
+          'binary_sensor.contact_chambre_parents_gauche',
+          'binary_sensor.contact_chambre_parents_milieu'
         ] %}
         {% set parents_open = (parents_fenetres | select('is_state', 'on') | list | length > 0) %}
         {% set parents_timer = states('timer.fenetre_chambre_parents_grace') %}
         {% set grace_etage = parents_open and parents_timer == 'active' %}
 
         {# ---------------------------------------------------
-           Grâce Séjour : si tu as aussi un timer de grâce séjour
-           et des capteurs bruts séjour, on peut la détecter.
-           👉 À défaut d’info, on ne “devine” pas.
+           Grâce Séjour : séjour_open + timer active
            --------------------------------------------------- #}
-        {% set grace_sejour = false %}
+        {% set sejour_fenetres = [
+          'binary_sensor.contact_sejour_1',
+          'binary_sensor.contact_sejour_2',
+          'binary_sensor.contact_sejour_3',
+          'binary_sensor.contact_sejour_4'
+        ] %}
+        {% set sejour_open = (sejour_fenetres | select('is_state', 'on') | list | length > 0) %}
+        {% set sejour_timer = states('timer.fenetre_sejour_ouverte_grace') %}
+        {% set grace_sejour = sejour_open and sejour_timer == 'active' %}
 
         {# ---------------------------------------------------
            Décision d’icône (pure lecture)
@@ -53,17 +62,14 @@
           mdi:window-open-variant
         {% elif grace_etage or grace_sejour %}
           mdi:timer-sand
-        {% elif is_state(this.entity_id, 'off') %}
-          mdi:window-closed-variant
         {% else %}
           mdi:window-closed-variant
         {% endif %}
 
       state: >
-        {% set capteurs = [
-          'binary_sensor.capteur_fenetre_entree',
-          'binary_sensor.fenetre_sejour_ouverte_avec_delai',
-          'binary_sensor.fenetre_ouverte_etage_avec_delai'
-        ] %}
+        {% set entree_open = is_state('binary_sensor.contact_fenetre_entree', 'on') %}
+        {% set sejour_ok   = is_state('binary_sensor.fenetre_sejour_ouverte_avec_delai', 'on') %}
+        {% set etage_ok    = is_state('binary_sensor.fenetre_ouverte_etage_avec_delai', 'on') %}
 
-        {{ capteurs | select('is_state', 'on') | list | length > 0 }}
+        {% set ok = entree_open or sejour_ok or etage_ok %}
+        {{ 'on' if ok else 'off' }}

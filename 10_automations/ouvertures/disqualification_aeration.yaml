@@ -1,0 +1,37 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Ouvertures – Clôture aération confirmée (fermeture stable)
+#
+#  ID : 10010000000030
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Réinitialiser le fait métier `input_boolean.aeration_confirmee`
+#     dès que la maison est considérée "fenêtres fermées stable".
+#
+#  🧱 NATURE
+#
+#     - Clôture d’un fait métier
+#     - Déclenchement sur signal canon de fermeture
+#     - Action idempotente (turn_off)
+#
+#  🚫 NE FAIT PAS
+#
+#     - Ne déclenche aucun moteur chauffage
+#     - Ne modifie aucun timer
+# ==========================================================
+
+- id: "10010000000030"
+  alias: "Ouvertures – Clôture aération confirmée (fermeture stable)"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.fenetres_maison_fermees_stable
+      from: "off"
+      to: "on"
+
+  action:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_confirmee

@@ -59,6 +59,11 @@
       entity_id: input_boolean.aeration_confirmee
       state: "off"
 
+    # Tout est fermé
+    - condition: state
+      entity_id: binary_sensor.contact_fenetres_maison
+      state: "off"
+
   ##################################################################
   #  ACTIONS
   ##################################################################

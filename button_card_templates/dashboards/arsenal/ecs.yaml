@@ -41,37 +41,26 @@ carte_ecs_action:
     - operator: template
       value: |
         [[[
-          const t = parseFloat(entity.state);
-          return !isNaN(t) && t < 39;
+          return states['sensor.temperature_ecs_couleur']?.state === 'blue';
         ]]]
       styles:
         card:
-          - background-color: rgba(144, 202, 249, 0.25)
+          - background-color: rgba(33, 150, 243, 0.2)
 
     - operator: template
       value: |
         [[[
-          const t = parseFloat(entity.state);
-          return !isNaN(t) && t >= 39;
+          return states['sensor.temperature_ecs_couleur']?.state === 'orange';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(255, 152, 0, 0.2)
+
+    - operator: template
+      value: |
+        [[[
+          return states['sensor.temperature_ecs_couleur']?.state === 'red';
         ]]]
       styles:
         card:
           - background-color: rgba(244, 67, 54, 0.2)
-
-    - operator: template
-      value: |
-        [[[
-          const st = entity.state;
-          return st !== 'unavailable'
-            && st !== 'unknown'
-            && st !== 'none'
-            && isNaN(parseFloat(st));
-        ]]]
-      styles:
-        card:
-          - background-color: rgba(158, 158, 158, 0.2)
-
-    - operator: default
-      styles:
-        card:
-          - background-color: rgba(158, 158, 158, 0.2)

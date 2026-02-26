@@ -30,7 +30,7 @@ carte_temperature_min_chambres:
 
             const RED   = 'rgba(244, 67, 54, 0.2)';
             const GREEN = 'rgba(76, 175, 80, 0.2)';
-            const BLUE  = 'rgba(144, 202, 249, 0.25)';
+            const BLUE  = 'rgba(33, 150, 243, 0.2)';
             const GREY  = 'rgba(158, 158, 158, 0.2)';
 
             if (

@@ -63,10 +63,10 @@
   trigger:
     - platform: state
       entity_id:
-        - binary_sensor.capteur_fenetre_sejour_1
-        - binary_sensor.capteur_fenetre_sejour_2
-        - binary_sensor.capteur_fenetre_sejour_3
-        - binary_sensor.capteur_fenetre_sejour_4
+        - binary_sensor.contact_sejour_1
+        - binary_sensor.contact_sejour_2
+        - binary_sensor.contact_sejour_3
+        - binary_sensor.contact_sejour_4
       to: "on"
 
   action:

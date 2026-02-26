@@ -20,12 +20,28 @@ aeration_reference_thermique_72:
   triggers_update:
     - input_number.aeration_reference_thermique_utilisee
     - input_number.aeration_delta_t_utilise
+    - input_boolean.aeration_episode_en_cours
+    - input_boolean.chauffage_blocage_aeration
+    - timer.aeration_analyse_delta_t
 
   icon: mdi:thermometer
 
   label: |
     [[[
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const episode = states['input_boolean.aeration_episode_en_cours']?.state;
+      const blocage = states['input_boolean.chauffage_blocage_aeration']?.state;
+      const tstate  = states['timer.aeration_analyse_delta_t']?.state;
+
+      if ([episode, blocage, tstate].some(v => UNAV.includes(v))) return "Indisponible";
+
+      const actif = (episode === 'on') || (blocage === 'on');
+      if (!actif) return "—";
+
+      if (tstate === 'active') {
+        return `Référence/ΔT en attente`;
+      }
 
       const num = (id) => {
         const s = states[id]?.state;

@@ -203,7 +203,7 @@ views:
 
           - type: tile
             entity: input_boolean.blocage_geofencing
-            name: ✅ Protection thermique en absence
+            name: Protection thermique en absence
 
           - type: grid
             square: false

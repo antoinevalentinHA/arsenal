@@ -29,21 +29,14 @@ aeration_m2_fin_episode:
   sequence:
 
     # ------------------------------------------------------
-    # Guard dur : M2 interdit si une ouverture est encore active
-    # (fenetres sans delai OU fenetres avec delai)
+    # Assertion canon : M2 ne doit être appelé que si fermé stable
     # ------------------------------------------------------
     - choose:
 
         - conditions:
-
             - condition: state
-              entity_id: binary_sensor.fenetre_ouverte_maison
-              state: "off"
-
-            - condition: state
-              entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
-              state: "off"
-
+              entity_id: binary_sensor.fenetres_maison_fermees_stable
+              state: "on"
           sequence: []
 
       default:
@@ -52,13 +45,12 @@ aeration_m2_fin_episode:
           data:
             name: "Chauffage - Fin aeration"
             message: >
-              REFUS M2 : ouvertures encore actives.
-              fenetre_ouverte_maison={{ states('binary_sensor.fenetre_ouverte_maison') }},
-              fenetre_ouverte_maison_avec_delai={{ states('binary_sensor.fenetre_ouverte_maison_avec_delai') }}.
+              REFUS M2 : incoherence (fermeture stable non acquise).
+              fenetres_maison_fermees_stable={{ states('binary_sensor.fenetres_maison_fermees_stable') }}.
               Aucune action executee, aucun timer demarre.
             entity_id: input_boolean.chauffage_blocage_aeration
 
-        - stop: "M2 refuse : ouvertures actives"
+        - stop: "M2 refuse : fermeture stable non acquise"
 
     # Fin épisode aération
     - action: input_boolean.turn_off

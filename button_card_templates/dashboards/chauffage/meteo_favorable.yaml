@@ -18,23 +18,13 @@
 # ==========================================================
 
 meteo_favorable_chauffage_72:
-  template: socle_status_label_72
+  template: socle_status_label_sans_nom
 
   entity: binary_sensor.meteo_favorable_chauffage
-  name: "Météo favorable"
 
-  show_state: false
-  show_name: true
+  show_state: true
   show_label: true
   show_icon: true
-  color_type: card
-
-  tap_action:
-    action: none
-  hold_action:
-    action: none
-  double_tap_action:
-    action: none
 
   icon: |
     [[[
@@ -42,6 +32,16 @@ meteo_favorable_chauffage_72:
       if (s === 'on') return 'mdi:weather-sunny';
       if (s === 'off') return 'mdi:weather-cloudy';
       return 'mdi:weather-cloudy-alert';
+    ]]]
+
+  state_display: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const s = entity?.state;
+      if (UNAV.includes(s)) return 'Indispo';
+      if (s === 'on') return 'Favorable';
+      if (s === 'off') return 'Défavorable';
+      return '—';
     ]]]
 
   label: |

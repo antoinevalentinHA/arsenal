@@ -37,22 +37,31 @@ aeration_episode_status_72:
 
   triggers_update:
     - binary_sensor.fenetre_ouverte_maison_avec_delai
-    - binary_sensor.fenetre_ouverte_maison
+    - binary_sensor.contact_fenetres_maison
+    - timer.fenetre_sejour_ouverte_grace
+    - timer.fenetre_chambre_parents_grace
 
   icon: |
     [[[
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
       const qual = states['binary_sensor.fenetre_ouverte_maison_avec_delai']?.state;
-      const brut = states['binary_sensor.fenetre_ouverte_maison']?.state;
+      const brut = states['binary_sensor.contact_fenetres_maison']?.state;
 
-      if (UNAV.includes(qual) || UNAV.includes(brut))
+      const tSej = states['timer.fenetre_sejour_ouverte_grace']?.state;
+      const tPar = states['timer.fenetre_chambre_parents_grace']?.state;
+      const grace = (tSej === 'active') || (tPar === 'active');
+
+      if (UNAV.includes(qual) || UNAV.includes(brut) || UNAV.includes(tSej) || UNAV.includes(tPar))
         return 'mdi:help-circle-outline';
 
       if (qual === 'on')
         return 'mdi:window-open-variant';
 
-      if (brut === 'on')
+      if (brut === 'on' && grace)
         return 'mdi:timer-sand';
+
+      if (brut === 'on')
+        return 'mdi:window-open-variant';
 
       return 'mdi:window-closed-variant';
     ]]]
@@ -61,16 +70,23 @@ aeration_episode_status_72:
     [[[
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
       const qual = states['binary_sensor.fenetre_ouverte_maison_avec_delai']?.state;
-      const brut = states['binary_sensor.fenetre_ouverte_maison']?.state;
+      const brut = states['binary_sensor.contact_fenetres_maison']?.state;
 
-      if (UNAV.includes(qual) || UNAV.includes(brut))
+      const tSej = states['timer.fenetre_sejour_ouverte_grace']?.state;
+      const tPar = states['timer.fenetre_chambre_parents_grace']?.state;
+      const grace = (tSej === 'active') || (tPar === 'active');
+
+      if (UNAV.includes(qual) || UNAV.includes(brut) || UNAV.includes(tSej) || UNAV.includes(tPar))
         return "Indisponible";
 
       if (qual === 'on')
         return "Ouverture qualifiée";
 
+      if (brut === 'on' && grace)
+        return "Ouverture • grâce en cours";
+
       if (brut === 'on')
-        return "Ouverture • délai";
+        return "Ouverture • non qualifiée";
 
       return "Au repos";
     ]]]
@@ -81,16 +97,23 @@ aeration_episode_status_72:
           [[[
             const UNAV = ['unknown','unavailable',undefined,null,'none',''];
             const qual = states['binary_sensor.fenetre_ouverte_maison_avec_delai']?.state;
-            const brut = states['binary_sensor.fenetre_ouverte_maison']?.state;
+            const brut = states['binary_sensor.contact_fenetres_maison']?.state;
 
-            if (UNAV.includes(qual) || UNAV.includes(brut))
-              return "rgba(158, 158, 158, 0.1)";
+            const tSej = states['timer.fenetre_sejour_ouverte_grace']?.state;
+            const tPar = states['timer.fenetre_chambre_parents_grace']?.state;
+            const grace = (tSej === 'active') || (tPar === 'active');
+
+            if (UNAV.includes(qual) || UNAV.includes(brut) || UNAV.includes(tSej) || UNAV.includes(tPar))
+              return "rgba(224, 224, 224, 0.2)";
 
             if (qual === 'on')
-              return "rgba(33, 150, 243, 0.2)";
+              return "rgba(255, 152, 0, 0.2)";
+
+            if (brut === 'on' && grace)
+              return "rgba(255, 235, 59, 0.2)";
 
             if (brut === 'on')
-              return "rgba(255, 235, 59, 0.2)";
+              return "rgba(255, 152, 0, 0.2)";
 
             return "rgba(158, 158, 158, 0.2)";
           ]]]

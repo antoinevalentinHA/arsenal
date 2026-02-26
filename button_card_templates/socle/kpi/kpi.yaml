@@ -41,25 +41,9 @@ socle_kpi:
     card:
       - background-color: |
           [[[
-            const profile = variables?.ui_profile || "meteo_legacy";
+            const profile = variables?.ui_profile || "arsenal";
 
             const palettes = {
-
-              // ----------------------------------------------------------
-              // Palette "meteo_legacy" : RGBA conservés tels qu’observés
-              // (profil par défaut, pour ne PAS changer le rendu météo)
-              // ----------------------------------------------------------
-              meteo_legacy: {
-                red: "rgba(244, 67, 54, 0.2)",
-                yellow: "rgba(255, 235, 59, 0.2)",
-                green: "rgba(76, 175, 80, 0.2)",
-                light_green: "rgba(139, 195, 74, 0.2)",
-                light_blue: "rgba(3, 169, 244, 0.2)",
-                blue: "rgba(144, 202, 249, 0.25)",
-                grey: "rgba(224, 224, 224, 0.2)",
-
-                unavailable: "rgba(158, 158, 158, 0.1)"
-              },
 
               // ----------------------------------------------------------
               // Palette "arsenal" : charte contractuelle Arsenal
@@ -70,9 +54,7 @@ socle_kpi:
                 orange: "rgba(255, 152, 0, 0.2)",
                 blue: "rgba(33, 150, 243, 0.2)",
                 grey: "rgba(158, 158, 158, 0.2)",
-
-                // Jaune conservé (cas existants / legacy)
-                yellow: "rgba(255, 193, 7, 0.25)",
+                yellow: "rgba(255, 235, 59, 0.2)",
 
                 // Compat éventuelle avec des clés météo existantes
                 light_green: "rgba(76, 175, 80, 0.2)",
@@ -98,7 +80,7 @@ socle_kpi:
               }
             };
 
-            const p = palettes[profile] || palettes.meteo_legacy;
+            const p = palettes[profile] || palettes.arsenal;
 
             // ----------------------------------------------------------
             // 1) Robustesse : indispo / entity absente

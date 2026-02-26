@@ -91,58 +91,30 @@
   trigger:
 
     # --------------------------------------------------------------
-    #  M1 - Debut aeration : ouverture fenetres "immediates"
+    #  M1 - Debut aeration : confirmation (fait métier)
     # --------------------------------------------------------------
-    - id: ouverture_immediate
+    - id: aeration_confirmee_on
       platform: state
-      entity_id:
-        - binary_sensor.capteur_fenetre_entree
-        - binary_sensor.capteur_chambre_arnaud
-        - binary_sensor.capteur_chambre_matthieu
-      to: "on"
-
-    # --------------------------------------------------------------
-    #  M1 - Debut aeration : ouverture fenetres "avec delai"
-    #    (ces binary_sensors encapsulent deja les timers de grace)
-    # --------------------------------------------------------------
-    - id: ouverture_differee
-      platform: state
-      entity_id:
-        - binary_sensor.fenetre_sejour_ouverte_avec_delai
-        - binary_sensor.fenetre_chambre_parents_ouverte_avec_delai
-      to: "on"
-
-    # --------------------------------------------------------------
-    #  M1 - Debut aeration : tentative "avec delai" (pendant grâce)
-    # --------------------------------------------------------------
-    - id: ouverture_grace
-      platform: state
-      entity_id: binary_sensor.tentative_aeration_en_grace
+      entity_id: input_boolean.aeration_confirmee
       from: "off"
       to: "on"
 
     # --------------------------------------------------------------
-    #  M2 - Fin aeration : fermeture globale
+    #  M2 - Fin aeration : fermeture globale (CANON)
     # --------------------------------------------------------------
-    - id: fermeture
+    - id: fermeture_stable
       platform: state
-      entity_id: binary_sensor.fenetre_ouverte_maison
-      from: "on"
-      to: "off"
-
-    - id: fermeture
-      platform: state
-      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
-      from: "on"
-      to: "off"
-      for: "00:00:01"
+      entity_id: binary_sensor.fenetres_maison_fermees_stable
+      from: "off"
+      to: "on"
 
     # --------------------------------------------------------------
     #  M5 - Reouverture pendant blocage
     # --------------------------------------------------------------
     - id: reouverture_pendant_blocage
       platform: state
-      entity_id: binary_sensor.fenetre_ouverte_maison
+      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+      from: "off"
       to: "on"
 
     # --------------------------------------------------------------
@@ -210,6 +182,9 @@
         ##################################################################
         - conditions:
 
+            - condition: template
+              value_template: "{{ trigger.id == 'aeration_confirmee_on' }}"
+
             - condition: state
               entity_id: input_boolean.systeme_stable
               state: "on"
@@ -218,29 +193,11 @@
               entity_id: input_boolean.aeration_episode_en_cours
               state: "off"
 
-            - condition: template
-              value_template: >
-                {{ trigger.id in ['ouverture_immediate','ouverture_differee','ouverture_grace'] }}
+            - condition: state
+              entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+              state: "on"
 
           sequence:
-
-            - choose:
-
-                - conditions:
-
-                    - condition: template
-                      value_template: "{{ trigger.id == 'ouverture_immediate' }}"
-
-                    - condition: state
-                      entity_id: input_boolean.aeration_confirmee
-                      state: "off"
-
-                  sequence:
-                    - action: input_boolean.turn_on
-                      target:
-                        entity_id: input_boolean.aeration_confirmee
-
-              default: []
 
             - action: script.aeration_m1_debut_episode
 
@@ -253,10 +210,6 @@
               entity_id: input_boolean.systeme_stable
               state: "on"
 
-            - condition: state
-              entity_id: input_boolean.aeration_confirmee
-              state: "on"
-
             - condition: template
               value_template: >
                 {{
@@ -265,7 +218,7 @@
                 }}
 
             - condition: template
-              value_template: "{{ trigger.id == 'fermeture' }}"
+              value_template: "{{ trigger.id == 'fermeture_stable' }}"
 
             - condition: state
               entity_id: input_boolean.aeration_episode_en_cours
@@ -274,18 +227,6 @@
             - condition: state
               entity_id: input_boolean.aeration_pipeline_arme
               state: "on"
-
-            - condition: template
-              value_template: "{{ trigger.entity_id in ['binary_sensor.fenetre_ouverte_maison','binary_sensor.fenetre_ouverte_maison_avec_delai'] }}"
-
-            - condition: state
-              entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
-              state: "off"
-              for: "00:00:05"
-
-            - condition: state
-              entity_id: binary_sensor.fenetre_ouverte_maison
-              state: "off"
 
           sequence:
             - action: script.aeration_m2_fin_episode
@@ -364,8 +305,28 @@
               state: "on"
 
             - condition: state
-              entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+              entity_id: binary_sensor.contact_fenetres_maison
               state: "on"
 
           sequence:
             - action: script.aeration_m5_reouverture_pendant_blocage
+
+        ##################################################################
+        #  DEFAUT
+        ##################################################################
+
+      default:
+
+        - action: logbook.log
+          data:
+            name: "Aération - Pipeline"
+            message: >
+              ROUTAGE : aucune branche ne matche.
+              trigger_id={{ trigger.id }}.
+              episode={{ states('input_boolean.aeration_episode_en_cours') }}.
+              confirmee={{ states('input_boolean.aeration_confirmee') }}.
+              fermees_stable={{ states('binary_sensor.fenetres_maison_fermees_stable') }}.
+              pipeline_arme={{ states('input_boolean.aeration_pipeline_arme') }}.
+            entity_id: input_boolean.aeration_episode_en_cours
+
+        - stop: "Pipeline aération : aucune branche ne matche"

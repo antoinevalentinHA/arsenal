@@ -16,10 +16,8 @@
       device_class: opening
 
       icon: >
-        {% if is_state('binary_sensor.ouvertures_maison', 'on') %}
+        {% if is_state(this.entity_id, 'on') %}
           mdi:window-open-variant
-        {% elif is_state('binary_sensor.ouvertures_maison', 'off') %}
-          mdi:window-closed-variant
         {% else %}
           mdi:window-closed-variant
         {% endif %}

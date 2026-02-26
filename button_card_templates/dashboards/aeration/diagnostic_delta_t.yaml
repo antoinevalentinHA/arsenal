@@ -6,7 +6,6 @@
 #   Indiquer si une chute thermique significative a été observée
 #   via aeration_delta_t_utilise (monotone max épisode).
 # ==========================================================
-
 aeration_deltat_chute_72:
   template: socle_status_label_72
 
@@ -18,14 +17,30 @@ aeration_deltat_chute_72:
 
   triggers_update:
     - input_number.aeration_delta_t_utilise
+    - input_boolean.aeration_episode_en_cours
+    - input_boolean.chauffage_blocage_aeration
+    - timer.aeration_analyse_delta_t
 
   icon: mdi:thermometer-chevron-down
 
   label: |
     [[[
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
-      const s = states['input_number.aeration_delta_t_utilise']?.state;
 
+      const episode = states['input_boolean.aeration_episode_en_cours']?.state;
+      const blocage = states['input_boolean.chauffage_blocage_aeration']?.state;
+      const tstate  = states['timer.aeration_analyse_delta_t']?.state;
+
+      if ([episode, blocage, tstate].some(v => UNAV.includes(v))) return "Indisponible";
+
+      const actif = (episode === 'on') || (blocage === 'on');
+      if (!actif) return "—";
+
+      if (tstate === 'active') {
+        return `Analyse ΔT en attente`;
+      }
+
+      const s = states['input_number.aeration_delta_t_utilise']?.state;
       if (UNAV.includes(s)) return "Indisponible";
 
       const v = parseFloat(s);
@@ -43,14 +58,28 @@ aeration_deltat_chute_72:
       - background-color: |
           [[[
             const UNAV = ['unknown','unavailable',undefined,null,'none',''];
-            const s = states['input_number.aeration_delta_t_utilise']?.state;
 
+            const episode = states['input_boolean.aeration_episode_en_cours']?.state;
+            const blocage = states['input_boolean.chauffage_blocage_aeration']?.state;
+            const tstate  = states['timer.aeration_analyse_delta_t']?.state;
+
+            if ([episode, blocage, tstate].some(v => UNAV.includes(v)))
+              return "rgba(224, 224, 224, 0.2)";
+
+            const actif = (episode === 'on') || (blocage === 'on');
+            if (!actif)
+              return "rgba(158, 158, 158, 0.2)";
+
+            if (tstate === 'active')
+              return "rgba(33, 150, 243, 0.2)";
+
+            const s = states['input_number.aeration_delta_t_utilise']?.state;
             if (UNAV.includes(s))
-              return "rgba(158, 158, 158, 0.1)";
+              return "rgba(224, 224, 224, 0.2)";
 
             const v = parseFloat(s);
             if (Number.isNaN(v))
-              return "rgba(158, 158, 158, 0.1)";
+              return "rgba(224, 224, 224, 0.2)";
 
             if (v === 0)
               return "rgba(76, 175, 80, 0.2)";

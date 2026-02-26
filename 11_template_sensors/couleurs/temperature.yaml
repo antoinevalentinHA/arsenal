@@ -67,7 +67,6 @@
 #
 # ==========================================================
 
-
 - trigger:
     - platform: state
       entity_id:
@@ -108,6 +107,24 @@
         {% else %}
           red
         {% endif %}
+      attributes:
+        reason: >
+          {% set suffixe = this.entity_id | replace('sensor.couleur_temperature_', '') %}
+          {% set src = 'sensor.temperature_' ~ suffixe %}
+          {% set src_bas = 'sensor.temperature_seuil_bas_' ~ suffixe %}
+          {% set src_haut = 'sensor.temperature_seuil_haut_' ~ suffixe %}
+          {% set t_raw = states(src) %}
+          {% set t = t_raw | replace(',', '.') | float(999) %}
+          {% set bas = states(src_bas) | replace(',', '.') | float(0) %}
+          {% set haut = states(src_haut) | replace(',', '.') | float(0) %}
+
+          {% if t_raw in ['unknown', 'unavailable', None] or t == 999 %}
+            unavailable
+          {% elif bas == 0 or haut == 0 or bas >= haut %}
+            invalid_thresholds
+          {% else %}
+            ok
+          {% endif %}
 
 - trigger:
     - platform: state

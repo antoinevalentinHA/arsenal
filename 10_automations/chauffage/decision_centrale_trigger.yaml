@@ -92,19 +92,23 @@
     - platform: state
       entity_id: input_boolean.chauffage_standby_force
 
-    # Aération épisode en cours (entrée / sortie)
-    - platform: state
-      entity_id: input_boolean.aeration_episode_en_cours
-      id: "aeration_episode"
-
     # Blocage post-aération (entrée / sortie)
     - platform: state
       entity_id: input_boolean.chauffage_blocage_aeration
 
-    # Fenêtres qualifiées avec délai
+    # Fenêtres qualifiées avec délai (ouverture qualifiée)
     - platform: state
       entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
-      id: "maison_delai"
+      from: "off"
+      to: "on"
+      id: "maison_delai_on"
+
+    # Fenêtres qualifiées avec délai (fin qualifiée)
+    - platform: state
+      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+      from: "on"
+      to: "off"
+      id: "maison_delai_off"
 
     # Poêle actif
     - platform: state
@@ -141,25 +145,6 @@
     - platform: state
       entity_id: sensor.chauffage_autorisation_cible
       id: "autorisation_thermique_change"
-
-
-    # ======================================================
-    # 🔥 GESTION FENÊTRES — FINS DE DÉLAIS
-    # ======================================================
-
-    # Fin délai séjour
-    - platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.fenetre_sejour_ouverte_grace
-      id: "delai_sejour_expire"
-
-    # Fin délai parents
-    - platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.fenetre_chambre_parents_grace
-      id: "delai_parents_expire"
 
 
     # ======================================================
@@ -205,58 +190,6 @@
 
 
   action:
-
-    # ==================================================
-    #  🧱 FILTRE — ÉPISODE AÉRATION NON QUALIFIÉ
-    #     - ouverture tentative  (off -> on, confirmee off)
-    #     - clôture tentative    (on -> off, confirmee off)
-    # ==================================================
-    - choose:
-
-        # --------------------------
-        # Tentative : ouverture
-        # --------------------------
-        - conditions:
-            - condition: template
-              value_template: >
-                {{
-                  trigger.platform == 'state'
-                  and trigger.entity_id == 'input_boolean.aeration_episode_en_cours'
-                  and trigger.from_state is not none
-                  and trigger.to_state is not none
-                  and trigger.from_state.state == 'off'
-                  and trigger.to_state.state == 'on'
-                }}
-            - condition: state
-              entity_id: input_boolean.aeration_confirmee
-              state: "off"
-          sequence:
-            - stop: "Aération non qualifiée (tentative) -> pas de décision chauffage (ouverture)."
-
-        # --------------------------
-        # Tentative : fermeture
-        # --------------------------
-        - conditions:
-            - condition: template
-              value_template: >
-                {{
-                  trigger.platform == 'state'
-                  and trigger.entity_id == 'input_boolean.aeration_episode_en_cours'
-                  and trigger.from_state is not none
-                  and trigger.to_state is not none
-                  and trigger.from_state.state == 'on'
-                  and trigger.to_state.state == 'off'
-                }}
-            - condition: state
-              entity_id: input_boolean.aeration_confirmee
-              state: "off"
-            - condition: state
-              entity_id: input_boolean.chauffage_blocage_aeration
-              state: "off"
-          sequence:
-            - stop: "Aération non qualifiée (tentative) -> pas de décision chauffage (fermeture)."
-
-      default: []
 
     # ==================================================
     #  🕒 STABILISATION CONDITIONNELLE

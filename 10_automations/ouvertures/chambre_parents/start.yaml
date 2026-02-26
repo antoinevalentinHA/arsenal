@@ -63,9 +63,9 @@
   trigger:
     - platform: state
       entity_id:
-        - binary_sensor.capteur_chambre_parents_droite
-        - binary_sensor.capteur_chambre_parents_gauche
-        - binary_sensor.capteur_chambre_parents_milieu
+        - binary_sensor.contact_chambre_parents_droite
+        - binary_sensor.contact_chambre_parents_gauche
+        - binary_sensor.contact_chambre_parents_milieu
       to: "on"
 
   action:

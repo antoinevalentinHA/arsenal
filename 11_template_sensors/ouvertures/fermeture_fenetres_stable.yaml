@@ -1,0 +1,24 @@
+# ==========================================================
+# 🧠 ARSENAL — CANONS OUVERTURES (N2)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Fournir des signaux CANONS stables pour l’orchestration :
+#   - fermeture stable (anti OFF furtif)
+#
+# 🧱 PRINCIPE
+#   - Dépend UNIQUEMENT de N2 (contact_fenetres_maison)
+#   - Stabilisation temporelle localisée (pas de guards pipeline)
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Fenetres Maison — Fermees stable"
+      unique_id: fenetres_maison_fermees_stable
+      state: >
+        {{ is_state('binary_sensor.contact_fenetres_maison', 'off') }}
+
+      delay_on: "00:00:02"
+
+      attributes:
+        source_entity: "binary_sensor.contact_fenetres_maison"
+        delay_on: "00:00:02"

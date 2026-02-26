@@ -3,12 +3,13 @@
 # ----------------------------------------------------------
 # 💡 Logique Arsenal :
 #   ON SEULEMENT si :
-#     1) une fenêtre parents est ouverte
-#     2) ET le timer fenetre_chambre_parents_grace est idle
+#     1) une fenêtre parents est ouverte (N1 : contact_*)
+#     2) ET timer = idle
+#     3) ET timer a changé d’état APRES la dernière ouverture
 #
-#   Pendant le délai (active) → reste OFF.
-#
-# 📍 Entité : binary_sensor.fenetre_chambre_parents_ouverte_avec_delai
+#   Pendant la grâce :
+#     - timer devient active puis revient idle
+#     - le capteur reste OFF jusqu’au retour idle (condition 3)
 # ==========================================================
 
 - binary_sensor:
@@ -20,31 +21,59 @@
 
       icon: >
         {% set fenetres = [
-          'binary_sensor.capteur_chambre_parents_droite',
-          'binary_sensor.capteur_chambre_parents_gauche',
-          'binary_sensor.capteur_chambre_parents_milieu'
+          'binary_sensor.contact_chambre_parents_droite',
+          'binary_sensor.contact_chambre_parents_gauche',
+          'binary_sensor.contact_chambre_parents_milieu'
         ] %}
-        {% set any_open = (fenetres | select('is_state', 'on') | list | length > 0) %}
-        {% set timer = states('timer.fenetre_chambre_parents_grace') %}
+
+        {% set open_entities = fenetres | select('is_state','on') | list %}
+        {% set any_open = (open_entities | length > 0) %}
+
+        {% set t = 'timer.fenetre_chambre_parents_grace' %}
+        {% set t_state = states(t) %}
+        {% set t_lc = as_timestamp(states[t].last_changed) if states[t] is not none else 0 %}
+
+        {% set last_open = 0 %}
+        {% for e in open_entities %}
+          {% set lc = as_timestamp(states[e].last_changed) %}
+          {% if lc > last_open %}
+            {% set last_open = lc %}
+          {% endif %}
+        {% endfor %}
+
+        {% set grace_pending = any_open and (t_state == 'active' or (t_state == 'idle' and t_lc <= last_open)) %}
 
         {% if is_state(this.entity_id, 'on') %}
           mdi:window-open-variant
-        {% elif any_open and timer == 'active' %}
+        {% elif grace_pending %}
           mdi:timer-sand
-        {% elif is_state(this.entity_id, 'off') %}
-          mdi:window-closed-variant
+        {% elif any_open %}
+          mdi:window-open-variant
         {% else %}
           mdi:window-closed-variant
         {% endif %}
 
       state: >
         {% set fenetres = [
-          'binary_sensor.capteur_chambre_parents_droite',
-          'binary_sensor.capteur_chambre_parents_gauche',
-          'binary_sensor.capteur_chambre_parents_milieu'
+          'binary_sensor.contact_chambre_parents_droite',
+          'binary_sensor.contact_chambre_parents_gauche',
+          'binary_sensor.contact_chambre_parents_milieu'
         ] %}
 
-        {{
-          (fenetres | select('is_state', 'on') | list | length > 0)
-          and is_state('timer.fenetre_chambre_parents_grace', 'idle')
-        }}
+        {% set open_entities = fenetres | select('is_state','on') | list %}
+        {% set any_open = (open_entities | length > 0) %}
+
+        {% set t = 'timer.fenetre_chambre_parents_grace' %}
+        {% set t_state = states(t) %}
+        {% set t_lc = as_timestamp(states[t].last_changed) if states[t] is not none else 0 %}
+
+        {% set last_open = 0 %}
+        {% for e in open_entities %}
+          {% set lc = as_timestamp(states[e].last_changed) %}
+          {% if lc > last_open %}
+            {% set last_open = lc %}
+          {% endif %}
+        {% endfor %}
+
+        {% set ok = any_open and t_state == 'idle' and t_lc > last_open %}
+        {{ 'on' if ok else 'off' }}
