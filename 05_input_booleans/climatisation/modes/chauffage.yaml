@@ -36,6 +36,5 @@
 #       explicitement autorisé
 # ==========================================================
 
-
 chauffage_clim_active_en_hiver:
   name: Chauffage activé

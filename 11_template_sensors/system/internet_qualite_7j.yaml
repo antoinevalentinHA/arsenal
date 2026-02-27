@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Qualité connexion Internet — 7 jours glissants
+# ----------------------------------------------------------
+# Domaine : Connectivité / Observabilité
+# Couche  : Interprétation (template modern)
+#
+# 🎯 Rôle :
+#   Détecter un FAI réellement instable.
+#   Les micro-coupures ne sont pas un objectif en soi.
+#
+# 📌 Sources (history_stats) :
+#   - sensor.internet_downtime_heures_7j
+#   - sensor.internet_coupures_count_7j
+# ==========================================================
+
+- sensor:
+    - name: "internet_qualite_7j"
+      unique_id: internet_qualite_7j
+      state: >
+        {% set UNAV = ['unknown','unavailable','none','None',''] %}
+
+        {% set h = states('sensor.internet_downtime_heures_7j') %}
+        {% set c = states('sensor.internet_coupures_count_7j') %}
+
+        {% if h in UNAV or c in UNAV %}
+          unknown
+        {% else %}
+          {% set downtime_min = (h | float(0)) * 60 %}
+          {% set coupures = c | int(0) %}
+
+          {% if downtime_min >= 60 or coupures >= 10 %}
+            instable
+          {% elif downtime_min >= 10 or coupures >= 3 %}
+            degrade
+          {% else %}
+            ok
+          {% endif %}
+        {% endif %}
+      attributes:
+        window_days: 7
+        downtime_minutes: >
+          {% set h = states('sensor.internet_downtime_heures_7j') %}
+          {% if h in ['unknown','unavailable','none','None',''] %}
+            none
+          {% else %}
+            {{ ((h | float(0)) * 60) | round(1) }}
+          {% endif %}
+        coupures_count: >
+          {% set c = states('sensor.internet_coupures_count_7j') %}
+          {% if c in ['unknown','unavailable','none','None',''] %}
+            none
+          {% else %}
+            {{ c | int(0) }}
+          {% endif %}
+        source_entity: binary_sensor.internet_disponible

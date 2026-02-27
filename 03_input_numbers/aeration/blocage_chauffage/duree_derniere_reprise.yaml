@@ -1,8 +1,0 @@
-reprise_thermique_duree_last_temp:
-  name: Reprise thermique duree derniere sequence
-  min: 0
-  max: 360
-  step: 1
-  unit_of_measurement: min
-  mode: box
-  icon: mdi:timer-outline

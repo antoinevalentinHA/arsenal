@@ -1,0 +1,28 @@
+# ==========================================================
+#  TEMPLATE SENSOR : État Dashboard – Voiture
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Indiquer si une recharge est en cours
+#     afin de colorer le bouton du menu Navigation.
+#
+#  🎯 États :
+#     - alert   → Recharge (rouge)
+#     - off → Etat normal (gris)
+# ==========================================================
+
+
+- sensor:
+
+    - name: "etat_voiture_dashboard"
+      unique_id: etat_voiture_dashboard
+      state: >
+        {% set UNAV = ['unknown','unavailable','none','None',''] %}
+        {% set etat = states('sensor.audi_e_tron_etat_de_charge_local') %}
+
+        {% if etat in UNAV %}
+          off
+        {% elif etat == 'charging' %}
+          alert
+        {% else %}
+          off
+        {% endif %}

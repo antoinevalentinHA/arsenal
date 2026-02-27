@@ -1,0 +1,51 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Clim – Application consigne HEAT (quand pertinent)
+#
+#  ID : 10030000000107
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Appliquer input_number.consigne_heat_clim a climate.clim
+#     uniquement lorsque la climatisation est en mode HEAT.
+#
+#  🧱 PRINCIPE
+#     - Si on entre en HEAT -> appliquer la consigne
+#     - Si on ajuste le slider alors qu'on est deja en HEAT -> appliquer
+#
+#  🚫 INTERDIT
+#     - Ne force pas le mode HEAT
+#     - Ne force pas l'allumage si OFF
+# ==========================================================
+
+- id: "10030000000107"
+  alias: "Clim - Application consigne HEAT (quand pertinent)"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.clim_mode_local
+      to: "heat"
+      id: "enter_heat"
+
+    - platform: state
+      entity_id: input_number.consigne_heat_clim
+      id: "slider"
+
+  condition:
+    - condition: state
+      entity_id: sensor.clim_mode_local
+      state: "heat"
+
+    - condition: template
+      alias: "Eviter envoi inutile"
+      value_template: >
+        {% set cible = states('input_number.consigne_heat_clim') | float(99) %}
+        {% set actuelle = state_attr('climate.clim', 'temperature') | float(99) %}
+        {{ cible not in [0, 99] and actuelle not in [0, 99] and actuelle != cible }}
+
+  action:
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.clim
+      data:
+        temperature: "{{ states('input_number.consigne_heat_clim') | float }}"

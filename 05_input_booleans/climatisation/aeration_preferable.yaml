@@ -34,7 +34,6 @@
 #       être consciemment contournée
 # ==========================================================
 
-
 clim_ignore_aeration:
   name: Ignorer le garde-fou aération
   icon: mdi:tune

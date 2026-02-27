@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — SENSOR PLATFORMS
+#     Historique disponibilité Internet — Fenêtre 7 jours
+# ----------------------------------------------------------
+# Domaine : Connectivité / Observabilité
+# Couche  : Plateformes natives (history_stats)
+# Statut  : Mesure glissante — Aucun calcul métier
+#
+# 🎯 Rôle :
+#   Exposer des métriques objectives sur 7 jours glissants :
+#
+#     - Durée cumulée d’indisponibilité (heures)
+#     - Nombre de coupures (transitions vers off)
+#
+# 📌 Source :
+#   binary_sensor.internet_disponible
+#     on  = Internet disponible
+#     off = Internet indisponible
+#
+# ⚠️ Invariants :
+#   - Aucune logique métier
+#   - Aucun template custom
+#   - Dépend strictement du recorder
+#   - purge_keep_days >= 7 requis
+# ==========================================================
+
+- platform: history_stats
+  name: "internet_downtime_heures_7j"
+  entity_id: binary_sensor.internet_disponible
+  state: "off"
+  type: time
+  end: "{{ now() }}"
+  start: "{{ now() - timedelta(days=7) }}"
+
+- platform: history_stats
+  name: "internet_coupures_count_7j"
+  entity_id: binary_sensor.internet_disponible
+  state: "off"
+  type: count
+  end: "{{ now() }}"
+  start: "{{ now() - timedelta(days=7) }}"

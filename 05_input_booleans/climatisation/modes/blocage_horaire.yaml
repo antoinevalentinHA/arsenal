@@ -36,7 +36,6 @@
 #       être explicitement activée ou neutralisée
 # ==========================================================
 
-
 clim_blocage_horaire_actif:
   name: "Blocage horaire clim actif"
   icon: mdi:timer-off

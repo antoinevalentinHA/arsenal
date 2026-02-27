@@ -32,7 +32,6 @@
 #   - Kilomètres (km)
 # ==========================================================
 
-
 autonomie_audi_etron_full:
   name: "Autonomie A3 e-tron (pleine charge)"
   min: 0

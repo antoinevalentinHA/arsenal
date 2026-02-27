@@ -37,7 +37,6 @@
 #       disposer de son autorisation propre
 # ==========================================================
 
-
 auto_deshumidification_active:
   name: "Déshumidification automatique"
   icon: mdi:air-humidifier-off

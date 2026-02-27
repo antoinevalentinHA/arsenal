@@ -1,5 +1,5 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Consigne clim chauffage (hiver)
+# 🧠 ARSENAL — INPUT_NUMBER : Consigne Heat Clim
 # ----------------------------------------------------------
 # 🎯 Rôle :
 #    Définir la température CIBLE envoyée à la climatisation
@@ -36,9 +36,8 @@
 #    - Consigne unique clim chauffage
 # ==========================================================
 
-
-clim_hiver_temperature_consigne:
-  name: Consigne température clim chauffage
+consigne_heat_clim:
+  name: Consigne Heat Clim
   min: 18
   max: 25
   step: 0.5

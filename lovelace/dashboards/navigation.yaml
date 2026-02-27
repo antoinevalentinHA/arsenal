@@ -186,15 +186,14 @@ views:
                         - color: '#E91E63'
 
                   - type: custom:button-card
-                    template: bouton_navigation
+                    template: bouton_navigation_dynamique
+                    variables: 
+                      etat_dashboard: sensor.etat_voiture_dashboard
                     name: Audi
                     icon: mdi:car
                     tap_action:
                       action: navigate
                       navigation_path: /audi-dashboard/audi_a3_e-tron
-                    styles:
-                      icon:
-                        - color: '#192D64'
 
                   - type: custom:button-card
                     template: bouton_navigation

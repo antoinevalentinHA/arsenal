@@ -1,0 +1,29 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Internet dégradé ou instable — 7 jours glissants
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Drapeau d'exploitation :
+#     - on  si qualité = degrade ou instable
+#     - off si qualité = ok
+#
+# 📌 Source :
+#   - sensor.internet_qualite_7j
+# ==========================================================
+
+- binary_sensor:
+    - name: "internet_instable_7j"
+      unique_id: internet_instable_7j
+      state: >
+        {{ states('sensor.internet_qualite_7j') in ['degrade','instable'] }}
+      icon: >
+        {% set q = states('sensor.internet_qualite_7j') %}
+        {% if q == 'ok' %}
+          mdi:check-network
+        {% elif q == 'degrade' %}
+          mdi:network-strength-2-alert
+        {% elif q == 'instable' %}
+          mdi:network-strength-off-outline
+        {% else %}
+          mdi:help-network
+        {% endif %}

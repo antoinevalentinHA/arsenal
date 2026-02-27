@@ -38,6 +38,5 @@
 #       il ne les déduit pas implicitement
 # ==========================================================
 
-
 aeration_episode_en_cours:
   name: "aeration_episode_en_cours"

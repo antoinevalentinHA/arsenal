@@ -33,23 +33,6 @@
 #   - Degrés Celsius (°C)
 # ==========================================================
 
-
-chauffage_consigne_presence:
-  name: Consigne présence
-  min: 17
-  max: 25
-  step: 1
-  unit_of_measurement: "°C"
-  mode: box
-
-chauffage_consigne_absence:
-  name: Consigne absence
-  min: 12
-  max: 20
-  step: 1
-  unit_of_measurement: "°C"
-  mode: box
-
 chauffage_consigne_confort:
   name: Consigne confort
   min: 17

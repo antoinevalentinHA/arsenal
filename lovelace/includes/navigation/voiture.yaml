@@ -16,7 +16,7 @@ cards:
   - type: custom:button-card
     template: bouton_navigation_badge_carre
     name: Aperçu
-    icon: mdi:magnify
+    icon: mdi:car
     tap_action:
       action: navigate
       navigation_path: /audi-dashboard/audi_a3_e-tron

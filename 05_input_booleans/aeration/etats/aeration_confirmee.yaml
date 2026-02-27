@@ -31,7 +31,6 @@
 #         détection → temporisation → mémoire → décision
 # ==========================================================
 
-
 aeration_confirmee:
   name: "Aeration confirmee"
   icon: mdi:check-circle

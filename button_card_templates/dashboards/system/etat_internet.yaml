@@ -19,12 +19,45 @@ carte_etat_internet:
     confirmation:
       text: Es-tu sûr de vouloir redémarrer la box internet ?
 
+  state_display: |
+    [[[
+      const dispo = entity?.state;
+      const qual  = states['sensor.internet_qualite_7j']?.state;
+
+      if (dispo === 'off') return 'Déconnecté';
+
+      if (dispo === 'on') {
+        if (qual === 'degrade')  return 'Connecté • Dégradé (7j)';
+        if (qual === 'instable') return 'Connecté • Instable (7j)';
+        return 'Connecté';
+      }
+
+      return 'Indisponible';
+    ]]]
+
   styles:
     card:
       - background-color: |
           [[[
-            const s = entity?.state;
-            if (s === "on")  return "rgba(76, 175, 80, 0.2)";   // 🟢 Internet OK
-            if (s === "off") return "rgba(244, 67, 54, 0.2)";   // 🔴 Internet KO
-            return "rgba(158, 158, 158, 0.2)";                  // ⚪ état inconnu
+            const dispo = entity?.state;
+            const qual  = states['sensor.internet_qualite_7j']?.state;
+
+            // 🔴 Internet down maintenant
+            if (dispo === "off")
+              return "rgba(244, 67, 54, 0.2)";
+
+            // 🟠 Dégradé sur 7 jours
+            if (qual === "degrade")
+              return "rgba(255, 152, 0, 0.2)";
+
+            // 🔴 Instable structurel
+            if (qual === "instable")
+              return "rgba(244, 67, 54, 0.2)";
+
+            // 🟢 Nominal
+            if (dispo === "on")
+              return "rgba(76, 175, 80, 0.2)";
+
+            // Gris neutre
+            return "rgba(158, 158, 158, 0.2)";
           ]]]

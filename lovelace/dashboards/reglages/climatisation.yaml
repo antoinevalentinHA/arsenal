@@ -131,13 +131,9 @@ views:
               - type: numeric-input
                 style: buttons
 
-          - type: custom:button-card
-            template: sub_section_header
-            name: Consigne
-
           - type: tile
-            entity: input_number.clim_hiver_seuil_temperature_exterieure
-            name: T° ext. mini
+            entity: input_number.consigne_heat_clim
+            name: Consigne
             features_position: inline
             features:
               - type: numeric-input
