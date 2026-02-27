@@ -1,0 +1,19 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER :
+#     Aération — Suspension active (M5/M6)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Matérialiser explicitement qu’une suspension des échéances
+#   est active suite à une réouverture pendant blocage.
+#
+#   - Activé exclusivement par M5
+#   - Désactivé exclusivement par M6
+#
+# 🛡️ INVARIANTS
+#   - Ne doit jamais être manipulé ailleurs
+#   - Sert d’autorisation stricte pour M6
+# ==========================================================
+
+aeration_suspension_active:
+  name: "Aération — Suspension active"
+  icon: mdi:pause-circle

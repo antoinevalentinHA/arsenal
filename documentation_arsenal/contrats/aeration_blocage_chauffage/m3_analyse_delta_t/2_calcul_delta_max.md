@@ -7,6 +7,9 @@
 
 Calculer le ΔT maximal (`delta_max`) sur le périmètre défini.
 
+Le calcul est fondé exclusivement sur les snapshots
+T_REF figés en M1.
+
 ---
 
 ## 📦 SOURCES UTILISÉES
@@ -24,11 +27,34 @@ Chaque valeur est convertie via `| float(0)`.
 
 ---
 
-## 🧩 PROPRIÉTÉS
+## 🧮 MÉTHODE
 
-- Robustesse :
-  toute valeur indisponible est traitée comme 0.
-- `delta_max` est calculé comme un maximum simple.
+- Chaque capteur ΔT représente :
+  température courante − référence snapshot M1.
+- Les valeurs indisponibles sont converties à 0.
+- `delta_max` est un maximum simple.
+- Aucun filtrage statistique.
+- Aucun lissage.
+- Aucune moyenne.
+
+---
+
+## 🛡️ ROBUSTESSE
+
+Si un capteur est :
+
+- unknown
+- unavailable
+- none
+- None
+- ""
+
+→ il est traité comme 0.
+
+Conséquence structurelle :
+
+Une indisponibilité ne peut jamais
+produire une prolongation de blocage.
 
 ---
 
@@ -36,9 +62,24 @@ Chaque valeur est convertie via `| float(0)`.
 
 M3 publie :
 
-- `input_number.delta_t_max_decisionnel_aeration = delta_max (arrondi 2 décimales)`
+- `input_number.delta_t_max_decisionnel_aeration`
+  = `delta_max` (arrondi à 2 décimales)
 
-Ce `input_number` est un artefact de diagnostic / décision.
-Il n’implique aucune action thermique.
+Ce `input_number` :
+
+- est un artefact décisionnel,
+- ne déclenche aucune action directe,
+- permet l’audit a posteriori de la décision.
+
+---
+
+## 🛑 INTERDIT
+
+Le calcul ne doit jamais :
+
+- modifier les snapshots T_REF,
+- utiliser une référence dynamique,
+- intégrer une moyenne temporelle,
+- introduire un biais correctif.
 
 # ==========================================================

@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     Aération — M6 — Fermeture après réouverture (reprise timers)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Lorsqu’une réouverture a eu lieu pendant blocage (M5),
+#   ce script relance les échéances uniquement après une
+#   fermeture globale stable :
+#     - reprise analyse ΔT
+#     - reprise fin de blocage horaire
+#
+# 🧩 PRINCIPE
+#   - Les timers ne doivent pas courir fenêtre ouverte.
+#   - La reprise se fait à partir de la fermeture stable.
+#
+# 🛡️ ROBUSTESSE
+#   - Zéro wait
+#   - Reprogrammation simple (cap)
+# ==========================================================
+
+aeration_m6_fermeture_post_reouverture:
+  alias: "Aération — M6 — Fermeture après réouverture"
+  mode: single
+
+  sequence:
+
+    - variables:
+        cap_min: "{{ states('input_number.delai_stabilisation_capteurs') | int(0) }}"
+        cap_s: "{{ (cap_min | int(0)) * 60 }}"
+        cap_hh: "{{ (cap_s // 3600) | int }}"
+        cap_mm: "{{ ((cap_s % 3600) // 60) | int }}"
+        cap_ss: "{{ (cap_s % 60) | int }}"
+        cap_duration: "{{ '%02d:%02d:%02d' | format(cap_hh, cap_mm, cap_ss) }}"
+
+    - action: timer.start
+      target:
+        entity_id: timer.aeration_analyse_delta_t
+      data:
+        duration: "{{ cap_duration }}"
+
+    - action: timer.start
+      target:
+        entity_id: timer.aeration_blocage
+      data:
+        duration: "{{ cap_duration }}"
+
+    # ------------------------------------------------------
+    # Fin de suspension (consommation M6)
+    # ------------------------------------------------------
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_suspension_active

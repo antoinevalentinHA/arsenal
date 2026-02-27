@@ -92,6 +92,16 @@ L’événement `timer.finished` :
 
 C’est le pipeline maître qui décide si l’étape est autorisée.
 
+# 🔒 VALIDATION STRUCTURELLE OBLIGATOIRE
+
+Un événement `timer.finished` ne peut être interprété
+que si l’enveloppe est fermée :
+
+- binary_sensor.contact_fenetres_maison = off
+
+Un timer atteint alors que l’enveloppe est ouverte
+ne doit jamais entraîner une levée ou une analyse.
+
 ---
 
 # 🧱 7️⃣ LIEN AVEC LES DATETIMES
@@ -103,6 +113,48 @@ Les timers et les input_datetime doivent rester cohérents :
 - un blocage levé implique :
   - timers annulés
   - datetimes neutralisés
+
+---
+
+# 🧊 8️⃣ SUSPENSION TEMPORAIRE AUTORISÉE (M5)
+
+Un timer peut être suspendu temporairement
+lors d’une réouverture pendant blocage (M5).
+
+Suspension signifie :
+
+- timer annulé ou redémarré avec une durée ≥ remaining,
+- aucune modification des échéances datetime cibles,
+- aucune levée implicite du blocage.
+
+La suspension :
+
+- ne constitue pas une réduction,
+- ne constitue pas une clôture,
+- ne modifie pas la monotonicité normative définie en M2/M3.
+
+La reprise relève exclusivement de M6.
+
+---
+
+# 🔁 9️⃣ REPRISE CONTRÔLÉE (M6)
+
+Lors de la refermeture après suspension :
+
+- les timers peuvent être redémarrés,
+- uniquement sur la base des échéances datetime existantes,
+- avec une durée calculée comme :
+  max(0, échéance - now).
+
+La reprise :
+
+- ne peut jamais créer une nouvelle échéance,
+- ne peut jamais prolonger une échéance,
+- ne peut jamais réduire une échéance,
+- ne peut jamais lever le blocage.
+
+M6 restaure l’exécution.
+Il ne modifie jamais la cible normative.
 
 ---
 

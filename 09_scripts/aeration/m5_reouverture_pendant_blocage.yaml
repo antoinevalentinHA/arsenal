@@ -1,18 +1,34 @@
 # ==========================================================
 # 🧠 ARSENAL — SCRIPT :
-#     Aération — M5 — Réouverture pendant blocage (trace)
+#     Aération — M5 — Réouverture pendant blocage (réarmement monotone)
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Tracer une réouverture de fenêtre pendant un blocage
-#   chauffage lié à une aération :
+#   Gérer une réouverture qualifiée de fenêtre pendant
+#   un blocage chauffage lié à une aération :
 #     - horodatage de la dernière réouverture
+#     - réarmement monotone des timers en cours
 #
 # 🧩 PRINCIPE
-#   Informatif : aucune décision, aucune action extérieure.
-#   Appelé par le pipeline uniquement lorsque M5 est autorisé.
+#   Orchestration locale des échéances :
+#     - timer.aeration_analyse_delta_t
+#     - timer.aeration_blocage
+#
+#   Objectif :
+#     - éviter la perte d’un événement timer.finished (one-shot),
+#     - empêcher la fin prématurée du blocage après réouverture.
+#
+#   Règle monotone :
+#     - une échéance ne peut jamais être raccourcie,
+#     - elle peut uniquement être maintenue ou repoussée.
+#
+# 🚫 CE QUE CE SCRIPT NE FAIT PAS
+#   - Ne décide pas de la levée du blocage
+#   - Ne pilote aucun actionneur thermique
+#   - Ne modifie aucune consigne
 #
 # 🛡️ ROBUSTESSE
 #   - Zéro wait
+#   - Idempotent par construction (monotonicité)
 #   - Post-reboot safe
 # ==========================================================
 
@@ -21,6 +37,13 @@ aeration_m5_reouverture_pendant_blocage:
   mode: single
 
   sequence:
+
+    # ------------------------------------------------------
+    # Suspension active (marqueur M5 → M6)
+    # ------------------------------------------------------
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.aeration_suspension_active
 
     # ------------------------------------------------------
     # Horodatage réouverture
@@ -60,8 +83,34 @@ aeration_m5_reouverture_pendant_blocage:
 
         analyse_duration: "{{ '%02d:%02d:%02d' | format(analyse_hh, analyse_mm, analyse_ss) }}"
 
-    - action: timer.start
+        blocage_active: "{{ is_state('timer.aeration_blocage', 'active') }}"
+        blocage_remaining: >
+          {{ state_attr('timer.aeration_blocage','remaining') if blocage_active else '00:00:00' }}
+
+        blocage_remaining_s: >
+          {% set r = blocage_remaining %}
+          {% if r in ['unknown','unavailable','none','None',''] %}
+            0
+          {% else %}
+            {% set p = r.split(':') %}
+            {{ (p[0] | int(0)) * 3600 + (p[1] | int(0)) * 60 + (p[2] | int(0)) }}
+          {% endif %}
+
+        blocage_start_s: "{{ cap_s if cap_s > blocage_remaining_s else blocage_remaining_s }}"
+
+        blocage_hh: "{{ (blocage_start_s // 3600) | int }}"
+        blocage_mm: "{{ ((blocage_start_s % 3600) // 60) | int }}"
+        blocage_ss: "{{ (blocage_start_s % 60) | int }}"
+
+        blocage_duration: "{{ '%02d:%02d:%02d' | format(blocage_hh, blocage_mm, blocage_ss) }}"
+
+    # ------------------------------------------------------
+    # Gel des échéances (fenêtre ouverte)
+    # ------------------------------------------------------
+    - action: timer.cancel
       target:
         entity_id: timer.aeration_analyse_delta_t
-      data:
-        duration: "{{ analyse_duration }}"
+
+    - action: timer.cancel
+      target:
+        entity_id: timer.aeration_blocage

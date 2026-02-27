@@ -1,11 +1,14 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRAT NORMATIF (M5)
-#     INTERACTION AVEC M3 (GARDE-FOU)
+#     INTERACTION AVEC M3 (GARDE-FOU STRUCTUREL)
 # ==========================================================
 
 ## 🎯 OBJET
 
 Décrire l’interaction normative entre M5 et M3.
+
+M5 agit comme mécanisme de suspension
+vis-à-vis de l’analyse ΔT.
 
 ---
 
@@ -13,13 +16,24 @@ Décrire l’interaction normative entre M5 et M3.
 
 Le pipeline impose, avant exécution de M3 :
 
-- un délai minimal entre :
+1️⃣ Conditions structurelles :
+
+- `chauffage_blocage_aeration = on`
+- `aeration_pipeline_arme = on`
+- `binary_sensor.contact_fenetres_maison = off`
+
+2️⃣ Condition temporelle :
+
+- délai minimal écoulé entre :
   `input_datetime.aeration_reouverture_last`
   et l’instant courant.
 
 Ce délai est défini par :
 
 - `input_number.delai_stabilisation_capteurs`
+
+L’évaluation est réalisée au moment du déclencheur
+`timer.finished` de `timer.aeration_analyse_delta_t`.
 
 ---
 
@@ -28,8 +42,13 @@ Ce délai est défini par :
 Une réouverture récente :
 
 - empêche l’analyse ΔT prématurée,
-- garantit que M3 ne se déclenche pas
-  tant que les capteurs ne sont pas stabilisés.
+- empêche l’exécution de M3 tant que :
+  - l’enveloppe n’est pas refermée,
+  - le délai de stabilisation n’est pas écoulé.
+
+M5 ne programme aucun déclenchement différé.
+Il modifie uniquement l’état permettant ou non
+l’exécution de M3.
 
 ---
 
@@ -38,7 +57,11 @@ Une réouverture récente :
 M5 ne doit jamais :
 
 - déclencher M3 directement,
-- prolonger ou raccourcir un blocage,
-- altérer la monotonicité des échéances.
+- contourner le pipeline,
+- lever ou raccourcir un blocage,
+- altérer la monotonicité des échéances,
+- supprimer l’exigence d’enveloppe fermée.
+
+La décision ΔT reste exclusivement de compétence M3.
 
 # ==========================================================

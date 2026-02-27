@@ -43,6 +43,14 @@ Ils ne décident rien.
 - Reset par : M2, M0
 - Jamais interprété ici
 
+## input_boolean.aeration_suspension_active
+- Signifie : suspension active des échéances (M5→M6)
+- Rôle : verrou structurel anti-reprise pendant enveloppe ouverte
+- Écrit par : M5 (ON), M6 (OFF)
+- Lu par : pipeline (autorisation M6), guards, détecteur cohérence KO
+- Ne déclenche aucune action thermique
+- Ne doit jamais être manipulé en dehors de M5/M6
+
 ## input_boolean.aeration_recover_requested
 - Signal de remédiation
 - Écrit par : automation 10010000000029

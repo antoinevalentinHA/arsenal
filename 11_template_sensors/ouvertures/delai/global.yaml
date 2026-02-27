@@ -23,14 +23,8 @@
       device_class: opening
 
       icon: >
-        {# ---------------------------------------------------
-           Entrée (immédiat) — N1
-           --------------------------------------------------- #}
         {% set entree_open = is_state('binary_sensor.contact_fenetre_entree', 'on') %}
 
-        {# ---------------------------------------------------
-           Grâce Étage (parents) : parents_open + timer active
-           --------------------------------------------------- #}
         {% set parents_fenetres = [
           'binary_sensor.contact_chambre_parents_droite',
           'binary_sensor.contact_chambre_parents_gauche',
@@ -40,9 +34,6 @@
         {% set parents_timer = states('timer.fenetre_chambre_parents_grace') %}
         {% set grace_etage = parents_open and parents_timer == 'active' %}
 
-        {# ---------------------------------------------------
-           Grâce Séjour : séjour_open + timer active
-           --------------------------------------------------- #}
         {% set sejour_fenetres = [
           'binary_sensor.contact_sejour_1',
           'binary_sensor.contact_sejour_2',
@@ -53,9 +44,6 @@
         {% set sejour_timer = states('timer.fenetre_sejour_ouverte_grace') %}
         {% set grace_sejour = sejour_open and sejour_timer == 'active' %}
 
-        {# ---------------------------------------------------
-           Décision d’icône (pure lecture)
-           --------------------------------------------------- #}
         {% if is_state(this.entity_id, 'on') %}
           mdi:window-open-variant
         {% elif entree_open %}

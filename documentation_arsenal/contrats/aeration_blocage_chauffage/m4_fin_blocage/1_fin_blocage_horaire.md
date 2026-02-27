@@ -28,6 +28,9 @@ Le pipeline impose notamment :
 - `chauffage_blocage_aeration = on`
 - `aeration_pipeline_arme = on`
 - `timer.aeration_analyse_delta_t` **non actif**
+- `binary_sensor.contact_fenetres_maison = off`
+
+M4 ne peut jamais s’exécuter si une fenêtre est ouverte.
 
 ---
 
@@ -35,14 +38,37 @@ Le pipeline impose notamment :
 
 1. Levée blocage :
    `chauffage_blocage_aeration` → OFF
+
 2. Annulation timers :
-   `timer.aeration_blocage` + `timer.aeration_analyse_delta_t` → cancel
+   `timer.aeration_blocage`
+   `timer.aeration_analyse_delta_t`
+   → cancel
+
 3. Neutralisation traces datetime :
-   `chauffage_fin_blocage_aeration` → `YYYY-MM-DD 00:00:00`
-   `analyse_deltat_disponible` → `YYYY-MM-DD 00:00:00`
+   `chauffage_fin_blocage_aeration`
+   → `YYYY-MM-DD 00:00:00`
+
+   `analyse_deltat_disponible`
+   → `YYYY-MM-DD 00:00:00`
+
 4. Désarmement pipeline :
    `aeration_pipeline_arme` → OFF
+
 5. Logbook
+
+---
+
+## 🧊 INTERACTION AVEC M5 / M6
+
+M4 n’intervient jamais pendant une suspension M5.
+
+Si une réouverture survient avant l’expiration du blocage :
+
+- le timer peut être gelé,
+- la levée est différée,
+- M4 n’est autorisé qu’après fermeture stable.
+
+M4 marque la clôture définitive du cycle M1–M6.
 
 ---
 
@@ -53,6 +79,7 @@ M4 ne doit jamais :
 - démarrer un timer,
 - déclencher M1/M2/M3,
 - initier une action thermique,
-- modifier des snapshots T_REF.
+- modifier des snapshots T_REF,
+- lever le blocage si l’enveloppe est ouverte.
 
 # ==========================================================

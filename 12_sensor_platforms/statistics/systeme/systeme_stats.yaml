@@ -1,0 +1,92 @@
+# ==========================================================
+# 🧠 ARSENAL — CAPTEURS SYSTEME (STATISTICS)
+#     CPU & Mémoire — Référence 7 j / Lissage 10 min
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Générer les signaux statistiques servant de base à la "météo système".
+#
+# 🧱 EMPLACEMENT
+#   12_sensor_platforms/
+#
+# 🔗 SOURCES
+#   - sensor.home_assistant_supervisor_memory_percent
+#   - sensor.home_assistant_supervisor_cpu_percent
+#   - sensor.home_assistant_core_memory_percent
+#   - sensor.home_assistant_core_cpu_percent
+# ==========================================================
+
+# -----------------------------
+# Mémoire — Supervisor
+# -----------------------------
+- platform: statistics
+  name: "Mémoire médiane 7 j Supervisor"
+  entity_id: sensor.home_assistant_supervisor_memory_percent
+  state_characteristic: median
+  max_age:
+    days: 7
+  sampling_size: 10000
+
+- platform: statistics
+  name: "Mémoire moyenne 10 min Supervisor"
+  entity_id: sensor.home_assistant_supervisor_memory_percent
+  state_characteristic: mean
+  max_age:
+    minutes: 10
+  sampling_size: 10000
+
+# -----------------------------
+# CPU — Supervisor
+# -----------------------------
+- platform: statistics
+  name: "CPU médiane 7 j Supervisor"
+  entity_id: sensor.home_assistant_supervisor_cpu_percent
+  state_characteristic: median
+  max_age:
+    days: 7
+  sampling_size: 10000
+
+- platform: statistics
+  name: "CPU moyenne 10 min Supervisor"
+  entity_id: sensor.home_assistant_supervisor_cpu_percent
+  state_characteristic: mean
+  max_age:
+    minutes: 10
+  sampling_size: 10000
+
+# -----------------------------
+# Mémoire — Core
+# -----------------------------
+- platform: statistics
+  name: "Mémoire médiane 7 j Core"
+  entity_id: sensor.home_assistant_core_memory_percent
+  state_characteristic: median
+  max_age:
+    days: 7
+  sampling_size: 10000
+
+- platform: statistics
+  name: "Mémoire moyenne 10 min Core"
+  entity_id: sensor.home_assistant_core_memory_percent
+  state_characteristic: mean
+  max_age:
+    minutes: 10
+  sampling_size: 10000
+
+# -----------------------------
+# CPU — Core
+# -----------------------------
+- platform: statistics
+  name: "CPU médiane 7 j Core"
+  entity_id: sensor.home_assistant_core_cpu_percent
+  state_characteristic: median
+  max_age:
+    days: 7
+  sampling_size: 10000
+
+- platform: statistics
+  name: "CPU moyenne 10 min Core"
+  entity_id: sensor.home_assistant_core_cpu_percent
+  state_characteristic: mean
+  max_age:
+    minutes: 10
+  sampling_size: 10000

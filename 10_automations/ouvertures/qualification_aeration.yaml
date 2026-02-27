@@ -9,8 +9,14 @@
 #     Automation de QUALIFICATION DE FAIT MÉTIER.
 #
 #     Elle marque une aération comme confirmée
-#     lorsque l’un des délais de grâce associés
-#     aux ouvertures arrive à son terme.
+#     dès qu’une ouverture éligible atteint le niveau
+#     de persistance requis :
+#
+#       - Zones AVEC délai : confirmation à l’échéance
+#         du timer de grâce associé.
+#
+#       - Zones SANS délai : confirmation immédiate
+#         à l’ouverture.
 #
 #     Elle transforme un état transitoire
 #     (ouverture récente) en fait métier stable
@@ -19,16 +25,30 @@
 #  🧱 NATURE
 #
 #     - Qualification binaire d’un événement physique
-#     - Déclenchement sur fin de temporisation
+#     - Déclenchement sur :
+#         • fin de temporisation (zones avec délai)
+#         • ouverture directe (zones sans délai)
 #     - Aucun pilotage ni décision autonome
 #
 #  ⚙️ PRINCIPE
 #
-#     - Déclenchement à la fin de l’un des timers :
+#     - Déclenchement sur :
+#
+#       A) Fin de l’un des timers (zones AVEC délai) :
 #         • timer.fenetre_sejour_ouverte_grace
 #         • timer.fenetre_chambre_parents_grace
-#     - Si le système est stable :
-#         • activation du booléen `aeration_confirmee`
+#
+#       B) Ouverture d’une zone SANS délai (immédiat) :
+#         • binary_sensor.contact_fenetre_entree
+#         • binary_sensor.contact_chambre_arnaud
+#         • binary_sensor.contact_chambre_matthieu
+#
+#     - Conditions de validité :
+#         • système stable (anti faux-positifs boot)
+#         • au moins une ouverture maison réellement présente
+#
+#     - Effet :
+#         • activation du booléen `input_boolean.aeration_confirmee`
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
@@ -42,24 +62,30 @@
 #     - Sert de source de vérité métier
 #       pour les moteurs décisionnels
 #     - Permet de distinguer :
-#         • ouverture brève
-#         • aération réelle et persistante
+#         • ouverture brève (non confirmée)
+#         • aération réelle et persistante (confirmée)
 #
 #  🧠 PRINCIPE ARSENAL
 #
 #     Un fait métier doit être posé explicitement,
 #     sans interprétation ni effet de bord.
 #
+#     Le booléen `aeration_confirmee` n’est écrit
+#     que par ce point d’entrée de qualification
+#     (writer unique).
+#
 #  🛡️ SÉCURITÉ
 #
 #     L’inhibition durant le boot garantit
 #     l’absence de faux positifs au démarrage.
 #
+#     Le garde-fou "ouverture maison présente"
+#     évite une confirmation tardive après fermeture.
+#
 #  ✅ COMPATIBILITÉ
 #
 #     Home Assistant 2024.8+
 # ==========================================================
-
 
 - id: "10170000000009"
   alias: "Ouvertures – Qualification aération confirmée"
@@ -67,17 +93,35 @@
 
   trigger:
 
-    # Séjour (baies vitrées)
+    # ==============================
+    # Zones AVEC délai
+    # ==============================
+
     - platform: event
       event_type: timer.finished
       event_data:
         entity_id: timer.fenetre_sejour_ouverte_grace
 
-    # Chambre parents
     - platform: event
       event_type: timer.finished
       event_data:
         entity_id: timer.fenetre_chambre_parents_grace
+
+    # ==============================
+    # Zones SANS délai (immédiat)
+    # ==============================
+
+    - platform: state
+      entity_id: binary_sensor.contact_fenetre_entree
+      to: "on"
+
+    - platform: state
+      entity_id: binary_sensor.contact_chambre_arnaud
+      to: "on"
+
+    - platform: state
+      entity_id: binary_sensor.contact_chambre_matthieu
+      to: "on"
 
   condition:
 
@@ -86,9 +130,13 @@
       entity_id: input_boolean.systeme_stable
       state: "on"
 
+    # Confirmer seulement si une ouverture est réellement présente
+    - condition: state
+      entity_id: binary_sensor.contact_fenetres_maison
+      state: "on"
+
   action:
 
-    # Marquage aération confirmée
     - action: input_boolean.turn_on
       target:
         entity_id: input_boolean.aeration_confirmee

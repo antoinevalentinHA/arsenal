@@ -13,7 +13,10 @@ Cette activation :
 
 - marque le début d’un épisode atomique,
 - interdit toute fusion implicite avec un épisode précédent,
-- rend le système éligible à M2.
+- rend le système éligible à M2,
+- constitue l’unique point légitime d’activation d’un épisode.
+
+Aucun autre mécanisme ne peut activer `aeration_episode_en_cours`.
 
 ---
 
@@ -27,7 +30,19 @@ Propriétés :
 
 - l’horodatage est systématique,
 - il écrase toute valeur précédente,
-- il constitue la référence temporelle unique de l’épisode.
+- il constitue la référence temporelle unique de l’épisode,
+- il ne peut être modifié par aucune autre étape (hors M0 recovery).
+
+---
+
+## 🔒 CONDITIONS STRUCTURELLES
+
+M1 ne peut être exécuté que si :
+
+- `input_boolean.aeration_episode_en_cours = off`
+- `input_boolean.chauffage_blocage_aeration = off`
+
+Toute tentative d’activation hors de ce cadre constitue une violation contractuelle.
 
 ---
 
@@ -38,5 +53,5 @@ Un épisode actif implique :
 - `aeration_episode_en_cours = on`
 - `aeration_debut` valide
 
-Toute incohérence future relève de M0.
+Toute incohérence future relève exclusivement de M0.
 # ==========================================================

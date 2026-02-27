@@ -12,6 +12,9 @@ Ces valeurs servent :
 - de base comparative pour l’analyse ΔT ultérieure (M3),
 - de référence thermique stable pour l’épisode.
 
+Les T_REF constituent la photographie thermique initiale
+de l’enveloppe au démarrage du cycle.
+
 ---
 
 ## 📦 CAPTEURS SNAPSHOTÉS
@@ -43,6 +46,21 @@ Alors :
 
 - la valeur existante du `input_number` est conservée.
 
+Aucune tentative de correction ou de recalcul n’est effectuée.
+
+---
+
+## 🔒 IMMUTABILITÉ DURANT L’ÉPISODE
+
+Une fois figées en M1 :
+
+- les T_REF ne peuvent plus être modifiées
+  tant que `input_boolean.aeration_episode_en_cours = on`.
+
+Ni M5, ni M6, ni M3, ni M4 ne doivent altérer ces valeurs.
+
+Toute modification en cours d’épisode constitue une violation contractuelle.
+
 ---
 
 ## 🧩 PROPRIÉTÉS
@@ -51,7 +69,9 @@ Alors :
 - Pas de retry.
 - Pas d’exception.
 - Idempotence raisonnable :
-  relancer M1 écraserait les snapshots avec les valeurs courantes.
+  relancer M1 écraserait les snapshots avec les valeurs courantes,
+  mais cette situation est structurellement interdite
+  (voir conditions d’entrée M1).
 
 ---
 
@@ -64,4 +84,6 @@ En plus des snapshots individuels :
 
 Même logique conservatrice en cas d’indisponibilité.
 
+Cette valeur constitue la référence unique
+pour toute analyse ΔT ultérieure.
 # ==========================================================

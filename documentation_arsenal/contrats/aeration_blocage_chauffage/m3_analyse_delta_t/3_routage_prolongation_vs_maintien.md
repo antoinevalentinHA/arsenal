@@ -38,19 +38,26 @@ La prolongation est déterminée comme suit :
 La valeur transmise au script de prolongation est exprimée en heures
 (fraction possible).
 
+Aucune autre logique décisionnelle n’est autorisée.
+
 ---
 
 ## 📏 PARAMÈTRES (GOUVERNÉS)
 
 Les seuils et durées sont :
 
-- configurables via le dashboard Réglages Chauffage
-- bornés par leurs `min` / `max`
-- sans valeur codée en dur dans le script M3
+- configurables via le dashboard Réglages Chauffage,
+- bornés par leurs `min` / `max`,
+- sans valeur codée en dur dans le script M3.
 
-Ordre attendu (invariant logique) :
+Invariant logique attendu :
 
     seuil_tiny < seuil_medium < seuil_high
+
+La détection d’une incohérence relève du contrat
+"Intégrité paramètres — Chauffage".
+
+M3 ne corrige jamais une incohérence paramétrique.
 
 ---
 
@@ -69,6 +76,10 @@ Action :
   - `delta_max`
   - `prolongation_heures`
 
+La monotonie effective est garantie par le script appelé.
+
+---
+
 ### Cas maintien
 
 Sinon :
@@ -79,13 +90,28 @@ Sinon :
 
 ---
 
+## 🧊 MONOTONICITÉ STRUCTURELLE
+
+M3 ne réduit jamais une échéance.
+
+Toute prolongation est :
+
+- appliquée de manière monotone,
+- comparée à l’échéance actuelle,
+- incapable de raccourcir le blocage.
+
+La levée du blocage reste exclusivement sous contrôle de M4.
+
+---
+
 ## 🛑 INTERDITS
 
 Il est interdit :
 
 - d’implémenter une levée du blocage dans M3,
 - de démarrer/arrêter M4 depuis M3,
-- de réduire une échéance en cours (toute prolongation doit être monotone),
-- d’introduire des seuils codés en dur dans le script.
+- de réduire une échéance en cours,
+- d’introduire des seuils codés en dur,
+- de contourner la séparation décision / exécution.
 
 # ==========================================================

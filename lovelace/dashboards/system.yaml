@@ -73,57 +73,45 @@ views:
             square: false
             cards:
 
-              # Supervisor CPU
+              # Supervisor CPU (météo interne)# Supervisor CPU (KPI lissé / courbe brute)
               - type: custom:button-card
-                template: carte_capteur_seuils
-                entity: sensor.home_assistant_supervisor_cpu_percent
+                template: socle_kpi
+                entity: sensor.cpu_moyenne_10_min_supervisor
                 name: Supervisor CPU
                 icon: mdi:chip
-                variables:
-                  unit: "%"
-                  seuil_warn: 50
-                  seuil_crit: 80
                 tap_action:
                   action: more-info
+                  entity: sensor.home_assistant_supervisor_cpu_percent
 
-              # Supervisor RAM
+              # Supervisor RAM (KPI lissé / courbe brute)
               - type: custom:button-card
-                template: carte_capteur_seuils
-                entity: sensor.home_assistant_supervisor_memory_percent
+                template: socle_kpi
+                entity: sensor.memoire_moyenne_10_min_supervisor
                 name: Supervisor RAM
                 icon: mdi:memory
-                variables:
-                  unit: "%"
-                  seuil_warn: 50
-                  seuil_crit: 80
                 tap_action:
                   action: more-info
+                  entity: sensor.home_assistant_supervisor_memory_percent
 
-              # Core CPU
+              # Core CPU (KPI lissé / courbe brute)
               - type: custom:button-card
-                template: carte_capteur_seuils
-                entity: sensor.home_assistant_core_cpu_percent
+                template: socle_kpi
+                entity: sensor.cpu_moyenne_10_min_core
                 name: Core CPU
                 icon: mdi:chip
-                variables:
-                  unit: "%"
-                  seuil_warn: 50
-                  seuil_crit: 80
                 tap_action:
                   action: more-info
+                  entity: sensor.home_assistant_core_cpu_percent
 
-              # Core RAM
+              # Core RAM (KPI lissé / courbe brute)
               - type: custom:button-card
-                template: carte_capteur_seuils
-                entity: sensor.home_assistant_core_memory_percent
+                template: socle_kpi
+                entity: sensor.memoire_moyenne_10_min_core
                 name: Core RAM
                 icon: mdi:memory
-                variables:
-                  unit: "%"
-                  seuil_warn: 50
-                  seuil_crit: 80
                 tap_action:
                   action: more-info
+                  entity: sensor.home_assistant_core_memory_percent
 
           ####################################################
           # 🩺 SYSTÈMES CRITIQUES

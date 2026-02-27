@@ -35,6 +35,12 @@ Le seuil utilisé est gouverné par :
 
 Aucune valeur codée en dur n’est autorisée dans M3.
 
+Ce script n’est exécuté que si :
+
+- `chauffage_blocage_aeration = on`
+- `aeration_pipeline_arme = on`
+- `binary_sensor.contact_fenetres_maison = off`
+
 ---
 
 ## 🔧 EFFETS NORMATIFS
@@ -50,7 +56,14 @@ Cette valeur agit comme :
 
 - marqueur de neutralisation,
 - protection contre un re-déclenchement intempestif de M3,
-- indication qu’aucune nouvelle décision n’est attendue pour cet épisode.
+- indication qu’aucune nouvelle décision n’est attendue
+  pour cet épisode.
+
+Cette neutralisation :
+
+- ne modifie aucune échéance de blocage,
+- ne désarme pas le pipeline,
+- ne supprime pas la possibilité d’un M5/M6 ultérieur.
 
 ---
 
@@ -79,7 +92,8 @@ Le script ne doit jamais :
 - modifier `aeration_pipeline_arme`,
 - relancer un timer analyse,
 - déclencher une action thermique,
-- introduire une valeur seuil codée en dur.
+- introduire une valeur seuil codée en dur,
+- s’exécuter si une fenêtre est ouverte.
 
 ---
 

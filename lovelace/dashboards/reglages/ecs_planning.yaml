@@ -81,7 +81,6 @@ views:
                 template: bouton_spacer
                 color_type: blank-card
 
-
           # ======================================================
           # 📅 LUNDI
           # ======================================================
@@ -94,12 +93,16 @@ views:
             columns: 2
             cards:
 
-              - type: vertical-stack
-                cards:
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛁 Matin"
 
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛁 Matin"
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛀 Soir"
+
+              - type: horizontal-stack
+                cards:
 
                   - type: tile
                     entity: input_boolean.ecs_monday_matin_active
@@ -109,12 +112,8 @@ views:
                     entity: input_datetime.ecs_monday_matin_heure
                     name: "⏰"
 
-              - type: vertical-stack
+              - type: horizontal-stack
                 cards:
-
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛀 Soir"
 
                   - type: tile
                     entity: input_boolean.ecs_monday_soir_active
@@ -123,7 +122,6 @@ views:
                   - type: tile
                     entity: input_datetime.ecs_monday_soir_heure
                     name: "⏰"
-
 
           # ======================================================
           # 📅 MARDI
@@ -137,12 +135,16 @@ views:
             columns: 2
             cards:
 
-              - type: vertical-stack
-                cards:
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛁 Matin"
 
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛁 Matin"
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛀 Soir"
+
+              - type: horizontal-stack
+                cards:
 
                   - type: tile
                     entity: input_boolean.ecs_tuesday_matin_active
@@ -152,12 +154,8 @@ views:
                     entity: input_datetime.ecs_tuesday_matin_heure
                     name: "⏰"
 
-              - type: vertical-stack
+              - type: horizontal-stack
                 cards:
-
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛀 Soir"
 
                   - type: tile
                     entity: input_boolean.ecs_tuesday_soir_active
@@ -166,7 +164,6 @@ views:
                   - type: tile
                     entity: input_datetime.ecs_tuesday_soir_heure
                     name: "⏰"
-
 
           # ======================================================
           # 📅 MERCREDI
@@ -180,12 +177,16 @@ views:
             columns: 2
             cards:
 
-              - type: vertical-stack
-                cards:
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛁 Matin"
 
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛁 Matin"
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛀 Soir"
+
+              - type: horizontal-stack
+                cards:
 
                   - type: tile
                     entity: input_boolean.ecs_wednesday_matin_active
@@ -195,12 +196,8 @@ views:
                     entity: input_datetime.ecs_wednesday_matin_heure
                     name: "⏰"
 
-              - type: vertical-stack
+              - type: horizontal-stack
                 cards:
-
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛀 Soir"
 
                   - type: tile
                     entity: input_boolean.ecs_wednesday_soir_active
@@ -209,7 +206,6 @@ views:
                   - type: tile
                     entity: input_datetime.ecs_wednesday_soir_heure
                     name: "⏰"
-
 
           # ======================================================
           # 📅 JEUDI
@@ -223,12 +219,16 @@ views:
             columns: 2
             cards:
 
-              - type: vertical-stack
-                cards:
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛁 Matin"
 
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛁 Matin"
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛀 Soir"
+
+              - type: horizontal-stack
+                cards:
 
                   - type: tile
                     entity: input_boolean.ecs_thursday_matin_active
@@ -238,12 +238,8 @@ views:
                     entity: input_datetime.ecs_thursday_matin_heure
                     name: "⏰"
 
-              - type: vertical-stack
+              - type: horizontal-stack
                 cards:
-
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛀 Soir"
 
                   - type: tile
                     entity: input_boolean.ecs_thursday_soir_active
@@ -252,7 +248,6 @@ views:
                   - type: tile
                     entity: input_datetime.ecs_thursday_soir_heure
                     name: "⏰"
-
 
           # ======================================================
           # 📅 VENDREDI
@@ -266,12 +261,16 @@ views:
             columns: 2
             cards:
 
-              - type: vertical-stack
-                cards:
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛁 Matin"
 
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛁 Matin"
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛀 Soir"
+
+              - type: horizontal-stack
+                cards:
 
                   - type: tile
                     entity: input_boolean.ecs_friday_matin_active
@@ -281,12 +280,8 @@ views:
                     entity: input_datetime.ecs_friday_matin_heure
                     name: "⏰"
 
-              - type: vertical-stack
+              - type: horizontal-stack
                 cards:
-
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛀 Soir"
 
                   - type: tile
                     entity: input_boolean.ecs_friday_soir_active
@@ -295,7 +290,6 @@ views:
                   - type: tile
                     entity: input_datetime.ecs_friday_soir_heure
                     name: "⏰"
-
 
           # ======================================================
           # 📅 SAMEDI
@@ -309,12 +303,16 @@ views:
             columns: 2
             cards:
 
-              - type: vertical-stack
-                cards:
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛁 Matin"
 
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛁 Matin"
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛀 Soir"
+
+              - type: horizontal-stack
+                cards:
 
                   - type: tile
                     entity: input_boolean.ecs_saturday_matin_active
@@ -324,12 +322,8 @@ views:
                     entity: input_datetime.ecs_saturday_matin_heure
                     name: "⏰"
 
-              - type: vertical-stack
+              - type: horizontal-stack
                 cards:
-
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛀 Soir"
 
                   - type: tile
                     entity: input_boolean.ecs_saturday_soir_active
@@ -338,7 +332,6 @@ views:
                   - type: tile
                     entity: input_datetime.ecs_saturday_soir_heure
                     name: "⏰"
-
 
           # ======================================================
           # 📅 DIMANCHE
@@ -352,12 +345,16 @@ views:
             columns: 2
             cards:
 
-              - type: vertical-stack
-                cards:
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛁 Matin"
 
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛁 Matin"
+              - type: custom:button-card
+                template: sub_section_header
+                name: "🛀 Soir"
+
+              - type: horizontal-stack
+                cards:
 
                   - type: tile
                     entity: input_boolean.ecs_sunday_matin_active
@@ -367,12 +364,8 @@ views:
                     entity: input_datetime.ecs_sunday_matin_heure
                     name: "⏰"
 
-              - type: vertical-stack
+              - type: horizontal-stack
                 cards:
-
-                  - type: custom:button-card
-                    template: sub_section_header
-                    name: "🛀 Soir"
 
                   - type: tile
                     entity: input_boolean.ecs_sunday_soir_active

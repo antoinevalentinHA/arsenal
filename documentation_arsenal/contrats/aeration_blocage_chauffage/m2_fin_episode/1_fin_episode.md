@@ -18,11 +18,25 @@ Il ne déclenche aucun redémarrage thermique.
 
 ---
 
+## 🚦 CONDITIONS STRUCTURELLES
+
+M2 ne peut être exécuté que si :
+
+- `aeration_episode_en_cours = on`
+- `chauffage_blocage_aeration = off`
+- `aeration_pipeline_arme = on`
+- `binary_sensor.fenetres_maison_fermees_stable = on`
+
+Toute exécution hors de ce cadre constitue
+une violation contractuelle.
+
+---
+
 ## 🧩 AUTORITÉ
 
 - Script exécuté : `script.aeration_m2_fin_episode`
 - Appelé exclusivement par le pipeline maître.
-- M2 n’est jamais appelé directement par M0, M3, M4 ou M5.
+- M2 n’est jamais appelé directement par M0, M3, M4, M5 ou M6.
 
 ---
 
@@ -34,7 +48,20 @@ Il ne déclenche aucun redémarrage thermique.
 4. Mise à jour des `input_datetime` de diagnostic  
 5. Démarrage / extension monotone des timers  
 6. `aeration_confirmee` → OFF  
-7. Logbook
+7. Logbook  
+
+---
+
+## 🔒 PORTÉE
+
+M2 est le seul point légitime :
+
+- d’activation initiale du blocage chauffage,
+- de programmation initiale des échéances M3 et M4.
+
+M5 peut geler ces échéances.
+M6 peut les relancer.
+M4 est le seul point autorisé de levée du blocage.
 
 ---
 
@@ -46,6 +73,7 @@ M2 ne doit jamais :
 - appeler M3 ou M4 directement,
 - déclencher une action thermique,
 - raccourcir une échéance existante,
-- modifier les snapshots T_REF.
+- modifier les snapshots T_REF,
+- réactiver un blocage déjà actif.
 
 # ==========================================================

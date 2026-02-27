@@ -7,6 +7,8 @@
 
 Finaliser la clôture totale de l’épisode.
 
+M4 marque la fin définitive du cycle M1–M6.
+
 ---
 
 ## 🔻 DÉSARMEMENT PIPELINE
@@ -19,6 +21,17 @@ Ce désarmement marque :
 
 - la fin totale du cycle aération/blocage,
 - l’impossibilité de déclencher M2/M3/M4 sans nouvel épisode.
+
+M4 ne peut s’exécuter que si :
+
+- `binary_sensor.contact_fenetres_maison = off`.
+
+Le désarmement n’est jamais autorisé
+si l’enveloppe est ouverte.
+
+M4 n’interdit jamais un futur M1.
+Une nouvelle qualification d’aération
+peut initier un nouveau cycle complet.
 
 ---
 
@@ -33,7 +46,8 @@ M4 écrit un logbook :
 Cette trace atteste :
 
 - la levée effective du blocage,
-- la clôture du cycle.
+- la clôture du cycle,
+- la restauration de l’état nominal thermique.
 
 ---
 
@@ -48,6 +62,20 @@ Après exécution M4, l’état canon attendu est :
 - `analyse_deltat_disponible` neutralisé (`00:00:00`)
 - `aeration_pipeline_arme = off`
 
+Aucune échéance future ne doit subsister.
+
 Toute divergence relève d’un recover (M0).
+
+---
+
+## 🧩 PROPRIÉTÉ DE CLÔTURE
+
+Après M4 :
+
+- aucun mécanisme interne ne peut relancer le blocage,
+- aucune analyse ΔT n’est en attente,
+- aucun timer du domaine n’est actif.
+
+Seul un nouveau M1 peut initier un cycle.
 
 # ==========================================================

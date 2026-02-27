@@ -17,6 +17,19 @@ Il est exécuté uniquement lorsque le pipeline autorise M1.
 
 ---
 
+## 🚦 CONDITIONS D’ENTRÉE STRUCTURELLES
+
+M1 ne peut être exécuté que si :
+
+- `input_boolean.chauffage_blocage_aeration` = OFF
+- `input_boolean.aeration_episode_en_cours` = OFF
+- `binary_sensor.contact_fenetres_maison` = ON
+- `input_boolean.systeme_stable` = ON
+
+Toute tentative d’exécution hors de ce cadre constitue une violation contractuelle.
+
+---
+
 ## 🧩 AUTORITÉ
 
 - Script exécuté : `script.aeration_m1_debut_episode`
@@ -30,10 +43,10 @@ Il est exécuté uniquement lorsque le pipeline autorise M1.
 
 1. `input_boolean.aeration_episode_en_cours` → ON  
 2. Horodatage :
-   `input_datetime.aeration_debut = now()`
-3. Snapshots individuels des températures de référence
-4. Snapshot global pour ΔT chambres
-5. `input_boolean.aeration_pipeline_arme` → ON
+   `input_datetime.aeration_debut = now()`  
+3. Snapshots individuels des températures de référence  
+4. Snapshot global pour ΔT chambres  
+5. `input_boolean.aeration_pipeline_arme` → ON  
 
 ---
 
@@ -41,7 +54,7 @@ Il est exécuté uniquement lorsque le pipeline autorise M1.
 
 M1 ne doit jamais :
 
-- activer `chauffage_blocage_aeration`,
+- activer `input_boolean.chauffage_blocage_aeration`,
 - démarrer un timer,
 - déclencher une analyse ΔT,
 - appeler un script thermique,

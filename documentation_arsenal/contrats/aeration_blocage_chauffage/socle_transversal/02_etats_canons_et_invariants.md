@@ -72,7 +72,9 @@ Condition :
 - chauffage_blocage_aeration = on
 - timer.aeration_blocage = active
 - chauffage_fin_blocage_aeration valide
-- timer.aeration_analyse_delta_t = active OU idle (selon timing)
+- timer.aeration_analyse_delta_t =
+  active si délai analyse non encore consommé
+  idle si analyse déjà exécutée (M3 faible ou fort)
 
 Signification :
 
@@ -82,12 +84,44 @@ Signification :
 
 Invariant :
 
-- au moins un mécanisme temporel doit exister
-  (timer actif ou datetime valide)
+- au moins un mécanisme temporel doit exister :
+  - timer actif
+  OU
+  - échéance datetime valide future
 
 ---
 
-# 🧱 4️⃣ ÉTAT CANON — APRÈS PROLONGATION (M3 FORT)
+# 🧱 4️⃣ ÉTAT CANON — SUSPENSION PENDANT BLOCAGE (M5)
+
+Condition :
+
+- chauffage_blocage_aeration = on
+- aeration_pipeline_arme = on
+- binary_sensor.contact_fenetres_maison = on
+- input_boolean.aeration_suspension_active = on
+- input_datetime.aeration_reouverture_last valide
+- timer.aeration_blocage = active OU idle (selon suspension)
+- timer.aeration_analyse_delta_t = active OU idle (selon suspension)
+
+Signification :
+
+- blocage actif
+- réouverture qualifiée détectée
+- exécution temporelle suspendue ou réarmable
+- aucune levée possible
+
+Invariants :
+
+- blocage reste ON
+- pipeline reste ON
+- enveloppe ouverte ⇒ suspension_active = on
+- aucune levée autorisée
+- aucune réduction d’échéance
+- aucune analyse ΔT autorisée tant que l’enveloppe est ouverte
+
+---
+
+# 🧱 5️⃣ ÉTAT CANON — APRÈS PROLONGATION (M3 FORT)
 
 Condition :
 
@@ -109,7 +143,7 @@ Interdiction :
 
 ---
 
-# 🧱 5️⃣ ÉTAT CANON — MAINTIEN (M3 FAIBLE)
+# 🧱 6️⃣ ÉTAT CANON — MAINTIEN (M3 FAIBLE)
 
 Condition :
 
@@ -124,7 +158,7 @@ Signification :
 
 ---
 
-# 🧱 6️⃣ ÉTAT CANON — FIN TOTALE (POST M4)
+# 🧱 7️⃣ ÉTAT CANON — FIN TOTALE (POST M4)
 
 Condition :
 
@@ -141,7 +175,7 @@ Signification :
 
 ---
 
-# 🧱 7️⃣ ÉTAT CANON — INVALIDATION TENTATIVE
+# 🧱 8️⃣ ÉTAT CANON — INVALIDATION TENTATIVE
 
 Condition :
 
@@ -157,16 +191,19 @@ Signification :
 
 ---
 
-# 🚫 8️⃣ ÉTATS IMPOSSIBLES (INCOHÉRENTS)
+# 🚫 9️⃣ ÉTATS IMPOSSIBLES (INCOHÉRENTS)
 
 Les combinaisons suivantes sont interdites :
 
 1) Blocage ON + pipeline OFF  
 2) Blocage ON + datetime neutralisé  
-3) Pipeline ON + épisode OFF + blocage OFF + aucune ouverture  
+3) Pipeline ON + épisode OFF + blocage OFF
+   ET aucune transition M2/M4 en cours
+   ET aucune ouverture active
 4) Timer actif + blocage OFF  
 5) Analyse disponible valide + blocage OFF  
 6) Blocage OFF + timer blocage actif  
+7) Blocage ON + enveloppe ON + suspension_active OFF
 
 Ces états doivent être captés par :
 

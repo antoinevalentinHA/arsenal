@@ -57,28 +57,49 @@ Validité “actuelle” :
 
 Ce mécanisme interdit toute réduction de fin de blocage.
 
+Les `input_datetime` représentent la cible normative,
+indépendamment de l’état courant du timer.
+
 ---
 
 ## ⏱ TIMER BLOCAGE — MONOTONE SUR REMAINING
 
 Le script lit :
 
-- `timer.aeration_blocage` état `active` ou non
-- `remaining` si actif, sinon `00:00:00`
-- conversion en secondes : `blocage_remaining_s`
+- `timer.aeration_blocage` état `active` ou non,
+- `remaining` si actif, sinon `00:00:00`,
+- conversion en secondes : `blocage_remaining_s`.
 
-Puis calcule une cible timer basée sur l’échéance cible :
+Puis calcule :
 
-- `blocage_cible_s = max(0, fin_blocage_cible - now)` en secondes
+- `blocage_cible_s = max(0, fin_blocage_cible - now)` en secondes.
 
 Durée réellement appliquée (monotone) :
 
-- `blocage_start_s = max(blocage_cible_s, blocage_remaining_s)`
+- `blocage_start_s = max(blocage_cible_s, blocage_remaining_s)`.
 
 Démarrage effectif :
 
-- le timer n’est relancé que si `blocage_start_s > blocage_remaining_s`
-  (sinon maintien strict du timer actuel)
+- le timer n’est relancé que si
+  `blocage_start_s > blocage_remaining_s`.
+
+Ce script ne force jamais une réduction.
+
+---
+
+## 🧊 INTERACTION AVEC M5 / M6
+
+Ce script :
+
+- n’annule jamais un timer,
+- ne force jamais une reprise si le timer a été gelé,
+- ne modifie pas l’état de suspension.
+
+La suspension éventuelle des timers relève exclusivement de M5.
+La reprise éventuelle relève exclusivement de M6.
+
+Ce script agit uniquement si son exécution est autorisée
+par le pipeline (enveloppe fermée).
 
 ---
 
@@ -107,6 +128,7 @@ Le script ne doit jamais :
 - désarmer le pipeline,
 - raccourcir le timer blocage,
 - modifier le timer analyse ΔT,
-- initier une action thermique.
+- initier une action thermique,
+- contourner une suspension décidée par M5.
 
 # ==========================================================

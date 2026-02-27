@@ -12,6 +12,9 @@ Programmer deux échéances :
 
 Ces échéances sont strictement monotones.
 
+M2 constitue le point unique de définition
+des échéances initiales du blocage.
+
 ---
 
 ## 🧮 CALCUL DES DÉLAIS
@@ -44,14 +47,17 @@ Cela garantit :
 - cohérence post-reboot,
 - extension seulement vers le futur.
 
+Les `input_datetime` représentent les cibles normatives,
+indépendamment de l’état courant des timers.
+
 ---
 
 ## ⏱ MONOTONICITÉ DES TIMERS
 
 Pour chaque timer :
 
-- timer.aeration_analyse_delta_t
-- timer.aeration_blocage
+- `timer.aeration_analyse_delta_t`
+- `timer.aeration_blocage`
 
 Le script :
 
@@ -67,11 +73,27 @@ Donc :
 
 ---
 
+## 🧊 INTERACTION AVEC M5 / M6
+
+Les échéances définies en M2 peuvent être :
+
+- temporairement gelées par M5 (annulation des timers),
+- relancées par M6 (reprise contrôlée),
+
+sans jamais modifier les cibles monotones
+stockées dans les `input_datetime`.
+
+M5 et M6 n’altèrent pas les dates cibles,
+ils modifient uniquement l’état d’exécution des timers.
+
+---
+
 ## 🧩 PROPRIÉTÉS STRUCTURELLES
 
 - Zéro wait.
 - Calcul indépendant des variables pipeline.
 - Post-reboot safe (relecture des datetime et timers).
+- Séparation stricte entre cible temporelle et exécution.
 
 ---
 
@@ -81,6 +103,7 @@ Il est strictement interdit que M2 :
 
 - raccourcisse une échéance existante,
 - force un timer à zéro,
-- déclenche l’analyse immédiatement.
+- déclenche l’analyse immédiatement,
+- modifie les échéances une fois le blocage actif.
 
 # ==========================================================

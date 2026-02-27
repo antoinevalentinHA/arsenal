@@ -109,15 +109,6 @@
       to: "on"
 
     # --------------------------------------------------------------
-    #  M5 - Reouverture pendant blocage
-    # --------------------------------------------------------------
-    - id: reouverture_pendant_blocage
-      platform: state
-      entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
-      from: "off"
-      to: "on"
-
-    # --------------------------------------------------------------
     #  M3 - Analyse DeltaT : timer atteint
     # --------------------------------------------------------------
     - id: analyse_deltat
@@ -194,7 +185,11 @@
               state: "off"
 
             - condition: state
-              entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "off"
+
+            - condition: state
+              entity_id: binary_sensor.contact_fenetres_maison
               state: "on"
 
           sequence:
@@ -228,6 +223,10 @@
               entity_id: input_boolean.aeration_pipeline_arme
               state: "on"
 
+            - condition: state
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "off"
+
           sequence:
             - action: script.aeration_m2_fin_episode
 
@@ -245,6 +244,10 @@
             - condition: state
               entity_id: input_boolean.aeration_pipeline_arme
               state: "on"
+
+            - condition: state
+              entity_id: binary_sensor.contact_fenetres_maison
+              state: "off"
 
             # Garde-fou M5 : ne pas analyser trop tôt après une réouverture
             - condition: template
@@ -280,6 +283,10 @@
               entity_id: input_boolean.aeration_pipeline_arme
               state: "on"
 
+            - condition: state
+              entity_id: binary_sensor.contact_fenetres_maison
+              state: "off"
+
             # L'analyse DeltaT ne doit plus être active
             - condition: template
               value_template: >
@@ -294,7 +301,7 @@
         - conditions:
 
             - condition: template
-              value_template: "{{ trigger.id == 'reouverture_pendant_blocage' }}"
+              value_template: "{{ trigger.id == 'aeration_confirmee_on' }}"
 
             - condition: state
               entity_id: input_boolean.chauffage_blocage_aeration
@@ -310,6 +317,33 @@
 
           sequence:
             - action: script.aeration_m5_reouverture_pendant_blocage
+
+        ##################################################################
+        #  M6 — FERMETURE APRÈS RÉOUVERTURE (REPRISE TIMERS)
+        ##################################################################
+        - conditions:
+
+            - condition: template
+              value_template: "{{ trigger.id == 'fermeture_stable' }}"
+
+            - condition: state
+              entity_id: input_boolean.chauffage_blocage_aeration
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.aeration_pipeline_arme
+              state: "on"
+
+            - condition: state
+              entity_id: binary_sensor.contact_fenetres_maison
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.aeration_suspension_active
+              state: "on"
+
+          sequence:
+            - action: script.aeration_m6_fermeture_post_reouverture
 
         ##################################################################
         #  DEFAUT

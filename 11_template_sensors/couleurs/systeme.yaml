@@ -1,0 +1,191 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS (OBSERVABILITE)
+#     Couleurs système — CPU & Mémoire — Core / Supervisor
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Produire des entités "sensor.couleur_*" consommées par socle_kpi.
+#
+# 🧱 PRINCIPE
+#   - Trigger-based (pas de now())
+#   - Seuils en dur
+#   - 1 couleur = comparaison now_10m vs médiane 7 j
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.memoire_moyenne_10_min_supervisor
+        - sensor.memoire_mediane_7_j_supervisor
+        - sensor.cpu_moyenne_10_min_supervisor
+        - sensor.cpu_mediane_7_j_supervisor
+        - sensor.memoire_moyenne_10_min_core
+        - sensor.memoire_mediane_7_j_core
+        - sensor.cpu_moyenne_10_min_core
+        - sensor.cpu_mediane_7_j_core
+    - platform: homeassistant
+      event: start
+
+  sensor:
+
+    # ----------------------------------------------------------
+    # Mémoire — Supervisor (couleur dérivée pour socle_kpi)
+    # ----------------------------------------------------------
+    - name: "Couleur Mémoire moyenne 10 min Supervisor"
+      unique_id: couleur_memoire_moyenne_10_min_supervisor
+      state: &couleur_memoire_logic >
+        {% set UNAV = ['unknown','unavailable', None, 'none', ''] %}
+
+        {% set suffixe = this.entity_id | replace('sensor.couleur_memoire_moyenne_10_min_', '') %}
+        {% set src_now = 'sensor.memoire_moyenne_10_min_' ~ suffixe %}
+        {% set src_ref = 'sensor.memoire_mediane_7_j_' ~ suffixe %}
+
+        {% set now_raw = states(src_now) %}
+        {% set ref_raw = states(src_ref) %}
+
+        {% set now = now_raw | replace(',', '.') | float(999) %}
+        {% set ref = ref_raw | replace(',', '.') | float(0) %}
+
+        {% if now_raw in UNAV %}
+          grey
+        {% elif ref_raw in UNAV or ref == 0 %}
+          grey
+        {% elif now == 999 %}
+          grey
+        {% else %}
+          {% set delta = now - ref %}
+          {% if delta <= 0.25 %}
+            green
+          {% elif delta <= 0.75 %}
+            yellow
+          {% elif delta <= 1.50 %}
+            orange
+          {% else %}
+            red
+          {% endif %}
+        {% endif %}
+      attributes:
+        reason: &couleur_reason_logic >
+          {% set UNAV = ['unknown','unavailable', None, 'none', ''] %}
+
+          {% set suffixe = this.entity_id | replace('sensor.couleur_', '') %}
+          {% set src_now = 'sensor.' ~ suffixe %}
+          {% set src_ref = src_now | replace('moyenne_10_min_', 'mediane_7_j_') %}
+
+          {% set now_raw = states(src_now) %}
+          {% set ref_raw = states(src_ref) %}
+          {% set ref = ref_raw | replace(',', '.') | float(0) %}
+
+          {% if now_raw in UNAV %}
+            unavailable
+          {% elif ref_raw in UNAV or ref == 0 %}
+            invalid_reference
+          {% else %}
+            ok
+          {% endif %}
+
+        now_10m: &attr_now_10m >
+          {% set suffixe = this.entity_id | replace('sensor.couleur_', '') %}
+          {% set s = states('sensor.' ~ suffixe) %}
+          {% if s in ['unknown','unavailable', None, 'none', ''] %}
+            —
+          {% else %}
+            {{ s }}
+          {% endif %}
+
+        ref_7j: &attr_ref_7j >
+          {% set suffixe = this.entity_id | replace('sensor.couleur_', '') %}
+          {% set src_now = 'sensor.' ~ suffixe %}
+          {% set src_ref = src_now | replace('moyenne_10_min_', 'mediane_7_j_') %}
+          {% set s = states(src_ref) %}
+          {% if s in ['unknown','unavailable', None, 'none', ''] %}
+            —
+          {% else %}
+            {{ s }}
+          {% endif %}
+
+        delta: &attr_delta >
+          {% set suffixe = this.entity_id | replace('sensor.couleur_', '') %}
+          {% set src_now = 'sensor.' ~ suffixe %}
+          {% set src_ref = src_now | replace('moyenne_10_min_', 'mediane_7_j_') %}
+
+          {% set now_raw = states(src_now) %}
+          {% set ref_raw = states(src_ref) %}
+
+          {% set now = now_raw | replace(',', '.') | float(999) %}
+          {% set ref = ref_raw | replace(',', '.') | float(0) %}
+
+          {% if now_raw in ['unknown','unavailable', None, 'none', ''] %}
+            —
+          {% elif ref_raw in ['unknown','unavailable', None, 'none', ''] or ref == 0 %}
+            —
+          {% elif now == 999 %}
+            —
+          {% else %}
+            {{ (now - ref) | round(2) }}
+          {% endif %}
+
+    # ----------------------------------------------------------
+    # Mémoire — Core
+    # ----------------------------------------------------------
+    - name: "Couleur Mémoire moyenne 10 min Core"
+      unique_id: couleur_memoire_moyenne_10_min_core
+      state: *couleur_memoire_logic
+      attributes:
+        reason: *couleur_reason_logic
+        now_10m: *attr_now_10m
+        ref_7j: *attr_ref_7j
+        delta: *attr_delta
+
+    # ----------------------------------------------------------
+    # CPU — Supervisor (seuils CPU dédiés)
+    # ----------------------------------------------------------
+    - name: "Couleur CPU moyenne 10 min Supervisor"
+      unique_id: couleur_cpu_moyenne_10_min_supervisor
+      state: &couleur_cpu_logic >
+        {% set UNAV = ['unknown','unavailable', None, 'none', ''] %}
+
+        {% set suffixe = this.entity_id | replace('sensor.couleur_cpu_moyenne_10_min_', '') %}
+        {% set src_now = 'sensor.cpu_moyenne_10_min_' ~ suffixe %}
+        {% set src_ref = 'sensor.cpu_mediane_7_j_' ~ suffixe %}
+
+        {% set now_raw = states(src_now) %}
+        {% set ref_raw = states(src_ref) %}
+
+        {% set now = now_raw | replace(',', '.') | float(999) %}
+        {% set ref = ref_raw | replace(',', '.') | float(0) %}
+
+        {% if now_raw in UNAV %}
+          grey
+        {% elif ref_raw in UNAV or ref == 0 %}
+          grey
+        {% elif now == 999 %}
+          grey
+        {% else %}
+          {% set delta = now - ref %}
+          {% if delta <= 0.50 %}
+            green
+          {% elif delta <= 1.50 %}
+            yellow
+          {% elif delta <= 3.00 %}
+            orange
+          {% else %}
+            red
+          {% endif %}
+        {% endif %}
+      attributes:
+        reason: *couleur_reason_logic
+        now_10m: *attr_now_10m
+        ref_7j: *attr_ref_7j
+        delta: *attr_delta
+
+    # ----------------------------------------------------------
+    # CPU — Core
+    # ----------------------------------------------------------
+    - name: "Couleur CPU moyenne 10 min Core"
+      unique_id: couleur_cpu_moyenne_10_min_core
+      state: *couleur_cpu_logic
+      attributes:
+        reason: *couleur_reason_logic
+        now_10m: *attr_now_10m
+        ref_7j: *attr_ref_7j
+        delta: *attr_delta

@@ -8,6 +8,7 @@
 #      aucune ouverture n’est actif (pipeline zombie)
 #   C) Blocage ON mais trace input_datetime.fin_blocage neutralisée (00:00:00)
 #   D) aeration_confirmee ON alors qu’aucun épisode / blocage / ouverture n’est actif
+#   E) Blocage ON + enveloppe ouverte + suspension_active OFF (suspension manquante)
 # ==========================================================
 
 - binary_sensor:
@@ -29,9 +30,13 @@
         {% set fin = states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime %}
         {% set fin_valide = fin is not none and not (fin.hour == 0 and fin.minute == 0 and fin.second == 0) %}
 
+        {% set enveloppe_ouverte = is_state('binary_sensor.contact_fenetres_maison','on') %}
+        {% set suspension = is_state('input_boolean.aeration_suspension_active','on') %}
+
         {% set ko_blocage_orphelin = blocage and not t_blocage_active %}
         {% set ko_pipeline_zombie = pipeline and (not episode) and (not blocage) and (not fenetres_q) %}
         {% set ko_trace = blocage and (not fin_valide) %}
+        {% set ko_suspension_manquante = blocage and enveloppe_ouverte and (not suspension) %}
 
         {% set ko_confirmee_orpheline =
           confirmee
@@ -42,4 +47,4 @@
           and (not fenetres_b)
         %}
 
-        {{ ko_blocage_orphelin or ko_pipeline_zombie or ko_trace or ko_confirmee_orpheline }}
+        {{ ko_blocage_orphelin or ko_pipeline_zombie or ko_trace or ko_confirmee_orpheline or ko_suspension_manquante }}

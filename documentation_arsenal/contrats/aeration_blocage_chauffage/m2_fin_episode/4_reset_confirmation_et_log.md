@@ -12,7 +12,12 @@
 Ce reset :
 
 - empêche toute persistance incohérente,
-- garantit que la prochaine ouverture devra être re-confirmée.
+- garantit que la prochaine ouverture devra être re-confirmée,
+- permet la détection d’une éventuelle réouverture qualifiée
+  pendant la phase de blocage (M5).
+
+`aeration_confirmee` est un signal événementiel d’entrée
+dans un épisode, non un indicateur persistant d’état.
 
 ---
 
@@ -30,7 +35,8 @@ Message :
 
 Cette trace atteste :
 
-- l’entrée effective en phase de blocage.
+- l’entrée effective en phase de blocage,
+- la clôture formelle de l’épisode.
 
 ---
 
@@ -38,5 +44,11 @@ Cette trace atteste :
 
 La journalisation est informative.
 Elle ne conditionne aucun comportement futur.
+
+Le reset de confirmation n’affecte ni :
+
+- les snapshots T_REF,
+- ni l’état du blocage,
+- ni l’armement du pipeline.
 
 # ==========================================================
