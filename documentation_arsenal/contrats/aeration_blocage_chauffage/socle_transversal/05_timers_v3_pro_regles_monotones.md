@@ -123,7 +123,8 @@ lors d’une réouverture pendant blocage (M5).
 
 Suspension signifie :
 
-- timer annulé ou redémarré avec une durée ≥ remaining,
+- M5 annule systématiquement les timers. Aucun redémarrage en M5.
+La reprise est exclusivement réalisée par M6.
 - aucune modification des échéances datetime cibles,
 - aucune levée implicite du blocage.
 

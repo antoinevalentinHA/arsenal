@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Ouvertures – Chambre parents – Marquer grâce échue
+#
+#  ID : 10170000000013
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Marquer explicitement la FIN DE GRÂCE
+#     des fenêtres de la chambre parents.
+#
+#     Ce marqueur distingue :
+#       - une expiration naturelle (timer.finished)
+#       - d’une annulation (timer.cancel)
+#
+#     Il constitue la seule source de vérité
+#     pour la qualification "avec délai" parents.
+#
+#  🧱 NATURE
+#
+#     - Writer unique du helper
+#       input_boolean.chambre_parents_grace_echue
+#     - Aucun effet thermique
+#     - Aucun pilotage
+#
+#  🔒 INVARIANTS
+#
+#     - Ne s’exécute que sur event timer.finished
+#     - Exige qu’au moins une fenêtre parents soit ouverte
+#
+# ==========================================================
+
+- id: "10170000000013"
+  alias: "Ouvertures – Chambre parents – Marquer grâce échue"
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.fenetre_chambre_parents_grace
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.contact_chambre_parents
+      state: "on"
+
+  action:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.chambre_parents_grace_echue

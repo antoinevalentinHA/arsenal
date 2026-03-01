@@ -55,6 +55,12 @@ aeration_m0_recover:
               state: "off"
 
           sequence:
+            - action: timer.cancel
+              target:
+                entity_id:
+                  - timer.aeration_analyse_delta_t
+                  - timer.aeration_blocage
+
             - action: input_boolean.turn_off
               target:
                 entity_id: input_boolean.aeration_pipeline_arme
@@ -108,6 +114,14 @@ aeration_m0_recover:
             - condition: state
               entity_id: timer.aeration_blocage
               state: "idle"
+
+            - condition: state
+              entity_id: input_boolean.aeration_suspension_active
+              state: "off"
+
+            - condition: state
+              entity_id: binary_sensor.contact_fenetres_maison
+              state: "off"
 
           sequence:
             - action: script.aeration_m4_fin_blocage_horaire

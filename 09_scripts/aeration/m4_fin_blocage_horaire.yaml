@@ -57,6 +57,11 @@ aeration_m4_fin_blocage_horaire:
       target:
         entity_id: input_boolean.aeration_pipeline_arme
 
+    # Forcer aeration_suspension_active à off
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.aeration_suspension_active
+
     - action: logbook.log
       data:
         name: "Chauffage - Fin blocage horaire"

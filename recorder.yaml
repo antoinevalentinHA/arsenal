@@ -140,6 +140,9 @@ include:
     - input_number.ref_temp_palier
     - input_number.duree_aeration_rdc_stock
     - input_number.duree_aeration_etage_stock
+    - binary_sensor.ouverture_qualifiee_maison
+    - binary_sensor.fenetre_sejour_ouverte_avec_delai
+    - binary_sensor.fenetre_chambre_parents_ouverte_avec_delai
 
     # =====================================================
     # ==== 🍓 SANTÉ PLATEFORME — CORE / SUPERVISOR ====

@@ -1,0 +1,24 @@
+systeme_bandeau_stabilite:
+  template: socle_status_label
+
+  entity: input_boolean.systeme_stable
+
+  name: "SYSTÈME INSTABLE"
+  icon: mdi:alert-octagon
+
+  show_state: false
+  show_label: true
+
+  label: >
+    [[[
+      return "Incohérences possibles : stabiliser avant toute analyse.";
+    ]]]
+
+  tap_action:
+    action: more-info
+
+  state:
+    - value: "off"
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)

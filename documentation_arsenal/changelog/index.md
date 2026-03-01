@@ -57,17 +57,6 @@ Index chronologique des versions/époques Arsenal.
 - MQTT : `value_template` rendu défensif (tolérance payload inattendu)
 - Exclusions `recorder/history/logbook` autour de `browser_mod_*` (débruitage volontaire)
 
-### Points de vigilance (sans dramatiser, mais réels)
-- **Rupture de chargement** si un include/chemin canonique manque : c’est une transition “socle”, pas une feature isolée.
-- **Retrait `scene:`** : si des scènes étaient “réellement” consommées, elles sortent de ce chemin (attention aux dépendances historiques).
-- **UI navigation (paths)** : dépendance à des chemins stables (`/dashboard-accueil/0`, `/dashboard-navigation/0`) → liens morts si renommage ultérieur.
-- **Zigbee2MQTT** : réordonnancement devices OK, mais **perte** d’un `friendly_name` = casse identitaire en cascade.
-- **Cohérence métriques** : autonomie Audi (libellé vs variable) → risque de confusion lecture/diagnostic.
-
-### Bruit identifié
-- Suppression de logs Zigbee2MQTT : bruit d’artefacts
-- Styles UI (padding/arrondis/couleurs) quand ça n’emporte pas un pattern de navigation
-
 **Lecture gouvernance :**
 Transition d’ère : abandon des agrégats legacy, adoption d’une arborescence atomisée “par rôle”.
 Le risque principal est structurel (chargement/chemins), pas thermique ni métier.
@@ -85,13 +74,6 @@ Le risque principal est structurel (chargement/chemins), pas thermique ni métie
 - `timer:` devient un pilier (watchdogs / anti-rebond / remplacement de `delay`)
 - Découplage orchestration → **scripts unifiés** (alarme, ECS, chauffage, panne secteur)
 - Structuration par domaines (relocalisations massives)
-
-**Vigilances :**
-- Effet domino “timers + scripts”
-- ViCare : dépendance attributs attendus (`active_vicare_program`)
-- Pluie : bascule “mesure → état” (`input_boolean.pluie_en_cours`)
-- Recorder/Logbook : exclusions larges possibles
-- UI/palette : dette potentielle (cosmétique mais doctrine à tenir)
 
 ---
 
@@ -321,6 +303,378 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Chauffage : watchdog /10 min désactivé → régime plus événementiel.
 - Auto-ajustement courbe : contractualisation complète + capteurs propositionnels (pas de boucle fermée).
 - ECS : bouclage auto gouverné (plage horaire + présence) + section UI réglages.
+
+---
+
+## 🧠 ARSENAL HA — v8.1.1 — STABLE — 2026-01-23  
+**Tags :** chauffage, ecs, gouvernance, observabilite, docs, vicare, architecture
+
+**Signal net :**
+- **Chauffage : décision centrale 100% événementielle** (suppression du polling `/10`, couverture exhaustive des causes contractuelles, idempotence conservée).
+- **Observabilité thermique structurée (A/B/C/D)** : création d’un domaine diagnostic passif (inertie, cycles, stabilisation), reload-safe et strictement non décisionnel.
+- **Architecture : migration “vicare → domaines” + gouvernance explicite des IDs** (préfixes 1024/1025/1026, 104 mouvements, resynchronisation documentaire complète).
+
+---
+
+## 🧠 ARSENAL HA — v8.2 — STABLE — 2026-01-24  
+**Tags :** chauffage, ecs, ui, observabilite, reseau, clim, docs
+
+**Signal net :**
+- **Chauffage : fiabilisation B0 + observabilité long terme** (capteur fondation strictement numérique, statistiques natives HA activées, Famille C absence refondue sous contrat normatif).
+- **Gouvernance idempotente hiver (chauffage/clim)** : calcul état cible explicite, écriture uniquement en cas de divergence réelle, suppression transitions fantômes.
+- **UI : factorisation structurelle des navigations Lovelace** (`lovelace/includes/navigation/`), socle includes canonisé.
+
+---
+
+## 🧠 ARSENAL HA — v8.2.1 — STABLE — 2026-01-27  
+**Tags :** chauffage, vicare, zigbee, aeration, ui, reseau, observabilite, docs
+
+**Signal net :**
+- **Chauffage : cohérence matériel ↔ décision** via `binary_sensor.chauffage_incoherence_vicare_decision` (ViCare canal surveillé non fiable, ré-alignement déclenché uniquement sur incohérence qualifiée).
+- **Observabilité thermique structurée étendue + recorder gouverné** (A1/B0/cycles/absence, séparation stricte décision ↔ diagnostic).
+- **Zigbee : migration canal 11 → 25 + reconstruction maillage** (LQI homogènes, résilience radio consolidée).
+
+---
+
+## 🧠 ARSENAL HA — v8.2.2 — STABLE — 2026-01-27  
+**Tags :** chauffage, zigbee, reseau, modes, observabilite, integrite
+
+**Signal net :**
+- **Présence : réactivité maîtrisée sans autorité d’écriture** (temporisations fortement réduites, invariants confirmés : aucune action directe chauffage/clim).
+- **Zigbee : LQI enfin vérifiable via source unique** (`group.zigbee_linkquality_all` + capteur triggered canon), migration arborescence système.
+- **Chauffage : géofencing qualifié par capteur métier** (`binary_sensor.chauffage_inhibition_geofencing_requise`) — hystérésis déplacée hors automation, séparation stricte qualification ↔ mémoire.
+
+---
+
+## 🧠 ARSENAL HA — v8.3.0 — STABLE — 2026-01-27  
+**Tags :** chauffage, vicare, ui, zigbee, docs, securite, observabilite
+
+**Signal net :**
+- **Chauffage : souveraineté consignes (HA maître / ViCare esclave passif)** — fin de toute sync inverse, scripts d’application matériels uniques, réalignement déclenché uniquement sur incohérence qualifiée.
+- **Alarme/Wi-Fi : apprentissage BSSID piloté par signal métier** (capteur → automation → helper), logique déductive supprimée.
+- **Documentation : socle architecture formalisé** (cartographie entités, couches, supervision) + structuration sous-domaines templates.
+
+---
+
+## 🧠 ARSENAL HA — v8.3.1 — STABLE — 2026-01-28  
+**Tags :** clim, chauffage, ui, observabilite, docs, integrite
+
+**Signal net :**
+- **Climatisation : pipeline canonique complet** (`sensor.clim_target_mode` → `script.clim_execution` → watchdog + capteur d’incohérence), suppression du script monolithique historique.
+- **Chauffage : observabilité cycles fiabilisée** (anti-replay reload/restart, incrément strictement événementiel).
+- **UI : dashboard Températures Min/Max + hygiène ressources Lovelace** (suppression composants inutilisés, includes normalisées).
+
+---
+
+## 🧠 ARSENAL HA — v8.3.2 — STABLE — 2026-02-04  
+**Tags :** chauffage, ecs, clim, ui, docs, gouvernance, integrite
+
+**Signal net :**
+- **Templates : factorisation interne par ancres YAML** (moteurs uniques + déduction via `this.entity_id`), réduction massive de duplication sans changement fonctionnel.
+- **Modes maison recentrés sur le contexte ECS** (Vacances / Normal / Désinfection) : suppression d’actions annexes, périmètre clarifié, modèle capteur → action.
+- **Réalignements sémantiques d’arborescence** (déshumidification rattachée aux seuils clim via humidex).
+
+---
+
+## 🧠 ARSENAL HA — v9.0.0 — STABLE — 2026-02-05 / 2026-02-06  
+**Tags :** architecture, ui, chauffage, docs, integrite
+
+**Signal net :**
+- **Extinction complète des legacy templates** (`platform: template`) → moteur moderne `template:` exclusivement.
+- **Assainissement d’arborescence capteurs** (extinction `12_template_binary_sensors`, 40+ moves vers `12_sensor_platforms`, includes nettoyés).
+- **Chauffage : notifications persistantes découplées des scripts** (automation UI dédiée, idempotente, projection fiable).
+
+---
+
+## 🧠 ARSENAL HA — v9.0.1 — CONSOLIDATION — 2026-02-08  
+**Tags :** chauffage, ecs, ui, docs, gouvernance
+
+**Signal net :**
+- **Chauffage : override opérateur institutionnalisé (N0)** — `mode_confort_chauffage` devient commande souveraine prioritaire sur le régime automatique.
+- **UI Chauffage : “observable only”** — notification persistante limitée au **Confort**, source exclusive `sensor.programme_chauffage`.
+- **ECS : institutionnalisation documentaire** — éclatement du contrat monolithique en corpus normatif spécialisé, ancien document déclassé en référence.
+
+---
+
+## 🧠 ARSENAL HA — v9.0.2 — CONSOLIDATION — 2026-02-10  
+**Tags :** docs, gouvernance, integrite
+
+**Signal net :**
+- **Refactor complet du système de changelog** : passage d’un fichier monolithique à un modèle versionné (`changelogs/vXX_X_X.md` + historique transversal).
+- Suppression du legacy `changelog.md` au profit d’une gouvernance diffable et industrialisable.
+- Nettoyage mineur ViCare : retrait d’un capteur local `modulation_local` (vérifications requises si dépendances).
+
+---
+
+## 🧠 ARSENAL HA — v9.0.3 — CONSOLIDATION — 2026-02-10  
+**Tags :** alarme, presence, gouvernance, architecture, docs
+
+**Signal net :**
+- **Alarme institutionnalisée** : création d’un corpus normatif complet (`contrats/alarme/`), sous-système désormais opposable et extensible.
+- **“Visite” migrée d’Alarme vers Présence** (helpers, timers, automations + changement d’ID) : recentrage sémantique et séparation des domaines.
+- **Domainisation des helpers système** (`input_selects/`, `input_booleans/`) : arborescence clarifiée, sous-dossiers par domaine.
+
+---
+
+## 🧠 ARSENAL HA — v9.0.4 — CONSOLIDATION — 2026-02-11  
+**Tags :** meteo, pluie, presence, visite, templates, hygiene_repo
+
+**Signal net :**
+- **Météo / Pluie enrichie** : introduction d’un cumul hebdomadaire (utility_meter) + totalisation locale + intégration recorder + UI long terme (52 semaines).
+- **Visite consolidée côté Présence** : migration d’`input_select` + création d’un contrat opposable dédié.
+- **Standardisation des en-têtes templates** : montée en qualité documentaire (opposabilité, lisibilité, invariants explicités).
+- **Éclairage jardin** : clarification sémantique “plage_active” + ajout d’un capteur d’heure d’allumage.
+
+**Anomalie snapshot :**
+- Import massif non fonctionnel du dossier `git/` (+4034 fichiers) → bruit structurel majeur à exclure des diffs futurs.
+
+---
+
+## 🧠 ARSENAL HA — v9.1.0 — STABLE — 2026-02-14  
+**Tags :** ui, docs, modes, integrite, reseau
+
+**Signal net :**
+- **UI : architecture à 3 niveaux** (socle → TPL génériques → métier) + application réelle sur plusieurs dashboards (CO₂, Clim diag, VMC, Éclairage).
+- **Lovelace : factorisation par includes structurels** (headers / sous-headers) + nettoyage d’agrégats historiques côté button-card.
+- **Compat webhooks : accès externe migré** `8443 → 9443` (`external_url`), pour Netatmo/Withings et validations.
+
+---
+
+## 🧠 ARSENAL HA — v9.1.1 — STABILISATION — 2026-02-14  
+**Tags :** upgrade, home_assistant, webhooks, stabilisation
+
+**Signal net :**
+- Mise à jour **Home Assistant Core → 2026.2.2**.
+- Stabilisation post-upgrade (validation webhooks Netatmo / Withings via port 9443).
+- Aucune évolution fonctionnelle Arsenal revendiquée.
+
+**Contexte :**
+- Séquence réelle : migration port (8443 → 9443) → v9.1 → upgrade HA → v9.1.1.
+- v9.1.1 acte la compatibilité complète après montée de version HA.
+
+---
+
+## 🧠 ARSENAL HA — v9.1.2 — CONSOLIDATION — 2026-02-15  
+**Tags :** ui, charte_couleurs, navigation, volets, diagnostics, logger
+
+**Signal net :**
+- **Charte couleurs enrichie** : distinction explicite couleur métier vs couleur structure UI + introduction sémantique NAV/HUB (`rgba(90, 110, 130, 0.08)`).
+- **Nouveau socle ACTION (TPL-06)** : `socle_action_simple_sans_couleur` → base structurelle neutre (sans fond, sans action imposée).
+- **Navigation rebasée proprement** sur le nouveau socle (fond défini localement, pas au niveau socle).
+- **Volets refactorisés** : variantes déterministes (`open/close/stop`) basées sur `socle_kpi_72`, suppression logique “tone”.
+- **Diagnostics Chauffage/Aération clarifiés** : lecture explicite du verrou post-aération + renommage “Blocage chauffage” → “Effet sur chauffage”.
+- **Logger durci** : réduction bruit via niveaux `warning/error` sur intégrations bavardes.
+
+---
+
+## 🧠 ARSENAL HA — v9.1.4 — CONSOLIDATION — 2026-02-15  
+**Tags :** ui, nas, templates, lecture_seule, monitoring
+
+**Signal net :**
+- **Nouveau template générique** : `capteur_seuil_sans_action` (lecture seule, sans interaction).
+- **Dashboard NAS sécurisé en lecture seule** : remplacement des tuiles à seuils interactives par `carte_capteur_seuils_sans_action`.
+- Périmètre : CPU, RAM, charge, volumes, températures disques, etc. → monitoring pur, aucune action possible.
+
+**Intention :**
+- Séparer clairement **supervision** et **action**.
+- Éviter toute interaction accidentelle sur un dashboard technique.
+
+---
+
+## 🧠 ARSENAL HA — v9.1.5 — CONSOLIDATION — 2026-02-15  
+**Tags :** ui, nettoyage, climatisation, navigation, meteo
+
+**Signal net :**
+- **Suppression du dashboard “Diagnostics Sommeil”** + retrait de toutes les références associées (dashboards.yaml, bouton Météo/Bruit).
+- **Climatisation — UI corrigée et structurée** :
+  - titres nettoyés (“Climatisation” sans espaces parasites),
+  - section “Décision” restructurée (header dédié + grille 2 colonnes).
+- **Navigation normalisée** :
+  - `/clim-dashboard/climatisation_` → `/clim-dashboard/climatisation`
+  - correction appliquée dans `navigation.yaml` et templates concernés.
+
+**Intention :**
+- Élimination d’un dashboard obsolète.
+- Alignement sémantique et visuel côté Clim.
+- Suppression d’un path incohérent (underscore résiduel).
+
+---
+
+## 🧠 ARSENAL HA — v9.2.0 — STABLE — 2026-02-17  
+**Tags :** ui, ergonomie, pipeline_couleur, diagnostics, reglages
+
+**Signal net :**
+- **Refonte massive des dashboards Réglages** : passage `entities` → `grid` + `tile` avec `numeric-input` inline (ergonomie homogène multi-domaines : éclairage, aération, ecs, chauffage, clim, alarme, vmc, volets, ouvertures, déshumidificateur).
+- **Pipeline couleur généralisé** : externalisation des couleurs vers des capteurs dédiés (`sensor.couleur_*`) + migration KPI Santé / CO₂ / Bruit vers `socle_kpi` + `ui_profile: arsenal`.
+- **Diagnostics renforcés** :
+  - Alarme : cartes dédiées cohérence / raison / divergence persistante (fin du markdown bricolé).
+  - Chauffage : bloc performance rationalisé (bar-card 24h/7j sans couleurs codées en dur).
+- **Nettoyage UI Chauffage** : suppression définitive de `input_select.chauffage_mode` (retrait helper + retrait dashboard).
+
+---
+
+## 🧠 ARSENAL HA — v9.2.1 — STABLE — 2026-02-17  
+**Tags :** ui, navigation, factorisation, ecs, bouclage, changelog
+
+**Signal net :**
+- **Navigation simplifiée** : retrait des raccourcis système (Automations, Scripts, Logs, États, Entités, etc.) + suppression de l’action “Reboot HA”.
+- **Factorisation Bouclage ECS** : remplacement des cartes inline par un include canon (`includes/cartes/bouclage.yaml`) partagé entre dashboards.
+- **Template générique ajouté** : `bouclage_timer.yaml` ; suppression de l’ancien template spécifique Arsenal (remplacé proprement).
+- **Changelog versionné v9.2 ajouté** + alignement de `en_cours.md`.
+
+**Intention :**
+- Alléger l’UI utilisateur (moins d’accès “système brut”).
+- Réduire la duplication (include unique pour Bouclage).
+- Stabiliser la gouvernance documentaire.
+
+---
+
+## 🧠 ARSENAL HA — v9.2.2 — STABLE — 2026-02-17  
+**Tags :** ui, ouvertures, diagnostics, templates, navigation, secrets
+
+**Signal net :**
+- **Diagnostics Ouvertures refactorisés** : remplacement des blocs `markdown` par des cartes statut structurées (fenêtres, délais, timers) → UI homogène Arsenal.
+- **Enrichissement capteurs Ouvertures** : ajout d’icônes explicites (`mdi:window-open`, `mdi:lock`) pour meilleure lisibilité métier.
+- **Nouveau template générique** : `status_72_on_off` + ajustements sur `bouclage_timer` et `compteur_seuils_variables` (alignement socle compact).
+- **Navigation ajustée** : Historique repositionné, retrait File Editor (ingress), ajout bouton Logs HA.
+- **Maintenance intégration ViCare** : mise à jour `vicare_entry_id` dans `secrets.yaml`.
+
+**Intention :**
+- Supprimer le rendu texte fragile au profit de cartes statut canoniques.
+- Renforcer la cohérence visuelle des Ouvertures.
+- Maintenir l’alignement intégration ViCare après changement d’entry id.
+
+---
+
+## 🧠 ARSENAL HA — v9.2.3 — STABLE — 2026-02-17  
+**Tags :** sante, sommeil, withings, templates, factorisation, changelog
+
+**Signal net :**
+- **Dashboard Santé (Sommeil) enrichi et densifié** : grille 2→3 colonnes, ajout KPI “Réveils” + bloc Ronflements (épisodes & durée), UI plus sobre (bar-card sans labels visibles).
+- **Capteurs Withings _local industrialisés** : dérivation automatique de la source depuis `this.entity_id` + fallback robuste sur `this.state` + factorisation via ancres YAML (fin de la duplication Jinja).
+- **Nouveau template Santé** : `duree_ronflements.yaml` ; suppression d’un template générique transitoire devenu inutile.
+- **Gouvernance changelog alignée** : ajout `v09_2_2.md` + mise à jour de `en_cours.md`.
+
+**Intention :**
+- Fiabiliser les capteurs locaux face aux `unknown/unavailable`.
+- Réduire la duplication template (maintenance simplifiée).
+- Enrichir la lecture sommeil sans ajouter de logique métier.
+
+---
+
+## 🧠 ARSENAL HA — v9.2.4 — STABLE — 2026-02-17  
+**Tags :** ui, ecs, planning, navigation, volets, templates, documentation
+
+**Signal net :**
+- **Planning ECS refondu** : structure `grid` + `vertical-stack`, sous-sections Matin/Soir standardisées (`sub_section_header`) + `tile` homogènes (ergonomie claire, compacte).
+- **Navigation “outillage” réintroduite** : accès directs (Sauvegardes, Automations, Scripts, Logs, États, Entités, Dashboards, Intégrations, Templates, File Editor) + bloc actions (Reboot HA, Ressources).
+- **Volets normalisés** : suppression variantes colorées au profit de `shutter_action_base` neutre + icônes cohérentes (`mdi:window-shutter*`) + section Chambres regroupée.
+- **Template volets simplifié** : fond neutre canon (`rgba(158, 158, 158, 0.2)`), fin des couleurs vert/rouge embarquées.
+- **Helper Chauffage** : icône `inhibition_geofencing_etat` alignée (`mdi:shield-check`).
+- **Documentation gouvernée** : ajout `v09_2_3.md` + note prospective `zigbee_reseau.md`.
+
+**Intention :**
+- Harmoniser l’ergonomie Réglages (planning ECS).
+- Assumer un menu Navigation “expert” complet.
+- Supprimer les couleurs décisionnelles des actions volets (neutralité UI).
+
+---
+
+## 🧠 ARSENAL HA — v9.2.5 — STABLE — 2026-02-18  
+**Tags :** ui, diagnostics, reglages, templates, climatisation, robustesse
+
+**Signal net :**
+- **Industrialisation des Diagnostics** : retrait massif des pavés `markdown` Jinja au profit de cartes statut 72px (Chauffage / Clim / ECS / Aération) + titres uniformisés “Diagnostics X”.
+- **Socle templates Diagnostics enrichi** : base dédiée Chauffage + templates spécifiques Climatisation / ECS (cartes compactes réutilisables).
+- **Réglages homogénéisés** : titres alignés “Réglages X” + bascule ponctuelle `entities` → `tile` (contrôles natifs, plus lisibles).
+- **Climatisation durcie** : script `execution_mode_cible` sécurisé (lecture explicite `states('climate.clim')` + garde-fous `unknown/unavailable`).
+- **Changelog complété** : ajout versionné v9.2.4.
+
+**Intention :**
+- Remplacer le diagnostic narratif par un diagnostic structuré, lisible, canon Arsenal.
+- Unifier la grammaire visuelle (Diagnostics / Réglages).
+- Éviter toute décision basée sur un état HVAC non fiable.
+
+---
+
+## 🧠 ARSENAL HA — v9.2.6 — STABLE — 2026-02-19  
+**Tags :** ui, diagnostics, chauffage, ouvertures, pluie, vicare, robustesse
+
+**Signal net :**
+- **Diagnostics Éclairage industrialisés** : disparition des blocs markdown “Simulation” au profit de grilles 3 colonnes homogènes (status_72_on_off + socle_info_72).
+- **Chauffage — Diagnostics durcis** : refactor profond des templates (objet `variables.diag` / `variables.diagnostic`) → catégorisation explicite (ok/warn/ko/info/indisponible), couleurs pilotées par type, labels normalisés.
+- **Ouvertures — Icônes dynamiques** : intégration des états temporisés (grâce) via `mdi:timer-sand` + variants ouverts/fermés cohérents (lecture pure, sans impact décisionnel).
+- **Pluie & ViCare — Fallback unifié** : factorisation Jinja via ancres (`this.entity_id` → source) + suppression `default_entity_id` → robustesse homogène des capteurs locaux.
+- **ViCare Gaz refactorisé** : rationalisation des templates (périodique / total) en remplacement des anciens fichiers segmentés.
+
+**Intention :**
+- Rendre les diagnostics 100 % structurés (plus aucun rendu narratif lourd).
+- Centraliser la logique d’étiquetage / couleur côté templates (UI déterministe).
+- Uniformiser tous les fallbacks “_local” (pluie, électricité, gaz) pour éviter les états incohérents après indisponibilité API.
+- Améliorer la lisibilité opérationnelle des ouvertures temporisées sans toucher aux invariants métier.
+
+---
+
+## 🧠 ARSENAL HA — v9.2.7 — STABLE — 2026-02-18  
+**Tags :** ui, factorisation, meteo, thermique, sante, robustesse, imprimerie
+
+**Signal net :**
+- **Factorisation Lovelace massive** : disparition des blocs markdown/auto-entities monolithiques au profit d’`includes/cartes/*` et `section_headers/*` gouvernables (Météo Min/Max, Diagnostics thermique, Clim, ECS, Zigbee, Batteries, Imprimerie, Déshumidificateur).
+- **Diagnostics Thermique Chauffage industrialisés** : décomposition en cartes dédiées (interprétation, inertie, oscillateur, contexte…) → maintenance fine, lisibilité accrue.
+- **`sensor.temperature_moyenne_maison` contractuel** :
+  - renommage + normalisation,
+  - seuils calculés exposés en attributs (`seuil_chauff_on`, `seuil_clim_on`),
+  - couleur Arsenal en attribut (`arsenal_bg`),
+  - alignement customize + recorder.
+- **Pluie & Santé durcies** :
+  - fallback numérique explicite sur capteurs pluie locaux,
+  - parsing robuste sommeil Withings (regex + gestion chaînes vides).
+- **Template chauffage (`*_courbe_diag_72`) renforcé** :
+  - normalisation `kind`,
+  - fallback explicite,
+  - couleurs strictement conformes à la charte Arsenal.
+
+**Intention :**
+- Éliminer les “monolithes UI” au profit de briques réutilisables, diffables et gouvernables.
+- Transformer la température moyenne maison en **KPI thermique central contractuel**.
+- Durcir les pipelines capteurs (météo / santé) face aux sources intermittentes.
+
+---
+
+## 🧠 ARSENAL HA — v9.4 — RECONSTRUCTION POST-ROLLBACK — 2026-02-23  
+**Type :** G4 — Consolidation stratégique  
+**Tags :** resilience, aeration_v3, volets_pluie, architecture, canonisation, timers, refactor_majeur
+
+**Signal net :**
+- **Résilience canonisée** : script unique `resilience_integration_recover` + backoff réel via timers dédiés → suppression totale des `time_pattern` et logiques anti-spam implicites.
+- **Intégrations structurées** : reload événementiel homogène (Netatmo, ViCare, Overkiz, SwitchBot, Airstage, Zigbee2MQTT, Synology, HomeKit) avec condition `systeme_stable`.
+- **Capteurs système consolidés** : centralisation `age_donnees_integrations` + `etat_integrations`, fin des fragments `age_des_donnees/*`.
+- **Aération V3 PRO atomique** : pipeline découpé (M1→M5), timers explicites, guard anti-zombie renforcé, séparation stricte détection / décision / action / analyse.
+- **Volets pluie industrialisés** : capteurs décisionnels dédiés + automatisation métier + templates UI 72 intégrés au socle.
+- **Nettoyage structurel massif** : suppression anciens reload, ancien `aeration.yaml`, logs zigbee, duplications diverses.
+- **Secrets rationalisés** : alignement `*_entry_id`, suppression doublons obsolètes.
+
+---
+
+## 🧠 ARSENAL HA — v9.5 — STABLE — 2026-02-XX  
+**Tags :** aeration, anticipation_meteo, chauffage, integrite, ui, architecture  
+**Signal net :**
+- Aération : M2 blindé + ΔT 100 % paramétrable (seuils & durées), fin des incohérences fantômes.
+- Chauffage : module Anticipation météo intégré au cœur décisionnel (confort différé si favorable).
+- Intégrité : invariants automatiques sur seuils/prolongations (impossible de configurer incohérent).
+- UI : diagnostic chauffage refactoré (anticipation intégrée), suppression includes legacy.
+- Documentation : hiérarchie v9 rationalisée, fin du modèle en_cours.
+
+---
+
+## 🧠 ARSENAL HA — v9.6 — STABLE — 2026-02-27  
+**Tags :** ouvertures, aeration, chauffage, alarme, observabilite, normalisation  
+**Signal net :**
+- Ouvertures : migration totale vers `contact_*` (N1/N2 canonique), capteurs “avec délai” fiabilisés (anti faux positifs reboot, cohérence timer).
+- Aération : pipeline M1–M6 consolidé (fermeture stable canonique, M5 sécurisé, déclenchement M1 unifié).
+- Chauffage : triggers rationalisés — alignement exclusif sur `fenetre_ouverte_maison_avec_delai` (fin recalculs parasites).
+- Alarme : alignement structurel sur couche `contact_*`, sans dérive métier.
+- Système : observabilité étendue (internet / stats) — couche purement diagnostic.
 
 ==================================================
 FIN INDEX

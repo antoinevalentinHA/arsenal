@@ -20,6 +20,11 @@ Le cas "blocage orphelin" est reconnu si :
 
 - `input_boolean.chauffage_blocage_aeration = on`
 - `timer.aeration_blocage = idle`
+- 'input_boolean.aeration_suspension_active = off'
+
+Note :
+Si aeration_suspension_active = on, le blocage est en suspension légitime (M5 actif). 
+M0 Cas C ne doit pas intervenir.
 
 ---
 

@@ -97,6 +97,20 @@
       target:
         entity_id: input_boolean.aeration_pipeline_arme
 
+    # Neutraliser datetime fin blocage (trace)
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.chauffage_fin_blocage_aeration
+      data:
+        datetime: "{{ now().date().isoformat() ~ ' 00:00:00' }}"
+
+    # Neutraliser datetime analyse ΔT (trace)
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.analyse_deltat_disponible
+      data:
+        datetime: "{{ now().date().isoformat() ~ ' 00:00:00' }}"
+
     # Journalisation minimale (audit)
     - action: logbook.log
       data:

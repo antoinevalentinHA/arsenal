@@ -41,6 +41,11 @@ Définition :
 
 - `chauffage_blocage_aeration = on`
 - `timer.aeration_blocage != active`
+- 'aeration_suspension_active = off'
+
+En M5 (suspension active), le timer blocage peut être idle 
+avec une datetime valide. 
+Cet état est canon et ne constitue pas une incohérence.
 
 Finalité :
 

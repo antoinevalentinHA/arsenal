@@ -70,26 +70,16 @@ aeration_m2_fin_episode:
         blocage_initial: "{{ (delai_analyse | int(0)) + 1 }}"
 
         fin_blocage_proposee: >
-          {{
-            (now() + timedelta(minutes = blocage_initial))
-            .replace(tzinfo=None)
-          }}
+          {{ now() + timedelta(minutes = blocage_initial) }}
 
         analyse_proposee: >
-          {{
-            (now() + timedelta(minutes = delai_analyse))
-            .replace(tzinfo=None)
-          }}
+          {{ now() + timedelta(minutes = delai_analyse) }}
 
         fin_blocage_actuelle: >
-          {{
-            states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime
-          }}
+          {{ states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime }}
 
         analyse_actuelle: >
-          {{
-            states('input_datetime.analyse_deltat_disponible') | as_datetime
-          }}
+          {{ states('input_datetime.analyse_deltat_disponible') | as_datetime }}
 
         fin_blocage_actuelle_valide: >
           {{
@@ -179,13 +169,13 @@ aeration_m2_fin_episode:
       target:
         entity_id: input_datetime.chauffage_fin_blocage_aeration
       data:
-        datetime: "{{ fin_blocage_cible | trim }}"
+        datetime: "{{ as_local(fin_blocage_cible | as_datetime).strftime('%Y-%m-%d %H:%M:%S') }}"
 
     - action: input_datetime.set_datetime
       target:
         entity_id: input_datetime.analyse_deltat_disponible
       data:
-        datetime: "{{ analyse_cible | trim }}"
+        datetime: "{{ as_local(analyse_cible | as_datetime).strftime('%Y-%m-%d %H:%M:%S') }}"
 
     # ------------------------------------------------------
     # Timers : démarrage / extension monotone

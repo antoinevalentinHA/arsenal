@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Ouvertures – Séjour – Marquer grâce échue
+#
+#  ID : 10170000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Marquer explicitement la FIN DE GRÂCE
+#     des fenêtres du séjour.
+#
+#     Ce marqueur distingue :
+#       - une expiration naturelle (timer.finished)
+#       - d’une annulation (timer.cancel)
+#
+#     Il constitue la seule source de vérité
+#     pour la qualification "avec délai" du séjour.
+#
+#  🧱 NATURE
+#
+#     - Writer unique du helper
+#       input_boolean.sejour_grace_echue
+#     - Aucun effet thermique
+#     - Aucun pilotage
+#
+#  🔒 INVARIANTS
+#
+#     - Ne s’exécute que sur event timer.finished
+#     - Exige qu’au moins une fenêtre séjour soit ouverte
+#
+# ==========================================================
+
+- id: "10170000000011"
+  alias: "Ouvertures – Séjour – Marquer grâce échue"
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.fenetre_sejour_ouverte_grace
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.contact_sejour
+      state: "on"
+
+  action:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.sejour_grace_echue

@@ -30,15 +30,10 @@ aeration_m3_prolonger_blocage:
         h: "{{ prolongation_heures | float(0) }}"
 
         fin_blocage_proposee: >
-          {{
-            (now() + timedelta(hours = h))
-            .replace(tzinfo=None)
-          }}
+          {{ now() + timedelta(hours = h) }}
 
         fin_blocage_actuelle: >
-          {{
-            states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime
-          }}
+          {{ states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime }}
 
         fin_blocage_actuelle_valide: >
           {{
@@ -77,12 +72,13 @@ aeration_m3_prolonger_blocage:
 
         # Cible timer = durée jusqu'à fin_blocage_cible
         blocage_cible_s: >
-          {% set dt = as_datetime(fin_blocage_cible) %}
-          {% if dt is none %}
+          {% set dt = fin_blocage_cible | as_datetime %}
+          {% set dt_ts = as_timestamp(dt) if dt is not none else none %}
+          {% set now_ts = as_timestamp(now()) %}
+          {% if dt_ts is none or now_ts is none %}
             0
           {% else %}
-            {% set s = (dt - now().replace(tzinfo=None)).total_seconds() %}
-            {{ 0 if s < 0 else (s | int(0)) }}
+            {{ [0, (dt_ts - now_ts) | int(0)] | max }}
           {% endif %}
 
         blocage_start_s: "{{ blocage_cible_s if blocage_cible_s > blocage_remaining_s else blocage_remaining_s }}"
@@ -100,7 +96,10 @@ aeration_m3_prolonger_blocage:
       target:
         entity_id: input_datetime.chauffage_fin_blocage_aeration
       data:
-        datetime: "{{ fin_blocage_cible | trim }}"
+        datetime: >
+          {{
+            as_local((fin_blocage_cible | as_datetime) if (fin_blocage_cible | as_datetime) is not none else now()).strftime('%Y-%m-%d %H:%M:%S')
+          }}
 
     # Timer blocage : étendre uniquement si ça repousse
     - if:

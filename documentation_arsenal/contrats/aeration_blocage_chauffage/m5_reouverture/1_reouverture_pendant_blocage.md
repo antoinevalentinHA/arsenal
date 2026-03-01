@@ -17,7 +17,7 @@ Il agit exclusivement à l’intérieur d’un blocage actif.
 
 ---
 
-## 🧩 AUTORITÉ
+## 🧩 AUTORITÉ (mise à jour)
 
 - Script exécuté : `script.aeration_m5_reouverture_pendant_blocage`
 - Appelé exclusivement par le pipeline maître.
@@ -26,7 +26,22 @@ Conditions imposées par le pipeline :
 
 - `chauffage_blocage_aeration = on`
 - `aeration_pipeline_arme = on`
-- réouverture qualifiée détectée
+- `binary_sensor.ouverture_qualifiee_maison = on`
+
+Définition normative :
+
+> Une **réouverture qualifiée** correspond exclusivement à l’état  
+> `binary_sensor.ouverture_qualifiee_maison`.
+
+Ce capteur constitue la frontière contractuelle unique entre  
+le sous-système *Ouvertures* et le moteur M5.
+
+Il agrège :
+
+- les ouvertures **immédiates** (entrée, chambres enfants),
+- les ouvertures **confirmées après délai** (séjour, chambre parents),
+
+sans inclure les tentatives en grâce ni les agrégats techniques bruts.
 
 ---
 

@@ -41,6 +41,8 @@ views:
       - type: vertical-stack
         cards:
 
+          - !include ../includes/cartes/systeme_stable.yaml
+
           ####################################################
           # 🍓 RASPBERRY PI
           ####################################################

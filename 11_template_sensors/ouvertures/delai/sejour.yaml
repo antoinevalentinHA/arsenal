@@ -1,12 +1,22 @@
 # ==========================================================
 # 🪟 TEMPLATE BINARY SENSOR — Séjour (grâce / délai expiré)
 # ----------------------------------------------------------
-# 💡 Logique Arsenal :
+# 💡 Logique Arsenal (ROBUSTE) :
 #   ON SEULEMENT si :
 #     1) au moins une fenêtre séjour est ouverte (N1 : contact_*)
-#     2) ET timer de grâce = idle
+#     2) ET la FIN DE GRÂCE a été atteinte explicitement
+#        (input_boolean.sejour_grace_echue = on)
 #
-#   Pendant le délai (active) → reste OFF.
+# ✅ Objectif :
+#   Éliminer l’ambiguïté "timer = idle" (idle peut provenir de timer.finished
+#   OU de timer.cancel), afin d’empêcher tout flash de confirmation.
+#
+#   Pendant la grâce :
+#     - timer devient active
+#     - le capteur reste OFF
+#   Après fin naturelle (timer.finished) :
+#     - sejour_grace_echue devient ON (writer unique)
+#     - le capteur devient ON tant qu’au moins une fenêtre reste ouverte
 # ==========================================================
 
 - binary_sensor:
@@ -29,17 +39,9 @@
 
         {% set t = 'timer.fenetre_sejour_ouverte_grace' %}
         {% set t_state = states(t) %}
-        {% set t_lc = as_timestamp(states[t].last_changed) if states[t] is not none else 0 %}
 
-        {% set last_open = 0 %}
-        {% for e in open_entities %}
-          {% set lc = as_timestamp(states[e].last_changed) %}
-          {% if lc > last_open %}
-            {% set last_open = lc %}
-          {% endif %}
-        {% endfor %}
-
-        {% set grace_pending = any_open and (t_state == 'active' or (t_state == 'idle' and t_lc <= last_open)) %}
+        {% set grace_echue = is_state('input_boolean.sejour_grace_echue', 'on') %}
+        {% set grace_pending = any_open and not grace_echue and t_state == 'active' %}
 
         {% if is_state(this.entity_id, 'on') %}
           mdi:window-open-variant
@@ -59,20 +61,8 @@
           'binary_sensor.contact_sejour_4'
         ] %}
 
-        {% set open_entities = sejour | select('is_state','on') | list %}
-        {% set any_open = (open_entities | length > 0) %}
+        {% set any_open = (sejour | select('is_state','on') | list | length > 0) %}
+        {% set grace_echue = is_state('input_boolean.sejour_grace_echue', 'on') %}
 
-        {% set t = 'timer.fenetre_sejour_ouverte_grace' %}
-        {% set t_state = states(t) %}
-        {% set t_lc = as_timestamp(states[t].last_changed) if states[t] is not none else 0 %}
-
-        {% set last_open = 0 %}
-        {% for e in open_entities %}
-          {% set lc = as_timestamp(states[e].last_changed) %}
-          {% if lc > last_open %}
-            {% set last_open = lc %}
-          {% endif %}
-        {% endfor %}
-
-        {% set ok = any_open and t_state == 'idle' and t_lc > last_open %}
+        {% set ok = any_open and grace_echue %}
         {{ 'on' if ok else 'off' }}

@@ -1,0 +1,7 @@
+type: conditional
+conditions:
+  - entity: input_boolean.systeme_stable
+    state: "off"
+card:
+  type: custom:button-card
+  template: systeme_bandeau_stabilite

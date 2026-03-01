@@ -35,6 +35,11 @@ peut initier un nouveau cycle complet.
 
 ---
 
+Remise à off de la suspension :
+aeration_suspension_active → OFF
+
+---
+
 ## 📝 JOURNALISATION
 
 M4 écrit un logbook :
@@ -61,6 +66,7 @@ Après exécution M4, l’état canon attendu est :
 - `chauffage_fin_blocage_aeration` neutralisé (`00:00:00`)
 - `analyse_deltat_disponible` neutralisé (`00:00:00`)
 - `aeration_pipeline_arme = off`
+- 'aeration_suspension_active = off'
 
 Aucune échéance future ne doit subsister.
 

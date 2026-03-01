@@ -23,13 +23,6 @@ carte_compteur_alerte:
               ? 'rgba(76,175,80,0.2)'                         // 🟢 Normal
               : 'rgba(244,67,54,0.2)';                        // 🔴 Incident
           ]]]
-    state:
-      - color: |
-          [[[
-            const v = Number(entity?.state);
-            if (isNaN(v)) return '#616161';
-            return v === 0 ? '#111' : '#b71c1c';
-          ]]]
 
   state_display: |
     [[[

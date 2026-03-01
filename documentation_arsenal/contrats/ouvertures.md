@@ -178,11 +178,27 @@ Caractéristiques :
 - restaurables,
 - aucune action automatique à expiration.
 
-Invariant :
+⚠️ Clarification structurelle :
+
+L’état `idle` d’un timer est ambigu.
+
+Il peut résulter :
+
+- soit d’une expiration naturelle (`timer.finished`),
+- soit d’une annulation explicite (`timer.cancel`),
+- soit d’un redémarrage système.
+
+En conséquence :
+
+> L’état `idle` ne constitue jamais une preuve de fin de grâce.
+
+Seul l’événement `timer.finished` peut être utilisé
+pour matérialiser contractuellement la fin d’une temporisation.
+
+Invariant fondamental :
 
 > Le timer définit le temps.  
-> L’interprétation est externe.
-
+> L’interprétation est externe et explicite.
 
 ## 3.2 Scripts de temporisation
 
@@ -254,11 +270,54 @@ Invariant :
 - matérialisent un fait métier
 - ne décident rien
 
-Invariant :
+Deux catégories existent :
+
+### 1️⃣ Faits métier
+
+Exemple :
+- `input_boolean.aeration_confirmee`
+
+Caractéristiques :
+
+- posés explicitement,
+- writer unique,
+- sans effet de bord.
+
+### 2️⃣ Marqueurs de temporisation
+
+Exemples :
+- `input_boolean.sejour_grace_echue`
+- `input_boolean.chambre_parents_grace_echue`
+
+Rôle :
+
+- matérialiser explicitement la fin naturelle
+  d’un timer de grâce (`timer.finished`),
+- lever l’ambiguïté structurelle de l’état `idle`,
+- servir de condition contractuelle aux capteurs
+  "avec délai".
+
+Caractéristiques :
+
+- activés exclusivement sur événement `timer.finished`,
+- désactivés explicitement lors :
+  - d’une fermeture complète,
+  - d’un redémarrage de temporisation,
+  - d’un redémarrage système si nécessaire,
+- ne déclenchent aucune action métier.
+
+Principe fondamental :
+
+> La fin d’une temporisation est matérialisée
+> par un marqueur explicite, jamais déduite
+> d’un état implicite.
+
+---
+
+Invariant global :
 
 > Les helpers sont des paramètres ou des marqueurs,  
 > jamais des décideurs.
-
 
 ---
 

@@ -116,12 +116,28 @@ elles ne qualifient aucun fait métier.
 ## 2.5 Cadres temporels
 
 - Timers de grâce
-- Rôle :
-  - fournir un cadre temporel
-- Aucun calcul
-- Aucune décision
 
-Ils introduisent la dimension temps dans le pipeline.
+Rôle :
+
+- fournir un cadre temporel
+- introduire la dimension temps dans le pipeline
+
+Caractéristiques :
+
+- aucun calcul métier
+- aucune décision
+- état `idle` structurellement ambigu
+  (expiration naturelle ou annulation)
+
+La fin d’une temporisation n’est jamais déduite
+directement de l’état du timer.
+
+Elle est matérialisée explicitement
+par un helper de type `input_boolean`
+activé exclusivement sur l’événement `timer.finished`.
+
+Les timers introduisent le temps.
+Les helpers matérialisent son interprétation.
 
 ---
 
@@ -130,12 +146,13 @@ Ils introduisent la dimension temps dans le pipeline.
 Les automatisations :
 
 - surveillent les états stabilisés,
-- s’appuient sur les timers,
-- posent explicitement des faits métier (helpers).
+- réagissent aux événements des timers,
+- matérialisent explicitement la fin de grâce via helpers dédiés,
+- posent des faits métier explicites lorsque les conditions sont réunies.
 
 Elles constituent la jonction entre :
 
-structure → temporalité → qualification.
+structure → temporalité → matérialisation → qualification.
 
 ---
 
@@ -165,7 +182,7 @@ Les dashboards :
 
 Flux conceptuel détaillé :
 
-  N0  Capteur physique brut
+N0  Capteur physique brut
             ↓
   N1  Normalisation structurelle
             ↓
@@ -175,11 +192,13 @@ Flux conceptuel détaillé :
             ↓
   Timer (cadre temporel)
             ↓
+  Helper (fin de grâce explicite)
+            ↓
   Automation de qualification
             ↓
   Helper (fait métier explicite)
             ↓
-  Moteurs externes (chauffage / aération / alarme)
+  Moteurs externes
             ↓
   Restitution UI
 

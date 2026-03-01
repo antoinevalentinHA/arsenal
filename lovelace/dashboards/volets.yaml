@@ -197,3 +197,27 @@ views:
                   icon: mdi:window-shutter
                   service: script.fermer_volet_matthieu
                   confirm: Confirmez-vous la fermeture du volet de la chambre de Matthieu ?
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🛏 Global
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: shutter_action_base
+                variables:
+                  name: Ouvrir
+                  icon: mdi:window-shutter-open
+                  service: script.ouvrir_volets_enfants
+                  confirm: Confirmez-vous l’ouverture des volets des chambres ?
+
+              - type: custom:button-card
+                template: shutter_action_base
+                variables:
+                  name: Fermer
+                  icon: mdi:window-shutter
+                  service: script.fermer_volets_enfants
+                  confirm: Confirmez-vous la fermeture des volets des chambres ?

@@ -101,6 +101,14 @@ Ce garde-fou ne s’exécute que dans ce cas.
 
 ---
 
+Après désarmement du pipeline, neutraliser les datetimes résiduelles :
+- input_datetime.chauffage_fin_blocage_aeration → YYYY-MM-DD 00:00:00
+- input_datetime.analyse_deltat_disponible → YYYY-MM-DD 00:00:00
+
+L'état résultant doit correspondre à l'état canon 1 (repos total).
+
+---
+
 ## 🧠 POSITIONNEMENT DANS LA GOUVERNANCE
 
 Ce garde-fou :

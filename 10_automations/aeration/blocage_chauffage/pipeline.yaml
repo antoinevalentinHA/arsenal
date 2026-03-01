@@ -100,7 +100,7 @@
       to: "on"
 
     # --------------------------------------------------------------
-    #  M2 - Fin aeration : fermeture globale (CANON)
+    #  M2/M6 - Fin aeration : fermeture globale (CANON)
     # --------------------------------------------------------------
     - id: fermeture_stable
       platform: state
@@ -125,6 +125,15 @@
       event_type: timer.finished
       event_data:
         entity_id: timer.aeration_blocage
+
+    # --------------------------------------------------------------
+    #  M5 - Reouverture pendant blocage : ouverture qualifiee
+    # --------------------------------------------------------------
+    - id: reouverture_pendant_blocage
+      platform: state
+      entity_id: binary_sensor.ouverture_qualifiee_maison
+      from: "off"
+      to: "on"
 
     # --------------------------------------------------------------
     #  RECOVER - Demande de remediation (coherence KO)
@@ -252,15 +261,14 @@
             # Garde-fou M5 : ne pas analyser trop tôt après une réouverture
             - condition: template
               value_template: >
-                {% set last = states('input_datetime.aeration_reouverture_last') | as_datetime %}
+                {% set last_raw = states('input_datetime.aeration_reouverture_last') %}
+                {% set last_ts = as_timestamp(last_raw) %}
+                {% set now_ts = as_timestamp(now()) %}
                 {% set cap = states('input_number.delai_stabilisation_capteurs') | int(0) %}
-                {% if last is none %}
+                {% if last_ts is none or now_ts is none %}
                   true
                 {% else %}
-                  {{
-                    (now().replace(tzinfo=None) - last).total_seconds()
-                    >= (cap * 60)
-                  }}
+                  {{ (now_ts - last_ts) >= (cap * 60) }}
                 {% endif %}
 
           sequence:
@@ -301,7 +309,7 @@
         - conditions:
 
             - condition: template
-              value_template: "{{ trigger.id == 'aeration_confirmee_on' }}"
+              value_template: "{{ trigger.id == 'reouverture_pendant_blocage' }}"
 
             - condition: state
               entity_id: input_boolean.chauffage_blocage_aeration

@@ -126,6 +126,22 @@ Ils ne décident rien.
 
 ---
 
+# 📊 3️⃣ HELPERS DE RESTITUTION UI
+
+## input_number.aeration_reference_thermique_utilisee
+
+Moyenne des six ref_temp_* post-snapshot M1
+Écrit par : M1
+Rôle : restitution UI uniquement, aucun rôle décisionnel
+
+## input_number.aeration_delta_t_utilise
+
+ΔT maximum monotone observé sur l'épisode (max des analyses M3)
+Écrit par : M3 orchestrateur
+Rôle : restitution UI uniquement, aucun rôle décisionnel
+
+---
+
 # 🛑 INVARIANTS
 
 - Aucun helper ne déclenche une action par lui-même.

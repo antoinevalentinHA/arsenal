@@ -1,21 +1,27 @@
 # ==========================================================
 # 🧠 ARSENAL — SCRIPT :
-#     Aération — M6 — Fermeture après réouverture (reprise timers)
+#     Aération — M6 — Fermeture après réouverture (reprise monotone)
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Lorsqu’une réouverture a eu lieu pendant blocage (M5),
-#   ce script relance les échéances uniquement après une
-#   fermeture globale stable :
-#     - reprise analyse ΔT
-#     - reprise fin de blocage horaire
+#   ce script restaure l’exécution des échéances suspendues :
+#     - relance analyse ΔT (stabilisation minimale)
+#     - garantit hiérarchie analyse < blocage
+#     - préserve strictement la monotonicité du blocage existant
 #
 # 🧩 PRINCIPE
 #   - Les timers ne doivent pas courir fenêtre ouverte.
-#   - La reprise se fait à partir de la fermeture stable.
+#   - À la fermeture stable :
+#       • analyse = delai_stabilisation_capteurs
+#       • blocage = max(delai_stabilisation_capteurs + 1,
+#                       blocage restant existant)
+#   - Aucun raccourcissement de blocage n’est autorisé.
 #
 # 🛡️ ROBUSTESSE
 #   - Zéro wait
-#   - Reprogrammation simple (cap)
+#   - Hiérarchie temporelle garantie (analyse toujours avant levée)
+#   - Compatible blocage court et blocage long
+#   - Post-reboot safe
 # ==========================================================
 
 aeration_m6_fermeture_post_reouverture:
@@ -24,29 +30,101 @@ aeration_m6_fermeture_post_reouverture:
 
   sequence:
 
+    ##################################################################
+    #  VARIABLES — Calcul monotone hybride (types sûrs)
+    ##################################################################
+
     - variables:
-        cap_min: "{{ states('input_number.delai_stabilisation_capteurs') | int(0) }}"
-        cap_s: "{{ (cap_min | int(0)) * 60 }}"
-        cap_hh: "{{ (cap_s // 3600) | int }}"
-        cap_mm: "{{ ((cap_s % 3600) // 60) | int }}"
-        cap_ss: "{{ (cap_s % 60) | int }}"
-        cap_duration: "{{ '%02d:%02d:%02d' | format(cap_hh, cap_mm, cap_ss) }}"
+
+        # --------------------------------------------------------------
+        # Stabilisation minimale (analyse)
+        # --------------------------------------------------------------
+        delai_analyse_min: "{{ states('input_number.delai_stabilisation_capteurs') | int(0) }}"
+        analyse_min_s: "{{ delai_analyse_min * 60 }}"
+
+        # --------------------------------------------------------------
+        # Blocage minimal = analyse + 1 minute (hiérarchie M3 < M4)
+        # --------------------------------------------------------------
+        blocage_min_s: "{{ (delai_analyse_min + 1) * 60 }}"
+
+        # --------------------------------------------------------------
+        # Datetime cibles existantes (M2/M3) + now (cast explicite)
+        # --------------------------------------------------------------
+        fin_blocage_dt: >
+          {{ (states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime) if (states('input_datetime.chauffage_fin_blocage_aeration') | as_datetime) is not none else none }}
+
+        analyse_dt: >
+          {{ (states('input_datetime.analyse_deltat_disponible') | as_datetime) if (states('input_datetime.analyse_deltat_disponible') | as_datetime) is not none else none }}
+
+        now_dt: "{{ now() }}"
+
+        # --------------------------------------------------------------
+        # Temps restant réel selon échéances existantes (secondes)
+        # --------------------------------------------------------------
+        blocage_restant_s: >
+          {% set fb = states('input_datetime.chauffage_fin_blocage_aeration') %}
+          {% set fb_ts = as_timestamp(fb) %}
+          {% set now_ts = as_timestamp(now()) %}
+          {% if fb_ts is not none and now_ts is not none %}
+            {{ [0, (fb_ts - now_ts) | int(0)] | max }}
+          {% else %}
+            0
+          {% endif %}
+
+        analyse_restant_s: >
+          {% set ad = states('input_datetime.analyse_deltat_disponible') %}
+          {% set ad_ts = as_timestamp(ad) %}
+          {% set now_ts = as_timestamp(now()) %}
+          {% if ad_ts is not none and now_ts is not none %}
+            {{ [0, (ad_ts - now_ts) | int(0)] | max }}
+          {% else %}
+            0
+          {% endif %}
+
+        # --------------------------------------------------------------
+        # Monotonicité hybride
+        # - Analyse : stabilisation minimale (cap)
+        # - Blocage : max(cap+1, blocage restant existant)
+        # --------------------------------------------------------------
+        analyse_final_s: "{{ analyse_min_s }}"
+        blocage_final_s: "{{ [blocage_min_s, blocage_restant_s] | max }}"
+
+        # --------------------------------------------------------------
+        # Format HH:MM:SS analyse
+        # --------------------------------------------------------------
+        analyse_hh: "{{ (analyse_final_s // 3600) | int }}"
+        analyse_mm: "{{ ((analyse_final_s % 3600) // 60) | int }}"
+        analyse_ss: "{{ (analyse_final_s % 60) | int }}"
+        analyse_duration: "{{ '%02d:%02d:%02d' | format(analyse_hh, analyse_mm, analyse_ss) }}"
+
+        # --------------------------------------------------------------
+        # Format HH:MM:SS blocage
+        # --------------------------------------------------------------
+        blocage_hh: "{{ (blocage_final_s // 3600) | int }}"
+        blocage_mm: "{{ ((blocage_final_s % 3600) // 60) | int }}"
+        blocage_ss: "{{ (blocage_final_s % 60) | int }}"
+        blocage_duration: "{{ '%02d:%02d:%02d' | format(blocage_hh, blocage_mm, blocage_ss) }}"
+
+    ##################################################################
+    #  REDÉMARRAGE TIMERS — Hiérarchie garantie
+    ##################################################################
 
     - action: timer.start
       target:
         entity_id: timer.aeration_analyse_delta_t
       data:
-        duration: "{{ cap_duration }}"
+        duration: "{{ analyse_duration }}"
 
     - action: timer.start
       target:
         entity_id: timer.aeration_blocage
       data:
-        duration: "{{ cap_duration }}"
+        duration: "{{ blocage_duration }}"
 
-    # ------------------------------------------------------
-    # Fin de suspension (consommation M6)
-    # ------------------------------------------------------
+    ##################################################################
+    #  FIN DE SUSPENSION (consommation M6)
+    ##################################################################
+
     - action: input_boolean.turn_off
       target:
         entity_id: input_boolean.aeration_suspension_active

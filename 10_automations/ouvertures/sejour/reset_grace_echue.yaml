@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Ouvertures – Séjour – Reset grâce échue
+#
+#  ID : 10170000000012
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Réinitialiser le marqueur de FIN DE GRÂCE du séjour
+#     `input_boolean.sejour_grace_echue` à OFF.
+#
+#     Ce reset est requis pour garantir qu’aucune grâce
+#     échue ancienne ne puisse "confirmer" une ouverture
+#     ultérieure (anti flash / anti héritage).
+#
+#  🧱 NATURE
+#
+#     - Writer du helper (reset)
+#     - Aucun pilotage
+#     - Aucun effet thermique
+#
+#  🔒 INVARIANTS
+#
+#     - OFF dès fermeture complète du séjour
+#     - OFF dès (re)démarrage du timer de grâce
+#       (nouvelle tentative)
+#
+# ==========================================================
+
+- id: "10170000000012"
+  alias: "Ouvertures – Séjour – Reset grâce échue"
+  mode: restart
+
+  trigger:
+
+    # Fermeture complète séjour
+    - platform: state
+      entity_id: binary_sensor.contact_sejour
+      to: "off"
+      id: sejour_ferme
+
+    # Nouvelle tentative : timer redémarré
+    - platform: state
+      entity_id: timer.fenetre_sejour_ouverte_grace
+      to: "active"
+      id: timer_redemarre
+
+    # Robustesse boot : repartir clean
+    - platform: homeassistant
+      event: start
+      id: ha_start
+
+  action:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.sejour_grace_echue

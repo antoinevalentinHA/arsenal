@@ -20,7 +20,7 @@ Le pipeline impose, avant exécution de M3 :
 
 - `chauffage_blocage_aeration = on`
 - `aeration_pipeline_arme = on`
-- `binary_sensor.contact_fenetres_maison = off`
+- `binary_sensor.ouverture_qualifiee_maison = off`
 
 2️⃣ Condition temporelle :
 

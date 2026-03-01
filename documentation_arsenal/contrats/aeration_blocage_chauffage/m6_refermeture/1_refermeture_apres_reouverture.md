@@ -81,9 +81,11 @@ M6 :
 - `timer.aeration_blocage`
 - `timer.aeration_analyse_delta_t`
 
-Uniquement si :
-
-- la durée restante est strictement positive.
+M6 redémarre systématiquement les timers sur la base des échéances existantes.
+Si l'échéance est expirée (fin_cible - now ≤ 0), 
+le timer est redémarré avec la durée minimale 
+(delai_stabilisation_capteurs pour l'analyse, delai_stabilisation_capteurs + 1 min pour le blocage).
+M6 garantit toujours un timer actif à la sortie.
 
 ---
 

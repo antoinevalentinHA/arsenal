@@ -29,6 +29,11 @@ Remédiation unique et soft :
 
 - `input_boolean.aeration_pipeline_arme` doit être remis à `off`.
 
+Avant le désarmement du pipeline, annuler les timers résiduels :
+- timer.aeration_analyse_delta_t → cancel
+- timer.aeration_blocage → cancel
+- Puis : aeration_pipeline_arme → OFF
+
 ---
 
 ## 🧩 PROPRIÉTÉS

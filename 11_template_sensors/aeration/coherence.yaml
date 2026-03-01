@@ -33,7 +33,7 @@
         {% set enveloppe_ouverte = is_state('binary_sensor.contact_fenetres_maison','on') %}
         {% set suspension = is_state('input_boolean.aeration_suspension_active','on') %}
 
-        {% set ko_blocage_orphelin = blocage and not t_blocage_active %}
+        {% set ko_blocage_orphelin = blocage and not t_blocage_active and not suspension %}
         {% set ko_pipeline_zombie = pipeline and (not episode) and (not blocage) and (not fenetres_q) %}
         {% set ko_trace = blocage and (not fin_valide) %}
         {% set ko_suspension_manquante = blocage and enveloppe_ouverte and (not suspension) %}

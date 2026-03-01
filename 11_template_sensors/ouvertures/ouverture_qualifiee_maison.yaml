@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (METIER)
+#     Ouverture qualifiée (Maison)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer un signal UNIQUE d’OUVERTURE QUALIFIÉE,
+#   destiné aux moteurs externes (ex: M5).
+#
+# ✅ Définition "ouverture qualifiée" :
+#   - Ouvertures SANS délai (immédiat) :
+#       • Entrée
+#       • Chambres enfants (Arnaud / Matthieu)
+#   - Ouvertures AVEC délai (confirmées uniquement) :
+#       • Séjour (après grâce)
+#       • Chambre parents (après grâce)
+#
+# 📌 Invariants
+#   - Ne remplace PAS les capteurs composites UI existants.
+#   - Ne mélange pas "tentative en grâce" et "confirmée".
+#   - Signal binaire ON/OFF, sémantique unique :
+#       "autorise une suspension M5 si blocage actif".
+#
+# 📍 Entité :
+#   binary_sensor.ouverture_qualifiee_maison
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Ouverture qualifiée (Maison)"
+      unique_id: ouverture_qualifiee_maison
+      default_entity_id: binary_sensor.ouverture_qualifiee_maison
+      device_class: opening
+
+      state: >
+        {% set immediat = [
+          'binary_sensor.contact_fenetre_entree',
+          'binary_sensor.contact_chambre_arnaud',
+          'binary_sensor.contact_chambre_matthieu'
+        ] %}
+
+        {% set confirme = [
+          'binary_sensor.fenetre_sejour_ouverte_avec_delai',
+          'binary_sensor.fenetre_chambre_parents_ouverte_avec_delai'
+        ] %}
+
+        {% set immediat_on = (immediat | select('is_state', 'on') | list | length > 0) %}
+        {% set confirme_on = (confirme | select('is_state', 'on') | list | length > 0) %}
+
+        {{ 'on' if (immediat_on or confirme_on) else 'off' }}

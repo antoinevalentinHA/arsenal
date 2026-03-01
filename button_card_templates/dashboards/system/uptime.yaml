@@ -41,7 +41,7 @@ carte_uptime_systeme:
             if (jours < 1) return "rgba(158, 158, 158, 0.2)";
 
             // Bleu info canon
-            if (jours < 3) return "rgba(144, 202, 249, 0.25)";
+            if (jours < 3) return "rgba(33, 150, 243, 0.2)";
 
             // Vert OK canon
             return "rgba(76, 175, 80, 0.2)";

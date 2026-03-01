@@ -1,0 +1,55 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Ouvertures – Chambre parents – Reset grâce échue
+#
+#  ID : 10170000000014
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Réinitialiser le marqueur de FIN DE GRÂCE
+#     `input_boolean.chambre_parents_grace_echue` à OFF.
+#
+#     Empêche toute confirmation héritée
+#     lors d’une nouvelle tentative.
+#
+#  🧱 NATURE
+#
+#     - Writer (reset) du helper
+#     - Aucun pilotage
+#     - Aucun effet thermique
+#
+#  🔒 INVARIANTS
+#
+#     - OFF à fermeture complète parents
+#     - OFF à redémarrage du timer
+#     - OFF au démarrage HA (robustesse)
+#
+# ==========================================================
+
+- id: "10170000000014"
+  alias: "Ouvertures – Chambre parents – Reset grâce échue"
+  mode: restart
+
+  trigger:
+
+    # Fermeture complète chambre parents
+    - platform: state
+      entity_id: binary_sensor.contact_chambre_parents
+      to: "off"
+      id: parents_fermes
+
+    # Nouvelle tentative (timer redémarré)
+    - platform: state
+      entity_id: timer.fenetre_chambre_parents_grace
+      to: "active"
+      id: timer_redemarre
+
+    # Robustesse boot
+    - platform: homeassistant
+      event: start
+      id: ha_start
+
+  action:
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.chambre_parents_grace_echue

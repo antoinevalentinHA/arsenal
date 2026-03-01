@@ -52,6 +52,28 @@ telles que définies par le contrat Ouvertures :
 - `binary_sensor.contact_chambre_matthieu`
 - `binary_sensor.contact_fenetre_entree`
 
+### Ouverture qualifiée (frontière aération)
+- `binary_sensor.ouverture_qualifiee_maison`
+
+Rôle :
+
+- Signal métier unique de **réouverture bloquante**
+- Frontière contractuelle utilisée par :
+  - M1 (qualification du fait métier)
+  - M3 (garde-fou structurel ΔT)
+  - M5 (suspension pendant blocage)
+
+Ce capteur constitue l’interface normative entre le
+sous-système *Ouvertures* et le domaine
+*Aération → Blocage Chauffage*.
+
+Il ne remplace pas :
+
+- `binary_sensor.fenetre_ouverte_maison`
+- `binary_sensor.fenetre_ouverte_maison_avec_delai`
+
+et ne redéfinit aucune logique interne du contrat Ouvertures.
+
 ---
 
 ## 🛑 INTERDITS

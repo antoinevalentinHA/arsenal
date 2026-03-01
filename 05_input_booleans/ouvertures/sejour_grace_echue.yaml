@@ -1,0 +1,24 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     sejour_grace_echue
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Marqueur explicite de FIN DE GRÂCE pour les fenêtres
+#   du séjour.
+#
+#   Passe à ON uniquement sur event `timer.finished`
+#   du timer.fenetre_sejour_ouverte_grace.
+#
+#   Permet de distinguer :
+#     - grâce réellement échue
+#     - timer annulé / redémarré
+#
+# 🧱 INVARIANTS
+#   - Aucun pilotage
+#   - Aucun effet de bord
+#   - Écrit uniquement par automation dédiée
+# ==========================================================
+
+sejour_grace_echue:
+  name: "Séjour — Grâce échue"
+  icon: mdi:timer-check-outline

@@ -29,8 +29,8 @@ Chaque valeur est convertie via `| float(0)`.
 
 ## 🧮 MÉTHODE
 
-- Chaque capteur ΔT représente :
-  température courante − référence snapshot M1.
+- Chaque capteur ΔT représente : max(référence snapshot M1 − température courante, 0).
+- Les valeurs négatives sont impossibles par construction.
 - Les valeurs indisponibles sont converties à 0.
 - `delta_max` est un maximum simple.
 - Aucun filtrage statistique.
@@ -52,9 +52,13 @@ Si un capteur est :
 → il est traité comme 0.
 
 Conséquence structurelle :
+Une indisponibilité de temperature_* produit un ΔT égal 
+à la référence T_REF entière — biais conservateur vers la prolongation.
+Une indisponibilité de ref_temp_* produit un ΔT nul — pas de prolongation.
+Ce comportement asymétrique est assumé : 
+mieux vaut prolonger un blocage que le lever prématurément sur donnée manquante.
 
-Une indisponibilité ne peut jamais
-produire une prolongation de blocage.
+Le comportement décrit résulte exclusivement de la règle de conversion | float(0) appliquée à chaque source.
 
 ---
 

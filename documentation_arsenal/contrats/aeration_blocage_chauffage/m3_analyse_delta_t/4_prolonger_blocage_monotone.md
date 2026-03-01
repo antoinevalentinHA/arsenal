@@ -29,7 +29,7 @@ Champs attendus :
 Normalisation interne :
 
 - `d = delta_max | float(0)`
-- `h = prolongation_heures | int(0)`
+- `h = prolongation_heures | float(0) — valeur en heures, fraction possible.
 
 ---
 

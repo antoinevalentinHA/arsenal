@@ -31,8 +31,9 @@
           'binary_sensor.contact_chambre_parents_milieu'
         ] %}
         {% set parents_open = (parents_fenetres | select('is_state', 'on') | list | length > 0) %}
+        {% set parents_grace_echue = is_state('input_boolean.chambre_parents_grace_echue', 'on') %}
         {% set parents_timer = states('timer.fenetre_chambre_parents_grace') %}
-        {% set grace_etage = parents_open and parents_timer == 'active' %}
+        {% set grace_etage = parents_open and parents_timer == 'active' and not parents_grace_echue %}
 
         {% set sejour_fenetres = [
           'binary_sensor.contact_sejour_1',
@@ -41,8 +42,9 @@
           'binary_sensor.contact_sejour_4'
         ] %}
         {% set sejour_open = (sejour_fenetres | select('is_state', 'on') | list | length > 0) %}
+        {% set sejour_grace_echue = is_state('input_boolean.sejour_grace_echue', 'on') %}
         {% set sejour_timer = states('timer.fenetre_sejour_ouverte_grace') %}
-        {% set grace_sejour = sejour_open and sejour_timer == 'active' %}
+        {% set grace_sejour = sejour_open and sejour_timer == 'active' and not sejour_grace_echue %}
 
         {% if is_state(this.entity_id, 'on') %}
           mdi:window-open-variant
