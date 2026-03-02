@@ -86,7 +86,6 @@
 #
 #     Home Assistant 2024.8+
 # ==========================================================
-
 - id: "10170000000009"
   alias: "Ouvertures – Qualification aération confirmée"
   mode: single
@@ -94,20 +93,20 @@
   trigger:
 
     # ==============================
-    # Zones AVEC délai
+    # Zones AVEC délai (marqueurs explicites)
     # ==============================
 
-    - platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.fenetre_sejour_ouverte_grace
-      id: timer_sejour
+    - platform: state
+      entity_id: input_boolean.sejour_grace_echue
+      from: "off"
+      to: "on"
+      id: sejour_grace_echue
 
-    - platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.fenetre_chambre_parents_grace
-      id: timer_chambre_parents
+    - platform: state
+      entity_id: input_boolean.chambre_parents_grace_echue
+      from: "off"
+      to: "on"
+      id: parents_grace_echue
 
     # ==============================
     # Zones SANS délai (immédiat)
@@ -130,7 +129,6 @@
 
   condition:
 
-    # Ne pas confirmer pendant le boot
     - condition: state
       entity_id: input_boolean.systeme_stable
       state: "on"
@@ -141,7 +139,6 @@
 
         # ======================================================
         # A) Zones SANS délai
-        #    -> attendre que l'agrégat filtré reflète l'ouverture
         # ======================================================
         - conditions:
             - condition: trigger
@@ -152,12 +149,10 @@
 
           sequence:
 
-            # Laisser le temps à l'ouverture qualifiee de remonter
             - wait_template: "{{ is_state('binary_sensor.ouverture_qualifiee_maison', 'on') }}"
               timeout: "00:00:03"
               continue_on_timeout: true
 
-            # Garde-fou après micro-délai : ouverture qualifiee réellement présente
             - condition: state
               entity_id: binary_sensor.ouverture_qualifiee_maison
               state: "on"
@@ -167,19 +162,33 @@
                 entity_id: input_boolean.aeration_confirmee
 
         # ======================================================
-        # B) Zones AVEC délai
-        #    -> garde-fou immédiat (évite confirmation tardive)
+        # B) Zones AVEC délai — Séjour
         # ======================================================
         - conditions:
             - condition: trigger
-              id:
-                - timer_sejour
-                - timer_chambre_parents
+              id: sejour_grace_echue
 
           sequence:
 
             - condition: state
-              entity_id: binary_sensor.ouverture_qualifiee_maison
+              entity_id: binary_sensor.contact_sejour
+              state: "on"
+
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.aeration_confirmee
+
+        # ======================================================
+        # C) Zones AVEC délai — Chambre parents
+        # ======================================================
+        - conditions:
+            - condition: trigger
+              id: parents_grace_echue
+
+          sequence:
+
+            - condition: state
+              entity_id: binary_sensor.contact_chambre_parents
               state: "on"
 
             - action: input_boolean.turn_on
