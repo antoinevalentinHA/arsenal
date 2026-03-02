@@ -1,0 +1,24 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     Chauffage — Pré-confort retour Vacances — Contrôles & état calculé
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Déclarer les helpers du mécanisme de pré-confort retour Vacances.
+#
+#   - input_boolean.pre_confort_enable :
+#       Disjoncteur opérateur (neutralisation immédiate).
+#
+#   - input_boolean.pre_confort_actif_calcule :
+#       Vérité interne de l’orchestrateur (fenêtre + Vacances actives + système stable).
+#
+# 🧱 INTEGRATION
+#   input_boolean: !include_dir_merge_named 05_input_booleans/
+# ==========================================================
+
+pre_confort_enable:
+  name: "Pré-confort — Activé"
+  icon: mdi:toggle-switch
+
+pre_confort_actif_calcule:
+  name: "Pré-confort — Actif (calculé)"
+  icon: mdi:radiator

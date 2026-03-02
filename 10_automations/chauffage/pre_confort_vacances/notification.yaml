@@ -28,7 +28,7 @@
 
   trigger:
     - platform: state
-      entity_id: binary_sensor.pre_confort_actif
+      entity_id: input_boolean.pre_confort_actif_calcule
 
   action:
     - choose:
@@ -38,7 +38,7 @@
         # --------------------------------------------------
         - conditions:
             - condition: state
-              entity_id: binary_sensor.pre_confort_actif
+              entity_id: input_boolean.pre_confort_actif_calcule
               state: "on"
           sequence:
             - service: persistent_notification.create
@@ -57,7 +57,7 @@
         # --------------------------------------------------
         - conditions:
             - condition: state
-              entity_id: binary_sensor.pre_confort_actif
+              entity_id: input_boolean.pre_confort_actif_calcule
               state: "off"
           sequence:
             - service: persistent_notification.dismiss

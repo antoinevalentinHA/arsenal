@@ -230,7 +230,8 @@ Règle cardinale :
 
 ### Autorisations forcées en absence
 
-En régime absence, hors override opérateur, toute autorisation `comfort`
+En régime **Vacances effectif** (au sens strict : `binary_sensor.vacances_actives = on`),
+hors override opérateur, toute autorisation `comfort`
 produite :
 
 - par pré-confort retour vacances,
@@ -248,12 +249,12 @@ Note :
 Le forçage utilisateur via `mode_confort_chauffage`
 ne relève pas de la présente section.
 Il constitue un override souverain et impose `comfort`
-indépendamment du régime d’absence.
+indépendamment du régime Vacances.
 
 Règle absolue :
 
 > ⚠️ Le pré-confort retour vacances ne peut JAMAIS
-> produire une décision de confort en absence
+> produire une décision de confort en absence réelle
 > hors inhibition géofencing explicitement active.
 
 ---

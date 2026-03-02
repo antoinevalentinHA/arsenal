@@ -1,0 +1,25 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Chauffage — Pré-confort retour Vacances — Fenêtre calculée
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Matérialiser la fenêtre temporelle de pré-confort (début/fin),
+#   utilisée par l’orchestrateur événementiel (timers + réconciliation).
+#
+# 📌 ENTITES
+#   - input_datetime.pre_confort_debut_calcule
+#   - input_datetime.pre_confort_fin_calcule
+#
+# 🧱 INTEGRATION
+#   input_datetime: !include_dir_merge_named 07_input_datetimes/
+# ==========================================================
+
+pre_confort_debut_calcule:
+  name: "Pre-confort — Début calculé"
+  has_date: true
+  has_time: true
+
+pre_confort_fin_calcule:
+  name: "Pre-confort — Fin calculée"
+  has_date: true
+  has_time: true

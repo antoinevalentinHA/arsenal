@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERN)
+#     Chauffage — Pré-confort retour Vacances — Fenêtre valide
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Indiquer si la fenêtre temporelle de pré-confort est calculable
+#   (fin_vacances valide + durée > 0).
+#
+#   - binary_sensor.pre_confort_fenetre_valide
+#
+# 📌 NOTE
+#   Ce capteur ne tient PAS compte de pre_confort_enable / vacances_actives /
+#   systeme_stable : il qualifie uniquement la validité des données de fenêtre.
+#
+# 🔗 DEPENDANCES
+#   - input_datetime.fin_vacances
+#   - input_number.duree_prechauffage_retour_vacances
+#   - sensor.pre_confort_debut_ts
+#   - sensor.pre_confort_fin_ts
+#
+# 🧱 INTEGRATION
+#   template: !include_dir_merge_list 11_template_sensors/
+# ==========================================================
+
+- binary_sensor:
+    - name: "pre_confort_fenetre_valide"
+      unique_id: pre_confort_fenetre_valide
+      icon: mdi:check-decagram-outline
+
+      state: >
+        {% set UNAV = ['unknown','unavailable','none','None',''] %}
+
+        {% set debut_ts = states('sensor.pre_confort_debut_ts') %}
+        {% set fin_ts = states('sensor.pre_confort_fin_ts') %}
+
+        {% if debut_ts in UNAV or fin_ts in UNAV %}
+          false
+        {% else %}
+          {{ (debut_ts | int(0)) < (fin_ts | int(0)) }}
+        {% endif %}

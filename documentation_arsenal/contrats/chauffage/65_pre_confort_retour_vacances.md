@@ -114,6 +114,9 @@ Règle cardinale :
 > 🔒 Toute activation de `mode_confort_chauffage`
 > écrase immédiatement tout mécanisme de pré-confort.
 
+L’override opérateur a priorité sur
+input_boolean.pre_confort_actif_calcule.
+
 Conséquences normatives :
 
 - le pré-confort ne peut jamais limiter un override humain,
@@ -165,7 +168,8 @@ Le pré-confort :
 
 Le pré-confort peut être autorisé uniquement si :
 
-- le régime courant est **Vacances**,
+- le régime courant est **Vacances**
+  (au sens strict : `binary_sensor.vacances_actives = on`),
 - une date / fenêtre de retour utilisateur est connue,
 - la fenêtre temporelle d’anticipation est atteinte,
 - aucune interdiction hiérarchique n’est active :
@@ -259,6 +263,87 @@ Statut :
 ---
 
 # ----------------------------------------------------------
+# 🔧 5ter. IMPLÉMENTATION TECHNIQUE ÉVÉNEMENTIELLE (V3)
+# ----------------------------------------------------------
+
+L’implémentation V3 du mécanisme de pré-confort repose
+sur une orchestration strictement événementielle,
+sans polling périodique.
+
+## 🧱 Architecture technique
+
+La fenêtre de pré-confort est matérialisée explicitement via :
+
+- `input_datetime.pre_confort_debut_calcule`
+- `input_datetime.pre_confort_fin_calcule`
+
+L’état interne canonique est porté par :
+
+- `input_boolean.pre_confort_actif_calcule`
+
+Ce boolean constitue la **vérité opérationnelle unique**
+du mécanisme de pré-confort.
+
+Il ne produit aucune décision,
+mais alimente exclusivement la couche :
+
+- `70_autorisation_thermostat.md`
+
+---
+
+## 🔁 Recalcul & Réconciliation
+
+Le mécanisme est recalculé exclusivement lors :
+
+- d’un redémarrage Home Assistant,
+- du passage de `systeme_stable` à `on`,
+- d’une modification de :
+  - `input_datetime.fin_vacances`,
+  - `input_number.duree_prechauffage_retour_vacances`,
+  - `binary_sensor.vacances_actives`,
+  - `input_boolean.pre_confort_enable`,
+- de la fin des timers instrumentaux.
+
+Aucun recalcul périodique n’est autorisé.
+
+---
+
+## ⏱️ Timers instrumentaux
+
+Les timers :
+
+- `timer.pre_confort_jusqua_debut`
+- `timer.pre_confort_jusqua_fin`
+
+sont strictement instrumentaux.
+
+Ils :
+
+- ne portent aucune autorité décisionnelle,
+- ne constituent pas une source de vérité,
+- ne remplacent jamais la réconciliation logique.
+
+Toute perte d’état est compensée
+par la logique de recalcul idempotente.
+
+---
+
+## 🔒 Invariants techniques V3
+
+- aucune dépendance au `time_pattern`,
+- aucune temporisation aveugle,
+- aucune activation autonome post-reboot,
+- invalidation immédiate si les préconditions deviennent fausses,
+- orchestration déterministe et reproductible.
+
+Statut :
+
+> Implémentation événementielle robuste,  
+> cohérente avec la gouvernance Chauffage Arsenal V3 PRO.
+
+---
+
+# ----------------------------------------------------------
 # 🔁 6. EFFETS NORMATIFS AUTORISÉS
 # ----------------------------------------------------------
 
@@ -293,8 +378,8 @@ Règles :
 
 - aucune activation hors fenêtre définie,
 - aucune réactivation rapprochée autorisée,
-- retour automatique à `reduced` obligatoire
-  en fin de fenêtre de pré-confort,
+- En fin de fenêtre, l’autorisation simulée comfort est retirée.
+Toute décision ultérieure relève exclusivement de la Décision Centrale.
 - aucune continuité de confort possible sans décision fraîche.
 
 Objectifs :

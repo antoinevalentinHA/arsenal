@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMERS
+#     Chauffage — Pré-confort retour Vacances — Orchestration
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Support événementiel du mécanisme de pré-confort.
+#
+#   - timer.pre_confort_jusqua_debut :
+#       Déclenche l’entrée dans la fenêtre.
+#
+#   - timer.pre_confort_jusqua_fin :
+#       Garantit la sortie stricte de fenêtre.
+#
+# 📌 STRATÉGIE
+#   - duration initiale fictive (écrasée dynamiquement)
+#   - restore: false (réconciliation gérée par l’automate)
+#
+# 🧱 INTEGRATION
+#   timer: !include_dir_merge_named 08_timers/
+# ==========================================================
+
+pre_confort_jusqua_debut:
+  name: "Pre-confort — Jusqu'au début"
+  duration: "00:00:10"
+  restore: false
+
+pre_confort_jusqua_fin:
+  name: "Pre-confort — Jusqu'a la fin"
+  duration: "00:00:10"
+  restore: false

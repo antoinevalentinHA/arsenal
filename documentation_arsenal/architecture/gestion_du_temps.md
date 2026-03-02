@@ -45,6 +45,9 @@ Les usages suivants sont **interdits** :
 
 👉 Tout usage de ce type est considéré comme une **dette architecturale**.
 
+interdit : polling pour “compenser un mauvais modèle” quand un événement existe
+autorisé : tick pour “déclencher l’évaluation” quand le seuil est atteint sans événement
+
 ---
 
 ## ✅ Usages autorisés du temps
@@ -103,6 +106,20 @@ Usage autorisé lorsque :
 * sans effet de bord,
 * tolérant aux redémarrages,
 * indépendant de l’historique.
+
+---
+
+### 5️⃣ Horloge de franchissement de seuil (deadline / durée minimale)
+
+Cas typique :
+* “appareil ON depuis ≥ 20 min”
+* “état OFF depuis ≥ 5 min”
+* “grâce expirée” quand un timer natif n’est pas utilisé
+
+Règles :
+* fréquence grossière (ex: /5, /10), jamais fine par réflexe
+* action strictement conditionnée par un test temporel (now() - last_changed, timer, input_datetime, etc.)
+* aucune action si déjà conforme (idempotence)
 
 ---
 

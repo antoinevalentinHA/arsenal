@@ -95,6 +95,28 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
+            name: 🏖️ Pré-confort retour Vacances
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_boolean.pre_confort_enable
+                name: "Activer"
+                icon: mdi:calendar-clock
+
+              - type: tile
+                entity: input_number.duree_prechauffage_retour_vacances
+                name: "Durée (h)"
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+          - type: custom:button-card
+            template: sub_section_header
             name: 🌡️ Température extérieure
 
           - type: grid

@@ -25,11 +25,15 @@
     - platform: homeassistant
       event: start
 
+    # Tick horaire (24/j) : nécessaire car dépend de now()
     - platform: time_pattern
-      minutes: "/10"
+      minutes: 0
+      seconds: 0
 
     - platform: state
-      entity_id: input_number.meteo_horizon_prevision_heures
+      entity_id:
+        - input_number.meteo_horizon_prevision_heures
+        - weather.forecast_maison
 
   action:
     - service: weather.get_forecasts
@@ -39,43 +43,28 @@
         type: hourly
       response_variable: metno_hourly
 
-  sensor:
-    - name: "Température prévue"
-      unique_id: temperature_prevue
-      unit_of_measurement: "°C"
-      device_class: temperature
+    - variables:
+        h: "{{ states('input_number.meteo_horizon_prevision_heures') | float(0) }}"
+        target: "{{ now() + timedelta(hours=h) }}"
+        forecasts: "{{ metno_hourly.get('weather.forecast_maison', {}).get('forecast', []) }}"
 
-      state: >
-        {% set h = states('input_number.meteo_horizon_prevision_heures') | float(0) %}
-        {% set target = now() + timedelta(hours=h) %}
-        {% set fc = metno_hourly.get('weather.forecast_maison', {}).get('forecast', []) %}
-
-        {% set ns = namespace(best_dt=None, best_temp=None) %}
-
-        {% for it in fc %}
-          {% if it.datetime is defined and it.temperature is defined %}
-            {% set dt = as_local(as_datetime(it.datetime)) %}
-            {% if dt >= target and (ns.best_dt is none or dt < ns.best_dt) %}
-              {% set ns.best_dt = dt %}
-              {% set ns.best_temp = it.temperature %}
+        # Résultats scalaires (pas d’objet)
+        match_temp: >
+          {% set ns = namespace(best_dt=none, best_temp=none) %}
+          {% for it in forecasts %}
+            {% if it.datetime is defined and it.temperature is defined %}
+              {% set dt = as_local(as_datetime(it.datetime)) %}
+              {% if dt >= target and (ns.best_dt is none or dt < ns.best_dt) %}
+                {% set ns.best_dt = dt %}
+                {% set ns.best_temp = it.temperature %}
+              {% endif %}
             {% endif %}
-          {% endif %}
-        {% endfor %}
+          {% endfor %}
+          {{ ns.best_temp if ns.best_temp is not none else none }}
 
-        {{ ns.best_temp if ns.best_temp is not none else none }}
-
-      attributes:
-        horizon_heures: >
-          {{ states('input_number.meteo_horizon_prevision_heures') }}
-
-        echeance_retenue: >
-          {% set h = states('input_number.meteo_horizon_prevision_heures') | float(0) %}
-          {% set target = now() + timedelta(hours=h) %}
-          {% set fc = metno_hourly.get('weather.forecast_maison', {}).get('forecast', []) %}
-
-          {% set ns = namespace(best_dt=None) %}
-
-          {% for it in fc %}
+        match_dt: >
+          {% set ns = namespace(best_dt=none) %}
+          {% for it in forecasts %}
             {% if it.datetime is defined %}
               {% set dt = as_local(as_datetime(it.datetime)) %}
               {% if dt >= target and (ns.best_dt is none or dt < ns.best_dt) %}
@@ -83,5 +72,17 @@
               {% endif %}
             {% endif %}
           {% endfor %}
-
           {{ ns.best_dt.isoformat() if ns.best_dt is not none else 'none' }}
+
+  sensor:
+    - name: "Température prévue"
+      unique_id: temperature_prevue
+      unit_of_measurement: "°C"
+      device_class: temperature
+
+      state: "{{ match_temp }}"
+
+      attributes:
+        horizon_heures: "{{ h }}"
+        echeance_retenue: "{{ match_dt }}"
+        derniere_maj: "{{ now().isoformat() }}"

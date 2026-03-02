@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS (MODERN)
+#     Chauffage — Pré-confort retour Vacances — Timestamps fenêtre
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer les timestamps (epoch seconds) de la fenêtre de pré-confort.
+#
+#   - sensor.pre_confort_debut_ts
+#   - sensor.pre_confort_fin_ts
+#
+# 🔗 DEPENDANCES
+#   - input_datetime.fin_vacances
+#   - input_number.duree_prechauffage_retour_vacances
+#
+# 🧱 INTEGRATION
+#   template: !include_dir_merge_list 11_template_sensors/
+# ==========================================================
+
+- sensor:
+    - name: "pre_confort_debut_ts"
+      unique_id: pre_confort_debut_ts
+      unit_of_measurement: "s"
+      icon: mdi:clock-start
+
+      state: >
+        {% set UNAV = ['unknown','unavailable','none','None',''] %}
+
+        {% set fin_raw = states('input_datetime.fin_vacances') %}
+        {% set duree_h = states('input_number.duree_prechauffage_retour_vacances') | float(0) %}
+
+        {% if fin_raw in UNAV or duree_h <= 0 %}
+          unknown
+        {% else %}
+          {% set fin_dt = strptime(fin_raw, '%Y-%m-%d %H:%M:%S') %}
+          {% if fin_dt is none %}
+            unknown
+          {% else %}
+            {{ (as_timestamp(fin_dt) - (duree_h * 3600)) | int(0) }}
+          {% endif %}
+        {% endif %}
+
+    - name: "pre_confort_fin_ts"
+      unique_id: pre_confort_fin_ts
+      unit_of_measurement: "s"
+      icon: mdi:clock-end
+
+      state: >
+        {% set UNAV = ['unknown','unavailable','none','None',''] %}
+
+        {% set fin_raw = states('input_datetime.fin_vacances') %}
+
+        {% if fin_raw in UNAV %}
+          unknown
+        {% else %}
+          {% set fin_dt = strptime(fin_raw, '%Y-%m-%d %H:%M:%S') %}
+          {% if fin_dt is none %}
+            unknown
+          {% else %}
+            {{ as_timestamp(fin_dt) | int(0) }}
+          {% endif %}
+        {% endif %}

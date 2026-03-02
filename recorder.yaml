@@ -187,6 +187,12 @@ include:
     - sensor.chauffage_raison_calculee
     - input_boolean.chauffage_inhibition_geofencing
     - input_select.chauffage_dernier_mode_decide
+    - input_boolean.pre_confort_enable
+    - input_boolean.pre_confort_actif_calcule
+    - sensor.chauffage_raison_calculee
+    - binary_sensor.vacances_actives
+    - input_datetime.fin_vacances
+    - input_number.duree_prechauffage_retour_vacances
 
     # =====================================================
     # ==== 🔥 CHAUFFAGE - DIAGNOSTIC THERMIQUE ====
