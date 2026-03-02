@@ -45,34 +45,44 @@
 
     - variables:
         h: "{{ states('input_number.meteo_horizon_prevision_heures') | float(0) }}"
-        target: "{{ now() + timedelta(hours=h) }}"
+        target_ts: "{{ as_timestamp(now() + timedelta(hours=h)) }}"
         forecasts: "{{ metno_hourly.get('weather.forecast_maison', {}).get('forecast', []) }}"
 
-        # Résultats scalaires (pas d’objet)
+        # ======================================================
+        # RESULTATS — SCALAIRES UNIQUEMENT (ANTI-TYPAGE JINJA)
+        #   - Comparaison en timestamps (float) : robuste
+        #   - Stockage ISO direct pour l'echeance retenue
+        #     (pas de reconversion timestamp -> datetime)
+        # ======================================================
+
         match_temp: >
-          {% set ns = namespace(best_dt=none, best_temp=none) %}
+          {% set ns = namespace(best_ts=none, best_temp=none, best_iso=none) %}
           {% for it in forecasts %}
             {% if it.datetime is defined and it.temperature is defined %}
               {% set dt = as_local(as_datetime(it.datetime)) %}
-              {% if dt >= target and (ns.best_dt is none or dt < ns.best_dt) %}
-                {% set ns.best_dt = dt %}
+              {% set ts = as_timestamp(dt) %}
+              {% if ts >= target_ts and (ns.best_ts is none or ts < ns.best_ts) %}
+                {% set ns.best_ts = ts %}
                 {% set ns.best_temp = it.temperature %}
+                {% set ns.best_iso = dt.isoformat() %}
               {% endif %}
             {% endif %}
           {% endfor %}
           {{ ns.best_temp if ns.best_temp is not none else none }}
 
         match_dt: >
-          {% set ns = namespace(best_dt=none) %}
+          {% set ns = namespace(best_ts=none, best_iso=none) %}
           {% for it in forecasts %}
             {% if it.datetime is defined %}
               {% set dt = as_local(as_datetime(it.datetime)) %}
-              {% if dt >= target and (ns.best_dt is none or dt < ns.best_dt) %}
-                {% set ns.best_dt = dt %}
+              {% set ts = as_timestamp(dt) %}
+              {% if ts >= target_ts and (ns.best_ts is none or ts < ns.best_ts) %}
+                {% set ns.best_ts = ts %}
+                {% set ns.best_iso = dt.isoformat() %}
               {% endif %}
             {% endif %}
           {% endfor %}
-          {{ ns.best_dt.isoformat() if ns.best_dt is not none else 'none' }}
+          {{ ns.best_iso if ns.best_iso is not none else 'none' }}
 
   sensor:
     - name: "Température prévue"

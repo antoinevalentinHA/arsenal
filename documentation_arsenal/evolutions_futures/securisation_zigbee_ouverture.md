@@ -26,6 +26,44 @@ GARDE-FOU PHYSIQUE ANTI-ÉPISODE ZOMBIE
   CRITIQUE — Sécurité thermique, autonomie système, absence de blocage irréversible
 
 ----------------------------------------------------------
+🧱 MESURE MATÉRIELLE IMMÉDIATE — REDONDANCE CAPTEURS
+----------------------------------------------------------
+
+Décision actée :
+
+- Ajout d’un second capteur Zigbee sur chaque ouvrant critique.
+- Objectif : réduire la probabilité de perte d’événement
+  et introduire une capacité de divergence observable.
+
+Portée :
+
+- Aucun changement de la Décision Centrale.
+- Aucune modification de la hiérarchie NIVEAU 1 / 2 / 3.
+- Aucun impact sur le pipeline aération existant.
+- Aucune activation immédiate d’une barrière métier intermédiaire.
+
+Rôle de cette mesure :
+
+- Diminuer la probabilité d’un état Zigbee mensonger.
+- Permettre l’observation de divergences inter-capteurs.
+- Introduire une première couche de résilience physique,
+  sans engager de refonte architecturale.
+
+Limite reconnue :
+
+- Deux capteurs Zigbee partagent toujours :
+    • le même protocole
+    • le même mesh
+    • les mêmes contraintes RF
+- Cette redondance réduit le risque,
+  mais ne supprime pas le scénario zombie par construction.
+
+Statut :
+
+- Déploiement matériel engagé.
+- Phase d’observation prolongée requise avant toute évolution logicielle.
+
+----------------------------------------------------------
 
 🎯 CONTEXTE GÉNÉRAL
 
@@ -328,8 +366,6 @@ Cette évolution garantit :
 - autonomie réelle sans intervention humaine
 
 ----------------------------------------------------------
-
-----------------------------------------------------------
 🧭 POSITION ARCHITECTURALE & STRATÉGIE DE DÉCISION
 ----------------------------------------------------------
 
@@ -386,6 +422,51 @@ Le capteur `binary_sensor.aeration_bloquante_valide` devient :
 
 ----------------------------------------------------------
 
+### 🔹 HYPOTHÈSE A’ — MITIGATION MATÉRIELLE PAR REDONDANCE ZIGBEE
+
+Postulat :
+
+- Zigbee reste un protocole imparfait mais acceptable.
+- Les pertes d’événements sont rares mais non nulles.
+- La robustesse peut être significativement améliorée
+  par redondance physique des capteurs critiques.
+
+Contexte :
+
+- Un second capteur Zigbee est déployé sur chaque ouvrant critique.
+- Cette redondance permet :
+    • réduction de probabilité d’événement perdu
+    • détection de divergences inter-capteurs
+    • observation fine des incohérences
+
+Conséquence :
+
+- Aucune refonte immédiate de la Décision Centrale.
+- Aucune suppression des causes NIVEAU 2 existantes.
+- Aucune activation du watchdog physique comme autorité décisionnelle.
+
+Dans ce modèle :
+
+- `fenetre_ouverte_maison_avec_delai` reste une cause légitime.
+- `episode_aeration_en_cours` reste une cause légitime.
+- `binary_sensor.aeration_bloquante_valide` demeure en observation.
+- La redondance matérielle constitue une mitigation suffisante,
+  sauf preuve contraire sur longue période.
+
+Objectif :
+
+> Élever la fiabilité opérationnelle
+> sans engager de refonte architecturale irréversible.
+
+Limite assumée :
+
+- Cette stratégie réduit le risque
+  mais ne supprime pas le scénario zombie par construction.
+- Une architecture de type HYPOTHÈSE B resterait nécessaire
+  pour une immunité structurelle complète.
+
+----------------------------------------------------------
+
 ### 🔹 HYPOTHÈSE B — DÉFAUT ARCHITECTURAL SYSTÉMIQUE
 
 Postulat :
@@ -420,8 +501,8 @@ Objectif :
 > même sur un réseau imparfait.
 
 ----------------------------------------------------------
-
 🧠 POSITION ACTUELLE D’ARSENAL (STATUT RÉEL)
+----------------------------------------------------------
 
 À ce jour :
 
@@ -437,7 +518,13 @@ Le réseau Zigbee est :
 - complexe  
 - perfectible (canal, coordo, parentage)  
 
-Le nouveau capteur :
+Mesure matérielle engagée :
+
+- ajout d’un second capteur Zigbee sur chaque ouvrant critique
+- objectif : réduction du risque de perte d’événement
+- statut : déploiement en cours / observation longue
+
+Concernant le capteur métier :
 
 - `binary_sensor.aeration_bloquante_valide`  
 - est :
@@ -446,11 +533,24 @@ Le nouveau capteur :
     • en **observation passive**  
     • sans impact décisionnel  
 
-Statut actuel officiel :
+Statut officiel :
 
-> ⚠️ AUCUNE DÉCISION D’ARCHITECTURE N’EST PRISE À CE STADE
+> ⚠️ AUCUNE REFONTE ARCHITECTURALE N’EST ACTIVÉE À CE STADE
 
-Le système est volontairement placé en **phase d’observation**.
+Le système est placé en :
+
+- phase d’assainissement réseau  
+- phase d’observation longue  
+- phase d’évaluation post-redondance matérielle  
+
+Aucune suppression de cause NIVEAU 2  
+Aucune modification de la Décision Centrale  
+Aucune activation de l’HYPOTHÈSE B  
+
+La posture actuelle demeure :
+
+> Mitigation matérielle + observation prolongée  
+> avant toute décision irréversible.
 
 ----------------------------------------------------------
 
@@ -504,17 +604,9 @@ ALORS :
 
 ----------------------------------------------------------
 
-🛑 POINT CRUCIAL À AJOUTER DANS LA NOTE
-
-Ce document doit explicitement mentionner :
-
 > ⚠️ Cette évolution n’est PAS une décision immédiate.  
 > Elle constitue une **architecture de repli** si et seulement si  
 > l’assainissement Zigbee échoue à éliminer les incidents.
-
-Formulation normative proposée à insérer :
-
-----------------------------------------------------------
 
 📌 POSITION ARCHITECTURALE ARSENAL — CLAUSE DE SUSPENSION
 
@@ -537,25 +629,6 @@ Tant que ces conditions ne sont pas réunies :
 - la Décision Centrale conserve ses causes actuelles  
 - le pipeline n’est pas modifié  
 - `binary_sensor.aeration_bloquante_valide` reste en observation  
-
-----------------------------------------------------------
-
-🧠 SYNTHÈSE FINALE (HONNÊTE ET COHÉRENTE)
-
-- Oui : le système est aujourd’hui **fonctionnel et robuste**  
-- Oui : le problème est **très probablement Zigbee**  
-- Non : il n’est PAS prouvé qu’il existe un défaut architectural  
-- Oui : l’architecture actuelle **reste vulnérable par principe**  
-
-Arsenal adopte donc une posture exemplaire :
-
-- réseau d’abord  
-- observation ensuite  
-- refonte uniquement si nécessaire  
-- aucune panique  
-- aucune sur-ingénierie prématurée  
-
-C’est exactement la bonne gouvernance.
 
 ----------------------------------------------------------
 

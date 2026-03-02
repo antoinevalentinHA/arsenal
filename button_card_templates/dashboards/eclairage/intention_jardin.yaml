@@ -1,24 +1,38 @@
 # ==============================================================
 # 🧠 ARSENAL — BUTTON CARD :
-#     Jardin – Intention eclairage
+#     Jardin – Intention eclairage (bandeau header)
 # --------------------------------------------------------------
-# Carte d’intention OPÉRATIONNELLE (dashboard niveau 0).
-#
-# Source :
-#   sensor.jardin_intention_eclairage
-#
-# Rôle :
-#   - Exposer ce que le système s’attend à faire
-#   - Donner une lecture immédiate (quoi / pourquoi)
+# Bandeau pleine largeur ultra fin.
+# Lecture seule.
+# ==============================================================
+
+# ==============================================================
+# 🧠 ARSENAL — BUTTON CARD :
+#     Jardin – Intention eclairage (bandeau header)
+# --------------------------------------------------------------
+# Bandeau pleine largeur ultra fin.
+# Lecture seule.
 # ==============================================================
 
 carte_jardin_intention_eclairage:
-  template: socle_status_label_sans_nom
+  template: socle_header_base
 
-  name: Intention éclairage jardin
+  entity: sensor.jardin_intention_eclairage
 
-  state_display: |
-    [[[ 
+  show_icon: false
+  show_state: false
+  show_label: false
+  show_name: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  name: |
+    [[[
       const map = {
         'Matin – allumage attendu': 'Allumage matin attendu',
         'Matin – attente presence': 'Attente présence (matin)',
@@ -28,20 +42,6 @@ carte_jardin_intention_eclairage:
         'Aucun eclairage attendu': 'Aucun éclairage attendu'
       };
       return map[entity.state] || entity.state;
-    ]]]
-
-  label: |
-    [[[
-      if (entity.state.includes('attente presence')) {
-        return 'Présence non détectée';
-      }
-      if (entity.state === 'Soir – extinction autorisee') {
-        return 'Confort OK · extinction possible';
-      }
-      if (entity.state === 'Aucun eclairage attendu') {
-        return 'Aucun cycle actif';
-      }
-      return '—';
     ]]]
 
   state:
@@ -56,25 +56,37 @@ carte_jardin_intention_eclairage:
         card:
           - background-color: rgba(76, 175, 80, 0.2)
 
-    # 🟡 Attente présence
+    # 🟡 Attente présence (jaune canon Arsenal)
     - value: 'Matin – attente presence'
       styles:
         card:
-          - background-color: rgba(255,235,59,0.2)
+          - background-color: rgba(255, 235, 59, 0.2)
 
     - value: 'Soir – attente presence'
       styles:
         card:
-          - background-color: rgba(255,235,59,0.2)
+          - background-color: rgba(255, 235, 59, 0.2)
 
     # 🔵 Extinction autorisée
     - value: 'Soir – extinction autorisee'
       styles:
         card:
-          - background-color: rgba(144, 202, 249, 0.25)
+          - background-color: rgba(33, 150, 243, 0.2)
 
-    # ⚪ Rien attendu
+    # ⚪ Aucun cycle
     - value: 'Aucun eclairage attendu'
       styles:
         card:
-          - background-color: rgba(158,158,158,0.2)
+          - background-color: rgba(158, 158, 158, 0.2)
+
+  styles:
+    card:
+      - padding: 4px 0 2px 0
+      - margin: 0px 0 2px 0
+
+    # Typos canon carte_base_v2 (name)
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+      - line-height: 1.2

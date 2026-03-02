@@ -62,7 +62,6 @@ views:
                     icon: mdi:lamp
                     entity: switch.prise_lampe_parents
 
-
           # ==================================================
           # 🎄 BAIES VITRÉES / SAPIN — CONDITIONNEL
           # ==================================================
@@ -82,27 +81,21 @@ views:
                   icon: mdi:pine-tree
                   entity: switch.prise_sejour_baies_vitrees
 
-
           # ==================================================
           # 🌳 JARDIN
           # ==================================================
           - !include ../includes/section_headers/jardin.yaml
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
+          - type: custom:button-card
+            template: carte_jardin_intention_eclairage
+            entity: sensor.jardin_intention_eclairage
 
-              - type: custom:button-card
-                template: carte_jardin_intention_eclairage
-                entity: sensor.jardin_intention_eclairage
-
-              # 🌳 Jardin — commande directe
-              - type: custom:button-card
-                template: carte_action_eclairage
-                name: Jardin
-                icon: mdi:lightbulb
-                entity: switch.prise_jardin
+          # 🌳 Jardin — commande directe
+          - type: custom:button-card
+            template: carte_action_eclairage
+            name: Jardin
+            icon: mdi:lightbulb
+            entity: switch.prise_jardin
 
           # ==================================================
           # 🚗 GARAGE
