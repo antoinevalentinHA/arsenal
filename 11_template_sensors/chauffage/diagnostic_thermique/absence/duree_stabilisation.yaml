@@ -25,6 +25,21 @@
 #   - Aucune décision
 #   - Aucune action
 #
+# 🧠 MÉTHODE (OPTION A — DÉRIVÉE PAR TRIGGER)
+#   - La dérivée thermique est calculée uniquement lors d’un trigger
+#     sur sensor.temperature_min_chambres, via :
+#       • trigger.from_state (échantillon précédent)
+#       • trigger.to_state   (échantillon courant)
+#       • timestamps last_changed correspondants
+#   - Le calcul de rate_last_c_per_h est ainsi indépendant de l’ordre
+#     d’évaluation des attributs (pas de risque "courant vs courant").
+#
+# 🧪 OBSERVABILITÉ (TRACE ÉCHANTILLON)
+#   - t_last_sample / T_last_sample sont maintenus comme trace du dernier
+#     échantillon "vu" en absence (diagnostic / post-mortem / UI).
+#   - Ces attributs ne participent pas au calcul de la dérivée
+#     dans l’Option A (pipeline volontairement découplé).
+#
 # 🚫 NE FAIT PAS
 #   - Ne décide jamais
 #   - Ne conditionne jamais une autorisation
@@ -114,6 +129,7 @@
 
         # --------------------------------------------------
         # Dernier échantillon thermique (figé par trigger)
+        #   (Option A: timestamp basé sur trigger.to_state.last_changed)
         # --------------------------------------------------
 
         t_last_sample: >
@@ -123,8 +139,9 @@
 
           {% elif states('binary_sensor.presence_famille_unifiee') == 'off'
                 and trigger.entity_id == 'sensor.temperature_min_chambres'
-                and states('sensor.temperature_min_chambres') | float(none) is not none %}
-            {{ now().timestamp() }}
+                and trigger.to_state is not none
+                and (trigger.to_state.state | float(none)) is not none %}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
 
           {% else %}
             {{ this.attributes.get('t_last_sample') }}
@@ -137,8 +154,9 @@
 
           {% elif states('binary_sensor.presence_famille_unifiee') == 'off'
                 and trigger.entity_id == 'sensor.temperature_min_chambres'
-                and states('sensor.temperature_min_chambres') | float(none) is not none %}
-            {{ states('sensor.temperature_min_chambres') | float }}
+                and trigger.to_state is not none
+                and (trigger.to_state.state | float(none)) is not none %}
+            {{ trigger.to_state.state | float }}
 
           {% else %}
             {{ this.attributes.get('T_last_sample') }}
@@ -147,21 +165,32 @@
 
         # --------------------------------------------------
         # Dérivée thermique réelle entre deux échantillons
+        #   (Option A: from_state -> to_state)
         # --------------------------------------------------
 
         rate_last_c_per_h: >
-          {% set tprev = this.attributes.get('t_last_sample') %}
-          {% set Tprev = this.attributes.get('T_last_sample') %}
-          {% set Tcur = states('sensor.temperature_min_chambres') | float(none) %}
-          {% set tcur = now().timestamp() %}
+          {% set presence = states('binary_sensor.presence_famille_unifiee') %}
 
-          {% if tprev is not none and Tprev is not none and Tcur is not none %}
-            {% set dt_h = (tcur - tprev) / 3600 %}
-            {% if dt_h > 0 %}
-              {{ (Tcur - Tprev) / dt_h }}
+          {% if presence == 'off'
+                and trigger.entity_id == 'sensor.temperature_min_chambres'
+                and trigger.from_state is not none
+                and trigger.to_state is not none %}
+            {% set Tprev = trigger.from_state.state | float(none) %}
+            {% set Tcur  = trigger.to_state.state   | float(none) %}
+            {% set tprev = as_timestamp(trigger.from_state.last_changed) %}
+            {% set tcur  = as_timestamp(trigger.to_state.last_changed) %}
+
+            {% if Tprev is not none and Tcur is not none %}
+              {% set dt_h = (tcur - tprev) / 3600 %}
+              {% if dt_h > 0 %}
+                {{ (Tcur - Tprev) / dt_h }}
+              {% else %}
+                {{ none }}
+              {% endif %}
             {% else %}
               {{ none }}
             {% endif %}
+
           {% else %}
             {{ none }}
           {% endif %}

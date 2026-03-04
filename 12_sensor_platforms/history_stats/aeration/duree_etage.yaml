@@ -29,7 +29,7 @@
 - platform: history_stats
   name: "Durée aération Étage"
   entity_id: binary_sensor.fenetre_ouverte_etage
-  state: "on"                                   # État mesuré (fenêtre ouverte)
-  type: time                                    # Calcule le temps total dans cet état
-  start: "{{ now().replace(hour=0, minute=0, second=0) }}"  # Début de journée
-  end: "{{ now() }}"                            # Jusqu’à maintenant
+  state: "on"
+  type: time
+  start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+  end: "{{ now() }}"

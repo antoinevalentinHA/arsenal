@@ -28,18 +28,29 @@
   sensor:
     - name: "chauffage_pente_suggeree"
       unique_id: chauffage_pente_suggeree
-      unit_of_measurement: ""
       icon: mdi:axis-arrow
       state: >
-        {% set ecart_froid = states('sensor.ecart_consigne_stats_froid') | float(0) %}
-        {% set pente_actuelle = states('input_number.chauffage_pente_consigne') | float(1.5) %}
+        {% set ecart_raw = states('sensor.ecart_consigne_stats_froid') %}
+        {% set pente_raw = states('input_number.chauffage_pente_consigne') %}
+
+        {% set pente_actuelle = (pente_raw | float(1.5)) | round(1) %}
         {% set pente_min = 1.2 %}
         {% set pente_max = 1.8 %}
 
-        {% if ecart_froid < -0.5 %}
-          {{ [pente_actuelle + 0.1, pente_max] | min }}
-        {% elif ecart_froid > 0.5 %}
-          {{ [pente_actuelle - 0.1, pente_min] | max }}
-        {% else %}
+        {% if ecart_raw in ['unknown', 'unavailable', 'none', ''] %}
           {{ pente_actuelle }}
+        {% else %}
+          {% set ecart_froid = ecart_raw | float(0) %}
+          {% if ecart_froid < -0.5 %}
+            {{ ([pente_actuelle + 0.1, pente_max] | min) | round(1) }}
+          {% elif ecart_froid > 0.5 %}
+            {{ ([pente_actuelle - 0.1, pente_min] | max) | round(1) }}
+          {% else %}
+            {{ pente_actuelle }}
+          {% endif %}
         {% endif %}
+      attributes:
+        source_ecart_state: "{{ states('sensor.ecart_consigne_stats_froid') }}"
+        source_pente_state: "{{ states('input_number.chauffage_pente_consigne') }}"
+        ecart_disponible: >
+          {{ states('sensor.ecart_consigne_stats_froid') not in ['unknown','unavailable','none',''] }}

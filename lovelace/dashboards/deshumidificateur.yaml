@@ -1,10 +1,10 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Cave
+title: Déshumidificateur cave
 views:
-  - title: Cave
-    path: cave
-    icon: mdi:server
+  - title: Déshumidificateur cave
+    path: deshumidificateur
+    icon: mdi:water-percent
 
     badges:
       - type: custom:button-card

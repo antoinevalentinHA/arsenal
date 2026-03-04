@@ -1,5 +1,5 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE SENSOR — DIAGNOSTIC CHAUFFAGE : INERTIE
+# 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR — DIAGNOSTIC CHAUFFAGE : INERTIE
 #     Synthèse indicative — Refroidissement réel (présence)
 # ----------------------------------------------------------
 # Domaine : Chauffage / Diagnostic thermique / Synthèses
@@ -8,27 +8,45 @@
 #
 # 🎯 Rôle :
 #   Publier un état textuel indicatif d’inertie / isolation
-#   à partir de la vitesse réelle de refroidissement en présence.
+#   à partir de la vitesse réelle de refroidissement en présence (°C/h).
 #
 # 🔗 Dépendances (lecture) :
-#   - sensor.vitesse_refroidissement_presence_chambres
+#   - sensor.vitesse_refroidissement_presence_chambres   (valeur POSITIVE en °C/h)
+#
+# 🧩 Principe :
+#   - Seuils en POSITIF :
+#       • v >= 0.50  → bâtiment très dissipatif (refroidit vite)
+#       • v >= 0.25  → dissipation normale
+#       • v  < 0.25  → très bonne inertie / isolation
 #
 # 🚫 Interdits :
 #   - Aucun service, aucune action, aucune écriture d’entité
 #   - Aucune autorisation, aucun blocage, aucune décision centrale
-#
 # ==========================================================
 
-- sensor:
-    - name: Diagnostic chauffage inertie
+- trigger:
+    - platform: state
+      entity_id: sensor.vitesse_refroidissement_presence_chambres
+
+  sensor:
+    - name: "Diagnostic chauffage inertie"
       unique_id: diagnostic_chauffage_inertie
-      state: >-
-        {%- set v_refroid = states('sensor.vitesse_refroidissement_presence_chambres') | float(none) -%}
-        {%- set txt = none -%}
-        {%- if v_refroid is not none -%}
-          {%- if v_refroid < -0.5 -%}{%- set txt = 'Bâtiment très dissipatif' -%}
-          {%- elif v_refroid < -0.25 -%}{%- set txt = 'Dissipation normale' -%}
-          {%- else -%}{%- set txt = 'Très bonne inertie / isolation' -%}
-          {%- endif -%}
-        {%- endif -%}
-        {{- txt if txt is not none else '' -}}
+
+      state: >
+        {% set v = states('sensor.vitesse_refroidissement_presence_chambres') | float(none) %}
+
+        {% if v is none %}
+          {{ none }}
+        {% elif v >= 0.50 %}
+          Bâtiment très dissipatif
+        {% elif v >= 0.25 %}
+          Dissipation normale
+        {% else %}
+          Très bonne inertie / isolation
+        {% endif %}
+
+      attributes:
+        source_entity: "sensor.vitesse_refroidissement_presence_chambres"
+        unit_hint: "°C/h"
+        arsenal_threshold_fast: 0.50
+        arsenal_threshold_normal: 0.25

@@ -17,6 +17,8 @@
     - name: "Ecart consigne confort"
       unique_id: ecart_consigne_confort
       unit_of_measurement: "°C"
+      state_class: measurement
+      icon: mdi:thermometer-chevron-down
       state: >
         {% set t_int = states('sensor.temperature_min_chambres') | float(none) %}
         {% set consigne = states('input_number.chauffage_consigne_confort') | float(none) %}
@@ -25,3 +27,9 @@
         {% else %}
           {{ none }}
         {% endif %}
+      attributes:
+        source_t_int_state: "{{ states('sensor.temperature_min_chambres') }}"
+        source_consigne_state: "{{ states('input_number.chauffage_consigne_confort') }}"
+        sources_disponibles: >
+          {{ states('sensor.temperature_min_chambres') not in ['unknown','unavailable','none','']
+             and states('input_number.chauffage_consigne_confort') not in ['unknown','unavailable','none',''] }}

@@ -35,13 +35,11 @@
 #     - Stockage volontairement limité au dernier événement
 # ==========================================================
 
-
 - id: "10240000000011"
   alias: "Chauffage - Logger auto-ajustement"
   description: >
     Transforme l'événement chauffage_adjustment en une ligne
     lisible et la stocke dans un helper dédié.
-
   mode: single
 
   trigger:
@@ -50,39 +48,47 @@
 
   action:
 
-    # ------------------------------------------------------
-    # Extraction sécurisée des données de l'événement
-    # ------------------------------------------------------
     - variables:
-        mode_evt: "{{ trigger.event.data.mode | default('inconnu') }}"
-        pente_before: "{{ trigger.event.data.pente_before | default('?') }}"
-        pente_after: "{{ trigger.event.data.pente_after | default('?') }}"
-        para_before: "{{ trigger.event.data.para_before | default('?') }}"
-        para_after: "{{ trigger.event.data.para_after | default('?') }}"
+        mode_evt: >
+          {% set v = trigger.event.data.mode if trigger.event.data.mode is defined else none %}
+          {{ v if v|string not in ['','none','null'] else 'inconnu' }}
 
-        # Timestamp envoyé → priorité
-        # Si absent → fallback propre (now() formaté)
         timestamp: >
-          {% set t = trigger.event.data.timestamp %}
-          {% if t is defined and t|string not in ['','none','null'] %}
+          {% set t = trigger.event.data.timestamp if trigger.event.data.timestamp is defined else none %}
+          {% if t is not none and t|string not in ['','none','null'] %}
             {{ t }}
           {% else %}
             {{ now().strftime("%d/%m %H:%M") }}
           {% endif %}
 
-    # ------------------------------------------------------
-    # Construction de la ligne finale
-    # ------------------------------------------------------
+        pente_before_raw: "{{ trigger.event.data.pente_before if trigger.event.data.pente_before is defined else none }}"
+        pente_after_raw: "{{ trigger.event.data.pente_after if trigger.event.data.pente_after is defined else none }}"
+        para_before_raw: "{{ trigger.event.data.para_before if trigger.event.data.para_before is defined else none }}"
+        para_after_raw: "{{ trigger.event.data.para_after if trigger.event.data.para_after is defined else none }}"
+
+        pente_before: >
+          {% set v = pente_before_raw %}
+          {{ (v | float | round(2)) if v is not none and v|string not in ['','none','null','unknown','unavailable','?'] else '?' }}
+
+        pente_after: >
+          {% set v = pente_after_raw %}
+          {{ (v | float | round(2)) if v is not none and v|string not in ['','none','null','unknown','unavailable','?'] else '?' }}
+
+        para_before: >
+          {% set v = para_before_raw %}
+          {{ (v | float | round(2)) if v is not none and v|string not in ['','none','null','unknown','unavailable','?'] else '?' }}
+
+        para_after: >
+          {% set v = para_after_raw %}
+          {{ (v | float | round(2)) if v is not none and v|string not in ['','none','null','unknown','unavailable','?'] else '?' }}
+
     - variables:
         ligne: >
           {{ timestamp }} • {{ mode_evt }} •
           pente {{ pente_before }}→{{ pente_after }} •
           para {{ para_before }}→{{ para_after }}
 
-    # ------------------------------------------------------
-    # Écriture dans le helper texte
-    # ------------------------------------------------------
-    - action: input_text.set_value
+    - service: input_text.set_value
       target:
         entity_id: input_text.chauffage_last_adjustment
       data:

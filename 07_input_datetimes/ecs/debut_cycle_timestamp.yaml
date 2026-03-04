@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     ECS — Cycle debut timestamp
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Stocker l’horodatage exact du début d’un cycle ECS.
+#
+# 🧩 UTILISATION
+#   - Ecrit par l’automation : ECS – Capture debut de cycle
+#     (transition ecs_cycle_en_cours : off → on)
+#
+#   - Utilisé par :
+#       • sensor.ecs_temperature_max_cycle
+#           → reset logique du max par cycle
+#
+#       • ECS – Gel donnees fin de cycle
+#           → calcul duree = tmax - debut_cycle
+#
+# 🛡️ CONTRAT
+#   - Source de verite temporelle du cycle ECS
+#   - Ne doit etre ecrit QUE par l’automation
+#     de capture du debut de cycle
+#   - Aucun reset manuel
+#
+# 📍 ENTITE
+#   input_datetime.ecs_cycle_debut_timestamp
+# ==========================================================
+
+ecs_cycle_debut_timestamp:
+  name: ECS - Cycle debut timestamp
+  has_date: true
+  has_time: true

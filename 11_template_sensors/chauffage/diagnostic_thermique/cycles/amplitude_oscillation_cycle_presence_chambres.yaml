@@ -1,21 +1,44 @@
 # ==========================================================
 # 🌡️ ARSENAL — TEMPLATE TRIGGERED SENSOR
 #     Chauffage : Amplitude oscillation cycle Présence Chambres
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Mesurer l’amplitude thermique (Tmax - Tmin) observée sur un cycle
+#   de chauffage en présence pour la zone Chambres, sur la base d’un
+#   signal thermique unique : sensor.temperature_min_chambres
+#   (minimum inter-chambres au fil du temps).
 #
-#  ✅ Version renforcée (cast bool strict, anti "false truthy")
-#  ✅ Cycle piloté par événements A1 (reprise) → B0 (arrêt)
-#  ✅ Min/Max suivis pendant le cycle, figés à B0
-#  ✅ Neutralisation stricte pendant aération_pipeline_arme
-#  ✅ Aucune "valeur mensongère" : state = none tant que cycle incomplet
+# 🧱 FRONTIÈRE D’AUTORITÉ
+#   OBSERVABILITÉ THERMIQUE — CYCLE ÉVÉNEMENTIEL A1 → B0
+#
+# 🧩 CYCLE CANONIQUE (événementiel)
+#   - A1 : reprise chauffage  (sensor.temperature_reprise_presence_chambres)
+#   - B0 : arrêt chauffage    (sensor.temperature_arret_presence_chambres)
+#   - Suivi Tmin/Tmax uniquement entre A1 et B0
+#   - Figement naturel à B0
+#
+# 🔒 PROPRIÉTÉS
+#   - Cast bool strict (anti "false truthy") sur reprise_valide / arret_valide
+#   - State = none tant que cycle incomplet ou invalidé
+#   - Neutralisation stricte pendant input_boolean.aeration_pipeline_arme :
+#       • state = none
+#       • Tmin/Tmax figés (pas d’effacement)
+#   - Reset explicite à chaque nouveau A1 valide
+#   - Reload-safe / runtime-safe (persistance via this.attributes)
+#
+# 🚫 NE FAIT PAS
+#   - Ne décide jamais
+#   - Ne pilote jamais
+#   - Ne sert jamais de seuil direct
 # ==========================================================
 
 - trigger:
 
-    # Reprise chauffage (A1)
+    # Reprise chauffage (A1) — début de cycle
     - platform: state
       entity_id: sensor.temperature_reprise_presence_chambres
 
-    # Arrêt chauffage (B0) → fin de cycle
+    # Arrêt chauffage (B0) — fin de cycle
     - platform: state
       entity_id: sensor.temperature_arret_presence_chambres
 
@@ -38,12 +61,21 @@
         {% else %}
 
           {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
-          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set arret_valide   = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')     | string | lower) == 'true' %}
+
+          {% set t_start = state_attr(this.entity_id, 't_cycle_start') %}
+          {% set t_end   = state_attr(this.entity_id, 't_cycle_end') %}
 
           {% set Tmin = state_attr(this.entity_id, 'Tmin') | float(none) %}
           {% set Tmax = state_attr(this.entity_id, 'Tmax') | float(none) %}
 
-          {% if not reprise_valide or not arret_valide or Tmin is none or Tmax is none or Tmax < Tmin %}
+          {% if t_start is none or t_end is none %}
+            {{ none }}
+          {% elif not reprise_valide or not arret_valide %}
+            {{ none }}
+          {% elif Tmin is none or Tmax is none %}
+            {{ none }}
+          {% elif Tmax < Tmin %}
             {{ none }}
           {% else %}
             {{ (Tmax - Tmin) | round(2) }}
@@ -55,32 +87,107 @@
       attributes:
 
         # --------------------------------------------------
+        # Debug : bools amont (cast strict)
+        # --------------------------------------------------
+        reprise_valide_cast: >
+          {{ ((state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true') }}
+
+        arret_valide_cast: >
+          {{ ((state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true') }}
+
+
+        # --------------------------------------------------
+        # Début / fin de cycle (timestamps)
+        # --------------------------------------------------
+        t_cycle_start: >
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+          {% set arret_valide   = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')     | string | lower) == 'true' %}
+          {% set prev_start = this.attributes.get('t_cycle_start') %}
+          {% set prev_end   = this.attributes.get('t_cycle_end') %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev_start }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' and reprise_valide %}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
+
+          {% elif prev_start is none and prev_end is none and reprise_valide and not arret_valide %}
+            {{ now().timestamp() }}
+
+          {% else %}
+            {{ prev_start }}
+          {% endif %}
+
+        t_cycle_end: >
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+          {% set arret_valide   = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')     | string | lower) == 'true' %}
+          {% set prev_end = this.attributes.get('t_cycle_end') %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev_end }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' and reprise_valide %}
+            {{ none }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' and arret_valide %}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
+
+          {% else %}
+            {{ prev_end }}
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Statut cycle (observabilité)
+        # --------------------------------------------------
+        cycle_status: >
+          {% set t_start = this.attributes.get('t_cycle_start') %}
+          {% set t_end   = this.attributes.get('t_cycle_end') %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            inhibited_aeration
+          {% elif t_start is none and t_end is none %}
+            no_cycle
+          {% elif t_start is not none and t_end is none %}
+            running
+          {% elif t_start is not none and t_end is not none %}
+            complete
+          {% else %}
+            incoherent
+          {% endif %}
+
+
+        # --------------------------------------------------
         # Température minimale atteinte pendant le cycle
         # --------------------------------------------------
         Tmin: >
           {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
-          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set arret_valide   = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')     | string | lower) == 'true' %}
 
-          {% set last = state_attr(this.entity_id, 'Tmin') | float(none) %}
+          {% set t_start = this.attributes.get('t_cycle_start') %}
+          {% set t_end   = this.attributes.get('t_cycle_end') %}
+
+          {% set last = this.attributes.get('Tmin') | float(none) %}
           {% set T = states('sensor.temperature_min_chambres') | float(none) %}
 
           {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
-            {{ state_attr(this.entity_id, 'Tmin') }}
+            {{ this.attributes.get('Tmin') }}
 
           {% elif trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' and reprise_valide %}
-            {{ T }}
+            {{ T if T is not none else none }}
 
-          {% elif arret_valide %}
+          {% elif t_end is not none %}
             {{ last }}
 
-          {% elif last is none %}
-            {{ T }}
-
-          {% elif T is none %}
-            {{ last }}
+          {% elif t_start is not none and T is not none %}
+            {% if last is none %}
+              {{ T }}
+            {% else %}
+              {{ [last, T] | min }}
+            {% endif %}
 
           {% else %}
-            {{ [last, T] | min }}
+            {{ last }}
           {% endif %}
 
 
@@ -89,26 +196,67 @@
         # --------------------------------------------------
         Tmax: >
           {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
-          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set arret_valide   = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')     | string | lower) == 'true' %}
 
-          {% set last = state_attr(this.entity_id, 'Tmax') | float(none) %}
+          {% set t_start = this.attributes.get('t_cycle_start') %}
+          {% set t_end   = this.attributes.get('t_cycle_end') %}
+
+          {% set last = this.attributes.get('Tmax') | float(none) %}
           {% set T = states('sensor.temperature_min_chambres') | float(none) %}
 
           {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
-            {{ state_attr(this.entity_id, 'Tmax') }}
+            {{ this.attributes.get('Tmax') }}
 
           {% elif trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' and reprise_valide %}
-            {{ T }}
+            {{ T if T is not none else none }}
 
-          {% elif arret_valide %}
+          {% elif t_end is not none %}
             {{ last }}
 
-          {% elif last is none %}
-            {{ T }}
-
-          {% elif T is none %}
-            {{ last }}
+          {% elif t_start is not none and T is not none %}
+            {% if last is none %}
+              {{ T }}
+            {% else %}
+              {{ [last, T] | max }}
+            {% endif %}
 
           {% else %}
-            {{ [last, T] | max }}
+            {{ last }}
           {% endif %}
+
+
+        # --------------------------------------------------
+        # Raison d’invalidation (diagnostic)
+        # --------------------------------------------------
+        raison_invalidation: >
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+          {% set arret_valide   = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')     | string | lower) == 'true' %}
+          {% set t_start = this.attributes.get('t_cycle_start') %}
+          {% set t_end   = this.attributes.get('t_cycle_end') %}
+          {% set Tmin = this.attributes.get('Tmin') | float(none) %}
+          {% set Tmax = this.attributes.get('Tmax') | float(none) %}
+
+          {% if aeration == 'on' %}
+            aeration
+          {% elif t_start is none or t_end is none %}
+            cycle_incomplet
+          {% elif not reprise_valide %}
+            reprise_invalide
+          {% elif not arret_valide %}
+            arret_invalide
+          {% elif Tmin is none %}
+            Tmin_none
+          {% elif Tmax is none %}
+            Tmax_none
+          {% elif Tmax < Tmin %}
+            incoherent_Tmax_lt_Tmin
+          {% else %}
+            ok
+          {% endif %}
+
+
+        # --------------------------------------------------
+        # Source thermique
+        # --------------------------------------------------
+        source_temp_entity: "sensor.temperature_min_chambres"

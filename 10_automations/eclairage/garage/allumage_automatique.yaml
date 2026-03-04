@@ -1,6 +1,6 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Garage – Déclenchement conditionnel éclairage
+#     Garage – Déclenchement conditionnel éclairage (autorisation saison/période)
 #
 #  ID : 10070000000012
 # ----------------------------------------------------------
@@ -10,8 +10,11 @@
 #
 #     Elle réagit à des événements physiques dans le garage
 #     (mouvements ou ouverture de porte) afin de demander
-#     l’allumage de l’éclairage, uniquement lorsque
-#     l’automatisme est autorisé et que la lumière est éteinte.
+#     l’allumage de l’éclairage, uniquement lorsque :
+#
+#       - l’automatisme global est autorisé
+#       - l’allumage automatique est autorisé par contexte (saison / période)
+#       - la lumière est actuellement éteinte (état logique interne)
 #
 #     Cette automation ne pilote PAS directement l’éclairage.
 #
@@ -20,25 +23,34 @@
 #     - Déclenchement sur événements physiques :
 #         • détection de mouvement (capteurs multiples)
 #         • ouverture de la porte du garage
-#     - Vérification des autorisations :
-#         • mode automatique activé
-#         • lumière actuellement éteinte
-#     - Délégation de l’action au script dédié
+#
+#     - Vérification des autorisations (gates) :
+#         • input_boolean.garage_auto_light = on
+#         • binary_sensor.garage_allumage_auto_autorise = on
+#
+#     - Vérification d’état :
+#         • input_boolean.garage_light_state = off
+#
+#     - Délégation de l’action au script dédié :
+#         • script.garage_toggle
 #
 #  🧠 AUTORISATIONS & ÉTAT
 #
 #     - input_boolean.garage_auto_light
 #         → autorisation globale de l’éclairage automatique
 #
+#     - binary_sensor.garage_allumage_auto_autorise
+#         → autorisation contextuelle (saison + période météo)
+#           (autorité UI/métier, aucun pilotage)
+#
 #     - input_boolean.garage_light_state
 #         → état logique interne de l’éclairage garage
 #
 #  🧠 AUTORITÉ D’ACTION
 #
-#     script.garage_toggle
-#
-#     → script unique responsable du pilotage réel
-#       de l’éclairage et de la cohérence d’état.
+#     - script.garage_toggle
+#         → script unique responsable du pilotage réel
+#           de l’éclairage et de la cohérence d’état.
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
@@ -46,6 +58,7 @@
 #     - Ne gère AUCUNE temporisation
 #     - Ne décide PAS de la durée d’éclairage
 #     - Ne pilote PAS directement le matériel
+#     - Ne calcule PAS la saison ni la période (délégué au binary_sensor dédié)
 #
 #  🧠 ARCHITECTURE ARSENAL
 #
@@ -55,7 +68,6 @@
 #     Elle traduit un contexte physique local
 #     en demande d’action, sans logique métier.
 # ==========================================================
-
 
 - id: "10070000000012"
   alias: "Garage - Allumage auto"
@@ -85,6 +97,10 @@
   condition:
     - condition: state
       entity_id: input_boolean.garage_auto_light
+      state: "on"
+
+    - condition: state
+      entity_id: binary_sensor.garage_allumage_auto_autorise
       state: "on"
 
     - condition: state

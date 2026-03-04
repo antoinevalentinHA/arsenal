@@ -1,6 +1,6 @@
 type: markdown
 content: |
-  ### 🔍 Dernier cycle
+  ### 🔍 Dernier cycle ECS
 
   {% set resume = states('input_text.ecs_resume_dernier_cycle_fige') %}
   {% if resume in ['unknown','unavailable','none','', None] %}
@@ -14,6 +14,8 @@ content: |
   {% set mode = parts[1] | title if have > 1 else 'Inconnu' %}
   {% set consigne = parts[2] | float(0) if have > 2 else 0 %}
   {% set t0 = parts[3] | float(0) if have > 3 else 0 %}
+  {% set boost = parts[4] if have > 4 else 'non' %}
+  {% set valide = parts[5] if have > 5 else '—' %}
 
   {% set tmax = states('input_number.ecs_temperature_max_figee') | float(0) %}
   {% set duree = states('input_number.ecs_duree_dernier_cycle_figee') | float(0) %}
@@ -23,7 +25,7 @@ content: |
   **Mode** : {{ mode }}  
   **Consigne** : {{ consigne }} °C  
   **Température max** : {{ tmax }} °C  
-  **Durée** : {{ duree | round(1) }} min  
+  **Durée réelle** : {{ duree | round(1) }} min  
 
   {% if t0 >= consigne %}
   ⚪ Cycle annulé (cuve déjà chaude)
@@ -44,6 +46,14 @@ content: |
 
     {% endif %}
 
+  {% endif %}
+
+  **Cycle validé** : {{ valide | upper }}
+
+  {% set ajust = states('input_text.ecs_dernier_ajustement') %}
+  {% if ajust not in ['unknown','unavailable','none','', None] %}
+  **Dernier ajustement offset**  
+  {{ ajust }}
   {% endif %}
 
   {% endif %}

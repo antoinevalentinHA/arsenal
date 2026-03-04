@@ -41,7 +41,6 @@
 #     - Comportement déterministe et traçable
 # ==========================================================
 
-
 - id: "10240000000009"
   alias: "Chauffage – Décision auto-ajustement courbe"
   description: >
@@ -56,32 +55,35 @@
 
   condition:
 
-    # Auto-ajustement activé
     - condition: template
       value_template: >
         {{ is_state('input_boolean.chauffage_reglages_auto', 'on') }}
 
-    # API ViCare disponible
     - condition: template
       value_template: >
         {{ is_state('binary_sensor.vicare_api_disponible', 'on') }}
 
-    # Maison en mode Normal
     - condition: template
       value_template: >
         {{ is_state('input_select.mode_maison', 'Normal') }}
 
-    # Au moins une correction suggérée
+    # Garde-fou : suggestions disponibles et numériques
     - condition: template
       value_template: >
-        {{ states('sensor.chauffage_pente_suggeree') != states('input_number.chauffage_pente_consigne')
-           or states('sensor.chauffage_parallele_suggeree') != states('input_number.chauffage_parallele_consigne') }}
+        {% set ps = states('sensor.chauffage_pente_suggeree') %}
+        {% set pas = states('sensor.chauffage_parallele_suggeree') %}
+        {{ ps not in ['unknown','unavailable','none',''] and pas not in ['unknown','unavailable','none',''] }}
+
+    # Au moins une correction suggérée (comparaison float)
+    - condition: template
+      value_template: >
+        {{ states('sensor.chauffage_pente_suggeree') | float
+           != states('input_number.chauffage_pente_consigne') | float
+           or states('sensor.chauffage_parallele_suggeree') | float
+           != states('input_number.chauffage_parallele_consigne') | float }}
 
   action:
 
-    # ======================================================
-    # 1️⃣ Capture état actuel et suggestions
-    # ======================================================
     - variables:
         pente_actuelle: "{{ states('input_number.chauffage_pente_consigne') | float }}"
         pente_suggeree: "{{ states('sensor.chauffage_pente_suggeree') | float }}"
@@ -89,19 +91,25 @@
         parallele_suggeree: "{{ states('sensor.chauffage_parallele_suggeree') | float }}"
         simulation: "{{ is_state('input_boolean.courbe_auto_simulation', 'on') }}"
 
+        apply_pente: >
+          {{ pente_suggeree != pente_actuelle
+             and (pente_suggeree > pente_actuelle
+                  or (pente_suggeree < pente_actuelle
+                      and is_state('binary_sensor.poele_en_fonction_stable', 'off'))) }}
+
+        apply_parallele: >
+          {{ parallele_suggeree != parallele_actuel
+             and (parallele_suggeree > parallele_actuel
+                  or (parallele_suggeree < parallele_actuel
+                      and is_state('binary_sensor.poele_en_fonction_stable', 'off'))) }}
+
     - choose:
 
-        # ==================================================
-        # 🧪 MODE SIMULATION — aucune écriture système
-        # ==================================================
         - conditions:
             - condition: template
               value_template: "{{ simulation }}"
           sequence:
 
-            # -------------------------------
-            # 📝 Journalisation immédiate (simulation)
-            # -------------------------------
             - service: logbook.log
               data:
                 name: "Chauffage"
@@ -129,24 +137,16 @@
                   • Pente : {{ pente_actuelle }} → {{ pente_suggeree }}
                   • Parallèle : {{ parallele_actuel }} → {{ parallele_suggeree }}
 
-                  Aucun changement n’a été appliqué.
+                  Aucun changement n'a été appliqué.
 
-        # ==================================================
-        # 🔥 MODE RÉEL — figer, tracer, puis exécuter
-        # ==================================================
         - conditions:
             - condition: template
               value_template: "{{ not simulation }}"
           sequence:
 
-            # -------------------------------
-            # 🔒 Figer la consigne PENTE
-            # -------------------------------
             - choose:
                 - conditions: >
-                    {{ pente_suggeree > pente_actuelle
-                       or (pente_suggeree < pente_actuelle
-                           and is_state('binary_sensor.poele_en_fonction_stable','off')) }}
+                    {{ apply_pente }}
                   sequence:
                     - service: input_number.set_value
                       target:
@@ -154,14 +154,9 @@
                       data:
                         value: "{{ pente_suggeree }}"
 
-            # -------------------------------
-            # 🔒 Figer la consigne PARALLÈLE
-            # -------------------------------
             - choose:
                 - conditions: >
-                    {{ parallele_suggeree > parallele_actuel
-                       or (parallele_suggeree < parallele_actuel
-                           and is_state('binary_sensor.poele_en_fonction_stable','off')) }}
+                    {{ apply_parallele }}
                   sequence:
                     - service: input_number.set_value
                       target:
@@ -169,16 +164,13 @@
                       data:
                         value: "{{ parallele_suggeree }}"
 
-            # -------------------------------
-            # 📝 Journalisation immédiate (décision réelle)
-            # -------------------------------
             - service: logbook.log
               data:
                 name: "Chauffage"
                 message: >
                   🔧 Auto-ajustement décidé :
-                  pente {{ pente_actuelle }} → {{ pente_suggeree }},
-                  parallèle {{ parallele_actuel }} → {{ parallele_suggeree }}
+                  pente {{ pente_actuelle }} → {{ pente_suggeree }} ({{ 'appliqué' if apply_pente else 'refusé' }}),
+                  parallèle {{ parallele_actuel }} → {{ parallele_suggeree }} ({{ 'appliqué' if apply_parallele else 'refusé' }})
 
             - event: chauffage_adjustment
               event_data:
@@ -187,18 +179,6 @@
                 pente_after: "{{ pente_suggeree }}"
                 para_before: "{{ parallele_actuel }}"
                 para_after: "{{ parallele_suggeree }}"
+                pente_applied: "{{ apply_pente }}"
+                para_applied: "{{ apply_parallele }}"
                 timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
-
-            # -------------------------------
-            # ⚙️ Exécution réelle (scripts blindés)
-            # -------------------------------
-            - choose:
-                - conditions: >
-                    {{ pente_suggeree != pente_actuelle }}
-                  sequence:
-                    - service: script.chauffage_appliquer_pente
-
-                - conditions: >
-                    {{ parallele_suggeree != parallele_actuel }}
-                  sequence:
-                    - service: script.chauffage_appliquer_parallele

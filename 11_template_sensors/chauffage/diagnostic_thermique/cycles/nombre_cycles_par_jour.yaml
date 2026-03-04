@@ -2,17 +2,22 @@
 # 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR
 #     Chauffage : Nombre cycles jour Présence Chambres
 # ----------------------------------------------------------
-# 🧠 Rôle :
-#     Compter le **nombre réel de cycles thermiques complets**
-#     du régime Présence sur une journée civile (00:00 → 23:59:59).
+# 🎯 RÔLE
+#   Compter le nombre réel de cycles thermiques complets
+#   du régime Présence sur une journée civile (00:00 → 23:59:59).
 #
-# 🔒 Propriétés :
-#   - Journalier strict
-#   - Comptage uniquement de cycles complets (A1 → B0)
-#   - Basé exclusivement sur arrêts valides
-#   - Anti-replay / anti-reload / anti-restore
+# 🔒 PROPRIÉTÉS
+#   - Journalier strict (reset à minuit + rattrapage si HA était éteint)
+#   - Comptage uniquement de cycles complets valides (A1 → B0)
+#   - Basé sur l'événement B0 canonique : changement de l’attribut t_arret
+#   - Idempotent : t_arret strictement croissant (anti-replay)
+#   - Anti-replay restart : baseline à HA start sur t_arret restauré
+#   - Neutralisation aération : pas de comptage, conservation de l’état
 #   - Reload-safe / restart-safe / runtime-safe
 #
+# 🧠 ALIGNEMENT ARSENAL
+#   - Cast bool strict sur reprise_valide / arret_valide (anti "false truthy")
+#   - Diagnostic : raison_invalidation (observabilité)
 # ==========================================================
 
 - trigger:
@@ -39,8 +44,8 @@
         {% set is_trig = (trigger is defined and trigger is not none) %}
         {% set last = this.state | int(0) %}
 
-        {% set reprise_valide = state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') %}
-        {% set arret_valide = state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') %}
+        {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+        {% set arret_valide   = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')     | string | lower) == 'true' %}
 
         {% set last_reset_ts = this.attributes.get('arsenal_ts_last_reset', 0) | float(0) %}
         {% set today_start = now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp() %}
@@ -56,7 +61,7 @@
           0
 
         {# -------------------------------------------------- #}
-        {# Invalidation aération / post-aération             #}
+        {# Neutralisation aération / post-aération            #}
         {# -------------------------------------------------- #}
         {% elif states('input_boolean.aeration_pipeline_arme') == 'on' %}
           {{ last }}
@@ -80,22 +85,71 @@
 
       attributes:
 
+        # --------------------------------------------------
+        # Diagnostic : raison d’invalidation / inhibition
+        # --------------------------------------------------
+        raison_invalidation: >
+          {% set is_trig = (trigger is defined and trigger is not none) %}
+
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+          {% set arret_valide   = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')     | string | lower) == 'true' %}
+
+          {% set last_reset_ts = this.attributes.get('arsenal_ts_last_reset', 0) | float(0) %}
+          {% set today_start = now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp() %}
+          {% set need_reset = (is_trig and trigger.platform == 'time') or (last_reset_ts != 0 and last_reset_ts < today_start) %}
+
+          {% set t_arret = state_attr('sensor.temperature_arret_presence_chambres', 't_arret') | float(0) %}
+          {% set last_event = this.attributes.get('arsenal_ts_last_cycle_end', 0) | float(0) %}
+
+          {% if need_reset %}
+            reset_journalier
+          {% elif states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            aeration
+          {% elif is_trig and trigger.platform == 'homeassistant' %}
+            ha_start_baseline
+          {% elif is_trig
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'sensor.temperature_arret_presence_chambres'
+                and not reprise_valide %}
+            reprise_invalide
+          {% elif is_trig
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'sensor.temperature_arret_presence_chambres'
+                and not arret_valide %}
+            arret_invalide
+          {% elif is_trig
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'sensor.temperature_arret_presence_chambres'
+                and (t_arret <= 0 or t_arret <= last_event) %}
+            event_deja_compte
+          {% else %}
+            ok
+          {% endif %}
+
+        # --------------------------------------------------
+        # Reset journalier (timestamp)
+        # --------------------------------------------------
         arsenal_ts_last_reset: >
           {% set is_trig = (trigger is defined and trigger is not none) %}
           {% set last_reset_ts = this.attributes.get('arsenal_ts_last_reset', 0) | float(0) %}
           {% set today_start = now().replace(hour=0, minute=0, second=0, microsecond=0).timestamp() %}
+
           {% if (is_trig and trigger.platform == 'time') or (last_reset_ts == 0) or (last_reset_ts < today_start) %}
             {{ now().timestamp() }}
           {% else %}
             {{ this.attributes.get('arsenal_ts_last_reset', none) }}
           {% endif %}
 
+        # --------------------------------------------------
+        # Anti-replay : dernier arrêt (t_arret) déjà compté
+        # --------------------------------------------------
         arsenal_ts_last_cycle_end: >
           {% set is_trig = (trigger is defined and trigger is not none) %}
           {% set last_event = this.attributes.get('arsenal_ts_last_cycle_end', 0) | float(0) %}
           {% set t_arret = state_attr('sensor.temperature_arret_presence_chambres', 't_arret') | float(0) %}
-          {% set reprise_valide = state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') %}
-          {% set arret_valide = state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') %}
+
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+          {% set arret_valide   = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide')     | string | lower) == 'true' %}
 
           {# Baseline au démarrage : empêche le replay de l'arrêt restauré #}
           {% if is_trig

@@ -1,15 +1,15 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Home
-icon: mdi:server
+title: VMC
+icon: mdi:fan
 
 views:
   ####################################
   # 💨 VMC – HOME
   ####################################
-  - title: Home
-    path: home
-    icon: mdi:server
+  - title: VMC
+    path: vmc
+    icon: mdi:fan
 
     badges:
       - type: custom:button-card

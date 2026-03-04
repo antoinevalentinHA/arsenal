@@ -3,7 +3,7 @@
 #     Cinématique dynamique — Oscillation, période et charge de cyclage
 # ----------------------------------------------------------
 # Domaine : Chauffage / Cycles thermiques / Présence
-# Couche  : Observabilité cinématique du moteur thermique
+# Couche  : Observabilité cinématique événementielle du moteur thermique
 # Statut  : STRUCTURANT — FRONTIÈRE DYNAMIQUE CRITIQUE
 #
 # 🎯 Rôle global :
@@ -53,7 +53,12 @@
 #   - Invalidation stricte en cas d’aération
 #   - Dépendance exclusive à des références gouvernées
 #   - Reload-safe / restart-safe / runtime-safe
-#   - Mesures purement descriptives et dynamiques
+#   - Mesures cinématiques événementielles strictement déterministes
+#   - Horodatages exclusivement événementiels :
+#       as_timestamp(trigger.to_state.last_changed)
+#   - Aucun calcul temporel vivant basé sur now()
+#   - Aucun delta temporel recalculé hors événement
+#   - Strictement déclenché par transitions canoniques (A1 / B0)
 #
 # 🔗 Autorités amont légitimes :
 #   - Décision centrale Chauffage
@@ -80,6 +85,29 @@
 #   Toute utilisation décisionnelle directe constitue une VIOLATION DE GOUVERNANCE.
 #
 # ==========================================================
+
+
+# ----------------------------------------------------------
+# 🔒 VALIDITÉ D’UN CYCLE PRÉSENCE
+# ----------------------------------------------------------
+#
+# Un cycle thermique Présence est déclaré valide si :
+#
+#   - Reprise canonique A1 détectée
+#   - Arrêt canonique B0 détecté
+#   - Aucune aération invalidante durant le cycle
+#   - Séquence complète A1 → B0 respectée
+#
+# Tout cycle partiel :
+#   - ne publie aucune valeur exploitable
+#   - force l’état à unknown si nécessaire
+#
+# ----------------------------------------------------------
+
+- Architecture strictement déterministe
+- Zéro polling implicite
+- Zéro dépendance au temps vivant
+
 
 ### 🔒 sensor.amplitude_oscillation_cycle_presence_chambres
 
@@ -114,13 +142,19 @@ Capteur structurant de validation d’hystérésis et de confort thermique réel
 
 🔒 Garanties exigées :
 - Intra-cycle strict (présence uniquement)
-- Figé naturel en fin de cycle
+- Figement définitif en fin de cycle
+- Aucune réécriture rétroactive
+- Aucune évolution post-fin-de-cycle
 - Aucune accumulation inter-cycle
 - Invalidation stricte en cas d’aération
 - Reload-safe / runtime-safe
 - Dépendance exclusive à des capteurs canoniques gouvernés
 - Absence totale de logique métier
 - Mesure purement descriptive
+- Cycle strict A1 → B0
+- Publication uniquement si reprise_valide ET arret_valide
+- Unknown si cycle incomplet
+- Références thermiques figées T0_ref
 
 🔗 Dépendances :
 Sources cycle :
@@ -193,10 +227,16 @@ Capteur structurant de qualification dynamique du comportement chaudière / bât
 - Invalidation stricte en cas d’aération
 - Reload-safe / runtime-safe
 - Mesure purement descriptive
+- Basé exclusivement sur reprises valides successives
+- Périodes = Δt entre deux A1 valides
+- Moyenne calculée uniquement sur périodes complètes
+- Unknown tant qu’aucune période valide
+- Anti-replay restart-safe
 
 🔗 Dépendances :
 Transition décisionnelle canonique :
-- input_select.chauffage_dernier_mode_decide  
+- sensor.temperature_reprise_presence_chambres
+- sensor.temperature_arret_presence_chambres
 
 Invalidation :
 - input_boolean.aeration_pipeline_arme  
@@ -261,10 +301,18 @@ Capteur structurant de diagnostic d’usure, de stabilité et de qualité de ré
 - Invalidation stricte en cas d’aération
 - Reload-safe / runtime-safe
 - Mesure purement comptable et descriptive
+- Idempotence stricte
+- Anti-replay au redémarrage
+- Aucun recomptage d’un événement restauré
+- Comptage uniquement sur B0 valide
+- Un cycle = 1 arrêt valide précédé d’une reprise valide
+- Reset strict à minuit
+- Anti-replay au redémarrage
 
 🔗 Dépendances :
 Transition décisionnelle canonique :
-- input_select.chauffage_dernier_mode_decide  
+- sensor.temperature_reprise_presence_chambres
+- sensor.temperature_arret_presence_chambres
 
 Invalidation :
 - input_boolean.aeration_pipeline_arme  

@@ -158,6 +158,52 @@
 
 
 # ----------------------------------------------------------
+# 🔒 DOCTRINE CANONIQUE DES HORODATAGES
+# ----------------------------------------------------------
+#
+# Principe Arsenal :
+#   Toute référence temporelle fondatrice (début ou fin d’événement)
+#   doit être ancrée sur l’horodatage événementiel natif :
+#
+#       as_timestamp(trigger.to_state.last_changed)
+#
+#   L’usage de now().timestamp() n’est autorisé que :
+#     - dans un trigger explicitement événementiel,
+#     - et immédiatement figé dans un attribut.
+#
+# Interdictions :
+#   - Aucun horodatage dérivé recalculé hors événement.
+#   - Aucun delta temporel vivant basé sur now().
+#
+# Objectif :
+#   - Cohérence inter-capteurs.
+#   - Idempotence parfaite.
+#   - Alignement strict sur l’événement physique réel.
+# ----------------------------------------------------------
+
+
+# ----------------------------------------------------------
+# 🔒 RÈGLE DE FIGEMENT INTRA-CYCLE
+# ----------------------------------------------------------
+#
+# Tout capteur inertiel passif doit :
+#
+#   - Figé définitivement ses valeurs lorsque
+#     le phénomène observé est terminé.
+#
+#   - Publier une valeur stable jusqu’au prochain cycle.
+#
+#   - Ne jamais réécrire rétroactivement une mesure terminée.
+#
+# Mécanisme canonique :
+#   - Attribut *_finished (0/1)
+#   - Références figées T0_ref / t0_ref
+#
+# Toute progression continue post-événement est interdite.
+# ----------------------------------------------------------
+
+
+# ----------------------------------------------------------
 # 🔒 RÈGLE CARDINALE — VALIDITÉ DES CYCLES D’ABSENCE
 # ----------------------------------------------------------
 #
@@ -245,6 +291,47 @@
 
 
 # ----------------------------------------------------------
+# 🔒 NEUTRALISATION PAR AÉRATION
+# ----------------------------------------------------------
+#
+# Toute aération intervenant pendant un cycle d’absence :
+#
+#   - Invalide le cycle.
+#   - Interrompt immédiatement toute progression inertielle.
+#   - Empêche toute mise à jour ultérieure.
+#
+# Aucun capteur de cette couche ne peut :
+#   - Continuer à évoluer pendant aeration_pipeline_arme = on
+#   - Produire une valeur exploitable sur cycle pollué.
+#
+# L’invalidation doit être :
+#   - événementielle,
+#   - traçable,
+#   - et figée.
+# ----------------------------------------------------------
+
+
+# ----------------------------------------------------------
+# 🔒 INTERDICTION DES DÉPENDANCES DÉRIVÉES INSTABLES
+# ----------------------------------------------------------
+#
+# Un capteur inertiel passif ne doit jamais dépendre :
+#
+#   - d’un capteur dérivé recalculé périodiquement,
+#   - d’un capteur dont l’état peut dériver hors événement,
+#   - d’un capteur utilisant un temps vivant.
+#
+# Les dépendances autorisées sont :
+#   - capteurs structurants fondationnels (A1 / B0)
+#   - capteurs thermiques bruts stabilisés
+#   - contexte de présence canonique
+#
+# Toute dépendance en cascade sur un capteur
+# lui-même non événementiel est interdite.
+# ----------------------------------------------------------
+
+
+# ----------------------------------------------------------
 # 🧩 CAPTEURS STRUCTURANTS — FAMILLE C (ABSENCE RÉELLE)
 # ----------------------------------------------------------
 
@@ -280,12 +367,30 @@ la calibration absence et la qualification de protection thermique du bâtiment.
 🔒 Garanties exigées :
 - Intra-cycle strict (absence réelle uniquement)
 - Frontière fondée exclusivement sur la présence canonique
-- Figé naturel dès stabilisation atteinte
+- Figement définitif une fois :
+    • stabilisation atteinte (durée_stabilisation)
+    • plancher thermique atteint (temperature_plancher)
+- Aucune réécriture rétroactive
+- Aucune évolution post-fin-de-cycle
 - Dépendance exclusive à des références canoniques gouvernées
 - Reload-safe / runtime-safe
 - Aucune logique métier embarquée
 - Aucun seuil décisionnel
 - Valeur purement descriptive et temporelle
+- Horodatages fondés exclusivement sur l’événement canonique
+  (as_timestamp(trigger.to_state.last_changed))
+- Aucun horodatage dérivé vivant
+- Aucun calcul temporel continu basé sur now()
+- Neutralisation stricte si aeration_pipeline_arme = on
+- Aucun cycle impacté par aération ne peut produire une valeur exploitable
+- Invalidation événementielle traçable
+- Publication conditionnée à un cycle valide :
+    • durée ≥ 3600 s
+    • frontière canonique respectée
+    • aucune aération invalidante
+- En cas de cycle invalide :
+    • état forcé à unknown
+    • attributs conservés à titre diagnostique
 
 🔗 Dépendances :
 Contexte absence canonique :
@@ -293,6 +398,10 @@ Contexte absence canonique :
 
 Source thermique :
 - sensor.temperature_min_chambres  
+
+❌ Interdit :
+- Dépendance à un capteur dérivé recalculé périodiquement
+- Dépendance à un capteur utilisant un temps vivant
 
 ⚠️ Risques :
 - Mauvaise interprétation hors contexte absence réelle
@@ -346,12 +455,30 @@ des garde-fous thermiques en absence réelle.
 🔒 Garanties exigées :
 - Intra-cycle strict (absence réelle uniquement)
 - Frontière fondée exclusivement sur la présence canonique
-- Figé naturel en fin de cycle
+- Figement définitif une fois :
+    • stabilisation atteinte (durée_stabilisation)
+    • plancher thermique atteint (temperature_plancher)
+- Aucune réécriture rétroactive
+- Aucune évolution post-fin-de-cycle
 - Dépendance exclusive à des références canoniques gouvernées
 - Reload-safe / runtime-safe
 - Aucune logique métier embarquée
 - Aucun seuil décisionnel
 - Valeur strictement descriptive et thermique
+- Horodatages fondés exclusivement sur l’événement canonique
+  (as_timestamp(trigger.to_state.last_changed))
+- Aucun horodatage dérivé vivant
+- Aucun calcul temporel continu basé sur now()
+- Neutralisation stricte si aeration_pipeline_arme = on
+- Aucun cycle impacté par aération ne peut produire une valeur exploitable
+- Invalidation événementielle traçable
+- Publication conditionnée à un cycle valide :
+    • durée ≥ 3600 s
+    • frontière canonique respectée
+    • aucune aération invalidante
+- En cas de cycle invalide :
+    • état forcé à unknown
+    • attributs conservés à titre diagnostique
 
 🔗 Dépendances :
 Contexte absence canonique :
@@ -359,6 +486,10 @@ Contexte absence canonique :
 
 Source thermique :
 - sensor.temperature_min_chambres  
+
+❌ Interdit :
+- Dépendance à un capteur dérivé recalculé périodiquement
+- Dépendance à un capteur utilisant un temps vivant
 
 ⚠️ Risques :
 - Mauvaise interprétation hors contexte absence réelle

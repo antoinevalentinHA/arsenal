@@ -34,30 +34,38 @@
 #     - Automation strictement réactive à l’action utilisateur
 # ==========================================================
 
-
 - id: "10240000000008"
   alias: "Chauffage – Appliquer pente ou parallèle"
   description: >
     Déclenche la mise à jour de la pente ou du parallèle de la courbe
     de chauffe via les scripts dédiés, uniquement si l'API ViCare est disponible.
-  mode: single
+  mode: queued
+  max: 5
 
   # ======================================================
   # 🔔 Déclencheur — slider modifié dans l’UI
   # ======================================================
   trigger:
     - platform: state
-      entity_id:
-        - input_number.chauffage_pente_consigne
-        - input_number.chauffage_parallele_consigne
+      entity_id: input_number.chauffage_pente_consigne
+      to: ~
+    - platform: state
+      entity_id: input_number.chauffage_parallele_consigne
+      to: ~
 
   # ======================================================
-  # 🧿 Condition — API ViCare disponible (reload-safe)
+  # 🧿 Condition — API ViCare disponible + valeur valide
   # ======================================================
   condition:
+
     - condition: template
       value_template: >
         {{ is_state('binary_sensor.vicare_api_disponible', 'on') }}
+
+    - condition: template
+      value_template: >
+        {{ trigger.to_state is not none
+           and trigger.to_state.state not in ['unknown','unavailable','none',''] }}
 
   # ======================================================
   # 🎯 Action — Appel du bon script selon l’input modifié

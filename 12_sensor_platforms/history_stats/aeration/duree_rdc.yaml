@@ -27,7 +27,7 @@
 - platform: history_stats
   name: "Durée aération RDC"
   entity_id: binary_sensor.fenetre_ouverte_rdc
-  state: "on"                                   # État à mesurer (fenêtres ouvertes)
-  type: time                                    # Mesure du temps cumulé dans cet état
-  start: "{{ now().replace(hour=0, minute=0, second=0) }}"  # Début de journée (minuit)
-  end: "{{ now() }}"                            # Jusqu'à l’instant actuel
+  state: "on"
+  type: time
+  start: "{{ now().replace(hour=0, minute=0, second=0) }}"
+  end: "{{ now() }}"

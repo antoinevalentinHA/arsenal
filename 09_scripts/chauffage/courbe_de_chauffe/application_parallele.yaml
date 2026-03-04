@@ -33,75 +33,83 @@
 # 🗓️ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 chauffage_appliquer_parallele:
   alias: "Chauffage – Appliquer décalage parallèle"
   mode: restart
   sequence:
 
-    # ======================================================
-    # 1️⃣ Capture état initial et consigne cible
-    # ======================================================
     - variables:
-        parallele_cible: "{{ states('input_number.chauffage_parallele_consigne') | float }}"
-        parallele_initial: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float }}"
+        parallele_cible_raw: "{{ states('input_number.chauffage_parallele_consigne') }}"
+        parallele_cloud_raw: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') }}"
         tolerance: 0.01
 
-    # ======================================================
-    # 2️⃣ Sortie immédiate si déjà conforme
-    # ======================================================
+    - condition: template
+      value_template: >
+        {{ parallele_cible_raw not in ['unknown','unavailable','none','']
+           and parallele_cloud_raw not in ['unknown','unavailable','none',''] }}
+
+    - variables:
+        parallele_cible: "{{ parallele_cible_raw | float }}"
+        parallele_initial: "{{ parallele_cloud_raw | float }}"
+
     - condition: template
       value_template: >
         {{ (parallele_cible - parallele_initial) | abs > tolerance }}
 
-    # ======================================================
-    # 3️⃣ Tentatives ViCare bornées (max 3)
-    # ======================================================
     - repeat:
-        count: 3
+        while:
+          - condition: template
+            value_template: >
+              {{ repeat.index <= 3
+                 and is_state('binary_sensor.vicare_api_disponible', 'on')
+                 and ((states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float - parallele_cible) | abs) > tolerance }}
         sequence:
 
-          # 📡 Envoi de la consigne au cloud ViCare
           - service: number.set_value
             target:
               entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
             data:
               value: "{{ parallele_cible }}"
 
-          # ⏳ Attente propagation cloud
           - delay: "00:00:20"
 
-          # 🔄 Rafraîchissement explicite
           - service: homeassistant.update_entity
             target:
               entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
 
-          # ⏳ Stabilisation lecture
           - delay: "00:00:30"
 
-          # ✅ Sortie anticipée si conforme
-          - condition: template
-            value_template: >
-              {{ ((states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float - parallele_cible) | abs) < tolerance }}
-            enabled: true
-
-    # ======================================================
-    # 4️⃣ Vérification finale factuelle
-    # ======================================================
     - variables:
-        parallele_final: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float }}"
+        parallele_final_raw: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') }}"
+        parallele_final: "{{ parallele_final_raw | float(9999) }}"
 
-    - condition: template
-      value_template: >
-        {{ (parallele_final - parallele_cible) | abs < tolerance }}
+    - choose:
 
-    # ======================================================
-    # 5️⃣ Journalisation factuelle (cloud confirmé)
-    # ======================================================
-    - service: logbook.log
-      data:
-        name: "ViCare"
-        message: >
-          📊 Parallele CONFIRME cote cloud :
-          {{ parallele_initial }} → {{ parallele_final }}
-        entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ parallele_final_raw not in ['unknown','unavailable','none','']
+                   and (parallele_final - parallele_cible) | abs < tolerance }}
+          sequence:
+            - service: logbook.log
+              data:
+                name: "ViCare"
+                message: >
+                  📊 Parallele CONFIRME cote cloud :
+                  {{ parallele_initial }} → {{ parallele_final }}
+                entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ parallele_final_raw in ['unknown','unavailable','none','']
+                   or (parallele_final - parallele_cible) | abs >= tolerance }}
+          sequence:
+            - service: logbook.log
+              data:
+                name: "ViCare"
+                message: >
+                  ⚠️ Parallele NON confirme cote cloud :
+                  cible={{ parallele_cible }},
+                  lu={{ parallele_final_raw }}
+                entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe

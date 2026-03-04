@@ -1,0 +1,54 @@
+# ==============================================================
+# 🧠 ARSENAL — BUTTON CARD :
+#     Garage – Intention eclairage (bandeau header)
+# --------------------------------------------------------------
+# Bandeau pleine largeur ultra fin.
+# Lecture seule.
+# ==============================================================
+
+carte_garage_intention_eclairage:
+  template: socle_header_base
+
+  entity: binary_sensor.garage_allumage_auto_autorise
+
+  show_icon: false
+  show_state: false
+  show_label: false
+  show_name: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  name: |
+    [[[
+      if (!entity) return 'Garage — Allumage auto';
+      return (entity.state === 'on')
+        ? 'Allumage autorisé'
+        : 'Allumage interdit';
+    ]]]
+
+  state:
+    - value: "on"
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: "off"
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+  styles:
+    card:
+      - padding: 4px 0 2px 0
+      - margin: 0px 0 2px 0
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+      - line-height: 1.2

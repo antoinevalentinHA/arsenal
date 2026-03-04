@@ -1,48 +1,29 @@
 # ==========================================================
 # 🌡️ ARSENAL — TEMPLATE TRIGGERED SENSOR
 #     Diagnostic thermique — Inertie arrêt
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Mesurer l’amplitude maximale de surchauffe inertielle observée
+#   après un arrêt chauffage (B0), par rapport au point d’arrêt figé.
 #
-# 🧠 RÔLE
-#     Mesurer l’**amplitude maximale de surchauffe inertielle**
-#     observée après une transition d’arrêt chauffage
-#     (comfort → reduced), à partir du point d’arrêt figé.
+# 🧱 FRONTIÈRE D’AUTORITÉ
+#   DIAGNOSTIC THERMIQUE — INTRA-CYCLE — ANCRÉ SUR B0
 #
-# 🎯 FINALITÉ
-#     - Quantification directe de l’inertie hydraulique / chaudière
-#     - Base canonique de :
-#         • stabilité cycles
-#         • offsets OFF présence
-#
-# 🧩 PÉRIMÈTRE
-#     - Intra-cycle strict
-#     - Ancré exclusivement sur B0
-#     - Aucune accumulation inter-cycle
-#
-# 🚫 NE FAIT PAS
-#     - Ne décide rien
-#     - Ne lit aucun offset
-#     - Ne déclenche aucun effet de bord
-#
-# 🔒 Invalidation stricte :
-#   - tout cycle impacté par aération est neutralisé
-#   - aucune mise à jour pendant aeration_pipeline_arme
-#
-# 🔗 DÉPENDANCES
-#     - sensor.temperature_arret_presence_chambres   (B0)
-#     - sensor.temperature_min_chambres
-#     - input_boolean.aeration_pipeline_arme
-#
-# 🧠 STATUT
-#     - Diagnostic thermique
-#     - Phénomène canonique T2
-#     - Impact système : nul
+# 🔒 PROPRIÉTÉS
+#   - Reset strict uniquement sur événement B0 canonique (t_arret change)
+#   - Max( T_cur - T_arret_ref ) suivi après B0
+#   - Neutralisation stricte pendant aération_pipeline_arme :
+#       • aucune mise à jour
+#       • valeur figée typée (float) si possible
+#   - Aucun effet de bord, aucune décision
 # ==========================================================
 
 - trigger:
 
-    # Nouvel arrêt chauffage (B0)
+    # Nouvel arrêt chauffage (B0) — canonique : changement de t_arret uniquement
     - platform: state
       entity_id: sensor.temperature_arret_presence_chambres
+      attribute: t_arret
 
     # Variation thermique Chambres
     - platform: state
@@ -58,65 +39,51 @@
 
 
       state: >
-        {# -------------------------------------------------- #}
-        {# Invalidation aération / post-aération             #}
-        {# -------------------------------------------------- #}
+        {% set last = this.state | float(none) %}
 
+        {# -------------------------------------------------- #}
+        {# Neutralisation aération / post-aération             #}
+        {# -------------------------------------------------- #}
         {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
-          {{ this.state }}
-
+          {{ last }}
         {% else %}
 
-          {% set arret_valide = state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') %}
-          {% set t_arret = state_attr('sensor.temperature_arret_presence_chambres', 't_arret') %}
-          {% set T_arret = states('sensor.temperature_arret_presence_chambres') | float(none) %}
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set t_arret = state_attr('sensor.temperature_arret_presence_chambres', 't_arret') | float(none) %}
+
+          {# Référence arrêt : figée au B0 (attributs persistés) #}
+          {% set t_arret_ref = this.attributes.get('t_arret_ref') | float(none) %}
+          {% set T_arret_ref = this.attributes.get('T_arret_ref') | float(none) %}
+
           {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
-          {% set last = this.state | float(none) %}
 
           {# -------------------------------------------------- #}
-          {# Neutralisation si arrêt invalide ou données absentes #}
+          {# Reset UNIQUEMENT lors d’un vrai arrêt valide (B0)  #}
           {# -------------------------------------------------- #}
+          {% if trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
 
-          {% if not arret_valide or t_arret is none or T_arret is none or T_cur is none %}
-            {{ none }}
+            {% if arret_valide %}
+              {{ 0 }}
+            {% else %}
+              {{ none }}
+            {% endif %}
 
           {% else %}
 
             {# -------------------------------------------------- #}
-            {# Reset UNIQUEMENT lors d’un vrai arrêt valide      #}
+            {# Neutralisation si pas de ref arrêt ou données absentes #}
             {# -------------------------------------------------- #}
-
-            {% if trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
-              {{ 0 }}
-
+            {% if not arret_valide or t_arret_ref is none or T_arret_ref is none or T_cur is none %}
+              {{ none }}
             {% else %}
 
-              {% set rise = (T_cur - T_arret) | float %}
+              {% set rise = (T_cur - T_arret_ref) | float %}
 
-              {# -------------------------------------------------- #}
-              {# Pas encore d’overshoot réel                      #}
-              {# -------------------------------------------------- #}
-
+              {# Pas encore d’overshoot réel #}
               {% if rise <= 0 %}
-
-                {% if last is not none %}
-                  {{ last }}
-                {% else %}
-                  {{ 0 }}
-                {% endif %}
-
-              {# -------------------------------------------------- #}
-              {# Overshoot réel observé                           #}
-              {# -------------------------------------------------- #}
-
+                {{ last if last is not none else 0 }}
               {% else %}
-
-                {% if last is not none %}
-                  {{ [last, rise] | max | round(3) }}
-                {% else %}
-                  {{ rise | round(3) }}
-                {% endif %}
-
+                {{ ([last, rise] | max) | round(3) if last is not none else (rise | round(3)) }}
               {% endif %}
 
             {% endif %}
@@ -124,3 +91,103 @@
           {% endif %}
 
         {% endif %}
+
+
+      attributes:
+
+        # --------------------------------------------------
+        # Cast strict (diagnostic)
+        # --------------------------------------------------
+        arret_valide_cast: >
+          {{ ((state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true') }}
+
+        # --------------------------------------------------
+        # Référence arrêt (figée à B0)
+        # --------------------------------------------------
+        t_arret_ref: >
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set t_arret = state_attr('sensor.temperature_arret_presence_chambres', 't_arret') | float(none) %}
+          {% set prev = this.attributes.get('t_arret_ref') %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev }}
+          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' and arret_valide and t_arret is not none %}
+            {{ t_arret }}
+          {% else %}
+            {{ prev }}
+          {% endif %}
+
+        T_arret_ref: >
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set T_arret = states('sensor.temperature_arret_presence_chambres') | float(none) %}
+          {% set prev = this.attributes.get('T_arret_ref') %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev }}
+          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' and arret_valide and T_arret is not none %}
+            {{ T_arret }}
+          {% else %}
+            {{ prev }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Dernier rise calculé (observabilité)
+        # --------------------------------------------------
+        overshoot_last_rise: >
+          {% set t_arret_ref = this.attributes.get('t_arret_ref') | float(none) %}
+          {% set T_arret_ref = this.attributes.get('T_arret_ref') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ this.attributes.get('overshoot_last_rise') }}
+          {% elif t_arret_ref is none or T_arret_ref is none or T_cur is none %}
+            {{ none }}
+          {% else %}
+            {{ (T_cur - T_arret_ref) | round(3) }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Statut / invalidation (diagnostic)
+        # --------------------------------------------------
+        arsenal_status: >
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set t_arret_ref = this.attributes.get('t_arret_ref') | float(none) %}
+          {% set T_arret_ref = this.attributes.get('T_arret_ref') | float(none) %}
+
+          {% if aeration == 'on' %}
+            inhibited_aeration
+          {% elif not arret_valide %}
+            arret_invalide
+          {% elif t_arret_ref is none or T_arret_ref is none %}
+            no_reference
+          {% else %}
+            tracking
+          {% endif %}
+
+        raison_invalidation: >
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set t_arret_ref = this.attributes.get('t_arret_ref') | float(none) %}
+          {% set T_arret_ref = this.attributes.get('T_arret_ref') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+
+          {% if aeration == 'on' %}
+            aeration
+          {% elif not arret_valide %}
+            arret_invalide
+          {% elif t_arret_ref is none %}
+            t_arret_ref_none
+          {% elif T_arret_ref is none %}
+            T_arret_ref_none
+          {% elif T_cur is none %}
+            T_cur_none
+          {% else %}
+            ok
+          {% endif %}
+
+        # --------------------------------------------------
+        # Sources
+        # --------------------------------------------------
+        source_arret_entity: "sensor.temperature_arret_presence_chambres"
+        source_temp_entity: "sensor.temperature_min_chambres"

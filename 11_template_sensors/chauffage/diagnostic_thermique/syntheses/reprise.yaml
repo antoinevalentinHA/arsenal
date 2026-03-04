@@ -1,5 +1,5 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE SENSOR — DIAGNOSTIC CHAUFFAGE : REPRISE
+# 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR — DIAGNOSTIC CHAUFFAGE : REPRISE
 #     Synthèse indicative — Vitesse de reprise (présence)
 # ----------------------------------------------------------
 # Domaine : Chauffage / Diagnostic thermique / Synthèses
@@ -8,27 +8,45 @@
 #
 # 🎯 Rôle :
 #   Publier un état textuel indicatif de dynamique de reprise
-#   à partir de la vitesse réelle de reprise en présence.
+#   à partir de la vitesse réelle de reprise en présence (°C/h).
 #
-# 🔗 Dépendances (lecture) :
+# 🔗 Dépendances :
 #   - sensor.vitesse_reprise_presence_chambres
 #
-# 🚫 Interdits :
-#   - Aucun service, aucune action, aucune écriture d’entité
-#   - Aucune autorisation, aucun blocage, aucune décision centrale
+# 🧩 Seuils :
+#   - v > 1.50  → Reprise rapide
+#   - v > 0.80  → Reprise modérée
+#   - v ≤ 0.80  → Reprise lente
 #
+# 🚫 Interdits :
+#   - Aucun service
+#   - Aucune décision
+#   - Aucune écriture
 # ==========================================================
 
-- sensor:
-    - name: Diagnostic chauffage reprise
+- trigger:
+    - platform: state
+      entity_id: sensor.vitesse_reprise_presence_chambres
+
+  sensor:
+    - name: "Diagnostic chauffage reprise"
       unique_id: diagnostic_chauffage_reprise
-      state: >-
-        {%- set v_reprise = states('sensor.vitesse_reprise_presence_chambres') | float(none) -%}
-        {%- set txt = none -%}
-        {%- if v_reprise is not none -%}
-          {%- if v_reprise > 1.5 -%}{%- set txt = 'Reprise rapide (bonne puissance / émetteurs efficaces)' -%}
-          {%- elif v_reprise > 0.8 -%}{%- set txt = 'Reprise modérée' -%}
-          {%- else -%}{%- set txt = 'Reprise lente (inertie forte ou puissance limitée)' -%}
-          {%- endif -%}
-        {%- endif -%}
-        {{- txt if txt is not none else '' -}}
+
+      state: >
+        {% set v = states('sensor.vitesse_reprise_presence_chambres') | float(none) %}
+
+        {% if v is none %}
+          {{ none }}
+        {% elif v > 1.50 %}
+          Reprise rapide (bonne puissance / émetteurs efficaces)
+        {% elif v > 0.80 %}
+          Reprise modérée
+        {% else %}
+          Reprise lente (inertie forte ou puissance limitée)
+        {% endif %}
+
+      attributes:
+        source_entity: "sensor.vitesse_reprise_presence_chambres"
+        unit_hint: "°C/h"
+        arsenal_threshold_fast: 1.50
+        arsenal_threshold_moderate: 0.80

@@ -10,7 +10,6 @@
 #  Principe :
 #    - Écoute les capteurs de durée calculée
 #    - Écrit dans les input_number "stock"
-#    - Actif uniquement pendant un épisode d’aération
 #
 #  Important :
 #    - Aucun calcul métier
@@ -30,14 +29,6 @@
       entity_id:
         - sensor.duree_aeration_rdc
         - sensor.duree_aeration_etage
-
-  # ======================================================
-  # Conditions
-  # ======================================================
-  condition:
-    - condition: state
-      entity_id: input_boolean.aeration_episode_en_cours
-      state: "on"
 
   # ======================================================
   # Actions

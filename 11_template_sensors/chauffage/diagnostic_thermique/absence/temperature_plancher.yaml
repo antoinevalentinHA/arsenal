@@ -18,6 +18,12 @@
 #   - aucun seuil métier
 #   - aucune décision
 #
+# 🧠 Méthode :
+#   - tmin_timestamp : timestamp événementiel basé sur trigger.to_state.last_changed
+#     (pas sur now()), pour refléter le moment réel du changement thermique.
+#   - cycle_valide : invalidation "aération" latched pendant le cycle
+#     (aeration_vue_pendant_cycle), pas seulement au moment de fin.
+#
 # 📌 Autorités :
 #   - Source thermique : sensor.temperature_min_chambres
 #   - Contexte absence : binary_sensor.presence_famille_unifiee
@@ -25,7 +31,6 @@
 # 🔒 Frontière canonique :
 #   - Début cycle : présence on → off
 #   - Fin cycle   : présence off → on
-#
 # ==========================================================
 
 - trigger:
@@ -81,9 +86,14 @@
 
         # --------------------------------------------------
         # Fin de cycle absence
+        #   - reset à chaque début de cycle (propreté)
         # --------------------------------------------------
         t_cycle_end: >
           {% if trigger.platform == 'state'
+                and trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+            {{ none }}
+          {% elif trigger.platform == 'state'
                 and trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
                 and trigger.from_state.state == 'off' %}
             {{ now().timestamp() }}
@@ -102,6 +112,26 @@
             {{ (t_end - t_start) | int }}
           {% else %}
             {{ none }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Aération vue pendant le cycle (latch)
+        # --------------------------------------------------
+        aeration_vue_pendant_cycle: >
+          {% set presence = states('binary_sensor.presence_famille_unifiee') %}
+          {% set prev = this.attributes.get('aeration_vue_pendant_cycle') %}
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+
+          {% if trigger.platform == 'state'
+                and trigger.entity_id == 'binary_sensor.presence_famille_unifiee'
+                and trigger.to_state.state == 'off' %}
+            false
+
+          {% elif presence == 'off' and aeration == 'on' %}
+            true
+
+          {% else %}
+            {{ prev if prev is not none else false }}
           {% endif %}
 
         # --------------------------------------------------
@@ -128,7 +158,7 @@
                 and trigger.entity_id == 'sensor.temperature_min_chambres'
                 and Tcur is not none %}
 
-            {% if Tmin is not none and Tcur < Tmin %}
+            {% if Tmin is none or Tcur < Tmin %}
               {{ Tcur }}
             {% else %}
               {{ Tmin }}
@@ -141,6 +171,7 @@
 
         # --------------------------------------------------
         # Timestamp du minimum thermique
+        #   - événementiel sur baisse (Option A)
         # --------------------------------------------------
         tmin_timestamp: >
           {% if trigger.platform == 'state'
@@ -150,11 +181,11 @@
 
           {% elif states('binary_sensor.presence_famille_unifiee') == 'off'
                 and trigger.entity_id == 'sensor.temperature_min_chambres'
-                and states('sensor.temperature_min_chambres') | float(none) is not none
+                and trigger.to_state is not none
+                and (trigger.to_state.state | float(none)) is not none
                 and this.attributes.get('tmin') is not none
-                and (states('sensor.temperature_min_chambres') | float) < this.attributes.get('tmin') %}
-
-            {{ now().timestamp() }}
+                and (trigger.to_state.state | float) < this.attributes.get('tmin') %}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
 
           {% else %}
             {{ this.attributes.get('tmin_timestamp') }}
@@ -166,11 +197,11 @@
         cycle_valide: >
           {% set duree = this.attributes.get('cycle_duree_s') %}
           {% set t_end = this.attributes.get('t_cycle_end') %}
-          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+          {% set aeration_vue = this.attributes.get('aeration_vue_pendant_cycle') %}
 
           {% if t_end is none %}
             false
-          {% elif aeration == 'on' %}
+          {% elif aeration_vue %}
             false
           {% elif duree is not none and duree >= 3600 %}
             true
@@ -184,11 +215,11 @@
         raison_invalidation: >
           {% set duree = this.attributes.get('cycle_duree_s') %}
           {% set t_end = this.attributes.get('t_cycle_end') %}
-          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+          {% set aeration_vue = this.attributes.get('aeration_vue_pendant_cycle') %}
 
           {% if t_end is none %}
             incomplet
-          {% elif aeration == 'on' %}
+          {% elif aeration_vue %}
             aeration
           {% elif duree is not none and duree < 3600 %}
             trop_court

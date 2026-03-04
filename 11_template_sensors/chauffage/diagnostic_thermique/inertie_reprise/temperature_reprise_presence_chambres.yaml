@@ -1,7 +1,7 @@
 # ==========================================================
 # 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR
 #     Diagnostic thermique — Inertie reprise
-#
+# ----------------------------------------------------------
 # 🧠 RÔLE
 #     Figer la température exacte au moment de la reprise chauffage
 #     (transition reduced → comfort) afin de constituer le point
@@ -93,7 +93,7 @@
       attributes:
 
         # --------------------------------------------------
-        # Timestamp canonique de reprise (A1)
+        # Timestamp canonique de reprise (A1) — événementiel
         # --------------------------------------------------
         t_reprise: >
           {% set is_trig = (trigger is defined and trigger is not none) %}
@@ -105,7 +105,7 @@
                 and trigger.from_state.state == 'reduced'
                 and trigger.to_state.state == 'comfort'
                 and states('input_boolean.aeration_pipeline_arme') == 'off' %}
-            {{ now().timestamp() }}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
           {% else %}
             {{ this.attributes.get('t_reprise') }}
           {% endif %}
@@ -159,7 +159,7 @@
           {% endif %}
 
         # --------------------------------------------------
-        # Timestamp d'invalidation (métadonnée stable)
+        # Timestamp d'invalidation (métadonnée stable) — événementiel
         # --------------------------------------------------
         t_invalidation: >
           {% set is_trig = (trigger is defined and trigger is not none) %}
@@ -168,7 +168,7 @@
                 and trigger.entity_id == 'input_boolean.aeration_pipeline_arme'
                 and trigger.to_state is not none
                 and trigger.to_state.state == 'on' %}
-            {{ now().timestamp() }}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
           {% else %}
             {{ this.attributes.get('t_invalidation') }}
           {% endif %}

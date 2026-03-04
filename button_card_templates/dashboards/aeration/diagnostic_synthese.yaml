@@ -49,13 +49,13 @@ aeration_synthese_72:
             const episode = st('input_boolean.aeration_episode_en_cours');
 
             if ([blocage, episode].some(v => UNAV.includes(v)))
-              return "rgba(224, 224, 224, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             if (blocage === 'on')
               return "rgba(244, 67, 54, 0.2)";
 
             if (episode === 'on')
-              return "rgba(144, 202, 249, 0.25)";
+              return "rgba(33, 150, 243, 0.2)";
 
             return "rgba(76, 175, 80, 0.2)";
           ]]]

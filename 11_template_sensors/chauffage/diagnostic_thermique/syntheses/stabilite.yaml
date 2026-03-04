@@ -1,5 +1,5 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE SENSOR — DIAGNOSTIC CHAUFFAGE : STABILITÉ
+# 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR — DIAGNOSTIC CHAUFFAGE : STABILITÉ
 #     Synthèse indicative — Charge de cyclage (journalier)
 # ----------------------------------------------------------
 # Domaine : Chauffage / Diagnostic thermique / Synthèses
@@ -10,25 +10,43 @@
 #   Publier un état textuel indicatif de stabilité de cyclage
 #   à partir du nombre de cycles journaliers en présence.
 #
-# 🔗 Dépendances (lecture) :
+# 🔗 Dépendances :
 #   - sensor.nombre_cycles_jour_presence_chambres
 #
-# 🚫 Interdits :
-#   - Aucun service, aucune action, aucune écriture d’entité
-#   - Aucune autorisation, aucun blocage, aucune décision centrale
+# 🧩 Seuils :
+#   - d2 ≤ 4   → Système très stable
+#   - d2 ≤ 8   → Stabilité correcte
+#   - d2  > 8  → Nervosité élevée
 #
+# 🚫 Interdits :
+#   - Aucun service
+#   - Aucune décision
+#   - Aucune écriture
 # ==========================================================
 
-- sensor:
-    - name: Diagnostic chauffage stabilite
+- trigger:
+    - platform: state
+      entity_id: sensor.nombre_cycles_jour_presence_chambres
+
+  sensor:
+    - name: "Diagnostic chauffage stabilite"
       unique_id: diagnostic_chauffage_stabilite
-      state: >-
-        {%- set d2 = states('sensor.nombre_cycles_jour_presence_chambres') | float(none) -%}
-        {%- set txt = none -%}
-        {%- if d2 is not none -%}
-          {%- if d2 <= 4 -%}{%- set txt = 'Système très stable (peu de cycles)' -%}
-          {%- elif d2 <= 8 -%}{%- set txt = 'Stabilité correcte' -%}
-          {%- else -%}{%- set txt = 'Nervosité élevée (cycles fréquents)' -%}
-          {%- endif -%}
-        {%- endif -%}
-        {{- txt if txt is not none else '' -}}
+
+      state: >
+        {% set d2 = states('sensor.nombre_cycles_jour_presence_chambres') | float(none) %}
+
+        {% if d2 is none %}
+          {{ none }}
+        {% elif d2 <= 4 %}
+          Système très stable (peu de cycles)
+        {% elif d2 <= 8 %}
+          Stabilité correcte
+        {% else %}
+          Nervosité élevée (cycles fréquents)
+        {% endif %}
+
+      attributes:
+        source_entity: "sensor.nombre_cycles_jour_presence_chambres"
+        unit_hint: "cycles/jour"
+        arsenal_threshold_very_stable: 4
+        arsenal_threshold_correct: 8

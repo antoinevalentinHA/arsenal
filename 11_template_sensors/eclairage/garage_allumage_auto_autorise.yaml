@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERN)
+#     Garage — Allumage automatique autorisé (saison + période)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Autorité logique unique indiquant si l’allumage auto garage
+#   est autorisé selon :
+#     - input_select.saison
+#     - sensor.periode_meteo
+#
+#   Ce capteur :
+#   - ne pilote rien
+#   - sert d’autorisation simple pour les automations garage
+#
+# 📌 ENTITE (attendue / cible)
+#   - binary_sensor.allumage_auto_garage_autorise
+#
+# 🔗 DEPENDANCES
+#   - input_select.saison
+#   - sensor.periode_meteo
+# ==========================================================
+
+- binary_sensor:
+    - name: "Garage — Allumage auto autorisé"
+      unique_id: "binary_sensor.garage_allumage_auto_autorise"
+
+      icon: >
+        {% set s = states('input_select.saison') %}
+        {% set p = states('sensor.periode_meteo') %}
+        {% if s in ['Automne','Hiver'] or (s in ['Printemps','Été'] and p in ['nuit','aube','crepuscule']) %}
+          mdi:lightbulb-auto
+        {% else %}
+          mdi:lightbulb-auto-outline
+        {% endif %}
+
+      availability: >
+        {{ states('input_select.saison') not in ['unknown','unavailable','none','']
+           and states('sensor.periode_meteo') not in ['unknown','unavailable','none',''] }}
+
+      attributes:
+        saison: >
+          {{ states('input_select.saison') }}
+        periode_meteo: >
+          {{ states('sensor.periode_meteo') }}
+        raison: >
+          {% set s = states('input_select.saison') %}
+          {% set p = states('sensor.periode_meteo') %}
+          {% if s in ['Automne','Hiver'] %}
+            Saison sombre (Automne/Hiver) : autorisé en continu.
+          {% elif s in ['Printemps','Été'] and p in ['nuit','aube','crepuscule'] %}
+            Saison claire (Printemps/Été) : autorisé uniquement nuit/aube/crepuscule.
+          {% else %}
+            Saison claire (Printemps/Été) : interdit en matin/jour.
+          {% endif %}
+
+      state: >
+        {% set s = states('input_select.saison') %}
+        {% set p = states('sensor.periode_meteo') %}
+        {{ s in ['Automne','Hiver']
+           or (s in ['Printemps','Été'] and p in ['nuit','aube','crepuscule']) }}

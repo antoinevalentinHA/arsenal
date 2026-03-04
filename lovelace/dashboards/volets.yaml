@@ -1,15 +1,15 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Général
-icon: mdi:server
+title: Volets
+icon: mdi:window-shutter
 
 views:
   ####################################
   # 🪟 VOLETS – COMMANDES GÉNÉRALES
   ####################################
-  - title: Général
-    path: general
-    icon: mdi:server
+  - title: Volets
+    path: volets
+    icon: mdi:window-shutter
 
     badges:
       - type: custom:button-card

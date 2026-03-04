@@ -64,7 +64,7 @@ aeration_deltat_chute_72:
             const tstate  = states['timer.aeration_analyse_delta_t']?.state;
 
             if ([episode, blocage, tstate].some(v => UNAV.includes(v)))
-              return "rgba(224, 224, 224, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             const actif = (episode === 'on') || (blocage === 'on');
             if (!actif)
@@ -75,11 +75,11 @@ aeration_deltat_chute_72:
 
             const s = states['input_number.aeration_delta_t_utilise']?.state;
             if (UNAV.includes(s))
-              return "rgba(224, 224, 224, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             const v = parseFloat(s);
             if (Number.isNaN(v))
-              return "rgba(224, 224, 224, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             if (v === 0)
               return "rgba(76, 175, 80, 0.2)";

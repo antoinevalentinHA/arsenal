@@ -1,36 +1,25 @@
 # ==========================================================
-# 🌡️ TEMPLATE TRIGGERED SENSOR — Chauffage : Durée chute reprise Présence Chambres
+# 🌡️ ARSENAL — TEMPLATE TRIGGERED SENSOR
+#     Chauffage : Durée chute reprise Présence Chambres
 # ----------------------------------------------------------
-# 🧠 Rôle :
-#   Mesurer la **durée effective de la chute thermique**
-#   après une transition de reprise chauffage (reduced → comfort),
-#   depuis l’instant de reprise jusqu’au point le plus bas atteint.
+# 🎯 RÔLE
+#   Mesurer la durée effective de la chute thermique après reprise A1 :
+#   du timestamp A1 (t0_ref) jusqu’au point le plus bas atteint,
+#   détecté par la première non-baisse (plateau/remontée).
 #
-#   Ce capteur quantifie directement :
-#     - la latence inertielle bâtiment + hydraulique
-#     - le retard réel de réponse thermique après ordre de reprise
+# 🧠 LOGIQUE
+#   - Reset strict à 0 uniquement sur reprise valide (A1)
+#   - Suivi direct de sensor.temperature_min_chambres
+#   - Mise à jour de t_low_ref tant que la température baisse strictement
+#   - Figement automatique à la première non-baisse
+#   - Durée = (t_low_ref - t0_ref) en minutes
 #
-# 🔎 Déclencheurs :
-#   - Nouvelle reprise chauffage (capteur A1)
-#   - Variation de l’amplitude de chute (capteur A2)
-#
-# ⚙️ Principe :
-#   - À chaque reprise valide :
-#       • durée remise à zéro
-#   - Tant que l’amplitude augmente réellement :
-#       • durée = now() – t_reprise
-#   - Dès que l’amplitude cesse d’augmenter :
-#       • durée figée automatiquement
-#
-# 📌 Nature :
-#   - Diagnostic pur
-#   - Mesure intra-cycle uniquement
-#   - Figement automatique à stabilisation
-#
-# 🚫 Ne fait pas :
-#   - Ne décide rien
-#   - Ne déclenche rien
-#   - Ne mémorise pas inter-cycle
+# 🔒 PROPRIÉTÉS
+#   - Trigger A1 canonique : changement de l’attribut t_reprise
+#   - Aucune dépendance en cascade sur capteur amplitude
+#   - Anti race-condition via T_prev
+#   - Neutralisation stricte pendant aeration_pipeline_arme
+#   - Aucun "0 fantôme" hors cycle valide
 #
 # 📦 Capteur créé :
 #   • sensor.duree_chute_reprise_presence_chambres
@@ -41,13 +30,14 @@
 
 - trigger:
 
-    # Nouvelle reprise chauffage (A1)
+    # Nouvelle reprise chauffage (A1) — canonique : changement t_reprise uniquement
     - platform: state
       entity_id: sensor.temperature_reprise_presence_chambres
+      attribute: t_reprise
 
-    # Évolution de l’amplitude de chute (A2)
+    # Variation thermique Chambres (source directe)
     - platform: state
-      entity_id: sensor.amplitude_chute_reprise_presence_chambres
+      entity_id: sensor.temperature_min_chambres
 
 
   sensor:
@@ -58,64 +48,31 @@
 
 
       state: >
-        {# -------------------------------------------------- #}
-        {# Invalidation aération / post-aération             #}
-        {# -------------------------------------------------- #}
+        {% set last = this.state | float(none) %}
 
         {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
-          {{ this.state }}
-
+          {{ last }}
         {% else %}
 
-          {% set reprise_valide = state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') %}
-          {% set t_reprise = state_attr('sensor.temperature_reprise_presence_chambres', 't_reprise') %}
-          {% set amp = states('sensor.amplitude_chute_reprise_presence_chambres') | float(none) %}
-          {% set last = this.state | float(none) %}
-          {% set last_amp = state_attr('sensor.duree_chute_reprise_presence_chambres', 'last_amp') | float(none) %}
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+          {% set t0 = this.attributes.get('t0_ref') | float(none) %}
+          {% set t_low = this.attributes.get('t_low_ref') | float(none) %}
 
-          {# -------------------------------------------------- #}
-          {# Neutralisation si reprise invalide ou données absentes #}
-          {# -------------------------------------------------- #}
-
-          {% if not reprise_valide or t_reprise is none or amp is none %}
-            {{ none }}
-
-          {% else %}
-
-            {# -------------------------------------------------- #}
-            {# Reset UNIQUEMENT lors d’une vraie reprise valide  #}
-            {# -------------------------------------------------- #}
-
-            {% if trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' %}
-              {{ 0 }}
-
+          {% if trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' %}
+            {% if reprise_valide %}
+              0
             {% else %}
-
-              {# -------------------------------------------------- #}
-              {# Phase de chute encore en cours (amplitude augmente) #}
-              {# -------------------------------------------------- #}
-
-              {% if last_amp is none or amp > last_amp %}
-
-                {% set delta = (now().timestamp() - t_reprise) / 60 %}
-                {{ delta | round(2) }}
-
-              {# -------------------------------------------------- #}
-              {# Fin de chute détectée → figement automatique      #}
-              {# -------------------------------------------------- #}
-
-              {% else %}
-
-                {% if last is not none %}
-                  {{ last }}
-                {% else %}
-                  {{ none }}
-                {% endif %}
-
-              {% endif %}
-
+              {{ none }}
             {% endif %}
 
+          {% elif not reprise_valide %}
+            {{ none }}
+
+          {% elif t0 is none or t_low is none %}
+            {{ last }}
+
+          {% else %}
+            {{ ((t_low - t0) / 60) | round(2) }}
           {% endif %}
 
         {% endif %}
@@ -124,12 +81,156 @@
       attributes:
 
         # --------------------------------------------------
-        # Dernière amplitude observée (détection fin de chute)
+        # Cast strict (diagnostic)
         # --------------------------------------------------
-        last_amp: >
-          {% set amp = states('sensor.amplitude_chute_reprise_presence_chambres') | float(none) %}
-          {% if amp is not none %}
-            {{ amp }}
+        reprise_valide_cast: >
+          {{ ((state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true') }}
+
+        # --------------------------------------------------
+        # Référence A1 (figée) — événementiel (Option A)
+        # --------------------------------------------------
+        t0_ref: >
+          {% set prev = this.attributes.get('t0_ref') %}
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev }}
+          {% elif trigger.entity_id == 'sensor.temperature_reprise_presence_chambres'
+                and reprise_valide
+                and trigger.to_state is not none %}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
           {% else %}
-            {{ this.attributes.get('last_amp') }}
+            {{ prev }}
           {% endif %}
+
+        # --------------------------------------------------
+        # Dernier échantillon thermique (anti race-condition)
+        # --------------------------------------------------
+        T_prev: >
+          {% set prev = this.attributes.get('T_prev') %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set finished = (this.attributes.get('chute_finished') | int(0)) == 1 %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' %}
+            {{ T_cur }}
+
+          {% elif finished %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_min_chambres'
+                and T_cur is not none %}
+            {{ T_cur }}
+
+          {% else %}
+            {{ prev }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Timestamp du point bas courant
+        # --------------------------------------------------
+        t_low_ref: >
+          {% set prev = this.attributes.get('t_low_ref') %}
+          {% set T_prev = this.attributes.get('T_prev') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set finished = (this.attributes.get('chute_finished') | int(0)) == 1 %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_reprise_presence_chambres'
+                and trigger.to_state is not none %}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
+
+          {% elif finished %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_min_chambres'
+                and T_prev is not none
+                and T_cur is not none
+                and T_cur < T_prev
+                and trigger.to_state is not none %}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
+
+          {% else %}
+            {{ prev }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Fin de chute : première non-baisse
+        # --------------------------------------------------
+        chute_finished: >
+          {% set finished = (this.attributes.get('chute_finished') | int(0)) == 1 %}
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+          {% set t0 = this.attributes.get('t0_ref') | float(none) %}
+          {% set T_prev = this.attributes.get('T_prev') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ 1 if finished else 0 }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_reprise_presence_chambres' %}
+            0
+
+          {% elif not reprise_valide or t0 is none %}
+            0
+
+          {% elif finished %}
+            1
+
+          {% elif trigger.entity_id == 'sensor.temperature_min_chambres'
+                and T_prev is not none
+                and T_cur is not none
+                and T_cur >= T_prev %}
+            1
+
+          {% else %}
+            0
+          {% endif %}
+
+        # --------------------------------------------------
+        # Statut / invalidation (diagnostic)
+        # --------------------------------------------------
+        arsenal_status: >
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+          {% set t0 = this.attributes.get('t0_ref') | float(none) %}
+          {% set finished = (this.attributes.get('chute_finished') | int(0)) == 1 %}
+
+          {% if aeration == 'on' %}
+            inhibited_aeration
+          {% elif not reprise_valide %}
+            reprise_invalide
+          {% elif t0 is none %}
+            no_cycle
+          {% elif finished %}
+            finished
+          {% else %}
+            tracking
+          {% endif %}
+
+        raison_invalidation: >
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+          {% set reprise_valide = (state_attr('sensor.temperature_reprise_presence_chambres', 'reprise_valide') | string | lower) == 'true' %}
+          {% set t0 = this.attributes.get('t0_ref') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+
+          {% if aeration == 'on' %}
+            aeration
+          {% elif not reprise_valide %}
+            reprise_invalide
+          {% elif t0 is none %}
+            t0_none
+          {% elif T_cur is none %}
+            T_cur_none
+          {% else %}
+            ok
+          {% endif %}
+
+        # --------------------------------------------------
+        # Sources
+        # --------------------------------------------------
+        source_reprise_entity: "sensor.temperature_reprise_presence_chambres"
+        source_temp_entity: "sensor.temperature_min_chambres"

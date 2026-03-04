@@ -1,11 +1,11 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Home
+title: Éclairage
 
 views:
-  - title: Home
-    path: home
-    icon: mdi:server
+  - title: Éclairage
+    path: eclairage
+    icon: mdi:lamp
 
     # ======================================================
     # 🔔 BADGES — Accès rapides & navigation globale
@@ -102,6 +102,9 @@ views:
           # ==================================================
 
           - !include ../includes/section_headers/garage.yaml
+
+          - type: custom:button-card
+            template: carte_garage_intention_eclairage
 
           # 🚗 Garage — pilotage via script
           - type: custom:button-card

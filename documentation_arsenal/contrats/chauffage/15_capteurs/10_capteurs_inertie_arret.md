@@ -54,6 +54,10 @@
 #   - Reload-safe / restart-safe / runtime-safe
 #   - Dépendance exclusive à références thermiques gouvernées
 #   - Mesures purement descriptives et différentielles
+#   - Horodatages exclusivement fondés sur :
+#       as_timestamp(trigger.to_state.last_changed)
+#   - Aucun now() utilisé hors déclenchement événementiel
+#   - Aucun delta temporel recalculé en continu
 #
 # 🔗 Autorités amont légitimes :
 #   - Décision centrale Chauffage
@@ -188,13 +192,18 @@ Capteur structurant de diagnostic d’inertie d’arrêt et de réglage offsets 
 - Ne participe jamais à la table de décision
 
 🔒 Garanties exigées :
-- Intra-cycle strict
-- Ancré exclusivement sur transition B0
-- Aucune accumulation inter-cycle
-- Invalidation stricte en cas d’aération
-- Reload-safe / runtime-safe
-- Dépendance exclusive à des références canoniques
-- Mesure purement descriptive
+- Ancré exclusivement sur transition décisionnelle comfort → reduced
+- Horodatage canonique fondé sur as_timestamp(trigger.to_state.last_changed)
+- Valeur figée instantanément
+- Idempotence stricte (anti-replay restart-safe)
+- Aucune réécriture rétroactive
+- Invalidation exclusivement événementielle en cas d’aération
+- Publication accompagnée d’un flag arret_valide
+- Aucune dérivation métier
+- Aucune qualification thermique
+- Reload-safe / restart-safe / runtime-safe
+- Dépendances exclusivement canoniques (décision, thermique, invalidation)
+- Mesure brute, non filtrée, non interprétée
 
 🔗 Dépendances :
 Point d’ancrage arrêt :
@@ -230,63 +239,94 @@ Classe : Capteur STRUCTURANT
 - Domaine : Diagnostic structurant / Inertie thermique / Arrêt présence  
 - Autorité : STRUCTURANT  
 
-🎯 Rôle :
-Mesurer la durée temporelle réelle de l’overshoot inertiel
-après un arrêt chauffage en régime Présence,
-jusqu’à atteinte du maximum thermique post-coupure,
-afin de quantifier la latence hydraulique et la durée d’influence chaudière.
+---
+
+### 🎯 Rôle
+
+Mesurer la durée temporelle réelle de l’overshoot inertiel après un arrêt chauffage en régime Présence, jusqu’à atteinte du maximum thermique post-coupure, afin de quantifier la latence hydraulique et la durée d’influence chaudière.
 
 Capteur structurant de diagnostic de latence d’arrêt et de réglage temporel des offsets OFF.
 
-🧭 Périmètre d’influence autorisé :
-- Diagnostic structurant de latence hydraulique post-arrêt
-- Qualification de durée d’inertie chaudière / radiateurs
-- Validation temporelle des offsets OFF présence
-- Analyse de stabilité de fin de cycle
-- Détection de dérives hydrauliques lentes
-- Aide directe au réglage de coupure chauffage
+---
 
-⛔ Interdictions absolues :
-- Ne décide jamais d’un arrêt
-- Ne déclenche jamais une reprise
-- Ne modifie jamais une consigne
-- Ne pilote jamais un service
-- Ne conditionne jamais une autorisation
-- Ne participe jamais à la table de décision
+### 🧭 Périmètre d’influence autorisé
 
-🔒 Garanties exigées :
-- Intra-cycle strict
-- Ancré exclusivement sur transition B0
-- Aucune accumulation inter-cycle
-- Figé naturel dès fin de montée inertielle
-- Invalidation stricte en cas d’aération
-- Reload-safe / runtime-safe
-- Dépendance exclusive à des références canoniques
-- Mesure purement descriptive
+- Diagnostic structurant de latence hydraulique post-arrêt  
+- Qualification de durée d’inertie chaudière / radiateurs  
+- Validation temporelle des offsets OFF présence (supervisée uniquement)  
+- Analyse de stabilité de fin de cycle  
+- Détection de dérives hydrauliques lentes  
+- Aide au réglage de coupure chauffage (supervision humaine uniquement)  
 
-🔗 Dépendances :
-Point d’ancrage arrêt :
-- sensor.temperature_arret_presence_chambres  
+---
 
-Source thermique :
-- sensor.temperature_min_chambres  
+### ⛔ Interdictions absolues
 
-Invalidation :
-- input_boolean.aeration_pipeline_arme  
+- Ne décide jamais d’un arrêt  
+- Ne déclenche jamais une reprise  
+- Ne modifie jamais une consigne  
+- Ne pilote jamais un service  
+- Ne conditionne jamais une autorisation  
+- Ne participe jamais à la table de décision  
 
-⚠️ Risques :
-- Pollution si arrêt mal détecté
-- Mauvaise interprétation en cas de coupures manuelles
-- Sensibilité aux capteurs bruités
-- Utilisation comme seuil de pilotage direct (strictement interdit)
-- Confusion avec durée de chauffe ou durée de cycle
+---
 
-❗ Statut particulier :
+### 🔒 Garanties exigées
+
+- Intra-cycle strict (présence uniquement)  
+- Ancrage exclusif sur le point B0 canonique (`sensor.temperature_arret_presence_chambres`)  
+- Horodatage fondé sur l’événement B0 (timestamp canonique issu de `trigger.to_state.last_changed`)  
+- Reset uniquement lors d’un événement B0 strictement nouveau (idempotence / anti-replay restart-safe)  
+- Aucune accumulation inter-cycle  
+- Fin d’overshoot définie normativement comme :  
+  - première occurrence où la température cesse d’augmenter (plateau ou début de décroissance) après B0  
+  - la durée est alors figée définitivement pour le cycle  
+- Invalidation strictement événementielle en cas d’aération :  
+  - aucune mise à jour durant `input_boolean.aeration_pipeline_arme = on`  
+  - cycle marqué invalide  
+- Reload-safe / restart-safe / runtime-safe  
+- Dépendances exclusivement canoniques (B0, source thermique, invalidation)  
+- Mesure purement descriptive  
+- Invariance numérique stricte :  
+  - état toujours `float` (minutes) ou `none`  
+  - aucune publication textuelle (`unknown`, `unavailable`, etc.)  
+
+---
+
+### 🔗 Dépendances
+
+Point d’ancrage arrêt :  
+- `sensor.temperature_arret_presence_chambres`  
+
+Source thermique :  
+- `sensor.temperature_min_chambres`  
+
+Invalidation :  
+- `input_boolean.aeration_pipeline_arme`  
+
+---
+
+### ⚠️ Risques
+
+- Pollution si arrêt mal détecté  
+- Mauvaise interprétation en cas de coupure manuelle  
+- Sensibilité aux capteurs bruités (faux plateau thermique)  
+- Utilisation comme seuil de pilotage direct (strictement interdit)  
+- Confusion avec durée de chauffe ou durée de cycle  
+
+---
+
+### ❗ Statut particulier
+
 CAPTEUR STRUCTURANT DE LATENCE D’ARRÊT HYDRAULIQUE  
+
 Référence officielle de durée d’influence chaudière après coupure.  
 Pilier du réglage temporel des offsets OFF et de la stabilité de fin de cycle.
 
-⚠️ Décision :
+---
+
+### ⚠️ Décision
+
 INCLUS DANS `15_capteurs_thermiques.md`  
 Section : Diagnostic structurant / Inertie arrêt  
 Classe : Capteur STRUCTURANT
@@ -298,68 +338,98 @@ Classe : Capteur STRUCTURANT
 - Domaine : Diagnostic structurant / Inertie thermique / Refroidissement présence  
 - Autorité : STRUCTURANT  
 
-🎯 Rôle :
-Mesurer la vitesse réelle de refroidissement thermique du bâtiment
-après un arrêt chauffage en régime Présence,
-exprimée en °C par heure,
-afin de caractériser directement la perte thermique naturelle,
-la qualité d’isolation et l’inertie structurelle du bâti.
+---
 
-Capteur structurant de référence pour la calibration absence,
-l’analyse d’inertie et la qualification thermique du bâtiment.
+### 🎯 Rôle
 
-🧭 Périmètre d’influence autorisé :
-- Diagnostic structurant de perte thermique réelle
-- Qualification d’isolation et d’inertie du bâti
-- Calibration des offsets absence
-- Analyse de dérives saisonnières
-- Détection de dégradation d’isolation
-- Dissociation régulation / hydraulique / bâtiment
-- Référence canonique de refroidissement passif
+Mesurer la vitesse réelle de refroidissement thermique du bâtiment après un arrêt chauffage en régime Présence, exprimée en °C par heure, afin de caractériser directement la perte thermique naturelle, la qualité d’isolation et l’inertie structurelle du bâti.
 
-⛔ Interdictions absolues :
-- Ne décide jamais d’un arrêt
-- Ne déclenche jamais une reprise
-- Ne modifie jamais une consigne
-- Ne pilote jamais un service
-- Ne conditionne jamais une autorisation
-- Ne participe jamais à la table de décision
-- Ne sert jamais de seuil direct de pilotage
+Capteur structurant de référence pour la calibration absence, l’analyse d’inertie et la qualification thermique du bâtiment.
 
-🔒 Garanties exigées :
-- Intra-cycle strict post-arrêt
-- Ancré exclusivement sur transition B0
-- Mesure purement différentielle temporelle
-- Aucune accumulation inter-cycle
-- Figé naturel dès fin de refroidissement actif
-- Invalidation stricte en cas d’aération
-- Reload-safe / runtime-safe
-- Dépendance exclusive à références canoniques
-- Absence totale de logique métier
+---
 
-🔗 Dépendances :
-Point d’ancrage arrêt :
-- sensor.temperature_arret_presence_chambres  
+### 🧭 Périmètre d’influence autorisé
 
-Source thermique :
-- sensor.temperature_min_chambres  
+- Diagnostic structurant de perte thermique réelle  
+- Qualification d’isolation et d’inertie du bâti  
+- Calibration des offsets absence (supervisée uniquement)  
+- Analyse de dérives saisonnières  
+- Détection de dégradation d’isolation  
+- Dissociation régulation / hydraulique / bâtiment  
+- Référence canonique de refroidissement passif  
 
-Invalidation :
-- input_boolean.aeration_pipeline_arme  
+---
 
-⚠️ Risques :
-- Pollution si arrêt mal détecté
-- Mauvaise interprétation en cas de variations météo brutales
-- Sensibilité aux ouvertures non détectées
-- Utilisation comme seuil décisionnel (strictement interdit)
-- Confusion avec vitesse de chute absence longue
+### ⛔ Interdictions absolues
 
-❗ Statut particulier :
+- Ne décide jamais d’un arrêt  
+- Ne déclenche jamais une reprise  
+- Ne modifie jamais une consigne  
+- Ne pilote jamais un service  
+- Ne conditionne jamais une autorisation  
+- Ne participe jamais à la table de décision  
+- Ne sert jamais de seuil direct de pilotage  
+
+---
+
+### 🔒 Garanties exigées
+
+- Intra-cycle strict post-arrêt (présence uniquement)  
+- Ancrage exclusif sur le point B0 canonique (`sensor.temperature_arret_presence_chambres`)  
+- Horodatage indirectement fondé sur l’événement B0 (timestamp canonique issu de `trigger.to_state.last_changed`)  
+- Mesure strictement différentielle :  
+  - calculée à partir de ΔT et Δt post-B0  
+  - aucune dépendance à un temps vivant (`now()` hors déclenchement interdit)  
+- Reset uniquement lors d’un événement B0 strictement nouveau (idempotence / anti-replay restart-safe)  
+- Aucune accumulation inter-cycle  
+- Figement normatif lorsque le refroidissement cesse d’être actif  
+  (plateau thermique ou reprise chauffage)  
+- Invalidation strictement événementielle en cas d’aération :  
+  - aucune mise à jour durant `input_boolean.aeration_pipeline_arme = on`  
+  - cycle marqué invalide  
+- Reload-safe / restart-safe / runtime-safe  
+- Dépendances exclusivement canoniques (B0, source thermique, invalidation)  
+- Absence totale de logique métier  
+- Invariance numérique stricte :  
+  - état toujours `float` (°C/h) ou `none`  
+  - aucune publication textuelle (`unknown`, `unavailable`, etc.)  
+
+---
+
+### 🔗 Dépendances
+
+Point d’ancrage arrêt :  
+- `sensor.temperature_arret_presence_chambres`  
+
+Source thermique :  
+- `sensor.temperature_min_chambres`  
+
+Invalidation :  
+- `input_boolean.aeration_pipeline_arme`  
+
+---
+
+### ⚠️ Risques
+
+- Pollution si arrêt mal détecté  
+- Mauvaise interprétation en cas de variations météo brutales  
+- Sensibilité aux ouvertures non détectées  
+- Utilisation comme seuil décisionnel (strictement interdit)  
+- Confusion avec vitesse de chute en absence longue  
+
+---
+
+### ❗ Statut particulier
+
 CAPTEUR STRUCTURANT DE PERTE THERMIQUE RÉELLE DU BÂTIMENT  
+
 Référence officielle de vitesse de refroidissement passif en régime présence.  
 Pilier fondamental de caractérisation inertielle et d’auto-calibration absence.
 
-⚠️ Décision :
+---
+
+### ⚠️ Décision
+
 INCLUS DANS `15_capteurs_thermiques.md`  
 Section : Diagnostic structurant / Inertie arrêt  
 Classe : Capteur STRUCTURANT

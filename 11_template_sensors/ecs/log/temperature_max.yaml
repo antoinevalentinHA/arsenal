@@ -1,13 +1,31 @@
 # ==========================================================
-# 🚿 TEMPLATE SENSOR — ECS - Temperature max cycle
+# 🧠 ARSENAL — TEMPLATE SENSOR (MODERN)
+#     ECS — Température max cycle (reset par cycle)
 # ----------------------------------------------------------
-# 🎯 Objectif :
-#   Suivre la **température maximale atteinte par le ballon ECS**
-#   pendant le cycle de chauffe en cours, avec persistance locale.
+# 🎯 RÔLE
+#   Suivre la température maximale atteinte par le ballon ECS
+#   PENDANT le cycle en cours, et conserver le dernier max
+#   du dernier cycle hors cycle (lecture/diagnostic).
 #
-# ✅ Améliorations :
-#   - Fiable même après un redémarrage ou un retour de `unavailable`
-#   - S’appuie sur `input_boolean.ecs_cycle_en_cours` pour déterminer le contexte
+# 🧩 PRINCIPE
+#   - Dépend du début de cycle : input_datetime.ecs_cycle_debut_timestamp
+#   - Un max "appartient au cycle courant" si :
+#       max_timestamp >= ecs_cycle_debut_timestamp
+#   - Si un nouveau cycle démarre, le max repart de la température
+#     courante tant qu'aucun nouveau max n'a été enregistré.
+#
+# ✅ GARANTIES
+#   - Reset par cycle sans toucher à ecs_cycle_en_cours
+#   - Robustesse bootstrap/redémarrage : as_timestamp(..., none)
+#   - Hors cycle : conserve le dernier max (Option A)
+#
+# 📌 ENTITÉ
+#   - sensor.ecs_temperature_max_cycle
+#
+# 🔗 DÉPENDANCES
+#   - sensor.ecs_temperature_ballon_securisee
+#   - input_boolean.ecs_cycle_en_cours
+#   - input_datetime.ecs_cycle_debut_timestamp
 # ==========================================================
 
 - sensor:
@@ -20,27 +38,87 @@
         {{ states('sensor.ecs_temperature_ballon_securisee') not in ['unknown','unavailable','none'] }}
 
       state: >
-        {% set t = states('sensor.ecs_temperature_ballon_securisee') %}
-        {% set t_valid = t not in ['unknown','unavailable','none'] %}
-        {% set current = (t | float(0)) if t_valid else 0 %}
-        {% set previous_state = states('sensor.ecs_temperature_max_cycle') %}
-        {% set previous = (previous_state | float(0)) if previous_state not in ['unknown','unavailable','none'] else current %}
-        {% set last_valid = this.attributes.get('last_valid_max', previous) | float(0) %}
+        {% set t_raw = states('sensor.ecs_temperature_ballon_securisee') %}
+        {% set t_valid = t_raw not in ['unknown','unavailable','none'] %}
+        {% set current = (t_raw | float(0)) if t_valid else none %}
         {% set in_cycle = is_state('input_boolean.ecs_cycle_en_cours', 'on') %}
 
+        {% set cycle_start_raw = states('input_datetime.ecs_cycle_debut_timestamp') %}
+        {% set cycle_start_ts = as_timestamp(cycle_start_raw, none) %}
+
+        {% set max_ts_raw = this.attributes.get('max_timestamp', '') %}
+        {% set max_ts = as_timestamp(max_ts_raw, none) %}
+
+        {% set prev_max = this.attributes.get('last_valid_max', (current if current is not none else 0)) | float(0) %}
+
+        {% set has_cycle_start = cycle_start_ts is not none %}
+        {% set max_belongs = (has_cycle_start and max_ts is not none and max_ts >= cycle_start_ts) %}
+
         {% if not t_valid %}
-          {{ last_valid }}
+          {{ prev_max }}
         {% elif in_cycle %}
-          {{ [previous, current, last_valid] | max }}
+          {% set base = prev_max if max_belongs else (current | float(0)) %}
+          {{ [base, (current | float(0))] | max }}
         {% else %}
-          {{ last_valid }}
+          {{ prev_max }}
         {% endif %}
 
       attributes:
         last_valid_max: >
-          {% set t = states('sensor.ecs_temperature_ballon_securisee') | float(0) %}
-          {% set prev = this.attributes.get('last_valid_max', t) | float(0) %}
-          {{ [t, prev] | max }}
+          {% set t_raw = states('sensor.ecs_temperature_ballon_securisee') %}
+          {% set t_valid = t_raw not in ['unknown','unavailable','none'] %}
+          {% set current = (t_raw | float(0)) if t_valid else none %}
+          {% set in_cycle = is_state('input_boolean.ecs_cycle_en_cours', 'on') %}
+
+          {% set cycle_start_raw = states('input_datetime.ecs_cycle_debut_timestamp') %}
+          {% set cycle_start_ts = as_timestamp(cycle_start_raw, none) %}
+
+          {% set max_ts_raw = this.attributes.get('max_timestamp', '') %}
+          {% set max_ts = as_timestamp(max_ts_raw, none) %}
+
+          {% set prev_max = this.attributes.get('last_valid_max', (current if current is not none else 0)) | float(0) %}
+
+          {% set has_cycle_start = cycle_start_ts is not none %}
+          {% set max_belongs = (has_cycle_start and max_ts is not none and max_ts >= cycle_start_ts) %}
+
+          {% if not t_valid %}
+            {{ prev_max }}
+          {% elif in_cycle %}
+            {% set base = prev_max if max_belongs else (current | float(0)) %}
+            {{ [base, (current | float(0))] | max }}
+          {% else %}
+            {{ prev_max }}
+          {% endif %}
+
+        max_timestamp: >
+          {% set t_raw = states('sensor.ecs_temperature_ballon_securisee') %}
+          {% set t_valid = t_raw not in ['unknown','unavailable','none'] %}
+          {% set current = (t_raw | float(0)) if t_valid else none %}
+          {% set in_cycle = is_state('input_boolean.ecs_cycle_en_cours', 'on') %}
+
+          {% set cycle_start_raw = states('input_datetime.ecs_cycle_debut_timestamp') %}
+          {% set cycle_start_ts = as_timestamp(cycle_start_raw, none) %}
+
+          {% set max_ts_raw = this.attributes.get('max_timestamp', '') %}
+          {% set max_ts = as_timestamp(max_ts_raw, none) %}
+
+          {% set prev_max = this.attributes.get('last_valid_max', (current if current is not none else 0)) | float(0) %}
+
+          {% set has_cycle_start = cycle_start_ts is not none %}
+          {% set max_belongs = (has_cycle_start and max_ts is not none and max_ts >= cycle_start_ts) %}
+          {% set base = prev_max if max_belongs else ((current | float(0)) if current is not none else prev_max) %}
+
+          {% if not t_valid %}
+            {{ max_ts_raw }}
+          {% elif not in_cycle %}
+            {{ max_ts_raw }}
+          {% else %}
+            {% if (current | float(0)) >= base %}
+              {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            {% else %}
+              {{ max_ts_raw }}
+            {% endif %}
+          {% endif %}
 
       icon: >
         {% set v = states('sensor.ecs_temperature_max_cycle') | float(0) %}

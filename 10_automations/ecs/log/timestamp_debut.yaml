@@ -1,0 +1,59 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Capture début de cycle (timestamps de référence)
+#
+#  ID : 10250000000024
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     À l’ouverture d’un cycle ECS (verrou ON),
+#     capturer immédiatement les horodatages de référence :
+#       - début de cycle (source de vérité)
+#       - initialisation du timestamp de pic thermique
+#
+#  🧩 PRINCIPE ARSENAL
+#     - Le début de cycle est un événement logique discret
+#       (ecs_cycle_en_cours : off → on)
+#     - Le pic thermique est ensuite mis à jour de manière
+#       monotone par une automation dédiée.
+#     - En l’absence de pic détecté, tmax == debut → durée 0
+#       (observabilité honnête, jamais de durée négative).
+#
+#  ✅ GARANTIES
+#     - Corrélation inter-cycles blindée (cycles rapprochés)
+#     - Zéro dépendance cloud
+#     - Écritures atomiques et idempotentes (réécriture now())
+#
+#  📌 ENTITÉS ÉCRITES
+#     - input_datetime.ecs_cycle_debut_timestamp
+#     - input_datetime.ecs_tmax_timestamp
+#
+#  🔗 DÉPENDANCES
+#     - input_boolean.ecs_cycle_en_cours
+# ==========================================================
+
+- id: "10250000000024"
+  alias: "ECS – Capture début de cycle"
+  description: >
+    Au début d’un cycle ECS (off→on), fige l’horodatage de début et
+    initialise le timestamp de pic thermique pour garantir une durée
+    déterministe (tmax ≥ debut).
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      from: "off"
+      to: "on"
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.ecs_cycle_debut_timestamp
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.ecs_tmax_timestamp
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

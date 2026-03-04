@@ -71,15 +71,3 @@ views:
                 entity: timer.blocage_armement_auto
                 template: status_72_info_transitoire
                 name: Blocage armement auto
-    
-    
-          # ==========================================================
-          # 🚨 DIVERGENCE PERSISTANTE
-          # ==========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🚨 Divergence persistante
-    
-          - type: custom:button-card
-            entity: automation.alarme_alerte_divergence_etat_reel_cible
-            template: alarme_diagnostic_divergence_persistante

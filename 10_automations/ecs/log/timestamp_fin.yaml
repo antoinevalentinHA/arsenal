@@ -9,41 +9,17 @@
 #     atteint une nouvelle température maximale pendant
 #     un cycle en cours.
 #
-#     Cette automation fournit un repère temporel fiable
-#     et indépendant pour le calcul de la durée réelle
-#     de chauffe (début de cycle → pic thermique).
+#  ✅ ÉVOLUTIONS (correction)
+#     - Ajout d’un garde-fou : ne capture QUE si un cycle ECS
+#       est déclaré en cours (`input_boolean.ecs_cycle_en_cours` = on).
+#     - Durcissement de la condition : ignore les transitions
+#       invalides (unknown/unavailable/none/absence de from_state).
 #
-#  🧱 PRINCIPE ARSENAL
-#     - Le pic thermique est un fait physique mesurable
-#     - Il ne dépend ni de l’arrêt du brûleur ni des verrous
-#     - Un seul événement doit produire un seul timestamp
-#
-#  🚫 NE FAIT PAS
-#     - Ne décide pas du début ou de la fin d’un cycle ECS
-#     - Ne pilote aucune consigne ou équipement
-#     - Ne calcule aucune durée directement
-#
-#  🧩 UTILISATION
-#     - Déclenchement :
-#         • toute augmentation de la température maximale
-#           atteinte durant le cycle ECS
-#     - Condition :
-#         • nouvelle valeur strictement supérieure à la précédente
-#     - Action :
-#         • écriture immédiate de l’horodatage courant
-#           dans un helper `input_datetime`
-#
-#  ⚠️ IMPORTANT
-#     - Un seul timestamp est conservé : le dernier pic réel
-#     - Cette donnée est utilisée par la consolidation
-#       finale de fin de cycle ECS
-#
-#  ✅ CONTRAINTES
-#     - Détection purement monotone (pas de bruit)
-#     - Aucune dépendance aux états logiques
-#     - Simplicité volontaire et robuste
+#  🛡️ GARANTIES
+#     - Zéro dépendance au cloud
+#     - Monotonicité conservée (strictement supérieur)
+#     - Pas de capture hors cycle (évite pollution inter-cycles)
 # ==========================================================
-
 
 - id: "10250000000011"
   alias: "ECS - Capture pic thermique"
@@ -55,10 +31,23 @@
       entity_id: sensor.ecs_temperature_max_cycle
 
   condition:
+    # ------------------------------------------------------
+    # Garde-fou : capture uniquement pendant un cycle ECS
+    # ------------------------------------------------------
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "on"
+
+    # ------------------------------------------------------
+    # Monotonicité stricte + robustesse aux états invalides
+    # ------------------------------------------------------
     - condition: template
       value_template: >
-        {{ trigger.to_state.state | float(0) >
-           trigger.from_state.state | float(0) }}
+        {% set to = trigger.to_state.state if trigger.to_state is not none else none %}
+        {% set fr = trigger.from_state.state if trigger.from_state is not none else none %}
+        {{ to not in ['unknown','unavailable','none','', none] and
+           fr not in ['unknown','unavailable','none','', none] and
+           (to | float) > (fr | float) }}
 
   action:
     - service: input_datetime.set_datetime

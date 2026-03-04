@@ -1,15 +1,15 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Home
-icon: mdi:server
+title: Prises
+icon: mdi:power-socket
 
 views:
   ####################################
   # ⚡️ PRISES CONNECTÉES – HOME
   ####################################
-  - title: Home
-    path: home
-    icon: mdi:server
+  - title: Prises
+    path: prises
+    icon: mdi:power-socket
 
     badges: !include ../includes/badges/base.yaml
 

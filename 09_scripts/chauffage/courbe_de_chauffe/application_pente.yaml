@@ -33,75 +33,83 @@
 # 🗓️ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 chauffage_appliquer_pente:
   alias: "Chauffage – Appliquer pente de chauffe"
   mode: restart
   sequence:
 
-    # ======================================================
-    # 1️⃣ Capture état initial et consigne cible
-    # ======================================================
     - variables:
-        pente_cible: "{{ states('input_number.chauffage_pente_consigne') | float }}"
-        pente_initiale: "{{ states('number.vscotho1_200_11_heating_curve_slope') | float }}"
+        pente_cible_raw: "{{ states('input_number.chauffage_pente_consigne') }}"
+        pente_cloud_raw: "{{ states('number.vscotho1_200_11_heating_curve_slope') }}"
         tolerance: 0.01
 
-    # ======================================================
-    # 2️⃣ Sortie immédiate si déjà conforme
-    # ======================================================
+    - condition: template
+      value_template: >
+        {{ pente_cible_raw not in ['unknown','unavailable','none','']
+           and pente_cloud_raw not in ['unknown','unavailable','none',''] }}
+
+    - variables:
+        pente_cible: "{{ pente_cible_raw | float }}"
+        pente_initiale: "{{ pente_cloud_raw | float }}"
+
     - condition: template
       value_template: >
         {{ (pente_cible - pente_initiale) | abs > tolerance }}
 
-    # ======================================================
-    # 3️⃣ Tentatives ViCare bornées (max 3)
-    # ======================================================
     - repeat:
-        count: 3
+        while:
+          - condition: template
+            value_template: >
+              {{ repeat.index <= 3
+                 and is_state('binary_sensor.vicare_api_disponible', 'on')
+                 and ((states('number.vscotho1_200_11_heating_curve_slope') | float - pente_cible) | abs) > tolerance }}
         sequence:
 
-          # 📡 Envoi de la consigne au cloud ViCare
           - service: number.set_value
             target:
               entity_id: number.vscotho1_200_11_heating_curve_slope
             data:
               value: "{{ pente_cible }}"
 
-          # ⏳ Attente propagation cloud
           - delay: "00:00:20"
 
-          # 🔄 Rafraîchissement explicite
           - service: homeassistant.update_entity
             target:
               entity_id: number.vscotho1_200_11_heating_curve_slope
 
-          # ⏳ Stabilisation lecture
           - delay: "00:00:30"
 
-          # ✅ Sortie anticipée si conforme
-          - condition: template
-            value_template: >
-              {{ ((states('number.vscotho1_200_11_heating_curve_slope') | float - pente_cible) | abs) < tolerance }}
-            enabled: true
-
-    # ======================================================
-    # 4️⃣ Vérification finale factuelle
-    # ======================================================
     - variables:
-        pente_finale: "{{ states('number.vscotho1_200_11_heating_curve_slope') | float }}"
+        pente_finale_raw: "{{ states('number.vscotho1_200_11_heating_curve_slope') }}"
+        pente_finale: "{{ pente_finale_raw | float(9999) }}"
 
-    - condition: template
-      value_template: >
-        {{ (pente_finale - pente_cible) | abs < tolerance }}
+    - choose:
 
-    # ======================================================
-    # 5️⃣ Journalisation factuelle (cloud confirmé)
-    # ======================================================
-    - service: logbook.log
-      data:
-        name: "ViCare"
-        message: >
-          📈 Pente CONFIRMEE cote cloud :
-          {{ pente_initiale }} → {{ pente_finale }}
-        entity_id: number.vscotho1_200_11_heating_curve_slope
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ pente_finale_raw not in ['unknown','unavailable','none','']
+                   and (pente_finale - pente_cible) | abs < tolerance }}
+          sequence:
+            - service: logbook.log
+              data:
+                name: "ViCare"
+                message: >
+                  📈 Pente CONFIRMEE cote cloud :
+                  {{ pente_initiale }} → {{ pente_finale }}
+                entity_id: number.vscotho1_200_11_heating_curve_slope
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ pente_finale_raw in ['unknown','unavailable','none','']
+                   or (pente_finale - pente_cible) | abs >= tolerance }}
+          sequence:
+            - service: logbook.log
+              data:
+                name: "ViCare"
+                message: >
+                  ⚠️ Pente NON confirmee cote cloud :
+                  cible={{ pente_cible }},
+                  lu={{ pente_finale_raw }}
+                entity_id: number.vscotho1_200_11_heating_curve_slope

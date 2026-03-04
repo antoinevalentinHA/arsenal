@@ -104,10 +104,10 @@ aeration_episode_status_72:
             const grace = (tSej === 'active') || (tPar === 'active');
 
             if (UNAV.includes(qual) || UNAV.includes(brut) || UNAV.includes(tSej) || UNAV.includes(tPar))
-              return "rgba(224, 224, 224, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             if (qual === 'on')
-              return "rgba(255, 152, 0, 0.2)";
+              return "rgba(33, 150, 243, 0.2)";
 
             if (brut === 'on' && grace)
               return "rgba(255, 235, 59, 0.2)";

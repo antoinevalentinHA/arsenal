@@ -35,7 +35,6 @@
 #     - Aucune dépendance aux entités climate ou états transitoires
 # ==========================================================
 
-
 - id: "10240000000010"
   alias: "Chauffage – Sync courbe démarrage"
   description: >
@@ -44,44 +43,63 @@
     et si le cloud diverge de la consigne locale.
   mode: single
 
-  # ------------------------------------------------------
-  # 🔔 Trigger — Home Assistant stabilisé
-  # ------------------------------------------------------
   trigger:
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
 
-  # ------------------------------------------------------
-  # 🎯 Actions — Sécurisation + restitution cible
-  # ------------------------------------------------------
   action:
 
-    # 🟢 API ViCare doit être disponible
     - condition: state
       entity_id: binary_sensor.vicare_api_disponible
       state: "on"
 
-    # 📊 Lecture consigne locale et état cloud
     - variables:
-        pente_cible: "{{ states('input_number.chauffage_pente_consigne') | float }}"
-        parallele_cible: "{{ states('input_number.chauffage_parallele_consigne') | float }}"
-        pente_cloud: "{{ states('number.vscotho1_200_11_heating_curve_slope') | float }}"
-        parallele_cloud: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float }}"
-        pente_a_modifier: "{{ pente_cible != pente_cloud }}"
-        parallele_a_modifier: "{{ parallele_cible != parallele_cloud }}"
+        pente_cible_raw: "{{ states('input_number.chauffage_pente_consigne') }}"
+        parallele_cible_raw: "{{ states('input_number.chauffage_parallele_consigne') }}"
+        pente_cloud_raw: "{{ states('number.vscotho1_200_11_heating_curve_slope') }}"
+        parallele_cloud_raw: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') }}"
+        tolerance: 0.01
 
-    # 🔁 Mise en cohérence par script si nécessaire
+        valeurs_disponibles: >
+          {{ pente_cible_raw not in ['unknown','unavailable','none','']
+             and parallele_cible_raw not in ['unknown','unavailable','none','']
+             and pente_cloud_raw not in ['unknown','unavailable','none','']
+             and parallele_cloud_raw not in ['unknown','unavailable','none',''] }}
+
+    - condition: template
+      value_template: "{{ valeurs_disponibles }}"
+
+    - variables:
+        pente_cible: "{{ pente_cible_raw | float }}"
+        parallele_cible: "{{ parallele_cible_raw | float }}"
+        pente_cloud: "{{ pente_cloud_raw | float }}"
+        parallele_cloud: "{{ parallele_cloud_raw | float }}"
+
+        pente_a_modifier: "{{ (pente_cible - pente_cloud) | abs > tolerance }}"
+        parallele_a_modifier: "{{ (parallele_cible - parallele_cloud) | abs > tolerance }}"
+
     - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ pente_a_modifier or parallele_a_modifier }}"
+          sequence:
+            - service: logbook.log
+              data:
+                name: "Chauffage"
+                message: >
+                  🔄 Sync courbe démarrage :
+                  pente {{ pente_cloud }} → {{ pente_cible }},
+                  parallèle {{ parallele_cloud }} → {{ parallele_cible }}
 
-        # Mise à jour pente
+    - choose:
         - conditions:
             - condition: template
               value_template: "{{ pente_a_modifier }}"
           sequence:
             - service: script.chauffage_appliquer_pente
 
-        # Mise à jour parallèle
+    - choose:
         - conditions:
             - condition: template
               value_template: "{{ parallele_a_modifier }}"

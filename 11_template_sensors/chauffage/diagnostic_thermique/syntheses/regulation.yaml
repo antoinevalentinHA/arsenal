@@ -1,5 +1,5 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE SENSOR — DIAGNOSTIC CHAUFFAGE : RÉGULATION
+# 🧠 ARSENAL — TEMPLATE TRIGGERED SENSOR — DIAGNOSTIC CHAUFFAGE : RÉGULATION
 #     Synthèse indicative — Stabilité d’oscillation (présence)
 # ----------------------------------------------------------
 # Domaine : Chauffage / Diagnostic thermique / Synthèses
@@ -8,27 +8,45 @@
 #
 # 🎯 Rôle :
 #   Publier un état textuel indicatif de stabilité de régulation
-#   à partir de l’amplitude d’oscillation de cycle en présence.
+#   à partir de l’amplitude d’oscillation de cycle en présence (°C).
 #
-# 🔗 Dépendances (lecture) :
+# 🔗 Dépendances :
 #   - sensor.amplitude_oscillation_cycle_presence_chambres
 #
-# 🚫 Interdits :
-#   - Aucun service, aucune action, aucune écriture d’entité
-#   - Aucune autorisation, aucun blocage, aucune décision centrale
+# 🧩 Seuils :
+#   - osc < 0.30  → Régulation très stable
+#   - osc < 0.60  → Régulation correcte
+#   - osc ≥ 0.60  → Régulation instable
 #
+# 🚫 Interdits :
+#   - Aucun service
+#   - Aucune décision
+#   - Aucune écriture
 # ==========================================================
 
-- sensor:
-    - name: Diagnostic chauffage regulation
+- trigger:
+    - platform: state
+      entity_id: sensor.amplitude_oscillation_cycle_presence_chambres
+
+  sensor:
+    - name: "Diagnostic chauffage regulation"
       unique_id: diagnostic_chauffage_regulation
-      state: >-
-        {%- set osc = states('sensor.amplitude_oscillation_cycle_presence_chambres') | float(none) -%}
-        {%- set txt = none -%}
-        {%- if osc is not none -%}
-          {%- if osc < 0.3 -%}{%- set txt = 'Régulation très stable' -%}
-          {%- elif osc < 0.6 -%}{%- set txt = 'Régulation correcte' -%}
-          {%- else -%}{%- set txt = 'Régulation instable (oscillation élevée)' -%}
-          {%- endif -%}
-        {%- endif -%}
-        {{- txt if txt is not none else '' -}}
+
+      state: >
+        {% set osc = states('sensor.amplitude_oscillation_cycle_presence_chambres') | float(none) %}
+
+        {% if osc is none %}
+          {{ none }}
+        {% elif osc < 0.30 %}
+          Régulation très stable
+        {% elif osc < 0.60 %}
+          Régulation correcte
+        {% else %}
+          Régulation instable (oscillation élevée)
+        {% endif %}
+
+      attributes:
+        source_entity: "sensor.amplitude_oscillation_cycle_presence_chambres"
+        unit_hint: "°C"
+        arsenal_threshold_stable: 0.30
+        arsenal_threshold_correct: 0.60

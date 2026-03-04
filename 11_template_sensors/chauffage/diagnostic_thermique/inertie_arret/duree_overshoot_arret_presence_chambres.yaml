@@ -1,18 +1,27 @@
 # ==========================================================
 # 🌡️ ARSENAL — TEMPLATE TRIGGERED SENSOR
 #     Chauffage : Durée overshoot arrêt Présence Chambres
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Mesurer la durée de la phase d’overshoot inertiel après un arrêt B0 :
+#   chrono démarré à B0 valide, figé dès que la température cesse de monter
+#   (première baisse observée).
 #
-#  ✅ Version renforcée (anti "false truthy", cast strict)
-#  ✅ Chrono démarre uniquement sur B0 valide
-#  ✅ Valeur figée quand overshoot terminé
-#  ✅ Ne fabrique pas de "0 fantôme" hors reset B0
+# 🔒 PROPRIÉTÉS
+#   - Trigger B0 canonique : changement de l’attribut t_arret
+#   - t0 événementiel : last_changed du trigger B0 (Option A time)
+#   - Suivi montée : comparaison T_cur vs T_prev (anti race-condition)
+#   - Figement définitif à la première baisse (T_cur < T_prev)
+#   - Neutralisation stricte aération : aucune mise à jour, valeur figée
+#   - Aucun "0 fantôme" hors reset B0 valide : state = none hors cycle
 # ==========================================================
 
 - trigger:
 
-    # Nouvel arrêt chauffage (B0)
+    # Nouvel arrêt chauffage (B0) — canonique : changement t_arret uniquement
     - platform: state
       entity_id: sensor.temperature_arret_presence_chambres
+      attribute: t_arret
 
     # Variation thermique Chambres
     - platform: state
@@ -27,70 +36,42 @@
 
 
       state: >
-        {% set last = this.state | float(0) %}
+        {% set last = this.state | float(none) %}
 
         {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
           {{ last }}
         {% else %}
 
           {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
-          {% set t_arret = state_attr('sensor.temperature_arret_presence_chambres', 't_arret') | float(none) %}
-          {% set T_arret = states('sensor.temperature_arret_presence_chambres') | float(none) %}
-          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
 
-          {% set last_temp = state_attr(this.entity_id, 'temperature_max') | float(none) %}
-          {% set t0 = state_attr(this.entity_id, 't0') | float(none) %}
+          {% set t0 = this.attributes.get('t0_ref') | float(none) %}
+          {% set t_end = this.attributes.get('t_end_ref') | float(none) %}
+          {% set finished = (this.attributes.get('overshoot_finished') | int(0)) == 1 %}
 
-          {% set finished = (state_attr(this.entity_id, 'overshoot_finished') | int(0)) == 1 %}
+          {% if trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+            {% if arret_valide %}
+              0
+            {% else %}
+              {{ none }}
+            {% endif %}
 
-          {# -------------------------------------------------- #}
-          {# Si overshoot déjà terminé → valeur figée définitive #}
-          {# -------------------------------------------------- #}
+          {% elif not arret_valide %}
+            {{ none }}
 
-          {% if finished %}
+          {% elif t0 is none %}
+            {{ none }}
+
+          {% elif finished %}
             {{ last }}
-
-          {# -------------------------------------------------- #}
-          {# Neutralisation si arrêt invalide ou données absentes #}
-          {# -------------------------------------------------- #}
-
-          {% elif not arret_valide or t_arret is none or T_arret is none or T_cur is none %}
-            {{ last }}
-
-          {# -------------------------------------------------- #}
-          {# Reset chrono UNIQUEMENT lors d’un vrai arrêt valide #}
-          {# -------------------------------------------------- #}
-
-          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
-            0
 
           {% else %}
-
-            {# -------------------------------------------------- #}
-            {# Tant que la température continue de monter        #}
-            {# -------------------------------------------------- #}
-
-            {% if last_temp is none or T_cur >= last_temp %}
-
-              {% if t0 is not none %}
-                {% set dt = (now().timestamp() - t0) / 60 %}
-                {% if dt > 0 %}
-                  {{ dt | round(2) }}
-                {% else %}
-                  {{ last }}
-                {% endif %}
-              {% else %}
-                {{ last }}
-              {% endif %}
-
-            {# -------------------------------------------------- #}
-            {# Température redescend → overshoot terminé         #}
-            {# -------------------------------------------------- #}
-
+            {% set now_ts = now().timestamp() %}
+            {% set dt = (now_ts - t0) / 60 %}
+            {% if dt > 0 %}
+              {{ dt | round(2) }}
             {% else %}
               {{ last }}
             {% endif %}
-
           {% endif %}
 
         {% endif %}
@@ -99,51 +80,182 @@
       attributes:
 
         # --------------------------------------------------
-        # Température maximale atteinte pendant l’overshoot
+        # Cast strict (diagnostic)
         # --------------------------------------------------
-        temperature_max: >
-          {% set last = state_attr(this.entity_id, 'temperature_max') | float(none) %}
+        arret_valide_cast: >
+          {{ ((state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true') }}
+
+        # --------------------------------------------------
+        # Référence t0 (début overshoot) — événementiel (Option A)
+        # --------------------------------------------------
+        t0_ref: >
+          {% set prev = this.attributes.get('t0_ref') %}
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' and arret_valide and trigger.to_state is not none %}
+            {{ as_timestamp(trigger.to_state.last_changed) }}
+
+          {% else %}
+            {{ prev }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Dernier échantillon température (pour détection de baisse)
+        # --------------------------------------------------
+        T_prev: >
+          {% set prev = this.attributes.get('T_prev') %}
           {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set finished = (this.attributes.get('overshoot_finished') | int(0)) == 1 %}
 
-          {% if trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
             {{ T_cur }}
 
-          {% elif last is none %}
+          {% elif finished %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_min_chambres' and T_cur is not none %}
             {{ T_cur }}
 
-          {% elif T_cur is none %}
-            {{ last }}
-
           {% else %}
-            {{ [last, T_cur] | max }}
+            {{ prev }}
           {% endif %}
 
+        # --------------------------------------------------
+        # Pic thermique observé pendant l’overshoot
+        # --------------------------------------------------
+        T_peak: >
+          {% set prev = this.attributes.get('T_peak') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+          {% set finished = (this.attributes.get('overshoot_finished') | int(0)) == 1 %}
 
-        # --------------------------------------------------
-        # Horodatage t0 de début overshoot
-        # --------------------------------------------------
-        t0: >
-          {% if trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
-            {{ now().timestamp() }}
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+            {{ T_cur }}
+
+          {% elif finished %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_min_chambres' and T_cur is not none %}
+            {% if prev is none %}
+              {{ T_cur }}
+            {% else %}
+              {{ [prev, T_cur] | max }}
+            {% endif %}
+
           {% else %}
-            {{ state_attr(this.entity_id, 't0') }}
+            {{ prev }}
           {% endif %}
 
-
         # --------------------------------------------------
-        # Indicateur de fin d’overshoot (1/0)
+        # Fin d’overshoot : première baisse observée (T_cur < T_prev)
         # --------------------------------------------------
         overshoot_finished: >
-          {% set last_temp = state_attr(this.entity_id, 'temperature_max') | float(none) %}
+          {% set finished = (this.attributes.get('overshoot_finished') | int(0)) == 1 %}
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set t0 = this.attributes.get('t0_ref') | float(none) %}
+          {% set T_prev = this.attributes.get('T_prev') | float(none) %}
           {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
-          {% set finished = (state_attr(this.entity_id, 'overshoot_finished') | int(0)) == 1 %}
 
-          {% if finished %}
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ 1 if finished else 0 }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+            0
+
+          {% elif not arret_valide or t0 is none %}
+            0
+
+          {% elif finished %}
             1
 
-          {% elif last_temp is not none and T_cur is not none and T_cur < last_temp %}
+          {% elif trigger.entity_id == 'sensor.temperature_min_chambres'
+                and T_prev is not none
+                and T_cur is not none
+                and T_cur < T_prev %}
             1
 
           {% else %}
             0
           {% endif %}
+
+        # --------------------------------------------------
+        # Horodatage de fin (figé à la détection finished)
+        # --------------------------------------------------
+        t_end_ref: >
+          {% set prev = this.attributes.get('t_end_ref') %}
+          {% set finished_prev = (this.attributes.get('overshoot_finished') | int(0)) == 1 %}
+          {% set finished_now = (this.attributes.get('overshoot_finished') | int(0)) == 1 %}
+          {% set T_prev = this.attributes.get('T_prev') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+
+          {% if states('input_boolean.aeration_pipeline_arme') == 'on' %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_arret_presence_chambres' %}
+            {{ none }}
+
+          {% elif finished_prev %}
+            {{ prev }}
+
+          {% elif trigger.entity_id == 'sensor.temperature_min_chambres'
+                and T_prev is not none
+                and T_cur is not none
+                and T_cur < T_prev %}
+            {{ as_timestamp(trigger.to_state.last_changed) if trigger.to_state is not none else now().timestamp() }}
+
+          {% else %}
+            {{ prev }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Statut / invalidation (diagnostic)
+        # --------------------------------------------------
+        arsenal_status: >
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set t0 = this.attributes.get('t0_ref') | float(none) %}
+          {% set finished = (this.attributes.get('overshoot_finished') | int(0)) == 1 %}
+
+          {% if aeration == 'on' %}
+            inhibited_aeration
+          {% elif not arret_valide %}
+            arret_invalide
+          {% elif t0 is none %}
+            no_cycle
+          {% elif finished %}
+            finished
+          {% else %}
+            tracking
+          {% endif %}
+
+        raison_invalidation: >
+          {% set aeration = states('input_boolean.aeration_pipeline_arme') %}
+          {% set arret_valide = (state_attr('sensor.temperature_arret_presence_chambres', 'arret_valide') | string | lower) == 'true' %}
+          {% set t0 = this.attributes.get('t0_ref') | float(none) %}
+          {% set T_cur = states('sensor.temperature_min_chambres') | float(none) %}
+
+          {% if aeration == 'on' %}
+            aeration
+          {% elif not arret_valide %}
+            arret_invalide
+          {% elif t0 is none %}
+            t0_none
+          {% elif T_cur is none %}
+            T_cur_none
+          {% else %}
+            ok
+          {% endif %}
+
+        # --------------------------------------------------
+        # Sources
+        # --------------------------------------------------
+        source_arret_entity: "sensor.temperature_arret_presence_chambres"
+        source_temp_entity: "sensor.temperature_min_chambres"

@@ -7,25 +7,30 @@ content: |
 
   {% set na = ['unknown','unavailable','none','None',''] %}
 
+  {% set reg_l  = reg  | lower %}
+  {% set rep_l  = rep  | lower %}
+  {% set ine_l  = ine  | lower %}
+  {% set stab_l = stab | lower %}
+
+  {% set all_na = (reg in na) and (rep in na) and (ine in na) and (stab in na) %}
+
   {# =======================================================
-     ⚪ DONNÉES INDISPONIBLES
+     ⚪ TOUTES DONNÉES INDISPONIBLES
      ======================================================= #}
-  {% if reg in na or rep in na or ine in na or stab in na %}
+  {% if all_na %}
 
   ⚪ **Interprétation indisponible**
 
-  Une ou plusieurs synthèses diagnostic sont **unknown/unavailable**.
-
-  - **Régulation :** {{ reg }}
-  - **Reprise :** {{ rep }}
-  - **Inertie / isolation :** {{ ine }}
-  - **Stabilité (cyclage) :** {{ stab }}
+  Toutes les synthèses diagnostic sont indisponibles.
 
   {% else %}
 
-  - {% if 'très stable' in reg %}🟢{% elif 'correcte' in reg %}🔵{% elif 'instable' in reg %}🟠{% else %}🔵{% endif %} **Régulation :** {{ reg }}
-  - {% if 'rapide' in rep %}🟢{% elif 'modérée' in rep %}🔵{% elif 'lente' in rep %}🟠{% else %}🔵{% endif %} **Reprise :** {{ rep }}
-  - {% if 'Très bonne' in ine %}🟢{% elif 'normale' in ine %}🔵{% elif 'très dissipatif' in ine %}🟠{% else %}🔵{% endif %} **Inertie / isolation :** {{ ine }}
-  - {% if 'très stable' in stab %}🟢{% elif 'correcte' in stab %}🔵{% elif 'Nervosité' in stab %}🟠{% else %}🔵{% endif %} **Stabilité (cyclage) :** {{ stab }}
+  - {% if reg in na %}⚪{% elif 'très stable' in reg_l %}🟢{% elif 'correcte' in reg_l %}🔵{% elif 'instable' in reg_l %}🟠{% else %}⚪{% endif %} **Régulation :** {{ reg if reg not in na else 'n/a' }}
+
+  - {% if rep in na %}⚪{% elif 'rapide' in rep_l %}🟢{% elif 'modérée' in rep_l %}🔵{% elif 'lente' in rep_l %}🟠{% else %}⚪{% endif %} **Reprise :** {{ rep if rep not in na else 'n/a' }}
+
+  - {% if ine in na %}⚪{% elif 'très bonne' in ine_l %}🟢{% elif 'normale' in ine_l %}🔵{% elif 'dissipatif' in ine_l %}🟠{% else %}⚪{% endif %} **Inertie / isolation :** {{ ine if ine not in na else 'n/a' }}
+
+  - {% if stab in na %}⚪{% elif 'très stable' in stab_l %}🟢{% elif 'correcte' in stab_l %}🔵{% elif 'nervosité' in stab_l %}🟠{% else %}⚪{% endif %} **Stabilité (cyclage) :** {{ stab if stab not in na else 'n/a' }}
 
   {% endif %}

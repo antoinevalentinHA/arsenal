@@ -1,10 +1,10 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Home
+title: ECS
 views:
-  - title: Home
-    path: home
-    icon: mdi:server
+  - title: ECS
+    path: ecs
+    icon: mdi:water-pump
 
     badges:
       - type: custom:button-card
