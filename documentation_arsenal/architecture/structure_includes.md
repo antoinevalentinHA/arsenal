@@ -29,7 +29,7 @@ Il s’agit d’un **document normatif d’architecture**.
 Arsenal repose sur une séparation stricte et explicite entre :
 
 - **Nature technique**  
-  (template, mqtt, automation, pyscript, lovelace, etc.)
+  (template, mqtt, automation, lovelace, etc.)
 
 - **Rôle fonctionnel**  
   (décision, application, diagnostic, interface utilisateur)
@@ -110,7 +110,6 @@ Toute évolution passe par :
 
 ```text
 homeassistant/
-├── pyscript/
 ├── mqtt_sensors/
 ├── mqtt_binary_sensors/
 ├── 01_customize/
@@ -854,25 +853,7 @@ mqtt:
 
 ---
 
-## 5.20 — pyscript
-
-### Rôle
-
-Scripts Python exposant des services.
-
----
-
-### Structure
-
-```python
-@service
-def <nom_service>():
-    <code_python>
-```
-
----
-
-## 5.21 — logbook.yaml
+## 5.20 — logbook.yaml
 
 ```yaml
 logbook: !include logbook.yaml
@@ -886,7 +867,7 @@ include:
 
 ---
 
-## 5.22 — logger.yaml
+## 5.21 — logger.yaml
 
 ```yaml
 logger: !include logger.yaml
@@ -900,7 +881,7 @@ logs:
 
 ---
 
-## 5.23 — recorder.yaml
+## 5.22 — recorder.yaml
 
 ```yaml
 recorder: !include recorder.yaml
@@ -918,7 +899,7 @@ include:
 
 ---
 
-## 5.24 — utility_meter.yaml
+## 5.23 — utility_meter.yaml
 
 ```yaml
 utility_meter: !include utility_meter.yaml

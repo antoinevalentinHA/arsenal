@@ -1,0 +1,89 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     Gestion ID — Générer next ID depuis prefix
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Lire `input_text.prefix_id`, calculer le prochain ID
+#   d'automatisation correspondant au préfixe, écrire le
+#   résultat dans `input_text.next_id_result`, et tracer
+#   dans le logbook.
+#
+# 🧩 PRINCIPE
+#   - prefix = numérique
+#   - Scan `states.automation` → attribute `id`
+#   - Filtre : id commence par prefix + suffix numérique
+#   - next_suffix = max(suffixes) + 1 (ou 1 si aucun)
+#   - next_id = prefix + suffix sur 10 digits (zero-pad)
+#
+# 🛡️ ROBUSTESSE
+#   - prefix vide / non numérique => stop
+#   - ignore ids absents / mal formés
+# ==========================================================
+
+generate_next_id_from_prefix:
+  alias: "Arsenal — Generate next ID from prefix"
+  mode: single
+
+  sequence:
+    # ------------------------------------------------------
+    # Lecture + validation préfixe
+    # ------------------------------------------------------
+    - variables:
+        prefix: "{{ (states('input_text.prefix_id') | default('') | trim) | string }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ prefix in ['unknown','unavailable','none','', None] }}"
+          sequence:
+            - stop: "Arsenal - Préfixe vide"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ not (prefix | regex_match('^[0-9]+$')) }}"
+          sequence:
+            - stop: "Arsenal - Préfixe invalide (doit être numérique)"
+
+    # ------------------------------------------------------
+    # Collecte des suffixes existants
+    # ------------------------------------------------------
+    - variables:
+        suffixes: >-
+          {% set ns = namespace(ids=[]) %}
+          {% set p = (prefix | string) %}
+          {% for s in states.automation %}
+            {% set aid = (state_attr(s.entity_id, 'id') | default('') | string) %}
+            {% if aid.startswith(p) %}
+              {% set tail = aid[p | length:] %}
+              {% if tail | regex_match('^[0-9]+$') %}
+                {% set ns.ids = ns.ids + [tail | int] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.ids }}
+
+    # ------------------------------------------------------
+    # Calcul prochain ID
+    # ------------------------------------------------------
+    - variables:
+        next_suffix: "{{ (suffixes | max + 1) if (suffixes | length > 0) else 1 }}"
+        next_id: "{{ prefix }}{{ '%010d' | format(next_suffix) }}"
+
+    # ------------------------------------------------------
+    # Écriture résultat
+    # ------------------------------------------------------
+    - service: input_text.set_value
+      data:
+        entity_id: input_text.next_id_result
+        value: "{{ next_id }}"
+
+    # ------------------------------------------------------
+    # Logbook
+    # ------------------------------------------------------
+    - event: logbook_entry
+      event_data:
+        name: "Arsenal - Gestion ID"
+        message: "ID généré : {{ next_id }} (préfixe {{ prefix }})"
+        domain: automation
+        entity_id: input_text.next_id_result

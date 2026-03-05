@@ -1,0 +1,232 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     ECS — Auto-correct offsets (post-dernier cycle valide)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Auto-ajuster UN SEUL offset ECS (`input_number.ecs_off_*`)
+#   en fonction du dernier cycle ECS figé, via correcteur
+#   proportionnel discret (alpha), avec zone morte anti-oscillation.
+#
+# 🧩 CONDITIONS
+#   - input_boolean.ecs_autocorrect_active == on
+#   - résumé figé présent : input_text.ecs_resume_dernier_cycle_fige
+#     Format : date|mode|consigne|t0|boost|valide
+#   - valide == "oui"
+#   - boost  != "oui"
+#   - t0 < consigne
+#   - 0 < duree < 120 min
+#   - erreur hors zone morte [-0.3 ; +0.5]
+#
+# 🧮 CALCUL
+#   bucket :
+#     desinfection  → mode == desinfection
+#     tiny          → delta_init < 2.5
+#     medium        → delta_init < 7.0
+#     normal        → sinon
+#
+#   offset_new = offset_actuel + alpha * erreur
+#   clamp [min; max]
+#   quantification step
+#   ignore si delta ≤ 0.001
+#
+# 🧾 TRACE
+#   input_text.ecs_dernier_ajustement :
+#   "dd/mm HH:MM • bucket • old→new • err +x.x°C"
+# ==========================================================
+
+ecs_autocorrect_offsets:
+  alias: "ECS — Auto-correct offsets"
+  mode: single
+
+  sequence:
+
+    # ------------------------------------------------------
+    # Activation
+    # ------------------------------------------------------
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ states('input_boolean.ecs_autocorrect_active') != 'on' }}"
+          sequence:
+            - stop: "ECS - Auto-ajustement désactivé"
+
+    # ------------------------------------------------------
+    # Lecture résumé figé
+    # ------------------------------------------------------
+    - variables:
+        resume: "{{ states('input_text.ecs_resume_dernier_cycle_fige') | default('') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ resume in ['unknown','unavailable','none','', None] }}"
+          sequence:
+            - stop: "ECS - Aucun résumé figé"
+
+    - variables:
+        parts: "{{ resume.split('|') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ (parts | length) < 6 }}"
+          sequence:
+            - stop: "ECS - Résumé figé incomplet"
+
+    - variables:
+        mode_raw: "{{ parts[1] | trim | lower }}"
+        consigne: "{{ parts[2] | trim | float(none) }}"
+        t0: "{{ parts[3] | trim | float(none) }}"
+        boost_flag: "{{ parts[4] | trim | lower }}"
+        valide_flag: "{{ parts[5] | trim | lower }}"
+
+    # ------------------------------------------------------
+    # Filtres cycle
+    # ------------------------------------------------------
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ valide_flag != 'oui' }}"
+          sequence:
+            - stop: "ECS - Cycle non valide"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ boost_flag == 'oui' }}"
+          sequence:
+            - stop: "ECS - Boost utilisé"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ consigne is none or t0 is none }}"
+          sequence:
+            - stop: "ECS - Conversion consigne/T0 impossible"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ t0 >= consigne }}"
+          sequence:
+            - stop: "ECS - Cycle non pertinent"
+
+    - variables:
+        duree: "{{ states('input_number.ecs_duree_dernier_cycle_figee') | float(none) }}"
+        tmax: "{{ states('input_number.ecs_temperature_max_figee') | float(none) }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ duree is none or not (0.0 < duree < 120.0) }}"
+          sequence:
+            - stop: "ECS - Durée hors plage"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ tmax is none }}"
+          sequence:
+            - stop: "ECS - Tmax indisponible"
+
+    # ------------------------------------------------------
+    # Calcul erreur
+    # ------------------------------------------------------
+    - variables:
+        erreur: "{{ tmax - consigne }}"
+        deadband_min: -0.3
+        deadband_max: 0.5
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ deadband_min <= erreur <= deadband_max }}"
+          sequence:
+            - stop: "ECS - Erreur dans zone morte"
+
+    # ------------------------------------------------------
+    # Bucket
+    # ------------------------------------------------------
+    - variables:
+        delta_init: "{{ consigne - t0 }}"
+        bucket: >-
+          {% if mode_raw == 'desinfection' %}
+            desinfection
+          {% elif delta_init < 2.5 %}
+            tiny
+          {% elif delta_init < 7.0 %}
+            medium
+          {% else %}
+            normal
+          {% endif %}
+
+    # ------------------------------------------------------
+    # Entité offset cible
+    # ------------------------------------------------------
+    - variables:
+        offset_entity: >-
+          {% if bucket == 'desinfection' %}
+            input_number.ecs_off_desinfection
+          {% elif bucket == 'tiny' %}
+            input_number.ecs_off_tiny
+          {% elif bucket == 'medium' %}
+            input_number.ecs_off_medium
+          {% else %}
+            input_number.ecs_off_normal
+          {% endif %}
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ states(offset_entity) in ['unknown','unavailable','none','', None] }}"
+          sequence:
+            - stop: "ECS - Offset indisponible"
+
+    # ------------------------------------------------------
+    # Lecture offset
+    # ------------------------------------------------------
+    - variables:
+        offset_actuel: "{{ states(offset_entity) | float }}"
+        offset_min: "{{ state_attr(offset_entity, 'min') | float(0) }}"
+        offset_max: "{{ state_attr(offset_entity, 'max') | float(10) }}"
+        step: "{{ state_attr(offset_entity, 'step') | float(0.1) }}"
+
+    # ------------------------------------------------------
+    # Calcul offset
+    # ------------------------------------------------------
+    - variables:
+        alpha: 0.25
+        offset_calc: "{{ offset_actuel + alpha * erreur }}"
+        offset_clamped: "{{ [offset_min, [offset_max, offset_calc] | min] | max }}"
+        offset_quant: >-
+          {% if step > 0 %}
+            {{ ((offset_clamped / step) | round(0) * step) | float }}
+          {% else %}
+            {{ offset_clamped }}
+          {% endif %}
+        offset_new: "{{ ('%.3f' | format(offset_quant)) | float }}"
+        delta_offset_abs: "{{ (offset_new - offset_actuel) | abs }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ delta_offset_abs <= 0.001 }}"
+          sequence:
+            - stop: "ECS - Correction négligeable"
+
+    # ------------------------------------------------------
+    # Application
+    # ------------------------------------------------------
+    - service: input_number.set_value
+      data:
+        entity_id: "{{ offset_entity }}"
+        value: "{{ offset_new }}"
+
+    # ------------------------------------------------------
+    # Trace
+    # ------------------------------------------------------
+    - service: input_text.set_value
+      data:
+        entity_id: input_text.ecs_dernier_ajustement
+        value: >-
+          {{ now().strftime('%d/%m %H:%M') }} • {{ bucket }} • {{ ('%.1f' | format(offset_actuel)) }}→{{ ('%.1f' | format(offset_new)) }} • err {{ ('%+.1f' | format(erreur)) }}°C

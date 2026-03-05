@@ -41,9 +41,6 @@ views:
               - type: custom:button-card
                 template: bouton_spacer
                 color_type: blank-card
-              - type: custom:button-card
-                template: bouton_spacer
-                color_type: blank-card
 
               # sauvegarde
               - type: custom:button-card
@@ -51,7 +48,9 @@ views:
                 icon: mdi:content-save
                 tap_action:
                   action: call-service
-                  service: pyscript.ecs_sauvegarde_planning
+                  service: script.ecs_sauvegarde_planning
+                  confirmation:
+                    text: "Confirmer la sauvegarde du planning ECS ?"
                 styles:
                   icon:
                     - color: '#2E7D32'
@@ -62,7 +61,9 @@ views:
                 icon: mdi:backup-restore
                 tap_action:
                   action: call-service
-                  service: pyscript.ecs_restore_planning
+                  service: script.ecs_restore_planning
+                  confirmation:
+                    text: "⚠️ Confirmer la RESTAURATION du planning ECS ?"
                 styles:
                   icon:
                     - color: '#B71C1C'

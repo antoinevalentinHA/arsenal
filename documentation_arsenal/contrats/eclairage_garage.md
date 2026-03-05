@@ -84,7 +84,7 @@ Interdictions absolues :
 
 Chaque entité appartient à une catégorie unique :
 
-| Catégorie     | Rôle autorisé                         |
+| Catégorie     | Rôle autorisé                        |
 |---------------|--------------------------------------|
 | Événement     | produire un fait brut                |
 | Autorisation  | autoriser / interdire l’automatisme  |
@@ -131,23 +131,52 @@ Règle :
 
 ---
 
-## 🧠 Règles d’autorisation automatique
+## 🧠 Règles d’autorisation automatique (Garage)
 
-L’automatisme est gouverné par :
+L’automatisme d’éclairage du garage est gouverné par **deux garde-fous cumulatifs** :
 
-- `input_boolean.<zone>_auto_light`
+- `input_boolean.garage_auto_light`
+  → autorisation globale de l’automatisme
+
+- `binary_sensor.garage_allumage_auto_autorise`
+  → autorisation contextuelle d’allumage (saison + période météo)
 
 Règles :
 
-- OFF :
-  - aucune automation ne peut déclencher d’action
-- ON :
-  - automatisations autorisées sous conditions d’état
+- si `input_boolean.garage_auto_light = off` :
+  - aucune automation ne peut demander une action (allumage ou extinction)
 
-Interdictions :
+- si `input_boolean.garage_auto_light = on` :
+  - l’extinction automatique peut être autorisée sous conditions d’état
+  - l’allumage automatique est autorisé **uniquement si**
+    `binary_sensor.garage_allumage_auto_autorise = on`
 
-- contournement de l’autorisation,
-- pilotage automatique hors autorisation.
+---
+
+### Catégorie contractuelle
+
+`binary_sensor.garage_allumage_auto_autorise` appartient à la catégorie :
+
+| Catégorie    | Rôle autorisé                         |
+|--------------|---------------------------------------|
+| Autorisation | autoriser / interdire l’allumage auto |
+
+Règle :
+
+> Ce capteur ne pilote rien et ne modifie aucun état.
+
+---
+
+### Interdictions
+
+`binary_sensor.garage_allumage_auto_autorise` ne doit jamais :
+
+- appeler `script.garage_toggle`
+- piloter un `switch.*`
+- écrire `input_boolean.garage_light_state`
+- contenir une logique de temporisation
+
+Il agit uniquement comme **garde d’autorisation**.
 
 ---
 

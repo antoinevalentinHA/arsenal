@@ -33,11 +33,12 @@
 #   - Valeur inexploitable sans désérialisation
 # ==========================================================
 
-
 ecs_planning_sauvegarde_matin:
   name: ECS planning sauvegarde matin
   icon: mdi:weather-sunset-up
+  max: 255
 
 ecs_planning_sauvegarde_soir:
   name: ECS planning sauvegarde soir
   icon: mdi:weather-sunset-down
+  max: 255

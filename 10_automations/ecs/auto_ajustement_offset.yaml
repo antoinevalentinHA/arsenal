@@ -5,32 +5,23 @@
 # ID : 10250000000019
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#     Consommer le signal canonique de fin de cycle ECS
-#     consolidé, déclencher le moteur Pyscript
-#     d’auto-ajustement des offsets, puis acquitter
-#     explicitement le signal.
+#     Consommer le signal canonique de fin de cycle ECS,
+#     déclencher le script natif d’auto-ajustement des offsets,
+#     puis acquitter explicitement le signal.
 #
 # 🧱 PRINCIPE ARSENAL
-#     - Cette automation est strictement CONSOMMATRICE
-#     - Elle ne déduit rien et ne consolide rien
-#     - Le reset du signal vaut accusé de réception métier
-#
-# 🚫 NE FAIT PAS
-#     - Ne détecte pas la fin de cycle
-#     - N’écoute plus aucun helper figé
-#     - Ne pilote aucune consigne ECS
-#
-# 🧩 CONDITIONS
-#     - L’auto-correction ECS doit être activée
+#     - Automation strictement CONSOMMATRICE
+#     - Aucun calcul métier
+#     - Acquittement = accusé de réception métier
 #
 # ⚠️ IMPORTANT
 #     - En cas d’échec, le signal reste ON
-#     - La relance manuelle reste possible
+#     - Relance manuelle possible
 # ==========================================================
 
 - id: "10250000000019"
   alias: "ECS – Auto-ajustement offsets (fin de cycle)"
-  description: "Consomme le signal de fin de cycle ECS, ajuste les offsets via Pyscript, puis acquitte le signal."
+  description: "Consomme le signal de fin de cycle ECS, ajuste les offsets via script, puis acquitte le signal."
   mode: single
 
   trigger:
@@ -44,10 +35,10 @@
       state: "on"
 
   action:
-    # 🔧 1️⃣ Appel du moteur Pyscript
-    - service: pyscript.ecs_autocorrect_offsets
+    # 🔧 1) Appel du script
+    - service: script.ecs_autocorrect_offsets
 
-    # 🧾 2️⃣ Acquittement explicite du signal
+    # 🧾 2) Acquittement explicite du signal
     - service: input_boolean.turn_off
       target:
         entity_id: input_boolean.ecs_fin_cycle_signal

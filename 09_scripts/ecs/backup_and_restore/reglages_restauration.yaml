@@ -1,0 +1,102 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     ECS — Restore réglages — ULTRA ROBUSTE (sans from_json)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Restaurer les réglages ECS depuis `input_text.ecs_reglages_backup`
+#   (payload JSON), uniquement si la valeur change, puis tracer
+#   dans `input_text.ecs_reglages_last_restore`.
+#
+# 📌 FORMAT BACKUP ATTENDU
+#   {"ts":"...","v":{"tiny":2.2,"med":3.8,"nor":3.7,"des":3.0,"eps":0.3,"epsd":1.2,"ceil":1.5}}
+#
+# 🛡️ ROBUSTESSE
+#   - Aucun usage de `from_json` (évite les ValueError/compat HA)
+#   - Aucune validation “forme JSON” fragile : on tente l’extraction
+#     par regex. Si une clé est absente → skip (comportement sûr).
+#   - Neutralisation BOM éventuelle.
+#   - Idempotence : set_value seulement si delta > 0.0001
+# ==========================================================
+
+ecs_restore_reglages:
+  alias: "ECS — Restore réglages"
+  mode: single
+
+  sequence:
+    # ------------------------------------------------------
+    # 0) Lecture backup + nettoyage minimal
+    # ------------------------------------------------------
+    - variables:
+        raw: >-
+          {{ states('input_text.ecs_reglages_backup') | default('') | trim
+             | replace('\ufeff','') }}
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ raw in ['unknown','unavailable','none','', None] }}"
+          sequence:
+            - stop: "ECS - Backup vide, restauration annulée"
+
+    # ------------------------------------------------------
+    # 1) Extraire ts (si présent)
+    # ------------------------------------------------------
+    - variables:
+        ts_list: "{{ raw | regex_findall('\"ts\"\\s*:\\s*\"([^\"]+)\"') }}"
+        ts_source: "{{ ts_list[0] if (ts_list | length) > 0 else 'inconnu' }}"
+
+    # ------------------------------------------------------
+    # 2) Application offsets (extraction valeur par regex)
+    # ------------------------------------------------------
+    - repeat:
+        for_each:
+          - key: "tiny"
+            ent: "input_number.ecs_off_tiny"
+          - key: "med"
+            ent: "input_number.ecs_off_medium"
+          - key: "nor"
+            ent: "input_number.ecs_off_normal"
+          - key: "des"
+            ent: "input_number.ecs_off_desinfection"
+          - key: "eps"
+            ent: "input_number.ecs_eps_ponctuel"
+          - key: "epsd"
+            ent: "input_number.ecs_eps_desinfection"
+          - key: "ceil"
+            ent: "input_number.ecs_trigger_ceiling_tiny_medium"
+
+        sequence:
+          # entité dispo
+          - condition: template
+            value_template: "{{ states(repeat.item.ent) not in ['unknown','unavailable','none','', None] }}"
+
+          # extraire new via regex (clé absente => found vide => new none => skip)
+          - variables:
+              pattern: "{{ '\"' ~ repeat.item.key ~ '\"\\s*:\\s*([-0-9]+(?:\\.[0-9]+)?)' }}"
+              found: "{{ raw | regex_findall(pattern) }}"
+              new: "{{ (found[0] | float(none)) if (found | length) > 0 else none }}"
+              old: "{{ states(repeat.item.ent) | float(none) }}"
+
+          # clé absente ou conversion impossible => skip
+          - condition: template
+            value_template: "{{ new is not none and old is not none }}"
+
+          # idempotence
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ (new - old) | abs > 0.0001 }}"
+                sequence:
+                  - service: input_number.set_value
+                    data:
+                      entity_id: "{{ repeat.item.ent }}"
+                      value: "{{ new }}"
+
+    # ------------------------------------------------------
+    # 3) Trace
+    # ------------------------------------------------------
+    - service: input_text.set_value
+      data:
+        entity_id: input_text.ecs_reglages_last_restore
+        value: >-
+          {"restored_at":"{{ utcnow().isoformat(timespec='seconds') }}","source":"{{ ts_source }}"}

@@ -1,6 +1,6 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRAT NORMATIF
-#     ECS — Auto-ajustement des offsets (pyscript)
+#     ECS — Auto-ajustement des offsets
 # ----------------------------------------------------------
 # Domaine : ECS / Offsets / Auto-correction
 # Couche  : Décision technique (post-cycle) + Traçabilité

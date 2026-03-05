@@ -1,0 +1,146 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     ECS — Restore planning (matin / soir) — STRICT SNAPSHOT
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Appliquer strictement les snapshots planning ECS :
+#     - input_text.ecs_planning_sauvegarde_matin
+#     - input_text.ecs_planning_sauvegarde_soir
+#
+# 🧩 PRINCIPE
+#   - Lecture raw_matin/raw_soir
+#   - RESET GLOBAL (toujours) :
+#       • OFF tous les input_boolean.ecs_*_matin_active
+#       • OFF tous les input_boolean.ecs_*_soir_active
+#   - RESTORE ciblé :
+#       • extraction regex (jour, heure)
+#       • ON le bool + set l'heure
+#
+# 🛡️ ROBUSTESSE
+#   - Aucun from_json
+#   - Reset global construit via namespace (Jinja loop-safe)
+#   - Backups vides => restore vide (tout reste OFF après reset)
+#   - Entités manquantes => skip
+# ==========================================================
+
+ecs_restore_planning:
+  alias: "ECS — Restore planning (strict snapshot)"
+  mode: single
+
+  sequence:
+    # ------------------------------------------------------
+    # 0) Lecture backups + nettoyage
+    # ------------------------------------------------------
+    - variables:
+        raw_matin: >-
+          {{ states('input_text.ecs_planning_sauvegarde_matin') | default('') | trim
+             | replace('\ufeff','') }}
+        raw_soir: >-
+          {{ states('input_text.ecs_planning_sauvegarde_soir') | default('') | trim
+             | replace('\ufeff','') }}
+
+    # ------------------------------------------------------
+    # 1) RESET GLOBAL MATIN (toujours)
+    # ------------------------------------------------------
+    - repeat:
+        for_each: >-
+          {% set ns = namespace(ids=[]) %}
+          {% for s in states.input_boolean %}
+            {% set e = s.entity_id %}
+            {% if e.startswith('input_boolean.ecs_') and e.endswith('_matin_active') %}
+              {% set ns.ids = ns.ids + [e] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.ids }}
+        sequence:
+          - service: input_boolean.turn_off
+            data:
+              entity_id: "{{ repeat.item }}"
+
+    # ------------------------------------------------------
+    # 2) RESET GLOBAL SOIR (toujours)
+    # ------------------------------------------------------
+    - repeat:
+        for_each: >-
+          {% set ns = namespace(ids=[]) %}
+          {% for s in states.input_boolean %}
+            {% set e = s.entity_id %}
+            {% if e.startswith('input_boolean.ecs_') and e.endswith('_soir_active') %}
+              {% set ns.ids = ns.ids + [e] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.ids }}
+        sequence:
+          - service: input_boolean.turn_off
+            data:
+              entity_id: "{{ repeat.item }}"
+
+    # ------------------------------------------------------
+    # 3) RESTORE MATIN
+    # ------------------------------------------------------
+    - variables:
+        matin_pairs: >-
+          {{ raw_matin | regex_findall('\"([^\"]+)\"\\s*:\\s*\"([0-9]{2}:[0-9]{2}(?::[0-9]{2})?)\"') }}
+
+    - repeat:
+        for_each: "{{ matin_pairs }}"
+        sequence:
+          - variables:
+              jour: "{{ repeat.item[0] }}"
+              h: "{{ repeat.item[1] }}"
+              ent_bool: "{{ 'input_boolean.ecs_' ~ jour ~ '_matin_active' }}"
+              ent_time: "{{ 'input_datetime.ecs_' ~ jour ~ '_matin_heure' }}"
+
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ states(ent_bool) not in ['unknown','unavailable','none','', None] }}"
+                sequence:
+                  - service: input_boolean.turn_on
+                    data:
+                      entity_id: "{{ ent_bool }}"
+
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ states(ent_time) not in ['unknown','unavailable','none','', None] }}"
+                sequence:
+                  - service: input_datetime.set_datetime
+                    data:
+                      entity_id: "{{ ent_time }}"
+                      time: "{{ h }}"
+
+    # ------------------------------------------------------
+    # 4) RESTORE SOIR
+    # ------------------------------------------------------
+    - variables:
+        soir_pairs: >-
+          {{ raw_soir | regex_findall('\"([^\"]+)\"\\s*:\\s*\"([0-9]{2}:[0-9]{2}(?::[0-9]{2})?)\"') }}
+
+    - repeat:
+        for_each: "{{ soir_pairs }}"
+        sequence:
+          - variables:
+              jour: "{{ repeat.item[0] }}"
+              h: "{{ repeat.item[1] }}"
+              ent_bool: "{{ 'input_boolean.ecs_' ~ jour ~ '_soir_active' }}"
+              ent_time: "{{ 'input_datetime.ecs_' ~ jour ~ '_soir_heure' }}"
+
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ states(ent_bool) not in ['unknown','unavailable','none','', None] }}"
+                sequence:
+                  - service: input_boolean.turn_on
+                    data:
+                      entity_id: "{{ ent_bool }}"
+
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: "{{ states(ent_time) not in ['unknown','unavailable','none','', None] }}"
+                sequence:
+                  - service: input_datetime.set_datetime
+                    data:
+                      entity_id: "{{ ent_time }}"
+                      time: "{{ h }}"

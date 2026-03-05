@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     ECS — Save réglages (backup JSON)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Sauvegarder un snapshot des réglages ECS dans
+#   `input_text.ecs_reglages_backup` sous forme JSON :
+#     {"ts":"...","v":{...}}
+#
+# 🧩 PRINCIPE
+#   - mapping clé courte -> input_number.*
+#   - entités indisponibles => clé absente
+#   - sérialisation JSON via `to_json` (pas de concat manuelle)
+#
+# 🛡️ ROBUSTESSE
+#   - Pas d'échec global si une entité est indisponible
+#   - `trim` final pour éviter tout espace parasite en tête
+# ==========================================================
+
+ecs_sauvegarde_reglages:
+  alias: "ECS — Save réglages"
+  mode: single
+
+  sequence:
+    - service: input_text.set_value
+      data:
+        entity_id: input_text.ecs_reglages_backup
+        value: >-
+          {% set ns = namespace(v={}) %}
+          {% set mapping = [
+            ("tiny",  "input_number.ecs_off_tiny"),
+            ("med",   "input_number.ecs_off_medium"),
+            ("nor",   "input_number.ecs_off_normal"),
+            ("des",   "input_number.ecs_off_desinfection"),
+            ("eps",   "input_number.ecs_eps_ponctuel"),
+            ("epsd",  "input_number.ecs_eps_desinfection"),
+            ("ceil",  "input_number.ecs_trigger_ceiling_tiny_medium")
+          ] %}
+          {% for key, ent in mapping %}
+            {% set s = states(ent) %}
+            {% if s not in ['unknown','unavailable','none','',None] %}
+              {% set ns.v = dict(ns.v, **{key: (s | float)}) %}
+            {% endif %}
+          {% endfor %}
+          {{ {"ts": utcnow().isoformat(timespec="seconds"), "v": ns.v} | to_json | trim }}

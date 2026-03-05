@@ -37,7 +37,7 @@ views:
             icon: mdi:calculator
             tap_action:
               action: call-service
-              service: pyscript.generate_next_id_from_prefix
+              service: script.generate_next_id_from_prefix
 
           - type: tile
             entity: input_text.next_id_result

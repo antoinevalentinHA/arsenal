@@ -1,8 +1,5 @@
 default_config:
 
-# Activation du dossier /config/pyscript pour les scripts locaux
-pyscript:
-
 # Configuration mqtt (sensors et binary_sensors zigbee2mqtt)
 mqtt:
   sensor: !include_dir_merge_list mqtt_sensors/

@@ -1,0 +1,67 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT :
+#     ECS — Save planning (matin / soir)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Sauvegarder le planning ECS actif dans deux helpers :
+#     - input_text.ecs_planning_sauvegarde_matin
+#     - input_text.ecs_planning_sauvegarde_soir
+#
+#   Format JSON :
+#     {"lundi":"06:30","mardi":"06:45",...}
+#
+# 🧩 PRINCIPE
+#   - Parcourt dynamiquement les input_boolean.ecs_*_active
+#   - Si actif → lit l'heure correspondante
+#   - Stocke uniquement les jours actifs
+#
+# 🛡️ ROBUSTESSE
+#   - Ignore les entités manquantes
+#   - JSON généré via sérialisation (pas de concat)
+# ==========================================================
+
+ecs_sauvegarde_planning:
+  alias: "ECS — Save planning"
+  mode: single
+
+  sequence:
+
+    # ------------------------------------------------------
+    # MATIN
+    # ------------------------------------------------------
+    - service: input_text.set_value
+      data:
+        entity_id: input_text.ecs_planning_sauvegarde_matin
+        value: >-
+          {% set ns = namespace(v={}) %}
+          {% for s in states.input_boolean %}
+            {% set e = s.entity_id %}
+            {% if e.startswith('input_boolean.ecs_') and e.endswith('_matin_active') and s.state == 'on' %}
+              {% set jour = e.replace('input_boolean.ecs_','').replace('_matin_active','') %}
+              {% set dt = 'input_datetime.ecs_' ~ jour ~ '_matin_heure' %}
+              {% if states(dt) not in ['unknown','unavailable','none','',None] %}
+                {% set ns.v = dict(ns.v, **{jour: states(dt)}) %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.v | to_json | trim }}
+
+    # ------------------------------------------------------
+    # SOIR
+    # ------------------------------------------------------
+    - service: input_text.set_value
+      data:
+        entity_id: input_text.ecs_planning_sauvegarde_soir
+        value: >-
+          {% set ns = namespace(v={}) %}
+          {% for s in states.input_boolean %}
+            {% set e = s.entity_id %}
+            {% if e.startswith('input_boolean.ecs_') and e.endswith('_soir_active') and s.state == 'on' %}
+              {% set jour = e.replace('input_boolean.ecs_','').replace('_soir_active','') %}
+              {% set dt = 'input_datetime.ecs_' ~ jour ~ '_soir_heure' %}
+              {% if states(dt) not in ['unknown','unavailable','none','',None] %}
+                {% set ns.v = dict(ns.v, **{jour: states(dt)}) %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.v | to_json | trim }}
