@@ -14,7 +14,7 @@
 #
 #   - Script utilitaire bas niveau
 #   - Aucune logique métier Netatmo
-#   - Aucun diagnostic
+#   - Aucun diagnostic fonctionnel
 #
 #   ➜ Il est appelé UNIQUEMENT par des automatisations
 #     qui ont déjà identifié un dysfonctionnement.
@@ -26,8 +26,14 @@
 #   - Délai fixe volontaire (8 secondes)
 #   - Remise sous tension
 #
+#   - Le paramètre reçu est "matérialisé" (_switch) une fois
+#     en début d'exécution pour garantir une cible stable.
+#
+#   - Garde-fou : si la prise est `unknown` / `unavailable`,
+#     le script refuse d'agir (sécurité infra).
+#
 #   ➜ Aucun retry
-#   ➜ Aucun contrôle d’état
+#   ➜ Aucun contrôle d’état métier
 #   ➜ Aucun appel cloud
 #
 # ----------------------------------------------------------
@@ -46,12 +52,20 @@
 #     Entité `switch.*` alimentant le module Netatmo
 #
 # ----------------------------------------------------------
+# 🔎 OBSERVABILITÉ MINIMALE
+#
+#   - Si la prise ne revient pas à ON après la remise sous
+#     tension, un WARNING est écrit dans `system_log`.
+#
+#   ➜ Ce n'est pas un diagnostic : c'est un constat d'exécution.
+#
+# ----------------------------------------------------------
 # 🚫 NE FAIT PAS
 #
 #   - Aucune vérification HomeKit
 #   - Aucune détection de panne
 #   - Aucun retry intelligent
-#   - Aucune notification
+#   - Aucune notification utilisateur
 #
 #   ➜ Toute intelligence est volontairement EXTERNE
 #
@@ -70,15 +84,45 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 reboot_netatmo:
   alias: Redémarrage station Netatmo
   mode: single
+
+  fields:
+    switch_entity:
+      description: "Entité switch.* alimentant le module Netatmo"
+      example: "switch.prise_netatmo"
+
+  variables:
+    _switch: "{{ switch_entity | string | trim }}"
+
   sequence:
+
+    - condition: template
+      value_template: "{{ _switch != '' and _switch != 'None' }}"
+
+    - condition: template
+      value_template: "{{ states(_switch) not in ['unknown', 'unavailable'] }}"
+
     - service: switch.turn_off
       target:
-        entity_id: "{{ switch_entity }}"
+        entity_id: "{{ _switch }}"
+
     - delay: "00:00:08"
+
     - service: switch.turn_on
       target:
-        entity_id: "{{ switch_entity }}"
+        entity_id: "{{ _switch }}"
+
+    - wait_template: "{{ is_state(_switch, 'on') }}"
+      timeout: "00:00:10"
+      continue_on_timeout: true
+
+    - if:
+        - condition: template
+          value_template: "{{ not is_state(_switch, 'on') }}"
+      then:
+        - service: system_log.write
+          data:
+            level: warning
+            message: "reboot_netatmo: {{ _switch }} n'est pas revenu ON après reboot"

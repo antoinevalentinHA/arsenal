@@ -87,6 +87,10 @@ sensor.capteur_porte_garage_battery:
   friendly_name: "Porte garage"
   icon: mdi:door-closed
 
+sensor.capteur_porte_garage_bis_battery:
+  friendly_name: "Porte garage 2"
+  icon: mdi:door-closed
+
 sensor.capteur_porte_entree_battery:
   friendly_name: "Porte d’entrée"
   icon: mdi:door-closed
@@ -107,6 +111,10 @@ sensor.capteur_fenetre_sejour_3_battery:
   friendly_name: "Baie vitrée 3 séjour"
   icon: mdi:window-closed
 
+sensor.capteur_fenetre_sejour_3_bis_battery:
+  friendly_name: "Baie vitrée 3_2 séjour"
+  icon: mdi:window-closed
+
 sensor.capteur_fenetre_sejour_4_battery:
   friendly_name: "Baie vitrée 4 séjour"
   icon: mdi:window-closed
@@ -115,12 +123,24 @@ sensor.capteur_fenetre_parents_gauche_battery:
   friendly_name: "Fenêtre parents (gauche)"
   icon: mdi:window-closed
 
+sensor.capteur_fenetre_parents_gauche_bis_battery:
+  friendly_name: "Fenêtre parents (gauche 2)"
+  icon: mdi:window-closed
+
 sensor.capteur_fenetre_parents_milieu_battery:
   friendly_name: "Fenêtre parents (milieu)"
   icon: mdi:window-closed
 
+sensor.capteur_fenetre_parents_milieu_bis_battery:
+  friendly_name: "Fenêtre parents (milieu 2)"
+  icon: mdi:window-closed
+
 sensor.capteur_fenetre_parents_droite_battery:
   friendly_name: "Fenêtre parents (droite)"
+  icon: mdi:window-closed
+
+sensor.capteur_fenetre_parents_droite_bis_battery:
+  friendly_name: "Fenêtre parents (droite 2)"
   icon: mdi:window-closed
 
 sensor.capteur_fenetre_arnaud_battery:

@@ -107,6 +107,40 @@ Principe :
 
 > N1 stabilise la structure, pas le temps.
 
+---
+
+### 2.2.1 — Redondance de détection (réconciliation N0)
+
+Certains ouvrants critiques peuvent être équipés
+de **plusieurs capteurs physiques redondants**.
+
+Dans ce cas :
+
+- plusieurs entités N0 existent pour un même ouvrant
+- N1 réalise une **réconciliation structurelle** de ces sources
+
+Cette réconciliation est définie par le contrat :
+
+> ARSENAL — Ouvertures Zigbee — Capteurs réconciliés (redondance asymétrique)
+
+Version actuelle :
+**v1.1**
+
+Principe :
+
+- N1 reste la **source canonique unique**
+- N2 ignore totalement la redondance physique
+- la logique de réconciliation reste **strictement interne à N1**
+
+Invariant :
+
+> La redondance physique ne modifie jamais
+> la structure contractuelle N0 → N1 → N2.
+
+N1 continue donc de produire :
+
+- un état toujours évaluable (`on` / `off`)
+- indépendamment du nombre de capteurs physiques.
 
 ---
 

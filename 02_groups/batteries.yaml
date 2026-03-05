@@ -44,12 +44,16 @@ batteries:
     - sensor.capteur_fenetre_arnaud_battery
     - sensor.capteur_fenetre_matthieu_battery
     - sensor.capteur_fenetre_parents_droite_battery
+    - sensor.capteur_fenetre_parents_droite_bis_battery
     - sensor.capteur_fenetre_parents_gauche_battery
+    - sensor.capteur_fenetre_parents_gauche_bis_battery
     - sensor.capteur_fenetre_parents_milieu_battery
+    - sensor.capteur_fenetre_parents_milieu_bis_battery
     - sensor.capteur_fenetre_entree_battery
     - sensor.capteur_fenetre_sejour_1_battery
     - sensor.capteur_fenetre_sejour_2_battery
     - sensor.capteur_fenetre_sejour_3_battery
+    - sensor.capteur_fenetre_sejour_3_bis_battery
     - sensor.capteur_fenetre_sejour_4_battery
     - sensor.capteur_mouvements_entree_battery
     - sensor.capteur_mouvements_garage_1_battery
@@ -58,6 +62,7 @@ batteries:
     - sensor.capteur_mouvements_sejour_2_battery
     - sensor.capteur_porte_entree_battery
     - sensor.capteur_porte_garage_battery
+    - sensor.capteur_porte_garage_bis_battery
     - sensor.cave_batterie
     - sensor.chambre_batterie
     - sensor.chambre_parents_batterie

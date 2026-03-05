@@ -148,6 +148,16 @@ devices:
     friendly_name: meteo_zigbee_chambre_matthieu
   '0xb43522fffec95a3b':
     friendly_name: meteo_zigbee_sdb_parents
+  '0xc4d8c8fffe4b2efe':
+    friendly_name: capteur_fenetre_sejour_3_bis
+  '0xc4d8c8fffe4b2eec':
+    friendly_name: capteur_porte_garage_bis
+  '0xc09b9efffeac2afe':
+    friendly_name: capteur_fenetre_parents_gauche_bis
+  '0xc09b9efffeac2af9':
+    friendly_name: capteur_fenetre_parents_milieu_bis
+  '0xc09b9efffeac380c':
+    friendly_name: capteur_fenetre_parents_droite_bis
 groups:
   '1':
     friendly_name: Prises

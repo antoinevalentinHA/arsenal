@@ -1,0 +1,188 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSORS (CONTACTS)
+#     OUVERTURES — CAPTEURS REDONDANTS (Aqara + Sonoff)
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/11_template_sensors/ouvertures/capteurs_contact_redondants.yaml
+#
+# 🎯 ROLE
+#   - Couche NORMALISATION N1 : binary_sensor.contact_* (canon)
+#   - Réconciliation A/B conforme au contrat v1.1 (avec adaptation HA binary_sensor)
+#
+# 🧱 PRINCIPE
+#   - Conserver EXACTEMENT les mêmes entités finales : binary_sensor.contact_*
+#   - Ne pas utiliser de triggered templates (réévaluation auto sur état + disponibilité)
+#   - Exposer divergence/degrade en attributs (observabilité)
+#
+# ⚠️ NOTE HA
+#   - Un binary_sensor ne peut pas retourner 'unknown' comme état.
+#   - Cas R1 (aucune source exploitable) : on retourne 'on' (conservateur)
+#     + degrade=true (indétermination explicitée par attribut).
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Contact Chambre Parents Gauche"
+      unique_id: contact_chambre_parents_gauche
+      device_class: opening
+      variables:
+        src_a: binary_sensor.capteur_chambre_parents_gauche
+        src_b: binary_sensor.capteur_fenetre_parents_gauche_bis
+        kind: window
+
+      icon: &contact_icon >
+        {% set s = state %}
+        {% if kind == 'door' %}
+          {{ 'mdi:door-open' if s == 'on' else 'mdi:door-closed' }}
+        {% else %}
+          {{ 'mdi:window-open-variant' if s == 'on' else 'mdi:window-closed-variant' }}
+        {% endif %}
+
+      state: &contact_reco_state >
+        {% set a = states(src_a) %}
+        {% set b = states(src_b) %}
+
+        {% set a_ok = a in ['on','off'] %}
+        {% set b_ok = b in ['on','off'] %}
+
+        {% if (not a_ok) and (not b_ok) %}
+          on
+        {% elif a_ok and (not b_ok) %}
+          {{ a }}
+        {% elif (not a_ok) and b_ok %}
+          {{ b }}
+        {% else %}
+          {% if a != b %}
+            off
+          {% else %}
+            {{ a }}
+          {% endif %}
+        {% endif %}
+
+      attributes: &contact_reco_attr
+        source_entity_a: "{{ src_a }}"
+        source_entity_b: "{{ src_b }}"
+        etat_a: "{{ states(src_a) }}"
+        etat_b: "{{ states(src_b) }}"
+        degrade: >
+          {% set a = states(src_a) %}
+          {% set b = states(src_b) %}
+          {{ (a not in ['on','off']) or (b not in ['on','off']) }}
+        divergence: >
+          {% set a = states(src_a) %}
+          {% set b = states(src_b) %}
+          {{ (a in ['on','off']) and (b in ['on','off']) and (a != b) }}
+
+    # ------------------------------------------------------
+    # CONTACTS REDONDANTS — CHAMBRE PARENTS (x3)
+    # ------------------------------------------------------
+    - name: "Contact Chambre Parents Milieu"
+      unique_id: contact_chambre_parents_milieu
+      device_class: opening
+      variables:
+        src_a: binary_sensor.capteur_chambre_parents_milieu
+        src_b: binary_sensor.capteur_fenetre_parents_milieu_bis
+        kind: window
+      state: *contact_reco_state
+      icon: *contact_icon
+      attributes: *contact_reco_attr
+
+    - name: "Contact Chambre Parents Droite"
+      unique_id: contact_chambre_parents_droite
+      device_class: opening
+      variables:
+        src_a: binary_sensor.capteur_chambre_parents_droite
+        src_b: binary_sensor.capteur_fenetre_parents_droite_bis
+        kind: window
+      state: *contact_reco_state
+      icon: *contact_icon
+      attributes: *contact_reco_attr
+
+    # ------------------------------------------------------
+    # CONTACT REDONDANT — PORTE GARAGE
+    # ------------------------------------------------------
+    - name: "Contact Porte Garage"
+      unique_id: contact_porte_garage
+      device_class: garage_door
+      variables:
+        src_a: binary_sensor.capteur_porte_garage
+        src_b: binary_sensor.capteur_porte_garage_bis
+        kind: door
+      state: *contact_reco_state
+      icon: *contact_icon
+      attributes: *contact_reco_attr
+
+    # ------------------------------------------------------
+    # CONTACT REDONDANT — SEJOUR 3
+    # ------------------------------------------------------
+    - name: "Contact Sejour 3"
+      unique_id: contact_sejour_3
+      device_class: opening
+      variables:
+        src_a: binary_sensor.capteur_fenetre_sejour_3
+        src_b: binary_sensor.capteur_fenetre_sejour_3_bis
+        kind: window
+      state: *contact_reco_state
+      icon: *contact_icon
+      attributes: *contact_reco_attr
+
+    # ------------------------------------------------------
+    # CONTACTS REDONDANTS — CHAMBRES ENFANTS
+    # ------------------------------------------------------
+    - name: "Contact Chambre Arnaud"
+      unique_id: contact_chambre_arnaud
+      device_class: opening
+      variables:
+        src_a: binary_sensor.capteur_chambre_arnaud
+        src_b: binary_sensor.capteur_chambre_arnaud_bis
+        kind: window
+      state: *contact_reco_state
+      icon: *contact_icon
+      attributes: *contact_reco_attr
+
+    - name: "Contact Chambre Matthieu"
+      unique_id: contact_chambre_matthieu
+      device_class: opening
+      variables:
+        src_a: binary_sensor.capteur_chambre_matthieu
+        src_b: binary_sensor.capteur_chambre_matthieu_bis
+        kind: window
+      state: *contact_reco_state
+      icon: *contact_icon
+      attributes: *contact_reco_attr
+
+    # ------------------------------------------------------
+    # CONTACTS REDONDANTS — SEJOUR (1 / 2 / 4)
+    # ------------------------------------------------------
+    - name: "Contact Sejour 1"
+      unique_id: contact_sejour_1
+      device_class: opening
+      variables:
+        src_a: binary_sensor.capteur_fenetre_sejour_1
+        src_b: binary_sensor.capteur_fenetre_sejour_1_bis
+        kind: window
+      state: *contact_reco_state
+      icon: *contact_icon
+      attributes: *contact_reco_attr
+
+    - name: "Contact Sejour 2"
+      unique_id: contact_sejour_2
+      device_class: opening
+      variables:
+        src_a: binary_sensor.capteur_fenetre_sejour_2
+        src_b: binary_sensor.capteur_fenetre_sejour_2_bis
+        kind: window
+      state: *contact_reco_state
+      icon: *contact_icon
+      attributes: *contact_reco_attr
+
+    - name: "Contact Sejour 4"
+      unique_id: contact_sejour_4
+      device_class: opening
+      variables:
+        src_a: binary_sensor.capteur_fenetre_sejour_4
+        src_b: binary_sensor.capteur_fenetre_sejour_4_bis
+        kind: window
+      state: *contact_reco_state
+      icon: *contact_icon
+      attributes: *contact_reco_attr

@@ -71,12 +71,24 @@ sensor.capteur_chambre_parents_gauche_linkquality:
   friendly_name: "Fenêtre parents (gauche)"
   icon: mdi:window-closed
 
+sensor.capteur_chambre_parents_gauche_bis_linkquality:
+  friendly_name: "Fenêtre parents (gauche 2)"
+  icon: mdi:window-closed
+
 sensor.capteur_chambre_parents_milieu_linkquality:
   friendly_name: "Fenêtre parents (milieu)"
   icon: mdi:window-closed
 
+sensor.capteur_chambre_parents_milieu_bis_linkquality:
+  friendly_name: "Fenêtre parents (milieu 2)"
+  icon: mdi:window-closed
+
 sensor.capteur_chambre_parents_droite_linkquality:
   friendly_name: "Fenêtre parents (droite)"
+  icon: mdi:window-closed
+
+sensor.capteur_chambre_parents_droite_bis_linkquality:
+  friendly_name: "Fenêtre parents (droite 2)"
   icon: mdi:window-closed
 
 sensor.capteur_fenetre_entree_linkquality:
@@ -95,6 +107,10 @@ sensor.capteur_fenetre_sejour_3_linkquality:
   friendly_name: "Baie vitrée 3 séjour"
   icon: mdi:window-closed
 
+sensor.capteur_fenetre_sejour_3_bis_linkquality:
+  friendly_name: "Baie vitrée 3_1 séjour"
+  icon: mdi:window-closed
+
 sensor.capteur_fenetre_sejour_4_linkquality:
   friendly_name: "Baie vitrée 4 séjour"
   icon: mdi:window-closed
@@ -105,6 +121,10 @@ sensor.capteur_porte_entree_linkquality:
 
 sensor.capteur_porte_garage_linkquality:
   friendly_name: "Porte garage"
+  icon: mdi:door-closed
+
+sensor.capteur_porte_garage_bis_linkquality:
+  friendly_name: "Porte garage 2"
   icon: mdi:door-closed
 
 

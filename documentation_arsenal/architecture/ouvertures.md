@@ -56,7 +56,21 @@ Le sous-système est organisé en couches distinctes.
   - peut être indisponible
   - aucune logique embarquée
 
-N0 constitue l’entrée physique du pipeline.
+### ⚠️ Évolution structurelle : redondance physique N0 (ouvrants critiques)
+
+Pour certains ouvrants critiques, N0 peut désormais être **redondé** :
+
+- **A** : capteur historique
+- **B** : capteur redondant (suffixe `_bis`)
+
+Exemples :
+
+- `binary_sensor.capteur_fenetre_parents_gauche` + `binary_sensor.capteur_fenetre_parents_gauche_bis`
+- `binary_sensor.capteur_fenetre_sejour_3` + `binary_sensor.capteur_fenetre_sejour_3_bis`
+- `binary_sensor.capteur_porte_garage` + `binary_sensor.capteur_porte_garage_bis`
+
+Cette redondance reste **strictement N0** :
+elle n’introduit aucun fait métier, aucune temporisation, aucune décision.
 
 ---
 
@@ -68,14 +82,24 @@ N0 constitue l’entrée physique du pipeline.
   - encapsuler l’indisponibilité
   - découpler le reste du système des capteurs bruts
 
-Caractéristiques :
+### ⚙️ Mode N1 : source unique vs réconciliation A/B
 
-- état toujours exploitable
-- pas de délai
-- pas de qualification
-- abstraction pure
+N1 peut être alimenté selon deux modes exclusifs :
 
-N1 stabilise la structure.
+1) **Source unique** (cas nominal historique)  
+   `contact_*` = normalisation directe d’une seule source N0.
+
+2) **Réconciliation A/B** (ouvrants redondés)  
+   `contact_*` = réconciliation déterministe de deux sources N0 (A/B),
+   avec exposition d’attributs d’observabilité (`degrade`, `divergence`, états bruts).
+
+Dans les deux cas, l’API N1 reste identique pour les consommateurs :
+
+- mêmes entités finales : `binary_sensor.contact_*`
+- mêmes attentes structurelles : état exploitable (`on/off`)
+- absence de temporisation et de qualification
+
+N1 stabilise la structure, indépendamment du fait que N0 soit simple ou redondé.
 
 ---
 
