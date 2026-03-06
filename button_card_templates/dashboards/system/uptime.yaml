@@ -24,25 +24,19 @@ carte_uptime_systeme:
           [[[
             const rawState = states["sensor.uptime_jours"]?.state;
 
-            // Gris indispo canon (unknown/unavailable/absent/NaN)
             if (
               rawState === undefined ||
               rawState === null ||
               rawState === "unknown" ||
               rawState === "unavailable"
             ) {
-              return "rgba(224, 224, 224, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
             }
 
             const jours = parseFloat(rawState);
-            if (isNaN(jours)) return "rgba(224, 224, 224, 0.2)";
+            if (isNaN(jours)) return "rgba(158, 158, 158, 0.1)";
 
-            // Gris neutre OFF/Repos canon
-            if (jours < 1) return "rgba(158, 158, 158, 0.2)";
+            if (jours < 1) return "rgba(33, 150, 243, 0.2)";
 
-            // Bleu info canon
-            if (jours < 3) return "rgba(33, 150, 243, 0.2)";
-
-            // Vert OK canon
             return "rgba(76, 175, 80, 0.2)";
           ]]]

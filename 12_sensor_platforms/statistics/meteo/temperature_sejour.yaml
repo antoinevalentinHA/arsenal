@@ -1,5 +1,5 @@
 # ================================================================
-# 📊 STATISTICS SENSOR — Séjour : Moyennes glissantes 10 et 30 min
+# 📊 STATISTICS SENSOR — Séjour : Moyennes glissantes 10, 30 et 60 min
 # ================================================================
 
 - platform: statistics
@@ -18,4 +18,13 @@
   max_age:
     minutes: 30
   sampling_size: 360
+  precision: 2
+
+- platform: statistics
+  name: temperature_sejour_mean_60min
+  entity_id: sensor.temperature_sejour
+  state_characteristic: mean
+  max_age:
+    minutes: 60
+  sampling_size: 720
   precision: 2

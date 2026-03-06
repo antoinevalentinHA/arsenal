@@ -153,7 +153,7 @@
       default_entity_id: binary_sensor.gel_avere_netatmo
       delay_on: *age_gel_delay_5
       state: >
-        {{ (states('sensor.netatmo_age_donnees') | int(999)) >= 45 }}
+        {{ (states('sensor.netatmo_age_donnees') | int(999)) >= 70 }}
 
     - name: "Retour OK — Netatmo"
       unique_id: retour_ok_netatmo

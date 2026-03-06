@@ -12,7 +12,7 @@ carte_aeration_blocage_timer:
 
   styles:
     card:
-      - background-color: rgba(255, 152, 0, 0.2)
+      - background-color: rgba(158, 158, 158, 0.2)
 
   state:
     - operator: template
@@ -48,7 +48,7 @@ carte_aeration_delta_t_timer:
 
   styles:
     card:
-      - background-color: rgba(33, 150, 243, 0.2)
+      - background-color: rgba(158, 158, 158, 0.2)
 
   state:
     - operator: template

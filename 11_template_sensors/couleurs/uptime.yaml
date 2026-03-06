@@ -1,0 +1,102 @@
+# ==========================================================
+#  Arsenal — TEMPLATE SENSOR : Couleur uptime
+# ----------------------------------------------------------
+#  Rôle :
+#    Produire strictement sensor.couleur_uptime_jours pour
+#    consommation automatique par socle_kpi.
+#
+#  Logique :
+#    - comparaison relative uptime actuel vs médiane 7 j
+#    - bande normale : ±20 %
+#    - aucun seuil absolu métier
+#
+#  Mapping KPI Arsenal :
+#    - grey   : indispo / référence invalide
+#    - yellow : uptime sous la plage normale
+#    - green  : uptime dans la plage normale ou au-dessus
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.uptime_jours
+        - sensor.uptime_mediane_7_j
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Couleur Uptime jours"
+      unique_id: couleur_uptime_jours
+      state: >
+        {% set UNAV = ['unknown','unavailable', None, 'none', ''] %}
+
+        {% set now_raw = states('sensor.uptime_jours') %}
+        {% set ref_raw = states('sensor.uptime_mediane_7_j') %}
+
+        {% set now_v = now_raw | replace(',', '.') | float(999) %}
+        {% set ref_v = ref_raw | replace(',', '.') | float(0) %}
+
+        {% if now_raw in UNAV %}
+          grey
+        {% elif ref_raw in UNAV or ref_v <= 0 %}
+          grey
+        {% elif now_v == 999 %}
+          grey
+        {% else %}
+          {% set ratio = now_v / ref_v %}
+          {% if ratio < 0.8 %}
+            yellow
+          {% else %}
+            green
+          {% endif %}
+        {% endif %}
+      attributes:
+        reason: >
+          {% set UNAV = ['unknown','unavailable', None, 'none', ''] %}
+
+          {% set now_raw = states('sensor.uptime_jours') %}
+          {% set ref_raw = states('sensor.uptime_mediane_7_j') %}
+          {% set ref_v = ref_raw | replace(',', '.') | float(0) %}
+
+          {% if now_raw in UNAV %}
+            unavailable
+          {% elif ref_raw in UNAV or ref_v <= 0 %}
+            invalid_reference
+          {% else %}
+            ok
+          {% endif %}
+
+        now: >
+          {% set s = states('sensor.uptime_jours') %}
+          {% if s in ['unknown','unavailable', None, 'none', ''] %}
+            —
+          {% else %}
+            {{ s }}
+          {% endif %}
+
+        ref_7j: >
+          {% set s = states('sensor.uptime_mediane_7_j') %}
+          {% if s in ['unknown','unavailable', None, 'none', ''] %}
+            —
+          {% else %}
+            {{ s }}
+          {% endif %}
+
+        ratio: >
+          {% set now_raw = states('sensor.uptime_jours') %}
+          {% set ref_raw = states('sensor.uptime_mediane_7_j') %}
+
+          {% set now_v = now_raw | replace(',', '.') | float(999) %}
+          {% set ref_v = ref_raw | replace(',', '.') | float(0) %}
+
+          {% if now_raw in ['unknown','unavailable', None, 'none', ''] %}
+            —
+          {% elif ref_raw in ['unknown','unavailable', None, 'none', ''] or ref_v <= 0 %}
+            —
+          {% elif now_v == 999 %}
+            —
+          {% else %}
+            {{ (now_v / ref_v) | round(2) }}
+          {% endif %}
+
+        bande_normale: "0.80-1.20"

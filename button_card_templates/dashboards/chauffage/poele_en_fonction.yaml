@@ -1,0 +1,64 @@
+poele_en_fonction_72:
+  template: socle_diagnostic_compact
+
+  entity: binary_sensor.poele_en_fonction
+
+  show_icon: true
+  show_name: false
+  show_state: true
+  show_label: true
+
+  icon: |
+    [[[
+      const s = entity?.state;
+      if (s === 'on') return 'mdi:fire';
+      if (s === 'off') return 'mdi:fire-off';
+      return 'mdi:fire-alert';
+    ]]]
+
+  state_display: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const s = entity?.state;
+
+      if (UNAV.includes(s)) return 'Indispo';
+      if (s === 'on') return 'Detecte';
+      if (s === 'off') return 'Non detecte';
+      return '—';
+    ]]]
+
+  label: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const sig = st('binary_sensor.signature_thermique_poele');
+      const prs = st('binary_sensor.presence_humaine_sejour');
+
+      if (UNAV.includes(sig) || UNAV.includes(prs)) {
+        return 'Diagnostic partiel';
+      }
+
+      const parts = [];
+      parts.push(sig === 'on' ? 'signature validee' : 'signature absente');
+      parts.push(prs === 'on' ? 'presence confirmee' : 'presence non confirmee');
+
+      return parts.join(' • ');
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            const s = entity?.state;
+
+            if (UNAV.includes(s)) return "rgba(224, 224, 224, 0.2)";
+            if (s === 'on') return "rgba(255, 152, 0, 0.2)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]
+
+    icon:
+      - width: 28px
+      - height: 28px
+      - color: '#111'

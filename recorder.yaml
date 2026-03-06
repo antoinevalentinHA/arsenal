@@ -151,6 +151,7 @@ include:
     - sensor.home_assistant_supervisor_memory_percent
     - sensor.home_assistant_core_cpu_percent
     - sensor.home_assistant_core_memory_percent
+    - sensor.uptime_jours
 
     # =====================================================
     # ==== 🔌 STABILITÉ RESEAU ====

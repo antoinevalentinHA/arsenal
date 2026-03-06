@@ -58,8 +58,8 @@ views:
 
               # Uptime
               - type: custom:button-card
-                template: carte_uptime_systeme
-                entity: sensor.uptime
+                template: socle_kpi
+                entity: sensor.uptime_jours
                 name: Uptime
                 icon: mdi:clock-outline
 

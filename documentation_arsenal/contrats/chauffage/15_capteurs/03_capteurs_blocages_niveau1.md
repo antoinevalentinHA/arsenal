@@ -53,6 +53,62 @@
 #     - être utilisé comme condition d’autorisation,
 #     - être consommé hors d’une frontière NIVEAU 1 explicite.
 #
+# 🔥 Doctrine spécifique — Apports thermiques externes (poele)
+#
+#   La détection d’un apport thermique externe de type poele repose
+#   sur une architecture causale en trois niveaux :
+#
+#     CAPTEURS STRUCTURANTS INDIRECTS
+#         - sensor.sejour_delta_30min
+#         - sensor.sejour_delta_60min
+#         - sensor.sejour_co2_delta_30min
+#
+#     CAPTEURS STRUCTURANTS INTERMÉDIAIRES
+#         - binary_sensor.signature_thermique_poele
+#         - binary_sensor.presence_humaine_sejour
+#
+#     FRONTIÈRE FINALE NIVEAU 1
+#         - binary_sensor.poele_en_fonction
+#
+#   Seul `binary_sensor.poele_en_fonction` constitue une frontière
+#   légitime de blocage thermique absolu liée au poêle.
+#
+#   Aucun des capteurs amont suivants ne doit être consommé
+#   directement comme autorité de blocage :
+#
+#     - sensor.sejour_delta_30min
+#     - sensor.sejour_delta_60min
+#     - sensor.sejour_co2_delta_30min
+#     - binary_sensor.signature_thermique_poele
+#     - binary_sensor.presence_humaine_sejour
+#
+#   Toute consommation directe de ces capteurs comme frontière N1
+#   constitue une violation contractuelle.
+#
+# ----------------------------------------------------------
+# Principe de détection thermique — Sous-système poele
+# ----------------------------------------------------------
+#
+# La détection d’un apport thermique externe de type poele repose sur
+# une chaîne causale strictement hiérarchisée :
+#
+#     delta_30min  →  amorce thermique
+#     delta_60min  →  consolidation thermique
+#     signature_thermique_poele  →  validation thermique
+#     presence_humaine_sejour    →  validation contextuelle
+#     poele_en_fonction          →  frontière NIVEAU 1 finale
+#
+# Cette séquence garantit que :
+#
+#   - aucune variation thermique isolée ne produit un blocage
+#   - toute détection repose sur une signature thermique cohérente
+#   - la présence humaine confirme la plausibilité de l’usage du poele
+#   - seul `binary_sensor.poele_en_fonction` constitue la frontière
+#     légitime de blocage thermique NIVEAU 1
+#
+# Toute consommation directe d’un capteur amont comme autorité finale
+# constitue une violation contractuelle.
+#
 # ⛔ Interdictions cardinales (couche entière) :
 #   - Aucune décision de mode thermique
 #   - Aucune participation à la table de décision
@@ -73,8 +129,14 @@
 #
 # 🔗 Autorités amont légitimes :
 #   - Capteurs physiques d’ouverture gouvernés
-#   - Capteurs dynamiques thermiques locaux (détection d’apports exogènes)
-#   - Mécanismes de stabilisation et mémoire poêle
+#   - Capteurs dynamiques thermiques locaux
+#       • sensor.sejour_delta_30min
+#       • sensor.sejour_delta_60min
+#   - Capteurs contextuels de présence
+#       • sensor.sejour_co2_delta_30min
+#   - Mécanismes de signature thermique
+#       • binary_sensor.signature_thermique_poele
+#       • binary_sensor.presence_humaine_sejour
 #
 # 🔗 Autorités aval autorisées :
 #   - 40_blocages.md (mécanismes de blocage N1)
@@ -96,10 +158,10 @@
 #
 # ==========================================================
 
-### 🔒 binary_sensor.fenetres_maison_fermees_stable (NOUVEAU — FRONTIÈRE FINALE N1)
+### 🔒 binary_sensor.fenetres_maison_fermees_stable (FRONTIÈRE FINALE N1)
 
 - Domaine : Blocages / Enveloppe / Clôture stable
-- Autorité : FRONTIÈRE NIVEAU 1 FINALE
+- Autorité : FRONTIÈRE DE CLÔTURE N1
 
 🎯 Rôle :  
 Fournir le signal canonique de clôture stable de l’enveloppe (toutes fenêtres fermées),
@@ -107,9 +169,9 @@ garantissant une sortie de contexte aération sans oscillation ni faux OFF tempo
 
 Ce capteur est la frontière officielle de clôture utilisée pour :
 
-- déclencher la fin d’épisode aération (M2),
-- déclencher les invalidations / reprises sûres,
-- déclencher les invalidations / reprises sûres,
+- déclencher la fin d’épisode aération (M2)
+- déclencher les invalidations / reprises sûres
+- signaler la clôture stable de l’enveloppe thermique
 
 🧭 Périmètre d’influence autorisé :
 - Déclenchement de clôture du pipeline aération (M2)
@@ -135,7 +197,6 @@ Ce capteur est la frontière officielle de clôture utilisée pour :
 Consommateurs contractuels attendus :
 - Pipelines aération normatifs (M2)
 - Triggers décisionnels chauffage (clôture globale)
-- Triggers décisionnels chauffage (clôture globale)
 
 ⚠️ Risques :
 - Faux positifs de “fermé” si agrégat incomplet
@@ -145,168 +206,213 @@ Consommateurs contractuels attendus :
 
 ### 🔒 binary_sensor.poele_en_fonction
 
-- Domaine : Blocage / Contexte thermique externe / Détection apports non pilotés  
-- Autorité : STRUCTURANT  
+- Domaine : Blocages / Contexte thermique externe / Apports exogènes non pilotés
+- Autorité : FRONTIÈRE NIVEAU 1 FINALE
 
 🎯 Rôle :  
-Détecter de manière **rapide, fiable et robuste** l’activation effective du poêle
-par analyse de **dynamiques thermiques locales** (accélérations 10 min / 30 min),
-afin de signaler la présence d’un **apport thermique externe non piloté**.
+Fournir le **signal canonique final** attestant qu’un **apport thermique externe non piloté**
+de type **poele à bois** influence effectivement le séjour.
 
-Ce capteur constitue le **signal primaire d’influence poêle** utilisé pour :
+Ce capteur constitue la **frontière officielle d’interdiction thermique NIVEAU 1**
+pour le sous-système poele.
 
-- bloquer le chauffage,  
-- neutraliser toute calibration,  
-- invalider les diagnostics thermiques pollués,  
-- protéger la souveraineté du moteur thermique Arsenal.
+Il synthétise exclusivement :
 
-Il est la **frontière de détection officielle** des apports thermiques exogènes.
+- une **signature thermique compatible poele**,
+- une **présence humaine probable dans le séjour**,
+- l’**absence de causalité chaudière**.
+
+Il est le **seul signal légitime** pour :
+- bloquer le chauffage pour cause d’apport poele,
+- invalider les cycles thermiques pollués,
+- empêcher toute reprise thermique illégitime,
+- protéger les diagnostics et modèles contre une influence externe non pilotée.
 
 🧭 Périmètre d’influence autorisé :
-- Déclenchement des blocages NIVEAU 1 (poêle actif)  
-- Invalidation des cycles thermiques non représentatifs  
-- Interdiction de toute reprise chauffage pendant influence poêle  
-- Neutralisation des diagnostics calibrants  
-- Alimentation du mécanisme poele_recent  
-- Protection des offsets et modèles inertiels  
+- Déclenchement du blocage absolu NIVEAU 1 lié au poele
+- Interdiction de reprise chauffage pendant influence poele
+- Invalidation des diagnostics thermiques pollués
+- Protection des offsets et modèles inertiels
+- Alimentation des mécanismes mémoire/stabilisation aval
 - Signal maître pour :
-  - 40_blocages.md  
-  - 85_auto_ajustement_courbe.md  
-  - diagnostics de performance  
+  - `40_blocages.md`
+  - invalidation de cycles thermiques
+  - protection auto-ajustement
+  - diagnostics thermiques structurants
 
 ⛔ Interdictions absolues :
-- Ne décide jamais d’un mode confort / réduit  
-- Ne modifie jamais une consigne  
-- Ne modifie jamais un offset  
-- Ne conditionne jamais une autorisation thermostat  
-- Ne pilote jamais directement la chaudière  
-- Ne participe jamais à la table de décision  
-- Ne sert jamais de seuil de pilotage thermique  
-- Ne produit jamais de calibration  
-- Ne déclenche jamais une action matérielle directe  
+- Ne décide jamais d’un mode confort / réduit
+- Ne modifie jamais une consigne
+- Ne modifie jamais un offset
+- Ne conditionne jamais une autorisation thermostat
+- Ne pilote jamais directement la chaudière
+- Ne participe jamais à la table de décision
+- Ne produit jamais de calibration
+- Ne déclenche jamais d’action matérielle directe
 
 🔒 Garanties exigées :
-- Détection basée **exclusivement sur dynamiques thermiques locales**  
-- Double critère temporel (delta10 + delta30) obligatoire  
-- Hystérésis stricte pour éviter toute oscillation  
-- Valeur binaire pure : influence présente / absente  
-- Aucune lecture de consigne, offset ou décision  
-- Robustesse aux micro-variations météo  
-- Reload-safe / runtime-safe  
-- Stabilité intra-régime garantie  
-- Absence totale de logique métier  
+- Frontière finale binaire pure : influence poele présente / absente
+- Dépendance exclusive à des signaux amont structurants explicitement gouvernés
+- Double preuve causale :
+  - signature thermique
+  - présence humaine probable
+- Exclusion explicite de la causalité chaudière
+- Hystérésis et stabilisation locales robustes
+- Reload-safe / restart-safe / runtime-safe
+- Absence totale d’effet de bord
 
 🔗 Dépendances :
-Sources dynamiques :
-- sensor.sejour_delta_10min  
-- sensor.sejour_delta_30min  
-
-Mémoire et stabilisation aval :
-- input_boolean.poele_recent  
-- binary_sensor.poele_en_fonction_stable  
+Capteurs amont structurants :
+- `binary_sensor.signature_thermique_poele`
+- `binary_sensor.presence_humaine_sejour`
+- `binary_sensor.bruleur_mode_chauffage`
 
 Consommateurs contractuels attendus :
-- 40_blocages.md (blocage poêle N1)  
-- 60_absence_inhibition_geofencing.md (invalidation cycles)  
-- 85_auto_ajustement_courbe.md  
-- Diagnostics thermiques structurants  
+- `40_blocages.md`
+- invalidation cycles thermiques
+- protection auto-ajustement et modèles inertiels
+- diagnostics thermiques structurants
 
 ⚠️ Risques :
-- Faux positifs si dynamique solaire rapide non filtrée  
-- Faux négatifs si poêle à montée très lente  
-- Pollution critique si seuils mal calibrés  
-- Oscillations dangereuses si hystérésis affaiblie  
-- Dérive systémique majeure s’il est utilisé comme signal décisionnel direct  
+- Faux positifs si les seuils thermiques ou CO2 sont mal calibrés
+- Faux négatifs si présence humaine non détectée
+- Sous-détection si montée poele très lente
+- Dérive systémique majeure s’il est consommé autrement que comme frontière N1 finale
 
 ❗ Statut particulier :
-CAPTEUR STRUCTURANT DE DÉTECTION D’APPORT THERMIQUE EXTERNE  
-Signal primaire de blocage NIVEAU 1 du moteur Chauffage Arsenal.  
-Frontière d’immunité contre toute influence thermique non pilotée.  
-
-⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
-Section : Blocages / Apports thermiques externes  
-Classe : Capteur STRUCTURANT
-
-# ----------------------------------------------------------
-
-### 🔒 sensor.sejour_delta_10min
-
-- Domaine : Blocages / Apports thermiques externes / Détection dynamique courte  
-- Autorité : STRUCTURANT INDIRECT  
-
-🎯 Rôle :  
-Mesurer en continu la **variation thermique instantanée sur une fenêtre courte (10 minutes)**  
-afin de détecter toute **accélération thermique rapide anormale** incompatible avec  
-le régime normal de chauffe du moteur thermique Arsenal.
-
-Ce capteur fournit un **signal primaire de dynamique thermique locale** permettant  
-d’identifier précocement la présence probable d’un **apport thermique externe non piloté**  
-(poêle, foyer, source locale intense).
-
-Il constitue la **brique de détection rapide** du sous-système d’**immunité thermique**  
-vis-à-vis des apports exogènes.
-
-🧭 Périmètre d’influence autorisé :
-- Détection précoce des montées thermiques rapides  
-- Alimentation directe du mécanisme poêle  
-- Invalidation des cycles thermiques non représentatifs  
-- Protection des offsets et modèles inertiels  
-- Signal primaire pour :
-  - `binary_sensor.poele_en_fonction`  
-  - blocages NIVEAU 1 (apports externes)  
-  - neutralisation calibration  
-  - diagnostics de performance pollués  
-
-⛔ Interdictions absolues :
-- Ne décide jamais d’un mode thermique  
-- Ne modifie jamais une consigne  
-- Ne modifie jamais un offset  
-- Ne conditionne jamais une autorisation thermostat  
-- Ne pilote jamais directement la chaudière  
-- Ne participe jamais à la table de décision  
-- Ne sert jamais de seuil thermique  
-- Ne déclenche jamais un blocage direct  
-- Ne produit jamais de calibration  
-- Ne déclenche jamais un auto-ajustement  
-
-🔒 Garanties exigées :
-- Détection basée exclusivement sur **variation temporelle locale**  
-- Valeur numérique pure, toujours définie  
-- Robustesse aux reloads et redémarrages  
-- Immunité aux micro-variations météo  
-- Stabilité intra-régime garantie  
-- Aucune dépendance à des consignes, offsets ou décisions  
-- Absence totale d’effet matériel direct  
-
-🔗 Dépendances :
-Sources thermiques :
-- sensor.temperature_sejour  
-- sensor.temperature_sejour_mean_10min  
-
-Consommateurs contractuels majeurs :
-- `binary_sensor.poele_en_fonction`  
-- `binary_sensor.poele_en_fonction_stable`  
-- 40_blocages.md  
-- 85_auto_ajustement_courbe.md  
-- Diagnostics thermiques structurants  
-
-⚠️ Risques :
-- Faux positifs lors de pics solaires rapides  
-- Faux négatifs si montée poêle très progressive  
-- Pollution critique si seuils trop permissifs  
-- Oscillations dangereuses si utilisé isolément  
-- Dérive systémique s’il est utilisé comme seuil décisionnel  
-
-❗ Statut particulier :
-CAPTEUR STRUCTURANT INDIRECT DE DÉTECTION D’ACCÉLÉRATION THERMIQUE  
-Source primaire courte portée de la détection d’apports thermiques externes.  
-Brique rapide du mécanisme d’immunité thermique Arsenal.  
+FRONTIÈRE FINALE NIVEAU 1 D’APPORT THERMIQUE EXTERNE NON PILOTÉ  
+Autorité binaire souveraine du sous-système poele.  
+Toute consommation amont directe hors de cette frontière est interdite.
 
 ⚠️ Décision :
 INCLUS DANS `03_capteurs_blocages_niveau1.md`  
-Section : Apports thermiques externes / Détection dynamique primaire  
-Classe : Capteur STRUCTURANT INDIRECT  
+Section : Apports thermiques externes / Frontière finale poele  
+Classe : FRONTIÈRE NIVEAU 1 FINALE
+
+# ----------------------------------------------------------
+
+### 🔒 binary_sensor.signature_thermique_poele
+
+- Domaine : Blocages / Apports thermiques externes / Détection thermique candidate
+- Autorité : STRUCTURANT INDIRECT
+
+🎯 Rôle :  
+Détecter une **signature thermique compatible avec un fonctionnement de poele**,
+par combinaison d’une :
+
+- **amorce de montée thermique sur 30 minutes**,
+- **consolidation thermique sur 60 minutes**.
+
+Ce capteur ne constitue **jamais** une frontière finale de blocage.
+Il fournit uniquement une **preuve thermique candidate** d’apport exogène,
+destinée à être consommée par `binary_sensor.poele_en_fonction`.
+
+🧭 Périmètre d’influence autorisé :
+- Détection thermique candidate d’apport poele
+- Validation amont du mécanisme poele
+- Protection contre les hausses thermiques trop faibles ou non consolidées
+- Signal structurant amont pour :
+  - `binary_sensor.poele_en_fonction`
+
+⛔ Interdictions absolues :
+- Ne déclenche jamais seul un blocage absolu
+- Ne sert jamais de frontière finale NIVEAU 1
+- Ne décide jamais d’un mode thermique
+- Ne modifie jamais une consigne
+- Ne pilote jamais directement la chaudière
+- Ne participe jamais à la table de décision
+
+🔒 Garanties exigées :
+- Détection basée exclusivement sur dynamiques thermiques locales
+- Double critère temporel obligatoire :
+  - `delta_30min`
+  - `delta_60min`
+- Hystérésis stricte anti-oscillation
+- Valeur binaire pure : signature présente / absente
+- Aucune dépendance à des consignes ou offsets
+- Reload-safe / restart-safe / runtime-safe
+- Absence totale d’effet matériel direct
+
+🔗 Dépendances :
+- `sensor.sejour_delta_30min`
+- `sensor.sejour_delta_60min`
+
+Consommateurs contractuels attendus :
+- `binary_sensor.poele_en_fonction`
+
+⚠️ Risques :
+- Faux positifs si exposition solaire locale rapide mal filtrée
+- Faux négatifs si montée thermique très lente
+- Oscillations si hystérésis affaiblie
+- Dérive systémique s’il est utilisé comme autorité finale
+
+❗ Statut particulier :
+CAPTEUR STRUCTURANT INDIRECT DE SIGNATURE THERMIQUE  
+Preuve amont candidate d’un apport thermique exogène.  
+Ne vaut jamais blocage direct.
+
+⚠️ Décision :
+INCLUS DANS `03_capteurs_blocages_niveau1.md`  
+Section : Apports thermiques externes / Détection thermique candidate  
+Classe : STRUCTURANT INDIRECT
+
+# ----------------------------------------------------------
+
+### 🔒 binary_sensor.presence_humaine_sejour
+
+- Domaine : Blocages / Apports thermiques externes / Confirmation contextuelle
+- Autorité : STRUCTURANT INDIRECT
+
+🎯 Rôle :  
+Détecter une **présence humaine probable dans le séjour** au moyen d’une
+**hausse relative du CO2**,
+afin de renforcer la vraisemblance causale d’un usage réel du poele.
+
+Ce capteur joue un rôle de **confirmation contextuelle**.
+Il ne constitue jamais à lui seul une autorité de blocage.
+
+🧭 Périmètre d’influence autorisé :
+- Confirmation contextuelle du mécanisme poele
+- Réduction des faux positifs thermiques sans présence probable
+- Alimentation amont de :
+  - `binary_sensor.poele_en_fonction`
+
+⛔ Interdictions absolues :
+- Ne déclenche jamais seul un blocage absolu
+- Ne décide jamais d’un mode thermique
+- Ne remplace jamais un capteur de présence physique
+- Ne participe jamais à la table de décision chauffage
+- Ne pilote jamais directement un équipement
+
+🔒 Garanties exigées :
+- Détection basée exclusivement sur dynamique relative du CO2
+- Hystérésis locale anti-oscillation
+- Valeur binaire pure : présence probable / absence probable
+- Aucune logique de confort
+- Aucune dépendance à des consignes ou offsets
+- Reload-safe / restart-safe / runtime-safe
+- Absence totale d’effet matériel direct
+
+🔗 Dépendances :
+- `sensor.sejour_co2_delta_30min`
+
+Consommateurs contractuels attendus :
+- `binary_sensor.poele_en_fonction`
+
+⚠️ Risques :
+- Faux négatifs si présence réelle sans hausse CO2 suffisante
+- Faux positifs si hausse CO2 non liée au poele
+- Dérive systémique si consommé comme présence canonique du logement
+
+❗ Statut particulier :
+CAPTEUR STRUCTURANT INDIRECT DE CONFIRMATION CONTEXTUELLE  
+Signal de vraisemblance humaine du sous-système poele.  
+Ne vaut jamais blocage direct.
+
+⚠️ Décision :
+INCLUS DANS `03_capteurs_blocages_niveau1.md`  
+Section : Apports thermiques externes / Confirmation contextuelle  
+Classe : STRUCTURANT INDIRECT
 
 # ----------------------------------------------------------
 
@@ -316,29 +422,25 @@ Classe : Capteur STRUCTURANT INDIRECT
 - Autorité : STRUCTURANT INDIRECT  
 
 🎯 Rôle :  
-Mesurer la **variation thermique moyenne sur une fenêtre étendue (30 minutes)**  
-afin de détecter toute **dérive thermique positive persistante** incompatible avec  
-le comportement normal du moteur thermique Arsenal.
+Mesurer la **variation thermique moyenne du séjour sur une fenêtre de 30 minutes**.
 
-Ce capteur fournit un **signal de confirmation inertielle** permettant de distinguer :
+Ce capteur permet d’identifier une **montée thermique réelle et persistante**
+dans la pièce, en filtrant les variations brèves ou locales.
 
-- variations transitoires normales,  
-- véritables **apports thermiques externes durables**.
+Dans l’architecture Arsenal, `sensor.sejour_delta_30min` constitue la
+**preuve d’amorce thermique** du mécanisme de détection poêle.
 
-Il constitue la **brique de validation temporelle** du mécanisme de détection poêle  
-et de protection contre la pollution thermique.
+Associé à `sensor.sejour_delta_60min` (consolidation thermique),
+il permet de distinguer une **dérive thermique durable**
+d’une variation transitoire locale.
+
+Il alimente `binary_sensor.signature_thermique_poele`
+mais **ne suffit jamais seul à qualifier une influence poêle durable**.
 
 🧭 Périmètre d’influence autorisé :
-- Confirmation des apports thermiques persistants  
-- Filtrage des faux positifs courts (soleil, inertie locale)  
-- Alimentation secondaire du mécanisme poêle  
-- Protection des offsets et modèles inertiels  
-- Invalidation des diagnostics thermiques pollués  
-- Signal structurant pour :
-  - `binary_sensor.poele_en_fonction`  
-  - `binary_sensor.poele_en_fonction_stable`  
-  - blocages NIVEAU 1  
-  - neutralisation calibration  
+- alimentation de `binary_sensor.signature_thermique_poele`
+- diagnostics thermiques structurants
+- protection indirecte des modèles thermiques
 
 ⛔ Interdictions absolues :
 - Ne décide jamais d’un mode thermique  
@@ -354,7 +456,8 @@ et de protection contre la pollution thermique.
 
 🔒 Garanties exigées :
 - Détection basée exclusivement sur **variation temporelle moyenne**  
-- Valeur numérique pure, toujours définie  
+- Valeur numérique pure quand les données amont sont prêtes
+- Aucun fallback à 0 : état `unknown` assumé honnêtement si données non prêtes
 - Robustesse aux reloads et redémarrages  
 - Stabilité temporelle intra-régime  
 - Immunité aux fluctuations rapides non persistantes  
@@ -362,16 +465,15 @@ et de protection contre la pollution thermique.
 - Absence totale d’effet matériel direct  
 
 🔗 Dépendances :
-Sources thermiques :
-- sensor.temperature_sejour  
-- sensor.temperature_sejour_mean_30min  
 
-Consommateurs contractuels majeurs :
-- `binary_sensor.poele_en_fonction`  
-- `binary_sensor.poele_en_fonction_stable`  
-- 40_blocages.md  
-- 85_auto_ajustement_courbe.md  
-- Diagnostics thermiques structurants  
+Sources thermiques :
+- `sensor.temperature_sejour`
+- `sensor.temperature_sejour_mean_30min`
+
+Consommateurs contractuels attendus :
+- `binary_sensor.signature_thermique_poele`
+- diagnostics thermiques structurants
+- protections aval explicitement gouvernées
 
 ⚠️ Risques :
 - Détection tardive si fenêtre trop longue  
@@ -381,21 +483,142 @@ Consommateurs contractuels majeurs :
 - Dérive critique s’il est utilisé comme signal décisionnel direct  
 
 ❗ Statut particulier :
-CAPTEUR STRUCTURANT INDIRECT DE VALIDATION D’APPORT THERMIQUE DURABLE  
-Source de confirmation inertielle des apports thermiques externes.  
-Pilier de robustesse du mécanisme d’immunité thermique Arsenal.  
+CAPTEUR STRUCTURANT INDIRECT D’AMORCE THERMIQUE  
+Source amont courte/moyenne portée de la signature thermique poêle.
 
 ⚠️ Décision :
 INCLUS DANS `03_capteurs_blocages_niveau1.md`  
 Section : Apports thermiques externes / Détection dynamique primaire  
-Classe : Capteur STRUCTURANT INDIRECT
+Classe : STRUCTURANT INDIRECT
+
+# ----------------------------------------------------------
+
+### 🔒 sensor.sejour_delta_60min
+
+- Domaine : Blocages / Apports thermiques externes / Détection dynamique consolidée
+- Autorité : STRUCTURANT INDIRECT
+
+🎯 Rôle :  
+Mesurer la **variation thermique du séjour sur une fenêtre de 60 minutes**
+afin d’identifier une **montée thermique durable et installée**
+compatible avec un apport poêle en régime réel.
+
+Dans l’architecture Arsenal, `sensor.sejour_delta_60min` constitue la
+**preuve de consolidation thermique** du mécanisme de détection poêle.
+
+Associé à `sensor.sejour_delta_30min` (amorce thermique),
+il permet de distinguer une **dérive thermique durable**
+d’une variation transitoire locale.
+
+Il alimente `binary_sensor.signature_thermique_poele`
+mais **ne déclenche jamais seul un blocage final**.
+
+🧭 Périmètre d’influence autorisé :
+- Consolidation de la signature thermique poêle
+- Filtrage des hausses trop brèves ou non durables
+- Alimentation de :
+  - `binary_sensor.signature_thermique_poele`
+- Diagnostics thermiques structurants
+
+⛔ Interdictions absolues :
+- Ne déclenche jamais seul un blocage absolu
+- Ne décide jamais d’un mode thermique
+- Ne modifie jamais une consigne
+- Ne pilote jamais directement la chaudière
+- Ne participe jamais à la table de décision
+
+🔒 Garanties exigées :
+- Détection basée exclusivement sur variation temporelle consolidée
+- Valeur numérique pure quand les données amont sont prêtes
+- Aucun fallback à `0` : état `unknown` assumé honnêtement si données non prêtes
+- Aucune logique métier thermique
+- Reload-safe / restart-safe / runtime-safe
+- Absence totale d’effet matériel direct
+
+🔗 Dépendances :
+- `sensor.temperature_sejour`
+- `sensor.temperature_sejour_mean_60min`
+
+Consommateurs contractuels attendus :
+- `binary_sensor.signature_thermique_poele`
+
+⚠️ Risques :
+- Détection plus lente que les fenêtres courtes
+- Faux négatifs si usage poêle très bref
+- Dérive systémique s’il est interprété comme autorité finale
+
+❗ Statut particulier :
+CAPTEUR STRUCTURANT INDIRECT DE CONSOLIDATION THERMIQUE  
+Source de preuve durable de la signature thermique poêle.  
+Ne vaut jamais blocage direct.
+
+⚠️ Décision :
+INCLUS DANS `03_capteurs_blocages_niveau1.md`  
+Section : Apports thermiques externes / Détection dynamique consolidée  
+Classe : STRUCTURANT INDIRECT
+
+# ----------------------------------------------------------
+
+### 🔒 sensor.sejour_co2_delta_30min
+
+- Domaine : Blocages / Apports thermiques externes / Confirmation contextuelle CO2
+- Autorité : STRUCTURANT INDIRECT
+
+🎯 Rôle :  
+Mesurer la **variation relative du CO2 sur 30 minutes**
+afin d’identifier une **hausse compatible avec une présence humaine réelle**
+dans le séjour.
+
+Ce capteur ne constitue jamais une autorité de blocage finale.
+Il sert exclusivement de base numérique à `binary_sensor.presence_humaine_sejour`.
+
+🧭 Périmètre d’influence autorisé :
+- Quantification de la dérive CO2 locale
+- Base de confirmation contextuelle humaine
+- Alimentation exclusive de :
+  - `binary_sensor.presence_humaine_sejour`
+
+⛔ Interdictions absolues :
+- Ne déclenche jamais seul un blocage absolu
+- Ne vaut jamais présence canonique du logement
+- Ne décide jamais d’un mode thermique
+- Ne participe jamais à la table de décision
+
+🔒 Garanties exigées :
+- Valeur numérique relative pure
+- Dépendance exclusive au CO2 actuel et à sa moyenne glissante
+- Aucune logique de confort
+- Reload-safe / restart-safe / runtime-safe
+- Absence totale d’effet matériel direct
+
+🔗 Dépendances :
+- `sensor.co2_sejour`
+- `sensor.co2_sejour_mean_30min`
+
+Consommateurs contractuels attendus :
+- `binary_sensor.presence_humaine_sejour`
+
+⚠️ Risques :
+- Faux positifs si dérive CO2 non liée à une présence significative
+- Faux négatifs si aération ou renouvellement d’air perturbe le signal
+- Dérive systémique si utilisé comme signal décisionnel final
+
+❗ Statut particulier :
+CAPTEUR STRUCTURANT INDIRECT DE CONFIRMATION CONTEXTUELLE CO2  
+Brique numérique amont du mécanisme de vraisemblance humaine poele.  
+Ne vaut jamais blocage direct.
+
+⚠️ Décision :
+INCLUS DANS `03_capteurs_blocages_niveau1.md`  
+Section : Apports thermiques externes / Confirmation contextuelle CO2  
+Classe : STRUCTURANT INDIRECT
 
 # ----------------------------------------------------------
 
 ### 🔒 binary_sensor.fenetre_ouverte_maison
 
 - Domaine : Blocages / Aération / Sécurité thermique bâtiment  
-- Autorité : STRUCTURANT  
+- Autorité : FRONTIÈRE NIVEAU 1 FINALE
 
 🎯 Rôle :  
 Fournir le **signal canonique global d’ouverture de fenêtres de la maison**,
@@ -472,7 +695,7 @@ Consommateurs contractuels majeurs :
 - Rupture de souveraineté si court-circuité dans les automations  
 
 ❗ Statut particulier :
-CAPTEUR STRUCTURANT DE FRONTIÈRE PHYSIQUE THERMIQUE  
+FRONTIÈRE PHYSIQUE THERMIQUE NIVEAU 1
 Signal maître de blocage NIVEAU 1 par ouverture réelle.  
 Autorité absolue sur l’intégrité de l’enveloppe thermique.  
 

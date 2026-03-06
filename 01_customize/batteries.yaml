@@ -151,6 +151,10 @@ sensor.capteur_fenetre_matthieu_battery:
   friendly_name: "Fenêtre Matthieu"
   icon: mdi:window-closed
 
+sensor.capteur_fenetre_matthieu_bis_battery:
+  friendly_name: "Fenêtre Matthieu 2"
+  icon: mdi:window-closed
+
 ############################################################
 # 👁️ CAPTEURS ZIGBEE MOUVEMENTS
 ############################################################

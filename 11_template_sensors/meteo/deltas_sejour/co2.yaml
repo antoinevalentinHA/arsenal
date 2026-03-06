@@ -1,0 +1,25 @@
+# ================================================================
+# 📊 TEMPLATE SENSOR — Séjour : Delta CO2 30min
+# ---------------------------------------------------------------
+# Rôle :
+#   Mesurer l'écart entre la valeur actuelle de CO2 et la
+#   moyenne glissante 30 minutes.
+#
+# Remarque :
+#   Ce capteur représente une variation relative du CO2
+#   (pas une concentration absolue).
+# ================================================================
+
+- sensor:
+    - name: "Sejour CO2 delta 30min"
+      unique_id: sejour_co2_delta_30min
+      unit_of_measurement: "ppm"
+      state: >
+        {% set now_co2 = states('sensor.co2_sejour') | float(none) %}
+        {% set mean_co2 = states('sensor.co2_sejour_mean_30min') | float(none) %}
+
+        {% if now_co2 is none or mean_co2 is none %}
+          unknown
+        {% else %}
+          {{ (now_co2 - mean_co2) | round(0) }}
+        {% endif %}

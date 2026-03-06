@@ -1,0 +1,97 @@
+# ================================================================
+# 🌡️ ARSENAL — TEMPLATE SENSORS
+#     Séjour : Deltas thermiques 10 / 30 / 60 min
+# ---------------------------------------------------------------
+# Rôle :
+#   Calculer l'écart entre la température actuelle du séjour
+#   et ses moyennes glissantes sur 10, 30 et 60 minutes.
+#
+# Principes :
+#   - recalcul sur changement de la température source
+#   - recalcul sur changement de la moyenne glissante associée
+#   - pas de repli mensonger à 0
+#   - tant que les données ne sont pas prêtes : état indisponible métier
+#
+# Effet attendu :
+#   - comportement plus propre après redémarrage
+#   - disponibilité métier plus honnête
+#   - meilleure fiabilité pour la détection poele
+# ================================================================
+
+# ================================================================
+# 🌡️ TEMPLATE SENSOR — Séjour : Delta 10 min
+# ================================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.temperature_sejour_mean_10min
+
+  sensor:
+    - name: "sejour_delta_10min"
+      unique_id: sejour_delta_10min
+      unit_of_measurement: "°C"
+      state_class: measurement
+      icon: mdi:chart-line-variant
+      state: >
+        {% set now_temp = states('sensor.temperature_sejour') | float(none) %}
+        {% set mean_temp = states('sensor.temperature_sejour_mean_10min') | float(none) %}
+
+        {% if now_temp is none or mean_temp is none %}
+          {{ none }}
+        {% else %}
+          {{ (now_temp - mean_temp) | round(2) }}
+        {% endif %}
+
+# ================================================================
+# 🌡️ TEMPLATE SENSOR — Séjour : Delta 30 min
+# ================================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.temperature_sejour_mean_30min
+
+  sensor:
+    - name: "sejour_delta_30min"
+      unique_id: sejour_delta_30min
+      unit_of_measurement: "°C"
+      state_class: measurement
+      icon: mdi:chart-line-variant
+      state: >
+        {% set now_temp = states('sensor.temperature_sejour') | float(none) %}
+        {% set mean_temp = states('sensor.temperature_sejour_mean_30min') | float(none) %}
+
+        {% if now_temp is none or mean_temp is none %}
+          {{ none }}
+        {% else %}
+          {{ (now_temp - mean_temp) | round(2) }}
+        {% endif %}
+
+# ================================================================
+# 🌡️ TEMPLATE SENSOR — Séjour : Delta 60 min
+# ================================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour
+        - sensor.temperature_sejour_mean_60min
+
+  sensor:
+    - name: "sejour_delta_60min"
+      unique_id: sejour_delta_60min
+      unit_of_measurement: "°C"
+      state_class: measurement
+      icon: mdi:chart-line-variant
+      state: >
+        {% set now_temp = states('sensor.temperature_sejour') | float(none) %}
+        {% set mean_temp = states('sensor.temperature_sejour_mean_60min') | float(none) %}
+
+        {% if now_temp is none or mean_temp is none %}
+          {{ none }}
+        {% else %}
+          {{ (now_temp - mean_temp) | round(2) }}
+        {% endif %}

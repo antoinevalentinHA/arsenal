@@ -78,7 +78,18 @@ views:
             template: meteo_favorable_chauffage_72
 
           ########################################################
-          # 🔒 2ter) Verrou aération / post-aération (diagnostic)
+          # 🪵 2ter) Poele (diagnostic thermique)
+          ########################################################
+
+          - type: custom:button-card
+            template: section_header
+            name: 🪵 Poele
+
+          - type: custom:button-card
+            template: poele_en_fonction_72
+
+          ########################################################
+          # 🔒 2quater) Verrou aération / post-aération (diagnostic)
           ########################################################
 
           - type: custom:button-card
@@ -95,37 +106,26 @@ views:
             template: section_header
             name: 📐 Réglage thermique
 
-          - type: custom:button-card
-            template: chauffage_reglage_courbe_diag_72
-            name: Réglages
-            variables:
-              kind: global
-
           - type: grid
             columns: 2
             square: false
             cards:
+
+              - type: custom:button-card
+                template: chauffage_reglage_courbe_diag_72
+                name: Réglages
+                variables:
+                  kind: global
+
               - type: custom:button-card
                 template: chauffage_reglage_courbe_diag_72
                 name: Tendance 24h
                 variables:
                   kind: tendance_24h
 
-              - type: custom:button-card
-                template: chauffage_reglage_courbe_diag_72
-                name: Froid
-                variables:
-                  kind: froid
-
           - type: custom:button-card
             template: section_header
             name: 🔁 Auto-ajustement courbe de chauffe
-
-          - type: custom:button-card
-            template: chauffage_auto_courbe_status_72
-            name: Auto-ajustement
-            variables:
-              kind: auto
 
           - type: custom:button-card
             template: chauffage_auto_courbe_status_72

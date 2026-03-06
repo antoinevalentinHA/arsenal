@@ -1,0 +1,21 @@
+# ================================================================
+# 📊 STATISTICS SENSOR — Séjour : Moyennes glissantes CO₂
+# ================================================================
+
+- platform: statistics
+  name: co2_sejour_mean_30min
+  entity_id: sensor.co2_sejour
+  state_characteristic: mean
+  max_age:
+    minutes: 30
+  sampling_size: 360
+  precision: 0
+
+- platform: statistics
+  name: co2_sejour_mean_60min
+  entity_id: sensor.co2_sejour
+  state_characteristic: mean
+  max_age:
+    minutes: 60
+  sampling_size: 720
+  precision: 0

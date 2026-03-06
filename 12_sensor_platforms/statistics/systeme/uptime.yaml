@@ -1,0 +1,22 @@
+# ==========================================================
+#  Arsenal — STATISTICS : Uptime — Référence 7 j
+# ----------------------------------------------------------
+#  Rôle :
+#    Fournir la référence statistique backend utilisée par la
+#    météo uptime Arsenal.
+#
+#  Principe :
+#    - source : sensor.uptime_jours
+#    - référence : médiane glissante 7 jours
+#
+#  Sortie attendue :
+#    - sensor.uptime_mediane_7_j
+# ==========================================================
+
+- platform: statistics
+  name: "Uptime mediane 7 j"
+  entity_id: sensor.uptime_jours
+  state_characteristic: median
+  max_age:
+    days: 7
+  sampling_size: 10000
