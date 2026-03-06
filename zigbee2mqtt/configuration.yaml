@@ -158,6 +158,8 @@ devices:
     friendly_name: capteur_fenetre_parents_milieu_bis
   '0xc09b9efffeac380c':
     friendly_name: capteur_fenetre_parents_droite_bis
+  '0xc09b9efffeac37eb':
+    friendly_name: capteur_fenetre_matthieu_bis
 groups:
   '1':
     friendly_name: Prises

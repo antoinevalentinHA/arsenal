@@ -1,51 +1,53 @@
 # ==========================================================
-#  Arsenal — TEMPLATE SENSOR : Diagnostic Netatmo
+#  Arsenal — SENSOR : Diagnostic Netatmo
 # ----------------------------------------------------------
-#  🧠 Rôle :
-#     Fournir un diagnostic clair de l'etat des stations
-#     Netatmo en distinguant :
-#       - ok
-#       - ko_reseau
-#       - ko_homekit
+#  États possibles :
+#    ok          → température numérique reçue
+#    ko_reseau   → station injoignable (ping != 'on')
+#    ko_homekit  → ping ok mais pas de température
 #
-#  🎯 Principe :
-#     - Si la temperature est numerique → ok
-#     - Sinon :
-#         - ping KO → ko_reseau
-#         - ping OK → ko_homekit
+#  Logique :
+#    - availability gate sur température uniquement
+#      (fail-safe : ping peut rester unavailable plus longtemps)
+#    - ping == 'on' est la seule preuve réseau OK
+#      (tout autre état → ko_reseau)
 #
-#  ⚙️ Sources :
-#     Arnaud   : sensor.temperature_jardin_1
-#                binary_sensor.station_meteo_netatmo_1
-#     Matthieu: sensor.temperature_jardin_2
-#                binary_sensor.station_meteo_netatmo_2
+#  Sources :
+#    Arnaud   : sensor.temperature_jardin_1
+#               binary_sensor.station_meteo_netatmo_1
+#    Matthieu : sensor.temperature_jardin_2
+#               binary_sensor.station_meteo_netatmo_2
 # ==========================================================
 
 - sensor:
     - name: "diagnostic_netatmo_arnaud"
       unique_id: diagnostic_netatmo_arnaud
+      availability: >
+        {{ states('sensor.temperature_jardin_1') not in ['unknown', 'unavailable'] }}
       state: >
         {% set t = states('sensor.temperature_jardin_1') %}
-        {% if t | float(default=None) is not none %}
+        {% if (t | float(default=none)) is not none %}
           ok
         {% else %}
-          {% if is_state('binary_sensor.station_meteo_netatmo_1', 'off') %}
-            ko_reseau
-          {% else %}
+          {% if states('binary_sensor.station_meteo_netatmo_1') == 'on' %}
             ko_homekit
+          {% else %}
+            ko_reseau
           {% endif %}
         {% endif %}
 
     - name: "diagnostic_netatmo_matthieu"
       unique_id: diagnostic_netatmo_matthieu
+      availability: >
+        {{ states('sensor.temperature_jardin_2') not in ['unknown', 'unavailable'] }}
       state: >
         {% set t = states('sensor.temperature_jardin_2') %}
-        {% if t | float(default=None) is not none %}
+        {% if (t | float(default=none)) is not none %}
           ok
         {% else %}
-          {% if is_state('binary_sensor.station_meteo_netatmo_2', 'off') %}
-            ko_reseau
-          {% else %}
+          {% if states('binary_sensor.station_meteo_netatmo_2') == 'on' %}
             ko_homekit
+          {% else %}
+            ko_reseau
           {% endif %}
         {% endif %}

@@ -43,6 +43,7 @@ batteries:
     - sensor.bouton_garage_2_battery
     - sensor.capteur_fenetre_arnaud_battery
     - sensor.capteur_fenetre_matthieu_battery
+    - sensor.capteur_fenetre_matthieu_bis_battery
     - sensor.capteur_fenetre_parents_droite_battery
     - sensor.capteur_fenetre_parents_droite_bis_battery
     - sensor.capteur_fenetre_parents_gauche_battery

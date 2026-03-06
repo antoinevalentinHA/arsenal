@@ -67,6 +67,10 @@ sensor.capteur_chambre_matthieu_linkquality:
   friendly_name: "Capteur Zigbee Matthieu"
   icon: mdi:window-closed
 
+sensor.capteur_chambre_matthieu_bis_linkquality:
+  friendly_name: "Capteur Zigbee Matthieu 2"
+  icon: mdi:window-closed
+
 sensor.capteur_chambre_parents_gauche_linkquality:
   friendly_name: "Fenêtre parents (gauche)"
   icon: mdi:window-closed
