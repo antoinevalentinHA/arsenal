@@ -35,7 +35,6 @@ clim_blocages_synthese_xl:
       const hOffRaw = st('input_datetime.clim_heure_blocage_autom_off');
 
       const finBlocage = st('input_datetime.chauffage_fin_blocage_aeration');
-      const reo = st('input_datetime.aeration_reouverture_last');
 
       const fmt = (v) => {
         if (UNAV.includes(v)) return '—';
@@ -84,8 +83,7 @@ clim_blocages_synthese_xl:
       if (post) {
         if (blocageHoraire) out += "<br>";
         out += "Blocage post-aération actif<br>";
-        out += "Fin prévue : " + fmt(finBlocage) + "<br>";
-        out += "Dernière réouverture : " + fmt(reo);
+        out += "Fin prévue : " + fmt(finBlocage);
       }
 
       return out;
