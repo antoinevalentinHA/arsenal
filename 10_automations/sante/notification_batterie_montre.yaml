@@ -22,7 +22,7 @@
 
   trigger:
     - platform: state
-      entity_id: sensor.scanwatch_2_battery_local
+      entity_id: sensor.scanwatch_batterie_local
       to: 'low'
 
   action:
