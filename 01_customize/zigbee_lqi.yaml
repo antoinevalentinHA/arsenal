@@ -59,75 +59,79 @@ sensor.bouton_sdb_linkquality:
 # 🪟 OUVERTURES (FENÊTRES / PORTES)
 ############################################################
 
-sensor.capteur_chambre_arnaud_linkquality:
-  friendly_name: "Capteur Zigbee Arnaud"
+sensor.contact_chambre_arnaud_1_linkquality:
+  friendly_name: "Fenêtre Arnaud"
   icon: mdi:window-closed
 
-sensor.capteur_chambre_matthieu_linkquality:
-  friendly_name: "Capteur Zigbee Matthieu"
+sensor.contact_chambre_arnaud_2_linkquality:
+  friendly_name: "Fenêtre Arnaud 2"
   icon: mdi:window-closed
 
-sensor.capteur_chambre_matthieu_bis_linkquality:
-  friendly_name: "Capteur Zigbee Matthieu 2"
+sensor.contact_chambre_matthieu_1_linkquality:
+  friendly_name: "Fenêtre Matthieu"
   icon: mdi:window-closed
 
-sensor.capteur_chambre_parents_gauche_linkquality:
-  friendly_name: "Fenêtre parents (gauche)"
+sensor.contact_chambre_matthieu_2_linkquality:
+  friendly_name: "Fenêtre Matthieu 2"
   icon: mdi:window-closed
 
-sensor.capteur_chambre_parents_gauche_bis_linkquality:
-  friendly_name: "Fenêtre parents (gauche 2)"
+sensor.contact_chambre_parents_gauche_1_linkquality:
+  friendly_name: "Fenêtre parents gauche 1"
   icon: mdi:window-closed
 
-sensor.capteur_chambre_parents_milieu_linkquality:
-  friendly_name: "Fenêtre parents (milieu)"
+sensor.contact_chambre_parents_gauche_2_linkquality:
+  friendly_name: "Fenêtre parents gauche 2"
   icon: mdi:window-closed
 
-sensor.capteur_chambre_parents_milieu_bis_linkquality:
-  friendly_name: "Fenêtre parents (milieu 2)"
+sensor.contact_chambre_parents_milieu_1_linkquality:
+  friendly_name: "Fenêtre parents milieu 1"
   icon: mdi:window-closed
 
-sensor.capteur_chambre_parents_droite_linkquality:
-  friendly_name: "Fenêtre parents (droite)"
+sensor.contact_chambre_parents_milieu_2_linkquality:
+  friendly_name: "Fenêtre parents milieu 2"
   icon: mdi:window-closed
 
-sensor.capteur_chambre_parents_droite_bis_linkquality:
-  friendly_name: "Fenêtre parents (droite 2)"
+sensor.contact_chambre_parents_droite_1_linkquality:
+  friendly_name: "Fenêtre parents droite 1"
   icon: mdi:window-closed
 
-sensor.capteur_fenetre_entree_linkquality:
+sensor.contact_chambre_parents_droite_2_linkquality:
+  friendly_name: "Fenêtre parents droite 2"
+  icon: mdi:window-closed
+
+sensor.contact_entree_fenetre_linkquality:
   friendly_name: "Fenêtre entrée"
   icon: mdi:window-closed
 
-sensor.capteur_fenetre_sejour_1_linkquality:
+sensor.contact_sejour_1_linkquality:
   friendly_name: "Baie vitrée 1 séjour"
   icon: mdi:window-closed
 
-sensor.capteur_fenetre_sejour_2_linkquality:
+sensor.contact_sejour_2_linkquality:
   friendly_name: "Baie vitrée 2 séjour"
   icon: mdi:window-closed
 
-sensor.capteur_fenetre_sejour_3_linkquality:
-  friendly_name: "Baie vitrée 3 séjour"
-  icon: mdi:window-closed
-
-sensor.capteur_fenetre_sejour_3_bis_linkquality:
+sensor.contact_sejour_3_1_linkquality:
   friendly_name: "Baie vitrée 3_1 séjour"
   icon: mdi:window-closed
 
-sensor.capteur_fenetre_sejour_4_linkquality:
+sensor.contact_sejour_3_2_linkquality:
+  friendly_name: "Baie vitrée 3_2 séjour"
+  icon: mdi:window-closed
+
+sensor.contact_sejour_4_linkquality:
   friendly_name: "Baie vitrée 4 séjour"
   icon: mdi:window-closed
 
-sensor.capteur_porte_entree_linkquality:
+sensor.contact_entree_porte_linkquality:
   friendly_name: "Porte d’entrée"
   icon: mdi:door-closed
 
-sensor.capteur_porte_garage_linkquality:
+sensor.contact_garage_1_linkquality:
   friendly_name: "Porte garage"
   icon: mdi:door-closed
 
-sensor.capteur_porte_garage_bis_linkquality:
+sensor.contact_garage_2_linkquality:
   friendly_name: "Porte garage 2"
   icon: mdi:door-closed
 

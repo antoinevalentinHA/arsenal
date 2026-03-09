@@ -41,21 +41,22 @@ batteries:
     - sensor.bouton_sdb_battery
     - sensor.bouton_garage_1_battery
     - sensor.bouton_garage_2_battery
-    - sensor.capteur_fenetre_arnaud_battery
-    - sensor.capteur_fenetre_matthieu_battery
-    - sensor.capteur_fenetre_matthieu_bis_battery
-    - sensor.capteur_fenetre_parents_droite_battery
-    - sensor.capteur_fenetre_parents_droite_bis_battery
-    - sensor.capteur_fenetre_parents_gauche_battery
-    - sensor.capteur_fenetre_parents_gauche_bis_battery
-    - sensor.capteur_fenetre_parents_milieu_battery
-    - sensor.capteur_fenetre_parents_milieu_bis_battery
-    - sensor.capteur_fenetre_entree_battery
-    - sensor.capteur_fenetre_sejour_1_battery
-    - sensor.capteur_fenetre_sejour_2_battery
-    - sensor.capteur_fenetre_sejour_3_battery
-    - sensor.capteur_fenetre_sejour_3_bis_battery
-    - sensor.capteur_fenetre_sejour_4_battery
+    - sensor.contact_chambre_arnaud_1_battery
+    - sensor.contact_chambre_arnaud_2_battery
+    - sensor.contact_chambre_matthieu_1_battery
+    - sensor.contact_chambre_matthieu_2_battery
+    - sensor.contact_chambre_parents_droite_1_battery
+    - sensor.contact_chambre_parents_droite_2_battery
+    - sensor.contact_chambre_parents_gauche_1_battery
+    - sensor.contact_chambre_parents_gauche_2_battery
+    - sensor.contact_chambre_parents_milieu_1_battery
+    - sensor.contact_chambre_parents_milieu_2_battery
+    - sensor.contact_entree_fenetre_battery
+    - sensor.contact_sejour_1_battery
+    - sensor.contact_sejour_2_battery
+    - sensor.contact_sejour_3_1_battery
+    - sensor.contact_sejour_3_2_battery
+    - sensor.contact_sejour_4_battery
     - sensor.capteur_mouvements_entree_battery
     - sensor.capteur_mouvements_garage_1_battery
     - sensor.capteur_mouvements_garage_2_battery

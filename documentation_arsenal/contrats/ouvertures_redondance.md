@@ -1,17 +1,19 @@
 # ARSENAL — CONTRAT NORMATIF
-## Ouvertures Zigbee — Capteurs réconciliés (redondance asymétrique)
+## Ouvertures Zigbee — Capteurs réconciliés par dernier événement valide
 
 ---
 
 **Statut :** ADOPTÉ  
-**Version :** 1.1  
+**Version :** 2.0  
 **Domaine :** Zigbee / Ouvertures / Aération / Chauffage / Sécurité thermique  
-**Remplace :** v1.0 (contradictions R2/R3, gestion unknown révisée)  
-**Changelog v1.1 :**
-- Algorithme de réconciliation restructuré en forme normale (divergence précondition)
-- Remplacement du principe "unknown → unknown" par disqualification de source
-- Source canonique qualifiée N1
-- Table de vérité complète mise à jour
+**Remplace :** v1.1 (réconciliation asymétrique Aqara/Sonoff par état brut)
+
+**Changelog v2.0 :**
+- Abandon de toute priorité de marque ou de capteur
+- Abandon du vote sur états bruts instantanés
+- Principe canonique : **dernier événement valide reçu, toutes sources confondues**
+- Implémentation via template binary_sensor déclenché (`trigger-based`)
+- `unknown` limité à l'absence totale d'historique valide
 
 ---
 
@@ -21,197 +23,226 @@
 
 Pour chaque ouvrant critique, deux capteurs Zigbee sont déployés en redondance :
 
-- **capteur_A** : Aqara (capteur historique)
-- **capteur_B** : Sonoff (capteur redondant, déployé en complément)
+- **capteur_A** — ex. Aqara
+- **capteur_B** — ex. Sonoff
 
-États possibles de chaque capteur :
+Le contrat **ne donne aucune priorité normative** à une marque ou un modèle.
 
-| État | Signification | Exploitable |
-|------|---------------|-------------|
-| `on` | Ouvrant détecté ouvert | ✅ oui |
-| `off` | Ouvrant détecté fermé | ✅ oui |
-| `unknown` | État indéterminé | ❌ non — source disqualifiée |
-| `unavailable` | Capteur non joignable | ❌ non — source disqualifiée |
+### 1.2 États bruts possibles
 
-### 1.2 Hypothèses opérationnelles validées terrain
+| État          | Signification         | Exploitable comme événement |
+|---------------|-----------------------|-----------------------------|
+| `on`          | ouverture détectée    | ✅ oui                      | 
+| `off`         | fermeture détectée    | ✅ oui                      |
+| `unknown`     | état indéterminé      | ❌ non                      |
+| `unavailable` | capteur non joignable | ❌ non                      |
 
-Ces hypothèses sont le fondement du contrat. Elles doivent être réévaluées si le contexte matériel change.
+### 1.3 Hypothèses opérationnelles
 
-**H1 — Ouverture non ratée**
-Les événements d'ouverture sont détectés de façon fiable par au moins un capteur. Aucun ouvrant réellement ouvert n'a été déclaré fermé en pratique.
+**H1 — Les événements constatés sont présumés valides**  
+Un `on` ou `off` reçu de n'importe quelle source est présumé valide tant qu'aucune observation terrain ne démontre le contraire. Un capteur peut manquer un événement, mais il n'invente pas d'événement.
 
-**H2 — Fermeture parfois ratée (Aqara)**
-Les Aqara peuvent manquer des événements de fermeture et rester bloqués à l'état `on` alors que l'ouvrant est physiquement fermé. Ce scénario "zombie ouverture" a été observé en production et constitue le **risque dominant**.
+**H2 — Des événements peuvent être manqués**  
+Un capteur peut rater un changement d'état et rester figé. C'est le risque dominant (état zombie).
 
-**H3 — Sonoff plus fiable**
-Les Sonoff présentent une meilleure fiabilité globale, en particulier sur la détection de fermeture. Cette hypothèse est en cours de confirmation terrain.
+**H3 — Aucune source n'est structurellement plus fiable qu'une autre**  
+La fiabilité relative des capteurs peut varier terrain, mais ne constitue pas un critère normatif.
 
-**H4 — Scénario dominant de divergence**
-En cas de divergence `capteur_A=on / capteur_B=off`, l'interprétation retenue est : **Aqara zombie, Sonoff fiable**. Le `off` l'emporte.
+**H4 — Le risque dominant est le faux ouvert persistant**  
+Un état zombie `on` peut bloquer le chauffage indéfiniment. C'est la conséquence la plus grave à éviter.
 
 ---
 
 ## 2. Objet du capteur réconcilié
 
-Un **capteur réconcilié** est une entité binaire métier représentant :
+Un **capteur réconcilié** est une entité métier représentant :
 
-> « L'état d'ouverture d'un ouvrant critique, consolidé à partir de deux sources physiques, selon une logique asymétrique adaptée au risque dominant identifié terrain. »
+> « L'état logique d'un ouvrant, déterminé par le dernier événement valide reçu de l'une ou l'autre des sources redondantes, dans l'ordre d'arrivée observé par Home Assistant. »
 
-Il est la **source canonique N1** — seule source autorisée pour toute logique métier (chauffage, sécurité, alertes, métriques). Aucune logique ne consomme directement les sources brutes lorsqu'un capteur réconcilié existe.
-
----
-
-## 3. Principe de disqualification
-
-Un capteur dans un état non exploitable (`unknown` ou `unavailable`) est **disqualifié** : il est exclu du calcul de réconciliation.
-
-La réconciliation s'opère sur l'ensemble des sources restantes exploitables.
-
-```
-Sources exploitables = {A, B} ∩ {on, off}
-```
-
-Ce principe évite tout raisonnement sur une absence de signal et garantit qu'un état `off` ne peut jamais résulter d'une source muette.
+Il constitue la **source canonique N1** pour toute logique métier (chauffage, aération, sécurité thermique, alertes, métriques). Aucune logique ne consomme directement les sources brutes lorsqu'un capteur réconcilié existe.
 
 ---
 
-## 4. Algorithme de réconciliation (forme normale)
+## 3. Principe fondamental
 
-Les règles s'appliquent dans l'ordre strict suivant. La première règle satisfaite s'applique, les suivantes sont ignorées.
+> **La vérité réconciliée est le dernier événement valide (`on` ou `off`) reçu de l'une ou l'autre des sources, dans l'ordre d'arrivée des `state_changed`.**
 
-```
-R1 — Aucune source exploitable
-     si Sources exploitables = ∅
-     → state = unknown, degrade = true
+Corollaires directs :
 
-R2 — Une seule source exploitable (disqualification partielle)
-     si Sources exploitables = {X} (une seule)
-     → state = X, degrade = true
+- Un `off` reçu de n'importe quelle source clôture immédiatement l'état réconcilié, quelle que soit la valeur courante de l'autre capteur.
+- Un `on` reçu de n'importe quelle source ouvre immédiatement l'état réconcilié.
+- Les états bruts instantanés des capteurs ne sont pas la base de décision — ils sont purement observationnels.
 
-R3 — Deux sources, divergence
-     si Sources exploitables = {A, B} et A ≠ B
-     → state = off, divergence = true
-
-R4 — Deux sources, consensus
-     si Sources exploitables = {A, B} et A = B
-     → state = A
-```
-
-**Note sur R3 :** La divergence est résolue en faveur de `off`. Justification H4 : le scénario dominant est un Aqara bloqué `on` après fermeture réelle. Un `off` isolé est plus fiable qu'un `on` isolé persistant.
-
-**Note sur R1 :** C'est le seul cas produisant `unknown`. Il est inévitable : sans aucune source, aucune décision n'est possible.
+Ce principe protège naturellement contre les zombies : dès qu'un capteur détecte la fermeture, l'état réconcilié passe `off`, même si l'autre reste bloqué `on`.
 
 ---
 
-## 5. Observabilité obligatoire
+## 4. Algorithme de réconciliation
 
-Le capteur réconcilié expose systématiquement :
+```
+À chaque state_changed reçu d'une source :
+
+  Si nouvel_état ∈ {on, off} :
+    → state_réconcilié = nouvel_état
+
+  Si nouvel_état ∈ {unknown, unavailable} :
+    → ignorer pour la réconciliation
+    → conserver l'état réconcilié précédent
+    → recalculer degrade
+```
+
+**Initialisation :** si aucun événement valide n'a encore été reçu d'aucune source → `state = unknown`.
+
+---
+
+## 5. Implémentation Home Assistant
+
+Le capteur réconcilié est implémenté comme un **template binary_sensor déclenché** (`trigger-based`).
+
+Ce choix est fondé sur les propriétés suivantes de HA :
+- un template trigger-based s'exécute à chaque `state_changed` des sources surveillées
+- il voit bien l'événement dans l'ordre d'arrivée, pas un snapshot d'état
+- son état est **restauré au redémarrage** pour les binary_sensors trigger-based
+- `this.state` permet de conserver proprement l'état précédent sans helper externe
+
+### Gabarit YAML normatif
+
+```yaml
+template:
+  - trigger:
+      - platform: state
+        entity_id:
+          - binary_sensor.capteur_a
+          - binary_sensor.capteur_b
+    binary_sensor:
+      - name: "Contact reconcilie"
+        unique_id: contact_reconcilie
+        device_class: opening
+        state: >
+          {% set new_state = trigger.to_state.state %}
+          {% if new_state in ['on', 'off'] %}
+            {{ new_state }}
+          {% else %}
+            {{ this.state if this.state in ['on', 'off'] else 'unknown' }}
+          {% endif %}
+        attributes:
+          etat_a: "{{ states('binary_sensor.capteur_a') }}"
+          etat_b: "{{ states('binary_sensor.capteur_b') }}"
+          degrade: >
+            {{ states('binary_sensor.capteur_a') in ['unknown', 'unavailable']
+               or states('binary_sensor.capteur_b') in ['unknown', 'unavailable'] }}
+          divergence: >
+            {{ states('binary_sensor.capteur_a') in ['on', 'off']
+               and states('binary_sensor.capteur_b') in ['on', 'off']
+               and states('binary_sensor.capteur_a') != states('binary_sensor.capteur_b') }}
+```
+
+**Note sur le fallback :** si `this.state` est non initialisé (première création, premier cycle), le fallback est `unknown` — jamais `off`. Déclarer `off` sans événement valide reçu serait une violation de I5.
+
+---
+
+## 6. Observabilité
 
 | Attribut | Type | Description |
-|----------|------|-------------|
-| `state` | `on / off / unknown` | État réconcilié (source canonique N1) |
-| `etat_A` | `on / off / unknown / unavailable` | État brut capteur A |
-| `etat_B` | `on / off / unknown / unavailable` | État brut capteur B |
-| `divergence` | `true / false` | A et B exploitables mais différents |
-| `degrade` | `true / false` | Au moins une source disqualifiée |
+|---|---|---|
+| `state` | `on / off / unknown` | État réconcilié canonique (N1) |
+| `etat_a` | `on / off / unknown / unavailable` | État brut courant A |
+| `etat_b` | `on / off / unknown / unavailable` | État brut courant B |
+| `divergence` | booléen | A et B exploitables mais états bruts différents |
+| `degrade` | booléen | Au moins une source actuellement disqualifiée |
 
-La divergence et la dégradation doivent déclencher une **alerte observable** (log, notification, tableau de bord). Il ne suffit pas de les stocker silencieusement.
+La `divergence` brute **n'a aucun pouvoir d'arbitrage sur l'état réconcilié** — elle constitue uniquement un signal d'observabilité.
 
----
+Le flag `degrade` décrit l'état **actuel des sources**, pas la validité de l'historique retenu. Un état réconcilié fondé sur un événement mémorisé reste pleinement valide même si `degrade = true`.
 
-## 6. Table de vérité normative complète
-
-### Cas nominaux — deux sources exploitables
-
-| capteur_A | capteur_B | réconcilié | divergence | degrade | Règle |
-|-----------|-----------|------------|------------|---------|-------|
-| off | off | **off** | false | false | R4 |
-| on | on | **on** | false | false | R4 |
-| on | off | **off** | true | false | R3 |
-| off | on | **off** | true | false | R3 |
-
-### Cas dégradés — une source disqualifiée
-
-| capteur_A | capteur_B | réconcilié | divergence | degrade | Règle |
-|-----------|-----------|------------|------------|---------|-------|
-| off | unknown/unavailable | **off** | false | true | R2 |
-| on | unknown/unavailable | **on** | false | true | R2 |
-| unknown/unavailable | off | **off** | false | true | R2 |
-| unknown/unavailable | on | **on** | false | true | R2 |
-
-### Cas dégradé total — deux sources disqualifiées
-
-| capteur_A | capteur_B | réconcilié | divergence | degrade | Règle |
-|-----------|-----------|------------|------------|---------|-------|
-| unknown/unavailable | unknown/unavailable | **unknown** | false | true | R1 |
+La `divergence` et la `degrade` sont des **signaux d'alerte observationnels**. Ils doivent être visibles en dashboard et loggés.
 
 ---
 
-## 7. Interdictions absolues
+## 7. Table de vérité normative
 
-**I1 — Interdiction de consommation directe des sources**
-Toute logique métier critique est interdite de consommer directement `capteur_A` ou `capteur_B` lorsqu'un capteur réconcilié existe.
+### Cas nominaux
 
-**I2 — Interdiction de fermeture sur source disqualifiée**
-Il est interdit de déclarer `off` si la seule source disponible est `unknown` ou `unavailable`.
+| Dernier événement reçu | État réconcilié | Note                |
+|------------------------|-----------------|---------------------|
+| `off` (A ou B)         | **off**         | Fermeture immédiate |
+| `on` (A ou B)          | **on**          | Ouverture immédiate |
 
-**I3 — Interdiction de masquer la divergence**
-La divergence `true` doit être exposée et observable. Elle ne peut pas être ignorée ou écrasée silencieusement.
+### Cas dégradés
 
-**I4 — Interdiction de fermeture par timeout**
-Un timeout arbitraire ne peut pas produire un état `off`. Seul un signal `off` explicite d'une source exploitable peut clôturer.
+| Situation                                               | État réconcilié | degrade |
+|---------------------------------------------------------|-----------------|---------|
+| Source disqualifiée, dernier event de l'autre = `off`   | **off**         | true    |
+| Source disqualifiée, dernier event de l'autre = `on`    | **on**          | true    |
+| Deux sources disqualifiées, dernier event connu = `off` | **off**         | true    |
+| Deux sources disqualifiées, dernier event connu = `on`  | **on**          | true    |
+| Aucun événement valide jamais reçu                      | **unknown**     | true    |
 
----
-
-## 8. Limites reconnues et risques acceptés
-
-### 8.1 Risque : faux fermé sur divergence (Sonoff défaillant)
-
-**Scénario :** capteur_B (Sonoff) se bloque `off` à tort alors que l'ouvrant est réellement ouvert et capteur_A (Aqara) dit `on`.
-
-**Conséquence :** R3 déclare `off`, masquant une ouverture réelle.
-
-**Mitigation actuelle :**
-- `divergence=true` est exposée → investigation possible
-- L'hypothèse H3 (Sonoff fiable) borne la probabilité de ce scénario
-- Ce scénario est l'inverse du risque dominant (H2) et n'a pas été observé terrain
-
-**Mitigation future envisagée :** debounce temporel sur R3 — ne clôturer en divergence que si le `off` persiste depuis N secondes. À activer si des faux fermés sont observés terrain, sans modifier les règles centrales.
-
-### 8.2 Réévaluation des hypothèses
-
-Ce contrat repose sur H1–H4. Déclencheurs de révision :
-
-| Événement terrain | Hypothèse remise en cause | Action |
-|-------------------|--------------------------|--------|
-| Ouverture manquée par les deux capteurs | H1 | Révision R4 (consensus) |
-| Sonoff rate des fermetures | H3, H4 | Révision R3 (divergence) |
-| Double blocage ON observé | H2 | Architecture watchdog (HYPOTHÈSE B) |
+**Note :** même avec deux sources disqualifiées, l'historique valide déjà reçu est conservé via `this.state`. `unknown` n'est produit qu'en absence totale d'historique.
 
 ---
 
-## 9. Critères d'acceptation
+## 8. Interdictions absolues
+
+**I1 — Interdiction de priorité matérielle**  
+Aucune marque ou modèle ne peut être déclaré prioritaire.
+
+**I2 — Interdiction de vote sur états bruts instantanés**  
+L'état réconcilié ne peut pas résulter d'un simple vote ou comparaison d'états bruts.
+
+**I3 — Interdiction de masquer la divergence**  
+Toute divergence doit être exposée et observable.
+
+**I4 — Interdiction de consommation directe des sources brutes**  
+Toute logique métier critique consomme uniquement le capteur réconcilié N1.
+
+**I5 — Interdiction de produire `off` sans fondement événementiel**  
+Une fermeture ne peut être déclarée que sur la base d'un événement `off` valide reçu — jamais par timeout, inférence, absence de signal, ou état non initialisé.
+
+**I6 — Interdiction de produire `unknown` si un historique valide existe**  
+`unknown` n'est autorisé qu'en absence totale d'événement valide reçu (premier démarrage sans historique restauré).
+
+---
+
+## 9. Limites reconnues et risques acceptés
+
+### 9.1 Risque : `on` intempestif d'une source défaillante
+
+Un capteur défaillant émettant un `on` parasite ferait passer l'état réconcilié à `on`.
+
+**Mitigation :** H1 postule que les événements constatés sont vrais. Si cette hypothèse est invalidée terrain, un debounce peut être ajouté en couche supérieure sans modifier ce contrat.
+
+### 9.2 Risque : fenêtre `unknown` à la première création
+
+Si aucun historique n'est disponible (première création d'entité), l'état est `unknown` jusqu'au premier événement valide reçu.
+
+**Mitigation :** les template binary_sensors trigger-based restaurent leur état au redémarrage — ce cas ne concerne que la toute première initialisation.
+
+---
+
+## 10. Critères d'acceptation
 
 Le contrat est respecté si et seulement si :
 
-- Une ouverture est détectée dès qu'au moins une source exploitable passe `on`
-- Une fermeture est déclarée dès qu'au moins une source exploitable passe `off`
-- Aucune source disqualifiée ne peut produire un état `off`
-- `unknown` n'est produit que si les deux sources sont simultanément disqualifiées
-- La divergence est exposée et observable dès que A ≠ B (toutes deux exploitables)
-- La dégradation est exposée et observable dès qu'une source est disqualifiée
+- L'état réconcilié suit immédiatement tout événement valide reçu de n'importe quelle source
+- Un `off` reçu clôture l'état réconcilié même si l'autre source reste `on`
+- Un `on` reçu ouvre l'état réconcilié même si l'autre source reste `off`
+- `unknown` n'est produit qu'en absence totale d'événement valide (aucun historique disponible)
+- Aucune marque n'est priorisée
+- La divergence est exposée dès que les états bruts diffèrent
+- La dégradation est exposée dès qu'une source est disqualifiée
 - Aucune logique métier ne consomme directement les sources brutes
 
 ---
 
-## 10. Évolutions futures prévues
+## 11. Évolutions futures prévues
 
-| Évolution | Déclencheur | Impact contrat |
-|-----------|-------------|----------------|
-| Debounce sur R3 | Faux fermés observés terrain | Amendement R3 uniquement |
-| Pondération par fiabilité capteur | Données terrain Sonoff accumulées | Nouveau contrat v2 |
-| Watchdog physique (HYPOTHÈSE B) | Double blocage ON observé | Architecture complémentaire |
+| Évolution                     | Déclencheur                            | Impact contrat                            |
+|-------------------------------|----------------------------------------|-------------------------------------------|
+| Debounce sur événements `on`  | `on` parasite observé terrain          | Couche filtre supérieure, hors contrat N1 |
+| Watchdog anti-zombie temporel | Besoin de détection de zombie résiduel | Couche supérieure, hors contrat N1        |
+| Score de confiance par source | Statistiques terrain longues           | Nouveau contrat v3                        |
 
 ---
 
-*Fin du contrat — ARSENAL v1.1*
+*Fin du contrat — ARSENAL v2.0*

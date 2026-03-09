@@ -14,12 +14,14 @@
     - name: "Sejour CO2 delta 30min"
       unique_id: sejour_co2_delta_30min
       unit_of_measurement: "ppm"
-      state: >
-        {% set now_co2 = states('sensor.co2_sejour') | float(none) %}
-        {% set mean_co2 = states('sensor.co2_sejour_mean_30min') | float(none) %}
 
-        {% if now_co2 is none or mean_co2 is none %}
-          unknown
-        {% else %}
-          {{ (now_co2 - mean_co2) | round(0) }}
-        {% endif %}
+      availability: >
+        {{
+          states('sensor.co2_sejour') | float(none) is not none
+          and states('sensor.co2_sejour_mean_30min') | float(none) is not none
+        }}
+
+      state: >
+        {% set now_co2 = states('sensor.co2_sejour') | float %}
+        {% set mean_co2 = states('sensor.co2_sejour_mean_30min') | float %}
+        {{ (now_co2 - mean_co2) | round(0) }}

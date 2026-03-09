@@ -7,182 +7,258 @@
 #
 # 🎯 ROLE
 #   - Couche NORMALISATION N1 : binary_sensor.contact_* (canon)
-#   - Réconciliation A/B conforme au contrat v1.1 (avec adaptation HA binary_sensor)
+#   - Réconciliation A/B conforme au contrat v2.0
 #
 # 🧱 PRINCIPE
-#   - Conserver EXACTEMENT les mêmes entités finales : binary_sensor.contact_*
-#   - Ne pas utiliser de triggered templates (réévaluation auto sur état + disponibilité)
-#   - Exposer divergence/degrade en attributs (observabilité)
+#   - Dernier événement valide reçu (on/off) = vérité réconciliée
+#   - unknown / unavailable ignorés pour la réconciliation
+#   - État précédent conservé via this.state
+#   - Restauration automatique au redémarrage (trigger-based)
+#   - Exposer divergence / degrade en attributs (observabilité)
 #
 # ⚠️ NOTE HA
-#   - Un binary_sensor ne peut pas retourner 'unknown' comme état.
-#   - Cas R1 (aucune source exploitable) : on retourne 'on' (conservateur)
-#     + degrade=true (indétermination explicitée par attribut).
+#   - Un seul bloc trigger couvrant tous les capteurs sources
+#   - Pas d'ancres inter-blocs (fragile dans HA)
+#   - Fallback final : unknown (jamais off sans événement valide — contrat I5)
 # ==========================================================
 
-- binary_sensor:
+- trigger:
+    - platform: state
+      entity_id:
+        # Chambre Parents
+        - binary_sensor.contact_chambre_parents_gauche_1
+        - binary_sensor.contact_chambre_parents_gauche_2
+        - binary_sensor.contact_chambre_parents_milieu_1
+        - binary_sensor.contact_chambre_parents_milieu_2
+        - binary_sensor.contact_chambre_parents_droite_1
+        - binary_sensor.contact_chambre_parents_droite_2
+        # Garage
+        - binary_sensor.contact_garage_1
+        - binary_sensor.contact_garage_2
+        # Séjour
+        - binary_sensor.contact_sejour_3_1
+        - binary_sensor.contact_sejour_3_2
+        # Chambres enfants
+        - binary_sensor.contact_chambre_arnaud_1
+        - binary_sensor.contact_chambre_arnaud_2
+        - binary_sensor.contact_chambre_matthieu_1
+        - binary_sensor.contact_chambre_matthieu_2
 
+  binary_sensor:
+
+    # ----------------------------------------------------------
+    # CHAMBRE PARENTS — GAUCHE
+    # ----------------------------------------------------------
     - name: "Contact Chambre Parents Gauche"
       unique_id: contact_chambre_parents_gauche
       device_class: opening
-      variables:
-        src_a: binary_sensor.capteur_chambre_parents_gauche
-        src_b: binary_sensor.capteur_fenetre_parents_gauche_bis
-        kind: window
-
-      icon: &contact_icon >
-        {% set s = state %}
-        {% if kind == 'door' %}
-          {{ 'mdi:door-open' if s == 'on' else 'mdi:door-closed' }}
+      state: >
+        {% set new_state = trigger.to_state.state %}
+        {% if trigger.entity_id in [
+            'binary_sensor.contact_chambre_parents_gauche_1',
+            'binary_sensor.contact_chambre_parents_gauche_2'
+          ] and new_state in ['on', 'off'] %}
+          {{ new_state }}
         {% else %}
-          {{ 'mdi:window-open-variant' if s == 'on' else 'mdi:window-closed-variant' }}
+          {{ this.state if this.state in ['on', 'off'] else 'unknown' }}
         {% endif %}
-
-      state: &contact_reco_state >
-        {% set a = states(src_a) %}
-        {% set b = states(src_b) %}
-
-        {% set a_ok = a in ['on','off'] %}
-        {% set b_ok = b in ['on','off'] %}
-
-        {% if (not a_ok) and (not b_ok) %}
-          on
-        {% elif a_ok and (not b_ok) %}
-          {{ a }}
-        {% elif (not a_ok) and b_ok %}
-          {{ b }}
-        {% else %}
-          {% if a != b %}
-            off
-          {% else %}
-            {{ a }}
-          {% endif %}
-        {% endif %}
-
-      attributes: &contact_reco_attr
-        source_entity_a: "{{ src_a }}"
-        source_entity_b: "{{ src_b }}"
-        etat_a: "{{ states(src_a) }}"
-        etat_b: "{{ states(src_b) }}"
+      icon: >
+        {{ 'mdi:window-open-variant' if this.state == 'on' else 'mdi:window-closed-variant' }}
+      attributes:
+        source_entity_a: binary_sensor.contact_chambre_parents_gauche_1
+        source_entity_b: binary_sensor.contact_chambre_parents_gauche_2
+        etat_a: "{{ states('binary_sensor.contact_chambre_parents_gauche_1') }}"
+        etat_b: "{{ states('binary_sensor.contact_chambre_parents_gauche_2') }}"
         degrade: >
-          {% set a = states(src_a) %}
-          {% set b = states(src_b) %}
-          {{ (a not in ['on','off']) or (b not in ['on','off']) }}
+          {{ states('binary_sensor.contact_chambre_parents_gauche_1') in ['unknown', 'unavailable']
+             or states('binary_sensor.contact_chambre_parents_gauche_2') in ['unknown', 'unavailable'] }}
         divergence: >
-          {% set a = states(src_a) %}
-          {% set b = states(src_b) %}
-          {{ (a in ['on','off']) and (b in ['on','off']) and (a != b) }}
+          {% set a = states('binary_sensor.contact_chambre_parents_gauche_1') %}
+          {% set b = states('binary_sensor.contact_chambre_parents_gauche_2') %}
+          {{ a in ['on','off'] and b in ['on','off'] and a != b }}
 
-    # ------------------------------------------------------
-    # CONTACTS REDONDANTS — CHAMBRE PARENTS (x3)
-    # ------------------------------------------------------
+    # ----------------------------------------------------------
+    # CHAMBRE PARENTS — MILIEU
+    # ----------------------------------------------------------
     - name: "Contact Chambre Parents Milieu"
       unique_id: contact_chambre_parents_milieu
       device_class: opening
-      variables:
-        src_a: binary_sensor.capteur_chambre_parents_milieu
-        src_b: binary_sensor.capteur_fenetre_parents_milieu_bis
-        kind: window
-      state: *contact_reco_state
-      icon: *contact_icon
-      attributes: *contact_reco_attr
+      state: >
+        {% set new_state = trigger.to_state.state %}
+        {% if trigger.entity_id in [
+            'binary_sensor.contact_chambre_parents_milieu_1',
+            'binary_sensor.contact_chambre_parents_milieu_2'
+          ] and new_state in ['on', 'off'] %}
+          {{ new_state }}
+        {% else %}
+          {{ this.state if this.state in ['on', 'off'] else 'unknown' }}
+        {% endif %}
+      icon: >
+        {{ 'mdi:window-open-variant' if this.state == 'on' else 'mdi:window-closed-variant' }}
+      attributes:
+        source_entity_a: binary_sensor.contact_chambre_parents_milieu_1
+        source_entity_b: binary_sensor.contact_chambre_parents_milieu_2
+        etat_a: "{{ states('binary_sensor.contact_chambre_parents_milieu_1') }}"
+        etat_b: "{{ states('binary_sensor.contact_chambre_parents_milieu_2') }}"
+        degrade: >
+          {{ states('binary_sensor.contact_chambre_parents_milieu_1') in ['unknown', 'unavailable']
+             or states('binary_sensor.contact_chambre_parents_milieu_2') in ['unknown', 'unavailable'] }}
+        divergence: >
+          {% set a = states('binary_sensor.contact_chambre_parents_milieu_1') %}
+          {% set b = states('binary_sensor.contact_chambre_parents_milieu_2') %}
+          {{ a in ['on','off'] and b in ['on','off'] and a != b }}
 
+    # ----------------------------------------------------------
+    # CHAMBRE PARENTS — DROITE
+    # ----------------------------------------------------------
     - name: "Contact Chambre Parents Droite"
       unique_id: contact_chambre_parents_droite
       device_class: opening
-      variables:
-        src_a: binary_sensor.capteur_chambre_parents_droite
-        src_b: binary_sensor.capteur_fenetre_parents_droite_bis
-        kind: window
-      state: *contact_reco_state
-      icon: *contact_icon
-      attributes: *contact_reco_attr
+      state: >
+        {% set new_state = trigger.to_state.state %}
+        {% if trigger.entity_id in [
+            'binary_sensor.contact_chambre_parents_droite_1',
+            'binary_sensor.contact_chambre_parents_droite_2'
+          ] and new_state in ['on', 'off'] %}
+          {{ new_state }}
+        {% else %}
+          {{ this.state if this.state in ['on', 'off'] else 'unknown' }}
+        {% endif %}
+      icon: >
+        {{ 'mdi:window-open-variant' if this.state == 'on' else 'mdi:window-closed-variant' }}
+      attributes:
+        source_entity_a: binary_sensor.contact_chambre_parents_droite_1
+        source_entity_b: binary_sensor.contact_chambre_parents_droite_2
+        etat_a: "{{ states('binary_sensor.contact_chambre_parents_droite_1') }}"
+        etat_b: "{{ states('binary_sensor.contact_chambre_parents_droite_2') }}"
+        degrade: >
+          {{ states('binary_sensor.contact_chambre_parents_droite_1') in ['unknown', 'unavailable']
+             or states('binary_sensor.contact_chambre_parents_droite_2') in ['unknown', 'unavailable'] }}
+        divergence: >
+          {% set a = states('binary_sensor.contact_chambre_parents_droite_1') %}
+          {% set b = states('binary_sensor.contact_chambre_parents_droite_2') %}
+          {{ a in ['on','off'] and b in ['on','off'] and a != b }}
 
-    # ------------------------------------------------------
-    # CONTACT REDONDANT — PORTE GARAGE
-    # ------------------------------------------------------
+    # ----------------------------------------------------------
+    # PORTE GARAGE
+    # ----------------------------------------------------------
     - name: "Contact Porte Garage"
       unique_id: contact_porte_garage
       device_class: garage_door
-      variables:
-        src_a: binary_sensor.capteur_porte_garage
-        src_b: binary_sensor.capteur_porte_garage_bis
-        kind: door
-      state: *contact_reco_state
-      icon: *contact_icon
-      attributes: *contact_reco_attr
+      state: >
+        {% set new_state = trigger.to_state.state %}
+        {% if trigger.entity_id in [
+            'binary_sensor.contact_garage_1',
+            'binary_sensor.contact_garage_2'
+          ] and new_state in ['on', 'off'] %}
+          {{ new_state }}
+        {% else %}
+          {{ this.state if this.state in ['on', 'off'] else 'unknown' }}
+        {% endif %}
+      icon: >
+        {{ 'mdi:garage-open' if this.state == 'on' else 'mdi:garage' }}
+      attributes:
+        source_entity_a: binary_sensor.contact_garage_1
+        source_entity_b: binary_sensor.contact_garage_2
+        etat_a: "{{ states('binary_sensor.contact_garage_1') }}"
+        etat_b: "{{ states('binary_sensor.contact_garage_2') }}"
+        degrade: >
+          {{ states('binary_sensor.contact_garage_1') in ['unknown', 'unavailable']
+             or states('binary_sensor.contact_garage_2') in ['unknown', 'unavailable'] }}
+        divergence: >
+          {% set a = states('binary_sensor.contact_garage_1') %}
+          {% set b = states('binary_sensor.contact_garage_2') %}
+          {{ a in ['on','off'] and b in ['on','off'] and a != b }}
 
-    # ------------------------------------------------------
-    # CONTACT REDONDANT — SEJOUR 3
-    # ------------------------------------------------------
+    # ----------------------------------------------------------
+    # SÉJOUR 3
+    # ----------------------------------------------------------
     - name: "Contact Sejour 3"
       unique_id: contact_sejour_3
       device_class: opening
-      variables:
-        src_a: binary_sensor.capteur_fenetre_sejour_3
-        src_b: binary_sensor.capteur_fenetre_sejour_3_bis
-        kind: window
-      state: *contact_reco_state
-      icon: *contact_icon
-      attributes: *contact_reco_attr
+      state: >
+        {% set new_state = trigger.to_state.state %}
+        {% if trigger.entity_id in [
+            'binary_sensor.contact_sejour_3_1',
+            'binary_sensor.contact_sejour_3_2'
+          ] and new_state in ['on', 'off'] %}
+          {{ new_state }}
+        {% else %}
+          {{ this.state if this.state in ['on', 'off'] else 'unknown' }}
+        {% endif %}
+      icon: >
+        {{ 'mdi:window-open-variant' if this.state == 'on' else 'mdi:window-closed-variant' }}
+      attributes:
+        source_entity_a: binary_sensor.contact_sejour_3_1
+        source_entity_b: binary_sensor.contact_sejour_3_2
+        etat_a: "{{ states('binary_sensor.contact_sejour_3_1') }}"
+        etat_b: "{{ states('binary_sensor.contact_sejour_3_2') }}"
+        degrade: >
+          {{ states('binary_sensor.contact_sejour_3_1') in ['unknown', 'unavailable']
+             or states('binary_sensor.contact_sejour_3_2') in ['unknown', 'unavailable'] }}
+        divergence: >
+          {% set a = states('binary_sensor.contact_sejour_3_1') %}
+          {% set b = states('binary_sensor.contact_sejour_3_2') %}
+          {{ a in ['on','off'] and b in ['on','off'] and a != b }}
 
-    # ------------------------------------------------------
-    # CONTACTS REDONDANTS — CHAMBRES ENFANTS
-    # ------------------------------------------------------
+    # ----------------------------------------------------------
+    # CHAMBRE ARNAUD
+    # ----------------------------------------------------------
     - name: "Contact Chambre Arnaud"
       unique_id: contact_chambre_arnaud
       device_class: opening
-      variables:
-        src_a: binary_sensor.capteur_chambre_arnaud
-        src_b: binary_sensor.capteur_chambre_arnaud_bis
-        kind: window
-      state: *contact_reco_state
-      icon: *contact_icon
-      attributes: *contact_reco_attr
+      state: >
+        {% set new_state = trigger.to_state.state %}
+        {% if trigger.entity_id in [
+            'binary_sensor.contact_chambre_arnaud_1',
+            'binary_sensor.contact_chambre_arnaud_2'
+          ] and new_state in ['on', 'off'] %}
+          {{ new_state }}
+        {% else %}
+          {{ this.state if this.state in ['on', 'off'] else 'unknown' }}
+        {% endif %}
+      icon: >
+        {{ 'mdi:window-open-variant' if this.state == 'on' else 'mdi:window-closed-variant' }}
+      attributes:
+        source_entity_a: binary_sensor.contact_chambre_arnaud_1
+        source_entity_b: binary_sensor.contact_chambre_arnaud_2
+        etat_a: "{{ states('binary_sensor.contact_chambre_arnaud_1') }}"
+        etat_b: "{{ states('binary_sensor.contact_chambre_arnaud_2') }}"
+        degrade: >
+          {{ states('binary_sensor.contact_chambre_arnaud_1') in ['unknown', 'unavailable']
+             or states('binary_sensor.contact_chambre_arnaud_2') in ['unknown', 'unavailable'] }}
+        divergence: >
+          {% set a = states('binary_sensor.contact_chambre_arnaud_1') %}
+          {% set b = states('binary_sensor.contact_chambre_arnaud_2') %}
+          {{ a in ['on','off'] and b in ['on','off'] and a != b }}
 
+    # ----------------------------------------------------------
+    # CHAMBRE MATTHIEU
+    # ----------------------------------------------------------
     - name: "Contact Chambre Matthieu"
       unique_id: contact_chambre_matthieu
       device_class: opening
-      variables:
-        src_a: binary_sensor.capteur_chambre_matthieu
-        src_b: binary_sensor.capteur_chambre_matthieu_bis
-        kind: window
-      state: *contact_reco_state
-      icon: *contact_icon
-      attributes: *contact_reco_attr
-
-    # ------------------------------------------------------
-    # CONTACTS REDONDANTS — SEJOUR (1 / 2 / 4)
-    # ------------------------------------------------------
-    - name: "Contact Sejour 1"
-      unique_id: contact_sejour_1
-      device_class: opening
-      variables:
-        src_a: binary_sensor.capteur_fenetre_sejour_1
-        src_b: binary_sensor.capteur_fenetre_sejour_1_bis
-        kind: window
-      state: *contact_reco_state
-      icon: *contact_icon
-      attributes: *contact_reco_attr
-
-    - name: "Contact Sejour 2"
-      unique_id: contact_sejour_2
-      device_class: opening
-      variables:
-        src_a: binary_sensor.capteur_fenetre_sejour_2
-        src_b: binary_sensor.capteur_fenetre_sejour_2_bis
-        kind: window
-      state: *contact_reco_state
-      icon: *contact_icon
-      attributes: *contact_reco_attr
-
-    - name: "Contact Sejour 4"
-      unique_id: contact_sejour_4
-      device_class: opening
-      variables:
-        src_a: binary_sensor.capteur_fenetre_sejour_4
-        src_b: binary_sensor.capteur_fenetre_sejour_4_bis
-        kind: window
-      state: *contact_reco_state
-      icon: *contact_icon
-      attributes: *contact_reco_attr
+      state: >
+        {% set new_state = trigger.to_state.state %}
+        {% if trigger.entity_id in [
+            'binary_sensor.contact_chambre_matthieu_1',
+            'binary_sensor.contact_chambre_matthieu_2'
+          ] and new_state in ['on', 'off'] %}
+          {{ new_state }}
+        {% else %}
+          {{ this.state if this.state in ['on', 'off'] else 'unknown' }}
+        {% endif %}
+      icon: >
+        {{ 'mdi:window-open-variant' if this.state == 'on' else 'mdi:window-closed-variant' }}
+      attributes:
+        source_entity_a: binary_sensor.contact_chambre_matthieu_1
+        source_entity_b: binary_sensor.contact_chambre_matthieu_2
+        etat_a: "{{ states('binary_sensor.contact_chambre_matthieu_1') }}"
+        etat_b: "{{ states('binary_sensor.contact_chambre_matthieu_2') }}"
+        degrade: >
+          {{ states('binary_sensor.contact_chambre_matthieu_1') in ['unknown', 'unavailable']
+             or states('binary_sensor.contact_chambre_matthieu_2') in ['unknown', 'unavailable'] }}
+        divergence: >
+          {% set a = states('binary_sensor.contact_chambre_matthieu_1') %}
+          {% set b = states('binary_sensor.contact_chambre_matthieu_2') %}
+          {{ a in ['on','off'] and b in ['on','off'] and a != b }}

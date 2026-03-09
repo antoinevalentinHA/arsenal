@@ -22,32 +22,26 @@
 - sensor:
     - name: "diagnostic_netatmo_arnaud"
       unique_id: diagnostic_netatmo_arnaud
-      availability: >
-        {{ states('sensor.temperature_jardin_1') not in ['unknown', 'unavailable'] }}
       state: >
-        {% set t = states('sensor.temperature_jardin_1') %}
-        {% if (t | float(default=none)) is not none %}
+        {% set temperature_ok = states('sensor.temperature_jardin_1') | float(default=none) is not none %}
+        {% set reseau_ok = is_state('binary_sensor.station_meteo_netatmo_1', 'on') %}
+        {% if temperature_ok %}
           ok
+        {% elif reseau_ok %}
+          ko_homekit
         {% else %}
-          {% if states('binary_sensor.station_meteo_netatmo_1') == 'on' %}
-            ko_homekit
-          {% else %}
-            ko_reseau
-          {% endif %}
+          ko_reseau
         {% endif %}
 
     - name: "diagnostic_netatmo_matthieu"
       unique_id: diagnostic_netatmo_matthieu
-      availability: >
-        {{ states('sensor.temperature_jardin_2') not in ['unknown', 'unavailable'] }}
       state: >
-        {% set t = states('sensor.temperature_jardin_2') %}
-        {% if (t | float(default=none)) is not none %}
+        {% set temperature_ok = states('sensor.temperature_jardin_2') | float(default=none) is not none %}
+        {% set reseau_ok = is_state('binary_sensor.station_meteo_netatmo_2', 'on') %}
+        {% if temperature_ok %}
           ok
+        {% elif reseau_ok %}
+          ko_homekit
         {% else %}
-          {% if states('binary_sensor.station_meteo_netatmo_2') == 'on' %}
-            ko_homekit
-          {% else %}
-            ko_reseau
-          {% endif %}
+          ko_reseau
         {% endif %}

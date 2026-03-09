@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE METIER (INCLUDE)
+#     Chauffage — Aération : Blocage + analyse / reference
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Afficher dans Diagnostics Chauffage :
+#   - toujours la carte timer de blocage
+#   - la carte timer d'analyse ΔT uniquement si active
+#   - sinon la carte "Référence thermique"
+#
+# 🧠 PRINCIPE
+#   - timer.aeration_blocage : carte toujours présente
+#   - timer.aeration_analyse_delta_t :
+#       * si active   -> afficher la carte timer ΔT
+#       * sinon       -> afficher la carte reference thermique
+# ==========================================================
+
+type: grid
+columns: 2
+square: false
+cards:
+
+  - type: custom:button-card
+    template: carte_aeration_blocage_timer
+    entity: timer.aeration_blocage
+    name: Blocage chauffage
+    icon: mdi:lock-alert
+
+  - type: conditional
+    conditions:
+      - entity: timer.aeration_analyse_delta_t
+        state: active
+    card:
+      type: custom:button-card
+      template: carte_aeration_delta_t_timer
+      entity: timer.aeration_analyse_delta_t
+      name: Analyse ΔT
+      icon: mdi:chart-bell-curve
+
+  - type: conditional
+    conditions:
+      - condition: state
+        entity: timer.aeration_analyse_delta_t
+        state_not: active
+    card:
+      type: custom:button-card
+      template: aeration_reference_thermique_72
+      name: Référence thermique
