@@ -27,8 +27,8 @@ decision_pluie_recente_72:
           [[[
             const s = entity?.state;
 
-            if (s === undefined || s === null) return "rgba(224, 224, 224, 0.2)";
-            if (s === "unknown" || s === "unavailable") return "rgba(224, 224, 224, 0.2)";
+            if (s === undefined || s === null) return "rgba(158, 158, 158, 0.1)";
+            if (s === "unknown" || s === "unavailable") return "rgba(158, 158, 158, 0.1)";
 
             if (s === "on") return "rgba(255, 152, 0, 0.25)";
             return "rgba(158, 158, 158, 0.2)";

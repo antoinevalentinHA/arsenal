@@ -54,4 +54,4 @@ prise_template:
         ]]]
       styles:
         card:
-          - background-color: rgba(224, 224, 224, 0.2)
+          - background-color: rgba(158, 158, 158, 0.1)

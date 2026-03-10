@@ -26,7 +26,7 @@ contact_sensor:
           [[[
             if (entity.state === 'on')  return 'rgba(244, 67, 54, 0.2)';   // ouvert
             if (entity.state === 'off') return 'rgba(76, 175, 80, 0.2)';  // fermé
-            return 'rgba(158, 158, 158, 0.2)';                            // inconnu
+            return 'rgba(158, 158, 158, 0.1)';                            // inconnu
           ]]]
 
     # Neutralisation visuelle du state (sécurité supplémentaire)

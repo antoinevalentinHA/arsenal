@@ -202,7 +202,7 @@ carte_chauffage_synthese:
         ]]]
       styles:
         card:
-          - background-color: rgba(255, 152, 0, 0.25)
+          - background-color: rgba(255, 152, 0, 0.2)
 
     # ⏳ Attentes thermiques (dont standby) → BLEU (CANON)
     - operator: template

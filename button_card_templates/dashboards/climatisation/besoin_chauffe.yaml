@@ -42,7 +42,7 @@ carte_diagnostic_besoin_chauffe_temperature_min_chambres:
             );
 
             if (isNaN(temp) || isNaN(consigne) || isNaN(offset))
-              return "rgba(158, 158, 158, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             const seuil = consigne - offset;
 

@@ -15,10 +15,10 @@ vmc_capteur:
           [[[
             const eid = entity?.entity_id;
             const st = eid ? hass.states[eid] : null;
-            if (!st) return "rgba(224, 224, 224, 0.2)";
+            if (!st) return "rgba(158, 158, 158, 0.1)";
 
             const raw = parseFloat(st.state);
-            if (isNaN(raw)) return "rgba(224, 224, 224, 0.2)";
+            if (isNaN(raw)) return "rgba(158, 158, 158, 0.1)";
 
             const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
             const isCO2 = unit.includes("ppm");
@@ -30,7 +30,7 @@ vmc_capteur:
               ? "input_number.vmc_co2_seuil_off"
               : "input_number.vmc_seuil_off"]?.state);
 
-            if (isNaN(seuilOn) || isNaN(seuilOff)) return "rgba(224, 224, 224, 0.2)";
+            if (isNaN(seuilOn) || isNaN(seuilOff)) return "rgba(158, 158, 158, 0.1)";
 
             const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
 

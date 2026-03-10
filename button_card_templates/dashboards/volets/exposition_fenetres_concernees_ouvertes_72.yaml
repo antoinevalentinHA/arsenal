@@ -27,8 +27,8 @@ exposition_fenetres_concernees_ouvertes_72:
           [[[
             const s = entity?.state;
 
-            if (s === undefined || s === null) return "rgba(224, 224, 224, 0.2)";
-            if (s === "unknown" || s === "unavailable") return "rgba(224, 224, 224, 0.2)";
+            if (s === undefined || s === null) return "rgba(158, 158, 158, 0.1)";
+            if (s === "unknown" || s === "unavailable") return "rgba(158, 158, 158, 0.1)";
 
             if (s === "on") return "rgba(244, 67, 54, 0.2)";
             return "rgba(76, 175, 80, 0.2)";

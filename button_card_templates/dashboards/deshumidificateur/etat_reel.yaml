@@ -36,9 +36,9 @@ carte_deshumidificateur_etat_reel:
     card:
       - background-color: |
           [[[
-            if (!entity) return "rgba(244, 67, 54, 0.2)";
+            if (!entity) return "rgba(158, 158, 158, 0.1)";
             const st = entity.state;
             if (st === 'on')  return "rgba(76, 175, 80, 0.2)";
             if (st === 'off') return "rgba(158, 158, 158, 0.2)";
-            return "rgba(244, 67, 54, 0.2)";
+            return "rgba(158, 158, 158, 0.1)";
           ]]]

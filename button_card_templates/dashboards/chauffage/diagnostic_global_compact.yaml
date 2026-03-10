@@ -201,7 +201,7 @@ chauffage_diagnostic_global_compact:
             // Indisponible
             // Arsenal : gris indispo unknown/unavailable
             if (d.type === 'indisponible')
-              return "rgba(224, 224, 224, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             // Blocage / critique
             if (d.type === 'blocage')

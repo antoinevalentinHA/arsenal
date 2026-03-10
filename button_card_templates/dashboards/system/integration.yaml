@@ -98,7 +98,7 @@ carte_integration_critique:
 
             // Cas indispo
             if (s === "unknown" || s === "unavailable" || s === null || s === undefined) {
-              return "rgba(224, 224, 224, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
             }
 
             // Cas binaire
@@ -115,18 +115,6 @@ carte_integration_critique:
 
             // Fallback
             return "rgba(224, 224, 224, 0.2)";
-          ]]]
-
-    state:
-      - justify-self: center
-      - align-self: end
-      - color: |
-          [[[
-            const s = entity?.state ?? "unknown";
-
-            // Erreurs (OFF) en rouge ; le reste en noir
-            if (s === "off") return "#b71c1c";
-            return "#111";
           ]]]
 
   state_display: |

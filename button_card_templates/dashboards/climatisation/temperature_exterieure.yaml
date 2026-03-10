@@ -27,7 +27,7 @@ carte_clim_diagnostic_temperature_exterieure:
             const seuil = toNumber(seuilState);
 
             if (isNaN(temp) || isNaN(seuil))
-              return "rgba(244, 67, 54, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             return temp >= seuil
               ? "rgba(76, 175, 80, 0.2)"

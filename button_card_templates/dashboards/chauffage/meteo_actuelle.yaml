@@ -18,8 +18,11 @@
 # 📌 NOTE
 #   Cette tuile n'embarque PAS la logique decisionnelle
 #   complete du chauffage.
-#   Elle expose uniquement la zone exterieure canonique :
-#   favorable / intermediaire / neutre.
+#   Elle expose une lecture locale du contexte thermique
+#   exterieur :
+#   - favorable
+#   - intermediaire
+#   - contrainte locale active
 # ==========================================================
 
 meteo_chauffage_actuelle_72:
@@ -95,30 +98,30 @@ meteo_chauffage_actuelle_72:
       - background-color: |
           [[[
             const UNAV = ['unknown','unavailable',undefined,null,'none',''];
-
+  
             const extRaw = entity?.state;
             const onRaw = states['input_number.chauffage_seuil_ext_on']?.state;
             const offRaw = states['input_number.chauffage_seuil_ext_off']?.state;
-
+  
             if (UNAV.includes(extRaw) || UNAV.includes(onRaw) || UNAV.includes(offRaw)) {
               return "rgba(158, 158, 158, 0.1)";
             }
-
+  
             const ext = parseFloat(String(extRaw).replace(',', '.'));
             const seuilOn = parseFloat(String(onRaw).replace(',', '.'));
             const seuilOff = parseFloat(String(offRaw).replace(',', '.'));
-
+  
             if (!Number.isFinite(ext) || !Number.isFinite(seuilOn) || !Number.isFinite(seuilOff)) {
               return "rgba(158, 158, 158, 0.1)";
             }
-
+  
             if (ext < seuilOn) {
               return "rgba(76, 175, 80, 0.2)";
             }
-
+  
             if (ext >= seuilOff) {
-              return "rgba(158, 158, 158, 0.2)";
+              return "rgba(255, 152, 0, 0.2)";
             }
-
-            return "rgba(255, 235, 59, 0.2)";
+  
+            return "rgba(158, 158, 158, 0.2)";
           ]]]

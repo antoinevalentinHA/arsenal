@@ -60,7 +60,7 @@ poele_en_fonction_72:
             const UNAV = ['unknown','unavailable',undefined,null,'none',''];
             const s = entity?.state;
 
-            if (UNAV.includes(s)) return "rgba(224, 224, 224, 0.2)";
+            if (UNAV.includes(s)) return "rgba(158, 158, 158, 0.1)";
             if (s === 'on') return "rgba(255, 152, 0, 0.2)";
             return "rgba(158, 158, 158, 0.2)";
           ]]]

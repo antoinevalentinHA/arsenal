@@ -19,7 +19,7 @@ pluie_exposition_resume_72:
           [[[
             const s = entity?.state;
 
-            if (!s || s === "unknown" || s === "unavailable") return "rgba(224, 224, 224, 0.2)";
+            if (!s || s === "unknown" || s === "unavailable") return "rgba(158, 158, 158, 0.1)";
 
             const v = String(s).trim().toLowerCase();
             const ok = (v === "aucune" || v === "0" || v === "none" || v === "");

@@ -63,8 +63,8 @@ chauffage_auto_courbe_status_72:
               // Indispo
               if (UNAV.includes(auto)) return "rgba(158, 158, 158, 0.1)";
 
-              // Inactif (tu avais rouge avant : je conserve)
-              if (auto !== 'on') return "rgba(244, 67, 54, 0.2)";
+              // Inactif → fonction non utilisée
+              if (auto !== 'on') return "rgba(158, 158, 158, 0.2)";
 
               // Actif
               if (UNAV.includes(simu)) return "rgba(76, 175, 80, 0.2)";

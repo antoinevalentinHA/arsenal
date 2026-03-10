@@ -20,6 +20,7 @@
 #   - vert    : aucun verrou
 #   - gris indispo : donnees manquantes
 # ==========================================================
+
 chauffage_synthese_blocage_aeration_xl:
   template: socle_status_label_xl
 
@@ -119,7 +120,7 @@ chauffage_synthese_blocage_aeration_xl:
             const d = variables.diagnostic;
 
             if (d.type === 'indisponible')
-              return "rgba(158, 158, 158, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             if (d.type === 'blocage_episode')
               return "rgba(244, 67, 54, 0.2)";

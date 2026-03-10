@@ -41,7 +41,7 @@ deshumidificateur_capteur:
               : "input_number.cave_rh_cible_off"]?.state);
 
             if (isNaN(valeur) || isNaN(seuilOn) || isNaN(seuilOff))
-              return "rgba(158,158,158,0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             if (actif) {
               return valeur > seuilOff

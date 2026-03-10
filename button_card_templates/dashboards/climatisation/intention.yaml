@@ -27,12 +27,12 @@ carte_clim_intention:
     - value: demande_refroidissement
       styles:
         card:
-          - background-color: rgba(144, 202, 249, 0.25)
+          - background-color: rgba(33, 150, 243, 0.2)
 
     - value: demande_chauffage
       styles:
         card:
-          - background-color: rgba(255,152,0,0.2)
+          - background-color: rgba(244, 67, 54, 0.2)
 
     - operator: template
       value: |

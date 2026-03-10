@@ -69,7 +69,7 @@ carte_clim_synthese:
         ]]]
       styles:
         card:
-          - background-color: rgba(144, 202, 249, 0.25)
+          - background-color: rgba(33, 150, 243, 0.2)
 
     # ✅ DRY
     - operator: template

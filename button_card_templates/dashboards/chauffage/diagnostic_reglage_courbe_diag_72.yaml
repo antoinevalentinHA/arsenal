@@ -16,8 +16,8 @@
 #   - sensor.ecart_consigne_moyenne_doux
 #
 # 🎨 COULEURS (charte Arsenal)
-#   - indispo -> rgba(224, 224, 224, 0.2)
-#   - warn    -> rgba(255, 152, 0, 0.25)
+#   - indispo -> rgba(158, 158, 158, 0.1)
+#   - warn    -> rgba(255, 152, 0, 0.2)
 #   - ok      -> rgba(76, 175, 80, 0.2)
 # ==========================================================
 
@@ -113,8 +113,8 @@ chauffage_reglage_courbe_diag_72:
             const ef  = num('sensor.ecart_consigne_moyenne_froid');
             const ed  = num('sensor.ecart_consigne_moyenne_doux');
 
-            const indispo = "rgba(224, 224, 224, 0.2)";
-            const warn    = "rgba(255, 152, 0, 0.25)";
+            const indispo = "rgba(158, 158, 158, 0.1)";
+            const warn    = "rgba(255, 152, 0, 0.2)";
             const ok      = "rgba(76, 175, 80, 0.2)";
 
             if (kind === 'tendance_24h') {
