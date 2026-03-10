@@ -1,0 +1,79 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS (COULEURS)
+#     Couleur diagnostic redondance contacts
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/11_template_sensors/couleurs/couleur_diagnostic_redondance_contacts.yaml
+#
+# 🎯 ROLE
+#   - Exposer la couleur nommee des diagnostics de redondance
+#   - Alimenter les socles UI Arsenal
+#
+# 🧱 PRINCIPE
+#   - Source : sensor.diagnostic_redondance_contact_*
+#   - Sortie : cle couleur compatible socle_kpi
+#
+# 📚 SORTIES
+#   - green
+#   - yellow
+#   - orange
+#   - red
+#   - unavailable
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.diagnostic_redondance_contact_sejour_3
+        - sensor.diagnostic_redondance_contact_porte_garage
+        - sensor.diagnostic_redondance_contact_chambre_parents_gauche
+        - sensor.diagnostic_redondance_contact_chambre_parents_milieu
+        - sensor.diagnostic_redondance_contact_chambre_parents_droite
+        - sensor.diagnostic_redondance_contact_chambre_arnaud
+        - sensor.diagnostic_redondance_contact_chambre_matthieu
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Couleur diagnostic redondance Contact Sejour 3"
+      unique_id: couleur_diagnostic_redondance_contact_sejour_3
+      state: &couleur_diagnostic_redondance_logic >
+        {% set suffixe = this.entity_id | replace('sensor.couleur_', '') %}
+        {% set src = 'sensor.' ~ suffixe %}
+        {% set diagnostic = states(src) %}
+
+        {% if diagnostic == 'nominal' %}
+          green
+        {% elif diagnostic == 'divergent' %}
+          yellow
+        {% elif diagnostic == 'degrade' %}
+          orange
+        {% elif diagnostic == 'critique' %}
+          red
+        {% else %}
+          unavailable
+        {% endif %}
+
+    - name: "Couleur diagnostic redondance Contact Porte Garage"
+      unique_id: couleur_diagnostic_redondance_contact_porte_garage
+      state: *couleur_diagnostic_redondance_logic
+
+    - name: "Couleur diagnostic redondance Contact Chambre Parents Gauche"
+      unique_id: couleur_diagnostic_redondance_contact_chambre_parents_gauche
+      state: *couleur_diagnostic_redondance_logic
+
+    - name: "Couleur diagnostic redondance Contact Chambre Parents Milieu"
+      unique_id: couleur_diagnostic_redondance_contact_chambre_parents_milieu
+      state: *couleur_diagnostic_redondance_logic
+
+    - name: "Couleur diagnostic redondance Contact Chambre Parents Droite"
+      unique_id: couleur_diagnostic_redondance_contact_chambre_parents_droite
+      state: *couleur_diagnostic_redondance_logic
+
+    - name: "Couleur diagnostic redondance Contact Chambre Arnaud"
+      unique_id: couleur_diagnostic_redondance_contact_chambre_arnaud
+      state: *couleur_diagnostic_redondance_logic
+
+    - name: "Couleur diagnostic redondance Contact Chambre Matthieu"
+      unique_id: couleur_diagnostic_redondance_contact_chambre_matthieu
+      state: *couleur_diagnostic_redondance_logic

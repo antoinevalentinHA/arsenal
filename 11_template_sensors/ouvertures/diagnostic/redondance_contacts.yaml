@@ -1,0 +1,124 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS (OUVERTURES / DIAGNOSTIC)
+#     Diagnostic redondance contacts
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/11_template_sensors/ouvertures/diagnostic/redondance_contacts.yaml
+#
+# 🎯 ROLE
+#   - Exposer l'état diagnostique synthétique des contacts redondés
+#   - Alimenter la restitution UI de diagnostic
+#
+# 🧱 PRINCIPE
+#   - Source : binary_sensor.contact_* réconciliés
+#   - Entrées relues : etat_a, etat_b, divergence, degrade
+#   - Sortie : un état synthétique par ouvrant
+#
+# 📚 ETATS
+#   - nominal
+#   - divergent
+#   - degrade
+#   - critique
+#   - unknown
+#
+# ⚠️ NOTE
+#   - Aucun calcul de diagnostic en Lovelace
+#   - Aucun rôle métier
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.contact_sejour_3
+        - binary_sensor.contact_porte_garage
+        - binary_sensor.contact_chambre_parents_gauche
+        - binary_sensor.contact_chambre_parents_milieu
+        - binary_sensor.contact_chambre_parents_droite
+        - binary_sensor.contact_chambre_arnaud
+        - binary_sensor.contact_chambre_matthieu
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Diagnostic redondance Contact Sejour 3"
+      unique_id: diagnostic_redondance_contact_sejour_3
+
+      state: &diagnostic_redondance_logic >
+        {% set suffixe = this.entity_id | replace('sensor.diagnostic_redondance_', '') %}
+        {% set src = 'binary_sensor.' ~ suffixe %}
+      
+        {% set etat = states(src) %}
+        {% set degrade = state_attr(src, 'degrade') | string | lower == 'true' %}
+        {% set divergence = state_attr(src, 'divergence') | string | lower == 'true' %}
+      
+        {% if etat in ['unknown', 'unavailable'] %}
+          unknown
+        {% elif degrade and divergence %}
+          critique
+        {% elif divergence %}
+          divergent
+        {% elif degrade %}
+          degrade
+        {% else %}
+          nominal
+        {% endif %}
+
+      attributes: &diagnostic_redondance_attributes
+        source_reconciliee: >
+          {% set suffixe = this.entity_id | replace('sensor.diagnostic_redondance_', '') %}
+          {{ 'binary_sensor.' ~ suffixe }}
+
+        etat_reconcilie: >
+          {% set suffixe = this.entity_id | replace('sensor.diagnostic_redondance_', '') %}
+          {% set src = 'binary_sensor.' ~ suffixe %}
+          {{ states(src) }}
+
+        etat_a: >
+          {% set suffixe = this.entity_id | replace('sensor.diagnostic_redondance_', '') %}
+          {% set src = 'binary_sensor.' ~ suffixe %}
+          {{ state_attr(src, 'etat_a') }}
+
+        etat_b: >
+          {% set suffixe = this.entity_id | replace('sensor.diagnostic_redondance_', '') %}
+          {% set src = 'binary_sensor.' ~ suffixe %}
+          {{ state_attr(src, 'etat_b') }}
+
+        degrade: >
+          {% set suffixe = this.entity_id | replace('sensor.diagnostic_redondance_', '') %}
+          {% set src = 'binary_sensor.' ~ suffixe %}
+          {{ state_attr(src, 'degrade') }}
+
+        divergence: >
+          {% set suffixe = this.entity_id | replace('sensor.diagnostic_redondance_', '') %}
+          {% set src = 'binary_sensor.' ~ suffixe %}
+          {{ state_attr(src, 'divergence') }}
+
+    - name: "Diagnostic redondance Contact Porte Garage"
+      unique_id: diagnostic_redondance_contact_porte_garage
+      state: *diagnostic_redondance_logic
+      attributes: *diagnostic_redondance_attributes
+
+    - name: "Diagnostic redondance Contact Chambre Parents Gauche"
+      unique_id: diagnostic_redondance_contact_chambre_parents_gauche
+      state: *diagnostic_redondance_logic
+      attributes: *diagnostic_redondance_attributes
+
+    - name: "Diagnostic redondance Contact Chambre Parents Milieu"
+      unique_id: diagnostic_redondance_contact_chambre_parents_milieu
+      state: *diagnostic_redondance_logic
+      attributes: *diagnostic_redondance_attributes
+
+    - name: "Diagnostic redondance Contact Chambre Parents Droite"
+      unique_id: diagnostic_redondance_contact_chambre_parents_droite
+      state: *diagnostic_redondance_logic
+      attributes: *diagnostic_redondance_attributes
+
+    - name: "Diagnostic redondance Contact Chambre Arnaud"
+      unique_id: diagnostic_redondance_contact_chambre_arnaud
+      state: *diagnostic_redondance_logic
+      attributes: *diagnostic_redondance_attributes
+
+    - name: "Diagnostic redondance Contact Chambre Matthieu"
+      unique_id: diagnostic_redondance_contact_chambre_matthieu
+      state: *diagnostic_redondance_logic
+      attributes: *diagnostic_redondance_attributes

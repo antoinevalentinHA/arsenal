@@ -1,0 +1,97 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSORS (MOUVEMENTS)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   - Couche NORMALISATION : binary_sensor.mouvement_* (miroir stable)
+#
+# 🧱 PRINCIPE
+#   - Les capteurs materiels bruts Zigbee2MQTT sont les sources amont.
+#   - Les entites Arsenal restent toujours evaluables (pas de unknown/unavailable).
+#   - L’indispo est exposee en attribut pour les decisions et diagnostics.
+#   - Cette couche ne fait aucune aggregation de zone.
+#
+# 📌 NOTE
+#   - Les capteurs agreges par piece / zone seront definis dans une couche N2 separee.
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.capteur_mouvements_entree_occupancy
+        - binary_sensor.capteur_mouvements_garage_1_occupancy
+        - binary_sensor.capteur_mouvements_garage_2_occupancy
+        - binary_sensor.capteur_mouvements_garage_3_occupancy
+        - binary_sensor.capteur_mouvements_sejour_1_occupancy
+        - binary_sensor.capteur_mouvements_sejour_2_occupancy
+    - platform: homeassistant
+      event: start
+
+  binary_sensor:
+
+    # ------------------------------------------------------
+    # ANCRE 1 — NORMALISATION (source -> mouvement stable)
+    # ------------------------------------------------------
+    - name: "Mouvement Entree 1"
+      unique_id: mouvement_entree_1
+      device_class: motion
+      variables:
+        src: binary_sensor.capteur_mouvements_entree_occupancy
+      state: &mouvement_norm_state >
+        {% set s = states(src) %}
+        {% if s in ['on','off'] %}
+          {{ s }}
+        {% else %}
+          off
+        {% endif %}
+      icon: &mouvement_norm_icon >
+        {% set s = states(this.entity_id) %}
+        {{ 'mdi:motion-sensor' if s == 'on' else 'mdi:motion-sensor-off' }}
+      attributes: &mouvement_norm_attr
+        source_entity: "{{ src }}"
+        source_state: "{{ states(src) }}"
+        unavailable: "{{ states(src) in ['unknown','unavailable', None] }}"
+
+    - name: "Mouvement Garage 1"
+      unique_id: mouvement_garage_1
+      device_class: motion
+      variables:
+        src: binary_sensor.capteur_mouvements_garage_1_occupancy
+      state: *mouvement_norm_state
+      icon: *mouvement_norm_icon
+      attributes: *mouvement_norm_attr
+
+    - name: "Mouvement Garage 2"
+      unique_id: mouvement_garage_2
+      device_class: motion
+      variables:
+        src: binary_sensor.capteur_mouvements_garage_2_occupancy
+      state: *mouvement_norm_state
+      icon: *mouvement_norm_icon
+      attributes: *mouvement_norm_attr
+
+    - name: "Mouvement Garage 3"
+      unique_id: mouvement_garage_3
+      device_class: motion
+      variables:
+        src: binary_sensor.capteur_mouvements_garage_3_occupancy
+      state: *mouvement_norm_state
+      icon: *mouvement_norm_icon
+      attributes: *mouvement_norm_attr
+
+    - name: "Mouvement Sejour 1"
+      unique_id: mouvement_sejour_1
+      device_class: motion
+      variables:
+        src: binary_sensor.capteur_mouvements_sejour_1_occupancy
+      state: *mouvement_norm_state
+      icon: *mouvement_norm_icon
+      attributes: *mouvement_norm_attr
+
+    - name: "Mouvement Sejour 2"
+      unique_id: mouvement_sejour_2
+      device_class: motion
+      variables:
+        src: binary_sensor.capteur_mouvements_sejour_2_occupancy
+      state: *mouvement_norm_state
+      icon: *mouvement_norm_icon
+      attributes: *mouvement_norm_attr

@@ -95,3 +95,5 @@ views:
                 entity: timer.fenetre_chambre_parents_grace
                 name: Chambre parents
                 icon: mdi:bed-king-outline
+
+          - !include ../../includes/cartes/diagnostic_redondance_contact.yaml

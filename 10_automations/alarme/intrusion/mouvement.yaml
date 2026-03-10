@@ -1,69 +1,54 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Alarme – Délai entrée (start)
+#     Alarme – Intrusion (mouvements)
 #
-#  ID : 10020000000031
+#  ID : 1002000000009
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
-#     Automation technique chargée de démarrer le délai
-#     d’entrée lorsqu’une porte surveillée est ouverte
-#     alors que l’alarme est armée.
+#     Déclencher l’alarme en cas de mouvement détecté
+#     dans une zone sensible lorsque l’alarme est armée,
+#     hors mode test et hors délai d’entrée actif.
 #
 #  🧩 PRINCIPE
 #
-#     - Réagit à une ouverture porte / garage
-#     - Pose un état temporel via timer.delai_entree
-#     - Toute décision est déléguée au cerveau Alarme V2
+#     - Réagit à une détection de mouvement agrégée par zone
+#     - Ignore tout déclenchement pendant le délai d’entrée
+#     - Ignore les nettoyages du robot
+#     - Déclenche réellement l’alarme ou envoie une notification
+#       selon le mode test
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
-#     - Ne décide pas du déclenchement de l’alarme
+#     - Ne gère pas le délai d’entrée
 #     - Ne désarme jamais l’alarme
-#     - Ne contient aucune logique métier
+#     - Ne contient pas la logique métier complète de sécurité
 #
 #  🛡️ ROBUSTESSE
 #
-#     - 100 % événementiel
-#     - Aucun wait
-#     - Post-reboot safe (timer persistant)
-#
-#  ✅ Compatibilité : Home Assistant 2024.8+
+#     - Déclenchement sur capteurs N2 de zone
+#     - Réduction des doublons liés aux capteurs physiques multiples
+#     - Lecture métier claire par zone
 # ==========================================================
 
-
 - id: '1002000000009'
-  alias: "Alarme – Intrusion (capteurs de mouvement)"
+  alias: "Alarme - Intrusion mouvements"
   description: >
     Déclenche l’alarme en cas de mouvement détecté dans des zones sensibles
-    lorsque l’alarme est armée, sauf si le mode test ou un délai est en cours.
+    lorsque l’alarme est armée, sauf si le mode test ou un délai d’entrée est en cours.
 
   mode: single
 
-  # ======================================================
-  # 🔔 Déclencheur — Mouvement détecté
-  # ======================================================
   trigger:
     - platform: state
       entity_id:
-        - binary_sensor.capteur_mouvements_sejour_1_occupancy
-        - binary_sensor.capteur_mouvements_sejour_2_occupancy
-        - binary_sensor.capteur_mouvement_entree_occupancy
-        - binary_sensor.capteur_mouvements_garage_1_occupancy
-        - binary_sensor.capteur_mouvements_garage_2_occupancy
-        - binary_sensor.capteur_mouvements_garage_3_occupancy
+        - binary_sensor.mouvement_sejour
+        - binary_sensor.mouvement_entree
+        - binary_sensor.mouvement_garage
       from: 'off'
       to: 'on'
 
-  # ======================================================
-  # ✅ Conditions — Capteur valide + contexte de déclenchement
-  # ======================================================
   condition:
-    - condition: template
-      alias: "Capteur valide (pas unknown/unavailable)"
-      value_template: >-
-        {{ trigger.to_state.state not in ['unknown', 'unavailable'] }}
-
     - condition: state
       entity_id: alarm_control_panel.alarme_maison
       state: armed_away
@@ -78,13 +63,9 @@
       entity_id: binary_sensor.roborock_q7_max_nettoyage
       state: 'off'
 
-  # ======================================================
-  # ▶️ Action — Déclenchement réel ou notification test
-  # ======================================================
   action:
     - choose:
 
-        # 🚨 Mode actif — Alarme + Notification
         - conditions:
             - condition: state
               entity_id: input_boolean.mode_test_alarme
@@ -97,26 +78,22 @@
             - action: script.notification_envoyer_avance
               data:
                 cible: input_text.telephone_antoine_notify
-                titre: "🚨 Mouvement détecté"
+                titre: "🚨 Mouvement detecte"
                 message: >
-                  {% set capteurs = {
-                    'binary_sensor.capteur_mouvements_sejour_1_occupancy': "séjour_1",
-                    'binary_sensor.capteur_mouvements_sejour_2_occupancy': "séjour_2",
-                    'binary_sensor.capteur_mouvements_entree_occupancy': "entrée",
-                    'binary_sensor.capteur_mouvements_garage_1_occupancy': "garage_1",
-                    'binary_sensor.capteur_mouvements_garage_2_occupancy': "garage_2",
-                    'binary_sensor.capteur_mouvements_garage_3_occupancy': "garage_3"
+                  {% set zones = {
+                    'binary_sensor.mouvement_sejour': 'sejour',
+                    'binary_sensor.mouvement_entree': 'entree',
+                    'binary_sensor.mouvement_garage': 'garage'
                   } %}
-                  Mouvement détecté à {{ now().strftime('%H:%M') }}  
-                  dans la zone **{{ capteurs.get(trigger.entity_id, 'inconnue') }}**.  
-                  
-                  L’alarme a été déclenchée.
+                  Mouvement detecte a {{ now().strftime('%H:%M') }}
+                  dans la zone **{{ zones.get(trigger.entity_id, 'inconnue') }}**.
+
+                  L’alarme a ete declenchee.
                 extra:
                   ttl: 0
                   priority: high
                   importance: high
 
-        # 🔕 Mode test — Notification seule
         - conditions:
             - condition: state
               entity_id: input_boolean.mode_test_alarme
@@ -125,12 +102,17 @@
             - action: script.notification_envoyer_avance
               data:
                 cible: input_text.telephone_antoine_notify
-                titre: "🔕 Mouvement simulé (mode test)"
+                titre: "🔕 Mouvement simule (mode test)"
                 message: >
-                  Mouvement détecté à {{ now().strftime('%H:%M') }}  
-                  (capteur : {{ trigger.to_state.name or trigger.entity_id }}).  
-                  
-                  Aucun déclenchement réel : le système est en **mode test**.
+                  {% set zones = {
+                    'binary_sensor.mouvement_sejour': 'sejour',
+                    'binary_sensor.mouvement_entree': 'entree',
+                    'binary_sensor.mouvement_garage': 'garage'
+                  } %}
+                  Mouvement detecte a {{ now().strftime('%H:%M') }}
+                  dans la zone **{{ zones.get(trigger.entity_id, 'inconnue') }}**.
+
+                  Aucun declenchement reel : le systeme est en **mode test**.
                 extra:
                   ttl: 0
                   priority: high

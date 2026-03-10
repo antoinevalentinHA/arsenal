@@ -432,6 +432,13 @@ diagnostics-ouvertures-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/ouvertures.yaml
 
+diagnostics-mouvements-dashboard:
+  mode: yaml
+  title: Diagnostics Mouvements
+  icon: mdi:radar
+  show_in_sidebar: false
+  filename: lovelace/dashboards/diagnostics/mouvements.yaml
+
 diagnostics-volets-dashboard:
   mode: yaml
   title: Diagnostics Volets

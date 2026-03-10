@@ -9,8 +9,8 @@
 #     Automation d’extinction conditionnelle.
 #
 #     Elle demande l’extinction de l’éclairage du garage
-#     lorsqu’aucun mouvement n’est détecté pendant
-#     une durée configurable, uniquement si l’éclairage
+#     lorsqu’aucun mouvement n’est détecté dans la zone
+#     pendant une durée configurable, uniquement si l’éclairage
 #     automatique est autorisé et actuellement actif.
 #
 #     Cette automation ne pilote PAS directement la lumière.
@@ -18,12 +18,10 @@
 #  🧩 PRINCIPE
 #
 #     - Déclenchement après absence de mouvement prolongée
-#       sur l’ensemble des capteurs du garage
+#       sur la zone garage
 #     - Vérification des autorisations :
 #         • mode automatique activé
 #         • éclairage logique actuellement allumé
-#     - Vérification globale :
-#         • tous les capteurs de mouvement sont à OFF
 #     - Délégation de l’action au script dédié
 #
 #  🧠 PARAMÈTRE UTILISATEUR
@@ -65,17 +63,13 @@
 #     paramétrable et cohérente.
 # ==========================================================
 
-
 - id: "10070000000013"
   alias: "Garage - Extinction auto"
   mode: single
 
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.capteur_mouvements_garage_1_occupancy
-        - binary_sensor.capteur_mouvements_garage_2_occupancy
-        - binary_sensor.capteur_mouvements_garage_3_occupancy
+      entity_id: binary_sensor.mouvement_garage
       to: "off"
       for:
         seconds: >
@@ -89,13 +83,6 @@
     - condition: state
       entity_id: input_boolean.garage_light_state
       state: "on"
-
-    - alias: "Tous les capteurs garage sont à off"
-      condition: template
-      value_template: >
-        {{ is_state('binary_sensor.capteur_mouvements_garage_1_occupancy', 'off')
-           and is_state('binary_sensor.capteur_mouvements_garage_2_occupancy', 'off')
-           and is_state('binary_sensor.capteur_mouvements_garage_3_occupancy', 'off') }}
 
   action:
     - alias: "Basculer la lumière via script"

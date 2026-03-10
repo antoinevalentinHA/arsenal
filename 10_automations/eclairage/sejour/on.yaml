@@ -9,7 +9,7 @@
 #     Automation d’allumage réactif par présence locale.
 #
 #     Elle alimente la lampe du séjour dès qu’un mouvement
-#     est détecté, uniquement si :
+#     est détecté dans la zone, uniquement si :
 #       • l’automatisme est autorisé
 #       • la lampe est actuellement éteinte
 #       • la période lumineuse est défavorable
@@ -19,6 +19,7 @@
 #  🧩 PRINCIPE
 #
 #     - Déclenchement immédiat sur détection de mouvement
+#       dans la zone sejour
 #     - Vérification d’une autorisation utilisateur
 #     - Vérification d’un état matériel (lampe OFF)
 #     - Restriction temporelle basée sur la période lumineuse
@@ -29,10 +30,9 @@
 #
 #  🧠 SOURCE D’ÉVÉNEMENT
 #
-#     - binary_sensor.capteur_mouvements_sejour_1_occupancy
-#     - binary_sensor.capteur_mouvements_sejour_2_occupancy
+#     - binary_sensor.mouvement_sejour
 #
-#     → événements physiques locaux
+#     → événement agrégé de zone
 #
 #  🧠 AUTORISATION
 #
@@ -45,7 +45,7 @@
 #     sensor.periode_meteo
 #
 #     → filtre de période :
-#       crépuscule / nuit / aube
+#       crepuscule / nuit / aube
 #
 #  🧠 ACTION DIRECTE
 #
@@ -70,16 +70,13 @@
 #     gérée séparément.
 # ==========================================================
 
-
 - id: "10070000000014"
   alias: "Séjour - Allumage auto"
   mode: single
 
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.capteur_mouvements_sejour_1_occupancy
-        - binary_sensor.capteur_mouvements_sejour_2_occupancy
+      entity_id: binary_sensor.mouvement_sejour
       to: "on"
 
   condition:

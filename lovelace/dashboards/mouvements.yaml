@@ -6,8 +6,18 @@ views:
     path: mouvements
     icon: mdi:motion-sensor
 
-    badges: !include ../includes/badges/base.yaml
+    badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
 
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-mouvements-dashboard/diagnostics-mouvements
 
     cards:
       - type: vertical-stack
@@ -32,19 +42,19 @@ views:
                     template: carte_mouvement
                     show_name: false
                     tap_action: none
-                    entity: binary_sensor.capteur_mouvements_garage_3_occupancy
+                    entity: binary_sensor.mouvement_garage_3
 
                   - type: custom:button-card
                     template: carte_mouvement
                     show_name: false
                     tap_action: none
-                    entity: binary_sensor.capteur_mouvements_garage_1_occupancy
+                    entity: binary_sensor.mouvement_garage_1
 
                   - type: custom:button-card
                     template: carte_mouvement
                     show_name: false
                     tap_action: none
-                    entity: binary_sensor.capteur_mouvements_garage_2_occupancy
+                    entity: binary_sensor.mouvement_garage_2
 
 
           # ===========================================================
@@ -61,7 +71,7 @@ views:
                 template: carte_mouvement
                 show_name: false
                 tap_action: none
-                entity: binary_sensor.capteur_mouvements_entree_occupancy
+                entity: binary_sensor.mouvement_entree_1
 
 
           # ===========================================================
@@ -83,10 +93,10 @@ views:
                     template: carte_mouvement
                     show_name: false
                     tap_action: none
-                    entity: binary_sensor.capteur_mouvements_sejour_2_occupancy
+                    entity: binary_sensor.mouvement_sejour_2
 
                   - type: custom:button-card
                     template: carte_mouvement
                     show_name: false
                     tap_action: none
-                    entity: binary_sensor.capteur_mouvements_sejour_1_occupancy
+                    entity: binary_sensor.mouvement_sejour_1

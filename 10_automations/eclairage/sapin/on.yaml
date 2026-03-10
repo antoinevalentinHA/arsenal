@@ -9,7 +9,7 @@
 #     Automation d’allumage réactif par présence locale.
 #
 #     Elle alimente la prise des baies vitrées dès qu’un
-#     mouvement est détecté dans le séjour, uniquement
+#     mouvement est détecté dans le sejour, uniquement
 #     si l’automatisme est explicitement autorisé.
 #
 #     Cette automation agit directement sur le matériel.
@@ -17,6 +17,7 @@
 #  🧩 PRINCIPE
 #
 #     - Déclenchement immédiat sur détection de mouvement
+#       dans la zone sejour
 #     - Vérification d’une autorisation utilisateur
 #     - Allumage direct de la prise concernée
 #
@@ -25,10 +26,9 @@
 #
 #  🧠 SOURCE D’ÉVÉNEMENT
 #
-#     - binary_sensor.capteur_mouvements_sejour_1_occupancy
-#     - binary_sensor.capteur_mouvements_sejour_2_occupancy
+#     - binary_sensor.mouvement_sejour
 #
-#     → événements physiques locaux
+#     → événement agrégé de zone
 #
 #  🧠 AUTORISATION
 #
@@ -59,16 +59,13 @@
 #     gérée séparément.
 # ==========================================================
 
-
 - id: "10070000000018"
   alias: "Guirlande - Allumage presence"
   mode: single
 
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.capteur_mouvements_sejour_1_occupancy
-        - binary_sensor.capteur_mouvements_sejour_2_occupancy
+      entity_id: binary_sensor.mouvement_sejour
       to: "on"
 
   condition:

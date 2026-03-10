@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSORS (MOUVEMENTS)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   - Couche AGREGATION GLOBALE : binary_sensor.mouvement_maison (OR)
+#
+# 🧱 PRINCIPE
+#   - N3 depend UNIQUEMENT des capteurs N2 (binary_sensor.mouvement_<zone>)
+#   - Aucun trigger-based ici : recalcul template pur
+#   - Entite toujours evaluable
+#   - L’indispo remonte via les attributs `any_unavailable` des N2
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Mouvement Maison"
+      unique_id: mouvement_maison
+      device_class: motion
+      variables:
+        members:
+          - binary_sensor.mouvement_entree
+          - binary_sensor.mouvement_garage
+          - binary_sensor.mouvement_sejour
+
+      state: >
+        {% set ns = namespace(any_on=false) %}
+        {% for e in members %}
+          {% if states(e) == 'on' %}
+            {% set ns.any_on = true %}
+          {% endif %}
+        {% endfor %}
+        {{ 'on' if ns.any_on else 'off' }}
+
+      attributes:
+        members: "{{ members }}"
+        active_members: >
+          {% set ns = namespace(items=[]) %}
+          {% for e in members %}
+            {% if states(e) == 'on' %}
+              {% set ns.items = ns.items + [e] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
+        unavailable_members: >
+          {% set ns = namespace(items=[]) %}
+          {% for e in members %}
+            {% if state_attr(e, 'any_unavailable') == true %}
+              {% set ns.items = ns.items + [e] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
+        any_unavailable: >
+          {% set ns = namespace(any_unav=false) %}
+          {% for e in members %}
+            {% if state_attr(e, 'any_unavailable') == true %}
+              {% set ns.any_unav = true %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.any_unav }}
+
+      icon: >
+        {% set ns = namespace(any_on=false, any_unav=false) %}
+        {% for e in members %}
+          {% if states(e) == 'on' %}
+            {% set ns.any_on = true %}
+          {% endif %}
+          {% if state_attr(e, 'any_unavailable') == true %}
+            {% set ns.any_unav = true %}
+          {% endif %}
+        {% endfor %}
+        {{ 'mdi:alert-circle-outline'
+           if ns.any_unav
+           else ('mdi:motion-sensor' if ns.any_on else 'mdi:motion-sensor-off') }}

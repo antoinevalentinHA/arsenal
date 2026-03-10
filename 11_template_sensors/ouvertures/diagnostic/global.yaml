@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Diagnostic redondance contacts — Synthèse globale
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Produire un état synthétique global des diagnostics
+#   de redondance des contacts.
+#
+# 🧠 PRINCIPE
+#   Le capteur expose l'état le plus critique présent
+#   parmi les diagnostics individuels.
+#
+# 📚 PRIORITE
+#   critique > divergent > degrade > nominal
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.diagnostic_redondance_contact_porte_garage
+        - sensor.diagnostic_redondance_contact_sejour_3
+        - sensor.diagnostic_redondance_contact_chambre_parents_gauche
+        - sensor.diagnostic_redondance_contact_chambre_parents_milieu
+        - sensor.diagnostic_redondance_contact_chambre_parents_droite
+        - sensor.diagnostic_redondance_contact_chambre_arnaud
+        - sensor.diagnostic_redondance_contact_chambre_matthieu
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Diagnostic redondance contacts"
+      unique_id: diagnostic_redondance_contacts
+      state: >
+        {% set s = [
+          states('sensor.diagnostic_redondance_contact_porte_garage'),
+          states('sensor.diagnostic_redondance_contact_sejour_3'),
+          states('sensor.diagnostic_redondance_contact_chambre_parents_gauche'),
+          states('sensor.diagnostic_redondance_contact_chambre_parents_milieu'),
+          states('sensor.diagnostic_redondance_contact_chambre_parents_droite'),
+          states('sensor.diagnostic_redondance_contact_chambre_arnaud'),
+          states('sensor.diagnostic_redondance_contact_chambre_matthieu')
+        ] %}
+
+        {% if 'critique' in s %}
+          critique
+        {% elif 'divergent' in s %}
+          divergent
+        {% elif 'degrade' in s %}
+          degrade
+        {% elif 'unknown' in s %}
+          unknown
+        {% else %}
+          nominal
+        {% endif %}

@@ -9,7 +9,7 @@
 #     Automation de déclenchement local conditionnel.
 #
 #     Elle réagit à des événements physiques dans le garage
-#     (mouvements ou ouverture de porte) afin de demander
+#     (mouvement de zone ou ouverture de porte) afin de demander
 #     l’allumage de l’éclairage, uniquement lorsque :
 #
 #       - l’automatisme global est autorisé
@@ -21,7 +21,7 @@
 #  🧩 PRINCIPE
 #
 #     - Déclenchement sur événements physiques :
-#         • détection de mouvement (capteurs multiples)
+#         • détection de mouvement agrégée dans le garage
 #         • ouverture de la porte du garage
 #
 #     - Vérification des autorisations (gates) :
@@ -74,22 +74,12 @@
   mode: single
 
   trigger:
-    # Capteur 1
+    # Mouvement agrégé garage
     - platform: state
-      entity_id: binary_sensor.capteur_mouvements_garage_1_occupancy
+      entity_id: binary_sensor.mouvement_garage
       to: "on"
 
-    # Capteur 2
-    - platform: state
-      entity_id: binary_sensor.capteur_mouvements_garage_2_occupancy
-      to: "on"
-
-    # Capteur 3
-    - platform: state
-      entity_id: binary_sensor.capteur_mouvements_garage_3_occupancy
-      to: "on"
-
-    # Ouverture/fermeture de la porte du garage
+    # Ouverture de la porte du garage
     - platform: state
       entity_id: binary_sensor.capteur_porte_garage
       to: "on"

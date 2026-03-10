@@ -9,7 +9,7 @@
 #     Automation d’extinction conditionnelle par absence.
 #
 #     Elle coupe l’alimentation de la lampe du séjour
-#     après une absence de mouvement prolongée,
+#     après une absence de mouvement prolongée dans la zone,
 #     uniquement si l’automatisme est autorisé
 #     et si la lampe est actuellement allumée.
 #
@@ -18,7 +18,7 @@
 #  🧩 PRINCIPE
 #
 #     - Déclenchement après absence de mouvement confirmée
-#       sur l’ensemble des capteurs du séjour
+#       sur la zone sejour
 #     - Temporisation paramétrable par l’utilisateur
 #     - Vérification d’une autorisation explicite
 #     - Extinction directe de la prise concernée
@@ -58,16 +58,13 @@
 #     claire, paramétrable et strictement locale.
 # ==========================================================
 
-
 - id: "10070000000015"
   alias: "Séjour - Extinction auto"
   mode: single
 
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.capteur_mouvements_sejour_1_occupancy
-        - binary_sensor.capteur_mouvements_sejour_2_occupancy
+      entity_id: binary_sensor.mouvement_sejour
       to: "off"
       for:
         minutes: >
@@ -77,12 +74,6 @@
     - condition: state
       entity_id: input_boolean.sejour_auto_light
       state: "on"
-
-    - alias: "Aucune détection sur les 2 capteurs"
-      condition: template
-      value_template: >
-        {{ is_state('binary_sensor.capteur_mouvements_sejour_1_occupancy', 'off')
-           and is_state('binary_sensor.capteur_mouvements_sejour_2_occupancy', 'off') }}
 
     - condition: state
       entity_id: switch.prise_lampe_sejour

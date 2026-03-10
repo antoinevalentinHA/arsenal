@@ -1,6 +1,6 @@
 # ==========================================================
 # 💡 ARSENAL — BINARY SENSOR
-#     Jardin (soir) – Extinction autorisée
+#     Jardin (soir) – Extinction autorisee
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
@@ -92,20 +92,12 @@
             {% set debut_cycle = coucher + timedelta(minutes=offset) %}
             {% set duree = states('input_number.duree_lumiere_jardin_soir') | float(0) * 60 %}
 
-            {# Activité séjour (blindée) #}
-            {% set m1 = states.binary_sensor.capteur_mouvements_sejour_1_occupancy.last_changed %}
-            {% set m2 = states.binary_sensor.capteur_mouvements_sejour_2_occupancy.last_changed %}
-            {% set motions = [m1, m2] | select('defined') | list %}
-
-            {% if motions | length == 0 %}
-              {% set last_motion = none %}
-            {% else %}
-              {% set last_motion = as_local(motions | max) %}
-            {% endif %}
+            {# Activité séjour (zone agrégée) #}
+            {% set last_motion = states.binary_sensor.mouvement_sejour.last_changed %}
 
             {% set inactivity_ok =
                  last_motion is not none
-                 and (now() - last_motion).total_seconds() > 3600 %}
+                 and (now() - as_local(last_motion)).total_seconds() > 3600 %}
 
             {{
               now() >= (debut_cycle + timedelta(seconds=duree))

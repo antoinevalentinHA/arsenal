@@ -67,15 +67,23 @@ views:
             template: chauffage_diagnostic_global_compact
 
           ########################################################
-          # 🔒 2bis) Contexte météo (anticipation)
+          # 🔒 2bis) Contexte météo
           ########################################################
 
           - type: custom:button-card
             template: section_header
-            name: 🌤️ Anticipation météo
+            name: 🌤 Météo
 
-          - type: custom:button-card
-            template: meteo_favorable_chauffage_72
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: meteo_chauffage_actuelle_72
+
+              - type: custom:button-card
+                template: meteo_favorable_chauffage_72
 
           ########################################################
           # 🪵 2ter) Poele (diagnostic thermique)

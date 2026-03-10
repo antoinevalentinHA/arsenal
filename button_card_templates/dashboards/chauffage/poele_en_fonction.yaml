@@ -8,6 +8,13 @@ poele_en_fonction_72:
   show_state: true
   show_label: true
 
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
   icon: |
     [[[
       const s = entity?.state;

@@ -25,7 +25,7 @@ views:
       - type: vertical-stack
         cards:
 
-          # === ECS Maison ===
+          # === Ouvertures avec délais ===
           - type: custom:button-card
             template: section_header
             name: ⏱️ Délais d'ouverture temporisés

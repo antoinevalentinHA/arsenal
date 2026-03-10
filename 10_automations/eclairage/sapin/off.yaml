@@ -9,15 +9,15 @@
 #     Automation d’extinction conditionnelle par absence.
 #
 #     Elle coupe l’alimentation de la prise des baies vitrées
-#     après une absence de mouvement prolongée, uniquement
-#     si l’automatisme est explicitement autorisé.
+#     après une absence de mouvement prolongée dans le sejour,
+#     uniquement si l’automatisme est explicitement autorisé.
 #
 #     Cette automation agit directement sur le matériel.
 #
 #  🧩 PRINCIPE
 #
 #     - Déclenchement après absence de mouvement confirmée
-#       sur l’ensemble des capteurs du séjour
+#       sur la zone sejour
 #     - Temporisation paramétrable par l’utilisateur
 #     - Vérification d’une autorisation explicite
 #     - Extinction directe de la prise concernée
@@ -57,16 +57,13 @@
 #     claire, paramétrable et strictement locale.
 # ==========================================================
 
-
 - id: "10070000000019"
   alias: "Guirlande - Extinction absence"
   mode: single
 
   trigger:
     - platform: state
-      entity_id:
-        - binary_sensor.capteur_mouvements_sejour_1_occupancy
-        - binary_sensor.capteur_mouvements_sejour_2_occupancy
+      entity_id: binary_sensor.mouvement_sejour
       to: "off"
       for:
         minutes: >

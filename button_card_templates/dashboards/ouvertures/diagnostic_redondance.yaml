@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — BUTTON-CARD TEMPLATE
+#     Ouvertures — Diagnostic redondance contact
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   - Specialisation UI du diagnostic de redondance contacts
+#   - Lecture seule
+#   - Consomme :
+#       - sensor.diagnostic_redondance_contact_*
+#       - sensor.couleur_diagnostic_redondance_contact_*
+#       - sensor.resume_diagnostic_redondance_contact_*
+# ==========================================================
+
+diagnostic_redondance_contact:
+  template: socle_diagnostic_compact_readonly_72
+
+  show_icon: false
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            if (!entity || !entity.entity_id) {
+              return "rgba(158, 158, 158, 0.1)";
+            }
+
+            const colorEntity = entity.entity_id.replace(
+              /^sensor\.diagnostic_redondance_/,
+              "sensor.couleur_diagnostic_redondance_"
+            );
+
+            const key = states[colorEntity]?.state;
+
+            const palette = {
+              green: "rgba(76, 175, 80, 0.2)",
+              red: "rgba(244, 67, 54, 0.2)",
+              orange: "rgba(255, 152, 0, 0.2)",
+              blue: "rgba(33, 150, 243, 0.2)",
+              grey: "rgba(158, 158, 158, 0.2)",
+              yellow: "rgba(255, 235, 59, 0.2)",
+              unavailable: "rgba(158, 158, 158, 0.1)"
+            };
+
+            if (!key || key === "unknown" || key === "unavailable") {
+              return palette.unavailable;
+            }
+
+            return palette[key] || palette.grey;
+          ]]]
+
+  label: >
+    [[[
+      if (!entity || !entity.entity_id) return "";
+
+      const resumeEntity = entity.entity_id.replace(
+        /^sensor\.diagnostic_redondance_/,
+        "sensor.resume_diagnostic_redondance_"
+      );
+
+      return states[resumeEntity]?.state || "";
+    ]]]
