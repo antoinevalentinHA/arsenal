@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS
+#     Contacts critiques — Timers de reconciliation
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/08_timers/contact_reconciliation.yaml
+#
+# 🎯 ROLE
+#   Porter la fenetre temporelle du moteur de reconciliation
+#   des contacts critiques.
+#
+# 🧱 PERIMETRE
+#   Un timer par capteur critique.
+#
+# ⚙️ CONTRAT
+#   - Duree nominale : 5 secondes
+#   - Pas de restauration apres redemarrage
+#   - Le moteur decide si le timer represente une phase
+#     de corroboration ou de quarantaine
+# ==========================================================
+
+contact_reconciliation_entree_porte:
+  name: Contact Entree Porte Reconciliation
+  duration: "00:00:05"
+  restore: false
+
+contact_reconciliation_chambre_parents_gauche:
+  name: Contact Chambre Parents Gauche Reconciliation
+  duration: "00:00:05"
+  restore: false
+
+contact_reconciliation_chambre_parents_milieu:
+  name: Contact Chambre Parents Milieu Reconciliation
+  duration: "00:00:05"
+  restore: false
+
+contact_reconciliation_chambre_parents_droite:
+  name: Contact Chambre Parents Droite Reconciliation
+  duration: "00:00:05"
+  restore: false
+
+contact_reconciliation_garage:
+  name: Contact Garage Reconciliation
+  duration: "00:00:05"
+  restore: false
+
+contact_reconciliation_sejour_3:
+  name: Contact Sejour 3 Reconciliation
+  duration: "00:00:05"
+  restore: false
+
+contact_reconciliation_chambre_arnaud:
+  name: Contact Chambre Arnaud Reconciliation
+  duration: "00:00:05"
+  restore: false
+
+contact_reconciliation_chambre_matthieu:
+  name: Contact Chambre Matthieu Reconciliation
+  duration: "00:00:05"
+  restore: false

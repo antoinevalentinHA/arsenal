@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS
+#     Contacts critiques — Horodatage dernière transition
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/07_input_datetimes/contact_last_transition_at.yaml
+#
+# 🎯 ROLE
+#   Enregistrer l'horodatage du dernier événement structurant
+#   traité par le moteur de réconciliation des contacts critiques.
+#
+#   Cet horodatage sert à :
+#     - tracer les transitions
+#     - diagnostiquer les divergences
+#     - analyser les comportements suspects
+#
+# 🧱 PERIMETRE
+#   Un helper par capteur critique.
+#
+# ⚙️ CONFIGURATION
+#   Les helpers stockent date + heure pour permettre une
+#   analyse temporelle précise des événements.
+# ==========================================================
+
+contact_last_transition_at_entree_porte:
+  name: Contact Entree Porte Derniere Transition
+  has_date: true
+  has_time: true
+
+contact_last_transition_at_chambre_parents_gauche:
+  name: Contact Chambre Parents Gauche Derniere Transition
+  has_date: true
+  has_time: true
+
+contact_last_transition_at_chambre_parents_milieu:
+  name: Contact Chambre Parents Milieu Derniere Transition
+  has_date: true
+  has_time: true
+
+contact_last_transition_at_chambre_parents_droite:
+  name: Contact Chambre Parents Droite Derniere Transition
+  has_date: true
+  has_time: true
+
+contact_last_transition_at_garage:
+  name: Contact Garage Derniere Transition
+  has_date: true
+  has_time: true
+
+contact_last_transition_at_sejour_3:
+  name: Contact Sejour 3 Derniere Transition
+  has_date: true
+  has_time: true
+
+contact_last_transition_at_chambre_arnaud:
+  name: Contact Chambre Arnaud Derniere Transition
+  has_date: true
+  has_time: true
+
+contact_last_transition_at_chambre_matthieu:
+  name: Contact Chambre Matthieu Derniere Transition
+  has_date: true
+  has_time: true

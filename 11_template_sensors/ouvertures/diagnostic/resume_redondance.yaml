@@ -13,6 +13,12 @@
 #   - Source reconciliee deduite depuis this.entity_id
 #   - Diagnostic deduit depuis this.entity_id
 #   - Sortie courte de type : A=off | B=off | nominal
+#
+# ⚠️ NOTE
+#   - Aucun calcul de diagnostic en Lovelace
+#   - Aucun role metier
+#   - Fallback explicite a unknown si attributs absents ou
+#     si capteur diagnostic indisponible
 # ==========================================================
 
 - trigger:
@@ -40,14 +46,19 @@
   sensor:
     - name: "Resume diagnostic redondance Contact Sejour 3"
       unique_id: resume_diagnostic_redondance_contact_sejour_3
+
       state: &resume_diagnostic_redondance_logic >
         {% set suffixe = this.entity_id | replace('sensor.resume_diagnostic_redondance_', '') %}
         {% set src = 'binary_sensor.' ~ suffixe %}
         {% set diagnostic = 'sensor.diagnostic_redondance_' ~ suffixe %}
 
-        {% set a = state_attr(src, 'etat_a') %}
-        {% set b = state_attr(src, 'etat_b') %}
-        {% set diag = states(diagnostic) %}
+        {% set a_raw = state_attr(src, 'etat_a') %}
+        {% set b_raw = state_attr(src, 'etat_b') %}
+        {% set diag_raw = states(diagnostic) %}
+
+        {% set a = a_raw if a_raw not in [none, '', 'None'] else 'unknown' %}
+        {% set b = b_raw if b_raw not in [none, '', 'None'] else 'unknown' %}
+        {% set diag = diag_raw if diag_raw not in ['unknown', 'unavailable', '', none] else 'unknown' %}
 
         A={{ a }} | B={{ b }} | {{ diag }}
 
@@ -55,7 +66,7 @@
       unique_id: resume_diagnostic_redondance_contact_garage
       state: *resume_diagnostic_redondance_logic
 
-    - name: "Resume diagnostic redondance Contact Entrée porte"
+    - name: "Resume diagnostic redondance Contact Entree Porte"
       unique_id: resume_diagnostic_redondance_contact_entree_porte
       state: *resume_diagnostic_redondance_logic
 

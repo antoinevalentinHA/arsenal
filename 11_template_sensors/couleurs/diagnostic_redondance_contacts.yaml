@@ -11,14 +11,10 @@
 #
 # 🧱 PRINCIPE
 #   - Source : sensor.diagnostic_redondance_contact_*
-#   - Sortie : cle couleur compatible socle_kpi
+#   - Sortie : cle couleur compatible socles UI
 #
 # 📚 SORTIES
-#   - green
-#   - yellow
-#   - orange
-#   - red
-#   - unavailable
+#   green / yellow / orange / red / blue / grey / unavailable
 # ==========================================================
 
 - trigger:
@@ -38,6 +34,7 @@
   sensor:
     - name: "Couleur diagnostic redondance Contact Sejour 3"
       unique_id: couleur_diagnostic_redondance_contact_sejour_3
+
       state: &couleur_diagnostic_redondance_logic >
         {% set suffixe = this.entity_id | replace('sensor.couleur_', '') %}
         {% set src = 'sensor.' ~ suffixe %}
@@ -51,6 +48,12 @@
           orange
         {% elif diagnostic == 'critique' %}
           red
+        {% elif diagnostic == 'quarantine' %}
+          blue
+        {% elif diagnostic == 'inhibited' %}
+          grey
+        {% elif diagnostic in ['unknown','unavailable',none] %}
+          unavailable
         {% else %}
           unavailable
         {% endif %}
@@ -59,7 +62,7 @@
       unique_id: couleur_diagnostic_redondance_contact_garage
       state: *couleur_diagnostic_redondance_logic
 
-    - name: "Couleur diagnostic redondance Contact Entrée porte"
+    - name: "Couleur diagnostic redondance Contact Entree porte"
       unique_id: couleur_diagnostic_redondance_contact_entree_porte
       state: *couleur_diagnostic_redondance_logic
 

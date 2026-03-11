@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS
+#     Contacts critiques — Contexte de réconciliation
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/04_input_texts/contact_reconciliation_contexts.yaml
+#
+# 🎯 ROLE
+#   Stocker le contexte moteur de réconciliation pour les
+#   capteurs de contact critiques (contrat v2.2).
+#
+# 🧱 CONTENU
+#   Chaque helper stocke un contexte compact contenant :
+#
+#   reconciliation_status | business_state | pending_source | suspect_event
+#
+#   Exemple :
+#     stable|off||
+#     quarantine|off|contact_garage_1|
+#     divergent|off|contact_garage_1|on_non_corroborated
+#     inhibited|off||
+#
+# ⚙️ CONTRAINTES
+#   - Un helper par capteur critique
+#   - Format compact sérialisé (pas de JSON)
+#   - Lecture/écriture contrôlée uniquement par le moteur
+#     de réconciliation
+# ==========================================================
+
+contact_reconciliation_context_entree_porte:
+  name: Contact Entree Porte Contexte Reconciliation
+  max: 100
+
+contact_reconciliation_context_chambre_parents_gauche:
+  name: Contact Chambre Parents Gauche Contexte Reconciliation
+  max: 100
+
+contact_reconciliation_context_chambre_parents_milieu:
+  name: Contact Chambre Parents Milieu Contexte Reconciliation
+  max: 100
+
+contact_reconciliation_context_chambre_parents_droite:
+  name: Contact Chambre Parents Droite Contexte Reconciliation
+  max: 100
+
+contact_reconciliation_context_garage:
+  name: Contact Garage Contexte Reconciliation
+  max: 100
+
+contact_reconciliation_context_sejour_3:
+  name: Contact Sejour 3 Contexte Reconciliation
+  max: 100
+
+contact_reconciliation_context_chambre_arnaud:
+  name: Contact Chambre Arnaud Contexte Reconciliation
+  max: 100
+
+contact_reconciliation_context_chambre_matthieu:
+  name: Contact Chambre Matthieu Contexte Reconciliation
+  max: 100

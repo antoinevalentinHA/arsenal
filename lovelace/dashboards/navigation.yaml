@@ -229,15 +229,14 @@ views:
                         - color: '#1976D2'
 
                   - type: custom:button-card
-                    template: bouton_navigation
+                    template: bouton_navigation_dynamique
+                    variables: 
+                      etat_dashboard: sensor.etat_systeme_dashboard
                     name: Système
                     icon: mdi:server
                     tap_action:
                       action: navigate
                       navigation_path: /system-dashboard/systeme
-                    styles:
-                      icon:
-                        - color: '#0288D1'
 
                   - type: custom:button-card
                     template: bouton_navigation
@@ -400,33 +399,15 @@ views:
                       action: navigate
                       navigation_path: /developer-tools/yaml
 
-              - type: grid
-                square: false
-                columns: 2
-                cards:
-
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: Reboot HA
-                    icon: mdi:restart
-                    styles:
-                      icon:
-                        - color: '#F57C00'
-                    tap_action:
-                      action: call-service
-                      service: homeassistant.restart
-                    confirmation:
-                      text: ❓ Redémarrer Home Assistant maintenant ?
-
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: Ressources
-                    icon: mdi:cog-refresh
-                    styles:
-                      icon:
-                        - color: '#009688'
-                    tap_action:
-                      action: navigate
-                      navigation_path: /config/lovelace/resources
-
-
+              - type: custom:button-card
+                template: bouton_navigation
+                name: Reboot HA
+                icon: mdi:restart
+                styles:
+                  icon:
+                    - color: '#F57C00'
+                tap_action:
+                  action: call-service
+                  service: homeassistant.restart
+                confirmation:
+                  text: ❓ Redémarrer Home Assistant maintenant ?

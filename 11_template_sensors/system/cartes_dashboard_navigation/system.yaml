@@ -1,0 +1,147 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (OBSERVABILITE)
+#     Etat systeme dashboard
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Produire une synthese exploitable de la sante systeme
+#   pour la navigation et pour une carte de diagnostic compact.
+#
+# 🧱 PRINCIPE
+#   - alert  : anomalie systeme reelle, indisponibilite d'un signal
+#              structurant, ou derive forte des ressources
+#   - normal : derive moderee sur les ressources
+#   - off    : RAS global
+#
+# 🛡️ NOTE DE MAINTENANCE
+#   Les blocs de variables sont volontairement dupliques entre
+#   state et resume, limitation native des template sensors HA.
+#   Toute evolution du perimetre doit etre reportee aux 2 endroits.
+# ==========================================================
+
+- sensor:
+
+    - name: "etat_systeme_dashboard"
+      unique_id: etat_systeme_dashboard
+      state: >
+        {% set couleurs = [
+          states('sensor.couleur_memoire_moyenne_10_min_core'),
+          states('sensor.couleur_cpu_moyenne_10_min_core'),
+          states('sensor.couleur_memoire_moyenne_10_min_supervisor'),
+          states('sensor.couleur_cpu_moyenne_10_min_supervisor')
+        ] %}
+
+        {% set internet = states('sensor.internet_qualite_7j') %}
+        {% set coupure = states('binary_sensor.coupure_secteur') %}
+        {% set batterie = states('binary_sensor.batterie_a_remplacer') %}
+        {% set zigbee = states('binary_sensor.zigbee_qualite_radio_degradee') %}
+        {% set autos_raw = states('sensor.automatisations_desactivees') %}
+        {% set autos = autos_raw | int(0) %}
+        {% set stable = states('input_boolean.systeme_stable') %}
+
+        {% set indispo = ['unknown', 'unavailable', 'none', ''] %}
+        {% set couleurs_critiques = (
+          couleurs | select('equalto', 'red') | list
+        ) + (
+          couleurs | select('equalto', 'orange') | list
+        ) %}
+        {% set couleurs_moderees = couleurs | select('equalto', 'yellow') | list %}
+        {% set couleurs_indispo = couleurs | select('in', indispo) | list %}
+
+        {% if stable in indispo
+              or internet in indispo
+              or coupure in indispo
+              or batterie in indispo
+              or zigbee in indispo
+              or autos_raw in indispo
+              or couleurs_indispo | count > 0
+              or stable == 'off'
+              or coupure == 'on'
+              or batterie == 'on'
+              or autos > 0
+              or internet != 'ok'
+              or couleurs_critiques | count > 0 %}
+          alert
+        {% elif zigbee == 'on'
+              or couleurs_moderees | count > 0 %}
+          normal
+        {% else %}
+          off
+        {% endif %}
+      icon: >
+        {% if this.state == 'alert' %}
+          mdi:alert-circle
+        {% elif this.state == 'normal' %}
+          mdi:server-network
+        {% else %}
+          mdi:server
+        {% endif %}
+      attributes:
+        resume: >
+          {% set couleurs = [
+            states('sensor.couleur_memoire_moyenne_10_min_core'),
+            states('sensor.couleur_cpu_moyenne_10_min_core'),
+            states('sensor.couleur_memoire_moyenne_10_min_supervisor'),
+            states('sensor.couleur_cpu_moyenne_10_min_supervisor')
+          ] %}
+
+          {% set internet = states('sensor.internet_qualite_7j') %}
+          {% set coupure = states('binary_sensor.coupure_secteur') %}
+          {% set batterie = states('binary_sensor.batterie_a_remplacer') %}
+          {% set zigbee = states('binary_sensor.zigbee_qualite_radio_degradee') %}
+          {% set autos_raw = states('sensor.automatisations_desactivees') %}
+          {% set autos = autos_raw | int(0) %}
+          {% set stable = states('input_boolean.systeme_stable') %}
+
+          {% set indispo = ['unknown', 'unavailable', 'none', ''] %}
+          {% set couleurs_critiques = (
+            couleurs | select('equalto', 'red') | list
+          ) + (
+            couleurs | select('equalto', 'orange') | list
+          ) %}
+          {% set couleurs_moderees = couleurs | select('equalto', 'yellow') | list %}
+          {% set couleurs_indispo = couleurs | select('in', indispo) | list %}
+
+          {% if stable in indispo %}
+            Etat systeme stable indisponible
+          {% elif internet in indispo %}
+            Qualite internet indisponible
+          {% elif coupure in indispo %}
+            Etat secteur indisponible
+          {% elif batterie in indispo %}
+            Etat batteries indisponible
+          {% elif zigbee in indispo %}
+            Etat radio Zigbee indisponible
+          {% elif autos_raw in indispo %}
+            Etat automatisations desactivees indisponible
+          {% elif couleurs_indispo | count > 0 %}
+            Etat ressources systeme indisponible
+          {% elif stable == 'off' %}
+            Stabilisation systeme en cours
+          {% elif coupure == 'on' %}
+            Coupure secteur detectee
+          {% elif batterie == 'on' %}
+            Batterie a remplacer
+          {% elif autos > 0 %}
+            Automatisations desactivees detectees
+          {% elif internet != 'ok' %}
+            Qualite internet non conforme
+          {% elif couleurs_critiques | count > 0 %}
+            Derive ressources significative
+          {% elif zigbee == 'on' %}
+            Qualite radio Zigbee degradee
+          {% elif couleurs_moderees | count > 0 %}
+            Legere derive ressources
+          {% else %}
+            Systeme nominal
+          {% endif %}
+
+        stabilite: "{{ states('input_boolean.systeme_stable') }}"
+        internet: "{{ states('sensor.internet_qualite_7j') }}"
+        secteur: "{{ states('binary_sensor.coupure_secteur') }}"
+        batterie: "{{ states('binary_sensor.batterie_a_remplacer') }}"
+        automatisations_desactivees: "{{ states('sensor.automatisations_desactivees') }}"
+        zigbee: "{{ states('binary_sensor.zigbee_qualite_radio_degradee') }}"
+        memoire_core: "{{ states('sensor.couleur_memoire_moyenne_10_min_core') }}"
+        cpu_core: "{{ states('sensor.couleur_cpu_moyenne_10_min_core') }}"
+        memoire_supervisor: "{{ states('sensor.couleur_memoire_moyenne_10_min_supervisor') }}"
+        cpu_supervisor: "{{ states('sensor.couleur_cpu_moyenne_10_min_supervisor') }}"
