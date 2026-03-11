@@ -14,16 +14,16 @@ card:
   severity:
     - from: 0
       to: 25
-      color: "rgba(244, 67, 54, 0.9)"     # 🔴 critique
+      color: "rgba(244, 67, 54, 0.2)"     # 🔴 critique
     - from: 26
       to: 50
-      color: "rgba(255, 152, 0, 0.85)"    # 🟠 bas
+      color: "rgba(255, 152, 0, 0.2)"    # 🟠 bas
     - from: 51
       to: 75
-      color: "rgba(255, 235, 59, 0.85)"   # 🟡 moyen
+      color: "rgba(255, 235, 59, 0.2)"   # 🟡 moyen
     - from: 76
       to: 100
-      color: "rgba(76, 175, 80, 0.9)"     # 🟢 OK
+      color: "rgba(76, 175, 80, 0.2)"     # 🟢 OK
   style: |
     ha-card {
       border-radius: 12px;

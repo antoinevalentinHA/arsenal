@@ -24,23 +24,23 @@ zigbee_linkquality_all:
     - sensor.bouton_garage_2_linkquality
     - sensor.bouton_sdb_linkquality
 
-    - sensor.capteur_chambre_arnaud_linkquality
-    - sensor.capteur_chambre_arnaud_bis_linkquality
-    - sensor.capteur_chambre_matthieu_linkquality
-    - sensor.capteur_chambre_matthieu_bis_linkquality
-    - sensor.capteur_chambre_parents_gauche_linkquality
-    - sensor.capteur_chambre_parents_gauche_bis_linkquality
-    - sensor.capteur_chambre_parents_milieu_linkquality
-    - sensor.capteur_chambre_parents_milieu_bis_linkquality
-    - sensor.capteur_chambre_parents_droite_linkquality
-    - sensor.capteur_chambre_parents_droite_bis_linkquality
+    - sensor.contact_chambre_arnaud_1_linkquality
+    - sensor.contact_chambre_arnaud_2_linkquality
+    - sensor.contact_chambre_matthieu_1_linkquality
+    - sensor.contact_chambre_matthieu_2_linkquality
+    - sensor.contact_chambre_parents_gauche_1_linkquality
+    - sensor.contact_chambre_parents_gauche_2_linkquality
+    - sensor.contact_chambre_parents_milieu_1_linkquality
+    - sensor.contact_chambre_parents_milieu_2_linkquality
+    - sensor.contact_chambre_parents_droite_1_linkquality
+    - sensor.contact_chambre_parents_droite_2_linkquality
 
-    - sensor.capteur_fenetre_entree_linkquality
-    - sensor.capteur_fenetre_sejour_1_linkquality
-    - sensor.capteur_fenetre_sejour_2_linkquality
-    - sensor.capteur_fenetre_sejour_3_linkquality
-    - sensor.capteur_fenetre_sejour_3_bis_linkquality
-    - sensor.capteur_fenetre_sejour_4_linkquality
+    - sensor.contact_entree_fenetre_linkquality
+    - sensor.contact_sejour_1_linkquality
+    - sensor.contact_sejour_2_linkquality
+    - sensor.contact_sejour_3_1_linkquality
+    - sensor.contact_sejour_3_2_linkquality
+    - sensor.contact_sejour_4_linkquality
 
     - sensor.capteur_mouvements_entree_linkquality
     - sensor.capteur_mouvements_garage_1_linkquality
@@ -49,9 +49,10 @@ zigbee_linkquality_all:
     - sensor.capteur_mouvements_sejour_1_linkquality
     - sensor.capteur_mouvements_sejour_2_linkquality
 
-    - sensor.capteur_porte_entree_linkquality
-    - sensor.capteur_porte_garage_linkquality
-    - sensor.capteur_porte_garage_bis_linkquality
+    - sensor.contact_entree_porte_1_linkquality
+    - sensor.contact_entree_porte_2_linkquality
+    - sensor.contact_garage_1_linkquality
+    - sensor.contact_garage_2_linkquality
 
     - sensor.clavier_alarme_1_linkquality
     - sensor.clavier_alarme_2_linkquality

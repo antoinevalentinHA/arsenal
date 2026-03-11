@@ -32,7 +32,7 @@
 
       state: >
         {% set fenetres_rdc = [
-          'binary_sensor.contact_fenetre_entree',
+          'binary_sensor.contact_entree_fenetre',
           'binary_sensor.contact_sejour'
         ] %}
         {{ fenetres_rdc | select('is_state', 'on') | list | length > 0 }}

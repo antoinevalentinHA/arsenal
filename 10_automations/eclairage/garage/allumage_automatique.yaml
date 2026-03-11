@@ -81,7 +81,7 @@
 
     # Ouverture de la porte du garage
     - platform: state
-      entity_id: binary_sensor.capteur_porte_garage
+      entity_id: binary_sensor.contact_garage
       to: "on"
 
   condition:

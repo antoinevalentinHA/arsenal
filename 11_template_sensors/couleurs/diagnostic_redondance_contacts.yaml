@@ -25,7 +25,8 @@
     - platform: state
       entity_id:
         - sensor.diagnostic_redondance_contact_sejour_3
-        - sensor.diagnostic_redondance_contact_porte_garage
+        - sensor.diagnostic_redondance_contact_garage
+        - sensor.diagnostic_redondance_contact_entree_porte
         - sensor.diagnostic_redondance_contact_chambre_parents_gauche
         - sensor.diagnostic_redondance_contact_chambre_parents_milieu
         - sensor.diagnostic_redondance_contact_chambre_parents_droite
@@ -54,8 +55,12 @@
           unavailable
         {% endif %}
 
-    - name: "Couleur diagnostic redondance Contact Porte Garage"
-      unique_id: couleur_diagnostic_redondance_contact_porte_garage
+    - name: "Couleur diagnostic redondance Contact Garage"
+      unique_id: couleur_diagnostic_redondance_contact_garage
+      state: *couleur_diagnostic_redondance_logic
+
+    - name: "Couleur diagnostic redondance Contact Entrée porte"
+      unique_id: couleur_diagnostic_redondance_contact_entree_porte
       state: *couleur_diagnostic_redondance_logic
 
     - name: "Couleur diagnostic redondance Contact Chambre Parents Gauche"

@@ -47,7 +47,7 @@
       default_entity_id: binary_sensor.fenetres_ouvertes_entree
       device_class: opening
       state: >
-        {{ is_state('binary_sensor.capteur_fenetre_entree', 'on') }}
+        {{ is_state('binary_sensor.contact_entree_fenetre', 'on') }}
 
     # ------------------------------------------------------
     #  🪟 Chambre Arnaud

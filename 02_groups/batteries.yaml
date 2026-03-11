@@ -62,9 +62,10 @@ batteries:
     - sensor.capteur_mouvements_garage_2_battery
     - sensor.capteur_mouvements_sejour_1_battery
     - sensor.capteur_mouvements_sejour_2_battery
-    - sensor.capteur_porte_entree_battery
-    - sensor.capteur_porte_garage_battery
-    - sensor.capteur_porte_garage_bis_battery
+    - sensor.contact_entree_porte_1_battery
+    - sensor.contact_entree_porte_2_battery
+    - sensor.contact_garage_1_battery
+    - sensor.contact_garage_2_battery
     - sensor.cave_batterie
     - sensor.chambre_batterie
     - sensor.chambre_parents_batterie

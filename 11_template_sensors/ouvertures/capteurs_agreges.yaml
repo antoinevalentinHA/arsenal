@@ -80,7 +80,7 @@
       device_class: opening
       variables:
         members:
-          - binary_sensor.contact_fenetre_entree
+          - binary_sensor.contact_entree_fenetre
           - binary_sensor.contact_sejour_1
           - binary_sensor.contact_sejour_2
           - binary_sensor.contact_sejour_3

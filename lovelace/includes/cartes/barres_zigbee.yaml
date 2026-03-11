@@ -17,16 +17,16 @@ card:
   severity:
     - from: 0
       to: 39
-      color: "rgba(244, 67, 54, 0.9)"      # 🔴 lien faible
+      color: "rgba(244, 67, 54, 0.2)"      # 🔴 lien faible
     - from: 40
       to: 79
-      color: "rgba(255, 152, 0, 0.85)"     # 🟠 médiocre
+      color: "rgba(255, 152, 0, 0.2)"     # 🟠 médiocre
     - from: 80
       to: 139
-      color: "rgba(255, 235, 59, 0.85)"    # 🟡 correct
+      color: "rgba(255, 235, 59, 0.2)"    # 🟡 correct
     - from: 140
       to: 255
-      color: "rgba(76, 175, 80, 0.9)"      # 🟢 bon / excellent
+      color: "rgba(76, 175, 80, 0.2)"      # 🟢 bon / excellent
   style: |
     ha-card {
       border-radius: 12px;

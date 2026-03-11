@@ -33,7 +33,7 @@
 
       state: >
         {% set immediat = [
-          'binary_sensor.contact_fenetre_entree',
+          'binary_sensor.contact_entree_fenetre',
           'binary_sensor.contact_chambre_arnaud',
           'binary_sensor.contact_chambre_matthieu'
         ] %}

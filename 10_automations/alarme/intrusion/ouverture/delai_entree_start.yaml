@@ -35,8 +35,8 @@
   trigger:
     - platform: state
       entity_id:
-        - binary_sensor.contact_porte_entree
-        - binary_sensor.contact_porte_garage
+        - binary_sensor.contact_entree_porte
+        - binary_sensor.contact_garage
       to: "on"
 
   condition:

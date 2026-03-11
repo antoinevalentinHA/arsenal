@@ -91,8 +91,12 @@ sensor.contact_garage_2_battery:
   friendly_name: "Porte garage 2"
   icon: mdi:door-closed
 
-sensor.contact_entree_porte_battery:
-  friendly_name: "Porte d’entrée"
+sensor.contact_entree_porte_1_battery:
+  friendly_name: "Porte d’entrée 1"
+  icon: mdi:door-closed
+
+sensor.contact_entree_porte_2_battery:
+  friendly_name: "Porte d’entrée 2"
   icon: mdi:door-closed
 
 sensor.contact_entree_fenetre_battery:

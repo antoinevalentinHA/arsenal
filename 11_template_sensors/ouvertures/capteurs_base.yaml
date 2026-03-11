@@ -17,8 +17,7 @@
 - trigger:
     - platform: state
       entity_id:
-        - binary_sensor.contact_entree_fenetre
-        - binary_sensor.contact_entree_porte
+        - binary_sensor.contact_brut_entree_fenetre
         - binary_sensor.contact_brut_sejour_1
         - binary_sensor.contact_brut_sejour_2
         - binary_sensor.contact_brut_sejour_4
@@ -30,11 +29,11 @@
     # ------------------------------------------------------
     # ANCRE 1 — NORMALISATION (source -> contact stable)
     # ------------------------------------------------------
-    - name: "Contact Fenetre Entree"
-      unique_id: contact_fenetre_entree
+    - name: "Contact Entrée Fenêtre"
+      unique_id: contact_entree_fenetre
       device_class: opening
       variables:
-        src: binary_sensor.contact_entree_fenetre
+        src: binary_sensor.contact_brut_entree_fenetre
         kind: window
       state: &contact_norm_state >
         {% set s = states(src) %}
@@ -54,16 +53,6 @@
         source_entity: "{{ src }}"
         source_state: "{{ states(src) }}"
         unavailable: "{{ states(src) in ['unknown','unavailable', None] }}"
-
-    - name: "Contact Porte Entree"
-      unique_id: contact_porte_entree
-      device_class: door
-      variables:
-        src: binary_sensor.contact_entree_porte
-        kind: door
-      state: *contact_norm_state
-      icon: *contact_norm_icon
-      attributes: *contact_norm_attr
 
     # ------------------------------------------------------
     # CONTACTS SIMPLES — SEJOUR (1 / 2 / 4)

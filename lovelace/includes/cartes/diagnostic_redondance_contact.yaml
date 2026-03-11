@@ -6,12 +6,17 @@ cards:
     name: 📡 Redondance Zigbee
 
   - type: grid
-    columns: 2
+    columns: 3
     square: false
     cards:
       - type: custom:button-card
         template: diagnostic_redondance_contact
-        entity: sensor.diagnostic_redondance_contact_porte_garage
+        entity: sensor.diagnostic_redondance_contact_entree_porte
+        name: Entrée (porte)
+
+      - type: custom:button-card
+        template: diagnostic_redondance_contact
+        entity: sensor.diagnostic_redondance_contact_garage
         name: Garage
 
       - type: custom:button-card
@@ -19,24 +24,25 @@ cards:
         entity: sensor.diagnostic_redondance_contact_sejour_3
         name: Séjour 3
 
-  - type: custom:button-card
-    template: diagnostic_redondance_contact
-    entity: sensor.diagnostic_redondance_contact_chambre_parents_gauche
-    name: Dressing
+      - type: custom:button-card
+        template: diagnostic_redondance_contact
+        entity: sensor.diagnostic_redondance_contact_chambre_parents_gauche
+        name: Dressing
+    
+      - type: custom:button-card
+        template: diagnostic_redondance_contact
+        entity: sensor.diagnostic_redondance_contact_chambre_parents_milieu
+        name: Parents gauche
+    
+      - type: custom:button-card
+        template: diagnostic_redondance_contact
+        entity: sensor.diagnostic_redondance_contact_chambre_parents_droite
+        name: Parents droite
 
   - type: grid
     columns: 2
     square: false
     cards:
-      - type: custom:button-card
-        template: diagnostic_redondance_contact
-        entity: sensor.diagnostic_redondance_contact_chambre_parents_milieu
-        name: Parents gauche
-
-      - type: custom:button-card
-        template: diagnostic_redondance_contact
-        entity: sensor.diagnostic_redondance_contact_chambre_parents_droite
-        name: Parents droite
 
       - type: custom:button-card
         template: diagnostic_redondance_contact

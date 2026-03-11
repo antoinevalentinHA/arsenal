@@ -77,6 +77,26 @@ Ce `input_number` :
 
 ---
 
+## 🔁 MÉMOIRE MONOTONE DE CYCLE
+
+M3 maintient également une mémoire monotone du ΔT
+observé pendant le cycle de blocage.
+
+Helper concerné :
+
+- `input_number.aeration_delta_t_utilise`
+
+Propriété :
+
+- la valeur stockée représente le **ΔT maximal observé
+  depuis le début du cycle M1–M4**.
+
+Méthode :
+
+- à chaque exécution de M3, la valeur est mise à jour via :
+
+---
+
 ## 🛑 INTERDIT
 
 Le calcul ne doit jamais :

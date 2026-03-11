@@ -28,6 +28,6 @@
           'binary_sensor.contact_chambre_matthieu',
           'binary_sensor.contact_chambre_parents',
           'binary_sensor.contact_sejour',
-          'binary_sensor.contact_fenetre_entree'
+          'binary_sensor.contact_entree_fenetre'
         ] %}
         {{ fenetres | select('is_state', 'on') | list | length > 0 }}

@@ -23,7 +23,7 @@
       device_class: opening
 
       icon: >
-        {% set entree_open = is_state('binary_sensor.contact_fenetre_entree', 'on') %}
+        {% set entree_open = is_state('binary_sensor.contact_entree_fenetre', 'on') %}
 
         {% set parents_fenetres = [
           'binary_sensor.contact_chambre_parents_droite',
@@ -57,7 +57,7 @@
         {% endif %}
 
       state: >
-        {% set entree_open = is_state('binary_sensor.contact_fenetre_entree', 'on') %}
+        {% set entree_open = is_state('binary_sensor.contact_entree_fenetre', 'on') %}
         {% set sejour_ok   = is_state('binary_sensor.fenetre_sejour_ouverte_avec_delai', 'on') %}
         {% set etage_ok    = is_state('binary_sensor.fenetre_ouverte_etage_avec_delai', 'on') %}
 

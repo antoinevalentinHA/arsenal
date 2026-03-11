@@ -39,8 +39,8 @@
           'binary_sensor.contact_chambre_matthieu',
           'binary_sensor.contact_chambre_parents',
           'binary_sensor.contact_sejour',
-          'binary_sensor.contact_fenetre_entree',
-          'binary_sensor.contact_porte_entree',
-          'binary_sensor.contact_porte_garage'
+          'binary_sensor.contact_entree_fenetre',
+          'binary_sensor.contact_entree_porte',
+          'binary_sensor.contact_garage'
         ] %}
         {{ ouvertures | select('is_state', 'on') | list | length > 0 }}

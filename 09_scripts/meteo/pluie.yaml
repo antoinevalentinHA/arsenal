@@ -97,7 +97,7 @@ pluie_detectee:
           Séjour 2: binary_sensor.contact_sejour_2
           Séjour 3: binary_sensor.contact_sejour_3
           Séjour 4: binary_sensor.contact_sejour_4
-          Entrée: binary_sensor.contact_fenetre_entree
+          Entrée: binary_sensor.contact_entree_fenetre
           Chambre parents - gauche: binary_sensor.contact_chambre_parents_gauche
           Chambre parents - milieu: binary_sensor.contact_chambre_parents_milieu
           Chambre parents - droite: binary_sensor.contact_chambre_parents_droite

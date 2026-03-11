@@ -49,7 +49,7 @@ homeassistant:
   enabled: true
 devices:
   '0x00158d0008482575':
-    friendly_name: contact_entree_porte
+    friendly_name: contact_entree_porte_1
   '0x0015bc0043005dda':
     friendly_name: clavier_alarme_1
   '0x0015bc0043005dcf':
@@ -162,6 +162,8 @@ devices:
     friendly_name: contact_chambre_matthieu_2
   '0x983268fffe9bc630':
     friendly_name: contact_chambre_arnaud_2
+  '0x7c31fafffef195bc':
+    friendly_name: contact_entree_porte_2
 groups:
   '1':
     friendly_name: Prises

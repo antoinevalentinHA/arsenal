@@ -30,7 +30,8 @@
     - platform: state
       entity_id:
         - binary_sensor.contact_sejour_3
-        - binary_sensor.contact_porte_garage
+        - binary_sensor.contact_entree_porte
+        - binary_sensor.contact_garage
         - binary_sensor.contact_chambre_parents_gauche
         - binary_sensor.contact_chambre_parents_milieu
         - binary_sensor.contact_chambre_parents_droite
@@ -93,8 +94,13 @@
           {% set src = 'binary_sensor.' ~ suffixe %}
           {{ state_attr(src, 'divergence') }}
 
-    - name: "Diagnostic redondance Contact Porte Garage"
-      unique_id: diagnostic_redondance_contact_porte_garage
+    - name: "Diagnostic redondance Contact Garage"
+      unique_id: diagnostic_redondance_contact_garage
+      state: *diagnostic_redondance_logic
+      attributes: *diagnostic_redondance_attributes
+
+    - name: "Diagnostic redondance Contact Entrée porte"
+      unique_id: diagnostic_redondance_contact_entree_porte
       state: *diagnostic_redondance_logic
       attributes: *diagnostic_redondance_attributes
 

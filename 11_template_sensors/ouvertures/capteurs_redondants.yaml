@@ -43,8 +43,42 @@
         - binary_sensor.contact_chambre_arnaud_2
         - binary_sensor.contact_chambre_matthieu_1
         - binary_sensor.contact_chambre_matthieu_2
+        # Entree
+        - binary_sensor.contact_entree_porte_1
+        - binary_sensor.contact_entree_porte_2
 
   binary_sensor:
+
+    # ----------------------------------------------------------
+    # PORTE ENTREE
+    # ----------------------------------------------------------
+    - name: "Contact Entree Porte"
+      unique_id: contact_entree_porte
+      device_class: door
+      state: >
+        {% set new_state = trigger.to_state.state %}
+        {% if trigger.entity_id in [
+            'binary_sensor.contact_entree_porte_1',
+            'binary_sensor.contact_entree_porte_2'
+          ] and new_state in ['on', 'off'] %}
+          {{ new_state }}
+        {% else %}
+          {{ this.state if this.state in ['on', 'off'] else 'unknown' }}
+        {% endif %}
+      icon: >
+        {{ 'mdi:door-open' if this.state == 'on' else 'mdi:door-closed' }}
+      attributes:
+        source_entity_a: binary_sensor.contact_entree_porte_1
+        source_entity_b: binary_sensor.contact_entree_porte_2
+        etat_a: "{{ states('binary_sensor.contact_entree_porte_1') }}"
+        etat_b: "{{ states('binary_sensor.contact_entree_porte_2') }}"
+        degrade: >
+          {{ states('binary_sensor.contact_entree_porte_1') in ['unknown', 'unavailable']
+             or states('binary_sensor.contact_entree_porte_2') in ['unknown', 'unavailable'] }}
+        divergence: >
+          {% set a = states('binary_sensor.contact_entree_porte_1') %}
+          {% set b = states('binary_sensor.contact_entree_porte_2') %}
+          {{ a in ['on','off'] and b in ['on','off'] and a != b }}
 
     # ----------------------------------------------------------
     # CHAMBRE PARENTS — GAUCHE
@@ -142,8 +176,8 @@
     # ----------------------------------------------------------
     # PORTE GARAGE
     # ----------------------------------------------------------
-    - name: "Contact Porte Garage"
-      unique_id: contact_porte_garage
+    - name: "Contact Garage"
+      unique_id: contact_garage
       device_class: garage_door
       state: >
         {% set new_state = trigger.to_state.state %}

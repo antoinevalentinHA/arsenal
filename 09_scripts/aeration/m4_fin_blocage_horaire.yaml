@@ -45,6 +45,13 @@ aeration_m4_fin_blocage_horaire:
       data:
         datetime: "{{ (now().date().isoformat() ~ ' 00:00:00') | trim }}"
 
+    # Neutraliser mémoire ΔT du cycle
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.aeration_delta_t_utilise
+      data:
+        value: 0
+
     # Neutraliser datetime analyse ΔT (trace)
     - action: input_datetime.set_datetime
       target:

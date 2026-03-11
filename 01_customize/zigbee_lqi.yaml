@@ -123,8 +123,12 @@ sensor.contact_sejour_4_linkquality:
   friendly_name: "Baie vitrée 4 séjour"
   icon: mdi:window-closed
 
-sensor.contact_entree_porte_linkquality:
-  friendly_name: "Porte d’entrée"
+sensor.contact_entree_porte_1_linkquality:
+  friendly_name: "Porte d’entrée 1"
+  icon: mdi:door-closed
+
+sensor.contact_entree_porte_2_linkquality:
+  friendly_name: "Porte d’entrée 2"
   icon: mdi:door-closed
 
 sensor.contact_garage_1_linkquality:

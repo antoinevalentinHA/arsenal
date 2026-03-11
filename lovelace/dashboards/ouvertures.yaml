@@ -52,17 +52,17 @@ views:
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.contact_porte_garage
+                    entity: binary_sensor.contact_garage
                     name: Garage
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.contact_porte_entree
+                    entity: binary_sensor.contact_entree_porte
                     name: Porte
 
                   - type: custom:button-card
                     template: contact_sensor
-                    entity: binary_sensor.contact_fenetre_entree
+                    entity: binary_sensor.contact_entree_fenetre
                     name: Fenêtre
 
           # 🛋️ Séjour

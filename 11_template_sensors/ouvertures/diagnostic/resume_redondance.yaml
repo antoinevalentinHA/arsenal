@@ -19,14 +19,16 @@
     - platform: state
       entity_id:
         - binary_sensor.contact_sejour_3
-        - binary_sensor.contact_porte_garage
+        - binary_sensor.contact_garage
+        - binary_sensor.contact_entree_porte
         - binary_sensor.contact_chambre_parents_gauche
         - binary_sensor.contact_chambre_parents_milieu
         - binary_sensor.contact_chambre_parents_droite
         - binary_sensor.contact_chambre_arnaud
         - binary_sensor.contact_chambre_matthieu
         - sensor.diagnostic_redondance_contact_sejour_3
-        - sensor.diagnostic_redondance_contact_porte_garage
+        - sensor.diagnostic_redondance_contact_garage
+        - sensor.diagnostic_redondance_contact_entree_porte
         - sensor.diagnostic_redondance_contact_chambre_parents_gauche
         - sensor.diagnostic_redondance_contact_chambre_parents_milieu
         - sensor.diagnostic_redondance_contact_chambre_parents_droite
@@ -49,8 +51,12 @@
 
         A={{ a }} | B={{ b }} | {{ diag }}
 
-    - name: "Resume diagnostic redondance Contact Porte Garage"
-      unique_id: resume_diagnostic_redondance_contact_porte_garage
+    - name: "Resume diagnostic redondance Contact Garage"
+      unique_id: resume_diagnostic_redondance_contact_garage
+      state: *resume_diagnostic_redondance_logic
+
+    - name: "Resume diagnostic redondance Contact Entrée porte"
+      unique_id: resume_diagnostic_redondance_contact_entree_porte
       state: *resume_diagnostic_redondance_logic
 
     - name: "Resume diagnostic redondance Contact Chambre Parents Gauche"

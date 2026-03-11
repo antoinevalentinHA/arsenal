@@ -65,9 +65,9 @@ Pour certains ouvrants critiques, N0 peut désormais être **redondé** :
 
 Exemples :
 
-- `binary_sensor.capteur_fenetre_parents_gauche` + `binary_sensor.capteur_fenetre_parents_gauche_bis`
-- `binary_sensor.capteur_fenetre_sejour_3` + `binary_sensor.capteur_fenetre_sejour_3_bis`
-- `binary_sensor.capteur_porte_garage` + `binary_sensor.capteur_porte_garage_bis`
+- `binary_sensor.contact_chambre_parents_gauche_1` + `binary_sensor.contact_chambre_parents_gauche_2`
+- `binary_sensor.contact_sejour_3_1` + `binary_sensor.contact_sejour_3_2`
+- `binary_sensor.contact_garage_1` + `binary_sensor.contact_garage_2`
 
 Cette redondance reste **strictement N0** :
 elle n’introduit aucun fait métier, aucune temporisation, aucune décision.

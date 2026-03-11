@@ -79,19 +79,25 @@
 ### 🔒 sensor.temperature_min_chambres
 
 - Domaine : Diagnostic structurant / Décision thermique
-- Autorité : STRUCTURANT
+- Autorité : **STRUCTURANT**
+
+---
 
 🎯 Rôle :
-Fournir la température minimale représentative de la zone Chambres,
+Fournir la **température minimale représentative de la zone Chambres**,
 utilisée comme borne basse de référence pour la décision thermique,
-la protection en absence et les diagnostics d’inertie.
+la protection en absence et les diagnostics d'inertie.
 
-🧭 Périmètre d’influence autorisé :
-- Décision centrale (borne basse de zone)
+---
+
+🧭 Périmètre d'influence autorisé :
+- `sensor.chauffage_autorisation_cible` (borne basse de zone)
 - Standby / hystérésis thermique
 - Protection absence (garde-fou refroidissement)
-- Diagnostics structurants d’inertie
+- Diagnostics structurants d'inertie
 - Base de calibration future (offset absence)
+
+---
 
 ⛔ Interdictions absolues :
 - Ne pilote jamais directement un ordre matériel
@@ -100,89 +106,155 @@ la protection en absence et les diagnostics d’inertie.
 - Ne sert jamais de température moyenne
 - Ne pilote jamais seul une décision finale
 
+---
+
 🔒 Garanties exigées :
-- Agrégation logique déterministe
-- Ignorance des valeurs non numériques
-- Fallback mémoire en cas de rupture
-- Reload-safe / runtime-safe
+- Agrégation min déterministe sur les valeurs numériques disponibles
+- Ignorance des valeurs non numériques (`unknown`, `unavailable`)
+- Fallback mémoire via `this.state` en cas de rupture temporaire —
+  garanti en fonctionnement normal ; peut retourner `unknown` au premier démarrage à froid
+  avant toute donnée disponible
+- Robustesse en cascade : chaque source amont (`temperature_chambre_*`) dispose
+  elle-même d'un fallback HomeKit → Zigbee → mémoire — la rupture totale
+  nécessite la défaillance simultanée des six capteurs physiques et de toutes les mémoires
+- Expose en attribut la chambre la plus froide identifiée
+- Reload-safe / runtime-safe (trigger `homeassistant start` inclus)
 - Aucune logique métier embarquée
 
+---
+
 🔗 Dépendances :
-Sources amont :
-- sensor.temperature_chambre_arnaud
-- sensor.temperature_chambre_matthieu
-- sensor.temperature_chambre_parents
+
+Sources amont (capteurs consolidés) :
+- `sensor.temperature_chambre_arnaud` (HomeKit → Zigbee → mémoire)
+- `sensor.temperature_chambre_matthieu` (HomeKit → Zigbee → mémoire)
+- `sensor.temperature_chambre_parents` (HomeKit → Zigbee → mémoire)
+
+Consommateurs contractuels :
+- `sensor.chauffage_autorisation_cible`
+- Diagnostics structurants d'inertie thermique
+
+---
 
 ⚠️ Risques :
-- Dérive sémantique (min ≠ température de confort)
+- Dérive sémantique : min ≠ température de confort — ne pas interpréter comme cible de chauffe
+- Retour `unknown` au premier démarrage à froid si aucune source n'est encore disponible
 - Usage direct en pilotage interdit
 - Extension de périmètre sans mise à jour contractuelle
+
+---
+
+⚠️ Classification :
+INCLUS DANS `15_capteurs_thermiques.md`
+Section : Diagnostic structurant / Décision thermique
+Classe : **STRUCTURANT**
 
 # ----------------------------------------------------------
 
 ### 🔒 sensor.chauffage_autorisation_cible
 
-- Domaine : Autorisation thermostat / Décision centrale  
-- Autorité : STRUCTURANT — NIVEAU CRITIQUE  
+- Domaine : Autorisation thermostat / Évaluation thermique canonique
+- Autorité : **STRUCTURANT — NIVEAU CRITIQUE**
+
+---
 
 🎯 Rôle :
-Produire l’INTENTION THERMIQUE CANONIQUE ternaire
-(comfort / neutre / reduced) issue directement de la Décision Centrale Chauffage,
-servant de référence unique pour la table de décision, les triggers décisionnels,
-les mécanismes d’autorisation et l’application logique du chauffage.
+Calculer l'**intention thermique canonique ternaire** (`comfort` / `neutre` / `reduced`)
+à partir des faits physiques et contextuels du moment,
+indépendamment de tout mécanisme de blocage N1 ou de décision d'exécution.
 
-🧭 Périmètre d’influence autorisé :
-- Table de décision canonique
-- Triggers décisionnels critiques
-- Autorisation thermostat logique
-- Verrou logique de standby
-- Synchronisation des états internes
-- UI structurante / diagnostic central
+Ce capteur constitue le **pivot d'évaluation thermique de fond** du système Arsenal.
+Il répond exclusivement à : fait-il froid dehors, fait-il froid dedans,
+et dans quel mode est la maison — sans tenir compte des mécanismes de blocage ou d'exécution.
+
+Il est une **entrée** de la décision centrale — pas sa sortie.
+Il est également consommé directement par le mécanisme de standby,
+les diagnostics structurants et les triggers décisionnels.
+
+Il représente une **autorisation thermique calculée**, jamais une décision finale,
+jamais une action, jamais un ordre matériel.
+
+---
+
+🧭 Périmètre d'influence autorisé :
+- Décision centrale chauffage (régime présence uniquement)
+- Automation d'application du verrou standby (`input_boolean.chauffage_standby_force`)
+- Triggers décisionnels présence (capteur pivot)
+- Diagnostics structurants (`sensor.chauffage_mode_calcule`, `sensor.chauffage_raison_calculee`)
+- Observabilité (recorder, logbook, UI)
+
+---
 
 ⛔ Interdictions absolues :
 - Ne déclenche jamais directement une chauffe
-- Ne produit jamais d’ordre matériel
+- Ne produit jamais d'ordre matériel
 - Ne modifie jamais une consigne
 - Ne pilote jamais un service
-- Ne lit jamais un état matériel
-- Ne dépend jamais de ViCare ou d’un retour Cloud
+- Ne dépend jamais directement d'un équipement matériel
+- Ne dépend jamais de ViCare ou d'un retour Cloud
 - Ne contourne jamais la table de décision
+- Ne doit pas connaître les blocages N1 (dépendance actuelle à `blocage_chauffage_poele` documentée comme dette à migrer vers la décision centrale)
+
+---
 
 🔒 Garanties exigées :
-- Valeurs strictement bornées : comfort / neutre / reduced
+- Valeurs strictement bornées : `comfort` / `neutre` / `reduced` / `unknown`
 - Décision pure, sans effet de bord
 - Reload-safe / restart-safe
-- Indépendance totale vis-à-vis du matériel et de l’API
+- Indépendance totale vis-à-vis du matériel et de l'API
 - Dépendance exclusive à des capteurs et helpers gouvernés
-- Logique strictement équivalente à la décision métier canonique
+- Fallback `unknown` si données amont indisponibles — jamais de repli mensonger
+
+---
 
 🔗 Dépendances :
+
 Sources thermiques :
-- sensor.temperature_jardin
-- sensor.temperature_min_chambres
+- `sensor.temperature_jardin`
+- `sensor.temperature_min_chambres`
 
 Paramètres décisionnels :
-- input_number.chauffage_consigne_confort
-- input_number.chauffage_offset_on
-- input_number.chauffage_offset_off
-- input_number.chauffage_seuil_ext_on
-- input_number.chauffage_seuil_ext_off
+- `input_number.chauffage_consigne_confort`
+- `input_number.chauffage_offset_on`
+- `input_number.chauffage_offset_off`
+- `input_number.chauffage_seuil_ext_on`
+- `input_number.chauffage_seuil_ext_off`
 
 Contextes :
-- input_boolean.blocage_chauffage_poele
-- input_select.mode_maison
+- `input_boolean.blocage_chauffage_poele` ⚠️ dette architecturale — ce capteur devrait ignorer les blocages N1 ; cette dépendance doit être migrée vers la décision centrale
+- `input_select.mode_maison`
+- `input_boolean.chauffage_anticipation_meteo`
+- `binary_sensor.meteo_favorable_chauffage`
+
+Consommateurs contractuels :
+- `decision_centrale.yaml` — régime présence (entrée, pas sortie)
+- `10_automations/chauffage/autorisation.yaml` — application du verrou standby
+- `20_triggers_decisionnels.md` — capteur pivot des triggers présence
+- `50_standby_hysteresis.md` — pilotage du standby
+- `diagnostic/mode.yaml` et `diagnostic/raison.yaml` — diagnostics structurants
+- Recorder / logbook / UI
+
+---
 
 ⚠️ Risques :
-- Altération sémantique des seuils (impact global immédiat)
-- Introduction de dépendance matérielle ou API (violation de souveraineté)
-- Contournement de la table de décision
-- Ajout implicite d’une action (dette systémique critique)
-- Usage direct comme déclencheur matériel
+- Altération sémantique des seuils — impact global immédiat sur tout le système
+- Introduction d'une dépendance matérielle ou API — violation de souveraineté
+- Confusion avec une sortie décisionnelle — ce capteur est une entrée, pas une sortie
+- Ajout implicite d'une action — dette systémique critique
+- Usage direct comme déclencheur matériel — interdit
 
-❗ Statut critique :
-SORTIE DIRECTE DU MOTEUR DE DÉCISION CHAUFFAGE  
+---
+
+❗ Statut particulier :
+**CAPTEUR D'ÉVALUATION THERMIQUE CANONIQUE — ENTRÉE DU MOTEUR DE DÉCISION**
+Pivot d'autorisation thermique de fond, consommé par la décision centrale,
+le standby et les diagnostics structurants.
+Ne connaît pas les blocages N1.
 Toute modification est une modification MÉTIER de premier niveau.
 
-✅ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
-Section : Autorisation thermostat / Décision centrale
+---
+
+⚠️ Classification :
+INCLUS DANS `15_capteurs_thermiques.md`
+Section : Autorisation thermostat / Évaluation thermique canonique
+Classe : **STRUCTURANT — NIVEAU CRITIQUE**

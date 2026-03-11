@@ -39,7 +39,7 @@
 #         • timer.fenetre_chambre_parents_grace
 #
 #       B) Ouverture d’une zone SANS délai (immédiat) :
-#         • binary_sensor.contact_fenetre_entree
+#         • binary_sensor.contact_entree_fenetre
 #         • binary_sensor.contact_chambre_arnaud
 #         • binary_sensor.contact_chambre_matthieu
 #
@@ -113,7 +113,7 @@
     # ==============================
 
     - platform: state
-      entity_id: binary_sensor.contact_fenetre_entree
+      entity_id: binary_sensor.contact_entree_fenetre
       to: "on"
       id: entree
 

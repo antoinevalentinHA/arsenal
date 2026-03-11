@@ -55,6 +55,33 @@ Ces neutralisations :
 
 ---
 
+## 🔄 NEUTRALISATION DES ARTEFACTS DE CYCLE
+
+M4 neutralise également les helpers de synthèse
+associés au cycle d’aération clôturé.
+
+Helper concerné :
+
+- `input_number.aeration_delta_t_utilise`
+
+Valeur cible :
+
+- `0`
+
+Rôle :
+
+- supprimer toute mémoire ΔT du cycle précédent,
+- garantir qu’un nouveau cycle reparte d’un état neutre,
+- éviter toute contamination inter-cycle.
+
+Propriété normative :
+
+- aucun artefact de synthèse du cycle
+  ne doit conserver une valeur active
+  après exécution de M4.
+
+---
+
 ## 🧩 PROPRIÉTÉ DE CLÔTURE
 
 Après exécution de M4 :

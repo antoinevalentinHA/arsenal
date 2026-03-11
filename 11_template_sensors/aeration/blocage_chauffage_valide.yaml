@@ -167,7 +167,7 @@
 
             {% set zones = [] %}
 
-            {% if is_state('binary_sensor.contact_fenetre_entree', 'on') %}
+            {% if is_state('binary_sensor.contact_entree_fenetre', 'on') %}
               {% set zones = zones + ['entree'] %}
             {% endif %}
 
