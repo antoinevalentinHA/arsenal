@@ -80,22 +80,22 @@ views:
                   - type: custom:button-card
                     template: contact_sensor
                     entity: binary_sensor.contact_sejour_1
-                    name: Baie vitrée 1
+                    name: "1"
 
                   - type: custom:button-card
                     template: contact_sensor
                     entity: binary_sensor.contact_sejour_2
-                    name: Baie vitrée 2
+                    name: "2"
 
                   - type: custom:button-card
                     template: contact_sensor
                     entity: binary_sensor.contact_sejour_3
-                    name: Baie vitrée 3
+                    name: "3"
 
                   - type: custom:button-card
                     template: contact_sensor
                     entity: binary_sensor.contact_sejour_4
-                    name: Baie vitrée 4
+                    name: "4"
 
           # 🛏️ Chambre parents
           - type: grid
