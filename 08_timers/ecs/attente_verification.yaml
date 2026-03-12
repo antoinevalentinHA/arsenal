@@ -53,7 +53,6 @@
 #   pas la production ECS elle-même.
 # ==========================================================
 
-
 ecs_gardien_consigne_verification:
   name: "ECS Gardien attente verification"
   duration: "00:00:20"

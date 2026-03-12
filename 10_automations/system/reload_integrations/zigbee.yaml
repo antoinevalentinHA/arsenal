@@ -70,7 +70,7 @@
   action:
     - variables:
         tentative: "{{ states('input_number.zigbee_reload_tentatives') | int(0) }}"
-        plafond: "{{ (states('input_number.zigbee_reload_tentatives') | int(0)) >= 5 }}"
+        plafond: "{{ tentative >= 5 }}"
         delai_min: >
           {% set d = (tentative + 1) * 10 %}
           {{ [d, 60] | min }}

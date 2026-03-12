@@ -1,283 +1,262 @@
-==================================================
-🧠 ARSENAL — HISTORIQUE TRANSVERSAL DES ÉVOLUTIONS (2025→2026)
-==================================================
+# ARSENAL — Historique architectural (2025 → 2026)
 
-Ce document décrit **l’évolution du système ARSENAL dans le temps** (lecture “signal”), en reliant :
-- **doctrine / gouvernance**
-- **architecture décision / action / UI**
-- **domaines fonctionnels** (Chauffage, ECS, Clim, Réseau/Zigbee, Sécurité, UI, Docs, Observabilité)
-
-📌 Source temporelle utilisée : **tes jalons datés** (Europe/Paris).
-📌 Quand un changelog interne porte une autre date, on le considère comme **date documentaire**, pas comme jalon.
+> Lecture "signal" : ce document raconte **comment le système a changé de nature**, 
+pas seulement ce qui a été ajouté. Chaque phase correspond à une inflexion de pensée, 
+pas à une liste de commits.
 
 ---
 
-# 0) Timeline — jalons & inflexions (vue synthétique)
+## Avant-propos : ce que ce document n'est pas
 
-| Date / heure | Jalon | Signal dominant (résumé 1 ligne) |
+Ce n'est pas un changelog. C'est une relecture rétrospective de l'évolution d'une doctrine. 
+Les versions mineures qui ne font que consolider sans changer de paradigme sont volontairement effacées du récit. 
+L'objectif est de pouvoir répondre, pour chaque période, à la question : **qu'est-ce que je savais faire que je ne savais pas faire avant ?**
+
+---
+
+## Vue synthétique — Inflexions majeures
+
+| Période | Phase | Ce qui a changé en profondeur |
 |---|---|---|
-| 31/08/2025 21:42 | 2025-08 Final  | Base antérieure (pré-Arsenal) — jalon de fin (contenu non détaillé ici). |
-| 20/09/2025 22:57 | 20250920 Final | Stabilisation pré-Arsenal (contenu non détaillé ici). |
-| 10/10/2025 13:51 | 20251010 Final | Dernier jalon “pré-Arsenal” (contenu non détaillé ici). |
-| 01/12/2025 15:37 | Arsenal v1     | Naissance Arsenal (fondations — contenu non détaillé ici). |
-| 02/12/2025 11:16 | Arsenal v2     | Consolidation initiale (contenu non détaillé ici). |
-| 06/12/2025 16:57 | Arsenal v3     | Structuration initiale (contenu non détaillé ici). |
-| 17/12/2025 18:31 | Arsenal v4     | Montée en gouvernance (contenu non détaillé ici). |
-| 22/12/2025 18:19 | Arsenal v5     | Stabilisation avant série v6 (contenu non détaillé ici). |
-| 05/01/2026 12:38 | Arsenal v6     | Pivot v6 (préambule à v6.4/v6.5). |
-| 08/01/2026 xx:xx | v6.4           | Stabilisation architecturale majeure : normalisation en-têtes + robustesse reboot-safe. |
-| 09/01/2026 xx:xx | v6.5           | Consolidation Chauffage V3 PRO + Clim silencieux + Vacances/ECS/robustesse reload. |
-| 11/01/2026 21:33 | Arsenal v7     | Transition d’ère : doctrine documentée + UI industrialisée + énergie verrouillée. |
-| 14/01/2026 10:19 | v7.2           | Chauffage : intention **Neutre** (abstention) + taxonomie UI complétée + débruitage observabilité. |
-| 15/01/2026 10:32 | v7.3           | ECS : **signal fin de cycle + ACK** ; Chauffage : verrou présence via autorisation cible ; diagnostics/UI renforcés. |
-| 16/01/2026 09:13 | v7.3.3         | Panne secteur : fin des pilotages chauffage hors décision centrale ; sémantique UI corrigée (standby/attente/repos). |
-| 19/01/2026 22:42 | v8.0.0         | Réforme transverse **Notifications** + MCO Batteries + métriques mobilité + durcissement UI Chauffage. |
-| 20/01/2026 21:00 | v8.1.0         | Chauffage post-cloud : souveraineté d’exécution + anti-yo-yo ; auto-ajustement courbe propositionnel ; ECS bouclage auto. |
-| 23/01/2026 16:03 | v8.1.1         | Chauffage 100% événementiel + observabilité inertielle A/B/C/D ; migration “vicare → domaines” + gouvernance IDs. |
-| 25/01/2026 09:40 | v8.2           | “Silence utile” : Overkiz silencieux ; stats long-terme températures ; hiver idempotent ; bouclage AUTO/MANUEL corrigé ; includes navigation UI. |
-| 27/01/2026 11:10 | v8.2.1         | Durcissement multi-domaines : cohérence ViCare/decision, Zigbee canal 25, aération durable, Z2M résilience, garage toggle fiable. |
-| 27/01/2026 15:38 | v8.2.2         | Durcissement ciblé : Présence (latence réduite), LQI source unique, géofencing hystérésis qualifiée, Overkiz cadence réduite. |
-| 27/01/2026 23:20 | v8.3.0         | Consignes Chauffage : **HA maître / ViCare esclave** ; Wi-Fi BSSID “signal métier” ; doc architecture structurante. |
-| 28/01/2026 19:05 | v8.3.1         | Clim : pipeline canonique (target_mode + execution + watchdog) ; UI Min/Max ; hygiène ressources ; ScanWatch local. |
-| 04/02/2026 22:17 | v8.3.2         | Templates : **factorisation par ancres YAML** ; Modes maison recentrés sur ECS ; déparasitage effets de bord. |
-| 08/02/2026 12:03 | v9.0.0         | Extinction complète legacy templates ; assainissement arborescences ; modernisation loader Lovelace ; UI Chauffage rebuild fiable. |
-| 08/02/2026 23:38 | v9.0.1         | Consolidation doctrinale : **override opérateur souverain (N0)** ; UI Chauffage “observable only” ; ECS au niveau constitutionnel (corpus). |
-| 14/02/2026 14:45 | v9.1           | UI : architecture **socle → génériques → métier** + factorisation Lovelace ; migration port externe **8443→9443** (webhooks). |
-| 14/02/2026 15:23 | v9.1.1         | Consolidation post-upgrade HA Core (2026.2.2) + compat webhooks ; **aucun** changement métier (bruit `.storage`/Git). |
+| août → oct. 2025 | Pré-Arsenal | Passage de "ça marche" à "c'est structuré" |
+| déc. 2025 | Arsenal v1–v5 | Naissance des primitives (timers, scripts souverains, verrous) |
+| jan. 2026 (début) | v6–v7 | Doctrine opposable : le système devient lisible et gouvernable |
+| jan. 2026 (fin) | v8 | Souveraineté et silence : HA maître, bruit réduit, résilience outillée |
+| fév. 2026 | v9 | Modernisation totale : templates, UI stratifiée, contrats de domaine || fév. 2026 | v9 | Séparation structurelle : pipelines métier, contrats de domaine, abstraction logique |
+| fév.–mars 2026 | v10+ | Maturité physique : capteurs redondés, états réconciliés, temporalité explicite |
 
 ---
 
-# 1) Grandes phases (lecture “évolution” plutôt que “versions”)
+## Phase A — Pré-Arsenal (août → octobre 2025)
+### Ce qui s'est passé
 
-## Phase A — Pré-Arsenal (2025-08 → 20251010) : bascule vers “système gouvernable”
+Le système existait, mais n'était pas *gouvernable*. 
+Les automatisations étaient organisées par fonctionnalité plutôt que par domaine, 
+les chemins d'include n'étaient pas stables, et la logique de chaque domaine (alarme, ECS, chauffage) 
+était dispersée entre des automations, des scripts et des helpers sans hiérarchie claire.
 
-### 2025_08_final (31/08)
-- Repère historique : contenu non détaillé ici.
+Deux jalons marquent cette période :
 
-### 20250920_final (20/09) — **Consolidation structurante (G1)**
-**Signal (doctrine/gouvernance)**
-- Migration des includes vers **répertoires canoniques** :
-  - `automatisations/` → `automations/`
-  - `sensors/` → `template_sensors/`
-  - `binary_sensors/` → `template_binary_sensors/`
-  - `alarm_control_panel/` → `template_alarm_panels/`
-- Retrait du chargement `scene: !include scenes.yaml` (sortie explicite d’un tiroir historique).
+**Septembre 2025 — Consolidation structurante :** premier grand ménage. 
+Migration vers des répertoires canoniques (`automations/`, `template_sensors/`…), 
+refonte de la navigation UI, industrialisation des `utility_meter`. 
+Le geste central n'est pas une feature — c'est la mise en cohérence de ce qui existait déjà.
 
-**Signal (UI)**
-- Refonte navigation : vues “Accueil” + badges nav.
-- Apparition de gabarits `button-card` structurants (boutons nav + status batterie).
+**Octobre 2025 — Industrialisation :** introduction des `timer:` 
+comme primitive de contrôle (watchdogs, anti-rebond), remplacement progressif des `delay`. 
+Naissance des scripts "souverains" : l'alarme, l'ECS, le chauffage cessent d'être des séquences d'automations 
+et deviennent des scripts qui portent leur propre responsabilité.
 
-**Signal (mesure/énergie)**
-- Extension `utility_meter` (industrialisation des cycles) + périmètre mobilité (autonomie Audi).
-
-**Signal (Zigbee / Secrets)**
-- Ajouts devices Zigbee2MQTT (prises + météo) + backup coordinateur.
-- Secrets : `entry_id` intégrations (Netatmo/ViCare/MQTT).
-
-**Point clé**
-- Transition d’ère : l’essentiel devient **cohérence de chargement + chemins stables**, pas “feature par feature”.
-
-### 20251010_final (10/10) — **Industrialisation / durcissement (G4-like, volume massif)**
-**Signal (infrastructure)**
-- `timer:` devient un pilier (watchdogs/anti-rebond) + remplacement progressif des `delay`.
-- Découplage : automatisations “orchestratrices” → **scripts unifiés** (alarme, ECS, chauffage, panne secteur).
-
-**Signal (Sécurité / Alarme)**
-- Délai d’entrée sur **timer** (`timer.delai_entree`) piloté par `input_number.alarme_delai_entree`.
-- Durcissements : confirmations anti-faux positifs, correction post-reboot, logique plus défensive (responsabilité portée par scripts).
-
-**Signal (Chauffage / ViCare / ECS / Clim)**
-- Chauffage geoloc : programme COMFORT↔REDUCED, anti-rebond via timer, dépendance attribut `active_vicare_program`.
-- ECS : cycle unifié durci (verrou + watchdog) + mode vaisselle ; fin sécurisée (abaissement 10°C confirmé).
-- Clim : séquences d’exécution plus robustes (wait mode appliqué) + notifications structurées.
-
-**Point clé**
-- Naissance de la “discipline” Arsenal : **timers + scripts souverains + états de verrou** comme primitives.
-
-➡️ **Inflexion Phase A :** préparation du terrain “Arsenal” : sources uniques, primitives robustes, structure par domaines.
+### Leçon retenue
+> **Avant de construire, il faut que les fondations soient stables.** 
+La discipline des chemins canoniques et des scripts souverains est la condition de tout le reste. 
+Sans cette phase, Arsenal n'aurait pas de sol où pousser.
 
 ---
 
-## Phase B — Arsenal v1 → v5 (01/12/2025 → 22/12/2025)
-**Objectif global :** naissance Arsenal, premières règles, montée en structuration.  
-**Données disponibles ici :** jalons temporels uniquement.  
-➡️ À compléter si tu fournis 1 digest par version (même 5 lignes).
+## Phase B — Arsenal v1 → v5 (décembre 2025)
 
-## Phase C — Série v6 (05/01/2026 → 09/01/2026) : lisibilité + reboot-safe comme socle
-### v6.4 (08/01)
-- **Normalisation totale des en-têtes** (helpers) : rôle / non-rôle explicite, séparation paramètre/mémoire/planification/décision/action.
-- **Hygiène structurelle** : suppression orphelins, alignement doc↔code↔entités.
-- **Scripts** : clarification responsabilité (unitaire/orchestration/décision).
-- **Réseau** : script bas niveau unique `script.cycle_alimentation_box` (une seule vérité physique).
-- **Éclairage jardin** : passage au modèle **état métier continu** + automations réactionnelles reboot-safe.
-- **Alarme** : mode visiteur sans polling via `binary_sensor.creneau_visiteur_actif`.
-- **Vacances** : état métier opportuniste via `binary_sensor.vacances_actives`.
+Les jalons existent, le contenu détaillé n'a pas été archivé ici. 
+Ce qui est certain : c'est pendant cette période que les premières primitives Arsenal 
+apparaissent — timers, scripts souverains, helpers mémoire et premiers verrous d'état. 
+La nomenclature et la séparation décision / exécution / UI prennent leur forme initiale.
 
-### v6.5 (09/01)
-- **Chauffage V3 PRO** : présence reléguée, Eco imposé en contextes bloquants ; justification canonique (fin des raisons trompeuses).
-- **Clim silencieux** : décision portée par `binary_sensor.clim_silencieux_autorise`, exécution événementielle, mode `queued`.
-- **Éclairage jardin** : consolidation matin/soir, mémoire métier matin (`input_boolean.jardin_eclairage_matin_actif`) pour anti-spam.
-- **Vacances** : décision + raison + UI dédiées (lecture seule).
-- **Robustesse reload YAML** : fin des `condition: state` fragiles, templates tolérants.
-
-➡️ **Inflexion de phase (v6.x) :** “on verrouille les couches (doc/structure) avant d’ajouter”.
-
-## Phase D — Arsenal v7 (11/01/2026 → mi-janvier) : doctrine opposable + UI industrialisée
-### v7.0 (transition d’ère)
-- **Documentation canonique** : pivot vers `documentation_arsenal/` (doctrine opposable).
-- **Énergie** : verrouillage sources monotones, interdiction capteurs instables en source dashboard Énergie.
-- **UI** : industrialisation par bibliothèque de templates segmentée ; dashboards déclaratifs (UI ne décide jamais).
-- **Temps** : timers structurants (temps = objet gouverné).
-- **Éclairage jardin / ECS vacances / réseau reboot** : patterns métier consolidés.
-
-### v7.1 (clarification sémantique)
-- VMC : séparation stricte aération vs VMC ; diagnostic relocalisé.
-- Chauffage : distinction “attente confort” vs “attente protection” ; UI alignée sans toucher au moteur.
-
-### v7.2 (intention **Neutre**)
-- Chauffage : **Neutre = autorisé sans action** (abstention volontaire), fin des décisions implicites de présence.
-- UI : complétion taxonomie templates génériques.
-- Observabilité : débruitage (logbook/system log) + refactor docs UI/outils.
-
-### v7.3 → v7.3.5 (durcissements Chauffage/ECS/UI)
-- **ECS** : fin de cycle = **signal explicite + ACK** (`ecs_fin_cycle_signal`) ; production/consommation séparées.
-- Chauffage : présence = autorisation, pas raccourci ; alignements diagnostics/UI.
-- Géofencing absence : hystérésis qualifiée + réduction bruit triggers décision centrale.
-- Paramètres invalides : garde-fous systémiques (capteurs + groupe + alerte UI).
-- UI Chauffage : correction attente/repos/standby/bloquages ; dashboard diagnostics resserré.
-- Vannes thermostatiques : dashboard diagnostic séparé (lecture seule).
-
-➡️ **Inflexion de phase (v7.x) :** passage d’un “système qui marche” à un “système gouverné, lisible, opposable”.
-
-## Phase E — Série v8 (19/01/2026 → 04/02/2026) : souveraineté + silence utile + durcissement infra
-### v8.0.0 (réforme Notifications + MCO)
-- **Notifications** : persistantes = projection d’état “en cours/dégradé” uniquement ; plus de persistantes de succès.
-- **Batteries** : gouvernance via `group.batteries`, script unique, verrou journalier.
-- Mobilité : `utility_meter` distance.
-- Chauffage UI : enrichissements et robustesse.
-
-### v8.1.0 / v8.1.1 (post-cloud Chauffage + événementiel total)
-- Chauffage : anti-yo-yo (`chauffage_application_en_cours`) ; mémoire “confirmée cloud”.
-- Réalignement dédié ViCare↔HA + `dernier_mode_applique` (puis supprimé plus tard).
-- Auto-ajustement courbe : propositionnel, souveraineté humaine, journalisé.
-- Pré-confort fin vacances : signal métier + automation bornée.
-- ECS : bouclage auto gouverné (plage + présence).
-- v8.1.1 : décision centrale **100% événementielle** (fin polling) + observabilité inertielle A/B/C/D ; migration “vicare → domaines” + refonte IDs.
-
-### v8.2 / v8.2.1 / v8.2.2 (silence utile + Zigbee + qualification capteurs)
-- Overkiz : résilience silencieuse, cadence réduite ensuite (/2h).
-- Chauffage : fiabilisation B0, stats long-terme températures, Famille C absence contractualisée.
-- ECS bouclage : arbitrage AUTO/MANUEL corrigé via `binary_sensor.bouclage_autorise`.
-- UI : factorisation navigation via `lovelace/includes/navigation/`.
-- Zigbee : migration canal 11→25 + reconstruction maillage ; LQI : groupe source unique + capteur redevenu vérifiable.
-- Aération : abandon push mobile pour états durables ; persistantes zonées.
-- Zigbee2MQTT : backoff réel + notification persistante recentrée.
-- Présence : temporisations drastiquement réduites, tout en interdisant l’usage comme déclencheur d’écriture directe.
-
-➡️ **Inflexion de phase (v8.x) :** “le système devient sobre : bruit réduit, sources uniques, résilience outillée”.
-
-## Phase F — Série v8.3 (27/01/2026 → 04/02/2026) : souveraineté HA, factorisation templates, pipeline clim
-### v8.3.0
-- Chauffage consignes : **HA maître absolu / ViCare esclave passif** (monodirection HA→ViCare).
-- Alarme/Wi-Fi : apprentissage BSSID piloté par **signal métier** (capteur → action → mémoire).
-- UI : include alerte intégrité paramètres factorisée.
-- Documentation : corpus architecture structurant (socle).
-
-### v8.3.1
-- Clim : refonte canonique (autorité `sensor.clim_target_mode`, exécution idempotente `script.clim_execution`, watchdog + incohérence).
-- UI : dashboard Températures Min/Max (pattern Arsenal) + hygiène ressources Lovelace (suppression composants non utilisés).
-- Santé : capteur local ScanWatch batterie + notification factuelle.
-
-### v8.3.2
-- Templates : factorisation par **ancres YAML** + `this.entity_id` (réduction duplication).
-- Modes maison : recentrage Vacances/Normal/Désinfection sur périmètre ECS, suppression actions annexes.
-
-➡️ **Inflexion (v8.3.x) :** “souveraineté HA + industrialisation interne (factorisation) + pipelines canoniques”.
+### Leçon retenue
+> Cette phase est le "big bang" doctrinal. 
 
 ---
 
-# 2) Série v9 (08/02/2026) : modernisation totale templates + doctrine Chauffage/UI/ECS
+## Phase C — Série v6 (janvier 2026, début)
+### Ce qui s'est passé
 
-## v9.0.0
-- Extinction complète **legacy templates** (`platform: template`) → `template:` moderne.
-- Assainissement arborescences capteurs / bascule `12_sensor_platforms`.
-- Modernisation loader Lovelace (`resource_mode: yaml`).
-- UI Chauffage : fin des persistantes gérées dans le script ; reconstruction fiable via automation dédiée.
+**v6.4 — Normalisation totale des en-têtes :** 
+chaque helper reçoit un rôle explicite (paramètre / mémoire / planification / décision / action). 
+La séparation n'est plus implicite dans le nom — elle est déclarée. 
+Les scripts clarifient leur périmètre (unitaire vs orchestration vs décision). 
+Un seul script physique par ressource critique (`script.cycle_alimentation_box`).
 
-## v9.0.1 (doctrine)
-- Chauffage : `mode_confort_chauffage` devient **override opérateur souverain (N0)**, prioritaire, bypass contrôlé d’abstentions.
-- Diagnostics : `confort_force` au sommet ; capteurs deviennent miroir contractuel strict.
-- UI Chauffage : “observable only” — persistante **Confort uniquement**, source **exclusive** `sensor.programme_chauffage`.
-- ECS : passage au niveau constitutionnel documentaire (corpus normatif spécialisé, contrat monolithique déclassé).
+**v6.5 — Premiers patterns métier durables :** 
+l'état "Vacances" et l'état "Visiteur" deviennent des `binary_sensor` métier consommés 
+par les autres domaines, pas des conditions éparpillées. 
+La présence est reléguée au rang d'autorisation, pas de raccourci décisionnel.
 
-➡️ **Inflexion v9 :** “modernisation technique totale + clarification politique : qui est souverain, et que l’UI a le droit de dire”.
-
-## v9.1.0 (UI socle 3 niveaux + factorisation + compat webhooks)
-- **UI (architecture 3 niveaux) :**
-  - stabilisation explicite du triptyque **socle UI → templates génériques → templates métier**,
-  - renforcement du socle : nouvelles variantes KPI (ex. sans icône), STATUS (ex. sans nom), alignements appliqués sur plusieurs dashboards (CO₂, Clim diag, VMC, etc.).
-- **Lovelace (factorisation structurelle) :**
-  - includes dédiés pour `section_header` / `sub_section_header`,
-  - refactor de dashboards (réorganisation des sections, réduction de duplication).
-- **Accès / compat :**
-  - migration du port externe Home Assistant **8443 → 9443** (objectif : continuité des webhooks Netatmo/Withings et stabilité d’accès).
-- **Documentation :**
-  - refonte UI (corpus socle_ui/),
-  - documentation “architecture des includes”,
-  - retrait de docs “évolutions futures” devenues obsolètes.
-- **Invariant :** aucun changement de décision métier — c’est une consolidation de lecture + structure.
-
-## v9.1.1 (post-upgrade HA Core 2026.2.2 — consolidation technique)
-- **Chronologie canonique :**
-  1) migration port **8443 → 9443**,
-  2) stabilisation/enregistrement v9.1.0,
-  3) upgrade **Home Assistant Core 2026.2.2**,
-  4) stabilisation/enregistrement **v9.1.1**.
-- **Portée réelle :**
-  - ajustements strictement techniques pour permettre l’upgrade + lever un blocage webhook,
-  - variations majoritairement **`.storage/*` + artefacts Git** (bruit post-upgrade),
-  - **aucun** ajout/modification “métier Arsenal”.
-- **Statut :** patch de compat/stabilisation (pas une évolution fonctionnelle).
-
-➡️ **Inflexion v9.1.x :** “industrialiser l’UI (socle → génériques → métier) + factoriser Lovelace, tout en sécurisant l’accès externe (webhooks) sans toucher au moteur.”
+### Leçon retenue
+> **Verrouiller les couches avant d'ajouter.** 
+Aucune feature significative dans ces versions — uniquement de la cohérence. 
+C'est le moment où la doctrine devient opposable : si quelque chose casse, on sait *où* chercher.
 
 ---
 
-# 3) Matrice transversale (où se déplacent les responsabilités)
+## Phase D — Série v7 (11 janvier → mi-janvier 2026)
+### Ce qui s'est passé
 
-## A) Autorité / décision / exécution
-- v6.x : clarification & séparation (en-têtes + scripts).
-- v7.x : doctrine opposable + UI industrialisée (UI non décisionnelle).
-- v8.x : souveraineté d’exécution post-cloud (anti-yo-yo, réalignements, événementiel).
-- v8.3 : HA maître (consignes), ViCare canal non fiable.
-- v9.0.1 : souveraineté opérateur explicitée (N0 override).
+**v7.0 — Pivot documentaire :** 
+naissance de `documentation_arsenal/` comme référentiel de doctrine. 
+L'UI reçoit une règle constitutionnelle : **elle ne décide jamais**. 
+Les timers deviennent des objets gouvernés.
 
-## B) UI (projection)
-- v7.0 : UI = consommation, templates segmentés par domaine.
-- v7.2 : taxonomie UI consolidée.
-- v8.2 : includes navigation (structure factorisée).
-- v9.0.0 : persistantes Chauffage découplées des scripts.
-- v9.0.1 : projection “observable only” pour Chauffage (programme réel).
-- v9.1.0 : **UI à 3 niveaux (socle → génériques → métier)** + includes Lovelace (headers) → réduction de duplication, meilleure gouvernance visuelle.
+**v7.2 — L'intention Neutre :** 
+introduction d'un état de chauffage `Neutre` signifiant 
+"autorisé sans action" — l'abstention volontaire. 
+Fin des décisions implicites de présence. 
+Ce détail conceptuel est structurant : 
+le système peut désormais *ne pas agir* de manière intentionnelle et traçable.
 
-## C) Observabilité
-- v7.3 : ECS fin de cycle = événement consommable (ACK).
-- v8.1.1 : observabilité inertielle A/B/C/D (descriptive, sans seuils métier).
-- v8.2 : stats natives long-terme température.
-- v7.2–v8.2 : débruitage (silence utile) + suppression diagnostics journaliers lourds.
+**v7.3 — Signaux explicites :** 
+la fin d'un cycle ECS cesse d'être inférée — elle émet un signal (`ecs_fin_cycle_signal`) qui doit être acquitté. 
+La présence devient une *autorisation*, pas un raccourci. 
+L'alarme reçoit des garde-fous sur les paramètres invalides.
 
-## D) Réseau/Zigbee
-- v6.4 : reboot box centralisé (script bas niveau unique).
-- v8.2.1–v8.2.2 : migration Zigbee canal 25 + LQI vérifiable via groupe source unique.
-- v8.2.1 : résilience Zigbee2MQTT (backoff, notification durable).
+### Leçon retenue
+> **Passage d'un système qui marche à un système gouverné, lisible, opposable.** 
+Chaque domaine peut maintenant être audité indépendamment. 
+La documentation n'est plus un épiphénomène — elle est contraignante.
 
-## E) Documentation / gouvernance
-- v7.0 : naissance `documentation_arsenal/` (doctrine opposable).
-- v8.x : extension “outils externes” + prompts/guides.
-- v8.1.1 : découpage contrats Chauffage.
-- v9.0.1 : ECS “constitutionnel” (corpus spécialisé + changelog).
-- v9.1.0 : **corpus socle_ui** + doc “architecture includes” + purge docs obsolètes.
+---
 
-==================================================
-FIN DU DOCUMENT
-==================================================
+## Phase E — Série v8 (19 janvier → 4 février 2026)
+### Ce qui s'est passé
+
+**v8.0 — Réforme des notifications :** 
+les notifications persistantes ne signalent plus des succès — elles projettent 
+uniquement des états "en cours" ou "dégradés". Fin du bruit informationnel.
+
+**v8.1 — Décision centrale 100% événementielle :** 
+fin définitive du modèle polling — plus d'évaluation périodique, 
+le chauffage répond uniquement à des événements. 
+Introduction de l'anti-yo-yo (`chauffage_application_en_cours`) et d'une mémoire de confirmation cloud. 
+L'observabilité est structurée en familles A/B/C/D.
+
+**v8.2 — "Silence utile" :** Overkiz passe en mode silencieux. 
+Le canal Zigbee migre (11→25), le maillage est reconstruit. 
+La LQI reçoit une source unique. 
+La présence voit ses temporisations réduites drastiquement — tout en perdant le droit d'écriture directe.
+
+**v8.3 — Souveraineté HA :** 
+HA devient maître absolu des consignes chauffage, ViCare devient esclave passif (flux monodirectionnel HA→ViCare). 
+La Clim reçoit un pipeline canonique (autorité → exécution → watchdog). 
+Les templates sont factorisés par ancres YAML.
+
+### Leçon retenue
+> **Le système devient sobre.** 
+Moins de bruit, moins de polling, moins de couplage. 
+Les sources sont uniques, la résilience est outillée (backoff réel, notifications persistantes recentrées). 
+C'est la phase où "ça marche bien" devient "on sait pourquoi ça marche".
+
+---
+
+## Phase F — Série v9 (8 février → fin février 2026)
+### Ce qui s'est passé
+
+**v9.0 — Extinction du legacy :** 
+tous les templates `platform: template` sont migrés vers le moteur moderne `template:`. 
+L'arborescence capteurs est assainie. 
+L'UI Chauffage est reconstruite avec des notifications découplées des scripts via une automation idempotente dédiée.
+
+**v9.1 — UI stratifiée :** 
+création de `button_card_templates/socle/` comme couche canonique. 
+L'UI reçoit une architecture à trois niveaux : socle → génériques → métier. 
+La logique *visite* quitte l'alarme pour devenir un domaine présence autonome. 
+**Naissance des premiers contrats de domaine** (`contrats/alarme`, `contrats/ecs`).
+
+**v9.4 → v9.6 — Domaine Aération refondé :** r
+emplacement de l'automation monolithique par un pipeline modulaire M0–M6. 
+Introduction d'un moteur de résilience générique (backoff réel, timers par intégration). 
+Les ouvertures sont normalisées en couche abstraite `contact_*` (N1/N2) : 
+les domaines critiques (chauffage, alarme, aération) consomment une vérité logique agrégée, 
+et non plus des capteurs physiques individuels.
+
+### Leçon retenue
+> **La séparation des préoccupations devient structurelle, pas seulement conventionnelle.** 
+Chaque domaine a un contrat. 
+L'UI ne sait pas ce que fait le moteur. 
+L'aération est un pipeline observable. 
+Les capteurs physiques disparaissent derrière des couches d'abstraction.
+
+---
+
+## Phase G — v10 → v10.8 (fin février → mars 2026)
+### Ce qui s'est passé
+
+**v10 — Qualifications explicites :** 
+fin de toute interprétation implicite des timers (`idle`, `cancel`). 
+Introduction de marqueurs métier (`*_grace_echue`, `ouverture_qualifiee_maison`). 
+La temporalité thermique devient monotone et garantie (calculs en secondes, hiérarchie stricte `analyse < blocage`).
+
+**v10.3 — Simplification d'infrastructure :** 
+suppression de `pyscript`, migration vers des scripts natifs HA. 
+Réduction de la surface de maintenance. 
+Préconfort vacances autonome.
+
+**v10.7 — Redondance Zigbee généralisée :** 
+chaque point critique est couvert par deux capteurs physiques fusionnés. 
+Introduction de la couche N2 (`mouvement_<zone>`, `contact_*`) 
+comme interface unique pour les automations — les capteurs physiques individuels disparaissent du code décisionnel.
+
+**v10.8 — Nouveau moteur de réconciliation (contrat v2.2) :** 
+abandon du modèle *last-valid-state* au profit d'un moteur centralisé avec 
+fenêtre de corroboration, quarantaine et inhibition système. 
+Introduction de trois couches d'état séparées : `observed_event` / `business_state` / `reconciliation_status`. 
+Les templates sont auto-paramétrés via `this.entity_id` — ajouter un capteur devient déclaratif.
+
+### Leçon retenue
+> **Le système atteint sa maturité physique.** 
+La couche matérielle (Zigbee, capteurs) est désormais abstraite, redondée, et réconciliée. 
+Le code décisionnel ne voit plus les capteurs physiques — il consomme uniquement des vérités métier réconciliées. 
+C'est l'aboutissement de la séparation engagée dès la Phase A.
+
+---
+
+## Primitives architecturales Arsenal
+
+Au fil de son évolution, Arsenal a convergé vers un petit nombre de primitives structurantes utilisées dans tous les domaines.
+
+**Scripts souverains** — Une ressource physique critique possède toujours un script maître responsable de son exécution.
+
+**Timers gouvernés** — Le temps n'est jamais implicite : il est représenté par des objets timer observables.
+
+**Helpers mémoire** — Les états historiques ou les contextes persistants sont explicitement stockés dans des helpers.
+
+**Capteurs métier** — Les automatisations consomment des vérités logiques (`contact_*`, `mouvement_<zone>`) plutôt que des capteurs physiques.
+
+**Pipelines métier** — Les logiques complexes sont exprimées sous forme de pipelines modulaires (ex : M0 → M6 pour l'aération).
+
+**Moteurs de réconciliation** — Les événements physiques instables sont consolidés par des moteurs dédiés avant d'être exposés au moteur métier.
+
+---
+
+## Patterns récurrents — ce que l'histoire révèle
+
+**1. Structurer avant d'ajouter.** 
+Chaque phase de feature est précédée ou suivie d'une phase de consolidation. 
+Les versions qui "ne font rien" sont souvent les plus importantes à long terme.
+
+**2. Les sources uniques comme invariant.** 
+À chaque échelle — 
+physique (un seul script par ressource), 
+logique (un seul capteur de vérité par domaine), 
+décisionnelle (un seul maître par flux) — 
+Arsenal converge vers des sources uniques.
+
+**3. L'abstraction comme protection.** 
+La couche `contact_*`, la couche `mouvement_<zone>`, les contrats de domaine : à chaque fois, introduire une abstraction 
+protège le code décisionnel contre la volatilité physique. 
+Les capteurs changent, cassent, se multiplient — le moteur ne le voit pas.
+
+**4. Rendre les intentions explicites.** 
+`Neutre` plutôt qu'une absence de décision. 
+`ecs_fin_cycle_signal` plutôt qu'une inférence d'état. 
+`*_grace_echue` plutôt qu'un timer en `idle`. 
+Arsenal a systématiquement remplacé l'implicite par du déclaratif — au prix d'un peu plus de code, 
+mais d'une lisibilité et d'une auditabilité infiniment supérieures.
+
+**5. L'UI ne décide jamais.** 
+Ce principe, posé en v7.0, n'a jamais été violé. 
+Il a rendu possibles toutes les refontes UI ultérieures sans régression fonctionnelle.
+
+---
+
+*Document vivant — à enrichir à chaque inflexion majeure, pas à chaque release.*
+
+*Ce document ne cherche pas à être exhaustif. 
+Il cherche à préserver la mémoire des décisions qui ont changé la nature du système.*

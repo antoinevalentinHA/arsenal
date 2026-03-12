@@ -85,12 +85,15 @@ La valeur plafond de 10 s est une borne dure : au-delà, le système masque l'in
 
 ### 4.3 Condition de corroboration valide
 
-La corroboration est valide si et seulement si l'autre source effectue une **transition `off` → `on`** 
-dans la fenêtre `T_corroboration` suivant l'événement déclencheur.
+La corroboration est valide si et seulement si la source corroborante (c’est-à-dire la
+seconde source, différente de celle ayant ouvert la fenêtre d’attente) effectue une
+transition `off` → `on`, détectée par le moteur de réconciliation, dans la fenêtre
+`T_corroboration`.
 
-Une simple coïncidence d'états (`on` simultané sans transition détectable) n'est pas une corroboration valide. 
-Cette règle protège contre les états restaurés au redémarrage HA et les replays Zigbee post-retour de mesh, 
-qui font remonter les deux sources en `on` sans séquence physique réelle.
+Une simple coïncidence d'états (`on` simultané sans transition détectable) n'est pas
+une corroboration valide. Cette règle protège contre les états restaurés au redémarrage
+de Home Assistant et les replays Zigbee après rétablissement du mesh, qui peuvent faire
+remonter les deux sources en `on` sans séquence physique réelle.
 
 ### 4.4 Corroboration réussie
 
@@ -116,8 +119,8 @@ Arsenal expose un signal de stabilité système normalisé :
 
 | Entité | État | Signification |
 |--------|------|---------------|
-| `binary_sensor.systeme_stable` | `on` | Système stabilisé — réconciliation autorisée |
-| `binary_sensor.systeme_stable` | `off` | Phase de démarrage, instabilité ou retour incomplet — réconciliation inhibée |
+| `input_boolean.systeme_stable` | `on` | Système stabilisé — réconciliation autorisée |
+| `input_boolean.systeme_stable` | `off` | Phase de démarrage, instabilité ou retour incomplet — réconciliation inhibée |
 
 Ce signal est la référence normative pour l'inhibition. Il n'est pas défini par un délai absolu 
 mais par une condition de stabilité gouvernée par l'architecture Arsenal. 
@@ -125,7 +128,7 @@ Toute substitution par un timer fixe est une déviation contractuelle.
 
 ### 5.2 Condition d'inhibition
 
-Tant que `binary_sensor.systeme_stable = off` :
+Tant que `input_boolean.systeme_stable = off` :
 
 - Toute promotion vers `business_state = on` est interdite, même si une séquence de corroboration est observée
 - Les événements reçus sont enregistrés dans `observed_event`
@@ -134,7 +137,7 @@ Tant que `binary_sensor.systeme_stable = off` :
 
 ### 5.3 Levée de l'inhibition
 
-L'inhibition est levée dès que `binary_sensor.systeme_stable` passe à `on`.
+L'inhibition est levée dès que `input_boolean.systeme_stable` passe à `on`.
 
 À la levée :
 - Les événements `on` reçus pendant l'inhibition sont abandonnés — ils ne sont pas rejoués ni réévalués
@@ -266,7 +269,7 @@ Ce risque est mitigé par le choix de `T_corroboration = 5 s`.
 **H4 — Indépendance des sources**  
 Les deux sources d'un même ouvrant doivent être physiquement et électriquement indépendantes pour que la corroboration ait une valeur discriminante.
 
-**H5 — Fiabilité de `binary_sensor.systeme_stable`**  
+**H5 — Fiabilité de `input_boolean.systeme_stable`**  
 L'inhibition repose sur la disponibilité et la fiabilité de ce signal. 
 Un signal bloqué à `off` indéfiniment maintient le système en inhibition permanente. 
 Ce cas est géré au niveau du signal de stabilité Arsenal, hors périmètre du présent contrat.

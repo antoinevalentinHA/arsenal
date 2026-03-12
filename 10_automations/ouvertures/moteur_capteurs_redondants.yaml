@@ -6,8 +6,9 @@
 #   homeassistant/10_automations/ouvertures/capteurs_redondants_critiques_moteur.yaml
 #
 # 🎯 ROLE
-#   Appliquer le contrat v2.2 pour les capteurs de contact
-#   critiques redondants.
+#   Orchestrateur du moteur de reconciliation v2.2.
+#   Capte les triggers, route vers les scripts métier.
+#   Ne contient aucune logique métier.
 #
 # 🧱 PERIMETRE
 #   - entree_porte
@@ -19,37 +20,29 @@
 #   - chambre_arnaud
 #   - chambre_matthieu
 #
-# 🧩 PRINCIPE
-#   - off = verite metier immediate
-#   - on + systeme instable = inhibition
-#   - on + systeme stable = quarantaine puis corroboration
-#   - fin de timer sans corroboration = divergence
-#   - systeme_stable off = inhibition forcee de tous les capteurs
-#   - systeme_stable on = levee simple de l'inhibition, sans replay
-#
-# 🧠 CONTEXTE SERALISE
-#   reconciliation_status|business_state|pending_source|suspect_event|observed_event
-#
-#   Exemples :
-#     stable|off|||
-#     stable|on|||
-#     quarantine|off|binary_sensor.contact_garage_1||on
-#     divergent|off|binary_sensor.contact_garage_1|on_non_corroborated|on
-#     inhibited|off|||on
+# 🧩 SCRIPTS APPELES
+#   - script.reconciliation_traiter_source
+#   - script.reconciliation_traiter_expiration
+#   - script.reconciliation_inhiber_tous
+#   - script.reconciliation_lever_inhibition
 #
 # 🛡️ GARANTIES
-#   - Idempotence
-#   - Pas de dependance par alias
-#   - Pas de replay des evenements on recus en phase inhibee
+#   - Idempotence portée par les scripts
+#   - Pas de logique métier inline
+#   - Mode queued — sérialisation des événements concurrents
 # ==========================================================
 
 - id: "10170000000015"
   alias: "Ouvertures — Capteurs redondants critiques — Moteur de reconciliation"
-  description: "Moteur v2.2 auto-parametre pour les contacts critiques redondants."
+  description: "Orchestrateur v2.2 — route les triggers vers les scripts de reconciliation."
   mode: queued
   max: 20
 
   trigger:
+
+    # ----------------------------------------------------------
+    # Sources brutes _1 / _2
+    # ----------------------------------------------------------
     - platform: state
       id: source_state
       entity_id:
@@ -70,6 +63,9 @@
         - binary_sensor.contact_chambre_matthieu_1
         - binary_sensor.contact_chambre_matthieu_2
 
+    # ----------------------------------------------------------
+    # Expirations de timers de corroboration
+    # ----------------------------------------------------------
     - platform: event
       id: timer_finished
       event_type: timer.finished
@@ -118,6 +114,9 @@
       event_data:
         entity_id: timer.contact_reconciliation_chambre_matthieu
 
+    # ----------------------------------------------------------
+    # Signal de stabilité système
+    # ----------------------------------------------------------
     - platform: state
       id: system_stable_off
       entity_id: input_boolean.systeme_stable
@@ -128,295 +127,37 @@
       entity_id: input_boolean.systeme_stable
       to: "on"
 
-  condition: []
-
   action:
     - choose:
 
-        # ==========================================================
-        # SOURCES BRUTES _1 / _2
-        # ==========================================================
         - conditions:
             - condition: trigger
               id: source_state
           sequence:
-            - variables:
+            - action: script.reconciliation_traiter_source
+              data:
                 source_entity: "{{ trigger.entity_id }}"
-                suffixe: >
-                  {% set eid = trigger.entity_id %}
-                  {% set base = eid | replace('binary_sensor.contact_', '') %}
-                  {% if base.endswith('_1') %}
-                    {{ base[:-2] }}
-                  {% elif base.endswith('_2') %}
-                    {{ base[:-2] }}
-                  {% else %}
-                    {{ base }}
-                  {% endif %}
-                autre_source: >
-                  {% if trigger.entity_id.endswith('_1') %}
-                    {{ trigger.entity_id[:-1] ~ '2' }}
-                  {% else %}
-                    {{ trigger.entity_id[:-1] ~ '1' }}
-                  {% endif %}
-                contexte_entity: "{{ 'input_text.contact_reconciliation_context_' ~ suffixe }}"
-                transition_entity: "{{ 'input_datetime.contact_last_transition_at_' ~ suffixe }}"
-                timer_entity: "{{ 'timer.contact_reconciliation_' ~ suffixe }}"
                 new_state: "{{ trigger.to_state.state if trigger.to_state is not none else '' }}"
-                contexte_brut: "{{ states(contexte_entity) }}"
-                parts: >
-                  {% set ctx = states(contexte_entity) %}
-                  {{ ctx.split('|') if ctx not in ['unknown', 'unavailable', '', none] else [] }}
-                current_status: "{{ parts[0] if parts | count > 0 and parts[0] != '' else 'stable' }}"
-                current_business_state: "{{ parts[1] if parts | count > 1 and parts[1] in ['on', 'off'] else 'off' }}"
-                current_pending_source: "{{ parts[2] if parts | count > 2 else '' }}"
-                current_suspect_event: "{{ parts[3] if parts | count > 3 else '' }}"
-                current_observed_event: "{{ parts[4] if parts | count > 4 and parts[4] in ['on', 'off'] else '' }}"
-                other_state: "{{ states(autre_source) }}"
-                now_ts: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+                from_state: "{{ trigger.from_state.state if trigger.from_state is not none else '' }}"
 
-            - choose:
-
-                # ----------------------------------------------------------
-                # OFF = verite immediate
-                # ----------------------------------------------------------
-                - conditions:
-                    - condition: template
-                      value_template: "{{ new_state == 'off' }}"
-                  sequence:
-                    - action: timer.cancel
-                      target:
-                        entity_id: "{{ timer_entity }}"
-
-                    - action: input_text.set_value
-                      target:
-                        entity_id: "{{ contexte_entity }}"
-                      data:
-                        value: "stable|off|||off"
-
-                    - action: input_datetime.set_datetime
-                      target:
-                        entity_id: "{{ transition_entity }}"
-                      data:
-                        datetime: "{{ now_ts }}"
-
-                # ----------------------------------------------------------
-                # ON + systeme instable = inhibition
-                # ----------------------------------------------------------
-                - conditions:
-                    - condition: template
-                      value_template: "{{ new_state == 'on' }}"
-                    - condition: state
-                      entity_id: input_boolean.systeme_stable
-                      state: "off"
-                  sequence:
-                    - action: timer.cancel
-                      target:
-                        entity_id: "{{ timer_entity }}"
-
-                    - action: input_text.set_value
-                      target:
-                        entity_id: "{{ contexte_entity }}"
-                      data:
-                        value: "{{ 'inhibited|' ~ current_business_state ~ '|||on' }}"
-
-                    - action: input_datetime.set_datetime
-                      target:
-                        entity_id: "{{ transition_entity }}"
-                      data:
-                        datetime: "{{ now_ts }}"
-
-                # ----------------------------------------------------------
-                # ON alors que business_state deja a on
-                # ----------------------------------------------------------
-                - conditions:
-                    - condition: template
-                      value_template: "{{ new_state == 'on' }}"
-                    - condition: state
-                      entity_id: input_boolean.systeme_stable
-                      state: "on"
-                    - condition: template
-                      value_template: "{{ current_business_state == 'on' }}"
-                  sequence:
-                    - action: timer.cancel
-                      target:
-                        entity_id: "{{ timer_entity }}"
-
-                    - action: input_text.set_value
-                      target:
-                        entity_id: "{{ contexte_entity }}"
-                      data:
-                        value: "stable|on|||on"
-
-                    - action: input_datetime.set_datetime
-                      target:
-                        entity_id: "{{ transition_entity }}"
-                      data:
-                        datetime: "{{ now_ts }}"
-
-                # ----------------------------------------------------------
-                # Corroboration reussie pendant quarantaine
-                # ----------------------------------------------------------
-                - conditions:
-                    - condition: state
-                      entity_id: input_boolean.systeme_stable
-                      state: "on"
-                    - condition: template
-                      value_template: >
-                        {{
-                          trigger.from_state is not none
-                          and trigger.from_state.state == 'off'
-                          and current_status == 'quarantine'
-                          and current_pending_source not in ['', none]
-                          and current_pending_source != source_entity
-                          and other_state == 'on'
-                        }}
-                  sequence:
-                    - action: timer.cancel
-                      target:
-                        entity_id: "{{ timer_entity }}"
-
-                    - action: input_text.set_value
-                      target:
-                        entity_id: "{{ contexte_entity }}"
-                      data:
-                        value: "stable|on|||on"
-
-                    - action: input_datetime.set_datetime
-                      target:
-                        entity_id: "{{ transition_entity }}"
-                      data:
-                        datetime: "{{ now_ts }}"
-
-              default:
-                # ----------------------------------------------------------
-                # ON + systeme stable = ouverture de quarantaine
-                # ----------------------------------------------------------
-                - action: timer.start
-                  target:
-                    entity_id: "{{ timer_entity }}"
-
-                - action: input_text.set_value
-                  target:
-                    entity_id: "{{ contexte_entity }}"
-                  data:
-                    value: "{{ 'quarantine|' ~ current_business_state ~ '|' ~ source_entity ~ '||on' }}"
-
-                - action: input_datetime.set_datetime
-                  target:
-                    entity_id: "{{ transition_entity }}"
-                  data:
-                    datetime: "{{ now_ts }}"
-
-        # ==========================================================
-        # FIN DE TIMER = divergence si quarantaine toujours active
-        # ==========================================================
         - conditions:
             - condition: trigger
               id: timer_finished
           sequence:
-            - variables:
+            - action: script.reconciliation_traiter_expiration
+              data:
                 timer_entity: "{{ trigger.event.data.entity_id }}"
-                suffixe: "{{ timer_entity | replace('timer.contact_reconciliation_', '') }}"
-                contexte_entity: "{{ 'input_text.contact_reconciliation_context_' ~ suffixe }}"
-                transition_entity: "{{ 'input_datetime.contact_last_transition_at_' ~ suffixe }}"
-                parts: >
-                  {% set ctx = states(contexte_entity) %}
-                  {{ ctx.split('|') if ctx not in ['unknown', 'unavailable', '', none] else [] }}
-                current_status: "{{ parts[0] if parts | count > 0 and parts[0] != '' else 'stable' }}"
-                current_business_state: "{{ parts[1] if parts | count > 1 and parts[1] in ['on', 'off'] else 'off' }}"
-                current_pending_source: "{{ parts[2] if parts | count > 2 else '' }}"
-                now_ts: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
 
-            - choose:
-                - conditions:
-                    - condition: template
-                      value_template: "{{ current_status == 'quarantine' }}"
-                  sequence:
-                    - action: input_text.set_value
-                      target:
-                        entity_id: "{{ contexte_entity }}"
-                      data:
-                        value: "{{ 'divergent|' ~ current_business_state ~ '|' ~ current_pending_source ~ '|on_non_corroborated|on' }}"
-
-                    - action: input_datetime.set_datetime
-                      target:
-                        entity_id: "{{ transition_entity }}"
-                      data:
-                        datetime: "{{ now_ts }}"
-
-        # ==========================================================
-        # SYSTEME_STABLE = off
-        # ==========================================================
         - conditions:
             - condition: trigger
               id: system_stable_off
           sequence:
-            - repeat:
-                for_each:
-                  - entree_porte
-                  - chambre_parents_gauche
-                  - chambre_parents_milieu
-                  - chambre_parents_droite
-                  - garage
-                  - sejour_3
-                  - chambre_arnaud
-                  - chambre_matthieu
-                sequence:
-                  - variables:
-                      suffixe: "{{ repeat.item }}"
-                      contexte_entity: "{{ 'input_text.contact_reconciliation_context_' ~ suffixe }}"
-                      timer_entity: "{{ 'timer.contact_reconciliation_' ~ suffixe }}"
-                      parts: >
-                        {% set ctx = states(contexte_entity) %}
-                        {{ ctx.split('|') if ctx not in ['unknown', 'unavailable', '', none] else [] }}
-                      current_business_state: "{{ parts[1] if parts | count > 1 and parts[1] in ['on', 'off'] else 'off' }}"
-                      current_observed_event: "{{ parts[4] if parts | count > 4 and parts[4] in ['on', 'off'] else '' }}"
+            - action: script.reconciliation_inhiber_tous
 
-                  - action: timer.cancel
-                    target:
-                      entity_id: "{{ timer_entity }}"
-
-                  - action: input_text.set_value
-                    target:
-                      entity_id: "{{ contexte_entity }}"
-                    data:
-                      value: "{{ 'inhibited|' ~ current_business_state ~ '|||' ~ current_observed_event }}"
-
-        # ==========================================================
-        # SYSTEME_STABLE = on
-        # ==========================================================
         - conditions:
             - condition: trigger
               id: system_stable_on
           sequence:
-            - repeat:
-                for_each:
-                  - entree_porte
-                  - chambre_parents_gauche
-                  - chambre_parents_milieu
-                  - chambre_parents_droite
-                  - garage
-                  - sejour_3
-                  - chambre_arnaud
-                  - chambre_matthieu
-                sequence:
-                  - variables:
-                      suffixe: "{{ repeat.item }}"
-                      contexte_entity: "{{ 'input_text.contact_reconciliation_context_' ~ suffixe }}"
-                      parts: >
-                        {% set ctx = states(contexte_entity) %}
-                        {{ ctx.split('|') if ctx not in ['unknown', 'unavailable', '', none] else [] }}
-                      current_status: "{{ parts[0] if parts | count > 0 and parts[0] != '' else 'stable' }}"
-                      current_business_state: "{{ parts[1] if parts | count > 1 and parts[1] in ['on', 'off'] else 'off' }}"
-                      current_observed_event: "{{ parts[4] if parts | count > 4 and parts[4] in ['on', 'off'] else '' }}"
+            - action: script.reconciliation_lever_inhibition
 
-                  - choose:
-                      - conditions:
-                          - condition: template
-                            value_template: "{{ current_status == 'inhibited' }}"
-                        sequence:
-                          - action: input_text.set_value
-                            target:
-                              entity_id: "{{ contexte_entity }}"
-                            data:
-                              value: "{{ 'stable|' ~ current_business_state ~ '|||' ~ current_observed_event }}"
+      default: []

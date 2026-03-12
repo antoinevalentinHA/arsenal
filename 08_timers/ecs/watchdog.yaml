@@ -50,7 +50,6 @@
 #   DE SÉCURITÉ, jamais un comportement normal.
 # ==========================================================
 
-
 ecs_cycle_watchdog:
   name: "ECS – Timer sécurité cycle"
   duration: "00:30:00"   # 30 minutes max

@@ -1,0 +1,183 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Reconciliation — Traiter un événement source
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/scripts/ouvertures/reconciliation_traiter_source.yaml
+#
+# 🎯 ROLE
+#   Traiter un changement d'état d'une source brute (_1 ou _2).
+#   Applique l'intégralité de la logique métier contractuelle v2.2
+#   pour les événements issus des capteurs physiques.
+#
+# 📥 PARAMETRES
+#   source_entity : entity_id de la source déclenchante
+#   new_state     : nouvel état reçu ("on" | "off")
+#   from_state    : état précédent ("on" | "off" | "")
+#
+# 🧩 DECISIONS METIER (§3 à §6 du contrat v2.2)
+#   1. off → verite immediate (§3.1)
+#   2. on + systeme instable → inhibition (§5.2)
+#   3. on + business_state deja on → stable|on idempotent
+#   4. on + quarantaine active + transition off→on autre source → corroboration (§4.4)
+#   5. on + systeme stable (default explicite) → ouverture quarantaine (§4.1)
+#
+# 🛡️ GARANTIES
+#   - Idempotence sur tous les cas
+#   - Pas d'écriture directe — délègue à reconciliation_appliquer_transition
+# ==========================================================
+
+reconciliation_traiter_source:
+  alias: "Reconciliation — Traiter événement source"
+  description: "Logique métier v2.2 pour un changement d'état source (_1 ou _2)."
+  mode: single
+
+  fields:
+    source_entity:
+      description: "entity_id de la source déclenchante"
+      required: true
+      example: "binary_sensor.contact_garage_1"
+
+    new_state:
+      description: "Nouvel état reçu"
+      required: true
+      example: "on"
+
+    from_state:
+      description: "État précédent de la source"
+      required: true
+      example: "off"
+
+  sequence:
+    - variables:
+        suffixe: >
+          {% set base = source_entity | replace('binary_sensor.contact_', '') %}
+          {% if base.endswith('_1') or base.endswith('_2') %}
+            {{ base[:-2] }}
+          {% else %}
+            {{ base }}
+          {% endif %}
+        autre_source: >
+          {% if source_entity.endswith('_1') %}
+            {{ source_entity[:-1] ~ '2' }}
+          {% else %}
+            {{ source_entity[:-1] ~ '1' }}
+          {% endif %}
+        contexte_entity: "{{ 'input_text.contact_reconciliation_context_' ~ suffixe }}"
+        transition_entity: "{{ 'input_datetime.contact_last_transition_at_' ~ suffixe }}"
+        timer_entity: "{{ 'timer.contact_reconciliation_' ~ suffixe }}"
+        parts: >
+          {% set ctx = states(contexte_entity) %}
+          {{ ctx.split('|') if ctx not in ['unknown', 'unavailable', '', none] else [] }}
+        current_status: "{{ parts[0] if parts | count > 0 and parts[0] != '' else 'stable' }}"
+        current_business_state: "{{ parts[1] if parts | count > 1 and parts[1] in ['on', 'off'] else 'off' }}"
+        current_pending_source: "{{ parts[2] if parts | count > 2 else '' }}"
+        other_state: "{{ states(autre_source) }}"
+
+    - choose:
+
+        # ----------------------------------------------------------
+        # CAS 1 — off = vérité métier immédiate (§3.1)
+        # ----------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ new_state == 'off' }}"
+          sequence:
+            - action: script.reconciliation_appliquer_transition
+              data:
+                contexte_entity: "{{ contexte_entity }}"
+                transition_entity: "{{ transition_entity }}"
+                timer_entity: "{{ timer_entity }}"
+                timer_action: "cancel"
+                nouveau_contexte: "stable|off|||off"
+
+        # ----------------------------------------------------------
+        # CAS 2 — on + système instable = inhibition (§5.2)
+        # ----------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ new_state == 'on' }}"
+            - condition: state
+              entity_id: input_boolean.systeme_stable
+              state: "off"
+          sequence:
+            - action: script.reconciliation_appliquer_transition
+              data:
+                contexte_entity: "{{ contexte_entity }}"
+                transition_entity: "{{ transition_entity }}"
+                timer_entity: "{{ timer_entity }}"
+                timer_action: "cancel"
+                nouveau_contexte: "{{ 'inhibited|' ~ current_business_state ~ '|||on' }}"
+
+        # ----------------------------------------------------------
+        # CAS 3 — on alors que business_state déjà on
+        # Réaffirmation de stabilité ouverte / idempotence
+        # ----------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ new_state == 'on' }}"
+            - condition: state
+              entity_id: input_boolean.systeme_stable
+              state: "on"
+            - condition: template
+              value_template: "{{ current_business_state == 'on' }}"
+          sequence:
+            - action: script.reconciliation_appliquer_transition
+              data:
+                contexte_entity: "{{ contexte_entity }}"
+                transition_entity: "{{ transition_entity }}"
+                timer_entity: "{{ timer_entity }}"
+                timer_action: "cancel"
+                nouveau_contexte: "stable|on|||on"
+
+        # ----------------------------------------------------------
+        # CAS 4 — Corroboration réussie pendant quarantaine (§4.3 / §4.4)
+        # Condition :
+        #   - transition réelle off→on sur la source courante
+        #   - quarantaine active
+        #   - la source ayant ouvert la quarantaine est différente
+        #   - l'autre source est bien à on
+        # ----------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ new_state == 'on' }}"
+            - condition: state
+              entity_id: input_boolean.systeme_stable
+              state: "on"
+            - condition: template
+              value_template: >
+                {{
+                  from_state == 'off'
+                  and current_status == 'quarantine'
+                  and current_pending_source not in ['', none]
+                  and current_pending_source != source_entity
+                  and other_state == 'on'
+                }}
+          sequence:
+            - action: script.reconciliation_appliquer_transition
+              data:
+                contexte_entity: "{{ contexte_entity }}"
+                transition_entity: "{{ transition_entity }}"
+                timer_entity: "{{ timer_entity }}"
+                timer_action: "cancel"
+                nouveau_contexte: "stable|on|||on"
+
+        # ----------------------------------------------------------
+        # CAS 5 — on + système stable = ouverture quarantaine (§4.1)
+        # ----------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ new_state == 'on' }}"
+            - condition: state
+              entity_id: input_boolean.systeme_stable
+              state: "on"
+          sequence:
+            - action: script.reconciliation_appliquer_transition
+              data:
+                contexte_entity: "{{ contexte_entity }}"
+                transition_entity: "{{ transition_entity }}"
+                timer_entity: "{{ timer_entity }}"
+                timer_action: "start"
+                nouveau_contexte: "{{ 'quarantine|' ~ current_business_state ~ '|' ~ source_entity ~ '||on' }}"
+
+      default: []

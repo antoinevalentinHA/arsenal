@@ -43,7 +43,6 @@
 #   AUCUNE action automatique directe.
 # ==========================================================
 
-
 babysitting:
   name: "Timer Babysitting"
   duration: "08:00:00"

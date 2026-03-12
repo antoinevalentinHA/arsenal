@@ -1,0 +1,78 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Reconciliation — Lever l'inhibition sur tous les capteurs
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/scripts/ouvertures/reconciliation_lever_inhibition.yaml
+#
+# 🎯 ROLE
+#   Lever l'inhibition système sur l'ensemble des capteurs
+#   critiques redondants lors du passage de systeme_stable à on.
+#
+#   Pour chaque capteur en statut "inhibited" :
+#     - Écrit le contexte : stable|<business_state>|||<observed_event>
+#     - Les événements on reçus pendant l'inhibition sont abandonnés
+#       (observed_event est conservé à titre informatif, pas rejoué)
+#
+#   Pour les capteurs dans un autre statut : no-op.
+#
+# 📥 PARAMETRES
+#   Aucun — la liste des suffixes est fixée dans ce script.
+#
+# 🧩 LOGIQUE (§5.3 du contrat v2.2)
+#   Levée simple : inhibited → stable.
+#   Pas de replay des événements on reçus pendant l'inhibition.
+#   Justification : fraîcheur sémantique non vérifiable.
+#
+# 🛡️ GARANTIES
+#   - Idempotence : no-op si statut != inhibited
+#   - Pas d'écriture directe — délègue à reconciliation_appliquer_transition
+# ==========================================================
+
+reconciliation_lever_inhibition:
+  alias: "Reconciliation — Lever l'inhibition"
+  description: "Levée d'inhibition batch sur system_stable = on (§5.3)."
+  mode: single
+
+  sequence:
+    - repeat:
+        for_each:
+          - entree_porte
+          - chambre_parents_gauche
+          - chambre_parents_milieu
+          - chambre_parents_droite
+          - garage
+          - sejour_3
+          - chambre_arnaud
+          - chambre_matthieu
+        sequence:
+          - variables:
+              suffixe: "{{ repeat.item }}"
+              contexte_entity: "{{ 'input_text.contact_reconciliation_context_' ~ suffixe }}"
+              transition_entity: "{{ 'input_datetime.contact_last_transition_at_' ~ suffixe }}"
+              timer_entity: "{{ 'timer.contact_reconciliation_' ~ suffixe }}"
+              parts: >
+                {% set ctx = states(contexte_entity) %}
+                {{ ctx.split('|') if ctx not in ['unknown', 'unavailable', '', none] else [] }}
+              current_status: "{{ parts[0] if parts | count > 0 and parts[0] != '' else 'stable' }}"
+              current_business_state: "{{ parts[1] if parts | count > 1 and parts[1] in ['on', 'off'] else 'off' }}"
+              current_observed_event: "{{ parts[4] if parts | count > 4 and parts[4] in ['on', 'off'] else '' }}"
+
+          - choose:
+
+              # ----------------------------------------------------------
+              # Statut inhibited → levée vers stable (§5.3)
+              # ----------------------------------------------------------
+              - conditions:
+                  - condition: template
+                    value_template: "{{ current_status == 'inhibited' }}"
+                sequence:
+                  - action: script.reconciliation_appliquer_transition
+                    data:
+                      contexte_entity: "{{ contexte_entity }}"
+                      transition_entity: "{{ transition_entity }}"
+                      timer_entity: "{{ timer_entity }}"
+                      timer_action: "none"
+                      nouveau_contexte: "{{ 'stable|' ~ current_business_state ~ '|||' ~ current_observed_event }}"
+
+            default: []

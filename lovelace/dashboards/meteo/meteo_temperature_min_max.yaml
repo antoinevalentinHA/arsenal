@@ -12,10 +12,21 @@ views:
       - type: custom:button-card
         template: bouton_navigation_badge_carre
 
+    # ======================================================
+    # 🌡️ CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    # ======================================================
     cards:
+
       - type: vertical-stack
         cards:
 
+          # ------------------------------------------------------
+          # 🧭 Navigation météo
+          # ------------------------------------------------------
           - !include ../../includes/navigation/meteo.yaml
 
           # ======================================================
@@ -25,16 +36,14 @@ views:
 
           - square: false
             type: grid
-            columns: 2
+            columns: 1
             cards:
 
-              - !include ../../includes/sub_section_headers/min.yaml
-
-              - !include ../../includes/sub_section_headers/max.yaml
-
-              - !include ../../includes/cartes/meteo_jardin_min.yaml
-
-              - !include ../../includes/cartes/meteo_jardin_max.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_jardin
+                name: Température
+                icon: mdi:thermometer
 
           # ======================================================
           # 🏠 RDC / PALIER
@@ -43,16 +52,26 @@ views:
 
           - square: false
             type: grid
-            columns: 2
+            columns: 3
             cards:
 
-              - !include ../../includes/sub_section_headers/min.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_entree
+                name: Entrée
+                icon: mdi:thermometer
 
-              - !include ../../includes/sub_section_headers/max.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_sejour
+                name: Séjour
+                icon: mdi:thermometer
 
-              - !include ../../includes/cartes/meteo_rdc_palier_min.yaml
-
-              - !include ../../includes/cartes/meteo_rdc_palier_max.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_palier
+                name: Palier
+                icon: mdi:thermometer
 
           # ======================================================
           # 🛏️ CHAMBRES
@@ -64,13 +83,29 @@ views:
             columns: 2
             cards:
 
-              - !include ../../includes/sub_section_headers/min.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_chambre_arnaud
+                name: Arnaud
+                icon: mdi:thermometer
 
-              - !include ../../includes/sub_section_headers/max.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_chambre_matthieu
+                name: Matthieu
+                icon: mdi:thermometer
 
-              - !include ../../includes/cartes/meteo_chambres_min.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_chambre_parents
+                name: Parents
+                icon: mdi:thermometer
 
-              - !include ../../includes/cartes/meteo_chambres_max.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                name: Petite Maison
+                icon: mdi:thermometer
+                entity: sensor.temperature_minmax_jour_petite_maison
 
           # ======================================================
           # 🚿 SALLES DE BAIN
@@ -82,13 +117,17 @@ views:
             columns: 2
             cards:
 
-              - !include ../../includes/sub_section_headers/min.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_sdb_parents
+                name: Parents
+                icon: mdi:thermometer
 
-              - !include ../../includes/sub_section_headers/max.yaml
-
-              - !include ../../includes/cartes/meteo_sdb_min.yaml
-
-              - !include ../../includes/cartes/meteo_sdb_max.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_sdb_enfants
+                name: Enfants
+                icon: mdi:thermometer
 
           # ======================================================
           # 🧱 CAVE & GARAGE
@@ -100,30 +139,14 @@ views:
             columns: 2
             cards:
 
-              - !include ../../includes/sub_section_headers/min.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_garage
+                name: Garage
+                icon: mdi:thermometer
 
-              - !include ../../includes/sub_section_headers/max.yaml
-
-              - !include ../../includes/cartes/meteo_cave_garage_min.yaml
-
-              - !include ../../includes/cartes/meteo_cave_garage_max.yaml
-
-          # ======================================================
-          # 🏡 PETITE MAISON
-          # ======================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🏡 Petite Maison
-
-          - square: false
-            type: grid
-            columns: 2
-            cards:
-
-              - !include ../../includes/sub_section_headers/min.yaml
-
-              - !include ../../includes/sub_section_headers/max.yaml
-
-              - !include ../../includes/cartes/meteo_petite_maison_min.yaml
-
-              - !include ../../includes/cartes/meteo_petite_maison_max.yaml
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.temperature_minmax_jour_cave
+                name: Cave
+                icon: mdi:thermometer

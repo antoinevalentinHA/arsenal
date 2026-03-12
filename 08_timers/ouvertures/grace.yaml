@@ -44,7 +44,6 @@
 #   AUCUNE action automatique directe.
 # ==========================================================
 
-
 fenetre_chambre_parents_grace:
   name: Fenêtre chambre parents - grâce
   duration: "00:00:30"

@@ -12,13 +12,13 @@
 # 🧱 PRINCIPE
 #   - Source reconciliee deduite depuis this.entity_id
 #   - Diagnostic deduit depuis this.entity_id
-#   - Sortie courte de type : A=off | B=off | nominal
+#   - Sortie courte de type : A=off | B=off
 #
 # ⚠️ NOTE
 #   - Aucun calcul de diagnostic en Lovelace
 #   - Aucun role metier
-#   - Fallback explicite a unknown si attributs absents ou
-#     si capteur diagnostic indisponible
+#   - Le diagnostic reste porte par l'etat principal de la carte
+#   - Fallback explicite a unknown si attributs absents
 # ==========================================================
 
 - trigger:
@@ -32,14 +32,7 @@
         - binary_sensor.contact_chambre_parents_droite
         - binary_sensor.contact_chambre_arnaud
         - binary_sensor.contact_chambre_matthieu
-        - sensor.diagnostic_redondance_contact_sejour_3
-        - sensor.diagnostic_redondance_contact_garage
-        - sensor.diagnostic_redondance_contact_entree_porte
-        - sensor.diagnostic_redondance_contact_chambre_parents_gauche
-        - sensor.diagnostic_redondance_contact_chambre_parents_milieu
-        - sensor.diagnostic_redondance_contact_chambre_parents_droite
-        - sensor.diagnostic_redondance_contact_chambre_arnaud
-        - sensor.diagnostic_redondance_contact_chambre_matthieu
+
     - platform: homeassistant
       event: start
 
@@ -50,17 +43,14 @@
       state: &resume_diagnostic_redondance_logic >
         {% set suffixe = this.entity_id | replace('sensor.resume_diagnostic_redondance_', '') %}
         {% set src = 'binary_sensor.' ~ suffixe %}
-        {% set diagnostic = 'sensor.diagnostic_redondance_' ~ suffixe %}
 
         {% set a_raw = state_attr(src, 'etat_a') %}
         {% set b_raw = state_attr(src, 'etat_b') %}
-        {% set diag_raw = states(diagnostic) %}
 
         {% set a = a_raw if a_raw not in [none, '', 'None'] else 'unknown' %}
         {% set b = b_raw if b_raw not in [none, '', 'None'] else 'unknown' %}
-        {% set diag = diag_raw if diag_raw not in ['unknown', 'unavailable', '', none] else 'unknown' %}
 
-        A={{ a }} | B={{ b }} | {{ diag }}
+        A={{ a }} | B={{ b }}
 
     - name: "Resume diagnostic redondance Contact Garage"
       unique_id: resume_diagnostic_redondance_contact_garage

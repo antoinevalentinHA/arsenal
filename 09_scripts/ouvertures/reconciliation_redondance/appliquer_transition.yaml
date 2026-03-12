@@ -1,0 +1,93 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Reconciliation — Appliquer une transition d'état
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/scripts/ouvertures/reconciliation_appliquer_transition.yaml
+#
+# 🎯 ROLE
+#   Point d'écriture unique pour toute transition d'état
+#   du moteur de reconciliation.
+#
+#   Aucun autre script ne doit écrire directement sur :
+#     - input_text.contact_reconciliation_context_*
+#     - input_datetime.contact_last_transition_at_*
+#     - timer.contact_reconciliation_*
+#
+# 📥 PARAMETRES
+#   contexte_entity   : input_text.contact_reconciliation_context_<suffixe>
+#   transition_entity : input_datetime.contact_last_transition_at_<suffixe>
+#   timer_entity      : timer.contact_reconciliation_<suffixe>
+#   timer_action      : "start" | "cancel" | "none"
+#   nouveau_contexte  : valeur pipe-separated à écrire
+#                       format : status|business_state|pending_source|suspect_event|observed_event
+# ==========================================================
+
+reconciliation_appliquer_transition:
+  alias: "Reconciliation — Appliquer transition d'état"
+  description: "Point d'écriture unique : timer + context + horodatage."
+  mode: single
+
+  fields:
+    contexte_entity:
+      description: "Entité input_text du contexte sérialisé"
+      required: true
+      example: "input_text.contact_reconciliation_context_garage"
+
+    transition_entity:
+      description: "Entité input_datetime du dernier horodatage de transition"
+      required: true
+      example: "input_datetime.contact_last_transition_at_garage"
+
+    timer_entity:
+      description: "Entité timer de corroboration"
+      required: true
+      example: "timer.contact_reconciliation_garage"
+
+    timer_action:
+      description: "Action sur le timer : start | cancel | none"
+      required: true
+      example: "cancel"
+
+    nouveau_contexte:
+      description: "Valeur pipe-separated à écrire dans contexte_entity"
+      required: true
+      example: "stable|off|||off"
+
+  sequence:
+    - choose:
+
+        - conditions:
+            - condition: template
+              value_template: "{{ timer_action == 'cancel' }}"
+          sequence:
+            - action: timer.cancel
+              target:
+                entity_id: "{{ timer_entity }}"
+
+        - conditions:
+            - condition: template
+              value_template: "{{ timer_action == 'start' }}"
+          sequence:
+            - action: timer.start
+              target:
+                entity_id: "{{ timer_entity }}"
+
+        - conditions:
+            - condition: template
+              value_template: "{{ timer_action == 'none' }}"
+          sequence: []
+
+      default: []
+
+    - action: input_text.set_value
+      target:
+        entity_id: "{{ contexte_entity }}"
+      data:
+        value: "{{ nouveau_contexte }}"
+
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: "{{ transition_entity }}"
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

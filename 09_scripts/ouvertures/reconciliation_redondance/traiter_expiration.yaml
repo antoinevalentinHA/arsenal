@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Reconciliation — Traiter l'expiration d'un timer
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/scripts/ouvertures/reconciliation_traiter_expiration.yaml
+#
+# 🎯 ROLE
+#   Traiter l'expiration d'un timer de corroboration.
+#   Si le statut courant est "quarantine", escalade vers "divergent".
+#   Sinon, no-op (timer orphelin — idempotence garantie).
+#
+# 📥 PARAMETRES
+#   timer_entity : entity_id du timer ayant expiré
+#
+# 🧩 DECISION METIER (§6.2 du contrat v2.2)
+#   quarantine → divergent|<business_state>|<pending_source>|on_non_corroborated|on
+#   autre statut → no-op
+#
+# 🛡️ GARANTIES
+#   - Idempotence : no-op si statut != quarantine
+#   - Pas d'écriture directe — délègue à reconciliation_appliquer_transition
+# ==========================================================
+
+reconciliation_traiter_expiration:
+  alias: "Reconciliation — Traiter expiration timer"
+  description: "Escalade vers divergent si quarantaine active à l'expiration du timer."
+  mode: single
+
+  fields:
+    timer_entity:
+      description: "entity_id du timer ayant expiré"
+      required: true
+      example: "timer.contact_reconciliation_garage"
+
+  sequence:
+    - variables:
+        suffixe: "{{ timer_entity | replace('timer.contact_reconciliation_', '') }}"
+        contexte_entity: "{{ 'input_text.contact_reconciliation_context_' ~ suffixe }}"
+        transition_entity: "{{ 'input_datetime.contact_last_transition_at_' ~ suffixe }}"
+        parts: >
+          {% set ctx = states(contexte_entity) %}
+          {{ ctx.split('|') if ctx not in ['unknown', 'unavailable', '', none] else [] }}
+        current_status: "{{ parts[0] if parts | count > 0 and parts[0] != '' else 'stable' }}"
+        current_business_state: "{{ parts[1] if parts | count > 1 and parts[1] in ['on', 'off'] else 'off' }}"
+        current_pending_source: "{{ parts[2] if parts | count > 2 else '' }}"
+
+    - choose:
+
+        # ----------------------------------------------------------
+        # Quarantaine active → divergence (§6.2)
+        # ----------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ current_status == 'quarantine' }}"
+          sequence:
+            - action: script.reconciliation_appliquer_transition
+              data:
+                contexte_entity: "{{ contexte_entity }}"
+                transition_entity: "{{ transition_entity }}"
+                timer_entity: "{{ timer_entity }}"
+                timer_action: "none"
+                nouveau_contexte: >
+                  {{ 'divergent|' ~ current_business_state ~ '|' ~ current_pending_source ~ '|on_non_corroborated|on' }}
+
+      default: []

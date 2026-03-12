@@ -1,0 +1,196 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS (COULEURS / METEO)
+#     Temperature Min/Max — Couleurs MAX_JOUR
+# ----------------------------------------------------------
+# 📌 Fichier
+#   /homeassistant/11_template_sensors/couleurs/meteo/temperature_min_max/max_jour.yaml
+#
+# 🎯 ROLE
+#   Classer les températures maximales journalières selon
+#   les seuils thermiques Arsenal afin d'alimenter l'UI
+#   Min/Max via un code couleur backend.
+#
+# 🧩 PRINCIPE
+#   - Auto-paramétrage via this.entity_id
+#   - Aucun suffixe codé en dur dans la logique
+#   - Mapping identique aux capteurs couleur_temperature_*
+#
+# 🛡️ CONTRAT
+#   - Aucun calcul couleur dans Lovelace
+#   - Toute la logique reste dans le backend
+#   - Entités attendues :
+#
+#       sensor.temperature_max_jour_<suffixe>
+#       sensor.temperature_seuil_bas_<suffixe>
+#       sensor.temperature_seuil_haut_<suffixe>
+#
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_max_jour_cave
+        - sensor.temperature_max_jour_chambre_arnaud
+        - sensor.temperature_max_jour_chambre_matthieu
+        - sensor.temperature_max_jour_chambre_parents
+        - sensor.temperature_max_jour_entree
+        - sensor.temperature_max_jour_garage
+        - sensor.temperature_max_jour_jardin
+        - sensor.temperature_max_jour_palier
+        - sensor.temperature_max_jour_petite_maison
+        - sensor.temperature_max_jour_sdb_enfants
+        - sensor.temperature_max_jour_sdb_parents
+        - sensor.temperature_max_jour_sejour
+        - sensor.temperature_seuil_bas_cave
+        - sensor.temperature_seuil_bas_chambre_arnaud
+        - sensor.temperature_seuil_bas_chambre_matthieu
+        - sensor.temperature_seuil_bas_chambre_parents
+        - sensor.temperature_seuil_bas_entree
+        - sensor.temperature_seuil_bas_garage
+        - sensor.temperature_seuil_bas_jardin
+        - sensor.temperature_seuil_bas_palier
+        - sensor.temperature_seuil_bas_petite_maison
+        - sensor.temperature_seuil_bas_sdb_enfants
+        - sensor.temperature_seuil_bas_sdb_parents
+        - sensor.temperature_seuil_bas_sejour
+        - sensor.temperature_seuil_haut_cave
+        - sensor.temperature_seuil_haut_chambre_arnaud
+        - sensor.temperature_seuil_haut_chambre_matthieu
+        - sensor.temperature_seuil_haut_chambre_parents
+        - sensor.temperature_seuil_haut_entree
+        - sensor.temperature_seuil_haut_garage
+        - sensor.temperature_seuil_haut_jardin
+        - sensor.temperature_seuil_haut_palier
+        - sensor.temperature_seuil_haut_petite_maison
+        - sensor.temperature_seuil_haut_sdb_enfants
+        - sensor.temperature_seuil_haut_sdb_parents
+        - sensor.temperature_seuil_haut_sejour
+        - input_number.temperature_couleur_zone_verte
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  sensor:
+
+    # ------------------------------------------------------
+    # LOGIQUE COULEUR (ANCRE)
+    # ------------------------------------------------------
+
+    - name: "Couleur Temperature Max Jour Cave"
+      unique_id: couleur_temperature_max_jour_cave
+
+      state: &logic_couleur_max >
+        {% set prefixe = 'sensor.couleur_temperature_max_jour_' %}
+        {% set suffixe = this.entity_id | replace(prefixe, '') %}
+
+        {% set src = 'sensor.temperature_max_jour_' ~ suffixe %}
+        {% set src_bas = 'sensor.temperature_seuil_bas_' ~ suffixe %}
+        {% set src_haut = 'sensor.temperature_seuil_haut_' ~ suffixe %}
+
+        {% set t_raw = states(src) %}
+        {% set t = t_raw | replace(',', '.') | float(999) %}
+
+        {% set bas = states(src_bas) | replace(',', '.') | float(0) %}
+        {% set haut = states(src_haut) | replace(',', '.') | float(0) %}
+
+        {% set zone = states('input_number.temperature_couleur_zone_verte') | float(0.5) %}
+        {% set centre = (bas + haut) / 2 %}
+
+        {% if t_raw in ['unknown','unavailable',None] or t == 999 %}
+          grey
+        {% elif bas == 0 or haut == 0 or bas >= haut %}
+          grey
+        {% elif t < bas %}
+          blue
+        {% elif t < centre - zone %}
+          light_blue
+        {% elif t <= centre + zone %}
+          green
+        {% elif t <= haut %}
+          yellow
+        {% else %}
+          red
+        {% endif %}
+
+      attributes: &attrs_couleur_max
+        reason: >
+          {% set prefixe = 'sensor.couleur_temperature_max_jour_' %}
+          {% set suffixe = this.entity_id | replace(prefixe, '') %}
+
+          {% set src = 'sensor.temperature_max_jour_' ~ suffixe %}
+          {% set src_bas = 'sensor.temperature_seuil_bas_' ~ suffixe %}
+          {% set src_haut = 'sensor.temperature_seuil_haut_' ~ suffixe %}
+
+          {% set t_raw = states(src) %}
+          {% set t = t_raw | replace(',', '.') | float(999) %}
+
+          {% set bas = states(src_bas) | replace(',', '.') | float(0) %}
+          {% set haut = states(src_haut) | replace(',', '.') | float(0) %}
+
+          {% if t_raw in ['unknown','unavailable',None] or t == 999 %}
+            unavailable
+          {% elif bas == 0 or haut == 0 or bas >= haut %}
+            invalid_thresholds
+          {% else %}
+            ok
+          {% endif %}
+
+    # ------------------------------------------------------
+    # INSTANCES
+    # ------------------------------------------------------
+
+    - name: "Couleur Temperature Max Jour Chambre Arnaud"
+      unique_id: couleur_temperature_max_jour_chambre_arnaud
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour Chambre Matthieu"
+      unique_id: couleur_temperature_max_jour_chambre_matthieu
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour Chambre Parents"
+      unique_id: couleur_temperature_max_jour_chambre_parents
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour Entree"
+      unique_id: couleur_temperature_max_jour_entree
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour Garage"
+      unique_id: couleur_temperature_max_jour_garage
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour Jardin"
+      unique_id: couleur_temperature_max_jour_jardin
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour Palier"
+      unique_id: couleur_temperature_max_jour_palier
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour Petite Maison"
+      unique_id: couleur_temperature_max_jour_petite_maison
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour SDB Enfants"
+      unique_id: couleur_temperature_max_jour_sdb_enfants
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour SDB Parents"
+      unique_id: couleur_temperature_max_jour_sdb_parents
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max
+
+    - name: "Couleur Temperature Max Jour Sejour"
+      unique_id: couleur_temperature_max_jour_sejour
+      state: *logic_couleur_max
+      attributes: *attrs_couleur_max

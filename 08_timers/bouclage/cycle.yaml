@@ -46,7 +46,6 @@
 #   Il ne constitue PAS un mécanisme de sûreté.
 # ==========================================================
 
-
 bouclage_ecs_5_minutes:
   name: "Bouclage ECS (5 min)"
   duration: "00:05:00"

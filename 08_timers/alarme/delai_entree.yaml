@@ -54,7 +54,6 @@
 #   un déclenchement automatique à elle seule.
 # ==========================================================
 
-
 delai_entree:
   name: "Délai entrée"
   duration: "00:00:30"

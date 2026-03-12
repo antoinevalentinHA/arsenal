@@ -47,6 +47,5 @@
 #   - Autorise seulement une réévaluation
 # ==========================================================
 
-
 poele_blocage_chauffage:
   duration: "01:00:00"

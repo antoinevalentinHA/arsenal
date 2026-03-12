@@ -50,7 +50,6 @@
 #   pas le chauffage lui-même.
 # ==========================================================
 
-
 chauffage_geoloc_antirebond:
   name: "Antirebond chauffage geolocalisation"
   duration: "00:05:00"

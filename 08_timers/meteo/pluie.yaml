@@ -47,7 +47,6 @@
 #   AUCUNE action automatique.
 # ==========================================================
 
-
 pluie_zigbee_rearm:
   name: "Réarmement pluie (Zigbee)"
   duration: "00:02:00"

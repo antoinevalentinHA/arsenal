@@ -54,7 +54,6 @@
 #   un armement automatique immédiat.
 # ==========================================================
 
-
 blocage_armement_auto:
   name: "Blocage armement auto"
   duration: "00:05:00"

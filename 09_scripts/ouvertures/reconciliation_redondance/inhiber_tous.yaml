@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Reconciliation — Inhiber tous les capteurs critiques
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/scripts/ouvertures/reconciliation_inhiber_tous.yaml
+#
+# 🎯 ROLE
+#   Appliquer l'inhibition système sur l'ensemble des capteurs
+#   critiques redondants lors du passage de systeme_stable à off.
+#
+#   Pour chaque capteur :
+#     - Annule le timer de corroboration en cours
+#     - Écrit le contexte : inhibited|<business_state>|||<observed_event>
+#     - Préserve business_state et observed_event existants
+#
+# 📥 PARAMETRES
+#   Aucun — la liste des suffixes est fixée dans ce script.
+#
+# 🧩 LOGIQUE (§5.2 du contrat v2.2)
+#   Tout statut courant est écrasé par "inhibited".
+#   business_state est conservé.
+#   Les événements on en cours de quarantaine sont abandonnés.
+#
+# 🛡️ GARANTIES
+#   - Idempotence : réécrire inhibited sur inhibited est sans effet métier
+#   - Pas d'écriture directe — délègue à reconciliation_appliquer_transition
+# ==========================================================
+
+reconciliation_inhiber_tous:
+  alias: "Reconciliation — Inhiber tous les capteurs"
+  description: "Inhibition batch sur system_stable = off (§5.2)."
+  mode: single
+
+  sequence:
+    - repeat:
+        for_each:
+          - entree_porte
+          - chambre_parents_gauche
+          - chambre_parents_milieu
+          - chambre_parents_droite
+          - garage
+          - sejour_3
+          - chambre_arnaud
+          - chambre_matthieu
+        sequence:
+          - variables:
+              suffixe: "{{ repeat.item }}"
+              contexte_entity: "{{ 'input_text.contact_reconciliation_context_' ~ suffixe }}"
+              transition_entity: "{{ 'input_datetime.contact_last_transition_at_' ~ suffixe }}"
+              timer_entity: "{{ 'timer.contact_reconciliation_' ~ suffixe }}"
+              parts: >
+                {% set ctx = states(contexte_entity) %}
+                {{ ctx.split('|') if ctx not in ['unknown', 'unavailable', '', none] else [] }}
+              current_business_state: "{{ parts[1] if parts | count > 1 and parts[1] in ['on', 'off'] else 'off' }}"
+              current_observed_event: "{{ parts[4] if parts | count > 4 and parts[4] in ['on', 'off'] else '' }}"
+
+          - action: script.reconciliation_appliquer_transition
+            data:
+              contexte_entity: "{{ contexte_entity }}"
+              transition_entity: "{{ transition_entity }}"
+              timer_entity: "{{ timer_entity }}"
+              timer_action: "cancel"
+              nouveau_contexte: "{{ 'inhibited|' ~ current_business_state ~ '|||' ~ current_observed_event }}"

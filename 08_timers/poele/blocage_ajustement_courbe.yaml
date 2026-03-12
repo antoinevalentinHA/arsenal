@@ -42,7 +42,6 @@
 #   AUCUNE reprise automatique.
 # ==========================================================
 
-
 poele_24h:
   name: "Poele neutralisation 24h"
   duration: "24:00:00"
