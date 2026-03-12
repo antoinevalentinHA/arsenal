@@ -28,7 +28,7 @@
 # ==========================================================
 
 reconciliation_inhiber_tous:
-  alias: "Reconciliation — Inhiber tous les capteurs"
+  alias: "Réconciliation — Inhiber tous les capteurs"
   description: "Inhibition batch sur system_stable = off (§5.2)."
   mode: single
 

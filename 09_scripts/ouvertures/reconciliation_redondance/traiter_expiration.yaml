@@ -23,7 +23,7 @@
 # ==========================================================
 
 reconciliation_traiter_expiration:
-  alias: "Reconciliation — Traiter expiration timer"
+  alias: "Réconciliation — Traiter expiration timer"
   description: "Escalade vers divergent si quarantaine active à l'expiration du timer."
   mode: single
 

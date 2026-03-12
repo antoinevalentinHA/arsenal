@@ -33,7 +33,7 @@
 # ==========================================================
 
 - id: "10170000000015"
-  alias: "Ouvertures — Capteurs redondants critiques — Moteur de reconciliation"
+  alias: "Ouvertures — Capteurs redondants critiques — Moteur de réconciliation"
   description: "Orchestrateur v2.2 — route les triggers vers les scripts de reconciliation."
   mode: queued
   max: 20
