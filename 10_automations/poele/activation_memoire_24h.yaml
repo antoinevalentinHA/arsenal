@@ -1,97 +1,96 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Poêle – Activation mémoire de fonctionnement (24 h)
+#     Poele – Activation memoire de fonctionnement (24 h)
 #
 #  ID : 10100000000001
 # ----------------------------------------------------------
-#  🎯 RÔLE
+#  🎯 ROLE
 #
-#     Automation de MÉMOIRE MÉTIER TEMPORELLE.
+#     Automation de MEMOIRE METIER TEMPORELLE.
 #
-#     Elle enregistre le fait que le poêle a été
-#     récemment en fonctionnement, en activant
-#     un booléen mémoire et en relançant un timer
+#     Elle enregistre le fait qu'une signature thermique
+#     compatible poele a ete detectee recemment, en activant
+#     un booleen memoire et en relancant un timer
 #     de persistance de 24 heures.
 #
-#     Cette mémoire est utilisée comme contexte
-#     par d’autres moteurs de décision (chauffage).
+#     Cette memoire est utilisee comme contexte
+#     par d'autres moteurs de decision (chauffage).
 #
 #  🧱 NATURE
 #
-#     - Projection d’un événement ponctuel
-#     - Mémoire volontairement persistante
-#     - Décorrélée de toute action immédiate
+#     - Projection d'un evenement ponctuel
+#     - Memoire volontairement persistante
+#     - Decorrelee de toute action immediate
 #
 #  ⚙️ PRINCIPE
 #
-#     - À chaque détection du poêle en fonctionnement :
-#         • activation de la mémoire `poele_recent`
-#         • redémarrage du timer 24 h
+#     - A chaque detection de signature thermique poele :
+#         • activation de la memoire `poele_recent`
+#         • redemarrage du timer 24 h
 #
-#     - Toute nouvelle détection prolonge
-#       la fenêtre mémoire (logique glissante)
+#     - Toute nouvelle detection prolonge
+#       la fenetre memoire (logique glissante)
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
-#     - Ne décide pas du chauffage
+#     - Ne decide pas du chauffage
 #     - Ne bloque aucune action
-#     - Ne mesure pas une durée réelle d’usage
-#     - Ne déclenche aucune consigne thermique
+#     - Ne mesure pas une duree reelle d'usage
+#     - Ne declenche aucune consigne thermique
 #
 #  🔗 UTILISATION
 #
-#     - Utilisée par l’automatisation
+#     - Utilisee par l'automatisation
 #       "Chauffage – Auto-ajustement courbe"
 #
-#     - Sert de CONTEXTE DE STABILITÉ lors du figement
-#       des réglages de courbe de chauffe (pente / parallèle)
+#     - Sert de CONTEXTE DE STABILITE lors du figement
+#       des reglages de courbe de chauffe (pente / parallele)
 #
-#     - Empêche les ajustements à la BAISSE de la courbe
-#       tant qu’une influence thermique récente du poêle
-#       est encore considérée possible
+#     - Empeche les ajustements a la BAISSE de la courbe
+#       tant qu'une pollution thermique recente
+#       reste consideree possible
 #
-#     - N’intervient pas dans la décision thermique instantanée
-#       ni dans l’exécution du chauffage
+#     - N'intervient pas dans la decision thermique instantanee
+#       ni dans l'execution du chauffage
 #
 #  🧠 PRINCIPE ARSENAL
 #
-#     Un événement ponctuel peut avoir
-#     une portée temporelle volontaire.
+#     Un evenement ponctuel peut avoir
+#     une portee temporelle volontaire.
 #
-#     La mémoire est explicite, bornée,
-#     et consommée ailleurs.
+#     La memoire est explicite, bornee,
+#     et consommee ailleurs.
 #
-#  ✅ COMPATIBILITÉ
+#  ✅ COMPATIBILITE
 #
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10100000000001"
-  alias: "Poêle – Mémoire de fonctionnement (24 h)"
+  alias: "Poele – Memoire thermique recente (24 h)"
   description: >
-    Active la mémoire poele_recent et redémarre le timer 24h
-    à chaque détection du poêle en fonctionnement.
+    Active la memoire poele_recent et redemarre le timer 24h
+    a chaque detection de signature thermique poele.
 
   mode: restart
 
   trigger:
     - platform: state
-      entity_id: binary_sensor.poele_en_fonction
+      entity_id: binary_sensor.signature_thermique_poele
       to: "on"
 
   action:
 
     # ------------------------------------------------------
-    # Activer la mémoire
+    # Activer la memoire
     # ------------------------------------------------------
-    - alias: "Activer la mémoire poêle récent"
+    - alias: "Activer la memoire poele_recent"
       action: input_boolean.turn_on
       target:
         entity_id: input_boolean.poele_recent
 
     # ------------------------------------------------------
-    # Redémarrer le timer 24h
+    # Redemarrer le timer 24h
     # ------------------------------------------------------
     - alias: "Relancer le timer 24h"
       action: timer.start

@@ -45,6 +45,19 @@ views:
                   - type: numeric-input
                     style: buttons
 
+          - type: tile
+            entity: input_number.garage_seuil_luminosite_allumage_auto
+            name: Luminosité max
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
               - type: tile
                 entity: input_boolean.sejour_auto_light
                 name: Séjour 🛋️

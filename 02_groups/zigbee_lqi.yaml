@@ -53,6 +53,8 @@ zigbee_linkquality_all:
     - sensor.contact_entree_porte_2_linkquality
     - sensor.contact_garage_1_linkquality
     - sensor.contact_garage_2_linkquality
+    
+    - sensor.luminosite_garage_linkquality
 
     - sensor.clavier_alarme_1_linkquality
     - sensor.clavier_alarme_2_linkquality

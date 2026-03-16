@@ -1,31 +1,41 @@
 # ==========================================================
-#  AUTOMATION : Alarme – Delai entree (start)
-# ----------------------------------------------------------
-#  🧠 Rôle :
-#     Lancer un délai d’entrée lorsqu’une porte surveillée
-#     est ouverte alors que l’alarme est armée.
+# 🧠 ARSENAL — AUTOMATION
+# Alarme — Delai entree (start)
+# ==========================================================
 #
-#  🎯 Objectif :
-#     Donner un temps limité pour désarmer l’alarme
-#     avant déclenchement (clavier, badge, présence).
+# 📌 Fichier
+#   automations/alarme/delai_entree_start.yaml
 #
-#  🧩 Principe Arsenal :
-#     - Cette automatisation NE DÉCIDE RIEN
-#     - Elle pose uniquement un état temporel :
-#         timer.delai_entree
-#     - Le cerveau V2 gère le reste (NOOP / TRIGGER)
+# 🎯 Role
+#   Lancer le delai d'entree lorsqu'un ouvrant d'entree
+#   alarme passe de off a on alors que l'alarme est armee.
 #
-#  ⚙️ Fonctionnement :
-#     - Déclenchement sur ouverture porte / garage
-#     - Démarrage du timer de délai d’entrée
-#     - Bip d’avertissement (hors mode test)
+# 🧱 Principe
+#   - Consomme les signaux metier permissifs du domaine alarme
+#   - Ne consomme plus la reconciliation stricte ouvrants
+#   - Ne decide rien
+#   - Pose uniquement un etat temporel :
+#       timer.delai_entree
 #
-#  🛡️ Robustesse :
-#     - 100 % événementiel
-#     - Aucun wait
-#     - Post-reboot safe
+# 📥 Entrees
+#   - binary_sensor.alarme_ouverture_entree
+#   - binary_sensor.alarme_ouverture_garage
+#   - alarm_control_panel.alarme_maison
+#   - timer.delai_entree
+#   - input_number.alarme_delai_entree
+#   - input_boolean.mode_test_alarme
 #
-#  🆔 ID : 10020000000031
+# 📤 Sorties
+#   - timer.delai_entree
+#   - script.sirene_bip
+#
+# ⚠️ Important
+#   - Declenchement strict sur front montant off -> on
+#   - Cette automation ne confirme aucune intrusion
+#   - Le cerveau alarme V2 gere la suite
+#
+# 🆔 ID
+#   - 10020000000031
 # ==========================================================
 
 - id: "10020000000031"
@@ -35,8 +45,9 @@
   trigger:
     - platform: state
       entity_id:
-        - binary_sensor.contact_entree_porte
-        - binary_sensor.contact_garage
+        - binary_sensor.alarme_ouverture_entree
+        - binary_sensor.alarme_ouverture_garage
+      from: "off"
       to: "on"
 
   condition:

@@ -139,7 +139,13 @@ L’automatisme d’éclairage du garage est gouverné par **deux garde-fous cum
   → autorisation globale de l’automatisme
 
 - `binary_sensor.garage_allumage_auto_autorise`
-  → autorisation contextuelle d’allumage (saison + période météo)
+  → autorisation contextuelle d’allumage (luminosité locale)
+
+La décision repose sur la luminosité mesurée localement
+dans le garage (sensor.luminosite_garage_illuminance)
+comparée au seuil configuré via :
+
+input_number.garage_seuil_luminosite_allumage_auto
 
 Règles :
 

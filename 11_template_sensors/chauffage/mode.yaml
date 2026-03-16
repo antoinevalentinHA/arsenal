@@ -10,7 +10,7 @@
 #   - OFF → preset_mode == "sleep" ou données indisponibles
 #
 # 🧩 Source :
-#   climate.vscotho1_200_11_chauffage
+#   sensor.programme_chauffage
 #
 # 📊 Type : Template Binary Sensor
 # 📍 Entité : binary_sensor.chauffage_actif

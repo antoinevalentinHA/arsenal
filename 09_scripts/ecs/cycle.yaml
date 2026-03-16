@@ -72,7 +72,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 chauffage_ecs_cycle:
   alias: "Chauffage ECS ‑ Cycle unifié"
   description: >

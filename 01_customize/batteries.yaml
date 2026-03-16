@@ -192,6 +192,14 @@ sensor.capteur_mouvements_sejour_2_battery:
   icon: mdi:motion-sensor
 
 ############################################################
+# 💡 LUMINOSITE
+############################################################
+
+sensor.luminosite_garage_battery:
+  friendly_name: "Lumière garage"
+  icon: mdi:brightness-6
+
+############################################################
 # 🌡️ CAPTEURS METEO ZIGBEE
 ############################################################
 

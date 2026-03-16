@@ -50,7 +50,6 @@
 #     - Robustesse indépendante du cloud
 # ==========================================================
 
-
 - id: "10250000000006"
   alias: "ECS – Gardien consigne hors cycle"
   description: >

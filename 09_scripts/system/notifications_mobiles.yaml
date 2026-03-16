@@ -137,7 +137,7 @@ notification_envoyer_famille:
 
 
 notification_envoyer_avance:
-  alias: "Notification - Envoyer Avance"
+  alias: "Notification - Envoyer Avancé"
   mode: parallel
   fields:
     cible:

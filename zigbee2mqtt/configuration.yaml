@@ -164,6 +164,8 @@ devices:
     friendly_name: contact_chambre_arnaud_2
   '0x7c31fafffef195bc':
     friendly_name: contact_entree_porte_2
+  '0x04cf8cdf3c819406':
+    friendly_name: luminosite_garage
 groups:
   '1':
     friendly_name: Prises

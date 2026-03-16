@@ -1,60 +1,61 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERN)
-#     Garage — Allumage automatique autorisé (saison + période)
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Garage — Allumage automatique autorise (luminosite)
 # ----------------------------------------------------------
-# 🎯 RÔLE
-#   Autorité logique unique indiquant si l’allumage auto garage
-#   est autorisé selon :
-#     - input_select.saison
-#     - sensor.periode_meteo
+# 🎯 ROLE
+#   Autorite logique unique indiquant si l’allumage
+#   automatique du garage est autorise selon la
+#   luminosite mesuree dans le garage.
 #
 #   Ce capteur :
-#   - ne pilote rien
-#   - sert d’autorisation simple pour les automations garage
+#     - ne pilote rien
+#     - sert uniquement d’autorisation pour les
+#       automatisations d’eclairage du garage
 #
-# 📌 ENTITE (attendue / cible)
-#   - binary_sensor.allumage_auto_garage_autorise
+# 📌 ENTITE
+#   - binary_sensor.garage_allumage_auto_autorise
 #
 # 🔗 DEPENDANCES
-#   - input_select.saison
-#   - sensor.periode_meteo
+#   - sensor.luminosite_garage_illuminance
+#   - input_number.garage_seuil_luminosite_allumage_auto
+#
+# 🧠 PRINCIPE
+#   L’allumage automatique est autorise lorsque :
+#
+#     luminosite_garage < seuil_reglage
+#
+#   Le seuil est reglable dynamiquement via l’UI.
+#
+# ⚠️ IMPORTANT
+#   Ce capteur ne prend aucune decision temporelle
+#   (jour / nuit / saison). Il repose uniquement
+#   sur la luminosite physique locale.
 # ==========================================================
 
 - binary_sensor:
-    - name: "Garage — Allumage auto autorisé"
-      unique_id: "binary_sensor.garage_allumage_auto_autorise"
+    - name: "Garage — Allumage auto autorise"
+      unique_id: "garage_allumage_auto_autorise"
 
       icon: >
-        {% set s = states('input_select.saison') %}
-        {% set p = states('sensor.periode_meteo') %}
-        {% if s in ['Automne','Hiver'] or (s in ['Printemps','Été'] and p in ['nuit','aube','crepuscule']) %}
+        {% if is_state('binary_sensor.garage_allumage_auto_autorise', 'on') %}
           mdi:lightbulb-auto
         {% else %}
           mdi:lightbulb-auto-outline
         {% endif %}
 
       availability: >
-        {{ states('input_select.saison') not in ['unknown','unavailable','none','']
-           and states('sensor.periode_meteo') not in ['unknown','unavailable','none',''] }}
+        {{ states('sensor.luminosite_garage_illuminance') not in ['unknown','unavailable','none','']
+           and states('input_number.garage_seuil_luminosite_allumage_auto') not in ['unknown','unavailable','none',''] }}
 
       attributes:
-        saison: >
-          {{ states('input_select.saison') }}
-        periode_meteo: >
-          {{ states('sensor.periode_meteo') }}
-        raison: >
-          {% set s = states('input_select.saison') %}
-          {% set p = states('sensor.periode_meteo') %}
-          {% if s in ['Automne','Hiver'] %}
-            Saison sombre (Automne/Hiver) : autorisé en continu.
-          {% elif s in ['Printemps','Été'] and p in ['nuit','aube','crepuscule'] %}
-            Saison claire (Printemps/Été) : autorisé uniquement nuit/aube/crepuscule.
-          {% else %}
-            Saison claire (Printemps/Été) : interdit en matin/jour.
-          {% endif %}
+        illuminance: >
+          {{ states('sensor.luminosite_garage_illuminance') }}
+        seuil_luminosite: >
+          {{ states('input_number.garage_seuil_luminosite_allumage_auto') }}
 
       state: >
-        {% set s = states('input_select.saison') %}
-        {% set p = states('sensor.periode_meteo') %}
-        {{ s in ['Automne','Hiver']
-           or (s in ['Printemps','Été'] and p in ['nuit','aube','crepuscule']) }}
+        {% set lux = states('sensor.luminosite_garage_illuminance') %}
+        {% set seuil = states('input_number.garage_seuil_luminosite_allumage_auto') %}
+        {{ lux not in ['unknown','unavailable','none','']
+           and seuil not in ['unknown','unavailable','none','']
+           and lux | float(9999) < seuil | float(0) }}

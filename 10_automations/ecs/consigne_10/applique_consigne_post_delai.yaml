@@ -45,7 +45,6 @@
 #     - Aucune sortie silencieuse en cas d’échec
 # ==========================================================
 
-
 - id: "10250000000005"
   alias: "ECS – Gardien post-prélèvement"
   description: >

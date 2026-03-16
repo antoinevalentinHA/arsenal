@@ -170,6 +170,15 @@ sensor.capteur_mouvements_garage_3_linkquality:
 
 
 ############################################################
+# 💡 LUMINOSITE
+############################################################
+
+sensor.luminosite_garage_linkquality:
+  friendly_name: "Lumière garage"
+  icon: mdi:brightness-6
+
+
+############################################################
 # 🌡️ CAPTEURS MÉTÉO / TEMPÉRATURE
 ############################################################
 

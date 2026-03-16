@@ -234,20 +234,18 @@ Interdictions :
 # 🔒 8. IMMUNITÉ THERMIQUE & PROTECTIONS
 # ----------------------------------------------------------
 
-Frontière d’immunité absolue :
+Frontière d’immunité thermique :
 
-- `binary_sensor.poele_en_fonction_stable`
-
-Effets :
-
-- suspension totale de toute calibration
-- neutralisation des diagnostics calibrants
-- gel des propositions
-- interdiction d’écriture
+- binary_sensor.signature_thermique_poele
+- mémoire thermique récente (24 h)
 
 Principe :
 
-> ⚠️ **Aucune calibration n’est légitime sous apports externes.**
+Toute signature thermique compatible avec un apport poêle
+rend la période thermique impropre à l’apprentissage.
+
+La présence d’une signature thermique active ou récente
+suspend toute calibration de la courbe de chauffe.
 
 ---
 

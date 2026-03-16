@@ -66,6 +66,7 @@ batteries:
     - sensor.contact_entree_porte_2_battery
     - sensor.contact_garage_1_battery
     - sensor.contact_garage_2_battery
+    - sensor.luminosite_garage_battery
     - sensor.cave_batterie
     - sensor.chambre_batterie
     - sensor.chambre_parents_batterie

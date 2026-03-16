@@ -1,5 +1,5 @@
 # ==========================================================
-# 🌦️ ARSENAL — CONTRAT D’AFFICHAGE MÉTÉO
+# 🌦️ ARSENAL — CONTRAT D'AFFICHAGE MÉTÉO
 # ==========================================================
 #
 # 📌 Statut :
@@ -23,10 +23,11 @@ Il établit :
 - ce qui peut être **affiché**,
 - comment une donnée météo doit être **restituée visuellement**,
 - la **séparation stricte** entre donnée, interprétation et affichage,
-- les **invariants d’honnêteté visuelle**.
+- les **invariants d'honnêteté visuelle**.
 
-Ce contrat **ne gouverne pas la validité des données météo**  
-(couverte par `/contrats/meteo.md`).
+Ce contrat **ne gouverne pas la validité des données météo**
+(couverte par `contrat_meteo_gouvernance.md`,
+`contrat_validation.md`, `contrat_fallback.md`).
 
 ---
 
@@ -34,12 +35,12 @@ Ce contrat **ne gouverne pas la validité des données météo**
 
 Ce contrat couvre exclusivement :
 
-- l’affichage des grandeurs météo suivantes :
+- l'affichage des grandeurs météo suivantes :
   - température,
   - humidité relative,
   - humidité absolue,
   - humidex,
-- l’utilisation de **capteurs de couleur dédiés**,
+- l'utilisation de **capteurs de couleur dédiés**,
 - la structuration des dashboards météo,
 - la navigation entre vues météo.
 
@@ -55,35 +56,33 @@ Il ne couvre PAS :
 
 ## 🧠 Principe fondamental
 
-L’affichage météo ARSENAL est **strictement passif**.
+L'affichage météo ARSENAL est **strictement passif**.
 
-👉 **L’UI observe. Elle n’interprète jamais.**
+👉 **L'UI observe. Elle n'interprète jamais.**
 
 Aucune logique métier, seuil, comparaison ou extrapolation
-n’est autorisée dans la couche UI.
+n'est autorisée dans la couche UI.
 
 ---
 
-## 🧩 Relation au contrat météo (gouvernance)
+## 🧩 Relation aux contrats météo
 
-Le contrat `/contrats/meteo.md` :
-
-- définit ce qu’est une **donnée météo valide**,
-- impose les règles de **continuité** et de **fallback**,
-- gouverne l’existence même de la donnée.
+`contrat_meteo_gouvernance.md` définit le cadre normatif du domaine.
+`contrat_validation.md` définit ce qu'est une donnée météo valide.
+`contrat_fallback.md` définit la continuité et les conditions d'abstention.
 
 Le présent contrat :
 
 - **consomme exclusivement** des données déjà qualifiées,
-- n’évalue jamais leur validité,
+- n'évalue jamais leur validité,
 - ne déclenche aucun fallback.
 
-➡️ Une donnée météo **non conforme** à `/contrats/meteo.md`
+➡️ Une donnée météo non conforme à l'architecture contractuelle météo
 est réputée **inexploitable** et doit être affichée comme telle.
 
 ---
 
-## 🔒 Invariants normatifs d’affichage
+## 🔒 Invariants normatifs d'affichage
 
 ### Invariant 1 — Fidélité absolue
 
@@ -105,7 +104,7 @@ Toute carte météo affiche :
   - `sensor.couleur_humidite_absolue_*`
   - `sensor.couleur_humidex_*`
 
-👉 Aucune carte UI ne calcule une couleur à partir d’une valeur.
+👉 Aucune carte UI ne calcule une couleur à partir d'une valeur.
 
 ---
 
@@ -113,9 +112,9 @@ Toute carte météo affiche :
 
 Les cartes UI :
 
-- consomment **directement** l’état textuel des capteurs couleur,
+- consomment **directement** l'état textuel des capteurs couleur,
 - ne redéfinissent aucune correspondance seuil → couleur,
-- n’introduisent aucune logique conditionnelle locale.
+- n'introduisent aucune logique conditionnelle locale.
 
 ---
 
@@ -128,9 +127,9 @@ Si une donnée est :
 
 alors :
 
-- l’état est affiché comme tel,
+- l'état est affiché comme tel,
 - la couleur associée est **grey**,
-- aucune tentative de masquage n’est autorisée.
+- aucune tentative de masquage n'est autorisée.
 
 ---
 
@@ -139,7 +138,7 @@ alors :
 La couleur affichée :
 
 - est **descriptive**,
-- n’est **jamais prescriptive**,
+- n'est **jamais prescriptive**,
 - ne suggère aucune action,
 - ne qualifie aucun confort souhaitable.
 
@@ -155,10 +154,10 @@ La palette et la logique de couleur :
 - exposées sous forme de **capteurs dédiés**,
 - utilisées telles quelles par les templates `carte_*`.
 
-L’UI :
-- n’invente pas de couleur,
-- n’en substitue aucune,
-- n’en déduit aucune.
+L'UI :
+- n'invente pas de couleur,
+- n'en substitue aucune,
+- n'en déduit aucune.
 
 ---
 
@@ -185,11 +184,11 @@ Chaque carte :
 
 Il est strictement interdit :
 
-- d’introduire une logique de seuil dans l’UI,
+- d'introduire une logique de seuil dans l'UI,
 - de recalculer une couleur côté carte,
-- de comparer plusieurs capteurs dans l’UI,
+- de comparer plusieurs capteurs dans l'UI,
 - de masquer une invalidité,
-- de transformer une valeur pour “aider” la lecture,
+- de transformer une valeur pour "aider" la lecture,
 - de fusionner plusieurs grandeurs sur une même carte.
 
 Toute violation constitue une **non-conformité contractuelle**.
@@ -202,7 +201,9 @@ Toute violation constitue une **non-conformité contractuelle**.
 - Normatif et opposable
 - Domaine : Affichage météo
 - Dépendances :
-  - `/contrats/meteo.md`
+  - `contrat_meteo_gouvernance.md`
+  - `contrat_validation.md`
+  - `contrat_fallback.md`
   - `/architecture/capteurs_meteo.md`
 
 Toute évolution nécessite :

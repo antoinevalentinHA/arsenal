@@ -49,7 +49,6 @@
 #     - Aucune sortie silencieuse en cas d’échec
 # ==========================================================
 
-
 - id: "10250000000007"
   alias: "ECS - Gardien vérification consigne"
   description: >

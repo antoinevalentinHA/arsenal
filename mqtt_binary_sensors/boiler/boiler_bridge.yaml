@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT BINARY SENSORS (BOILER / BRIDGE)
+# ----------------------------------------------------------
+# 📌 Fichier
+#   mqtt_binary_sensors/boiler/boiler_bridge.yaml
+#
+# 🎯 ROLE
+#   Exposer les états binaires de santé de la passerelle
+#   chaudière (connectivité MQTT et heartbeat applicatif).
+#
+# 🧱 PRINCIPE
+#   - Mapping direct des topics MQTT bridge vers des
+#     binary_sensors Home Assistant
+#   - Etats dérivés du Last Will MQTT et du heartbeat
+#   - Aucune transformation ni logique métier
+#
+# 📥 SOURCE
+#   Namespace contrat : boiler/bridge/...
+#   Références :
+#     - 06_decision_3_last_will_testament.md
+#     - 07_decision_4_heartbeat.md
+#
+# ⚠️ IMPORTANT
+#   - Couche strictement observation passerelle
+#   - Aucun calcul ni interprétation métier
+#   - Les automatisations consomment ces états
+# ==========================================================
+
+- name: "Boiler bridge online"
+  unique_id: boiler_bridge_online
+  default_entity_id: boiler_bridge_online
+  state_topic: "boiler/bridge/online"
+  payload_on: "online"
+  payload_off: "offline"
+  device_class: connectivity
+  icon: mdi:lan-connect
+  # LWT broker : payload_off publié sur déconnexion anormale
+  # Arrêt propre : passerelle publie payload_off avant DISCONNECT
+  # Voir : 06_decision_3_last_will_testament.md
+
+- name: "Boiler bridge heartbeat"
+  unique_id: boiler_bridge_heartbeat
+  default_entity_id: boiler_bridge_heartbeat
+  state_topic: "boiler/bridge/heartbeat"
+  icon: mdi:heart-pulse
+  expire_after: 60
+  # Devient unavailable si aucun heartbeat recu pendant 60 s
+  # Voir : 07_decision_4_heartbeat.md

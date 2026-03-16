@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBER
+#     Garage — Seuil luminosite allumage automatique
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Parametre de reglage du seuil de luminosite (lux)
+#   en dessous duquel l’allumage automatique du garage
+#   est autorise.
+#
+#   Ce helper permet d’ajuster le comportement
+#   de l’automatisme sans modifier le code.
+#
+# 📌 UTILISATION
+#   Consomme par :
+#     - binary_sensor.garage_allumage_auto_autorise
+#
+# 🔗 DEPENDANCE
+#   - sensor.luminosite_garage_illuminance
+#
+# ⚠️ NOTE
+#   La valeur doit etre adaptee au contexte reel
+#   du garage (lumiere naturelle / artificielle).
+#
+#   Ordres de grandeur typiques :
+#     - nuit totale         : 0–5 lx
+#     - garage sombre       : 10–40 lx
+#     - garage eclaire      : 80–200 lx
+# ==========================================================
+
+garage_seuil_luminosite_allumage_auto:
+  name: Garage — Seuil luminosite allumage auto
+  min: 0
+  max: 200
+  step: 1
+  unit_of_measurement: lx
+  mode: slider
+  icon: mdi:brightness-6

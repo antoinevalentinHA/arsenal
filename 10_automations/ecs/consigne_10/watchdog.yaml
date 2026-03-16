@@ -43,7 +43,6 @@
 #     - Aucune dépendance à un retour cloud parfait
 # ==========================================================
 
-
 - id: "10250000000008"
   alias: "ECS - Watchdog fin de cycle"
   description: >

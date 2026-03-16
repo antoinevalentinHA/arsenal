@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT BINARY SENSORS (BOILER / TELEMETRY)
+# ----------------------------------------------------------
+# 📌 Fichier
+#   mqtt_binary_sensors/boiler/boiler_telemetry.yaml
+#
+# 🎯 ROLE
+#   Exposer les états binaires de la télémétrie chaudière
+#   (ex. activité brûleur).
+#
+# 🧱 PRINCIPE
+#   - Mapping direct des topics MQTT télémétrie vers des
+#     binary_sensors Home Assistant
+#   - Payloads booléens publiés par le bridge chaudière
+#   - Aucune transformation ni logique métier
+#
+# 📥 SOURCE
+#   Namespace contrat : boiler/telemetry/...
+#   Référence : 03_namespace_canonique.md §3.2
+#
+# ⚠️ IMPORTANT
+#   - Couche strictement observation
+#   - Aucun calcul ni interprétation métier
+#   - Les automatisations consomment ces états
+# ==========================================================
+
+- name: "Boiler burner on"
+  unique_id: boiler_burner_on
+  default_entity_id: boiler_burner_on
+  state_topic: "boiler/telemetry/burner/state"
+  payload_on: "on"
+  payload_off: "off"
+  device_class: running
+  icon: mdi:fire
