@@ -6,7 +6,7 @@
 #
 # 🎯 Rôle :
 #   Indiquer si la température maximale intérieure
-#   a atteint ou dépassé le seuil d’allumage COOL
+#   a atteint ou dépassé le seuil d'allumage COOL
 #   appliqué par le système.
 #
 # 🧱 Principe Arsenal :
@@ -15,9 +15,8 @@
 #   - Aucune action
 #   - Seuil déjà calculé ailleurs
 #
-# 🔌 Consommateurs typiques :
-#   - Automation "Clim – Analyse complète et décision"
-#   - UI diagnostic clim
+# 🔌 Consommé par :
+#   - binary_sensor.besoin_clim_cool
 #
 # ⚠️ IMPORTANT :
 #   - Strictement équivalent à la condition :

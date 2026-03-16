@@ -108,14 +108,6 @@ views:
               - Interdiction froid : ≤ {{ seuil_off | round(1) }} °C
 
           - type: custom:button-card
-            template: sub_section_header
-            name: 🔒 Blocage Aération
-
-          - type: tile
-            entity: input_boolean.clim_ignore_aeration
-            name: Ignorer « Aération préférée »
-
-          - type: custom:button-card
             template: section_header
             name: 🔥 Mode HEAT
 

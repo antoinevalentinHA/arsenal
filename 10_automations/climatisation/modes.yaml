@@ -89,7 +89,14 @@
     - platform: state
       entity_id: input_boolean.mode_babysitting
 
+    # 🔄 Reconvergence post-démarrage
+    - platform: homeassistant
+      event: start
+
   action:
+
+    # ⏱️ Stabilisation post-boot
+    - delay: "00:00:05"
 
     # ------------------------------------------------------
     # 🧠 Calcul de l’autorisation cible

@@ -1,105 +1,238 @@
-## 🧱 SOCLES UI — Inventaire & catégorisation (V1) — KPI
+# 🧱 SOCLE UI — KPI
 
-### Socle : `socle_kpi`
-- Type : **SOCLE_KPI / KPI_TILE (72px) + COLOR_FROM_SENSOR**
-- Cible catalogue : **TPL-03 — TILE_KPI** (+ sert de base a **TPL-04** si une variante “primary” existe)
-- Profil UI :
-  - Affiche : **icon + name + state**
-  - Met en avant la valeur :
-    - `state: 18px / 700`
-- Couleur (background) :
-  - **dynamique** via entite `sensor.couleur_*`
-  - selection palette via `variables.ui_profile`
-- Contrat d’interface (inputs socle)
-  - `variables.ui_profile` : `meteo_legacy` (defaut) | `arsenal` | `ecs`
-  - `variables.couleur` : entite couleur explicite (optionnel)
-- Regles de resolution couleur
-  - priorite : `variables.couleur` -> sinon derivation `sensor.couleur_<suffixe>`
-  - fallback indispo : `unknown/unavailable/absent` -> `unavailable`
-  - fallback cle inconnue -> `grey`
-- Note palette (coherence Arsenal)
-  - `arsenal` mappe vers couleurs contractuelles (vert/rouge/orange/bleu/jaune/gris)
-  - `meteo_legacy` conserve rendu historique meteo
-  - `ecs` compat cles (blue/orange/red) + fallback generique
-- Couverture typique :
-  - Meteo (temperature/HR/HA/humidex/CO2/pluie), ECS (si capteurs couleur), tout KPI “metier” qui fournit une entite couleur
+## Objet
+
+Socles pour cartes à valeur mise en avant (état typographié fort : 18/700).
+Lecture seule. La couleur de fond est observée depuis une entité couleur externe —
+jamais calculée dans le socle. Aucune logique métier.
 
 ---
 
-### Socle : `socle_kpi_72`
-- Type : **SOCLE_KPI_NEUTRE / KPI_TILE (72px)**
-- Cible catalogue : **TPL-03 — TILE_KPI** (variante “neutre / sans couleur”)
-- Profil UI :
-  - Affiche : **icon + name + state**
-  - Masque : **label**
-  - Actions : **neutralisées** (tap/hold/double_tap = none)
-- Typo KPI canon :
-  - `state: 18px / 700`
-  - textes strict `#111`
-- Couverture typique :
-  - KPI “bruts” (valeurs techniques, compteurs, dB, ppm) quand la couleur est gérée ailleurs ou inutile
+## `socle_kpi`
 
-#### Variante : `socle_kpi_72_sans_icone`
-- Type : **SOCLE_KPI_NEUTRE / KPI_TILE (72px, sans icone)**
-- Cible catalogue : **TPL-03 — TILE_KPI** (variante “neutre / sans icone / sans couleur”)
-- Profil UI :
-  - Affiche : **name + state**
-  - Masque : **icon + label**
-  - Actions : **neutralisées** (tap/hold/double_tap = none)
-- Typo KPI canon :
-  - `state: 18px / 700`
-  - textes strict `#111`
-- Couverture typique :
-  - KPI “bruts” lorsque l’icone est inutile ou volontairement supprimée, et que la couleur n’est pas souhaitée
+**Rôle** : Socle KPI canonique. Affiche icon + name + state (18/700).
+Observe la couleur de fond depuis une entité `sensor.couleur_*` dérivée
+ou explicitement fournie via `variables.couleur`. Supporte deux profils
+de palette : `arsenal` (défaut) et `ecs`.
 
----
+**Héritage** : `carte_base_v2`
 
-### Socle : `socle_kpi_label`
-- Type : **SOCLE_KPI_LABEL / KPI_TILE + LABEL (heritage couleur)**
-- Cible catalogue : **TPL-03 — TILE_KPI** (variante “KPI + label”)
-- Dépendance :
-  - `template: socle_kpi` (donc **hérite du moteur couleur** `sensor.couleur_*` + `ui_profile`)
-- Profil UI :
-  - Affiche : **icon + name + state + label**
-- Couverture typique :
-  - KPI comparatifs / KPI avec “delta_line” ou contexte (label = “Δ …”, “seuil …”, “moyenne …”)
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | true |
+| show_label | false |
 
----
+**Actions**
 
-### Socle : `socle_kpi_label_72`
-- Type : **SOCLE_KPI_LABEL_NEUTRE / KPI_TILE + LABEL (72px, sans couleur)**
-- Cible catalogue : **TPL-03 — TILE_KPI** (variante “neutre + label”)
-- Profil UI :
-  - Affiche : **icon + name + state + label**
-  - Actions : **neutralisées** (tap/hold/double_tap = none)
-- Typo :
-  - `state: 18px / 700`
-  - `label: 13px / 400`
-  - textes strict `#111`
-- Couverture typique :
-  - KPI “capteur + contexte” quand tu veux **une UI strictement neutre** (pas de palette/couleur)
+| Événement | Action |
+|-----------|--------|
+| tap | more-info (hérité carte_base_v2) |
+| hold | none |
+| double_tap | none |
 
-#### Variante : `socle_kpi_label_72_sans_icone`
-- Type : **SOCLE_KPI_LABEL_NEUTRE / KPI_TILE + LABEL (72px, sans icone, sans couleur)**
-- Cible catalogue : **TPL-03 — TILE_KPI** (variante “neutre + label / sans icone”)
-- Profil UI :
-  - Affiche : **name + state + label**
-  - Masque : **icon**
-  - Actions : **neutralisées** (tap/hold/double_tap = none)
-- Typo :
-  - `state: 18px / 700`
-  - `label: 13px / 400`
-  - textes strict `#111`
-- Couverture typique :
-  - KPI “capteur + contexte” en UI strictement neutre, lorsque l’icone est inutile ou volontairement supprimée
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px (hérité) |
+| state | 18px / 700 |
+
+**Particularités**
+
+- Couleur de fond pilotée par JS : observe `states[colorEntity].state`
+- Résolution de l'entité couleur :
+  1. `variables.couleur` si fourni explicitement
+  2. Sinon : dérivation automatique `sensor.couleur_<suffixe_entité>`
+- Profil palette via `variables.ui_profile` :
+  - `arsenal` (défaut) : green / red / orange / blue / grey / yellow
+  - `ecs` : blue / orange / red
+- Indisponibilité (`unknown` / `unavailable` / entité absente) → `rgba(158, 158, 158, 0.1)`
+- Clé inconnue dans la palette → fallback `grey`
+- Socle parent de `socle_kpi_label`
 
 ---
 
-## Synthese — rattachement au catalogue (templates)
-- **TPL-03 / TILE_KPI**
-  - `socle_kpi` : socle KPI canon (state emphase + couleur issue capteur couleur)
-  - `socle_kpi_72` : KPI neutre (sans couleur)
-  - `socle_kpi_72_sans_icone` : KPI neutre (sans couleur, sans icone)
-  - `socle_kpi_label` : KPI + label (avec couleur via `socle_kpi`)
-  - `socle_kpi_label_72` : KPI + label neutre (sans couleur)
-  - `socle_kpi_label_72_sans_icone` : KPI + label neutre (sans couleur, sans icone)
+## `socle_kpi_label`
+
+**Rôle** : Extension de `socle_kpi` avec label activé (ligne 2).
+Hérite intégralement de la logique couleur et de la typographie KPI.
+
+**Héritage** : `socle_kpi`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | true |
+| show_label | true |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | more-info (hérité) |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px (hérité) |
+| state | 18px / 700 (hérité) |
+| label | 12px / 400 / #111 / opacity 0.85 (hérité carte_base_v2) |
+
+**Particularités** : surcharge minimale — active uniquement `show_label: true`.
+Toute la logique couleur et typographique est héritée de `socle_kpi`.
+
+---
+
+## `socle_kpi_72`
+
+**Rôle** : KPI neutre 72px. Affiche icon + name + state (18/700).
+Textes noirs stricts. Ne gère pas les couleurs de fond.
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | true |
+| show_label | false |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px |
+| icon | 26×26px / #111 |
+| name | 13px / 500 / #111 |
+| state | 18px / 700 / #111 |
+
+**Particularités** : aucune logique couleur. Fond géré exclusivement
+par la carte métier. Variante sans icône : `socle_kpi_72_sans_icone`.
+
+---
+
+## `socle_kpi_72_sans_icone`
+
+**Rôle** : Variante de `socle_kpi_72` sans icône. Même typographie,
+même métriques. Usage : contextes où l'icône est inutile ou encombrante.
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | false |
+| show_name | true |
+| show_state | true |
+| show_label | false |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px |
+| name | 13px / 500 / #111 |
+| state | 18px / 700 / #111 |
+
+**Particularités** : identique à `socle_kpi_72`, `show_icon: false` uniquement.
+
+---
+
+## `socle_kpi_label_72`
+
+**Rôle** : KPI neutre 72px avec label. Affiche icon + name + state + label.
+Textes noirs stricts. Ne gère pas les couleurs de fond.
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | true |
+| show_label | true |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px |
+| icon | 26×26px / #111 |
+| name | 13px / 500 / #111 |
+| state | 18px / 700 / #111 |
+| label | 13px / 400 / #111 |
+
+**Particularités** : label à 13px (vs 12px canon `carte_base_v2`).
+Variante sans icône : `socle_kpi_label_72_sans_icone`.
+
+---
+
+## `socle_kpi_label_72_sans_icone`
+
+**Rôle** : Variante de `socle_kpi_label_72` sans icône.
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | false |
+| show_name | true |
+| show_state | true |
+| show_label | true |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px |
+| name | 13px / 500 / #111 |
+| state | 18px / 700 / #111 |
+| label | 13px / 400 / #111 |
+
+**Particularités** : identique à `socle_kpi_label_72`, `show_icon: false` uniquement.
+
+---
+
+## 🚫 Interdits (contractuels)
+
+- Le socle ne calcule pas les couleurs métier — il les observe uniquement
+- Aucun seuil, aucun mapping d'état dans les socles KPI
+- Les variantes `_72` et `_72_sans_icone` ne doivent pas embarquer
+  de logique couleur JS (réservée à `socle_kpi` et `socle_kpi_label`)

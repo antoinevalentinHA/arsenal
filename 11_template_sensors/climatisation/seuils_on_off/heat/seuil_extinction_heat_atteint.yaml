@@ -6,7 +6,7 @@
 #
 # 🎯 Rôle :
 #   Indiquer si la température minimale intérieure
-#   est remontée au-dessus du seuil d’extinction HEAT
+#   est remontée au-dessus du seuil d'extinction HEAT
 #   appliqué par le système.
 #
 # 🧱 Principe Arsenal :
@@ -15,9 +15,8 @@
 #   - Aucune action
 #   - Seuil déjà calculé ailleurs
 #
-# 🔌 Consommateurs typiques :
-#   - Automation "Clim – Analyse complète et décision"
-#   - UI diagnostic clim
+# 🔌 Consommé par :
+#   - binary_sensor.besoin_clim_heat
 #
 # ⚠️ IMPORTANT :
 #   - Strictement équivalent à la condition :

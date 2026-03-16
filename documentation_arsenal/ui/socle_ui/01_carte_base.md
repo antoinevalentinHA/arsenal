@@ -1,44 +1,60 @@
-## 🧱 SOCLE UI — Inventaire & catégorisation (V1)
+# 🧱 SOCLE UI — carte_base_v2
 
-### Socle : `carte_base_v2`
-- Type : **SOCLE_STYLE / BASE_BUTTON_CARD**
-- Rôle (confirmé) : **socle canonique de styles** (géométrie + typo + actions par défaut) pour templates `custom:button-card`.
-- Catégories UI impactées (taxonomie) :
-  - **TILE_KPI** (TPL-03)
-  - **TILE_KPI primary** (TPL-04)
-  - **TILE_STATUS** (TPL-05)
-  - **TILE_ACTION** (TPL-06)
-  - (optionnel selon usage) **NAV tiles** (TPL-06 dans “Navigation”)
+## Objet
 
-#### Contrat d’interface — ce que fixe `carte_base_v2`
-- **Actions UI (défauts sûrs)**
-  - `tap_action: more-info`
-  - `hold_action: none`
-  - `double_tap_action: none`
-- **Géométrie**
-  - `border-radius: 12px`
-  - `height: 72px`
-  - `padding: 8px`
-  - `box-shadow: var(--ha-card-box-shadow)`
-- **Typo / métriques**
-  - `icon: 26px` + `color: '#111'`
-  - `name: 13px / 500 / '#111'`
-  - `state: 14px / 400 / '#111'`
-  - `label: 12px / 400 / '#111' / opacity 0.85`
+Socle canonique racine de tous les templates button-card Arsenal.
+Fixe la géométrie, la typographie et les actions UI par défaut.
+Tous les socles thématiques en héritent directement ou indirectement.
 
-#### Contrat d’interface — ce que `carte_base_v2` ne fait pas (donc relève du “métier” / templates TPL)
-- **Aucune logique métier** (seuils, mapping d’état, calculs, etc.)
-- **Aucun `background-color` dynamique**
-  - => la **severity** (ok|info|warn|ko|off|unknown) et la **palette Arsenal** doivent être portées par les templates dérivés (TPL-03/04/05/06), pas par le socle.
+---
 
-#### Positionnement dans le catalogue ARSENAL
-- Statut : **socle transversal** (dépendance) utilisé par les templates “tuiles”.
-- Cible : servir de base unique pour toutes les tuiles afin de garantir :
-  - cohérence typo / dimensions,
-  - comportements d’actions homogènes,
-  - séparation stricte “style” (socle) vs “métier” (templates dérivés).
+## `carte_base_v2`
 
---- 
+**Rôle** : Socle UI canonique (géométrie + typographie + actions sûres par défaut).
+Aucune logique métier. Aucune couleur dynamique.
 
-✅ **Synthèse (1 ligne)**
-`carte_base_v2` = **fondation universelle des tuiles** (TPL-03/04/05/06) : il standardise **forme + typo + actions**, et délègue **couleurs / severity / logique** aux templates métier.
+**Héritage** : —
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | — (non fixé, délégué aux socles enfants) |
+| show_name | — |
+| show_state | — |
+| show_label | — |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | more-info |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px |
+| border-radius | 12px |
+| padding | 8px |
+| box-shadow | var(--ha-card-box-shadow) |
+| icon | 26×26px / #111 |
+| name | 13px / 500 / #111 |
+| state | 14px / 400 / #111 |
+| label | 12px / 400 / #111 / opacity 0.85 |
+
+**Particularités**
+
+- `color_type: card` — couleur appliquée à la carte entière
+- Action `tap: more-info` est le seul défaut non-neutre : les socles
+  enfants qui veulent une carte non interactive DOIVENT surcharger
+  explicitement avec `tap_action: none`
+- Socle non instanciable directement en carte métier
+
+---
+
+## 🚫 Interdits (contractuels)
+
+- Aucune logique métier (seuils, mapping état, couleurs dynamiques)
+- Aucun `background-color` dynamique
+- Aucune action `navigate` ou `call-service` à ce niveau

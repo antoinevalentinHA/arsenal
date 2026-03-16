@@ -87,6 +87,8 @@
         - binary_sensor.fenetre_ouverte_maison
         - climate.clim
         - switch.clim_power
+    - platform: homeassistant
+      event: start
 
   variables:
     presence: "{{ is_state('binary_sensor.presence_famille_unifiee', 'on') }}"
@@ -98,6 +100,10 @@
       {{ clim_state not in ['off', 'unavailable', 'unknown'] }}
 
   condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
     - condition: template
       value_template: >
         {{
@@ -123,7 +129,7 @@
                 entity_id: climate.clim
 
     # ------------------------------------------------------
-    # 2️⃣ Couper l’alimentation si inutile ou incohérente
+    # 2️⃣ Couper l'alimentation si inutile ou incohérente
     # ------------------------------------------------------
     - choose:
         - conditions: "{{ clim_power == 'on' }}"

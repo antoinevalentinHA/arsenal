@@ -30,5 +30,5 @@
             or is_state('input_boolean.mode_babysitting', 'on') )
           and is_state('binary_sensor.fenetre_ouverte_maison', 'off')
           and is_state('binary_sensor.aeration_preferable_etage', 'off')
-          and is_state('input_boolean.clim_blocage_horaire_actif', 'off')
+          and is_state('binary_sensor.clim_blocage_horaire_reel', 'off')
         }}

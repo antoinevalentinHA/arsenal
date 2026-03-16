@@ -1,15 +1,18 @@
 # ==========================================================
-# 🧠 TEMPLATE SENSOR — Clim : raison de la décision
+# 🧠 ARSENAL — TEMPLATE SENSOR (CLIM)
 # ----------------------------------------------------------
-# 💡 Objectif :
+# 📛 Nom :
+#   Clim raison decision
+#
+# 🎯 Rôle :
 #   Expliquer clairement la raison principale qui motive
-#   l’état actuel ou la non-activation de la climatisation.
+#   l'état actuel ou la non-activation de la climatisation.
 #
 # 🧱 Principe Arsenal :
 #   - Capteur STRICTEMENT explicatif
 #   - Aucune logique de décision
 #   - Aucune action
-#   - Aucune modification d’état
+#   - Aucune modification d'état
 #
 # 🎯 Hiérarchie des causes (priorité décroissante) :
 #   1. Blocages transversaux (sécurité / cohérence énergétique)
@@ -19,7 +22,10 @@
 #
 # ⚠️ IMPORTANT :
 #   - Ce capteur consomme UNIQUEMENT des vérités métier
-#   - Aucune comparaison de seuil n’est faite ici
+#   - Aucune comparaison de seuil n'est faite ici
+#
+# 🔌 Primitives consommées :
+#   - binary_sensor.chambre_max_humidex_au_dessus_seuil
 # ==========================================================
 
 - sensor:
@@ -29,26 +35,19 @@
       state: >
         {% if is_state('input_boolean.blocage_clim_poele', 'on') %}
           blocage_poele
-
         {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
           blocage_aeration
-
         {% elif is_state('binary_sensor.clim_blocage_horaire_reel', 'on') %}
           blocage_horaire
-
         {% elif is_state('binary_sensor.fenetre_ouverte_maison', 'on') %}
           fenetre_ouverte
-
-        {% elif is_state('binary_sensor.clim_humidex_sup_cible_dry', 'on') %}
+        {% elif is_state('binary_sensor.chambre_max_humidex_au_dessus_seuil', 'on') %}
           humidite_elevee
-
         {% elif is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
           temperature_elevee
-
         {% elif is_state('binary_sensor.clim_seuil_allumage_heat_atteint', 'on')
               and is_state('binary_sensor.presence_famille_unifiee', 'on') %}
           soutien_chauffage
-
         {% else %}
           aucune_demande
         {% endif %}

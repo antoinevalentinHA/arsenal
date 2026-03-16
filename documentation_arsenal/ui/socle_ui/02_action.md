@@ -1,85 +1,191 @@
-## 🧱 SOCLES UI — Inventaire & catégorisation (V1) — Actions
+# 🧱 SOCLE UI — Action
 
-### Socle : `socle_action_simple`
-- Type : **SOCLE_ACTION / ACTION_TILE (72px)**
-- Cible catalogue : **TPL-06 — tpl_tile_action** (variante “simple / volontaire”)
-- Profil UI :
-  - Affiche : **icon + name**
-  - Masque : **state + label**
-  - Actions : **neutralisées** (tap/hold/double_tap = none) → l’action est fournie par la carte dérivée
-- Severity / couleur :
-  - **OFF/Repos** canon : `rgba(158, 158, 158, 0.2)` (gris neutre)
-- Usage typique (couverture) :
-  - **Navigation tiles** (menu), **Volets** (Ouvrir/Fermer), **NAS commandes** (si non-confirmées), **Eclairage** (actions directes)
+## Objet
+
+Socles pour cartes d'action volontaire (déclenchement explicite par l'utilisateur).
+Aucune logique métier. Les actions réelles (service, navigation) sont définies
+au niveau des cartes métier, pas dans les socles.
 
 ---
 
-### Socle : `socle_action_simple_sans_couleur`
-- Type : **SOCLE_ACTION / ACTION_TILE (72px) — STRUCTUREL**
-- Cible catalogue : **TPL-06 — tpl_tile_action** (variante “structurelle / neutre”)
-- Profil UI :
-  - Affiche : **icon + name**
-  - Masque : **state + label**
-  - Actions : **neutralisées** (tap/hold/double_tap = none)
-- Severity / couleur :
-  - **Aucune** (ne fixe pas de `background-color`)
-- Usage typique (couverture) :
-  - Socle de base pour cartes métier qui imposent leur fond (ex : `bouton_navigation`)
+## `socle_action_simple`
+
+**Rôle** : Socle standard pour actions globales volontaires. Fond gris neutre.
+Pas d'état affiché, pas de label.
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | false |
+| show_label | false |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px (hérité) |
+| background-color | rgba(158, 158, 158, 0.2) |
+
+**Particularités** : fond gris fixe. L'action réelle est définie par la carte métier.
 
 ---
 
-### Socle : `socle_action_critical`
-- Type : **SOCLE_ACTION_CRITIQUE / ACTION_TILE (72px)**
-- Cible catalogue : **TPL-06 — tpl_tile_action** (variante “critique”)
-- Profil UI :
-  - Affiche : **icon + name**
-  - Masque : **state + label**
-  - Actions : **neutralisées** (tap/hold/double_tap = none) → carte dérivée impose action + confirmation
-- Différences vs `socle_action_simple` :
-  - **name font-weight: 600** (signal visuel de criticité)
-- Severity / couleur :
-  - **OFF/Repos** canon : `rgba(158, 158, 158, 0.2)`
-- Usage typique (couverture) :
-  - **Commandes système** (reboot, arrêt, actions “dangereuses”), actions domotiques à risque (ECS, chauffage, etc.) quand confirmation obligatoire
+## `socle_action_simple_sans_couleur`
+
+**Rôle** : Variante strictement structurelle de `socle_action_simple`.
+Aucune couleur de fond. Usage : navigation, hub, structure pure.
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | false |
+| show_label | false |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px (hérité) |
+| background-color | aucune |
+
+**Particularités** : aucun fond déclaré. Transparence totale héritée du contexte.
 
 ---
 
-### Socle : `socle_action_label_compact`
-- Type : **SOCLE_ACTION_LABEL / ACTION_TILE + FEEDBACK_LABEL (72px)**
-- Cible catalogue : **TPL-06 — tpl_tile_action** (variante “action + feedback court”)
-- Profil UI :
-  - Affiche : **icon + name + label**
-  - Masque : **state**
-  - Actions : non fixées (hérite des défauts `carte_base_v2` si non override)
-- Spécificité :
-  - Label renforcé (lisibilité) :
-    - `font-size: 14px`, `line-height: 1.3`, `color '#111'`
-- Usage typique (couverture) :
-  - Actions avec **retour textuel** type “Dernière exécution…”, “Seuil…”, “Δ …”, “Mode …”, sans exposer un état binaire
+## `socle_action_critical`
+
+**Rôle** : Socle pour actions à caractère critique. Visuellement identique à
+`socle_action_simple` mais signale l'importance par un `name` en gras (600).
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | false |
+| show_label | false |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px (hérité) |
+| background-color | rgba(158, 158, 158, 0.2) |
+| name | font-weight 600 |
+
+**Particularités** : seule différence avec `socle_action_simple` — le `name`
+est en 600 au lieu de 500. Signale visuellement la criticité de l'action.
 
 ---
 
-### Socle : `socle_action_script_confirme`
-- Type : **SOCLE_ACTION_CONFIRMEE / ACTION_TILE + CONFIRM + FEEDBACK_STATE**
-- Cible catalogue : **TPL-06 — tpl_tile_action** (variante “script/service confirmé”)
-- Profil UI :
-  - Affiche : **icon + name**
-  - Masque : **state**
-  - Action : **call-service + confirmation** (texte : “Confirmer l’action ?”)
-  - Feedback visuel via `state` :
-    - `on`  → **OK** `rgba(76, 175, 80, 0.2)`
-    - `off` → **OFF/Repos** `rgba(158, 158, 158, 0.2)`
-- Remarque de taxonomie :
-  - C’est une **action** (TPL-06) avec **retour d’état** codé couleur (sans afficher le state).
-- Usage typique (couverture) :
-  - Scripts “bouton” avec **ack** (ex : remédiation, relance, actions ponctuelles) + indicateur ON/OFF
+## `socle_action_label_compact`
+
+**Rôle** : Socle 72px pour cartes d'action avec feedback contextuel en label.
+Le label sert de ligne 2 lisible (contexte, état secondaire, info courte).
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | false |
+| show_label | true |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none (surcharge carte métier) |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px (hérité) |
+| label | 14px / 400 / #111 / line-height 1.3 |
+
+**Particularités** : label à 14px (plus lisible que le canon 12px de
+`carte_base_v2`). `line-height: 1.3` pour confort de lecture sur deux lignes.
 
 ---
 
-## Synthèse — rattachement au catalogue (templates)
-- **TPL-06 / TILE_ACTION**
-  - `socle_action_simple` : variante “action volontaire”
-  - `socle_action_simple_sans_couleur` : variante “structurelle / sans fond”
-  - `socle_action_critical` : variante “action critique”
-  - `socle_action_label_compact` : variante “action + feedback label”
-  - `socle_action_script_confirme` : variante “action confirmée + feedback ON/OFF”
+## `socle_action_script_confirme`
+
+**Rôle** : Carte d'action indirecte avec confirmation utilisateur obligatoire.
+Déclenche un script ou service. Feedback visuel on/off via state mapping.
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | false |
+| show_label | — |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | call-service + confirmation ("Confirmer l'action ?") |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px (hérité) |
+| icon | #111 |
+| name | #111 |
+
+**Particularités**
+
+- Seul socle Action à embarquer une `confirmation` native
+- State mapping on/off :
+  - `on` → `rgba(76, 175, 80, 0.2)`
+  - `off` → `rgba(158, 158, 158, 0.2)`
+- Le service cible est défini au niveau carte métier
+
+---
+
+## 🚫 Interdits (contractuels)
+
+- Aucune logique métier dans les socles Action
+- Les actions réelles (`navigate`, `call-service`, cible du service)
+  sont définies exclusivement au niveau carte métier
+- Aucun `background-color` dynamique hors state mapping on/off déclaré

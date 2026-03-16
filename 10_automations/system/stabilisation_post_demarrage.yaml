@@ -33,7 +33,6 @@
 #     - Durée de stabilisation fixe et déterministe
 # ==========================================================
 
-
 - id: "10120000000018"
   alias: "Système - Stabilisation post-demarrage"
   mode: single

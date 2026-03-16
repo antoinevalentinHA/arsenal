@@ -1,20 +1,55 @@
-## 🧱 SOCLES UI — Inventaire & catégorisation (V1) — Info
+# 🧱 SOCLE UI — Info
 
-### Socle : `socle_info_72`
-- Type : **SOCLE_INFO / READONLY_INFO_TILE (72px)**
-- Cible catalogue : **TPL-05 — TILE_STATUS** (variante “info systeme / infra”)
-- Profil UI :
-  - Affiche : **icon + name + state**
-  - Masque : **label**
-  - Actions : **neutralisées** (tap/hold/double_tap = none)
-- Couleur :
-  - **INFO** : `rgba(33, 150, 243, 0.25)`
-- Typo : conforme `carte_base_v2` (icon 26, name 13/500, state 14/400)
-- Couverture typique :
-  - dashboards **Systeme / NAS / reseau / integrations** (cartes “OK / Normal / Connecte / X min”)
+## Objet
+
+Socle pour cartes d'information système ou infrastructure.
+Lecture seule. Fond bleu info fixe. Aucune interaction. Aucune logique métier.
 
 ---
 
-## Synthese — rattachement au catalogue (templates)
-- **TPL-05 / TILE_STATUS**
-  - `socle_info_72` : variante “info bleu read-only”
+## `socle_info_72`
+
+**Rôle** : Carte information système (72px). Affiche icon + name + state.
+Fond bleu info fixe. Signale visuellement un contenu informatif neutre
+(infrastructure, système, statut non décisionnel).
+
+**Héritage** : `carte_base_v2`
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | true |
+| show_state | true |
+| show_label | false |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 72px |
+| background-color | rgba(33, 150, 243, 0.2) |
+| icon | 26×26px / #111 |
+| name | 13px / 500 / #111 |
+| state | 14px / 400 / #111 |
+
+**Particularités**
+
+- Fond bleu info contractuel fixe (`rgba(33, 150, 243, 0.2)`) —
+  non variable, non surchargeable par les cartes métier
+- Famille à un seul socle : pas de variante label, pas de variante XL
+
+---
+
+## 🚫 Interdits (contractuels)
+
+- Aucune interaction utilisateur
+- Aucune logique métier, aucun mapping d'état
+- Le fond bleu ne doit pas être utilisé hors contexte info système

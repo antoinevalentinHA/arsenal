@@ -28,4 +28,3 @@
         {% set seuil_off = (states('input_number.seuil_humidex_deshumidification') | float(29)) - 1 %}
         {% set humidex = states('sensor.humidex_max_chambres') | float(0) %}
         {{ humidex < seuil_off }}
-

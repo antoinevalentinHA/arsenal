@@ -1,29 +1,62 @@
-## 🧱 SOCLES UI — Inventaire & catégorisation (V1) — Header
+# 🧱 SOCLE UI — Header
 
-### Socle : `socle_header_base`
-- Type : **SOCLE_HEADER / HEADER (structure visuelle)**
-- Cible catalogue : **TPL-02 — tpl_section_header (SECTION_HEADER)** *(brique header utilisée en section)*
-- Profil UI :
-  - Affiche : **name**
-  - Masque : **icon + state + label**
-- Actions :
-  - actions **neutralisées** (tap/hold/double_tap = none)
-- Styles :
-  - carte : `background: none`, `box-shadow: none`
-  - name : `color: var(--primary-text-color)`, `text-align: left`
-- Interdits / ne fait pas :
-  - aucune logique métier
-  - aucune action implicite
-  - aucun mapping d’état
+## Objet
+
+Socle pour titres de sections et sous-sections des dashboards Arsenal.
+Lecture seule. Aucune interaction. Aucune logique métier.
+Structure visuelle pure.
 
 ---
 
-## Synthese — rattachement au catalogue (templates)
-- **TPL-02 / SECTION_HEADER**
-  - `socle_header_base` : base header (lecture seule, neutralisation actions)
+## `socle_header_base`
+
+**Rôle** : Titre de section ou sous-section. Affiche uniquement le name,
+aligné à gauche. Fond transparent, sans ombre. Strictement non interactif.
+
+**Héritage** : —
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | false |
+| show_name | true |
+| show_state | false |
+| show_label | false |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | none |
+| hold | none |
+| double_tap | none |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | — (non fixé, adaptatif) |
+| background | none |
+| box-shadow | none |
+| name color | var(--primary-text-color) |
+| name align | left |
+
+**Particularités**
+
+- N'hérite pas de `carte_base_v2` — structure visuelle entièrement autonome
+- Fond et ombre supprimés explicitement (`background: none`,
+  `box-shadow: none`) — le header ne doit pas ressembler à une carte
+- Couleur du name via variable CSS HA (`--primary-text-color`) —
+  seul socle à utiliser une variable thème plutôt que `#111`
+- Hauteur non fixée : s'adapte au contenu textuel
+- Typographie (font-size, font-weight) non fixée au niveau socle —
+  définie par la carte métier
 
 ---
 
-## Synthese — rattachement implémentation
-- `/homeassistant/button_card_templates/socle/header_base.yaml`
-  - `socle_header_base`
+## 🚫 Interdits (contractuels)
+
+- Aucune interaction utilisateur
+- Aucune logique métier
+- Aucun fond coloré, aucune ombre
+- Le header ne doit jamais ressembler visuellement à une carte action
+  ou status

@@ -1,38 +1,68 @@
-## 🧱 SOCLES UI — Inventaire & catégorisation (V1) — Badge
+# 🧱 SOCLE UI — Badge
 
-### Socle : `socle_badge_42`
-- Type : **SOCLE_BADGE / BADGE (42x42)**
-- Cible catalogue : **TPL-01 — tpl_nav_bar (NAV_BAR)** *(brique badge utilisée en en-tête)*
-- Profil UI :
-  - Affiche : **icon**
-  - Masque : **name + state + label**
-  - `entity: none`
-- Géométrie :
-  - `height: 42px`
-  - `width: 42px`
-  - centrage (flex)
-  - `box-shadow: var(--ha-card-box-shadow)`
-- Iconographie :
-  - `icon: 22px`
-- Variations UI (variables) :
-  - `variables.bg_color` (fallback : `rgba(0, 0, 0, 0)`)
-  - `variables.icon_color` (fallback : `#111`)
-  - `variables.border_radius` (fallback : `12px`)
-- Actions :
-  - aucune action définie par ce socle (navigate/call-service/etc. hors périmètre)
-- Interdits / ne fait pas :
-  - aucune logique métier
-  - aucun mapping d’état
-  - aucune action implicite
+## Objet
+
+Socle pour badges 42×42 utilisés en en-tête de vues.
+Géométrie fixe. Iconographie fixe. Variation UI pure via variables.
+Aucune action. Aucune logique métier.
 
 ---
 
-## Synthese — rattachement au catalogue (templates)
-- **TPL-01 / NAV_BAR**
-  - `socle_badge_42` : badge 42x42 (socle géométrie + iconographie, variables UI)
+## `socle_badge_42`
+
+**Rôle** : Socle UI standard pour badges 42×42. Usage : en-têtes de vues,
+badges de navigation, badges d'action. Fixe la géométrie et l'iconographie.
+Permet la variation purement UI via variables (`bg_color`, `icon_color`,
+`border_radius`).
+
+**Héritage** : —
+
+| Champ | Valeur |
+|-------|--------|
+| show_icon | true |
+| show_name | false |
+| show_state | false |
+| show_label | false |
+
+**Actions**
+
+| Événement | Action |
+|-----------|--------|
+| tap | — (non fixé — défini par la carte métier) |
+| hold | — |
+| double_tap | — |
+
+**Métriques-clés**
+
+| Élément | Valeur |
+|---------|--------|
+| height | 42px |
+| width | 42px |
+| border-radius | `variables.border_radius` \|\| 12px |
+| box-shadow | var(--ha-card-box-shadow) |
+| padding | 0 |
+| margin | 0 |
+| icon | 22×22px |
+| icon color | `variables.icon_color` \|\| #111 |
+| background-color | `variables.bg_color` \|\| rgba(0, 0, 0, 0) |
+
+**Particularités**
+
+- Seul socle du système à format carré fixe (42×42px)
+- N'hérite pas de `carte_base_v2` — géométrie entièrement autonome
+- Trois variables UI pilotables par la carte métier :
+  - `bg_color` : couleur de fond (défaut : transparent)
+  - `icon_color` : couleur icône (défaut : #111)
+  - `border_radius` : rayon de bordure (défaut : 12px)
+- Aucune action définie au niveau socle — entièrement délégué
+  à la carte appelante
+- Display flex centré (align-items + justify-content: center)
 
 ---
 
-## Synthese — rattachement implémentation
-- `/homeassistant/button_card_templates/socle/badge.yaml`
-  - `socle_badge_42`
+## 🚫 Interdits (contractuels)
+
+- Aucune logique métier
+- Aucun mapping d'état
+- Les variables `bg_color` / `icon_color` / `border_radius` sont
+  des variations UI pures — elles ne peuvent pas encoder de logique métier

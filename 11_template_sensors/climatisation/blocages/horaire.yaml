@@ -1,22 +1,32 @@
 # ==========================================================
-# 🧠 BINARY SENSOR — Clim : blocage horaire réel
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
 # ----------------------------------------------------------
-# 🧱 Rôle :
-#   Exposer l’état RÉEL du blocage horaire de la climatisation.
+# 📛 Nom :
+#   Clim — Blocage horaire réel
 #
-# 🎯 Vérité métier :
-#   ON  → la clim est effectivement bloquée maintenant (horaire)
-#   OFF → aucun blocage horaire actif à l’instant T
+# 🎯 Rôle :
+#   Exprimer la vérité métier du blocage horaire
+#   à l'instant T, à partir des réglages opérateur.
 #
-# 🧩 Principe Arsenal :
+# 🧱 Principe Arsenal :
+#   - Synthèse PURE de réglages amont
 #   - Calculé en continu
 #   - Aucun état persistant
-#   - Lecture UNIQUE pour l’UI et les capteurs explicatifs
-#
-# ❌ Ne fait PAS :
-#   - Aucune décision
 #   - Aucune action
-#   - Aucune mémoire
+#
+# 🔌 Dépendances STRICTES :
+#   - input_boolean.clim_blocage_horaire_actif  (activation)
+#   - input_datetime.clim_heure_blocage_autom_on
+#   - input_datetime.clim_heure_blocage_autom_off
+#
+# 🧠 Logique :
+#   - ON  si blocage activé ET heure courante dans la plage
+#   - OFF sinon
+#
+# 📤 Consommé par :
+#   - binary_sensor.autorisation_clim_cool
+#   - binary_sensor.autorisation_clim_dry
+#   - binary_sensor.autorisation_clim_heat
 # ==========================================================
 
 - binary_sensor:

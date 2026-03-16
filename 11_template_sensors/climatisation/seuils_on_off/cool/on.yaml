@@ -27,6 +27,8 @@
         - binary_sensor.presence_famille_unifiee
         - input_number.clim_seuil_declenchement_presence
         - input_number.clim_seuil_declenchement_absence
+    - platform: homeassistant
+      event: start
 
   sensor:
     - name: "Seuil allumage clim appliqué"

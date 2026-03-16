@@ -36,8 +36,11 @@
   trigger:
     - platform: state
       entity_id: binary_sensor.presence_famille_unifiee
+    - platform: homeassistant
+      event: start
 
   action:
+    - delay: "00:00:05"
     - choose:
 
         # ▶️ Absence → démarrage du timer

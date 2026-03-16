@@ -15,6 +15,16 @@
 #   - Aucune temporisation
 #   - Entity_id contractuel maîtrisé
 #
+# 🧠 Implémentation :
+#   Fusionne la couche Décision (production des candidats)
+#   et la couche Arbitrage (ThermalPriorityPolicy v1).
+#   Les candidats n'ont pas d'existence matérielle distincte
+#   dans cette implémentation.
+#
+# 🔌 Consommé par :
+#   - automation.clim_transit_decision_vers_execution
+#   - automation.clim_watchdog_coherence_decision_reel
+#
 # 📍 Entité :
 #   sensor.clim_target_mode
 # ==========================================================

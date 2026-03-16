@@ -292,11 +292,7 @@ views:
 
               - type: custom:button-card
                 template: section_header
-                name: 🧩 Options
-
-              - type: tile
-                entity: input_boolean.clim_ignore_aeration
-                name: Ignorer la condition d’aération
+                name: 🔔 Notifications
 
               - type: tile
                 entity: input_boolean.notifications_aeration_actives

@@ -20,6 +20,7 @@
 #   - fenêtres
 #   - blocage horaire
 #   - blocage poêle
+#   - blocage post-aération (domaine chauffage)
 # ==========================================================
 
 - binary_sensor:
@@ -34,6 +35,6 @@
           and is_state('input_boolean.chauffage_blocage_aeration', 'off')
           and is_state('binary_sensor.presence_famille_unifiee', 'on')
           and is_state('binary_sensor.fenetre_ouverte_maison', 'off')
-          and is_state('input_boolean.clim_blocage_horaire_actif', 'off')
+          and is_state('binary_sensor.clim_blocage_horaire_reel', 'off')
           and is_state('input_boolean.blocage_clim_poele', 'off')
         }}
