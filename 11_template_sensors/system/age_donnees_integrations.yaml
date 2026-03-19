@@ -97,13 +97,6 @@
         source_group: "group.synology_capteurs"
 
     - <<: *age_donnees_canon
-      name: "ViCare Age donnees"
-      unique_id: vicare_age_donnees
-      icon: mdi:fire
-      attributes:
-        source_group: "group.vicare_capteurs"
-
-    - <<: *age_donnees_canon
       name: "Withings Age donnees"
       unique_id: withings_age_donnees
       icon: mdi:scale-bathroom

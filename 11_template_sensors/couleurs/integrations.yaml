@@ -128,11 +128,6 @@
       availability: *couleur_age_availability
       state: *couleur_age_logic
 
-    - name: "Couleur age ViCare"
-      unique_id: couleur_age_vicare
-      availability: *couleur_age_availability
-      state: *couleur_age_logic
-
     - name: "Couleur age Fujitsu"
       unique_id: couleur_age_fujitsu
       availability: *couleur_age_availability

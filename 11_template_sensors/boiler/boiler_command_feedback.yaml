@@ -2,7 +2,7 @@
 # 🧠 ARSENAL — TEMPLATE SENSORS (BOILER / COMMAND FEEDBACK)
 # ----------------------------------------------------------
 # 📌 Fichier
-#   11_template_sensors/vicare/boiler_command_feedback.yaml
+#   11_template_sensors/boiler/boiler_command_feedback.yaml
 #
 # 🎯 ROLE
 #   Exposer une lecture diagnostique simple des acquittements
@@ -45,13 +45,13 @@
 
 - sensor:
     # ======================================================
-    # ACK — HEATING / SET PROGRAM
+    # ACK — HEATING / SET TEMPERATURE
     # ======================================================
 
-    - name: "Boiler ack heating set program status"
-      unique_id: boiler_ack_heating_set_program_status
+    - name: "Boiler ack heating set temperature status"
+      unique_id: boiler_ack_heating_set_temperature_status
       state: >
-        {% set raw = states('sensor.boiler_ack_heating_set_program_raw') %}
+        {% set raw = states('sensor.boiler_ack_heating_set_temperature_raw') %}
         {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
           {% set payload = raw | from_json %}
           {{ payload.status if payload.status is defined else 'unknown' }}
@@ -60,71 +60,15 @@
         {% endif %}
       icon: mdi:list-status
 
-    - name: "Boiler ack heating set program reason"
-      unique_id: boiler_ack_heating_set_program_reason
+    - name: "Boiler ack heating set temperature reason"
+      unique_id: boiler_ack_heating_set_temperature_reason
       state: >
-        {% set raw = states('sensor.boiler_ack_heating_set_program_raw') %}
+        {% set raw = states('sensor.boiler_ack_heating_set_temperature_raw') %}
         {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
           {% set payload = raw | from_json %}
           {{ payload.reason if payload.reason is defined else 'none' }}
         {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:message-alert-outline
-
-    # ======================================================
-    # ACK — HEATING / SET COMFORT TEMPERATURE
-    # ======================================================
-
-    - name: "Boiler ack heating set comfort temperature status"
-      unique_id: boiler_ack_heating_set_comfort_temperature_status
-      state: >
-        {% set raw = states('sensor.boiler_ack_heating_set_comfort_temperature_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.status if payload.status is defined else 'unknown' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:list-status
-
-    - name: "Boiler ack heating set comfort temperature reason"
-      unique_id: boiler_ack_heating_set_comfort_temperature_reason
-      state: >
-        {% set raw = states('sensor.boiler_ack_heating_set_comfort_temperature_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.reason if payload.reason is defined else 'none' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:message-alert-outline
-
-    # ======================================================
-    # ACK — HEATING / SET REDUCED TEMPERATURE
-    # ======================================================
-
-    - name: "Boiler ack heating set reduced temperature status"
-      unique_id: boiler_ack_heating_set_reduced_temperature_status
-      state: >
-        {% set raw = states('sensor.boiler_ack_heating_set_reduced_temperature_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.status if payload.status is defined else 'unknown' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:list-status
-
-    - name: "Boiler ack heating set reduced temperature reason"
-      unique_id: boiler_ack_heating_set_reduced_temperature_reason
-      state: >
-        {% set raw = states('sensor.boiler_ack_heating_set_reduced_temperature_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.reason if payload.reason is defined else 'none' }}
-        {% else %}
-          unknown
+          none
         {% endif %}
       icon: mdi:message-alert-outline
 
@@ -204,34 +148,6 @@
       unique_id: boiler_ack_dhw_set_setpoint_reason
       state: >
         {% set raw = states('sensor.boiler_ack_dhw_set_setpoint_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.reason if payload.reason is defined else 'none' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:message-alert-outline
-
-    # ======================================================
-    # ACK — DHW / ONESHOT CHARGE
-    # ======================================================
-
-    - name: "Boiler ack dhw oneshot charge status"
-      unique_id: boiler_ack_dhw_oneshot_charge_status
-      state: >
-        {% set raw = states('sensor.boiler_ack_dhw_oneshot_charge_raw') %}
-        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
-          {% set payload = raw | from_json %}
-          {{ payload.status if payload.status is defined else 'unknown' }}
-        {% else %}
-          unknown
-        {% endif %}
-      icon: mdi:list-status
-
-    - name: "Boiler ack dhw oneshot charge reason"
-      unique_id: boiler_ack_dhw_oneshot_charge_reason
-      state: >
-        {% set raw = states('sensor.boiler_ack_dhw_oneshot_charge_raw') %}
         {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
           {% set payload = raw | from_json %}
           {{ payload.reason if payload.reason is defined else 'none' }}

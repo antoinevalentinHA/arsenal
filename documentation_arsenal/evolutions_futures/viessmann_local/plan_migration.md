@@ -1,7 +1,7 @@
 # Arsenal — Architecture thermique & migration chaudière
 
-**Remplacement ViCare par Optolink / KM-Bus**
-Version : v4 | Date : 13/03/2026
+**Remplacement ViCare par Optolink local via boiler bridge**
+Version : v5 | Date : 17/03/2026
 
 ---
 
@@ -11,7 +11,7 @@ Ce document décrit :
 
 1. l'architecture thermique actuelle du système Arsenal
 2. les dépendances à ViCare
-3. la stratégie de migration vers lecture et pilotage locaux de la chaudière
+3. la stratégie de migration vers lecture et pilotage locaux de la chaudière via bridge MQTT
 4. l'analyse des registres Optolink nécessaires
 
 **Objectifs de la migration :**
@@ -42,24 +42,33 @@ Chaudière Viessmann
 Home Assistant — intégration ViCare
 ```
 
-**Architecture cible**
+**Architecture cible (validée)**
 
 ```
 Chaudière Viessmann
         │
         ▼
-    Optolink / KM-Bus
+      Optolink
         │
         ▼
-Home Assistant — intégration locale
+ Boiler bridge local
+ (vcontrold / P300)
+        │
+        ▼
+        MQTT
+        │
+        ▼
+Home Assistant — capteurs MQTT locaux
 ```
+
+> L'interface réelle validée est : **chaudière ↔ Optolink ↔ vcontrold/P300 ↔ MQTT ↔ HA**. Il n'existe pas de connexion directe HA ↔ chaudière. KM-Bus n'est pas retenu dans cette version.
 
 ### 2.2 Couche abstraction Arsenal
 
-Arsenal n'utilise jamais directement les entités ViCare. Une couche de capteurs template robustes assure la translation.
+Arsenal n'utilise jamais directement les entités ViCare ni les entités MQTT brutes. Une couche de capteurs template robustes assure la translation.
 
 ```
-Sources chaudière
+Sources chaudière (MQTT locaux)
         │
         ▼
 Capteurs template Arsenal
@@ -166,7 +175,7 @@ sensor.chauffage_consigne_reduced_local
 \data\09_scripts\ecs\cycle.yaml
 ```
 
-Ces scripts représentent **l'interface d'écriture chaudière**. Ils seront les seuls modifiés lors de la migration (remplacement des appels de service ViCare).
+Ces scripts représentent **l'interface d'écriture chaudière**. Ils seront les seuls modifiés lors de la migration (remplacement des appels de service ViCare par commandes MQTT).
 
 ---
 
@@ -188,7 +197,7 @@ Ces automatisations restent **inchangées** après migration.
 
 ## 8. Primitives chaudière réellement utilisées
 
-Arsenal utilise seulement **7 primitives chaudière**.
+Arsenal utilise **12 objets chaudière natifs** + 1 commande virtuelle passerelle.
 
 **Écriture**
 
@@ -200,7 +209,9 @@ Arsenal utilise seulement **7 primitives chaudière**.
 | pente courbe chauffe | set slope | moyenne |
 | parallèle courbe chauffe | set parallel shift | moyenne |
 | consigne ECS | set DHW temperature | haute |
-| déclenchement ECS | trigger one-shot | haute |
+| déclenchement ECS | commande virtuelle passerelle (non natif) | haute |
+
+> Le déclenchement ECS (one-shot charge) n'est pas exposé nativement via vcontrold/P300 sur cette chaudière. Il doit être émulé côté passerelle si Arsenal souhaite conserver une primitive de type `oneshot_charge`.
 
 **Lecture**
 
@@ -245,9 +256,18 @@ Utilisé par : `sensor.programme_chauffage`, `binary_sensor.chauffage_actif`
 | sleep / reduced | Eco |
 
 ```
-Objet : heating_circuit.mode  /  heating.program
-Type  : enum
+Objet : mode chauffage
+Type  : non natif (dérivé)
 ```
+
+Source réelle :
+- getBetriebArtM1
+- états Spar / Party éventuels
+- consignes confort / réduit
+
+Remarque :
+La chaudière ne fournit pas un mode unique de type enum.
+Le mode est reconstruit côté Arsenal.
 
 ---
 
@@ -345,7 +365,7 @@ Type  : bool  (0 = off / 1 = on)
 
 ### 10.4 Liste finale des objets nécessaires
 
-**Lecture (6 objets)**
+**Lecture (6 objets natifs)**
 
 ```
 heating_circuit.mode
@@ -356,7 +376,7 @@ dhw.storage_temperature
 boiler.burner_state
 ```
 
-**Écriture (7 objets)**
+**Écriture (6 objets natifs + 1 commande virtuelle passerelle)**
 
 ```
 heating_circuit.mode
@@ -365,53 +385,48 @@ heating_circuit.reduced_temperature
 heating_curve.slope
 heating_curve.parallel_shift
 dhw.temperature_setpoint
-dhw.one_time_charge
+[dhw.one_time_charge]  ← commande virtuelle passerelle, non native
 ```
 
-**Total : 13 objets chaudière distincts.**
-
-> Toute interface Optolink capable d'exposer ces 13 points est compatible avec Arsenal.
+> **Total : 12 objets chaudière natifs distincts + 1 commande virtuelle passerelle.** Toute interface Optolink capable d'exposer ces 12 points est compatible avec Arsenal. Le déclenchement ECS one-shot doit être pris en charge au niveau du bridge.
 
 ---
 
-## 11. Compatibilité interfaces Optolink
-
-Exemples d'intégrations pouvant fournir ces données :
-
-- EMS-ESP
-- ebusd
-- vitotronic-optolink
-- vitoconnect local bridge
-
----
-
-## 12. Données chaudière nécessaires — vue synthétique
+## 11. Données chaudière nécessaires — vue synthétique
 
 | Donnée | Objet Optolink | Entité cible (exemple) | Mode |
 |---|---|---|---|
 | programme chauffage | `heating_circuit.mode` | `sensor.boiler_heating_program` | R/W |
-| consigne confort | `heating_circuit.comfort_temperature` | `number.boiler_comfort_temp` | R/W |
-| consigne réduit | `heating_circuit.reduced_temperature` | `number.boiler_reduced_temp` | R/W |
-| pente courbe chauffe | `heating_curve.slope` | `number.boiler_curve_slope` | W |
-| parallèle courbe chauffe | `heating_curve.parallel_shift` | `number.boiler_curve_shift` | W |
-| consigne ECS | `dhw.temperature_setpoint` | `number.boiler_dhw_setpoint` | R/W |
-| déclenchement ECS | `dhw.one_time_charge` | `button.boiler_dhw_oneshot` | W |
+| consigne confort | `heating_circuit.comfort_temperature` | `sensor.boiler_comfort_temperature` | R/W |
+| consigne réduit | `heating_circuit.reduced_temperature` | `sensor.boiler_reduced_temperature` | R/W |
+| pente courbe chauffe | `heating_curve.slope` | `sensor.boiler_curve_slope` | W |
+| parallèle courbe chauffe | `heating_curve.parallel_shift` | `sensor.boiler_curve_shift` | W |
+| consigne ECS | `dhw.temperature_setpoint` | `sensor.boiler_dhw_setpoint` | R/W |
+| déclenchement ECS | `[virtuel passerelle]` | `[commande bridge]` | W* |
 | température départ | `boiler.supply_temperature` | `sensor.boiler_supply_temperature` | R |
 | température ballon | `dhw.storage_temperature` | `sensor.boiler_dhw_temperature` | R |
 | état brûleur | `boiler.burner_state` | `binary_sensor.boiler_burner_state` | R |
 
+*W\* = commande virtuelle émulée côté passerelle, sans objet Optolink natif correspondant.*
+
 ---
 
-## 13. Cartographie flux Arsenal
+## 12. Cartographie flux Arsenal
 
 ```
 Chaudière
    │
    ▼
-Optolink / KM-Bus
+Optolink + vcontrold/P300
    │
    ▼
-Capteurs bruts locaux
+Boiler bridge local
+   │
+   ▼
+MQTT
+   │
+   ▼
+Capteurs bruts MQTT locaux
    │
    ▼
 Template Sensors Arsenal
@@ -419,7 +434,7 @@ Template Sensors Arsenal
    ├── chauffage
    │   ├── programme
    │   ├── consigne confort
-   │   ├── consigne reduced
+   │   ├── consigne reduite
    │   ├── température chaudière
    │   └── état brûleur
    │
@@ -430,36 +445,49 @@ Template Sensors Arsenal
 
 ---
 
-## 14. Plan de migration
+## 13. Plan de migration
 
 ### Étape 1 — Installation interface
 
-Installer l'interface Optolink / KM-Bus entre la chaudière Viessmann et le réseau local.
+Installer l'interface Optolink sur la chaudière Viessmann. Configurer vcontrold avec le protocole P300 pour exposer les registres chaudière.
 
-### Étape 2 — Intégration Home Assistant
+### Étape 2 — Intégration Home Assistant via MQTT
 
-Options possibles :
-- EMS-ESP
-- ebusd
-- optolink HA
-- vitotronic integrations
+La voie d'intégration est définie et non plus exploratoire :
 
-### Étape 3 — Création des capteurs bruts locaux
+- boiler bridge local + vcontrold + MQTT
+- Home Assistant consomme les topics MQTT via des capteurs MQTT déclarés explicitement
+- Aucune intégration HA tierce (EMS-ESP, ebusd, etc.) n'est utilisée dans cette version
 
-Créer les 10 entités locales brutes correspondant aux objets Optolink :
+### Étape 3 — Création des entités locales brutes
+
+Distinguer deux surfaces :
+
+**Télémétrie MQTT canonique (lecture)**
 
 ```yaml
 sensor.boiler_supply_temperature       # boiler.supply_temperature
 sensor.boiler_dhw_temperature          # dhw.storage_temperature
 binary_sensor.boiler_burner_state      # boiler.burner_state
 sensor.boiler_heating_program          # heating_circuit.mode
-number.boiler_comfort_temp             # heating_circuit.comfort_temperature
-number.boiler_reduced_temp             # heating_circuit.reduced_temperature
-number.boiler_curve_slope              # heating_curve.slope
-number.boiler_curve_shift              # heating_curve.parallel_shift
-number.boiler_dhw_setpoint             # dhw.temperature_setpoint
-button.boiler_dhw_oneshot              # dhw.one_time_charge
+sensor.boiler_comfort_temperature      # heating_circuit.comfort_temperature
+sensor.boiler_reduced_temperature      # heating_circuit.reduced_temperature
+sensor.boiler_dhw_setpoint             # dhw.temperature_setpoint
 ```
+
+**Surface d'écriture Arsenal (helpers + scripts)**
+
+```yaml
+# Écriture via mqtt.publish dans les scripts :
+# heating_circuit.comfort_temperature
+# heating_circuit.reduced_temperature
+# heating_curve.slope
+# heating_curve.parallel_shift
+# dhw.temperature_setpoint
+# [déclenchement ECS] → commande virtuelle bridge
+```
+
+> Les entités d'écriture ne sont pas des `number`/`button` natifs issus d'une intégration directe, mais des helpers construits ou des appels `mqtt.publish` dans les scripts Arsenal.
 
 ### Étape 4 — Adaptation des template sensors Arsenal
 
@@ -477,7 +505,7 @@ sensor.boiler_dhw_temperature
 
 ### Étape 5 — Adaptation des scripts d'écriture
 
-Remplacer les appels de service ViCare dans les 7 scripts par ceux de l'intégration locale.
+Remplacer les appels de service ViCare dans les 7 scripts par des appels `mqtt.publish` vers les topics d'écriture du bridge.
 
 ### Étape 6 — Tests fonctionnels
 
@@ -487,7 +515,7 @@ Remplacer les appels de service ViCare dans les 7 scripts par ceux de l'intégra
 
 ---
 
-## 15. Validation
+## 14. Validation
 
 **Chauffage**
 
@@ -509,7 +537,7 @@ Remplacer les appels de service ViCare dans les 7 scripts par ceux de l'intégra
 
 ---
 
-## 16. Stratégie rollback
+## 15. Stratégie rollback
 
 - Garder ViCare actif pendant toute la durée de la migration
 - Basculer uniquement les sources des capteurs template
@@ -517,7 +545,7 @@ Remplacer les appels de service ViCare dans les 7 scripts par ceux de l'intégra
 
 ---
 
-## 17. Périmètre de migration
+## 16. Périmètre de migration
 
 | Type | Nombre |
 |---|---|
@@ -526,7 +554,8 @@ Remplacer les appels de service ViCare dans les 7 scripts par ceux de l'intégra
 | Capteurs structurants | 7 |
 | UI | 1 |
 | **Total fichiers** | **21** |
-| **Objets chaudière nécessaires** | **13** |
+| **Objets chaudière natifs nécessaires** | **12** |
+| **Commandes virtuelles passerelle** | **1** |
 
 Migration : **limitée, maîtrisée et entièrement cartographiée.**
 
@@ -540,6 +569,8 @@ Arsenal possède déjà une architecture idéale pour une migration locale :
 - scripts idempotents
 - sécurités indépendantes du cloud
 
-Arsenal utilise un **sous-ensemble très réduit des capacités chaudière** — 13 objets distincts sur l'ensemble du protocole Optolink.
+Arsenal utilise un **sous-ensemble très réduit des capacités chaudière** — 12 objets natifs distincts sur l'ensemble du protocole Optolink, plus 1 commande virtuelle de passerelle pour le déclenchement ECS one-shot.
 
-La migration vers Optolink consiste uniquement à **réalimenter les capteurs structurants avec des données locales**. Aucune modification de la logique Arsenal n'est nécessaire.
+La migration vers Optolink local via bridge MQTT consiste uniquement à **réalimenter les capteurs structurants avec des données locales**. Aucune modification de la logique Arsenal n'est nécessaire.
+
+> **Protocole retenu : Optolink + vcontrold + P300. KM-Bus non retenu dans cette version.**

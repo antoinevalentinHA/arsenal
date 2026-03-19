@@ -37,12 +37,3 @@
   # LWT broker : payload_off publié sur déconnexion anormale
   # Arrêt propre : passerelle publie payload_off avant DISCONNECT
   # Voir : 06_decision_3_last_will_testament.md
-
-- name: "Boiler bridge heartbeat"
-  unique_id: boiler_bridge_heartbeat
-  default_entity_id: boiler_bridge_heartbeat
-  state_topic: "boiler/bridge/heartbeat"
-  icon: mdi:heart-pulse
-  expire_after: 60
-  # Devient unavailable si aucun heartbeat recu pendant 60 s
-  # Voir : 07_decision_4_heartbeat.md

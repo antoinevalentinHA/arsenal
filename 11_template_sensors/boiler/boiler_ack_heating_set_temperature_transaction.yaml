@@ -1,0 +1,104 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Boiler ACK — Heating set_temperature transaction
+# ----------------------------------------------------------
+# 📌 Fichier
+#   11_template_sensors/boiler/boiler_ack_heating_set_temperature_transaction.yaml
+#
+# 🎯 ROLE
+#   Exposer le socle transactionnel ACK de la commande
+#   boiler/command/heating/set_temperature :
+#     - extraction request_id / ts
+#     - correlation avec la transaction en cours
+#     - conclusion exploitable par les scripts
+#
+# 🧱 PRINCIPE
+#   - Source brute unique :
+#       sensor.boiler_ack_heating_set_temperature_raw
+#   - Reference transactionnelle :
+#       input_text.boiler_req_heating_set_temperature
+#   - Ce fichier NE redefinit PAS status / reason
+#     si deja exposes par un fichier de feedback dedie
+#
+# ⚠️ IMPORTANT
+#   - accepted n'est jamais un succes metier
+#   - seul applied correle vaut succes
+#   - aucune logique metier de chauffage ici
+# ==========================================================
+
+- sensor:
+    - name: "Boiler ack heating set temperature request_id"
+      unique_id: boiler_ack_heating_set_temperature_request_id
+      icon: mdi:identifier
+      state: >
+        {% set raw = states('sensor.boiler_ack_heating_set_temperature_raw') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') %}
+          unknown
+        {% else %}
+          {% set payload = raw | from_json %}
+          {% set value = payload.request_id if payload.request_id is defined else '' %}
+          {{ value if value not in ['', none] else 'unknown' }}
+        {% endif %}
+
+    - name: "Boiler ack heating set temperature ts"
+      unique_id: boiler_ack_heating_set_temperature_ts
+      icon: mdi:clock-outline
+      state: >
+        {% set raw = states('sensor.boiler_ack_heating_set_temperature_raw') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') %}
+          unknown
+        {% else %}
+          {% set payload = raw | from_json %}
+          {% set value = payload.ts if payload.ts is defined else '' %}
+          {{ value if value not in ['', none] else 'unknown' }}
+        {% endif %}
+
+    - name: "Boiler ack heating set temperature correlation"
+      unique_id: boiler_ack_heating_set_temperature_correlation
+      icon: mdi:source-branch-sync
+      state: >
+        {% set ack_request_id = states('sensor.boiler_ack_heating_set_temperature_request_id') %}
+        {% set current_request_id = states('input_text.boiler_req_heating_set_temperature') %}
+        {% if ack_request_id in ['unknown', 'unavailable', ''] or current_request_id in ['unknown', 'unavailable', ''] %}
+          inconnu
+        {% elif ack_request_id == current_request_id %}
+          match
+        {% else %}
+          mismatch
+        {% endif %}
+
+    - name: "Boiler ack heating set temperature result"
+      unique_id: boiler_ack_heating_set_temperature_result
+      icon: mdi:check-decagram-outline
+      state: >
+        {% set raw = states('sensor.boiler_ack_heating_set_temperature_raw') %}
+        {% set current_request_id = states('input_text.boiler_req_heating_set_temperature') %}
+        {% set correlation = states('sensor.boiler_ack_heating_set_temperature_correlation') %}
+        {% set status = states('sensor.boiler_ack_heating_set_temperature_status') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') or current_request_id in ['unknown', 'unavailable', ''] %}
+          inconnu
+        {% elif correlation == 'match' and status == 'applied' %}
+          applied
+        {% elif correlation == 'match' and status == 'rejected' %}
+          rejected
+        {% elif correlation == 'match' and status == 'timeout' %}
+          timeout
+        {% else %}
+          pending
+        {% endif %}
+      attributes:
+        request_id_en_cours: >
+          {% set v = states('input_text.boiler_req_heating_set_temperature') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
+        ack_request_id: >
+          {% set v = states('sensor.boiler_ack_heating_set_temperature_request_id') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
+        ack_status: >
+          {% set v = states('sensor.boiler_ack_heating_set_temperature_status') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
+        ack_reason: >
+          {% set v = states('sensor.boiler_ack_heating_set_temperature_reason') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'none' }}
+        ack_ts: >
+          {% set v = states('sensor.boiler_ack_heating_set_temperature_ts') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}

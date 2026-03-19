@@ -1,46 +1,46 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Chauffage – Resynchronisation courbe au redémarrage
+#     Chauffage – Reappliquer courbe au demarrage
 #
 #  ID : 10240000000010
 # ----------------------------------------------------------
-#  🎯 RÔLE
-#     Restaurer la cohérence entre les consignes locales
-#     (pente et parallèle de la courbe de chauffe) et
-#     l’état cloud ViCare après un redémarrage de
-#     Home Assistant.
+#  🎯 ROLE
+#     Reappliquer au demarrage les consignes locales Arsenal
+#     de pente et de parallele de la courbe de chauffe.
 #
-#     Cette automation garantit que la chaudière applique
-#     bien les valeurs de référence décidées par ARSENAL.
+#     Cette automation ne verifie aucune divergence externe.
+#     Elle reafﬁrme simplement les references locales
+#     apres stabilisation du systeme.
 #
 #  🚫 NE FAIT PAS
-#     - Ne décide aucun ajustement de courbe
+#     - Ne decide aucun ajustement de courbe
 #     - Ne calcule aucune valeur thermique
-#     - Ne s’exécute pas si l’API ViCare est indisponible
+#     - Ne lit aucune valeur cloud
+#     - Ne compare aucune valeur locale/externe
 #
 #  🧩 UTILISATION
-#     - Déclenchement :
-#         • passage du système à l’état stable post-démarrage
-#     - Pré-requis :
-#         • API ViCare disponible
+#     - Declenchement :
+#         • passage du systeme a l'etat stable post-demarrage
 #     - Traitement :
-#         • comparaison consignes locales ↔ valeurs cloud
-#         • appel des scripts dédiés uniquement en cas d’écart
+#         • validation minimale des consignes locales
+#         • appel des scripts executifs locaux dedies
 #     - Objectif :
-#         • restitution fidèle de la configuration ARSENAL
+#         • reaffirmer la configuration Arsenal
+#           apres redemarrage de Home Assistant
 #
 #  ✅ CONTRAINTES
-#     - Synchronisation unidirectionnelle (local → cloud)
-#     - Délégation complète de l’exécution aux scripts ViCare
-#     - Aucune dépendance aux entités climate ou états transitoires
+#     - Reapplication unidirectionnelle locale
+#     - Delegation complete de l'execution aux scripts boiler bridge
+#     - Aucune dependance a ViCare
+#     - Aucune logique de synchronisation
 # ==========================================================
 
 - id: "10240000000010"
-  alias: "Chauffage – Sync courbe démarrage"
+  alias: "Chauffage – Reappliquer courbe au demarrage"
   description: >
-    Remet les valeurs de pente et de décalage de la courbe de chauffe
-    au démarrage de Home Assistant, si l’API Viessmann est disponible
-    et si le cloud diverge de la consigne locale.
+    Reapplique au demarrage les consignes locales de pente
+    et de parallele de la courbe de chauffe apres stabilisation
+    du systeme, via boiler bridge.
   mode: single
 
   trigger:
@@ -49,59 +49,40 @@
       to: "on"
 
   action:
-
-    - condition: state
-      entity_id: binary_sensor.vicare_api_disponible
-      state: "on"
-
     - variables:
         pente_cible_raw: "{{ states('input_number.chauffage_pente_consigne') }}"
         parallele_cible_raw: "{{ states('input_number.chauffage_parallele_consigne') }}"
-        pente_cloud_raw: "{{ states('number.vscotho1_200_11_heating_curve_slope') }}"
-        parallele_cloud_raw: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') }}"
-        tolerance: 0.01
 
-        valeurs_disponibles: >
-          {{ pente_cible_raw not in ['unknown','unavailable','none','']
-             and parallele_cible_raw not in ['unknown','unavailable','none','']
-             and pente_cloud_raw not in ['unknown','unavailable','none','']
-             and parallele_cloud_raw not in ['unknown','unavailable','none',''] }}
+        pente_disponible: >
+          {{ pente_cible_raw not in ['unknown', 'unavailable', 'none', ''] }}
 
-    - condition: template
-      value_template: "{{ valeurs_disponibles }}"
-
-    - variables:
-        pente_cible: "{{ pente_cible_raw | float }}"
-        parallele_cible: "{{ parallele_cible_raw | float }}"
-        pente_cloud: "{{ pente_cloud_raw | float }}"
-        parallele_cloud: "{{ parallele_cloud_raw | float }}"
-
-        pente_a_modifier: "{{ (pente_cible - pente_cloud) | abs > tolerance }}"
-        parallele_a_modifier: "{{ (parallele_cible - parallele_cloud) | abs > tolerance }}"
+        parallele_disponible: >
+          {{ parallele_cible_raw not in ['unknown', 'unavailable', 'none', ''] }}
 
     - choose:
         - conditions:
             - condition: template
-              value_template: "{{ pente_a_modifier or parallele_a_modifier }}"
+              value_template: >
+                {{ pente_disponible or parallele_disponible }}
           sequence:
             - service: logbook.log
               data:
                 name: "Chauffage"
                 message: >
-                  🔄 Sync courbe démarrage :
-                  pente {{ pente_cloud }} → {{ pente_cible }},
-                  parallèle {{ parallele_cloud }} → {{ parallele_cible }}
+                  🔄 Reapplication courbe au demarrage :
+                  pente={{ pente_cible_raw }},
+                  parallele={{ parallele_cible_raw }}
 
     - choose:
         - conditions:
             - condition: template
-              value_template: "{{ pente_a_modifier }}"
+              value_template: "{{ pente_disponible }}"
           sequence:
             - service: script.chauffage_appliquer_pente
 
     - choose:
         - conditions:
             - condition: template
-              value_template: "{{ parallele_a_modifier }}"
+              value_template: "{{ parallele_disponible }}"
           sequence:
             - service: script.chauffage_appliquer_parallele

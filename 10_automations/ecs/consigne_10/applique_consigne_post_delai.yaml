@@ -1,56 +1,55 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     ECS – Gardien de réapplication de la consigne après prélèvement
+#     ECS – Gardien de reapplication de la consigne apres prelevement
 #
 #  ID : 10250000000005
 # ----------------------------------------------------------
-#  🎯 RÔLE
-#     Réappliquer et vérifier automatiquement la consigne ECS
-#     de sécurité (10 °C) à l’issue d’un prélèvement forcé,
-#     afin d’éviter tout rebond thermique non souhaité.
+#  🎯 ROLE
+#     Reappliquer automatiquement la consigne ECS
+#     de securite (10 °C) a l'issue d'un cycle ECS,
+#     afin d'eviter tout rebond thermique non souhaite.
 #
-#     Cette automation agit comme un gardien post-événement,
-#     garantissant le retour effectif à l’état nominal.
+#     Cette automation agit comme un gardien post-evenement,
+#     garantissant le retour effectif a l'etat nominal.
 #
 #  🧱 PRINCIPE ARSENAL
-#     - La décision de prélèvement est prise ailleurs
-#     - Le gardien vérifie et corrige a posteriori
-#     - La sécurité prime sur l’optimisation
+#     - La decision ECS est prise ailleurs
+#     - Le gardien verifie et corrige a posteriori
+#     - La securite prime sur l'optimisation
 #
 #  🚫 NE FAIT PAS
-#     - Ne déclenche aucun prélèvement ECS
-#     - Ne modifie pas la stratégie ECS globale
-#     - Ne s’exécute pas si un cycle ECS est en cours
+#     - Ne declenche aucun cycle ECS
+#     - Ne modifie pas la strategie ECS globale
+#     - Ne s'execute pas si un cycle ECS est en cours
 #
 #  🧩 UTILISATION
-#     - Déclenchement :
-#         • fin du timer post-prélèvement ECS
-#     - Pré-requis :
-#         • aucun cycle ECS actif (verrou logique)
-#     - Séquence :
-#         • temporisation de stabilisation chaudière
-#         • deux tentatives de réapplication espacées
-#         • vérification réelle de la consigne effective
-#         • fallback matériel (bouton physique) en dernier recours
-#         • notification critique si échec persistant
+#     - Declenchement :
+#         • fin du timer post-prelevement ECS
+#     - Pre-requis :
+#         • aucun cycle ECS actif
+#     - Sequence :
+#         • temporisation de stabilisation
+#         • deux tentatives transactionnelles espacees
+#         • verification par ACK correle
+#         • notification critique si echec persistant
 #
 #  ⚠️ IMPORTANT
-#     - Cette automation applique une consigne de sécurité
-#     - Toute modification de la valeur cible ou de la stratégie
-#       doit être réfléchie au niveau système ECS
+#     - Cette automation applique une consigne de securite
+#     - Toute modification de la valeur cible ou de la strategie
+#       doit etre reflechie au niveau systeme ECS
 #
 #  ✅ CONTRAINTES
-#     - Sécurité prioritaire sur toute autre considération
-#     - Vérification basée sur l’état réel chaudière
-#     - Aucune sortie silencieuse en cas d’échec
+#     - Securite prioritaire sur toute autre consideration
+#     - Verification basee sur ACK correle
+#     - Aucune sortie silencieuse en cas d'echec
 # ==========================================================
 
 - id: "10250000000005"
-  alias: "ECS – Gardien post-prélèvement"
+  alias: "ECS – Gardien post-prelevement"
   description: >
-    Applique et vérifie la consigne 10 °C après un prélèvement forcé.
-    Double tentative + fallback bouton si la consigne n'est pas appliquée.
-    Ne s'exécute pas si un cycle ECS est en cours (verrou).
+    Applique et verifie la consigne 10 °C apres un cycle ECS.
+    Double tentative transactionnelle via boiler bridge.
+    Ne s'execute pas si un cycle ECS est en cours.
   mode: single
 
   trigger:
@@ -67,55 +66,82 @@
   action:
     - variables:
         retour_temp: 10
-        btn_one_shot: button.vscotho1_200_11_activer_le_prelevement_unique
-        number_setpoint: number.vscotho1_200_11_dhw_temperature
-        sensor_consigne: sensor.ecs_consigne_chaudiere_securisee
 
-    # 🕐 Délai initial avant tentative (stabilisation chaudière)
+    # ======================================================
+    # 🕐 Stabilisation initiale
+    # ======================================================
     - delay: "00:00:05"
 
-    # 🔁 Tentatives 1 & 2
+    # ======================================================
+    # 🔁 Tentatives 1 et 2
+    # ======================================================
     - repeat:
         count: 2
         sequence:
           - delay: "00:00:05"
-          - service: number.set_value
+
+          - variables:
+              boiler_request_id: >
+                {% set h = '0123456789abcdef' %}
+                {% set v = '89ab' %}
+                {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
+              boiler_ts: >
+                {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+              boiler_expires_at: >
+                {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+          - service: input_text.set_value
             target:
-              entity_id: "{{ number_setpoint }}"
+              entity_id: input_text.boiler_req_dhw_set_setpoint
             data:
-              value: "{{ retour_temp }}"
+              value: "{{ boiler_request_id }}"
+
+          - service: mqtt.publish
+            data:
+              topic: "boiler/command/dhw/set_setpoint"
+              qos: 1
+              retain: false
+              payload: >-
+                {
+                  "request_id": "{{ boiler_request_id }}",
+                  "ts": "{{ boiler_ts }}",
+                  "expires_at": "{{ boiler_expires_at }}",
+                  "source": "arsenal",
+                  "value": {{ retour_temp }}
+                }
 
           - wait_template: >
-              {{ states(sensor_consigne) | float(0) == retour_temp }}
-            timeout: "00:01:00"
+              {{ states('sensor.boiler_ack_dhw_set_setpoint_result') in ['applied', 'rejected', 'timeout'] }}
+            timeout: "00:00:20"
             continue_on_timeout: true
 
           - choose:
               - conditions:
                   - condition: template
                     value_template: >
-                      {{ states(sensor_consigne) | float(0) == retour_temp }}
+                      {{ states('sensor.boiler_ack_dhw_set_setpoint_result') == 'applied' }}
                 sequence:
-                  - stop: "Consigne confirmée, fin du gardien"
+                  - service: input_text.set_value
+                    target:
+                      entity_id: input_text.boiler_req_dhw_set_setpoint
+                    data:
+                      value: ""
+                  - stop: "Consigne ECS de securite confirmee par ACK"
 
-    # 🚨 Dernier recours : bouton physique + nouvelle écriture + Alerte
-    - service: button.press
-      target:
-        entity_id: "{{ btn_one_shot }}"
-
-    - delay: "00:00:15"
-
-    - service: number.set_value
-      target:
-        entity_id: "{{ number_setpoint }}"
-      data:
-        value: "{{ retour_temp }}"
-
+    # ======================================================
+    # 🚨 Echec persistant apres deux tentatives
+    # ======================================================
     - service: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
-        titre: "🚨 ECS – Consigne non appliquée"
+        titre: "🚨 ECS – Consigne non appliquee"
         message: >
-          À {{ now().strftime('%H:%M') }}, après deux tentatives et un appui sur le bouton matériel,
-          la consigne n’est toujours pas passée à 10 °C.  
-          Risque de rebond détecté.
+          A {{ now().strftime('%H:%M') }}, apres deux tentatives transactionnelles boiler bridge,
+          la consigne ECS de securite n'a pas ete confirmee a {{ retour_temp }} °C.
+          Resultat ACK : {{ states('sensor.boiler_ack_dhw_set_setpoint_result') }}.
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_dhw_set_setpoint
+      data:
+        value: ""

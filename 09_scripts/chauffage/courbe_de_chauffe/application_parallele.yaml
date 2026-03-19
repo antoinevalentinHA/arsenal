@@ -1,115 +1,127 @@
 # ==========================================================
-# 🔥 SCRIPT ARSENAL — Chauffage : Application décalage parallèle
+# 🔥 SCRIPT ARSENAL — Chauffage : Appliquer parallele
 # ----------------------------------------------------------
 # 🎯 Rôle :
-#   Appliquer le décalage parallèle de la courbe de chauffe
-#   Viessmann (ViCare) de manière robuste et contrôlée.
+#   Appliquer le décalage parallele de la courbe de chauffe
+#   correspondant a la consigne Arsenal locale.
 #
 # 🧠 Nature du script :
-#   - Script STRICTEMENT exécutif
-#   - Ne contient AUCUNE logique décisionnelle
-#   - N’est JAMAIS déclenché directement par l’utilisateur
+#   - Script STRICTEMENT executif
+#   - Aucune logique decisionnelle integree
+#   - Aucun declenchement direct par l’interface utilisateur
 #
 # ⚙️ Comportement :
-#   - Lit la consigne cible depuis un helper
-#   - Compare à la valeur cloud actuelle
-#   - Applique la consigne uniquement si nécessaire
-#   - Répète l’envoi de façon bornée et temporisée
-#   - Valide le résultat par observation côté cloud
+#   - Lit la consigne cible depuis input_number.chauffage_parallele_consigne
+#   - Genere un request_id UUID v4
+#   - Publie UNE commande MQTT vers boiler bridge
+#   - Attend une conclusion ACK corrélée :
+#       applied / rejected / timeout
+#   - Ne declare jamais de succes sans ACK corrélé = applied
 #
 # 🔒 Garanties :
-#   - Idempotence totale
-#   - Limitation stricte des appels API ViCare
-#   - Aucune hypothèse sur le succès d’un service
+#   - Script executif pur
+#   - Aucune dependance a ViCare
+#   - Aucune relecture cloud
+#   - Aucune boucle de retry
 #
-# ⚠️ Limites connues :
-#   - ViCare ne fournit pas d’ACK fiable
-#   - La chaudière peut écraser la valeur ultérieurement
+# ⚠️ Important :
+#   - accepted n’est PAS un succes metier
+#   - seul un ACK corrélé = applied vaut succes d’execution
+#   - la conclusion transactionnelle est portee par
+#     sensor.boiler_ack_heating_set_curve_shift_result
+#   - le script n’ecrit aucune conclusion metier locale
 #
-# 📌 Usage :
-#   - Appelé exclusivement par des automatisations
-#     de décision ou de correction thermique
+# 📌 Dependances :
+#   - input_number.chauffage_parallele_consigne
+#   - input_text.boiler_req_heating_set_curve_shift
+#   - sensor.boiler_ack_heating_set_curve_shift_result
 #
-# 🗓️ Compatibilité : Home Assistant 2024.8+
+# 🗓️ Compatibilite : Home Assistant 2024.8+
 # ==========================================================
 
 chauffage_appliquer_parallele:
-  alias: "Chauffage – Appliquer décalage parallèle"
-  mode: restart
+  alias: "Chauffage – Appliquer parallele"
+  mode: single
+
   sequence:
-
+    # ======================================================
+    # 🧾 ETAPE 0 : VARIABLES TRANSACTIONNELLES
+    # ======================================================
     - variables:
-        parallele_cible_raw: "{{ states('input_number.chauffage_parallele_consigne') }}"
-        parallele_cloud_raw: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') }}"
-        tolerance: 0.01
+        boiler_request_id: >
+          {% set h = '0123456789abcdef' %}
+          {% set v = '89ab' %}
+          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
 
-    - condition: template
-      value_template: >
-        {{ parallele_cible_raw not in ['unknown','unavailable','none','']
-           and parallele_cloud_raw not in ['unknown','unavailable','none',''] }}
+        boiler_ts: >
+          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
 
-    - variables:
-        parallele_cible: "{{ parallele_cible_raw | float }}"
-        parallele_initial: "{{ parallele_cloud_raw | float }}"
+        boiler_expires_at: >
+          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
 
-    - condition: template
-      value_template: >
-        {{ (parallele_cible - parallele_initial) | abs > tolerance }}
+        boiler_parallele_cible_raw: >
+          {{ states('input_number.chauffage_parallele_consigne') }}
 
-    - repeat:
-        while:
-          - condition: template
-            value_template: >
-              {{ repeat.index <= 3
-                 and is_state('binary_sensor.vicare_api_disponible', 'on')
-                 and ((states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') | float - parallele_cible) | abs) > tolerance }}
-        sequence:
+        boiler_parallele_cible: >
+          {{ states('input_number.chauffage_parallele_consigne') | float(9999) }}
 
-          - service: number.set_value
-            target:
-              entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
-            data:
-              value: "{{ parallele_cible }}"
-
-          - delay: "00:00:20"
-
-          - service: homeassistant.update_entity
-            target:
-              entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
-
-          - delay: "00:00:30"
-
-    - variables:
-        parallele_final_raw: "{{ states('number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe') }}"
-        parallele_final: "{{ parallele_final_raw | float(9999) }}"
-
+    # ======================================================
+    # 🚫 ETAPE 1 : VALIDATION ENTREE
+    # ======================================================
     - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ boiler_parallele_cible_raw in ['unknown', 'unavailable', 'none', ''] }}
+          sequence:
+            - stop: "Parallele cible indisponible — aucun envoi boiler bridge"
 
         - conditions:
             - condition: template
               value_template: >
-                {{ parallele_final_raw not in ['unknown','unavailable','none','']
-                   and (parallele_final - parallele_cible) | abs < tolerance }}
+                {{ boiler_parallele_cible == 9999 }}
           sequence:
-            - service: logbook.log
-              data:
-                name: "ViCare"
-                message: >
-                  📊 Parallele CONFIRME cote cloud :
-                  {{ parallele_initial }} → {{ parallele_final }}
-                entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
+            - stop: "Parallele cible invalide — aucun envoi boiler bridge"
 
-        - conditions:
-            - condition: template
-              value_template: >
-                {{ parallele_final_raw in ['unknown','unavailable','none','']
-                   or (parallele_final - parallele_cible) | abs >= tolerance }}
-          sequence:
-            - service: logbook.log
-              data:
-                name: "ViCare"
-                message: >
-                  ⚠️ Parallele NON confirme cote cloud :
-                  cible={{ parallele_cible }},
-                  lu={{ parallele_final_raw }}
-                entity_id: number.vscotho1_200_11_decalage_de_la_courbe_de_chauffe
+    # ======================================================
+    # 🧷 ETAPE 2 : ANCRAGE TRANSACTIONNEL
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_heating_set_curve_shift
+      data:
+        value: "{{ boiler_request_id }}"
+
+    # ======================================================
+    # 📤 ETAPE 3 : ENVOI COMMANDE MQTT
+    # ======================================================
+    - service: mqtt.publish
+      data:
+        topic: "boiler/command/heating/set_curve_shift"
+        qos: 1
+        retain: false
+        payload: >-
+          {
+            "request_id": "{{ boiler_request_id }}",
+            "ts": "{{ boiler_ts }}",
+            "expires_at": "{{ boiler_expires_at }}",
+            "source": "arsenal",
+            "value": {{ boiler_parallele_cible }}
+          }
+
+    # ======================================================
+    # ⏳ ETAPE 4 : ATTENTE CONCLUSION ACK CORRELEE
+    # ======================================================
+    - wait_template: >
+        {{ states('sensor.boiler_ack_heating_set_curve_shift_result') in ['applied', 'rejected', 'timeout'] }}
+      timeout: "00:00:20"
+      continue_on_timeout: true
+
+    # ======================================================
+    # 🧹 ETAPE 5 : LIBERATION TRANSACTIONNELLE
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_heating_set_curve_shift
+      data:
+        value: ""

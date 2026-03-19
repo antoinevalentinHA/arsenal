@@ -6,9 +6,9 @@
 #   Cerveau UNIQUE de décision du chauffage.
 #
 #   Ce script est la SEULE autorité habilitée à décider
-#   un changement de programme chauffage :
+#   un changement de regime chauffage Arsenal :
 #     → Confort
-#     → Réduit
+#     → Reduit
 #
 #   Il peut :
 #     - ordonner un changement explicite de programme
@@ -77,15 +77,15 @@
 #   toute décision concurrente immédiate.
 #
 #   ➜ Stabilisation logique
-#   ➜ Protection thermique et API ViCare
+#   ➜ Protection thermique et anti-rafale transactionnelle
 #
 # ----------------------------------------------------------
 # 🧾 OBSERVABILITÉ & TRAÇABILITÉ
 #
-#   Toute décision explicite produit :
-#     - Un changement de programme observable
+#   Toute decision explicite produit :
+#     - Une application de regime observable
 #     - Un logbook lisible
-#     - Une raison métier traçable
+#     - Une raison metier traçable
 #
 #   En cas d’override opérateur, la raison `confort_force`
 #   est prioritaire et doit rester lisible.
@@ -102,9 +102,9 @@
 # ❌ NE FAIT PAS
 #
 #   - Aucun appel ViCare direct
-#   - Aucun réglage de consigne
-#   - Aucune hypothèse thermique
-#   - Aucune décision implicite
+#   - Aucune execution directe de consigne
+#   - Aucune hypothese thermique
+#   - Aucune decision implicite
 #
 # ----------------------------------------------------------
 # ✅ Compatibilité : Home Assistant 2024.8+
@@ -273,8 +273,9 @@ chauffage_decision_centrale:
               value_template: "{{ not is_state('sensor.programme_chauffage', 'Confort') }}"
           sequence:
             - alias: "Activer chauffage confort"
-              service: script.chauffage_consigne_confort
+              service: script.chauffage_appliquer_consigne
               data:
+                consigne: confort
                 raison: "{{ reason }}"
 
             - alias: "Start anti-rebond"
@@ -294,14 +295,15 @@ chauffage_decision_centrale:
       default:
 
         # ---------- Passage en Reduced ----------
-        - alias: "Activer chauffage reduced"
+        - alias: "Activer chauffage reduit"
           choose:
             - conditions:
                 - condition: template
                   value_template: "{{ not is_state('sensor.programme_chauffage', 'Eco') }}"
               sequence:
-                - service: script.chauffage_consigne_reduite
+                - service: script.chauffage_appliquer_consigne
                   data:
+                    consigne: reduite
                     raison: "{{ reason }}"
 
         - alias: "Start anti-rebond"

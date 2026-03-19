@@ -2,26 +2,28 @@
 # 🧠 ARSENAL — MQTT SENSORS (BOILER / TELEMETRY)
 # ----------------------------------------------------------
 # 📌 Fichier
-#   mqtt_sensors/boiler_telemetry.yaml
+#   mqtt_sensors/boiler/boiler_telemetry.yaml
 #
 # 🎯 ROLE
 #   Exposer la télémétrie chaudière publiée sur MQTT
-#   (températures, programmes et consignes).
+#   après simplification Arsenal Vision A :
+#     - une seule consigne chauffage active
+#     - une référence réduite secondaire de diagnostic
 #
 # 🧱 PRINCIPE
 #   - Mapping direct des topics MQTT vers des sensors HA
-#   - Payloads scalaires publiés par le bridge Optolink
+#   - Payloads scalaires publiés par le boiler bridge
 #   - Aucune transformation ni logique métier
 #
 # 📥 SOURCE
-#   Namespace contrat : boiler/telemetry/...
-#   Référence : 03_namespace_canonique.md §3.2
+#   Namespace contrat :
+#     - boiler/telemetry/...
 #
 # ⚠️ IMPORTANT
 #   - Couche strictement observation
 #   - Aucun calcul ni interprétation métier
-#   - Toute logique doit être implémentée dans les
-#     couches automation / template
+#   - Le bridge N’expose PAS de programme chauffage métier
+#   - La sémantique Confort / Eco appartient à Arsenal
 # ==========================================================
 
 - name: "Boiler supply temperature"
@@ -42,29 +44,14 @@
   state_class: measurement
   icon: mdi:water-thermometer
 
-- name: "Boiler heating program"
-  unique_id: boiler_heating_program
-  default_entity_id: boiler_heating_program
-  state_topic: "boiler/telemetry/heating/program"
-  icon: mdi:calendar-clock
-
-- name: "Boiler comfort temperature setpoint"
-  unique_id: boiler_comfort_temperature
-  default_entity_id: boiler_comfort_temperature
-  state_topic: "boiler/telemetry/heating/comfort_temperature"
+- name: "Boiler heating setpoint"
+  unique_id: boiler_heating_setpoint
+  default_entity_id: boiler_heating_setpoint
+  state_topic: "boiler/telemetry/heating/setpoint"
   device_class: temperature
   unit_of_measurement: "°C"
   state_class: measurement
   icon: mdi:thermometer-high
-
-- name: "Boiler reduced temperature setpoint"
-  unique_id: boiler_reduced_temperature
-  default_entity_id: boiler_reduced_temperature
-  state_topic: "boiler/telemetry/heating/reduced_temperature"
-  device_class: temperature
-  unit_of_measurement: "°C"
-  state_class: measurement
-  icon: mdi:thermometer-low
 
 - name: "Boiler heating curve slope"
   unique_id: boiler_heating_curve_slope

@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS
+#     Boiler request_id transactionnels
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Conserver le request_id de la transaction en cours
+#   pour les commandes boiler publiees via MQTT.
+#
+# 🧱 PRINCIPE
+#   - Un helper par famille de commande
+#   - Ecrit exclusivement par les scripts executifs
+#   - Lu par les capteurs transactionnels ACK
+#
+# ⚠️ IMPORTANT
+#   - Aucun usage metier direct
+#   - Aucun stockage de valeur chaudiere
+#   - Role strictement transactionnel
+# ==========================================================
+
+boiler_req_heating_set_temperature:
+  name: "Boiler req heating set temperature"
+  max: 36
+  initial: ""
+
+boiler_req_heating_set_curve_shift:
+  name: "Boiler req heating set curve shift"
+  max: 36
+  initial: ""
+
+boiler_req_heating_set_curve_slope:
+  name: "Boiler req heating set curve slope"
+  max: 36
+  initial: ""
+
+boiler_req_dhw_set_setpoint:
+  name: Boiler req dhw set setpoint
+  max: 64
+  initial: ""

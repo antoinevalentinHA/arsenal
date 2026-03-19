@@ -9,13 +9,14 @@ carte_chauffage_etat:
 
   state_display: |
     [[[
-      const mode = entity.attributes.active_vicare_mode;
-      const action = entity.attributes.hvac_action;
-      if (mode === 'standby') return 'Veille';
-      if (action === 'heating') return 'Actif';
-      if (action === 'idle') return 'Repos';
-      if (action === 'off') return 'Éteint';
-      return action || '—';
+      const burner = states['binary_sensor.bruleur_chauffage_actif']?.state;
+      const prog = entity?.state;
+
+      if (burner === 'on' && prog === 'Confort') return 'Actif';
+      if (prog === 'Confort') return 'Repos';
+      if (prog === 'Eco') return 'Repos';
+
+      return prog || '—';
     ]]]
 
   tap_action:
@@ -26,47 +27,41 @@ carte_chauffage_etat:
     action: more-info
 
   state:
+    # 🔴 Confort + brûleur actif
     - operator: template
       value: |
         [[[
-          return states['binary_sensor.bruleur_chauffage_actif']?.state === 'on';
+          const burner = states['binary_sensor.bruleur_chauffage_actif']?.state;
+          const prog = entity?.state;
+          return burner === 'on' && prog === 'Confort';
         ]]]
       styles:
         card:
           - background-color: rgba(244, 67, 54, 0.2)
 
+    # 🟢 Confort
     - operator: template
       value: |
         [[[
-          const mode = entity.attributes.active_vicare_mode;
-          return mode === 'standby';
-        ]]]
-      styles:
-        card:
-          - background-color: rgba(158, 158, 158, 0.2)
-
-    - operator: template
-      value: |
-        [[[
-          const mode = entity.attributes.active_vicare_mode;
-          const prog = states['sensor.programme_chauffage']?.state;
-          return mode !== 'standby' && prog === 'Confort';
+          const prog = entity?.state;
+          return prog === 'Confort';
         ]]]
       styles:
         card:
           - background-color: rgba(76, 175, 80, 0.2)
 
+    # ⚪ Eco
     - operator: template
       value: |
         [[[
-          const mode = entity.attributes.active_vicare_mode;
-          const prog = states['sensor.programme_chauffage']?.state;
-          return mode !== 'standby' && prog === 'Éco';
+          const prog = entity?.state;
+          return prog === 'Eco';
         ]]]
       styles:
         card:
-          - background-color: rgba(144, 202, 249, 0.25)
+          - background-color: rgba(158, 158, 158, 0.2)
 
+    # ⚪ fallback
     - operator: default
       styles:
         card:

@@ -1,0 +1,210 @@
+# ==========================================================
+# 🔥 SCRIPT ARSENAL — Chauffage : Appliquer consigne
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Appliquer la consigne chauffage correspondant a la
+#   consigne Arsenal demandee :
+#     - confort  -> input_number.chauffage_consigne_confort
+#     - reduite  -> input_number.chauffage_consigne_reduite
+#
+# 🧠 Nature du script :
+#   - Script STRICTEMENT executif
+#   - Aucune logique decisionnelle integree
+#   - Aucun declenchement direct par l’interface utilisateur
+#
+# ⚙️ Comportement :
+#   - Recoit une consigne Arsenal : confort / reduite
+#   - Lit automatiquement la bonne consigne locale
+#   - Genere un request_id UUID v4
+#   - Publie UNE commande MQTT vers boiler bridge
+#   - Attend une conclusion ACK corrélée :
+#       applied / rejected / timeout
+#   - N’ecrit la memoire souveraine Arsenal qu’apres succes reel
+#
+# 🔒 Garanties :
+#   - Script executif pur
+#   - Aucun faux succes declare
+#   - Aucune dependance a ViCare
+#
+# ⚠️ Important :
+#   - accepted n’est PAS un succes metier
+#   - seul un ACK corrélé = applied vaut succes d’execution
+#
+# 📌 Dependances :
+#   - input_boolean.chauffage_application_en_cours
+#   - input_select.chauffage_dernier_mode_decide
+#   - input_text.chauffage_raison
+#   - input_number.chauffage_consigne_confort
+#   - input_number.chauffage_consigne_reduite
+#   - input_text.boiler_req_heating_set_temperature
+#   - sensor.boiler_ack_heating_set_temperature_result
+#
+# 🗓️ Compatibilite : Home Assistant 2024.8+
+# ==========================================================
+
+chauffage_appliquer_consigne:
+  alias: "Chauffage – Appliquer consigne"
+  mode: restart
+  fields:
+    consigne:
+      name: "Consigne Arsenal"
+      description: "Consigne cible : confort ou reduite"
+      required: true
+      selector:
+        select:
+          options:
+            - confort
+            - reduite
+
+    raison:
+      name: "Raison"
+      description: "Raison optionnelle ecrite apres succes"
+      required: false
+      selector:
+        text:
+
+  sequence:
+    # ======================================================
+    # 🧾 ETAPE 0 : VARIABLES TRANSACTIONNELLES
+    # ------------------------------------------------------
+    # Selection dynamique de la consigne cible
+    # ======================================================
+    - variables:
+        boiler_consigne: >
+          {{ consigne | lower }}
+
+        boiler_mode: >
+          {% if boiler_consigne == 'confort' %}
+            comfort
+          {% elif boiler_consigne == 'reduite' %}
+            reduced
+          {% else %}
+            unknown
+          {% endif %}
+
+        boiler_request_id: >
+          {% set h = '0123456789abcdef' %}
+          {% set v = '89ab' %}
+          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
+
+        boiler_ts: >
+          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+        boiler_expires_at: >
+          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+        boiler_temperature_cible: >
+          {% if boiler_mode == 'comfort' %}
+            {{ states('input_number.chauffage_consigne_confort') | float(0) }}
+          {% elif boiler_mode == 'reduced' %}
+            {{ states('input_number.chauffage_consigne_reduite') | float(0) }}
+          {% else %}
+            0
+          {% endif %}
+
+    # ======================================================
+    # 🚫 ETAPE 1 : VALIDATION ENTREE
+    # ------------------------------------------------------
+    # Refuse toute consigne invalide ou toute valeur absurde
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ boiler_consigne not in ['confort', 'reduite'] }}
+          sequence:
+            - stop: "Consigne invalide — aucun envoi boiler bridge"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ boiler_temperature_cible <= 0 }}
+          sequence:
+            - stop: "Consigne cible invalide — aucun envoi boiler bridge"
+
+    # ======================================================
+    # 🛑 ETAPE 2 : VERROU APPLICATION EN COURS (ANTI-YOYO)
+    # ======================================================
+    - service: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.chauffage_application_en_cours
+
+    # ======================================================
+    # 🧷 ETAPE 3 : ANCRAGE TRANSACTIONNEL
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_heating_set_temperature
+      data:
+        value: "{{ boiler_request_id }}"
+
+    # ======================================================
+    # 📤 ETAPE 4 : ENVOI COMMANDE MQTT
+    # ======================================================
+    - service: mqtt.publish
+      data:
+        topic: "boiler/command/heating/set_temperature"
+        qos: 1
+        retain: false
+        payload: >-
+          {
+            "request_id": "{{ boiler_request_id }}",
+            "ts": "{{ boiler_ts }}",
+            "expires_at": "{{ boiler_expires_at }}",
+            "source": "arsenal",
+            "value": {{ boiler_temperature_cible }}
+          }
+
+    # ======================================================
+    # ⏳ ETAPE 5 : ATTENTE CONCLUSION ACK CORRELEE
+    # ======================================================
+    - wait_template: >
+        {{ states('sensor.boiler_ack_heating_set_temperature_result') in ['applied', 'rejected', 'timeout'] }}
+      timeout: "00:00:20"
+      continue_on_timeout: true
+
+    # ======================================================
+    # ✅ / ❌ ETAPE 6 : CONCLUSION TRANSACTIONNELLE
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('sensor.boiler_ack_heating_set_temperature_result') == 'applied' }}
+          sequence:
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.chauffage_dernier_mode_decide
+              data:
+                option: "{{ boiler_mode }}"
+
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ raison is defined and (raison | string | trim) != '' }}
+                  sequence:
+                    - service: input_text.set_value
+                      target:
+                        entity_id: input_text.chauffage_raison
+                      data:
+                        value: "{{ raison }}"
+              default: []
+
+      default: []
+
+    # ======================================================
+    # 🧹 ETAPE 7 : LIBERATION TRANSACTIONNELLE
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_heating_set_temperature
+      data:
+        value: ""
+
+    # ======================================================
+    # 🔓 ETAPE 8 : LIBERATION VERROU APPLICATION
+    # ======================================================
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.chauffage_application_en_cours

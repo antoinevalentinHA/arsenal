@@ -219,17 +219,6 @@ views:
 
               - type: custom:button-card
                 template: kpi_no_action
-                entity: sensor.vicare_age_donnees
-                name: ViCare
-                icon: mdi:fire
-                variables:
-                  ui_profile: arsenal
-                  couleur: sensor.couleur_age_vicare
-                triggers_update:
-                  - sensor.couleur_age_vicare
-
-              - type: custom:button-card
-                template: kpi_no_action
                 entity: sensor.fujitsu_age_donnees
                 name: Fujitsu
                 icon: mdi:air-conditioner
@@ -238,6 +227,11 @@ views:
                   couleur: sensor.couleur_age_fujitsu
                 triggers_update:
                   - sensor.couleur_age_fujitsu
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
 
               - type: custom:button-card
                 template: kpi_no_action

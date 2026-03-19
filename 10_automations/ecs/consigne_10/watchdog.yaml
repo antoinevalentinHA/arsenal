@@ -4,50 +4,32 @@
 #
 #  ID : 10250000000008
 # ----------------------------------------------------------
-#  🎯 RÔLE
-#     Garantir la remise en sécurité complète du ballon
-#     d’eau chaude sanitaire lorsque le cycle ECS arrive
-#     à son terme sans retour normal de la logique métier.
+#  🎯 ROLE
+#     Garantir la remise en securite complete du ballon ECS
+#     en fin de cycle, meme en cas de defaillance amont.
 #
-#     Cette automation agit comme un watchdog terminal,
-#     chargé de forcer la sortie de cycle et le retour
-#     à la consigne basse de sécurité.
+#     Tente un rabaissement a 10 °C puis libere le verrou.
 #
-#  🧱 PRINCIPE ARSENAL
+#  🧱 PRINCIPE
 #     - Un cycle ECS ne doit jamais rester ouvert
 #     - La consigne haute ne doit pas persister
-#     - Le verrou logique doit toujours être libéré
+#     - Liberation du verrou quoi qu'il arrive
 #
 #  🚫 NE FAIT PAS
-#     - Ne déclenche aucun cycle ECS
-#     - Ne décide pas de la durée ou du timing des cycles
-#     - Ne modifie aucune planification ECS
-#
-#  🧩 UTILISATION
-#     - Déclenchement :
-#         • expiration du timer watchdog de cycle ECS
-#     - Séquence :
-#         • temporisation courte post-expiration
-#         • rabaissement forcé de la consigne à 10 °C
-#         • vérification réelle via capteur local
-#         • libération forcée du verrou de cycle ECS
-#
-#  ⚠️ IMPORTANT
-#     - Cette automation est un garde-fou de sécurité
-#     - Elle s’exécute même si la logique amont a failli
-#     - Le déverrouillage est volontairement unilatéral
+#     - Aucun log utilisateur
+#     - Aucune notification
+#     - Aucun blocage en cas d'echec
 #
 #  ✅ CONTRAINTES
-#     - Priorité absolue à la sécurité thermique
-#     - Vérification basée sur l’état réel chaudière
-#     - Aucune dépendance à un retour cloud parfait
+#     - Execution deterministe
+#     - Nettoyage transactionnel garanti
 # ==========================================================
 
 - id: "10250000000008"
   alias: "ECS - Watchdog fin de cycle"
   description: >
-    Si le timer de cycle arrive à son terme, rabaisse la consigne à 10 °C,
-    vérifie la mise à jour réelle et libère le verrou input_boolean.ecs_cycle_en_cours.
+    Fin de cycle ECS forcee : tentative de rabaissement a 10 °C
+    puis liberation du verrou.
   mode: single
 
   trigger:
@@ -57,32 +39,66 @@
         entity_id: timer.ecs_cycle_watchdog
 
   action:
-    # 🕐 Laisse 3 s pour stabiliser les états après expiration du timer
     - delay:
         seconds: 3
 
     - variables:
         retour_temp: 10
-        number_setpoint: number.vscotho1_200_11_dhw_temperature
-        sensor_consigne: sensor.ecs_consigne_chaudiere_securisee
 
-    # 🔁 Rabaisse la consigne
-    - service: number.set_value
+        boiler_request_id: >
+          {% set h = '0123456789abcdef' %}
+          {% set v = '89ab' %}
+          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
+
+        boiler_ts: >
+          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+        boiler_expires_at: >
+          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+    # ======================================================
+    # 📤 Envoi commande rabaissement
+    # ======================================================
+    - service: input_text.set_value
       target:
-        entity_id: "{{ number_setpoint }}"
+        entity_id: input_text.boiler_req_dhw_set_setpoint
       data:
-        value: "{{ retour_temp }}"
+        value: "{{ boiler_request_id }}"
 
-    # ⏳ Vérifie que la consigne est bien appliquée
-    - wait_for_trigger:
-        - platform: template
-          value_template: >
-            {{ (states(sensor_consigne) | float(0)) == retour_temp }}
-      timeout:
-        seconds: 60
+    - service: mqtt.publish
+      data:
+        topic: "boiler/command/dhw/set_setpoint"
+        qos: 1
+        retain: false
+        payload: >-
+          {
+            "request_id": "{{ boiler_request_id }}",
+            "ts": "{{ boiler_ts }}",
+            "expires_at": "{{ boiler_expires_at }}",
+            "source": "arsenal",
+            "value": {{ retour_temp }}
+          }
+
+    # ======================================================
+    # ⏳ Attente ACK (non bloquante)
+    # ======================================================
+    - wait_template: >
+        {{ states('sensor.boiler_ack_dhw_set_setpoint_result') in ['applied', 'rejected', 'timeout'] }}
+      timeout: "00:00:20"
       continue_on_timeout: true
 
-    # 🔓 Fin du cycle forcée
+    # ======================================================
+    # 🧹 Nettoyage transactionnel
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_dhw_set_setpoint
+      data:
+        value: ""
+
+    # ======================================================
+    # 🔓 Liberation verrou (toujours)
+    # ======================================================
     - service: input_boolean.turn_off
       target:
         entity_id: input_boolean.ecs_cycle_en_cours

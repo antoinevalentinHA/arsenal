@@ -23,8 +23,7 @@
 #
 # Règles normatives :
 #   - Écrite exclusivement par :
-#       • script.chauffage_consigne_confort
-#       • script.chauffage_consigne_reduite
+#       • script.chauffage_appliquer_consigne
 #
 #   - Interdite à :
 #       • la Décision Centrale

@@ -11,14 +11,14 @@
 #   - Si la valeur est numérique → mise à jour directe.
 #   - Sinon → conservation de la dernière valeur valide.
 #
-# 🧮 Source : number.vscotho1_200_11_dhw_temperature
+# 🧮 Source : sensor.boiler_dhw_setpoint
 # 📊 Type : Trigger Template Sensor
 # 📏 Unité : °C
 # ==========================================================
 
 - trigger:
     - platform: state
-      entity_id: number.vscotho1_200_11_dhw_temperature
+      entity_id: sensor.boiler_dhw_setpoint
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
@@ -30,7 +30,7 @@
       unit_of_measurement: "°C"
       state_class: measurement
       state: >
-        {% set v = states('number.vscotho1_200_11_dhw_temperature') %}
+        {% set v = states('sensor.boiler_dhw_setpoint') %}
         {% if v | is_number %}
           {{ v | float }}
         {% else %}

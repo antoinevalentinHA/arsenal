@@ -1,6 +1,6 @@
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATION
-#     Réalignement ViCare HA
+#     Réalignement Chauffage — Garde de souverainete
 #
 #  ID : 10240000000004
 # ----------------------------------------------------------
@@ -26,13 +26,11 @@
 #     - Entités lues :
 #         • sensor.programme_chauffage
 #         • input_select.chauffage_dernier_mode_decide
-#         • binary_sensor.vicare_api_disponible
 #         • input_boolean.chauffage_application_en_cours
 #         • binary_sensor.chauffage_incoherence_vicare_decision
 #
 #     - Scripts appelés :
-#         • script.chauffage_consigne_confort
-#         • script.chauffage_consigne_reduite
+#         • script.chauffage_appliquer_consigne
 #
 #  🚫 INTERDITS
 #
@@ -51,7 +49,7 @@
 # ==========================================================
 
 - id: "10240000000004"
-  alias: "Réalignement ViCare HA"
+  alias: "Réalignement chauffage - garde de souveraineté"
   mode: single
 
   trigger:
@@ -102,9 +100,6 @@
         - conditions:
             - condition: template
               value_template: >
-                {{ states('binary_sensor.vicare_api_disponible') == 'on' }}
-            - condition: template
-              value_template: >
                 {{ states('input_select.chauffage_dernier_mode_decide') == 'comfort' }}
             - condition: template
               value_template: >
@@ -113,7 +108,9 @@
               value_template: >
                 {{ states('sensor.programme_chauffage') == 'Eco' }}
           sequence:
-            - service: script.chauffage_consigne_confort
+            - service: script.chauffage_appliquer_consigne
+              data:
+                consigne: confort
 
         # --------------------------------------------------
         # 🔴 CAS 2 — Divergence :
@@ -121,9 +118,6 @@
         #     programme réel = Confort
         # --------------------------------------------------
         - conditions:
-            - condition: template
-              value_template: >
-                {{ states('binary_sensor.vicare_api_disponible') == 'on' }}
             - condition: template
               value_template: >
                 {{ states('input_select.chauffage_dernier_mode_decide') == 'reduced' }}
@@ -134,6 +128,8 @@
               value_template: >
                 {{ states('sensor.programme_chauffage') == 'Confort' }}
           sequence:
-            - service: script.chauffage_consigne_reduite
+            - service: script.chauffage_appliquer_consigne
+              data:
+                consigne: reduite
 
       default: []

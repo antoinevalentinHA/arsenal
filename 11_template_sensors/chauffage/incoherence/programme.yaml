@@ -39,10 +39,6 @@
     - platform: state
       entity_id: input_select.chauffage_dernier_mode_decide
 
-    # 🔁 Disponibilité API
-    - platform: state
-      entity_id: binary_sensor.vicare_api_disponible
-
     # 🔁 Verrou application matérielle
     - platform: state
       entity_id: input_boolean.chauffage_application_en_cours
@@ -64,12 +60,11 @@
       # 🧠 Logique canonique de divergence
       # --------------------------------------------------
       state: >
-        {% set api = states('binary_sensor.vicare_api_disponible') == 'on' %}
         {% set lock = states('input_boolean.chauffage_application_en_cours') == 'on' %}
         {% set decided = states('input_select.chauffage_dernier_mode_decide') %}
         {% set prog = states('sensor.programme_chauffage') %}
 
-        {% if not api or lock %}
+        {% if not lock %}
           false
         {% elif prog in ['unknown','unavailable','none','None','Inconnu',''] %}
           false

@@ -3,24 +3,28 @@
 # ----------------------------------------------------------
 # 📌 ROLE
 #   Exposer un etat degrade de la passerelle chaudiere
-#   base sur le heartbeat applicatif.
+#   base sur l'age du heartbeat applicatif.
 #
 # 🧱 PRINCIPE
-#   - Le heartbeat MQTT brut est expose par
-#     binary_sensor.boiler_bridge_heartbeat
-#   - L'absence de heartbeat pendant 60 s fait passer
-#     ce sensor a unavailable
-#   - Ce binary_sensor traduit cet etat en probleme lisible
+#   - online   = connectivite MQTT
+#   - degraded = absence de heartbeat valide depuis plus
+#     de 60 s
+#   - Source : sensor.boiler_bridge_heartbeat_timestamp
 #
 # ⚠️ IMPORTANT
-#   - online   = connectivite MQTT
-#   - degraded = silence applicatif
+#   - Couche technique de sante passerelle
+#   - Aucun pilotage metier
 # ==========================================================
 
 - binary_sensor:
     - name: "Boiler bridge degraded"
       unique_id: boiler_bridge_degraded
       state: >
-        {{ states('binary_sensor.boiler_bridge_heartbeat') in ['unavailable', 'unknown'] }}
+        {% set ts = states('sensor.boiler_bridge_heartbeat_timestamp') %}
+        {% if ts in ['unknown', 'unavailable', ''] %}
+          true
+        {% else %}
+          {{ (as_timestamp(now()) - as_timestamp(ts, default=0)) > 60 }}
+        {% endif %}
       device_class: problem
       icon: mdi:heart-broken

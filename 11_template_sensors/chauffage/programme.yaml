@@ -2,54 +2,52 @@
 # 🔥 TEMPLATE SENSOR — Programme Chauffage simplifie
 # ----------------------------------------------------------
 # 🎯 Objectif :
-#   Identifier clairement le programme actif de ViCare :
-#     - "Confort" si comfort/normal
-#     - "Eco"     si sleep/reduced
+#   Exposer le programme chauffage metier Arsenal :
+#     - "Confort" si la reference souveraine vaut comfort
+#     - "Eco"     si la reference souveraine vaut reduced
 #     - "Inconnu" sinon
 #
 # ⚙️ Source :
-#   climate.vscotho1_200_11_chauffage → active_vicare_program
+#   input_select.chauffage_dernier_mode_decide
 #
 # 🧠 Particularites :
-#   - Gere les etats unknown/unavailable/none pour eviter les erreurs.
-#   - Les attributs exposes permettent un diagnostic rapide :
-#       programme_vicare, preset_mode, hvac_action, vicare_api.
+#   - Ne depend plus de ViCare
+#   - Ne projette que les etats executoires
+#   - Les etats neutre / unknown restent non qualifies
+#   - Les attributs exposes permettent un diagnostic rapide
 #
-# 📊 Type : Template Sensor  
-# 🔥 Domaine : Chauffage / ViCare
+# 📊 Type : Template Sensor
+# 🔥 Domaine : Chauffage / Arsenal
 # ==========================================================
 
 - sensor:
     - name: "Programme"
       unique_id: programme_chauffage
       icon: >
-        {% set prog = state_attr('climate.vscotho1_200_11_chauffage', 'active_vicare_program') | default('none') | lower %}
-        {% if prog in ['comfort', 'normal'] %}
+        {% set prog = states('input_select.chauffage_dernier_mode_decide') | lower %}
+        {% if prog == 'comfort' %}
           mdi:fire
-        {% elif prog in ['sleep', 'reduced'] %}
+        {% elif prog == 'reduced' %}
           mdi:leaf
         {% else %}
           mdi:help-circle-outline
         {% endif %}
       state: >
-        {% set prog = state_attr('climate.vscotho1_200_11_chauffage', 'active_vicare_program') | default('none') | lower %}
-        {% if prog in ['comfort', 'normal'] %}
+        {% set prog = states('input_select.chauffage_dernier_mode_decide') | lower %}
+        {% if prog == 'comfort' %}
           Confort
-        {% elif prog in ['sleep', 'reduced'] %}
+        {% elif prog == 'reduced' %}
           Eco
         {% else %}
           Inconnu
         {% endif %}
       attributes:
-        programme_vicare: >
-          {% set v = state_attr('climate.vscotho1_200_11_chauffage', 'active_vicare_program') %}
-          {{ v if v not in ['unknown','unavailable',none] else 'Indisponible' }}
-        preset_mode: >
-          {% set v = state_attr('climate.vscotho1_200_11_chauffage', 'preset_mode') %}
-          {{ v if v not in ['unknown','unavailable',none] else 'Indisponible' }}
-        hvac_action: >
-          {% set v = state_attr('climate.vscotho1_200_11_chauffage', 'hvac_action') %}
-          {{ v if v not in ['unknown','unavailable',none] else 'Indisponible' }}
-        vicare_api: >
-          {% set v = states('binary_sensor.vicare_api_disponible') %}
-          {{ v if v not in ['unknown','unavailable','none'] else 'Inconnue' }}
+        mode_arsenal: >
+          {% set v = states('input_select.chauffage_dernier_mode_decide') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
+        application_en_cours: >
+          {% set v = states('input_boolean.chauffage_application_en_cours') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
+        raison: >
+          {% set v = states('input_text.chauffage_raison') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}

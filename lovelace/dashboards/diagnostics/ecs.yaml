@@ -42,27 +42,17 @@ views:
             template: ecs_chauffe_planifiee_status
 
           - type: grid
-            columns: 3
+            columns: 2
             square: false
             cards:
 
               - type: custom:button-card
                 template: ecs_synthese_status_72
-                name: ECS
-                icon: mdi:water-boiler
+                name: Boiler Bridge
+                icon: mdi:lan-connect
                 variables:
                   kind: bool
-                  entity: binary_sensor.vscotho1_200_11_chargement_de_l_ecs
-                  label_on: En chauffe
-                  label_off: Au repos
-
-              - type: custom:button-card
-                template: ecs_synthese_status_72
-                name: ViCare
-                icon: mdi:cloud-check
-                variables:
-                  kind: bool
-                  entity: binary_sensor.vicare_api_disponible
+                  entity: binary_sensor.boiler_bridge_online
                   label_on: Disponible
                   label_off: Indispo
 
@@ -72,7 +62,7 @@ views:
                 icon: mdi:thermometer
                 variables:
                   kind: dhw_setpoint_10
-                  entity: number.vscotho1_200_11_dhw_temperature
+                  entity: sensor.boiler_dhw_setpoint
 
           - !include ../../includes/cartes/ecs_dernier_cycle.yaml
 

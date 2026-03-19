@@ -183,8 +183,7 @@ Rôle :
 
 Entités autorisées :
 
-- `script.chauffage_consigne_confort`
-- `script.chauffage_consigne_reduite`
+- `script.chauffage_appliquer_consigne`
 - scripts d’application thermique.
 
 Garanties :

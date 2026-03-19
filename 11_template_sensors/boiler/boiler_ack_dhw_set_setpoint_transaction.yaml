@@ -1,0 +1,104 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Boiler ACK — DHW set_setpoint transaction
+# ----------------------------------------------------------
+# 📌 Fichier
+#   11_template_sensors/boiler/boiler_ack_dhw_set_setpoint_transaction.yaml
+#
+# 🎯 ROLE
+#   Exposer le socle transactionnel ACK de la commande
+#   boiler/command/dhw/set_setpoint :
+#     - extraction request_id / ts
+#     - correlation avec la transaction en cours
+#     - conclusion exploitable par les scripts
+#
+# 🧱 PRINCIPE
+#   - Source brute unique :
+#       sensor.boiler_ack_dhw_set_setpoint_raw
+#   - Reference transactionnelle :
+#       input_text.boiler_req_dhw_set_setpoint
+#   - Ce fichier NE redefinit PAS status / reason
+#     deja exposes par boiler_command_feedback.yaml
+#
+# ⚠️ IMPORTANT
+#   - accepted n'est jamais un succes metier
+#   - seul applied correle vaut succes
+#   - aucune logique metier ECS ici
+# ==========================================================
+
+- sensor:
+    - name: "Boiler ack dhw set setpoint request_id"
+      unique_id: boiler_ack_dhw_set_setpoint_request_id
+      icon: mdi:identifier
+      state: >
+        {% set raw = states('sensor.boiler_ack_dhw_set_setpoint_raw') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') %}
+          unknown
+        {% else %}
+          {% set payload = raw | from_json %}
+          {% set value = payload.request_id if payload.request_id is defined else '' %}
+          {{ value if value not in ['', none] else 'unknown' }}
+        {% endif %}
+
+    - name: "Boiler ack dhw set setpoint ts"
+      unique_id: boiler_ack_dhw_set_setpoint_ts
+      icon: mdi:clock-outline
+      state: >
+        {% set raw = states('sensor.boiler_ack_dhw_set_setpoint_raw') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') %}
+          unknown
+        {% else %}
+          {% set payload = raw | from_json %}
+          {% set value = payload.ts if payload.ts is defined else '' %}
+          {{ value if value not in ['', none] else 'unknown' }}
+        {% endif %}
+
+    - name: "Boiler ack dhw set setpoint correlation"
+      unique_id: boiler_ack_dhw_set_setpoint_correlation
+      icon: mdi:source-branch-sync
+      state: >
+        {% set ack_request_id = states('sensor.boiler_ack_dhw_set_setpoint_request_id') %}
+        {% set current_request_id = states('input_text.boiler_req_dhw_set_setpoint') %}
+        {% if ack_request_id in ['unknown', 'unavailable', ''] or current_request_id in ['unknown', 'unavailable', ''] %}
+          inconnu
+        {% elif ack_request_id == current_request_id %}
+          match
+        {% else %}
+          mismatch
+        {% endif %}
+
+    - name: "Boiler ack dhw set setpoint result"
+      unique_id: boiler_ack_dhw_set_setpoint_result
+      icon: mdi:check-decagram-outline
+      state: >
+        {% set raw = states('sensor.boiler_ack_dhw_set_setpoint_raw') %}
+        {% set current_request_id = states('input_text.boiler_req_dhw_set_setpoint') %}
+        {% set correlation = states('sensor.boiler_ack_dhw_set_setpoint_correlation') %}
+        {% set status = states('sensor.boiler_ack_dhw_set_setpoint_status') %}
+        {% if raw in ['unknown', 'unavailable', ''] or not raw.startswith('{') or current_request_id in ['unknown', 'unavailable', ''] %}
+          inconnu
+        {% elif correlation == 'match' and status == 'applied' %}
+          applied
+        {% elif correlation == 'match' and status == 'rejected' %}
+          rejected
+        {% elif correlation == 'match' and status == 'timeout' %}
+          timeout
+        {% else %}
+          pending
+        {% endif %}
+      attributes:
+        request_id_en_cours: >
+          {% set v = states('input_text.boiler_req_dhw_set_setpoint') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
+        ack_request_id: >
+          {% set v = states('sensor.boiler_ack_dhw_set_setpoint_request_id') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
+        ack_status: >
+          {% set v = states('sensor.boiler_ack_dhw_set_setpoint_status') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
+        ack_reason: >
+          {% set v = states('sensor.boiler_ack_dhw_set_setpoint_reason') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'none' }}
+        ack_ts: >
+          {% set v = states('sensor.boiler_ack_dhw_set_setpoint_ts') %}
+          {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}

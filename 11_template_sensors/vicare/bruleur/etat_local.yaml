@@ -8,14 +8,14 @@
 
 - trigger:
     - platform: state
-      entity_id: binary_sensor.vscotho1_200_11_bruleur
+      entity_id: binary_sensor.boiler_burner_on
 
   binary_sensor:
     - name: "Bruleur physique local"
       unique_id: bruleur_physique_local
       device_class: heat
       state: >
-        {% set src = 'binary_sensor.vscotho1_200_11_bruleur' %}
+        {% set src = 'binary_sensor.boiler_burner_on' %}
         {% set etat = states(src) %}
         {% if etat in ['on', 'off'] %}
           {{ etat }}

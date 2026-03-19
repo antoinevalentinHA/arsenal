@@ -45,3 +45,8 @@
   state_topic: "boiler/bridge/optolink_status"
   icon: mdi:serial-port
   # Valeurs attendues : connected | disconnected | error
+
+- name: "Boiler bridge heartbeat raw"
+  unique_id: boiler_bridge_heartbeat_raw
+  state_topic: "boiler/bridge/heartbeat"
+  icon: mdi:code-json

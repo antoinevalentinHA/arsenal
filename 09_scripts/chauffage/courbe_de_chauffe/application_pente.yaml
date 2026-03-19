@@ -1,115 +1,127 @@
 # ==========================================================
-# 🔥 SCRIPT ARSENAL — Chauffage : Application pente de chauffe
+# 🔥 SCRIPT ARSENAL — Chauffage : Appliquer pente
 # ----------------------------------------------------------
 # 🎯 Rôle :
-#   Appliquer la pente de la courbe de chauffe Viessmann
-#   (ViCare) de manière robuste, bornée et vérifiable.
+#   Appliquer la pente de la courbe de chauffe
+#   correspondant à la consigne Arsenal locale.
 #
 # 🧠 Nature du script :
-#   - Script STRICTEMENT exécutif
-#   - Aucune logique décisionnelle intégrée
-#   - Aucun déclenchement direct par l’utilisateur
+#   - Script STRICTEMENT executif
+#   - Aucune logique decisionnelle integree
+#   - Aucun declenchement direct par l’interface utilisateur
 #
 # ⚙️ Comportement :
-#   - Lit la consigne cible depuis un helper
-#   - Compare à la valeur cloud actuelle
-#   - Applique la consigne uniquement si nécessaire
-#   - Effectue des tentatives limitées et temporisées
-#   - Valide le résultat par observation côté cloud
+#   - Lit la consigne cible depuis input_number.chauffage_pente_consigne
+#   - Genere un request_id UUID v4
+#   - Publie UNE commande MQTT vers boiler bridge
+#   - Attend une conclusion ACK corrélée :
+#       applied / rejected / timeout
+#   - Ne declare jamais de succes sans ACK corrélé = applied
 #
 # 🔒 Garanties :
-#   - Idempotence stricte
-#   - Nombre d’appels API ViCare maîtrisé
-#   - Aucune hypothèse sur le succès d’un service
+#   - Script executif pur
+#   - Aucune dependance a ViCare
+#   - Aucune relecture cloud
+#   - Aucune boucle de retry
 #
-# ⚠️ Limites connues :
-#   - Absence d’ACK fiable côté ViCare
-#   - Valeur potentiellement réécrasée par la chaudière
+# ⚠️ Important :
+#   - accepted n’est PAS un succes metier
+#   - seul un ACK corrélé = applied vaut succes d’execution
+#   - la conclusion transactionnelle est portee par
+#     sensor.boiler_ack_heating_set_curve_slope_result
+#   - le script n’ecrit aucune conclusion metier locale
 #
-# 📌 Usage :
-#   - Appelé exclusivement par des automatisations
-#     de décision ou de correction thermique
+# 📌 Dependances :
+#   - input_number.chauffage_pente_consigne
+#   - input_text.boiler_req_heating_set_curve_slope
+#   - sensor.boiler_ack_heating_set_curve_slope_result
 #
-# 🗓️ Compatibilité : Home Assistant 2024.8+
+# 🗓️ Compatibilite : Home Assistant 2024.8+
 # ==========================================================
 
 chauffage_appliquer_pente:
-  alias: "Chauffage – Appliquer pente de chauffe"
-  mode: restart
+  alias: "Chauffage – Appliquer pente"
+  mode: single
+
   sequence:
-
+    # ======================================================
+    # 🧾 ETAPE 0 : VARIABLES TRANSACTIONNELLES
+    # ======================================================
     - variables:
-        pente_cible_raw: "{{ states('input_number.chauffage_pente_consigne') }}"
-        pente_cloud_raw: "{{ states('number.vscotho1_200_11_heating_curve_slope') }}"
-        tolerance: 0.01
+        boiler_request_id: >
+          {% set h = '0123456789abcdef' %}
+          {% set v = '89ab' %}
+          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
 
-    - condition: template
-      value_template: >
-        {{ pente_cible_raw not in ['unknown','unavailable','none','']
-           and pente_cloud_raw not in ['unknown','unavailable','none',''] }}
+        boiler_ts: >
+          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
 
-    - variables:
-        pente_cible: "{{ pente_cible_raw | float }}"
-        pente_initiale: "{{ pente_cloud_raw | float }}"
+        boiler_expires_at: >
+          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
 
-    - condition: template
-      value_template: >
-        {{ (pente_cible - pente_initiale) | abs > tolerance }}
+        boiler_pente_cible_raw: >
+          {{ states('input_number.chauffage_pente_consigne') }}
 
-    - repeat:
-        while:
-          - condition: template
-            value_template: >
-              {{ repeat.index <= 3
-                 and is_state('binary_sensor.vicare_api_disponible', 'on')
-                 and ((states('number.vscotho1_200_11_heating_curve_slope') | float - pente_cible) | abs) > tolerance }}
-        sequence:
+        boiler_pente_cible: >
+          {{ states('input_number.chauffage_pente_consigne') | float(9999) }}
 
-          - service: number.set_value
-            target:
-              entity_id: number.vscotho1_200_11_heating_curve_slope
-            data:
-              value: "{{ pente_cible }}"
-
-          - delay: "00:00:20"
-
-          - service: homeassistant.update_entity
-            target:
-              entity_id: number.vscotho1_200_11_heating_curve_slope
-
-          - delay: "00:00:30"
-
-    - variables:
-        pente_finale_raw: "{{ states('number.vscotho1_200_11_heating_curve_slope') }}"
-        pente_finale: "{{ pente_finale_raw | float(9999) }}"
-
+    # ======================================================
+    # 🚫 ETAPE 1 : VALIDATION ENTREE
+    # ======================================================
     - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ boiler_pente_cible_raw in ['unknown', 'unavailable', 'none', ''] }}
+          sequence:
+            - stop: "Pente cible indisponible — aucun envoi boiler bridge"
 
         - conditions:
             - condition: template
               value_template: >
-                {{ pente_finale_raw not in ['unknown','unavailable','none','']
-                   and (pente_finale - pente_cible) | abs < tolerance }}
+                {{ boiler_pente_cible == 9999 }}
           sequence:
-            - service: logbook.log
-              data:
-                name: "ViCare"
-                message: >
-                  📈 Pente CONFIRMEE cote cloud :
-                  {{ pente_initiale }} → {{ pente_finale }}
-                entity_id: number.vscotho1_200_11_heating_curve_slope
+            - stop: "Pente cible invalide — aucun envoi boiler bridge"
 
-        - conditions:
-            - condition: template
-              value_template: >
-                {{ pente_finale_raw in ['unknown','unavailable','none','']
-                   or (pente_finale - pente_cible) | abs >= tolerance }}
-          sequence:
-            - service: logbook.log
-              data:
-                name: "ViCare"
-                message: >
-                  ⚠️ Pente NON confirmee cote cloud :
-                  cible={{ pente_cible }},
-                  lu={{ pente_finale_raw }}
-                entity_id: number.vscotho1_200_11_heating_curve_slope
+    # ======================================================
+    # 🧷 ETAPE 2 : ANCRAGE TRANSACTIONNEL
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_heating_set_curve_slope
+      data:
+        value: "{{ boiler_request_id }}"
+
+    # ======================================================
+    # 📤 ETAPE 3 : ENVOI COMMANDE MQTT
+    # ======================================================
+    - service: mqtt.publish
+      data:
+        topic: "boiler/command/heating/set_curve_slope"
+        qos: 1
+        retain: false
+        payload: >-
+          {
+            "request_id": "{{ boiler_request_id }}",
+            "ts": "{{ boiler_ts }}",
+            "expires_at": "{{ boiler_expires_at }}",
+            "source": "arsenal",
+            "value": {{ boiler_pente_cible }}
+          }
+
+    # ======================================================
+    # ⏳ ETAPE 4 : ATTENTE CONCLUSION ACK CORRELEE
+    # ======================================================
+    - wait_template: >
+        {{ states('sensor.boiler_ack_heating_set_curve_slope_result') in ['applied', 'rejected', 'timeout'] }}
+      timeout: "00:00:20"
+      continue_on_timeout: true
+
+    # ======================================================
+    # 🧹 ETAPE 5 : LIBERATION TRANSACTIONNELLE
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_heating_set_curve_slope
+      data:
+        value: ""

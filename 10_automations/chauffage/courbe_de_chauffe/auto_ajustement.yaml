@@ -61,10 +61,6 @@
 
     - condition: template
       value_template: >
-        {{ is_state('binary_sensor.vicare_api_disponible', 'on') }}
-
-    - condition: template
-      value_template: >
         {{ is_state('input_select.mode_maison', 'Normal') }}
 
     # Garde-fou : suggestions disponibles et numériques

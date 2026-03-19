@@ -3,11 +3,12 @@
 # ----------------------------------------------------------
 # 🎯 Objectif :
 #   Fournir une lecture stable et fiable de la température ECS,
-#   même lorsque ViCare renvoie une valeur invalide ou indisponible.
+#   même lorsque la source chaudière renvoie une valeur invalide
+#   ou indisponible.
 #
 # ⚙️ Fonctionnement :
 #   - Déclenchement sur tout changement de
-#       `sensor.vscotho1_200_11_dhw_storage_temperature`
+#       `sensor.boiler_dhw_temperature`
 #       ou au démarrage de Home Assistant.
 #   - Si la valeur source est numérique → mise à jour directe.
 #   - Sinon → conservation de la dernière valeur valide connue.
@@ -15,9 +16,9 @@
 # 💡 Avantages :
 #   - Évite les transitions “unavailable”
 #   - Maintient un historique continu
-#   - Empêche les faux `last_changed` pendant les pertes API
+#   - Empêche les faux `last_changed` pendant les pertes source
 #
-# 🧮 Source : sensor.vscotho1_200_11_dhw_storage_temperature
+# 🧮 Source : sensor.boiler_dhw_temperature
 # 📊 Type : Trigger Template Sensor
 # 📏 Unité : °C
 # ✅ Compatibilité : Home Assistant 2024.8+
@@ -25,7 +26,7 @@
 
 - trigger:
     - platform: state
-      entity_id: sensor.vscotho1_200_11_dhw_storage_temperature
+      entity_id: sensor.boiler_dhw_temperature
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
@@ -39,7 +40,7 @@
       state_class: measurement
 
       state: >
-        {% set v = states('sensor.vscotho1_200_11_dhw_storage_temperature') %}
+        {% set v = states('sensor.boiler_dhw_temperature') %}
         {% if v | is_number %}
           {{ v | float }}
         {% elif this.state is defined and this.state not in ['unknown','unavailable','none'] %}
@@ -50,7 +51,7 @@
 
       attributes:
         last_valid: >
-          {% set v = states('sensor.vscotho1_200_11_dhw_storage_temperature') %}
+          {% set v = states('sensor.boiler_dhw_temperature') %}
           {% if v | is_number %}
             {{ v | float }}
           {% else %}

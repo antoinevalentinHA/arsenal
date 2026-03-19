@@ -4,119 +4,153 @@
 #
 #  ID : 10250000000006
 # ----------------------------------------------------------
-#  🎯 RÔLE
-#     Garantir que la consigne ECS reste fixée à la valeur
-#     de sécurité (10 °C) en dehors de tout cycle ECS en
-#     cours ou planifié.
+#  🎯 ROLE
+#     Garantir que la consigne ECS soit regulierement
+#     re-appliquee a la valeur de securite (10 °C)
+#     en dehors de tout cycle ECS en cours.
 #
-#     Cette automation agit comme un gardien permanent,
-#     chargé de détecter et corriger toute dérive de
-#     consigne hors fenêtres autorisées.
+#     Cette automation agit comme un gardien permanent
+#     de reconvergence, charge de corriger silencieusement
+#     tout ecart hors cycle.
 #
 #  🧱 PRINCIPE ARSENAL
-#     - Les cycles ECS décident quand chauffer
-#     - Hors cycle, la consigne doit rester minimale
-#     - Le gardien vérifie et corrige silencieusement
+#     - Les cycles ECS decident quand chauffer
+#     - Hors cycle, la consigne doit revenir a 10 °C
+#     - Le gardien re-applique periodiquement cette valeur
+#       via boiler bridge
 #
 #  🚫 NE FAIT PAS
-#     - Ne déclenche aucun cycle ECS
+#     - Ne declenche aucun cycle ECS
 #     - Ne modifie pas la planification ECS
 #     - Ne corrige jamais pendant un cycle en cours
-#     - Ne dépend pas des états cloud ViCare
-#
-#  🧩 UTILISATION
-#     - Déclenchement :
-#         • changement de la consigne ECS chaudière
-#         • stabilisation post-démarrage du système
-#     - Conditions :
-#         • aucun cycle ECS actif ou verrouillé
-#         • hors créneaux ECS planifiés (matin / soir)
-#         • consigne effective différente de 10 °C
-#     - Séquence :
-#         • temporisation courte de stabilisation
-#         • application de la consigne 10 °C
-#         • vérification réelle après délai
-#         • seconde tentative si nécessaire
-#         • relance du timer de surveillance
-#
-#  ⚠️ IMPORTANT
-#     - Cette automation est un garde-fou de sécurité
-#     - Toute modification de la valeur cible ou des
-#       créneaux ECS doit être décidée ailleurs
+#     - Ne depend pas de ViCare
 #
 #  ✅ CONTRAINTES
 #     - Correction silencieuse et idempotente
-#     - Aucune action en période légitime de chauffe ECS
-#     - Robustesse indépendante du cloud
+#     - Verification par ACK correle
+#     - Relance automatique du timer de surveillance
 # ==========================================================
 
 - id: "10250000000006"
   alias: "ECS – Gardien consigne hors cycle"
   description: >
-    Maintient la consigne ECS à 10 °C hors cycle planifié ou en cours.
-    Vérifie et corrige silencieusement toute dérive de consigne.
+    Reapplique periodiquement la consigne ECS de securite a 10 °C
+    hors cycle ECS actif, via boiler bridge.
   mode: restart
 
   trigger:
     - platform: state
-      entity_id: number.vscotho1_200_11_dhw_temperature
-
-    - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
 
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.ecs_gardien_consigne_verification
+
   condition:
-    - condition: template
-      value_template: >
-        {% set cons = states('sensor.ecs_consigne_chaudiere_securisee') | float(0) %}
-        {% set running = is_state('script.chauffage_ecs_cycle','on') %}
-        {% set verrou = is_state('input_boolean.ecs_cycle_en_cours','on') %}
-        {% set d = now().strftime('%A') | lower %}
-        {% set hm = now().strftime('%H:%M') %}
-        {% set matin = states('input_datetime.ecs_' ~ d ~ '_matin_heure')[0:5] %}
-        {% set soir  = states('input_datetime.ecs_' ~ d ~ '_soir_heure')[0:5] %}
-        {% set target_times = [matin, soir] | reject('in', ['unknown','unavailable','']) | list %}
-        {{ cons != 10 and (not running) and (not verrou)
-           and not (hm in target_times) }}
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "off"
 
   action:
-    # 🕐 Temporisation initiale (stabilisation post-démarrage)
+    - variables:
+        retour_temp: 10
+
+    # ======================================================
+    # 🕐 Stabilisation courte
+    # ======================================================
     - delay:
         seconds: 3
 
+    # ======================================================
+    # 🧾 Tentative 1
+    # ======================================================
     - variables:
-        retour_temp: 10
-        number_setpoint: number.vscotho1_200_11_dhw_temperature
-        sensor_consigne: sensor.ecs_consigne_chaudiere_securisee
+        boiler_request_id_1: >
+          {% set h = '0123456789abcdef' %}
+          {% set v = '89ab' %}
+          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
+        boiler_ts_1: >
+          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+        boiler_expires_at_1: >
+          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
 
-    # 1️⃣ Correction de la consigne
-    - service: number.set_value
-      continue_on_error: true
+    - service: input_text.set_value
       target:
-        entity_id: "{{ number_setpoint }}"
+        entity_id: input_text.boiler_req_dhw_set_setpoint
       data:
-        value: "{{ retour_temp }}"
+        value: "{{ boiler_request_id_1 }}"
 
-    # 2️⃣ Vérification (1 tentative après 15 s)
-    - delay:
-        seconds: 15
+    - service: mqtt.publish
+      data:
+        topic: "boiler/command/dhw/set_setpoint"
+        qos: 1
+        retain: false
+        payload: >-
+          {
+            "request_id": "{{ boiler_request_id_1 }}",
+            "ts": "{{ boiler_ts_1 }}",
+            "expires_at": "{{ boiler_expires_at_1 }}",
+            "source": "arsenal",
+            "value": {{ retour_temp }}
+          }
 
+    - wait_template: >
+        {{ states('sensor.boiler_ack_dhw_set_setpoint_result') in ['applied', 'rejected', 'timeout'] }}
+      timeout: "00:00:20"
+      continue_on_timeout: true
+
+    # ======================================================
+    # 🔁 Tentative 2 si echec
+    # ======================================================
     - choose:
         - conditions:
             - condition: template
-              value_template: >
-                {{ states(sensor_consigne) | float(0) == retour_temp }}
-          sequence: []
+              value_template: "{{ states('sensor.boiler_ack_dhw_set_setpoint_result') != 'applied' }}"
+          sequence:
+            - delay:
+                seconds: 10
 
-      default:
-        - service: number.set_value
-          continue_on_error: true
-          target:
-            entity_id: "{{ number_setpoint }}"
-          data:
-            value: "{{ retour_temp }}"
+            - variables:
+                boiler_request_id_2: >
+                  {% set h = '0123456789abcdef' %}
+                  {% set v = '89ab' %}
+                  {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
+                boiler_ts_2: >
+                  {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+                boiler_expires_at_2: >
+                  {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
 
-    # 3️⃣ Redémarrage du timer de surveillance
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.boiler_req_dhw_set_setpoint
+              data:
+                value: "{{ boiler_request_id_2 }}"
+
+            - service: mqtt.publish
+              data:
+                topic: "boiler/command/dhw/set_setpoint"
+                qos: 1
+                retain: false
+                payload: >-
+                  {
+                    "request_id": "{{ boiler_request_id_2 }}",
+                    "ts": "{{ boiler_ts_2 }}",
+                    "expires_at": "{{ boiler_expires_at_2 }}",
+                    "source": "arsenal",
+                    "value": {{ retour_temp }}
+                  }
+
+            - wait_template: >
+                {{ states('sensor.boiler_ack_dhw_set_setpoint_result') in ['applied', 'rejected', 'timeout'] }}
+              timeout: "00:00:20"
+              continue_on_timeout: true
+      default: []
+
+    # ======================================================
+    # 🔁 Relance du timer de surveillance
+    # ======================================================
     - service: timer.start
       target:
         entity_id: timer.ecs_gardien_consigne_verification

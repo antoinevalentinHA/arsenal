@@ -193,33 +193,6 @@
         }}
 
     # ==========================================================
-    # VICARE
-    # ==========================================================
-
-    - name: "Recovery en cours — ViCare"
-      unique_id: recovery_en_cours_vicare
-      default_entity_id: binary_sensor.recovery_en_cours_vicare
-      state: >
-        {{ is_state('timer.vicare_reload_backoff', 'active') }}
-
-    - name: "Gel avéré — ViCare"
-      unique_id: gel_avere_vicare
-      default_entity_id: binary_sensor.gel_avere_vicare
-      delay_on: *age_gel_delay_5
-      state: >
-        {{ (states('sensor.vicare_age_donnees') | int(999)) >= 45 }}
-
-    - name: "Retour OK — ViCare"
-      unique_id: retour_ok_vicare
-      default_entity_id: binary_sensor.retour_ok_vicare
-      delay_on: *age_ok_delay
-      state: >
-        {{
-          is_state('binary_sensor.recovery_en_cours_vicare', 'on')
-          and (states('sensor.vicare_age_donnees') | int(999)) < 10
-        }}
-
-    # ==========================================================
     # SYNOLOGY
     # ==========================================================
 

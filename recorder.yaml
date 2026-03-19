@@ -125,7 +125,6 @@ include:
     # =====================================================
     #  ==== 🪟 AERATION ====
     # =====================================================
-
     - input_boolean.aeration_episode_en_cours
     - input_boolean.chauffage_blocage_aeration
     - input_boolean.aeration_pipeline_arme
@@ -163,12 +162,8 @@ include:
     # ==== 🔥 CHAUFFAGE ====
     # =====================================================
     - sensor.programme_chauffage
-    - sensor.chauffage_consigne_confort_local
-    - sensor.chauffage_consigne_reduced_local
     - sensor.chauffage_parallele_suggeree
     - sensor.chauffage_pente_suggeree
-    - sensor.temperature_chaudiere_locale
-    - sensor.temperature_de_consigne_appliquee_locale
     - sensor.ecart_consigne_instantane
     - sensor.electricite_chaudiere_semaine_local
     - sensor.electricite_chaudiere_annee_local
@@ -198,7 +193,6 @@ include:
     # =====================================================
     # ==== 🔥 CHAUFFAGE - DIAGNOSTIC THERMIQUE ====
     # =====================================================
-
     - sensor.temperature_arret_presence_chambres
     - sensor.temperature_plancher_absence_chambres
     - sensor.duree_stabilisation_absence_chambres

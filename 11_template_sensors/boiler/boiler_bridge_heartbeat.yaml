@@ -1,0 +1,25 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS (BOILER / BRIDGE)
+# ----------------------------------------------------------
+# 📌 ROLE
+#   Extraire le timestamp du heartbeat brut publie par la
+#   passerelle chaudiere.
+#
+# 🧱 PRINCIPE
+#   - Source : sensor.boiler_bridge_heartbeat_raw
+#   - Extraction du champ JSON ts
+#   - Aucune interprétation temporelle
+# ==========================================================
+
+- sensor:
+    - name: "Boiler bridge heartbeat timestamp"
+      unique_id: boiler_bridge_heartbeat_timestamp
+      state: >
+        {% set raw = states('sensor.boiler_bridge_heartbeat_raw') %}
+        {% if raw not in ['unknown', 'unavailable', ''] and raw.startswith('{') %}
+          {% set payload = raw | from_json %}
+          {{ payload.ts if payload.ts is defined else 'unknown' }}
+        {% else %}
+          unknown
+        {% endif %}
+      icon: mdi:clock-outline

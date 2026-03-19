@@ -11,8 +11,7 @@ include:
     - script.chauffage_decision_centrale
     - script.chauffage_appliquer_parallele
     - script.chauffage_appliquer_pente
-    - script.chauffage_consigne_reduite
-    - script.chauffage_consigne_confort
+    - script.chauffage_appliquer_consigne
     - sensor.chauffage_mode_calcule
     - sensor.chauffage_raison_calculee
     - sensor.chauffage_autorisation_cible
