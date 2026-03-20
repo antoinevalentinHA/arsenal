@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     ECS — Temperature max reelle figee
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Stocker de maniere persistante la temperature maximale
+#   reellement atteinte par le ballon ECS sur l'ensemble :
+#     - cycle actif
+#     - fenetre d'inertie post-cycle
+#
+#   Cette valeur correspond a :
+#     sensor.ecs_temperature_max_reelle_cycle
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
+#
+#   - Ecriture uniquement a la fin de la fenetre d'inertie
+#   - Valeur figee pour exploitation dashboard / analyse
+#   - Aucune logique embarquee
+#
+# ----------------------------------------------------------
+# ⚠️ IMPORTANT
+#
+#   - Ne remplace pas :
+#       input_number.ecs_temperature_max_figee
+#   - Les deux valeurs coexistent volontairement :
+#       - max cycle pur
+#       - max reel (cycle + inertie)
+#
+# ----------------------------------------------------------
+# 🔗 DEPENDANCES
+#
+#   - sensor.ecs_temperature_max_reelle_cycle
+#
+# ----------------------------------------------------------
+# ✅ COMPATIBILITE
+#
+#   - include: 03_input_numbers/
+# ==========================================================
+
+ecs_temperature_max_reelle_figee:
+  name: ECS Temperature max reelle figee
+  min: 0
+  max: 100
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:water-boiler

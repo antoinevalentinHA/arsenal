@@ -25,13 +25,16 @@ Les règles suivantes sont intangibles :
 - ❌ Aucune consigne haute hors cycle
 - ❌ Aucun cycle ECS infini
 - ❌ Aucun état dangereux silencieux
-- ❌ Aucun déclenchement direct depuis une automation
+- ❌ Aucun déclenchement direct d'une action ECS en dehors des scripts autoritaires
+- ❌ Aucun cycle ECS considéré comme terminé avant validation temporelle
+- ❌ Aucune considération de fin de cycle avant l'émission du signal canonique `ecs_fin_cycle_signal`
+- ❌ Aucune donnée considérée comme valide avant le gel final déclenché par le signal canonique `ecs_fin_cycle_signal`
 
 - ✅ Consigne 10 °C = état nominal hors cycle
 - ✅ Toute action ECS est traçable
 - ✅ Toute dérive est corrigée ou signalée
 
-Aucune dérogation n’est admise.
+Aucune dérogation n'est admise.
 
 ---
 
@@ -42,8 +45,8 @@ Il est formellement interdit :
 - de déclencher une chauffe ECS hors chaîne autorisée
 - de maintenir une consigne haute hors cycle
 - de libérer un verrou sans rabaissement
-- d’utiliser une donnée dynamique comme vérité finale
-- d’implémenter une logique thermique dans une automation
+- d'utiliser une donnée dynamique comme vérité finale
+- d'implémenter une logique thermique en dehors des scripts dédiés
 
 Toute infraction est critique.
 
@@ -68,6 +71,4 @@ Toute violation doit :
 - être corrigée
 - être tracée
 
-Aucune tolérance durable n’est admise.
-
----
+Aucune tolérance durable n'est admise.

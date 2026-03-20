@@ -1,0 +1,132 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Gel et validation des données de fin de cycle
+#
+#  ID : 10250000000026
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#     Capturer, valider et figer l’ensemble des données
+#     diagnostiques d’un cycle ECS à l’échéance de la
+#     fenêtre d’inertie post-cycle, afin de garantir une
+#     lecture persistante, fiable et exploitable dans les
+#     dashboards Arsenal.
+#
+#  ✅ MODIFICATION (bascule max réelle)
+#     - Le gel final conserve désormais deux références
+#       thermiques distinctes :
+#         • max cycle pur
+#         • max réel cycle + inertie
+#     - La validation du résumé repose désormais sur
+#       la température max réelle figée post-inertie
+#
+#  📌 DURÉE
+#     - Définition actuelle :
+#         début de cycle → pic thermique
+#         duree = tmax_timestamp - cycle_debut_timestamp
+#
+#  ⚠️ NOTE
+#     - Cette automation ne modifie pas encore la logique
+#       d’auto-correction
+#     - Elle bascule uniquement la validation du cycle sur
+#       la température max réelle observée
+# ==========================================================
+
+- id: "10250000000026"
+  alias: "ECS – Gel données fin de cycle"
+  description: >
+    À l’échéance de la fenêtre d’inertie post-cycle ECS, capture
+    les données essentielles pour une lecture persistante dans les
+    dashboards (température max, température max réelle, durée,
+    résumé validé).
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.fenetre_inertie_chauffe_ecs
+
+  action:
+    # ♻️ 1️⃣ Mise à jour des capteurs dynamiques requis
+    - action: homeassistant.update_entity
+      target:
+        entity_id:
+          - sensor.ecs_temperature_max_cycle
+          - sensor.ecs_temperature_max_reelle_cycle
+          - sensor.ecs_dernier_cycle_resume
+
+    # ⏳ 2️⃣ Stabilisation minimale après update_entity
+    # homeassistant.update_entity est non bloquant.
+    # Ce délai court limite le risque de relire un état
+    # précédent sur les capteurs dynamiques.
+    - delay: "00:00:01"
+
+    # 🧮 3️⃣ Variables intermédiaires + validation résumé
+    - variables:
+        duree: >
+          {% set start_raw = states('input_datetime.ecs_cycle_debut_timestamp') %}
+          {% set end_raw   = states('input_datetime.ecs_tmax_timestamp') %}
+          {% set start = as_timestamp(start_raw, none) %}
+          {% set end   = as_timestamp(end_raw, none) %}
+          {% if start is not none and end is not none and end >= start %}
+            {{ ((end - start) / 60) | round(1) }}
+          {% else %}
+            0
+          {% endif %}
+        temp_max: "{{ states('sensor.ecs_temperature_max_cycle') | float(0) }}"
+        temp_max_reelle: "{{ states('sensor.ecs_temperature_max_reelle_cycle') | float(0) }}"
+        resume_brut: "{{ states('input_text.ecs_dernier_cycle_resume') }}"
+        consigne_reelle: "{{ states('sensor.ecs_consigne_chaudiere_securisee') | float(0) }}"
+        resume_valide: >
+          {% set parts = (resume_brut | string).split('|') %}
+          {% set t0 = (parts[3] | float(0)) if (parts | length >= 4) else none %}
+          {% set delta_min = 0.5 %}
+          {% set ok =
+               (duree | float(0)) > 0
+               and (temp_max_reelle | float(0)) > 0
+               and (t0 is not none)
+               and ((temp_max_reelle | float(0)) - (t0 | float(0))) >= delta_min
+          %}
+          {{ resume_brut.replace('|pending', '|oui') if ok
+             else resume_brut.replace('|pending', '|non') }}
+
+    # 💾 4️⃣ Écriture des valeurs figées
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.ecs_duree_dernier_cycle_figee
+      data:
+        value: "{{ duree }}"
+
+    # 💾 Sauvegarde persistante de la durée réelle
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.ecs_duree_chauffe_reel_backup
+      data:
+        value: "{{ duree }}"
+
+    # 💾 Température max atteinte pendant le cycle
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.ecs_temperature_max_figee
+      data:
+        value: "{{ temp_max }}"
+
+    # 💾 Température max réelle atteinte sur cycle + inertie
+    - action: input_number.set_value
+      target:
+        entity_id: input_number.ecs_temperature_max_reelle_figee
+      data:
+        value: "{{ temp_max_reelle }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.ecs_resume_dernier_cycle_fige
+      data:
+        value: "{{ resume_valide }}"
+
+    # 🧩 5️⃣ Miroir du résumé validé
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.ecs_dernier_cycle_resume
+      data:
+        value: "{{ resume_valide }}"

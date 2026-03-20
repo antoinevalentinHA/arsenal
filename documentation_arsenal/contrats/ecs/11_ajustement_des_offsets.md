@@ -1,79 +1,103 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF
-#     ECS — Auto-ajustement des offsets
-# ----------------------------------------------------------
-# Domaine : ECS / Offsets / Auto-correction
-# Couche  : Décision technique (post-cycle) + Traçabilité
-# Statut  : STRUCTURANT — CONTRAT OPPOSABLE
-# ==========================================================
+# ARSENAL — Contrat normatif
+## ECS — Auto-ajustement des offsets
 
-## 1) Objet
-
-Ce contrat définit le comportement opposable du service :
-
-- `ecs_autocorrect_offsets()`
-
-dont la finalité est :
-
-- **ajuster automatiquement** les offsets ECS (`input_number.ecs_off_*`)
-  à partir des **données figées du dernier cycle**.
-
-Le service ne s’appuie **que** sur des valeurs stabilisées post-cycle
-et vise un correcteur **lent et robuste**.
+**Domaine :** ECS / Offsets / Auto-correction  
+**Couche :** Décision technique (post-cycle) + Traçabilité  
+**Statut :** STRUCTURANT — CONTRAT OPPOSABLE
 
 ---
 
-## 2) Portée et responsabilités
+## 1. Objet
+
+Ce contrat définit le comportement opposable du service :
+
+```
+ecs_autocorrect_offsets()
+```
+
+dont la finalité est d'ajuster automatiquement les offsets ECS (`input_number.ecs_off_*`) à partir des données figées du dernier cycle.
+
+Le service s'appuie exclusivement sur des données stabilisées post-cycle et implémente un correcteur lent, discret et robuste.
+
+---
+
+## 2. Portée et responsabilités
 
 ### 2.1 Ce que fait le service
 
-- Lit le **dernier cycle figé** (résumé + métriques figées)
+- Lit le dernier cycle figé (résumé + métriques figées)
 - Filtre les cycles non pertinents (boost, non validé, durée hors plage, etc.)
-- Calcule une **erreur thermique** `erreur = Tmax_figee - consigne`
-- Applique une correction proportionnelle discrète sur **un unique offset**
-  (bucket déterminé par `delta_init = consigne - T0`)
+- Calcule une erreur thermique :
+
+```
+erreur = tmax_reference - consigne
+```
+
+- Applique une correction proportionnelle discrète sur un unique offset (bucket déterminé par `delta_init = consigne - t0`)
 - Enregistre une ligne de traçabilité dans `input_text.ecs_dernier_ajustement`
 
 ### 2.2 Ce que le service ne fait pas
 
-- Ne modifie **aucune** consigne chaudière
-- Ne déclenche **aucun** cycle ECS
-- Ne modifie **aucun** signal de cycle (`ecs_cycle_en_cours`)
-- Ne corrige **que** des `input_number.ecs_off_*`
-- Ne tente pas de fallback silencieux si des données sont absentes :
-  il **s’arrête** explicitement
+- Ne modifie aucune consigne chaudière
+- Ne déclenche aucun cycle ECS
+- Ne modifie aucun signal de cycle (`ecs_cycle_en_cours`)
+- Ne corrige que des `input_number.ecs_off_*`
+- Ne valide pas la fin de cycle
+- Ne vérifie pas le signal canonique `ecs_fin_cycle_signal`
+- Ne tente pas de fallback silencieux : en cas de données invalides → arrêt explicite
 
 ---
 
-## 3) Dépendances (lecture)
+## 3. Dépendances (lecture)
 
 ### 3.1 Activation
 
-- `input_boolean.ecs_autocorrect_active`  
-  Le service s’exécute uniquement si l’entité est à `on`.
+```
+input_boolean.ecs_autocorrect_active
+```
+
+Le service s'exécute uniquement si l'entité est à `on`.
 
 ### 3.2 Données figées post-cycle
 
 Résumé figé (source pivot) :
 
-- `input_text.ecs_resume_dernier_cycle_fige`
+```
+input_text.ecs_resume_dernier_cycle_fige
+```
 
-Format attendu (séparateur `|`) :
+Format attendu :
 
-- `date|mode|consigne|t0|boost|valide`
+```
+date|mode|consigne|t0|boost|valide
+```
 
 Métriques figées :
 
 - `input_number.ecs_duree_dernier_cycle_figee`
-- `input_number.ecs_temperature_max_figee`
+- `input_number.ecs_temperature_max_reelle_figee`
+
+### 3.3 Garantie de validité (chaîne amont)
+
+Les données utilisées par le service sont réputées valides car :
+
+- produites par la chaîne canonique ECS
+- gelées à l'échéance du timer d'inertie post-cycle
+- issues d'un cycle ayant déclenché le signal `ecs_fin_cycle_signal`
+
+Cette validation est assurée par l'orchestration amont.
+
+Le champ `valide` du résumé constitue la validation métier finale du cycle, issue de la phase de consolidation post-inertie.
+
+Le service ne vérifie pas ces conditions — il en est uniquement le consommateur aval.
 
 ---
 
-## 4) Sorties (écriture)
+## 4. Sorties (écriture)
 
 ### 4.1 Offsets corrigés
 
-Le service modifie **exactement un** offset parmi :
+Le service modifie exactement un offset parmi :
 
 - `input_number.ecs_off_tiny`
 - `input_number.ecs_off_medium`
@@ -82,144 +106,124 @@ Le service modifie **exactement un** offset parmi :
 
 ### 4.2 Traçabilité
 
-- `input_text.ecs_dernier_ajustement`
+```
+input_text.ecs_dernier_ajustement
+```
 
-Format (ligne unique) :
+Format :
 
-- `dd/mm HH:MM • <bucket> • <old>→<new> • err <±X.X>°C`
+```
+dd/mm HH:MM • <bucket> • <old>→<new> • err <±X.X>°C
+```
 
 ---
 
-## 5) Pré-conditions et filtres (gates)
+## 5. Pré-conditions et filtres (gates)
 
-Le service s’arrête immédiatement si :
+Le service s'arrête immédiatement si :
 
-1. `input_boolean.ecs_autocorrect_active != on`
-2. `input_text.ecs_resume_dernier_cycle_fige` est vide / unknown / unavailable / none
+1. `input_boolean.ecs_autocorrect_active` != `on`
+2. `input_text.ecs_resume_dernier_cycle_fige` est vide / `unknown` / `unavailable` / `none`
 3. Le résumé a moins de 6 segments (`|`)
-4. `valide_flag != "oui"`
-5. `boost_flag == "oui"`
-6. `t0` ou `consigne` non convertibles en float
+4. `valide_flag` != `"oui"`
+5. `boost_flag` == `"oui"`
+6. `t0` ou `consigne` non convertibles
 7. `t0 >= consigne`
-8. `duree` non convertible ou hors plage :
-   - contrainte : `0 < duree < 120`
-9. `tmax` non convertible
+8. `duree` non convertible ou hors plage : `0 < duree < 120`
+9. `tmax_reference` non convertible
 
 ---
 
-## 6) Calculs canon
+## 6. Calculs canon
 
 ### 6.1 Erreur thermique
 
-- `erreur = tmax - consigne`
+```
+erreur = tmax_reference - consigne
+```
 
-Zone morte (anti-oscillation) :
+où `tmax_reference = input_number.ecs_temperature_max_reelle_figee` correspond au maximum réel du cycle incluant l'inertie post-cycle.
 
-- `deadband_min = -0.3`
-- `deadband_max = +0.5`
+Zone morte :
 
-Si :
+```
+deadband_min = -0.3
+deadband_max = +0.5
+```
 
-- `-0.3 <= erreur <= +0.5`
+Si `-0.3 <= erreur <= +0.5` → aucune correction.
 
-alors :
+### 6.2 Bucket (sélection offset)
 
-- aucune correction
+```
+delta_init = consigne - t0
+```
 
-### 6.2 Bucket (sélection de l’offset)
+| Condition | Bucket |
+|---|---|
+| `mode == desinfection` | `ecs_off_desinfection` |
+| `delta_init < 2.5` | `tiny` |
+| `delta_init < 7.0` | `medium` |
+| sinon | `normal` |
 
-On calcule :
-
-- `delta_init = consigne - t0`
-
-Choix du bucket :
-
-- si `mode == desinfection` (ou `désinfection`) :
-  - bucket = `desinfection`
-  - offset = `input_number.ecs_off_desinfection`
-- sinon :
-  - si `delta_init < 2.5` : bucket = `tiny` → `ecs_off_tiny`
-  - sinon si `delta_init < 7.0` : bucket = `medium` → `ecs_off_medium`
-  - sinon : bucket = `normal` → `ecs_off_normal`
-
-Contrat :
-
-- un cycle ne corrige **qu’un seul** bucket.
+> Un cycle corrige un seul bucket.
 
 ---
 
-## 7) Correcteur (proportionnel discret)
+## 7. Correcteur (proportionnel discret)
 
 ### 7.1 Formule
 
-Paramètre d’apprentissage :
+```
+alpha = 0.25
+offset_new = offset_actuel + alpha * erreur
+```
 
-- `alpha = 0.25`
+### 7.2 Contraintes
 
-Calcul :
-
-- `offset_new = offset_actuel + alpha * erreur`
-
-### 7.2 Contraintes physiques (clamp)
-
-Le service lit les attributs de l’`input_number` cible :
-
-- `min`, `max`, `step`
-
-Puis applique :
-
-- clamp : `offset_new ∈ [min ; max]`
-- quantification : `round(offset_new / step) * step` (si `step > 0`)
-- arrondi final : 3 décimales (anti 2.999999)
+- clamp : `[min ; max]`
+- quantification : `step`
+- re-clamp post-quantification obligatoire — la quantification ne doit jamais produire une valeur hors bornes
+- arrondi final : 3 décimales
 
 ### 7.3 Seuil de négligeabilité
 
-Si `offset_new` est trop proche de `offset_actuel` :
-
-- `math.isclose(..., rel_tol=1e-03, abs_tol=1e-03)`
-
-alors :
-
-- aucune écriture
+Si `|offset_new - offset_actuel| <= 0.001` → aucune écriture.
 
 ---
 
-## 8) Invariants opposables
+## 8. Invariants opposables
 
-1. Le service ne s’exécute pas si `ecs_autocorrect_active` est `off`.
-2. Le service ne corrige jamais un cycle :
-   - non validé (`valide != oui`)
-   - avec boost (`boost == oui`)
-   - où `t0 >= consigne`
-   - où `duree` est hors `(0 ; 120)`
-3. La correction est **monotone au sens discret** :
-   - correction appliquée au pas `step`
-   - bornée par `[min ; max]`
-4. Aucune correction dans la zone morte `[-0.3 ; +0.5]`.
-5. Une exécution peut modifier **au plus une** entité offset.
-6. Toute correction appliquée produit une trace dans
-   `input_text.ecs_dernier_ajustement`.
+1. Le service ne s'exécute pas si `ecs_autocorrect_active` est `off`.
+2. Le service ne corrige jamais un cycle dont la validité n'est pas explicitement établie — boost actif, `t0 >= consigne`, durée hors plage, ou `valide != oui`.
+3. La correction est bornée, quantifiée, et monotone au sens discret.
+4. Aucune correction dans la zone morte.
+5. Une exécution modifie au plus une entité.
+6. Toute correction produit une trace horodatée.
 
 ---
 
-## 9) Observabilité attendue
+## 9. Observabilité attendue
 
-Pour comprendre une correction, l’UI / diagnostic doit permettre de lire :
+Doivent être lisibles :
 
-- `input_text.ecs_resume_dernier_cycle_fige`
-- `input_number.ecs_duree_dernier_cycle_figee`
-- `input_number.ecs_temperature_max_figee`
-- l’offset ciblé (`ecs_off_*`)
-- `input_text.ecs_dernier_ajustement`
-
-En cas d’absence de correction :
-- les logs décrivent explicitement la raison (gate déclenchée / zone morte / négligeable).
+| Observable | Entité |
+|---|---|
+| Résumé figé | `input_text.ecs_resume_dernier_cycle_fige` |
+| Durée figée | `input_number.ecs_duree_dernier_cycle_figee` |
+| Température max réelle | `input_number.ecs_temperature_max_reelle_figee` |
+| Offset ciblé | `input_number.ecs_off_<bucket>` |
+| Trace dernier ajustement | `input_text.ecs_dernier_ajustement` |
 
 ---
 
-## 10) Notes de gouvernance
+## 10. Notes de gouvernance
 
-- Toute modification de seuils (`alpha`, deadband, buckets, plage durée)
-  doit être documentée comme changement contractuel ECS Offsets.
-- Toute modification du format du résumé figé doit être traitée comme
-  rupture de contrat (parsing).
+Les paramètres suivants sont des paramètres contractuels — toute modification constitue un changement de contrat :
+
+- `alpha` (convergence progressive — environ 4 cycles pour une erreur constante)
+- `deadband_min` / `deadband_max`
+- définition des buckets et seuils `delta_init`
+- plage durée `[0 ; 120[`
+
+Toute modification du format du résumé figé (`date|mode|consigne|t0|boost|valide`) constitue une rupture de contrat.

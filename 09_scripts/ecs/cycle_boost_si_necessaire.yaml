@@ -90,7 +90,7 @@ ecs_cycle_boost_si_necessaire:
     # 📊 ETAPE 2 : Calcul du boost
     # ======================================================
     - variables:
-        boost2: "{{ [ (effective_target_int | int) + 1, 60 ] | min }}"
+        boost2: "{{ [ (effective_target_int | int) + 5, 60 ] | min }}"
 
     # ======================================================
     # 📤 ETAPE 3 : Application consigne boost confirmée

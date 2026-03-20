@@ -1,0 +1,333 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     ECS — Signature thermique chauffe
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Qualifier la crédibilité du démarrage thermique d’un
+#   cycle ECS à partir :
+#     - de la température ballon sécurisée
+#     - du contexte `sensor.mode_bruleur_chaudiere`
+#
+# ----------------------------------------------------------
+# 🧱 PÉRIMÈTRE
+#
+#   - Couche d’observation uniquement
+#   - Aucun déclenchement de boost
+#   - Aucun effet direct sur la validité du cycle
+#   - Aucun effet direct sur la disqualification analytique
+#   - Aucune commande chaudière
+#   - Aucune logique décisionnelle globale
+#
+# ----------------------------------------------------------
+# ⚙️ DÉCLENCHEMENT
+#
+#   Le capteur se réévalue uniquement sur événements réels :
+#     - changement de `sensor.mode_bruleur_chaudiere`
+#     - mise à jour de `sensor.ecs_temperature_ballon_securisee`
+#     - démarrage Home Assistant
+#
+#   Aucune utilisation de `time_pattern`.
+#
+#   Le temps n’est pas piloté par polling ; il est inféré
+#   à partir des mises à jour effectives du capteur ballon.
+#
+# ----------------------------------------------------------
+# ⚠️ RÉFÉRENCE OPÉRATIONNELLE
+#
+#   Ce capteur utilise comme référence de départ :
+#     - l’entrée en mode `ECS`
+#
+#   et non un horodatage post-ACK haute.
+#
+#   Cette approximation est volontaire et assumée à ce stade,
+#   afin d’éviter l’introduction prématurée d’un support
+#   dédié supplémentaire.
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPE ARSENAL
+#
+#   - Lecture physique, pas interprétation métier
+#   - Aucune heuristique de polling
+#   - Aucune horloge interne artificielle
+#   - Le capteur observe ; l’orchestrateur décide
+#
+#   Cette signature n’est jamais souveraine seule.
+#
+# ----------------------------------------------------------
+# 📐 CONTRAT IMPLÉMENTÉ
+#
+#   États produits :
+#     - favorable
+#     - insuffisante
+#     - indeterminee
+#
+#   Référence :
+#     - `start_temp` figée à l’entrée en mode `ECS`
+#     - `start_ts` figé au même instant
+#
+#   Fenêtres temporelles :
+#     - fenêtre courte        : ≥ 120 s
+#     - fenêtre confirmation  : ≥ 240 s
+#
+#   Note :
+#     la précision réelle dépend de la fréquence de mise à
+#     jour de `sensor.ecs_temperature_ballon_securisee`
+#     (≈ 30 s dans l’état actuel du système).
+#
+#   Règles :
+#     - si mode != ECS                  → indeterminee
+#     - si température invalide         → indeterminee
+#     - si référence absente            → indeterminee
+#     - avant 240 s                     → indeterminee
+#     - à partir de 240 s :
+#         * favorable si :
+#             delta_court >= 0.3
+#             delta_confirmation >= 0.6
+#             delta_confirmation >= delta_court
+#         * insuffisante sinon
+#
+# ----------------------------------------------------------
+# ⚠️ LIMITES ASSUMÉES
+#
+#   1. Bootstrap sans transition explicite
+#      Si Home Assistant redémarre alors que le mode est déjà
+#      `ECS`, ou si les attributs internes sont absents, le
+#      capteur reconstitue `start_temp` et `start_ts` à partir
+#      de l’instant courant.
+#
+#      Effet :
+#        - le snapshot de départ peut être recalé sans trace
+#        - `elapsed` repart de zéro
+#        - le verdict peut revenir temporairement à
+#          `indeterminee`
+#
+#      Cette réinitialisation silencieuse est tolérée comme
+#      comportement dégradé et non comme redémarrage de cycle
+#      souverain.
+#
+#   2. Cohérence de montée en mode dégradé
+#      Le test de cohérence thermique
+#        `delta_confirmation >= delta_court`
+#      n’est pleinement fiable que si `delta_court` a bien été
+#      figé lors de la première fenêtre utile (≥ 120 s).
+#
+#      Si ce gel n’a pas pu être réalisé correctement,
+#      `delta_court_effectif` peut être recalculé tardivement
+#      à partir de la température courante, ce qui affaiblit la
+#      portée physique du test de cohérence.
+#
+#      Ce cas est considéré comme dégradé, non nominal.
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#   - sensor.ecs_temperature_ballon_securisee
+#   - sensor.mode_bruleur_chaudiere
+#
+# ----------------------------------------------------------
+# 📊 OBSERVABILITÉ
+#
+#   Le capteur doit exposer au minimum :
+#     - la température de départ
+#     - l’horodatage de départ
+#     - le temps écoulé
+#     - delta_court
+#     - delta_confirmation
+#     - la cohérence de montée
+#
+# ----------------------------------------------------------
+# ✅ COMPATIBILITÉ
+#
+#   - moteur `template:` moderne
+#   - Home Assistant 2024.8+
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.mode_bruleur_chaudiere
+        - sensor.ecs_temperature_ballon_securisee
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "ECS — Signature thermique chauffe"
+      unique_id: ecs_signature_thermique_chauffe
+      icon: >
+        {% set v = this.state | default('indeterminee', true) %}
+        {% if v == 'favorable' %}
+          mdi:thermometer-chevron-up
+        {% elif v == 'insuffisante' %}
+          mdi:thermometer-alert
+        {% else %}
+          mdi:thermometer-off
+        {% endif %}
+
+      state: >
+        {% set mode = states('sensor.mode_bruleur_chaudiere') %}
+        {% set t = states('sensor.ecs_temperature_ballon_securisee') %}
+        {% set start_temp = this.attributes.start_temp | default(none) %}
+        {% set start_ts = this.attributes.start_ts | default(none) %}
+
+        {% if mode != 'ECS' %}
+          indeterminee
+
+        {% elif t in ['unknown', 'unavailable', 'none', ''] %}
+          indeterminee
+
+        {% elif start_temp is none or start_ts is none %}
+          indeterminee
+
+        {% else %}
+          {% set now_ts = as_timestamp(now(), none) %}
+          {% set start_ts_num = as_timestamp(start_ts, none) %}
+          {% set t_now = t | float(0) %}
+
+          {% if now_ts is none or start_ts_num is none %}
+            indeterminee
+          {% else %}
+            {% set elapsed = (now_ts - start_ts_num) | int(0) %}
+            {% set delta_confirmation = (t_now - (start_temp | float(0))) | round(3) %}
+            {% set delta_court = this.attributes.delta_court | default(none) %}
+            {% set coherence = (delta_court is not none) and (delta_confirmation >= (delta_court | float(0))) %}
+
+            {% if elapsed < 240 %}
+              indeterminee
+            {% elif (delta_court is not none)
+                    and (delta_court | float(0)) >= 0.3
+                    and delta_confirmation >= 0.6
+                    and coherence %}
+              favorable
+            {% else %}
+              insuffisante
+            {% endif %}
+          {% endif %}
+        {% endif %}
+
+      attributes:
+        # --------------------------------------------------
+        # Snapshot de départ
+        # --------------------------------------------------
+        start_temp: >
+          {% set mode = states('sensor.mode_bruleur_chaudiere') %}
+          {% set t = states('sensor.ecs_temperature_ballon_securisee') %}
+
+          {% if mode == 'ECS'
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'sensor.mode_bruleur_chaudiere'
+                and trigger.to_state is not none
+                and trigger.to_state.state == 'ECS'
+                and trigger.from_state is not none
+                and trigger.from_state.state != 'ECS'
+                and t not in ['unknown', 'unavailable', 'none', ''] %}
+            {{ t | float(0) }}
+          {% elif mode == 'ECS' %}
+            {{ this.attributes.start_temp | default(none) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        start_ts: >
+          {% set mode = states('sensor.mode_bruleur_chaudiere') %}
+
+          {% if mode == 'ECS'
+                and trigger.platform == 'state'
+                and trigger.entity_id == 'sensor.mode_bruleur_chaudiere'
+                and trigger.to_state is not none
+                and trigger.to_state.state == 'ECS'
+                and trigger.from_state is not none
+                and trigger.from_state.state != 'ECS' %}
+            {{ now().isoformat() }}
+          {% elif mode == 'ECS' %}
+            {{ this.attributes.start_ts | default(none) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        # --------------------------------------------------
+        # Mesures dérivées
+        # --------------------------------------------------
+        elapsed_s: >
+          {% set mode = states('sensor.mode_bruleur_chaudiere') %}
+          {% set start_ts = this.attributes.start_ts | default(none) %}
+
+          {% if mode == 'ECS' and start_ts is not none %}
+            {% set now_ts = as_timestamp(now(), none) %}
+            {% set start_ts_num = as_timestamp(start_ts, none) %}
+            {% if now_ts is not none and start_ts_num is not none %}
+              {{ (now_ts - start_ts_num) | int(0) }}
+            {% else %}
+              {{ none }}
+            {% endif %}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        delta_court: >
+          {% set mode = states('sensor.mode_bruleur_chaudiere') %}
+          {% set t = states('sensor.ecs_temperature_ballon_securisee') %}
+          {% set start_temp = this.attributes.start_temp | default(none) %}
+          {% set start_ts = this.attributes.start_ts | default(none) %}
+
+          {% if mode == 'ECS'
+                and t not in ['unknown', 'unavailable', 'none', '']
+                and start_temp is not none
+                and start_ts is not none %}
+            {% set now_ts = as_timestamp(now(), none) %}
+            {% set start_ts_num = as_timestamp(start_ts, none) %}
+            {% if now_ts is not none and start_ts_num is not none %}
+              {% set elapsed = (now_ts - start_ts_num) | int(0) %}
+              {% if elapsed >= 120 %}
+                {{ ((t | float(0)) - (start_temp | float(0))) | round(3) }}
+              {% else %}
+                {{ none }}
+              {% endif %}
+            {% else %}
+              {{ none }}
+            {% endif %}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        delta_confirmation: >
+          {% set mode = states('sensor.mode_bruleur_chaudiere') %}
+          {% set t = states('sensor.ecs_temperature_ballon_securisee') %}
+          {% set start_temp = this.attributes.start_temp | default(none) %}
+          {% set start_ts = this.attributes.start_ts | default(none) %}
+
+          {% if mode == 'ECS'
+                and t not in ['unknown', 'unavailable', 'none', '']
+                and start_temp is not none
+                and start_ts is not none %}
+            {% set now_ts = as_timestamp(now(), none) %}
+            {% set start_ts_num = as_timestamp(start_ts, none) %}
+            {% if now_ts is not none and start_ts_num is not none %}
+              {% set elapsed = (now_ts - start_ts_num) | int(0) %}
+              {% if elapsed >= 240 %}
+                {{ ((t | float(0)) - (start_temp | float(0))) | round(3) }}
+              {% else %}
+                {{ none }}
+              {% endif %}
+            {% else %}
+              {{ none }}
+            {% endif %}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        coherence_montee: >
+          {% set d1 = this.attributes.delta_court | default(none) %}
+          {% set d2 = this.attributes.delta_confirmation | default(none) %}
+
+          {% if d1 is not none and d2 is not none %}
+            {{ (d2 | float(0)) >= (d1 | float(0)) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        mode_bruleur: >
+          {{ states('sensor.mode_bruleur_chaudiere') }}
+
+        temperature_actuelle: >
+          {{ states('sensor.ecs_temperature_ballon_securisee') }}

@@ -26,6 +26,9 @@ sur toute considération externe.
 Aucune dépendance distante
 ne peut compromettre la sûreté.
 
+Aucune donnée non validée ne peut être utilisée
+comme référence.
+
 ---
 
 ## 3. Défaillances tolérées
@@ -33,13 +36,13 @@ ne peut compromettre la sûreté.
 Le système ECS doit rester sûr en cas de :
 
 - redémarrage Home Assistant
-- latence de la couche d’exécution
+- latence de la couche d'exécution
 - indisponibilité cloud
 - désynchronisation
 - reboot en cours de cycle
 
 Aucune de ces situations
-ne doit produire d’état dangereux.
+ne doit produire d'état dangereux.
 
 ---
 
@@ -50,30 +53,32 @@ En cas de reboot :
 - restauration des verrous critiques
 - re-synchronisation via systeme_stable
 - vérification des consignes
+- invalidation de tout cycle non finalisé (absence de gel ou de signal canonique)
 - reprise sécurisée
 
 Tout état ambigu est neutralisé.
 
 ---
 
-## 5. Indisponibilité de la couche d’exécution
+## 5. Indisponibilité de la couche d'exécution
 
-En cas de perte de la couche d’exécution :
+En cas de perte de la couche d'exécution :
 
 - maintien local des gardiens
 - interdiction de nouvelles chauffes
+- aucune action ECS sans confirmation explicite de la couche d'exécution
 - surveillance renforcée
 - journalisation
 
-Aucune hypothèse de succès n’est admise.
+Aucune hypothèse de succès n'est admise.
 
 ---
 
 ## 6. Désynchronisation exécution / local
 
-En cas d’écart entre l’état exécuté et l’état local :
+En cas d'écart entre l'état exécuté et l'état local :
 
-- priorité aux mesures locales
+- priorité aux mesures locales validées
 - réapplication contrôlée
 - vérification différée
 - alerte si persistance
@@ -87,13 +92,27 @@ Si un cycle est interrompu :
 - activation du watchdog
 - bascule en sûreté
 - rabaissement forcé
+- invalidation du cycle en cours (absence de validation canonique)
 - traçabilité complète
 
-Aucun cycle partiel n’est validé.
+Aucun cycle partiel n'est validé.
 
 ---
 
-## 8. Procédures de récupération
+## 8. Validité d'un cycle après incident
+
+Un cycle ECS n'est considéré comme valide que s'il a été :
+
+- entièrement exécuté
+- gelé à l'échéance du timer d'inertie
+- validé par l'émission du signal canonique `ecs_fin_cycle_signal`
+
+Tout cycle interrompu avant ce point est considéré comme invalide
+et ne doit pas être exploité.
+
+---
+
+## 9. Procédures de récupération
 
 Après incident :
 
@@ -106,15 +125,14 @@ Aucune relance aveugle.
 
 ---
 
-## 9. Anti-patterns
+## 10. Anti-patterns
 
 Sont interdits :
 
 - relance automatique non contrôlée
-- masquage d’incident
+- masquage d'incident
 - dépendance cloud exclusive
 - hypothèse implicite de cohérence
+- exploitation d'un cycle non validé par le signal canonique
 
 Toute dérive est critique.
-
----

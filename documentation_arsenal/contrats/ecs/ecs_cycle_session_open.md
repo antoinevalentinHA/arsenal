@@ -1,6 +1,9 @@
-# Contrat — `ecs_cycle_session_open`
+# ARSENAL — Contrat fonctionnel
+## ECS — `ecs_cycle_session_open`
 
-## Rôle
+---
+
+## 1. Rôle
 
 Ouvrir proprement une session ECS en assurant l'exclusivité d'exécution, le traitement du verrou déjà présent, le déblocage zombie si nécessaire, le démarrage du watchdog et l'initialisation de l'état transactionnel de session.
 
@@ -8,11 +11,11 @@ Ce script extrait les étapes `-1`, `0` et `1` du monolithe actuel.
 
 ---
 
-## Préconditions
+## 2. Préconditions
 
 Aucune précondition métier.
 
-Le script doit pouvoir être appelé même si l'état courant est sale ou partiellement incohérent. Il suppose uniquement l'existence des entités suivantes :
+Le script doit pouvoir être appelé même si l'état courant est sale ou partiellement incohérent. Il suppose l'existence des entités suivantes, ainsi que la disponibilité des services de notification persistante et logbook si utilisés :
 
 - `input_boolean.ecs_pipeline_en_cours`
 - `input_boolean.ecs_cycle_en_cours`
@@ -23,7 +26,7 @@ Le script doit pouvoir être appelé même si l'état courant est sale ou partie
 
 ---
 
-## Entrées
+## 3. Entrées
 
 Aucune.
 
@@ -31,7 +34,7 @@ En particulier : pas de `mode`, pas de température, pas de contexte métier.
 
 ---
 
-## Sorties / effets observables
+## 4. Sorties / effets observables
 
 Le script suit cette séquence contractuelle :
 
@@ -44,13 +47,15 @@ Le script suit cette séquence contractuelle :
 4. Remettre `input_text.ecs_cycle_last_action_status` → `""` — initialisation logique de session terminée
 5. Démarrer `timer.ecs_cycle_watchdog` — surveillance armée en dernier
 
+En cas d'ouverture réussie, `input_boolean.ecs_pipeline_en_cours` reste à `on` à la sortie du script.
+
 ### Chemin alternatif — cycle déjà en cours
 
 3. Calculer l'âge du verrou via `last_changed`
 
 **Si âge > 5 min (zombie) :**
 
-4. Créer la notification persistante de déblocage forcé
+4. Créer la notification persistante de déblocage forcé — une seule notification par événement de déblocage
 5. Annuler `timer.ecs_cycle_watchdog` — tolérant : l'appel est valide même si le timer est déjà idle ou absent
 6. Vider `input_text.ecs_target_temp_session` → `""`
 7. Vider `input_text.boiler_req_dhw_set_setpoint` → `""`
@@ -65,7 +70,7 @@ Le script suit cette séquence contractuelle :
 
 ---
 
-## Constantes contractuelles
+## 5. Constantes contractuelles
 
 | Constante | Valeur |
 |---|---|
@@ -74,7 +79,15 @@ Le script suit cette séquence contractuelle :
 
 ---
 
-## Interdictions explicites
+## 6. Invariants opposables
+
+- Le watchdog ne doit jamais être armé avant que l'état transactionnel de session soit entièrement initialisé. Il est toujours la dernière opération du chemin nominal.
+- Une seule notification persistante est créée par événement de déblocage zombie — pas de spam en cas de rejeu.
+- En cas de refus (verrou légitime), `input_boolean.ecs_pipeline_en_cours` est remis à `off` avant le `stop`.
+
+---
+
+## 7. Interdictions explicites
 
 Ce script ne doit **jamais** :
 
@@ -91,7 +104,7 @@ Ce script ne doit **jamais** :
 
 ---
 
-## Observabilité attendue
+## 8. Observabilité attendue
 
 L'état du script est visible par :
 
@@ -103,6 +116,6 @@ L'état du script est visible par :
 
 ---
 
-## Remarque d'architecture
+## 9. Remarque d'architecture
 
 C'est un script d'**ouverture transactionnelle**. Il prépare un terrain propre. Il ne lance pas le métier thermique.

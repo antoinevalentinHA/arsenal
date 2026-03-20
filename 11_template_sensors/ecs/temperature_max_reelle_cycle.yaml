@@ -1,0 +1,195 @@
+
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     ECS — Temperature max reelle cycle
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Capturer le maximum thermique reel atteint par le ballon
+#   sur l'ensemble :
+#     - cycle actif
+#     - fenetre d'inertie post-cycle
+#
+#   Ce capteur materialise directement :
+#     tmax_reference = max(tmax_cycle, tmax_post_cycle)
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
+#
+#   - Debut de cycle :
+#       reset logique a la temperature courante
+#
+#   - Pendant le cycle :
+#       suit le maximum thermique
+#
+#   - Pendant la fenetre d'inertie :
+#       continue a suivre le maximum thermique
+#
+#   - Hors cycle / hors fenetre :
+#       conserve la derniere valeur valide
+#
+# ----------------------------------------------------------
+# ⚠️ CONDITIONS DE VALIDITE
+#
+#   - La fenetre d'inertie doit aller a son terme
+#   - Aucun nouveau cycle ne doit intervenir
+#
+#   Sinon :
+#     la valeur reste exploitable mais correspond
+#     uniquement au maximum partiel observe
+#
+# ----------------------------------------------------------
+# 🔗 DEPENDANCES
+#
+#   - sensor.ecs_temperature_ballon_securisee
+#   - input_boolean.ecs_cycle_en_cours
+#   - timer.fenetre_inertie_chauffe_ecs
+#
+# ----------------------------------------------------------
+# 📊 COMPORTEMENT
+#
+#   - ignore unknown / unavailable
+#   - pas d'extrapolation
+#   - pas d'interpolation
+#   - reset explicite sur front off -> on du cycle
+#
+# ----------------------------------------------------------
+# ⚠️ LIMITES ASSUMEES
+#
+#   1. Bootstrap Home Assistant
+#      Au redemarrage Home Assistant, si le capteur n'a pas
+#      encore d'etat exploitable et que la temperature ballon
+#      est temporairement invalide, la lecture precedente peut
+#      etre remplacee transitoirement par 0.0 jusqu'a la
+#      premiere mise a jour valide.
+#
+#      Ce comportement est degrade, detectable, et sans effet
+#      structurel durable des la premiere valeur temperature
+#      exploitable.
+#
+#   2. Interpretation de max_timestamp
+#      L'attribut `max_timestamp` represente l'instant de la
+#      derniere mise a jour du maximum retenu par le capteur.
+#
+#      Lors d'un reset de debut de cycle, il est donc mis a
+#      l'instant du reset, et non a un "pic thermique" deja
+#      observe.
+#
+#      Il ne doit pas etre interprete comme un horodatage
+#      souverain du pic physique final sans tenir compte de ce
+#      comportement.
+#
+#   3. Nouveau cycle avant fin de fenetre
+#      Si un nouveau cycle demarre avant la fin de la fenetre
+#      d'inertie, le reset logique ecrase la valeur precedente.
+#
+#      Ce comportement est conforme au contrat :
+#        - la fenetre precedente est annulee
+#        - le gel final ne se produit pas
+#        - le cycle precedent devient non exploitable
+#
+#      La perte du maximum precedent dans ce cas est voulue et
+#      traduit l'invalidite analytique du cycle interrompu.
+#
+# ----------------------------------------------------------
+# ✅ COMPATIBILITE
+#
+#   - moteur `template:` moderne
+#   - Home Assistant 2024.8+
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.ecs_temperature_ballon_securisee
+        - input_boolean.ecs_cycle_en_cours
+        - timer.fenetre_inertie_chauffe_ecs
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "ECS - Temperature max reelle cycle"
+      unique_id: ecs_temperature_max_reelle_cycle
+      device_class: temperature
+      unit_of_measurement: "°C"
+
+      availability: >
+        {{ states('sensor.ecs_temperature_ballon_securisee') not in ['unknown','unavailable','none'] }}
+
+      state: >
+        {% set t_raw = states('sensor.ecs_temperature_ballon_securisee') %}
+        {% set t_valid = t_raw not in ['unknown','unavailable','none'] %}
+        {% set current = (t_raw | float(0)) if t_valid else none %}
+
+        {% set in_cycle = is_state('input_boolean.ecs_cycle_en_cours', 'on') %}
+        {% set inertia_active = is_state('timer.fenetre_inertie_chauffe_ecs', 'active') %}
+
+        {% set prev = states('sensor.ecs_temperature_max_reelle_cycle') | float(0) %}
+
+        {% set cycle_start_trigger =
+             trigger.platform == 'state'
+             and trigger.entity_id == 'input_boolean.ecs_cycle_en_cours'
+             and trigger.from_state is not none
+             and trigger.to_state is not none
+             and trigger.from_state.state == 'off'
+             and trigger.to_state.state == 'on' %}
+
+        {% if not t_valid %}
+          {{ prev }}
+
+        {% elif cycle_start_trigger %}
+          {{ current | float(0) }}
+
+        {% elif in_cycle or inertia_active %}
+          {{ [prev, (current | float(0))] | max }}
+
+        {% else %}
+          {{ prev }}
+        {% endif %}
+
+      attributes:
+        max_timestamp: >
+          {% set t_raw = states('sensor.ecs_temperature_ballon_securisee') %}
+          {% set t_valid = t_raw not in ['unknown','unavailable','none'] %}
+          {% set current = (t_raw | float(0)) if t_valid else none %}
+
+          {% set in_cycle = is_state('input_boolean.ecs_cycle_en_cours', 'on') %}
+          {% set inertia_active = is_state('timer.fenetre_inertie_chauffe_ecs', 'active') %}
+
+          {% set prev = states('sensor.ecs_temperature_max_reelle_cycle') | float(0) %}
+          {% set prev_ts = this.attributes.get('max_timestamp', '') %}
+
+          {% set cycle_start_trigger =
+               trigger.platform == 'state'
+               and trigger.entity_id == 'input_boolean.ecs_cycle_en_cours'
+               and trigger.from_state is not none
+               and trigger.to_state is not none
+               and trigger.from_state.state == 'off'
+               and trigger.to_state.state == 'on' %}
+
+          {% if not t_valid %}
+            {{ prev_ts }}
+
+          {% elif cycle_start_trigger %}
+            {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+
+          {% elif in_cycle or inertia_active %}
+            {% if (current | float(0)) >= prev %}
+              {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            {% else %}
+              {{ prev_ts }}
+            {% endif %}
+
+          {% else %}
+            {{ prev_ts }}
+          {% endif %}
+
+      icon: >
+        {% set v = states('sensor.ecs_temperature_max_reelle_cycle') | float(0) %}
+        {% if v < 35 %}
+          mdi:coolant-temperature
+        {% elif v < 45 %}
+          mdi:water-thermometer
+        {% else %}
+          mdi:water-boiler
+        {% endif %}

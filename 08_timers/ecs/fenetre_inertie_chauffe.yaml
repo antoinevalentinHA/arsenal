@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER
+#     Fenêtre inertie chauffe ECS
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Représenter la fenêtre de stabilisation thermique
+#   post-cycle ECS avant gel définitif des données.
+#
+# ----------------------------------------------------------
+# 🧱 PÉRIMÈTRE
+#
+#   - Démarré à la fin d’un cycle ECS
+#   - Annulé si un nouveau cycle redémarre avant échéance
+#   - Conservé au redémarrage Home Assistant
+#
+# ----------------------------------------------------------
+# 📏 DURÉE
+#
+#   - 00:15:00
+#
+# ----------------------------------------------------------
+# ✅ COMPATIBILITÉ
+#
+#   - restore: true
+# ==========================================================
+
+fenetre_inertie_chauffe_ecs:
+  name: "Fenêtre inertie chauffe ECS"
+  duration: "00:15:00"
+  restore: true

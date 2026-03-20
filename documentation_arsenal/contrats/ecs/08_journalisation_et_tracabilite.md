@@ -12,15 +12,15 @@ Périmètre : Traçabilité ECS
 Ce document définit les règles de journalisation
 et de traçabilité des cycles ECS.
 
-Il garantit qu’aucun cycle
+Il garantit qu'aucun cycle
 ne peut exister sans preuve.
 
 ---
 
 ## 2. Principe fondamental
 
-> Un cycle ECS n’existe que s’il est traçable
-> du début au gel final.
+> Un cycle ECS n'existe que s'il est traçable
+> du début au gel final déclenché par le signal canonique de fin de cycle.
 
 Toute chauffe non documentée
 est réputée invalide.
@@ -34,17 +34,18 @@ les éléments suivants :
 
 1. journalisation du début de cycle
 2. capture du pic thermique réel
-3. consolidation post-stabilisation
-4. gel des diagnostics
+3. stabilisation via timer d'inertie post-cycle
+4. gel des diagnostics à l'échéance du timer
+5. émission du signal canonique de fin de cycle
 
-L’absence d’un maillon
+L'absence d'un maillon
 constitue une anomalie critique.
 
 ---
 
 ## 4. Début de cycle
 
-À l’ouverture d’un cycle :
+À l'ouverture d'un cycle :
 
 - horodatage immédiat
 - identification du mode
@@ -72,14 +73,32 @@ est proscrite.
 
 ## 6. Consolidation finale
 
-Après stabilisation :
+### 6.1 Séquence
+
+À l'échéance du timer d'inertie post-cycle :
 
 - calcul des durées
 - agrégation des données
 - génération du résumé
-- gel définitif
+- gel définitif des diagnostics
+- émission du signal canonique `ecs_fin_cycle_signal`
+
+Le gel final constitue l'unique point de clôture exploitable d'un cycle ECS.
 
 Les données sont ensuite immuables.
+
+### 6.2 Référence temporelle
+
+La consolidation et le gel final ne s'appuient pas
+sur la fin thermique du cycle.
+
+Ils dépendent exclusivement :
+
+- de l'expiration du timer d'inertie post-cycle
+- de l'émission du signal canonique `ecs_fin_cycle_signal`
+
+Aucune donnée ne peut être considérée comme consolidée
+avant cet événement.
 
 ---
 
@@ -119,5 +138,3 @@ Sont interdits :
 - historisation partielle
 
 Toute violation est critique.
-
----

@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     ECS – Armement fenêtre inertie post-cycle
+#
+#  ID : 10250000000027
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Piloter la fenêtre d’inertie post-cycle ECS :
+#     - armement à la fin du cycle
+#     - annulation si un nouveau cycle redémarre avant échéance
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
+#
+#   - La fin de cycle n’entraîne plus un gel immédiat
+#   - Une fenêtre de 15 min est ouverte pour laisser
+#     s’exprimer l’inertie thermique post-cycle
+#   - Si un nouveau cycle repart avant échéance,
+#     la fenêtre précédente est annulée
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - ne gèle aucune donnée
+#   - ne valide aucun cycle
+#   - ne calcule aucune métrique thermique
+# ==========================================================
+
+- id: "10250000000027"
+  alias: "ECS – Armement fenêtre inertie post-cycle"
+  description: >
+    Arme la fenêtre d’inertie post-cycle ECS à la fin du cycle
+    et l’annule si un nouveau cycle redémarre avant échéance.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      from: "on"
+      to: "off"
+      id: fin_cycle
+
+    - platform: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      from: "off"
+      to: "on"
+      id: reprise_cycle
+
+  action:
+    - choose:
+        # ==================================================
+        # ⏳ Fin de cycle → armement fenêtre inertie
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: fin_cycle
+          sequence:
+            - action: timer.start
+              target:
+                entity_id: timer.fenetre_inertie_chauffe_ecs
+
+        # ==================================================
+        # 🚫 Nouveau cycle → annulation fenêtre inertie
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: reprise_cycle
+          sequence:
+            - action: timer.cancel
+              target:
+                entity_id: timer.fenetre_inertie_chauffe_ecs

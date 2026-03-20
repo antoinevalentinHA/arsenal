@@ -5,7 +5,7 @@
 # 🎯 RÔLE
 #   Auto-ajuster UN SEUL offset ECS (`input_number.ecs_off_*`)
 #   en fonction du dernier cycle ECS figé, via correcteur
-#   proportionnel discret (alpha), avec zone morte anti-oscillation.
+#   proportionnel discret, avec zone morte anti-oscillation.
 #
 # 🧩 CONDITIONS
 #   - input_boolean.ecs_autocorrect_active == on
@@ -24,10 +24,20 @@
 #     medium        → delta_init < 7.0
 #     normal        → sinon
 #
+#   temperature de reference :
+#     tmax_reference = input_number.ecs_temperature_max_reelle_figee
+#
 #   offset_new = offset_actuel + alpha * erreur
 #   clamp [min; max]
 #   quantification step
+#   re-clamp final
 #   ignore si delta ≤ 0.001
+#
+# 📐 PARAMÈTRE DE CONTRAT
+#   - alpha = 0.25
+#   - correction proportionnelle discrète
+#   - choix actuel : convergence progressive sans oscillation
+#     brutale pour une erreur constante
 #
 # 🧾 TRACE
 #   input_text.ecs_dernier_ajustement :
@@ -113,7 +123,7 @@ ecs_autocorrect_offsets:
 
     - variables:
         duree: "{{ states('input_number.ecs_duree_dernier_cycle_figee') | float(none) }}"
-        tmax: "{{ states('input_number.ecs_temperature_max_figee') | float(none) }}"
+        tmax_reference: "{{ states('input_number.ecs_temperature_max_reelle_figee') | float(none) }}"
 
     - choose:
         - conditions:
@@ -125,15 +135,15 @@ ecs_autocorrect_offsets:
     - choose:
         - conditions:
             - condition: template
-              value_template: "{{ tmax is none }}"
+              value_template: "{{ tmax_reference is none }}"
           sequence:
-            - stop: "ECS - Tmax indisponible"
+            - stop: "ECS - Tmax de référence indisponible"
 
     # ------------------------------------------------------
     # Calcul erreur
     # ------------------------------------------------------
     - variables:
-        erreur: "{{ tmax - consigne }}"
+        erreur: "{{ tmax_reference - consigne }}"
         deadband_min: -0.3
         deadband_max: 0.5
 
@@ -204,7 +214,8 @@ ecs_autocorrect_offsets:
           {% else %}
             {{ offset_clamped }}
           {% endif %}
-        offset_new: "{{ ('%.3f' | format(offset_quant)) | float }}"
+        offset_new: >-
+          {{ ('%.3f' | format(([offset_min, [offset_max, offset_quant] | min] | max))) | float }}
         delta_offset_abs: "{{ (offset_new - offset_actuel) | abs }}"
 
     - choose:

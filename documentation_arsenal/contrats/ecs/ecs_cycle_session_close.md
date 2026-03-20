@@ -1,6 +1,9 @@
-# Contrat — `ecs_cycle_session_close`
+# ARSENAL — Contrat fonctionnel
+## ECS — `ecs_cycle_session_close`
 
-## Rôle
+---
+
+## 1. Rôle
 
 Fermer proprement une session ECS en libérant les verrous et en supprimant les traces transactionnelles de session.
 
@@ -8,23 +11,23 @@ Ce script centralise le bloc de nettoyage actuellement dupliqué plusieurs fois 
 
 ---
 
-## Préconditions
+## 2. Préconditions
 
 Aucune précondition forte.
 
-Le script doit être **idempotent** : appelable si la session est réellement ouverte, appelable aussi si une partie des états a déjà été nettoyée.
+Le script est **idempotent** : appelable si la session est réellement ouverte, appelable aussi si une partie des états a déjà été nettoyée.
 
 ---
 
-## Entrées
+## 3. Entrées
 
 Aucune.
 
 ---
 
-## Sorties / effets observables
+## 4. Sorties / effets observables
 
-Le script produit exactement ces effets, sans condition :
+Le script produit exactement ces effets :
 
 | Entité | État final |
 |---|---|
@@ -34,9 +37,13 @@ Le script produit exactement ces effets, sans condition :
 | `input_boolean.ecs_cycle_en_cours` | `off` |
 | `input_boolean.ecs_pipeline_en_cours` | `off` |
 
+L'ordre interne des opérations n'est pas contractuel — seul l'état final l'est.
+
+Le script ne doit modifier aucune autre entité que celles listées dans ce tableau.
+
 ---
 
-## Interdictions explicites
+## 5. Interdictions explicites
 
 Ce script ne doit **jamais** :
 
@@ -51,15 +58,15 @@ Ce script ne doit **jamais** :
 
 ---
 
-## Observabilité attendue
+## 6. Observabilité attendue
 
-L'effet du script est visible uniquement par l'état final des helpers, booléens et timer listés ci-dessus.
+L'effet du script est visible uniquement par l'état final des helpers, booléens et timer listés en section 4.
 
 Aucun journal métier obligatoire. Aucun logbook "par principe".
 
 ---
 
-## Remarque d'architecture
+## 7. Remarque d'architecture
 
 C'est un **script d'hygiène transactionnelle**, pas un script métier.
 

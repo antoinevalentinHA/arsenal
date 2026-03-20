@@ -25,6 +25,7 @@ La sécurité ECS repose sur :
 - idempotence défensive
 - indépendance cloud
 - vérification systématique
+- synchronisation avec les événements canoniques
 
 Toute anomalie doit être corrigée
 ou signalée.
@@ -59,9 +60,9 @@ ou signalée.
 
 ---
 
-### 4.2 Procédure d’échec
+### 4.2 Procédure d'échec
 
-En cas d’échec répété :
+En cas d'échec répété :
 
 - activation du fallback
 - alerte utilisateur
@@ -73,8 +74,9 @@ En cas d’échec répété :
 
 ### 5.1 Rôle
 
-- vérification différée du rabaissement
-- tolérance aux échecs d’application de la consigne
+- vérification différée du rabaissement après la fin exploitable du cycle ECS
+- déclenché uniquement après l'émission du signal canonique `ecs_fin_cycle_signal`
+- tolérance aux échecs d'application de la consigne
 - neutralité pendant cycle
 
 ---
@@ -84,6 +86,21 @@ En cas d’échec répété :
 - jamais actif pendant un cycle
 - jamais bloquant
 - toujours traçable
+
+---
+
+### 5.3 Dépendance temporelle
+
+Le gardien post-cycle ne s'appuie pas sur la fin thermique brute du cycle.
+
+Il dépend exclusivement de la fin exploitable du cycle ECS,
+définie par :
+
+- l'expiration du timer d'inertie post-cycle
+- l'émission du signal canonique `ecs_fin_cycle_signal`
+
+Aucune vérification de sécurité post-cycle ne doit intervenir
+avant cet événement.
 
 ---
 
@@ -98,14 +115,15 @@ Il assure :
 - rabaissement forcé
 - libération unilatérale du verrou
 - restauration nominale
+- indépendance totale des mécanismes temporels secondaires
 
 ---
 
-### 6.2 Conditions d’activation
+### 6.2 Conditions d'activation
 
 - watchdog expiré
 - désynchronisation critique
-- perte d’autorité
+- perte d'autorité
 
 ---
 
@@ -113,11 +131,9 @@ Il assure :
 
 Sont interdits :
 
-- neutralisation d’un gardien
+- neutralisation d'un gardien
 - bypass manuel
 - désactivation silencieuse
 - dépendance cloud
 
 Toute violation est critique.
-
----

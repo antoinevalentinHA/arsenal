@@ -2,11 +2,11 @@
 
 ## Rôle
 
-Gérer le boost de sécurité lorsque la cible thermique initiale n'a pas été atteinte après la première attente réelle.
+Gérer le boost de sécurité lorsque l'orchestrateur a déjà établi que la cible thermique n'est pas atteinte après la première attente réelle.
 
-Ce script extrait la logique de l'étape `7` du monolithe actuel : calcul de `boost2`, application de la consigne boost via l'exécuteur générique, log si ACK non confirmé, seconde attente thermique.
+Ce script extrait la logique de l'étape `7` du monolithe actuel. C'est un **sous-scénario optionnel** — il n'appartient pas au flux nominal et n'est appelé que si l'orchestrateur a constaté la non-atteinte thermique.
 
-C'est un **sous-scénario optionnel**. Il n'appartient pas au flux nominal et n'est appelé que si l'orchestrateur a constaté la non-atteinte thermique après la première attente.
+**La vérification d'éligibilité appartient à l'orchestrateur.** Ce script suppose que l'appel est justifié et n'en rejuge pas la légitimité.
 
 ---
 
@@ -20,14 +20,10 @@ Le script suppose que l'orchestrateur a déjà :
 - réalisé une première attente thermique,
 - constaté que la cible n'est **pas** atteinte.
 
-**La vérification d'éligibilité appartient à l'orchestrateur**, pas à ce script. L'orchestrateur ne doit appeler `ecs_cycle_boost_si_necessaire` que s'il a déjà établi que la cible n'est pas atteinte. Le script boost ne vérifie pas lui-même cette condition en entrée — il suppose que l'appel est justifié.
-
 Le script suppose également l'existence de :
 
 - `script.ecs_appliquer_consigne_confirmee`
 - `input_text.ecs_cycle_last_action_status`
-- le capteur thermique source utilisé par l'orchestrateur
-- la valeur `effective_target_int` figée côté orchestrateur
 
 ---
 
@@ -37,9 +33,9 @@ Le script suppose également l'existence de :
 |---|---|---|---|
 | `mode` | texte | oui | détermine le timeout de la seconde attente |
 | `sensor_temp` | texte | oui | entité source de température réelle |
-| `target_temp` | numérique | oui | seuil d'atteinte thermique de référence — utilisé pour la condition `wait_template` et le logbook |
+| `target_temp` | numérique | oui | seuil thermique à atteindre — utilisé pour le `wait_template` |
 | `epsilon` | numérique | oui | tolérance d'atteinte |
-| `effective_target_int` | numérique | oui | consigne chaudière de référence — utilisée exclusivement pour calculer `boost2` |
+| `effective_target_int` | numérique | oui | consigne chaudière de référence — base de calcul de `boost2` |
 
 `target_temp` et `effective_target_int` ne sont pas interchangeables : le premier est le seuil thermique observable, le second est la base de calcul de la consigne bridge.
 
@@ -57,22 +53,20 @@ Le script suit cette séquence contractuelle.
 
 ### 1. Calcul du boost
 
-Le script calcule :
-
-- `boost2 = min(effective_target_int + 1, 60)`
+`boost2 = min(effective_target_int + 1, 60)`
 
 La borne haute `60` est une constante contractuelle héritée du monolithe.
 
 ### 2. Application de la consigne boost
 
-Le script appelle `script.ecs_appliquer_consigne_confirmee` avec :
+Appel de `script.ecs_appliquer_consigne_confirmee` avec :
 
 - `target_temp = boost2`
 - `contexte = boost`
 
 ### 3. Lecture du résultat exécuteur
 
-Le script lit immédiatement `input_text.ecs_cycle_last_action_status`.
+Lecture immédiate de `input_text.ecs_cycle_last_action_status`.
 
 ### 4. Gestion du résultat ACK du boost
 
@@ -80,15 +74,13 @@ Le script lit immédiatement `input_text.ecs_cycle_last_action_status`.
 
 **Si statut = `rejected` ou `timeout`** :
 
-- écrire un logbook diagnostic mentionnant : statut, valeur boost demandée, contexte `boost`
+- logbook diagnostique mentionnant : statut, boost demandé, mode
 - ne pas arrêter le cycle
-- poursuivre malgré tout la seconde attente thermique
+- poursuivre la seconde attente thermique
 
-Un ACK boost non confirmé est une anomalie diagnostique, pas une cause d'arrêt immédiat. C'est la doctrine du monolithe actuel, conservée ici.
+Un ACK boost non confirmé est une anomalie diagnostique, pas une cause d'arrêt. La `reason` ACK est déjà loggée par `ecs_appliquer_consigne_confirmee` — elle n'est pas répétée ici.
 
 ### 5. Seconde attente thermique
-
-Le script effectue une seconde attente d'atteinte réelle :
 
 - condition : `sensor_temp >= target_temp - epsilon`
 - `continue_on_timeout: true`
@@ -100,7 +92,7 @@ Le script effectue une seconde attente d'atteinte réelle :
 
 ### 6. Fin du script
 
-Le script se termine sans conclure le succès thermique final. L'orchestrateur reprend la main après l'appel.
+Le script se termine sans conclure le succès thermique final. L'orchestrateur reprend la main.
 
 Le script n'écrit aucun helper de résultat d'attente. L'orchestrateur exploite directement `wait.completed` après retour — aucun `input_text` de transit n'est requis ni attendu.
 
@@ -122,15 +114,14 @@ Le script n'écrit aucun helper de résultat d'attente. L'orchestrateur exploite
 
 Si `mode` n'est pas l'une des trois valeurs contractuelles :
 
-1. Ne pas appliquer de consigne
-2. Écrire un logbook avec le mode reçu
-3. `stop`
+1. Logbook avec le mode reçu
+2. `stop`
 
-Même doctrine que `ecs_armer_gardien_post_prelevement` : un `mode` invalide est une rupture de contrat de l'appelant.
+Un `mode` invalide à ce stade est une rupture de contrat de l'appelant.
 
 ### `sensor_temp` invalide ou non numérique
 
-Aucune logique défensive supplémentaire. Si la condition thermique n'est pas vérifiable, la seconde attente ira à timeout, puis rendra la main à l'orchestrateur. Le script ne tente pas de deviner.
+Aucune logique défensive supplémentaire. Si la condition thermique n'est pas vérifiable, la seconde attente ira à timeout puis rendra la main à l'orchestrateur.
 
 ---
 
@@ -138,45 +129,43 @@ Aucune logique défensive supplémentaire. Si la condition thermique n'est pas v
 
 Ce script ne doit **jamais** :
 
+- décider lui-même si le boost est nécessaire
 - ouvrir ou fermer la session ECS
 - annuler `timer.ecs_cycle_watchdog`
 - démarrer `timer.ecs_gardien_post_prelevement`
-- appeler directement `script.ecs_appliquer_consigne_bridge`
 - lire directement `sensor.boiler_ack_dhw_set_setpoint_status`
+- appeler directement `script.ecs_appliquer_consigne_bridge`
 - décider seul de stopper le cycle
 - appliquer la consigne basse de fin de cycle
-- recalculer la logique thermique de session
 - modifier `input_text.ecs_target_temp_session`
-- vérifier lui-même si le boost est nécessaire — cette décision appartient à l'orchestrateur
+- ajouter un helper de résultat d'attente
 
 ---
 
 ## Observabilité attendue
 
 - `input_text.ecs_cycle_last_action_status` après appel exécuteur
-- logbook en cas de boost non confirmé (rejected / timeout)
+- logbook en cas de boost non confirmé (`rejected` / `timeout`)
 - température réelle observable pendant la seconde attente
 
-Aucune notification persistante requise. Aucun helper de résultat spécifique boost.
+Aucune notification persistante requise.
 
 ---
 
 ## Politique de décision
 
-Le script ne décide pas du succès final du cycle.
-
-Il calcule un boost, l'applique via l'exécuteur, trace l'anomalie ACK si nécessaire, attend. L'orchestrateur reste seul juge de la suite.
+Le script ne décide pas du succès final du cycle. Il calcule un boost, l'applique via l'exécuteur, trace l'anomalie ACK si nécessaire, attend, rend la main.
 
 ---
 
 ## Priorité de mise en œuvre
 
-Ce script est à produire en **phase 5**, après stabilisation des 4 premiers scripts. Il dépend d'`ecs_appliquer_consigne_confirmee` et son intérêt principal est la lisibilité du flux nominal, pas la réduction d'un risque structurel.
+Phase 5 — après stabilisation des phases 1 à 4. Ce script dépend d'`ecs_appliquer_consigne_confirmee` et son intérêt principal est la lisibilité du flux nominal.
 
 ---
 
 ## Remarque d'architecture
 
-C'est un script de **rattrapage thermique borné**.
+C'est un script de **rattrapage thermique borné**. Il tente une correction limitée, trace l'échec ACK si nécessaire, attend, rend la main. Il ne doit pas devenir un second orchestrateur, un moteur ACK parallèle, ni un script qui commence à conclure seul.
 
-Il tente une correction limitée, trace l'échec ACK si nécessaire, attend, rend la main. Il ne doit pas devenir un second orchestrateur, un moteur ACK parallèle, ni un script qui commence à conclure seul.
+Le delta `+ 5` est dimensionné pour dépasser l'hystérésis DHW interne de la chaudière Viessmann — un delta trop faible (`+ 1`) ne suffit pas à déclencher le brûleur si la température du ballon est proche de la consigne initiale.

@@ -96,7 +96,7 @@
 # ==========================================================
 
 chauffage_ecs_cycle:
-  alias: "Chauffage ECS - Cycle unifié"
+  alias: "ECS - Cycle unifié"
   description: >
     Cycle ECS fiable : chauffe jusqu'à consigne effective,
     rabaissement confirme a 10 °C via boiler bridge,
@@ -242,6 +242,51 @@ chauffage_ecs_cycle:
                 Echec application consigne ECS haute
                 (status={{ states('input_text.ecs_cycle_last_action_status') }},
                 target={{ effective_target_int }})
+
+    # ======================================================
+    # 🚀 ETAPE 5B : Qualification du démarrage thermique ECS
+    # ------------------------------------------------------
+    # Objectif :
+    #   Remplacer le boost prématuré sur simple delta 90 s
+    #   par une lecture physique plus robuste de la chauffe.
+    #
+    # Principe :
+    #   - Attendre que `sensor.ecs_signature_thermique_chauffe`
+    #     sorte de l’état `indeterminee`
+    #   - Ne jamais booster sur signature `indeterminee`
+    #   - Autoriser boost 1 uniquement si :
+    #       * signature = insuffisante
+    #       * distance résiduelle à la cible >= 1.0 °C
+    #
+    # Note :
+    #   - La signature est une couche d’observation
+    #   - L’orchestrateur reste seul décideur du boost
+    #   - Un second boost reste possible à l’étape 7
+    # ======================================================
+    - wait_template: >
+        {{ states('sensor.ecs_signature_thermique_chauffe') != 'indeterminee' }}
+      timeout: "00:04:30"
+      continue_on_timeout: true
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  states('sensor.ecs_signature_thermique_chauffe') == 'insuffisante'
+                  and (
+                    (target_temp | float(0))
+                    - (states(sensor_temp) | float(0))
+                  ) >= 1.0
+                }}
+          sequence:
+            - action: script.ecs_cycle_boost_si_necessaire
+              data:
+                mode: "{{ mode }}"
+                sensor_temp: "{{ sensor_temp }}"
+                target_temp: "{{ target_temp }}"
+                epsilon: "{{ epsilon }}"
+                effective_target_int: "{{ effective_target_int }}"
 
     # ======================================================
     # ♻️ ETAPE 6 : Attente d’atteinte thermique réelle
