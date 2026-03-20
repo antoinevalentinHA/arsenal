@@ -1,0 +1,39 @@
+# ==========================================================
+# 🔥 TEMPLATE BINARY SENSOR — ECS Consigne hors cycle incohérente
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Détecter un écart réel de consigne ECS hors cycle,
+#   uniquement si la consigne source est numérique
+#   et si l'écart persiste hors phase transitoire.
+# ==========================================================
+
+- binary_sensor:
+    - name: "ECS Consigne hors cycle incohérente"
+      unique_id: "ecs_consigne_hors_cycle_incoherente"
+      default_entity_id: binary_sensor.ecs_consigne_hors_cycle_incoherente
+
+      state: >
+        {% set consigne = states('sensor.boiler_dhw_setpoint') %}
+        {{
+          is_state('input_boolean.systeme_stable', 'on')
+          and is_state('input_boolean.ecs_cycle_en_cours', 'off')
+          and is_state('input_boolean.ecs_pipeline_en_cours', 'off')
+          and is_number(consigne)
+          and (consigne | float) != 10
+        }}
+
+      attributes:
+        consigne_actuelle: >
+          {{ states('sensor.boiler_dhw_setpoint') }}
+        consigne_attendue: >
+          10
+        systeme_stable: >
+          {{ states('input_boolean.systeme_stable') }}
+        ecs_cycle_en_cours: >
+          {{ states('input_boolean.ecs_cycle_en_cours') }}
+        ecs_pipeline_en_cours: >
+          {{ states('input_boolean.ecs_pipeline_en_cours') }}
+        gardien_post_prelevement: >
+          {{ states('timer.ecs_gardien_post_prelevement') }}
+        age_consigne_s: >
+          {{ (now().timestamp() - as_timestamp(states.sensor.boiler_dhw_setpoint.last_changed)) | int(0) }}

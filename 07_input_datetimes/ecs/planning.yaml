@@ -49,14 +49,13 @@
 #       • Planification (input_datetime)
 #       • Autorisation (capteurs)
 #       • Décision (logique ECS)
-#       • Action réelle (ViCare)
+#       • Action réelle (pipeline ECS)
 #
 # ⚠️ Remarque :
 #   Modifier ces valeurs change le PLANNING
 #   autorisé, jamais l’état immédiat
 #   de la production ECS.
 # ==========================================================
-
 
 ecs_monday_matin_heure:
   name: ECS - Lundi matin

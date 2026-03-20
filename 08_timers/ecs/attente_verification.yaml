@@ -8,7 +8,7 @@
 #
 #   Ce timer laisse le temps :
 #     - à la consigne ECS d’être réellement appliquée
-#     - aux états ViCare de se synchroniser
+#     - aux états système ECS de converger
 #     - aux températures ECS de commencer à évoluer
 #
 # 🧩 Nature :

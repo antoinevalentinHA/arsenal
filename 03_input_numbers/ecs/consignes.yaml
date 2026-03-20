@@ -21,7 +21,7 @@
 #
 # ⚙️ Utilisation réelle :
 #   - Sélectionnées dynamiquement par :
-#       • 09_scripts/vicare/ecs/cycle.yaml
+#       • script.chauffage_ecs_cycle
 #   - Tracées dans :
 #       • logs ECS
 #       • dashboards diagnostics
@@ -34,7 +34,6 @@
 # 📐 Unité :
 #   - Degrés Celsius (°C)
 # ==========================================================
-
 
 ecs_consigne_temperature:
   name: Température ECS

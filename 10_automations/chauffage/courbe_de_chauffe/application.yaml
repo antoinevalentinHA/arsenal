@@ -5,31 +5,32 @@
 #  ID : 10240000000008
 # ----------------------------------------------------------
 #  🎯 RÔLE
-#     Appliquer sur la chaudière Viessmann les ajustements
+#     Appliquer sur la chaudière les ajustements
 #     manuels de la courbe de chauffe (pente ou parallèle)
 #     réalisés par l’utilisateur via les sliders de l’UI.
 #
 #     Cette automation agit comme un pont fiable entre
-#     l’intention utilisateur et l’exécution ViCare.
+#     l’intention utilisateur et l’exécution chauffage.
 #
 #  🚫 NE FAIT PAS
 #     - Ne calcule aucune valeur de pente ou de parallèle
 #     - Ne décide pas d’un ajustement automatique
 #     - Ne modifie pas la logique thermique du système
+#     - N’écrit directement sur aucun équipement
 #
 #  🧩 UTILISATION
 #     - Déclenchement :
 #         • modification d’un input_number de consigne
 #           (pente ou parallèle)
 #     - Condition :
-#         • API ViCare disponible
+#         • valeur cible valide
 #     - Action :
 #         • appel du script dédié correspondant à
 #           l’input modifié
-#     - Délégation complète de la robustesse aux scripts
+#     - Délégation complète de l’exécution aux scripts
 #
 #  ✅ CONTRAINTES
-#     - Aucune dépendance aux entités number.* cloud ViCare
+#     - Aucune dépendance à ViCare
 #     - Aucune temporisation ou logique de retry ici
 #     - Automation strictement réactive à l’action utilisateur
 # ==========================================================
@@ -38,7 +39,7 @@
   alias: "Chauffage – Appliquer pente ou parallèle"
   description: >
     Déclenche la mise à jour de la pente ou du parallèle de la courbe
-    de chauffe via les scripts dédiés, uniquement si l'API ViCare est disponible.
+    de chauffe via les scripts dédiés, sur modification utilisateur.
   mode: queued
   max: 5
 
@@ -54,7 +55,7 @@
       to: ~
 
   # ======================================================
-  # 🧿 Condition — API ViCare disponible + valeur valide
+  # 🧿 Condition — valeur cible valide
   # ======================================================
   condition:
 

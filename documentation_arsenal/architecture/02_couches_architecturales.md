@@ -23,9 +23,8 @@ Structure :
 
 Sources principales :
 
-- MQTT
+- MQTT (incluant chaudière via boiler bridge local)
 - Netatmo
-- ViCare
 - Withings
 - Overkiz
 - Roborock
@@ -38,12 +37,13 @@ Sources principales :
 Rôle :
 
 - acquisition brute des états
+- réception des retours d’exécution (ACK, statuts)
 - normalisation minimale
 - **aucune logique métier**
 
 Principe :
 
-> La perception décrit le réel mais ne l’interprète pas.
+> La perception décrit le réel et les résultats d’exécution, sans les interpréter.
 
 ---
 

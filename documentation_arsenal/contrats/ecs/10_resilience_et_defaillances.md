@@ -33,7 +33,7 @@ ne peut compromettre la sûreté.
 Le système ECS doit rester sûr en cas de :
 
 - redémarrage Home Assistant
-- latence ViCare
+- latence de la couche d’exécution
 - indisponibilité cloud
 - désynchronisation
 - reboot en cours de cycle
@@ -56,9 +56,9 @@ Tout état ambigu est neutralisé.
 
 ---
 
-## 5. Indisponibilité ViCare
+## 5. Indisponibilité de la couche d’exécution
 
-En cas de perte ViCare :
+En cas de perte de la couche d’exécution :
 
 - maintien local des gardiens
 - interdiction de nouvelles chauffes
@@ -69,9 +69,9 @@ Aucune hypothèse de succès n’est admise.
 
 ---
 
-## 6. Désynchronisation cloud
+## 6. Désynchronisation exécution / local
 
-En cas d’écart cloud / local :
+En cas d’écart entre l’état exécuté et l’état local :
 
 - priorité aux mesures locales
 - réapplication contrôlée

@@ -40,29 +40,6 @@
 #    - couche technique interne / intégrité des données
 # ==========================================================
 
-
-############################################################
-# 🔥 GAZ — CHAUFFAGE
-############################################################
-
-sensor.gaz_chauffage_total_proxy:
-  unit_of_measurement: "kWh"
-  device_class: energy
-  state_class: total
-  unit_class: energy
-
-
-############################################################
-# 🚿 GAZ — EAU CHAUDE SANITAIRE (ECS)
-############################################################
-
-sensor.gaz_ecs_total_proxy:
-  unit_of_measurement: "kWh"
-  device_class: energy
-  state_class: total
-  unit_class: energy
-
-
 ############################################################
 # ❄️ CLIMATISATION — CONSOMMATION ESTIMÉE
 ############################################################

@@ -1,46 +1,45 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Chauffage – Reappliquer courbe au demarrage
+#     Chauffage – Réappliquer courbe au démarrage
 #
 #  ID : 10240000000010
 # ----------------------------------------------------------
 #  🎯 ROLE
-#     Reappliquer au demarrage les consignes locales Arsenal
-#     de pente et de parallele de la courbe de chauffe.
+#     Réappliquer au démarrage les consignes locales Arsenal
+#     de pente et de parallèle de la courbe de chauffe.
 #
-#     Cette automation ne verifie aucune divergence externe.
-#     Elle reafﬁrme simplement les references locales
-#     apres stabilisation du systeme.
+#     Cette automation ne vérifie aucune divergence externe.
+#     Elle réafﬁrme simplement les references locales
+#     après stabilisation du système.
 #
 #  🚫 NE FAIT PAS
-#     - Ne decide aucun ajustement de courbe
+#     - Ne décide aucun ajustement de courbe
 #     - Ne calcule aucune valeur thermique
 #     - Ne lit aucune valeur cloud
 #     - Ne compare aucune valeur locale/externe
 #
 #  🧩 UTILISATION
-#     - Declenchement :
-#         • passage du systeme a l'etat stable post-demarrage
+#     - Déclenchement :
+#         • passage du système à l'état stable post-démarrage
 #     - Traitement :
 #         • validation minimale des consignes locales
-#         • appel des scripts executifs locaux dedies
+#         • appel des scripts exécutifs locaux dédiés
 #     - Objectif :
-#         • reaffirmer la configuration Arsenal
-#           apres redemarrage de Home Assistant
+#         • réaffirmer la configuration Arsenal
+#           apres redémarrage de Home Assistant
 #
 #  ✅ CONTRAINTES
-#     - Reapplication unidirectionnelle locale
-#     - Delegation complete de l'execution aux scripts boiler bridge
-#     - Aucune dependance a ViCare
+#     - Réapplication unidirectionnelle locale
+#     - Délégation complète de l'exécution aux scripts boiler bridge
 #     - Aucune logique de synchronisation
 # ==========================================================
 
 - id: "10240000000010"
-  alias: "Chauffage – Reappliquer courbe au demarrage"
+  alias: "Chauffage – Réappliquer courbe au demarrage"
   description: >
-    Reapplique au demarrage les consignes locales de pente
-    et de parallele de la courbe de chauffe apres stabilisation
-    du systeme, via boiler bridge.
+    Réapplique au démarrage les consignes locales de pente
+    et de parallèle de la courbe de chauffe après stabilisation
+    du système, via boiler bridge.
   mode: single
 
   trigger:
@@ -69,7 +68,7 @@
               data:
                 name: "Chauffage"
                 message: >
-                  🔄 Reapplication courbe au demarrage :
+                  🔄 Réapplication courbe au demarrage :
                   pente={{ pente_cible_raw }},
                   parallele={{ parallele_cible_raw }}
 

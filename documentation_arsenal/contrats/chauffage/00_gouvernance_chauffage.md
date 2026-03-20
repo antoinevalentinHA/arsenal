@@ -193,10 +193,13 @@ Toute action thermique doit dériver d’une décision centrale valide.
 L’application :
 
 - exécute une décision,
-- corrige les divergences,
-- protège l’état matériel,
+- transmet des commandes au matériel via un protocole local,
+- observe le résultat d’exécution,
 - ne décide jamais,
 - ne modifie jamais l’intention.
+
+Toute application est considérée comme valide uniquement après
+réception d’une confirmation explicite d’exécution.
 
 ---
 
@@ -204,14 +207,14 @@ L’application :
 # 🔒 4. SOUVERAINETÉ DÉCISIONNELLE
 # ----------------------------------------------------------
 
-Le système Arsenal est **souverain de ses décisions thermiques**.
+Le système Arsenal est **souverain de ses décisions thermiques et de leur validation**.
 
 Règles cardinales :
 
-- aucune décision ne dépend directement du Cloud,
-- aucun retour ViCare n’est source de vérité décisionnelle,
-- l’état interne prévaut sur l’état matériel en cas de divergence,
-- toute correction est passive et contrôlée.
+- aucune décision ne dépend d’un système externe,
+- aucune action n’est considérée comme réussie sans validation explicite,
+- l’état interne prévaut tant qu’une confirmation d’exécution n’est pas reçue,
+- toute divergence est traitée comme un défaut d’exécution, jamais comme une vérité externe.
 
 La décision centrale est :
 
@@ -220,6 +223,15 @@ La décision centrale est :
 - déterministe,
 - traçable,
 - opposable.
+
+---
+
+Toute action thermique légitime doit :
+
+- être précédée d’une décision récente,
+- être exécutée via une commande traçable,
+- être suivie d’une validation explicite (ACK),
+- être cohérente avec la table canonique.
 
 ---
 

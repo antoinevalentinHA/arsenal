@@ -115,7 +115,7 @@ Hors périmètre strict :
 - toute notion de blocage,
 - toute lecture de présence globale,
 - toute gestion absence / vacances,
-- toute interaction ViCare,
+- toute interaction avec la couche matérielle,
 - toute logique d’anti-rebond,
 - toute traçabilité.
 
@@ -190,7 +190,7 @@ Principes absolus :
 - l’autorisation n’est JAMAIS prioritaire,
 - l’autorisation n’est JAMAIS souveraine,
 - l’autorisation ne connaît JAMAIS le matériel,
-- l’autorisation ne lit JAMAIS ViCare.
+- l’autorisation ne lit JAMAIS la couche matérielle.
 
 Règle centrale :
 

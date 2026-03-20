@@ -20,8 +20,6 @@
 #
 # 🔒 Garanties :
 #   - Script executif pur
-#   - Aucune dependance a ViCare
-#   - Aucune relecture cloud
 #   - Aucune boucle de retry
 #
 # ⚠️ Important :
@@ -34,7 +32,7 @@
 # 📌 Dependances :
 #   - input_number.chauffage_parallele_consigne
 #   - input_text.boiler_req_heating_set_curve_shift
-#   - sensor.boiler_ack_heating_set_curve_shift_result
+#   - sensor.boiler_ack_heating_set_curve_shift_status
 #
 # 🗓️ Compatibilite : Home Assistant 2024.8+
 # ==========================================================
@@ -113,7 +111,10 @@ chauffage_appliquer_parallele:
     # ⏳ ETAPE 4 : ATTENTE CONCLUSION ACK CORRELEE
     # ======================================================
     - wait_template: >
-        {{ states('sensor.boiler_ack_heating_set_curve_shift_result') in ['applied', 'rejected', 'timeout'] }}
+        {{
+          states('sensor.boiler_ack_heating_set_curve_shift_status') in ['applied', 'rejected', 'timeout']
+          and states('sensor.boiler_ack_heating_set_curve_shift_request_id') == boiler_request_id
+        }}
       timeout: "00:00:20"
       continue_on_timeout: true
 

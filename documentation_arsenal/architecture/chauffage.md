@@ -1,7 +1,19 @@
 # 🏗️ ARCHITECTURE — CHAUFFAGE (V3 PRO)
 
-## 🏛️ MODÈLE DE CONCEPTION
-Le système de chauffage Arsenal repose sur le pattern **"Trigger - Decision - Action - Guard"**. Ce modèle garantit que la logique thermique est totalement découplée des contraintes matérielles du cloud propriétaire (ViCare). Il intègre une couche de **Gouvernance Algorithmique** (Apprentissage statistique de la Loi d'eau) pour assurer une performance énergétique et un confort durable.
+## Modèle de conception
+
+Le système de chauffage Arsenal repose sur le pattern **Trigger → Decision → Action → Guard**.
+
+Il garantit une séparation stricte entre :
+- perception des états ;
+- décision thermique ;
+- exécution matérielle ;
+- validation d'exécution.
+
+Le pilotage repose sur un modèle **local transactionnel** :
+- chaque commande est émise avec un `request_id` ;
+- chaque commande attend une validation explicite (ACK) ;
+- aucune action n'est considérée comme réussie sans confirmation.
 
 ### 🧩 1. Segmentation des Responsabilités
 L'architecture est découpée en couches fonctionnelles étanches pour garantir la résilience et la clarté du diagnostic :
@@ -21,27 +33,43 @@ L'architecture est découpée en couches fonctionnelles étanches pour garantir 
     * *Rôle* : Arbitre souverain. Croise l'intention thermique avec les blocages métiers (Poêle, Aération).
 6.  **L'Optimiseur (Loi d'eau)** : `automation.chauffage_decision_auto_ajustement_courbe`
     * *Rôle* : Instance décisionnelle quotidienne (10h00). Applique les suggestions de l'Expertise Statistique si le contexte est stable.
-7.  **Le Pont des Consignes (Sync Bi-directionnelle)** : Automations `chauffage_sync_consigne_...`
-    * *Rôle* : Assure la cohérence HA ↔ Cloud avec protection contre les boucles d'écriture.
+7.  **Le Pont des Consignes (Projection locale)** : Automations `chauffage_sync_consigne_...`
+    * *Rôle* : Projette les consignes décidées vers la couche d’exécution.
+    * Ne réalise aucune synchronisation externe.
 8.  **Les Bras (Exécution)** : Scripts `chauffage_appliquer_...`
-    * *Rôle* : Gestionnaires de transactions Cloud. Assurent l'atomicité et la gestion du verrouillage système.
-9.  **La Police (Garde)** : `automation.realignement_vicare_ha`
-    * *Rôle* : Surveillant de souveraineté. Corrige toute dérive passive du matériel par rapport à la mémoire locale.
+    * *Rôle* : Exécution transactionnelle locale via boiler bridge.
+    * Chaque commande :
+        - génère un `request_id`
+        - est envoyée via MQTT
+        - attend un ACK (`applied`, `rejected`, `timeout`)
+9.  **La Police (Garde)** : mécanismes de validation
+    * *Rôle* : Surveille la cohérence entre :
+        - la consigne demandée
+        - le résultat d’exécution (ACK)
+    * Détecte les échecs d’application (timeout, mismatch, rejet)
 
 ---
 
 ## 🔒 INVARIANTS ET PATTERNS ARCHITECTURAUX
 
 ### A. Pattern de Souveraineté Matérielle
-Arsenal ne fait jamais confiance à l'état Cloud instantané. Les `input_number` et `input_select` locaux sont la seule source de vérité. Le mirroring local (`sensor..._local`) assure la continuité de service en cas de coupure API.
+La source de vérité est locale.
+
+- Les `input_number` et `input_select` portent les décisions.
+- L’état matériel n’est validé qu’après réception d’un ACK.
+- Aucun état n’est supposé appliqué sans confirmation explicite.
 
 ### B. Pattern d'Apprentissage (Segmentation Thermique)
 Le système optimise la courbe de chauffe en distinguant l'origine de la dérive :
 1. **Dérive par Temps Doux** ($T_{ext} \ge 10^\circ\text{C}$) : Impacte le **Parallèle**. Le système ajuste l'offset global pour caler la base de la courbe.
 2. **Dérive par Temps Froid** ($T_{ext} \le 5^\circ\text{C}$) : Impacte la **Pente**. Le système ajuste l'inclinaison pour répondre à une déperdition accrue.
 
-### C. Pattern d'Atomicité (Locking)
-Le verrou `input_boolean.chauffage_application_en_cours` suspend la Garde pendant toute écriture vers le Cloud pour éviter les conflits de réalignement.
+### C. Pattern d'Atomicité (Transaction)
+Chaque commande est traitée comme une transaction :
+
+- émission avec `request_id`
+- attente d’un ACK
+- absence de chevauchement via verrou logique
 
 ### D. Pattern de Stabilité (Le "Neutre")
 L'état `Neutre` préserve la mécanique en interdisant les bascules ON/OFF inutiles tant que la température est contenue dans la zone morte de l'hystérésis.
@@ -50,11 +78,12 @@ L'état `Neutre` préserve la mécanique en interdisant les bascules ON/OFF inut
 
 ## 🛠️ FLUX DE DONNÉES (DATAFLOW)
 
-1.  **ENTRÉES** : Capteurs physiques, Sliders utilisateur, ou temps (10h00).
-2.  **FILTRAGE** : Les écarts instantanés sont capturés et triés par température extérieure (**Doux** vs **Froid**).
-3.  **DÉCISION** : Le Cerveau ou l'Optimiseur calcule l'état cible basé sur ces données segmentées.
-4.  **ACTION** : Les scripts synchronisent le Cloud ViCare et mettent à jour la mémoire locale.
-5.  **GARDE** : La Police vérifie et maintient la conformité de l'état final.
+1.  **ENTRÉES** : Capteurs physiques, helpers, temps.
+2.  **FILTRAGE** : Calcul des écarts segmentés (Doux / Froid).
+3.  **DÉCISION** : Calcul de la consigne cible.
+4.  **ACTION** : Envoi d’une commande transactionnelle via MQTT.
+5.  **VALIDATION** : Réception d’un ACK (applied / rejected / timeout).
+6.  **GARDE** : Vérification de cohérence entre intention et résultat.
 
 ---
 
@@ -70,4 +99,4 @@ Le système est une "boîte de verre" grâce à ses capteurs de transparence :
 ## ⚠️ MAINTENANCE ET ÉVOLUTION
 * **Modifier la règle métier** -> `contrats_arsenal/chauffage.md`.
 * **Ajuster la finesse de l'analyse** -> Modifier les seuils ($\pm 0.4$ ou $\pm 0.5$) dans les capteurs de suggestion.
-* **Changer de matériel** -> Couche "Bras" (Scripts d'exécution) et capteurs de mirroring uniquement.
+* **Changer de matériel** -> Couche "Bras" (scripts d’exécution + protocole MQTT) uniquement.

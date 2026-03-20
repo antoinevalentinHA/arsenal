@@ -49,7 +49,6 @@ logs:
   homeassistant.components.withings: error
   aiowithings: error
   homeassistant.components.netatmo: warning
-  homeassistant.components.vicare: warning
   homeassistant.components.overkiz: warning
 
   # ── Système / logs externes ─────────────────────────────

@@ -8,7 +8,7 @@
 #
 #   Ce timer permet la stabilisation :
 #     - des températures mesurées
-#     - des états ViCare
+#     - des états système ECS
 #     - des calculs de consigne post-usage
 #
 # 🧩 Nature :
@@ -46,7 +46,7 @@
 #   - Séparation stricte entre :
 #       • Stabilisation des signaux (timer)
 #       • Diagnostic ECS (gardien)
-#       • Décision thermique (logique ViCare)
+#       • Décision thermique (moteur ECS)
 #
 # ⚠️ Remarque :
 #   Ce timer protège la QUALITÉ DES MESURES,

@@ -11,7 +11,6 @@
 #   input_select.chauffage_dernier_mode_decide
 #
 # 🧠 Particularites :
-#   - Ne depend plus de ViCare
 #   - Ne projette que les etats executoires
 #   - Les etats neutre / unknown restent non qualifies
 #   - Les attributs exposes permettent un diagnostic rapide

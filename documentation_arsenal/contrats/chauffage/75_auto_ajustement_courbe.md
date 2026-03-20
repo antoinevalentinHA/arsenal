@@ -191,7 +191,7 @@ Chaîne obligatoire :
 2. **Capteurs de proposition (`*_suggeree`)**
 3. **Automation décisionnelle supervisée**
 4. **Écriture helpers consigne**
-5. **Scripts d’application ViCare**
+5. **Scripts d’application**
 6. **Journalisation événementielle**
 
 Interdictions absolues :
@@ -214,7 +214,6 @@ Principe cardinal :
 L’auto-ajustement est autorisé uniquement si :
 
 - auto-ajustement activé explicitement
-- API ViCare disponible
 - régime maison = Normal
 - aucune influence poêle active ou récente
 - grandeurs diagnostiques valides et stables

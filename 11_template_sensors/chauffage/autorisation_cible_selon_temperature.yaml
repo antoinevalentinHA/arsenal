@@ -17,7 +17,6 @@
 #     • exposé aux capteurs canoniques et à l’UI.
 #
 #   Il ne lit JAMAIS l’état matériel.
-#   Il ne dépend JAMAIS de ViCare.
 #
 # ----------------------------------------------------------
 # 🧠 RÔLE FONCTIONNEL

@@ -40,7 +40,6 @@ Il ne couvre pas :
 - le pilotage thermique ECS,
 - la production d’eau chaude,
 - les consignes ou offsets,
-- la logique ViCare,
 - l’optimisation énergétique future.
 
 ---

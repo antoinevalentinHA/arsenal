@@ -2,33 +2,33 @@
 # 🔥 SCRIPT ARSENAL — Chauffage : Appliquer consigne
 # ----------------------------------------------------------
 # 🎯 Rôle :
-#   Appliquer la consigne chauffage correspondant a la
-#   consigne Arsenal demandee :
+#   Appliquer la consigne chauffage correspondant à la
+#   consigne Arsenal demandée :
 #     - confort  -> input_number.chauffage_consigne_confort
-#     - reduite  -> input_number.chauffage_consigne_reduite
+#     - réduite  -> input_number.chauffage_consigne_reduite
 #
 # 🧠 Nature du script :
-#   - Script STRICTEMENT executif
-#   - Aucune logique decisionnelle integree
-#   - Aucun declenchement direct par l’interface utilisateur
+#   - Script STRICTEMENT exécutif
+#   - Aucune logique décisionnelle intégrée
+#   - Aucun déclenchement direct par l’interface utilisateur
 #
 # ⚙️ Comportement :
-#   - Recoit une consigne Arsenal : confort / reduite
+#   - Recoit une consigne Arsenal : confort / réduite
 #   - Lit automatiquement la bonne consigne locale
-#   - Genere un request_id UUID v4
+#   - Génère un request_id UUID v4
 #   - Publie UNE commande MQTT vers boiler bridge
 #   - Attend une conclusion ACK corrélée :
 #       applied / rejected / timeout
-#   - N’ecrit la memoire souveraine Arsenal qu’apres succes reel
+#   - N’écrit la mémoire souveraine Arsenal qu’après succès réel
 #
 # 🔒 Garanties :
-#   - Script executif pur
-#   - Aucun faux succes declare
-#   - Aucune dependance a ViCare
+#   - Script exécutif pur
+#   - Aucun faux succès déclaré
+#   - Aucune dépendance à ViCare
 #
 # ⚠️ Important :
-#   - accepted n’est PAS un succes metier
-#   - seul un ACK corrélé = applied vaut succes d’execution
+#   - accepted n’est PAS un succès métier
+#   - seul un ACK corrélé = applied vaut succès d’exécution
 #
 # 📌 Dependances :
 #   - input_boolean.chauffage_application_en_cours
@@ -37,14 +37,14 @@
 #   - input_number.chauffage_consigne_confort
 #   - input_number.chauffage_consigne_reduite
 #   - input_text.boiler_req_heating_set_temperature
-#   - sensor.boiler_ack_heating_set_temperature_result
+#   - sensor.boiler_ack_heating_set_temperature_status
 #
-# 🗓️ Compatibilite : Home Assistant 2024.8+
+# 🗓️ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
 chauffage_appliquer_consigne:
   alias: "Chauffage – Appliquer consigne"
-  mode: restart
+  mode: single
   fields:
     consigne:
       name: "Consigne Arsenal"
@@ -67,7 +67,7 @@ chauffage_appliquer_consigne:
     # ======================================================
     # 🧾 ETAPE 0 : VARIABLES TRANSACTIONNELLES
     # ------------------------------------------------------
-    # Selection dynamique de la consigne cible
+    # Sélection dynamique de la consigne cible
     # ======================================================
     - variables:
         boiler_consigne: >
@@ -159,7 +159,10 @@ chauffage_appliquer_consigne:
     # ⏳ ETAPE 5 : ATTENTE CONCLUSION ACK CORRELEE
     # ======================================================
     - wait_template: >
-        {{ states('sensor.boiler_ack_heating_set_temperature_result') in ['applied', 'rejected', 'timeout'] }}
+        {{
+          states('sensor.boiler_ack_heating_set_temperature_status') in ['applied', 'rejected', 'timeout']
+          and states('sensor.boiler_ack_heating_set_temperature_request_id') == boiler_request_id
+        }}
       timeout: "00:00:20"
       continue_on_timeout: true
 
@@ -170,7 +173,10 @@ chauffage_appliquer_consigne:
         - conditions:
             - condition: template
               value_template: >
-                {{ states('sensor.boiler_ack_heating_set_temperature_result') == 'applied' }}
+                {{
+                  states('sensor.boiler_ack_heating_set_temperature_status') == 'applied'
+                  and states('sensor.boiler_ack_heating_set_temperature_request_id') == boiler_request_id
+                }}
           sequence:
             - service: input_select.select_option
               target:

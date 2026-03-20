@@ -31,7 +31,7 @@
 #   - timestamp_brut : `1730225100.0`
 #
 # 📊 Type : Template Sensor  
-# 🪄 Domaine : ECS / Historique cycles ViCare  
+# 🪄 Domaine : ECS / Historique cycles
 # ==========================================================
 
 - sensor:

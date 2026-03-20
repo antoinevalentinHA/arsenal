@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION :
+#     ECS – Pipeline guard au démarrage
+#
+# ID : 10250000000025
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Éliminer un pipeline ECS zombie après redémarrage,
+#   sans interrompre un cycle ECS légitime en cours.
+#
+# 🧠 PRINCIPE
+#   - Si pipeline actif ET cycle ECS actif → on conserve
+#   - Sinon → purge du flag pipeline (anti-zombie)
+#
+# 🚫 NE FAIT PAS
+#   - Ne modifie pas ecs_cycle_en_cours
+#   - Ne pilote aucune consigne ECS
+#   - Ne déclenche aucun cycle
+#
+# ⚠️ POINT DE VIGILANCE
+#   - Cas limite : reboot très précoce pendant démarrage cycle
+#   - Améliorable via vérification thermique (non inclus ici)
+#
+# ==========================================================
+
+- id: "10250000000025"
+  alias: "ECS – Pipeline guard au démarrage"
+  mode: single
+
+  trigger:
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.ecs_pipeline_en_cours
+      state: "on"
+
+  action:
+    - choose:
+        # --------------------------------------------------
+        # CAS 1 : cycle légitime → on conserve
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.ecs_cycle_en_cours
+              state: "on"
+          sequence:
+            - action: logbook.log
+              data:
+                name: "ECS"
+                message: "Pipeline conservé après redémarrage (cycle actif)"
+
+      default:
+        # --------------------------------------------------
+        # CAS 2 : zombie → purge
+        # --------------------------------------------------
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.ecs_pipeline_en_cours
+
+        - action: logbook.log
+          data:
+            name: "ECS"
+            message: "Pipeline zombie purgé après redémarrage"

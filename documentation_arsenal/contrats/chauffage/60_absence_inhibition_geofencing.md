@@ -275,7 +275,7 @@ L’inhibition du géofencing ne doit JAMAIS :
 - ignorer une interdiction système,
 - déclencher une décision directe,
 - écrire une consigne,
-- appeler ViCare.
+- appeler directement la couche matérielle.
 
 Toute dérive constitue :
 

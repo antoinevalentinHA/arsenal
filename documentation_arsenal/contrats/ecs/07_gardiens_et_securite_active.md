@@ -74,7 +74,7 @@ En cas d’échec répété :
 ### 5.1 Rôle
 
 - vérification différée du rabaissement
-- tolérance aux ratés ViCare
+- tolérance aux échecs d’application de la consigne
 - neutralité pendant cycle
 
 ---

@@ -17,7 +17,7 @@
 #
 # ⚙️ Utilisation réelle :
 #   - Consommé par :
-#       • 09_scripts/vicare/ecs/cycle.yaml
+#       • script.chauffage_ecs_cycle
 #
 # 🧠 Principe Arsenal :
 #   - Helper RELATIF (delta)
@@ -28,7 +28,6 @@
 # 📐 Unité :
 #   - Degrés Celsius (°C)
 # ==========================================================
-
 
 ecs_trigger_ceiling_tiny_medium:
   name: ECS — Plafond Amorçage Tiny/Medium (consigne - X)

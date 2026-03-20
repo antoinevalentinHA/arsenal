@@ -14,7 +14,7 @@
 #
 # 💡 Avantages :
 #   - Filtrage physique → plus de faux positifs
-#   - 100 % local, sans dépendance directe ViCare
+#   - 100 % local
 #   - Cohérence parfaite entre logique et réalité
 #
 # 📊 Type : Template Binary Sensors (syntax moderne)

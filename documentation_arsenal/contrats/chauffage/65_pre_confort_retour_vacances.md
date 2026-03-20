@@ -421,7 +421,7 @@ Le pré-confort retour Vacances ne doit JAMAIS :
 - court-circuiter un blocage hiérarchique,
 - ignorer une abstention décisionnelle,
 - écrire une consigne,
-- appeler ViCare,
+- appeler directement la couche matérielle,
 - déclencher une transition directe.
 
 Toute dérive constitue :

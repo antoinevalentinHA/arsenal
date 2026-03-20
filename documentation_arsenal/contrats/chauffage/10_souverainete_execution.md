@@ -1,510 +1,394 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF FONDATEUR
-#     CHAUFFAGE — SOUVERAINETÉ D’EXÉCUTION (V3 PRO)
-# ==========================================================
-#
-# 📌 STATUT :
-#   CONTRAT NORMATIF FONDATEUR — GOUVERNANCE D’EXÉCUTION
-#
-# 🔒 AUTORITÉ :
-#   Ce document définit les règles de **souveraineté d’exécution**
-#   du sous-système Chauffage Arsenal.
-#
-#   Il formalise :
-#     • qui est autorisé à exécuter une action,
-#     • dans quel périmètre,
-#     • sous quelle autorité,
-#     • avec quelles garanties,
-#     • et avec quelles interdictions absolues.
-#
-#   Il est OPPOSABLE à toute implémentation :
-#     • scripts d’application,
-#     • automatismes matériels,
-#     • intégrations cloud,
-#     • appels directs ViCare,
-#     • commandes UI.
-#
-#   Subordonné à :
-#     /homeassistant/documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
-#
-# ==========================================================
+# Arsenal — Contrat Normatif Fondateur
+## Chauffage — Souveraineté d'Exécution (V3 Pro)
 
+---
 
-# ----------------------------------------------------------
-# 🎯 1. OBJET DU CONTRAT
-# ----------------------------------------------------------
+**Statut :** Contrat normatif fondateur — Gouvernance d'exécution
 
-Ce contrat définit la **souveraineté d’exécution** du sous-système Chauffage.
+**Autorité :**
+Ce document définit les règles de souveraineté d'exécution du sous-système Chauffage Arsenal.
+
+Il formalise :
+- qui est autorisé à exécuter une action ;
+- dans quel périmètre ;
+- sous quelle autorité ;
+- avec quelles garanties ;
+- et avec quelles interdictions absolues.
+
+Il est opposable à toute implémentation : scripts d'application, automatisations matérielles,
+adaptateurs locaux, commandes UI.
+
+Subordonné à :
+`/homeassistant/documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md`
+
+---
+
+## 1. Objet du contrat
+
+Ce contrat définit la **souveraineté d'exécution** du sous-système Chauffage.
 
 Il formalise :
 
-- les niveaux d’autorité d’exécution,
-- la séparation stricte décision / application / matériel,
-- les règles d’appel légitimes,
-- les interdictions formelles d’accès direct,
-- la protection contre les dérives API et UI.
+- les niveaux d'autorité d'exécution ;
+- la séparation stricte décision / application / validation / matériel ;
+- les règles d'appel légitimes ;
+- les interdictions formelles d'accès direct ;
+- les garanties transactionnelles d'exécution.
 
 Ce contrat garantit que :
 
-> 🧠 **AUCUNE ACTION MATÉRIELLE NE PEUT ÊTRE EXÉCUTÉE  
-> SANS PASSER PAR LE CERVEAU ARSENAL**
+> **AUCUNE ACTION MATÉRIELLE NE PEUT ÊTRE EXÉCUTÉE SANS DÉCISION CENTRALE,
+> CHAÎNE D'APPLICATION OFFICIELLE ET VALIDATION EXPLICITE D'EXÉCUTION.**
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 2. PRINCIPE DE SOUVERAINETÉ
-# ----------------------------------------------------------
+## 2. Principe de souveraineté
 
 Principe cardinal :
 
-> 🔒 **Le moteur Chauffage Arsenal est l’autorité souveraine  
-> de référence sur toute intention et toute décision thermique.**
+> **Le moteur Chauffage Arsenal est l'autorité souveraine de référence
+> sur toute intention, toute décision et toute exécution thermique légitime.**
 
 Cela implique :
 
-- aucune entité externe ne produit de décision métier,
-- aucune UI ne produit d’ordre matériel autonome,
-- aucune intégration cloud n’est autorité décisionnelle,
-- aucun script n’est habilité à décider hors moteur.
-
-Cependant :
-
-- des dérives matérielles peuvent être injectées passivement,
-- des synchronisations cloud peuvent modifier l’état réel,
-- des redémarrages HA peuvent produire des incohérences transitoires.
-
-Dans ces cas :
-
-> 🧠 **Arsenal conserve la souveraineté par restauration de cohérence**,  
-> et non par interdiction absolue d’injection externe.
+- aucune entité externe ne produit de décision métier ;
+- aucune UI ne produit d'ordre matériel autonome ;
+- aucun adaptateur matériel n'est autorité décisionnelle ;
+- aucun script n'est habilité à décider hors moteur ;
+- aucune action n'est considérée comme réussie sans validation explicite.
 
 Toute action matérielle légitime doit être :
 
-- décidée par la Décision Centrale,
-- mémorisée comme décision de référence,
-- transmise par la couche d’application,
-- exécutée par un adaptateur matériel,
-- restaurée si nécessaire par une garde de cohérence.
+- décidée par la Décision Centrale ;
+- mémorisée comme décision de référence ;
+- transmise par la couche d'application ;
+- exécutée via l'adaptateur matériel officiel ;
+- validée par un retour d'exécution explicite.
 
 La souveraineté est donc définie comme :
 
-> 🔒 **Souveraineté par autorité décisionnelle  
-> et restauration défensive de l’état matériel.**
+> **Souveraineté par autorité décisionnelle
+> et validation transactionnelle de l'exécution.**
 
 ---
 
-# ----------------------------------------------------------
-# 🧱 3. COUCHES D’AUTORITÉ D’EXÉCUTION
-# ----------------------------------------------------------
+## 3. Couches d'autorité d'exécution
 
-L’architecture est structurée en **quatre couches souveraines**.
+L'architecture est structurée en **quatre couches d'autorité d'exécution**.
 
-## 3.1 Couche Décisionnelle (Autorité suprême)
+---
 
-Rôle :
+### 3.1 Couche Décisionnelle — Autorité suprême
 
-- produire une décision explicite,
-- choisir un régime cible,
+**Rôle :**
+- produire une décision explicite ;
+- choisir un régime cible ;
 - refuser toute action illégitime.
 
-Entités autorisées :
-
+**Entités autorisées :**
 - `script.chauffage_decision_centrale`
 - moteurs décisionnels dérivés.
 
-Interdictions :
-
-- aucun accès matériel,
-- aucun appel ViCare,
-- aucune écriture de consigne,
-- aucune interaction directe.
+**Interdictions :**
+- aucun accès matériel ;
+- aucune écriture de consigne directe ;
+- aucune interaction directe avec l'adaptateur.
 
 ---
-## 3.2 Couche d’Autorisation (Intention thermique)
 
-Rôle :
+### 3.2 Couche d'Autorisation — Intention thermique
 
-- produire une intention autorisée,
-- décrire l’état thermique local,
+**Rôle :**
+- produire une intention autorisée ;
+- décrire l'état thermique local ;
 - proposer sans imposer.
 
-Entités autorisées :
-
+**Entités autorisées :**
 - `sensor.chauffage_autorisation_cible`
-- capteurs d’intention thermique.
+- capteurs d'intention thermique.
 
----
+**Interdictions :**
+- aucune décision ;
+- aucune action ;
+- aucun pilotage ;
+- aucune lecture matérielle.
 
-### Autorisations contextuelles automatiques
+#### Autorisations contextuelles automatiques
 
-Certaines autorisations thermiques peuvent être produites automatiquement
-par des mécanismes contextuels légitimes, sans constituer une décision
-ni une action d’exécution.
+Certaines autorisations thermiques peuvent être produites automatiquement par des mécanismes
+contextuels légitimes, sans constituer une décision ni une action d'exécution.
 
 Caractéristiques cardinales :
 
-- ne produisent jamais d’ordre matériel,
-- ne déclenchent aucune exécution,
-- n’interagissent avec aucune intégration,
-- se limitent exclusivement à la couche d’autorisation.
+- ne produisent jamais d'ordre matériel ;
+- ne déclenchent aucune exécution ;
+- n'interagissent avec aucun adaptateur ;
+- se limitent exclusivement à la couche d'autorisation.
 
-Mécanismes reconnus :
-
-- inhibition géofencing,
-- pré-confort retour vacances.
+Mécanismes reconnus : inhibition géofencing, pré-confort retour vacances.
 
 Règles cardinales :
 
-- ces mécanismes n’ont aucun droit d’accès aux couches d’application ou matérielle,
-- ils ne peuvent agir que par modification d’un helper d’autorisation reconnu,
-- ils ne peuvent jamais appeler un script d’exécution ni une intégration.
+- ces mécanismes n'ont aucun droit d'accès aux couches d'application ou matérielle ;
+- ils ne peuvent agir que par modification d'un helper d'autorisation reconnu ;
+- ils ne peuvent jamais appeler un script d'exécution ni un adaptateur.
 
-Toute interaction directe avec la chaîne d’exécution constitue une rupture de souveraineté.
-
----
-
-Interdictions :
-
-- aucune décision,
-- aucune action,
-- aucun pilotage,
-- aucune lecture matérielle.
+Toute interaction directe avec la chaîne d'exécution constitue une rupture de souveraineté.
 
 ---
 
-## 3.3 Couche d’Application (Exécution logique)
+### 3.3 Couche d'Application — Exécution logique
 
-Rôle :
+**Rôle :**
+- traduire une décision en commande exécutable ;
+- préparer la transaction d'exécution ;
+- gérer la sérialisation et les transitions ;
+- produire la traçabilité ;
+- attendre un résultat explicite d'exécution.
 
-- traduire une décision en ordre logique,
-- appliquer des consignes abstraites,
-- gérer les transitions,
-- produire la traçabilité.
-
-Entités autorisées :
-
+**Entités autorisées :**
 - `script.chauffage_appliquer_consigne`
-- scripts d’application thermique.
+- scripts d'application thermique.
 
-Garanties :
+**Garanties :**
+- idempotence ;
+- sérialisation ;
+- protection anti-rebond ;
+- vérification préalable d'état ;
+- corrélation de commande (`request_id`) ;
+- absence de succès implicite.
 
-- idempotence,
-- sérialisation,
-- protection anti-rebond,
-- vérification d’état avant action.
-
-Interdictions :
-
-- aucune décision autonome,
-- aucun arbitrage,
-- aucun contournement hiérarchique.
-
----
-
-## 3.4 Couche Matérielle (Adaptateurs & Intégrations)
-
-Rôle :
-
-- transmettre un ordre validé,
-- interfacer avec ViCare,
-- appliquer physiquement une consigne.
-
-Entités autorisées :
-
-- intégration ViCare,
-- adaptateurs locaux chauffage,
-- scripts proxy matériel.
-
-Interdictions absolues :
-
-- aucune logique métier,
-- aucune décision locale,
-- aucune initiative autonome,
-- aucune correction implicite.
+**Interdictions :**
+- aucune décision autonome ;
+- aucun arbitrage ;
+- aucun contournement hiérarchique ;
+- aucune validation implicite.
 
 ---
 
-# ----------------------------------------------------------
-# 🔒 4. INTERDICTIONS FONDAMENTALES
-# ----------------------------------------------------------
+### 3.4 Couche Matérielle — Adaptateur d'exécution
 
-Il est STRICTEMENT INTERDIT :
+**Rôle :**
+- transmettre une commande validée par la couche d'application ;
+- interfacer avec le matériel via l'adaptateur local officiel (boiler bridge) ;
+- exposer les retours d'exécution ;
+- n'exécuter aucune logique métier.
 
-- d’appeler ViCare hors couche d’application,
-- de modifier une consigne depuis l’UI,
-- de piloter un thermostat directement,
-- de créer une automatisation matérielle autonome,
-- d’écrire un programme chauffage sans décision centrale,
-- de déclencher une chauffe par seuil direct.
+**Entités autorisées :**
+- boiler bridge ;
+- canal de transport MQTT ;
+- mécanismes d'exposition des retours d'exécution ;
+- adaptateurs locaux chauffage.
+
+**Interdictions absolues :**
+- aucune logique métier ;
+- aucune décision locale ;
+- aucune initiative autonome ;
+- aucune correction implicite ;
+- aucune réinterprétation de l'intention Arsenal.
+
+---
+
+## 4. Interdictions fondamentales
+
+Il est **strictement interdit** :
+
+- de publier une commande matérielle hors chaîne officielle ;
+- d'émettre une action sans décision centrale préalable ;
+- de modifier une consigne depuis l'UI par accès direct matériel ;
+- de contourner le boiler bridge ;
+- de créer une automatisation matérielle autonome ;
+- de considérer une commande comme réussie sans validation explicite ;
+- de déclencher une chauffe par seuil direct ;
+- de produire une logique métier dans la couche matérielle.
 
 Toute violation constitue :
 
-- une rupture de souveraineté,
-- une dérive d’architecture,
-- un risque de pompage API,
+- une rupture de souveraineté ;
+- une dérive d'architecture ;
 - une perte de gouvernance.
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 5. GOUVERNANCE DES APPELS VI CARE
-# ----------------------------------------------------------
+## 5. Gouvernance d'exécution
 
-Principes :
+**Principes :**
 
-- ViCare est un **adaptateur matériel passif**,
-- ViCare ne décide jamais,
-- ViCare n’est jamais une autorité métier,
-- ViCare est toujours subordonné au moteur Arsenal.
+- l'adaptateur matériel local est passif ;
+- il ne décide jamais ;
+- il ne constitue jamais une autorité métier ;
+- il reste toujours subordonné au moteur Arsenal.
 
-Règles :
+**Règles :**
 
-- tout appel ViCare est initié par un script d’application,
-- aucun appel périodique n’est autorisé sans nécessité métier,
-- toute correction ViCare est contrôlée par Arsenal,
-- toute dérive API est auditée.
+- toute commande est initiée par un script d'application autorisé ;
+- toute commande doit être traçable et corrélée (`request_id`) ;
+- toute commande doit attendre un retour d'exécution explicite ;
+- toute commande doit être clôturée par un statut explicite : `applied`, `rejected` ou `timeout` ;
+- tout échec d'exécution doit être diagnostiquable.
 
-Objectifs :
+**Objectifs :**
 
-- réduire drastiquement les requêtes API,
-- éviter les conflits cloud / local,
-- garantir la souveraineté locale.
+- garantir l'exécution locale et souveraine ;
+- éviter tout contournement matériel ;
+- supprimer toute réussite supposée.
 
 ---
 
-# ----------------------------------------------------------
-# 🧩 6. UI, COMMANDES MANUELLES & EXCEPTIONS
-# ----------------------------------------------------------
+## 6. UI, commandes manuelles et exceptions
 
-Règles cardinales :
+**Règles cardinales :**
 
-- aucune carte UI ne pilote directement le chauffage,
-- toute action utilisateur passe par un helper ou un script autorisé,
+- aucune carte UI ne pilote directement le chauffage ;
+- toute action utilisateur passe par un helper ou un script autorisé ;
 - toute commande manuelle est réinterprétée par la Décision Centrale.
 
-Cas autorisés :
+**Cas autorisés :**
 
-- forçage confort via `input_boolean.mode_confort_chauffage`,
-- désactivation système via helpers de gouvernance,
+- forçage confort via `input_boolean.mode_confort_chauffage` ;
+- désactivation système via helpers de gouvernance ;
 - modes maison officiels.
 
-Cas interdits :
+**Cas interdits :**
 
-- slider thermostat direct,
-- carte climate interactive,
-- script UI appelant ViCare,
+- slider thermostat direct ;
+- carte climate interactive ;
+- script UI appelant un adaptateur directement ;
 - automatisation utilisateur hors moteur.
 
 ---
 
-# ----------------------------------------------------------
-# 🛡️ 6 bis. GARDE DE COHÉRENCE POST-MATÉRIELLE
-# ----------------------------------------------------------
+## 6 bis. Diagnostic d'échec d'exécution
 
-Le sous-système Chauffage Arsenal tolère l’existence de :
+Le sous-système Chauffage Arsenal traite tout retour d'exécution comme une information
+contractuelle. Aucune commande n'est considérée comme appliquée sans confirmation explicite.
 
-- synchronisations cloud ViCare,
-- redémarrages Home Assistant,
-- mises à jour matérielles,
-- dérives passives de programme.
+### Principe fondamental
 
-Ces événements peuvent produire :
+La divergence critique à surveiller est :
 
-- une divergence entre l’état matériel réel,
-- et la dernière décision officiellement exécutée par Arsenal.
+    commande émise ≠ application validée
 
-Dans ce cas :
+L'échec correspond à :
+- rejet explicite par l'adaptateur (`rejected`) ;
+- absence d'ACK dans le délai contractuel (`timeout`).
 
-- aucune décision thermique n’est produite,
-- aucune hiérarchie n’est réévaluée,
-- aucune autorisation n’est recalculée.
+Ce mécanisme repose sur une séparation stricte entre :
 
-Un mécanisme défensif spécialisé est autorisé :
+- **émission de commande** (couche d'application) ;
+- **réception du retour d'exécution** (couche matérielle) ;
+- **qualification du résultat** (lecture pure, non décisionnelle).
 
-> 🧠 **GARDE DE COHÉRENCE POST-MATÉRIELLE**
+Aucune décision thermique n'est produite dans ce cadre.
+La Décision Centrale demeure l'unique autorité thermique.
 
----
+### États de retour reconnus
 
-## 🎯 Principe fondamental
+| État ACK   | Signification                              | Action Arsenal                          |
+|------------|--------------------------------------------|-----------------------------------------|
+| `applied`  | Commande exécutée et confirmée             | État validé, traçabilité produite       |
+| `rejected` | Commande refusée par l'adaptateur          | Échec qualifié, alerte diagnostic       |
+| `timeout`  | Absence de retour dans le délai contractuel| Échec qualifié, alerte diagnostic       |
 
-Le mécanisme repose sur une séparation stricte entre :
-
-- **détection de divergence** (lecture pure, qualifiée),
-- **correction matérielle** (action défensive),
-- **décision thermique** (strictement interdite).
-
-Aucune décision n’est jamais prise dans ce cadre.  
-La Décision Centrale demeure l’unique autorité thermique.
-
----
-
-## 🧩 Architecture de référence
-
-La garde de cohérence est désormais structurée en deux couches distinctes :
-
-### 1️⃣ Détection qualifiée d’incohérence (lecture pure)
-
-Un capteur métier dédié assure la détection déterministe de toute divergence :
-
-- `binary_sensor.chauffage_incoherence_vicare_decision`
-
-Rôle :
-
-- comparer :
-  - le programme réel ViCare (`sensor.programme_chauffage`)
-  - la dernière consigne souveraine Arsenal (`input_select.chauffage_dernier_mode_decide`)
-- qualifier une incohérence effective et stable
-
-Propriétés cardinales :
-
-- neutralisé si API indisponible  
-- neutralisé si application matérielle en cours  
-- ignore états Inconnu / unknown / unavailable  
-- anti-rebond temporel intégré  
-- lecture pure, non historisée  
-
-Ce capteur constitue :
-
-> 🧠 **LA SOURCE UNIQUE DE VÉRITÉ DE DIVERGENCE POST-MATÉRIELLE**
-
----
-
-### 2️⃣ Correction défensive de cohérence
-
-Une automation spécialisée est autorisée :
-
-- `10240000000004 — Réalignement ViCare HA`
-
-Déclenchement exclusif :
-
-- sur transition `off → on` de  
-  `binary_sensor.chauffage_incoherence_vicare_decision`
-- ou sur stabilisation de Home Assistant (`input_boolean.systeme_stable`)
-
-Rôle :
-
-- restaurer strictement l’état matériel décidé,
-- sans jamais recalculer ni réévaluer quoi que ce soit.
-
----
-
-## 🚫 Interdictions structurelles
+### Interdictions structurelles
 
 Ce mécanisme est strictement interdit de :
 
-- produire une décision thermique,
-- réévaluer une hiérarchie,
-- modifier `input_select.chauffage_dernier_mode_decide`,
-- appeler directement `climate.*`,
-- intégrer une logique métier (présence, seuil, blocage, hystérésis),
-- se déclencher autrement que par incohérence qualifiée ou redémarrage.
+- produire une décision thermique ;
+- réévaluer une hiérarchie ;
+- modifier `input_select.chauffage_dernier_mode_decide` ;
+- intégrer une logique métier (présence, seuil, blocage, hystérésis) ;
+- supposer un succès en l'absence d'ACK.
+
+### Statut architectural
+
+Ce mécanisme constitue un **invariant de validation transactionnelle**, garantissant :
+
+- l'absence de succès implicite ;
+- la traçabilité complète de toute exécution ;
+- la détection déterministe de tout échec d'application.
+
+La Décision Centrale Chauffage demeure **l'autorité unique de décision thermique**.
+Toute autre couche lui est strictement subordonnée.
 
 ---
 
-## 🛡️ Statut architectural
-
-Ce mécanisme constitue :
-
-> 🛡️ **UN INVARIANT DÉFENSIF DE SOUVERAINETÉ POST-MATÉRIELLE**  
-> garantissant :
-
-- l’alignement durable entre décision et matériel,
-- l’immunité aux dérives cloud passives,
-- l’absence totale de dépendance décisionnelle à ViCare,
-- la restauration systématique et déterministe de l’état souverain.
-
-La Décision Centrale Chauffage demeure :
-
-> 🧠 **L’AUTORITÉ UNIQUE DE DÉCISION THERMIQUE**  
-toute autre couche étant strictement subordonnée.
-
----
-
-# ----------------------------------------------------------
-# 🔁 7. TRAÇABILITÉ & AUDIT D’EXÉCUTION
-# ----------------------------------------------------------
+## 7. Traçabilité et audit d'exécution
 
 Toute action matérielle doit produire :
 
-- une décision traçable,
-- une raison métier explicite,
-- un logbook lisible,
-- un état final cohérent.
+- une décision traçable ;
+- une raison métier explicite ;
+- une commande identifiable (`request_id`) ;
+- un retour d'exécution explicite (`applied` / `rejected` / `timeout`) ;
+- un état final qualifié.
 
-Règles :
+**Règles :**
 
-- aucune action silencieuse,
-- aucune action non justifiée,
-- aucune transition invisible.
+- aucune action silencieuse ;
+- aucune action non justifiée ;
+- aucune transition invisible ;
+- aucune réussite implicite.
 
-Objectifs :
+**Objectifs :**
 
-- auditabilité complète,
-- diagnostic simplifié,
+- auditabilité complète ;
+- diagnostic simplifié ;
 - compréhension humaine permanente.
 
 ---
 
-# ----------------------------------------------------------
-# 🧱 8. INVARIANTS DE SOUVERAINETÉ
-# ----------------------------------------------------------
+## 8. Invariants de souveraineté
 
 Invariants absolus :
 
-- une seule source de décision,
-- une seule chaîne d’exécution,
-- aucun accès direct matériel,
-- aucune initiative cloud,
-- aucune action sans décision préalable,
-- aucune UI souveraine.
+- une seule source de décision ;
+- une seule chaîne d'exécution officielle ;
+- aucun accès direct matériel ;
+- aucune action sans décision préalable ;
+- aucune action sans validation explicite ;
+- aucune UI souveraine ;
+- aucune logique métier dans l'adaptateur matériel.
 
 Toute violation constitue :
 
-- une perte de contrôle système,
-- une rupture de gouvernance,
-- un risque énergétique majeur,
+- une perte de contrôle système ;
+- une rupture de gouvernance ;
+- un risque énergétique majeur ;
 - une dette architecturale critique.
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 9. DÉPENDANCES CONTRACTUELLES
-# ----------------------------------------------------------
+## 9. Dépendances contractuelles
 
-Ce contrat est :
+Ce contrat est subordonné à :
+- `00_gouvernance_chauffage.md`
 
-- subordonné à :
-  - `00_gouvernance_chauffage.md`
-
-- fondation de :
-  - `30_decision_centrale.md`
-  - `40_blocages.md`
-  - `60_absence_inhibition_geofencing.md`
-  - `70_autorisation_thermostat.md`
-  - `80_table_decision_canonique.md`
+Il est fondation de :
+- `30_decision_centrale.md`
+- `40_blocages.md`
+- `60_absence_inhibition_geofencing.md`
+- `70_autorisation_thermostat.md`
+- `80_table_decision_canonique.md`
 
 Il gouverne directement :
 
-- tous les scripts d’application chauffage,
-- tous les appels ViCare,
-- toute interaction UI chauffage,
-- toute automatisation matérielle.
+- tous les scripts d'application chauffage ;
+- toute commande vers l'adaptateur matériel officiel ;
+- toute interaction UI chauffage ;
+- toute automatisation d'exécution ;
+- tout mécanisme de validation d'exécution.
 
 ---
 
-# ----------------------------------------------------------
-# 📌 10. PORTÉE & STABILITÉ
-# ----------------------------------------------------------
+## 10. Portée et stabilité
 
 Ce contrat est :
 
-- fondateur dans l’architecture Arsenal,
-- stable long terme,
-- modifié uniquement lors d’évolutions majeures,
-- versionné explicitement,
+- fondateur dans l'architecture Arsenal ;
+- stable long terme ;
+- modifié uniquement lors d'évolutions majeures ;
+- versionné explicitement ;
 - opposable à toute implémentation.
 
-Il constitue la **charte de souveraineté d’exécution officielle  
-du Chauffage Arsenal V3 PRO**.
-
-# ==========================================================
+Il constitue la **charte de souveraineté d'exécution officielle du Chauffage Arsenal V3 Pro**.

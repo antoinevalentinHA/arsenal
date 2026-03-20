@@ -22,14 +22,13 @@
 #   - Pas de mémoire longue : état uniquement “actuel”
 #
 # 🧩 Usage :
-#   - Script ViCare / décision chauffage : lecture du boolean
+#   - Décision centrale chauffage : lecture du boolean
 #   - Dashboards de diagnostic : affichage uniquement
 #   - Automatisations Poêle : mise à jour de l’état
 #
 # ✅ Architecture :
-#   Arsenal V5+
+#   Arsenal V11+
 # ==========================================================
-
 
 blocage_chauffage_poele:
   name: "Blocage chauffage poele"

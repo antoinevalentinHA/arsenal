@@ -1,156 +1,73 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     ECS – Gardien permanent de la consigne hors cycle
+#     ECS – Gardien consigne hors cycle
 #
 #  ID : 10250000000006
 # ----------------------------------------------------------
 #  🎯 ROLE
-#     Garantir que la consigne ECS soit regulierement
-#     re-appliquee a la valeur de securite (10 °C)
-#     en dehors de tout cycle ECS en cours.
+#     Corriger la consigne ECS vers 10 °C uniquement
+#     lorsqu'une incohérence réelle est détectée hors cycle.
 #
-#     Cette automation agit comme un gardien permanent
-#     de reconvergence, charge de corriger silencieusement
-#     tout ecart hors cycle.
-#
-#  🧱 PRINCIPE ARSENAL
-#     - Les cycles ECS decident quand chauffer
-#     - Hors cycle, la consigne doit revenir a 10 °C
-#     - Le gardien re-applique periodiquement cette valeur
-#       via boiler bridge
+#  🧱 PRINCIPE
+#     - Le déclenchement repose sur un capteur métier simple
+#     - Aucune action si aucune incohérence n'est présente
+#     - Vérification finale sur l'état réel, pas sur l'ACK
 #
 #  🚫 NE FAIT PAS
-#     - Ne declenche aucun cycle ECS
-#     - Ne modifie pas la planification ECS
-#     - Ne corrige jamais pendant un cycle en cours
-#     - Ne depend pas de ViCare
-#
-#  ✅ CONTRAINTES
-#     - Correction silencieuse et idempotente
-#     - Verification par ACK correle
-#     - Relance automatique du timer de surveillance
+#     - Ne déclenche aucun cycle ECS
+#     - Ne dépend pas d'un timer périodique
+#     - N'émet aucune commande MQTT directe
 # ==========================================================
 
 - id: "10250000000006"
   alias: "ECS – Gardien consigne hors cycle"
   description: >
-    Reapplique periodiquement la consigne ECS de securite a 10 °C
-    hors cycle ECS actif, via boiler bridge.
-  mode: restart
+    Corrige la consigne ECS vers 10 °C uniquement lorsqu'une
+    incohérence hors cycle est détectée.
+  mode: single
 
   trigger:
+    - platform: state
+      entity_id: binary_sensor.ecs_consigne_hors_cycle_incoherente
+      to: "on"
+      for: "00:00:20"
+
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
 
-    - platform: event
-      event_type: timer.finished
-      event_data:
-        entity_id: timer.ecs_gardien_consigne_verification
-
   condition:
     - condition: state
-      entity_id: input_boolean.ecs_cycle_en_cours
-      state: "off"
+      entity_id: binary_sensor.ecs_consigne_hors_cycle_incoherente
+      state: "on"
 
   action:
     - variables:
         retour_temp: 10
 
     # ======================================================
-    # 🕐 Stabilisation courte
-    # ======================================================
-    - delay:
-        seconds: 3
-
-    # ======================================================
     # 🧾 Tentative 1
     # ======================================================
-    - variables:
-        boiler_request_id_1: >
-          {% set h = '0123456789abcdef' %}
-          {% set v = '89ab' %}
-          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
-        boiler_ts_1: >
-          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
-        boiler_expires_at_1: >
-          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
-
-    - service: input_text.set_value
-      target:
-        entity_id: input_text.boiler_req_dhw_set_setpoint
+    - service: script.ecs_appliquer_consigne_bridge
       data:
-        value: "{{ boiler_request_id_1 }}"
-
-    - service: mqtt.publish
-      data:
-        topic: "boiler/command/dhw/set_setpoint"
-        qos: 1
-        retain: false
-        payload: >-
-          {
-            "request_id": "{{ boiler_request_id_1 }}",
-            "ts": "{{ boiler_ts_1 }}",
-            "expires_at": "{{ boiler_expires_at_1 }}",
-            "source": "arsenal",
-            "value": {{ retour_temp }}
-          }
-
-    - wait_template: >
-        {{ states('sensor.boiler_ack_dhw_set_setpoint_result') in ['applied', 'rejected', 'timeout'] }}
-      timeout: "00:00:20"
-      continue_on_timeout: true
+        target_temp: "{{ retour_temp }}"
 
     # ======================================================
-    # 🔁 Tentative 2 si echec
+    # 🕐 Laisser le temps à la consigne de converger
+    # ======================================================
+    - delay:
+        seconds: 10
+
+    # ======================================================
+    # 🔁 Tentative 2 uniquement si l'incohérence persiste
     # ======================================================
     - choose:
         - conditions:
-            - condition: template
-              value_template: "{{ states('sensor.boiler_ack_dhw_set_setpoint_result') != 'applied' }}"
+            - condition: state
+              entity_id: binary_sensor.ecs_consigne_hors_cycle_incoherente
+              state: "on"
           sequence:
-            - delay:
-                seconds: 10
-
-            - variables:
-                boiler_request_id_2: >
-                  {% set h = '0123456789abcdef' %}
-                  {% set v = '89ab' %}
-                  {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
-                boiler_ts_2: >
-                  {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
-                boiler_expires_at_2: >
-                  {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
-
-            - service: input_text.set_value
-              target:
-                entity_id: input_text.boiler_req_dhw_set_setpoint
+            - service: script.ecs_appliquer_consigne_bridge
               data:
-                value: "{{ boiler_request_id_2 }}"
-
-            - service: mqtt.publish
-              data:
-                topic: "boiler/command/dhw/set_setpoint"
-                qos: 1
-                retain: false
-                payload: >-
-                  {
-                    "request_id": "{{ boiler_request_id_2 }}",
-                    "ts": "{{ boiler_ts_2 }}",
-                    "expires_at": "{{ boiler_expires_at_2 }}",
-                    "source": "arsenal",
-                    "value": {{ retour_temp }}
-                  }
-
-            - wait_template: >
-                {{ states('sensor.boiler_ack_dhw_set_setpoint_result') in ['applied', 'rejected', 'timeout'] }}
-              timeout: "00:00:20"
-              continue_on_timeout: true
+                target_temp: "{{ retour_temp }}"
       default: []
-
-    # ======================================================
-    # 🔁 Relance du timer de surveillance
-    # ======================================================
-    - service: timer.start
-      target:
-        entity_id: timer.ecs_gardien_consigne_verification

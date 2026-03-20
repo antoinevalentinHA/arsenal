@@ -110,8 +110,6 @@ include:
     - automation.securite_sortie_mode_panne_ecs
     - automation.reseau_confirmation_retour_internet
     - automation.batteries_faibles_notification_quotidienne
-    - automation.alerte_api_viessmann_indisponible
-    - automation.alerte_api_viessmann_retablie
     - script.reboot_netatmo
     - script.redemarrer_box
     - script.mode_panne_coupure_secteur

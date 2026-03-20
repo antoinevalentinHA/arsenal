@@ -16,9 +16,8 @@
 #   - Ne constitue pas une configuration durable
 #
 # 🔗 Utilisation :
-#   - Script :
-#       09_scripts/vicare/ecs/cycle.yaml
-#     → lecture / écriture pendant la session ECS
+#   - Script ECS :
+#       • chauffage_ecs_cycle
 #
 # 🧠 Principe ARSENAL :
 #   - La consigne durable est définie ailleurs
@@ -28,7 +27,6 @@
 #   - Valeur valable UNIQUEMENT pendant la session active
 #   - Hors session, ce champ est inerte
 # ==========================================================
-
 
 ecs_target_temp_session:
   name: ECS Target Temp (session)

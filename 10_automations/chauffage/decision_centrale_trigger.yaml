@@ -154,11 +154,11 @@
     # ⏱️ ORDONNANCEMENT — FIN DE TRANSACTION EXÉCUTIVE
     # ======================================================
 
-    # Fin d'application ViCare (transaction terminée)
+    # Fin d'application chauffage (transaction terminée)
     - platform: state
       entity_id: input_boolean.chauffage_application_en_cours
       to: "off"
-      id: "fin_execution_vicare"
+      id: "fin_application_chauffage"
 
 
     # ======================================================

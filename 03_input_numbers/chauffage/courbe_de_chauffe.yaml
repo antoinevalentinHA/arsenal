@@ -17,13 +17,13 @@
 #   - Les capteurs suggèrent (pente / parallèle).
 #   - Les input_number FIGENT la consigne retenue.
 #   - Les automatisations décident si et quand appliquer.
-#   - ViCare exécute la modification réelle.
+#   - Le pipeline d’exécution chauffage applique la modification.
 #
 # 🔗 Utilisation :
 #   - Référence officielle de la courbe active
 #   - Comparaison avec valeurs suggérées
 #   - Auto-ajustement contrôlé (simulé ou réel)
-#   - Synchronisation HA ↔ ViCare
+#   - Application via scripts / automatisations dédiés
 #   - Affichage diagnostic et réglages manuels
 #
 # ⚠️ Règles fondamentales :
@@ -35,7 +35,6 @@
 #   - Pente       : sans unité
 #   - Parallèle   : degrés Celsius (°C)
 # ==========================================================
-
 
 chauffage_pente_consigne:
   name: Pente (consigne)

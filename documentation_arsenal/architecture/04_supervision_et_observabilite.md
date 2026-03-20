@@ -34,7 +34,6 @@ Garantir :
 ## Invariants
 
 Exemples :
-- cohérence ViCare / décision
 - interdictions absolues
 - blocages thermiques
 - autorisations dynamiques

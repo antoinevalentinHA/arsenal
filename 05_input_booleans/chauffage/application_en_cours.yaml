@@ -1,10 +1,10 @@
 # ==========================================================
 # 🧠 ARSENAL — HELPER D’APPLICATION
-#     Chauffage — Verrou d’application matérielle ViCare
+#     Chauffage — Verrou d’application matérielle
 # ----------------------------------------------------------
 # Rôle :
 #   Marqueur transactionnel indiquant qu’une écriture
-#   matérielle vers ViCare est en cours.
+#   matérielle vers la chaudière est en cours.
 #
 #   Cette entité ne représente :
 #     - ni une intention thermique
@@ -15,7 +15,7 @@
 #   active, afin de :
 #     - protéger contre les effets yo-yo
 #     - empêcher toute correction concurrente
-#     - garantir l’atomicité des écritures ViCare.
+#     - garantir l’atomicité des écritures chauffage.
 #
 # Sémantique :
 #   - ON  → une transaction d’application est en cours
@@ -27,15 +27,16 @@
 #
 #   - Interdite à :
 #       • la Décision Centrale
-#       • l’automation de réalignement
+#       • toute automation de garde
 #       • toute automation métier
 #       • toute écriture depuis l’UI
 #
-#   - Toute automation de garde DOIT refuser d’agir
+#   - Toute automation DOIT refuser d’agir
 #     si cet état est à ON.
 #
 # Nature :
 #   - Verrou transactionnel d’application matérielle
+#   - Synchronisé avec le cycle request / ACK
 #   - Aucun rôle décisionnel
 #   - Aucun rôle thermique
 #

@@ -21,6 +21,6 @@
       unit_of_measurement: "°C"
       icon: mdi:thermometer-chevron-up
       state: >
-        {% set consigne = states('sensor.temperature_de_consigne_appliquee_locale') | float(20) %}
+        {% set consigne = states('sensor.temperature_consigne_appliquee_locale') | float(20) %}
         {% set offset_off = states('input_number.clim_offset_off') | float(0.5) %}
         {{ (consigne + offset_off) | round(1) }}

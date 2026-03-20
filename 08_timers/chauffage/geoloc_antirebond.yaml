@@ -43,7 +43,7 @@
 #   - Séparation stricte entre :
 #       • Filtrage des signaux instables (timer)
 #       • Décision métier (script central)
-#       • Action finale (chauffage / ViCare)
+#       • Action finale (chauffage)
 #
 # ⚠️ Remarque :
 #   Ce timer protège la DÉCISION,

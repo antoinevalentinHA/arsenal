@@ -38,12 +38,6 @@
 # ==========================================================
 
 - platform: statistics
-  name: "gaz_chauffage_total_proxy"
-  entity_id: sensor.gaz_chauffage_total_local
-  state_characteristic: mean
-  sampling_size: 1
-
-- platform: statistics
   name: "clim_consommation_estimee_energy_proxy"
   entity_id: sensor.clim_consommation_estimee_energie
   state_characteristic: mean

@@ -38,7 +38,6 @@ deshumidificateur_yearly_energy:
   source: sensor.deshumidificateur_energy_proxy
   cycle: yearly
 
-
 # ----------------------------------------------------------
 # Réfrigérateur
 # ----------------------------------------------------------
@@ -77,7 +76,6 @@ buanderie_annuel:
   source: sensor.prise_buanderie_energy
   name: Buanderie cette année
   cycle: yearly
-
 
 # ----------------------------------------------------------
 # Éclairage / prises spécifiques
@@ -255,63 +253,6 @@ bouclage_yearly_energy:
   cycle: yearly
 
 ############################################################
-# 🔥 CHAUDIÈRE — GAZ & ÉLECTRICITÉ
-############################################################
-
-# ----------------------------------------------------------
-# Gaz — Chauffage
-# ----------------------------------------------------------
-
-gaz_chauffage_jour:
-  source: sensor.gaz_chauffage_total_proxy
-  cycle: daily
-
-gaz_chauffage_semaine:
-  source: sensor.gaz_chauffage_total_proxy
-  cycle: weekly
-
-gaz_chauffage_mois:
-  source: sensor.gaz_chauffage_total_proxy
-  cycle: monthly
-
-gaz_chauffage_annee:
-  source: sensor.gaz_chauffage_total_proxy
-  cycle: yearly
-
-# ----------------------------------------------------------
-# Gaz — Eau chaude sanitaire (ECS)
-# ----------------------------------------------------------
-
-gaz_ecs_jour:
-  source: sensor.gaz_ecs_total_proxy
-  cycle: daily
-
-gaz_ecs_semaine:
-  source: sensor.gaz_ecs_total_proxy
-  cycle: weekly
-
-gaz_ecs_mois:
-  source: sensor.gaz_ecs_total_proxy
-  cycle: monthly
-
-gaz_ecs_annee:
-  source: sensor.gaz_ecs_total_proxy
-  cycle: yearly
-
-# ----------------------------------------------------------
-# Électricité chaudière
-# ----------------------------------------------------------
-
-electricite_chaudiere_semaine:
-  source: sensor.electricite_chaudiere_semaine_local
-  cycle: weekly
-
-electricite_chaudiere_annee:
-  source: sensor.electricite_chaudiere_annee_local
-  cycle: yearly
-
-
-############################################################
 # 🚗 MOBILITÉ
 ############################################################
 
@@ -335,7 +276,6 @@ audi_e_tron_distance_an:
   source: sensor.audi_e_tron_kilometrage_local
   cycle: yearly
   name: "Distance Audi e-tron (annuelle)"
-
 
 ############################################################
 # 🌧️ MÉTÉO — PRÉCIPITATIONS

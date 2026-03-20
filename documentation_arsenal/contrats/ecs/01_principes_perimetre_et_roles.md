@@ -30,7 +30,7 @@ Relèvent du sous-système ECS :
   - ponctuel
   - vaisselle
   - désinfection
-- Pilotage ViCare ECS :
+- Pilotage ECS via la couche d’application :
   - consigne effective
   - prélèvement unique
 - Gestion complète des cycles :

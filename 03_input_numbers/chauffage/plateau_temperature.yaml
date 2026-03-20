@@ -24,12 +24,12 @@
 #
 # 🔗 Utilisés par :
 #   - Template sensors :
-#       • vicare/chauffage/diagnostic_vannes/plateaux_stricts.yaml
-#       • vicare/chauffage/diagnostic_vannes/affichage_plateau.yaml
+#       • 11_template_sensors/chauffage/vannes_thermostatiques/plateaux_stricts.yaml
+#       • 11_template_sensors/chauffage/vannes_thermostatiques/affichage_plateau.yaml
 #   - Automatisation :
-#       • vicare/chauffage/update_plateaux_thermostatiques.yaml
+#       • 10_automations/chauffage/update_plateaux_thermostatiques.yaml
 #   - Script :
-#       • vicare/chauffage/reset_plateau.yaml
+#       • 09_scripts/chauffage/reset_plateau.yaml
 #
 # 🧠 Principe Arsenal :
 #   - Les capteurs DÉTECTENT
@@ -37,7 +37,6 @@
 #   - Les helpers MÉMORISENT
 #   - Les dashboards AFFICHENT
 # ==========================================================
-
 
 plateau_chambre_arnaud:
   name: plateau_chambre_arnaud

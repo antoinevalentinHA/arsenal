@@ -88,7 +88,6 @@ Hors périmètre strict :
 - estimation d’inertie,
 - réglage des consignes,
 - pilotage matériel,
-- correction ViCare,
 - UI et pédagogie.
 
 ---
@@ -106,7 +105,6 @@ Aucune cause de niveau inférieur ne peut contredire un niveau supérieur.
 Causes structurantes bloquantes :
 
 - chauffage non autorisé système,
-- standby forcé.
 
 Effet normatif :
 
@@ -279,7 +277,6 @@ Objectifs :
 
 - stabilisation logique,
 - protection thermique,
-- protection API ViCare,
 - élimination des oscillations rapides.
 
 ---
@@ -321,7 +318,7 @@ Règles opposables :
 
 La Décision Centrale ne doit JAMAIS :
 
-- appeler ViCare directement,
+- accéder directement à une couche matérielle,
 - modifier une consigne,
 - estimer un besoin thermique,
 - lire un retour matériel comme vérité,

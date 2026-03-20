@@ -187,8 +187,8 @@ Fonctions :
 
 - éviter les bascules rapides comfort / reduced,
 - empêcher les cycles courts d’application,
-- stabiliser l’état matériel,
-- protéger ViCare et la chaudière.
+- protéger l’exécution matérielle et la chaudière,
+- stabiliser l’état matériel. 
 
 Caractéristiques :
 
@@ -215,8 +215,8 @@ Le mécanisme de standby ne doit JAMAIS :
 - interpréter un état métier,
 - déclencher une chauffe,
 - modifier une consigne,
-- appeler ViCare,
 - déclencher une transition matérielle directe,
+- appeler directement la couche matérielle,
 - ignorer une décision centrale.
 
 Il est STRICTEMENT INTERDIT :

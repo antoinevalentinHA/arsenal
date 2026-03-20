@@ -1,0 +1,35 @@
+# ==========================================================
+# 🛣️ ARSENAL — TEMPLATE SENSOR
+#     Chauffage — Consigne appliquee locale
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Exposer la consigne de temperature effectivement
+#   appliquee par Arsenal, en fonction du programme
+#   chauffage en cours.
+#
+# ⚙️ LOGIQUE
+#   - Eco     → input_number.chauffage_consigne_reduite
+#   - Confort → input_number.chauffage_consigne_confort
+#   - Autre   → capteur indisponible
+#
+# 🧠 SOURCE
+#   sensor.programme_chauffage
+#
+# 📊 TYPE
+#   Template Sensor
+#
+# 📏 UNITE
+#   °C
+# ==========================================================
+
+- sensor:
+    - name: "temperature_consigne_appliquee_locale"
+      unit_of_measurement: "°C"
+      availability: >
+        {{ states('sensor.programme_chauffage') in ['Eco', 'Confort'] }}
+      state: >
+        {% if states('sensor.programme_chauffage') == 'Eco' %}
+          {{ states('input_number.chauffage_consigne_reduite') | float(0) }}
+        {% elif states('sensor.programme_chauffage') == 'Confort' %}
+          {{ states('input_number.chauffage_consigne_confort') | float(0) }}
+        {% endif %}

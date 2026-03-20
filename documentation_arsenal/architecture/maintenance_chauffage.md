@@ -95,5 +95,11 @@ Le système s'auto-optimise par **Analyse Statistique** segmentée :
 
 ## 🔍 DIAGNOSTIC RAPIDE
 - **La carte est ORANGE** : Un blocage métier est actif (Fenêtre, Poêle, etc.). Vérifier `sensor.chauffage_raison_calculee`.
+
 - **La carte est BLEUE** : Le système est en attente (Hystérésis thermique). Tout est nominal, le bâtiment conserve sa chaleur.
-- **La carte est ROUGE** : Divergence détectée entre l'intention Arsenal et l'état ViCare. La Garde devrait intervenir sous 10 minutes.
+
+- **La carte est ROUGE** : La commande n’a pas été correctement appliquée.
+  Vérifier :
+    • le statut ACK,
+    • la correspondance des `request_id`,
+    • l’état du boiler bridge.

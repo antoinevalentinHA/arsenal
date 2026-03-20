@@ -26,7 +26,7 @@
 #
 # 🔗 Utilisation :
 #   - Script :
-#       • 09_scripts/vicare/ecs/cycle.yaml
+#       • chauffage_ecs_cycle
 #
 # 🧠 Principe Arsenal :
 #   - La physique fluctue
@@ -35,7 +35,6 @@
 # 📐 Unité :
 #   - degrés Celsius (°C)
 # ==========================================================
-
 
 ecs_eps_ponctuel:
   name: ECS- Epsilon Ponctuel

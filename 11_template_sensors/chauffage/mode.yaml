@@ -2,7 +2,7 @@
 # 🔥 TEMPLATE BINARY SENSOR — Chauffage actif
 # ----------------------------------------------------------
 # 💡 Objectif :
-#   Indiquer si le chauffage ViCare est considéré comme actif,
+#   Indiquer si le chauffage est considéré comme actif,
 #   selon le preset actuel (comfort = actif, sleep = inactif).
 #
 # ⚙️ Fonctionnement :

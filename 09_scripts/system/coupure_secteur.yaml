@@ -68,7 +68,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 mode_panne_coupure_secteur:
   alias: "Mode panne - Coupure secteur"
   mode: single

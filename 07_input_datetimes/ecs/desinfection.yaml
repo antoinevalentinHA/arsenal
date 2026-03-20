@@ -43,13 +43,12 @@
 #   - Séparation stricte entre :
 #       • Planification (input_datetime)
 #       • Autorisation (capteurs)
-#       • Action réelle (ViCare)
+#       • Action réelle (pipeline ECS)
 #
 # ⚠️ Remarque :
 #   Modifier cette valeur change la PLANIFICATION,
 #   jamais le comportement immédiat de l’ECS.
 # ==========================================================
-
 
 ecs_desinfection_heure:
   name: Heure désinfection ECS

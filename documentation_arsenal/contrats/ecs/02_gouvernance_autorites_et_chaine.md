@@ -67,7 +67,7 @@ Les scripts de garde :
 
 Ils ne peuvent jamais :
 
-- piloter ViCare
+- piloter directement un adaptateur matériel
 - modifier une consigne
 - court-circuiter l’autorité
 
@@ -90,17 +90,17 @@ Aucune logique thermique n’est admise.
 
 Toute chauffe ECS doit suivre la chaîne :
 
- Intention 
-     ↓ 
- Script de garde
-     ↓ 
- script.chauffage_ecs_cycle
-     ↓ 
- Application ViCare
-     ↓ 
- Surveillance réelle
-     ↓ 
- Rabaissement
+Intention
+    ↓
+Script de garde
+    ↓
+script.chauffage_ecs_cycle
+    ↓
+Application
+    ↓
+Surveillance réelle
+    ↓
+Rabaissement
 
 Toute déviation est une violation contractuelle.
 

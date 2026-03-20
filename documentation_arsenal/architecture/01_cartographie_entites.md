@@ -40,7 +40,7 @@ Ce chiffre représente uniquement les entités enregistrées, hors entités temp
 | switchbot_cloud | 45 |
 | roborock | 42 |
 | withings | 40 |
-| vicare | 39 |
+| vicare | 39 | 🧾 legacy (obsolète) |
 | synology_dsm | 38 |
 | timer | 30 |
 | ping | 28 |
@@ -64,8 +64,20 @@ Ce chiffre représente uniquement les entités enregistrées, hors entités temp
 
 ### Couche Perception (~1 000 entités · ~30 %)
 
-Entités provenant directement d'équipements physiques ou d'API cloud :
-MQTT, Netatmo, Roborock, AudiConnect, ViCare, Synology DSM, Withings, HomeKit Controller, Ping.
+Entités provenant directement d'équipements physiques ou de flux externes.
+
+Inclut :
+- MQTT (dont chaudière via boiler bridge local)
+- Netatmo
+- Roborock
+- AudiConnect
+- Synology DSM
+- Withings
+- HomeKit Controller
+- Ping
+
+⚠️ Remarque :
+L’intégration ViCare est désormais obsolète et ne participe plus au fonctionnement actif du système.
 
 ---
 
@@ -107,7 +119,7 @@ Couche logicielle basée sur le calcul et la dérivation.
 | Couche | Volume | Ratio |
 |---|---|---|
 | Modèle logiciel | ~1 530 | ~45 % |
-| Perception terrain | ~1 000 | ~30 % |
+| Perception terrain (majoritairement locale) | ~1 000 | ~30 % |
 | Orchestration | ~280 | ~8 % |
 | Infrastructure / divers | ~588 | ~17 % |
 
@@ -126,9 +138,16 @@ Dans la majorité des installations Home Assistant, le nombre de templates est i
 Arsenal confirme une architecture **MODEL-DRIVEN dominante**, caractérisée par :
 
 - une couche modèle logiciel très développée
-- une perception terrain importante mais non dominante
-- une orchestration relativement compacte
+- une perception terrain majoritairement locale
+- une orchestration compacte et spécialisée
 
-Cette structure indique que la logique métier est largement dérivée et centralisée, que les automatisations servent principalement d'orchestration, et que Home Assistant est utilisé comme **moteur d'exécution d'un modèle logiciel**.
+Le système repose désormais sur un modèle **déterministe local**, dans lequel :
 
-> **Note :** Avec 3 398 entités, le système entre dans la zone où la croissance naturelle des entités devient exponentielle — phénomène classique dans les architectures model-driven, atteint par très peu d'installations Home Assistant.
+- les décisions sont portées par les capteurs dérivés (couche modèle)
+- les actions sont exécutées via des scripts spécialisés
+- les commandes critiques reposent sur un protocole transactionnel
+  avec corrélation (`request_id`) et validation explicite (ACK)
+
+Aucune action n’est considérée comme réussie sans confirmation.
+
+Home Assistant est utilisé comme **moteur d’exécution d’un système logiciel contractuel**, et non comme simple orchestrateur d’automatisations.

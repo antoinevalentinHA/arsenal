@@ -165,15 +165,6 @@ include:
     - sensor.chauffage_parallele_suggeree
     - sensor.chauffage_pente_suggeree
     - sensor.ecart_consigne_instantane
-    - sensor.electricite_chaudiere_semaine_local
-    - sensor.electricite_chaudiere_annee_local
-    - sensor.gaz_chauffage_jour
-    - sensor.gaz_chauffage_semaine
-    - sensor.gaz_chauffage_mois
-    - sensor.gaz_chauffage_annee
-    - sensor.gaz_chauffage_total_local
-    - sensor.electricite_chaudiere_semaine
-    - sensor.electricite_chaudiere_annee
     - input_boolean.chauffage_standby_force
     - input_boolean.poele_recent
     - input_boolean.blocage_chauffage_poele
@@ -213,11 +204,6 @@ include:
     - sensor.ecs_consigne_chaudiere_securisee
     - sensor.ecs_fin_cycle_consigne_atteinte
     - binary_sensor.ecs_chauffe_en_cours_local
-    - sensor.gaz_ecs_jour
-    - sensor.gaz_ecs_semaine
-    - sensor.gaz_ecs_mois
-    - sensor.gaz_ecs_annee
-    - sensor.gaz_ecs_total_local
     - binary_sensor.ecs_desinfection_retour_vacances_autorisee
     - timer.vacances_longues_ecs
 

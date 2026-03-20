@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     ecs_pipeline_en_cours
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Indiquer qu’un pipeline ECS est en cours d’execution.
+#
+#   Ce flag represente une phase TRANSITOIRE technique,
+#   durant laquelle :
+#     - une commande ECS est en cours d’application
+#     - les etats peuvent etre temporairement incoherents
+#
+# 🚫 NE FAIT PAS
+#   - Ne represente PAS un cycle thermique ECS
+#   - Ne doit PAS etre utilise pour piloter du chauffage
+#   - Ne remplace PAS ecs_cycle_en_cours
+#
+# 🧠 CONTRAT
+#   - ON  → entree dans un pipeline ECS (script executif)
+#   - OFF → sortie certaine du pipeline (succes, erreur, timeout)
+#
+# ⚠️ POINT DE VIGILANCE
+#   - Doit etre pilote UNIQUEMENT par le script ECS central
+#   - Toute sortie doit garantir un retour a OFF (anti-zombie)
+#
+# 📊 TYPE : Helper technique (etat transitoire)
+# ==========================================================
+
+ecs_pipeline_en_cours:
+  name: "ECS Pipeline en cours"
+  icon: mdi:sync-circle

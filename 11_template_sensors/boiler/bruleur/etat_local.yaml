@@ -1,0 +1,63 @@
+# ==========================================================
+# 🔥 TEMPLATE BINARY SENSOR — Brûleur physique (local sécurisé)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer l’état physique réel du brûleur chaudière
+#   à partir de la source locale boiler bridge.
+#
+# ----------------------------------------------------------
+# ⚙️ SOURCE
+#   - binary_sensor.boiler_burner_on
+#     (état remonté directement par le bridge Optolink)
+#
+# ----------------------------------------------------------
+# 🧠 COMPORTEMENT
+#   - Si la valeur source est valide (`on` / `off`)
+#       → propagation directe
+#   - Sinon (`unknown`, `unavailable`, etc.)
+#       → conservation de la dernière valeur connue
+#
+# ----------------------------------------------------------
+# 🛡️ OBJECTIF
+#   - Éviter les oscillations d’état parasites
+#   - Maintenir une continuité d’observabilité
+#   - Garantir un signal exploitable pour les couches métier
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#   - Ne dépend d’aucune API cloud
+#   - Ne reconstruit pas un état
+#   - N’interprète pas le comportement thermique
+#
+# ----------------------------------------------------------
+# 🧾 NOTE ARCHITECTURE
+#   Ce capteur constitue une couche de stabilisation locale
+#   entre la donnée physique brute (bridge) et les usages
+#   métier Arsenal.
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: binary_sensor.boiler_burner_on
+
+  binary_sensor:
+    - name: "Bruleur physique local"
+      unique_id: bruleur_physique_local
+      device_class: heat
+      state: >
+        {% set src = 'binary_sensor.boiler_burner_on' %}
+        {% set etat = states(src) %}
+        {% if etat in ['on', 'off'] %}
+          {{ etat }}
+        {% else %}
+          {{ this.state }}
+        {% endif %}
+      icon: >
+        {% if is_state('binary_sensor.bruleur_physique_local', 'on') %}
+          mdi:fire
+        {% else %}
+          mdi:fire-off
+        {% endif %}

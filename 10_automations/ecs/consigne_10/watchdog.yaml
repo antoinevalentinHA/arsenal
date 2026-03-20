@@ -5,31 +5,34 @@
 #  ID : 10250000000008
 # ----------------------------------------------------------
 #  🎯 ROLE
-#     Garantir la remise en securite complete du ballon ECS
-#     en fin de cycle, meme en cas de defaillance amont.
+#     Garantir la remise en securité complète du ballon ECS
+#     en fin de cycle, même en cas de défaillance amont.
 #
-#     Tente un rabaissement a 10 °C puis libere le verrou.
+#     Tente un rabaissement à 10 °C puis libère le verrou.
 #
 #  🧱 PRINCIPE
 #     - Un cycle ECS ne doit jamais rester ouvert
 #     - La consigne haute ne doit pas persister
-#     - Liberation du verrou quoi qu'il arrive
+#     - Le rabaissement est délégue au script exécutif
+#       script.ecs_appliquer_consigne_bridge
+#     - Libération du verrou quoi qu'il arrive
 #
 #  🚫 NE FAIT PAS
 #     - Aucun log utilisateur
 #     - Aucune notification
-#     - Aucun blocage en cas d'echec
+#     - Aucun blocage en cas d'échec
+#     - Aucune publication MQTT directe
 #
 #  ✅ CONTRAINTES
-#     - Execution deterministe
-#     - Nettoyage transactionnel garanti
+#     - Exécution déterministe
+#     - Libération du verrou garantie
 # ==========================================================
 
 - id: "10250000000008"
   alias: "ECS - Watchdog fin de cycle"
   description: >
-    Fin de cycle ECS forcee : tentative de rabaissement a 10 °C
-    puis liberation du verrou.
+    Fin de cycle ECS forcée : tentative de rabaissement à 10 °C
+    via script exécutif boiler bridge, puis libération du verrou.
   mode: single
 
   trigger:
@@ -45,59 +48,15 @@
     - variables:
         retour_temp: 10
 
-        boiler_request_id: >
-          {% set h = '0123456789abcdef' %}
-          {% set v = '89ab' %}
-          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
-
-        boiler_ts: >
-          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
-
-        boiler_expires_at: >
-          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
-
     # ======================================================
-    # 📤 Envoi commande rabaissement
+    # 🔽 Tentative de rabaissement ECS
     # ======================================================
-    - service: input_text.set_value
-      target:
-        entity_id: input_text.boiler_req_dhw_set_setpoint
+    - service: script.ecs_appliquer_consigne_bridge
       data:
-        value: "{{ boiler_request_id }}"
-
-    - service: mqtt.publish
-      data:
-        topic: "boiler/command/dhw/set_setpoint"
-        qos: 1
-        retain: false
-        payload: >-
-          {
-            "request_id": "{{ boiler_request_id }}",
-            "ts": "{{ boiler_ts }}",
-            "expires_at": "{{ boiler_expires_at }}",
-            "source": "arsenal",
-            "value": {{ retour_temp }}
-          }
+        target_temp: "{{ retour_temp }}"
 
     # ======================================================
-    # ⏳ Attente ACK (non bloquante)
-    # ======================================================
-    - wait_template: >
-        {{ states('sensor.boiler_ack_dhw_set_setpoint_result') in ['applied', 'rejected', 'timeout'] }}
-      timeout: "00:00:20"
-      continue_on_timeout: true
-
-    # ======================================================
-    # 🧹 Nettoyage transactionnel
-    # ======================================================
-    - service: input_text.set_value
-      target:
-        entity_id: input_text.boiler_req_dhw_set_setpoint
-      data:
-        value: ""
-
-    # ======================================================
-    # 🔓 Liberation verrou (toujours)
+    # 🔓 Libération verrou (toujours)
     # ======================================================
     - service: input_boolean.turn_off
       target:

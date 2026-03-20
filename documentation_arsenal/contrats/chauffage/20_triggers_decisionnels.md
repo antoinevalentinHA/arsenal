@@ -180,7 +180,7 @@ Règles cardinales :
 - toute entrée ou sortie d’une autorisation contextuelle
   doit rappeler immédiatement la Décision Centrale,
 - aucune autorisation automatique ne peut subsister
-  sans validation décisionnelle explicite,
+  sans réévaluation décisionnelle explicite,
 - ces triggers ne constituent jamais une cause hiérarchique,
   mais uniquement une modification de l’espace d’autorisation.
 
@@ -192,8 +192,6 @@ Règles cardinales :
 
 | Cause                               | Transition   | Trigger | Criticité | Commentaire |
 |------------------------------------|--------------|---------|-----------|-------------|
-| chauffage_standby_force             | OFF → ON      | OUI     | CRITIQUE  | Entrée blocage hiérarchique |
-| chauffage_standby_force             | ON → OFF      | OUI     | CRITIQUE  | Levée interdiction absolue |
 | aeration_episode_en_cours           | OFF → ON      | OUI     | CRITIQUE  | Début blocage thermique |
 | aeration_episode_en_cours           | ON → OFF      | OUI     | MAJEUR    | Entrée post-aération |
 | chauffage_blocage_aeration          | OFF → ON      | OUI     | CRITIQUE  | Blocage post-aération |
@@ -255,24 +253,10 @@ Capteur pivot : `sensor.chauffage_autorisation_cible`
 # 🔥 BESOIN THERMIQUE (TRANSVERSAL)
 # ----------------------------------------------------------
 
-| Cause                        | Transition | Trigger | Criticité | Commentaire |
-|-----------------------------|------------|---------|-----------|-------------|
-| seuil bas confort franchi   | faux → vrai | OUI    | CRITIQUE  | Reprise attendue |
-| seuil bas protection franchi| faux → vrai | OUI    | CRITIQUE  | Chauffe absence |
-| seuil haut atteint          | vrai → faux | OUI    | CRITIQUE  | Arrêt nécessaire |
+Ce bloc ne constitue pas une source canonique autonome de trigger
+lorsque les transitions sont déjà portées par `sensor.chauffage_autorisation_cible`.
 
-(Normalement inclus via `chauffage_autorisation_cible`)
-
----
-
-# ----------------------------------------------------------
-# 🌡️ STANDBY MÉCANIQUE / HYSTÉRÉSIS
-# ----------------------------------------------------------
-
-| Cause                     | Transition | Trigger | Criticité | Commentaire |
-|--------------------------|------------|---------|-----------|-------------|
-| chauffage_standby_force  | OFF → ON   | OUI     | CRITIQUE  | Entrée attente |
-| chauffage_standby_force  | ON → OFF   | OUI     | CRITIQUE  | Sortie attente |
+Il sert uniquement de lecture explicative transverse.
 
 ---
 
@@ -303,11 +287,9 @@ Capteur pivot : `sensor.chauffage_autorisation_cible`
 # ⏱️ ORDONNANCEMENT & CONVERGENCE
 # ----------------------------------------------------------
 
-| Cause                         | Transition | Trigger | Criticité | Commentaire |
-|------------------------------|------------|---------|-----------|-------------|
-| fin exécution ViCare         | ON → OFF   | OUI     | CRITIQUE  | Décision possiblement obsolète |
-| fin correction défensive     | ON → OFF   | OUI     | MAJEUR    | Revalidation cohérence |
-| systeme_stable               | OFF → ON   | OUI     | CRITIQUE  | Recalcul initial |
+| Cause           | Transition | Trigger | Criticité | Commentaire |
+|----------------|------------|---------|-----------|-------------|
+| systeme_stable | OFF → ON   | OUI     | CRITIQUE  | Recalcul initial |
 
 ---
 

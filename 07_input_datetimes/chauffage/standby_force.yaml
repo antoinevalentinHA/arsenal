@@ -42,13 +42,12 @@
 #       • État (standby forcé)
 #       • Mémoire (input_datetime)
 #       • Décision (pipeline chauffage)
-#       • Action réelle (ViCare)
+#       • Action réelle (chaudière via bridge)
 #
 # ⚠️ Remarque :
 #   La mise à jour de cet horodatage
 #   n’implique AUCUNE action thermique.
 # ==========================================================
-
 
 chauffage_standby_force_changed:
   name: Chauffage standby force - last change

@@ -5,8 +5,8 @@
 #  ID : 10240000000002
 # ----------------------------------------------------------
 #  🎯 RÔLE
-#     Appliquer la décision ternaire calculée par le capteur
-#     central `sensor.chauffage_autorisation_cible` en
+#     Appliquer l’autorisation thermique ternaire portée par
+#     `sensor.chauffage_autorisation_cible` en
 #     pilotant exclusivement le verrou logique
 #     `input_boolean.chauffage_standby_force`.
 #

@@ -37,7 +37,7 @@
 #   - Séparation stricte entre :
 #       • Planification (input_select)
 #       • Autorisation (capteurs / automatisations)
-#       • Action réelle (ViCare)
+#       • Action réelle (pipeline ECS)
 #
 # ⚠️ Remarque :
 #   Modifier ce helper change la PLANIFICATION,

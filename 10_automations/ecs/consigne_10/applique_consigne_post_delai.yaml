@@ -1,55 +1,58 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     ECS – Gardien de reapplication de la consigne apres prelevement
+#     ECS – Gardien de réapplication de la consigne après prélèvement
 #
 #  ID : 10250000000005
 # ----------------------------------------------------------
-#  🎯 ROLE
-#     Reappliquer automatiquement la consigne ECS
-#     de securite (10 °C) a l'issue d'un cycle ECS,
-#     afin d'eviter tout rebond thermique non souhaite.
+#  🎯 RÔLE
+#     Réappliquer automatiquement la consigne ECS
+#     de sécurité (10 °C) à l’issue d’un cycle ECS,
+#     afin d’éviter tout rebond thermique non souhaité.
 #
-#     Cette automation agit comme un gardien post-evenement,
-#     garantissant le retour effectif a l'etat nominal.
+#     Cette automation agit comme un gardien post-événement,
+#     garantissant le retour effectif à l’état nominal.
 #
 #  🧱 PRINCIPE ARSENAL
-#     - La decision ECS est prise ailleurs
-#     - Le gardien verifie et corrige a posteriori
-#     - La securite prime sur l'optimisation
+#     - La décision ECS est prise ailleurs
+#     - Le gardien vérifie et corrige a posteriori
+#     - La sécurité prime sur l’optimisation
+#     - L’écriture chaudière est déléguée au script
+#       script.ecs_appliquer_consigne_bridge
 #
 #  🚫 NE FAIT PAS
-#     - Ne declenche aucun cycle ECS
-#     - Ne modifie pas la strategie ECS globale
-#     - Ne s'execute pas si un cycle ECS est en cours
+#     - Ne déclenche aucun cycle ECS
+#     - Ne modifie pas la stratégie ECS globale
+#     - Ne s’exécute pas si un cycle ECS est en cours
+#     - N’émet aucune commande MQTT directe
 #
 #  🧩 UTILISATION
-#     - Declenchement :
-#         • fin du timer post-prelevement ECS
-#     - Pre-requis :
+#     - Déclenchement :
+#         • fin du timer post-prélèvement ECS
+#     - Pré-requis :
 #         • aucun cycle ECS actif
-#     - Sequence :
+#     - Séquence :
 #         • temporisation de stabilisation
-#         • deux tentatives transactionnelles espacees
-#         • verification par ACK correle
-#         • notification critique si echec persistant
+#         • deux tentatives espacées
+#         • vérification du résultat via ACK
+#         • notification critique si échec persistant
 #
 #  ⚠️ IMPORTANT
-#     - Cette automation applique une consigne de securite
-#     - Toute modification de la valeur cible ou de la strategie
-#       doit etre reflechie au niveau systeme ECS
+#     - Cette automation applique une consigne de sécurité
+#     - Toute modification de la valeur cible ou de la stratégie
+#       doit être réfléchie au niveau système ECS
 #
 #  ✅ CONTRAINTES
-#     - Securite prioritaire sur toute autre consideration
-#     - Verification basee sur ACK correle
-#     - Aucune sortie silencieuse en cas d'echec
+#     - Sécurité prioritaire sur toute autre considération
+#     - Vérification basée sur ACK
+#     - Aucune sortie silencieuse en cas d’échec
 # ==========================================================
 
 - id: "10250000000005"
-  alias: "ECS – Gardien post-prelevement"
+  alias: "ECS – Gardien post-prélèvement"
   description: >
-    Applique et verifie la consigne 10 °C apres un cycle ECS.
-    Double tentative transactionnelle via boiler bridge.
-    Ne s'execute pas si un cycle ECS est en cours.
+    Applique et vérifie la consigne 10 °C après un cycle ECS.
+    Double tentative via script exécutif boiler bridge.
+    Ne s’exécute pas si un cycle ECS est en cours.
   mode: single
 
   trigger:
@@ -80,40 +83,9 @@
         sequence:
           - delay: "00:00:05"
 
-          - variables:
-              boiler_request_id: >
-                {% set h = '0123456789abcdef' %}
-                {% set v = '89ab' %}
-                {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
-              boiler_ts: >
-                {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
-              boiler_expires_at: >
-                {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
-
-          - service: input_text.set_value
-            target:
-              entity_id: input_text.boiler_req_dhw_set_setpoint
+          - service: script.ecs_appliquer_consigne_bridge
             data:
-              value: "{{ boiler_request_id }}"
-
-          - service: mqtt.publish
-            data:
-              topic: "boiler/command/dhw/set_setpoint"
-              qos: 1
-              retain: false
-              payload: >-
-                {
-                  "request_id": "{{ boiler_request_id }}",
-                  "ts": "{{ boiler_ts }}",
-                  "expires_at": "{{ boiler_expires_at }}",
-                  "source": "arsenal",
-                  "value": {{ retour_temp }}
-                }
-
-          - wait_template: >
-              {{ states('sensor.boiler_ack_dhw_set_setpoint_result') in ['applied', 'rejected', 'timeout'] }}
-            timeout: "00:00:20"
-            continue_on_timeout: true
+              target_temp: "{{ retour_temp }}"
 
           - choose:
               - conditions:
@@ -121,24 +93,19 @@
                     value_template: >
                       {{ states('sensor.boiler_ack_dhw_set_setpoint_result') == 'applied' }}
                 sequence:
-                  - service: input_text.set_value
-                    target:
-                      entity_id: input_text.boiler_req_dhw_set_setpoint
-                    data:
-                      value: ""
-                  - stop: "Consigne ECS de securite confirmee par ACK"
+                  - stop: "Consigne ECS de sécurité confirmée par ACK"
 
     # ======================================================
-    # 🚨 Echec persistant apres deux tentatives
+    # 🚨 Échec persistant après deux tentatives
     # ======================================================
     - service: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
-        titre: "🚨 ECS – Consigne non appliquee"
+        titre: "🚨 ECS – Consigne non appliquée"
         message: >
-          A {{ now().strftime('%H:%M') }}, apres deux tentatives transactionnelles boiler bridge,
-          la consigne ECS de securite n'a pas ete confirmee a {{ retour_temp }} °C.
-          Resultat ACK : {{ states('sensor.boiler_ack_dhw_set_setpoint_result') }}.
+          À {{ now().strftime('%H:%M') }}, après deux tentatives via script exécutif boiler bridge,
+          la consigne ECS de sécurité n'a pas été confirmée à {{ retour_temp }} °C.
+          Résultat ACK : {{ states('sensor.boiler_ack_dhw_set_setpoint_result') }}.
 
     - service: input_text.set_value
       target:

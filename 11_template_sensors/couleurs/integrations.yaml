@@ -25,7 +25,6 @@
         - sensor.homekit_age_donnees
         - sensor.netatmo_age_donnees
         - sensor.switchbot_age_donnees
-        - sensor.vicare_age_donnees
         - sensor.fujitsu_age_donnees
         - sensor.petite_maison_cumulus_age_donnees
         - sensor.synology_age_donnees
@@ -42,7 +41,6 @@
           'homekit': 'sensor.homekit_age_donnees',
           'netatmo': 'sensor.netatmo_age_donnees',
           'switchbot': 'sensor.switchbot_age_donnees',
-          'vicare': 'sensor.vicare_age_donnees',
           'fujitsu': 'sensor.fujitsu_age_donnees',
           'cumulus': 'sensor.petite_maison_cumulus_age_donnees',
           'synology': 'sensor.synology_age_donnees',
@@ -58,7 +56,6 @@
           'homekit': 'sensor.homekit_age_donnees',
           'netatmo': 'sensor.netatmo_age_donnees',
           'switchbot': 'sensor.switchbot_age_donnees',
-          'vicare': 'sensor.vicare_age_donnees',
           'fujitsu': 'sensor.fujitsu_age_donnees',
           'cumulus': 'sensor.petite_maison_cumulus_age_donnees',
           'synology': 'sensor.synology_age_donnees',
@@ -69,7 +66,6 @@
           'homekit': 1.0,
           'netatmo': 1.0,
           'switchbot': 1.0,
-          'vicare': 2.0,
           'fujitsu': 2.0,
           'cumulus': 2.0,
           'synology': 2.0,
@@ -80,7 +76,6 @@
           'homekit': 15,
           'netatmo': 15,
           'switchbot': 15,
-          'vicare': 30,
           'fujitsu': 45,
           'cumulus': 60,
           'synology': 30,
@@ -91,7 +86,6 @@
           'homekit': 0.5,
           'netatmo': 0.5,
           'switchbot': 0.5,
-          'vicare': 1.0,
           'fujitsu': 1.0,
           'cumulus': 1.0,
           'synology': 1.0,

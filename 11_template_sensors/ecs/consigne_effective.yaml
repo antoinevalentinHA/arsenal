@@ -3,10 +3,10 @@
 # ----------------------------------------------------------
 # 🎯 Objectif :
 #   Fournir la consigne ECS actuelle de la chaudière
-#   avec conservation locale en cas d’indisponibilité ViCare.
+#   avec conservation locale en cas d’indisponibilité.
 #
 # ⚙️ Fonctionnement :
-#   - Déclenchement sur tout changement de la consigne ViCare
+#   - Déclenchement sur tout changement de la consigne exposée par la chaudière
 #     ou au démarrage de Home Assistant.
 #   - Si la valeur est numérique → mise à jour directe.
 #   - Sinon → conservation de la dernière valeur valide.

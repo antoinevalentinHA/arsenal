@@ -1,0 +1,144 @@
+# ==========================================================
+#  🧠 ARSENAL — SCRIPT :
+#     ECS – Appliquer consigne boiler bridge
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Script strictement executif charge d'appliquer
+#     une consigne ECS via boiler bridge.
+#
+#     Il :
+#       - recoit une valeur cible
+#       - valide la consigne demandee
+#       - verifie si la consigne est deja appliquee
+#       - genere une transaction si necessaire
+#       - publie la commande MQTT
+#       - attend une conclusion ACK correlee
+#       - nettoie le helper de correlation
+#
+#  🧱 PRINCIPE ARSENAL
+#     - aucune decision metier
+#     - aucune notification
+#     - aucune gestion d'etat global ECS
+#     - resultat exploitable par l'appelant via ACK
+#     - no-op si la consigne reelle est deja conforme
+#
+#  ⚠️ HYPOTHESES V1
+#     - usage sequentiel et maitrise
+#     - aucune protection contre les appels concurrents
+#     - aucune verification d'occupation prealable du helper
+#     - la correlation ACK expose un request_id lisible
+#
+#  ⏱️ PARAMETRES TEMPORELS V1
+#     - TTL commande : 30 s
+#     - attente ACK  : 20 s
+#
+#  ✅ CONTRAINTE
+#     - mode: single
+# ==========================================================
+
+ecs_appliquer_consigne_bridge:
+  alias: "ECS – Appliquer consigne boiler bridge"
+  description: >
+    Applique une consigne ECS via boiler bridge, attend une conclusion ACK
+    correlee, puis nettoie le helper de correlation. Script strictement executif.
+  mode: single
+
+  fields:
+    target_temp:
+      name: target_temp
+      description: "Consigne ECS cible"
+      required: true
+      selector:
+        number:
+          min: 0
+          max: 80
+          step: 1
+          mode: box
+          unit_of_measurement: "°C"
+
+  sequence:
+    - variables:
+        effective_target_temp: "{{ target_temp | int(none) }}"
+
+    # ======================================================
+    # 🛑 Rejet si consigne demandee invalide
+    # ======================================================
+    - if:
+        - condition: template
+          value_template: >
+            {{
+              effective_target_temp is none
+              or effective_target_temp < 0
+              or effective_target_temp > 80
+            }}
+      then:
+        - stop: "Consigne ECS invalide"
+
+    # ======================================================
+    # 🛑 No-op si la consigne est deja conforme
+    # ======================================================
+    - if:
+        - condition: template
+          value_template: >
+            {{
+              is_number(states('sensor.boiler_dhw_setpoint'))
+              and (states('sensor.boiler_dhw_setpoint') | int) == effective_target_temp
+            }}
+      then:
+        - stop: "Consigne ECS deja appliquee"
+
+    - variables:
+        boiler_request_id: >
+          {% set h = '0123456789abcdef' %}
+          {% set v = '89ab' %}
+          {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
+        boiler_ts: >
+          {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+        boiler_expires_at: >
+          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
+    # ======================================================
+    # 🧾 Correlation prealable
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_dhw_set_setpoint
+      data:
+        value: "{{ boiler_request_id }}"
+
+    # ======================================================
+    # 📤 Publication commande boiler bridge
+    # ======================================================
+    - service: mqtt.publish
+      data:
+        topic: "boiler/command/dhw/set_setpoint"
+        qos: 1
+        retain: false
+        payload: >-
+          {
+            "request_id": "{{ boiler_request_id }}",
+            "ts": "{{ boiler_ts }}",
+            "expires_at": "{{ boiler_expires_at }}",
+            "source": "arsenal",
+            "value": {{ effective_target_temp }}
+          }
+
+    # ======================================================
+    # ⏳ Attente conclusion ACK corrélée
+    # ======================================================
+    - wait_template: >
+        {{
+          states('sensor.boiler_ack_dhw_set_setpoint_status') in ['applied', 'rejected', 'timeout']
+          and states('sensor.boiler_ack_dhw_set_setpoint_request_id') == boiler_request_id
+        }}
+      timeout: "00:00:20"
+      continue_on_timeout: true
+
+    # ======================================================
+    # 🧹 Nettoyage transactionnel
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_dhw_set_setpoint
+      data:
+        value: ""

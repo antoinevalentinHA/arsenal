@@ -16,12 +16,12 @@
 #   - Les capteurs MESURENT.
 #   - Les consignes EXPRIMENT une intention thermique.
 #   - Les scripts / automatisations DÉCIDENT.
-#   - Les intégrations (ViCare) EXÉCUTENT.
+#   - Le pipeline d’exécution chauffage APPLIQUE.
 #
 # 🔗 Utilisation :
 #   - Calcul des écarts à la consigne
 #   - Logique décisionnelle centrale chauffage
-#   - Synchronisation bidirectionnelle HA ↔ ViCare
+#   - Application des décisions chauffage
 #   - Affichage et réglage via dashboards
 #
 # ⚠️ Règle fondamentale :

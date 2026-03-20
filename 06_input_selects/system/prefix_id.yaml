@@ -74,6 +74,5 @@ prefix_id_select:
     - "1011 - reveils"
     - "1020 - sante"
     - "1012 - system"
-    - "1013 - vicare"
     - "1019 - vmc"
     - "1015 - voiture"

@@ -48,7 +48,7 @@ Ces cas restent soumis à la chaîne autorisée.
 Les scripts d’orchestration :
 
 - ❌ ne calculent aucune consigne
-- ❌ ne déclenchent pas directement ViCare
+- ❌ ne déclenchent pas directement la couche matérielle
 - ❌ ne décident pas d’un cycle
 - ❌ ne modifient aucun verrou
 
