@@ -1,0 +1,153 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Ouverture session
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Ouvrir proprement une session ECS en assurant
+#   l'exclusivité d'exécution et le traitement des verrous.
+#
+# ----------------------------------------------------------
+# 🧱 PERIMETRE
+#
+#   - marquer le pipeline en cours
+#   - inspecter le verrou de cycle existant
+#   - refuser si cycle actif légitime (âge ≤ 5 min)
+#   - débloquer si zombie (âge > 5 min) — fall-through
+#   - activer le verrou cycle
+#   - reset du statut transactionnel de session
+#   - démarrer le watchdog
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - ne lit pas le mode
+#   - ne calcule aucune cible thermique
+#   - ne lit aucun ACK
+#   - ne publie aucune commande chaudière
+#   - ne démarre pas le gardien post-prélèvement
+#   - n'écrit pas dans ecs_target_temp_session
+#     sauf pour nettoyage zombie
+#
+# ----------------------------------------------------------
+# 🔗 DEPENDANCES
+#
+#   - input_boolean.ecs_pipeline_en_cours
+#   - input_boolean.ecs_cycle_en_cours
+#   - timer.ecs_cycle_watchdog
+#   - input_text.ecs_target_temp_session
+#   - input_text.boiler_req_dhw_set_setpoint
+#   - input_text.ecs_cycle_last_action_status
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+ecs_cycle_session_open:
+  alias: "ECS - Ouverture session"
+  mode: single
+
+  sequence:
+
+    # ======================================================
+    # 🟢 ETAPE 1 : Marquer le pipeline en cours
+    # ======================================================
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.ecs_pipeline_en_cours
+
+    # ======================================================
+    # 📊 ETAPE 2 : Lire l'état du verrou cycle
+    # NOTE : age_secondes mesure l'âge du verrou
+    # (last_changed de ecs_cycle_en_cours), pas l'âge
+    # réel du cycle fonctionnel. C'est intentionnel et
+    # cohérent avec le monolithe.
+    # ======================================================
+    - variables:
+        cycle_actif: "{{ is_state('input_boolean.ecs_cycle_en_cours', 'on') }}"
+        age_secondes: >
+          {% if is_state('input_boolean.ecs_cycle_en_cours', 'on') %}
+            {{ (as_timestamp(now()) - as_timestamp(states.input_boolean.ecs_cycle_en_cours.last_changed)) | int }}
+          {% else %}
+            0
+          {% endif %}
+
+    # ======================================================
+    # 🚫 ETAPE 3 : Refus si cycle actif légitime (≤ 5 min)
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ cycle_actif and age_secondes <= 300 }}"
+          sequence:
+            - action: logbook.log
+              data:
+                name: "ECS"
+                message: >
+                  Ouverture refusée : cycle ECS déjà actif
+                  (age={{ age_secondes }}s — seuil=300s)
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.ecs_pipeline_en_cours
+            - stop: "Cycle ECS déjà actif"
+
+    # ======================================================
+    # 🚨 ETAPE 4 : Déblocage zombie si âge > 5 min
+    # Fall-through ensuite vers ouverture nominale.
+    # Annulation watchdog tolérante (timer peut être idle).
+    # ecs_pipeline_en_cours n'est PAS coupé ici : il
+    # appartient à la nouvelle tentative en cours, pas au
+    # cycle zombie. L'asymétrie est intentionnelle.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ cycle_actif and age_secondes > 300 }}"
+          sequence:
+            - action: persistent_notification.create
+              data:
+                title: "⚠️ Déblocage ECS forcé"
+                message: >
+                  {{ now().strftime('%d/%m %H:%M') }} —
+                  Verrou ECS zombie détecté (age={{ age_secondes }}s) → reset automatique.
+
+            - action: timer.cancel
+              target:
+                entity_id: timer.ecs_cycle_watchdog
+
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.ecs_target_temp_session
+              data:
+                value: ""
+
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.boiler_req_dhw_set_setpoint
+              data:
+                value: ""
+
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.ecs_cycle_en_cours
+
+    # ======================================================
+    # 🟢 ETAPE 5 : Ouverture nominale
+    # Ordre contractuel : verrou → statut → watchdog
+    # (initialisation logique complète avant surveillance)
+    # NOTE : timer.start sans duration — la durée du
+    # watchdog est configurée dans le helper timer côté HA.
+    # Si ce n'est pas le cas, ajouter duration: explicite
+    # lors du YAML final.
+    # ======================================================
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.ecs_cycle_en_cours
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.ecs_cycle_last_action_status
+      data:
+        value: ""
+
+    - action: timer.start
+      target:
+        entity_id: timer.ecs_cycle_watchdog

@@ -123,7 +123,7 @@ views:
             name: 🩺 Systèmes critiques
 
           - type: grid
-            columns: 4
+            columns: 2
             square: false
             cards:
 
@@ -146,6 +146,11 @@ views:
                 hold_action:
                   action: more-info
 
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+
               # Zigbee – Qualité réseau
               - type: custom:button-card
                 template: carte_alerte_binaire_critique
@@ -162,11 +167,21 @@ views:
                 hold_action:
                   action: more-info
 
+              - type: custom:button-card
+                template: ecs_synthese_status_72
+                name: Boiler Bridge
+                icon: mdi:lan-connect
+                variables:
+                  kind: bool
+                  entity: binary_sensor.boiler_bridge_online
+                  label_on: Disponible
+                  label_off: Indispo
+
               # Automatisations désactivées
               - type: custom:button-card
                 template: carte_compteur_alerte
                 entity: sensor.automatisations_desactivees
-                name: Automat.
+                name: Automatisations
                 icon: mdi:robot
                 show_state: true
                 tap_action:

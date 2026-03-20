@@ -1,0 +1,131 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Boost si nécessaire
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Gérer le boost de sécurité lorsque l'orchestrateur a
+#   déjà établi que la cible thermique n'est pas atteinte
+#   après la première attente.
+#
+# ----------------------------------------------------------
+# 🧱 PERIMETRE
+#
+#   - calculer boost2 depuis effective_target_int
+#   - appliquer la consigne boost via l'exécuteur confirmé
+#   - logguer si ACK boost non confirmé
+#   - effectuer une seconde attente thermique
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - ne décide pas lui-même si le boost est nécessaire
+#   - ne lit pas directement les capteurs ACK
+#   - n'ouvre ni ne ferme la session ECS
+#   - n'applique pas la consigne basse
+#   - n'ajoute aucun helper de transit
+#
+# ----------------------------------------------------------
+# 🔗 DEPENDANCES
+#
+#   - script.ecs_appliquer_consigne_confirmee
+#   - input_text.ecs_cycle_last_action_status
+#
+# ----------------------------------------------------------
+# 📥 ENTREES
+#
+#   - mode
+#   - sensor_temp
+#   - target_temp
+#   - epsilon
+#   - effective_target_int
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+ecs_cycle_boost_si_necessaire:
+  alias: "ECS - Boost si nécessaire"
+  mode: single
+
+  fields:
+    mode:
+      name: Mode
+      description: "Type de cycle : ponctuel | vaisselle | desinfection"
+      required: true
+    sensor_temp:
+      name: Capteur température
+      description: "Entité source de température réelle"
+      required: true
+    target_temp:
+      name: Cible thermique
+      description: "Seuil thermique à atteindre"
+      required: true
+    epsilon:
+      name: Epsilon
+      description: "Tolérance d'atteinte"
+      required: true
+    effective_target_int:
+      name: Consigne effective
+      description: "Base de calcul du boost"
+      required: true
+
+  sequence:
+
+    # ======================================================
+    # 🚫 ETAPE 1 : Refuser un mode invalide
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ mode not in ['ponctuel', 'vaisselle', 'desinfection'] }}"
+          sequence:
+            - action: logbook.log
+              data:
+                name: "ECS"
+                message: >
+                  Mode invalide pour boost ECS
+                  (mode={{ mode }})
+            - stop: "Mode invalide pour boost ECS"
+
+    # ======================================================
+    # 📊 ETAPE 2 : Calcul du boost
+    # ======================================================
+    - variables:
+        boost2: "{{ [ (effective_target_int | int) + 1, 60 ] | min }}"
+
+    # ======================================================
+    # 📤 ETAPE 3 : Application consigne boost confirmée
+    # ======================================================
+    - action: script.ecs_appliquer_consigne_confirmee
+      data:
+        target_temp: "{{ boost2 }}"
+        contexte: "boost"
+
+    # ======================================================
+    # 📥 ETAPE 4 : Lecture du résultat exécuteur
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ states('input_text.ecs_cycle_last_action_status') != 'applied' }}"
+          sequence:
+            - action: logbook.log
+              data:
+                name: "ECS"
+                message: >
+                  Boost ECS non confirmé
+                  (status={{ states('input_text.ecs_cycle_last_action_status') }},
+                  boost={{ boost2 }},
+                  mode={{ mode }})
+
+    # ======================================================
+    # ♻️ ETAPE 5 : Seconde attente thermique
+    # ======================================================
+    - wait_template: >
+        {{ states(sensor_temp) | float(0) >= (target_temp | float) - (epsilon | float) }}
+      timeout: >
+        {% if mode == 'desinfection' %}
+          00:20:00
+        {% else %}
+          00:10:00
+        {% endif %}
+      continue_on_timeout: true

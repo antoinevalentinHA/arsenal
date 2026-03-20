@@ -1,0 +1,99 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Armer gardien post-prélèvement
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Armer le timer du gardien post-prélèvement avec une
+#   durée déterminée exclusivement par le mode du cycle.
+#
+# ----------------------------------------------------------
+# 🧱 PERIMETRE
+#
+#   - refuser un mode invalide
+#   - calculer la durée depuis le mode reçu
+#   - démarrer ou réarmer le timer dédié
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - ne lit aucune température
+#   - ne lit aucun ACK
+#   - n'applique aucune consigne chaudière
+#   - n'ouvre ni ne ferme de session
+#   - n'annule pas timer.ecs_cycle_watchdog
+#   - n'écrit pas dans input_text.ecs_cycle_last_action_status
+#   - ne calcule pas la durée depuis autre chose que mode
+#
+# ----------------------------------------------------------
+# 🔗 DEPENDANCES
+#
+#   - timer.ecs_gardien_post_prelevement
+#
+# ----------------------------------------------------------
+# 📥 ENTREES
+#
+#   - mode : ponctuel | vaisselle | desinfection
+#
+# ----------------------------------------------------------
+# 📤 SORTIES
+#
+#   - timer.ecs_gardien_post_prelevement démarré ou réarmé
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+ecs_armer_gardien_post_prelevement:
+  alias: "ECS - Armer gardien post-prélèvement"
+  mode: single
+
+  fields:
+    mode:
+      name: Mode
+      description: "Type de cycle : ponctuel | vaisselle | desinfection"
+      required: true
+
+  sequence:
+
+    # ======================================================
+    # 🚫 ETAPE 1 : Refuser un mode invalide
+    # Un mode hors contrat est une rupture de l'appelant,
+    # pas une anomalie mineure.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ mode not in ['ponctuel', 'vaisselle', 'desinfection'] }}"
+          sequence:
+            - action: logbook.log
+              data:
+                name: "ECS"
+                message: >
+                  Mode invalide pour armement gardien (mode={{ mode }})
+            - stop: "Mode invalide pour armement gardien ECS"
+
+    # ======================================================
+    # 📊 ETAPE 2 : Calculer la durée depuis le mode
+    # Source unique : paramètre mode reçu à l'appel.
+    # Aucune lecture de helper, capteur ou timer existant.
+    # ======================================================
+    - variables:
+        duree_gardien: >
+          {% if mode == 'ponctuel' %}
+            00:25:00
+          {% elif mode == 'vaisselle' %}
+            00:12:00
+          {% else %}
+            00:45:00
+          {% endif %}
+
+    # ======================================================
+    # ⏱️ ETAPE 3 : Démarrer / réarmer le timer
+    # Si le timer est déjà actif, la nouvelle durée
+    # remplace la durée courante. Aucun cancel préalable
+    # n'est requis.
+    # ======================================================
+    - action: timer.start
+      target:
+        entity_id: timer.ecs_gardien_post_prelevement
+      data:
+        duration: "{{ duree_gardien }}"

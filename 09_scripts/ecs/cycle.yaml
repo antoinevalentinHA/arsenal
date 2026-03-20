@@ -1,81 +1,98 @@
 # ==========================================================
-# 🧠 ARSENAL — SCRIPT : ECS – Cycle thermique unifie
+# 🧠 ARSENAL — SCRIPT : ECS – Cycle thermique unifié
 # ----------------------------------------------------------
-# 🎯 ROLE FONDAMENTAL
-#   Orchestrateur UNIQUE d’un cycle ECS complet.
+# 🎯 RÔLE FONDAMENTAL
+#   Orchestrateur UNIQUE d'un cycle ECS complet.
 #
-#   Ce script est l’autorite d’execution du cycle thermique
-#   ECS, de l’armement a la liberation du verrou.
+#   Ce script est l'autorité d'exécution du cycle thermique
+#   ECS, de l'armement à la libération du verrou.
 #
 #   Il ne planifie pas.
-#   Il n’anticipe pas.
-#   Il execute un cycle demande.
+#   Il n'anticipe pas.
+#   Il exécute un cycle demandé.
 #
 # ----------------------------------------------------------
-# 🧱 RESPONSABILITES COUVERTES
+# 🧱 RESPONSABILITÉS COUVERTES
 #
-#   - Verrouillage exclusif du cycle ECS
-#   - Calcul et application d’une consigne EFFECTIVE
-#   - Delegation des ecritures ECS au script
-#       script.ecs_appliquer_consigne_bridge
-#   - Verification du resultat via capteur ACK
-#   - Surveillance de l’atteinte thermique reelle
-#   - Gestion des timeouts et boosts de securite
-#   - Rabaissement garanti de la consigne en fin de cycle
-#   - Liberation controlee du verrou
-#
-# ----------------------------------------------------------
-# 🧠 MODES SUPPORTES
-#
-#   Le comportement thermique est ajuste selon le mode :
-#
-#     - ponctuel       → confort immediat
-#     - vaisselle      → cycle court optimise
-#     - desinfection   → montee haute securisee
-#
-#   Le choix du mode est un PARAMETRE d’entree,
-#   jamais une decision interne.
+#   - Séquencement du cycle ECS de bout en bout
+#   - Calcul de la consigne effective et de l'epsilon
+#   - Validation des entrées métier
+#   - Mémorisation de la cible de session
+#   - Délégation de l'ouverture de session
+#       script.ecs_cycle_session_open
+#   - Délégation des applications de consigne confirmées
+#       script.ecs_appliquer_consigne_confirmee
+#   - Surveillance de l'atteinte thermique réelle
+#   - Délégation du boost de sécurité si non-atteinte
+#       script.ecs_cycle_boost_si_necessaire
+#   - Délégation de l'armement du gardien
+#       script.ecs_armer_gardien_post_prelevement
+#   - Délégation de la fermeture de session
+#       script.ecs_cycle_session_close
 #
 # ----------------------------------------------------------
-# 🔁 GARANTIES D’EXECUTION
+# 🧠 MODES SUPPORTÉS
 #
-#   - Un seul cycle ECS a la fois
+#   Le comportement thermique est ajusté selon le mode :
+#
+#     - ponctuel       → confort immédiat
+#     - vaisselle      → cycle court optimisé
+#     - desinfection   → montée haute sécurisée
+#
+#   Le choix du mode est un PARAMÈTRE d'entrée,
+#   jamais une décision interne.
+#
+# ----------------------------------------------------------
+# 🔁 GARANTIES D'EXÉCUTION
+#
+#   - Un seul cycle ECS à la fois
 #   - Anti-rebond par verrou + watchdog
-#   - Aucun faux succes declare
-#   - Aucun succes suppose
-#   - Verification systematique via ACK
-#   - Decisions basees uniquement sur mesures reelles
+#   - Aucun faux succès déclaré
+#   - Aucun succès supposé
+#   - Vérification systématique via ACK corrélé
+#   - Décisions basées uniquement sur mesures réelles
 #
 # ----------------------------------------------------------
 # ❌ CE SCRIPT NE FAIT PAS
 #
 #   - Aucune publication MQTT directe
 #   - Aucune gestion du protocole transactionnel boiler
-#   - Aucun declenchement horaire
-#   - Aucun arbitrage planning / presence
-#   - Aucune decision metier ECS globale
+#   - Aucune gestion du verrou ou du watchdog (délégué)
+#   - Aucun déclenchement horaire
+#   - Aucun arbitrage planning / présence
+#   - Aucune décision métier ECS globale
 #   - Aucune logique de bouclage sanitaire
 #
 # ----------------------------------------------------------
-# 🧾 OBSERVABILITE
+# 🧾 OBSERVABILITÉ
 #
-#   - Cible thermique de session memorisee
-#   - Resultat ACK lisible via capteur dedie
-#   - Timers visibles et tracables
+#   - Cible thermique de session mémorisée
+#       input_text.ecs_target_temp_session
+#   - Statut du dernier appel confirmé
+#       input_text.ecs_cycle_last_action_status
+#   - Timers visibles et traçables
 #
 # ----------------------------------------------------------
-# 🔗 DEPENDANCES CLES
+# 🔗 DÉPENDANCES CLÉS
 #
-#   - script.ecs_appliquer_consigne_bridge
-#   - input_boolean.ecs_cycle_en_cours
-#   - timer.ecs_cycle_watchdog
-#   - timer.ecs_gardien_post_prelevement
+#   Scripts délégués :
+#   - script.ecs_cycle_session_open
+#   - script.ecs_appliquer_consigne_confirmee
+#   - script.ecs_cycle_boost_si_necessaire
+#   - script.ecs_armer_gardien_post_prelevement
+#   - script.ecs_cycle_session_close
+#
+#   Bridge (via ecs_appliquer_consigne_confirmee) :
+#   - script.ecs_appliquer_consigne_bridge        [indirect]
+#
+#   Helpers lus :
+#   - input_text.ecs_cycle_last_action_status
 #   - input_text.ecs_target_temp_session
 #   - sensor.ecs_temperature_ballon_securisee
-#   - sensor.boiler_ack_dhw_set_setpoint_status
+#   - sensor.boiler_dhw_setpoint
 #
 # ----------------------------------------------------------
-# ✅ Compatibilite : Home Assistant 2024.8+
+# ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
 chauffage_ecs_cycle:
@@ -97,79 +114,18 @@ chauffage_ecs_cycle:
   sequence:
 
     # ======================================================
-    # 🟢 ETAPE -1 : Marquage pipeline ECS en cours
+    # 🟢 ETAPE 1 : Ouverture session ECS (externalisee)
     # ======================================================
-    - action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.ecs_pipeline_en_cours
+    - action: script.ecs_cycle_session_open
 
     # ======================================================
-    # 🧩 ETAPE 0 : Vérification de cycle en cours
+    # 🛑 GARDE : poursuivre uniquement si la session est ouverte
+    # Si le sous-script a refuse l'ouverture, la sequence
+    # s'arrete ici sans executer le reste du cycle.
     # ======================================================
-    - choose:
-        - conditions:
-            - condition: state
-              entity_id: input_boolean.ecs_cycle_en_cours
-              state: "on"
-          sequence:
-            - variables:
-                last_change: "{{ as_timestamp(states.input_boolean.ecs_cycle_en_cours.last_changed) | default(0) }}"
-                age_min: "{{ ((now().timestamp() - last_change) / 60) | round(1) }}"
-
-            - choose:
-                - conditions:
-                    - condition: template
-                      value_template: "{{ age_min > 5 }}"
-                  sequence:
-                    - action: persistent_notification.create
-                      data:
-                        title: "⚠️ Déblocage ECS forcé"
-                        message: >
-                          {{ now().strftime('%d/%m %H:%M') }} — verrou ECS actif depuis {{ age_min }} min → reset automatique.
-
-                    - action: timer.cancel
-                      target:
-                        entity_id: timer.ecs_cycle_watchdog
-
-                    - action: input_text.set_value
-                      target:
-                        entity_id: input_text.ecs_target_temp_session
-                      data:
-                        value: ""
-
-                    - action: input_text.set_value
-                      target:
-                        entity_id: input_text.boiler_req_dhw_set_setpoint
-                      data:
-                        value: ""
-
-                    - action: input_boolean.turn_off
-                      target:
-                        entity_id: input_boolean.ecs_cycle_en_cours
-
-                - conditions:
-                    - condition: template
-                      value_template: "{{ age_min <= 5 }}"
-                  sequence:
-                    - action: logbook.log
-                      data:
-                        name: "ECS"
-                        message: "Cycle ECS déjà en cours (moins de 5 min) → arrêt du script"
-                    - action: input_boolean.turn_off
-                      target:
-                        entity_id: input_boolean.ecs_pipeline_en_cours
-                    - stop: "Cycle ECS déjà en cours"
-
-    # ======================================================
-    # 🟢 ETAPE 1 : Activation du verrou et démarrage watchdog
-    # ======================================================
-    - action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.ecs_cycle_en_cours
-
-    - action: timer.start
-      target:
-        entity_id: timer.ecs_cycle_watchdog
+    - condition: state
+      entity_id: input_boolean.ecs_cycle_en_cours
+      state: "on"
 
     # ======================================================
     # 📊 ETAPE 2 : Définition des variables dynamiques
@@ -238,17 +194,8 @@ chauffage_ecs_cycle:
             - condition: template
               value_template: "{{ mode not in ['ponctuel', 'vaisselle', 'desinfection'] }}"
           sequence:
-            - action: timer.cancel
-              target:
-                entity_id: timer.ecs_cycle_watchdog
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.ecs_cycle_en_cours
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.ecs_pipeline_en_cours
-            - stop: >
-                Mode ECS invalide (mode={{ mode }})
+            - action: script.ecs_cycle_session_close
+            - stop: "Mode ECS invalide (mode={{ mode }})"
 
         - conditions:
             - condition: template
@@ -258,18 +205,11 @@ chauffage_ecs_cycle:
                   or not is_number(start_temp)
                   or (target_temp | float) <= 0
                   or (start_temp | float) < 0
-                  or (effective_target_int | int) < 15
+                  or not is_number(effective_target_int)
+                  or (effective_target_int | float) < 15
                 }}
           sequence:
-            - action: timer.cancel
-              target:
-                entity_id: timer.ecs_cycle_watchdog
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.ecs_cycle_en_cours
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.ecs_pipeline_en_cours
+            - action: script.ecs_cycle_session_close
             - stop: >
                 Consigne ECS cible invalide
                 (mode={{ mode }}, target={{ target_temp }}, start={{ start_temp }}, effective={{ effective_target_int }})
@@ -286,44 +226,21 @@ chauffage_ecs_cycle:
     # ======================================================
     # 📤 ETAPE 5 : Application consigne ECS haute
     # ======================================================
-    - action: script.ecs_appliquer_consigne_bridge
+    - action: script.ecs_appliquer_consigne_confirmee
       data:
         target_temp: "{{ effective_target_int }}"
+        contexte: "consigne_haute"
 
     - choose:
         - conditions:
             - condition: template
-              value_template: "{{ states('sensor.boiler_ack_dhw_set_setpoint_status') != 'applied' }}"
+              value_template: >
+                {{ states('input_text.ecs_cycle_last_action_status') != 'applied' }}
           sequence:
-            - action: input_text.set_value
-              target:
-                entity_id: input_text.ecs_target_temp_session
-              data:
-                value: ""
-
-            - action: input_text.set_value
-              target:
-                entity_id: input_text.boiler_req_dhw_set_setpoint
-              data:
-                value: ""
-
-            - action: timer.cancel
-              target:
-                entity_id: timer.ecs_cycle_watchdog
-
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.ecs_cycle_en_cours
-
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.ecs_pipeline_en_cours
-
+            - action: script.ecs_cycle_session_close
             - stop: >
                 Echec application consigne ECS haute
-                (ack_result={{ states('sensor.boiler_ack_dhw_set_setpoint_result') }},
-                ack_status={{ states('sensor.boiler_ack_dhw_set_setpoint_status') }},
-                ack_reason={{ states('sensor.boiler_ack_dhw_set_setpoint_reason') }},
+                (status={{ states('input_text.ecs_cycle_last_action_status') }},
                 target={{ effective_target_int }})
 
     # ======================================================
@@ -341,6 +258,8 @@ chauffage_ecs_cycle:
 
     # ======================================================
     # 🚑 ETAPE 7 : Boost de sécurité si cible non atteinte
+    # L'orchestrateur établit l'éligibilité.
+    # Le sous-script boost exécute sans re-juger l'appel.
     # ======================================================
     - choose:
         - conditions:
@@ -348,43 +267,21 @@ chauffage_ecs_cycle:
               value_template: >
                 {{ states(sensor_temp) | float(0) < (target_temp | float) - (epsilon | float) }}
           sequence:
-            - variables:
-                boost2: "{{ [ (effective_target_int | int) + 1, 60 ] | min }}"
-
-            - action: script.ecs_appliquer_consigne_bridge
+            - action: script.ecs_cycle_boost_si_necessaire
               data:
-                target_temp: "{{ boost2 }}"
-
-            - choose:
-                - conditions:
-                    - condition: template
-                      value_template: "{{ states('sensor.boiler_ack_dhw_set_setpoint_status') != 'applied' }}"
-                  sequence:
-                    - action: logbook.log
-                      data:
-                        name: "ECS"
-                        message: >
-                          Boost ECS non confirmé par ACK
-                          (status={{ states('sensor.boiler_ack_dhw_set_setpoint_status') }},
-                          reason={{ states('sensor.boiler_ack_dhw_set_setpoint_reason') }},
-                          boost={{ boost2 }})
-
-            - wait_template: >
-                {{ states(sensor_temp) | float(0) >= (target_temp | float) - (epsilon | float) }}
-              timeout: >
-                {% if mode == 'desinfection' %}
-                  00:20:00
-                {% else %}
-                  00:10:00
-                {% endif %}
-              continue_on_timeout: true
+                mode: "{{ mode }}"
+                sensor_temp: "{{ sensor_temp }}"
+                target_temp: "{{ target_temp }}"
+                epsilon: "{{ epsilon }}"
+                effective_target_int: "{{ effective_target_int }}"
 
     # ======================================================
     # 🔽 ETAPE 8 : Application consigne ECS basse
     # ======================================================
-    - action: script.ecs_appliquer_consigne_bridge
+    - action: script.ecs_appliquer_consigne_confirmee
       data:
         target_temp: "{{ retour_temp }}"
+        contexte: "retour_basse"
 
     # ======================================================
     # ✅ ETAPE 8B : Verification retour consigne ECS basse
@@ -392,35 +289,13 @@ chauffage_ecs_cycle:
     - choose:
         - conditions:
             - condition: template
-              value_template: "{{ states('sensor.boiler_ack_dhw_set_setpoint_status') != 'applied' }}"
+              value_template: >
+                {{ states('input_text.ecs_cycle_last_action_status') != 'applied' }}
           sequence:
-            - action: input_text.set_value
-              target:
-                entity_id: input_text.ecs_target_temp_session
-              data:
-                value: ""
-
-            - action: input_text.set_value
-              target:
-                entity_id: input_text.boiler_req_dhw_set_setpoint
-              data:
-                value: ""
-
-            - action: timer.cancel
-              target:
-                entity_id: timer.ecs_cycle_watchdog
-
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.ecs_cycle_en_cours
-
-            - action: input_boolean.turn_off
-              target:
-                entity_id: input_boolean.ecs_pipeline_en_cours
-
+            - action: script.ecs_cycle_session_close
             - stop: >
                 Echec application consigne ECS basse
-                (ack={{ states('sensor.boiler_ack_dhw_set_setpoint_status') }})
+                (status={{ states('input_text.ecs_cycle_last_action_status') }})
 
     - wait_template: >
         {{
@@ -446,69 +321,17 @@ chauffage_ecs_cycle:
                   Retour consigne ECS basse non observé
                   (attendu={{ retour_temp }}, lu={{ states('sensor.boiler_dhw_setpoint') }})
 
-            - stop: >
-                Retour consigne ECS basse non observé
+            - action: script.ecs_cycle_session_close
+            - stop: "Retour consigne ECS basse non observé"
 
     # ======================================================
-    # ⏱️ ETAPE 9 : Démarrage gardien post-prélèvement
+    # ⏱️ ETAPE 9 : Armement gardien post-prélèvement
     # ======================================================
-    - choose:
-        - conditions:
-            - condition: template
-              value_template: "{{ mode == 'ponctuel' }}"
-          sequence:
-            - action: timer.start
-              target:
-                entity_id: timer.ecs_gardien_post_prelevement
-              data:
-                duration: "00:25:00"
-
-        - conditions:
-            - condition: template
-              value_template: "{{ mode == 'desinfection' }}"
-          sequence:
-            - action: timer.start
-              target:
-                entity_id: timer.ecs_gardien_post_prelevement
-              data:
-                duration: "00:45:00"
-
-        - conditions:
-            - condition: template
-              value_template: "{{ mode == 'vaisselle' }}"
-          sequence:
-            - action: timer.start
-              target:
-                entity_id: timer.ecs_gardien_post_prelevement
-              data:
-                duration: "00:12:00"
+    - action: script.ecs_armer_gardien_post_prelevement
+      data:
+        mode: "{{ mode }}"
 
     # ======================================================
     # 🧹 ETAPE 10 : Nettoyage et libération transactionnelle
     # ======================================================
-    - action: input_text.set_value
-      target:
-        entity_id: input_text.ecs_target_temp_session
-      data:
-        value: ""
-
-    - action: input_text.set_value
-      target:
-        entity_id: input_text.boiler_req_dhw_set_setpoint
-      data:
-        value: ""
-
-    - action: timer.cancel
-      target:
-        entity_id: timer.ecs_cycle_watchdog
-
-    - action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.ecs_cycle_en_cours
-
-    #-------------------------------------------------------
-    # 🔴 Sortie pipeline ECS
-    # ------------------------------------------------------
-    - action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.ecs_pipeline_en_cours
+    - action: script.ecs_cycle_session_close

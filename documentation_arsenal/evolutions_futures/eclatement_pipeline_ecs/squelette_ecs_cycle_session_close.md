@@ -1,0 +1,83 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : ECS – Fermeture session
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Fermer proprement une session ECS en supprimant les
+#   traces transactionnelles et en libérant les verrous.
+#
+# ----------------------------------------------------------
+# 🧱 PERIMETRE
+#
+#   - vider la cible de session
+#   - vider la corrélation bridge ECS
+#   - annuler le watchdog
+#   - couper les booléens de cycle et de pipeline
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - ne lit aucun ACK
+#   - ne décide rien
+#   - ne stoppe pas lui-même le flux appelant
+#   - ne lit pas le mode
+#   - ne publie aucune commande chaudière
+#   - n'écrit pas dans input_text.ecs_cycle_last_action_status
+#
+# ----------------------------------------------------------
+# 🔗 DEPENDANCES
+#
+#   - input_text.ecs_target_temp_session
+#   - input_text.boiler_req_dhw_set_setpoint
+#   - timer.ecs_cycle_watchdog
+#   - input_boolean.ecs_cycle_en_cours
+#   - input_boolean.ecs_pipeline_en_cours
+#
+# ----------------------------------------------------------
+# ✅ Compatibilité : Home Assistant 2024.8+
+# ==========================================================
+
+ecs_cycle_session_close:
+  alias: "ECS - Fermeture session"
+  mode: single
+
+  sequence:
+
+    # ======================================================
+    # 🧹 ETAPE 1 : Vider la cible de session
+    # ======================================================
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.ecs_target_temp_session
+      data:
+        value: ""
+
+    # ======================================================
+    # 🧹 ETAPE 2 : Vider la corrélation bridge ECS
+    # ======================================================
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.boiler_req_dhw_set_setpoint
+      data:
+        value: ""
+
+    # ======================================================
+    # 🧹 ETAPE 3 : Annuler le watchdog
+    # Tolérant : autorisé même si le timer n'est plus actif.
+    # ======================================================
+    - action: timer.cancel
+      target:
+        entity_id: timer.ecs_cycle_watchdog
+
+    # ======================================================
+    # 🧹 ETAPE 4 : Libérer le verrou cycle
+    # ======================================================
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.ecs_cycle_en_cours
+
+    # ======================================================
+    # 🧹 ETAPE 5 : Libérer le verrou pipeline
+    # ======================================================
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.ecs_pipeline_en_cours

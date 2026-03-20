@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : ECS (Dernier statut action)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Stocker le résultat normalisé du dernier appel à
+#   `script.ecs_appliquer_consigne_confirmee`.
+#
+# ----------------------------------------------------------
+# 🧱 PERIMETRE
+#
+#   - helper transactionnel de lecture par l'orchestrateur
+#   - reset en entrée de chaque appel exécuteur
+#   - écriture finale par l'exécuteur uniquement
+#
+# ----------------------------------------------------------
+# 📥 VALEURS ATTENDUES
+#
+#   - applied
+#   - rejected
+#   - timeout
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - ne décide rien
+#   - ne porte aucune logique métier ECS
+#   - ne doit pas être écrit par ecs_cycle_session_close
+#   - ne remplace pas la corrélation ACK du bridge
+#
+# ----------------------------------------------------------
+# 🔗 CONSOMMATEURS
+#
+#   - script.ecs_appliquer_consigne_confirmee
+#   - orchestrateur ECS (lecture après consigne haute/basse)
+# ==========================================================
+
+ecs_cycle_last_action_status:
+  name: "ECS - Dernier statut action"
+  max: 20
+  initial: ""
