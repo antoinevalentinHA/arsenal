@@ -191,7 +191,7 @@ jamais une action, jamais un ordre matériel.
 - Ne modifie jamais une consigne
 - Ne pilote jamais un service
 - Ne dépend jamais directement d'un équipement matériel
-- Ne dépend jamais de ViCare ou d'un retour Cloud
+- Ne dépend jamais d’une source externe non maîtrisée
 - Ne contourne jamais la table de décision
 - Ne doit pas connaître les blocages N1 (dépendance actuelle à `blocage_chauffage_poele` documentée comme dette à migrer vers la décision centrale)
 

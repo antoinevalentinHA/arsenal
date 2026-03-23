@@ -125,7 +125,7 @@ Ils restent subordonnés aux scripts de garde.
 
 Il est interdit :
 
-- d’appeler ViCare hors script autoritaire
+- d’appeler la couche d'exécution hors script autoritaire
 - de lancer un cycle sans garde
 - d’injecter une consigne manuellement
 - de libérer un verrou sans rabaissement

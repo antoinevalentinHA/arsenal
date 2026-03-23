@@ -1,6 +1,6 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Alarme – Application décision centrale (V2)
+#     Alarme – Application décision centrale (V3)
 #
 #  ID : 10020000000027
 # ----------------------------------------------------------
@@ -13,40 +13,25 @@
 #       - idempotente
 #       - robuste aux retriggers et redémarrages
 #
-#  🧩 PRINCIPE ARSENAL V2
+#  🧩 PRINCIPE ARSENAL
 #
 #     - Snapshot de l’état cible AVANT recalcul
 #     - Exécution du cerveau décisionnel
 #     - Snapshot de l’état cible APRÈS recalcul
-#     - Comparaison snapshot → snapshot
-#     - Application UNIQUE, figée et déterministe
+#     - Application UNIQUE sur l’état cible courant
 #
-#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#  ⚠️ CHOIX D’EXECUTION
 #
-#     - Ne prend aucune décision métier
-#     - Ne recalcule aucune logique
-#     - N’introduit aucun délai
-#     - N’émet aucune notification directe
-#
-#  🧠 PRINCIPES ARSENAL
-#
-#     - Séparation stricte décision / application
-#     - Idempotence garantie
-#     - Couche d’exécution pure (production grade)
-#
-#  ⚙️ EXÉCUTION
-#
-#     - Mode : queued (max 5)
-#     - Résistance aux retriggers
+#     - Mode : restart
+#     - Toute nouvelle variation remplace l’exécution en cours
+#     - Aucun empilement de runs obsolètes
 #
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10020000000027"
   alias: "Alarme - Application décision centrale"
-  mode: queued
-  max: 5
+  mode: restart
 
   trigger:
     - platform: state
@@ -62,6 +47,11 @@
       entity_id: input_boolean.systeme_stable
       to: "on"
 
+  condition:
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
   action:
 
     # ------------------------------------------------------
@@ -71,7 +61,7 @@
         cible_avant: "{{ states('input_text.alarme_etat_cible') }}"
 
     # ------------------------------------------------------
-    # 1) CALCUL — cerveau V2 (publication helpers)
+    # 1) CALCUL — cerveau décisionnel
     # ------------------------------------------------------
     - action: script.alarme_decision_centrale
 
@@ -82,13 +72,20 @@
         cible_calculee: "{{ states('input_text.alarme_etat_cible') }}"
 
     # ------------------------------------------------------
-    # 3) APPLICATION — basée UNIQUEMENT sur le snapshot
+    # 3) GARDE-FOU — cible exploitable uniquement
+    # ------------------------------------------------------
+    - condition: template
+      value_template: >
+        {{ cible_calculee in ['DISARMED', 'ARMED_AWAY'] }}
+
+    # ------------------------------------------------------
+    # 4) APPLICATION — basée UNIQUEMENT sur le snapshot
     # ------------------------------------------------------
     - choose:
 
-        # ----------------------------------------------
+        # --------------------------------------------------
         # 🔓 DESARMEMENT
-        # ----------------------------------------------
+        # --------------------------------------------------
         - conditions:
             - condition: template
               value_template: >
@@ -99,9 +96,9 @@
               data:
                 origine: "Decision centrale"
 
-        # ----------------------------------------------
+        # --------------------------------------------------
         # 🔐 ARMEMENT AUTO
-        # ----------------------------------------------
+        # --------------------------------------------------
         - conditions:
             - condition: template
               value_template: >

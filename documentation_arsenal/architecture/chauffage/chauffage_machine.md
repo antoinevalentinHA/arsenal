@@ -79,7 +79,10 @@
 # 🏗️ ARCHITECTURE TECHNIQUE — CHAUFFAGE (V3 PRO)
 
 ## 🏛️ MODÈLE "TRIGGER - DECISION - ACTION - GUARD"
-L'architecture repose sur un cycle asynchrone sécurisé pour traiter avec des API Cloud lentes ou instables.
+L'architecture repose sur un cycle asynchrone sécurisé pour piloter
+un système de chauffage via une interface matérielle locale,
+tout en garantissant robustesse face aux latences, pertes d’état
+et incohérences d’exécution.
 
 ### 🧩 LES COUCHES FONCTIONNELLES
 1. **COUCHE MIROIR (Mirroring)** :

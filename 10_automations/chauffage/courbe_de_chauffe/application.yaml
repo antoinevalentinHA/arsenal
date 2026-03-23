@@ -30,7 +30,6 @@
 #     - Délégation complète de l’exécution aux scripts
 #
 #  ✅ CONTRAINTES
-#     - Aucune dépendance à ViCare
 #     - Aucune temporisation ou logique de retry ici
 #     - Automation strictement réactive à l’action utilisateur
 # ==========================================================

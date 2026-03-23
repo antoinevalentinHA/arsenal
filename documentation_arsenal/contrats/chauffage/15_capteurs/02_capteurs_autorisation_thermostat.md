@@ -158,59 +158,60 @@ Classe : Capteur STRUCTURANT
 
 ### 🔒 sensor.programme_chauffage
 
-- Domaine : Autorisation thermostat / Synchronisation API  
+- Domaine : Projection décisionnelle / Interface métier  
 - Autorité : STRUCTURANT  
 
 🎯 Rôle :
-Fournir une représentation simplifiée, normalisée et fiable
-du programme actif réel de la chaudière ViCare (Confort / Eco / Inconnu),
-servant de référence d’état externe pour la synchronisation,
-le contrôle d’autorisation et les mécanismes de réalignement.
+Fournir une représentation simplifiée, normalisée et lisible
+du dernier mode de chauffage décidé par le moteur Arsenal
+(Confort / Eco / Inconnu),
+destinée à l’interface utilisateur, à l’observabilité
+et aux couches non décisionnelles.
 
 🧭 Périmètre d’influence autorisé :
-- Autorisation thermostat (validation cohérence état externe)
-- Mécanismes de réalignement ViCare ↔ Arsenal
-- Diagnostics de divergence moteur / API
-- Sécurité de souveraineté d’exécution
-- Observabilité structurante des états réels chaudière
+- Projection UI du mode chauffage
+- Observabilité structurante de la décision thermique
+- Support aux diagnostics fonctionnels
+- Interface lisible pour l’utilisateur
 
 ⛔ Interdictions absolues :
 - Ne décide jamais d’un mode thermique
 - Ne déclenche jamais directement une action chaudière
 - Ne définit aucune consigne
 - Ne pilote jamais un blocage
-- Ne remplace jamais `chauffage_dernier_mode_decide`
+- Ne remplace jamais `input_select.chauffage_dernier_mode_decide`
 - Ne sert jamais de source décisionnelle primaire
 
 🔒 Garanties exigées :
-- Normalisation stricte des états API (comfort/normal → Confort ; sleep/reduced → Eco)
+- Projection fidèle et sans transformation métier
+- Normalisation stricte (comfort → Confort ; reduced → Eco)
 - Gestion robuste des états unknown / unavailable / none
-- Fallback explicite vers état neutre “Inconnu”
+- Fallback explicite vers état “Inconnu”
 - Aucune logique métier thermique embarquée
-- Dépendance unique à une source API gouvernée
 
 🔗 Dépendances :
 Source amont :
-- climate.vscotho1_200_11_chauffage (active_vicare_program)
+- input_select.chauffage_dernier_mode_decide
 
 Capteurs auxiliaires (diagnostic uniquement) :
-- binary_sensor.vicare_api_disponible
-- preset_mode
-- hvac_action
+- input_boolean.chauffage_application_en_cours
+- input_text.chauffage_raison
 
 ⚠️ Risques :
-- Dérive d’usage comme source décisionnelle primaire (interdit)
-- Confusion entre état réel API et décision interne Arsenal
+- Dérive d’usage comme source décisionnelle (interdit)
+- Confusion entre décision interne et état réellement appliqué
+- Surinterprétation UI comme vérité physique
 - Couplage excessif avec logique métier
-- Instabilité si API devient intermittente
 
 ❗ Statut critique :
-Capteur de FRONTIÈRE DE SOUVERAINETÉ API  
-Tout usage hors synchronisation / diagnostic constitue une violation de gouvernance.
+Capteur de PROJECTION DE DÉCISION  
+Ne reflète pas l’état réel chaudière, mais la décision Arsenal.
+
+Tout usage comme vérité physique constitue une erreur de conception.
 
 ✅ Décision :
 INCLUS DANS `15_capteurs_thermiques.md`
-Section : Autorisation thermostat / Synchronisation API
+Section : Projection décisionnelle / Interface métier
 
 # ----------------------------------------------------------
 

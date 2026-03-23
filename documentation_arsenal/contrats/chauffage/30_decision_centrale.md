@@ -64,7 +64,7 @@ Elle peut uniquement :
 Elle ne peut jamais :
 
 - régler une consigne,
-- appeler ViCare directement,
+- appeler la couche d’exécution directement,
 - produire une hypothèse thermique,
 - déclencher une action implicite.
 

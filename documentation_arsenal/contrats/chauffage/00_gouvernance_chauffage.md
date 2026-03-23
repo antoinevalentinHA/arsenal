@@ -482,6 +482,9 @@ Invariants absolus :
 - aucune reprise automatique post-blocage,
 - aucune chauffe implicite hors décision.
 
+La levée d’un blocage doit être explicitement définie
+par les contrats de niveau inférieur.
+
 Toute violation constitue :
 
 - une régression architecturale,
