@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR :
+#     Garage — Lumiere reelle estimee
+#
+#  🎯 ROLE
+#     Estimer l'etat reel de la lumiere du garage
+#     a partir de la luminosite nocturne.
+#
+#  🧱 PRINCIPE
+#     - lux <= 5   -> OFF estime
+#     - lux >= 20  -> ON estime
+#     - entre les deux -> zone grise
+#
+#  ⚠️ NOTE
+#     Ce capteur est reserve a l'observation passive
+#     pour le recalage nocturne.
+# ==========================================================
+
+- binary_sensor:
+    - name: Garage - Lumiere reelle estimee
+      unique_id: garage_lumiere_reelle_estimee
+      icon: >
+        {% set lux = states('sensor.luminosite_garage_illuminance') | float(-1) %}
+        {% if lux >= 20 %}
+          mdi:lightbulb-on
+        {% elif lux >= 0 and lux <= 5 %}
+          mdi:lightbulb-off
+        {% else %}
+          mdi:lightbulb-alert
+        {% endif %}
+      availability: >
+        {{ states('sensor.luminosite_garage_illuminance') not in ['unknown', 'unavailable', 'none', ''] }}
+      attributes:
+        source: >
+          sensor.luminosite_garage_illuminance
+        seuil_bas: >
+          5
+        seuil_haut: >
+          20
+        lux_mesure: >
+          {{ states('sensor.luminosite_garage_illuminance') | float(-1) }}
+        etat_estimation: >
+          {% set lux = states('sensor.luminosite_garage_illuminance') | float(-1) %}
+          {% if lux >= 20 %}
+            on
+          {% elif lux >= 0 and lux <= 5 %}
+            off
+          {% else %}
+            indetermine
+          {% endif %}
+      state: >
+        {% set lux = states('sensor.luminosite_garage_illuminance') | float(-1) %}
+        {% if lux >= 20 %}
+          on
+        {% elif lux >= 0 and lux <= 5 %}
+          off
+        {% else %}
+          {{ none }}
+        {% endif %}

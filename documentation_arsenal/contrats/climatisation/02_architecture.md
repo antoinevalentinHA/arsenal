@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 02 — Architecture Arsenal — Invariants
 
-**Version contrat :** v1.2
+**Version contrat :** v1.3
 
 ---
 
@@ -69,8 +69,10 @@ L'arbitre est structurellement stable. Seule la politique d'arbitrage peut évol
 **Garanties :**
 - N'embarque aucune logique métier
 - N'effectue aucun arbitrage
-- N'envoie aucune commande redondante
+- N'envoie aucune commande redondante au sein d'une même exécution
 - Ne peut ni modifier ni requalifier la décision canonique
+- Ne conserve aucune mémoire locale interne au script
+- La mémoire de résilience, si présente, est externalisée via des helpers dédiés et n'altère pas la nature idempotente de l'exécution
 
 ---
 
@@ -86,6 +88,7 @@ L'arbitre est structurellement stable. Seule la politique d'arbitrage peut évol
 - Ne choisit jamais un mode
 - Ne produit aucune décision
 - Ré-applique exclusivement la décision canonique courante (ré-assertion)
+- Intervient en complément de la couche Exécution : il ne duplique pas les mécanismes de reprise courte de l'Exécution et n'agit qu'en cas de divergence persistante non résolue par ces mécanismes
 
 Les Guards n'appartiennent pas à la chaîne Décision → Arbitrage → Exécution.  
 Ils constituent une **voie de sécurité orthogonale**, prioritaire sur toute autre couche, et limitée strictement à l'imposition d'un état sûr.
@@ -111,7 +114,7 @@ Toute action du système climatique est déclenchée exclusivement par l'un des 
 `sensor.clim_target_mode` → application du mode cible par la couche d'Exécution.
 
 **2. Watchdog de sécurité**  
-Uniquement pour ré-appliquer la décision canonique courante en cas de divergence persistante (ré-assertion), sans aucune logique métier.
+Uniquement pour ré-appliquer la décision canonique courante en cas de divergence persistante non résolue par la résilience courte de l'Exécution (ré-assertion), sans aucune logique métier.
 
 **3. Guard de sécurité**  
 Uniquement pour imposer un état sûr (arrêt logique et/ou coupure physique), sans sélection de mode de confort, sans logique thermique, et hors de tout arbitrage.

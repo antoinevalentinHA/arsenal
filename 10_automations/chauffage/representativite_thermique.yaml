@@ -1,0 +1,123 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Chauffage – Représentativité thermique – Évaluation hystérésis
+#
+#  ID : 10240000000021
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’ORCHESTRATION TECHNIQUE (évaluation d’état).
+#
+#     Évalue l’état de représentativité thermique à partir de
+#     `sensor.pourcentage_consigne_eco_24h_proxy` et met à jour
+#     exclusivement le helper :
+#       `input_select.chauffage_representativite_thermique`
+#
+#     Cet état sert de verrou d’éligibilité à l’apprentissage
+#     pour l’auto-ajustement de la courbe de chauffe.
+#
+#  🧱 NATURE
+#
+#     - Évaluation d’état mémorisé
+#     - Hystérésis contractuelle
+#     - Autorité unique d’écriture sur le helper
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement principal :
+#         • changement de `sensor.pourcentage_consigne_eco_24h_proxy`
+#     - Déclenchement de reprise :
+#         • `input_boolean.systeme_stable` -> ON
+#
+#     - Transition vers `NON_REPRESENTATIF` si proxy > 55
+#     - Transition vers `REPRESENTATIF` si proxy < 40
+#     - Entre 40 et 55 inclus :
+#         • aucun changement
+#
+#  ✅ CONDITIONS
+#
+#     - Valeur proxy disponible
+#     - Valeur proxy numérique
+#     - Réécriture interdite si l’état cible est déjà l’état courant
+#
+#  🚫 NE FAIT PAS
+#
+#     - Ne calcule aucune correction thermique
+#     - Ne décide aucun ajustement de courbe
+#     - Ne pondère aucune suggestion
+#     - N’écrit rien hors helper dédié
+# ==========================================================
+
+- id: "10240000000021"
+  alias: "Chauffage – Représentativité thermique – Évaluation hystérésis"
+  description: >
+    Évalue l’état de représentativité thermique à partir du proxy éco 24h
+    et applique l’hystérésis contractuelle sur le helper dédié.
+
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      id: proxy_change
+      entity_id: sensor.pourcentage_consigne_eco_24h_proxy
+
+    - platform: state
+      id: demarrage
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: template
+      alias: "Condition : proxy disponible"
+      value_template: >
+        {{ states('sensor.pourcentage_consigne_eco_24h_proxy') not in ['unknown', 'unavailable', 'none', ''] }}
+
+    - condition: template
+      alias: "Condition : proxy numérique"
+      value_template: >
+        {{ states('sensor.pourcentage_consigne_eco_24h_proxy') | float(-1) >= 0 }}
+
+  action:
+    - variables:
+        proxy: "{{ states('sensor.pourcentage_consigne_eco_24h_proxy') | float(0) }}"
+        etat_actuel: "{{ states('input_select.chauffage_representativite_thermique') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              alias: "Transition : vers NON_REPRESENTATIF"
+              value_template: >
+                {{ proxy > 55 and etat_actuel != 'NON_REPRESENTATIF' }}
+          sequence:
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.chauffage_representativite_thermique
+              data:
+                option: "NON_REPRESENTATIF"
+
+            - event: chauffage_representativite_thermique_transition
+              event_data:
+                before: "{{ etat_actuel }}"
+                after: "NON_REPRESENTATIF"
+                proxy: "{{ proxy }}"
+                trigger_id: "{{ trigger.id }}"
+
+        - conditions:
+            - condition: template
+              alias: "Transition : vers REPRESENTATIF"
+              value_template: >
+                {{ proxy < 40 and etat_actuel != 'REPRESENTATIF' }}
+          sequence:
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.chauffage_representativite_thermique
+              data:
+                option: "REPRESENTATIF"
+
+            - event: chauffage_representativite_thermique_transition
+              event_data:
+                before: "{{ etat_actuel }}"
+                after: "REPRESENTATIF"
+                proxy: "{{ proxy }}"
+                trigger_id: "{{ trigger.id }}"

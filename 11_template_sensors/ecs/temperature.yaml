@@ -42,20 +42,20 @@
       state: >
         {% set v = states('sensor.boiler_dhw_temperature') %}
         {% if v | is_number %}
-          {{ v | float }}
+          {{ v | float | round(1) }}
         {% elif this.state is defined and this.state not in ['unknown','unavailable','none'] %}
-          {{ this.state }}
+          {{ this.state | float(0) | round(1) }}
         {% else %}
-          {{ this.attributes.get('last_valid', 0) }}
+          {{ this.attributes.get('last_valid', 0) | float(0) | round(1) }}
         {% endif %}
 
       attributes:
         last_valid: >
           {% set v = states('sensor.boiler_dhw_temperature') %}
           {% if v | is_number %}
-            {{ v | float }}
+            {{ v | float | round(1) }}
           {% else %}
-            {{ this.attributes.get('last_valid', this.state | float(0)) }}
+            {{ this.attributes.get('last_valid', this.state | float(0)) | float(0) | round(1) }}
           {% endif %}
 
       icon: >

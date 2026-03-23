@@ -1,174 +1,198 @@
-# 🧱 Arsenal — Principes du Logbook Home Assistant
+# Arsenal — Contrat Logbook Home Assistant
+
+**Nature :** contrat architectural opposable
+**Portée :** globale
+**Auditabilité :** binaire (conforme / non conforme)
+**Évolution :** contrôlée, justifiée, documentée
 
 ---
 
-## 🎯 OBJECTIF
+## Principe fondamental
 
-Définir le rôle exact du **Logbook** dans le système Arsenal.
+> Le Logbook raconte l'histoire du système, pas son implémentation.
 
-Le Logbook est un **journal fonctionnel lisible par l’humain**.
-Il sert à **raconter ce qui s’est réellement passé** dans le système,
-pas à exposer sa mécanique interne.
-
----
-
-## 🧠 PRINCIPE FONDAMENTAL
-
-> **Le Logbook raconte l’histoire du système,
-> pas son implémentation.**
-
-Chaque entrée doit avoir un **sens immédiat**
-pour un humain qui consulte l’historique.
+Le Logbook est un journal narratif fonctionnel, destiné à l'humain.
+Il expose des événements interprétables — jamais des états internes.
 
 ---
 
-## 🧩 RÔLE EXACT DU LOGBOOK DANS ARSENAL
+## Règle de base (opposable)
 
-Le Logbook sert exclusivement à :
+Une entrée Logbook est autorisée si et seulement si elle respecte les trois conditions suivantes.
 
-- comprendre **une action ou un changement significatif**
-- retracer une **chronologie fonctionnelle**
-- expliquer un **comportement observable**
-- rassurer sur le fait que le système agit comme prévu
+### A. Nature événementielle
 
-Il constitue la **mémoire narrative** d’Arsenal.
+L'entrée correspond à un changement d'état stable ou à une action effective.
 
----
+Sont exclus : états transitoires, préconditions, variables internes.
 
-## ❌ CE QUE LE LOGBOOK N’EST PAS
+### B. Impact fonctionnel observable
 
-Le Logbook **n’est pas** :
+L'événement modifie au moins une de ces dimensions :
 
-- un outil de debug
-- un équivalent du Logger
-- une trace exhaustive de tous les états
-- un journal technique
-- un dump d’événements automatiques sans intérêt humain
+- confort (température, humidité, éclairage…)
+- sécurité
+- consommation énergétique
+- comportement global du système
 
----
+Un événement sans effet observable sur au moins une de ces dimensions est interdit, même s'il correspond à une action interne réelle.
 
-## 🧱 PRINCIPE DE SÉLECTION STRICTE
+### C. Unicité explicative
 
-Une règle simple s’applique :
+L'événement apporte une information nouvelle, non redondante.
 
-> **Si l’événement n’a aucun intérêt pour un humain,
-> il n’a rien à faire dans le Logbook.**
-
-Chaque entité incluse doit justifier sa présence
-par une **valeur explicative ou décisionnelle**.
+Sont exclus : doublons, confirmations implicites, répétitions sans changement de contexte.
 
 ---
 
-## 🧩 TYPES D’ÉVÉNEMENTS AUTORISÉS
+## Typologie autorisée (fermée)
 
-### 🔥 Décisions et changements de mode
+Seules les catégories suivantes sont autorisées. Toute autre catégorie est interdite.
 
-- changement de programme chauffage
-- activation / désactivation d’un mode
-- décision centrale (intention, autorisation)
+### 1. Décision système
+Changement de programme, sélection de mode, arbitrage central.
 
----
+### 2. Transition d'état stable
+Début / fin d'un épisode (aération, ECS…), changement de régime durable.
 
-### 🚨 Sécurité et supervision
+### 3. Événement de sécurité ou anomalie
+Alarme, perte / retour réseau, watchdog, recovery.
 
-- alarme (armement, désarmement, déclenchement)
-- coupure secteur
-- perte / retour réseau
-- dégradation d’une intégration critique
-
----
-
-### 🌬️ Confort et environnement
-
-- aération (début / fin)
-- blocage chauffage post-aération
-- ECS (début / fin de cycle)
-- VMC (changement de régime)
+### 4. Action système explicite
+Script critique, action corrective, redémarrage ciblé.
 
 ---
 
-### 🔁 Actions volontaires ou automatiques significatives
+## Règle de fréquence
 
-- scripts manuels critiques
-- redémarrages ciblés
-- actions de récupération (reload, watchdog)
+> La fréquence anormale d'un événement est un signal système, pas un motif de log.
 
----
+Un même type d'événement répété au-delà d'un seuil de référence doit être traité comme une anomalie ou un défaut de conception — et non comme un comportement à enregistrer.
 
-## 🔗 RELATION AVEC LES AUTRES MÉCANISMES
+Des valeurs de référence peuvent être définies par domaine lors de l'implémentation.
 
-### Logbook ≠ Logger
-
-- **Logbook** : narration fonctionnelle
-- **Logger** : signal technique brut
-
-Un événement peut :
-- apparaître **dans le Logbook**
-- sans jamais apparaître dans le Logger
-
-L’inverse est fréquent.
+**Exception :** les événements de catégorie Sécurité / Anomalie sont exclus de cette contrainte. Leur répétition est elle-même un signal à conserver.
 
 ---
 
-### Logbook ≠ Historique (Recorder)
+## Responsabilité d'émission
 
-- **Recorder** : données temporelles
-- **Logbook** : événements discrets
+> Un événement = un point d'émission désigné.
 
-Le Logbook explique **pourquoi**
-l’historique montre ce qu’il montre.
+> L'émetteur est celui qui possède la vérité de l'événement.
 
----
+Exemples de désignation :
 
-### Logbook ≠ Notifications
+| Événement | Émetteur désigné |
+|---|---|
+| Décision prise | Couche décisionnelle |
+| Exécution confirmée | Script exécutant |
+| Anomalie détectée | Watchdog concerné |
 
-- le Logbook conserve
-- la notification alerte
+La désignation est faite au moment de l'implémentation, par domaine.
 
-Un événement peut être :
-- loggé sans notifier
-- notifié sans être loggé
-- ou les deux, selon le contexte
+**Interdictions :**
 
----
-
-## 🧠 STRUCTURE D’UNE ENTRÉE LOGBOOK
-
-Une entrée Logbook Arsenal doit idéalement répondre à :
-
-- **Quoi** s’est produit
-- **Pourquoi** (explicitement ou implicitement)
-- **Dans quel contexte**
-
-Elle doit être :
-- concise
-- compréhensible sans code
-- non ambiguë
+- émissions concurrentes sur un même événement
+- écriture depuis des observers, sensors ou helpers techniques
+- multiplication des points d'émission sans désignation explicite
 
 ---
 
-## 🚫 DÉRIVES EXPLICITEMENT REFUSÉES
+## Structure d'une entrée (norme forte)
 
-- ajouter une entité « parce qu’elle existe »
-- tracer des états transitoires
-- dupliquer des informations purement techniques
-- transformer le Logbook en timeline exhaustive
-- masquer un manque de compréhension par du bruit
+Chaque entrée doit contenir implicitement :
 
----
-
-## 🧾 RÈGLE D’OR ARSENAL
-
-> **Si une entrée du Logbook n’explique rien,
-> elle ne sert à rien.**
+- **Quoi** — l'événement
+- **Pourquoi** — la cause ou l'intention
+- **Contexte** — obligatoire dès lors que l'événement n'est pas auto-explicite
 
 ---
 
-## 📌 STATUT
+## Règle de formulation
 
-- Nature : **principe architectural**
-- Champ : **Logbook Home Assistant**
-- Applicabilité : globale
-- Évolution : rare, consciente, documentée
+Interdictions strictes :
+
+- noms d'entités bruts (`input_boolean.xxx`, `sensor.xxx`, etc.)
+- jargon technique
+- identifiants internes
+
+Exigences :
+
+- langage métier
+- lisible immédiatement sans connaissance du système
+- orienté action ou résultat
+
+| ❌ Interdit | ✔ Conforme |
+|---|---|
+| `input_boolean.chauffage_mode_eco turned on` | Mode éco activé |
+| `script.aeration_declenchement called` | Aération déclenchée |
 
 ---
+
+## Test Arsenal (complet — 4 tests)
+
+Toute entrée candidate doit passer les quatre tests suivants.
+
+**Test 1 — Nature**
+> Est-ce un événement réel, et non un état interne ou transitoire ?
+
+**Test 2 — Impact**
+> Modifie-t-il un comportement fonctionnellement observable ?
+
+**Test 3 — Densité**
+> Apporte-t-il une information non redondante ?
+
+**Test 4 — Formulation**
+> Le message est-il rédigé en langage fonctionnel, sans jargon ni nom d'entité brut ?
+
+**Si un seul test échoue → EXCLUSION.**
+
+---
+
+## Règle de densité
+
+> Une timeline dense est un défaut système.
+
+Objectif : lecture rapide, compréhension immédiate, absence de bruit.
+
+**1 événement = 1 information utile.**
+
+---
+
+## Relations système
+
+| | Logbook | Logger |
+|---|---|---|
+| Mode | Narratif | Technique |
+| Volume | Rare | Verbeux |
+| Destinataire | Humain | Machine |
+
+| | Logbook | Recorder |
+|---|---|---|
+| Granularité | Discret | Continu |
+| Unité | Événement | Donnée |
+| Finalité | Explication | Observation |
+
+| | Logbook | Notification |
+|---|---|---|
+| Nature | Mémoire | Alerte |
+| Durée | Persistant | Éphémère |
+
+---
+
+## Dérives interdites
+
+- Logger "au cas où"
+- Logger pour debug
+- Multiplier les points d'émission sans désignation
+- Exposer la mécanique interne
+- Tolérer le bruit par inertie
+
+> Arsenal fait l'inverse : on sélectionne avant d'émettre.
+
+---
+
+## Règle d'or
+
+> Si une entrée n'explique rien, elle est interdite.

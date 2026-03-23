@@ -1,263 +1,182 @@
 # ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER PRINCIPAL
-# Éclairage Garage
+# 🔧 ARSENAL — CONTRAT D'IMPLÉMENTATION
+# script.garage_action_physique
 # ==========================================================
+
 #
 # 📌 Statut :
-# CONTRAT MÉTIER PRINCIPAL — Domaine Éclairage aveugle
+# CONTRAT D'IMPLÉMENTATION — Domaine Éclairage Garage
 #
-# 📌 Domaine :
-# Éclairage — Zones sans retour d’état fiable
+# 📌 Dépendance normative :
+# Ce contrat est subordonné au Contrat Métier Principal — Éclairage Garage.
+# Tout invariant du contrat métier prévaut sur le présent document.
 #
 # 📌 Portée :
-# Garage et zones similaires :
-#   - va-et-vient physiques
-#   - boutons Zigbee / SwitchBot
-#   - coexistence manuel / automatique / UI
+# Implémentation exclusive de script.garage_action_physique
 #
 # ==========================================================
 
-## 🎯 Objet du contrat
+## 🎯 Objet
 
-Ce contrat définit les **règles normatives obligatoires**  
-régissant le sous-système **Éclairage Garage**.
+Ce contrat définit les règles d'implémentation du script autoritaire
+unique pour l'éclairage garage.
 
-Il formalise :
+Il couvre :
 
-- les invariants de vérité,
-- les autorités contractuelles,
-- les droits et interdictions,
-- les garanties de cohérence,
-- les interfaces autorisées.
-
-Ce contrat est :
-
-- principal pour ce domaine,
-- référence pour tous cas analogues Arsenal.
+- la séquence d'exécution interne,
+- la stratégie de choix actionneur,
+- les mises à jour d'état logique,
+- les interdictions d'implémentation.
 
 ---
 
-## 🔒 Invariant 1 — Vérité fonctionnelle unique
+## 🔒 Invariant I1 — Périmètre exclusif
 
-### Définition
+Ce script est l'unique point d'exécution physique du sous-système.
 
-La seule source de vérité autorisée est :
-
-- `input_boolean.<zone>_light_state`
-
-Règles :
-
-- cet état représente l’état attendu du système,
-- il est persistant,
-- il est contractuellement prioritaire.
-
-Interdictions :
-
-- lecture d’état matériel comme vérité,
-- recalcul depuis relais, consommation ou Zigbee,
-- correction automatique depuis le matériel.
+Il n'existe aucun autre chemin légitime vers les actionneurs.
 
 ---
 
-## 🔒 Invariant 2 — Autorité d’action unique
+## 🔒 Invariant I2 — Séquence d'exécution obligatoire
 
-### Définition
+Toute exécution du script suit impérativement cet ordre :
 
-Le seul point de pilotage autorisé est :
-
-- `script.<zone>_toggle`
-
-Droits exclusifs :
-
-- commander le matériel,
-- mettre à jour l’état logique.
-
-Interdictions absolues :
-
-- appel direct à `switch.*` hors script,
-- duplication de logique de bascule,
-- pilotage concurrent.
-
----
-
-## 🔒 Invariant 3 — Séparation contractuelle des rôles
-
-Chaque entité appartient à une catégorie unique :
-
-| Catégorie     | Rôle autorisé                        |
-|---------------|--------------------------------------|
-| Événement     | produire un fait brut                |
-| Autorisation  | autoriser / interdire l’automatisme  |
-| État          | porter la vérité logique             |
-| Pilotage      | appliquer l’action physique          |
-| Interface     | déclencher volontairement            |
-
-Règle :
-
-> **Aucune entité ne peut cumuler deux rôles contractuels.**
-
----
-
-## 🔒 Invariant 4 — Aveuglement matériel volontaire
-
-Le système est contractuellement :
-
-- aveugle à l’état réel,
-- indépendant du relais,
-- non synchronisé matériellement.
-
-Interdictions :
-
-- lecture de retour d’état,
-- tentative de resynchronisation,
-- validation d’exécution,
-- correction post-action.
-
----
-
-## 🔒 Invariant 5 — Concurrence multi-commandes autorisée
-
-Le système doit accepter simultanément :
-
-- commandes mécaniques,
-- boutons Zigbee,
-- UI,
-- automatisations.
-
-Règle :
-
-- toutes les commandes passent par le script autoritaire,
-- l’état logique reste l’unique référence.
-
----
-
-## 🧠 Règles d’autorisation automatique (Garage)
-
-L’automatisme d’éclairage du garage est gouverné par **deux garde-fous cumulatifs** :
-
-- `input_boolean.garage_auto_light`
-  → autorisation globale de l’automatisme
-
-- `binary_sensor.garage_allumage_auto_autorise`
-  → autorisation contextuelle d’allumage (luminosité locale)
-
-La décision repose sur la luminosité mesurée localement
-dans le garage (sensor.luminosite_garage_illuminance)
-comparée au seuil configuré via :
-
-input_number.garage_seuil_luminosite_allumage_auto
-
-Règles :
-
-- si `input_boolean.garage_auto_light = off` :
-  - aucune automation ne peut demander une action (allumage ou extinction)
-
-- si `input_boolean.garage_auto_light = on` :
-  - l’extinction automatique peut être autorisée sous conditions d’état
-  - l’allumage automatique est autorisé **uniquement si**
-    `binary_sensor.garage_allumage_auto_autorise = on`
-
----
-
-### Catégorie contractuelle
-
-`binary_sensor.garage_allumage_auto_autorise` appartient à la catégorie :
-
-| Catégorie    | Rôle autorisé                         |
-|--------------|---------------------------------------|
-| Autorisation | autoriser / interdire l’allumage auto |
-
-Règle :
-
-> Ce capteur ne pilote rien et ne modifie aucun état.
-
----
+1. **Lecture** — lire `input_boolean.<zone>_light_state`
+2. **Décision** — choisir l'actionneur selon la stratégie définie (§ Stratégie)
+3. **Action** — appeler l'actionneur retenu
+4. **Mise à jour** — basculer `input_boolean.<zone>_light_state`
 
 ### Interdictions
 
-`binary_sensor.garage_allumage_auto_autorise` ne doit jamais :
-
-- appeler `script.garage_toggle`
-- piloter un `switch.*`
-- écrire `input_boolean.garage_light_state`
-- contenir une logique de temporisation
-
-Il agit uniquement comme **garde d’autorisation**.
+- inverser les étapes 3 et 4
+- mettre à jour l'état logique sans avoir exécuté l'action
+- exécuter l'action sans mettre à jour l'état logique
+- sauter une étape
 
 ---
 
-## 🧠 Règles de bascule
+## 🔒 Invariant I3 — Stratégie de choix actionneur
 
-Toute bascule doit :
+### Principe
 
-- lire l’état logique courant,
-- appliquer une action physique aveugle,
-- mettre à jour l’état logique correspondant.
+Le choix entre `button.garage_1` et `button.garage_2` est fondé
+sur une stratégie interne cohérente basée sur l'état logique courant.
 
-Interdictions :
+Cette stratégie vise à maintenir une cohérence logique interne,
+sans garantie d'effet physique réel.
 
-- bascule sans mise à jour d’état,
-- écriture d’état sans action physique,
-- double écriture concurrente.
+### Table de correspondance (implémentation)
 
----
+| État logique courant | Action logique visée | Actionneur retenu |
+|----------------------|----------------------|-------------------|
+| `off`                | passer à `on`        | `button.garage_1` |
+| `on`                 | passer à `off`       | `button.garage_2` |
 
-## 🧠 Règles d’allumage automatique
+> ⚠️ Cette correspondance :
+> - est purement logique
+> - ne garantit pas l'état réel
+> - peut être inversée selon le câblage, sans modification du présent contrat
 
-Conditions minimales :
+### Interdictions
 
-- autorisation automatique active,
-- état logique actuellement OFF,
-- événement physique valide.
-
-Garanties :
-
-- aucune décision métier portée ici,
-- aucune temporisation incluse,
-- aucune politique globale.
-
----
-
-## 🧠 Règles d’extinction automatique
-
-Conditions minimales :
-
-- autorisation automatique active,
-- état logique actuellement ON,
-- absence prolongée confirmée.
-
-Règles :
-
-- extinction uniquement par script autoritaire,
-- aucune réactivation implicite,
-- aucune stratégie transversale intégrée.
+- considérer cette table comme une vérité physique
+- déduire l'état réel depuis le choix effectué
+- utiliser une information matérielle pour ajuster la stratégie
+- utiliser les timestamps des `button.*` comme critère de choix
+- implémenter une logique de rotation ou d'alternance
 
 ---
 
-## 🧩 Interfaces autorisées
+## 🔒 Invariant I4 — Mise à jour de l'état logique
 
-Interfaces contractuellement valides :
+La mise à jour de `input_boolean.<zone>_light_state` :
 
-- boutons MQTT Zigbee
-- UI appelant le script
-- automatisations événementielles
-- automatisations temporisées
+- est **systématique** après chaque action physique,
+- reflète l'intention, non une confirmation matérielle,
+- s'effectue par **écriture explicite** (`on` ou `off`) cohérente avec la décision prise en étape 2.
 
-Obligation :
+### Interdiction
 
-- toute interface appelle exclusivement le script autoritaire.
+- mettre à jour vers une valeur non cohérente avec la décision de l'étape 2
 
 ---
 
-## 🚫 États et comportements interdits
+## 🔒 Invariant I5 — Absence de validation post-action
 
-Sont contractuellement interdits :
+Le script :
 
-- état logique incohérent avec dernière action,
-- pilotage matériel hors script,
-- correction d’état depuis matériel,
-- automatisme sans autorisation,
-- cumul décision + pilotage dans une automation.
+- ne vérifie pas l'effet réel de l'action,
+- ne lit pas les timestamps après exécution,
+- ne corrige pas l'état logique a posteriori,
+- ne déclenche pas de re-tentative automatique.
+
+Toute divergence réel / logique est acceptée conformément au contrat métier.
+
+---
+
+## 🔒 Invariant I6 — Atomicité logique
+
+L'exécution du script est conçue comme atomique :
+
+- la séquence I2 est exécutée sans divergence logique interne,
+- aucun appel concurrent ne doit produire d'état incohérent.
+
+La gestion de la concurrence repose sur le mode du script (ex : `mode: single`).
+
+> La garantie d'atomicité est logique, non système.
+> Elle dépend de la configuration du mode d'exécution HA.
+
+---
+
+## 🧠 Comportement attendu — résumé
+
+```
+[ENTRÉE] : demande d'action (allumer / éteindre / toggler)
+    ↓
+[1] Lecture input_boolean → état courant
+    ↓
+[2] Décision actionneur (table I3)
+    ↓
+[3] Appel button.garage_X (via press)
+    ↓
+[4] Mise à jour input_boolean
+[SORTIE] : état logique cohérent avec l'intention
+```
+
+---
+
+## 🚫 Interdictions d'implémentation
+
+- lire ou écrire un autre `input_boolean` que `<zone>_light_state`
+- appeler directement `button.garage_1` ou `button.garage_2` hors séquence
+- introduire une logique conditionnelle basée sur le matériel
+- logger un "succès" impliquant une confirmation physique
+- toute forme de retry automatique
+
+---
+
+## 📋 Interface d'appel
+
+Le script n'expose **aucun paramètre obligatoire**.
+
+Un paramètre optionnel `action` ∈ {`on`, `off`, `toggle`} peut être fourni.
+
+### Règles
+
+- si `action` est absent → comportement `toggle`
+- si `action = toggle` → bascule logique systématique
+- si `action = on` :
+  - état logique = `off` → exécution normale
+  - état logique = `on` → aucune action
+- si `action = off` :
+  - état logique = `on` → exécution normale
+  - état logique = `off` → aucune action
+
+### Garantie
+
+Le paramètre `action` n'introduit aucune dépendance au réel,
+uniquement une contrainte logique interne.
 
 ---
 
@@ -265,29 +184,12 @@ Sont contractuellement interdits :
 
 Ce contrat garantit :
 
-- cohérence persistante multi-commandes,
-- robustesse face aux incohérences matérielles,
-- indépendance complète du matériel,
-- extensibilité contrôlée,
-- compatibilité humaine (manuel + automatique).
-
----
-
-## 🧩 Réutilisation normative
-
-Ce contrat constitue :
-
-- la référence Arsenal pour :
-  - éclairages aveugles
-  - zones techniques
-  - ateliers, caves, couloirs multi-interrupteurs
-
-Toute implémentation analogue doit :
-
-- respecter ces invariants,
-- réutiliser ce modèle,
-- ne jamais affaiblir ces garanties.
+- conformité totale aux invariants du contrat métier,
+- cohérence systématique de `input_boolean.<zone>_light_state`,
+- traçabilité de chaque décision,
+- indépendance totale vis-à-vis du matériel réel,
+- extensibilité sans rupture de contrat.
 
 # ==========================================================
-# FIN CONTRAT MÉTIER PRINCIPAL — ÉCLAIRAGE GARAGE
+# FIN CONTRAT D'IMPLÉMENTATION — script.garage_action_physique
 # ==========================================================

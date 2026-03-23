@@ -91,7 +91,7 @@
               - conditions:
                   - condition: template
                     value_template: >
-                      {{ states('sensor.boiler_ack_dhw_set_setpoint_result') == 'applied' }}
+                      {{ states('sensor.boiler_ack_dhw_set_setpoint_status') == 'applied' }}
                 sequence:
                   - stop: "Consigne ECS de sécurité confirmée par ACK"
 
@@ -105,7 +105,7 @@
         message: >
           À {{ now().strftime('%H:%M') }}, après deux tentatives via script exécutif boiler bridge,
           la consigne ECS de sécurité n'a pas été confirmée à {{ retour_temp }} °C.
-          Résultat ACK : {{ states('sensor.boiler_ack_dhw_set_setpoint_result') }}.
+          Résultat ACK : {{ states('sensor.boiler_ack_dhw_set_setpoint_status') }}.
 
     - service: input_text.set_value
       target:

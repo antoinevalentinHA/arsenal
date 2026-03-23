@@ -41,6 +41,8 @@ batteries:
     - sensor.bouton_sdb_battery
     - sensor.bouton_garage_1_battery
     - sensor.bouton_garage_2_battery
+    - sensor.switchbot_bot_garage_1
+    - sensor.switchbot_bot_garage_2
     - sensor.contact_chambre_arnaud_1_battery
     - sensor.contact_chambre_arnaud_2_battery
     - sensor.contact_chambre_matthieu_1_battery
@@ -73,7 +75,6 @@ batteries:
     - sensor.exterieur_batterie
     - sensor.jardin_se_batterie
     - sensor.jardin_no_batterie
-    - sensor.jardin_batterie
     - sensor.petite_maison_batterie
     - sensor.pluviometre_batterie
     - sensor.sejour_batterie
@@ -99,7 +100,5 @@ batteries:
     - sensor.commercial_batterie
     - sensor.stock_carton_batterie
     - sensor.stock_pf_batterie
-    - sensor.mezzanine_batterie
-    - sensor.alarme_batterie
     - sensor.zigbee_pluie_battery
     - sensor.vmc_batterie

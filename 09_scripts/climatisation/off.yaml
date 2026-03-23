@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Clim – Exécution OFF physique
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Imposer un arrêt physique complet de la climatisation,
+#   de manière idempotente et sans aucune logique métier.
+#
+# 🧱 PRINCIPE
+#   - action pure
+#   - zéro décision
+#   - zéro retry
+#   - zéro notification
+#   - zéro lecture de sensor.clim_target_mode
+#
+# ✅ GARANTIES
+#   - si climate.clim est actif, il est coupé
+#   - après stabilisation courte, switch.clim_power est coupé
+#   - si tout est déjà arrêté, abstention silencieuse
+# ==========================================================
+
+clim_exec_apply_off:
+  alias: "Clim – Exécution OFF physique"
+  mode: single
+  max_exceeded: silent
+
+  sequence:
+    - variables:
+        hvac: "{{ states('climate.clim') }}"
+        power: "{{ states('switch.clim_power') }}"
+        clim_active: "{{ hvac not in ['off', 'unknown', 'unavailable'] }}"
+        power_on: "{{ power == 'on' }}"
+
+    - choose:
+        - conditions: "{{ clim_active }}"
+          sequence:
+            - service: climate.turn_off
+              target:
+                entity_id: climate.clim
+            - delay: "00:00:01"
+
+    - choose:
+        - conditions: "{{ power_on }}"
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.clim_power

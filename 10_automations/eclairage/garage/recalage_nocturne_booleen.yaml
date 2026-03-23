@@ -1,0 +1,86 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Garage – Recalage nocturne etat logique eclairage
+#
+#  ID : 10070000000025
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Recaler l'etat logique du garage par observation
+#     passive nocturne, sans aucune action physique.
+#
+#  🧱 PRINCIPE
+#     - passages a 02:00 / 03:00 / 04:00
+#     - execution uniquement si absence de mouvement
+#       depuis 10 minutes
+#     - correction uniquement si l'etat estime est certain
+#       et divergent de l'etat logique actuel
+#
+#  🚫 NE FAIT PAS
+#     - n'appelle jamais button.garage_1
+#     - n'appelle jamais button.garage_2
+#     - ne modifie jamais l'etat reel
+# ==========================================================
+
+- id: "10070000000025"
+  alias: "Garage – Recalage nocturne etat logique eclairage"
+  description: >-
+    Recale input_boolean.garage_light_state a partir de
+    binary_sensor.garage_lumiere_reelle_estimee lors de
+    passages nocturnes passifs.
+  mode: single
+  trigger:
+    - platform: time
+      at: "02:00:00"
+    - platform: time
+      at: "03:00:00"
+    - platform: time
+      at: "04:00:00"
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.mouvement_garage
+      state: "off"
+      for:
+        minutes: 10
+
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.garage_lumiere_reelle_estimee
+          state: "unavailable"
+        - condition: state
+          entity_id: binary_sensor.garage_lumiere_reelle_estimee
+          state: "unknown"
+
+  action:
+    - choose:
+
+        # =====================================================
+        # Recalage vers ON
+        # =====================================================
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.garage_lumiere_reelle_estimee
+              state: "on"
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "off"
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.garage_light_state
+
+        # =====================================================
+        # Recalage vers OFF
+        # =====================================================
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.garage_lumiere_reelle_estimee
+              state: "off"
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "on"
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.garage_light_state

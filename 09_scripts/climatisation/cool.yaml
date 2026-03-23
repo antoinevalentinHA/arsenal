@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Clim – Exécution COOL physique
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Appliquer physiquement l'état cible COOL,
+#   de manière idempotente et sans aucune logique métier.
+#
+# 🧱 PRINCIPE
+#   - action pure
+#   - zéro décision
+#   - zéro retry
+#   - zéro notification
+#   - zéro lecture de sensor.clim_target_mode
+#
+# ✅ GARANTIES
+#   - si switch.clim_power est off, il est allumé
+#   - après stabilisation courte, climate.clim est positionné sur cool
+#   - si l'état réel est déjà conforme, abstention silencieuse
+# ==========================================================
+
+clim_exec_apply_cool:
+  alias: "Clim – Exécution COOL physique"
+  mode: single
+  max_exceeded: silent
+
+  sequence:
+    - variables:
+        hvac: "{{ states('climate.clim') }}"
+        power: "{{ states('switch.clim_power') }}"
+
+    - choose:
+        - conditions: "{{ power != 'on' }}"
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: switch.clim_power
+            - delay: "00:00:02"
+
+    - choose:
+        - conditions: "{{ hvac != 'cool' }}"
+          sequence:
+            - service: climate.set_hvac_mode
+              target:
+                entity_id: climate.clim
+              data:
+                hvac_mode: cool

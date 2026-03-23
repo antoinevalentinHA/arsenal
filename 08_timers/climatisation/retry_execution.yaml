@@ -1,0 +1,18 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER
+#     Clim — Reprise exécution
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter la temporisation avant nouvelle tentative
+#   d'exécution clim après échec.
+#
+# 🧱 PRINCIPE
+#   - Le timer ne décide rien
+#   - Il ordonne uniquement la reprise différée
+#   - La durée est fixée par le script selon le compteur
+# ==========================================================
+
+clim_retry:
+  name: "Clim – Timer de reprise"
+  icon: mdi:timer-outline
+  restore: true

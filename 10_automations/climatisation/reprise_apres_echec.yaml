@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Clim – Reprise après échec d'exécution
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Relancer script.clim_execution à l'expiration du timer
+#   de reprise, si l'échec est toujours actif, la cible
+#   toujours valide, et la borne de tentatives non atteinte.
+#
+# 🧱 PRINCIPE
+#   - Pas de décision thermique
+#   - Pas de boucle interne
+#   - Relance strictement bornée (compteur <= 2)
+# ==========================================================
+
+- id: "10030000000108"
+  alias: "Clim – Reprise après échec d'exécution"
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.clim_retry
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.clim_execution_echec
+      state: "on"
+
+    - condition: template
+      value_template: >
+        {{ states('sensor.clim_target_mode') in ['cool', 'dry', 'heat', 'off'] }}
+
+    - condition: template
+      value_template: >
+        {{ states('counter.clim_execution_retry_count') | int(0) <= 2 }}
+
+  action:
+    - service: script.turn_on
+      target:
+        entity_id: script.clim_execution

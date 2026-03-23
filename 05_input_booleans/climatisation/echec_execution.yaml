@@ -1,0 +1,18 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     Clim — Échec d'exécution
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter l'état d'échec d'exécution de la clim.
+#
+# 🧱 PRINCIPE
+#   - Aucune décision métier
+#   - ON  = la dernière exécution n'a pas atteint
+#           la post-condition attendue,
+#           ou l'exécution était impossible (infra indispo)
+#   - OFF = exécution validée ou échec purgé
+# ==========================================================
+
+clim_execution_echec:
+  name: "Clim – Échec d'exécution"
+  icon: mdi:alert-circle-outline

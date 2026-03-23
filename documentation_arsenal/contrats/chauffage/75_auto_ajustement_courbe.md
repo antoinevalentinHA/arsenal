@@ -229,6 +229,128 @@ Interdictions :
 
 ---
 
+Les conditions ci-dessus sont des conditions instantanées d’autorisation.
+
+La condition suivante constitue un état système stable,
+porté par un helper dédié et évalué avec hystérésis.
+
+Elle agit comme une précondition d’éligibilité à l’apprentissage,
+en amont de toute décision d’auto-ajustement.
+
+---
+
+# ----------------------------------------------------------
+# 🧠 7.1 REPRÉSENTATIVITÉ THERMIQUE — ÉLIGIBILITÉ D’APPRENTISSAGE
+# ----------------------------------------------------------
+
+## Principe
+
+L’auto-ajustement de la courbe de chauffe est autorisé uniquement si
+la période d’observation est **thermiquement représentative**.
+
+Ce mécanisme constitue un **verrou de qualité de signal**.
+
+Il ne participe pas au calcul de la correction.
+Il conditionne uniquement le droit d’apprentissage.
+
+---
+
+## Indicateur canonique
+
+sensor.pourcentage_consigne_eco_24h_proxy
+
+Sémantique :
+
+Plus la valeur est élevée, plus la période récente a été
+peu sollicitée thermiquement, donc moins elle est représentative.
+
+---
+
+## Définition de l’état
+
+L’état de représentativité thermique est un **état système stable**,
+déterminé avec hystérésis.
+
+Il ne reflète pas une valeur instantanée mais une position mémorisée.
+
+Règles de transition :
+
+- valeur > 55 %  → NON_REPRESENTATIF
+- valeur < 40 %  → REPRESENTATIF
+- 40 % ≤ valeur ≤ 55 % → état conservé
+
+État initial :
+
+- NON_REPRESENTATIF (conservatoire)
+
+---
+
+## Support d’état
+
+L’état de représentativité thermique est porté exclusivement par :
+
+input_select.chauffage_representativite_thermique
+
+Toute modification de cet état doit être réalisée exclusivement
+par le mécanisme d’évaluation de la représentativité thermique.
+
+Toute écriture externe constitue une violation du contrat.
+
+---
+
+## Usage contractuel
+
+- état = REPRESENTATIF → auto-ajustement autorisé
+- état = NON_REPRESENTATIF → auto-ajustement interdit
+
+Ce critère est une **précondition d’éligibilité**.
+Il est évalué prioritairement, avant toute autre condition d’autorisation.
+
+Toute décision d’ajustement produite hors état REPRESENTATIF est :
+
+→ contractuellement nulle
+
+---
+
+## Interdictions normatives
+
+- Ce critère ne pondère jamais une correction
+- Il ne modifie aucune grandeur thermique
+- Il ne peut pas être contourné par une logique décisionnelle
+- Il ne peut pas être forcé sans mécanisme explicite documenté
+
+---
+
+## Positionnement architectural
+
+Ce mécanisme appartient à la **couche de qualification du signal**.
+
+Il est évalué en amont :
+
+- des grandeurs canoniques
+- des capteurs de suggestion
+- de toute décision
+
+Il est strictement indépendant :
+
+- du calcul d’écart thermique
+- de la logique de correction
+
+---
+
+## Traçabilité
+
+Toute transition d’état doit produire :
+
+- un événement traçable
+- une entrée logbook explicite
+
+Principe :
+
+> 🧠 Une invalidation d’apprentissage doit être observable et explicable
+
+---
+
 # ----------------------------------------------------------
 # 🔒 8. IMMUNITÉ THERMIQUE & PROTECTIONS
 # ----------------------------------------------------------

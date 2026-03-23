@@ -5,8 +5,8 @@
 #   Clim – Seuil extinction HEAT atteint
 #
 # 🎯 Rôle :
-#   Indiquer si la température minimale intérieure
-#   est remontée au-dessus du seuil d'extinction HEAT
+#   Indiquer si la température minimale des chambres
+#   a atteint ou dépassé le seuil d'extinction HEAT
 #   appliqué par le système.
 #
 # 🧱 Principe Arsenal :
@@ -28,8 +28,6 @@
       unique_id: clim_seuil_extinction_heat_atteint
       default_entity_id: binary_sensor.clim_seuil_extinction_heat_atteint
       state: >
-        {{
-          states('sensor.temperature_min_chambres') | float(-99)
-          >=
-          states('sensor.seuil_extinction_chauffage_clim') | float(999)
-        }}
+        {% set consigne = states('sensor.temperature_consigne_appliquee_locale') | float(20) %}
+        {% set offset_off = states('input_number.clim_offset_off') | float(0.5) %}
+        {{ (consigne - offset_off) | round(1) }}

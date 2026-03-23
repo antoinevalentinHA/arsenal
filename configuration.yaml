@@ -13,6 +13,7 @@ input_boolean: !include_dir_merge_named 05_input_booleans
 input_select: !include_dir_merge_named 06_input_selects
 input_datetime: !include_dir_merge_named 07_input_datetimes
 timer: !include_dir_merge_named 08_timers
+counter: !include_dir_merge_named 08b_counters
 alarm_control_panel: !include_dir_merge_list template_alarm_panels
 script: !include_dir_merge_named 09_scripts
 automation: !include_dir_merge_list 10_automations

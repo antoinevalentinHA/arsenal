@@ -17,7 +17,7 @@ content: |
   {% set boost = parts[4] if have > 4 else 'non' %}
   {% set valide = parts[5] if have > 5 else '—' %}
 
-  {% set tmax = states('input_number.ecs_temperature_max_figee') | float(0) %}
+  {% set tmax = states('input_number.ecs_temperature_max_reelle_figee') | float(0) %}
   {% set duree = states('input_number.ecs_duree_dernier_cycle_figee') | float(0) %}
   {% set delta = (tmax - consigne) | round(1) %}
 

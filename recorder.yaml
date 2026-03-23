@@ -89,7 +89,6 @@ include:
     # ==== 🌧️ PLUIE / PRESSION ====
     # =====================================================
     - sensor.pluviometre_precipitation
-    - binary_sensor.zigbee_pluie_water_leak
     - sensor.pluie_aujourdhui_local
     - sensor.pluie_total_local
     - sensor.pluie_hebdomadaire
@@ -120,7 +119,6 @@ include:
     - sensor.clim_target_mode
     - sensor.clim_consommation_estimee_energie
     - sensor.clim_consommation_estimee_aujourd_hui
-    - input_datetime.clim_mode_last_change
 
     # =====================================================
     #  ==== 🪟 AERATION ====
@@ -129,19 +127,7 @@ include:
     - input_boolean.chauffage_blocage_aeration
     - input_boolean.aeration_pipeline_arme
     - input_boolean.aeration_confirmee
-    - input_number.delta_t_max_decisionnel_aeration
-    - input_datetime.aeration_debut
-    - input_number.ref_temp_entree
-    - input_number.ref_temp_sejour
-    - input_number.ref_temp_chambre_arnaud
-    - input_number.ref_temp_chambre_matthieu
-    - input_number.ref_temp_chambre_parents
-    - input_number.ref_temp_palier
-    - input_number.duree_aeration_rdc_stock
-    - input_number.duree_aeration_etage_stock
     - binary_sensor.ouverture_qualifiee_maison
-    - binary_sensor.fenetre_sejour_ouverte_avec_delai
-    - binary_sensor.fenetre_chambre_parents_ouverte_avec_delai
 
     # =====================================================
     # ==== 🍓 SANTÉ PLATEFORME — CORE / SUPERVISOR ====
@@ -162,24 +148,16 @@ include:
     # ==== 🔥 CHAUFFAGE ====
     # =====================================================
     - sensor.programme_chauffage
-    - sensor.chauffage_parallele_suggeree
-    - sensor.chauffage_pente_suggeree
-    - sensor.ecart_consigne_instantane
     - input_boolean.chauffage_standby_force
     - input_boolean.poele_recent
     - input_boolean.blocage_chauffage_poele
-    - timer.poele_blocage_chauffage
     - sensor.chauffage_autorisation_cible
     - sensor.chauffage_mode_calcule
-    - sensor.chauffage_raison_calculee
     - input_boolean.chauffage_inhibition_geofencing
     - input_select.chauffage_dernier_mode_decide
-    - input_boolean.pre_confort_enable
     - input_boolean.pre_confort_actif_calcule
     - sensor.chauffage_raison_calculee
     - binary_sensor.vacances_actives
-    - input_datetime.fin_vacances
-    - input_number.duree_prechauffage_retour_vacances
 
     # =====================================================
     # ==== 🔥 CHAUFFAGE - DIAGNOSTIC THERMIQUE ====
@@ -200,12 +178,8 @@ include:
     # =====================================================
     - sensor.ecs_temperature_ballon_securisee
     - sensor.ecs_consigne_dernier_cycle
-    - sensor.ecs_temperature_max_cycle
     - sensor.ecs_consigne_chaudiere_securisee
-    - sensor.ecs_fin_cycle_consigne_atteinte
     - binary_sensor.ecs_chauffe_en_cours_local
-    - binary_sensor.ecs_desinfection_retour_vacances_autorisee
-    - timer.vacances_longues_ecs
 
     # =====================================================
     # ==== 💨 DÉSHUMIDIFICATEUR ====

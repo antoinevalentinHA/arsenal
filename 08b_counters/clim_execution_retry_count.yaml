@@ -1,0 +1,21 @@
+# ==========================================================
+# 🧠 ARSENAL — COUNTER
+#     Clim — Compteur de retry exécution
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Compter les échecs consécutifs de l'exécution clim.
+#
+# 🧱 PRINCIPE
+#   - 0 = aucun échec en cours
+#   - 1 = premier échec constaté (reprise à +30 s)
+#   - 2 = deuxième échec constaté (reprise à +90 s)
+#   - 3 = échec persistant, notification et arrêt
+# ==========================================================
+
+clim_execution_retry_count:
+  name: "Clim – Compteur de retry"
+  initial: 0
+  minimum: 0
+  maximum: 3
+  step: 1
+  icon: mdi:repeat

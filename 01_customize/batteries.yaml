@@ -75,8 +75,12 @@ sensor.deshumidificateur_batterie:
   friendly_name: "Bouton déshumidificateur"
   icon: mdi:gesture-tap-button
 
-sensor.alarme_batterie:
-  friendly_name: "Bouton alarme Imprimerie"
+sensor.switchbot_bot_garage_1:
+  friendly_name: "Bouton Garage 1"
+  icon: mdi:gesture-tap-button
+
+sensor.switchbot_bot_garage_2:
+  friendly_name: "Bouton Garage 2"
   icon: mdi:gesture-tap-button
 
 ############################################################

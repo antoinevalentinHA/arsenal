@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT :
+#     Chauffage - Représentativité thermique
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#     Porter l'état système de représentativité thermique
+#     utilisé comme condition d'éligibilité à l'auto-ajustement
+#     de la courbe de chauffe.
+#
+# 🧩 PRINCIPE
+#     - État discret :
+#         • NON_REPRESENTATIF
+#         • REPRESENTATIF
+#     - État évalué avec hystérésis par automation dédiée
+#     - Aucune logique embarquée dans ce helper
+#
+# 🧱 AUTORITÉ
+#     - Écriture exclusive par :
+#         automation.chauffage_representativite_thermique_evaluation_hysteresis
+#     - Toute écriture externe constitue une violation du contrat
+#
+# 🔒 ÉTAT INITIAL
+#     - NON_REPRESENTATIF (conservatoire)
+# ==========================================================
+
+chauffage_representativite_thermique:
+  name: Chauffage representativite thermique
+  icon: mdi:thermometer-check
+  options:
+    - NON_REPRESENTATIF
+    - REPRESENTATIF

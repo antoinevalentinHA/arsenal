@@ -1,26 +1,32 @@
 # ==========================================================
-# 🧠 ARSENAL — SCRIPT (CLIM)
+# 🧠 ARSENAL — SCRIPT
+#     Clim – Exécution mode cible
 # ----------------------------------------------------------
-# 📛 Nom :
-#   Clim – Exécution mode cible
+# 🎯 RÔLE
+#   Appliquer le mode cible issu de sensor.clim_target_mode
+#   de manière idempotente, sans aucune décision thermique.
 #
-# 🎯 Rôle :
-#   Appliquer le mode cible issu de `sensor.clim_target_mode`
-#   de manière idempotente, sans aucune décision métier.
+# 🧱 PRINCIPE
+#   - Action pure
+#   - Zéro arbitrage métier
+#   - Zéro retry interne
+#   - Post-condition obligatoire
+#   - Trois conclusions possibles :
+#       1. cible invalide       → abstention silencieuse
+#       2. infra indisponible   → échec infra, reprise programmée
+#       3. post-condition KO    → échec d'exécution, reprise programmée
 #
-# 🧱 Principe Arsenal :
-#   - Action PURE
-#   - Zéro logique thermique
-#   - Zéro arbitrage
-#   - Zéro redondance
-#
-# 🔌 Dépendances :
+# 🔌 DÉPENDANCES
 #   - sensor.clim_target_mode
 #   - climate.clim
 #   - switch.clim_power
-#
-# 📍 Entité :
-#   script.clim_execution
+#   - input_boolean.clim_execution_echec
+#   - counter.clim_execution_retry_count
+#   - timer.clim_retry
+#   - script.clim_exec_apply_cool
+#   - script.clim_exec_apply_dry
+#   - script.clim_exec_apply_heat
+#   - script.clim_exec_apply_off
 # ==========================================================
 
 clim_execution:
@@ -31,118 +37,173 @@ clim_execution:
   sequence:
 
     # ======================================================
-    # 1️⃣ LECTURE — Mode cible et état réel
+    # 1. LECTURE ET QUALIFICATION
     # ======================================================
     - variables:
         target: "{{ states('sensor.clim_target_mode') }}"
         hvac: "{{ states('climate.clim') }}"
         power: "{{ states('switch.clim_power') }}"
+        retry_next: "{{ (states('counter.clim_execution_retry_count') | int(0)) + 1 }}"
+        target_valid: "{{ target in ['cool', 'dry', 'heat', 'off'] }}"
+        entities_available: >
+          {{ hvac not in ['unknown', 'unavailable']
+             and power not in ['unknown', 'unavailable'] }}
+        execution_possible: "{{ target_valid and entities_available }}"
 
     # ======================================================
-    # 2️⃣ ABSTENTION — Décision invalide ou état indisponible
+    # 2. GARDE — CIBLE INVALIDE
+    #    Abstention silencieuse :
+    #    la consigne elle-même est hors contrat.
     # ======================================================
     - condition: template
-      value_template: >
-        {{ target in ['cool', 'dry', 'heat', 'off'] }}
-
-    - condition: template
-      value_template: >
-        {{ hvac not in ['unknown', 'unavailable'] and power not in ['unknown', 'unavailable'] }}
+      value_template: "{{ target_valid }}"
 
     # ======================================================
-    # 3️⃣ APPLICATION — Selon le mode cible
+    # 3. ACTION — UNIQUEMENT SI EXÉCUTION POSSIBLE
     # ======================================================
     - choose:
 
         # --------------------------------------------------
-        # ➜ MODE COOL
+        # MODE COOL
         # --------------------------------------------------
-        - conditions: "{{ target == 'cool' }}"
+        - conditions:
+            - condition: template
+              value_template: "{{ execution_possible and target == 'cool' }}"
           sequence:
-
-            - choose:
-                - conditions: "{{ power != 'on' }}"
-                  sequence:
-                    - service: switch.turn_on
-                      target:
-                        entity_id: switch.clim_power
-                    - delay: "00:00:02"
-
-            - choose:
-                - conditions: "{{ hvac != 'cool' }}"
-                  sequence:
-                    - service: climate.set_hvac_mode
-                      target:
-                        entity_id: climate.clim
-                      data:
-                        hvac_mode: cool
-
+            - service: script.clim_exec_apply_cool
 
         # --------------------------------------------------
-        # ➜ MODE DRY
+        # MODE DRY
         # --------------------------------------------------
-        - conditions: "{{ target == 'dry' }}"
+        - conditions:
+            - condition: template
+              value_template: "{{ execution_possible and target == 'dry' }}"
           sequence:
-
-            - choose:
-                - conditions: "{{ power != 'on' }}"
-                  sequence:
-                    - service: switch.turn_on
-                      target:
-                        entity_id: switch.clim_power
-                    - delay: "00:00:02"
-
-            - choose:
-                - conditions: "{{ hvac != 'dry' }}"
-                  sequence:
-                    - service: climate.set_hvac_mode
-                      target:
-                        entity_id: climate.clim
-                      data:
-                        hvac_mode: dry
-
+            - service: script.clim_exec_apply_dry
 
         # --------------------------------------------------
-        # ➜ MODE HEAT
+        # MODE HEAT
         # --------------------------------------------------
-        - conditions: "{{ target == 'heat' }}"
+        - conditions:
+            - condition: template
+              value_template: "{{ execution_possible and target == 'heat' }}"
           sequence:
-
-            - choose:
-                - conditions: "{{ power != 'on' }}"
-                  sequence:
-                    - service: switch.turn_on
-                      target:
-                        entity_id: switch.clim_power
-                    - delay: "00:00:02"
-
-            - choose:
-                - conditions: "{{ hvac != 'heat' }}"
-                  sequence:
-                    - service: climate.set_hvac_mode
-                      target:
-                        entity_id: climate.clim
-                      data:
-                        hvac_mode: heat
-
+            - service: script.clim_exec_apply_heat
 
         # --------------------------------------------------
-        # ➜ MODE OFF
+        # MODE OFF
         # --------------------------------------------------
-        - conditions: "{{ target == 'off' }}"
+        - conditions:
+            - condition: template
+              value_template: "{{ execution_possible and target == 'off' }}"
           sequence:
+            - service: script.clim_exec_apply_off
 
-            - choose:
-                - conditions: "{{ hvac != 'off' }}"
-                  sequence:
-                    - service: climate.turn_off
-                      target:
-                        entity_id: climate.clim
-                    - delay: "00:00:01"
+    # ======================================================
+    # 4. STABILISATION
+    #    Seulement si une exécution réelle a été possible.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ execution_possible }}"
+          sequence:
+            - delay: "00:00:05"
 
-            - choose:
-                - conditions: "{{ power == 'on' }}"
-                  sequence:
-                    - service: switch.turn_off
-                      target:
-                        entity_id: switch.clim_power
+    # ======================================================
+    # 5. QUALIFICATION DU RÉSULTAT
+    # ======================================================
+    - variables:
+        post_ok: >
+          {% if not execution_possible %}
+            false
+          {% elif target == 'cool' %}
+            {{ is_state('climate.clim', 'cool') }}
+          {% elif target == 'dry' %}
+            {{ is_state('climate.clim', 'dry') }}
+          {% elif target == 'heat' %}
+            {{ is_state('climate.clim', 'heat') }}
+          {% elif target == 'off' %}
+            {{ is_state('climate.clim', 'off')
+               and is_state('switch.clim_power', 'off') }}
+          {% else %}
+            false
+          {% endif %}
+        echec_type: >
+          {% if not execution_possible %}
+            infra
+          {% elif not (post_ok | bool) %}
+            postcondition
+          {% else %}
+            none
+          {% endif %}
+
+    # ======================================================
+    # 6. CONCLUSION
+    # ======================================================
+    - choose:
+
+        # --------------------------------------------------
+        # SUCCÈS
+        # --------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ echec_type == 'none' }}"
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.clim_execution_echec
+
+            - service: counter.reset
+              target:
+                entity_id: counter.clim_execution_retry_count
+
+            - service: timer.cancel
+              target:
+                entity_id: timer.clim_retry
+
+      default:
+
+        # --------------------------------------------------
+        # ÉCHEC — INFRA OU POST-CONDITION
+        # --------------------------------------------------
+        - service: input_boolean.turn_on
+          target:
+            entity_id: input_boolean.clim_execution_echec
+
+        - service: counter.increment
+          target:
+            entity_id: counter.clim_execution_retry_count
+
+        - choose:
+
+            # ----------------------------------------------
+            # REPRISE 1 — +30 s
+            # ----------------------------------------------
+            - conditions:
+                - condition: template
+                  value_template: "{{ retry_next == 1 }}"
+              sequence:
+                - service: timer.start
+                  target:
+                    entity_id: timer.clim_retry
+                  data:
+                    duration: "00:00:30"
+
+            # ----------------------------------------------
+            # REPRISE 2 — +90 s
+            # ----------------------------------------------
+            - conditions:
+                - condition: template
+                  value_template: "{{ retry_next == 2 }}"
+              sequence:
+                - service: timer.start
+                  target:
+                    entity_id: timer.clim_retry
+                  data:
+                    duration: "00:01:30"
+
+          default:
+            - service: timer.cancel
+              target:
+                entity_id: timer.clim_retry
