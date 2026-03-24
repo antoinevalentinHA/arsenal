@@ -64,3 +64,4 @@ carte_etat_charge_vehicule:
               ? "rgba(76, 175, 80, 0.2)"          // 🟢 en charge
               : "rgba(158, 158, 158, 0.2)";       // ⚪ arrêt
           ]]]
+          

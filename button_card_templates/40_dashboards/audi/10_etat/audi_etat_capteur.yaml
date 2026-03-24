@@ -51,3 +51,4 @@ audi_etat_capteur:
             if (s === "off") return "rgba(76, 175, 80, 0.2)";
             return "rgba(244, 67, 54, 0.2)";
           ]]]
+

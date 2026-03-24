@@ -77,21 +77,6 @@ L'absence d'erreur ne constitue pas une validation système.
 
 ---
 
-### F. Information technique
-
-Exemples : `boiler_info_requete`, `boiler_info_timestamp`
-
-- Traçabilité technique : flux de requêtes, horodatage
-- Une requête émise n'est ni bonne ni mauvaise en soi
-- **Type UI : info** (aucune interprétation superposée)
-
-> Les templates de type `info` ne doivent jamais porter de sémantique de validation, d'erreur ou de succès.
-
-Les templates de type info ne doivent pas intégrer
-de seuils ni de logique de classification.
-
----
-
 ### G. KPI techniques
 
 Exemples : `boiler_kpi_consigne`, `boiler_kpi_courbe`, `boiler_kpi_temperature`
@@ -163,7 +148,6 @@ Niveau 5 — KPI                    → 50_kpi/
     boiler_diagnostic_error.yaml
 
   40_info/
-    boiler_info_requete.yaml
     boiler_info_timestamp.yaml
 
   50_kpi/
