@@ -62,14 +62,6 @@
 #       → une seule calibration active à la fois
 #
 # ----------------------------------------------------------
-# 🧾 TRAÇABILITÉ
-#
-#   - Chaque correction appliquée est loguée :
-#       • pièce concernée
-#       • écart mesuré
-#       • nouvelle calibration appliquée
-#
-# ----------------------------------------------------------
 # ❌ NE FAIT PAS
 #
 #   - Aucun déclenchement automatique
@@ -182,11 +174,6 @@ calibration_capteurs_zigbee:
                     data:
                       entity_id: "{{ repeat.item.calib_t }}"
                       value: "{{ newCalT }}"
-                  - action: logbook.log
-                    data:
-                      name: "Calibration Zigbee TEMP"
-                      message: >
-                        {{ repeat.item.name }} → ΔT={{ dT }}°C → calibration={{ newCalT }}°C
 
           - alias: "Correction humidité si nécessaire"
             choose:
@@ -203,8 +190,3 @@ calibration_capteurs_zigbee:
                     data:
                       entity_id: "{{ repeat.item.calib_h }}"
                       value: "{{ newCalH }}"
-                  - action: logbook.log
-                    data:
-                      name: "Calibration Zigbee HUM"
-                      message: >
-                        {{ repeat.item.name }} → ΔH={{ dH }}% → calibration={{ newCalH }}%

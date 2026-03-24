@@ -1,0 +1,108 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Ambiance — Humidité relative (KPI avec Δ zone)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'humidité relative d'un capteur avec comparaison
+#     Δ par rapport au capteur maître de la zone (suffixe _1).
+#     Les capteurs jardin Netatmo sont traités comme cas spéciaux
+#     (pas de Δ, toujours vert).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     Capteurs jardin Netatmo (_jardin_1 / _jardin_2) :
+#     - toujours             -> 🟢 vert  (pas de référence de comparaison)
+#
+#     Capteur maître de zone (suffixe _1) :
+#     - affiché sans Δ       -> couleur non définie (grey par défaut si NaN)
+#
+#     Capteurs secondaires (suffixe _2, _3…) :
+#     - |Δ| < 2%             -> 🟢 vert   (cohérent avec le maître)
+#     - 2% <= |Δ| < 5%       -> 🟡 jaune  (écart modéré)
+#     - |Δ| >= 5%            -> 🔴 rouge  (écart significatif)
+#     - données manquantes   -> ⚪ gris   (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity              : sensor.humidite_relative_* (convention _N en suffixe)
+#     - sensor maître zone  : entity_id avec suffixe _1 (dérivé automatiquement)
+#
+# ⚠️ CONTRAINTES
+#     - Convention de nommage Arsenal requise : suffixe _1 = maître, _2+ = secondaires
+#     - Le capteur maître est dérivé par remplacement du suffixe (regex /_\d$/)
+#     - Les deux entity_id jardin Netatmo sont codés en dur — à externaliser
+#       via variables si d'autres capteurs externes sont ajoutés
+#     - Le label est vide pour le maître et les capteurs jardin (pas de Δ affiché)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: humidite
+#     entity: sensor.humidite_relative_salon_2
+#
+# ==========================================================
+
+humidite:
+  template: socle_kpi_label_72
+
+  icon: mdi:water-percent
+
+  styles:
+    card:
+      - background-color: |
+          [[[ 
+            const map = {
+              red: "rgba(244, 67, 54, 0.2)",
+              yellow: "rgba(255, 235, 59, 0.3)",
+              green: "rgba(76, 175, 80, 0.2)",
+              grey: "rgba(158, 158, 158, 0.4)"
+            };
+            if (!entity || !entity.entity_id) return map.grey;
+
+            const id = entity.entity_id;
+            const val = parseFloat(entity.state);
+            if (isNaN(val)) return map.grey;
+
+            // ✅ Jardin Netatmo → toujours vert
+            if (id === "sensor.humidite_relative_jardin_1" ||
+                id === "sensor.humidite_relative_jardin_2")
+              return map.green;
+
+            let refId = id.replace(/_\d$/, "_1");
+            const ref = parseFloat(states[refId]?.state);
+            if (isNaN(ref)) return map.grey;
+
+            const diff = Math.abs(val - ref);
+            if (diff < 2) return map.green;
+            if (diff < 5) return map.yellow;
+            return map.red;
+          ]]]
+
+  label: |
+    [[[ 
+      if (!entity || !entity.entity_id) return '';
+      const id = entity.entity_id;
+
+      // ✅ Jardin Netatmo → pas de Δ
+      if (id === "sensor.humidite_relative_jardin_1" ||
+          id === "sensor.humidite_relative_jardin_2")
+        return '';
+
+      // ✅ Maître intérieur
+      if (id.endsWith("_1")) return '';
+
+      const val = parseFloat(entity.state);
+      const refId = id.replace(/_\d$/, "_1");
+      const ref = parseFloat(states[refId]?.state);
+      if (isNaN(val) || isNaN(ref)) return 'Données KO';
+
+      const diff = (val - ref).toFixed(1);
+      return `Δ ${diff > 0 ? '+' : ''}${diff}%`;
+    ]]]
+

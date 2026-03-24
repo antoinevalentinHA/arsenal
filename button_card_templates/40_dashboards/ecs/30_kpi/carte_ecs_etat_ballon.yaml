@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     ECS — État ballon (KPI)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la température du ballon ECS sous forme de KPI.
+#     La couleur est pilotée par un sensor de couleur upstream
+#     (charte Arsenal ECS). Délègue toute la logique visuelle
+#     au socle via variables.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Déléguée à sensor.temperature_ecs_couleur (upstream)
+#       et au profil ui_profile: ecs du socle_kpi
+#     - Les valeurs de couleur attendues : blue / orange / red
+#       (voir carte_ecs_action pour la sémantique détaillée)
+#
+# 🔗 DEPENDANCES
+#     - variables.couleur    : sensor.temperature_ecs_couleur
+#     - variables.ui_profile : "ecs" (profil de rendu socle_kpi)
+#     - entity               : sensor température ballon ECS (à fournir à l'instance)
+#
+# ⚠️ CONTRAINTES
+#     - Aucune logique de couleur propre — entièrement déléguée au socle
+#       via ui_profile et sensor couleur upstream
+#     - L'entity n'est pas fixée dans le template — requise à l'instance
+#     - Cohérence à maintenir avec carte_ecs_action (même sensor couleur)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_ecs_etat_ballon
+#     entity: sensor.temperature_ballon_ecs
+#
+# ==========================================================
+
+carte_ecs_etat_ballon:
+  template: socle_kpi
+  variables:
+    ui_profile: ecs
+    couleur: sensor.temperature_ecs_couleur

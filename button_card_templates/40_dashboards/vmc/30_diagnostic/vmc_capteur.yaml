@@ -1,0 +1,118 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     VMC — Capteur HR / CO₂ (diagnostic)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la valeur d'un capteur VMC (humidité relative ou
+#     CO₂) avec le seuil actif contextualisé selon l'état haute
+#     vitesse. Le type de mesure est déduit dynamiquement depuis
+#     l'unité du capteur (ppm = CO₂, sinon HR).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_diagnostic_compact
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     VMC haute vitesse ACTIVE :
+#     - valeur > seuil_off     -> 🔴 rouge (encore au-dessus du seuil d'arrêt)
+#     - valeur <= seuil_off    -> 🟢 vert  (descendu sous seuil off)
+#
+#     VMC haute vitesse INACTIVE :
+#     - valeur >= seuil_on     -> 🔴 rouge (seuil de déclenchement atteint)
+#     - valeur < seuil_on      -> 🟢 vert  (sous le seuil)
+#
+#     Données manquantes       -> ⚪ gris clair (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity                          : sensor HR (%) ou CO₂ (ppm)
+#       (unité lue via attributes.unit_of_measurement pour routage)
+#     - input_boolean.vmc_haute_vitesse : état VMC pour choix du seuil affiché
+#     Branche HR :
+#     - input_number.vmc_seuil_on / vmc_seuil_off
+#     Branche CO₂ (unit contient 'ppm') :
+#     - input_number.vmc_co2_seuil_on / vmc_co2_seuil_off
+#
+# ⚠️ CONTRAINTES
+#     - Routage HR/CO₂ basé sur unit_of_measurement — toute unité
+#       ne contenant pas 'ppm' est traitée comme HR
+#     - Utilise hass.states[] (pas states[]) — spécificité à noter si portage
+#     - Même pattern que deshumidificateur_capteur — seuil on/off
+#       contextualisé selon l'état de l'équipement
+#     - show_icon désactivé
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: vmc_capteur
+#     entity: sensor.humidite_relative_vmc
+#     # ou
+#     entity: sensor.co2_vmc
+#
+# ==========================================================
+
+vmc_capteur:
+  template: socle_diagnostic_compact
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const eid = entity?.entity_id;
+            const st = eid ? hass.states[eid] : null;
+            if (!st) return "rgba(158, 158, 158, 0.1)";
+
+            const raw = parseFloat(st.state);
+            if (isNaN(raw)) return "rgba(158, 158, 158, 0.1)";
+
+            const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
+            const isCO2 = unit.includes("ppm");
+
+            const seuilOn  = parseFloat(hass.states[isCO2
+              ? "input_number.vmc_co2_seuil_on"
+              : "input_number.vmc_seuil_on"]?.state);
+            const seuilOff = parseFloat(hass.states[isCO2
+              ? "input_number.vmc_co2_seuil_off"
+              : "input_number.vmc_seuil_off"]?.state);
+
+            if (isNaN(seuilOn) || isNaN(seuilOff)) return "rgba(158, 158, 158, 0.1)";
+
+            const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
+
+            if (vmcOn) {
+              return raw > seuilOff ? "rgba(244, 67, 54, 0.2)" : "rgba(76, 175, 80, 0.2)";
+            }
+            return raw >= seuilOn ? "rgba(244, 67, 54, 0.2)" : "rgba(76, 175, 80, 0.2)";
+          ]]]
+
+  label: |
+    [[[
+      const eid = entity?.entity_id;
+      const st = eid ? hass.states[eid] : null;
+      if (!st) return "Seuil : —";
+
+      const unit = (st.attributes.unit_of_measurement || "").toLowerCase();
+      const isCO2 = unit.includes("ppm");
+
+      const seuilOn  = parseFloat(hass.states[isCO2
+        ? "input_number.vmc_co2_seuil_on"
+        : "input_number.vmc_seuil_on"]?.state);
+      const seuilOff = parseFloat(hass.states[isCO2
+        ? "input_number.vmc_co2_seuil_off"
+        : "input_number.vmc_seuil_off"]?.state);
+
+      if (isNaN(seuilOn) || isNaN(seuilOff)) return "Seuil : —";
+
+      const vmcOn = hass.states["input_boolean.vmc_haute_vitesse"]?.state === "on";
+
+      return vmcOn
+        ? `Seuil Off : ${seuilOff.toFixed(0)}${isCO2 ? " ppm" : " %"}`
+        : `Seuil On : ${seuilOn.toFixed(0)}${isCO2 ? " ppm" : " %"}`;
+    ]]]

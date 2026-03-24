@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Maison — Mode synthese dashboard
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher une synthese du mode maison pour lecture
+#     rapide sur dashboard.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - mode = normal -> vert
+#     - autre mode -> rouge
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur ou select representant le mode maison
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Carte purement informationnelle
+#     - Aucune action metier (tap = more-info uniquement)
+#     - Interpretation minimale du mode (normal vs autre)
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_mode_maison_synthese
+#       entity: input_select.mode_maison
+#
+# ==========================================================
+
+carte_mode_maison_synthese:
+  template: socle_status
+
+  show_name: false
+
+  tap_action:
+    action: more-info
+
+  hold_action:
+    action: navigate
+    navigation_path: /reglages-dashboard/maison
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const mode = (entity?.state || '').toLowerCase();
+            return mode === 'normal'
+              ? 'rgba(76, 175, 80, 0.2)'
+              : 'rgba(244, 67, 54, 0.2)';
+          ]]]
+          

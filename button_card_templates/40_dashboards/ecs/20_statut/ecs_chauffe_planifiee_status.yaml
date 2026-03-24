@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     ECS — Chauffe planifiée status
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher l'état de la chauffe planifiée ECS sous forme
+#     de tuile de statut lisible.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_label
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on -> blocage planifié actif + rouge
+#     - state = off -> chauffe planifiée active + vert
+#     - etat indisponible -> gris indispo
+#
+# 🔗 DEPENDANCES
+#     - entity: input_boolean.ecs_blocage_planifiee
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne pilote pas la programmation ECS
+#     - Il restitue uniquement l'etat expose par le backend
+#     - La semantique ON/OFF est inversée par rapport a une
+#       lecture intuitive : ON = blocage, OFF = fonctionnement normal
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: ecs_chauffe_planifiee_status
+#
+# ==========================================================
+
+ecs_chauffe_planifiee_status:
+  template: socle_status_label
+
+  entity: input_boolean.ecs_blocage_planifiee
+
+  show_icon: true
+  show_name: false
+  show_state: false
+  show_label: true
+
+  icon: |
+    [[[
+      const st = entity?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      if (UNAV.includes(st)) return 'mdi:help-circle-outline';
+      return (st === 'on')
+        ? 'mdi:calendar-remove'
+        : 'mdi:calendar-check';
+    ]]]
+
+  state_display: |
+    [[[
+      const st = entity?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      if (UNAV.includes(st)) return "ECS";
+      return (st === 'on')
+        ? "Blocage chauffe planifiée actif"
+        : "Chauffe planifiée active";
+    ]]]
+
+  label: |
+    [[[
+      const st = entity?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      if (UNAV.includes(st)) return "État indisponible";
+      return (st === 'on')
+        ? "La programmation ECS est temporairement désactivée"
+        : "La programmation ECS suit son planning normal";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const st = entity?.state;
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            if (UNAV.includes(st)) return 'rgba(158, 158, 158, 0.1)';
+            return (st === 'on')
+              ? 'rgba(244, 67, 54, 0.2)'
+              : 'rgba(76, 175, 80, 0.2)';
+          ]]]

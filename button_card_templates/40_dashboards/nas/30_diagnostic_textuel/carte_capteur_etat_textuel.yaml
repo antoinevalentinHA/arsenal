@@ -1,0 +1,82 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Générique — État textuel interprété (diagnostic)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Template générique de diagnostic pour tout sensor exposant
+#     un état textuel. Mappe les mots-clés fr/en vers une couleur
+#     sémantique Arsenal. Remplace et unifie carte_nas_drive_etat
+#     et carte_nas_smart_etat.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - critique / critical / erreur / error
+#       échec / echec / fail              -> 🔴 rouge   (défaillance)
+#     - avert / warning / attention / warn -> 🟠 orange  (dégradation)
+#     - ok / normal                        -> 🟢 vert    (nominal)
+#     - aucun mot-clé reconnu              -> ⚪ gris clair (inconnu / indisponible)
+#
+# 🔗 DEPENDANCES
+#     - entity : tout sensor exposant un état textuel (state = texte libre)
+#
+# ⚠️ CONTRAINTES
+#     - Détection par inclusion (toLowerCase) — un état contenant
+#       plusieurs mots-clés est classé par priorité : rouge > orange > vert
+#     - Superset de carte_nas_drive_etat et carte_nas_smart_etat —
+#       ces deux templates peuvent être dépréciés en faveur de celui-ci
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_capteur_etat_textuel
+#     entity: sensor.nas_disque_1_etat
+#
+# ==========================================================
+
+carte_capteur_etat_textuel:
+  template: socle_status_72
+
+  show_state: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = (entity.state || '').toLowerCase();
+
+            // 🔴 Critique / Erreur / Échec
+            if (
+              v.includes('critique') ||
+              v.includes('critical') ||
+              v.includes('erreur') ||
+              v.includes('error') ||
+              v.includes('échec') ||
+              v.includes('echec') ||
+              v.includes('fail')
+            ) return 'rgba(244, 67, 54, 0.2)';
+
+            // 🟠 Avertissement / Attention
+            if (
+              v.includes('avert') ||
+              v.includes('warning') ||
+              v.includes('attention') ||
+              v.includes('warn')
+            ) return 'rgba(255, 152, 0, 0.2)';
+
+            // 🟢 OK / Normal
+            if (
+              v.includes('ok') ||
+              v.includes('normal')
+            ) return 'rgba(76, 175, 80, 0.2)';
+
+            // ⚪ Inconnu / fallback (charte)
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

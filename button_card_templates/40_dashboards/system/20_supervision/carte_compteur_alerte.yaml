@@ -1,0 +1,68 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Supervision — Compteur d'alertes automatisations
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche le statut de supervision des automatisations :
+#     normal si aucune alerte, incident si le compteur est
+#     non nul. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_state_bottom_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = 0          -> 🟢 vert  "Normal"   (aucune alerte)
+#     - state > 0          -> 🔴 rouge "Incident" (N alertes actives)
+#     - state non numérique -> ⚪ gris "—"        (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor compteur d'alertes automatisations (state numérique entier)
+#
+# ⚠️ CONTRAINTES
+#     - Sémantique binaire : 0 = OK, tout autre nombre = incident
+#       (le nombre d'alertes n'est pas affiché, seulement le statut)
+#     - show_label désactivé — pas de détail affiché
+#     - Nom et icône fixés dans le template (Automat. / mdi:robot)
+#       — à surcharger à l'instance si réutilisé sur un autre domaine
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_compteur_alerte
+#     entity: sensor.arsenal_compteur_alertes_automatisations
+#
+# ==========================================================
+
+carte_compteur_alerte:
+  template: socle_status_state_bottom_72
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  icon: mdi:robot
+  name: Automat.
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = Number(entity?.state);
+            if (isNaN(v)) return 'rgba(158,158,158,0.2)';     // inconnu
+            return v === 0
+              ? 'rgba(76,175,80,0.2)'                         // 🟢 Normal
+              : 'rgba(244,67,54,0.2)';                        // 🔴 Incident
+          ]]]
+
+  state_display: |
+    [[[
+      const v = Number(entity?.state);
+      if (isNaN(v)) return '—';
+      return v === 0 ? 'Normal' : 'Incident';
+    ]]]

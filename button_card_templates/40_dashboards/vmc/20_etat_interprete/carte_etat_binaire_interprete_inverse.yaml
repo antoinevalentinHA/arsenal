@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Système — Etat binaire interprete inverse
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher un etat binaire avec une interpretation
+#     inverse (ON defavorable, OFF favorable).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on -> defavorable + couleur associee
+#     - state = off -> favorable + couleur associee
+#     - personnalisation via variables (label / couleur)
+#
+# 🔗 DEPENDANCES
+#     - entity: binary_sensor.*
+#     - attributes: aucune
+#     - helpers externes: aucun
+#     - variables:
+#         - label_on (optionnel)
+#         - label_off (optionnel)
+#         - color_on (optionnel)
+#         - color_off (optionnel)
+#
+# ⚠️ CONTRAINTES
+#     - Convention inverse imposee (ON = defavorable)
+#     - Aucune logique metier
+#     - Utiliser uniquement pour des etats binaires interpretes
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_etat_binaire_interprete_inverse
+#       entity: binary_sensor.aeration_defavorable
+#
+# ==========================================================
+
+carte_etat_binaire_interprete_inverse:
+  template: socle_status
+
+  show_state: true
+
+  state_display: |
+    [[[
+      return entity.state === 'on'
+        ? (variables?.label_on || 'Défavorable')
+        : (variables?.label_off || 'Favorable');
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity.state === 'on'
+              ? (variables?.color_on || 'rgba(158, 158, 158, 0.2)')
+              : (variables?.color_off || 'rgba(76, 175, 80, 0.2)');
+          ]]]
+          

@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Supervision — Uptime système Home Assistant
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'uptime Home Assistant avec coloration indiquant
+#     la stabilité : bleu si redémarrage récent (< 1 jour),
+#     vert si système stable. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - uptime < 1 jour        -> 🔵 bleu  (redémarrage récent, système jeune)
+#     - uptime >= 1 jour       -> 🟢 vert  (système stable)
+#     - unavailable / inconnu  -> ⚪ gris clair
+#
+# 🔗 DEPENDANCES
+#     - sensor.uptime_jours : uptime HA en jours (float, lu via states[])
+#     - entity              : non utilisée pour la couleur — lu via states[]
+#
+# ⚠️ CONTRAINTES
+#     - La couleur est lue via states[sensor.uptime_jours] et non via entity —
+#       l'entity de la carte peut différer (triggers_update à prévoir si besoin)
+#     - Seuil unique (1 jour) — pas de niveau critique rouge
+#       (un uptime faible est informatif, pas une alerte)
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_uptime_systeme
+#     entity: sensor.uptime_jours
+#
+# ==========================================================
+
+carte_uptime_systeme:
+  template: socle_status_72
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const rawState = states["sensor.uptime_jours"]?.state;
+
+            if (
+              rawState === undefined ||
+              rawState === null ||
+              rawState === "unknown" ||
+              rawState === "unavailable"
+            ) {
+              return "rgba(158, 158, 158, 0.1)";
+            }
+
+            const jours = parseFloat(rawState);
+            if (isNaN(jours)) return "rgba(158, 158, 158, 0.1)";
+
+            if (jours < 1) return "rgba(33, 150, 243, 0.2)";
+
+            return "rgba(76, 175, 80, 0.2)";
+          ]]]
+
+

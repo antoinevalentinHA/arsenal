@@ -1,0 +1,86 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Aeration — Aération preferable
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la synthese decisionnelle de l'aeration
+#     preferable a partir d'un capteur binaire metier.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_label
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on  -> "Conseillée"  -> vert
+#     - state = off -> "Déconseillée" -> gris neutre
+#     - attribute decision -> libelle explicatif du motif
+#
+# 🔗 DEPENDANCES
+#     - entity: binary_sensor ou capteur equivalent exposant
+#       un etat on/off
+#     - attributes:
+#         - decision
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule jamais la decision.
+#     - Il traduit uniquement une decision deja produite
+#       par le backend.
+#     - Le mapping des motifs est metier et reserve au
+#       domaine Aeration.
+#
+# 🧩 USAGE
+#     Exemple :
+#       type: custom:button-card
+#       template: carte_aeration_preferable
+#       entity: binary_sensor.aeration_preferable
+#       name: Aeration preferable
+#
+# ==========================================================
+
+carte_aeration_preferable:
+  template: socle_status_label
+
+  show_icon: false
+
+  state_display: |
+    [[[
+      return entity.state === 'on' ? 'Conseillée' : 'Déconseillée';
+    ]]]
+
+  label: |
+    [[[
+      const d = entity.attributes?.decision || '';
+      const map = {
+        'co2_priorite': 'Motif : CO₂ prioritaire',
+        'pluie_recente': 'Motif : Pluie récente',
+        'canicule': 'Motif : Canicule (jour)',
+        'aeration_ok': 'Motif : Seuils atteints',
+        'seuil_ha_non_atteint': 'Motif : ΔHA insuffisant',
+        'seuil_dt_non_atteint': 'Motif : ΔT insuffisant',
+        'inconnue': 'Motif : Données indisponibles'
+      };
+      return map[d] || 'Motif : Analyse en cours';
+    ]]]
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none

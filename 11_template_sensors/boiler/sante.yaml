@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Boiler Bridge — Santé synthétique
+# ==========================================================
+#
+# 🎯 RÔLE
+#     Produire un état synthétique unique de santé du
+#     sous-système Boiler Bridge pour usage UI
+#     et supervision.
+#
+# 🧱 PRINCIPE
+#     Priorité descendante :
+#       1. unknown
+#       2. down
+#       3. degraded
+#       4. ok
+#
+# 🔒 NOTE ARCHITECTURALE
+#     Le flag `binary_sensor.boiler_bridge_degraded`
+#     constitue une synthèse amont.
+#
+#     Les contrôles locaux sur `sensor.boiler_optolink_status`
+#     et `sensor.boiler_vcontrold_status` jouent un rôle
+#     de filet de sécurité supplémentaire côté Home Assistant.
+#
+# ⚠️ CONTRAINTE
+#     Ce capteur est un résumé de santé.
+#     Il ne remplace pas le diagnostic détaillé.
+#
+# ==========================================================
+
+- sensor:
+    - name: "Boiler Bridge — Santé"
+      unique_id: boiler_bridge_sante
+      state: >
+        {% set online_raw = states('binary_sensor.boiler_bridge_online') %}
+        {% set degraded_raw = states('binary_sensor.boiler_bridge_degraded') %}
+        {% set optolink = states('sensor.boiler_optolink_status') | lower %}
+        {% set vcontrold = states('sensor.boiler_vcontrold_status') | lower %}
+        {% set indisponible = ['unknown', 'unavailable'] %}
+        {% set etats_ok = ['ok', 'connected', 'ready', 'running'] %}
+
+        {% if online_raw in indisponible
+              or degraded_raw in indisponible
+              or optolink in indisponible
+              or vcontrold in indisponible %}
+          unknown
+        {% elif online_raw == 'off' %}
+          down
+        {% elif degraded_raw == 'on'
+              or optolink not in etats_ok
+              or vcontrold not in etats_ok %}
+          degraded
+        {% else %}
+          ok
+        {% endif %}
+      attributes:
+        online: "{{ states('binary_sensor.boiler_bridge_online') }}"
+        degraded_flag: "{{ states('binary_sensor.boiler_bridge_degraded') }}"
+        optolink_status: "{{ states('sensor.boiler_optolink_status') }}"
+        vcontrold_status: "{{ states('sensor.boiler_vcontrold_status') }}"

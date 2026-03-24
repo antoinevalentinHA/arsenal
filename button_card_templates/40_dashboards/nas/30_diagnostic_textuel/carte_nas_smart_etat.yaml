@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     NAS — État SMART disque (diagnostic)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état SMART d'un disque NAS DSM avec coloration
+#     sémantique. Détection par inclusion de mots-clés —
+#     tolérant aux variantes fr/en des libellés DSM.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state contient 'échec' / 'fail'       -> 🔴 rouge   (défaillance SMART)
+#     - state contient 'attention' / 'warn'   -> 🟠 orange  (dégradation détectée)
+#     - state contient 'ok' / 'normal'        -> 🟢 vert    (SMART nominal)
+#     - aucun mot-clé reconnu                 -> ⚪ gris clair (inconnu / indisponible)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor d'état SMART disque DSM (state = texte libre DSM fr/en)
+#
+# ⚠️ CONTRAINTES
+#     - Priorité : échec/fail > attention/warn > ok/normal > inconnu
+#     - Symétrique de carte_nas_drive_etat — même pattern, mots-clés différents
+#       (fail/échec vs critique, attention vs avert)
+#     - Candidat à une factorisation avec carte_nas_drive_etat sur un socle
+#       commun paramétrable (variables.mots_critique / warn / ok)
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_nas_smart_etat
+#     entity: sensor.nas_disque_1_smart
+#
+# ==========================================================
+
+carte_nas_smart_etat:
+  template: socle_status_72
+
+  show_state: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = (entity.state || '').toLowerCase();
+
+            if (v.includes('échec') || v.includes('fail'))
+              return 'rgba(244, 67, 54, 0.2)';   // 🔴 échec
+
+            if (v.includes('attention') || v.includes('warn'))
+              return 'rgba(255, 152, 0, 0.2)';   // 🟠 alerte
+
+            if (v.includes('ok') || v.includes('normal'))
+              return 'rgba(76, 175, 80, 0.2)';   // 🟢 OK
+
+            return 'rgba(158, 158, 158, 0.1)';   // ⚪ inconnu/indispo (charte)
+          ]]]

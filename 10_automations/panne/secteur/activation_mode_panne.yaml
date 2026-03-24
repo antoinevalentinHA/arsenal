@@ -1,0 +1,141 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Sécurité – Entrée en mode panne (coupure secteur)
+#
+#  ID : 1004000000001
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’ENTRÉE EN MODE PANNE SECTEUR.
+#
+#     Elle qualifie l’entrée dans un épisode de panne
+#     déjà confirmé, publie un état système explicite
+#     et déclenche une réponse de résilience thermique
+#     canonique.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Réaction à événement critique externe
+#     - Publication d’état système
+#     - Point d’entrée unique de l’épisode de panne
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement dans deux cas :
+#         • coupure secteur confirmée
+#         • redémarrage de Home Assistant alors que
+#           la coupure est toujours active
+#
+#     - Garde d’idempotence :
+#         • aucune ré-exécution si l’épisode de panne
+#           est déjà actif
+#
+#     - Actions effectuées :
+#         • activation de `input_boolean.panne_secteur_active`
+#         • activation de `input_boolean.mode_confort_chauffage`
+#         • délégation de la mise en régime ECS de secours
+#           et de la signalisation à un script dédié
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne détecte pas physiquement la panne
+#     - Ne décide d’aucune stratégie thermique
+#     - Ne pilote pas directement le chauffage
+#     - Ne pilote pas directement la chaudière
+#     - Ne sort pas du mode panne
+#
+# ----------------------------------------------------------
+#  🔗 UTILISATION
+#
+#     - Point d’entrée unique du mode panne secteur
+#     - Publication d’un signal logique chauffage
+#       soumis à la décision centrale
+#     - Garantie d’idempotence après reboot
+#
+# ----------------------------------------------------------
+#  🧠 PRINCIPE ARSENAL
+#
+#     Les événements critiques publient un état système.
+#     Les moteurs décisionnels restent souverains.
+#
+# ----------------------------------------------------------
+#  🛡️ ROBUSTESSE
+#
+#     L’épisode de panne est mémorisé par
+#     `input_boolean.panne_secteur_active`.
+#
+#     Tant que cet état est actif, aucune action d’entrée
+#     en mode panne ne doit être rejouée.
+#
+# ----------------------------------------------------------
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+- id: '1004000000001'
+  alias: "Mode panne – Entrée coupure secteur"
+  description: >
+    Entre en mode panne secteur, active l’état système
+    `input_boolean.panne_secteur_active`, publie le signal
+    `input_boolean.mode_confort_chauffage` et délègue la
+    mise en régime ECS de secours ainsi que la signalisation
+    au script dédié.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheurs — Coupure secteur ou redémarrage HA
+  # ======================================================
+  trigger:
+    - id: power_cut
+      platform: state
+      entity_id: binary_sensor.coupure_secteur
+      from: 'off'
+      to: 'on'
+      for: "00:00:30"
+
+    - id: ha_start
+      platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  # ======================================================
+  # ✅ Conditions — Panne active non encore traitée
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: binary_sensor.coupure_secteur
+      state: "on"
+
+    - condition: state
+      entity_id: input_boolean.panne_secteur_active
+      state: "off"
+
+    - condition: or
+      conditions:
+        - condition: template
+          value_template: "{{ trigger.id == 'power_cut' }}"
+        - condition: template
+          value_template: "{{ trigger.id == 'ha_start' }}"
+
+  # ======================================================
+  # 🔁 Actions — Entrée en mode panne secteur
+  # ======================================================
+  action:
+
+    # 1) Marquer l’épisode de panne comme actif
+    - service: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.panne_secteur_active
+
+    # 2) Publier le signal logique chauffage
+    - service: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.mode_confort_chauffage
+
+    # 3) Déléguer la mise en régime ECS de secours + la signalisation
+    - service: script.mode_panne_coupure_secteur

@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Audi — Etat info
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher une information non binaire issue d'une
+#     entite Audi avec une mise en forme informative.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - valeur indisponible -> gris indispo
+#     - valeur disponible -> bleu informatif
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur ou entite Audi informative
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne traite pas de logique metier
+#     - Il affiche uniquement une information brute
+#     - Reserve aux entites non binaires
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: audi_etat_info
+#       entity: sensor.audi_status
+#
+# ==========================================================
+
+audi_etat_info:
+  template: socle_status
+
+  show_icon: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity?.state;
+
+            if (s === undefined || s === null || s === "unknown" || s === "unavailable") {
+              return "rgba(158, 158, 158, 0.1)";  // ⚪ indispo
+            }
+
+            return "rgba(33, 150, 243, 0.2)";     // 🔵 info
+          ]]]

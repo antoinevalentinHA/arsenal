@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Véhicule — Durée de stationnement
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche une durée de stationnement en lecture seule.
+#     Couleur fixe informationnelle — aucune sémantique
+#     d'alerte, aucun seuil.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - état disponible        -> 🔵 bleu  (information neutre)
+#     - unknown / unavailable  -> ⚪ gris  (données absentes)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor de durée de stationnement (state = durée formatée ou numérique)
+#
+# ⚠️ CONTRAINTES
+#     - Toutes les actions désactivées (tap, hold, double_tap)
+#     - Pas de seuil, pas de logique de couleur — bleu fixe quand disponible
+#     - Ne pas utiliser si une sémantique d'alerte est souhaitée
+#       (préférer carte_autonomie_seuils_variables ou équivalent)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_duree_stationnement
+#     entity: sensor.audi_duree_stationnement
+#
+# ==========================================================
+
+carte_duree_stationnement:
+  template: socle_status
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity?.state;
+
+            if (["unknown","unavailable",null].includes(s))
+              return "rgba(158, 158, 158, 0.1)";   // ⚪ indispo
+
+            return "rgba(33, 150, 243, 0.2)";     // 🔵 info
+          ]]]

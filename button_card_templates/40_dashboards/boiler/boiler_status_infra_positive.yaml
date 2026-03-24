@@ -1,0 +1,86 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler — Status infra positif
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — REUTILISABLE
+#
+# 🎯 ROLE
+#     Specialiser le socle status canonique pour l'affichage
+#     des statuts d'infrastructure boiler a polarite positive.
+#
+# 🧱 NATURE
+#     - Template button-card derive d'un socle status
+#     - Porte la semantique couleur metier infra
+#     - Reutilisable sur bridge online, optolink, vcontrold
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unknown / unavailable / vide -> gris indispo
+#     - online / on / ok / connected / ready / running -> vert
+#     - degraded / warning / warn -> orange
+#     - offline / off / error / ko / failed / timeout / disconnected -> rouge
+#     - autre valeur non reconnue -> jaune
+#
+# ⚠️ CONTRAINTE
+#     Ce template est reserve aux statuts positifs.
+#     Il ne doit pas etre utilise pour un capteur binaire
+#     de type "degraded".
+#
+# ==========================================================
+
+boiler_status_infra_positive:
+  template:
+    - socle_status_72
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (
+              state === null ||
+              state === undefined ||
+              state === '' ||
+              state === 'unknown' ||
+              state === 'unavailable'
+            ) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const normalized = String(state).toLowerCase();
+
+            if (
+              normalized === 'online' ||
+              normalized === 'on' ||
+              normalized === 'ok' ||
+              normalized === 'connected' ||
+              normalized === 'ready' ||
+              normalized === 'running'
+            ) {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            if (
+              normalized === 'degraded' ||
+              normalized === 'warning' ||
+              normalized === 'warn'
+            ) {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            if (
+              normalized === 'offline' ||
+              normalized === 'off' ||
+              normalized === 'error' ||
+              normalized === 'ko' ||
+              normalized === 'failed' ||
+              normalized === 'timeout' ||
+              normalized === 'disconnected'
+            ) {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            return 'rgba(255, 235, 59, 0.2)';
+          ]]]

@@ -1,0 +1,122 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Décision et cohérence état réel / raison
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état réel de la climatisation et évalue la
+#     cohérence entre l'action en cours et la raison décisionnelle.
+#     Colore selon la cohérence ou la nature du blocage.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_decision_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - action cohérente avec raison              -> 🟢 vert   (nominal)
+#       (aucune_demande→arrêt, blocage→bloquée,
+#        humidite_elevee→dry, temperature_elevee→cool,
+#        soutien_chauffage→heat)
+#     - clim bloquée + binary_sensor confirmé     -> 🟠 orange (blocage explicite)
+#     - toute autre combinaison (incohérence)     -> 🔴 rouge  (divergence à investiguer)
+#
+# 🔗 DEPENDANCES
+#     - entity                          : sensor état réel clim
+#       (cool_actif | dry_actif | heat_actif | arret | bloquee)
+#     - sensor.clim_raison_decision     : raison active normalisée
+#     - binary_sensor.clim_bloquee      : confirmation de blocage matériel / logique
+#
+# ⚠️ CONTRAINTES
+#     - Priorité : cohérence > blocage confirmé > défaut rouge
+#     - Le blocage orange n'est atteint que si la cohérence verte ne matche pas d'abord
+#     - Les raisons non listées dans le mapping vert tombent en rouge par défaut
+#     - Symétrique de carte_chauffage_decision — même pattern, domaine clim
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_decision
+#     entity: sensor.clim_etat_reel
+#
+# ==========================================================
+
+carte_clim_decision:
+  template: socle_decision_72
+
+  name: Clim – État réel
+
+  state_display: |
+    [[[
+      const map = {
+        'cool_actif': 'Refroidissement actif',
+        'dry_actif': 'Déshumidification active',
+        'heat_actif': 'Chauffage actif',
+        'arret': 'À l’arrêt',
+        'bloquee': 'Bloquée'
+      };
+      return map[entity.state] || entity.state;
+    ]]]
+
+  label: |
+    [[[
+      const raison = states['sensor.clim_raison_decision']?.state || '—';
+      return `Raison : ${raison}`;
+    ]]]
+
+  state:
+    - operator: template
+      value: |
+        [[[
+          const action = entity.state;
+          const raison = states['sensor.clim_raison_decision']?.state || '';
+
+          if (raison === 'aucune_demande' && (action === 'arret' || action === 'bloquee')) {
+            return true;
+          }
+
+          if (raison.startsWith('blocage') && (action === 'bloquee' || action === 'arret')) {
+            return true;
+          }
+
+          if (raison === 'humidite_elevee' && action === 'dry_actif') {
+            return true;
+          }
+
+          if (raison === 'temperature_elevee' && action === 'cool_actif') {
+            return true;
+          }
+
+          if (raison === 'soutien_chauffage' && action === 'heat_actif') {
+            return true;
+          }
+
+          return false;
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76,175,80,0.2)
+
+    - operator: template
+      value: |
+        [[[
+          const action = entity.state;
+          const raison = states['sensor.clim_raison_decision']?.state || '';
+          const bloquee = states['binary_sensor.clim_bloquee']?.state === 'on';
+
+          if (bloquee && (action === 'bloquee' || action === 'arret')) {
+            return true;
+          }
+
+          return false;
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(255, 152, 0, 0.2)
+
+    - operator: default
+      styles:
+        card:
+          - background-color: rgba(244,67,54,0.2)

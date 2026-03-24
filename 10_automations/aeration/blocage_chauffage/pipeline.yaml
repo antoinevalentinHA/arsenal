@@ -358,17 +358,4 @@
         ##################################################################
 
       default:
-
-        - action: logbook.log
-          data:
-            name: "Aération - Pipeline"
-            message: >
-              ROUTAGE : aucune branche ne matche.
-              trigger_id={{ trigger.id }}.
-              episode={{ states('input_boolean.aeration_episode_en_cours') }}.
-              confirmee={{ states('input_boolean.aeration_confirmee') }}.
-              fermees_stable={{ states('binary_sensor.fenetres_maison_fermees_stable') }}.
-              pipeline_arme={{ states('input_boolean.aeration_pipeline_arme') }}.
-            entity_id: input_boolean.aeration_episode_en_cours
-
         - stop: "Pipeline aération : aucune branche ne matche"

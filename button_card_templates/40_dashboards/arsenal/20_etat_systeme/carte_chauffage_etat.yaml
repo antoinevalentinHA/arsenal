@@ -1,0 +1,103 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Chauffage — État réel du chauffage
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche le mode de programmation du chauffage (Confort/Eco)
+#     et distingue visuellement si le brûleur est actif ou en repos.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_etat_action_secondaire
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Confort + brûleur ON  -> "Actif"   🔴 rouge  (chauffe réellement)
+#     - Confort + brûleur OFF -> "Repos"   🟢 vert   (consigne Confort, pas de chauffe)
+#     - Eco                   -> "Repos"   ⚪ gris   (consigne basse)
+#     - Autre / inconnu       -> état brut ⚪ gris
+#
+# 🔗 DEPENDANCES
+#     - entity            : sensor de programmation chauffage (state = 'Confort' | 'Eco')
+#     - binary_sensor.bruleur_chauffage_actif : état brûleur (on/off)
+#
+# ⚠️ CONTRAINTES
+#     - Dépend d'un sensor externe (brûleur) — ne pas utiliser sur une entité sans ce contexte
+#     - L'état affiché est calculé (pas le state brut de l'entité)
+#     - Ne prend aucune décision de mode — navigation seulement
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_chauffage_etat
+#     entity: sensor.chauffage_programme_actif
+#
+# ==========================================================
+
+carte_chauffage_etat:
+  template: socle_etat_action_secondaire
+
+  show_state: true
+
+  state_display: |
+    [[[
+      const burner = states['binary_sensor.bruleur_chauffage_actif']?.state;
+      const prog = entity?.state;
+
+      if (burner === 'on' && prog === 'Confort') return 'Actif';
+      if (prog === 'Confort') return 'Repos';
+      if (prog === 'Eco') return 'Repos';
+
+      return prog || '—';
+    ]]]
+
+  tap_action:
+    action: navigate
+    navigation_path: /chauffage-dashboard/chauffage
+
+  hold_action:
+    action: more-info
+
+  state:
+    # 🔴 Confort + brûleur actif
+    - operator: template
+      value: |
+        [[[
+          const burner = states['binary_sensor.bruleur_chauffage_actif']?.state;
+          const prog = entity?.state;
+          return burner === 'on' && prog === 'Confort';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)
+
+    # 🟢 Confort
+    - operator: template
+      value: |
+        [[[
+          const prog = entity?.state;
+          return prog === 'Confort';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    # ⚪ Eco
+    - operator: template
+      value: |
+        [[[
+          const prog = entity?.state;
+          return prog === 'Eco';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    # ⚪ fallback
+    - operator: default
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)

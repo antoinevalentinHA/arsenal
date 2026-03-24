@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Système — Bandeau stabilité
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Signaler un état d’instabilité du système et alerter
+#     l’utilisateur avant toute analyse ou interprétation.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_label
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = off -> système instable + rouge
+#     - state = on -> état nominal (non affiché / neutre)
+#
+# 🔗 DEPENDANCES
+#     - entity: input_boolean.systeme_stable
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Carte d’alerte prioritaire
+#     - Ne doit pas être utilisée pour du diagnostic fin
+#     - Doit rester simple, visible et explicite
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: systeme_bandeau_stabilite
+#
+# ==========================================================
+
+systeme_bandeau_stabilite:
+  template: socle_status_label
+
+  entity: input_boolean.systeme_stable
+
+  name: "SYSTÈME INSTABLE"
+  icon: mdi:alert-octagon
+
+  show_state: false
+  show_label: true
+
+  label: >
+    [[[
+      return "Incohérences possibles : stabiliser avant toute analyse.";
+    ]]]
+
+  tap_action:
+    action: more-info
+
+  state:
+    - value: "off"
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)

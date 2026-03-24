@@ -111,11 +111,3 @@ aeration_m3_prolonger_blocage:
             entity_id: timer.aeration_blocage
           data:
             duration: "{{ blocage_duration }}"
-
-    - action: logbook.log
-      data:
-        name: "Chauffage - Blocage prolonge"
-        message: >
-          DeltaT = {{ d | round(2) }} degC
-          -> prolongation {{ (h * 60) | round(0) | int }} min ({{ h | round(2) }} h).
-        entity_id: input_boolean.chauffage_blocage_aeration

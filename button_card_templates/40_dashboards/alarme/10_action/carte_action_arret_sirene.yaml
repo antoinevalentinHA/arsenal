@@ -1,0 +1,53 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Alarme — Arrêt sirène
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Permettre l'arrêt immédiat de la sirène via une
+#     action utilisateur critique avec confirmation.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_action_critical
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - action critique -> rouge
+#
+# 🔗 DEPENDANCES
+#     - entity: aucune
+#     - attributes: aucune
+#     - helpers externes:
+#         - script.arret_sirene
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation obligatoire avant execution
+#     - Aucune lecture d'etat
+#     - Effet immediat et global
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_action_arret_sirene
+#
+# ==========================================================
+
+carte_action_arret_sirene:
+  template: socle_action_critical
+
+  name: Arrêt sirène
+  icon: mdi:alarm-off
+
+  tap_action:
+    action: call-service
+    service: script.arret_sirene
+    confirmation:
+      text: Arrêter immédiatement la sirène ?
+
+  styles:
+    card:
+      - background-color: rgba(244, 67, 54, 0.2)

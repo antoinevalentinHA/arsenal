@@ -1,21 +1,79 @@
 # ==========================================================
-#  AUTOMATION : ECS – Alerte rebond (chauffe sans demande HA)
-#  ----------------------------------------------------------
-#  🧠 Rôle :
-#     Détecter qu’une chauffe ECS démarre alors qu’aucune
-#     demande Home Assistant n’a été lancée récemment.
+#  🧠 ARSENAL — AUTOMATION :
+#     ECS – Alerte rebond (chauffe sans demande HA)
 #
-#  💡 Avantages :
-#     - Détection en direct d’un comportement anormal
-#     - Aide au diagnostic de rebonds chaudière
-#     - Aucune fausse alerte si cycle récent
+#  ID : 10250000000018
+# ----------------------------------------------------------
+#  🎯 RÔLE
 #
-#  ⚙️ Comportement :
-#     - Si chauffe ECS = ON (détectée localement)
-#       ET dernier cycle HA trop ancien
-#       → Notifications push détaillant le rebond
+#     Détecter une chauffe ECS locale qui démarre alors
+#     qu’aucune demande Home Assistant légitime n’a été
+#     lancée récemment.
 #
-#  ✅ Compatibilité : Home Assistant 2024.8+
+#     Cette automation vise exclusivement le diagnostic
+#     des démarrages ECS anormaux hors contexte attendu.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Surveillance diagnostique ECS
+#     - Détection d’anomalie hors cycle
+#     - Notification explicite d’un comportement suspect
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement sur démarrage réel de chauffe ECS
+#       détecté localement
+#
+#     - Qualification du rebond :
+#         • aucun cycle HA récent
+#         • aucun cycle ECS déclaré en cours
+#         • aucun épisode de panne secteur actif
+#
+#     - Action effectuée :
+#         • notification mobile détaillée
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne corrige aucune consigne ECS
+#     - Ne stoppe aucune chauffe
+#     - Ne décide d’aucune stratégie ECS
+#     - Ne s’exécute pas pendant un épisode de panne secteur
+#
+# ----------------------------------------------------------
+#  🔗 UTILISATION
+#
+#     - Détection en direct d’un rebond chaudière ECS
+#     - Aide au diagnostic des chauffes non demandées
+#     - Inhibée en contexte de panne secteur pour éviter
+#       les faux positifs liés au régime dérogatoire
+#
+# ----------------------------------------------------------
+#  🧠 PRINCIPE ARSENAL
+#
+#     Une alerte diagnostique n’est légitime que si
+#     le système est en régime nominal.
+#
+#     Un contexte dérogatoire explicite doit suspendre
+#     les diagnostics nominalement valides.
+#
+# ----------------------------------------------------------
+#  🛡️ ROBUSTESSE
+#
+#     L’automation exclut :
+#       - les cycles ECS récents,
+#       - les cycles ECS explicitement en cours,
+#       - les épisodes de panne secteur actifs.
+#
+#     Elle évite ainsi les faux diagnostics liés aux
+#     séquences ECS volontairement provoquées par Arsenal.
+#
+# ----------------------------------------------------------
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
 # ==========================================================
 
 - id: '10250000000018'
@@ -61,13 +119,16 @@
     dernier_cycle_t0: "{{ resume_parts[3] if resume_parts|length > 3 else '—' }}"
 
   # ======================================================
-  # ✅ Conditions — Rebond confirmé
+  # ✅ Conditions — Rebond confirmé + Absense de panne
   # ======================================================
   condition:
     - condition: template
       value_template: "{{ rebond_suspect }}"
     - condition: state
       entity_id: input_boolean.ecs_cycle_en_cours
+      state: "off"
+    - condition: state
+      entity_id: input_boolean.panne_secteur_active
       state: "off"
 
   # ======================================================

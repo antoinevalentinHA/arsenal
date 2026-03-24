@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Santé — Durée ronflements (KPI)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la durée de ronflements sous forme de KPI 72px.
+#     Couleur fixe informationnelle — aucune sémantique d'alerte,
+#     aucun seuil.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - état disponible        -> 🔵 bleu fixe (information neutre)
+#     - (pas de gestion unavailable propre — héritée du socle)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor durée ronflements (state = durée, unité portée par le socle ou l'instance)
+#
+# ⚠️ CONTRAINTES
+#     - Couleur non sémantique (bleu fixe) — pas de seuil ni d'alerte
+#     - Aucune logique de couleur upstream (contrairement à
+#       carte_duree_qualitative et carte_activite_calories_quotidiennes)
+#     - Même pattern couleur fixe que carte_duree_stationnement
+#     - state_display et label non surchargés — hérités du socle
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_duree_ronflements
+#     entity: sensor.duree_ronflements
+#
+# ==========================================================
+
+carte_duree_ronflements:
+  template: socle_kpi_label_72
+
+  show_state: true
+  show_icon: true
+
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)

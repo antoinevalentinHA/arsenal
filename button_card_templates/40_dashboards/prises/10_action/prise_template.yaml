@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Prises — Toggle manuel avec confirmation
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Commande manuelle ON/OFF d'une prise connectée avec
+#     confirmation modale. Retour visuel immédiat sur l'état
+#     réel. Aucune logique métier.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_toggle_confirme
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on               -> 🟢 vert  (prise active)
+#     - state = off              -> ⚪ gris  (prise inactive)
+#     - unknown / unavailable    -> ⚪ gris clair (indisponible)
+#
+# 🔗 DEPENDANCES
+#     - entity : switch.* ou input_boolean.* de prise connectée
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale obligatoire avant toggle
+#     - Template générique — ne pas y intégrer de logique
+#       spécifique à une prise (créer une spécialisation)
+#     - L'ordre des states est critique : unavailable évalué
+#       en dernier via operator template
+#     - Aucune logique de protection ou de séquencement
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: prise_template
+#     entity: switch.prise_salon
+#     name: Prise salon
+#
+# ==========================================================
+
+prise_template:
+  template: socle_toggle_confirme
+
+  tap_action:
+    action: toggle
+    confirmation:
+      text: Basculer la prise ON / OFF ?
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    - operator: template
+      value: |
+        [[[
+          return ['unknown','unavailable','none'].includes(entity?.state);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.1)
+

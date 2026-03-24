@@ -1,0 +1,109 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Ambiance — Température (KPI avec Δ zone)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la température ambiante d'un capteur avec comparaison
+#     Δ par rapport au capteur maître de la zone (suffixe _1).
+#     Les capteurs jardin Netatmo sont traités comme cas spéciaux
+#     (pas de Δ, toujours vert).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     Capteurs jardin Netatmo (_jardin_1 / _jardin_2) :
+#     - toujours             -> 🟢 vert  (référence externe, pas de comparaison)
+#
+#     Capteur maître de zone (suffixe _1) :
+#     - affiché sans Δ       -> ⚪ gris si NaN, sinon vert si cohérent
+#
+#     Capteurs secondaires (suffixe _2, _3…) :
+#     - |Δ| < 0.3°C          -> 🟢 vert   (cohérent avec le maître)
+#     - 0.3 <= |Δ| < 0.8°C   -> 🟡 jaune  (écart modéré)
+#     - |Δ| >= 0.8°C         -> 🔴 rouge  (écart significatif)
+#     - données manquantes   -> ⚪ gris   (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity             : sensor.temperature_* (convention suffixe _N)
+#     - sensor maître zone : entity_id avec suffixe _1 (dérivé automatiquement)
+#
+# ⚠️ CONTRAINTES
+#     - Convention de nommage Arsenal requise : suffixe _1 = maître, _2+ = secondaires
+#     - Le capteur maître est dérivé par remplacement du suffixe (regex /_\d$/)
+#     - Les deux entity_id jardin Netatmo sont codés en dur — à externaliser
+#       si d'autres capteurs externes sont ajoutés
+#     - Seuils Δ température (0.3 / 0.8°C) plus fins que ceux humidité (2 / 5%)
+#       — ne pas confondre les deux templates lors d'une factorisation
+#     - Symétrique de humidite — même architecture, seuils Δ différents
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: temperature
+#     entity: sensor.temperature_salon_2
+#
+# ==========================================================
+
+temperature:
+  template: socle_kpi_label_72
+
+  icon: mdi:thermometer
+
+  styles:
+    card:
+      - background-color: |
+          [[[ 
+            const map = {
+              red: "rgba(244, 67, 54, 0.2)",
+              yellow: "rgba(255, 235, 59, 0.3)",
+              green: "rgba(76, 175, 80, 0.2)",
+              grey: "rgba(158, 158, 158, 0.4)"
+            };
+            if (!entity || !entity.entity_id) return map.grey;
+
+            const id = entity.entity_id;
+            const val = parseFloat(entity.state);
+            if (isNaN(val)) return map.grey;
+
+            // ✅ Jardin : Netatmo => toujours vert
+            if (id === "sensor.temperature_jardin_1" ||
+                id === "sensor.temperature_jardin_2")
+              return map.green;
+
+            let refId = id.replace(/_\d$/, "_1");
+            const ref = parseFloat(states[refId]?.state);
+            if (isNaN(ref)) return map.grey;
+
+            const diff = Math.abs(val - ref);
+            if (diff < 0.3) return map.green;
+            if (diff < 0.8) return map.yellow;
+            return map.red;
+          ]]]
+
+  label: |
+    [[[ 
+      if (!entity || !entity.entity_id) return '';
+      const id = entity.entity_id;
+
+      // ✅ Jardin : Netatmo => PAS de delta
+      if (id === "sensor.temperature_jardin_1" ||
+          id === "sensor.temperature_jardin_2")
+        return '';
+
+      // ✅ Maître (intérieur)
+      if (id.endsWith("_1")) return '';
+
+      const val = parseFloat(entity.state);
+      const refId = id.replace(/_\d$/, "_1");
+      const ref = parseFloat(states[refId]?.state);
+      if (isNaN(val) || isNaN(ref)) return 'Données KO';
+
+      const diff = (val - ref).toFixed(1);
+      return `Δ ${diff > 0 ? '+' : ''}${diff}°C`;
+    ]]]

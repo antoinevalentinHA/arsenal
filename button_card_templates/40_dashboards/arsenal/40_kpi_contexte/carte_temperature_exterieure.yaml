@@ -1,0 +1,69 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Météo — Température extérieure
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la température extérieure avec une icône
+#     météo dynamique adaptée à l'état courant du weather
+#     entity.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_kpi
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - valeur et couleur issues du socle_kpi
+#     - icône dynamique selon l'état météo courant
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur de température extérieure
+#     - attributes: aucune
+#     - helpers externes:
+#         - weather.forecast_maison
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule aucune logique météo métier
+#     - Il ne modifie pas la logique couleur portée par le socle
+#     - Il reste une spécialisation locale du domaine météo
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_temperature_exterieure
+#       entity: sensor.temperature_exterieure
+#       name: Extérieur
+#
+# ==========================================================
+
+carte_temperature_exterieure:
+  template: socle_kpi
+
+  icon: |
+    [[[
+      const icones = {
+        sunny: "mdi:weather-sunny",
+        clear: "mdi:weather-sunny",
+        "clear-night": "mdi:weather-night",
+        cloudy: "mdi:weather-cloudy",
+        partlycloudy: "mdi:weather-partly-cloudy",
+        rainy: "mdi:weather-rainy",
+        pouring: "mdi:weather-pouring",
+        lightning: "mdi:weather-lightning",
+        "lightning-rainy": "mdi:weather-lightning-rainy",
+        snowy: "mdi:weather-snowy",
+        "snowy-rainy": "mdi:weather-snowy-rainy",
+        windy: "mdi:weather-windy",
+        fog: "mdi:weather-fog"
+      };
+
+      return icones[states['weather.forecast_maison']?.state]
+        || "mdi:weather-cloudy";
+    ]]]
+
+  triggers_update:
+    - weather.forecast_maison

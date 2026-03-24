@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Maison — Mode maison courant
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche le mode maison courant et donne accès au dashboard
+#     des modes via tap. Traduction visuelle simple : normal ou
+#     mode dégradé.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_toggle
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = 'normal' (insensible à la casse) -> 🟢 vert  (mode nominal)
+#     - tout autre état                          -> 🔴 rouge (mode dégradé / absent)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor ou input_select exposant le mode maison (state attendu : 'normal' | autre)
+#
+# ⚠️ CONTRAINTES
+#     - Sémantique binaire uniquement — si de nouveaux modes sont ajoutés, la carte
+#       les traitera tous comme "dégradé" par défaut
+#     - Aucune action d'écriture — navigation seule (hold_action non défini)
+#     - Ne pas utiliser pour un toggle actif sur le mode maison
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_mode_maison
+#     entity: sensor.mode_maison
+#
+# ==========================================================
+
+carte_mode_maison:
+  template: socle_toggle
+
+  tap_action:
+    action: navigate
+    navigation_path: /modes-dashboard/home
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const mode = (entity?.state || '').toLowerCase();
+            return mode === 'normal'
+              ? 'rgba(76, 175, 80, 0.2)'
+              : 'rgba(244, 67, 54, 0.2)';
+          ]]]

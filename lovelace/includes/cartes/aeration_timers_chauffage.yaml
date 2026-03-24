@@ -21,10 +21,12 @@ square: false
 cards:
 
   - type: custom:button-card
-    template: carte_aeration_blocage_timer
+    template: carte_timer_status
     entity: timer.aeration_blocage
     name: Blocage chauffage
     icon: mdi:lock-alert
+    variables:
+      active_semantic: warning
 
   - type: conditional
     conditions:
@@ -32,10 +34,12 @@ cards:
         state: active
     card:
       type: custom:button-card
-      template: carte_aeration_delta_t_timer
+      template: carte_timer_status
       entity: timer.aeration_analyse_delta_t
       name: Analyse ΔT
       icon: mdi:chart-bell-curve
+      variables:
+        active_semantic: info
 
   - type: conditional
     conditions:

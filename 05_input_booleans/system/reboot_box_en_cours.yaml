@@ -1,0 +1,22 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN
+#     Réseau — Campagne remédiation active
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Publier le contexte explicite de campagne
+#     de remédiation Internet.
+#
+#     Ce helper constitue la source de vérité système
+#     du contexte de perturbation volontaire réseau.
+#
+# 🧱 CONTRAT
+#
+#     - activé immédiatement avant l'action corrective physique
+#     - actif pendant toute la campagne
+#     - désactivé uniquement à la fermeture de campagne
+# ==========================================================
+
+reboot_box_en_cours:
+  name: "Réseau – Campagne remédiation active"
+  icon: mdi:router-network

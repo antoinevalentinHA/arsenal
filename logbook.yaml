@@ -54,6 +54,13 @@ include:
     - automation.vacances_desactivation_automatique_du_mode
 
     # =====================================================
+    # 🧒 ENFANTS / CONFORT
+    # =====================================================
+    - automation.sdb_enfants_charge_veilleuse_arnaud
+    - automation.babyphone_arnaud
+    - automation.babyphone_matthieu
+
+    # =====================================================
     # 🚨 SÉCURITÉ & SUPERVISION
     # =====================================================
     - automation.netatmo_redemarrage_sur_panne_reseau_arnaud
@@ -63,14 +70,6 @@ include:
     - automation.reseau_confirmation_retour_internet
 
     # =====================================================
-    # 🧒 ENFANTS / CONFORT
-    # =====================================================
-    - automation.sdb_enfants_charge_veilleuse_arnaud
-    - automation.babyphone_arnaud
-    - automation.babyphone_matthieu
-
-    # =====================================================
     # 🌐 RÉSEAU / STABILITÉ
     # =====================================================
-    - automation.reseau_redemarrage_box_auto
     - automation.nas_alerte_temperature_disque

@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Éclairage — Action toggle éclairage via script (confirmé)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Déclenche le toggle d'éclairage garage via script avec
+#     confirmation obligatoire. Carte d'action pure — aucun
+#     affichage d'état.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_action_script_confirme
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Pas de sémantique d'état — carte d'action pure
+#       (couleur et icône héritées du socle)
+#
+# 🔗 DEPENDANCES
+#     - script.garage_toggle : script de toggle éclairage garage
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale obligatoire avant exécution
+#     - Aucun retour visuel d'état après action (pas d'entity liée)
+#     - Usage limité au garage — ne pas réutiliser tel quel sur
+#       un autre circuit (paramétrer via variables si besoin)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_action_eclairage_script
+#     # aucune entity requise
+#
+# ==========================================================
+
+carte_action_eclairage_script:
+  template: socle_action_script_confirme
+
+  tap_action:
+    action: call-service
+    service: script.garage_toggle
+    confirmation:
+      text: Allumer/éteindre l’éclairage ?

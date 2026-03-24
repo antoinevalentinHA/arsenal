@@ -1,0 +1,144 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Météo — Chauffage actuelle 72
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la temperature exterieure actuelle utile au
+#     diagnostic chauffage ainsi que les seuils exterieurs
+#     ON / OFF associes.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_label_sans_nom
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - donnees indisponibles -> gris indispo
+#     - temperature < seuil ON -> vert
+#     - temperature >= seuil OFF -> orange
+#     - zone intermediaire -> gris neutre
+#
+# 🔗 DEPENDANCES
+#     - entity: sensor.temperature_jardin
+#     - attributes: aucune
+#     - helpers externes:
+#         - input_number.chauffage_seuil_ext_on
+#         - input_number.chauffage_seuil_ext_off
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne porte pas la decision chauffage complete
+#     - Il affiche uniquement une lecture locale du contexte
+#       thermique exterieur
+#     - Les seuils ON / OFF doivent etre disponibles
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: meteo_chauffage_actuelle_72
+#
+# ==========================================================
+
+meteo_chauffage_actuelle_72:
+  template: socle_status_label_sans_nom
+
+  entity: sensor.temperature_jardin
+
+  show_state: true
+  show_label: true
+  show_icon: true
+
+  icon: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const extRaw = entity?.state;
+      const onRaw = states['input_number.chauffage_seuil_ext_on']?.state;
+      const offRaw = states['input_number.chauffage_seuil_ext_off']?.state;
+
+      if (UNAV.includes(extRaw) || UNAV.includes(onRaw) || UNAV.includes(offRaw)) {
+        return 'mdi:thermometer-off';
+      }
+
+      const ext = parseFloat(String(extRaw).replace(',', '.'));
+      const seuilOn = parseFloat(String(onRaw).replace(',', '.'));
+      const seuilOff = parseFloat(String(offRaw).replace(',', '.'));
+
+      if (!Number.isFinite(ext) || !Number.isFinite(seuilOn) || !Number.isFinite(seuilOff)) {
+        return 'mdi:thermometer-off';
+      }
+
+      if (ext < seuilOn) {
+        return 'mdi:thermometer-low';
+      }
+
+      if (ext >= seuilOff) {
+        return 'mdi:thermometer-high';
+      }
+
+      return 'mdi:thermometer';
+    ]]]
+
+  state_display: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const extRaw = entity?.state;
+
+      if (UNAV.includes(extRaw)) return 'Indispo';
+
+      const ext = parseFloat(String(extRaw).replace(',', '.'));
+      if (!Number.isFinite(ext)) return 'Indispo';
+
+      return `${ext.toFixed(1)}°C`;
+    ]]]
+
+  label: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const onRaw = states['input_number.chauffage_seuil_ext_on']?.state;
+      const offRaw = states['input_number.chauffage_seuil_ext_off']?.state;
+
+      if (UNAV.includes(onRaw) || UNAV.includes(offRaw)) return 'Seuils —';
+
+      const seuilOn = parseFloat(String(onRaw).replace(',', '.'));
+      const seuilOff = parseFloat(String(offRaw).replace(',', '.'));
+
+      if (!Number.isFinite(seuilOn) || !Number.isFinite(seuilOff)) return 'Seuils —';
+
+      return `${seuilOn.toFixed(1)}°C • ${seuilOff.toFixed(1)}°C`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+  
+            const extRaw = entity?.state;
+            const onRaw = states['input_number.chauffage_seuil_ext_on']?.state;
+            const offRaw = states['input_number.chauffage_seuil_ext_off']?.state;
+  
+            if (UNAV.includes(extRaw) || UNAV.includes(onRaw) || UNAV.includes(offRaw)) {
+              return "rgba(158, 158, 158, 0.1)";
+            }
+  
+            const ext = parseFloat(String(extRaw).replace(',', '.'));
+            const seuilOn = parseFloat(String(onRaw).replace(',', '.'));
+            const seuilOff = parseFloat(String(offRaw).replace(',', '.'));
+  
+            if (!Number.isFinite(ext) || !Number.isFinite(seuilOn) || !Number.isFinite(seuilOff)) {
+              return "rgba(158, 158, 158, 0.1)";
+            }
+  
+            if (ext < seuilOn) {
+              return "rgba(76, 175, 80, 0.2)";
+            }
+  
+            if (ext >= seuilOff) {
+              return "rgba(255, 152, 0, 0.2)";
+            }
+  
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]

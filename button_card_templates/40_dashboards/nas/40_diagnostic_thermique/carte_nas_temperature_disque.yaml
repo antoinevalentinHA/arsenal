@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     NAS — Température disque (diagnostic)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la température d'un disque NAS en °C avec
+#     coloration sémantique par seuils fixes. Diagnostic pur.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - t >= 55°C              -> 🔴 rouge   (température critique)
+#     - 45°C <= t < 55°C       -> 🟠 orange  (température élevée)
+#     - t < 45°C               -> 🟢 vert    (température nominale)
+#     - valeur non numérique   -> ⚪ gris clair (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor de température disque DSM (state numérique, °C)
+#
+# ⚠️ CONTRAINTES
+#     - Seuils codés en dur (45°C / 55°C) — valeurs typiques HDD,
+#       peuvent ne pas convenir aux SSD NVMe (seuils plus élevés)
+#     - Candidat à une variante avec seuils paramétrables via variables
+#       (même pattern que carte_autonomie_seuils_variables)
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_nas_temperature_disque
+#     entity: sensor.nas_disque_1_temperature
+#
+# ==========================================================
+
+carte_nas_temperature_disque:
+  template: socle_status_72
+
+  show_state: true
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? "N/A" : `${v.toFixed(0)}°C`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const t = parseFloat(entity.state);
+
+            // Indisponible / invalide
+            if (isNaN(t))
+              return "rgba(224, 224, 224, 0.2)";
+
+            // 🔴 Critique
+            if (t >= 55)
+              return "rgba(244, 67, 54, 0.2)";
+
+            // 🟠 Alerte
+            if (t >= 45)
+              return "rgba(255, 152, 0, 0.2)";
+
+            // 🟢 OK
+            return "rgba(76, 175, 80, 0.2)";
+          ]]]

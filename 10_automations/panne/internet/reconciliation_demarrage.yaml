@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Réseau — Réconciliation démarrage HA
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Garantir l'absence d'états résiduels incohérents
+#     au démarrage de Home Assistant.
+#
+#     Cette automation :
+#     - annule toute cadence résiduelle
+#     - supprime toute notification persistante résiduelle
+#     - ferme tout contexte de campagne incohérent
+#
+# 🧱 CONTRAT
+#
+#     - exécutée uniquement si état nominal
+#     - supprime tout état zombie
+#     - ne crée aucun nouvel état
+#
+# 🔎 NOTES D'IMPLEMENTATION
+#
+#     - si Internet est disponible au démarrage,
+#       tout résidu d'exécution doit être purgé
+#     - si Internet est indisponible au démarrage,
+#       cette automation n'agit pas
+#     - la reprise de remédiation relève ensuite
+#       du mécanisme nominal de détection
+# ==========================================================
+
+- id: "10120000000025"
+  alias: "Réseau – Réconciliation démarrage HA"
+  description: >
+    Nettoie les états résiduels si Internet est disponible au démarrage.
+  mode: single
+
+  trigger:
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.acces_externe
+      state: "on"
+
+  action:
+    - action: timer.cancel
+      target:
+        entity_id: timer.reboot_box
+
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: panne_internet
+
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.reboot_box_en_cours

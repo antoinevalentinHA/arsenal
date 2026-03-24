@@ -1,0 +1,102 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Réseau — État internet (connectivité + qualité 7j)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état de connectivité internet en croisant
+#     la disponibilité courante et la qualité sur 7 jours.
+#     Hold déclenche le redémarrage de la box avec confirmation.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - dispo = off                        -> 🔴 rouge  "Déconnecté"
+#     - dispo = on + qualite = instable    -> 🔴 rouge  "Connecté • Instable (7j)"
+#     - dispo = on + qualite = degrade     -> 🟠 orange "Connecté • Dégradé (7j)"
+#     - dispo = on + qualite nominale      -> 🟢 vert   "Connecté"
+#     - unavailable                        -> ⚪ gris   "Indisponible"
+#
+# 🔗 DEPENDANCES
+#     - entity                       : binary_sensor connectivité internet (on/off)
+#     - sensor.internet_qualite_7j   : qualité sur 7j (nominal | degrade | instable)
+#     - script.redemarrer_box        : script de redémarrage box (hold)
+#
+# ⚠️ CONTRAINTES
+#     - Priorité couleur : off > instable > degrade > on nominal
+#       (instable et off partagent le rouge — distinction via le libellé)
+#     - hold_action avec confirmation — action irréversible à court terme
+#     - tap_action = more-info (accès historique connectivité)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_etat_internet
+#     entity: binary_sensor.internet_disponible
+#
+# ==========================================================
+
+carte_etat_internet:
+  template: socle_status_72
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  tap_action:
+    action: more-info
+
+  hold_action:
+    action: call-service
+    service: script.redemarrer_box
+    confirmation:
+      text: Es-tu sûr de vouloir redémarrer la box internet ?
+
+  state_display: |
+    [[[
+      const dispo = entity?.state;
+      const qual  = states['sensor.internet_qualite_7j']?.state;
+
+      if (dispo === 'off') return 'Déconnecté';
+
+      if (dispo === 'on') {
+        if (qual === 'degrade')  return 'Connecté • Dégradé (7j)';
+        if (qual === 'instable') return 'Connecté • Instable (7j)';
+        return 'Connecté';
+      }
+
+      return 'Indisponible';
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const dispo = entity?.state;
+            const qual  = states['sensor.internet_qualite_7j']?.state;
+
+            // 🔴 Internet down maintenant
+            if (dispo === "off")
+              return "rgba(244, 67, 54, 0.2)";
+
+            // 🟠 Dégradé sur 7 jours
+            if (qual === "degrade")
+              return "rgba(255, 152, 0, 0.2)";
+
+            // 🔴 Instable structurel
+            if (qual === "instable")
+              return "rgba(244, 67, 54, 0.2)";
+
+            // 🟢 Nominal
+            if (dispo === "on")
+              return "rgba(76, 175, 80, 0.2)";
+
+            // Gris neutre
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]

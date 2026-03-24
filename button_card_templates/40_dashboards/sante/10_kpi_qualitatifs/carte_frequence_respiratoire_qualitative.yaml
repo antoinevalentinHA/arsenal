@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Santé — Fréquence respiratoire qualitative (KPI)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la fréquence respiratoire en rpm sous forme de KPI.
+#     La couleur est pilotée par un sensor de couleur upstream
+#     (charte Arsenal santé). Délègue toute la logique visuelle
+#     au socle via variables.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Déléguée à sensor.couleur_sante_frequence_respiratoire
+#       et au profil ui_profile: arsenal du socle_kpi
+#
+# 🔗 DEPENDANCES
+#     - entity                                        : sensor fréquence respiratoire (state numérique, rpm)
+#     - sensor.couleur_sante_frequence_respiratoire   : clé couleur upstream
+#     - variables.ui_profile                          : "arsenal" (profil de rendu socle_kpi)
+#
+# ⚠️ CONTRAINTES
+#     - Aucune logique de couleur propre — entièrement déléguée upstream
+#     - triggers_update déclaré sur le sensor couleur (réactivité)
+#     - Valeur affichée arrondie à l'entier (Math.round) avec unité rpm
+#     - Membre de la famille socle_kpi + sensor couleur upstream :
+#       carte_ecs_etat_ballon / carte_activite_calories_quotidiennes /
+#       carte_duree_qualitative
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_frequence_respiratoire_qualitative
+#     entity: sensor.frequence_respiratoire
+#
+# ==========================================================
+
+carte_frequence_respiratoire_qualitative:
+  template: socle_kpi
+
+  show_state: true
+  show_icon: true
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_sante_frequence_respiratoire
+
+  triggers_update:
+    - sensor.couleur_sante_frequence_respiratoire
+
+  state_display: |
+    [[[
+      const rpm = parseFloat(entity?.state);
+      if (isNaN(rpm)) return "—";
+      return `${Math.round(rpm)} rpm`;
+    ]]]
+

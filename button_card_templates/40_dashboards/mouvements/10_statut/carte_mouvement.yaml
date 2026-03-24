@@ -1,0 +1,69 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Présence — Capteur de mouvement
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état d'un capteur de mouvement avec coloration
+#     sémantique. Générique — utilisable sur tout
+#     binary_sensor de mouvement. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on             -> 🔴 rouge (mouvement détecté)
+#     - state = off            -> 🟢 vert  (calme)
+#     - unknown / unavailable  -> ⚪ gris clair (indisponible)
+#
+# 🔗 DEPENDANCES
+#     - entity : binary_sensor.* de mouvement (state = on | off)
+#
+# ⚠️ CONTRAINTES
+#     - show_state et show_label désactivés — nom seul affiché
+#     - Toutes les actions désactivées
+#     - Sémantique ON = rouge : ne pas utiliser sur un capteur
+#       où ON est l'état souhaité
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_mouvement
+#     entity: binary_sensor.mouvement_salon
+#     name: Salon
+#
+# ==========================================================
+
+carte_mouvement:
+  template: socle_status
+
+  icon: mdi:motion-sensor
+  show_state: false
+  show_label: false
+  show_name: true
+  show_icon: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const rouge = "rgba(244, 67, 54, 0.2)";   // mouvement
+            const vert  = "rgba(76, 175, 80, 0.2)";  // calme
+            const indispo = "rgba(158, 158, 158, 0.1)";
+
+            if (!entity || entity.state === "unknown" || entity.state === "unavailable")
+              return indispo;
+
+            return entity.state === "on" ? rouge : vert;
+          ]]]

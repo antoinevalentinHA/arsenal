@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Volets — Décision pluie récente (72px)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Tuile décisionnelle 72px indiquant si une pluie récente
+#     a été détectée, ce qui conditionne l'autorisation de
+#     fermeture automatique des volets. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_decision_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on             -> 🟠 orange  mdi:weather-rainy      (pluie récente — blocage volets)
+#     - state = off            -> ⚪ gris    mdi:weather-rainy-off  (pas de pluie récente)
+#     - unknown / unavailable  -> ⚪ gris clair mdi:help-circle-outline
+#
+# 🔗 DEPENDANCES
+#     - entity : binary_sensor pluie récente (state = on | off)
+#
+# ⚠️ CONTRAINTES
+#     - Orange choisi pour ON (et non rouge) : la pluie récente est
+#       une contrainte de protection, pas une alerte critique
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: decision_pluie_recente_72
+#     entity: binary_sensor.pluie_recente
+#
+# ==========================================================
+
+decision_pluie_recente_72:
+  template: socle_decision_72
+  show_icon: true
+  icon: >
+    [[[
+      const s = entity?.state;
+      if (s === "on") return "mdi:weather-rainy";
+      if (s === "off") return "mdi:weather-rainy-off";
+      return "mdi:help-circle-outline";
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity?.state;
+
+            if (s === undefined || s === null) return "rgba(158, 158, 158, 0.1)";
+            if (s === "unknown" || s === "unavailable") return "rgba(158, 158, 158, 0.1)";
+
+            if (s === "on") return "rgba(255, 152, 0, 0.25)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]

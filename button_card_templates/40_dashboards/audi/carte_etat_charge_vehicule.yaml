@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Véhicule — État de charge électrique
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Indique si le véhicule électrique est en cours de charge.
+#     Carte purement informationnelle, lecture immédiate,
+#     aucune interaction autorisée.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = 'charging' (insensible à la casse) -> 🟢 vert  (charge en cours)
+#     - tout autre état connu                      -> ⚪ gris  (non en charge)
+#     - unknown / unavailable / null               -> ⚪ gris clair (indisponible)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor exposant l'état de charge (state attendu : 'charging' | autre)
+#
+# ⚠️ CONTRAINTES
+#     - Toutes les actions désactivées (tap, hold, double_tap)
+#     - Sémantique binaire : pas de distinction entre 'idle', 'complete', 'disconnected'
+#       — tous traités comme "non en charge"
+#     - show_state désactivé — l'état brut n'est pas affiché
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_etat_charge_vehicule
+#     entity: sensor.audi_etat_charge
+#
+# ==========================================================
+
+carte_etat_charge_vehicule:
+  template: socle_status
+
+  show_state: false
+  show_icon: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = (entity?.state || '').toLowerCase();
+
+            if (["unknown","unavailable",null].includes(s)) {
+              return "rgba(158, 158, 158, 0.1)";   // ⚪ indispo
+            }
+
+            return s === "charging"
+              ? "rgba(76, 175, 80, 0.2)"          // 🟢 en charge
+              : "rgba(158, 158, 158, 0.2)";       // ⚪ arrêt
+          ]]]

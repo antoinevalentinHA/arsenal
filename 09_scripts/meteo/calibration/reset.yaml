@@ -108,4 +108,4 @@ reset_calibration_capteurs_zigbee:
     - action: logbook.log
       data:
         name: "Reset Calibration"
-        message: "Toutes les calibrations Zigbee ont été remises à 0 ✅"
+        message: "Calibration Zigbee réinitialisée"

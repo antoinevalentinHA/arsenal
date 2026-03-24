@@ -1,44 +1,59 @@
 # ==========================================================
-#  Arsenal — Automation : Aeration – Persistance durees
+# 🧠 ARSENAL — AUTOMATION :
+#     Aération – Persistance durées
+#
+# ID : 10010000000025
 # ----------------------------------------------------------
-#  Rôle :
-#    Synchroniser les durées d’aération calculées
-#    vers des helpers persistants afin de :
-#      - survivre aux redémarrages Home Assistant
-#      - garantir une continuité logique des épisodes
+# 🎯 RÔLE
+#     Synchroniser les durées d’aération calculées vers
+#     des helpers persistants :
+#       - input_number.duree_aeration_rdc_stock
+#       - input_number.duree_aeration_etage_stock
 #
-#  Principe :
-#    - Écoute les capteurs de durée calculée
-#    - Écrit dans les input_number "stock"
+# ----------------------------------------------------------
+# 🧱 NATURE
+#     - Guard technique de persistance
+#     - Aucune logique métier
+#     - Aucune décision
+#     - Aucune remise à zéro
 #
-#  Important :
-#    - Aucun calcul métier
-#    - Aucun reset
-#    - Pure persistance (guard technique)
+# ----------------------------------------------------------
+# ⚙️ PRINCIPE
+#     - Déclenchement sur changement des capteurs source
+#     - Écriture uniquement si la valeur source est
+#       numériquement valide
+#     - Protection explicite contre les états transitoires
+#       au démarrage (unknown / unavailable / non numérique)
+#
+# ----------------------------------------------------------
+# ⚠️ IMPORTANT
+#     - Cette automation protège la mémoire persistante
+#       contre les écrasements parasites au boot
+#     - Toute valeur invalide est ignorée
+#     - Le stock ne doit jamais être remplacé par 0
+#       par simple défaut de lecture
 # ==========================================================
 
 - id: "10010000000025"
   alias: "Aération – Persistance durées"
   mode: queued
 
-  # ======================================================
-  # Déclencheurs
-  # ======================================================
   trigger:
     - platform: state
       entity_id:
         - sensor.duree_aeration_rdc
         - sensor.duree_aeration_etage
 
-  # ======================================================
-  # Actions
-  # ======================================================
   action:
     - choose:
 
         - conditions:
             - condition: template
-              value_template: "{{ trigger.entity_id == 'sensor.duree_aeration_rdc' }}"
+              value_template: >
+                {{
+                  trigger.entity_id == 'sensor.duree_aeration_rdc'
+                  and states('sensor.duree_aeration_rdc') | float(-1) >= 0
+                }}
           sequence:
             - service: input_number.set_value
               target:
@@ -46,12 +61,16 @@
               data:
                 value: >
                   {{
-                    (states('sensor.duree_aeration_rdc') | float(0) * 60) | round(0)
+                    (states('sensor.duree_aeration_rdc') | float * 60) | round(0)
                   }}
 
         - conditions:
             - condition: template
-              value_template: "{{ trigger.entity_id == 'sensor.duree_aeration_etage' }}"
+              value_template: >
+                {{
+                  trigger.entity_id == 'sensor.duree_aeration_etage'
+                  and states('sensor.duree_aeration_etage') | float(-1) >= 0
+                }}
           sequence:
             - service: input_number.set_value
               target:
@@ -59,5 +78,5 @@
               data:
                 value: >
                   {{
-                    (states('sensor.duree_aeration_etage') | float(0) * 60) | round(0)
+                    (states('sensor.duree_aeration_etage') | float * 60) | round(0)
                   }}

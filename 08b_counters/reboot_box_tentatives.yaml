@@ -1,0 +1,21 @@
+# ==========================================================
+# 🧠 ARSENAL — COUNTER
+#     Réseau — Cycles physiques campagne
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Comptabiliser les cycles physiques réellement exécutés
+#     pendant une campagne de remédiation Internet.
+#
+# 🧱 CONTRAT
+#
+#     - source de vérité physique
+#     - aucun usage cosmétique
+#     - incrément uniquement après exécution effective
+# ==========================================================
+
+reboot_box_tentatives:
+  name: "Réseau – Cycles physiques campagne"
+  initial: 0
+  step: 1
+  icon: mdi:counter

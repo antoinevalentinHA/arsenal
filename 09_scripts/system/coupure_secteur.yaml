@@ -2,12 +2,12 @@
 # 🧠 ARSENAL — SCRIPT : Mode panne – Coupure secteur
 # ----------------------------------------------------------
 # 🎯 RÔLE FONDAMENTAL
-#   Script de bascule en MODE DÉGRADÉ lors d’une coupure
-#   d’alimentation électrique détectée.
+#   Script de résilience exécuté lors de l’entrée valide
+#   en mode panne secteur.
 #
-#   Il applique immédiatement des réglages de survie
-#   thermique et sanitaire pour préserver un confort
-#   minimal pendant une panne secteur.
+#   Il applique la mise en régime ECS de secours par le
+#   chemin canonique Arsenal et matérialise l’état de panne
+#   auprès de l’utilisateur.
 #
 # ----------------------------------------------------------
 # 🧱 POSITION DANS L’ARCHITECTURE
@@ -15,8 +15,8 @@
 #   - Script de résilience système
 #   - Niveau : sécurité / continuité de service
 #
-#   ➜ Il est déclenché UNIQUEMENT par une automatisation
-#     de détection de panne électrique.
+#   ➜ Il est déclenché UNIQUEMENT par l’automation
+#     d’entrée en mode panne secteur.
 #
 # ----------------------------------------------------------
 # ⚙️ COMPORTEMENT
@@ -24,10 +24,12 @@
 #   Lors de l’exécution :
 #
 #   - Eau chaude sanitaire :
-#       • Lancement d’un cycle ECS ponctuel de secours
+#       • Application d’une consigne ECS de secours
+#         via `script.ecs_appliquer_consigne_confirmee`
+#       • Contexte retenu : `consigne_haute`
 #
 #   - Information utilisateur :
-#       • Notification persistante (état système)
+#       • Notification persistante d’état système
 #       • Notification mobile prioritaire
 #
 # ----------------------------------------------------------
@@ -36,9 +38,10 @@
 #   - Aucune décision métier
 #   - Aucune temporisation interne
 #   - Aucune sortie automatique du mode panne
+#   - Aucun pilotage direct du chauffage
 #
-#   ➜ Ce script applique un état de secours,
-#     il ne gère PAS le retour à la normale.
+#   ➜ Ce script exécute la mise en régime ECS de secours
+#     et la signalisation associée.
 #
 # ----------------------------------------------------------
 # 🚫 NE FAIT PAS
@@ -46,17 +49,19 @@
 #   - Ne détecte pas la coupure secteur
 #   - Ne surveille pas le retour du courant
 #   - Ne restaure aucun état précédent
+#   - Ne pilote pas directement la chaudière chauffage
 #   - Ne boucle pas
 #
 # ----------------------------------------------------------
 # 📊 Type :
-#   Script de résilience — mode dégradé électrique
+#   Script de résilience — mode panne secteur
 #
 # 📍 Entité :
 #   script.mode_panne_coupure_secteur
 #
 # 🔗 Dépendances :
-#   - script.chauffage_ecs_cycle
+#   - script.ecs_appliquer_consigne_confirmee
+#   - input_text.ecs_cycle_last_action_status
 #   - persistent_notification
 #   - script.notification_envoyer_avance
 #
@@ -69,37 +74,81 @@
 # ==========================================================
 
 mode_panne_coupure_secteur:
-  alias: "Mode panne - Coupure secteur"
+  alias: "Mode panne – Coupure secteur"
   mode: single
   sequence:
 
-    # 1) ECS -> lancer le cycle ponctuel
-    - service: script.chauffage_ecs_cycle
+    # 1) ECS -> appliquer la consigne de secours par le chemin canonique
+    - action: script.ecs_appliquer_consigne_confirmee
       data:
-        mode: "ponctuel"
+        target_temp: 45
+        contexte: "consigne_haute"
 
-    # 2) ⚠️ Notification persistante – état système (panne en cours)
+    # 2) Notification persistante – état système
     - service: persistent_notification.create
       data:
         notification_id: mode_panne_secteur
-        title: "⚠️ Coupure secteur – Mode secours activé"
+        title: "⚠️ Coupure secteur – Mode panne actif"
         message: >
-          Coupure d’alimentation détectée à {{ now().strftime('%H:%M') }}  
-          (tension nulle sur la prise du réfrigérateur).  
+          Coupure d’alimentation détectée à {{ now().strftime('%H:%M') }}.
 
-          **Actions automatiques effectuées :**
-          • Chauffage réglé en mode *confort*  
-          • Production d’eau chaude lancée (*mode secours*)  
+          **État système actif :**
+          • `input_boolean.panne_secteur_active` = ON
+          • signal chauffage de sécurisation publié
+            (`input_boolean.mode_confort_chauffage`)
+          • demande ECS de secours envoyée
+            (consigne haute : 45 °C)
 
-          Le système repassera en mode normal dès le retour du secteur.
+          Cette notification restera visible tant que
+          la panne secteur sera active.
 
-    # 3) 📲 Notification mobile prioritaire
-    - service: script.notification_envoyer_avance
-      data:
-        cible: input_text.telephone_antoine_notify
-        titre: "⚠️ Coupure secteur détectée"
-        message: "Mode secours activé : chauffage mode Confort et ECS lancée."
-        extra:
-          ttl: 0
-          priority: high
-          importance: high
+    # 3) Notification mobile prioritaire selon résultat normalisé
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_text.ecs_cycle_last_action_status
+              state: "applied"
+          sequence:
+            - service: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "⚠️ Coupure secteur détectée"
+                message: >
+                  Mode panne actif : signal chauffage de sécurisation publié
+                  et consigne ECS de secours appliquée à 45 °C.
+                extra:
+                  ttl: 0
+                  priority: high
+                  importance: high
+
+        - conditions:
+            - condition: state
+              entity_id: input_text.ecs_cycle_last_action_status
+              state: "rejected"
+          sequence:
+            - service: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "⚠️ Coupure secteur détectée"
+                message: >
+                  Mode panne actif : signal chauffage de sécurisation publié,
+                  mais la consigne ECS de secours à 45 °C
+                  a été rejetée.
+                extra:
+                  ttl: 0
+                  priority: high
+                  importance: high
+
+      default:
+        - service: script.notification_envoyer_avance
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "⚠️ Coupure secteur détectée"
+            message: >
+              Mode panne actif : signal chauffage de sécurisation publié,
+              mais la consigne ECS de secours à 45 °C
+              n’a pas été confirmée.
+            extra:
+              ttl: 0
+              priority: high
+              importance: high

@@ -1,0 +1,116 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Synthèse statut COOL / HEAT / DRY
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Tuile générique de synthèse pour les trois modes clim
+#     (cool, heat, dry). Paramétrable via variables — un seul
+#     template couvre les trois modes avec sémantique adaptée.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_label_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     Mode dry (kind = 'dry') :
+#     - entity_on = on          -> 🟢 vert  "Autorisé"
+#     - entity_on = off         -> ⚪ gris  "Non requis"
+#
+#     Mode cool / heat (kind = 'cool' | 'heat') :
+#     - maintien KO (entity_off = off)           -> 🔴 rouge "Sortie requise"
+#     - maintien OK + allumage ON (entity_on=on) -> 🟢 vert  "Actif"
+#     - maintien OK + allumage OFF               -> ⚪ gris  "Inactif"
+#
+#     Toute valeur unavailable                   -> ⚪ gris clair "Indisponible"
+#
+# 🔗 DEPENDANCES
+#     - variables.kind       : "cool" | "heat" | "dry"
+#     - variables.entity_on  : binary_sensor d'allumage / autorisation
+#     - variables.entity_off : binary_sensor de maintien (optionnel, ignoré en mode dry)
+#
+# ⚠️ CONTRAINTES
+#     - entity_off est optionnel pour dry mais requis pour cool/heat
+#       (son absence en mode cool/heat produit "Sortie requise" systématiquement)
+#     - La logique label et couleur est dupliquée dans deux blocs JS distincts —
+#       dette technique à factoriser si le template évolue
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: clim_synthese_status_72
+#     variables:
+#       kind: cool
+#       entity_on:  binary_sensor.clim_autorisation_cool
+#       entity_off: binary_sensor.clim_maintien_cool
+#
+# ==========================================================
+
+clim_synthese_status_72:
+  template: socle_status_label_72
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  label: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const kind   = variables.kind;
+      const id_on  = variables.entity_on;
+      const id_off = variables.entity_off;
+
+      const s_on  = st(id_on);
+      const s_off = id_off ? st(id_off) : undefined;
+
+      if (UNAV.includes(s_on) || (id_off && UNAV.includes(s_off))) return "Indisponible";
+
+      if (kind === 'dry') {
+        return (s_on === 'on') ? "Autorisé" : "Non requis";
+      }
+
+      const allumage_ok = (s_on === 'on');
+      const maintien_ok = (s_off === 'on');
+
+      if (!maintien_ok) return "Sortie requise";
+      return allumage_ok ? "Actif" : "Inactif";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const st = (id) => states[id]?.state;
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+            const kind   = variables.kind;
+            const id_on  = variables.entity_on;
+            const id_off = variables.entity_off;
+
+            const s_on  = st(id_on);
+            const s_off = id_off ? st(id_off) : undefined;
+
+            if (UNAV.includes(s_on) || (id_off && UNAV.includes(s_off)))
+              return "rgba(158, 158, 158, 0.1)";
+
+            if (kind === 'dry') {
+              return (s_on === 'on')
+                ? "rgba(76, 175, 80, 0.2)"
+                : "rgba(158, 158, 158, 0.2)";
+            }
+
+            const allumage_ok = (s_on === 'on');
+            const maintien_ok = (s_off === 'on');
+
+            if (!maintien_ok) return "rgba(244, 67, 54, 0.2)";
+            if (allumage_ok)  return "rgba(76, 175, 80, 0.2)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]

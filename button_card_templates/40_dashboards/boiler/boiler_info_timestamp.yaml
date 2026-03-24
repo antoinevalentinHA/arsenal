@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler — Info timestamp
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — REUTILISABLE
+#
+# 🎯 ROLE
+#     Specialiser le socle information canonique pour
+#     l'affichage d'un horodatage du sous-systeme boiler.
+#
+# 🧱 NATURE
+#     - Template button-card derive d'un socle information
+#     - Porte la semantique couleur metier temporelle
+#     - Reutilisable sur heartbeat, ACK et erreurs
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unknown / unavailable / vide -> gris indispo
+#     - valeur presente -> bleu info
+#
+# ⚠️ CONTRAINTE
+#     Un timestamp n'est ni un KPI, ni un etat OK / KO,
+#     ni une decision. Il releve exclusivement d'une
+#     semantique d'information technique.
+#
+# 🧩 USAGE
+#     Exemple :
+#       type: custom:button-card
+#       template: boiler_info_timestamp
+#       entity: sensor.boiler_bridge_heartbeat_timestamp
+#       name: Heartbeat
+#
+# ==========================================================
+
+boiler_info_timestamp:
+  template:
+    - socle_info_72
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (
+              state === null ||
+              state === undefined ||
+              state === '' ||
+              state === 'unknown' ||
+              state === 'unavailable'
+            ) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            return 'rgba(33, 150, 243, 0.2)';
+          ]]]

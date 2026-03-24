@@ -1,0 +1,127 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Déshumidificateur — Capteur humidité (relatif / absolu)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la valeur d'humidité cave (relative % ou absolue g/m³)
+#     avec le seuil actif contextualisé selon l'état du déshumidificateur.
+#     Le type de mesure est déduit dynamiquement depuis l'entity_id.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_diagnostic_compact
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     Déshumidificateur ACTIF :
+#     - valeur > seuil_off     -> 🔴 rouge (toujours humide, encore en travail)
+#     - valeur <= seuil_off    -> 🟢 vert  (descendu sous seuil off)
+#
+#     Déshumidificateur INACTIF :
+#     - valeur >= seuil_on     -> 🔴 rouge (humidité haute, démarrage attendu)
+#     - valeur < seuil_on      -> 🟢 vert  (sec, pas de démarrage requis)
+#
+#     Données manquantes       -> ⚪ gris clair (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity                                  : sensor humidité (entity_id utilisé comme clé de routage)
+#     - binary_sensor.deshumidificateur_actif   : état actif pour choix du seuil affiché
+#     Branche humidité relative :
+#     - sensor.humidite_relative_cave
+#     - input_number.cave_rh_cible_on / off
+#     Branche humidité absolue (entity_id contient '_ha_' ou '_absolue') :
+#     - sensor.humidite_absolue_cave
+#     - sensor.humidite_absolue_cible_on_cave / off_cave
+#
+# ⚠️ CONTRAINTES
+#     - Le routage relatif/absolu repose sur la convention de nommage de l'entity_id
+#       ('_ha_' ou '_absolue') — toute déviation casse le routage silencieusement
+#     - Utilise hass.states[] (pas states[]) — spécificité à noter si portage
+#     - Le label affiche seuil_off si actif, seuil_on si inactif (seuil pertinent)
+#     - show_icon désactivé — aucune icône affichée
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: deshumidificateur_capteur
+#     entity: sensor.humidite_relative_cave      # → branche relative
+#     # ou
+#     entity: sensor.humidite_absolue_cave       # → branche absolue
+#
+# ==========================================================
+
+deshumidificateur_capteur:
+  template: socle_diagnostic_compact
+  show_name: true
+  show_state: true
+  show_label: true
+  show_icon: false
+  styles:
+    card:
+
+      # Couleur PUREMENT VISUELLE :
+      # - dépend de l’humidité mesurée
+      # - des seuils ON / OFF
+      # - et de l’état actif du déshumidificateur
+      # ⚠️ Ne pilote aucune action
+
+      - background-color: |
+          [[[
+            const id = entity?.entity_id || "";
+            const actif = hass.states["binary_sensor.deshumidificateur_actif"]?.state === "on";
+
+            const isHA = id.includes("_ha_") || id.includes("_absolue");
+            const valeur = parseFloat(hass.states[isHA
+              ? "sensor.humidite_absolue_cave"
+              : "sensor.humidite_relative_cave"]?.state);
+
+            const seuilOn  = parseFloat(hass.states[isHA
+              ? "sensor.humidite_absolue_cible_on_cave"
+              : "input_number.cave_rh_cible_on"]?.state);
+            const seuilOff = parseFloat(hass.states[isHA
+              ? "sensor.humidite_absolue_cible_off_cave"
+              : "input_number.cave_rh_cible_off"]?.state);
+
+            if (isNaN(valeur) || isNaN(seuilOn) || isNaN(seuilOff))
+              return "rgba(158, 158, 158, 0.1)";
+
+            if (actif) {
+              return valeur > seuilOff
+                ? "rgba(244,67,54,0.2)"   // rouge = toujours humide
+                : "rgba(76,175,80,0.2)";  // vert = descendu sous seuil off
+            } else {
+              return valeur >= seuilOn
+                ? "rgba(244,67,54,0.2)"   // rouge = humidité haute
+                : "rgba(76,175,80,0.2)";  // vert = sec
+            }
+          ]]]
+  state_display: |
+    [[[
+      const id = entity?.entity_id || "";
+      const isHA = id.includes("_ha_") || id.includes("_absolue");
+      const valeur = hass.states[isHA
+        ? "sensor.humidite_absolue_cave"
+        : "sensor.humidite_relative_cave"]?.state;
+      return valeur && valeur !== "unknown"
+        ? `${valeur} ${isHA ? "g/m³" : "%"}` 
+        : "—";
+    ]]]
+  label: |
+    [[[
+      const id = entity?.entity_id || "";
+      const isHA = id.includes("_ha_") || id.includes("_absolue");
+      const seuilOn  = hass.states[isHA
+        ? "sensor.humidite_absolue_cible_on_cave"
+        : "input_number.cave_rh_cible_on"]?.state;
+      const seuilOff = hass.states[isHA
+        ? "sensor.humidite_absolue_cible_off_cave"
+        : "input_number.cave_rh_cible_off"]?.state;
+      const actif = hass.states["binary_sensor.deshumidificateur_actif"]?.state === "on";
+      if (!seuilOn || !seuilOff) return "Seuils : —";
+      return actif
+        ? `Seuil Off : ${parseFloat(seuilOff).toFixed(1)} ${isHA ? "g/m³" : "%"}` 
+        : `Seuil On : ${parseFloat(seuilOn).toFixed(1)} ${isHA ? "g/m³" : "%"}`;
+    ]]]

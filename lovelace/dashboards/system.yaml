@@ -167,15 +167,15 @@ views:
                 hold_action:
                   action: more-info
 
+              # Boiler Bridge – Santé
               - type: custom:button-card
-                template: ecs_synthese_status_72
+                template: boiler_status_health
+                entity: sensor.boiler_bridge_sante
                 name: Boiler Bridge
                 icon: mdi:lan-connect
-                variables:
-                  kind: bool
-                  entity: binary_sensor.boiler_bridge_online
-                  label_on: Disponible
-                  label_off: Indispo
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-boiler-dashboard/boiler
 
               # Automatisations désactivées
               - type: custom:button-card

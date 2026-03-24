@@ -1,0 +1,155 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Chauffage — Blocage aeration XL
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher une synthese XL du verrou chauffage lie
+#     a l'aeration, avec statut principal et detail
+#     contextuel des timers associes.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_label_xl
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - donnees indisponibles -> gris indispo
+#     - blocage + episode -> rouge ("Suspendu")
+#     - blocage seul -> orange ("Stabilisation")
+#     - override actif -> bleu ("Override")
+#     - aucun verrou -> vert ("Aucun verrou")
+#
+# 🔗 DEPENDANCES
+#     - helpers:
+#         - input_boolean.chauffage_blocage_aeration
+#         - input_boolean.aeration_episode_en_cours
+#         - input_boolean.mode_confort_chauffage
+#     - timers:
+#         - timer.aeration_blocage
+#         - timer.aeration_analyse_delta_t
+#     - rafraichissement:
+#         - sensor.time
+#
+# ⚠️ CONTRAINTES
+#     - Ce template agrege plusieurs entites et produit
+#       une synthese UI metier locale.
+#     - Il ne doit pas etre reutilise hors du domaine
+#       Chauffage / Aeration.
+#     - Les attributs 'remaining' sont affiches a titre
+#       informatif uniquement.
+#     - Le template ne doit jamais etre considere comme
+#       source de decision autoritaire.
+#
+# 🧩 USAGE
+#     Exemple :
+#       type: custom:button-card
+#       template: chauffage_blocage_aeration_xl
+#       name: Chauffage
+#
+# ==========================================================
+
+chauffage_blocage_aeration_xl:
+  template: socle_status_label_xl
+
+  icon: mdi:lock-alert
+
+  triggers_update:
+    - sensor.time
+    - input_boolean.chauffage_blocage_aeration
+    - input_boolean.aeration_episode_en_cours
+    - input_boolean.mode_confort_chauffage
+    - timer.aeration_blocage
+    - timer.aeration_analyse_delta_t
+
+  state_display: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const blocage = st('input_boolean.chauffage_blocage_aeration');
+      const episode = st('input_boolean.aeration_episode_en_cours');
+      const override = st('input_boolean.mode_confort_chauffage');
+
+      if ([blocage, episode, override].some(v => UNAV.includes(v)))
+        return "Chauffage";
+
+      if (blocage === 'on' && episode === 'on') return "Suspendu";
+      if (blocage === 'on') return "Stabilisation";
+      if (override === 'on') return "Override";
+      return "Aucun verrou";
+    ]]]
+
+  label: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const attr = (id, a) => states[id]?.attributes?.[a];
+
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const blocage = st('input_boolean.chauffage_blocage_aeration');
+      const episode = st('input_boolean.aeration_episode_en_cours');
+      const override = st('input_boolean.mode_confort_chauffage');
+
+      const t_bloc_state = st('timer.aeration_blocage');
+      const t_ana_state  = st('timer.aeration_analyse_delta_t');
+
+      const rem_bloc = attr('timer.aeration_blocage', 'remaining');
+      const rem_ana  = attr('timer.aeration_analyse_delta_t', 'remaining');
+
+      const fmt_rem = (timer_state, remaining) => {
+        if (UNAV.includes(timer_state)) return "—";
+        if (timer_state !== 'active') return "—";
+        if (UNAV.includes(remaining)) return "—";
+        return String(remaining);
+      };
+
+      const bloc_txt = fmt_rem(t_bloc_state, rem_bloc);
+      const ana_txt  = fmt_rem(t_ana_state,  rem_ana);
+
+      if ([blocage, episode, override].some(v => UNAV.includes(v)))
+        return "Indisponible";
+
+      if (blocage === 'on' && episode === 'on') {
+        return `Aération en cours\nReste: ${bloc_txt}  •  ΔT: ${ana_txt}`;
+      }
+
+      if (blocage === 'on') {
+        return `Post-aération\nReste: ${bloc_txt}  •  ΔT: ${ana_txt}`;
+      }
+
+      if (override === 'on') {
+        return "Confort forcé opérateur";
+      }
+
+      return "Système nominal";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const st = (id) => states[id]?.state;
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+            const blocage = st('input_boolean.chauffage_blocage_aeration');
+            const episode = st('input_boolean.aeration_episode_en_cours');
+            const override = st('input_boolean.mode_confort_chauffage');
+
+            if ([blocage, episode, override].some(v => UNAV.includes(v)))
+              return "rgba(158, 158, 158, 0.1)";
+
+            if (blocage === 'on' && episode === 'on')
+              return "rgba(244, 67, 54, 0.2)";
+
+            if (blocage === 'on')
+              return "rgba(255, 152, 0, 0.2)";
+
+            if (override === 'on')
+              return "rgba(33, 150, 243, 0.2)";
+
+            return "rgba(76, 175, 80, 0.2)";
+          ]]]

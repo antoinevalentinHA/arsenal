@@ -1,0 +1,81 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler — KPI temperature
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — REUTILISABLE
+#
+# 🎯 ROLE
+#     Specialiser le socle KPI canonique pour l'affichage
+#     d'une temperature mesuree du sous-systeme boiler.
+#
+# 🧱 NATURE
+#     - Template button-card derive d'un socle KPI
+#     - Porte la semantique couleur metier
+#     - Reutilisable sur plusieurs entites thermiques
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unknown / unavailable -> gris indispo
+#     - valeur valide nominale -> bleu info
+#     - seuil warning atteint -> orange
+#     - seuil critique atteint -> rouge
+#
+# ⚠️ CONTRAINTE
+#     Une temperature mesuree n'est jamais verte par nature.
+#     Le vert est reserve a un etat OK / autorise / nominal,
+#     pas a une mesure physique brute.
+#
+# 🧩 USAGE
+#     Variables supportees par la carte metier :
+#       - warning_threshold
+#       - critical_threshold
+#
+#     Exemple :
+#       type: custom:button-card
+#       template: boiler_kpi_temperature
+#       entity: sensor.boiler_dhw_temperature
+#       name: ECS
+#       variables:
+#         warning_threshold: 55
+#         critical_threshold: 60
+#
+# ==========================================================
+
+boiler_kpi_temperature:
+  template:
+    - socle_kpi_72
+
+  variables:
+    warning_threshold: null
+    critical_threshold: null
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (state === null || state === undefined || state === 'unknown' || state === 'unavailable') {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const value = Number(state);
+
+            if (!Number.isFinite(value)) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const warning = variables.warning_threshold;
+            const critical = variables.critical_threshold;
+
+            if (critical !== null && critical !== undefined && Number.isFinite(Number(critical)) && value >= Number(critical)) {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            if (warning !== null && warning !== undefined && Number.isFinite(Number(warning)) && value >= Number(warning)) {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            return 'rgba(33, 150, 243, 0.2)';
+          ]]]

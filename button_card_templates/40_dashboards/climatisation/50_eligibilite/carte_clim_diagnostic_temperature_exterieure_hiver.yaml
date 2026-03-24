@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Diagnostic température extérieure (hiver)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la température extérieure jardin et la confronte
+#     au seuil minimum d'autorisation clim hiver. Vert si la
+#     température permet l'usage clim, gris sinon.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72_sans_icone
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - temp > seuil           -> 🟢 vert  (température suffisante, clim hiver éligible)
+#     - temp <= seuil          -> ⚪ gris  (trop froid, clim hiver bloquée)
+#     - valeur non numérique   -> ⚪ gris clair (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity                                              : sensor.temperature_jardin
+#     - input_number.clim_hiver_seuil_temperature_exterieure : seuil minimum autorisation
+#
+# ⚠️ CONTRAINTES
+#     - Sémantique identique à carte_clim_diagnostic_humidex_max_chambres :
+#       vert = seuil atteint = éligibilité, pas nominal
+#     - Fallback seuil à "99" si unavailable (évite faux positif vert)
+#     - Le label affiche le seuil brut sans unité °C — cohérence à vérifier
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_diagnostic_temperature_exterieure_hiver
+#     entity: sensor.temperature_jardin
+#
+# ==========================================================
+
+carte_clim_diagnostic_temperature_exterieure_hiver:
+  template: socle_kpi_label_72_sans_icone
+
+  entity: sensor.temperature_jardin
+
+  label: |
+    [[[
+      const s = states['input_number.clim_hiver_seuil_temperature_exterieure']
+        ? states['input_number.clim_hiver_seuil_temperature_exterieure'].state
+        : '—';
+      return "Seuil min : " + s;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const temp = parseFloat(entity.state);
+            const seuil = parseFloat(
+              states['input_number.clim_hiver_seuil_temperature_exterieure']?.state || "99"
+            );
+
+            if (isNaN(temp) || isNaN(seuil))
+              return "rgba(158, 158, 158, 0.1)";
+
+            return temp > seuil
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]

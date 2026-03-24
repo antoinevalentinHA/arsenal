@@ -1,0 +1,88 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Alarme — Carte alarme
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher l'etat lisible de l'alarme maison et
+#     permettre un armement ou desarmement explicite.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_toggle
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = disarmed -> "Désarmée" + vert
+#     - state = armed_away -> "Armée" + rouge
+#     - autre etat -> affichage brut
+#
+# 🔗 DEPENDANCES
+#     - entity: alarm_control_panel.alarme_maison
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Aucune action implicite de type toggle
+#     - Armement / désarmement uniquement par actions explicites
+#     - Navigation vers le dashboard alarme sur hold_action
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_alarme
+#       entity: alarm_control_panel.alarme_maison
+#
+# ==========================================================
+
+carte_alarme:
+  template: socle_toggle
+
+  show_state: true
+
+  state_display: |
+    [[[
+      if (!entity) return '—';
+      return entity.state === 'armed_away' ? 'Armée'
+           : entity.state === 'disarmed'  ? 'Désarmée'
+           : entity.state;
+    ]]]
+
+  tap_action:
+    action: call-service
+    confirmation:
+      text: |
+        [[[
+          return entity?.state === 'armed_away'
+            ? "⚠️ Désarmer l’alarme ?"
+            : "⚠️ Armer l’alarme ?";
+        ]]]
+    service: |
+      [[[
+        return entity?.state === 'disarmed'
+          ? 'alarm_control_panel.alarm_arm_away'
+          : 'alarm_control_panel.alarm_disarm';
+      ]]]
+    service_data:
+      entity_id: alarm_control_panel.alarme_maison
+
+  hold_action:
+    action: navigate
+    navigation_path: /alarme-dashboard/alarme
+
+  double_tap_action:
+    action: none
+
+  state:
+    - value: disarmed
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)   # 🟢 Désarmée
+
+    - value: armed_away
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)   # 🔴 Armée

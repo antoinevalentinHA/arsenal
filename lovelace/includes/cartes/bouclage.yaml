@@ -4,8 +4,8 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Afficher une seule carte selon l’état du timer :
-#   - timer inactive → carte_action_ecs_bouclage (interactive)
-#   - timer active   → carte_ecs_bouclage_timer (transitoire)
+#   - timer inactive → action de lancement du bouclage
+#   - timer active   → affichage transitoire du timer en cours
 # ==========================================================
 
 type: vertical-stack
@@ -33,7 +33,9 @@ cards:
         state: active
     card:
       type: custom:button-card
-      template: carte_ecs_bouclage_timer
+      template: carte_timer_status
       entity: timer.bouclage_ecs_5_minutes
       name: Bouclage ECS
       icon: mdi:play-circle
+      variables:
+        active_semantic: ok

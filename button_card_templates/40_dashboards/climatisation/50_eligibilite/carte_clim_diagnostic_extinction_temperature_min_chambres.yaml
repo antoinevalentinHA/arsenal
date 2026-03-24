@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Diagnostic extinction temperature min chambres
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la temperature minimale des chambres et son
+#     evaluation par rapport au seuil OFF de climatisation.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_kpi_label_72_sans_icone
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - donnees indisponibles -> gris indispo
+#     - temperature >= seuil OFF -> vert
+#     - temperature < seuil OFF -> gris neutre
+#
+# 🔗 DEPENDANCES
+#     - entity: sensor.temperature_min_chambres
+#     - attributes: aucune
+#     - helpers externes:
+#         - sensor.seuil_extinction_clim_applique
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule pas la logique d'extinction
+#     - Il affiche uniquement une comparaison locale
+#       temperature vs seuil OFF
+#     - Le seuil doit etre fourni par le backend
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_clim_diagnostic_extinction_temperature_min_chambres
+#       entity: sensor.temperature_min_chambres
+#
+# ==========================================================
+
+carte_clim_diagnostic_extinction_temperature_min_chambres:
+  template: socle_kpi_label_72_sans_icone
+
+  entity: sensor.temperature_min_chambres
+
+  label: |
+    [[[
+      const s = states['sensor.seuil_extinction_clim_applique']?.state || '—';
+      return "Seuil OFF : " + s;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const toNumber = (v) =>
+              parseFloat(String(v).replace(',', '.').replace(/[^\d.-]/g, ''));
+
+            const temp = toNumber(entity.state);
+            const seuilState = states['sensor.seuil_extinction_clim_applique']?.state;
+            const seuil = toNumber(seuilState);
+
+            if (isNaN(temp) || isNaN(seuil))
+              return "rgba(158, 158, 158, 0.1)";
+
+            return temp >= seuil
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]

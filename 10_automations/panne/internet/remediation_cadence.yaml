@@ -1,0 +1,85 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Réseau — Cadence remédiation Internet
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Exécuter les cycles de remédiation N ≥ 2 selon la cadence
+#     contractuelle, sur expiration du timer.
+#
+#     Cette automation :
+#     - exécute un cycle physique
+#     - comptabilise immédiatement le cycle
+#     - calcule le délai suivant selon la table canonique
+#     - redémarre le timer
+#
+# 🧱 CONTRAT
+#
+#     - exécution uniquement si campagne active et panne persistante
+#     - compteur incrémenté après exécution
+#     - cadence déterminée par le numéro de cycle
+#     - arrêt implicite via conditions si retour nominal
+#
+# 🔎 NOTES D'IMPLEMENTATION
+#
+#     - le cycle 2 est déclenché après le délai de vérification
+#       post-action lancé par l'automation d'ouverture
+#     - le délai suivant est calculé après incrément,
+#       conformément au numéro réel du cycle exécuté
+# ==========================================================
+
+- id: "10120000000024"
+  alias: "Réseau – Cadence remédiation Internet"
+  description: >
+    Exécute les cycles N ≥ 2 de remédiation Internet.
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.reboot_box
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.reboot_box_en_cours
+      state: "on"
+
+    - condition: state
+      entity_id: binary_sensor.acces_externe
+      state: "off"
+
+  action:
+    - action: script.cycle_alimentation_box
+
+    - action: counter.increment
+      target:
+        entity_id: counter.reboot_box_tentatives
+
+    - variables:
+        cycle_en_cours: "{{ states('counter.reboot_box_tentatives') | int(0) }}"
+        delai_suivant: >
+          {% if cycle_en_cours == 2 %}
+            01:00:00
+          {% elif cycle_en_cours == 3 %}
+            02:00:00
+          {% elif cycle_en_cours == 4 %}
+            04:00:00
+          {% else %}
+            24:00:00
+          {% endif %}
+
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "🌐 Remédiation réseau — cycle {{ cycle_en_cours }}"
+        message: >
+          Redémarrage box effectué.
+          Prochaine tentative dans {{ delai_suivant }}.
+
+    - action: timer.start
+      target:
+        entity_id: timer.reboot_box
+      data:
+        duration: "{{ delai_suivant }}"

@@ -94,12 +94,3 @@
         entity_id: input_datetime.analyse_deltat_disponible
       data:
         datetime: "{{ now().date().isoformat() ~ ' 00:00:00' }}"
-
-    # Journalisation
-    - action: logbook.log
-      data:
-        name: "Chauffage - Blocage aération - Sécurité démarrage"
-        message: >
-          Blocage aération coupé au démarrage : fin de blocage dépassée.
-          Timers aération annulés. Pipeline désarmé.
-        entity_id: input_boolean.chauffage_blocage_aeration

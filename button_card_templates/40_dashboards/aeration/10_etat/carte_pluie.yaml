@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Météo — Pluie
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la présence ou l'absence de pluie à partir
+#     d'un capteur binaire agrégé.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on -> "Oui" + gris neutre
+#     - state = off -> "Non" + vert
+#
+# 🔗 DEPENDANCES
+#     - entity: binary_sensor indiquant la pluie
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne fusionne pas les sources, il affiche
+#       uniquement le résultat fourni par le backend
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_pluie
+#       entity: binary_sensor.pluie
+#       name: Pluie
+#
+# ==========================================================
+
+carte_pluie:
+  template: socle_status
+
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      return entity.state === "on" ? "Oui" : "Non";
+    ]]]
+
+  state:
+    - value: "on"
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    - value: "off"
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)

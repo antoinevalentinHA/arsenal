@@ -1,56 +1,26 @@
 # ==========================================================
-#  🧠 ARSENAL — AUTOMATION :
+# 🧠 ARSENAL — AUTOMATISATION
 #     Netatmo – Remédiation réseau (reboot station Matthieu)
-#
-#  ID : 10160000000008
 # ----------------------------------------------------------
-#  🎯 RÔLE
+# 🎯 RÔLE
 #
-#     Automation de REMÉDIATION TECHNIQUE CONDITIONNELLE.
+#     Exécuter une action corrective ciblée sur la station
+#     Netatmo de la chambre Matthieu lorsqu'un diagnostic
+#     réseau dédié l'autorise explicitement.
 #
-#     Elle déclenche un redémarrage électrique de la
-#     station Netatmo de la chambre Matthieu uniquement
-#     lorsqu’un diagnostic réseau explicite l’autorise.
+#     Cette automation :
+#     - consomme un diagnostic externe dédié
+#     - vérifie l'absence de campagne de remédiation réseau
+#     - exécute un redémarrage électrique ciblé
+#     - notifie l'événement par canal mobile
 #
-#  🧱 NATURE
+# 🧱 CONTRAT
 #
-#     - Action corrective ciblée
-#     - Pilotée par un diagnostic externe
-#     - Aucun diagnostic interne
-#
-#  ⚙️ PRINCIPE
-#
-#     - Surveillance de l’état du capteur
-#       `sensor.diagnostic_netatmo_matthieu`
-#     - Si diagnostic = `ko_reseau` :
-#         • reboot électrique de la station
-#         • notification utilisateur
-#     - Si diagnostic ≠ `ko_reseau` :
-#         • aucune action
-#
-#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
-#
-#     - Ne diagnostique pas l’origine de la panne
-#     - Ne redémarre jamais en cas de `ko_homekit`
-#     - Ne force pas un redémarrage périodique
-#     - Ne gère pas de logique de retry ou de boucle
-#
-#  🔗 UTILISATION
-#
-#     - Correctif automatique des pannes réseau Netatmo
-#     - Action ponctuelle, déclenchée uniquement
-#       par une autorité de diagnostic dédiée
-#
-#  🛡️ SÉCURITÉ
-#
-#     La séparation stricte diagnostic / action
-#     empêche tout redémarrage intempestif.
-#
-#  ✅ COMPATIBILITÉ
-#
-#     Home Assistant 2024.8+
+#     - aucune décision locale de diagnostic
+#     - aucune remédiation secondaire pendant campagne réseau
+#     - action uniquement en état réseau nominal
+#     - aucune boucle ni retry
 # ==========================================================
-
 
 - id: "10160000000008"
   alias: "Netatmo – Redémarrage sur panne réseau (Matthieu)"
@@ -61,13 +31,24 @@
       entity_id: sensor.diagnostic_netatmo_matthieu
       to: "ko_reseau"
 
+  condition:
+    - condition: state
+      entity_id: input_boolean.reboot_box_en_cours
+      state: "off"
+
+    - condition: state
+      entity_id: binary_sensor.acces_externe
+      state: "on"
+
   action:
-    - service: script.reboot_netatmo
+    - action: script.reboot_netatmo
       data:
         switch_entity: "switch.prise_chambre_matthieu"
 
-    - service: script.notification_envoyer
+    - action: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
         titre: "🔧 Netatmo – Redémarrage"
-        message: "Netatmo Chambre Matthieu rebootee (panne reseau detectee)."
+        message: >
+          Station Netatmo chambre Matthieu redémarrée
+          après détection d'une panne réseau.

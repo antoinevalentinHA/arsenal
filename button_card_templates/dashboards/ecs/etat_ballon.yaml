@@ -1,9 +1,0 @@
-#################################################################
-# 💧 UI ARSENAL — CARTE ECS : ÉTAT BALLON
-#################################################################
-
-carte_ecs_etat_ballon:
-  template: socle_kpi
-  variables:
-    ui_profile: ecs
-    couleur: sensor.temperature_ecs_couleur

@@ -57,11 +57,6 @@ resilience_integration_recover:
         - conditions: "{{ age_entity_safe | length > 0 }}"
           sequence: []
       default:
-        - service: logbook.log
-          data:
-            name: "Resilience – Integration recover (canon)"
-            message: "Paramètre manquant : age_entity (script appelé sans age_entity)."
-            domain: script
         - stop: "age_entity manquant"
 
     - variables:

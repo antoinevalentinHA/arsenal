@@ -1,0 +1,102 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Alarme — Intention systeme
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher l'intention du systeme d'alarme et sa
+#     coherence avec l'etat reel du panneau.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - intention coherente avec l'etat reel -> vert
+#     - intention divergente -> rouge
+#     - intention = NOOP -> gris neutre
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur portant l'intention systeme
+#     - attributes: aucune
+#     - helpers externes:
+#         - alarm_control_panel.alarme_maison
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule pas l'intention
+#     - Il compare uniquement une intention backend a
+#       l'etat reel de l'alarme
+#     - Le cas NOOP doit rester neutre
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_alarme_intention
+#       entity: input_text.alarme_etat_cible
+#
+# ==========================================================
+
+carte_alarme_intention:
+  template: socle_status
+
+  icon: mdi:brain
+  name: Intention système
+
+  show_icon: true
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[ 
+      const map = {
+        'ARMED_AWAY': 'Armer (Absent)',
+        'DISARMED': 'Désarmer',
+        'NOOP': 'Aucune action'
+      };
+      return map[entity.state] || entity.state;
+    ]]]
+
+  state:
+    # 🟢 COHÉRENT
+    - operator: template
+      value: >
+        [[[
+          const cible = entity.state;
+          const reel  = states['alarm_control_panel.alarme_maison']?.state;
+
+          return (cible === 'ARMED_AWAY' && reel === 'armed_away') ||
+                 (cible === 'DISARMED'  && reel === 'disarmed');
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76,175,80,0.2)
+
+    # 🔴 DIVERGENCE
+    - operator: template
+      value: >
+        [[[
+          const cible = entity.state;
+          const reel  = states['alarm_control_panel.alarme_maison']?.state;
+
+          return (cible === 'ARMED_AWAY' && reel !== 'armed_away') ||
+                 (cible === 'DISARMED'  && reel !== 'disarmed');
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244,67,54,0.2)
+
+    # ⚪ NOOP
+    - value: 'NOOP'
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)

@@ -8,7 +8,6 @@
 #
 #   - Ne lève jamais un blocage existant
 #   - Neutralise l'analyse pour éviter re-déclenchement
-#   - Journalise la décision
 # ==========================================================
 
 aeration_m3_maintenir_blocage:
@@ -31,11 +30,3 @@ aeration_m3_maintenir_blocage:
         entity_id: input_datetime.analyse_deltat_disponible
       data:
         datetime: "{{ now().date().isoformat() ~ ' 00:00:00' }}"
-
-    - action: logbook.log
-      data:
-        name: "Chauffage - Analyse DeltaT"
-        message: >
-          DeltaT faible ({{ d | round(2) }} degC).
-          Blocage maintenu (pire épisode prioritaire).
-        entity_id: input_boolean.chauffage_blocage_aeration

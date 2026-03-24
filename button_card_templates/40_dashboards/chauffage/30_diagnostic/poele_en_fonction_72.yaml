@@ -1,0 +1,113 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Chauffage — Poêle en fonction (diagnostic)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état de détection du poêle avec ses deux signaux
+#     de corroboration : signature thermique et présence humaine
+#     en séjour. Diagnostic pur — aucune interaction.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_diagnostic_compact
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on             -> 🟠 orange "Détecté"      (poêle actif — blocage chauffage)
+#     - state = off            -> ⚪ gris   "Non détecté"  (nominal)
+#     - unknown / unavailable  -> ⚪ gris clair "Indispo"
+#
+# 🔗 DEPENDANCES
+#     - entity                              : binary_sensor.poele_en_fonction
+#     - binary_sensor.signature_thermique_poele  : signal de corroboration thermique
+#     - binary_sensor.presence_humaine_sejour    : signal de corroboration présence
+#
+# ⚠️ CONTRAINTES
+#     - Le label se dégrade en "Diagnostic partiel" si l'un des deux signaux
+#       de corroboration est unavailable — pas d'erreur bloquante
+#     - Orange choisi pour ON (et non rouge) : le poêle est un blocage chauffage
+#       attendu, pas une alerte critique
+#     - Toutes les actions désactivées
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: poele_en_fonction_72
+#     entity: binary_sensor.poele_en_fonction
+#
+# ==========================================================
+
+poele_en_fonction_72:
+  template: socle_diagnostic_compact
+
+  entity: binary_sensor.poele_en_fonction
+
+  show_icon: true
+  show_name: false
+  show_state: true
+  show_label: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  icon: |
+    [[[
+      const s = entity?.state;
+      if (s === 'on') return 'mdi:fire';
+      if (s === 'off') return 'mdi:fire-off';
+      return 'mdi:fire-alert';
+    ]]]
+
+  state_display: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const s = entity?.state;
+
+      if (UNAV.includes(s)) return 'Indispo';
+      if (s === 'on') return 'Detecte';
+      if (s === 'off') return 'Non detecte';
+      return '—';
+    ]]]
+
+  label: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const sig = st('binary_sensor.signature_thermique_poele');
+      const prs = st('binary_sensor.presence_humaine_sejour');
+
+      if (UNAV.includes(sig) || UNAV.includes(prs)) {
+        return 'Diagnostic partiel';
+      }
+
+      const parts = [];
+      parts.push(sig === 'on' ? 'signature validee' : 'signature absente');
+      parts.push(prs === 'on' ? 'presence confirmee' : 'presence non confirmee');
+
+      return parts.join(' • ');
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            const s = entity?.state;
+
+            if (UNAV.includes(s)) return "rgba(158, 158, 158, 0.1)";
+            if (s === 'on') return "rgba(255, 152, 0, 0.2)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]
+
+    icon:
+      - width: 28px
+      - height: 28px
+      - color: '#111'

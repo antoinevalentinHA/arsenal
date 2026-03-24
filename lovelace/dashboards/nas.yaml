@@ -60,41 +60,45 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils_sans_action
+                    template: carte_capteur_seuils
                     entity: sensor.nas_valentin_temperature
                     name: Température
                     icon: mdi:server
                     variables:
+                      disable_actions: true
                       unit: "°C"
                       seuil_warn: 50
                       seuil_crit: 60
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils_sans_action
+                    template: carte_capteur_seuils
                     entity: sensor.nas_valentin_utilisation_de_la_memoire_reelle
                     name: Mém. utilisée
                     icon: mdi:memory
                     variables:
+                      disable_actions: true
                       unit: "%"
                       seuil_warn: 80
                       seuil_crit: 90
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils_sans_action
+                    template: carte_capteur_seuils
                     entity: sensor.nas_valentin_utilisation_du_processeur_autre
                     name: CPU
                     icon: mdi:chip
                     variables:
+                      disable_actions: true
                       unit: "%"
                       seuil_warn: 50
                       seuil_crit: 75
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils_sans_action
+                    template: carte_capteur_seuils
                     entity: sensor.nas_valentin_charge_moyenne_du_processeur_15_min
                     name: Charge CPU
                     icon: mdi:cpu-64-bit
                     variables:
+                      disable_actions: true
                       unit: ""
                       seuil_warn: 1.0
                       seuil_crit: 2.0
@@ -124,31 +128,34 @@ views:
                     icon: mdi:database
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils_sans_action
+                    template: carte_capteur_seuils
                     entity: sensor.nas_valentin_volume_1_volume_utilise
                     name: Utilisation (%)
                     icon: mdi:chart-pie
                     variables:
+                      disable_actions: true
                       unit: "%"
                       seuil_warn: 80
                       seuil_crit: 90
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils_sans_action
+                    template: carte_capteur_seuils
                     entity: sensor.nas_valentin_volume_1_temperature_moyenne_du_disque
                     name: T° moy.
                     icon: mdi:thermometer
                     variables:
+                      disable_actions: true
                       unit: "°C"
                       seuil_warn: 45
                       seuil_crit: 55
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils_sans_action
+                    template: carte_capteur_seuils
                     entity: sensor.nas_valentin_volume_1_temperature_maximale_du_disque
                     name: T° max.
                     icon: mdi:thermometer-alert
                     variables:
+                      disable_actions: true
                       unit: "°C"
                       seuil_warn: 45
                       seuil_crit: 55
@@ -172,11 +179,12 @@ views:
                 cards:
 
                   - type: custom:button-card
-                    template: carte_capteur_seuils_sans_action
+                    template: carte_capteur_seuils
                     entity: sensor.nas_valentin_drive_1_temperature
                     name: Température
                     icon: mdi:thermometer
                     variables:
+                      disable_actions: true
                       unit: "°C"
                       seuil_warn: 45
                       seuil_crit: 55

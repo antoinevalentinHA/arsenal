@@ -1,0 +1,123 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Thermostatique — Variance température 12h (pièce sélectionnée)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la variance de température sur 12h pour la pièce
+#     courante. Indicateur de dispersion thermique brut.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72_sans_icone
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - valeur disponible      -> 🔵 bleu fixe (info diagnostic)
+#     - unavailable / inconnu  -> affiche "—"
+#
+# 🔗 DEPENDANCES
+#     - input_select.adjustment_piece                    : pièce active (clé de routage)
+#     - sensor.temperature_stats_12h_variance_<piece>    : variance 12h par pièce
+#
+# ⚠️ CONTRAINTES
+#     - Le sensor cible est construit dynamiquement — convention de nommage requise
+#     - Valeur brute sans seuil de couleur (contrairement à thermo_stabilite_12h_status)
+#     - Toutes les actions désactivées
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: thermo_variance_12h_72
+#     entity: input_select.adjustment_piece
+#
+# ==========================================================
+
+thermo_variance_12h_72:
+  template: socle_kpi_label_72_sans_icone
+  entity: input_select.adjustment_piece
+  tap_action: { action: none }
+  hold_action: { action: none }
+  double_tap_action: { action: none }
+  name: "Variance 12h"
+  state_display: |
+    [[[
+      const piece = states['input_select.adjustment_piece']?.state;
+      if (!piece || ['unknown','unavailable'].includes(piece)) return '—';
+      const id = `sensor.temperature_stats_12h_variance_${piece}`;
+      const v = states[id]?.state;
+      return (v && !['unknown','unavailable'].includes(v)) ? String(v) : '—';
+    ]]]
+  label: "Dispersion"
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)
+
+thermo_stabilite_12h_status:
+  template: socle_status_72
+  entity: input_select.adjustment_piece
+
+  name: "Stabilité 12h"
+
+  icon: |
+    [[[
+      const piece = states['input_select.adjustment_piece']?.state;
+      if (!piece || ['unknown','unavailable'].includes(piece))
+        return 'mdi:help-circle-outline';
+
+      const id = `sensor.temperature_stats_12h_variance_${piece}`;
+      const raw = states[id]?.state;
+      const v = Number.parseFloat(raw);
+      if (!Number.isFinite(v))
+        return 'mdi:help-circle-outline';
+
+      if (v < 0.02) return 'mdi:check-circle-outline';
+      if (v < 0.05) return 'mdi:alert-circle-outline';
+      return 'mdi:close-circle-outline';
+    ]]]
+
+  state_display: |
+    [[[
+      const piece = states['input_select.adjustment_piece']?.state;
+      if (!piece || ['unknown','unavailable'].includes(piece))
+        return "Indisponible";
+
+      const id = `sensor.temperature_stats_12h_variance_${piece}`;
+      const raw = states[id]?.state;
+      const v = Number.parseFloat(raw);
+      if (!Number.isFinite(v))
+        return "Variance indisponible";
+
+      if (v < 0.02)
+        return "Très stable";
+
+      if (v < 0.05)
+        return "Modérément stable";
+
+      return "Instable";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const piece = states['input_select.adjustment_piece']?.state;
+            if (!piece || ['unknown','unavailable'].includes(piece))
+              return 'rgba(224, 224, 224, 0.2)';
+
+            const id = `sensor.temperature_stats_12h_variance_${piece}`;
+            const raw = states[id]?.state;
+            const v = Number.parseFloat(raw);
+            if (!Number.isFinite(v))
+              return 'rgba(224, 224, 224, 0.2)';
+
+            if (v < 0.02)
+              return 'rgba(76, 175, 80, 0.2)';
+
+            if (v < 0.05)
+              return 'rgba(255, 152, 0, 0.2)';
+
+            return 'rgba(244, 67, 54, 0.2)';
+          ]]]

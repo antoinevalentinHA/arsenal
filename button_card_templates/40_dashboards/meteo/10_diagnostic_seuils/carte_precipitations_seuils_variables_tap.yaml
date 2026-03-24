@@ -1,0 +1,78 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Météo — Précipitations à seuils variables (avec tap)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Variante de carte_precipitations_seuils_variables avec
+#     tap_action more-info activé. Identique en tout point
+#     sauf l'interaction au tap.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de carte_base_v2
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Identique à carte_precipitations_seuils_variables
+#       (voir entête de référence)
+#
+# 🔗 DEPENDANCES
+#     - Identiques à carte_precipitations_seuils_variables
+#
+# ⚠️ CONTRAINTES
+#     - Seule différence avec carte_precipitations_seuils_variables :
+#       tap_action = more-info (au lieu de none)
+#     - Duplication de logique — candidat à une fusion via variable
+#       (ex. variables.tap_action: more-info | none) si le socle le permet
+#     - Seuils évalués de fort vers faible — ordre requis
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_precipitations_seuils_variables_tap
+#     entity: sensor.precipitations_jardin
+#     variables:
+#       seuil_faible: 0.5
+#       seuil_modere: 2
+#       seuil_forte: 10
+#
+# ==========================================================
+
+carte_precipitations_seuils_variables_tap:
+  template: carte_base_v2
+  icon: mdi:water
+  show_state: true
+  show_icon: true
+
+  tap_action:
+    action: more-info
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${v.toFixed(1)} mm`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+
+            const f = variables?.seuil_faible;
+            const m = variables?.seuil_modere;
+            const s = variables?.seuil_forte;
+
+            if (isNaN(v)) return 'rgba(158, 158, 158, 0.1)';
+            if (s !== undefined && v >= s) return 'rgba(30, 136, 229, 0.35)';
+            if (m !== undefined && v >= m) return 'rgba(100, 181, 246, 0.3)';
+            if (f !== undefined && v >= f) return 'rgba(187, 222, 251, 0.3)';
+            return 'rgba(158, 158, 158, 0.2)';
+          ]]]

@@ -36,8 +36,9 @@ ou signalée.
 
 ### 3.1 Rôle
 
-- garantit la consigne ECS à 10 °C hors cycle
-- applique une correction silencieuse
+- garantit la consigne ECS nominale hors cycle
+- applique une correction silencieuse uniquement en régime nominal
+- reste inhibé pendant tout épisode de panne secteur actif
 - fonctionne sans dépendance externe
 
 ---
@@ -46,7 +47,9 @@ ou signalée.
 
 - correction idempotente
 - aucune notification parasite
-- priorité absolue
+- aucune correction si `input_boolean.panne_secteur_active == on`
+- aucune opposition à un régime dérogatoire explicitement autorisé
+- priorité absolue uniquement en régime nominal hors cycle
 
 ---
 

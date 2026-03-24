@@ -33,7 +33,6 @@
 #     - Délégation complète de l'exécution aux scripts boiler bridge
 #     - Aucune logique de synchronisation
 # ==========================================================
-
 - id: "10240000000010"
   alias: "Chauffage – Réappliquer courbe au demarrage"
   description: >
@@ -57,20 +56,6 @@
 
         parallele_disponible: >
           {{ parallele_cible_raw not in ['unknown', 'unavailable', 'none', ''] }}
-
-    - choose:
-        - conditions:
-            - condition: template
-              value_template: >
-                {{ pente_disponible or parallele_disponible }}
-          sequence:
-            - service: logbook.log
-              data:
-                name: "Chauffage"
-                message: >
-                  🔄 Réapplication courbe au demarrage :
-                  pente={{ pente_cible_raw }},
-                  parallele={{ parallele_cible_raw }}
 
     - choose:
         - conditions:

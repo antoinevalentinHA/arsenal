@@ -1,0 +1,53 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Audi — État capteur binaire véhicule
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état ON/OFF d'un capteur binaire du véhicule
+#     Audi avec coloration sémantique. Template générique
+#     couvrant tous les binaires du domaine véhicule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = off                        -> 🟢 vert  (nominal — porte fermée, verrou actif…)
+#     - state = on                         -> 🔴 rouge (alerte — porte ouverte, défaut…)
+#     - unknown / unavailable / null       -> ⚪ gris  (données absentes)
+#
+# 🔗 DEPENDANCES
+#     - entity : binary_sensor.* du domaine Audi (state = on | off)
+#
+# ⚠️ CONTRAINTES
+#     - Sémantique OFF = nominal supposée universelle pour ce domaine —
+#       ne pas utiliser sur un capteur où ON est l'état souhaité
+#     - Aucune action définie — héritée de socle_status
+#     - Pas de label ni state_display surchargés — affichage brut du socle
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: audi_etat_capteur
+#     entity: binary_sensor.audi_porte_conducteur
+#
+# ==========================================================
+
+audi_etat_capteur:
+  template: socle_status
+
+  show_icon: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity?.state;
+            if (["unknown","unavailable",null].includes(s)) return "rgba(158, 158, 158, 0.1)";
+            if (s === "off") return "rgba(76, 175, 80, 0.2)";
+            return "rgba(244, 67, 54, 0.2)";
+          ]]]

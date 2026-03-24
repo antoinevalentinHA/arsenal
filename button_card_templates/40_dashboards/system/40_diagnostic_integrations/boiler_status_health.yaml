@@ -1,0 +1,92 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler Bridge — Santé sous-système (status health)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état synthétique de santé du sous-système
+#     Boiler Bridge avec coloration sémantique à quatre niveaux.
+#     Réutilisable sur tout sensor multi-états ok/degraded/down.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - ok                     -> 🟢 vert    "Disponible"
+#     - degraded               -> 🟠 orange  "Dégradé"
+#     - down                   -> 🔴 rouge   "Indispo"
+#     - unknown / unavailable  -> ⚪ gris    "Inconnu"
+#     - toute autre valeur     -> 🟡 jaune   "Inconnu" (état non anticipé)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor synthétique de santé
+#       (state attendu : ok | degraded | down | unknown)
+#
+# ⚠️ CONTRAINTES
+#     - Réservé aux sensors multi-états de santé (ok/degraded/down)
+#     - Ne pas utiliser pour un booléen simple ni un KPI numérique
+#     - Le jaune signale un état non reconnu — toute nouvelle valeur
+#       upstream doit être ajoutée au mapping explicitement
+#     - Détection case-insensitive (String.toLowerCase)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: boiler_status_health
+#     entity: sensor.boiler_bridge_health
+#     name: Boiler Bridge
+#
+# ==========================================================
+
+boiler_status_health:
+  template:
+    - socle_status
+
+  state_display: >
+    [[[
+      const s = entity ? entity.state : 'unknown';
+
+      if (s === 'ok') return 'Disponible';
+      if (s === 'degraded') return 'Dégradé';
+      if (s === 'down') return 'Indispo';
+      if (s === 'unknown' || s === 'unavailable') return 'Inconnu';
+
+      return 'Inconnu';
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (
+              state === null ||
+              state === undefined ||
+              state === '' ||
+              state === 'unknown' ||
+              state === 'unavailable'
+            ) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const normalized = String(state).toLowerCase();
+
+            if (normalized === 'ok') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            if (normalized === 'degraded') {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            if (normalized === 'down') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            return 'rgba(255, 235, 59, 0.2)';
+          ]]]

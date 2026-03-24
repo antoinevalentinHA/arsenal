@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Volets — Exposition pluie résumé ouvertures (72px)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Synthèse d'exposition pluie : affiche le résumé des
+#     ouvertures exposées. Vert si aucune ouverture concernée,
+#     rouge sinon. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_diagnostic_compact
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = "aucune" / "0" / "none" / "" -> 🟢 vert  (aucune exposition)
+#     - toute autre valeur non vide           -> 🔴 rouge (ouvertures exposées)
+#     - unknown / unavailable                 -> ⚪ gris clair
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor résumé d'exposition (state = texte ou compteur)
+#
+# ⚠️ CONTRAINTES
+#     - Détection "aucune" par comparaison insensible à la casse sur
+#       valeurs normalisées (aucune / 0 / none / vide)
+#     - Toute valeur non reconnue comme "aucune" produit rouge —
+#       y compris des valeurs inattendues upstream
+#     - state_display et label non surchargés — hérités du socle
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: pluie_exposition_resume_72
+#     entity: sensor.pluie_exposition_resume
+#
+# ==========================================================
+
+pluie_exposition_resume_72:
+  template: socle_diagnostic_compact
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity?.state;
+
+            if (!s || s === "unknown" || s === "unavailable") return "rgba(158, 158, 158, 0.1)";
+
+            const v = String(s).trim().toLowerCase();
+            const ok = (v === "aucune" || v === "0" || v === "none" || v === "");
+
+            return ok ? "rgba(76, 175, 80, 0.2)" : "rgba(244, 67, 54, 0.2)";
+          ]]]

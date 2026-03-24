@@ -1,0 +1,78 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Alarme — Diagnostic coherence
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher l'etat de coherence global du systeme
+#     d'alarme ainsi que la raison associee.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_diagnostic
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on -> "Système cohérent" + vert
+#     - state = off -> "Incohérence détectée" + rouge
+#     - state = unknown/unavailable -> "Indisponible" + gris indispo
+#
+# 🔗 DEPENDANCES
+#     - entity: binary_sensor ou capteur equivalent de coherence
+#     - attributes:
+#         - raison
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule pas la coherence
+#     - Il affiche uniquement un diagnostic backend
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: alarme_diagnostic_coherence
+#       entity: binary_sensor.alarme_coherence
+#       name: Cohérence
+#
+# ==========================================================
+
+alarme_diagnostic_coherence:
+  template: socle_diagnostic
+
+  icon: mdi:shield-check
+
+  show_state: true
+  show_label: true
+
+  state_display: >
+    [[[ 
+      if (entity.state === "on") return "Système cohérent";
+      if (entity.state === "off") return "Incohérence détectée";
+      return "Indisponible";
+    ]]]
+
+  label: >
+    [[[ 
+      return entity.attributes?.raison || "—";
+    ]]]
+
+  state:
+    - value: "on"
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: "off"
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)
+
+    - operator: template
+      value: >
+        [[[ return entity.state === "unknown" || entity.state === "unavailable"; ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.1)

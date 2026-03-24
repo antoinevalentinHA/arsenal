@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Maison — Action bonne nuit
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Permettre le lancement explicite de la routine
+#     "Bonne nuit" avec confirmation utilisateur.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_action_simple
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - action simple -> gris neutre
+#
+# 🔗 DEPENDANCES
+#     - entity: aucune
+#     - attributes: aucune
+#     - helpers externes:
+#         - script.extinction_soir_maison
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation obligatoire avant execution
+#     - Aucune logique metier dans la carte
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_action_bonne_nuit
+#
+# ==========================================================
+
+carte_action_bonne_nuit:
+  template: socle_action_simple
+
+  tap_action:
+    action: call-service
+    service: script.extinction_soir_maison
+    confirmation:
+      text: Lancer la routine “Bonne nuit” ?
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)

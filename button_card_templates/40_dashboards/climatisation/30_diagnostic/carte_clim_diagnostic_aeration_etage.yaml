@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Diagnostic aération étage
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Indique si une aération naturelle est préférable à l'étage,
+#     ce qui implique un blocage du mode Dry climatisation.
+#     Diagnostic pur — aucune interaction.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_action_label_compact
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = off -> 🟢 vert  "Pas d'aération recommandée" (clim Dry autorisée)
+#     - state = on  -> ⚪ gris  "Aération préférable (Dry bloqué)"
+#
+# 🔗 DEPENDANCES
+#     - entity : binary_sensor.aeration_preferable_etage
+#
+# ⚠️ CONTRAINTES
+#     - Sémantique inversée : ON = état dégradé (gris), OFF = nominal (vert)
+#     - Pas de rouge — le blocage Dry est une contrainte de confort, pas une alerte
+#     - Aucune action définie malgré l'héritage de socle_action_label_compact
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_diagnostic_aeration_etage
+#     entity: binary_sensor.aeration_preferable_etage
+#
+# ==========================================================
+
+carte_clim_diagnostic_aeration_etage:
+  template: socle_action_label_compact
+
+  entity: binary_sensor.aeration_preferable_etage
+
+  show_state: false
+  show_name: true
+  show_label: true
+  color_type: card
+
+  label: |
+    [[[
+      return entity.state === "off"
+        ? "Pas d’aération recommandée"
+        : "Aération préférable (Dry bloqué)";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity.state === "off"
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]

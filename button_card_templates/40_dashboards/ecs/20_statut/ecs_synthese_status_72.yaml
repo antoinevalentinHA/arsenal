@@ -1,0 +1,118 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     ECS — Synthèse statut (tuile 72)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Tuile générique de synthèse ECS 72px. Couvre deux modes
+#     via variables : booléen on/off avec labels paramétrables,
+#     ou consigne DHW avec détection du rabais à 10°C.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_label_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     Mode bool (kind = 'bool') :
+#     - state = on             -> 🟢 vert  (label_on, défaut "Actif")
+#     - state = off            -> ⚪ gris  (label_off, défaut "Inactif")
+#
+#     Mode DHW (kind = 'dhw_setpoint_10') :
+#     - valeur = 10            -> 🟢 vert    "Rabaissée"
+#     - valeur ≠ 10            -> 🟠 orange  "Non rabaissée"
+#
+#     Toute valeur unavailable -> ⚪ gris clair "Indisponible"
+#
+# 🔗 DEPENDANCES
+#     - variables.kind       : "bool" | "dhw_setpoint_10"
+#     - variables.entity     : entity_id source (binary_sensor.* ou number.*)
+#     - variables.label_on   : label si on (optionnel, défaut "Actif")
+#     - variables.label_off  : label si off (optionnel, défaut "Inactif")
+#
+# ⚠️ CONTRAINTES
+#     - L'entity est passée via variable, pas comme entity de carte —
+#       triggers_update non déclaré (à ajouter à l'instance si réactivité requise)
+#     - Le mode dhw_setpoint_10 détecte uniquement la valeur exacte 10 —
+#       tout autre seuil nécessite un nouveau kind
+#     - label_on / label_off ignorés en mode dhw_setpoint_10
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     # Mode booléen :
+#     type: custom:button-card
+#     template: ecs_synthese_status_72
+#     variables:
+#       kind: bool
+#       entity: binary_sensor.ecs_programme_actif
+#       label_on: Programmé
+#       label_off: Hors programme
+#
+#     # Mode DHW :
+#     type: custom:button-card
+#     template: ecs_synthese_status_72
+#     variables:
+#       kind: dhw_setpoint_10
+#       entity: number.boiler_dhw_setpoint
+#
+# ==========================================================
+
+ecs_synthese_status_72:
+  template: socle_status_label_72
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  label: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const kind = variables.kind;
+      const id   = variables.entity;
+
+      const s = states[id]?.state;
+
+      if (UNAV.includes(s)) return "Indisponible";
+
+      if (kind === 'dhw_setpoint_10') {
+        const v = parseFloat(s);
+        if (Number.isNaN(v)) return "Indisponible";
+        return (v === 10) ? "Rabaissée" : "Non rabaissée";
+      }
+
+      // kind === 'bool'
+      const on = (s === 'on');
+      return on ? (variables.label_on || "Actif") : (variables.label_off || "Inactif");
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            const kind = variables.kind;
+            const id   = variables.entity;
+
+            const s = states[id]?.state;
+
+            if (UNAV.includes(s)) return "rgba(158, 158, 158, 0.1)";
+
+            if (kind === 'dhw_setpoint_10') {
+              const v = parseFloat(s);
+              if (Number.isNaN(v)) return "rgba(158, 158, 158, 0.1)";
+              return (v === 10)
+                ? "rgba(76, 175, 80, 0.2)"
+                : "rgba(255, 152, 0, 0.2)";
+            }
+
+            // kind === 'bool'
+            return (s === 'on')
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]
+

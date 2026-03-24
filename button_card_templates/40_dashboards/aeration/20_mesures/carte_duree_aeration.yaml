@@ -1,0 +1,87 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Aération — Durée cumulée
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la durée cumulée d’aération et son
+#     évaluation par rapport à une durée cible.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_label
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - durée > seuil -> vert
+#     - durée <= seuil -> gris neutre
+#     - valeur indisponible -> affichage "–"
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur exprimant une durée en minutes
+#     - attributes: aucune
+#     - helpers externes:
+#         - input_number.aeration_duree_cible_minutes
+#
+# ⚠️ CONTRAINTES
+#     - Seuil avec fallback à 10 minutes si non défini
+#     - Ce template ne calcule pas la durée, il l'affiche
+#       uniquement
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_duree_aeration
+#       entity: sensor.duree_aeration
+#       name: Durée
+#
+# ==========================================================
+
+carte_duree_aeration:
+  template: socle_status_label
+
+  show_icon: false
+
+  label: |
+    [[[
+      const seuil = parseFloat(states['input_number.aeration_duree_cible_minutes']?.state);
+      if (Number.isFinite(seuil)) {
+        return `Temps > ${seuil.toFixed(0)} min`;
+      }
+      return 'Temps > 10 min';
+    ]]]
+
+  state_display: |
+    [[[
+      const minutes = parseFloat(entity.state);
+      if (!Number.isFinite(minutes)) return '–';
+      return `${minutes.toFixed(0)} min`;
+    ]]]
+
+  state:
+    - operator: template
+      value: |
+        [[[
+          const minutes = parseFloat(entity.state);
+          const seuil = parseFloat(states['input_number.aeration_duree_cible_minutes']?.state);
+          const seuilMin = Number.isFinite(seuil) ? seuil : 10;
+          return Number.isFinite(minutes) && minutes > seuilMin;
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - operator: default
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none

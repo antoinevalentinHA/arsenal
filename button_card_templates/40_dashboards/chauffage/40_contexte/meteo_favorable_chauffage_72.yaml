@@ -1,0 +1,116 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Chauffage — Météo favorable (indicateur décisionnel)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'indicateur de météo favorable au chauffage comme
+#     contexte décisionnel externe. Expose l'horizon de prévision,
+#     la température prévue et le seuil calculé (consigne - offset)
+#     en label. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_label_sans_nom
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on             -> 🟢 vert  "Favorable"   (météo permet d'anticiper)
+#     - state = off            -> ⚪ gris  "Défavorable" (pas d'anticipation)
+#     - unknown / unavailable  -> ⚪ gris clair "Indispo"
+#
+# 🔗 DEPENDANCES
+#     - entity                                  : binary_sensor.meteo_favorable_chauffage
+#     - sensor.temperature_prevue               : température prévue à l'horizon
+#     - input_number.meteo_horizon_prevision_heures : horizon de prévision (h)
+#     - input_number.chauffage_consigne_confort  : consigne confort chauffage
+#     - input_number.meteo_favorable_offset      : offset de calcul du seuil
+#
+# ⚠️ CONTRAINTES
+#     - Le label est dégradé silencieusement si une valeur numérique est absente
+#       (chaque partie est optionnelle, pas d'erreur bloquante)
+#     - Le seuil affiché = consigne_confort - offset (calcul purement visuel)
+#     - Aucune action définie — tuile de diagnostic pur
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: meteo_favorable_chauffage_72
+#     entity: binary_sensor.meteo_favorable_chauffage
+#
+# ==========================================================
+
+meteo_favorable_chauffage_72:
+  template: socle_status_label_sans_nom
+
+  entity: binary_sensor.meteo_favorable_chauffage
+
+  show_state: true
+  show_label: true
+  show_icon: true
+
+  icon: |
+    [[[
+      const s = entity?.state;
+      if (s === 'on') return 'mdi:weather-sunny';
+      if (s === 'off') return 'mdi:weather-cloudy';
+      return 'mdi:weather-cloudy-alert';
+    ]]]
+
+  state_display: |
+    [[[
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      const s = entity?.state;
+      if (UNAV.includes(s)) return 'Indispo';
+      if (s === 'on') return 'Favorable';
+      if (s === 'off') return 'Défavorable';
+      return '—';
+    ]]]
+
+  label: |
+    [[[
+      const st = (id) => states[id]?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const h = st('input_number.meteo_horizon_prevision_heures');
+      const tprev = st('sensor.temperature_prevue');
+      const cons = st('input_number.chauffage_consigne_confort');
+      const off = st('input_number.meteo_favorable_offset');
+
+      const toNum = (v) => {
+        if (UNAV.includes(v)) return NaN;
+        const n = parseFloat(String(v).replace(',', '.'));
+        return Number.isFinite(n) ? n : NaN;
+      };
+
+      const hh = toNum(h);
+      const tp = toNum(tprev);
+      const cc = toNum(cons);
+      const oo = toNum(off);
+
+      const parts = [];
+
+      if (Number.isFinite(hh)) parts.push(`T+${hh}h`);
+      if (Number.isFinite(tp)) parts.push(`${tp.toFixed(1)}°C`);
+
+      if (Number.isFinite(cc) && Number.isFinite(oo)) {
+        const seuil = cc - oo;
+        parts.push(`seuil ${seuil.toFixed(1)}°C`);
+      }
+
+      return parts.length ? parts.join(' • ') : '—';
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            const s = entity?.state;
+
+            if (UNAV.includes(s)) return "rgba(158, 158, 158, 0.1)";
+            if (s === 'on') return "rgba(76, 175, 80, 0.2)";
+            return "rgba(158, 158, 158, 0.2)";
+          ]]]

@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler — KPI consigne
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — REUTILISABLE
+#
+# 🎯 ROLE
+#     Specialiser le socle KPI canonique pour l'affichage
+#     d'une consigne lue du sous-systeme boiler.
+#
+# 🧱 NATURE
+#     - Template button-card derive d'un socle KPI label
+#     - Porte la semantique couleur metier
+#     - Reutilisable sur plusieurs consignes chaudiere
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unknown / unavailable -> gris indispo
+#     - valeur valide -> bleu info
+#
+# ⚠️ CONTRAINTE
+#     Une consigne n'est pas une mesure physique.
+#     Elle represente une valeur cible / de reference.
+#     Elle ne doit donc pas reutiliser la semantique
+#     couleur d'une temperature mesuree.
+#
+# 🧩 USAGE
+#     Exemple :
+#       type: custom:button-card
+#       template: boiler_kpi_consigne
+#       entity: sensor.boiler_dhw_setpoint
+#       name: Consigne ECS
+#
+# ==========================================================
+
+boiler_kpi_consigne:
+  template:
+    - socle_kpi_label_72
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (state === null || state === undefined || state === 'unknown' || state === 'unavailable') {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const value = Number(state);
+
+            if (!Number.isFinite(value)) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            return 'rgba(33, 150, 243, 0.2)';
+          ]]]

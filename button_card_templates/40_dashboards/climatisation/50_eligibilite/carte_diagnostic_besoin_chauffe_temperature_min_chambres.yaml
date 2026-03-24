@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Chauffage — Diagnostic besoin de chauffe temperature min chambres
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la temperature minimale des chambres et son
+#     evaluation par rapport au seuil ON de chauffe.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_kpi_label_72_sans_icone
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - donnees indisponibles -> gris indispo
+#     - temperature < seuil ON -> vert
+#     - temperature >= seuil ON -> gris neutre
+#
+# 🔗 DEPENDANCES
+#     - entity: sensor.temperature_min_chambres
+#     - attributes: aucune
+#     - helpers externes:
+#         - input_number.chauffage_consigne_confort
+#         - input_number.clim_offset_on
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule pas le besoin de chauffe global
+#     - Il affiche uniquement une lecture locale basee sur
+#       la temperature minimale des chambres
+#     - Le seuil ON est derive de la consigne confort et
+#       de l'offset fourni par le backend
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_diagnostic_besoin_chauffe_temperature_min_chambres
+#
+# ==========================================================
+
+carte_diagnostic_besoin_chauffe_temperature_min_chambres:
+  template: socle_kpi_label_72_sans_icone
+
+  entity: sensor.temperature_min_chambres
+
+  show_icon: false
+  show_state: true
+  show_name: true
+  show_label: true
+  color_type: card
+
+  label: |
+    [[[
+      const consigne = parseFloat(
+        states['input_number.chauffage_consigne_confort']?.state || "NaN"
+      );
+      const offset = parseFloat(
+        states['input_number.clim_offset_on']?.state || "NaN"
+      );
+
+      if (isNaN(consigne) || isNaN(offset))
+        return "Seuil ON : —";
+
+      const seuil = (consigne - offset).toFixed(1);
+      return "Seuil ON : " + seuil + "°C";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const temp = parseFloat(entity.state);
+            const consigne = parseFloat(
+              states['input_number.chauffage_consigne_confort']?.state || "NaN"
+            );
+            const offset = parseFloat(
+              states['input_number.clim_offset_on']?.state || "NaN"
+            );
+
+            if (isNaN(temp) || isNaN(consigne) || isNaN(offset))
+              return "rgba(158, 158, 158, 0.1)";
+
+            const seuil = consigne - offset;
+
+            return temp < seuil
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]

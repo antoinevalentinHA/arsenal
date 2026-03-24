@@ -12,7 +12,6 @@
 #       • aeration_confirmee orpheline -> reset flag
 #       • blocage orphelin -> délégation à M4 (cas strict)
 #   - Ack systématique : aeration_recover_requested -> OFF
-#   - Trace logbook
 #
 # 🚫 NE FAIT PAS
 #   - Ne déclenche aucun épisode
@@ -133,10 +132,4 @@ aeration_m0_recover:
     # ----------------------------------------------------------
     - action: input_boolean.turn_off
       target:
-        entity_id: input_boolean.aeration_recover_requested
-
-    - action: logbook.log
-      data:
-        name: "Aération — M0 — Recover"
-        message: "Recover exécuté (remédiation ciblée) suite demande aeration_recover_requested."
         entity_id: input_boolean.aeration_recover_requested

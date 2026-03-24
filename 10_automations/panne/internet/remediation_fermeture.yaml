@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Réseau — Fermeture campagne remédiation
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Fermer la campagne de remédiation au retour de l'état nominal.
+#
+#     Cette automation :
+#     - arrête la cadence de remédiation
+#     - disqualifie la notification persistante
+#     - ferme le contexte de campagne
+#     - notifie le retour à l'état nominal
+#
+# 🧱 CONTRAT
+#
+#     - idempotence (sans effet si pas de campagne)
+#     - arrêt immédiat de la cadence
+#     - extinction complète des états publiés
+#
+# 🔎 NOTES D'IMPLEMENTATION
+#
+#     - le compteur physique n'est pas réinitialisé ici
+#       afin de conserver la trace de la campagne clôturée
+#       jusqu'à la prochaine ouverture
+#     - la réinitialisation du compteur relève de
+#       l'automation d'ouverture de campagne
+# ==========================================================
+
+- id: "10120000000023"
+  alias: "Réseau – Fermeture campagne remédiation"
+  description: >
+    Ferme la campagne de remédiation au retour de l'état nominal.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.acces_externe
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.reboot_box_en_cours
+      state: "on"
+
+  action:
+    - action: timer.cancel
+      target:
+        entity_id: timer.reboot_box
+
+    - action: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.reboot_box_en_cours
+
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: panne_internet
+
+    - action: script.notification_envoyer
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "✅ Internet rétabli"
+        message: >
+          Connexion restaurée après
+          {{ states('counter.reboot_box_tentatives') }} cycle(s) physique(s).

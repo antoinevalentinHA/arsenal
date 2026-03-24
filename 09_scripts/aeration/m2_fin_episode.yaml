@@ -9,7 +9,6 @@
 #     - calcul et programmation des délais (blocage initial + analyse DeltaT)
 #     - démarrage / extension monotone des timers M3 et M4
 #     - reset du booléen aeration_confirmee
-#     - journalisation
 #
 # 🧩 PRINCIPE
 #   Aucune décision métier ici.
@@ -196,13 +195,3 @@ aeration_m2_fin_episode:
     - action: input_boolean.turn_off
       target:
         entity_id: input_boolean.aeration_confirmee
-
-    # Journalisation
-    - action: logbook.log
-      data:
-        name: "Chauffage - Fin aeration"
-        message: >
-          Aération terminée -> blocage chauffage activé.
-          Blocage initial calculé : {{ blocage_initial }} min.
-          Analyse DeltaT dans : {{ delai_analyse }} min.
-        entity_id: input_boolean.chauffage_blocage_aeration

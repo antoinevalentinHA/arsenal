@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Maison — Mode babysitting
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Permettre l'activation et la desactivation du mode
+#     babysitting avec confirmation explicite et acces
+#     aux reglages associes.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_toggle
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on -> mode actif + vert
+#     - state = off -> mode inactif + gris neutre
+#
+# 🔗 DEPENDANCES
+#     - entity: input_boolean ou entite equivalente
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation obligatoire avant changement d'etat
+#     - Aucune logique metier dans la carte
+#     - Navigation vers les reglages via hold_action
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_mode_babysitting
+#       entity: input_boolean.mode_babysitting
+#
+# ==========================================================
+
+carte_mode_babysitting:
+  template: socle_toggle
+
+  tap_action:
+    action: toggle
+    confirmation:
+      text: |
+        [[[
+          return entity?.state === 'on'
+            ? "Désactiver le mode Babysitting ?"
+            : "Activer le mode Babysitting ?";
+        ]]]
+
+  hold_action:
+    action: navigate
+    navigation_path: /reglages-dashboard/maison
+
+  double_tap_action:
+    action: none
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)

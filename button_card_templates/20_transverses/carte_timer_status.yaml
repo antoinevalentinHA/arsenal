@@ -1,0 +1,41 @@
+#################################################################
+# ⏳ CARTE TIMER STATUS — UI
+#################################################################
+
+carte_timer_status:
+  template: socle_status_72
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)
+
+  state:
+    - operator: template
+      value: >
+        [[[
+          return entity.state === "active";
+        ]]]
+      styles:
+        card:
+          - background-color: >
+              [[[
+                const semantic = variables?.active_semantic || "ok";
+
+                if (semantic === "warning") return "rgba(255, 152, 0, 0.2)";
+                if (semantic === "info") return "rgba(144, 202, 249, 0.25)";
+                return "rgba(76, 175, 80, 0.2)";
+              ]]]
+
+    - operator: template
+      value: >
+        [[[
+          return entity.state === "unknown" || entity.state === "unavailable";
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.1)

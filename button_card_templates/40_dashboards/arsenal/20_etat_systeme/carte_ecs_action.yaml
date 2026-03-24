@@ -1,0 +1,105 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     ECS — État ballon eau chaude sanitaire
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la température courante du ballon ECS et signale
+#     visuellement si le brûleur ECS est actif ou si la température
+#     est dans une zone critique (froide / tiède / chaude).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_etat_action_secondaire
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Brûleur ECS ON                          -> 🟠 orange  (chauffe en cours)
+#     - sensor.temperature_ecs_couleur = blue   -> 🔵 bleu    (température basse, risque)
+#     - sensor.temperature_ecs_couleur = orange -> 🟠 orange  (température tiède)
+#     - sensor.temperature_ecs_couleur = red    -> 🔴 rouge   (température critique haute ?)
+#     - Aucune condition matchée                -> pas de surbrillance (fallback implicite)
+#
+# 🔗 DEPENDANCES
+#     - entity                          : sensor température ballon ECS (float ou unavailable)
+#     - binary_sensor.bruleur_mode_ecs  : brûleur en mode ECS (on/off)
+#     - sensor.temperature_ecs_couleur  : sémantique couleur calculée upstream (blue/orange/red)
+#
+# ⚠️ CONTRAINTES
+#     - Priorité des états : brûleur ON prime sur la couleur de température
+#     - Pas de fallback explicite (aucun style par défaut) — prévoir un état neutre si besoin
+#     - hold_action déclenche un script avec confirmation — ne pas utiliser sur entité sans ce script
+#     - La sémantique de 'red' est ambiguë (critique haute ou basse ?) — à documenter côté métier
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_ecs_action
+#     entity: sensor.temperature_ballon_ecs
+#
+# ==========================================================
+
+carte_ecs_action:
+  template: socle_etat_action_secondaire
+
+  show_state: true
+
+  state_display: |
+    [[[
+      const st = entity.state;
+      if (st === 'unavailable' || st === 'unknown' || st === 'none') return 'Indisponible';
+      const t = parseFloat(st);
+      if (isNaN(t)) return '—';
+      return `${t.toFixed(1)} °C`;
+    ]]]
+
+  tap_action:
+    action: navigate
+    navigation_path: /ecs-dashboard/home
+
+  hold_action:
+    action: call-service
+    service: script.chauffage_ecs_cycle
+    data:
+      mode: ponctuel
+    confirmation:
+      text: Lancer un cycle de chauffage ECS ponctuel ?
+
+  state:
+    - operator: template
+      value: |
+        [[[
+          return states['binary_sensor.bruleur_mode_ecs']?.state === 'on';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(255, 152, 0, 0.2)
+
+    - operator: template
+      value: |
+        [[[
+          return states['sensor.temperature_ecs_couleur']?.state === 'blue';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(33, 150, 243, 0.2)
+
+    - operator: template
+      value: |
+        [[[
+          return states['sensor.temperature_ecs_couleur']?.state === 'orange';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(255, 152, 0, 0.2)
+
+    - operator: template
+      value: |
+        [[[
+          return states['sensor.temperature_ecs_couleur']?.state === 'red';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)

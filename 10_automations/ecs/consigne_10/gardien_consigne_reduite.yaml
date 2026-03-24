@@ -4,19 +4,76 @@
 #
 #  ID : 10250000000006
 # ----------------------------------------------------------
-#  🎯 ROLE
-#     Corriger la consigne ECS vers 10 °C uniquement
-#     lorsqu'une incohérence réelle est détectée hors cycle.
+#  🎯 RÔLE
 #
-#  🧱 PRINCIPE
-#     - Le déclenchement repose sur un capteur métier simple
-#     - Aucune action si aucune incohérence n'est présente
-#     - Vérification finale sur l'état réel, pas sur l'ACK
+#     Corriger la consigne ECS vers sa valeur de sécurité
+#     hors cycle uniquement lorsqu’une incohérence réelle
+#     est détectée en régime nominal.
 #
-#  🚫 NE FAIT PAS
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Gardien de cohérence ECS
+#     - Correction hors cycle
+#     - Protection du régime nominal ECS
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement sur incohérence persistante
+#       de consigne ECS hors cycle
+#
+#     - Exécution uniquement si :
+#         • l’incohérence est réelle
+#         • le système est stable
+#         • aucun épisode de panne secteur n’est actif
+#
+#     - Actions effectuées :
+#         • tentative de correction vers la consigne
+#           de sécurité
+#         • seconde tentative uniquement si
+#           l’incohérence persiste
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
 #     - Ne déclenche aucun cycle ECS
-#     - Ne dépend pas d'un timer périodique
-#     - N'émet aucune commande MQTT directe
+#     - Ne décide d’aucune politique métier
+#     - Ne s’oppose pas à un régime dérogatoire explicite
+#     - Ne corrige rien pendant un épisode de panne secteur
+#
+# ----------------------------------------------------------
+#  🔗 UTILISATION
+#
+#     - Maintien de la cohérence ECS hors cycle
+#     - Filet de sécurité du régime nominal
+#     - Inhibé lorsque la panne secteur active une
+#       doctrine ECS dérogatoire volontaire
+#
+# ----------------------------------------------------------
+#  🧠 PRINCIPE ARSENAL
+#
+#     Une correction automatique nominale ne doit jamais
+#     contredire un contexte système dérogatoire explicite.
+#
+#     La panne secteur suspend temporairement les règles
+#     nominales incompatibles avec la stratégie de secours.
+#
+# ----------------------------------------------------------
+#  🛡️ ROBUSTESSE
+#
+#     La correction est conditionnée par :
+#       - une incohérence réellement observée,
+#       - une persistance minimale,
+#       - l’absence d’épisode de panne secteur actif.
+#
+#     Cette garde évite que le système ECS nominal
+#     annule lui-même une consigne de secours légitime.
+#
+# ----------------------------------------------------------
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
 # ==========================================================
 
 - id: "10250000000006"
@@ -40,6 +97,10 @@
     - condition: state
       entity_id: binary_sensor.ecs_consigne_hors_cycle_incoherente
       state: "on"
+
+    - condition: state
+      entity_id: input_boolean.panne_secteur_active
+      state: "off"
 
   action:
     - variables:

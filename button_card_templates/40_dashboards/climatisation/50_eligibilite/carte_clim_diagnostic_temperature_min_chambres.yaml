@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Diagnostic température min chambres
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la température minimale des chambres et la confronte
+#     au seuil d'allumage clim appliqué. Vert si le seuil est
+#     atteint (clim éligible), gris sinon.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72_sans_icone
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - temp >= seuil          -> 🟢 vert  (seuil atteint, clim cool éligible)
+#     - temp < seuil           -> ⚪ gris  (sous le seuil, clim non requise)
+#     - valeur non numérique   -> ⚪ gris clair (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity                              : sensor.temperature_min_chambres
+#     - sensor.seuil_allumage_clim_applique : seuil dynamique calculé upstream
+#
+# ⚠️ CONTRAINTES
+#     - Seuil issu d'un sensor calculé (pas d'input_number) — dépendance upstream forte
+#     - Parser robuste (virgule, caractères parasites) contrairement aux deux cartes
+#       sœurs — à homogénéiser si on factorise la famille
+#     - Même sémantique vert = éligibilité que carte_clim_diagnostic_humidex_max_chambres
+#       et carte_clim_diagnostic_temperature_exterieure_hiver
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_diagnostic_temperature_min_chambres
+#     entity: sensor.temperature_min_chambres
+#
+# ==========================================================
+
+carte_clim_diagnostic_temperature_min_chambres:
+  template: socle_kpi_label_72_sans_icone
+
+  entity: sensor.temperature_min_chambres
+
+  label: |
+    [[[
+      const s = states['sensor.seuil_allumage_clim_applique']?.state || '—';
+      return "Seuil ON : " + s;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const toNumber = (v) =>
+              parseFloat(String(v).replace(',', '.').replace(/[^\d.-]/g, ''));
+
+            const temp = toNumber(entity.state);
+            const seuilState = states['sensor.seuil_allumage_clim_applique']?.state;
+            const seuil = toNumber(seuilState);
+
+            if (isNaN(temp) || isNaN(seuil))
+              return "rgba(158, 158, 158, 0.1)";
+
+            return temp >= seuil
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]

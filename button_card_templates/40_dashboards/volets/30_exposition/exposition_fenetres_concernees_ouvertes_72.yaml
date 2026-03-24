@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Volets — Exposition fenêtres concernées ouvertes (72px)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Gate d'exposition : indique si au moins une fenêtre
+#     concernée par la logique volets est ouverte. Conditionne
+#     l'autorisation de fermeture automatique. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_decision_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on             -> 🔴 rouge  mdi:window-open-variant    (fenêtre ouverte — risque)
+#     - state = off            -> 🟢 vert   mdi:window-closed-variant  (toutes fermées — OK)
+#     - unknown / unavailable  -> ⚪ gris clair mdi:help-circle-outline
+#
+# 🔗 DEPENDANCES
+#     - entity : binary_sensor fenêtres concernées ouvertes (state = on | off)
+#
+# ⚠️ CONTRAINTES
+#     - Sémantique inversée par rapport à carte_clim_diagnostic_fenetres_maison :
+#       ici ON = rouge (risque exposition pluie), pas gris
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: exposition_fenetres_concernees_ouvertes_72
+#     entity: binary_sensor.fenetres_concernees_ouvertes
+#
+# ==========================================================
+
+exposition_fenetres_concernees_ouvertes_72:
+  template: socle_decision_72
+  show_icon: true
+  icon: >
+    [[[
+      const s = entity?.state;
+      if (s === "on") return "mdi:window-open-variant";
+      if (s === "off") return "mdi:window-closed-variant";
+      return "mdi:help-circle-outline";
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity?.state;
+
+            if (s === undefined || s === null) return "rgba(158, 158, 158, 0.1)";
+            if (s === "unknown" || s === "unavailable") return "rgba(158, 158, 158, 0.1)";
+
+            if (s === "on") return "rgba(244, 67, 54, 0.2)";
+            return "rgba(76, 175, 80, 0.2)";
+          ]]]

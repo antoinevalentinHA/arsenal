@@ -1,0 +1,68 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler — Decision ACK
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — REUTILISABLE
+#
+# 🎯 ROLE
+#     Specialiser le socle decision canonique pour l'affichage
+#     du statut transactionnel d'un ACK boiler.
+#
+# 🧱 NATURE
+#     - Template button-card derive d'un socle decision
+#     - Porte la semantique couleur metier transactionnelle
+#     - Reutilisable sur tous les statuts ACK du bridge
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unknown / unavailable -> gris indispo
+#     - applied -> vert
+#     - accepted -> jaune
+#     - rejected -> rouge
+#     - timeout -> rouge
+#     - autre valeur non reconnue -> orange
+#
+# ⚠️ CONTRAINTE
+#     accepted n'est pas un succes final.
+#     Seul applied represente un succes applique.
+#
+# 🧩 USAGE
+#     Exemple :
+#       type: custom:button-card
+#       template: boiler_decision_ack
+#       entity: sensor.boiler_ack_dhw_set_setpoint_status
+#       name: ECS
+#
+# ==========================================================
+
+boiler_decision_ack:
+  template:
+    - socle_decision_72
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (state === null || state === undefined || state === 'unknown' || state === 'unavailable') {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const normalized = String(state).toLowerCase();
+
+            if (normalized === 'applied') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            if (normalized === 'accepted') {
+              return 'rgba(255, 235, 59, 0.2)';
+            }
+
+            if (normalized === 'rejected' || normalized === 'timeout') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            return 'rgba(255, 152, 0, 0.2)';
+          ]]]

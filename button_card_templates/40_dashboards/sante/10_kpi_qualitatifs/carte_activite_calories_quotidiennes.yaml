@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Santé — Calories quotidiennes (KPI)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche les calories quotidiennes sous forme de KPI.
+#     La couleur est pilotée par un sensor de couleur upstream
+#     (charte Arsenal santé). Délègue toute la logique visuelle
+#     au socle via variables.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Déléguée à sensor.couleur_sante_calories_quotidiennes
+#       et au profil ui_profile: arsenal du socle_kpi
+#
+# 🔗 DEPENDANCES
+#     - entity                                    : sensor calories quotidiennes (state numérique)
+#     - sensor.couleur_sante_calories_quotidiennes : clé couleur upstream
+#     - variables.ui_profile                      : "arsenal" (profil de rendu socle_kpi)
+#
+# ⚠️ CONTRAINTES
+#     - Aucune logique de couleur propre — entièrement déléguée upstream
+#     - triggers_update déclaré sur le sensor couleur (réactivité)
+#     - Valeur affichée arrondie à l'entier (Math.round) avec unité kcal
+#     - Même pattern que carte_ecs_etat_ballon — socle_kpi + sensor couleur
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_activite_calories_quotidiennes
+#     entity: sensor.calories_quotidiennes
+#
+# ==========================================================
+
+carte_activite_calories_quotidiennes:
+  template: socle_kpi
+
+  show_state: true
+  show_icon: true
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_sante_calories_quotidiennes
+
+  triggers_update:
+    - sensor.couleur_sante_calories_quotidiennes
+
+  state_display: |
+    [[[
+      const val = parseFloat(entity?.state);
+      if (isNaN(val)) return "—";
+      return `${Math.round(val)} kcal`;
+    ]]]
+    

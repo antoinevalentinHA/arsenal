@@ -1,0 +1,67 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Maison — Mode Babysitting (commande dashboard)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Commande et lecture du mode Babysitting depuis les dashboards
+#     de synthèse. Toggle avec confirmation modale et accès aux
+#     réglages en hold.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_toggle
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on  -> 🟢 vert "on"  (mode Babysitting actif)
+#     - state = off -> ⚪ gris "off" (mode inactif)
+#
+# 🔗 DEPENDANCES
+#     - entity : input_boolean.mode_babysitting
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale obligatoire avec texte contextuel (on/off)
+#     - hold_action navigue vers /reglages-dashboard/maison —
+#       ne pas utiliser si cette route n'existe pas
+#     - Carte de commande active — à ne pas confondre avec
+#       carte_clim_diagnostic_presence_babysitting (lecture seule)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_mode_babysitting_synthese
+#     entity: input_boolean.mode_babysitting
+#
+# ==========================================================
+
+carte_mode_babysitting_synthese:
+  template: socle_toggle
+
+  show_state: true
+
+  tap_action:
+    action: toggle
+    confirmation:
+      text: |
+        [[[
+          return entity.state === 'on'
+            ? "Désactiver le mode Babysitting ?"
+            : "Activer le mode Babysitting ?";
+        ]]]
+
+  hold_action:
+    action: navigate
+    navigation_path: /reglages-dashboard/maison
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity.state === 'on'
+              ? 'rgba(76, 175, 80, 0.2)'
+              : 'rgba(158, 158, 158, 0.2)';
+          ]]]
+          

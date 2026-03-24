@@ -1,0 +1,88 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Supervision — Diagnostic Netatmo HomeKit
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état de l'intégration Netatmo HomeKit avec
+#     icône et couleur sémantiques par état. Distingue panne
+#     réseau et panne HomeKit. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - ok          -> 🟢 vert      mdi:check-circle    (nominal)
+#     - ko_reseau   -> ⚪ gris      mdi:lan-disconnect  (panne réseau / connectivité)
+#     - ko_homekit  -> 🔴 rouge     mdi:apple           (erreur bridge HomeKit)
+#     - unknown     -> ⚪ gris      mdi:help-circle     (état inconnu)
+#     - unavailable -> ⚪ gris      mdi:help-circle     (indisponible)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor diagnostic Netatmo synthétique
+#       (state attendu : ok | ko_reseau | ko_homekit)
+#
+# ⚠️ CONTRAINTES
+#     - Icône par défaut mdi:weather-cloudy si état hors mapping
+#     - ko_reseau et unavailable/unknown partagent la même couleur grise —
+#       distinction uniquement via l'icône et le state affiché
+#     - Lecture seule — aucune action définie
+#     - Distinct de carte_integration_critique : états textuels normalisés
+#       Arsenal (ok/ko_*) vs binaire/numérique générique
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: netatmo_diagnostic
+#     entity: sensor.netatmo_diagnostic_etat
+#
+# ==========================================================
+
+netatmo_diagnostic:
+  template: socle_status_72
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  icon: mdi:weather-cloudy
+
+  styles:
+    icon:
+      - color: "#111"
+
+  state:
+    - value: "ok"
+      icon: mdi:check-circle
+      styles:
+        card:
+          - background-color: "rgba(76, 175, 80, 0.2)"
+
+    - value: "ko_reseau"
+      icon: mdi:lan-disconnect
+      styles:
+        card:
+          - background-color: "rgba(158, 158, 158, 0.1)"
+
+    - value: "ko_homekit"
+      icon: mdi:apple
+      styles:
+        card:
+          - background-color: "rgba(244, 67, 54, 0.2)"
+
+    - value: "unknown"
+      icon: mdi:help-circle
+      styles:
+        card:
+          - background-color: "rgba(158, 158, 158, 0.1)"
+
+    - value: "unavailable"
+      icon: mdi:help-circle
+      styles:
+        card:
+          - background-color: "rgba(158, 158, 158, 0.1)"

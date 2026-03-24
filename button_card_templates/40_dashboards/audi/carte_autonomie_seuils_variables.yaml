@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Autonomie — Seuils variables (kilométrique)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche une valeur d'autonomie en km et la colore selon
+#     trois seuils d'alerte entièrement paramétrables via
+#     variables. Générique : utilisable sur tout sensor
+#     d'autonomie kilométrique.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_diagnostic_compact
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - v < s_crit              -> 🔴 rouge   (autonomie critique)
+#     - s_crit <= v < s_low     -> 🟠 orange  (autonomie faible)
+#     - s_low  <= v < s_mid     -> 🟡 jaune   (autonomie limitée)
+#     - v >= s_mid              -> 🟢 vert    (autonomie suffisante)
+#     - valeur non numérique    -> ⚪ gris    (unavailable / unknown)
+#
+# 🔗 DEPENDANCES
+#     - entity             : sensor d'autonomie (state numérique, unité km attendue)
+#     - variables.s_crit   : seuil critique (km) — optionnel, ignoré si absent
+#     - variables.s_low    : seuil faible   (km) — optionnel, ignoré si absent
+#     - variables.s_mid    : seuil limité   (km) — optionnel, ignoré si absent
+#
+# ⚠️ CONTRAINTES
+#     - Les seuils sont évalués en cascade — s_crit doit être < s_low < s_mid
+#     - Un seuil absent (undefined) est silencieusement ignoré, pas une erreur
+#     - Toutes les actions sont désactivées — carte de diagnostic pur
+#     - L'affichage arrondit à l'entier le plus proche (Math.round)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_autonomie_seuils_variables
+#     entity: sensor.voiture_autonomie
+#     variables:
+#       s_crit: 30
+#       s_low: 80
+#       s_mid: 150
+#
+# ==========================================================
+
+carte_autonomie_seuils_variables:
+  template: socle_diagnostic_compact
+
+  show_state: true
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${Math.round(v)} km`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+
+            const s_crit = variables?.s_crit;
+            const s_low  = variables?.s_low;
+            const s_mid  = variables?.s_mid;
+
+            if (isNaN(v)) return 'rgba(158, 158, 158, 0.1)';
+
+            if (s_crit !== undefined && v < s_crit)
+              return 'rgba(244, 67, 54, 0.2)';
+
+            if (s_low !== undefined && v < s_low)
+              return 'rgba(255, 152, 0, 0.2)';
+
+            if (s_mid !== undefined && v < s_mid)
+              return 'rgba(255, 193, 7, 0.25)';
+
+            return 'rgba(76, 175, 80, 0.2)';
+          ]]]

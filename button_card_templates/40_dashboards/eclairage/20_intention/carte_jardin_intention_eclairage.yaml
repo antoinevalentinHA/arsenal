@@ -1,0 +1,122 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Jardin — Intention éclairage (bandeau header)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Bandeau header pleine largeur ultra fin affichant l'intention
+#     d'éclairage jardin issue du moteur de décision. Distingue
+#     allumage attendu, attente présence, extinction autorisée
+#     et absence de cycle. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_header_base
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Matin/Soir – allumage attendu    -> 🟢 vert   (cycle actif, allumage requis)
+#     - Matin/Soir – attente presence    -> 🟡 jaune  (cycle actif, présence requise)
+#     - Soir – extinction autorisee      -> 🔵 bleu   (extinction possible)
+#     - Aucun eclairage attendu          -> ⚪ gris   (hors cycle)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor.jardin_intention_eclairage
+#       (valeurs normalisées Arsenal — voir mapping name)
+#
+# ⚠️ CONTRAINTES
+#     - Format bandeau : padding et margin réduits au minimum —
+#       ne pas utiliser comme carte standard
+#     - show_icon / show_state / show_label désactivés —
+#       toute l'information passe par le name dynamique
+#     - Toute valeur hors mapping affiche l'état brut (pas de fallback neutre)
+#     - Styles name codés en dur (13px, #111) — identiques à
+#       carte_garage_intention_eclairage (socle_header_base commun)
+#     - Toutes les actions désactivées
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_jardin_intention_eclairage
+#     entity: sensor.jardin_intention_eclairage
+#
+# ==========================================================
+
+carte_jardin_intention_eclairage:
+  template: socle_header_base
+
+  entity: sensor.jardin_intention_eclairage
+
+  show_icon: false
+  show_state: false
+  show_label: false
+  show_name: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  name: |
+    [[[
+      const map = {
+        'Matin – allumage attendu': 'Allumage matin attendu',
+        'Matin – attente presence': 'Attente présence (matin)',
+        'Soir – allumage attendu': 'Allumage soir attendu',
+        'Soir – attente presence': 'Attente présence (soir)',
+        'Soir – extinction autorisee': 'Extinction autorisée',
+        'Aucun eclairage attendu': 'Aucun éclairage attendu'
+      };
+      return map[entity.state] || entity.state;
+    ]]]
+
+  state:
+    # 🟢 Allumage attendu
+    - value: 'Matin – allumage attendu'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'Soir – allumage attendu'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    # 🟡 Attente présence (jaune canon Arsenal)
+    - value: 'Matin – attente presence'
+      styles:
+        card:
+          - background-color: rgba(255, 235, 59, 0.2)
+
+    - value: 'Soir – attente presence'
+      styles:
+        card:
+          - background-color: rgba(255, 235, 59, 0.2)
+
+    # 🔵 Extinction autorisée
+    - value: 'Soir – extinction autorisee'
+      styles:
+        card:
+          - background-color: rgba(33, 150, 243, 0.2)
+
+    # ⚪ Aucun cycle
+    - value: 'Aucun eclairage attendu'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+  styles:
+    card:
+      - padding: 4px 0 2px 0
+      - margin: 0px 0 2px 0
+
+    # Typos canon carte_base_v2 (name)
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+      - line-height: 1.2

@@ -1,0 +1,79 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     VMC — Intention métier
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'intention du moteur de décision VMC et la cause
+#     principale ayant conduit à cette intention (via attribut).
+#     Lecture seule — aucune interaction.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_label
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - "Extraction utile demandée"      -> 🟢 vert  (haute vitesse justifiée)
+#     - "Fonctionnement nominal demandé" -> ⚪ gris  (vitesse normale)
+#     - toute autre valeur               -> ⚪ gris  (fallback)
+#
+# 🔗 DEPENDANCES
+#     - entity                    : sensor.vmc_intention
+#       (state = libellé intention, attribute.cause = raison principale)
+#
+# ⚠️ CONTRAINTES
+#     - Le label est lu depuis entity.attributes.cause —
+#       si l'attribut est absent, le label est vide (pas d'erreur)
+#     - state_display retourne l'état brut sans mapping —
+#       les libellés sont portés par sensor.vmc_intention upstream
+#     - show_icon désactivé
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_vmc_intention
+#     entity: sensor.vmc_intention
+#
+# ==========================================================
+
+carte_vmc_intention:
+  template: socle_status_label
+
+  show_icon: false
+
+  name: Intention VMC
+
+  state_display: |
+    [[[
+      return entity.state;
+    ]]]
+
+  label: |
+    [[[
+      return entity.attributes.cause || '';
+    ]]]
+
+  state:
+    - value: Extraction utile demandée
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: Fonctionnement nominal demandé
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+
+    - operator: default
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+
+  styles:
+    label:
+      - color: '#444'
+

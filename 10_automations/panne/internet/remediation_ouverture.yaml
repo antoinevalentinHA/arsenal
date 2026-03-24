@@ -1,0 +1,105 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Réseau — Ouverture campagne remédiation
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Détecter une panne Internet persistante et ouvrir
+#     une campagne de remédiation.
+#
+#     Cette automation :
+#     - publie l'état de panne (notification persistante)
+#     - active le contexte de campagne
+#     - réinitialise le compteur physique
+#     - exécute le cycle 1
+#     - comptabilise le cycle 1
+#     - lance le délai de vérification post-action
+#
+# 🧱 CONTRAT
+#
+#     - garde d'entrée explicite (unicité de campagne)
+#     - cycle 1 immédiat dans ce contexte
+#     - compteur incrémenté après exécution effective
+#     - démarrage du timer unique de cadence
+#
+# 🔎 NOTES D'IMPLEMENTATION
+#
+#     - le contexte de campagne est publié avant toute
+#       mutation associée à la campagne
+#     - une revalidation défensive de la panne est effectuée
+#       juste après ouverture de campagne pour éviter
+#       tout cycle physique inutile si Internet revient
+#       pendant la séquence d'ouverture
+#     - si la revalidation échoue, la campagne est refermée
+#       immédiatement sans exécuter de cycle physique
+#     - le compteur est réinitialisé uniquement après
+#       confirmation que la panne persiste encore
+#     - la notification persistante représente un état courant :
+#       panne Internet + remédiation active
+# ==========================================================
+
+- id: "10120000000022"
+  alias: "Réseau – Ouverture campagne remédiation"
+  description: >
+    Ouvre une campagne de remédiation après 5 minutes de coupure Internet.
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.acces_externe
+      to: "off"
+      for: "00:05:00"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.reboot_box_en_cours
+      state: "off"
+
+  action:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.reboot_box_en_cours
+
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.acces_externe
+              state: "off"
+          sequence:
+            - action: counter.reset
+              target:
+                entity_id: counter.reboot_box_tentatives
+
+            - action: persistent_notification.create
+              data:
+                notification_id: panne_internet
+                title: "🌐 Coupure Internet en cours"
+                message: >
+                  Accès Internet indisponible depuis {{ now().strftime('%H:%M') }}.
+                  Remédiation automatique active.
+
+            - action: script.cycle_alimentation_box
+
+            - action: counter.increment
+              target:
+                entity_id: counter.reboot_box_tentatives
+
+            - action: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🌐 Remédiation réseau — cycle 1"
+                message: >
+                  Premier redémarrage box effectué.
+                  Vérification dans 2 minutes.
+
+            - action: timer.start
+              target:
+                entity_id: timer.reboot_box
+              data:
+                duration: "00:02:00"
+
+      default:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.reboot_box_en_cours

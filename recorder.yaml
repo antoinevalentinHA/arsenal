@@ -116,7 +116,6 @@ include:
     # =====================================================
     - switch.clim_power
     - sensor.clim_mode_local
-    - sensor.clim_target_mode
     - sensor.clim_consommation_estimee_energie
     - sensor.clim_consommation_estimee_aujourd_hui
 
@@ -125,7 +124,6 @@ include:
     # =====================================================
     - input_boolean.aeration_episode_en_cours
     - input_boolean.chauffage_blocage_aeration
-    - input_boolean.aeration_pipeline_arme
     - input_boolean.aeration_confirmee
     - binary_sensor.ouverture_qualifiee_maison
 
@@ -151,12 +149,8 @@ include:
     - input_boolean.chauffage_standby_force
     - input_boolean.poele_recent
     - input_boolean.blocage_chauffage_poele
-    - sensor.chauffage_autorisation_cible
-    - sensor.chauffage_mode_calcule
     - input_boolean.chauffage_inhibition_geofencing
     - input_select.chauffage_dernier_mode_decide
-    - input_boolean.pre_confort_actif_calcule
-    - sensor.chauffage_raison_calculee
     - binary_sensor.vacances_actives
 
     # =====================================================

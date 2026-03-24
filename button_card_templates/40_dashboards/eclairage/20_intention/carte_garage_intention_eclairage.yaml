@@ -1,0 +1,86 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Garage — Intention éclairage (bandeau header)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Bandeau header pleine largeur ultra fin indiquant si
+#     l'allumage automatique garage est autorisé ou interdit.
+#     Lecture seule — aucune interaction.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_header_base
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on  -> 🟢 vert "Allumage autorisé"
+#     - state = off -> ⚪ gris "Allumage interdit"
+#
+# 🔗 DEPENDANCES
+#     - entity : binary_sensor.garage_allumage_auto_autorise
+#
+# ⚠️ CONTRAINTES
+#     - Format bandeau : padding et margin réduits au minimum —
+#       ne pas utiliser comme carte standard
+#     - show_icon / show_state / show_label désactivés —
+#       toute l'information passe par le name dynamique
+#     - Toutes les actions désactivées
+#     - Styles name codés en dur (13px, #111) — non hérités du socle
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_garage_intention_eclairage
+#     entity: binary_sensor.garage_allumage_auto_autorise
+#
+# ==========================================================
+
+carte_garage_intention_eclairage:
+  template: socle_header_base
+
+  entity: binary_sensor.garage_allumage_auto_autorise
+
+  show_icon: false
+  show_state: false
+  show_label: false
+  show_name: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  name: |
+    [[[
+      if (!entity) return 'Garage — Allumage auto';
+      return (entity.state === 'on')
+        ? 'Allumage autorisé'
+        : 'Allumage interdit';
+    ]]]
+
+  state:
+    - value: "on"
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: "off"
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+  styles:
+    card:
+      - padding: 4px 0 2px 0
+      - margin: 0px 0 2px 0
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+      - line-height: 1.2

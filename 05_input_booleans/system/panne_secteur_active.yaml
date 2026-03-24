@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN :
+#    panne_secteur_active
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#    Etat systeme explicite de PANNE SECTEUR ACTIVE.
+#
+#    Ce helper ne detecte pas la panne.
+#    Il memorise qu'un episode de panne secteur a ete
+#    qualifie et que l'entree en mode panne a deja ete
+#    traitee par Arsenal.
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#
+#    - Etat systeme derive
+#    - Support d'idempotence
+#    - Memoire explicite d'episode de panne
+#
+# ----------------------------------------------------------
+# ⚙️ PRINCIPE
+#
+#    - OFF :
+#        aucun episode de panne actif
+#
+#    - ON :
+#        episode de panne actif deja qualifie
+#        et deja traite par les automatismes
+#        d'entree en mode panne
+#
+# ----------------------------------------------------------
+# 🔒 INVARIANTS
+#
+#    - Ne remplace pas `binary_sensor.coupure_secteur`
+#    - Ne detecte aucun evenement physique
+#    - Ne porte aucune decision chauffage
+#    - Ne porte aucune decision ECS
+#    - Empêche la re-execution des actions d'entree
+#      en mode panne tant que l'episode reste actif
+#
+# ----------------------------------------------------------
+# 🔁 CYCLE DE VIE
+#
+#    - Passe a ON :
+#        uniquement lors de l'entree validee
+#        en mode panne secteur
+#
+#    - Passe a OFF :
+#        uniquement lors de la sortie validee
+#        du mode panne secteur
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#    - Ne confirme pas la panne
+#    - Ne qualifie pas la fin de panne
+#    - Ne lance aucune action metier
+#    - Ne remplace aucune notification
+#
+# ----------------------------------------------------------
+# ✅ COMPATIBILITE
+#
+#    Home Assistant 2024.8+
+#    Arsenal v6+
+# ==========================================================
+
+panne_secteur_active:
+  name: "Panne secteur active"
+  icon: mdi:power-plug-off

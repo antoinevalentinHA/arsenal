@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Activité — Distance quotidienne
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la distance quotidienne parcourue sous forme
+#     de KPI lisible.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_kpi
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - valeur disponible -> affichage KPI
+#     - valeur indisponible -> "—"
+#     - couleur portee par la source externe fournie
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur de distance quotidienne
+#     - attributes: aucune
+#     - helpers externes:
+#         - sensor.couleur_sante_distance_quotidienne
+#     - variables:
+#         - ui_profile
+#         - couleur
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule pas la couleur
+#     - Il affiche uniquement une valeur et consomme une
+#       source de couleur backend
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_activite_distance_quotidienne
+#       entity: sensor.distance_quotidienne
+#
+# ==========================================================
+
+carte_activite_distance_quotidienne:
+  template: socle_kpi
+
+  show_state: true
+  show_icon: true
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_sante_distance_quotidienne
+
+  triggers_update:
+    - sensor.couleur_sante_distance_quotidienne
+
+  state_display: |
+    [[[
+      const val = parseFloat(entity?.state);
+      if (isNaN(val)) return "—";
+      return `${Math.round(val)} m`;
+    ]]]
+

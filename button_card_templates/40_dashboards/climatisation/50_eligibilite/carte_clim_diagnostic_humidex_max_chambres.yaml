@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Diagnostic humidex max chambres
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'humidex maximum des chambres et le confronte au
+#     seuil de déclenchement déshumidification. Le label expose
+#     le seuil configuré pour lecture immédiate.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72_sans_icone
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - humidex >= seuil       -> 🟢 vert  (seuil atteint, dry éligible)
+#     - humidex < seuil        -> ⚪ gris  (sous le seuil, dry non requis)
+#     - valeur non numérique   -> ⚪ gris clair (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity                                      : sensor.humidex_max_chambres
+#     - input_number.seuil_humidex_deshumidification : seuil de déclenchement dry
+#
+# ⚠️ CONTRAINTES
+#     - Sémantique inhabituelle : vert = seuil atteint (et non = nominal)
+#       car l'objectif est de signaler l'éligibilité au mode dry
+#     - Le seuil est affiché brut sans unité — à vérifier côté métier
+#     - Fallback seuil à "99" si unavailable (évite faux positif vert)
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_diagnostic_humidex_max_chambres
+#     entity: sensor.humidex_max_chambres
+#
+# ==========================================================
+
+carte_clim_diagnostic_humidex_max_chambres:
+  template: socle_kpi_label_72_sans_icone
+
+  entity: sensor.humidex_max_chambres
+
+  label: |
+    [[[
+      const s = states['input_number.seuil_humidex_deshumidification']
+        ? states['input_number.seuil_humidex_deshumidification'].state
+        : '—';
+      return "Seuil ON : " + s;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const humidex = parseFloat(entity.state);
+            const seuil = parseFloat(
+              states['input_number.seuil_humidex_deshumidification']?.state || "99"
+            );
+
+            if (isNaN(humidex) || isNaN(seuil))
+              return "rgba(158, 158, 158, 0.1)";
+
+            return humidex >= seuil
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]

@@ -1,0 +1,67 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Chauffage — Diagnostic blocage post-aération
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Indique si le verrou chauffage post-aération est actif.
+#     Tuile de diagnostic simple — lecture directe du booléen,
+#     sans contexte timer ni raison.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_label_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on  -> 🔴 rouge "Actif"   (blocage chauffage en cours)
+#     - state = off -> 🟢 vert  "Inactif" (aucun verrou)
+#
+# 🔗 DEPENDANCES
+#     - entity : input_boolean.chauffage_blocage_aeration
+#
+# ⚠️ CONTRAINTES
+#     - Version simplifiée de chauffage_synthese_blocage_aeration_xl :
+#       pas de timer, pas de distinction épisode / post-aération
+#     - À utiliser pour un diagnostic rapide ; préférer la version XL
+#       si le contexte temporel est nécessaire
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_diagnostic_chauffage_blocage_aeration
+#     entity: input_boolean.chauffage_blocage_aeration
+#
+# ==========================================================
+
+carte_diagnostic_chauffage_blocage_aeration:
+  template: socle_status_label_72
+
+  entity: input_boolean.chauffage_blocage_aeration
+
+  show_state: false
+  show_name: true
+  show_label: true
+  show_icon: true
+  color_type: card
+
+  icon: mdi:lock-alert
+
+  label: |
+    [[[
+      return entity.state === "on"
+        ? "Actif"
+        : "Inactif";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity.state === "on"
+              ? "rgba(244, 67, 54, 0.2)"
+              : "rgba(76, 175, 80, 0.2)";
+          ]]]

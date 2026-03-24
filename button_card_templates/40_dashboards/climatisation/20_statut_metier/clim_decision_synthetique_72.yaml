@@ -1,0 +1,119 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Décision synthétique (tuile 72)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Tuile décisionnelle compacte sans titre : affiche le mode
+#     clim décidé et la raison principale en label. Lecture seule,
+#     toutes actions désactivées.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_decision_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - mode = cool            -> 🔵 bleu    "Décision active — ❄️ COOL"
+#     - mode = dry             -> 🟢 vert    "Décision active — 💧 DRY"
+#     - mode = heat            -> 🔴 rouge   "Décision active — 🔥 HEAT"
+#     - mode = off             -> ⚪ gris    "Aucune action en cours"
+#     - mode inconnu / autre   -> 🟠 orange  "Décision indéterminée"
+#     - unavailable            -> ⚪ gris clair
+#
+# 🔗 DEPENDANCES
+#     - sensor.clim_mode_local        : mode décidé (cool | heat | dry | off)
+#     - input_text.climatisation_raison : raison principale exposée en label
+#
+# ⚠️ CONTRAINTES
+#     - Aucune entity directe — tout lu via states[]
+#     - show_name désactivé — tuile sans titre, contexte porté par le label
+#     - Un mode non reconnu (ni cool/heat/dry/off) produit orange + libellé brut
+#     - Toutes les actions désactivées
+#     - Distinct de carte_clim_decision : ici pas de confrontation état/raison,
+#       lecture directe du mode décidé uniquement
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: clim_decision_synthetique_72
+#     # aucune entity requise
+#
+# ==========================================================
+
+clim_decision_synthetique_72:
+  template: socle_decision_72
+
+  show_name: false
+  show_state: true
+  show_label: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const mode = states['sensor.clim_mode_local']?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      if (UNAV.includes(mode)) return "Décision indéterminée";
+      if (['cool','heat','dry'].includes(mode)) return "Décision active";
+      if (mode === 'off') return "Aucune action en cours";
+      return "Décision indéterminée";
+    ]]]
+
+  label: |
+    [[[
+      const mode = states['sensor.clim_mode_local']?.state;
+      const raison = states['input_text.climatisation_raison']?.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+      const badgeMode = (m) => {
+        if (m === 'cool') return '❄️ COOL';
+        if (m === 'heat') return '🔥 HEAT';
+        if (m === 'dry')  return '💧 DRY';
+        if (m === 'off')  return '⚪ AUCUNE';
+        if (UNAV.includes(m)) return '—';
+        return '⛔ ' + String(m).toUpperCase();
+      };
+
+      const r = (UNAV.includes(raison) || raison === '') ? '—' : raison;
+
+      if (UNAV.includes(mode)) {
+        return "État décisionnel non interprétable<br>Mode brut : —";
+      }
+
+      if (['cool','heat','dry'].includes(mode)) {
+        return "Action décidée : " + badgeMode(mode) + "<br>" +
+               "Cause principale : " + r;
+      }
+
+      if (mode === 'off') {
+        return "Le système est au repos.<br>Aucune condition ne justifie une action.";
+      }
+
+      return "État décisionnel non interprétable<br>Mode brut : `" + mode + "`";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const mode = states['sensor.clim_mode_local']?.state;
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+
+            if (UNAV.includes(mode)) return 'rgba(158, 158, 158, 0.1)';
+
+            if (mode === 'cool') return 'rgba(33, 150, 243, 0.2)';
+            if (mode === 'dry')  return 'rgba(76, 175, 80, 0.2)';
+            if (mode === 'heat') return 'rgba(244, 67, 54, 0.2)';
+            if (mode === 'off')  return 'rgba(158, 158, 158, 0.2)';
+
+            return 'rgba(255, 152, 0, 0.2)';
+          ]]]

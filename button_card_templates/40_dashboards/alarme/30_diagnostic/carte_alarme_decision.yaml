@@ -1,0 +1,96 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Alarme — Decision
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher l'etat reel du panneau d'alarme, la decision
+#     cible issue du backend et la coherence entre les deux.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_diagnostic
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - etat coherent avec la cible -> vert
+#     - divergence entre cible et etat reel -> rouge
+#     - etat affiche : armed_away -> "Armée (Absent)"
+#     - etat affiche : disarmed -> "Désarmée"
+#
+# 🔗 DEPENDANCES
+#     - entity: alarm_control_panel.alarme_maison
+#     - attributes: aucune
+#     - helpers externes:
+#         - input_text.alarme_etat_cible
+#         - input_text.alarme_raison
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule pas la decision d'alarme
+#     - Ce template ne pilote aucun armement ni desarmement
+#     - Tolerance au cas NOOP
+#     - L'UI ne fait qu'exposer la coherence backend / reel
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_alarme_decision
+#       entity: alarm_control_panel.alarme_maison
+#       name: Alarme
+#
+# ==========================================================
+
+carte_alarme_decision:
+  template: socle_diagnostic
+
+  icon: mdi:shield-home
+
+  state_display: |
+    [[[
+      const map = {
+        'armed_away': 'Armée (Absent)',
+        'disarmed': 'Désarmée'
+      };
+      return map[entity.state] || entity.state;
+    ]]]
+
+  label: |
+    [[[
+      const cible = states['input_text.alarme_etat_cible']?.state || '—';
+      const raison = states['input_text.alarme_raison']?.state || '';
+      const map = {
+        'ARMED_AWAY': 'Décision : Armer',
+        'DISARMED': 'Décision : Désarmer',
+        'NOOP': 'Décision : Aucune action'
+      };
+      return `${map[cible] || cible}${raison ? ' — ' + raison : ''}`;
+    ]]]
+
+  state:
+    # 🟢 Cohérent
+    - operator: template
+      value: >
+        [[[
+          const cible = states['input_text.alarme_etat_cible']?.state;
+          return (cible === 'ARMED_AWAY' && entity.state === 'armed_away') ||
+                 (cible === 'DISARMED'  && entity.state === 'disarmed') ||
+                 (cible === 'NOOP');
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76,175,80,0.2)
+
+    # 🔴 Divergence
+    - operator: template
+      value: >
+        [[[
+          const cible = states['input_text.alarme_etat_cible']?.state;
+          return (cible === 'ARMED_AWAY' && entity.state !== 'armed_away') ||
+                 (cible === 'DISARMED'  && entity.state !== 'disarmed');
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244,67,54,0.2)

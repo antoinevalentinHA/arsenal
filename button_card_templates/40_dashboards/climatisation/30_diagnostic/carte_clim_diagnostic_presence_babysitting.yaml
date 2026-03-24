@@ -1,0 +1,76 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Diagnostic présence / babysitting
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état de présence famille en tenant compte du mode
+#     babysitting comme présence implicite. Contexte décisionnel
+#     pour l'autorisation clim en absence apparente.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_label_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - présence ON                    -> 🟢 vert  "Présence détectée"   mdi:account-group
+#     - présence OFF + babysitting ON  -> 🟢 vert  "Mode Babysitting"    mdi:account-child
+#     - présence OFF + babysitting OFF -> ⚪ gris  "Absence"             mdi:account-off
+#
+# 🔗 DEPENDANCES
+#     - entity                          : binary_sensor.presence_famille_unifiee
+#     - input_boolean.mode_babysitting  : présence implicite hors géofencing
+#
+# ⚠️ CONTRAINTES
+#     - Priorité : présence réelle > babysitting > absence
+#     - Le babysitting est traité comme présence pour la couleur (vert),
+#       mais distingué visuellement par l'icône et le label
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_diagnostic_presence_babysitting
+#     entity: binary_sensor.presence_famille_unifiee
+#
+# ==========================================================
+
+carte_clim_diagnostic_presence_babysitting:
+  template: socle_status_label_72
+
+  entity: binary_sensor.presence_famille_unifiee
+
+  icon: |
+    [[[
+      const presence = entity.state === "on";
+      const babysitting = states['input_boolean.mode_babysitting']?.state === "on";
+
+      if (presence)    return "mdi:account-group";
+      if (babysitting) return "mdi:account-child";
+      return "mdi:account-off";
+    ]]]
+
+  label: |
+    [[[
+      const presence = entity.state === "on";
+      const babysitting = states['input_boolean.mode_babysitting']?.state === "on";
+
+      if (presence)    return "Présence détectée";
+      if (babysitting) return "Mode Babysitting actif";
+      return "Absence";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const presence = entity.state === "on";
+            const babysitting = states['input_boolean.mode_babysitting']?.state === "on";
+
+            return (presence || babysitting)
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]

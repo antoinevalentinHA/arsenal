@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Sécurité — État binaire
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher un etat de securite binaire (defaut,
+#     intrusion, alerte, etc.) de maniere lisible.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_72
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = off -> OK + vert
+#     - state = on -> alerte / defaut + rouge
+#     - autre / indisponible -> gris indispo
+#
+# 🔗 DEPENDANCES
+#     - entity: binary_sensor.* de securite
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Carte purement informationnelle
+#     - Aucune logique metier ni interpretation avancee
+#     - La semantique OFF = OK / ON = alerte doit etre respectee
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_etat_securite
+#       entity: binary_sensor.alarme_intrusion
+#
+# ==========================================================
+
+carte_etat_securite:
+  template: socle_status_72
+
+  show_state: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const st = entity.state;
+
+            // 🟢 OK
+            if (st === 'off') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            // 🔴 Défaut / alerte / intrusion
+            if (st === 'on') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            // ⚪ Inconnu / indispo
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

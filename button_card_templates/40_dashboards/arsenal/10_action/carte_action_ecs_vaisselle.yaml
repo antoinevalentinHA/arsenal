@@ -1,0 +1,81 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     ECS — Action vaisselle
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Permettre le lancement explicite d'un cycle ECS
+#     pour la vaisselle avec indication visuelle d'un
+#     cycle vaisselle en cours.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_action_label_compact
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - cycle vaisselle en cours -> label "En chauffe…" + vert
+#     - sinon -> fond gris neutre
+#
+# 🔗 DEPENDANCES
+#     - entity: aucune
+#     - attributes: aucune
+#     - helpers externes:
+#         - script.lancer_vaisselle_et_bouclage
+#         - input_boolean.ecs_cycle_en_cours
+#         - input_text.ecs_dernier_cycle_resume
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation obligatoire avant lancement
+#     - Le statut "vaisselle en cours" depend du resume
+#       de cycle fourni par le backend
+#     - Ce template ne calcule pas la logique ECS
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_action_ecs_vaisselle
+#       name: Vaisselle
+#       icon: mdi:dishwasher
+#
+# ==========================================================
+
+carte_action_ecs_vaisselle:
+  template: socle_action_label_compact
+
+  show_label: true
+
+  label: |
+    [[[
+      const cycle = states['input_boolean.ecs_cycle_en_cours']?.state === 'on';
+      const resume = states['input_text.ecs_dernier_cycle_resume']?.state || "";
+      const parts = resume.split("|");
+      const mode = parts.length > 1 ? parts[1].toLowerCase() : "";
+      return (cycle && mode === 'vaisselle') ? "En chauffe…" : "";
+    ]]]
+
+  tap_action:
+    action: call-service
+    service: script.lancer_vaisselle_et_bouclage
+    confirmation:
+      text: Lancer un cycle ECS pour la vaisselle + bouclage ?
+
+  triggers_update:
+    - input_boolean.ecs_cycle_en_cours
+    - input_text.ecs_dernier_cycle_resume
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const en_cours = states['input_boolean.ecs_cycle_en_cours']?.state === 'on';
+            const resume = states['input_text.ecs_dernier_cycle_resume']?.state || "";
+            const parts = resume.split("|");
+            const mode = parts.length > 1 ? parts[1].toLowerCase() : "";
+            return (en_cours && mode === 'vaisselle')
+              ? 'rgba(76, 175, 80, 0.2)'
+              : 'rgba(158, 158, 158, 0.2)';
+          ]]]

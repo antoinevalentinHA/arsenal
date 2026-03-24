@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler — Status degraded flag
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — REUTILISABLE
+#
+# 🎯 ROLE
+#     Specialiser le socle status canonique pour l'affichage
+#     d'un drapeau binaire de degradation boiler.
+#
+# 🧱 NATURE
+#     - Template button-card derive d'un socle status
+#     - Porte la semantique couleur metier de degradation
+#     - Reutilisable sur les binary_sensor "*_degraded"
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unknown / unavailable / vide -> gris indispo
+#     - off -> vert
+#     - on -> orange
+#     - autre valeur non reconnue -> jaune
+#
+# ⚠️ CONTRAINTE
+#     Un capteur degraded est un drapeau d'alerte.
+#     Son etat off signifie systeme sain.
+#     Son etat on signifie fonctionnement degrade.
+#
+# ==========================================================
+
+boiler_status_degraded_flag:
+  template:
+    - socle_status_72
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (
+              state === null ||
+              state === undefined ||
+              state === '' ||
+              state === 'unknown' ||
+              state === 'unavailable'
+            ) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const normalized = String(state).toLowerCase();
+
+            if (normalized === 'off') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            if (normalized === 'on') {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            return 'rgba(255, 235, 59, 0.2)';
+          ]]]

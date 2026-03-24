@@ -8,7 +8,6 @@
 #     - annulation explicite des timers
 #     - neutralisation des datetimes (anti traces résiduelles)
 #     - désarmement du pipeline (fin totale épisode)
-#     - journalisation
 #
 # 🧩 PRINCIPE
 #   Aucune décision métier ici.
@@ -68,9 +67,3 @@ aeration_m4_fin_blocage_horaire:
     - action: input_boolean.turn_off
       target:
         entity_id: input_boolean.aeration_suspension_active
-
-    - action: logbook.log
-      data:
-        name: "Chauffage - Fin blocage horaire"
-        message: "Blocage chauffage levé (fin blocage horaire)."
-        entity_id: input_boolean.chauffage_blocage_aeration

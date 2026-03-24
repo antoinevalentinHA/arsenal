@@ -38,23 +38,13 @@
 
   action:
     - choose:
-        # --------------------------------------------------
-        # CAS 1 : cycle légitime → on conserve
-        # --------------------------------------------------
         - conditions:
             - condition: state
               entity_id: input_boolean.ecs_cycle_en_cours
               state: "on"
-          sequence:
-            - action: logbook.log
-              data:
-                name: "ECS"
-                message: "Pipeline conservé après redémarrage (cycle actif)"
+          sequence: []
 
       default:
-        # --------------------------------------------------
-        # CAS 2 : zombie → purge
-        # --------------------------------------------------
         - action: input_boolean.turn_off
           target:
             entity_id: input_boolean.ecs_pipeline_en_cours
@@ -62,4 +52,4 @@
         - action: logbook.log
           data:
             name: "ECS"
-            message: "Pipeline zombie purgé après redémarrage"
+            message: "État ECS incohérent purgé au démarrage"

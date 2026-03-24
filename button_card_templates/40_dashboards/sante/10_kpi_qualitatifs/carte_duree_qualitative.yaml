@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Santé — Durée sommeil qualitative (KPI)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la durée de sommeil en heures sous forme de KPI.
+#     La couleur est pilotée par un sensor de couleur upstream
+#     (charte Arsenal santé). Délègue toute la logique visuelle
+#     au socle via variables.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Déléguée à sensor.couleur_sante_duree_sommeil
+#       et au profil ui_profile: arsenal du socle_kpi
+#
+# 🔗 DEPENDANCES
+#     - entity                               : sensor durée sommeil (state numérique, heures)
+#     - sensor.couleur_sante_duree_sommeil   : clé couleur upstream
+#     - variables.ui_profile                 : "arsenal" (profil de rendu socle_kpi)
+#
+# ⚠️ CONTRAINTES
+#     - Aucune logique de couleur propre — entièrement déléguée upstream
+#     - triggers_update déclaré sur le sensor couleur (réactivité)
+#     - Valeur affichée avec 1 décimale (toFixed(1)) et unité h
+#     - Même pattern que carte_activite_calories_quotidiennes et
+#       carte_ecs_etat_ballon — famille socle_kpi + sensor couleur upstream
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_duree_qualitative
+#     entity: sensor.duree_sommeil
+#
+# ==========================================================
+
+carte_duree_qualitative:
+  template: socle_kpi
+
+  show_state: true
+  show_icon: true
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_sante_duree_sommeil
+
+  triggers_update:
+    - sensor.couleur_sante_duree_sommeil
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity?.state);
+      if (isNaN(v)) return "—";
+      return `${v.toFixed(1)} h`;
+    ]]]
+

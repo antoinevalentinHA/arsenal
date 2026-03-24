@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler — KPI courbe
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — REUTILISABLE
+#
+# 🎯 ROLE
+#     Specialiser le socle KPI canonique pour l'affichage
+#     d'un parametre de courbe du sous-systeme boiler.
+#
+# 🧱 NATURE
+#     - Template button-card derive d'un socle KPI
+#     - Porte la semantique couleur metier
+#     - Reutilisable sur les parametres structurels
+#       de la courbe de chauffe
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unknown / unavailable -> gris indispo
+#     - valeur valide -> bleu info
+#
+# ⚠️ CONTRAINTE
+#     Une pente ou un decalage de courbe n'est ni une mesure
+#     physique brute ni un etat OK / KO.
+#     Ces valeurs representent des parametres de reglage.
+#     Leur affichage releve donc d'une semantique
+#     d'information technique.
+#
+# 🧩 USAGE
+#     Exemple :
+#       type: custom:button-card
+#       template: boiler_kpi_courbe
+#       entity: sensor.boiler_heating_curve_slope
+#       name: Pente
+#
+# ==========================================================
+
+boiler_kpi_courbe:
+  template:
+    - socle_kpi_72
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (state === null || state === undefined || state === 'unknown' || state === 'unavailable') {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const value = Number(state);
+
+            if (!Number.isFinite(value)) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            return 'rgba(33, 150, 243, 0.2)';
+          ]]]

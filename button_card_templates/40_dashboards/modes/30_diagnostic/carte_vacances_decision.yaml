@@ -1,0 +1,78 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Vacances — État réel et raison active
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état réel du mode vacances et la raison qui
+#     l'explique (conditions réunies ou cause de blocage).
+#     Lecture seule — aucune interaction.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_label
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on  -> 🟡 jaune "Vacances actives"
+#     - state = off -> ⚪ gris  "Vacances inactives"
+#
+# 🔗 DEPENDANCES
+#     - entity                  : binary_sensor.vacances_actives
+#     - sensor.vacances_raison  : raison active normalisée (clé Arsenal)
+#       Valeurs connues :
+#       • mode_maison_normal    -> mode maison non positionné sur Vacances
+#       • presence_famille      -> présence famille détectée
+#       • visite_en_cours       -> visite en cours
+#       • vacances_actives      -> toutes conditions réunies
+#
+# ⚠️ CONTRAINTES
+#     - Toute raison hors mapping affiche "—" (pas d'état brut)
+#     - Jaune choisi pour ON : vacances = état intentionnel, pas une alerte
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_vacances_decision
+#     entity: binary_sensor.vacances_actives
+#
+# ==========================================================
+
+carte_vacances_decision:
+  template: socle_status_label
+
+  name: Vacances – État réel
+
+  state_display: |
+    [[[ 
+      return entity.state === 'on'
+        ? 'Vacances actives'
+        : 'Vacances inactives';
+    ]]]
+
+  label: |
+    [[[ 
+      const raison = states['sensor.vacances_raison']?.state || '';
+      const map = {
+        'mode_maison_normal': 'Mode maison non positionné sur Vacances',
+        'presence_famille': 'Présence famille détectée',
+        'visite_en_cours': 'Visite en cours',
+        'vacances_actives': 'Toutes les conditions sont réunies'
+      };
+      return map[raison] || '—';
+    ]]]
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(255,235,59,0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
+          

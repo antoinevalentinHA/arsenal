@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Diagnostic chauffage hiver actif
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher l'etat d'activation du chauffage par
+#     climatisation en periode hivernale.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_label_72
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on -> "Actif" + vert
+#     - state = off -> "Désactivé" + gris neutre
+#
+# 🔗 DEPENDANCES
+#     - entity: input_boolean.chauffage_clim_active_en_hiver
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule pas l'autorisation chauffage
+#     - Il restitue uniquement l'etat expose par le backend
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_clim_diagnostic_chauffage_hiver_actif
+#       entity: input_boolean.chauffage_clim_active_en_hiver
+#
+# ==========================================================
+
+carte_clim_diagnostic_chauffage_hiver_actif:
+  template: socle_status_label_72
+
+  entity: input_boolean.chauffage_clim_active_en_hiver
+
+  icon: mdi:radiator
+
+  label: |
+    [[[
+      return entity.state === "on"
+        ? "Actif"
+        : "Désactivé";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity.state === "on"
+              ? "rgba(76, 175, 80, 0.2)"
+              : "rgba(158, 158, 158, 0.2)";
+          ]]]

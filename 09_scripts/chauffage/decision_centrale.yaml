@@ -282,15 +282,6 @@ chauffage_decision_centrale:
               target:
                 entity_id: timer.chauffage_geoloc_antirebond
 
-            - alias: "Log confort"
-              service: logbook.log
-              data:
-                name: "Chauffage - Décision"
-                message: >
-                  Passage en mode Confort.
-                  Raison: {{ reason }}.
-                entity_id: sensor.programme_chauffage
-
       default:
 
         # ---------- Passage en Reduced ----------
@@ -309,12 +300,3 @@ chauffage_decision_centrale:
           service: timer.start
           target:
             entity_id: timer.chauffage_geoloc_antirebond
-
-        - alias: "Log reduced"
-          service: logbook.log
-          data:
-            name: "Chauffage - Decision"
-            message: >
-              Passage en mode Réduit.
-              Raison: {{ reason }}.
-            entity_id: sensor.programme_chauffage

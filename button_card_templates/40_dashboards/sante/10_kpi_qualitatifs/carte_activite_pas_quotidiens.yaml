@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Santé — Pas quotidiens (KPI)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche le nombre de pas quotidiens sous forme de KPI.
+#     La couleur est pilotée par un sensor de couleur upstream
+#     (charte Arsenal santé). Délègue toute la logique visuelle
+#     au socle via variables.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Déléguée à sensor.couleur_sante_pas_quotidiens
+#       et au profil ui_profile: arsenal du socle_kpi
+#
+# 🔗 DEPENDANCES
+#     - entity                               : sensor pas quotidiens (state numérique)
+#     - sensor.couleur_sante_pas_quotidiens  : clé couleur upstream
+#     - variables.ui_profile                 : "arsenal" (profil de rendu socle_kpi)
+#
+# ⚠️ CONTRAINTES
+#     - Aucune logique de couleur propre — entièrement déléguée upstream
+#     - triggers_update déclaré sur le sensor couleur (réactivité)
+#     - Valeur affichée arrondie à l'entier (Math.round) avec unité "pas"
+#     - Membre de la famille socle_kpi + sensor couleur upstream :
+#       carte_ecs_etat_ballon / carte_activite_calories_quotidiennes /
+#       carte_duree_qualitative / carte_frequence_respiratoire_qualitative
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_activite_pas_quotidiens
+#     entity: sensor.pas_quotidiens
+#
+# ==========================================================
+
+carte_activite_pas_quotidiens:
+  template: socle_kpi
+
+  show_state: true
+  show_icon: true
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_sante_pas_quotidiens
+
+  triggers_update:
+    - sensor.couleur_sante_pas_quotidiens
+
+  state_display: |
+    [[[
+      const steps = parseFloat(entity?.state);
+      if (isNaN(steps)) return "—";
+      return `${Math.round(steps)} pas`;
+    ]]]
+

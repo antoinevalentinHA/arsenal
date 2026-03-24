@@ -1,0 +1,84 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Météo — Précipitations à seuils variables
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche une valeur de précipitations en mm avec coloration
+#     progressive selon trois seuils paramétrables. Générique —
+#     utilisable sur tout sensor de précipitations.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de carte_base_v2
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - v >= seuil_forte         -> 🔵 bleu foncé   (forte pluie)
+#     - v >= seuil_modere        -> 🔵 bleu moyen   (pluie modérée)
+#     - v >= seuil_faible        -> 🔵 bleu clair   (pluie faible)
+#     - v < seuil_faible (ou 0)  -> ⚪ gris         (sec / trace)
+#     - valeur non numérique     -> ⚪ gris clair   (unavailable)
+#
+# 🔗 DEPENDANCES
+#     - entity               : sensor de précipitations (state numérique, unité mm)
+#     - variables.seuil_faible  : seuil pluie faible (mm) — optionnel
+#     - variables.seuil_modere  : seuil pluie modérée (mm) — optionnel
+#     - variables.seuil_forte   : seuil pluie forte (mm) — optionnel
+#
+# ⚠️ CONTRAINTES
+#     - Seuils évalués de fort vers faible — seuil_forte doit être > seuil_modere > seuil_faible
+#     - Un seuil absent (undefined) est silencieusement ignoré
+#     - Toutes les actions désactivées
+#     - Pattern identique à carte_autonomie_seuils_variables —
+#       candidats à un socle commun paramétrable
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_precipitations_seuils_variables
+#     entity: sensor.precipitations_jardin
+#     variables:
+#       seuil_faible: 0.5
+#       seuil_modere: 2
+#       seuil_forte: 10
+#
+# ==========================================================
+
+carte_precipitations_seuils_variables:
+  template: carte_base_v2
+  icon: mdi:water
+  show_state: true
+  show_icon: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${v.toFixed(1)} mm`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+
+            const f = variables?.seuil_faible;
+            const m = variables?.seuil_modere;
+            const s = variables?.seuil_forte;
+
+            if (isNaN(v)) return 'rgba(158, 158, 158, 0.1)';
+            if (s !== undefined && v >= s) return 'rgba(30, 136, 229, 0.35)';
+            if (m !== undefined && v >= m) return 'rgba(100, 181, 246, 0.3)';
+            if (f !== undefined && v >= f) return 'rgba(187, 222, 251, 0.3)';
+            return 'rgba(158, 158, 158, 0.2)';
+          ]]]

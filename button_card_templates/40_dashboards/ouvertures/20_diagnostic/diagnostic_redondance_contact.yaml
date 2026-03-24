@@ -1,0 +1,98 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Ouvertures — Diagnostic redondance contact
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche le diagnostic de redondance d'un capteur de contact
+#     avec couleur et résumé dérivés automatiquement depuis
+#     l'entity_id source. Lecture seule.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_diagnostic_compact_readonly_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Couleur pilotée par sensor.couleur_diagnostic_redondance_*
+#       (dérivé de l'entity_id par substitution de préfixe) :
+#       green  -> 🟢 vert
+#       red    -> 🔴 rouge
+#       orange -> 🟠 orange
+#       blue   -> 🔵 bleu
+#       yellow -> 🟡 jaune
+#       grey   -> ⚪ gris
+#       unavailable / inconnu -> ⚪ gris clair
+#
+# 🔗 DEPENDANCES
+#     - entity                                    : sensor.diagnostic_redondance_contact_*
+#     - sensor.couleur_diagnostic_redondance_*    : clé couleur (dérivée par regex)
+#     - sensor.resume_diagnostic_redondance_*     : texte résumé label (dérivé par regex)
+#
+# ⚠️ CONTRAINTES
+#     - Convention de nommage Arsenal strictement requise :
+#       sensor.diagnostic_redondance_* →
+#       sensor.couleur_diagnostic_redondance_* et
+#       sensor.resume_diagnostic_redondance_*
+#       Toute déviation casse la dérivation silencieusement
+#     - show_icon désactivé — layout texte seul
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: diagnostic_redondance_contact
+#     entity: sensor.diagnostic_redondance_contact_porte_entree
+#
+# ==========================================================
+
+diagnostic_redondance_contact:
+  template: socle_diagnostic_compact_readonly_72
+
+  show_icon: false
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            if (!entity || !entity.entity_id) {
+              return "rgba(158, 158, 158, 0.1)";
+            }
+
+            const colorEntity = entity.entity_id.replace(
+              /^sensor\.diagnostic_redondance_/,
+              "sensor.couleur_diagnostic_redondance_"
+            );
+
+            const key = states[colorEntity]?.state;
+
+            const palette = {
+              green: "rgba(76, 175, 80, 0.2)",
+              red: "rgba(244, 67, 54, 0.2)",
+              orange: "rgba(255, 152, 0, 0.2)",
+              blue: "rgba(33, 150, 243, 0.2)",
+              grey: "rgba(158, 158, 158, 0.2)",
+              yellow: "rgba(255, 235, 59, 0.2)",
+              unavailable: "rgba(158, 158, 158, 0.1)"
+            };
+
+            if (!key || key === "unknown" || key === "unavailable") {
+              return palette.unavailable;
+            }
+
+            return palette[key] || palette.grey;
+          ]]]
+
+  label: >
+    [[[
+      if (!entity || !entity.entity_id) return "";
+
+      const resumeEntity = entity.entity_id.replace(
+        /^sensor\.diagnostic_redondance_/,
+        "sensor.resume_diagnostic_redondance_"
+      );
+
+      return states[resumeEntity]?.state || "";
+    ]]]

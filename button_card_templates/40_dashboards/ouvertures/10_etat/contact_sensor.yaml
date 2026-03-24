@@ -1,0 +1,81 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Ouvertures — Capteur de contact
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher l'etat d'un capteur de contact (ouvert / ferme)
+#     avec une semantique visuelle claire et sans affichage du state.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_72
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on -> ouvert + rouge
+#     - state = off -> ferme + vert
+#     - autre / indisponible -> gris indispo
+#
+# 🔗 DEPENDANCES
+#     - entity: binary_sensor.* (contact)
+#     - attributes:
+#         - icon (optionnel)
+#     - helpers externes: aucun
+#     - variables:
+#         - icon_on (optionnel)
+#         - icon_off (optionnel)
+#
+# ⚠️ CONTRAINTES
+#     - Affichage du state volontairement masque
+#     - Aucune logique metier ni reinterpretation
+#     - Les icones peuvent etre surchargees via variables
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: contact_sensor
+#       entity: binary_sensor.porte_entree
+#
+# ==========================================================
+
+contact_sensor:
+  template: socle_status_72
+
+  show_state: false
+
+  tap_action:
+    action: more-info
+
+  variables:
+    icon_on: null
+    icon_off: null
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            if (entity.state === 'on')  return 'rgba(244, 67, 54, 0.2)';   // ouvert
+            if (entity.state === 'off') return 'rgba(76, 175, 80, 0.2)';  // fermé
+            return 'rgba(158, 158, 158, 0.1)';                            // inconnu
+          ]]]
+
+    # Neutralisation visuelle du state (sécurité supplémentaire)
+    state:
+      - display: none
+
+  state:
+    - value: 'on'
+      icon: |
+        [[[
+          return variables.icon_on || entity.attributes.icon || 'mdi:alert';
+        ]]]
+
+    - value: 'off'
+      icon: |
+        [[[
+          return variables.icon_off || entity.attributes.icon || 'mdi:check-circle-outline';
+        ]]]

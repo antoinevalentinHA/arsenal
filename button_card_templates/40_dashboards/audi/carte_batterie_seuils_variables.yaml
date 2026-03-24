@@ -1,0 +1,88 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Système — Batterie seuils variables
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher le niveau de batterie avec une evaluation
+#     dynamique basee sur des seuils fournis en variables.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_diagnostic_compact
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - valeur indisponible -> gris indispo
+#     - valeur < s_crit -> rouge
+#     - valeur < s_low -> orange
+#     - valeur < s_mid -> jaune
+#     - valeur >= s_mid -> vert
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur de batterie (valeur en %)
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Les seuils sont fournis via variables (s_crit, s_low, s_mid)
+#     - Aucun seuil par defaut impose
+#     - Ce template ne calcule pas la valeur batterie
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_batterie_seuils_variables
+#       entity: sensor.batterie
+#       variables:
+#         s_crit: 10
+#         s_low: 20
+#         s_mid: 40
+#
+# ==========================================================
+
+carte_batterie_seuils_variables:
+  template: socle_diagnostic_compact
+
+  show_state: true
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${Math.round(v)} %`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+
+            const s_crit = variables?.s_crit;
+            const s_low  = variables?.s_low;
+            const s_mid  = variables?.s_mid;
+
+            if (isNaN(v)) return 'rgba(158, 158, 158, 0.1)';
+
+            if (s_crit !== undefined && v < s_crit)
+              return 'rgba(244, 67, 54, 0.2)';
+
+            if (s_low !== undefined && v < s_low)
+              return 'rgba(255, 152, 0, 0.2)';
+
+            if (s_mid !== undefined && v < s_mid)
+              return 'rgba(255, 193, 7, 0.25)';
+
+            return 'rgba(76, 175, 80, 0.2)';
+          ]]]

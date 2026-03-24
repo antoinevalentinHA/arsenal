@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Déshumidificateur — État réel
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher l'etat reel du déshumidificateur ainsi que
+#     sa puissance instantanée mesurée par la prise.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_label
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on -> "Actif" + vert
+#     - state = off -> "Arrêté" + gris neutre
+#     - etat inconnu / indisponible -> "Inconnu" + gris indispo
+#
+# 🔗 DEPENDANCES
+#     - entity: binary_sensor.deshumidificateur_actif
+#     - attributes: aucune
+#     - helpers externes:
+#         - sensor.prise_deshumidificateur_power
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne pilote pas le déshumidificateur
+#     - Il repose sur une mesure réelle de prise
+#     - Il affiche uniquement une lecture materielle
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_deshumidificateur_etat_reel
+#       entity: binary_sensor.deshumidificateur_actif
+#
+# ==========================================================
+
+carte_deshumidificateur_etat_reel:
+  template: socle_status_label
+
+  entity: binary_sensor.deshumidificateur_actif
+
+  show_icon: false
+
+  state_display: |
+    [[[
+      if (!entity) return 'Inconnu';
+      if (entity.state === 'on')  return 'Actif';
+      if (entity.state === 'off') return 'Arrêté';
+      return 'Inconnu';
+    ]]]
+
+  label: |
+    [[[
+      const p = states['sensor.prise_deshumidificateur_power']?.state ?? '—';
+      return `Puissance: ${p} W`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            if (!entity) return "rgba(158, 158, 158, 0.1)";
+            const st = entity.state;
+            if (st === 'on')  return "rgba(76, 175, 80, 0.2)";
+            if (st === 'off') return "rgba(158, 158, 158, 0.2)";
+            return "rgba(158, 158, 158, 0.1)";
+          ]]]
+          

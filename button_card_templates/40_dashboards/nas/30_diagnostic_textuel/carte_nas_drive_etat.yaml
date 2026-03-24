@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     NAS — État disque (diagnostic)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état global d'un disque NAS DSM avec coloration
+#     sémantique. Détection par inclusion de mots-clés dans
+#     le state — tolérant aux variantes de libellés DSM.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state contient 'critique'          -> 🔴 rouge   (défaillance critique)
+#     - state contient 'avert' / 'warning' -> 🟠 orange  (avertissement)
+#     - state contient 'normal' / 'ok'     -> 🟢 vert    (nominal)
+#     - aucun mot-clé reconnu              -> ⚪ gris clair (inconnu / indisponible)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor d'état disque DSM (state = texte libre DSM)
+#
+# ⚠️ CONTRAINTES
+#     - Détection par inclusion (toLowerCase) — sensible aux libellés DSM
+#       non anticipés (ex. nouvelle valeur sans 'normal'/'ok'/'avert'/'critique')
+#     - Priorité : critique > avertissement > normal > inconnu
+#     - Aucune action définie — héritée de socle_status_72
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_nas_drive_etat
+#     entity: sensor.nas_disque_1_etat
+#
+# ==========================================================
+
+carte_nas_drive_etat:
+  template: socle_status_72
+
+  show_state: true
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = (entity.state || '').toLowerCase();
+
+            if (v.includes('critique'))
+              return 'rgba(244, 67, 54, 0.2)';   // 🔴 critique
+
+            if (v.includes('avert') || v.includes('warning'))
+              return 'rgba(255, 152, 0, 0.2)';   // 🟠 avertissement
+
+            if (v.includes('normal') || v.includes('ok'))
+              return 'rgba(76, 175, 80, 0.2)';   // 🟢 normal
+
+            return 'rgba(158, 158, 158, 0.1)';   // ⚪ inconnu/indisponible (charte)
+          ]]]

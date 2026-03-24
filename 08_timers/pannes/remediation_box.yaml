@@ -1,0 +1,24 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER
+#     Réseau — Timer remédiation box
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Porter la temporisation unique de la campagne
+#     de remédiation Internet.
+#
+#     Ce timer sert :
+#     - au délai de vérification post-action avant cycle 2
+#     - aux délais de cadence entre cycles suivants
+#
+# 🧱 CONTRAT
+#
+#     - mécanisme unique de temporisation
+#     - support de la cadence canonique
+#     - survivance au redémarrage Home Assistant
+# ==========================================================
+
+reboot_box:
+  name: "Réseau – Timer remédiation box"
+  duration: "00:02:00"
+  restore: true

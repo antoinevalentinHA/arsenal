@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Système — Information
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher une information systeme simple et lisible
+#     (uptime, horodatage, dernier demarrage, etc.).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_info_72
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - valeur disponible -> affichage neutre (info)
+#     - valeur indisponible -> gris indispo
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur systeme (uptime, timestamp, etc.)
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Carte purement informationnelle
+#     - Aucune interaction utilisateur
+#     - Aucun traitement ou interpretation metier
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_info_systeme
+#       entity: sensor.system_uptime
+#
+# ==========================================================
+
+carte_info_systeme:
+  template: socle_info_72
+
+  show_state: true

@@ -1,0 +1,141 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Sécurité – Sortie du mode panne secteur
+#
+#  ID : 1004000000002
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de SORTIE DU MODE PANNE SECTEUR.
+#
+#     Elle clôt l’épisode de panne après retour du courant
+#     confirmé, lève les états système de secours et
+#     disqualifie la signalisation associée.
+#
+# ----------------------------------------------------------
+#  🧱 NATURE
+#
+#     - Réaction à la fin d’un événement critique
+#     - Clôture d’état système dégradé
+#     - Retour explicite au régime nominal
+#
+# ----------------------------------------------------------
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement après retour du secteur confirmé
+#       et stable (≥ 5 minutes)
+#     - Rejet explicite des états restaurés
+#       (anti faux-positifs au redémarrage)
+#
+#     - Actions effectuées :
+#         • désactivation de `input_boolean.panne_secteur_active`
+#         • désactivation de `input_boolean.mode_confort_chauffage`
+#         • suppression de la notification persistante
+#         • notification mobile de fin d’épisode
+#
+# ----------------------------------------------------------
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne force aucune consigne chauffage
+#     - Ne décide d’aucune stratégie thermique
+#     - Ne corrige pas l’ECS par défaut
+#     - Ne pilote aucun autre sous-système
+#     - N’émet aucune commande MQTT directe
+#
+# ----------------------------------------------------------
+#  🔗 UTILISATION
+#
+#     - Complément direct de l’automation d’entrée
+#       en mode panne secteur
+#     - Clôture explicite de l’épisode de panne
+#     - Restitution du chauffage à sa gouvernance normale
+#
+# ----------------------------------------------------------
+#  🧠 PRINCIPE ARSENAL
+#
+#     La sortie d’un mode dégradé est explicite,
+#     observable et sans effet caché.
+#
+#     Chaque sous-système reprend ensuite sous le contrôle
+#     de son moteur décisionnel ou exécutif légitime.
+#
+# ----------------------------------------------------------
+#  🛡️ ROBUSTESSE
+#
+#     Les vérifications temporelles et le filtrage des
+#     états restaurés limitent les déclenchements fantômes
+#     lors d’un redémarrage ou d’un retour secteur instable.
+#
+# ----------------------------------------------------------
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+- id: '1004000000002'
+  alias: "Sécurité – Sortie mode panne secteur"
+  description: >
+    Clôt l’épisode de panne secteur après retour du courant,
+    désactive les états système de secours et supprime la
+    signalisation associée.
+
+  mode: single
+
+  # ======================================================
+  # 🔔 Déclencheur — Retour courant secteur confirmé
+  # ======================================================
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.coupure_secteur
+      from: 'on'
+      to: 'off'
+      for: "00:05:00"
+
+  # ======================================================
+  # ✅ Conditions — Retour réel d’un épisode actif
+  # ======================================================
+  condition:
+    - condition: state
+      entity_id: input_boolean.panne_secteur_active
+      state: "on"
+
+    - condition: template
+      value_template: >
+        {{ not (
+          (trigger.from_state and trigger.from_state.attributes.get('restored', false)) or
+          (trigger.to_state and trigger.to_state.attributes.get('restored', false))
+        ) }}
+
+  # ======================================================
+  # 🔁 Actions — Sortie du mode panne secteur
+  # ======================================================
+  action:
+
+    # 1) Clôturer l’épisode de panne
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.panne_secteur_active
+
+    # 2) Lever le signal logique chauffage
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.mode_confort_chauffage
+
+    # 3) Disqualifier l’état panne visible
+    - service: persistent_notification.dismiss
+      data:
+        notification_id: mode_panne_secteur
+
+    # 4) Notification mobile de fin d’épisode
+    - service: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "✅ Courant rétabli"
+        message: >
+          Alimentation rétablie à {{ now().strftime('%H:%M') }}.
+          L’épisode de panne secteur est clôturé.
+          Le signal chauffage de sécurisation est levé.
+        extra:
+          ttl: 0
+          priority: high
+          importance: high

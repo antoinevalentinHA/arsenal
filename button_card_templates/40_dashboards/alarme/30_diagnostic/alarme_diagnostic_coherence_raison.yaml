@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Alarme — Diagnostic coherence raison
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la raison textuelle associee au diagnostic
+#     de coherence du systeme d'alarme.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_info_72
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - raison connue -> libelle explicite
+#     - raison inconnue / indisponible -> "Indisponible"
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur portant un attribut raison
+#     - attributes:
+#         - raison
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Ce template ne calcule pas la raison
+#     - Il traduit uniquement un code backend en libelle lisible
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: alarme_diagnostic_coherence_raison
+#       entity: binary_sensor.alarme_coherence
+#
+# ==========================================================
+
+alarme_diagnostic_coherence_raison:
+  template: socle_info_72
+
+  show_state: false
+  show_label: true
+  name: Raison
+
+  label: >
+    [[[
+      const r = entity.attributes?.raison;
+
+      if (!r || r === "unknown" || r === "unavailable")
+        return "Indisponible";
+
+      const map = {
+        "coherent": "Fonctionnement nominal",
+        "force_on": "Mode test / babysitting actif",
+        "blocage_actif": "Blocage armement automatique actif",
+        "armed_away_avec_presence": "Alarme armée avec présence détectée",
+        "desarme_maison_vide": "Alarme désarmée alors que maison vide"
+      };
+
+      return map[r] || r;
+    ]]]

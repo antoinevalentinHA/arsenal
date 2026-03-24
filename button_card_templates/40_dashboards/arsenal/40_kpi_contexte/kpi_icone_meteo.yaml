@@ -1,0 +1,82 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Météo — KPI avec icône météo dynamique
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Variante de socle_kpi qui remplace l'icône statique par
+#     une icône dynamique dérivée de l'état d'une entité météo.
+#     Typiquement associée à un sensor de température ou KPI
+#     quelconque, avec contexte météo visuel.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - sunny / clear          -> mdi:weather-sunny
+#     - clear-night            -> mdi:weather-night
+#     - cloudy                 -> mdi:weather-cloudy
+#     - partlycloudy           -> mdi:weather-partly-cloudy
+#     - rainy                  -> mdi:weather-rainy
+#     - pouring                -> mdi:weather-pouring
+#     - lightning              -> mdi:weather-lightning
+#     - lightning-rainy        -> mdi:weather-lightning-rainy
+#     - snowy                  -> mdi:weather-snowy
+#     - snowy-rainy            -> mdi:weather-snowy-rainy
+#     - windy                  -> mdi:weather-windy
+#     - fog                    -> mdi:weather-fog
+#     - état inconnu / absent  -> mdi:weather-cloudy (fallback)
+#
+# 🔗 DEPENDANCES
+#     - entity                  : sensor KPI affiché (température ou autre)
+#     - variables.weather_entity: entité météo source (défaut: weather.forecast_maison)
+#
+# ⚠️ CONTRAINTES
+#     - Ne surcharge que l'icône — tout le reste hérite de socle_kpi sans modification
+#     - La variable weather_entity est optionnelle mais doit pointer vers une entité weather.*
+#     - Ne pas utiliser si l'icône doit être statique (utiliser socle_kpi directement)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: kpi_icone_meteo
+#     entity: sensor.temperature_jardin
+#     # optionnel :
+#     variables:
+#       weather_entity: weather.forecast_maison
+#
+# ==========================================================
+
+kpi_icone_meteo:
+  template: socle_kpi
+
+  variables:
+    weather_entity: weather.forecast_maison
+
+  icon: |
+    [[[
+      const we = variables?.weather_entity || 'weather.forecast_maison';
+      const code = states[we]?.state;
+
+      const icones = {
+        sunny: "mdi:weather-sunny",
+        clear: "mdi:weather-sunny",
+        "clear-night": "mdi:weather-night",
+        cloudy: "mdi:weather-cloudy",
+        partlycloudy: "mdi:weather-partly-cloudy",
+        rainy: "mdi:weather-rainy",
+        pouring: "mdi:weather-pouring",
+        lightning: "mdi:weather-lightning",
+        "lightning-rainy": "mdi:weather-lightning-rainy",
+        snowy: "mdi:weather-snowy",
+        "snowy-rainy": "mdi:weather-snowy-rainy",
+        windy: "mdi:weather-windy",
+        fog: "mdi:weather-fog"
+      };
+
+      return icones[code] || "mdi:weather-cloudy";
+    ]]]

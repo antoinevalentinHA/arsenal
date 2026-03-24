@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler — Diagnostic erreur
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — REUTILISABLE
+#
+# 🎯 ROLE
+#     Specialiser le socle diagnostic canonique pour
+#     l'affichage de la derniere erreur du sous-systeme
+#     boiler.
+#
+# 🧱 NATURE
+#     - Template button-card derive d'un socle diagnostic
+#     - Porte la semantique couleur metier d'erreur
+#     - Reutilisable sur les capteurs d'erreur boiler
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unknown / unavailable / vide -> gris indispo
+#     - valeur presente -> rouge
+#
+# ⚠️ CONTRAINTE
+#     Une erreur boiler releve d'une semantique critique.
+#     Cette carte ne doit pas etre reutilisee pour un
+#     simple statut, une information, ou un KPI.
+#
+# 🧩 USAGE
+#     Exemple :
+#       type: custom:button-card
+#       template: boiler_diagnostic_error
+#       entity: sensor.boiler_error_last_summary
+#       name: Resume
+#
+# ==========================================================
+
+boiler_diagnostic_error:
+  template:
+    - socle_diagnostic_compact_readonly_72
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (
+              state === null ||
+              state === undefined ||
+              state === '' ||
+              state === 'unknown' ||
+              state === 'unavailable'
+            ) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            return 'rgba(244, 67, 54, 0.2)';
+          ]]]

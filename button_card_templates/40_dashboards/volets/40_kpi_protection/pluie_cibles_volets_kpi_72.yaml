@@ -1,0 +1,67 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Volets — KPI cibles volets pluie (72px)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche le nombre de volets ciblés par la logique pluie
+#     avec coloration sémantique. Zéro = nominal, non-zéro =
+#     volets en attente de fermeture / protection.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72_sans_icone
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - n = 0                  -> 🟢 vert   "0 volet(s)" (aucun volet concerné)
+#     - n > 0                  -> 🟠 orange "N volet(s)" (volets ciblés par pluie)
+#     - unknown / unavailable  -> ⚪ gris clair "Indisponible"
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor compteur de volets ciblés (state numérique entier)
+#
+# ⚠️ CONTRAINTES
+#     - Sémantique inhabituelle : 0 = nominal (vert), >0 = attention (orange)
+#     - Le label redonde le state avec unité "volet(s)" —
+#       show_state et label affichent tous deux la valeur
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: pluie_cibles_volets_kpi_72
+#     entity: sensor.pluie_cibles_volets_count
+#
+# ==========================================================
+
+pluie_cibles_volets_kpi_72:
+  template: socle_kpi_label_72_sans_icone
+  show_state: true
+  show_label: true
+  label: >
+    [[[
+      const s = entity?.state;
+      if (!s || s === "unknown" || s === "unavailable") return "Indisponible";
+
+      const n = Number(s);
+      if (!Number.isFinite(n)) return "Indisponible";
+
+      return `${n} volet(s)`;
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity?.state;
+
+            if (!s || s === "unknown" || s === "unavailable") return "rgba(158, 158, 158, 0.1)";
+
+            const n = Number(s);
+            if (!Number.isFinite(n)) return "rgba(158, 158, 158, 0.1)";
+
+            if (n <= 0) return "rgba(76, 175, 80, 0.2)";
+            return "rgba(255, 152, 0, 0.25)";
+          ]]]

@@ -110,12 +110,3 @@
         entity_id: input_datetime.analyse_deltat_disponible
       data:
         datetime: "{{ now().date().isoformat() ~ ' 00:00:00' }}"
-
-    # Journalisation minimale (audit)
-    - action: logbook.log
-      data:
-        name: "Chauffage - Aération - Mini-guard"
-        message: >
-          Pipeline désarmé (anti-zombie) : épisode OFF, blocage OFF, ouvertures OFF.
-          Timers aération annulés.
-        entity_id: input_boolean.aeration_pipeline_arme

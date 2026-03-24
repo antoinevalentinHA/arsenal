@@ -1,0 +1,83 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Air — CO₂ seuils variables
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher le niveau de CO₂ et son evaluation selon
+#     des seuils fournis en variables.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_kpi_72
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - valeur indisponible -> gris indispo
+#     - valeur > seuil_crit -> rouge
+#     - valeur >= seuil_warn -> bleu
+#     - valeur < seuil_warn -> vert
+#
+# 🔗 DEPENDANCES
+#     - entity: capteur de CO₂
+#     - attributes: aucune
+#     - helpers externes: aucun
+#     - variables:
+#         - seuil_ok
+#         - seuil_warn
+#         - seuil_crit
+#
+# ⚠️ CONTRAINTES
+#     - Les seuils doivent etre fournis par l'appelant
+#     - Ce template ne calcule pas la valeur de CO₂
+#     - La variable seuil_ok est documentee mais non utilisee
+#       dans la logique actuelle
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_co2_seuils_variables
+#       entity: sensor.co2_sejour
+#       variables:
+#         seuil_warn: 1000
+#         seuil_crit: 1400
+#
+# ==========================================================
+
+carte_co2_seuils_variables:
+  template: socle_kpi_72
+
+  icon: mdi:molecule-co2
+
+  show_state: true
+
+  tap_action:
+    action: more-info
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity.state);
+      return isNaN(v) ? '—' : `${Math.round(v)} ppm`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const v = parseFloat(entity.state);
+            const ok   = variables?.seuil_ok;
+            const warn = variables?.seuil_warn;
+            const crit = variables?.seuil_crit;
+
+            if (isNaN(v)) return 'rgba(158, 158, 158, 0.1)';
+            if (crit !== undefined && v > crit) return 'rgba(244, 67, 54, 0.2)';
+            if (warn !== undefined && v >= warn) return 'rgba(33, 150, 243, 0.2)';
+            return 'rgba(76, 175, 80, 0.2)';
+          ]]]

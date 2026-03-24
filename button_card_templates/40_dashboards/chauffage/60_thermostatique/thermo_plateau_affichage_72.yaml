@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Thermostatique — Plateau affiché (pièce sélectionnée)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la valeur de plateau thermostatique calculée pour
+#     affichage (sensor dédié, indépendant de la pièce active).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72_sans_icone
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - valeur disponible      -> 🔵 bleu fixe (info diagnostic)
+#     - unavailable / inconnu  -> affiche "—"
+#
+# 🔗 DEPENDANCES
+#     - input_select.adjustment_piece                    : pièce active (entity de déclenchement)
+#     - sensor.plateau_thermostatique_piece_affichage    : valeur affichage (sensor fixe)
+#
+# ⚠️ CONTRAINTES
+#     - Contrairement à thermo_plateau_strict_72, le sensor source est fixe (pas dynamique)
+#     - L'entity reste input_select pour cohérence de déclenchement dans la famille
+#     - Toutes les actions désactivées
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: thermo_plateau_affichage_72
+#     entity: input_select.adjustment_piece
+#
+# ==========================================================
+
+thermo_plateau_affichage_72:
+  template: socle_kpi_label_72_sans_icone
+  entity: input_select.adjustment_piece
+  tap_action: { action: none }
+  hold_action: { action: none }
+  double_tap_action: { action: none }
+  name: "Plateau"
+  state_display: |
+    [[[
+      const v = states['sensor.plateau_thermostatique_piece_affichage']?.state;
+      if (!v || ['unknown','unavailable'].includes(v)) return '—';
+      return `${v} °C`;
+    ]]]
+  label: "Valeur affichée"
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)

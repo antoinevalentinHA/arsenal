@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Eclairage — Action toggle confirme
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Permettre le pilotage d’un eclairage via une action
+#     toggle avec confirmation utilisateur.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_toggle_confirme
+#     - UI uniquement (aucune decision)
+#
+# 🎨 SEMANTIQUE
+#     - etat on -> eclairage allume (selon socle)
+#     - etat off -> eclairage eteint (selon socle)
+#     - confirmation obligatoire avant action
+#
+# 🔗 DEPENDANCES
+#     - entity: entite light.* ou equivalente
+#     - attributes: aucune
+#     - helpers externes: aucun
+#
+# ⚠️ CONTRAINTES
+#     - Action critique protegee par confirmation
+#     - Aucun pilotage implicite (pas de logique conditionnelle)
+#     - Ce template ne contient aucune logique metier
+#
+# 🧩 USAGE
+#     Exemple minimal :
+#       type: custom:button-card
+#       template: carte_action_eclairage
+#       entity: light.salon
+#
+# ==========================================================
+
+carte_action_eclairage:
+  template: socle_toggle_confirme
+
+  tap_action:
+    action: toggle
+    confirmation:
+      text: Allumer/éteindre l’éclairage ?

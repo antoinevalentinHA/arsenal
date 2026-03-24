@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Thermostatique — Plateau strict (pièce sélectionnée)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la valeur de plateau thermostatique strict pour la
+#     pièce courante sélectionnée dans input_select.adjustment_piece.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_kpi_label_72_sans_icone
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - valeur disponible      -> 🔵 bleu fixe (info diagnostic)
+#     - unavailable / inconnu  -> affiche "—"
+#
+# 🔗 DEPENDANCES
+#     - input_select.adjustment_piece              : pièce active (clé de routage)
+#     - sensor.plateau_thermostatique_<piece>      : valeur stricte par pièce
+#
+# ⚠️ CONTRAINTES
+#     - L'entity est input_select.adjustment_piece (routage), pas le sensor affiché
+#     - Le sensor cible est construit dynamiquement — convention de nommage requise
+#     - Toutes les actions désactivées
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: thermo_plateau_strict_72
+#     entity: input_select.adjustment_piece
+#
+# ==========================================================
+
+thermo_plateau_strict_72:
+  template: socle_kpi_label_72_sans_icone
+  entity: input_select.adjustment_piece
+  tap_action: { action: none }
+  hold_action: { action: none }
+  double_tap_action: { action: none }
+  name: "Plateau strict"
+  state_display: |
+    [[[
+      const piece = states['input_select.adjustment_piece']?.state;
+      if (!piece || ['unknown','unavailable'].includes(piece)) return '—';
+      const id = `sensor.plateau_thermostatique_${piece}`;
+      const v = states[id]?.state;
+      return (v && !['unknown','unavailable'].includes(v)) ? String(v) : '—';
+    ]]]
+  label: "Détection stricte"
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)

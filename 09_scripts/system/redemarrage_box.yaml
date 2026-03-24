@@ -1,63 +1,30 @@
 # ==========================================================
-# 🧠 ARSENAL — SCRIPT : Cycle alimentation box Internet
+# 🧠 ARSENAL — SCRIPT
+#     Réseau — Cycle alimentation box Internet
 # ----------------------------------------------------------
-# 🎯 RÔLE FONDAMENTAL
-#   Action physique UNIQUE de cycle d’alimentation
-#   de la box Internet (OFF → délai → ON).
+# 🎯 RÔLE
 #
-#   Ce script est un ACTUATEUR PUR.
+#     Exécuter l'action corrective physique unique
+#     de cycle d'alimentation de la box Internet.
 #
-# ----------------------------------------------------------
-# 🧱 POSITION DANS L’ARCHITECTURE
+#     Ce script :
+#     - coupe l'alimentation de la box
+#     - attend un délai fixe
+#     - rétablit l'alimentation
 #
-#   - Brique bas niveau
-#   - Infrastructure / Réseau
-#   - Aucun contexte métier
+# 🧱 CONTRAT
 #
-#   ➜ Toute coupure / remise sous tension
-#     de la box DOIT passer par ce script.
+#     - actuateur pur
+#     - aucune lecture de l'état réseau
+#     - aucune décision
+#     - aucune notification
+#     - aucune modification de contexte métier
 #
-# ----------------------------------------------------------
-# ⚙️ COMPORTEMENT
+# 🔎 NOTES D'IMPLEMENTATION
 #
-#   - Coupe la prise de la box
-#   - Attend une durée fixe
-#   - Rallume la prise
-#
-# ----------------------------------------------------------
-# 🔒 GARANTIES
-#
-#   - Aucune notification
-#   - Aucune logique conditionnelle
-#   - Aucune décision
-#   - Aucun retry
-#
-#   ➜ Ce script FAIT.
-#     Il ne sait PAS pourquoi.
-#
-# ----------------------------------------------------------
-# 🚫 NE FAIT PAS
-#
-#   - Ne décide pas quand agir
-#   - Ne vérifie pas l’état Internet
-#   - Ne trace rien
-#
-# ----------------------------------------------------------
-# 📊 Type :
-#   Script technique — actuateur infrastructure
-#
-# 📍 Entité :
-#   script.cycle_alimentation_box
-#
-# 🔗 Dépendances :
-#   - switch.prise_box
-#
-# 🧩 Pipeline :
-#   Système / Réseau / Actuateur
-#
-# ✅ Compatibilité :
-#   Home Assistant 2024.8+
-#   Arsenal v6+
+#     - toute action physique de redémarrage box
+#       doit passer exclusivement par ce script
+#     - la durée OFF est fixe et déterministe
 # ==========================================================
 
 cycle_alimentation_box:

@@ -1,0 +1,143 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Supervision — Intégration critique (générique)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Template générique de surveillance des intégrations critiques
+#     Home Assistant. Couvre deux modes : binaire (on/off) et
+#     numérique (âge des données en minutes vs seuil). Action
+#     manuelle de récupération optionnelle via tap.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de carte_base_v2
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     Mode binaire :
+#     - state = on             -> 🟢 vert  "OK"
+#     - state = off            -> 🔴 rouge "OFF"
+#
+#     Mode numérique (âge en minutes) :
+#     - valeur < seuil_minutes -> 🟢 vert  (données récentes)
+#     - valeur >= seuil_minutes -> 🔴 rouge (données obsolètes)
+#
+#     Seuils indicatifs par intégration :
+#     Netatmo 60 / Fujitsu 420 / SwitchBot 60 /
+#     Synology 360 / Audi 2880 / Cumulus 360
+#
+#     unknown / unavailable    -> ⚪ gris clair
+#
+# 🔗 DEPENDANCES
+#     - entity                      : binary_sensor ou sensor d'âge (minutes)
+#     - variables.seuil_minutes     : seuil d'obsolescence (défaut 180 min)
+#     - variables.action_service    : service à appeler au tap (optionnel)
+#     - variables.action_data       : data du service (optionnel)
+#     - variables.confirmation_text : texte de confirmation modale (optionnel)
+#
+# ⚠️ CONTRAINTES
+#     - tap_action est none si action_service est null — pas d'action par défaut
+#     - hold_action = more-info fixe (non paramétrable)
+#     - Le seuil par défaut (180 min) s'applique si seuil_minutes absent —
+#       toujours le surcharger à l'instance pour une supervision précise
+#     - Ne déclenche aucun redémarrage automatique
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_integration_critique
+#     entity: sensor.netatmo_age_donnees
+#     variables:
+#       seuil_minutes: 60
+#       action_service: homeassistant.reload_config_entry
+#       action_data:
+#         entry_id: "abc123"
+#       confirmation_text: "Recharger l'intégration Netatmo ?"
+#
+# ==========================================================
+
+carte_integration_critique:
+  template: carte_base_v2
+  color_type: card
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  variables:
+    action_service: null
+    action_data: {}
+    confirmation_text: "Confirmer l’action ?"
+    seuil_minutes: null
+
+  tap_action:
+    action: |
+      [[[
+        return variables?.action_service ? "call-service" : "none";
+      ]]]
+    service: |
+      [[[
+        return variables?.action_service || "";
+      ]]]
+    service_data: |
+      [[[
+        return variables?.action_data || {};
+      ]]]
+    confirmation:
+      text: |
+        [[[
+          return variables?.confirmation_text || "Confirmer l’action ?";
+        ]]]
+
+  hold_action:
+    action: more-info
+
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity?.state ?? "unknown";
+
+            // Seuil (minutes) : paramétrable par carte (fallback 180)
+            const seuil = Number.isFinite(parseFloat(variables?.seuil_minutes))
+              ? parseFloat(variables.seuil_minutes)
+              : 180;
+
+            // Cas indispo
+            if (s === "unknown" || s === "unavailable" || s === null || s === undefined) {
+              return "rgba(158, 158, 158, 0.1)";
+            }
+
+            // Cas binaire
+            if (s === "on")  return "rgba(76, 175, 80, 0.2)";
+            if (s === "off") return "rgba(244, 67, 54, 0.2)";
+
+            // Cas numérique (âge)
+            const val = parseFloat(s);
+            if (!isNaN(val)) {
+              return val < seuil
+                ? "rgba(76, 175, 80, 0.2)"
+                : "rgba(244, 67, 54, 0.2)";
+            }
+
+            // Fallback
+            return "rgba(224, 224, 224, 0.2)";
+          ]]]
+
+  state_display: |
+    [[[
+      const s = entity?.state ?? "unknown";
+      const val = parseFloat(s);
+
+      if (s === "on") return "OK";
+      if (s === "off") return "OFF";
+      if (!isNaN(val)) return `${val.toFixed(0)} min`;
+      return "—";
+    ]]]

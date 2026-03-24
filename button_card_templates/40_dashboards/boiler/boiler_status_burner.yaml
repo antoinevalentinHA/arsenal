@@ -1,0 +1,68 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Boiler — Status burner
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — REUTILISABLE
+#
+# 🎯 ROLE
+#     Specialiser le socle status canonique pour l'affichage
+#     de l'etat fonctionnel du bruleur boiler.
+#
+# 🧱 NATURE
+#     - Template button-card derive d'un socle status
+#     - Porte la semantique couleur metier du bruleur
+#     - Reutilisable sur l'etat on/off du bruleur
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unknown / unavailable / vide -> gris indispo
+#     - on -> bleu
+#     - off -> gris neutre
+#     - autre valeur non reconnue -> jaune
+#
+# ⚠️ CONTRAINTE
+#     Le bruleur n'est ni un statut infra, ni un etat OK/KO.
+#     on ne doit donc ni etre vert ni orange par defaut.
+#
+# 🧩 USAGE
+#     Exemple :
+#       type: custom:button-card
+#       template: boiler_status_burner
+#       entity: binary_sensor.boiler_burner_on
+#       name: Bruleur
+#
+# ==========================================================
+
+boiler_status_burner:
+  template:
+    - socle_status_72
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (
+              state === null ||
+              state === undefined ||
+              state === '' ||
+              state === 'unknown' ||
+              state === 'unavailable'
+            ) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const normalized = String(state).toLowerCase();
+
+            if (normalized === 'on') {
+              return 'rgba(33, 150, 243, 0.2)';
+            }
+
+            if (normalized === 'off') {
+              return 'rgba(158, 158, 158, 0.2)';
+            }
+
+            return 'rgba(255, 235, 59, 0.2)';
+          ]]]

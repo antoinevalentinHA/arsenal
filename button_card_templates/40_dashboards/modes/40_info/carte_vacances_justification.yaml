@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Vacances — Justification de l'état
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche la raison active du moteur vacances sous forme
+#     lisible. Complément de carte_vacances_decision — expose
+#     la justification seule, sans l'état binaire.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_compact
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - Couleur fixe 🔵 bleu (information contextuelle)
+#       quelle que soit la raison active
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor.vacances_raison
+#       Valeurs connues :
+#       • mode_maison_normal  -> "Mode maison ≠ Vacances"
+#       • presence_famille    -> "Présence famille détectée"
+#       • visite_en_cours     -> "Visite en cours"
+#       • vacances_actives    -> "Vacances effectivement actives"
+#
+# ⚠️ CONTRAINTES
+#     - Couleur non sémantique (bleu fixe) — pas de distinction
+#       entre raison de blocage et raison d'activation
+#     - Toute raison hors mapping affiche l'état brut
+#     - Complémentaire de carte_vacances_decision — ne pas
+#       utiliser seul sans contexte de l'état binaire
+#     - Aucune action définie
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_vacances_justification
+#     entity: sensor.vacances_raison
+#
+# ==========================================================
+
+carte_vacances_justification:
+  template: socle_status_compact
+
+  name: Vacances – Justification
+
+  state_display: |
+    [[[ 
+      const map = {
+        'mode_maison_normal': 'Mode maison ≠ Vacances',
+        'presence_famille': 'Présence famille détectée',
+        'visite_en_cours': 'Visite en cours',
+        'vacances_actives': 'Vacances effectivement actives'
+      };
+      return map[entity.state] || entity.state;
+    ]]]
+
+  styles:
+    card:
+      - background-color: rgba(33, 150, 243, 0.2)
+      

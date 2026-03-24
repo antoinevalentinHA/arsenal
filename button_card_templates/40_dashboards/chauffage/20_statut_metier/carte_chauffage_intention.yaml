@@ -1,0 +1,95 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Chauffage — Intention calculée
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'intention du moteur de décision chauffage
+#     (Confort / Neutre / Eco) avec un libellé humain contextualisé
+#     par la raison active. Lecture seule — aucune interaction.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_decision_72
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - intention = Confort                              -> 🟢 vert  "Confort requis"
+#     - intention = Neutre                               -> ⚪ gris  "Confort autorisé"
+#     - intention = Eco + raison absence_inhibition      -> ⚪ gris  "Sobriété • protection thermique"
+#     - intention = Eco + raison absence                 -> ⚪ gris  "Sobriété • absence"
+#     - intention = Eco (autre raison)                   -> ⚪ gris  "Sobriété thermique"
+#     - autre                                            -> état brut
+#
+# 🔗 DEPENDANCES
+#     - entity                           : sensor.chauffage_mode_calcule (Confort | Neutre | Eco)
+#     - sensor.chauffage_raison_calculee : raison active pour contextualiser Eco
+#
+# ⚠️ CONTRAINTES
+#     - Neutre et Eco partagent la même couleur grise — distinction via le libellé uniquement
+#     - show_label désactivé — toute l'information passe par state_display
+#     - Aucune action définie — héritée de socle_decision_72
+#     - Ne pas confondre avec carte_chauffage_decision (qui confronte intention vs état réel)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_chauffage_intention
+#     entity: sensor.chauffage_mode_calcule
+#
+# ==========================================================
+
+carte_chauffage_intention:
+  template: socle_decision_72
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  icon: mdi:brain
+  name: Intention chauffage
+
+  state_display: |
+    [[[ 
+      const intention = entity.state;
+      const raison = states['sensor.chauffage_raison_calculee']?.state;
+
+      if (intention === 'Confort') {
+        return 'Confort requis';
+      }
+
+      if (intention === 'Neutre') {
+        return 'Confort autorisé';
+      }
+
+      if (intention === 'Eco') {
+        if (raison === 'absence_inhibition_thermique') {
+          return 'Sobriété • protection thermique';
+        }
+        if (raison === 'absence') {
+          return 'Sobriété • absence';
+        }
+        return 'Sobriété thermique';
+      }
+
+      return intention;
+    ]]]
+
+  state:
+    - value: Confort
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: Neutre
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    - value: Eco
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)

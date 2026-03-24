@@ -1,0 +1,220 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+title: Boiler
+views:
+  - title: Boiler
+    path: boiler
+    icon: mdi:fire
+
+    badges: !include ../../includes/badges/diagnostics_systeme.yaml
+
+    cards:
+      - type: vertical-stack
+        cards:
+    
+          # ==========================================================
+          # 🧠 SECTION — SANTE BRIDGE
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔗 Bridge
+    
+          - type: horizontal-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_status_infra_positive
+                entity: binary_sensor.boiler_bridge_online
+                name: MQTT
+    
+              - type: custom:button-card
+                template: boiler_status_degraded_flag
+                entity: binary_sensor.boiler_bridge_degraded
+                name: Degraded
+    
+              - type: custom:button-card
+                template: boiler_status_infra_positive
+                entity: sensor.boiler_optolink_status
+                name: Optolink
+    
+              - type: custom:button-card
+                template: boiler_status_infra_positive
+                entity: sensor.boiler_vcontrold_status
+                name: vcontrold
+    
+          # ==========================================================
+          # 🧠 SECTION — ACTIVITE SYSTEME
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📡 Activite
+    
+          - type: horizontal-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_info_timestamp
+                entity: sensor.boiler_bridge_heartbeat_timestamp
+                name: Heartbeat
+    
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.boiler_bridge_version
+                name: Version
+    
+          # ==========================================================
+          # 🧠 SECTION — ETAT CHAUDIERE
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔥 Chaudiere
+    
+          - type: horizontal-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_status_burner
+                entity: binary_sensor.boiler_burner_on
+                name: Brûleur
+    
+              - type: custom:button-card
+                template: boiler_kpi_temperature
+                entity: sensor.boiler_supply_temperature
+                name: Départ
+    
+              - type: custom:button-card
+                template: boiler_kpi_temperature
+                entity: sensor.boiler_dhw_temperature
+                name: ECS
+                variables:
+                  warning_threshold: 55
+                  critical_threshold: 60
+    
+          - type: horizontal-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_kpi_consigne
+                entity: sensor.boiler_dhw_setpoint
+                name: Consigne ECS
+    
+              - type: custom:button-card
+                template: boiler_kpi_consigne
+                entity: sensor.boiler_heating_setpoint
+                name: Consigne Chauffage
+    
+          - type: horizontal-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_kpi_courbe
+                entity: sensor.boiler_heating_curve_slope
+                name: Pente
+    
+              - type: custom:button-card
+                template: boiler_kpi_courbe
+                entity: sensor.boiler_heating_curve_shift
+                name: Décalage
+    
+          # ==========================================================
+          # 🧠 SECTION — TRANSACTIONS
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔁 Transactions
+    
+          # ECS
+          - type: horizontal-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_decision_ack
+                entity: sensor.boiler_ack_dhw_set_setpoint_status
+                name: ECS
+    
+              - type: custom:button-card
+                template: boiler_info_timestamp
+                entity: sensor.boiler_ack_dhw_set_setpoint_ts
+                name: Timestamp
+    
+              - type: custom:button-card
+                template: boiler_info_requete
+                entity: input_text.boiler_req_dhw_set_setpoint
+                name: Requête
+    
+          # Chauffage temperature
+          - type: horizontal-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_decision_ack
+                entity: sensor.boiler_ack_heating_set_temperature_status
+                name: Chauffage
+    
+              - type: custom:button-card
+                template: boiler_info_timestamp
+                entity: sensor.boiler_ack_heating_set_temperature_ts
+                name: Timestamp
+    
+              - type: custom:button-card
+                template: boiler_info_requete
+                entity: input_text.boiler_req_heating_set_temperature
+                name: Requête
+    
+          # Pente
+          - type: horizontal-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_decision_ack
+                entity: sensor.boiler_ack_heating_set_curve_slope_status
+                name: Pente
+    
+              - type: custom:button-card
+                template: boiler_info_timestamp
+                entity: sensor.boiler_ack_heating_set_curve_slope_ts
+                name: Timestamp
+    
+              - type: custom:button-card
+                template: boiler_info_requete
+                entity: input_text.boiler_req_heating_set_curve_slope
+                name: Requête
+    
+          # Decalage
+          - type: horizontal-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_decision_ack
+                entity: sensor.boiler_ack_heating_set_curve_shift_status
+                name: Décalage
+    
+              - type: custom:button-card
+                template: boiler_info_timestamp
+                entity: sensor.boiler_ack_heating_set_curve_shift_ts
+                name: Timestamp
+    
+              - type: custom:button-card
+                template: boiler_info_requete
+                entity: input_text.boiler_req_heating_set_curve_shift
+                name: Requête
+    
+          # ==========================================================
+          # 🧠 SECTION — DERNIERE ERREUR
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: ⚠️ Erreur
+    
+          - type: vertical-stack
+            cards:
+    
+              - type: custom:button-card
+                template: boiler_diagnostic_error
+                entity: sensor.boiler_error_last_summary
+                name: Résumé
+    
+              - type: custom:button-card
+                template: boiler_info_timestamp
+                entity: sensor.boiler_error_last_ts
+                name: Timestamp

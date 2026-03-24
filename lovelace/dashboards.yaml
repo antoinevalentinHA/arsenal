@@ -383,6 +383,13 @@ diagnostics-climatisation-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/climatisation.yaml
 
+diagnostics-boiler-dashboard:
+  mode: yaml
+  title: Diagnostics Boiler
+  icon: mdi:fire
+  show_in_sidebar: false
+  filename: lovelace/dashboards/diagnostics/boiler.yaml
+
 diagnostics-chauffage-dashboard:
   mode: yaml
   title: Diagnostics Chauffage
