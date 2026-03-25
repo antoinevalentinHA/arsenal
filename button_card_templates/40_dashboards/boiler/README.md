@@ -84,13 +84,23 @@ Exemples : `boiler_kpi_consigne`, `boiler_kpi_courbe`, `boiler_kpi_temperature`
 - Lecture de valeurs opérationnelles avec seuils informatifs
 - **Type UI : interprétative** (transformation locale, non source de vérité système)
 
-Trois natures physiques distinctes au sein de ce bloc :
+Quatre natures physiques distinctes au sein de ce bloc :
 
-| KPI         | Nature réelle        |
-|-------------|----------------------|
-| consigne    | valeur cible         |
-| courbe      | paramètre structurel |
-| température | mesure physique      |
+| KPI         | Nature réelle                    |
+|-------------|----------------------------------|
+| consigne    | valeur cible                     |
+| courbe      | paramètre structurel             |
+| température | mesure physique                  |
+| modulation  | puissance instantanée du système |
+
+> La modulation du brûleur constitue une mesure interne
+> de l'activité réelle du système (puissance instantanée).
+>
+> Elle ne traduit ni un état de santé, ni une conformité,
+> ni un succès opérationnel.
+>
+> Une modulation élevée n'est pas un problème.
+> Une modulation nulle n'est pas une anomalie.
 
 > Les seuils warning / critique des KPI sont purement informatifs et ne constituent pas une logique décisionnelle. Une mesure physique ne doit jamais être affichée en vert — le vert est réservé aux états normatifs (OK / autorisé).
 
@@ -154,6 +164,7 @@ Niveau 5 — KPI                    → 50_kpi/
     boiler_kpi_consigne.yaml
     boiler_kpi_courbe.yaml
     boiler_kpi_temperature.yaml
+    boiler_kpi_burner_modulation.yaml
 ```
 
 ---

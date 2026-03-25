@@ -1,9 +1,30 @@
-#################################################################
-# 🏷️ HEADERS — STRUCTURE VISUELLE
-# ---------------------------------------------------------------
-# Titres de sections et sous-sections.
-# Lecture seule, aucune interaction utilisateur.
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Section — Header
+#
+# 🗂️ COUCHE : 10_generiques/headers
+# 🧱 TYPE UI : info
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Structure visuellement un ensemble de cartes en
+#   introduisant un titre de section.
+#
+# 📡 SOURCE
+#   - name fourni par la carte
+#
+# ⚙️ LOGIQUE UI
+#   - hérite de socle_header_base
+#   - aucune lecture d’entité
+#   - aucun comportement interactif
+#   - rendu typographique uniquement
+#
+# 📐 USAGE
+#   - utilisé pour séparer et titrer des groupes de cartes
+#   - ne doit porter aucune information métier
+#   - ne doit pas être utilisé comme support d’état
+# ==========================================================
 
 section_header:
   template: socle_header_base

@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI TRANSVERSE
+#     Base — V2
+#
+# 🧩 NATURE : socle
+# 🏗️ PORTÉE : fondation transversale
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit la base visuelle et comportementale commune
+#   des cartes button-card Arsenal.
+#
+# ⚙️ COMPORTEMENT
+#   - color_type: card
+#   - tap_action = more-info
+#   - hold/double_tap désactivés
+#   - hauteur standard 72px
+#   - rayon 12px, padding 8px
+#   - box-shadow hérité du thème HA
+#   - typographie canonique pour icon, name, state et label
+#
+# 📐 USAGE
+#   - destiné à être hérité par les socles et cartes métier
+#   - constitue la fondation visuelle par défaut Arsenal
+#   - peut être surchargé localement si le domaine l’exige
+#   - ne doit pas porter de logique métier locale
+# ==========================================================
+
+carte_base_v2:
+  color_type: card
+
+  tap_action:
+    action: more-info
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - border-radius: 12px
+      - height: 72px
+      - padding: 8px
+      - box-shadow: var(--ha-card-box-shadow)
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'
+
+    label:
+      - font-size: 12px
+      - font-weight: 400
+      - color: '#111'
+      - opacity: 0.85

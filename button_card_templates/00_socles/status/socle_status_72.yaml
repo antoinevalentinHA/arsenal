@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Status — Compact (72px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle de lecture d’état compact,
+#   sans interaction utilisateur.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon + name + state
+#   - label masqué
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - hauteur fixe 72px
+#   - icon dimensionnée (26px)
+#   - name secondaire (13px, font-weight 500)
+#   - state lisible (14px, font-weight 400)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux cartes de lecture compacte en grille
+#   - utilisé lorsque l’interaction more-info n’est pas nécessaire
+#   - ne doit pas être utilisé pour des cartes d’action
+# ==========================================================
+
+socle_status_72:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 72px
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'

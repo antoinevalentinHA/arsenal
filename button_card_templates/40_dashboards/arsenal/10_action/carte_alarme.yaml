@@ -1,40 +1,42 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Alarme — Carte alarme
+#
+# 🗂️ COUCHE : action
+# 🧱 TYPE UI : commande explicite contextualisée
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher l’état lisible de l’alarme maison et
+#   permettre un armement ou désarmement explicite
+#   selon l’état courant.
 #
-# 🎯 ROLE
-#     Afficher l'etat lisible de l'alarme maison et
-#     permettre un armement ou desarmement explicite.
+# 📡 SOURCE
+#   - entity.state (alarm_control_panel.alarme_maison)
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_toggle
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Affiche l’état réel de l’alarme :
+#       - armed_away → « Armée »
+#       - disarmed   → « Désarmée »
+#       - autre état → affichage brut
+#   - Détermine l’action utilisateur proposée selon
+#     l’état courant :
+#       - si désarmée → armement explicite
+#       - sinon → désarmement explicite
+#   - Confirmation obligatoire avant exécution
+#   - Aucune action implicite de type toggle natif
+#   - Navigation vers le dashboard alarme sur maintien
+#   - Code visuel :
+#       - disarmed → vert
+#       - armed_away → rouge
 #
-# 🎨 SEMANTIQUE
-#     - state = disarmed -> "Désarmée" + vert
-#     - state = armed_away -> "Armée" + rouge
-#     - autre etat -> affichage brut
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: alarm_control_panel.alarme_maison
-#     - attributes: aucune
-#     - helpers externes: aucun
-#
-# ⚠️ CONTRAINTES
-#     - Aucune action implicite de type toggle
-#     - Armement / désarmement uniquement par actions explicites
-#     - Navigation vers le dashboard alarme sur hold_action
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_alarme
-#       entity: alarm_control_panel.alarme_maison
+# 🔗 SATELLITE DE : socle_toggle
 #
 # ==========================================================
 

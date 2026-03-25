@@ -1,6 +1,31 @@
-#################################################################
-# 🧭 BOUTONS DE NAVIGATION — ACCÈS DIRECTS (nettoyés)
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Navigation — Accueil (badge carré)
+#
+# 🗂️ COUCHE : 20_transverses/navigation
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Permet l’accès rapide à la vue principale (Accueil)
+#   du dashboard Arsenal.
+#
+# 📡 SOURCE
+#   - navigation_path : /arsenal-dashboard/arsenal
+#
+# ⚙️ LOGIQUE UI
+#   - basé sur bouton_navigation_base
+#   - icône : mdi:home
+#   - label : "Accueil"
+#   - tap_action : navigate vers la vue principale
+#   - aucune autre interaction
+#
+# 📐 USAGE
+#   - utilisé comme point d’entrée principal de navigation
+#   - carte transverse réutilisable sur plusieurs dashboards
+#   - ne déclenche aucune action backend
+# ==========================================================
 
 bouton_accueil_badge_carre:
   template: bouton_navigation_base

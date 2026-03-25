@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     KPI — Compact sans icône (72px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Variante sans icône de socle_kpi_72.
+#   Fournit un socle KPI compact centré sur la valeur,
+#   sans élément iconographique.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : name + state (icône masquée)
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - hauteur fixe 72px
+#   - state dominant (18px, font-weight 700)
+#   - name secondaire (13px, font-weight 500)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - privilégier lorsque l'icône n'apporte pas de valeur
+#     sémantique (ex. valeur numérique pure, texte d'état)
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_kpi_72_sans_icone:
+  template: carte_base_v2
+
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: false
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 72px
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 18px
+      - font-weight: 700
+      - color: '#111'

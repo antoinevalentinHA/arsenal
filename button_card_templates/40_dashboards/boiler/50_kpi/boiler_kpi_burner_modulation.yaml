@@ -1,0 +1,77 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Boiler — KPI modulation brûleur
+#
+# 🗂️ COUCHE : observabilité chaudière
+# 🧱 TYPE UI : interprétation numérique
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher la modulation physique du brûleur chaudière
+#   sous forme de KPI numérique, avec une couleur de fond
+#   décidée par le backend.
+#
+# 📡 SOURCE
+#   - entity principale :
+#       sensor.boiler_burner_modulation
+#   - entity couleur dérivée :
+#       sensor.couleur_boiler_burner_modulation
+#
+# ⚙️ LOGIQUE UI
+#   - dérive de socle_kpi
+#   - n’interprète pas la logique métier
+#   - formate uniquement l’affichage en pourcentage
+#   - affiche "—" si la valeur est indisponible ou invalide
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - état réel
+#     - observabilité
+#     - diagnostic simple
+# ==========================================================
+
+boiler_kpi_burner_modulation:
+  template:
+    - socle_kpi
+
+  show_icon: true
+  show_name: true
+  show_state: true
+
+  icon: mdi:fire
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: >
+    [[[
+      const raw = entity?.state;
+
+      if (
+        raw === undefined ||
+        raw === null ||
+        raw === '' ||
+        raw === 'unknown' ||
+        raw === 'unavailable'
+      ) {
+        return '—';
+      }
+
+      const value = Number(raw);
+
+      if (Number.isNaN(value)) {
+        return '—';
+      }
+
+      return `${value.toFixed(0)} %`;
+    ]]]

@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Boiler — Erreur récente
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE SENSOR — DIAGNOSTIC
+#
+# 🎯 RÔLE
+#     Qualifier si la dernière erreur boiler connue est
+#     encore récente au sens du dashboard technique.
+#
+# 🧱 NATURE
+#     - Binary sensor template (state-based)
+#     - Couche backend de qualification temporelle
+#     - Consommé par l'UI diagnostique
+#
+# ⚙️ RÈGLE
+#     - on  -> dernière erreur date de moins de 24 h
+#     - off -> aucune erreur récente
+#
+# 🔗 DÉPENDANCE
+#     - sensor.boiler_error_last_ts
+#
+# ⚠️ CONTRAINTE
+#     L'UI ne calcule jamais la fraîcheur d'une erreur.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Boiler error recent"
+      unique_id: boiler_error_recent
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:alert-circle
+        {% else %}
+          mdi:check-circle-outline
+        {% endif %}
+      state: >
+        {% set ts = states('sensor.boiler_error_last_ts') %}
+
+        {% if ts in ['unknown', 'unavailable', ''] %}
+          false
+        {% else %}
+          {% set err = as_datetime(ts) %}
+          {% if err is not none %}
+            {{ (now() - err).total_seconds() < 86400 }}
+          {% else %}
+            false
+          {% endif %}
+        {% endif %}

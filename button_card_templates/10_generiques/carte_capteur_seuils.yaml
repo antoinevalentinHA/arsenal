@@ -1,6 +1,38 @@
-#################################################################
-# 📊 CARTE CAPTEUR A SEUILS — UI
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Capteur — Seuils warn/crit
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche la valeur d'un capteur numérique avec codage
+#   coloriel à deux seuils (warn / crit) paramétrables.
+#
+# 📡 SOURCE
+#   - entity.state (valeur numérique)
+#   - variables.seuil_warn
+#   - variables.seuil_crit
+#   - variables.unit
+#   - variables.disable_actions
+#
+# ⚙️ LOGIQUE UI
+#   - valeur arrondie affichée avec unité paramétrable
+#   - indisponible/NaN  → fond gris    rgba(158, 158, 158, 0.1)
+#   - v > seuil_crit    → fond rouge   rgba(244, 67, 54, 0.2)
+#   - v > seuil_warn    → fond orange  rgba(255, 152, 0, 0.2)
+#   - sinon             → fond vert    rgba(76, 175, 80, 0.2)
+#   - seuil non défini  → palier ignoré
+#   - tap → more-info (désactivable via disable_actions)
+#
+# 📐 USAGE
+#   - carte générique paramétrable (dossier 10_generiques)
+#   - les seuils et l'unité doivent être définis dans la carte dérivée
+#   - le codage coloriel est local — non utilisé comme source de vérité
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
 
 carte_capteur_seuils:
   template: carte_base_v2

@@ -1,42 +1,40 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Aération — Intention globale
+#
+# 🗂️ COUCHE : intention
+# 🧱 TYPE UI : statut intentionnel explicatif
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher l’intention globale d’aération naturelle
+#   à l’échelle de la maison ainsi que le motif
+#   principal associé.
 #
-# 🎯 ROLE
-#     Afficher l'intention globale d'aération naturelle
-#     a l'echelle de la maison ainsi que le motif
-#     principal associe.
+# 📡 SOURCE
+#   - binary_sensor.aeration_conseillee
+#   - entity.attributes.decision_globale
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status_label
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Affiche une intention globale déjà calculée par
+#     le backend
+#   - Traduit `decision_globale` en icône et libellé
+#     explicatifs
+#   - Code visuel :
+#       - state = on  → aération conseillée → vert
+#       - state = off → aération non pertinente → gris neutre
+#   - Navigation vers le dashboard Aération sur appui
+#   - Accès au more-info sur maintien
+#   - Aucun calcul d’intention dans la carte
+#   - Aucune logique métier décisionnelle locale
 #
-# 🎨 SEMANTIQUE
-#     - state = on -> aération conseillée + vert
-#     - state = off -> aération non pertinente + gris neutre
-#     - decision_globale -> icone et libelle explicatifs
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: binary_sensor.aeration_conseillee
-#     - attributes:
-#         - decision_globale
-#     - helpers externes: aucun
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule pas l'intention d'aération
-#     - Il restitue uniquement une decision backend
-#     - Le mapping des motifs est reserve au domaine Aération
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_aeration_intention_globale
-#       name: Aération globale
+# 🔗 SATELLITE DE : socle_status_label
 #
 # ==========================================================
 

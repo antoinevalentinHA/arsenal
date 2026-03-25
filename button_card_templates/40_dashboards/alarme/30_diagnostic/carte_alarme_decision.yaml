@@ -1,46 +1,50 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Alarme — Decision
+# 🧠 ARSENAL — CARTE UI
+#     Alarme — Décision
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : synthèse décision / état réel / raison
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher l’état réel du panneau d’alarme, la décision
+#   cible issue du backend et la cohérence entre les deux,
+#   avec la raison associée.
 #
-# 🎯 ROLE
-#     Afficher l'etat reel du panneau d'alarme, la decision
-#     cible issue du backend et la coherence entre les deux.
+# 📡 SOURCE
+#   - entity.state (alarm_control_panel.alarme_maison)
+#   - input_text.alarme_etat_cible
+#   - input_text.alarme_raison
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_diagnostic
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Affiche l’état réel de l’alarme :
+#       - armed_away → "Armée (Absent)"
+#       - disarmed   → "Désarmée"
+#   - Affiche la décision cible :
+#       - ARMED_AWAY → "Décision : Armer"
+#       - DISARMED   → "Décision : Désarmer"
+#       - NOOP       → "Décision : Aucune action"
+#   - Ajoute la raison si disponible
+#   - Compare décision cible et état réel
+#   - Code visuel :
+#       - cohérent → vert
+#       - divergence → rouge
+#       - NOOP → considéré cohérent (neutre logique)
+#   - Carte strictement informative
+#   - Aucun calcul de décision
+#   - Aucun pilotage du système
 #
-# 🎨 SEMANTIQUE
-#     - etat coherent avec la cible -> vert
-#     - divergence entre cible et etat reel -> rouge
-#     - etat affiche : armed_away -> "Armée (Absent)"
-#     - etat affiche : disarmed -> "Désarmée"
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: alarm_control_panel.alarme_maison
-#     - attributes: aucune
-#     - helpers externes:
-#         - input_text.alarme_etat_cible
-#         - input_text.alarme_raison
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule pas la decision d'alarme
-#     - Ce template ne pilote aucun armement ni desarmement
-#     - Tolerance au cas NOOP
-#     - L'UI ne fait qu'exposer la coherence backend / reel
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_alarme_decision
-#       entity: alarm_control_panel.alarme_maison
-#       name: Alarme
-#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention
+#     - état réel
+#     - diagnostic
 # ==========================================================
 
 carte_alarme_decision:

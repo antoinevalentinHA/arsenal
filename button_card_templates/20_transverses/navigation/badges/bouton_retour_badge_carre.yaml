@@ -1,3 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Navigation — Retour (badge carré)
+#
+# 🗂️ COUCHE : 20_transverses/navigation
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Permet le retour vers la vue principale (Accueil)
+#   du dashboard Arsenal.
+#
+# 📡 SOURCE
+#   - navigation_path : /arsenal-dashboard/arsenal
+#
+# ⚙️ LOGIQUE UI
+#   - basé sur bouton_navigation_base
+#   - icône : mdi:arrow-left
+#   - aucun label
+#   - tap_action : navigate vers la vue principale
+#   - aucune autre interaction
+#
+# 📐 USAGE
+#   - utilisé comme bouton de retour depuis les vues secondaires
+#   - carte transverse réutilisable sur plusieurs dashboards
+#   - ne déclenche aucune action backend
+# ==========================================================
+
 bouton_retour_badge_carre:
   template: bouton_navigation_base
   icon: mdi:arrow-left

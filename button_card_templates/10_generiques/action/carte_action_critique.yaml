@@ -1,8 +1,30 @@
-#################################################################
-# 🚨 CARTE ACTION CRITIQUE — UI
-# ---------------------------------------------------------------
-# Carte d’action manuelle sensible (redémarrage, arrêt, reset…)
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Action — Critique
+#
+# 🗂️ COUCHE : 10_action
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Déclenche une action backend critique sur l’entité portée
+#   par la carte, après confirmation utilisateur.
+#
+# 📡 SOURCE
+#   - entity de la carte
+#
+# ⚙️ LOGIQUE UI
+#   - confirmation obligatoire avant exécution
+#   - message de confirmation surchargeable via variables.confirmation
+#   - exécution du service : button.press
+#   - ciblage : entity.entity_id
+#
+# 📐 USAGE
+#   - destiné aux actions critiques exposées explicitement à l’utilisateur
+#   - utilisé lorsque l’entité cible est un button compatible button.press
+#   - ne doit pas embarquer de logique conditionnelle métier locale
+# ==========================================================
 
 carte_action_critique:
   template: socle_action_critical

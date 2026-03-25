@@ -1,6 +1,29 @@
-#################################################################
-# 🟢 CARTE MODE — TOGGLE
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Mode — Toggle
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Expose un toggle générique pour commuter un mode
+#   ou une entité commutable.
+#
+# 📡 SOURCE
+#   - entity.state (on/off)
+#
+# ⚙️ LOGIQUE UI
+#   - hérite de socle_toggle
+#   - tap → toggle
+#   - retour coloriel d'état hérité du socle
+#
+# 📐 USAGE
+#   - carte générique paramétrable (dossier 10_generiques)
+#   - destinée aux entités commutables (switch, input_boolean)
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
 
 carte_mode_toggle:
   template: socle_toggle

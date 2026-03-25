@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI TRANSVERSE
+#     Header — Base
+#
+# 🧩 NATURE : socle
+# 🏗️ PORTÉE : structuration visuelle
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle de titre pour structurer les sections
+#   d’un dashboard.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : name uniquement
+#   - icône, state et label masqués
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - fond transparent, sans ombre
+#   - alignement du texte à gauche
+#
+# 📐 USAGE
+#   - utilisé comme en-tête de section ou de groupe
+#   - ne représente aucune donnée backend
+#   - ne doit pas être utilisé comme carte de lecture ou d’action
+# ==========================================================
+
+socle_header_base:
+  show_icon: false
+  show_name: true
+  show_state: false
+  show_label: false
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background: none
+      - box-shadow: none
+    name:
+      - color: var(--primary-text-color)
+      - text-align: left

@@ -1,3 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Navigation — Hub (badge carré)
+#
+# 🗂️ COUCHE : 20_transverses/navigation
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Permet l’accès au dashboard de navigation principal.
+#
+# 📡 SOURCE
+#   - navigation_path : /navigation-dashboard/home
+#
+# ⚙️ LOGIQUE UI
+#   - basé sur bouton_navigation_base
+#   - icône : mdi:apps
+#   - label : "Navigation"
+#   - tap_action : navigate vers le dashboard de navigation
+#   - aucune autre interaction
+#
+# 📐 USAGE
+#   - utilisé comme point d’entrée vers le hub de navigation
+#   - carte transverse réutilisable sur plusieurs dashboards
+#   - ne déclenche aucune action backend
+# ==========================================================
+
 bouton_navigation_badge_carre:
   template: bouton_navigation_base
   name: Navigation

@@ -1,6 +1,30 @@
-#################################################################
-# 🔁 BOUTONS DE NAVIGATION — GÉNÉRIQUE (72px, socle-first)
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Navigation — Bouton
+#
+# 🗂️ COUCHE : 10_generiques/navigation
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Permet la navigation entre vues Lovelace via un bouton
+#   cliquable.
+#
+# 📡 SOURCE
+#   - paramètres de navigation fournis par la carte (navigation_path)
+#
+# ⚙️ LOGIQUE UI
+#   - basé sur socle_action_simple_sans_couleur
+#   - tap_action : navigate
+#   - aucune autre interaction (hold / double_tap désactivés)
+#   - fond visuel discret (navigation non critique)
+#
+# 📐 USAGE
+#   - utilisé pour naviguer entre dashboards ou vues
+#   - ne déclenche aucune action backend
+#   - ne doit pas porter de logique métier
+# ==========================================================
 
 bouton_navigation:
   template: socle_action_simple_sans_couleur

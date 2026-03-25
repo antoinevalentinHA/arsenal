@@ -1,39 +1,34 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Véhicule — État de charge électrique
+#
+# 🗂️ COUCHE : etat
+# 🧱 TYPE UI : statut binaire sémantique
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Indiquer si le véhicule électrique est en cours de
+#   charge. Lecture immédiate, aucune interaction.
 #
-# 🎯 ROLE
-#     Indique si le véhicule électrique est en cours de charge.
-#     Carte purement informationnelle, lecture immédiate,
-#     aucune interaction autorisée.
+# 📡 SOURCE
+#   - entity.state (valeur attendue : 'charging' | autre)
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Spécialisation de socle_status
-#     - UI uniquement (aucune décision)
+# ⚙️ LOGIQUE UI
+#   - 'charging' (insensible casse) → fond vert (charge en cours)
+#   - tout autre état connu         → fond gris neutre (non en charge)
+#   - unknown / unavailable / null  → fond gris indispo
+#   - Sémantique binaire : idle, complete, disconnected
+#     tous traités comme "non en charge"
+#   - state brut non affiché
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - state = 'charging' (insensible à la casse) -> 🟢 vert  (charge en cours)
-#     - tout autre état connu                      -> ⚪ gris  (non en charge)
-#     - unknown / unavailable / null               -> ⚪ gris clair (indisponible)
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity : sensor exposant l'état de charge (state attendu : 'charging' | autre)
-#
-# ⚠️ CONTRAINTES
-#     - Toutes les actions désactivées (tap, hold, double_tap)
-#     - Sémantique binaire : pas de distinction entre 'idle', 'complete', 'disconnected'
-#       — tous traités comme "non en charge"
-#     - show_state désactivé — l'état brut n'est pas affiché
-#
-# 🧩 USAGE
-#     type: custom:button-card
-#     template: carte_etat_charge_vehicule
-#     entity: sensor.audi_etat_charge
+# 🔗 SATELLITE DE : socle_status
 #
 # ==========================================================
 

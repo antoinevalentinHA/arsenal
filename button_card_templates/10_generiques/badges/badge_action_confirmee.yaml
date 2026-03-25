@@ -1,6 +1,34 @@
-#################################################################
-# 🔘 BADGE ACTION — UI (CONFIRMÉ)
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Badge — Action confirmee
+#
+# 🗂️ COUCHE : 10_action
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Déclenche une action backend explicite depuis un badge,
+#   après confirmation utilisateur.
+#
+# 📡 SOURCE
+#   - variables.action_service
+#   - variables.action_data
+#
+# ⚙️ LOGIQUE UI
+#   - format badge basé sur socle_badge_42
+#   - service appelé via variables.action_service
+#   - données via variables.action_data
+#   - confirmation obligatoire avant exécution
+#   - aucune action si aucun service n’est fourni
+#
+# 📐 USAGE
+#   - carte générique paramétrable (dossier 10_generiques)
+#   - destinée aux actions compactes exposées en badge
+#   - utilisée lorsque le service et les données sont fournis
+#     dynamiquement
+#   - ne doit pas embarquer de logique conditionnelle métier locale
+# ==========================================================
 
 badge_action_confirmee:
   template: socle_badge_42

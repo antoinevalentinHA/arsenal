@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Status — State bas (72px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Variante de socle_status_72 avec state positionné
+#   en bas de carte.
+#
+# ⚙️ COMPORTEMENT
+#   - hérite de socle_status_72
+#   - state ancré en bas de carte
+#   - state secondaire (13px, font-weight 400)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux cartes où le state joue un rôle de sous-titre
+#   - utilisé lorsque la hiérarchie visuelle privilégie le name
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_status_state_bottom_72:
+  template: socle_status_72
+
+  styles:
+    state:
+      - justify-self: center
+      - align-self: end
+      - font-size: 13px
+      - font-weight: 400

@@ -1,43 +1,49 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Climatisation — État réel
+#
+# 🗂️ COUCHE : état
+# 🧱 TYPE UI : synthèse état réel / consigne appliquée
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher l’état réel de la climatisation ainsi que
+#   la consigne appliquée lorsque disponible.
 #
-# 🎯 ROLE
-#     Afficher l'état réel de la climatisation ainsi que
-#     la consigne appliquée lorsque disponible.
+# 📡 SOURCE
+#   - entity.state (climate.clim)
+#   - sensor.consigne_clim_appliquee_locale
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_action_label_compact
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Lit l’état réel de la climatisation
+#   - Lit la consigne appliquée locale lorsque disponible
+#   - Produit un libellé contextuel selon le mode réel :
+#       - cool → affichage de la consigne appliquée
+#       - dry  → « Mode Dry actif »
+#       - heat → « Mode Chauffage actif »
+#       - off  → « Veille »
+#       - autre → affichage brut de l’état
+#   - Code visuel :
+#       - cool → bleu
+#       - dry  → vert
+#       - heat → rouge
+#       - off / autre → gris neutre
+#   - Navigation vers le dashboard Climatisation sur appui
+#   - More-info sur maintien
+#   - Aucun calcul du mode cible
+#   - Aucun pilotage de l’équipement
 #
-# 🎨 SEMANTIQUE
-#     - mode = cool -> consigne affichée + bleu
-#     - mode = dry -> "Mode Dry actif" + vert
-#     - mode = heat -> "Mode Chauffage actif" + rouge
-#     - mode = off -> "Veille" + gris neutre
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: climate.clim ou entite equivalente
-#     - attributes: aucune
-#     - helpers externes:
-#         - sensor.consigne_clim_appliquee_locale
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule pas le mode cible
-#     - Il affiche uniquement l'etat reel expose par le systeme
-#     - Navigation vers le dashboard climatisation sur tap_action
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_clim_etat
-#       entity: climate.clim
-#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention
+#     - état réel
+#     - diagnostic
 # ==========================================================
 
 carte_clim_etat:

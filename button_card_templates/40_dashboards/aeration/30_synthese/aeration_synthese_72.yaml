@@ -1,43 +1,38 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Aération — Synthèse 72
+# 🧠 ARSENAL — CARTE UI
+#     Aération — Synthèse
+#
+# 🗂️ COUCHE : synthese
+# 🧱 TYPE UI : synthèse priorisée
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher une phrase de synthèse priorisée de l'état
+#   d'aération : blocage, épisode en cours ou nominal.
 #
-# 🎯 ROLE
-#     Afficher une phrase de synthèse priorisée de l'état
-#     d'aération : blocage, épisode en cours ou nominal.
+# 📡 SOURCE
+#   - input_boolean.chauffage_blocage_aeration
+#   - input_boolean.aeration_episode_en_cours
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status_label_72
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Priorité stricte : blocage > episode > nominal
+#   - blocage = on → "Chauffage bloqué (post-aération)" → fond rouge
+#   - episode = on → "Aération en cours"                → fond bleu
+#   - nominal      → "Situation nominale"               → fond vert
+#   - indisponible → "Indisponible"                     → fond gris
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - blocage = on -> "Chauffage bloqué (post-aération)" + rouge
-#     - episode = on -> "Aération en cours" + bleu
-#     - aucun état actif -> "Situation nominale" + vert
-#     - donnée indisponible -> "Indisponible" + gris indispo
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: aucune entité principale portée par la carte
-#     - attributes: aucune
-#     - helpers externes:
-#         - input_boolean.chauffage_blocage_aeration
-#         - input_boolean.aeration_episode_en_cours
-#
-# ⚠️ CONTRAINTES
-#     - Priorité stricte : blocage > episode > nominal
-#     - Ce template ne doit pas calculer la logique métier
-#       d'aération ; il traduit uniquement des états backend.
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: aeration_synthese_72
-#       name: Synthèse
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention (aération souhaitée ou bloquée)
+#     - état réel (épisode en cours)
+#     - diagnostic (situation nominale ou indisponible)
 #
 # ==========================================================
 

@@ -1,8 +1,33 @@
-#################################################################
-# ⚠️ CARTE ACTION STANDARD — WARNING
-# ---------------------------------------------------------------
-# Action manuelle sensible (calibration, reset, recalcul…)
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Action — Standard warning
+#
+# 🗂️ COUCHE : 10_action
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Variante visuelle de carte_action_standard signalant
+#   une action à impact potentiellement sensible.
+#
+# 📡 SOURCE
+#   - entity de la carte
+#   - variables.service
+#   - variables.data
+#
+# ⚙️ LOGIQUE UI
+#   - identique à carte_action_standard
+#   - confirmation obligatoire avant exécution
+#   - service appelé via variables.service
+#   - données via variables.data (fallback entity_id)
+#   - fond orange (signal visuel warning)
+#
+# 📐 USAGE
+#   - destiné aux actions nécessitant une vigilance accrue
+#   - utilisé lorsque l’impact de l’action n’est pas neutre
+#   - ne modifie pas le comportement d’exécution
+# ==========================================================
 
 carte_action_standard_warning:
   template: carte_action_standard

@@ -1,42 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Aération — Durée cumulée
+#
+# 🗂️ COUCHE : mesures
+# 🧱 TYPE UI : valeur + seuil dynamique
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher la durée cumulée d'aération et son
+#   évaluation par rapport à une durée cible.
 #
-# 🎯 ROLE
-#     Afficher la durée cumulée d’aération et son
-#     évaluation par rapport à une durée cible.
+# 📡 SOURCE
+#   - entity.state (durée en minutes)
+#   - input_number.aeration_duree_cible_minutes
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status_label
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Affiche la durée en minutes (entier)
+#   - Label : seuil cible (fallback 10 min si non défini)
+#   - Coloration :
+#       - valeur inconnue → gris neutre
+#       - durée > seuil   → fond vert
+#       - durée <= seuil  → fond gris neutre
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - durée > seuil -> vert
-#     - durée <= seuil -> gris neutre
-#     - valeur indisponible -> affichage "–"
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: capteur exprimant une durée en minutes
-#     - attributes: aucune
-#     - helpers externes:
-#         - input_number.aeration_duree_cible_minutes
-#
-# ⚠️ CONTRAINTES
-#     - Seuil avec fallback à 10 minutes si non défini
-#     - Ce template ne calcule pas la durée, il l'affiche
-#       uniquement
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_duree_aeration
-#       entity: sensor.duree_aeration
-#       name: Durée
+# 🔗 SATELLITE DE : socle_status_label
 #
 # ==========================================================
 

@@ -1,44 +1,52 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     ECS — État ballon eau chaude sanitaire
+#
+# 🗂️ COUCHE : état
+# 🧱 TYPE UI : synthèse d'état avec action secondaire
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher la température courante du ballon ECS et
+#   signaler visuellement si le brûleur ECS est actif
+#   ou si la température se situe dans une zone
+#   thermique qualifiée.
 #
-# 🎯 ROLE
-#     Affiche la température courante du ballon ECS et signale
-#     visuellement si le brûleur ECS est actif ou si la température
-#     est dans une zone critique (froide / tiède / chaude).
+# 📡 SOURCE
+#   - entity.state
+#   - binary_sensor.bruleur_mode_ecs
+#   - sensor.temperature_ecs_couleur
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Spécialisation de socle_etat_action_secondaire
-#     - UI uniquement (aucune décision)
+# ⚙️ LOGIQUE UI
+#   - Affiche la température ECS sous forme lisible
+#   - Cas dégradés :
+#       - unavailable / unknown / none → « Indisponible »
+#       - valeur non numérique → « — »
+#   - Donne une priorité visuelle au brûleur ECS actif
+#   - Sinon, applique la sémantique couleur calculée
+#     par le backend :
+#       - blue   → température basse
+#       - orange → température tiède
+#       - red    → température critique
+#   - Ordre de priorité :
+#       - brûleur ECS actif
+#       - couleur thermique calculée
+#   - Navigation vers le dashboard ECS sur appui
+#   - Action secondaire explicite sur maintien :
+#       - lancement d'un cycle ECS ponctuel
+#       - confirmation obligatoire
+#   - Aucun calcul de décision ECS
 #
-# 🎨 SEMANTIQUE
-#     - Brûleur ECS ON                          -> 🟠 orange  (chauffe en cours)
-#     - sensor.temperature_ecs_couleur = blue   -> 🔵 bleu    (température basse, risque)
-#     - sensor.temperature_ecs_couleur = orange -> 🟠 orange  (température tiède)
-#     - sensor.temperature_ecs_couleur = red    -> 🔴 rouge   (température critique haute ?)
-#     - Aucune condition matchée                -> pas de surbrillance (fallback implicite)
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity                          : sensor température ballon ECS (float ou unavailable)
-#     - binary_sensor.bruleur_mode_ecs  : brûleur en mode ECS (on/off)
-#     - sensor.temperature_ecs_couleur  : sémantique couleur calculée upstream (blue/orange/red)
-#
-# ⚠️ CONTRAINTES
-#     - Priorité des états : brûleur ON prime sur la couleur de température
-#     - Pas de fallback explicite (aucun style par défaut) — prévoir un état neutre si besoin
-#     - hold_action déclenche un script avec confirmation — ne pas utiliser sur entité sans ce script
-#     - La sémantique de 'red' est ambiguë (critique haute ou basse ?) — à documenter côté métier
-#
-# 🧩 USAGE
-#     type: custom:button-card
-#     template: carte_ecs_action
-#     entity: sensor.temperature_ballon_ecs
-#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - état réel
+#     - diagnostic
 # ==========================================================
 
 carte_ecs_action:

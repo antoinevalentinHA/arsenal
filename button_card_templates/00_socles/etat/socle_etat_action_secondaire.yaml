@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Etat — Lecture secondaire
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle de lecture d’état secondaire,
+#   centré sur l’affichage du state avec mise en forme sobre.
+#
+# ⚙️ COMPORTEMENT
+#   - hérite de carte_base_v2 et de socle_etat_lecture_principale
+#   - affiche : icon + name + state
+#   - label masqué
+#   - state centré visuellement dans la carte
+#
+# 📐 USAGE
+#   - destiné aux cartes de lecture d’état non prioritaires
+#   - utilisé lorsqu’un état doit rester visible sans enrichissement contextuel
+#   - ne doit pas être présenté comme une carte d’action sans surcharge explicite
+# ==========================================================
+
+socle_etat_action_secondaire:
+  template:
+    - carte_base_v2
+    - socle_etat_lecture_principale
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+
+  styles:
+    state:
+      - justify-self: center
+      - align-self: center

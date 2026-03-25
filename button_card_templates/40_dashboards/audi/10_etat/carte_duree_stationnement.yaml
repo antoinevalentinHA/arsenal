@@ -1,38 +1,32 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Véhicule — Durée de stationnement
+#
+# 🗂️ COUCHE : etat
+# 🧱 TYPE UI : info brute non binaire
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher une durée de stationnement en lecture seule.
+#   Couleur fixe informationnelle — aucune sémantique
+#   d'alerte, aucun seuil.
 #
-# 🎯 ROLE
-#     Affiche une durée de stationnement en lecture seule.
-#     Couleur fixe informationnelle — aucune sémantique
-#     d'alerte, aucun seuil.
+# 📡 SOURCE
+#   - entity.state (durée formatée ou numérique)
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Spécialisation de socle_status
-#     - UI uniquement (aucune décision)
+# ⚙️ LOGIQUE UI
+#   - valeur disponible   → fond bleu informatif
+#   - valeur indisponible → fond gris indispo
+#   - Aucun seuil, aucune logique d'alerte
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - état disponible        -> 🔵 bleu  (information neutre)
-#     - unknown / unavailable  -> ⚪ gris  (données absentes)
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity : sensor de durée de stationnement (state = durée formatée ou numérique)
-#
-# ⚠️ CONTRAINTES
-#     - Toutes les actions désactivées (tap, hold, double_tap)
-#     - Pas de seuil, pas de logique de couleur — bleu fixe quand disponible
-#     - Ne pas utiliser si une sémantique d'alerte est souhaitée
-#       (préférer carte_autonomie_seuils_variables ou équivalent)
-#
-# 🧩 USAGE
-#     type: custom:button-card
-#     template: carte_duree_stationnement
-#     entity: sensor.audi_duree_stationnement
+# 🔗 SATELLITE DE : socle_status
 #
 # ==========================================================
 

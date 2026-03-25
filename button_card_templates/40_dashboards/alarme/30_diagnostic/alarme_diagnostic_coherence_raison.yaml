@@ -1,39 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Alarme — Diagnostic coherence raison
+# 🧠 ARSENAL — CARTE UI
+#     Alarme — Diagnostic cohérence raison
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : information contextuelle
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher la raison textuelle associée au diagnostic
+#   de cohérence du système d'alarme.
 #
-# 🎯 ROLE
-#     Afficher la raison textuelle associee au diagnostic
-#     de coherence du systeme d'alarme.
+# 📡 SOURCE
+#   - entity.attributes.raison
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_info_72
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Lit l'attribut `raison`
+#   - Traduit les codes backend en libellés lisibles
+#   - Cas nominal :
+#       - code connu → libellé explicite
+#   - Cas dégradé :
+#       - absent / unknown / unavailable → "Indisponible"
+#   - Carte purement informative
+#   - Aucun affichage d'état
+#   - Aucun calcul de diagnostic
 #
-# 🎨 SEMANTIQUE
-#     - raison connue -> libelle explicite
-#     - raison inconnue / indisponible -> "Indisponible"
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: capteur portant un attribut raison
-#     - attributes:
-#         - raison
-#     - helpers externes: aucun
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule pas la raison
-#     - Il traduit uniquement un code backend en libelle lisible
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: alarme_diagnostic_coherence_raison
-#       entity: binary_sensor.alarme_coherence
+# 🔗 SATELLITE DE : socle_info_72
 #
 # ==========================================================
 

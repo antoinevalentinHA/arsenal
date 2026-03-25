@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Status — Label sans icône
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle de lecture d’état avec contexte secondaire
+#   via le label, sans icône.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : name + state + label
+#   - icône masquée
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - state mis en avant (15px, font-weight 600)
+#   - label secondaire (12px, atténué)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux états nécessitant un contexte explicatif court
+#   - utilisé lorsque le label apporte une précision utile
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_status_label:
+  template: carte_base_v2
+
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    name:
+      - color: '#111'
+
+    state:
+      - font-size: 15px
+      - font-weight: 600
+      - color: '#111'
+
+    label:
+      - font-size: 12px
+      - font-weight: 400
+      - color: '#111'
+      - opacity: 0.85

@@ -1,6 +1,37 @@
-#################################################################
-# 🔊 CARTE BRUIT — SEUILS VARIABLES
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Bruit — Seuils variables
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche un niveau sonore en dB avec codage coloriel
+#   paramétrable via seuils injectés par variables.
+#
+# 📡 SOURCE
+#   - entity.state (valeur numérique, dB)
+#   - variables.seuil_1 à seuil_5
+#
+# ⚙️ LOGIQUE UI
+#   - valeur arrondie affichée en dB
+#   - indisponible/NaN  → fond gris     rgba(158, 158, 158, 0.1)
+#   - v ≤ seuil_1       → fond vert     rgba(76, 175, 80, 0.2)
+#   - v ≤ seuil_2       → fond jaune    rgba(255, 193, 7, 0.25)
+#   - v ≤ seuil_3       → fond orange   rgba(255, 152, 0, 0.25)
+#   - v ≤ seuil_4       → fond rouge    rgba(244, 67, 54, 0.2)
+#   - au-delà           → fond rouge    rgba(244, 67, 54, 0.2)
+#   - seuils non définis → palier ignoré
+#   - aucune interaction
+#
+# 📐 USAGE
+#   - carte générique paramétrable (dossier 10_generiques)
+#   - les seuils doivent être définis dans la carte dérivée
+#   - le codage coloriel est local — non utilisé comme source de vérité
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
 
 carte_bruit_seuils_variables:
   template: socle_kpi

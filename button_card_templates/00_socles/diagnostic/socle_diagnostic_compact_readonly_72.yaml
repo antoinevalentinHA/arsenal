@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Diagnostic — Compact readonly (72px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : diagnostic
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit une variante non interactive du socle diagnostic compact,
+#   destinée à la lecture seule.
+#
+# ⚙️ COMPORTEMENT
+#   - hérite de socle_diagnostic_compact
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - conserve l’affichage : icon + name + state + label
+#
+# 📐 USAGE
+#   - utilisé pour garantir l’absence d’interaction utilisateur
+#   - recommandé dans les vues de supervision ou de consultation
+#   - ne doit pas être modifié en carte interactive
+# ==========================================================
+
+socle_diagnostic_compact_readonly_72:
+  template: socle_diagnostic_compact
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none

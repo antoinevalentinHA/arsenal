@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Status — Standard
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle de lecture standard d’un état,
+#   avec accès au détail via more-info.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon + name + state
+#   - label masqué
+#   - tap_action = more-info
+#   - hold/double_tap désactivés
+#   - typographie sobre pour le state (14px, 400)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux cartes de lecture génériques
+#   - utilisé lorsque l’accès au panneau more-info est pertinent
+#   - ne doit pas être utilisé pour des cartes d’action
+# ==========================================================
+
+socle_status:
+  template: carte_base_v2
+
+  show_icon: true
+  show_state: true
+  show_name: true
+  show_label: false
+
+  tap_action:
+    action: more-info
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'

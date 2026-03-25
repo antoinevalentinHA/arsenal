@@ -1,3 +1,33 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Status — Info transitoire (72px)
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Signale visuellement un état transitoire ou informatif
+#   par codage coloriel bleu, compatible binary_sensor et timer.
+#
+# 📡 SOURCE
+#   - entity.state (on/off/active/unknown/unavailable)
+#
+# ⚙️ LOGIQUE UI
+#   - état actif (on / active) → fond bleu  rgba(33, 150, 243, 0.2)
+#   - état inactif             → fond gris  rgba(158, 158, 158, 0.2)
+#   - unknown / unavailable    → fond gris atténué rgba(158, 158, 158, 0.1)
+#   - aucune interaction
+#
+# 📐 USAGE
+#   - carte générique paramétrable (dossier 10_generiques)
+#   - destinée aux états transitoires non critiques (timers, délais, phases)
+#   - le codage bleu signale une activité informative, non une alerte
+#   - le codage coloriel est local — non utilisé comme source de vérité
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
 status_72_info_transitoire:
   template: socle_status_72
 

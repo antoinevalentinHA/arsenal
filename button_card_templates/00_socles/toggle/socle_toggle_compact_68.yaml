@@ -1,0 +1,69 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Toggle — Compact (68px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : interprétative
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Variante compacte de socle_toggle, sans state ni label,
+#   avec gestion des états dégradés.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon uniquement
+#   - state et label masqués
+#   - tap → toggle
+#   - hold → more-info
+#   - state on          → fond vert  rgba(76, 175, 80, 0.2)
+#   - state off         → fond gris  rgba(158, 158, 158, 0.2)
+#   - unknown/unavailable/none → fond gris atténué rgba(158, 158, 158, 0.1)
+#   - hauteur fixe 68px
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux zones denses où l'état coloriel suffit
+#   - le retour coloriel est local — non utilisé comme source de vérité
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_toggle_compact_68:
+  template: carte_base_v2
+
+  show_state: false
+  show_label: false
+  show_icon: true
+  color_type: card
+
+  tap_action:
+    action: toggle
+  hold_action:
+    action: more-info
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 68px
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    - operator: template
+      value: |
+        [[[
+          return ['unknown','unavailable','none'].includes(entity?.state);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.1)

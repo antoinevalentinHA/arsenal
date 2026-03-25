@@ -1,46 +1,45 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Aeration — Episode status 72
+# 🧠 ARSENAL — CARTE UI
+#     Aération — Statut épisode
+#
+# 🗂️ COUCHE : statut
+# 🧱 TYPE UI : synthèse qualifiée multi-source
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher une synthèse compacte de l'état d'ouverture
+#   utile au domaine Aération, à partir d'une source
+#   qualifiée backend et d'indices contextuels de grâce.
 #
-# 🎯 ROLE
-#     Afficher une synthese compacte de l'etat d'ouverture
-#     utile au domaine Aeration, a partir d'une source
-#     qualifiee backend et d'indices contextuels de grace.
+# 📡 SOURCE
+#   - binary_sensor.fenetre_ouverte_maison_avec_delai
+#   - binary_sensor.contact_fenetres_maison
+#   - timer.fenetre_sejour_ouverte_grace
+#   - timer.fenetre_chambre_parents_grace
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status_label_72
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Priorité stricte :
+#       indisponible → gris indispo
+#       ouverture qualifiée → "Ouverture qualifiée"        → fond bleu
+#       brut + grâce active → "Ouverture • grâce en cours" → fond jaune
+#       brut non qualifié   → "Ouverture • non qualifiée"  → fond orange
+#       repos               → "Au repos"                   → fond gris neutre
+#   - Icône adaptée à chaque état
+#   - La qualification d'ouverture provient exclusivement
+#     du backend — jamais calculée par l'UI
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - indisponible -> gris indispo
-#     - ouverture qualifiee -> bleu
-#     - ouverture brute avec grace active -> jaune
-#     - ouverture brute non qualifiee -> orange
-#     - repos -> gris neutre
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - binary_sensor.fenetre_ouverte_maison_avec_delai
-#     - binary_sensor.contact_fenetres_maison
-#     - timer.fenetre_sejour_ouverte_grace
-#     - timer.fenetre_chambre_parents_grace
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule aucun delai.
-#     - La qualification d'ouverture doit provenir du backend.
-#     - L'UI ne doit jamais presenter une ouverture comme
-#       "qualifiee" sans le capteur qualifie correspondant.
-#     - Ce template est reserve au domaine Aeration.
-#
-# 🧩 USAGE
-#     Exemple :
-#       type: custom:button-card
-#       template: aeration_episode_status_72
-#       name: Episode
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention (ouverture souhaitée ou qualifiée)
+#     - état réel (brut vs qualifié, grâce active)
+#     - diagnostic (indisponible, non qualifié)
 #
 # ==========================================================
 

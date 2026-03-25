@@ -1,39 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Audi — État capteur binaire véhicule
+#
+# 🗂️ COUCHE : etat
+# 🧱 TYPE UI : statut binaire générique
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher l'état ON/OFF d'un capteur binaire du véhicule
+#   Audi avec coloration sémantique. Template générique
+#   couvrant tous les binaires du domaine véhicule.
 #
-# 🎯 ROLE
-#     Affiche l'état ON/OFF d'un capteur binaire du véhicule
-#     Audi avec coloration sémantique. Template générique
-#     couvrant tous les binaires du domaine véhicule.
+# 📡 SOURCE
+#   - entity.state (binary_sensor.* domaine Audi)
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Spécialisation de socle_status
-#     - UI uniquement (aucune décision)
+# ⚙️ LOGIQUE UI
+#   - off                        → fond vert  (nominal)
+#   - on                         → fond rouge (alerte)
+#   - unknown / unavailable / null → fond gris indispo
+#   - Sémantique OFF = nominal — ne pas utiliser sur un
+#     capteur où ON est l'état souhaité
+#   - Aucun label ni state_display surchargés
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - state = off                        -> 🟢 vert  (nominal — porte fermée, verrou actif…)
-#     - state = on                         -> 🔴 rouge (alerte — porte ouverte, défaut…)
-#     - unknown / unavailable / null       -> ⚪ gris  (données absentes)
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity : binary_sensor.* du domaine Audi (state = on | off)
-#
-# ⚠️ CONTRAINTES
-#     - Sémantique OFF = nominal supposée universelle pour ce domaine —
-#       ne pas utiliser sur un capteur où ON est l'état souhaité
-#     - Aucune action définie — héritée de socle_status
-#     - Pas de label ni state_display surchargés — affichage brut du socle
-#
-# 🧩 USAGE
-#     type: custom:button-card
-#     template: audi_etat_capteur
-#     entity: binary_sensor.audi_porte_conducteur
+# 🔗 SATELLITE DE : socle_status
 #
 # ==========================================================
 

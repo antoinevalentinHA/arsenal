@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE METIER (INCLUDE)
+#     Boiler — Derniere erreur recente
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Afficher dans Diagnostics Boiler le bloc de derniere
+#   erreur uniquement si une erreur recente est presente.
+#
+# 🧠 PRINCIPE
+#   - binary_sensor.boiler_error_recent :
+#       * on  -> afficher le header + resume + timestamp
+#       * off -> ne rien afficher
+#
+# ⚠️ CONTRAINTE
+#   La fraicheur de l'erreur est decidee par le backend.
+#   L'UI n'interprete pas directement le timestamp.
+# ==========================================================
+
+type: conditional
+conditions:
+  - condition: state
+    entity: binary_sensor.boiler_error_recent
+    state: "on"
+card:
+  type: vertical-stack
+  cards:
+
+    - type: custom:button-card
+      template: section_header
+      name: ⚠️ Erreur récente
+
+    - type: vertical-stack
+      cards:
+
+        - type: custom:button-card
+          template: boiler_diagnostic_error
+          entity: sensor.boiler_error_last_summary
+          name: Résumé
+
+        - type: custom:button-card
+          template: boiler_info_timestamp
+          entity: sensor.boiler_error_last_ts
+          name: Timestamp

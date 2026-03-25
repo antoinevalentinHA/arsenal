@@ -1,52 +1,47 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Aeration — Delta T chute 72
+# 🧠 ARSENAL — CARTE UI
+#     Aération — Chute thermique (ΔT)
+#
+# 🗂️ COUCHE : contexte_thermique
+# 🧱 TYPE UI : synthèse qualifiée multi-seuil
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher une synthèse compacte de la chute thermique
+#   observée pendant ou après un épisode d'aération,
+#   à partir de la valeur métier consolidée
+#   input_number.aeration_delta_t_utilise.
 #
-# 🎯 ROLE
-#     Afficher une synthese compacte de la chute thermique
-#     observee pendant ou apres un episode d'aeration,
-#     a partir de la valeur metier consolidee
-#     input_number.aeration_delta_t_utilise.
+# 📡 SOURCE
+#   - input_number.aeration_delta_t_utilise
+#   - input_boolean.aeration_episode_en_cours
+#   - input_boolean.chauffage_blocage_aeration
+#   - timer.aeration_analyse_delta_t
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status_label_72
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Priorité stricte :
+#       indisponible        → "Indisponible"              → gris indispo
+#       aucun contexte actif → "—"                        → gris neutre
+#       timer actif         → "Analyse ΔT en attente"     → fond bleu
+#       v = 0              → "Aucune chute"               → fond vert
+#       v < 0.8 °C         → "Chute faible • x.xx °C"    → fond jaune
+#       v < 1.2 °C         → "Chute modérée • x.xx °C"   → fond orange
+#       v >= 1.2 °C        → "Chute importante • x.xx °C"→ fond rouge
+#   - Contexte actif = épisode en cours OU blocage actif
+#   - Valeur interprétée, jamais calculée par l'UI
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - donnees indisponibles -> gris indispo
-#     - pas de contexte actif -> gris neutre
-#     - analyse en cours -> bleu
-#     - aucune chute -> vert
-#     - chute faible -> jaune
-#     - chute moderee -> orange
-#     - chute importante -> rouge
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - helpers:
-#         - input_number.aeration_delta_t_utilise
-#         - input_boolean.aeration_episode_en_cours
-#         - input_boolean.chauffage_blocage_aeration
-#     - timer:
-#         - timer.aeration_analyse_delta_t
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule pas la chute thermique.
-#     - Il interprete une valeur metier deja consolidee.
-#     - Il ne doit pas etre reutilise hors du contexte
-#       Aeration / Chauffage.
-#     - Les seuils de qualification (faible / moderee /
-#       importante) sont propres a cette lecture UI metier.
-#
-# 🧩 USAGE
-#     Exemple :
-#       type: custom:button-card
-#       template: aeration_deltat_chute_72
-#       name: Chute thermique
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention (épisode ou blocage post-aération actif)
+#     - état réel (valeur ΔT consolidée)
+#     - diagnostic (qualification de la chute thermique)
 #
 # ==========================================================
 

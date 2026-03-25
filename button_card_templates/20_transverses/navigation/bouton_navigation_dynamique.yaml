@@ -1,6 +1,37 @@
-#################################################################
-# 🔁 BOUTONS DE NAVIGATION — GÉNÉRIQUE (72px, socle-first)
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Navigation — Dynamique
+#
+# 🗂️ COUCHE : 20_transverses/navigation
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Permet la navigation vers un dashboard tout en
+#   exposant un état synthétique via la couleur de l’icône.
+#
+# 📡 SOURCE
+#   - navigation_path (hérité de bouton_navigation)
+#   - variables.etat_dashboard (entité externe)
+#
+# ⚙️ LOGIQUE UI
+#   - basé sur bouton_navigation
+#   - tap_action : navigate
+#   - couleur icône déterminée par l’état de variables.etat_dashboard :
+#       alert   → rouge
+#       normal  → bleu
+#       confort → vert
+#       eco     → bleu clair
+#       standby/off → gris
+#       indisponible → gris
+#
+# 📐 USAGE
+#   - utilisé pour accéder à un dashboard tout en exposant
+#     un état global synthétique
+#   - la couleur est une interprétation locale (non contractuelle)
+#   - ne doit pas être utilisée comme source de décision
+# ==========================================================
 
 bouton_navigation_dynamique:
   template: bouton_navigation

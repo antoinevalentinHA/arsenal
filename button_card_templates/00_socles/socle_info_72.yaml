@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Info — Compact avec icône (72px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : info
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle informatif compact avec fond bleu,
+#   destiné aux contenus contextuels ou explicatifs.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon + name + state
+#   - label masqué
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - hauteur fixe 72px
+#   - fond bleu fixe rgba(33, 150, 243, 0.2)
+#   - name principal (13px, font-weight 500)
+#   - state secondaire (14px, font-weight 400)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux cartes satellites portant un contexte textuel
+#   - le fond bleu signale visuellement la nature informative
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_info_72:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 72px
+      - background-color: rgba(33, 150, 243, 0.2)
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'

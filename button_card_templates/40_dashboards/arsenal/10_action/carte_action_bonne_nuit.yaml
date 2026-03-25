@@ -1,37 +1,32 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Maison — Action bonne nuit
+#
+# 🗂️ COUCHE : action
+# 🧱 TYPE UI : action simple
+# 🔍 NIVEAU DE CONFIANCE : total
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Permettre le lancement explicite de la routine
+#   « Bonne nuit » avec confirmation utilisateur.
 #
-# 🎯 ROLE
-#     Permettre le lancement explicite de la routine
-#     "Bonne nuit" avec confirmation utilisateur.
+# 📡 SOURCE
+#   - script.extinction_soir_maison
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_action_simple
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Bouton d’action sans lecture d’état
+#   - Confirmation obligatoire avant exécution
+#   - Exécution directe du script de routine
+#   - Sémantique visuelle neutre
+#   - Aucune logique métier dans la carte
 #
-# 🎨 SEMANTIQUE
-#     - action simple -> gris neutre
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: aucune
-#     - attributes: aucune
-#     - helpers externes:
-#         - script.extinction_soir_maison
-#
-# ⚠️ CONTRAINTES
-#     - Confirmation obligatoire avant execution
-#     - Aucune logique metier dans la carte
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_action_bonne_nuit
+# 🔗 SATELLITE DE : socle_action_simple
 #
 # ==========================================================
 

@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Boiler — Couleur modulation bruleur
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE SENSOR — COULEUR UI
+#
+# 🎯 ROLE
+#     Produire la couleur semantique associee a la modulation
+#     du bruleur chaudiere.
+#
+#     Ce capteur traduit une valeur analogique (%) en une cle
+#     de palette Arsenal, sans logique UI.
+#
+# 🧱 NATURE
+#     - Sensor template (state-based)
+#     - Couche backend de decision couleur
+#     - Consomme par socle_kpi
+#
+# 🎨 SEMANTIQUE COULEUR
+#     - unavailable / unknown / vide -> indisponibilite
+#     - valeur non numerique -> jaune (incoherence)
+#     - 0 % -> gris neutre (repos)
+#     - > 0 % -> bleu (activite informative)
+#
+# ⚠️ CONTRAINTE
+#     - Aucune logique UI dans la carte
+#     - Respect strict de la palette Arsenal
+#     - Une seule semantique par couleur
+#
+# 🔗 DEPENDANCE
+#     - sensor.boiler_burner_modulation
+#
+# ==========================================================
+
+- sensor:
+    - name: "Couleur boiler burner modulation"
+      unique_id: couleur_boiler_burner_modulation
+      default_entity_id: sensor.couleur_boiler_burner_modulation
+      icon: mdi:palette
+      state: >
+        {% set v = states('sensor.boiler_burner_modulation') %}
+
+        {% if v in ['unknown', 'unavailable', '', none] %}
+          unavailable
+        {% else %}
+          {% set n = v | float(default=none) %}
+
+          {% if n is none %}
+            yellow
+          {% elif n == 0 %}
+            grey
+          {% elif n > 0 %}
+            blue
+          {% else %}
+            yellow
+          {% endif %}
+        {% endif %}

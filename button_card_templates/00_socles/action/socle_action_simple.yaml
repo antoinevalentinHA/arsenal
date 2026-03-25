@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Action — Simple
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : action
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle visuel minimal pour cartes d’action,
+#   sans comportement ni interaction définis.
+#
+# ⚙️ COMPORTEMENT
+#   - aucune action (tap/hold/double_tap désactivées)
+#   - affiche : icon + name
+#   - état et label masqués
+#   - fond neutre (gris OFF)
+#
+# 📐 USAGE
+#   - destiné à être dérivé par une carte métier
+#   - toutes les actions doivent être définies en surcharge
+#   - peut servir de base générique pour actions simples
+# ==========================================================
+
+socle_action_simple:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: false
+  show_label: false
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - background-color: rgba(158, 158, 158, 0.2)

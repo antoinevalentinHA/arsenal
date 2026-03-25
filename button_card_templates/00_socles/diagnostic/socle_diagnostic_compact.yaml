@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Diagnostic — Compact
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : diagnostic
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle de diagnostic compact avec mise en avant
+#   de l’état principal et contexte en label.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon + name + state + label
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - state visuellement dominant (16px, font-weight 700)
+#   - label secondaire (13px)
+#   - aucune hauteur imposée
+#
+# 📐 USAGE
+#   - destiné aux cartes de diagnostic en espace contraint
+#   - utilisé lorsque la valeur principale doit être priorisée
+#   - ne doit pas être utilisé pour des cartes d’action
+# ==========================================================
+
+socle_diagnostic_compact:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+
+  styles:
+    state:
+      - font-size: 16px
+      - font-weight: 700
+
+    label:
+      - font-size: 13px
+      - font-weight: 400

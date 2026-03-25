@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Toggle — Confirmé
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : action
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle toggle avec confirmation explicite
+#   avant exécution.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon + name
+#   - state masqué
+#   - tap → toggle avec confirmation ("Confirmer l'action ?")
+#   - state on  → fond vert  rgba(76, 175, 80, 0.2)
+#   - state off → fond gris  rgba(158, 158, 158, 0.2)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux actions à risque nécessitant une validation
+#   - la confirmation est portée par le socle — ne pas la redéfinir
+#     dans la carte dérivée
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_toggle_confirme:
+  template: carte_base_v2
+
+  show_state: false
+  show_icon: true
+  show_name: true
+  color_type: card
+
+  tap_action:
+    action: toggle
+    confirmation:
+      text: Confirmer l’action ?
+
+  styles:
+    icon:
+      - color: '#111'
+
+    name:
+      - color: '#111'
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)

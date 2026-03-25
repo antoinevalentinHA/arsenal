@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     KPI — Compact avec label (72px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Variante avec label de socle_kpi_72.
+#   Fournit un socle KPI compact permettant d'afficher
+#   une information contextuelle secondaire sous la valeur.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon + name + state + label
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - hauteur fixe 72px
+#   - state dominant (18px, font-weight 700)
+#   - name secondaire (13px, font-weight 500)
+#   - label tertiaire (13px, font-weight 400)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - privilégier lorsqu'un contexte secondaire accompagne
+#     la valeur principale (ex. unité, horodatage, sous-titre)
+#   - le label ne doit pas porter de logique métier locale
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_kpi_label_72:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 72px
+
+    icon:
+      - width: 26px
+      - height: 26px
+      - color: '#111'
+
+    name:
+      - font-size: 13px
+      - font-weight: 500
+      - color: '#111'
+
+    state:
+      - font-size: 18px
+      - font-weight: 700
+      - color: '#111'
+
+    label:
+      - font-size: 13px
+      - font-weight: 400
+      - color: '#111'

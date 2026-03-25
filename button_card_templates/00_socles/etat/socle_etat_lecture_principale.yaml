@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Etat — Lecture principale (typo)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit une base typographique pour l’affichage de l’état
+#   et du label dans les cartes de lecture principale.
+#
+# ⚙️ COMPORTEMENT
+#   - définit la typographie du state (14px, 400)
+#   - définit la typographie du label (14px, 400)
+#   - ne définit ni structure ni visibilité des champs
+#
+# 📐 USAGE
+#   - destiné à être combiné avec un socle structurel
+#   - utilisé pour homogénéiser les cartes de lecture principale
+#   - ne doit jamais être utilisé seul
+# ==========================================================
+
+socle_etat_lecture_principale:
+  styles:
+    state:
+      - font-size: 14px
+      - font-weight: 400
+
+    label:
+      - font-size: 14px
+      - font-weight: 400

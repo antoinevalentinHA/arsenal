@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Badge — Icône seule (42px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle badge carré centré sur une icône,
+#   paramétrable via variables.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon uniquement
+#   - name et state masqués
+#   - dimensions fixes 42×42px
+#   - bg_color      → couleur de fond       (défaut : transparent)
+#   - border_radius → arrondi de carte      (défaut : 12px)
+#   - icon_color    → couleur de l'icône    (défaut : #111)
+#
+# 📡 SOURCE
+#   - aucune entité (entity: none)
+#   - paramètres injectés via variables
+#
+# 📐 USAGE
+#   - destiné aux badges décoratifs ou indicateurs visuels
+#   - les variables doivent être définies dans la carte dérivée
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_badge_42:
+  entity: none
+  show_name: false
+  show_state: false
+  show_icon: true
+
+  styles:
+    card:
+      - height: 42px
+      - width: 42px
+      - box-shadow: var(--ha-card-box-shadow)
+      - background-color: |
+          [[[
+            return variables?.bg_color || "rgba(0, 0, 0, 0)";
+          ]]]
+      - border-radius: |
+          [[[
+            return variables?.border_radius || "12px";
+          ]]]
+      - display: flex
+      - align-items: center
+      - justify-content: center
+      - padding: 0
+      - margin: 0
+
+    icon:
+      - width: 22px
+      - height: 22px
+      - color: |
+          [[[
+            return variables?.icon_color || "#111";
+          ]]]

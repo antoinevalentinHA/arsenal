@@ -1,38 +1,38 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Maison — Mode maison courant
+#
+# 🗂️ COUCHE : état
+# 🧱 TYPE UI : statut synthétique de mode
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher le mode maison courant et donner accès au
+#   dashboard des modes, avec une lecture visuelle simple
+#   entre état nominal et état dégradé.
 #
-# 🎯 ROLE
-#     Affiche le mode maison courant et donne accès au dashboard
-#     des modes via tap. Traduction visuelle simple : normal ou
-#     mode dégradé.
+# 📡 SOURCE
+#   - entity.state
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Spécialisation de socle_toggle
-#     - UI uniquement (aucune décision)
+# ⚙️ LOGIQUE UI
+#   - Lit le mode maison porté par l'entité
+#   - Applique une lecture binaire du mode :
+#       - normal → état nominal
+#       - tout autre état → état dégradé
+#   - Code visuel :
+#       - normal → vert
+#       - autre → rouge
+#   - Navigation vers le dashboard des modes sur appui
+#   - Aucune action d'écriture
+#   - Aucun calcul de décision
 #
-# 🎨 SEMANTIQUE
-#     - state = 'normal' (insensible à la casse) -> 🟢 vert  (mode nominal)
-#     - tout autre état                          -> 🔴 rouge (mode dégradé / absent)
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity : sensor ou input_select exposant le mode maison (state attendu : 'normal' | autre)
-#
-# ⚠️ CONTRAINTES
-#     - Sémantique binaire uniquement — si de nouveaux modes sont ajoutés, la carte
-#       les traitera tous comme "dégradé" par défaut
-#     - Aucune action d'écriture — navigation seule (hold_action non défini)
-#     - Ne pas utiliser pour un toggle actif sur le mode maison
-#
-# 🧩 USAGE
-#     type: custom:button-card
-#     template: carte_mode_maison
-#     entity: sensor.mode_maison
+# 🔗 SATELLITE DE : socle_toggle
 #
 # ==========================================================
 

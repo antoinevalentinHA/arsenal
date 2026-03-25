@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Decision — Standard (72px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle de lecture pour une décision backend,
+#   avec affichage du state et d’un contexte complémentaire
+#   via le label.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : name + state + label
+#   - icône masquée
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - hauteur héritée de carte_base_v2 (72px)
+#   - state mis en avant (15px, font-weight 600)
+#   - label secondaire (12px, font-weight 400)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux cartes lisant une décision déjà calculée
+#     par le backend
+#   - utilisé lorsque le label apporte un contexte utile
+#     à la décision affichée
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_decision_72:
+  template: carte_base_v2
+
+  show_icon: false
+  show_name: true
+  show_state: true
+  show_label: true
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    state:
+      - font-size: 15px
+      - font-weight: 600
+
+    label:
+      - font-size: 12px
+      - font-weight: 400
+      - color: '#111'

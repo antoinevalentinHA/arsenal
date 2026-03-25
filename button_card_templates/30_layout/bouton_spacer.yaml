@@ -1,8 +1,26 @@
-#################################################################
-# BOUTON SPACER
-# ---------------------------------------------------------------
-# Bouton fictif pour permettre un centrage ok. 
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — ÉLÉMENT UI
+#     Layout — Spacer
+#
+# 🧩 NATURE : layout
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Crée un espace vide dans une grille ou un alignement
+#   de cartes.
+#
+# ⚙️ COMPORTEMENT
+#   - aucune entité
+#   - aucun affichage (name masqué)
+#   - aucune interaction
+#   - dimensions fixes (42x42)
+#   - aucun style visuel (fond transparent, sans ombre)
+#
+# 📐 USAGE
+#   - utilisé pour ajuster l’alignement et l’espacement
+#   - ne doit jamais porter d’information
+#   - ne doit jamais être interactif
+# ==========================================================
 
 bouton_spacer:
   entity: none

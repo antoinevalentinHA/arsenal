@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Etat — Reel
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle de lecture directe d’un état réel backend,
+#   avec consultation detaillee via more-info.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon + name + state
+#   - label masque
+#   - tap_action = more-info
+#   - hold/double_tap desactives
+#   - typographie de lecture sobre pour le state
+#
+# 📡 SOURCE
+#   - entity de la carte derivee
+#
+# 📐 USAGE
+#   - destine aux cartes de lecture d’un etat reel unitaire
+#   - utilise lorsque l’acces au panneau more-info est utile
+#   - ne doit pas etre utilise pour des cartes de commande
+# ==========================================================
+
+socle_etat_reel:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: false
+  color_type: card
+
+  tap_action:
+    action: more-info
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    name:
+      - color: '#111'
+
+    state:
+      - font-size: 14px
+      - font-weight: 400
+      - color: '#111'
+
+    label:
+      - font-size: 12px
+      - font-weight: 400
+      - color: '#111'
+      - opacity: 0.85

@@ -75,3 +75,12 @@
   unit_of_measurement: "°C"
   state_class: measurement
   icon: mdi:water-boiler
+
+- name: "Boiler burner modulation"
+  unique_id: boiler_burner_modulation
+  default_entity_id: sensor.boiler_burner_modulation
+  state_topic: "boiler/telemetry/burner/modulation"
+  value_template: "{{ value | float(0) }}"
+  unit_of_measurement: "%"
+  state_class: measurement
+  icon: mdi:fire

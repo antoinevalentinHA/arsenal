@@ -1,46 +1,39 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Système — Batterie seuils variables
+#
+# 🗂️ COUCHE : mesures
+# 🧱 TYPE UI : valeur + seuils variables
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher le niveau de batterie avec une évaluation
+#   dynamique basée sur des seuils fournis en variables.
 #
-# 🎯 ROLE
-#     Afficher le niveau de batterie avec une evaluation
-#     dynamique basee sur des seuils fournis en variables.
+# 📡 SOURCE
+#   - entity.state (valeur en %)
+#   - variables.s_crit (seuil critique %, optionnel)
+#   - variables.s_low  (seuil faible %, optionnel)
+#   - variables.s_mid  (seuil limité %, optionnel)
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_diagnostic_compact
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Seuils évalués en cascade (s_crit < s_low < s_mid) :
+#       v < s_crit           → fond rouge   (critique)
+#       s_crit <= v < s_low  → fond orange  (faible)
+#       s_low  <= v < s_mid  → fond jaune   (limité)
+#       v >= s_mid           → fond vert    (nominal)
+#       valeur non numérique → fond gris indispo
+#   - Seuil absent → silencieusement ignoré
+#   - Affichage arrondi à l'entier (Math.round)
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - valeur indisponible -> gris indispo
-#     - valeur < s_crit -> rouge
-#     - valeur < s_low -> orange
-#     - valeur < s_mid -> jaune
-#     - valeur >= s_mid -> vert
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: capteur de batterie (valeur en %)
-#     - attributes: aucune
-#     - helpers externes: aucun
-#
-# ⚠️ CONTRAINTES
-#     - Les seuils sont fournis via variables (s_crit, s_low, s_mid)
-#     - Aucun seuil par defaut impose
-#     - Ce template ne calcule pas la valeur batterie
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_batterie_seuils_variables
-#       entity: sensor.batterie
-#       variables:
-#         s_crit: 10
-#         s_low: 20
-#         s_mid: 40
+# 🔗 SATELLITE DE : socle_diagnostic_compact
 #
 # ==========================================================
 

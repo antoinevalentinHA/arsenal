@@ -1,49 +1,40 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI MÉTIER
-#     Aération — Référence thermique 72
+# 🧠 ARSENAL — CARTE UI
+#     Aération — Référence thermique
+#
+# 🗂️ COUCHE : contexte_thermique
+# 🧱 TYPE UI : info contextuelle
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI MÉTIER
-#
 # 🎯 RÔLE
-#     Afficher une synthèse informative de la référence
-#     thermique utilisée pour l’analyse d’aération ainsi
-#     que du ΔT retenu pour l’épisode en cours ou le
-#     blocage post-aération.
+#   Afficher la référence thermique utilisée pour
+#   l'analyse d'aération et le ΔT retenu pour l'épisode
+#   en cours ou le blocage post-aération.
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Spécialisation de socle_info_72
-#     - UI uniquement (aucune décision)
+# 📡 SOURCE
+#   - input_number.aeration_reference_thermique_utilisee
+#   - input_number.aeration_delta_t_utilise
+#   - input_boolean.aeration_episode_en_cours
+#   - input_boolean.chauffage_blocage_aeration
+#   - timer.aeration_analyse_delta_t
 #
-# 🎨 SÉMANTIQUE
-#     - données indisponibles -> gris indispo
-#     - aucun contexte actif -> gris neutre
-#     - contexte actif / analyse en cours -> bleu informatif
+# ⚙️ LOGIQUE UI
+#   - Priorité stricte :
+#       indisponible         → "Indisponible"                  → gris indispo
+#       aucun contexte actif → "—"                             → gris neutre
+#       timer actif          → "Référence/ΔT en attente"       → fond bleu
+#       contexte actif       → "Réf x.xx °C  •  ΔT x.xx °C"  → fond bleu
+#   - Contexte actif = épisode en cours OU blocage actif
+#   - Valeurs affichées uniquement, jamais calculées par l'UI
+#   - Aucune action utilisateur
 #
-# 🔗 DÉPENDANCES
-#     - helpers :
-#         - input_number.aeration_reference_thermique_utilisee
-#         - input_number.aeration_delta_t_utilise
-#         - input_boolean.aeration_episode_en_cours
-#         - input_boolean.chauffage_blocage_aeration
-#     - timer :
-#         - timer.aeration_analyse_delta_t
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule ni la référence thermique
-#       ni le ΔT.
-#     - Il affiche uniquement des valeurs métier déjà
-#       consolidées par le backend.
-#     - Le libellé produit une synthèse contextuelle locale
-#       réservée au domaine Aération.
-#
-# 🧩 USAGE
-#     Exemple :
-#       type: custom:button-card
-#       template: aeration_reference_thermique_72
-#       name: Référence thermique
+# 🔗 SATELLITE DE : socle_info_72
 #
 # ==========================================================
 

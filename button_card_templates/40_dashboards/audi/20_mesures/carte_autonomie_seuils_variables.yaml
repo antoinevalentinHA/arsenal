@@ -1,49 +1,41 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Autonomie — Seuils variables (kilométrique)
+#
+# 🗂️ COUCHE : mesures
+# 🧱 TYPE UI : valeur + seuils variables
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher une valeur d'autonomie en km et la colorer
+#   selon trois seuils d'alerte paramétrables via variables.
+#   Générique : utilisable sur tout sensor d'autonomie
+#   kilométrique.
 #
-# 🎯 ROLE
-#     Affiche une valeur d'autonomie en km et la colore selon
-#     trois seuils d'alerte entièrement paramétrables via
-#     variables. Générique : utilisable sur tout sensor
-#     d'autonomie kilométrique.
+# 📡 SOURCE
+#   - entity.state (numérique, unité km attendue)
+#   - variables.s_crit (seuil critique km, optionnel)
+#   - variables.s_low  (seuil faible km, optionnel)
+#   - variables.s_mid  (seuil limité km, optionnel)
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Spécialisation de socle_diagnostic_compact
-#     - UI uniquement (aucune décision)
+# ⚙️ LOGIQUE UI
+#   - Seuils évalués en cascade (s_crit < s_low < s_mid) :
+#       v < s_crit             → fond rouge   (critique)
+#       s_crit <= v < s_low    → fond orange  (faible)
+#       s_low  <= v < s_mid    → fond jaune   (limitée)
+#       v >= s_mid             → fond vert    (suffisante)
+#       valeur non numérique   → fond gris indispo
+#   - Seuil absent → silencieusement ignoré
+#   - Affichage arrondi à l'entier (Math.round)
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - v < s_crit              -> 🔴 rouge   (autonomie critique)
-#     - s_crit <= v < s_low     -> 🟠 orange  (autonomie faible)
-#     - s_low  <= v < s_mid     -> 🟡 jaune   (autonomie limitée)
-#     - v >= s_mid              -> 🟢 vert    (autonomie suffisante)
-#     - valeur non numérique    -> ⚪ gris    (unavailable / unknown)
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity             : sensor d'autonomie (state numérique, unité km attendue)
-#     - variables.s_crit   : seuil critique (km) — optionnel, ignoré si absent
-#     - variables.s_low    : seuil faible   (km) — optionnel, ignoré si absent
-#     - variables.s_mid    : seuil limité   (km) — optionnel, ignoré si absent
-#
-# ⚠️ CONTRAINTES
-#     - Les seuils sont évalués en cascade — s_crit doit être < s_low < s_mid
-#     - Un seuil absent (undefined) est silencieusement ignoré, pas une erreur
-#     - Toutes les actions sont désactivées — carte de diagnostic pur
-#     - L'affichage arrondit à l'entier le plus proche (Math.round)
-#
-# 🧩 USAGE
-#     type: custom:button-card
-#     template: carte_autonomie_seuils_variables
-#     entity: sensor.voiture_autonomie
-#     variables:
-#       s_crit: 30
-#       s_low: 80
-#       s_mid: 150
+# 🔗 SATELLITE DE : socle_diagnostic_compact
 #
 # ==========================================================
 

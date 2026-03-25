@@ -1,38 +1,31 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Alarme — Arrêt sirène
+# 🧠 ARSENAL — CARTE UI
+#     Alarme — Arret sirene
+#
+# 🗂️ COUCHE : action
+# 🧱 TYPE UI : action critique
+# 🔍 NIVEAU DE CONFIANCE : total
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Permettre l'arret immediat de la sirene via une
+#   action utilisateur critique avec confirmation.
 #
-# 🎯 ROLE
-#     Permettre l'arrêt immédiat de la sirène via une
-#     action utilisateur critique avec confirmation.
+# 📡 SOURCE
+#   - script.arret_sirene
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_action_critical
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Bouton d'action sans lecture d'etat
+#   - Confirmation obligatoire avant execution
+#   - Execution directe du script d'arret
+#   - Semantique visuelle critique (rouge)
 #
-# 🎨 SEMANTIQUE
-#     - action critique -> rouge
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: aucune
-#     - attributes: aucune
-#     - helpers externes:
-#         - script.arret_sirene
-#
-# ⚠️ CONTRAINTES
-#     - Confirmation obligatoire avant execution
-#     - Aucune lecture d'etat
-#     - Effet immediat et global
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_action_arret_sirene
+# 🔗 SATELLITE DE : socle_action_critical
 #
 # ==========================================================
 

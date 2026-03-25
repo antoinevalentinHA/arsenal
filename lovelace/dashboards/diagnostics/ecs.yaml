@@ -41,29 +41,6 @@ views:
           - type: custom:button-card
             template: ecs_chauffe_planifiee_status
 
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-
-              - type: custom:button-card
-                template: ecs_synthese_status_72
-                name: Boiler Bridge
-                icon: mdi:lan-connect
-                variables:
-                  kind: bool
-                  entity: binary_sensor.boiler_bridge_online
-                  label_on: Disponible
-                  label_off: Indispo
-
-              - type: custom:button-card
-                template: ecs_synthese_status_72
-                name: Consigne
-                icon: mdi:thermometer
-                variables:
-                  kind: dhw_setpoint_10
-                  entity: sensor.boiler_dhw_setpoint
-
           - !include ../../includes/cartes/ecs_dernier_cycle.yaml
 
           ########################################################

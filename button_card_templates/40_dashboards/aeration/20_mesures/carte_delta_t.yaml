@@ -1,52 +1,43 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Aeration — Delta temperature (ΔT)
+# 🧠 ARSENAL — CARTE UI
+#     Aération — Delta température (ΔT)
+#
+# 🗂️ COUCHE : mesures
+# 🧱 TYPE UI : valeur + seuil dynamique
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher la valeur du delta de température (ΔT)
+#   et son évaluation par rapport au seuil dynamique
+#   appliqué.
 #
-# 🎯 ROLE
-#     Afficher la valeur du delta de temperature (ΔT)
-#     ainsi que son evaluation par rapport a un seuil
-#     dynamique applique.
+# 📡 SOURCE
+#   - entity.attributes.delta_temperature
+#   - entity.attributes.seuils_utilises.dt_min_applique
+#   - input_select.saison (fallback seuil)
+#   - input_number.aeration_delta_t_min_hiver
+#   - input_number.aeration_seuil_ecart_temperature_min
+#   - input_number.aeration_delta_t_min_inter
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status_label
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Affiche la valeur ΔT en °C (2 décimales)
+#   - Label : seuil appliqué (1 décimale)
+#   - Seuil résolu depuis seuils_utilises.dt_min_applique
+#     ou fallback saison si absent
+#   - Coloration :
+#       - valeur inconnue → gris indispo
+#       - valeur >= seuil → fond vert
+#       - valeur < seuil  → fond gris neutre
+#   - Logique UI dérivée, non autoritaire
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - valeur inconnue / non numerique -> gris indispo
-#     - valeur >= seuil -> vert (condition favorable)
-#     - valeur < seuil -> gris neutre (condition non atteinte)
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: capteur exposant les attributs suivants
-#     - attributes:
-#         - delta_temperature
-#         - seuils_utilises (optionnel, JSON ou objet)
-#             - dt_min_applique
-#     - helpers externes:
-#         - input_select.saison
-#         - input_number.aeration_delta_t_min_hiver
-#         - input_number.aeration_seuil_ecart_temperature_min
-#         - input_number.aeration_delta_t_min_inter
-#
-# ⚠️ CONTRAINTES
-#     - Le calcul du seuil est tolerent (fallback saison)
-#       mais reste une logique UI derivee, non autoritaire.
-#     - Ce template ne doit pas etre utilise pour piloter
-#       une decision systeme.
-#     - Les conversions (string → float) sont defensives
-#       pour tolerer des formats non normalises.
-#
-# 🧩 USAGE
-#     Exemple :
-#       type: custom:button-card
-#       template: carte_delta_t
-#       entity: sensor.aeration_etage
-#       name: Delta T
+# 🔗 SATELLITE DE : socle_status_label
 #
 # ==========================================================
 

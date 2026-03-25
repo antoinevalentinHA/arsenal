@@ -1,44 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Aeration — Aération preferable
+# 🧠 ARSENAL — CARTE UI
+#     Aération — Aération préférable
+#
+# 🗂️ COUCHE : etat
+# 🧱 TYPE UI : statut explicatif
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher si l'aeration est conseillee ou deconseillee,
+#   avec le motif decisionnel associe.
 #
-# 🎯 ROLE
-#     Afficher la synthese decisionnelle de l'aeration
-#     preferable a partir d'un capteur binaire metier.
+# 📡 SOURCE
+#   - entity.state
+#   - entity.attributes.decision
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status_label
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Affiche un statut binaire :
+#       - on  -> "Conseillee"
+#       - off -> "Deconseillee"
+#   - Affiche un label de justification a partir de
+#     l'attribut `decision`
+#   - Traduit les codes decisionnels en motif lisible
+#   - Carte purement informative
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - state = on  -> "Conseillée"  -> vert
-#     - state = off -> "Déconseillée" -> gris neutre
-#     - attribute decision -> libelle explicatif du motif
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: binary_sensor ou capteur equivalent exposant
-#       un etat on/off
-#     - attributes:
-#         - decision
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule jamais la decision.
-#     - Il traduit uniquement une decision deja produite
-#       par le backend.
-#     - Le mapping des motifs est metier et reserve au
-#       domaine Aeration.
-#
-# 🧩 USAGE
-#     Exemple :
-#       type: custom:button-card
-#       template: carte_aeration_preferable
-#       entity: binary_sensor.aeration_preferable
-#       name: Aeration preferable
+# 🔗 SATELLITE DE : socle_status_label
 #
 # ==========================================================
 

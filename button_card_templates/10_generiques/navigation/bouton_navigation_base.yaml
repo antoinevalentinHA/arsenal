@@ -1,6 +1,32 @@
-#################################################################
-# 🧭 NAVIGATION — BOUTONS DE BASE (badge 42)
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Navigation — Badge base
+#
+# 🗂️ COUCHE : 10_generiques/navigation
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit une base visuelle pour les boutons de navigation
+#   au format badge.
+#
+# 📡 SOURCE
+#   - aucune (carte structurelle)
+#
+# ⚙️ LOGIQUE UI
+#   - basé sur socle_badge_42
+#   - fond transparent
+#   - icône active
+#   - coins arrondis (12px)
+#   - aucune action définie (à surcharger)
+#
+# 📐 USAGE
+#   - utilisé comme base pour les boutons de navigation
+#   - doit être spécialisé par une carte définissant
+#     un tap_action (navigate)
+#   - ne doit pas être utilisé seul en production
+# ==========================================================
 
 bouton_navigation_base:
   template: socle_badge_42

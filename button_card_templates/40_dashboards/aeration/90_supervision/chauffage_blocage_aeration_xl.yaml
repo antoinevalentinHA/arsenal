@@ -1,54 +1,50 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Chauffage — Blocage aeration XL
+# 🧠 ARSENAL — CARTE UI
+#     Aération — Blocage chauffage (supervision)
+#
+# 🗂️ COUCHE : supervision
+# 🧱 TYPE UI : synthèse XL multi-état
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher une synthèse XL du verrou chauffage lié
+#   à l'aération, avec statut principal et détail
+#   contextuel des timers associés.
 #
-# 🎯 ROLE
-#     Afficher une synthese XL du verrou chauffage lie
-#     a l'aeration, avec statut principal et detail
-#     contextuel des timers associes.
+# 📡 SOURCE
+#   - input_boolean.chauffage_blocage_aeration
+#   - input_boolean.aeration_episode_en_cours
+#   - input_boolean.mode_confort_chauffage
+#   - timer.aeration_blocage
+#   - timer.aeration_analyse_delta_t
+#   - sensor.time (rafraîchissement)
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status_label_xl
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Priorité stricte :
+#       indisponible          → "Chauffage" / "Indisponible" → gris indispo
+#       blocage + épisode     → "Suspendu"                   → fond rouge
+#       blocage seul          → "Stabilisation"              → fond orange
+#       override actif        → "Override"                   → fond bleu
+#       nominal               → "Aucun verrou"               → fond vert
+#   - Label contextuel :
+#       blocage + épisode     → durée restante blocage + ΔT
+#       blocage seul          → durée restante blocage + ΔT
+#       override              → "Confort forcé opérateur"
+#       nominal               → "Système nominal"
+#   - Attribut remaining affiché à titre informatif
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - donnees indisponibles -> gris indispo
-#     - blocage + episode -> rouge ("Suspendu")
-#     - blocage seul -> orange ("Stabilisation")
-#     - override actif -> bleu ("Override")
-#     - aucun verrou -> vert ("Aucun verrou")
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - helpers:
-#         - input_boolean.chauffage_blocage_aeration
-#         - input_boolean.aeration_episode_en_cours
-#         - input_boolean.mode_confort_chauffage
-#     - timers:
-#         - timer.aeration_blocage
-#         - timer.aeration_analyse_delta_t
-#     - rafraichissement:
-#         - sensor.time
-#
-# ⚠️ CONTRAINTES
-#     - Ce template agrege plusieurs entites et produit
-#       une synthese UI metier locale.
-#     - Il ne doit pas etre reutilise hors du domaine
-#       Chauffage / Aeration.
-#     - Les attributs 'remaining' sont affiches a titre
-#       informatif uniquement.
-#     - Le template ne doit jamais etre considere comme
-#       source de decision autoritaire.
-#
-# 🧩 USAGE
-#     Exemple :
-#       type: custom:button-card
-#       template: chauffage_blocage_aeration_xl
-#       name: Chauffage
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention (override opérateur)
+#     - état réel (blocage, épisode, timers)
+#     - diagnostic (stabilisation, suspension, nominal)
 #
 # ==========================================================
 

@@ -1,6 +1,30 @@
-#################################################################
-# 🚨 CARTE ALERTE BINAIRE CRITIQUE — UI
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Alerte — Binaire critique
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Signale visuellement l’état d’une entité binaire critique
+#   par codage coloriel du fond de carte.
+#
+# 📡 SOURCE
+#   - entity.state
+#
+# ⚙️ LOGIQUE UI
+#   - state = on   → fond rouge
+#   - state = off  → fond vert
+#   - autre état   → fond gris
+#   - tap_action = more-info
+#
+# 📐 USAGE
+#   - destinée aux alertes binaires à signalement critique
+#   - le codage coloriel est local à l’UI
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
 
 carte_alerte_binaire_critique:
   template: carte_base_v2

@@ -1,40 +1,41 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Maison — Mode babysitting
+#
+# 🗂️ COUCHE : action
+# 🧱 TYPE UI : commande d'état contextualisée
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Permettre l’activation et la désactivation du mode
+#   babysitting avec confirmation explicite et accès
+#   aux réglages associés.
 #
-# 🎯 ROLE
-#     Permettre l'activation et la desactivation du mode
-#     babysitting avec confirmation explicite et acces
-#     aux reglages associes.
+# 📡 SOURCE
+#   - entity.state (input_boolean.mode_babysitting)
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_toggle
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Affiche l’état du mode :
+#       - on  → actif
+#       - off → inactif
+#   - Permet le changement d’état via action utilisateur
+#   - Confirmation obligatoire avant bascule
+#   - Action contextualisée :
+#       - si actif → proposition de désactivation
+#       - si inactif → proposition d’activation
+#   - Navigation vers les réglages via maintien
+#   - Code visuel :
+#       - actif → vert
+#       - inactif → gris neutre
+#   - Aucune logique métier dans la carte
 #
-# 🎨 SEMANTIQUE
-#     - state = on -> mode actif + vert
-#     - state = off -> mode inactif + gris neutre
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: input_boolean ou entite equivalente
-#     - attributes: aucune
-#     - helpers externes: aucun
-#
-# ⚠️ CONTRAINTES
-#     - Confirmation obligatoire avant changement d'etat
-#     - Aucune logique metier dans la carte
-#     - Navigation vers les reglages via hold_action
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_mode_babysitting
-#       entity: input_boolean.mode_babysitting
+# 🔗 SATELLITE DE : socle_toggle
 #
 # ==========================================================
 

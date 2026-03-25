@@ -1,6 +1,37 @@
-#################################################################
-# 🌙 CARTE COMPTEUR — SEUILS VARIABLES
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Compteur — Seuils variables
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche un compteur avec interprétation visuelle locale
+#   selon des seuils fournis par variables.
+#
+# 📡 SOURCE
+#   - entity.state
+#   - variables.seuil_1
+#   - variables.seuil_2
+#   - variables.seuil_3
+#   - variables.seuil_4
+#
+# ⚙️ LOGIQUE UI
+#   - state_display : valeur entière, ou "—" si état non numérique
+#   - valeur non numérique → fond gris indisponible
+#   - seuil_4 atteint      → fond rouge
+#   - seuil_3 atteint      → fond orange
+#   - seuil_2 atteint      → fond jaune
+#   - sinon                → fond vert
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#
+# 📐 USAGE
+#   - destinée aux compteurs interprétés par seuils locaux
+#   - utilisée lorsque les seuils dépendent du contexte d’usage
+#   - ne doit pas être utilisée comme source de décision
+# ==========================================================
 
 carte_compteur_seuils_variables:
   template: socle_diagnostic_compact

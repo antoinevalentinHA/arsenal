@@ -1,43 +1,50 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Ouvertures — Diagnostic global portes et fenêtres
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : diagnostic synthétique contextualisé
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher l'état global du groupe d'ouvertures
+#   (portes + fenêtres) avec un libellé contextuel
+#   précisant la nature des ouvertures détectées,
+#   et donner accès au dashboard dédié.
 #
-# 🎯 ROLE
-#     Affiche l'état global du groupe d'ouvertures (portes +
-#     fenêtres) avec un label contextuel précisant le nombre
-#     et la nature des ouvertures détectées. Donne accès au
-#     dashboard ouvertures via tap.
+# 📡 SOURCE
+#   - binary_sensor.ouvertures_maison
+#   - entity.attributes.entity_id
+#   - states[membre]
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Spécialisation de socle_action_label_compact
-#     - UI uniquement (aucune décision)
+# ⚙️ LOGIQUE UI
+#   - Lit l'état global du groupe d'ouvertures
+#   - Si tout est fermé :
+#       - affiche « Fermé »
+#       - code visuel vert
+#   - Si au moins une ouverture est détectée :
+#       - code visuel rouge
+#       - analyse les membres ouverts du groupe
+#       - si seules des fenêtres sont ouvertes :
+#           - affiche un libellé quantifié
+#       - sinon :
+#           - affiche « Ouvert »
+#   - Navigation vers le dashboard Ouvertures sur appui
+#   - More-info sur maintien
+#   - Carte strictement informative
+#   - Aucun calcul métier de sécurité
 #
-# 🎨 SEMANTIQUE
-#     - state = 'on'  -> 🔴 rouge  (au moins une ouverture détectée)
-#     - state = 'off' -> 🟢 vert   (tout fermé)
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity                        : binary_sensor.ouvertures_maison (groupe)
-#     - entity.attributes.entity_id   : liste des capteurs membres du groupe
-#     - states[membre]                : état individuel de chaque ouverture
-#
-# ⚠️ CONTRAINTES
-#     - Entité fixée dans le template (binary_sensor.ouvertures_maison) — non paramétrable
-#     - Le label fenêtre est détecté par inclusion de "fenetre" dans l'entity_id
-#       (convention de nommage Arsenal requise)
-#     - Le label ne distingue pas les portes ouvertes (retourne "Ouvert" sans détail)
-#     - Requiert que le groupe expose entity_id dans ses attributs
-#
-# 🧩 USAGE
-#     type: custom:button-card
-#     template: carte_ouvertures_diagnostic
-#     # entity déjà fixée dans le template
-#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention
+#     - état réel
+#     - diagnostic
 # ==========================================================
 
 carte_ouvertures_diagnostic:

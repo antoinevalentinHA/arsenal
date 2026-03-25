@@ -1,6 +1,35 @@
-#################################################################
-# ⏳ CARTE TIMER STATUS — UI
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Timer — Status
+#
+# 🗂️ COUCHE : 20_transverses
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche le statut d'un timer avec codage coloriel
+#   sémantique paramétrable à l'activation.
+#
+# 📡 SOURCE
+#   - entity.state (active/idle/unknown/unavailable)
+#   - variables.active_semantic
+#
+# ⚙️ LOGIQUE UI
+#   - état idle                → fond gris       rgba(158, 158, 158, 0.2)
+#   - état active + ok         → fond vert        rgba(76, 175, 80, 0.2)
+#   - état active + warning    → fond orange      rgba(255, 152, 0, 0.2)
+#   - état active + info       → fond bleu clair  rgba(144, 202, 249, 0.25)
+#   - unknown / unavailable    → fond gris atténué rgba(158, 158, 158, 0.1)
+#   - aucune interaction
+#
+# 📐 USAGE
+#   - carte transverse réutilisable (dossier 20_transverses)
+#   - active_semantic doit être défini dans la carte dérivée
+#     (valeurs : ok / warning / info — défaut : ok)
+#   - le codage coloriel est local — non utilisé comme source de vérité
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
 
 carte_timer_status:
   template: socle_status_72

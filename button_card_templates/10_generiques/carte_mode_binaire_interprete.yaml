@@ -1,6 +1,38 @@
-#################################################################
-# 🔁 CARTE MODE BINAIRE INTERPRÉTÉ — UI
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Mode — Binaire interprété
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche un état binaire backend sous forme de libellé
+#   interprété, avec signal coloriel local.
+#
+# 📡 SOURCE
+#   - entity.state
+#   - variables.label_on
+#   - variables.label_off
+#   - variables.color_on
+#   - variables.color_off
+#
+# ⚙️ LOGIQUE UI
+#   - état indisponible → state_display = "—" et fond gris
+#   - state = on  → libellé label_on (défaut : "Actif")
+#   - state = off → libellé label_off (défaut : "Normal")
+#   - state = on  → fond color_on (défaut : rouge)
+#   - state = off → fond color_off (défaut : vert)
+#   - name et state centrés
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#
+# 📐 USAGE
+#   - destinée aux états binaires nécessitant un libellé métier
+#     plus lisible que on/off
+#   - utilisée lorsque le code couleur est local à l’UI
+#   - ne doit pas être utilisée comme source de décision
+# ==========================================================
 
 carte_mode_binaire_interprete:
   template: socle_status

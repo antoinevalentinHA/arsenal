@@ -40,6 +40,29 @@ boiler_kpi_courbe:
   template:
     - socle_kpi_72
 
+  state_display: >
+    [[[
+      const raw = entity?.state;
+
+      if (
+        raw === undefined ||
+        raw === null ||
+        raw === '' ||
+        raw === 'unknown' ||
+        raw === 'unavailable'
+      ) {
+        return '—';
+      }
+
+      const value = Number(raw);
+
+      if (!Number.isFinite(value)) {
+        return '—';
+      }
+
+      return value.toFixed(1);
+    ]]]
+
   styles:
     card:
       - background-color: >

@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Toggle — Interactif avec retour d'état
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : interprétative
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle toggle avec retour visuel d'état
+#   et interaction directe.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon + name + state
+#   - tap → toggle
+#   - hold → more-info
+#   - state on  → fond vert  rgba(76, 175, 80, 0.2)
+#   - state off → fond gris  rgba(158, 158, 158, 0.2)
+#   - name et state centrés
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux entités commutables (switch, input_boolean)
+#   - le retour coloriel est local — non utilisé comme source de vérité
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_toggle:
+  template: carte_base_v2
+
+  show_icon: true
+  show_state: true
+  show_name: true
+  color_type: card
+
+  tap_action:
+    action: toggle
+  hold_action:
+    action: more-info
+  double_tap_action:
+    action: none
+
+  state:
+    - value: 'on'
+      color: rgba(76, 175, 80, 0.2)
+    - value: 'off'
+      color: rgba(158, 158, 158, 0.2)
+
+  styles:
+    name:
+      - justify-self: center
+      - text-align: center
+
+    state:
+      - justify-self: center
+      - text-align: center

@@ -63,11 +63,11 @@ views:
                 name: Version
 
           # ==========================================================
-          # 🧠 SECTION — ETAT CHAUDIERE
+          # 🧠 SECTION — COMBUSTION
           # ==========================================================
           - type: custom:button-card
             template: section_header
-            name: 🔥 Chaudiere
+            name: 🔥 Combustion
 
           - type: horizontal-stack
             cards:
@@ -78,17 +78,14 @@ views:
                 name: Brûleur
 
               - type: custom:button-card
-                template: boiler_kpi_temperature
-                entity: sensor.boiler_supply_temperature
-                name: Départ
+                template: boiler_kpi_burner_modulation
+                entity: sensor.boiler_burner_modulation
+                name: Modulation
 
               - type: custom:button-card
                 template: boiler_kpi_temperature
-                entity: sensor.boiler_dhw_temperature
-                name: ECS
-                variables:
-                  warning_threshold: 55
-                  critical_threshold: 60
+                entity: sensor.boiler_supply_temperature
+                name: Départ
 
           - type: horizontal-stack
             cards:
@@ -182,19 +179,4 @@ views:
           # ==========================================================
           # 🧠 SECTION — DERNIERE ERREUR
           # ==========================================================
-          - type: custom:button-card
-            template: section_header
-            name: ⚠️ Erreur
-
-          - type: vertical-stack
-            cards:
-
-              - type: custom:button-card
-                template: boiler_diagnostic_error
-                entity: sensor.boiler_error_last_summary
-                name: Résumé
-
-              - type: custom:button-card
-                template: boiler_info_timestamp
-                entity: sensor.boiler_error_last_ts
-                name: Timestamp
+          - !include ../../includes/cartes/boiler_bloc_erreur_recente.yaml

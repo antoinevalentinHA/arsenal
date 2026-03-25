@@ -1,3 +1,33 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Status — On/Off (72px)
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche l'état on/off d'une entité binaire avec codage
+#   coloriel et libellé normalisé.
+#
+# 📡 SOURCE
+#   - entity.state (on/off/unknown/unavailable)
+#
+# ⚙️ LOGIQUE UI
+#   - state on          → "ON"  + fond vert  rgba(76, 175, 80, 0.2)
+#   - state off         → "OFF" + fond gris  rgba(158, 158, 158, 0.2)
+#   - unknown/unavailable → "—" + fond gris atténué rgba(158, 158, 158, 0.1)
+#   - aucune interaction
+#
+# 📐 USAGE
+#   - carte générique paramétrable (dossier 10_generiques)
+#   - destinée aux entités binaires dont l'état doit être
+#     affiché de manière explicite et normalisée
+#   - le codage coloriel est local — non utilisé comme source de vérité
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
 status_72_on_off:
   template: socle_status_72
 

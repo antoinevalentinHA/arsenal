@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Action — Script confirme
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : action
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle de carte d’action avec confirmation
+#   utilisateur avant exécution d’un service backend.
+#
+# ⚙️ COMPORTEMENT
+#   - tap_action = call-service
+#   - confirmation obligatoire avant exécution
+#   - affiche : icon + name
+#   - état masqué
+#   - feedback visuel par couleur de fond selon l’état lu
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux cartes métier lançant un script ou un service
+#   - le service appelé doit être défini par la carte dérivée
+#   - le texte de confirmation peut être surchargé si nécessaire
+#   - ne doit pas porter de logique métier locale
+# ==========================================================
+
+socle_action_script_confirme:
+  template: carte_base_v2
+
+  show_state: false
+  show_icon: true
+  show_name: true
+  color_type: card
+
+  tap_action:
+    action: call-service
+    confirmation:
+      text: Confirmer l’action ?
+
+  styles:
+    icon:
+      - color: '#111'
+
+    name:
+      - color: '#111'
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)

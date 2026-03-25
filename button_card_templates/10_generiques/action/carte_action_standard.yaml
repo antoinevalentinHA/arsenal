@@ -1,6 +1,33 @@
-#################################################################
-# ⚙️ CARTE ACTION STANDARD — UI
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Action — Standard
+#
+# 🗂️ COUCHE : 10_action
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Déclenche un service backend explicite sur confirmation
+#   utilisateur.
+#
+# 📡 SOURCE
+#   - entity de la carte
+#   - variables.service
+#   - variables.data
+#
+# ⚙️ LOGIQUE UI
+#   - confirmation obligatoire avant exécution
+#   - service appelé via variables.service
+#   - données appelées via variables.data
+#   - fallback data : { entity_id: entity.entity_id }
+#
+# 📐 USAGE
+#   - destiné aux cartes d’action génériques
+#   - utilisé lorsque le service et les données sont fournis
+#     par la carte dérivée
+#   - ne doit pas embarquer de logique conditionnelle métier locale
+# ==========================================================
 
 carte_action_standard:
   template: socle_action_simple

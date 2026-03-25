@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Status — Label XL avec icône (80px)
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : pure
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle status élargi avec state et label visibles,
+#   sans affichage du name.
+#
+# ⚙️ COMPORTEMENT
+#   - affiche : icon + state + label
+#   - name masqué
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#   - hauteur fixe 80px
+#   - state principal (15px, font-weight 600)
+#   - label secondaire (13px, font-weight 400)
+#
+# 📡 SOURCE
+#   - entity de la carte dérivée
+#
+# 📐 USAGE
+#   - destiné aux cartes où le state porte l'information principale
+#   - utilisé lorsque le label apporte un contexte utile à l'état
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
+
+socle_status_label_xl:
+  template: carte_base_v2
+
+  show_icon: true
+  show_name: false
+  show_state: true
+  show_label: true
+  color_type: card
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  styles:
+    card:
+      - height: 80px
+
+    icon:
+      - width: 28px
+      - height: 28px
+      - color: '#111'
+
+    state:
+      - font-size: 15px
+      - font-weight: 600
+      - color: '#111'
+
+    label:
+      - font-size: 13px
+      - font-weight: 400
+      - color: '#111'

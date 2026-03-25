@@ -1,39 +1,32 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
-#     Audi — Etat info
+# 🧠 ARSENAL — CARTE UI
+#     Audi — État info
+#
+# 🗂️ COUCHE : etat
+# 🧱 TYPE UI : info brute non binaire
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher une information non binaire issue d'une
+#   entité Audi avec une mise en forme informative.
 #
-# 🎯 ROLE
-#     Afficher une information non binaire issue d'une
-#     entite Audi avec une mise en forme informative.
+# 📡 SOURCE
+#   - entity.state (capteur ou entité Audi informative)
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - valeur disponible    → fond bleu informatif
+#   - valeur indisponible  → fond gris indispo
+#   - Aucune logique métier — affichage brut uniquement
+#   - Réservé aux entités non binaires
+#   - Aucune action utilisateur
 #
-# 🎨 SEMANTIQUE
-#     - valeur indisponible -> gris indispo
-#     - valeur disponible -> bleu informatif
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: capteur ou entite Audi informative
-#     - attributes: aucune
-#     - helpers externes: aucun
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne traite pas de logique metier
-#     - Il affiche uniquement une information brute
-#     - Reserve aux entites non binaires
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: audi_etat_info
-#       entity: sensor.audi_status
+# 🔗 SATELLITE DE : socle_status
 #
 # ==========================================================
 

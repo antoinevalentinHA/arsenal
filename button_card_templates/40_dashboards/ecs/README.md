@@ -40,19 +40,7 @@ Exemple : `ecs_chauffe_planifiee_status`
 
 ---
 
-### C. Synthèses paramétriques compactes
-
-Exemple : `ecs_synthese_status_72`
-
-- Template paramétrique à comportement dépendant de `variables.kind`
-- Deux modes : booléen de statut / consigne DHW spéciale à 10 °C (rabaissée)
-- **Type UI : interprétative** (traduction métier locale, cas `dhw_setpoint_10` non brut)
-
-> Template multifonction assumé. Les deux sous-comportements sont intentionnels et documentés — ne pas les séparer en deux cartes sans revoir la logique paramétrique.
-
----
-
-### D. KPI thermique ECS
+### C. KPI thermique ECS
 
 Exemple : `carte_ecs_etat_ballon`
 
@@ -101,7 +89,6 @@ Niveau 3 — KPI     → 30_kpi/
 
   20_statut/
     ecs_chauffe_planifiee_status.yaml
-    ecs_synthese_status_72.yaml
 
   30_kpi/
     carte_ecs_etat_ballon.yaml

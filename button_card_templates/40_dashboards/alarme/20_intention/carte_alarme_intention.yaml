@@ -1,43 +1,44 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Alarme — Intention systeme
+#
+# 🗂️ COUCHE : intention
+# 🧱 TYPE UI : comparaison intention / etat reel
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher l'intention du systeme d'alarme et sa
+#   coherence avec l'etat reel du panneau.
 #
-# 🎯 ROLE
-#     Afficher l'intention du systeme d'alarme et sa
-#     coherence avec l'etat reel du panneau.
+# 📡 SOURCE
+#   - entity.state
+#   - alarm_control_panel.alarme_maison
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_status
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Affiche l'intention backend sous forme lisible :
+#       - ARMED_AWAY -> Armer (Absent)
+#       - DISARMED  -> Desarmer
+#       - NOOP      -> Aucune action
+#   - Compare l'intention cible a l'etat reel de
+#     `alarm_control_panel.alarme_maison`
+#   - Code visuel :
+#       - intention coherente -> vert
+#       - divergence -> rouge
+#       - NOOP -> gris neutre
+#   - Carte strictement informative
+#   - Aucun calcul de decision
 #
-# 🎨 SEMANTIQUE
-#     - intention coherente avec l'etat reel -> vert
-#     - intention divergente -> rouge
-#     - intention = NOOP -> gris neutre
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: capteur portant l'intention systeme
-#     - attributes: aucune
-#     - helpers externes:
-#         - alarm_control_panel.alarme_maison
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule pas l'intention
-#     - Il compare uniquement une intention backend a
-#       l'etat reel de l'alarme
-#     - Le cas NOOP doit rester neutre
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: carte_alarme_intention
-#       entity: input_text.alarme_etat_cible
-#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention
+#     - etat reel
+#     - diagnostic
 # ==========================================================
 
 carte_alarme_intention:

@@ -1,40 +1,48 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Chauffage — État réel du chauffage
+#
+# 🗂️ COUCHE : état
+# 🧱 TYPE UI : synthèse état programmé / état réel
+# 🔍 NIVEAU DE CONFIANCE : élevé
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher le mode de programmation du chauffage
+#   (Confort / Eco) et distinguer visuellement si le
+#   brûleur est actif ou en repos.
 #
-# 🎯 ROLE
-#     Affiche le mode de programmation du chauffage (Confort/Eco)
-#     et distingue visuellement si le brûleur est actif ou en repos.
+# 📡 SOURCE
+#   - entity.state
+#   - binary_sensor.bruleur_chauffage_actif
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Spécialisation de socle_etat_action_secondaire
-#     - UI uniquement (aucune décision)
+# ⚙️ LOGIQUE UI
+#   - Lit le mode de programmation chauffage porté par
+#     l'entité
+#   - Lit l'état réel du brûleur via
+#     `binary_sensor.bruleur_chauffage_actif`
+#   - Produit un affichage synthétique :
+#       - Confort + brûleur ON  → « Actif »
+#       - Confort + brûleur OFF → « Repos »
+#       - Eco                   → « Repos »
+#       - autre / inconnu       → état brut
+#   - Code visuel :
+#       - chauffe réelle en Confort → rouge
+#       - Confort sans chauffe      → vert
+#       - Eco / fallback            → gris neutre
+#   - Navigation vers le dashboard Chauffage sur appui
+#   - More-info sur maintien
 #
-# 🎨 SEMANTIQUE
-#     - Confort + brûleur ON  -> "Actif"   🔴 rouge  (chauffe réellement)
-#     - Confort + brûleur OFF -> "Repos"   🟢 vert   (consigne Confort, pas de chauffe)
-#     - Eco                   -> "Repos"   ⚪ gris   (consigne basse)
-#     - Autre / inconnu       -> état brut ⚪ gris
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity            : sensor de programmation chauffage (state = 'Confort' | 'Eco')
-#     - binary_sensor.bruleur_chauffage_actif : état brûleur (on/off)
-#
-# ⚠️ CONTRAINTES
-#     - Dépend d'un sensor externe (brûleur) — ne pas utiliser sur une entité sans ce contexte
-#     - L'état affiché est calculé (pas le state brut de l'entité)
-#     - Ne prend aucune décision de mode — navigation seulement
-#
-# 🧩 USAGE
-#     type: custom:button-card
-#     template: carte_chauffage_etat
-#     entity: sensor.chauffage_programme_actif
-#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention
+#     - état réel
+#     - diagnostic
 # ==========================================================
 
 carte_chauffage_etat:

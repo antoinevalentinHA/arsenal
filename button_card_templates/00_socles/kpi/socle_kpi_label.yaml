@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     KPI — Label
+#
+# 🧩 NATURE : socle
+# 🧱 TYPE UI : interprétative
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournit un socle KPI enrichi avec affichage d’un contexte
+#   complémentaire via le label.
+#
+# ⚙️ COMPORTEMENT
+#   - hérite de socle_kpi (couleur dynamique incluse)
+#   - affiche : icon + name + state + label
+#   - state dominant, label secondaire
+#   - aucune interaction définie
+#
+# 📡 SOURCE
+#   - entity principale (valeur KPI)
+#   - entity couleur (sensor.couleur_* ou variable explicite)
+#
+# ⚙️ LOGIQUE UI
+#   - identique à socle_kpi (mapping couleur dynamique)
+#
+# 📐 USAGE
+#   - destiné aux KPI nécessitant un contexte explicatif
+#   - utilisé lorsque la valeur seule est insuffisante
+#   - ne doit pas être utilisé comme source de décision
+# ==========================================================
+
+socle_kpi_label:
+  template: socle_kpi
+
+  show_icon: true
+  show_name: true
+  show_state: true
+  show_label: true

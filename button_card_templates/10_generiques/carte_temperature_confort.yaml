@@ -1,14 +1,30 @@
-#################################################################
-# 🛋️ TEMPÉRATURE — CONFORT THERMIQUE
-# ---------------------------------------------------------------
-# Carte socle UI générique :
-#   - structure visuelle
-#   - gestion des données manquantes
-#   - palette canonique Arsenal
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Température — Confort
 #
-# ⚠️ Aucune interprétation métier (chauffage / clim).
-# 🔒 Contrat UI neutre — réutilisable.
-#################################################################
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : pure
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche une valeur de température avec label contextuel,
+#   sans icône.
+#
+# 📡 SOURCE
+#   - entity.state (valeur numérique, °C)
+#
+# ⚙️ LOGIQUE UI
+#   - hérite de socle_kpi_label
+#   - icône masquée
+#   - aucune transformation locale
+#   - aucune interaction
+#
+# 📐 USAGE
+#   - carte générique paramétrable (dossier 10_generiques)
+#   - destinée aux capteurs de température confort
+#   - ne doit pas embarquer de logique métier locale
+# ==========================================================
 
 carte_temperature_confort:
   template: socle_kpi_label

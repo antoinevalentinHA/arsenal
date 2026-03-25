@@ -1,41 +1,40 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE UI METIER
+# 🧠 ARSENAL — CARTE UI
 #     Alarme — Diagnostic coherence
+#
+# 🗂️ COUCHE : diagnostic
+# 🧱 TYPE UI : diagnostic explicatif
+# 🔍 NIVEAU DE CONFIANCE : eleve
 # ==========================================================
 #
-# 📌 STATUT
-#     TEMPLATE UI METIER
+# 🎯 RÔLE
+#   Afficher l'etat de coherence global du systeme
+#   d'alarme ainsi que la raison associee.
 #
-# 🎯 ROLE
-#     Afficher l'etat de coherence global du systeme
-#     d'alarme ainsi que la raison associee.
+# 📡 SOURCE
+#   - entity.state
+#   - entity.attributes.raison
 #
-# 🧱 NATURE
-#     - Template button-card
-#     - Specialisation de socle_diagnostic
-#     - UI uniquement (aucune decision)
+# ⚙️ LOGIQUE UI
+#   - Affiche un diagnostic backend deja calcule
+#   - Traduit l'etat en message lisible :
+#       - on  -> Systeme coherent
+#       - off -> Incoherence detectee
+#       - unknown/unavailable -> Indisponible
+#   - Affiche la raison associee via l'attribut `raison`
+#   - Code visuel :
+#       - coherent -> vert
+#       - incoherent -> rouge
+#       - indisponible -> gris indispo
+#   - Carte strictement informative
+#   - Aucun calcul de coherence
 #
-# 🎨 SEMANTIQUE
-#     - state = on -> "Système cohérent" + vert
-#     - state = off -> "Incohérence détectée" + rouge
-#     - state = unknown/unavailable -> "Indisponible" + gris indispo
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
 #
-# 🔗 DEPENDANCES
-#     - entity: binary_sensor ou capteur equivalent de coherence
-#     - attributes:
-#         - raison
-#     - helpers externes: aucun
-#
-# ⚠️ CONTRAINTES
-#     - Ce template ne calcule pas la coherence
-#     - Il affiche uniquement un diagnostic backend
-#
-# 🧩 USAGE
-#     Exemple minimal :
-#       type: custom:button-card
-#       template: alarme_diagnostic_coherence
-#       entity: binary_sensor.alarme_coherence
-#       name: Cohérence
+# 🔗 SATELLITE DE : socle_diagnostic
 #
 # ==========================================================
 

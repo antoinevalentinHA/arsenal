@@ -1,3 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Navigation — Diagnostics (badge carré)
+#
+# 🗂️ COUCHE : 20_transverses/navigation
+# 🧱 TYPE UI : action
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Permet l'accès rapide à la vue Diagnostics
+#   du dashboard Arsenal.
+#
+# 📡 SOURCE
+#   - navigation_path : /diagnostics-dashboard/diagnostics
+#
+# ⚙️ LOGIQUE UI
+#   - basé sur bouton_navigation_base
+#   - icône : mdi:stethoscope
+#   - label : "Diagnostics"
+#   - tap_action : navigate vers la vue diagnostics
+#   - aucune autre interaction
+#
+# 📐 USAGE
+#   - utilisé comme point d'entrée vers la vue diagnostics
+#   - carte transverse réutilisable sur plusieurs dashboards
+#   - ne déclenche aucune action backend
+# ==========================================================
+
 bouton_diagnostics_badge_carre:
   template: bouton_navigation_base
   name: Diagnostics

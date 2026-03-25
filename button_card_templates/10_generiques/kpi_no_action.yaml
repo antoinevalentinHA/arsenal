@@ -1,6 +1,28 @@
-#################################################################
-# KPI / SANS ACTION
-#################################################################
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     KPI — Lecture seule
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Affiche un KPI sans interaction utilisateur.
+#
+# 📡 SOURCE
+#   - entity.state
+#   - logique couleur héritée de socle_kpi
+#
+# ⚙️ LOGIQUE UI
+#   - hérite du rendu KPI (state dominant + codage couleur)
+#   - aucune interaction (tap/hold/double_tap désactivées)
+#
+# 📐 USAGE
+#   - destinée aux KPI purement informatifs
+#   - utilisée lorsque toute interaction est volontairement désactivée
+#   - ne doit pas être utilisée comme source de décision
+# ==========================================================
 
 kpi_no_action:
   template: socle_kpi
