@@ -1,51 +1,45 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRAT CAPTEURS D’AUTORISATION THERMOSTAT
-#     Frontière d’exécution — Autorisation et paramétrage effectif
+#     Cohérence d’exécution — Orchestration et contrôle logique
 # ----------------------------------------------------------
-# Domaine : Chauffage / Autorisation thermostat
-# Couche  : Frontière d’exécution du moteur thermique
-# Statut  : STRUCTURANT — FRONTIÈRE CRITIQUE
+# Domaine : Chauffage / Orchestration thermique
+# Couche  : Interface décision → application
+# Statut  : STRUCTURANT
 #
 # 🎯 Rôle global :
-#   Définir la COUCHE D’AUTORISATION D’EXÉCUTION DU CHAUFFAGE,
-#   interface officielle entre :
+#   Définir la COUCHE DE COHÉRENCE D’APPLICATION DU CHAUFFAGE,
+#   interface entre :
 #     - une décision thermique valide
-#     - et la possibilité réelle d’autoriser l’infrastructure à chauffer.
+#     - et les mécanismes d’application vers le système chaudière.
 #
-#   Cette couche regroupe exclusivement :
-#     - les VERROUS SYSTÈME D’EXÉCUTION
-#     - la SYNCHRONISATION D’ÉTAT EXTERNE (API)
-#     - le PARAMÉTRAGE OPÉRATIONNEL EFFECTIF
-#
-#   Elle constitue la DERNIÈRE FRONTIÈRE SOUVERAINE AVANT EXÉCUTION MATÉRIELLE.
+#   Cette couche ne contrôle pas l’exécution matérielle.
+#   Elle structure, autorise et sécurise l’APPLICATION LOGIQUE.
 #
 # 🧱 Frontière d’autorité protégée :
-#   AUTORISATION D’EXÉCUTION DU MOTEUR THERMIQUE
+#   COHÉRENCE D’APPLICATION DU MOTEUR THERMIQUE
 #
 #   Cette couche :
-#     - n’élabore aucune décision thermique
-#     - ne choisit aucun mode
+#     - ne décide jamais du mode thermique
 #     - ne produit aucun seuil
-#     - ne calibre aucun paramètre
+#     - ne définit aucun paramètre métier
+#     - ne garantit pas l’exécution physique
 #
-#   Elle autorise ou interdit exclusivement l’EXÉCUTION,
-#   et fournit les PARAMÈTRES OPÉRATIONNELS EFFECTIFS.
+#   Elle autorise ou interdit uniquement :
+#     - l’émission de commandes
+#     - la cohérence des paramètres envoyés
 #
 # ⛔ Interdictions cardinales (couche entière) :
 #   - Aucune décision de mode thermique
-#   - Aucune participation à la table de décision
 #   - Aucun calcul métier thermique
 #   - Aucun pilotage direct du matériel
-#   - Aucun déclenchement d’action
-#   - Aucune modification de consigne
-#   - Aucune logique de calibration
+#   - Aucune modification autonome de consigne
+#   - Aucune interprétation du comportement réel chaudière
 #
 # 🔒 Garanties exigées :
-#   - Autorisation binaire stricte (autorisé / interdit)
+#   - Autorisation logique explicite (autorisé / interdit)
 #   - Sémantique stable et documentée
-#   - Dépendance exclusive à des sources gouvernées
-#   - Indépendance totale vis-à-vis de la décision centrale
-#   - Indépendance totale vis-à-vis des seuils et offsets
+#   - Aucune dépendance à des projections non fiables
+#   - Indépendance vis-à-vis des lectures physiques chaudière
 #   - Reload-safe / restart-safe / runtime-safe
 #   - Absence totale d’effet de bord
 #
@@ -54,24 +48,22 @@
 #   - Table de décision canonique
 #   - Capteurs structurants du cœur thermique
 #   - Verrous système gouvernés
-#   - Sources API gouvernées
 #
 # 🔗 Autorités aval autorisées :
 #   - Automations d’application chauffage
-#   - Scripts d’exécution chaudière
-#   - Mécanismes de réalignement API
+#   - Scripts d’envoi de commandes chaudière
+#   - Mécanismes de réalignement
 #   - UI de diagnostic d’autorisation
 #
 # ⚠️ Risques systémiques surveillés :
-#   - Contournement de l’autorisation dans les automations
-#   - Introduction de logique thermique cachée
-#   - Confusion décision / autorisation
-#   - Couplage excessif avec l’API
-#   - Blocage figé non détecté
+#   - Confusion entre autorisation logique et exécution réelle
+#   - Surinterprétation comme frontière physique
+#   - Contournement dans les automations
+#   - Couplage excessif avec le bridge
 #
 # 🔒 Statut d’autorité :
-#   FRONTIÈRE D’EXÉCUTION OFFICIELLE DU MOTEUR CHAUFFAGE
-#   Toute modification impacte directement la sécurité d’exécution globale.
+#   COUCHE D’ORCHESTRATION ET DE COHÉRENCE
+#   Ne constitue pas une frontière physique d’exécution.
 #
 # ==========================================================
 
@@ -158,116 +150,136 @@ Classe : Capteur STRUCTURANT
 
 ### 🔒 sensor.programme_chauffage
 
-- Domaine : Projection décisionnelle / Interface métier  
-- Autorité : STRUCTURANT  
+- Domaine : Lecture métier dérivée / Interface thermique
+- Autorité : STRUCTURANT
 
 🎯 Rôle :
 Fournir une représentation simplifiée, normalisée et lisible
-du dernier mode de chauffage décidé par le moteur Arsenal
+du programme chauffage effectivement déduit de la consigne
+chauffage réellement lue sur le boiler bridge
 (Confort / Eco / Inconnu),
 destinée à l’interface utilisateur, à l’observabilité
 et aux couches non décisionnelles.
 
 🧭 Périmètre d’influence autorisé :
-- Projection UI du mode chauffage
-- Observabilité structurante de la décision thermique
+- Projection UI du programme chauffage
+- Observabilité structurante de l’état thermique appliqué
 - Support aux diagnostics fonctionnels
 - Interface lisible pour l’utilisateur
+- Support aux capteurs métier dérivés non décisionnels
 
 ⛔ Interdictions absolues :
 - Ne décide jamais d’un mode thermique
 - Ne déclenche jamais directement une action chaudière
 - Ne définit aucune consigne
 - Ne pilote jamais un blocage
-- Ne remplace jamais `input_select.chauffage_dernier_mode_decide`
+- Ne remplace jamais une source décisionnelle Arsenal
 - Ne sert jamais de source décisionnelle primaire
 
 🔒 Garanties exigées :
-- Projection fidèle et sans transformation métier
-- Normalisation stricte (comfort → Confort ; reduced → Eco)
+- Dérivation exclusivement fondée sur la consigne chauffage
+  réellement lue côté boiler bridge
+- Normalisation stricte :
+  - consigne = consigne confort -> Confort
+  - consigne = consigne reduite -> Eco
 - Gestion robuste des états unknown / unavailable / none
-- Fallback explicite vers état “Inconnu”
-- Aucune logique métier thermique embarquée
+- Fallback explicite vers état "Inconnu"
+- Aucune logique métier thermique embarquée hors dérivation
+  normalisée
+- Aucune projection fondée sur une mémoire de décision Arsenal
 
 🔗 Dépendances :
-Source amont :
-- input_select.chauffage_dernier_mode_decide
+Source amont autoritaire :
+- sensor.boiler_heating_setpoint
 
-Capteurs auxiliaires (diagnostic uniquement) :
-- input_boolean.chauffage_application_en_cours
-- input_text.chauffage_raison
+Références locales de comparaison :
+- input_number.chauffage_consigne_reduite
+- input_number.chauffage_consigne_confort
 
 ⚠️ Risques :
+- Confusion entre état dérivé et état physique natif chaudière
+- Passage abusif en vérité système complète alors qu’il s’agit
+  d’une normalisation métier
+- Classement en "Inconnu" si la consigne réelle ne correspond
+  à aucune consigne locale de référence
 - Dérive d’usage comme source décisionnelle (interdit)
-- Confusion entre décision interne et état réellement appliqué
-- Surinterprétation UI comme vérité physique
-- Couplage excessif avec logique métier
 
 ❗ Statut critique :
-Capteur de PROJECTION DE DÉCISION  
-Ne reflète pas l’état réel chaudière, mais la décision Arsenal.
+Capteur de LECTURE METIER DERIVEE
 
-Tout usage comme vérité physique constitue une erreur de conception.
+Ne reflète pas directement un mode natif exposé par la chaudière.
+Il reflète une interprétation strictement normalisée de la consigne
+chauffage réellement lue via le boiler bridge.
+
+Il est plus proche du réel appliqué qu’une projection décisionnelle
+Arsenal, mais ne constitue pas pour autant une source de décision.
+
+Tout usage comme autorité décisionnelle primaire constitue
+une erreur de conception.
 
 ✅ Décision :
 INCLUS DANS `15_capteurs_thermiques.md`
-Section : Projection décisionnelle / Interface métier
+Section : Lecture métier dérivée / Interface thermique
 
 # ----------------------------------------------------------
 
 ### 🔒 sensor.temperature_consigne_appliquee_locale
 
-- Domaine : Autorisation thermostat / Paramétrage effectif  
-- Autorité : STRUCTURANT  
+- Domaine : Lecture réelle / Interface thermique
+- Autorité : STRUCTURANT
 
 🎯 Rôle :
-Fournir la température de consigne effectivement applicable localement
-en fonction du programme actif réel et des consignes locales sécurisées,
-servant de référence canonique de consigne opérationnelle pour
-l’autorisation thermostat, la logique d’application et les diagnostics de cohérence.
+Fournir la température de consigne chauffage réellement appliquée,
+telle que lue sur le boiler bridge, sans projection ni reconstruction
+locale, destinée à l’interface utilisateur, à l’observabilité
+et aux diagnostics de cohérence thermique.
 
 🧭 Périmètre d’influence autorisé :
-- Autorisation thermostat logique
-- Application de la consigne vers le matériel (via automatismes)
-- Diagnostics de cohérence programme / consigne
-- Sécurité de souveraineté d’exécution
-- Observabilité structurante des paramètres réellement utilisés
+- Affichage UI de la consigne réelle
+- Observabilité structurante de la consigne appliquée
+- Support aux diagnostics de cohérence système
+- Vérification de conformité entre décision, demande et application
+- Support aux capteurs métier dérivés non décisionnels
 
 ⛔ Interdictions absolues :
 - Ne décide jamais d’un mode thermique
-- Ne choisit jamais un programme
+- Ne choisit jamais une consigne
 - Ne modifie jamais une consigne matérielle
 - Ne déclenche jamais directement une action
-- Ne remplace jamais la décision centrale
-- Ne contourne jamais les mécanismes d’autorisation
+- Ne remplace jamais une source décisionnelle Arsenal
+- Ne sert jamais de source décisionnelle primaire
+- Ne reconstruit jamais une consigne à partir de données locales
 
 🔒 Garanties exigées :
-- Dépendance exclusive à des sources locales sécurisées
-- Sélection déterministe selon programme actif normalisé
-- Validation stricte numérique des consignes
-- Fallback mémoire en cas d’indisponibilité
-- Reload-safe / restart-safe
-- Indépendance totale vis-à-vis du cloud
+- Lecture directe et fidèle de la consigne exposée par le boiler bridge
+- Aucune transformation métier appliquée à la valeur
+- Gestion robuste des états unknown / unavailable / none
+- Aucune dépendance à une logique locale de décision
+- Indépendance totale vis-à-vis des projections Arsenal
 
 🔗 Dépendances :
-Programme actif :
-- sensor.programme_chauffage
-
-Consignes locales canoniques :
-- sensor.chauffage_consigne_confort_local
-- sensor.chauffage_consigne_reduced_local
+Source amont autoritaire :
+- sensor.boiler_heating_setpoint
 
 ⚠️ Risques :
-- Dérive d’usage comme source décisionnelle primaire (interdit)
-- Contournement de la décision centrale par couplage programme → action
-- Incohérence silencieuse si programme et consignes divergent
-- Fallback abusif masquant une erreur amont
+- Confusion entre consigne lue et consigne réellement exécutée
+  (ex : latence ou inertie chaudière)
+- Surinterprétation comme vérité thermique complète
+- Dérive d’usage comme source décisionnelle (interdit)
+- Perte de sens si la source bridge devient indisponible
 
 ❗ Statut critique :
-CONSigne OPÉRATIONNELLE CANONIQUE  
-Dernier paramètre thermique avant application logique.
-Toute altération impacte directement le comportement réel du chauffage.
+LECTURE RÉELLE DE CONSIGNE
+
+Ce capteur reflète la consigne chauffage effectivement exposée
+par la chaudière via le boiler bridge.
+
+Il constitue une source d’observation fiable du système,
+mais ne porte aucune logique décisionnelle.
+
+Tout usage comme source de décision constitue une erreur
+de conception.
 
 ✅ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
-Section : Autorisation thermostat / Paramétrage effectif
+INCLUS DANS `15_capteurs_thermiques.md`
+Section : Lecture réelle / Interface thermique

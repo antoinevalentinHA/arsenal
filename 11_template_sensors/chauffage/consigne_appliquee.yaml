@@ -1,22 +1,13 @@
 # ==========================================================
-# 🛣️ ARSENAL — TEMPLATE SENSOR
+# 🧠 ARSENAL — TEMPLATE SENSOR
 #     Chauffage — Consigne appliquee locale
 # ----------------------------------------------------------
 # 🎯 ROLE
-#   Exposer la consigne de temperature effectivement
-#   appliquee par Arsenal, en fonction du programme
-#   chauffage en cours.
-#
-# ⚙️ LOGIQUE
-#   - Eco     → input_number.chauffage_consigne_reduite
-#   - Confort → input_number.chauffage_consigne_confort
-#   - Autre   → capteur indisponible
+#   Exposer la consigne chauffage reellement lue sur le
+#   boiler bridge, sans projection locale.
 #
 # 🧠 SOURCE
-#   sensor.programme_chauffage
-#
-# 📊 TYPE
-#   Template Sensor
+#   sensor.boiler_heating_setpoint
 #
 # 📏 UNITE
 #   °C
@@ -24,12 +15,10 @@
 
 - sensor:
     - name: "temperature_consigne_appliquee_locale"
+      unique_id: temperature_consigne_appliquee_locale
       unit_of_measurement: "°C"
       availability: >
-        {{ states('sensor.programme_chauffage') in ['Eco', 'Confort'] }}
+        {{ states('sensor.boiler_heating_setpoint') not in ['unknown', 'unavailable', ''] }}
       state: >
-        {% if states('sensor.programme_chauffage') == 'Eco' %}
-          {{ states('input_number.chauffage_consigne_reduite') | float(0) }}
-        {% elif states('sensor.programme_chauffage') == 'Confort' %}
-          {{ states('input_number.chauffage_consigne_confort') | float(0) }}
-        {% endif %}
+        {% set v = states('sensor.boiler_heating_setpoint') | float(none) %}
+        {{ v if v is not none else 'unavailable' }}

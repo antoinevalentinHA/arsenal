@@ -1,52 +1,61 @@
 # ==========================================================
-# 🔥 TEMPLATE SENSOR — Programme Chauffage simplifie
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Chauffage — Programme chauffage
 # ----------------------------------------------------------
-# 🎯 Objectif :
-#   Exposer le programme chauffage metier Arsenal :
-#     - "Confort" si la reference souveraine vaut comfort
-#     - "Eco"     si la reference souveraine vaut reduced
-#     - "Inconnu" sinon
+# 🎯 ROLE
+#   Exposer le programme chauffage metier a partir de la
+#   consigne reellement lue sur le boiler bridge.
 #
-# ⚙️ Source :
-#   input_select.chauffage_dernier_mode_decide
+# ⚙️ LOGIQUE
+#   - setpoint = consigne reduite  -> Eco
+#   - setpoint = consigne confort  -> Confort
+#   - autre / indetermine          -> Inconnu
 #
-# 🧠 Particularites :
-#   - Ne projette que les etats executoires
-#   - Les etats neutre / unknown restent non qualifies
-#   - Les attributs exposes permettent un diagnostic rapide
+# 🧠 SOURCE
+#   sensor.boiler_heating_setpoint
 #
-# 📊 Type : Template Sensor
-# 🔥 Domaine : Chauffage / Arsenal
+# ⚠️ NOTE
+#   Une tolerance est appliquee pour eviter les faux ecarts
+#   de comparaison flottante.
 # ==========================================================
 
 - sensor:
     - name: "Programme"
       unique_id: programme_chauffage
       icon: >
-        {% set prog = states('input_select.chauffage_dernier_mode_decide') | lower %}
-        {% if prog == 'comfort' %}
-          mdi:fire
-        {% elif prog == 'reduced' %}
+        {% set setpoint = states('sensor.boiler_heating_setpoint') | float(none) %}
+        {% set reduced = states('input_number.chauffage_consigne_reduite') | float(none) %}
+        {% set comfort = states('input_number.chauffage_consigne_confort') | float(none) %}
+        {% set eps = 0.05 %}
+
+        {% if setpoint is not none and reduced is not none and (setpoint - reduced) | abs <= eps %}
           mdi:leaf
+        {% elif setpoint is not none and comfort is not none and (setpoint - comfort) | abs <= eps %}
+          mdi:fire
         {% else %}
           mdi:help-circle-outline
         {% endif %}
       state: >
-        {% set prog = states('input_select.chauffage_dernier_mode_decide') | lower %}
-        {% if prog == 'comfort' %}
-          Confort
-        {% elif prog == 'reduced' %}
+        {% set setpoint = states('sensor.boiler_heating_setpoint') | float(none) %}
+        {% set reduced = states('input_number.chauffage_consigne_reduite') | float(none) %}
+        {% set comfort = states('input_number.chauffage_consigne_confort') | float(none) %}
+        {% set eps = 0.05 %}
+
+        {% if setpoint is not none and reduced is not none and (setpoint - reduced) | abs <= eps %}
           Eco
+        {% elif setpoint is not none and comfort is not none and (setpoint - comfort) | abs <= eps %}
+          Confort
         {% else %}
           Inconnu
         {% endif %}
       attributes:
-        mode_arsenal: >
-          {% set v = states('input_select.chauffage_dernier_mode_decide') %}
+        boiler_heating_setpoint: >
+          {% set v = states('sensor.boiler_heating_setpoint') %}
           {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
-        application_en_cours: >
-          {% set v = states('input_boolean.chauffage_application_en_cours') %}
+        consigne_reduite_locale: >
+          {% set v = states('input_number.chauffage_consigne_reduite') %}
           {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
-        raison: >
-          {% set v = states('input_text.chauffage_raison') %}
+        consigne_confort_locale: >
+          {% set v = states('input_number.chauffage_consigne_confort') %}
           {{ v if v not in ['unknown', 'unavailable', ''] else 'Indisponible' }}
+        mode_derive_depuis: "sensor.boiler_heating_setpoint"

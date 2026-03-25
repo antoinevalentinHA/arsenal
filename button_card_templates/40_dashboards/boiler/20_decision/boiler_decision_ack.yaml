@@ -7,11 +7,11 @@
 #     TEMPLATE UI METIER — REUTILISABLE
 #
 # 🎯 ROLE
-#     Specialiser le socle decision canonique pour l'affichage
+#     Specialiser un socle status canonique pour l'affichage
 #     du statut transactionnel d'un ACK boiler.
 #
 # 🧱 NATURE
-#     - Template button-card derive d'un socle decision
+#     - Template button-card derive d'un socle status
 #     - Porte la semantique couleur metier transactionnelle
 #     - Reutilisable sur tous les statuts ACK du bridge
 #
@@ -27,18 +27,65 @@
 #     accepted n'est pas un succes final.
 #     Seul applied represente un succes applique.
 #
-# 🧩 USAGE
-#     Exemple :
-#       type: custom:button-card
-#       template: boiler_decision_ack
-#       entity: sensor.boiler_ack_dhw_set_setpoint_status
-#       name: ECS
-#
 # ==========================================================
 
 boiler_decision_ack:
   template:
-    - socle_decision_72
+    - socle_status_72
+
+  icon: >
+    [[[
+      const state = entity ? String(entity.state).toLowerCase() : null;
+
+      if (state === null || state === undefined || state === 'unknown' || state === 'unavailable') {
+        return 'mdi:help-circle-outline';
+      }
+
+      if (state === 'applied') {
+        return 'mdi:check-circle-outline';
+      }
+
+      if (state === 'accepted') {
+        return 'mdi:clock-outline';
+      }
+
+      if (state === 'rejected') {
+        return 'mdi:close-circle-outline';
+      }
+
+      if (state === 'timeout') {
+        return 'mdi:timer-alert-outline';
+      }
+
+      return 'mdi:alert-circle-outline';
+    ]]]
+
+  state_display: >
+    [[[
+      const state = entity ? String(entity.state).toLowerCase() : null;
+
+      if (state === null || state === undefined || state === 'unknown' || state === 'unavailable') {
+        return 'Inconnu';
+      }
+
+      if (state === 'applied') {
+        return 'Applique';
+      }
+
+      if (state === 'accepted') {
+        return 'Accepte';
+      }
+
+      if (state === 'rejected') {
+        return 'Rejete';
+      }
+
+      if (state === 'timeout') {
+        return 'Timeout';
+      }
+
+      return 'Anormal';
+    ]]]
 
   styles:
     card:
