@@ -1,387 +1,239 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF CENTRAL
-#     CHAUFFAGE — DÉCISION CENTRALE (V3 PRO)
-# ==========================================================
-#
-# 📌 STATUT :
-#   CONTRAT NORMATIF CENTRAL — CERVEAU MÉTIER DU DOMAINE CHAUFFAGE
-#
-# 🔒 AUTORITÉ :
-#   Ce document définit l’ALGORITHME MÉTIER OFFICIEL
-#   de décision thermique du sous-système Chauffage Arsenal.
-#
-#   Il est OPPOSABLE à toute implémentation :
-#     • scripts,
-#     • automatismes,
-#     • capteurs décisionnels,
-#     • interfaces utilisateur.
-#
-#   Toute divergence entre ce contrat et le YAML constitue
-#   une erreur critique de conception.
-#
-#   Subordonné à :
-#     /documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
-#
-# ==========================================================
+# ARSENAL — Contrat Normatif Central
+## Chauffage — Décision Centrale V3
 
-
-# ----------------------------------------------------------
-# 🎯 1. OBJET DU CONTRAT
-# ----------------------------------------------------------
-
-Ce contrat définit le comportement normatif de la **Décision Centrale Chauffage**.
-
-Il formalise :
-
-- le rôle exclusif du cerveau thermique,
-- la hiérarchie réelle des causes,
-- les règles d’arbitrage entre contextes,
-- les mécanismes d’abstention,
-- les garde-fous anti-oscillation,
-- les conditions légitimes de changement de programme.
-
-Ce contrat est la **référence unique** décrivant *comment* et *quand* le système
-est autorisé à changer de régime thermique.
+**Statut :** Contrat normatif central — opposable
+**Rôle :** Cerveau métier du domaine Chauffage · Point d'entrée canonique de décision
+**Subordonné à :** `contrats/chauffage/00_gouvernance_chauffage.md`
+**Complémentaire de :** `20_triggers_decisionnels.md` · `70_autorisation_thermostat.md` · `80_table_decision_canonique.md`
+**Références boiler :** `contrats/boiler/CONTRAT_BOILER_SOCLE_TRANSACTIONNEL.md` · `outils_externes/boiler_pi/AUDIT_CHAINE_MQTT_ACK_ECS.md`
+**Date :** 2026-03-26
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 2. RÔLE FONDAMENTAL DE LA DÉCISION CENTRALE
-# ----------------------------------------------------------
+## 0. Principes normatifs fondamentaux
+
+La Décision Centrale est un système de décision souverain soumis aux invariants suivants :
+
+- aucune action sans cause explicite
+- aucune reprise automatique post-blocage
+- aucune oscillation de régime autorisée
+- abstention par défaut en absence de besoin valide
+- une autorisation n'est jamais une décision
+
+Toute implémentation doit respecter ces principes indépendamment de sa forme technique.
+
+---
+
+## 1. Autorité et opposabilité
+
+Ce document définit l'algorithme métier officiel de décision thermique du sous-système Chauffage Arsenal.
+
+Il est **opposable** à toute implémentation : scripts, automatismes, capteurs décisionnels, interfaces utilisateur.
+
+Toute divergence entre ce contrat et le YAML constitue une erreur critique de conception.
+
+---
+
+## 2. Rôle fondamental
 
 La Décision Centrale est :
 
-- l’unique autorité habilitée à décider un changement de programme chauffage,
+- l'unique autorité habilitée à décider un changement de programme chauffage,
 - le point de convergence de toutes les causes thermiques et contextuelles,
-- la source officielle de toute intention d’application.
+- la source officielle de toute intention d'application,
+- le seul appelant légitime de `script.chauffage_appliquer_consigne`.
 
-Elle peut uniquement :
+Elle peut uniquement : ordonner `comfort`, ordonner `reduced`, ou refuser volontairement toute action.
 
-- ordonner un passage en `comfort`,
-- ordonner un passage en `reduced`,
-- ou refuser volontairement toute action.
+Elle ne peut jamais : régler une consigne, produire une hypothèse thermique, accéder à une couche matérielle, produire une décision implicite.
 
-Elle ne peut jamais :
+### Nature de la décision
 
-- régler une consigne,
-- appeler la couche d’exécution directement,
-- produire une hypothèse thermique,
-- déclencher une action implicite.
+La décision produite est une **intention de changement de régime**. Elle ne constitue pas une preuve d'exécution.
+
+L'exécution réelle est confirmée uniquement par la couche transactionnelle aval (ACK boiler).
 
 ---
 
-# ----------------------------------------------------------
-# 🧱 3. PÉRIMÈTRE COUVERT
-# ----------------------------------------------------------
+## 3. Périmètre couvert
 
-La Décision Centrale couvre exclusivement :
+**Inclus :** arbitrage confort / sobriété, hiérarchie des causes métier, production d'une décision explicite, abstention volontaire, traçabilité métier.
 
-- l’arbitrage entre confort et sobriété,
-- la hiérarchie des causes métier,
-- la production d’une décision explicite,
-- le refus volontaire d’action,
-- la traçabilité métier de toute transition.
-
-Hors périmètre strict :
-
-- calcul des besoins thermiques,
-- estimation d’inertie,
-- réglage des consignes,
-- pilotage matériel,
-- UI et pédagogie.
+**Exclu :** calcul des besoins thermiques, estimation d'inertie, réglage des consignes, pilotage matériel, logique UI.
 
 ---
 
-# ----------------------------------------------------------
-# ⚖️ 4. HIÉRARCHIE OFFICIELLE DES CAUSES
-# ----------------------------------------------------------
-
-La décision est gouvernée par une hiérarchie descendante stricte.
+## 4. Hiérarchie officielle des causes (doctrine)
 
 Aucune cause de niveau inférieur ne peut contredire un niveau supérieur.
 
-## 4.1 NIVEAU 1 — INTERDICTIONS ABSOLUES
+### Niveau 0 — Override opérateur
 
-Causes structurantes bloquantes :
+`input_boolean.mode_confort_chauffage`
 
-- chauffage non autorisé système,
+Impose `comfort`. Écrase toute logique inférieure, y compris les abstentions.
 
-Effet normatif :
+### Niveau 1 — Interdictions système
 
-- décision forcée en `reduced`,
-- aucune autre cause n’est évaluée.
+`binary_sensor.chauffage_autorise_systeme`
 
----
+Impose `reduced`. Stop hiérarchique — aucune autre cause évaluée.
 
-## 4.2 NIVEAU 2 — CONTEXTES MAJEURS BLOQUANTS
+### Niveau 2 — Contextes majeurs
 
-Causes imposant la sobriété :
+Aération en cours confirmée, blocage aération, fenêtres ouvertes (avec délai), mode maison = Vacances, poêle actif.
 
-- poêle actif (instantané ou mémoire),
-- blocage aération actif,
-- blocage post-aération,
-- fenêtre ouverte avec délai,
-- mode maison = Vacances.
+Impose `reduced`. Aucune autorisation confort ne survit à ce niveau.
 
-Effet normatif :
+### Niveau 3 — Confort d'opportunité
 
-- décision forcée en `reduced`,
-- toute autorisation confort est ignorée.
+`binary_sensor.presence_famille_unifiee` → délégation à `sensor.chauffage_autorisation_cible`.
 
----
+Valeurs possibles : `comfort`, `neutre`, `reduced`.
 
----
+La présence n'est jamais une décision — elle délègue. L'autorisation `neutre` produit une abstention stricte.
 
-### Autorisations amont en contexte Vacances
+### Niveau 4 — Autorisations forcées
 
-En contexte `mode_maison = Vacances` :
+Inhibition géofencing, pré-confort retour vacances.
 
-- toute interdiction NIVEAU 2 demeure absolue,
-- aucune décision confort n’est autorisée,
-- aucune exception hiérarchique n’est permise.
-
-Toute autorisation amont active dans ce contexte :
-
-- ne constitue jamais une levée d’interdiction,
-- ne modifie jamais le régime effectif,
-- ne peut jamais produire une décision de reprise autonome.
-
-Le pré-confort retour vacances est soumis intégralement à ces règles
-et demeure strictement écrasé par toute cause NIVEAU 2.
-
-Il ne constitue :
-
-- ni une exception Vacances,
-- ni une levée d’interdiction,
-- ni un mécanisme de reprise automatique.
+Ces autorisations ne sont jamais des décisions. Elles ne modifient jamais la hiérarchie et ne produisent jamais de reprise automatique post-blocage. Toute interdiction niveau 1 ou 2 les écrase immédiatement.
 
 ---
 
-## 4.3 NIVEAU 3 — AUTORISATION DE CONFORT (PRÉSENCE)
+## 5. Règles décisionnelles fondamentales
 
-La présence réelle autorise un régime confortable.
+### Abstention (principe cardinal)
+
+L'abstention est l'état nominal du système. Une décision n'est valide que si une cause métier existe, qu'aucune interdiction supérieure n'est active, et qu'une autorisation explicite est présente. Sinon : le système refuse d'agir.
+
+> La Décision Centrale ne cherche jamais à agir. Elle cherche à ne pas agir tant que cela n'est pas nécessaire.
+
+### Statut du mode `neutre`
+
+Le mode `neutre` n'est pas un régime thermique. Il représente une absence de décision.
+
+Conséquences : il ne déclenche aucune action, il ne modifie aucun état, il formalise une abstention volontaire du système.
+
+Il constitue un état valide et stable.
+
+### Hystérésis décisionnelle
+
+Fin de blocage ≠ reprise automatique. Aucune action par principe. Respect strict de l'inertie thermique. Zéro oscillation autorisée.
+
+---
+
+## 6. Garde-fous d'abstention (doctrine)
+
+Aucune action n'est autorisée si : programme inconnu, autorisation = `neutre`, mode déjà actif, anti-rebond actif.
+
+> Une autorisation sans besoin produit une abstention stricte.
+
+---
+
+## 7. Garde d'exécution — Disponibilité du système
+
+La disponibilité du système d'exécution est une condition préalable à toute action. Elle est évaluée via `binary_sensor.boiler_bridge_online`.
 
 Règles :
 
-- la présence n’est JAMAIS une décision,
-- elle délègue l’intention à `autorisation_cible`,
-- elle peut produire :
-  - `comfort`
-  - `neutre`
-  - `reduced`
+- cette garde ne participe pas à la décision métier,
+- elle conditionne uniquement la capacité d'exécution,
+- elle est évaluée au point d'entrée canonique,
+- elle est non contournable.
 
-Effet normatif :
-
-- la décision suit strictement l’autorisation cible,
-- aucune hypothèse locale n’est autorisée.
+Conséquence : une décision valide peut être produite mais non exécutée. La décision et l'exécution sont deux événements distincts.
 
 ---
 
 ---
 
-### Autorisations de confort forcées amont
-
-Certaines autorisations de confort peuvent être produites en amont
-de la Décision Centrale par des mécanismes non liés à la présence.
-
-Caractéristiques cardinales :
-
-- ne constituent jamais une cause hiérarchique,
-- ne constituent jamais une décision thermique,
-- ne modifient jamais le régime de référence,
-- restent entièrement soumises aux niveaux supérieurs.
-
-Sources reconnues :
-
-- inhibition géofencing,
-- pré-confort retour vacances.
-
-Règles cardinales :
-
-- toute autorisation forcée est évaluée strictement
-  dans le cadre de la hiérarchie officielle,
-- toute interdiction NIVEAU 1 ou NIVEAU 2 écrase immédiatement
-  toute autorisation forcée,
-- aucune autorisation forcée ne peut produire
-  une reprise automatique post-blocage.
-
-Le pré-confort retour vacances appartient exclusivement à cette catégorie
-et ne bénéficie d’aucun privilège hiérarchique particulier.
+## ⚙️ Implémentation actuelle (référence YAML)
 
 ---
 
-## 4.4 NIVEAU 4 — INHIBITION GÉOFENCING (ABSENCE ACTIVE)
+## 8. Séquence d'exécution
 
-Mécanisme de confort différé en absence.
-
-Règles :
-
-- le régime reste **absence**,
-- l’autorisation simulée devient `comfort`,
-- l’objectif est la qualité de reprise,
-- jamais la recherche permanente de confort.
-
-Effet normatif :
-
-- autorisation ponctuelle de passage en `comfort` en absence,
-- strictement contrôlée par garde-fous.
-
----
-
-# ----------------------------------------------------------
-# 🔁 5. HYSTÉRÉSIS DÉCISIONNELLE & ABSTENTION
-# ----------------------------------------------------------
-
-Principes cardinaux :
-
-- fin de blocage ≠ reprise automatique,
-- aucune action « par principe »,
-- toute reprise doit être justifiée par un besoin valide.
-
-Règles :
-
-- aucune reprise immédiate après interdiction,
-- aucune oscillation autorisée,
-- inertie thermique respectée,
-- abstention privilégiée par défaut.
+```
+START
+  │
+  ├─ G1  Anti-rebond actif ET pas override ? → STOP
+  ├─ G2  Bridge offline ? → STOP
+  ├─ SET variables : prog_actuel / desired_mode / reason
+  ├─ G3  Programme unknown ET pas override ? → STOP
+  ├─ G4  desired_mode == neutre ? → STOP
+  ├─ G5  desired_mode == prog_actuel ? → STOP
+  │
+  └─ EXÉCUTION
+       → script.chauffage_appliquer_consigne (consigne, raison)
+       → timer.chauffage_geoloc_antirebond (start)
+```
 
 ---
 
-# ----------------------------------------------------------
-# 🛑 6. GARDE-FOUS D’ABSTENTION
-# ----------------------------------------------------------
+## 9. Gardes
 
-AUCUNE action n’est autorisée si :
-
-- le programme actuel est inconnu,
-- le mode désiré est déjà actif,
-- un anti-rebond géolocalisation est en cours,
-- l’autorisation est `neutre`.
-
-Règle :
-
-> ⚠️ Une autorisation sans besoin produit une abstention stricte.
+| Garde | Condition | Contournable par override |
+|-------|-----------|--------------------------|
+| G1 | Anti-rebond actif | Oui |
+| G2 | Bridge offline | Non |
+| G3 | Programme unknown | Oui |
+| G4 | `desired_mode == neutre` | Non |
+| G5 | `desired_mode == prog_actuel` | Non |
 
 ---
 
-# ----------------------------------------------------------
-# 🔒 7. ANTI-REBOND & SÉRIALISATION
-# ----------------------------------------------------------
+## 10. Traçabilité métier
 
-Toute décision validée déclenche :
+Chaque décision produit : une action observable, une raison métier explicite, un logbook cohérent.
 
-- un verrou temporel géolocalisation,
-- l’interdiction de toute décision concurrente immédiate.
+La raison est calculée localement et transmise à `chauffage_appliquer_consigne` — elle n'est jamais recalculée en aval.
 
-Objectifs :
-
-- stabilisation logique,
-- protection thermique,
-- élimination des oscillations rapides.
-
----
-
-# ----------------------------------------------------------
-# 🧾 8. TRAÇABILITÉ MÉTIER
-# ----------------------------------------------------------
-
-Toute décision explicite doit produire :
-
-- un changement de programme observable,
-- une raison métier explicite,
-- un logbook lisible,
-- une notification persistante si pertinente.
-
-Toute transition est :
-
-- traçable,
-- explicable,
-- audit-compatible.
-
-### 🔔 Projection UI — Notifications persistantes (invariant)
-
-Les notifications persistantes Chauffage (Confort / Réduit) sont des **projections d’état secondaires**.
-
-Règles opposables :
-- Une notification persistante **ne dépend jamais** de la fin d’un script.
-- Toute logique `persistent_notification.*` est **strictement interdite**
-  dans un script `mode: restart` (Décision Centrale incluse).
-- La production et la disqualification des notifications sont assurées
-  exclusivement par une **automation UI dédiée**, idempotente et reconstructible
-  (reconstruction garantie après redémarrage système).
+| Contexte | Raison |
+|----------|--------|
+| Override opérateur | `confort_force` |
+| Système non autorisé | `chauffage_non_autorise` |
+| Aération en cours confirmée | `aeration_en_cours` |
+| Blocage aération actif | `blocage_aeration_en_cours` |
+| Fenêtre ouverte (avec délai) | `fenetre_ouverte_maison` |
+| Mode vacances | `mode_maison_vacances` |
+| Poêle actif | `poele_actif` |
+| Présence + cible = comfort | `besoin_thermique` |
+| Présence + cible = neutre | `presence_on` |
+| Présence + cible = reduced | `confort_suffisant` |
+| Inhibition géofencing | `absence_protection_thermique` |
+| Absence (défaut) | `absence` |
 
 ---
 
-# ----------------------------------------------------------
-# 🔒 9. INTERDICTIONS FORMELLES
-# ----------------------------------------------------------
+## 11. Notifications (invariant UI)
 
-La Décision Centrale ne doit JAMAIS :
-
-- accéder directement à une couche matérielle,
-- modifier une consigne,
-- estimer un besoin thermique,
-- lire un retour matériel comme vérité,
-- produire une décision implicite,
-- court-circuiter la hiérarchie.
+- Jamais dans un script `mode: restart`.
+- Toujours via automation dédiée, idempotente et reconstructible après redémarrage.
 
 ---
 
-# ----------------------------------------------------------
-# 🧱 10. INVARIANTS DE DÉCISION
-# ----------------------------------------------------------
+## 12. Interdictions formelles
 
-Invariants absolus :
-
-- une seule décision à la fois,
-- zéro appel inutile,
-- zéro oscillation programme,
-- zéro ambiguïté d’état,
-- zéro reprise automatique post-blocage,
-- zéro décision sans cause référencée.
-
-Toute violation constitue :
-
-- une régression critique,
-- une rupture de gouvernance,
-- une erreur majeure d’architecture.
+La Décision Centrale ne doit jamais : appeler directement le matériel, modifier une consigne, recalculer une vérité matérielle, court-circuiter la hiérarchie.
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 11. DÉPENDANCES CONTRACTUELLES
-# ----------------------------------------------------------
+## 13. Invariants non négociables
 
-Ce contrat est :
+- Une seule décision à la fois — mode `restart`
+- Zéro appel inutile — G5 idempotence
+- Zéro oscillation — anti-rebond systématique
+- Zéro ambiguïté d'état — `prog_actuel` normalisé
+- Zéro reprise automatique post-blocage
+- Zéro décision sans cause référencée
 
-- subordonné à :
-  - `00_gouvernance_chauffage.md`
-
-- complémentaire de :
-  - `20_triggers_decisionnels.md`
-  - `70_autorisation_thermostat.md`
-  - `80_table_decision_canonique.md`
-
-Il gouverne directement :
-
-- le script `chauffage_decision_centrale`,
-- tous les automatismes de rappel décisionnel,
-- toute transition de programme chauffage.
+Toute violation constitue une régression critique et une rupture de gouvernance.
 
 ---
 
-# ----------------------------------------------------------
-# 📌 12. PORTÉE & STABILITÉ
-# ----------------------------------------------------------
+## 14. Portée et stabilité
 
-Ce contrat est :
+Ce contrat est central, stable long terme, versionné explicitement, et opposable à toute implémentation.
 
-- central dans l’architecture Chauffage,
-- stable long terme,
-- modifié uniquement lors d’évolutions majeures,
-- versionné explicitement,
-- opposable à toute implémentation.
-
-Il constitue le **cerveau normatif officiel du Chauffage Arsenal V3 PRO**.
-
-# ==========================================================
+Il constitue le **cerveau normatif officiel du Chauffage Arsenal V3**.

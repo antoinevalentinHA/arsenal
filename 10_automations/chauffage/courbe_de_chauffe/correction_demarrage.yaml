@@ -6,7 +6,8 @@
 # ----------------------------------------------------------
 #  🎯 ROLE
 #     Réappliquer au démarrage les consignes locales Arsenal
-#     de pente et de parallèle de la courbe de chauffe.
+#     de pente et de parallèle de la courbe de chauffe,
+#     sous réserve de disponibilité du boiler bridge.
 #
 #     Cette automation ne vérifie aucune divergence externe.
 #     Elle réafﬁrme simplement les references locales
@@ -23,6 +24,7 @@
 #         • passage du système à l'état stable post-démarrage
 #     - Traitement :
 #         • validation minimale des consignes locales
+#         • vérification de disponibilité du boiler bridge
 #         • appel des scripts exécutifs locaux dédiés
 #     - Objectif :
 #         • réaffirmer la configuration Arsenal
@@ -32,7 +34,9 @@
 #     - Réapplication unidirectionnelle locale
 #     - Délégation complète de l'exécution aux scripts boiler bridge
 #     - Aucune logique de synchronisation
+#     - Exécution conditionnée à la disponibilité du boiler bridge
 # ==========================================================
+
 - id: "10240000000010"
   alias: "Chauffage – Réappliquer courbe au demarrage"
   description: >
@@ -45,6 +49,11 @@
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.boiler_bridge_online
+      state: "on"
 
   action:
     - variables:

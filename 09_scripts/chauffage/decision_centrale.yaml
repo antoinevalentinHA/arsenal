@@ -4,15 +4,20 @@
 # 🎯 RÔLE FONDAMENTAL
 #
 #   Cerveau UNIQUE de décision du chauffage.
+#   Point d'entrée canonique du domaine chauffage consigne.
 #
 #   Ce script est la SEULE autorité habilitée à décider
-#   un changement de regime chauffage Arsenal :
+#   un changement de régime chauffage Arsenal :
 #     → Confort
-#     → Reduit
+#     → Réduit
 #
-#   Il peut :
-#     - ordonner un changement explicite de programme
-#     - OU refuser volontairement toute action
+#   Il délègue toute exécution à :
+#     → script.chauffage_appliquer_consigne
+#
+#   Il ne fait PAS :
+#     - Aucune exécution directe de consigne
+#     - Aucune hypothèse thermique
+#     - Aucune décision implicite
 #
 # ----------------------------------------------------------
 # 🧱 HIÉRARCHIE DES PRIORITÉS (ORDRE STRICT)
@@ -29,26 +34,26 @@
 #   🛑 NIVEAU 1 — INTERDICTIONS SYSTÈME (RÉGIME AUTOMATIQUE)
 #     (souveraines hors override opérateur)
 #     - Chauffage non autorisé système
-#     - Standby forcé
 #
 #   🧠 NIVEAU 2 — CONTEXTES MAJEURS (RÉGIME AUTOMATIQUE)
-#     (imposent Réduit hors override opérateur)
-#     - Poêle actif (instantané ou mémoire)
-#     - Aération en cours ou bloquée
-#     - Fenêtres ouvertes (avec délai)
-#     - Mode maison = Vacances
+#     (imposent Réduit hors override opérateur, ordre d'évaluation strict)
+#     1. Aération en cours et confirmée
+#     2. Blocage aération
+#     3. Fenêtres ouvertes (avec délai)
+#     4. Mode maison = Vacances
+#     5. Poêle actif
 #
-#   🌡️ NIVEAU 3 — CONFORT D’OPPORTUNITÉ (RÉGIME AUTOMATIQUE)
+#   🌡️ NIVEAU 3 — CONFORT D'OPPORTUNITÉ (RÉGIME AUTOMATIQUE)
 #     (sous réserve des niveaux supérieurs)
-#     - Présence réelle du foyer
-#     - Pré-confort (retour anticipé)
-#     - Inhibition géofencing (protection thermique en absence)
+#     1. Présence réelle → délégué à sensor.chauffage_autorisation_cible
+#     2. Inhibition géofencing → confort (protection thermique en absence)
+#     3. Défaut → réduit
 #
 # ----------------------------------------------------------
-# 🔁 HYSTÉRÉSIS DÉCISIONNELLE & ÉTAT D’ATTENTE
+# 🔁 HYSTÉRÉSIS DÉCISIONNELLE & ÉTAT D'ATTENTE
 #
 #   Hors override opérateur, ce script ne force JAMAIS
-#   une reprise automatique à la levée d’un blocage ou d’un délai.
+#   une reprise automatique à la levée d'un blocage ou d'un délai.
 #
 #   ➜ Fin de blocage ≠ reprise chauffage
 #   ➜ Passage en Confort uniquement si le BESOIN THERMIQUE
@@ -56,25 +61,40 @@
 #
 #   Objectifs :
 #     - Zéro effet yo-yo
-#     - Respect de l’inertie thermique
-#     - Aucune action “par principe”
+#     - Respect de l'inertie thermique
+#     - Aucune action "par principe"
 #
 # ----------------------------------------------------------
-# 🛑 GARDE-FOUS D’ABSTENTION
+# 🚦 GARDES D'EXÉCUTION (SÉQUENCE STRICTE)
 #
-#   Hors override opérateur, AUCUNE action n’est déclenchée si :
-#     - Le programme chauffage est inconnu
-#     - Le mode désiré est déjà actif
-#     - Un anti-rebond géolocalisation est en cours
+#   G1 — Anti-rebond géoloc
+#         Timer actif ET pas d'override → STOP
+#         (contournable par override opérateur)
 #
-#   En override opérateur :
-#     - ces abstentions ne neutralisent jamais une commande humaine
+#   G2 — Bridge online [CONTRAT SOCLE BOILER]
+#         binary_sensor.boiler_bridge_online != on → STOP
+#         Point d'entrée canonique : c'est ICI que bridge_online
+#         est évalué pour le domaine chauffage consigne.
+#         (non contournable)
+#
+#   G3 — Programme inconnu
+#         prog_actuel == unknown ET pas d'override → STOP
+#         (contournable par override opérateur)
+#
+#   G4 — Mode neutre
+#         desired_mode == neutre → STOP propre sans appel descendant
+#         (autorisation sans action — non contournable)
+#
+#   G5 — Idempotence
+#         desired_mode == prog_actuel → STOP
+#         Zéro appel inutile.
+#         (non contournable)
 #
 # ----------------------------------------------------------
 # 🔒 ANTI-REBOND GÉOLOCALISATION
 #
-#   Toute décision validée déclenche un timer bloquant
-#   toute décision concurrente immédiate.
+#   Toute décision validée déclenche timer.chauffage_geoloc_antirebond.
+#   Ce timer bloque toute décision concurrente immédiate.
 #
 #   ➜ Stabilisation logique
 #   ➜ Protection thermique et anti-rafale transactionnelle
@@ -82,28 +102,43 @@
 # ----------------------------------------------------------
 # 🧾 OBSERVABILITÉ & TRAÇABILITÉ
 #
-#   Toute decision explicite produit :
-#     - Une application de regime observable
+#   Toute décision explicite produit :
+#     - Une application de régime observable (via chauffage_appliquer_consigne)
 #     - Un logbook lisible
-#     - Une raison metier traçable
+#     - Une raison métier traçable (voir table ci-dessous)
 #
-#   En cas d’override opérateur, la raison `confort_force`
-#   est prioritaire et doit rester lisible.
+#   Raisons émises :
+#     confort_force              — override opérateur
+#     chauffage_non_autorise     — système non autorisé
+#     aeration_en_cours          — aération en cours et confirmée
+#     blocage_aeration_en_cours  — blocage aération actif
+#     fenetre_ouverte_maison     — fenêtre ouverte (avec délai)
+#     mode_maison_vacances       — mode vacances actif
+#     poele_actif                — poêle en fonctionnement
+#     besoin_thermique           — présence + cible = comfort
+#     presence_on                — présence + cible = neutre
+#     confort_suffisant          — présence + cible = reduced
+#     absence_protection_thermique — inhibition géofencing
+#     absence                    — défaut (absence non inhibée)
 #
 # ----------------------------------------------------------
 # 🧱 GARANTIES SYSTÈME
 #
-#   - Une seule décision à la fois
-#   - Zéro appel inutile
-#   - Zéro oscillation en régime automatique
-#   - Zéro ambiguïté d’état
+#   - Une seule décision à la fois (mode: restart)
+#   - Zéro appel inutile (G5 idempotence)
+#   - Zéro oscillation en régime automatique (anti-rebond)
+#   - Zéro ambiguïté d'état (prog_actuel normalisé)
+#   - Override toujours lisible (raison confort_force prioritaire)
 #
 # ----------------------------------------------------------
-# ❌ NE FAIT PAS
+# 📎 RÉFÉRENCES
 #
-#   - Aucune exécution directe de consigne
-#   - Aucune hypothèse thermique
-#   - Aucune décision implicite
+#   Contrat socle boiler :
+#     contrats/boiler/CONTRAT_BOILER_SOCLE_TRANSACTIONNEL.md
+#   Fiche de référence complète :
+#     contrats/chauffage/30_decision_centrale.md
+#   Audit pattern transactionnel boiler :
+#     outils_externes/boiler_pi/AUDIT_CHAINE_MQTT_ACK_ECS.md
 #
 # ----------------------------------------------------------
 # ✅ Compatibilité : Home Assistant 2024.8+
@@ -130,6 +165,14 @@ chauffage_decision_centrale:
           is_state('input_boolean.mode_confort_chauffage', 'on')
           or is_state('timer.chauffage_geoloc_antirebond', 'idle')
         }}
+
+    # ------------------------------------------------------
+    # Garde capacité d'exécution boiler
+    # ------------------------------------------------------
+    - alias: "Guard boiler bridge online"
+      condition: state
+      entity_id: binary_sensor.boiler_bridge_online
+      state: "on"
 
     # ------------------------------------------------------
     # Variables principales (programme actuel et évaluation)

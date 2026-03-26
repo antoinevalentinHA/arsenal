@@ -22,8 +22,9 @@
 #     - Déclenchement :
 #         • modification d’un input_number de consigne
 #           (pente ou parallèle)
-#     - Condition :
-#         • valeur cible valide
+#     - Conditions :
+#         • valeur cible exploitable
+#         • bridge boiler disponible
 #     - Action :
 #         • appel du script dédié correspondant à
 #           l’input modifié
@@ -54,14 +55,16 @@
       to: ~
 
   # ======================================================
-  # 🧿 Condition — valeur cible valide
+  # 🧿 Condition — entrée exploitable et bridge disponible
   # ======================================================
   condition:
-
     - condition: template
       value_template: >
-        {{ trigger.to_state is not none
-           and trigger.to_state.state not in ['unknown','unavailable','none',''] }}
+        {{
+          trigger.to_state is not none
+          and trigger.to_state.state not in ['unknown', 'unavailable', 'none', '']
+          and is_state('binary_sensor.boiler_bridge_online', 'on')
+        }}
 
   # ======================================================
   # 🎯 Action — Appel du bon script selon l’input modifié
