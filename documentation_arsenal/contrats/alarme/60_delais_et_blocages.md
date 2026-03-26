@@ -1,74 +1,171 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Détection intrusion
+#     Alarme — Blocage armement automatique
 # ==========================================================
 
 ## 📌 Statut
 
 - **Contrat normatif et opposable**
 - Domaine : **Sécurité / Alarme**
-- Chemin : `homeassistant/documentation_arsenal/contrats/alarme/50_intrusion_detection.md`
+- Chemin : `homeassistant/documentation_arsenal/contrats/alarme/51_blocage_armement.md`
 
 ---
 
-## 🎯 Objet
+## 🎯 Rôle
 
-Définir les règles contractuelles des automatisations de détection intrusion :
-
-- ouverture
-- mouvement
-- fin de délai d’entrée (timer)
+Empêcher temporairement l'armement automatique après un événement légitime
+(désarmement utilisateur, entrée dans le domicile, événement équivalent contracté).
 
 ---
 
-## 🧠 Principe fondamental
+## 🧱 Nature
 
-La détection intrusion :
+Le blocage est un **état dérivé piloté**.
 
-- observe un événement (capteur),
-- valide un contexte (alarme armée, garde-fous),
-- déclenche l’état réel `triggered` **ou** une notification de test,
-- ne décide pas de la stratégie d’armement.
-
----
-
-## ✅ Conditions contractuelles minimales
-
-### Contexte
-
-- `alarm_control_panel.alarme_maison == armed_away`
-
-### Garde-fous recommandés
-
-- capteur déclencheur non `unknown/unavailable`
-- inhibition “armement auto récent” :
-  - `binary_sensor.alarme_armee_auto_recentement == off`
-- inhibition si délai d’entrée en cours :
-  - `binary_sensor.delai_desarmement_en_cours == off`
-- inhibition faux positifs mouvement (ex : robot) :
-  - `binary_sensor.roborock_q7_max_nettoyage == off`
-- différenciation mode test :
-  - `input_boolean.mode_test_alarme`
+Il ne constitue pas une mémoire libre et ne peut être modifié
+qu'au travers des mécanismes contractuels définis.
+Toute modification directe (set manuel, script hors contrat) est **interdite**.
 
 ---
 
-## 🔔 Actions autorisées
+## 📥 Entrées autorisées (activation)
 
-### Mode normal (mode test off)
+- désarmement utilisateur
+- entrée dans le domicile
+- tout événement équivalent contracté explicitement
 
-- `alarm_control_panel.alarm_trigger`
-- notification critique (mobile)
-- sirène forte déclenchée **par un mécanisme contractuel** (ex : automation sur état `triggered`)
+---
 
-### Mode test (mode test on)
+## 📤 Levée du blocage
 
-- notification uniquement
-- aucune sirène forte
+Le blocage **doit** être levé par **un seul mécanisme** parmi :
+
+| Mécanisme | Description |
+|-----------|-------------|
+| *(canonique)* Expiration d'un `timer` dédié | `timer.blocage_armement_auto` |
+| *(conditionnel)* Disparition de la condition causale | si blocage conditionnel contracté |
+
+---
+
+## 🔒 Invariants contractuels
+
+### Invariant 1 — Unicité de temporalité
+
+```
+Le mécanisme de levée doit être unique pour une instance donnée du blocage.
+
+Un blocage ne peut pas être simultanément piloté par :
+- un timer
+- et une condition causale
+
+Toute implémentation hybride est interdite.
+```
+
+### Invariant 2 — Cohérence blocage ↔ timer
+
+```
+Si input_boolean.blocage_armement_auto == on
+→ timer.blocage_armement_auto doit être actif.
+
+Si timer.blocage_armement_auto == idle
+→ input_boolean.blocage_armement_auto doit être off.
+
+Toute divergence constitue une anomalie système.
+```
+
+### Invariant 3 — Interdiction des delays
+
+```
+Un blocage ne doit jamais dépendre d'un `delay` dans un script
+ou une automation.
+
+Seul un timer dédié constitue un mécanisme de temporalité valide.
+```
+
+---
+
+## 🔁 Résilience
+
+Après redémarrage Home Assistant :
+
+- le blocage doit être **cohérent avec l'état du timer**
+- aucun blocage **orphelin** (blocage `on`, timer `idle`) ne doit subsister
+- le timer doit être restauré automatiquement par HA si actif au moment du restart
+
+---
+
+## 🔐 Autorité d'écriture
+
+L'écriture de `input_boolean.blocage_armement_auto` est réservée
+aux mécanismes contractuels suivants :
+
+- activation du blocage (désarmement / entrée)
+- levée par expiration du timer
+- correction par watchdog
+
+Toute autre source d'écriture est **interdite**.
 
 ---
 
 ## 🛑 Interdictions
 
-- désarmer l’alarme en réaction à une intrusion
-- armer l’alarme depuis une automation intrusion
-- recalculer une décision “presence/absence” dans intrusion
+- `delay` dans scripts ou automations du périmètre armement/désarmement
+- blocage sans mécanisme de levée défini
+- double système de temporalité (timer + delay simultanés)
+- modification directe de `input_boolean.blocage_armement_auto` hors mécanisme contractuel
+- levée du blocage par une logique extérieure au contrat
+
+---
+
+## 🧪 Tests de validité
+
+### Cas nominal
+
+1. désarmement → blocage `on`
+2. `timer.blocage_armement_auto` actif
+3. timer expire → blocage `off`
+4. armement automatique de nouveau possible
+
+### Cas redémarrage
+
+1. blocage `on` + `timer` actif
+2. HA restart
+3. timer restauré → levée correcte à expiration
+4. aucun blocage orphelin
+
+### Cas anomalie (watchdog)
+
+1. blocage `on` + timer `idle` (divergence)
+2. watchdog détecte l'incohérence
+3. notification d'anomalie système
+4. remise en cohérence (blocage → `off`)
+
+---
+
+## 🛡️ Statut du watchdog
+
+Le watchdog est un **mécanisme de sécurité**.
+
+Il ne constitue pas un mécanisme normal de levée du blocage,
+mais uniquement une correction d'anomalie.
+
+Son déclenchement doit être considéré comme un **événement anormal**.
+Le système ne doit jamais fonctionner en s'appuyant sur le watchdog
+comme chemin nominal.
+
+---
+
+## 🔗 Dépendances contractuelles
+
+| Entité | Rôle |
+|--------|------|
+| `input_boolean.blocage_armement_auto` | État du verrou |
+| `timer.blocage_armement_auto` | Mécanisme de levée canonique |
+| Automation watchdog | Détection et correction des divergences |
+
+---
+
+## 🔗 Contrats liés
+
+- `50_intrusion_detection.md` — consomme `binary_sensor.alarme_armee_auto_recentement`
+  (dérivé du présent blocage)

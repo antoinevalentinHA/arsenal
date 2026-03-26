@@ -26,10 +26,12 @@
 - binary_sensor:
     - name: "Clim – Seuil allumage COOL atteint"
       unique_id: clim_seuil_allumage_cool_atteint
-      default_entity_id: binary_sensor.clim_seuil_allumage_cool_atteint
       state: >
-        {{
-          states('sensor.temperature_max_chambres') | float(-99)
-          >=
-          states('sensor.seuil_allumage_clim_applique') | float(999)
-        }}
+        {% set temp_max = states('sensor.temperature_max_chambres') %}
+        {% set seuil_on = states('sensor.seuil_allumage_clim_applique') %}
+        {% if temp_max in ['unknown', 'unavailable', ''] or
+              seuil_on in ['unknown', 'unavailable', ''] %}
+          false
+        {% else %}
+          {{ temp_max | float >= seuil_on | float }}
+        {% endif %}

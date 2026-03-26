@@ -9,18 +9,37 @@
 
 ## Structure du dossier
 
-| Fichier | Contenu |
+| Fichier / dossier | Contenu |
 |---|---|
 | `01_finalite.md` | Finalité du système, états exclusifs, objectifs |
 | `02_architecture.md` | Couches Arsenal, invariants globaux de déclenchement |
 | `03_decision_canonique.md` | Objet `sensor.clim_target_mode`, pureté, déterminisme, séparation besoin/autorisation |
 | `04_entrees_metier.md` | Températures, humidex, présence, contraintes physiques |
-| `05_decision_candidats.md` | Règles de production des candidats par mode (COOL / DRY / HEAT / OFF) |
-| `06_arbitrage_politique.md` | Politique d'arbitrage active, hiérarchie canonique des modes |
+| `05_decision_candidats.md` | Production des candidats (besoin / applicable) par mode |
+| `06_arbitrage_politique.md` | Politique d'arbitrage active, hiérarchie des modes |
 | `07_execution.md` | Application idempotente du mode cible |
 | `08_securite.md` | Guards et Watchdog |
 | `09_observabilite.md` | États explicatifs, robustesse, déterminisme post-redémarrage |
 | `10_perimetre_exclu.md` | Ce que le système ne fait pas |
+| `capteurs/` | Documentation détaillée des capteurs implémentant les couches du système |
+
+---
+
+### Dossier `capteurs/`
+
+Ce dossier contient la documentation technique détaillée des capteurs Home Assistant
+implémentant les différentes couches du système (besoins, autorisations, blocages, décision, cohérence, etc.).
+
+Il constitue la traduction concrète du contrat en entités.
+
+| Sous-dossier | Rôle |
+|---|---|
+| `besoins/` | Capteurs exprimant les besoins thermiques |
+| `autorisations/` | Capteurs d’autorisation d’exécution |
+| `blocages/` | Capteurs de blocage et contraintes |
+| `seuils_et_franchissements/` | Capteurs de seuils et franchissements |
+| `decision/` | Capteurs décisionnels, explicatifs et de lecture locale |
+| `coherence/` | Capteur de cohérence décision / réel |
 
 ---
 

@@ -18,13 +18,15 @@
 # ==========================================================
 
 - binary_sensor:
-
     - name: "Humidex max au-dessus du seuil"
       unique_id: chambre_max_humidex_au_dessus_seuil
-      default_entity_id: binary_sensor.chambre_max_humidex_au_dessus_seuil
       device_class: heat
-
       state: >
-        {% set seuil = states('input_number.seuil_humidex_deshumidification') | float(29) %}
-        {% set humidex = states('sensor.humidex_max_chambres') | float(0) %}
-        {{ humidex > seuil }}
+        {% set seuil = states('input_number.seuil_humidex_deshumidification') %}
+        {% set humidex = states('sensor.humidex_max_chambres') %}
+        {% if seuil in ['unknown', 'unavailable', ''] or
+              humidex in ['unknown', 'unavailable', ''] %}
+          false
+        {% else %}
+          {{ humidex | float > seuil | float }}
+        {% endif %}

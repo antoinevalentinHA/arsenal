@@ -32,8 +32,8 @@
 # 🔐 Sécurité intégrée :
 #   - Le blocage d’armement automatique empêche
 #     toute ré-activation immédiate non désirée
-#   - La temporisation est volontairement locale
-#     à ce script (effet maîtrisé)
+#   - La temporalité du blocage est externalisée
+#     via un timer dédié (contrat 51)
 #
 # 🧪 Propriétés Arsenal :
 #   - Idempotent (désarmé ≠ redésarmé)
@@ -55,12 +55,11 @@
 #   Home Assistant 2024.8+
 # ==========================================================
 
-
 alarme_desarmer:
   alias: Alarme - Désarmement unifié
   description: >
     Désarme l’alarme proprement : coupe la sirène si active, coupe tout délai en cours,
-    active le blocage d’armement auto pour 5 min, et envoie une notification/log.
+    active le blocage d’armement automatique (durée gérée par timer dédié), et envoie une notification/log.
   mode: single
   fields:
     origine:
@@ -109,10 +108,3 @@ alarme_desarmer:
         message: >
           L'alarme a été désactivée {{ 'automatiquement' if origine|default('Automatisme') == 'Automatisme' else 'manuellement' }}
           à {{ now().strftime('%H:%M') }}.
-
-    # 6) Délai avant levée du blocage
-    - delay: "00:05:00"
-
-    - action: input_boolean.turn_off
-      target:
-        entity_id: input_boolean.blocage_armement_auto

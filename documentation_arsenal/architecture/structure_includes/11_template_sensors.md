@@ -61,7 +61,6 @@ template: !include_dir_merge_list 11_template_sensors/
 - binary_sensor:
     - name: <nom_lisible>
       unique_id: <identifiant_unique>
-      default_entity_id: binary_sensor.<entity_id_stable>   # optionnel
       device_class: <device_class>                          # optionnel
       icon: >
         <template_jinja>                                    # optionnel
@@ -89,7 +88,6 @@ template: !include_dir_merge_list 11_template_sensors/
   sensor:
     - name: <nom_lisible>
       unique_id: <identifiant_unique>
-      default_entity_id: sensor.<entity_id_stable>          # optionnel
       unit_of_measurement: <unite>                          # optionnel
       device_class: <device_class>                          # optionnel
       state_class: <state_class>                            # optionnel
@@ -117,7 +115,6 @@ template: !include_dir_merge_list 11_template_sensors/
   binary_sensor:
     - name: <nom_lisible>
       unique_id: <identifiant_unique>
-      default_entity_id: binary_sensor.<entity_id_stable>   # optionnel
       device_class: <device_class>                          # optionnel
       icon: >
         <template_jinja>                                    # optionnel

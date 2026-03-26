@@ -11,8 +11,9 @@ Portée : locale (LAN uniquement)
 ## 12. Décision 9 — Expiration métier des commandes
 
 Chaque commande DOIT porter un champ `expires_at` (timestamp ISO 8601, côté Arsenal) indiquant la limite de validité métier.
-expires_at DOIT être exprimé en ISO 8601 UTC.
-ts DOIT également être exprimé en ISO 8601 UTC.
+
+`expires_at` DOIT être exprimé en ISO 8601 UTC.
+`ts` DOIT également être exprimé en ISO 8601 UTC.
 
 ```json
 {
@@ -24,31 +25,54 @@ ts DOIT également être exprimé en ISO 8601 UTC.
 }
 ```
 
+---
+
 ### Règle passerelle
 
 La passerelle DOIT vérifier le champ `expires_at`
 à réception de la commande et avant toute tentative d'exécution.
 
 Si `now > expires_at` :
-publier ack `rejected` avec `reason: expired`
-— NE PAS exécuter la commande.
+
+* publier ack `rejected`
+* avec `reason: expired`
+* NE PAS exécuter la commande
+
+---
 
 ### TTL recommandés par Arsenal
 
 | Commande                  | TTL recommandé |
-|---------------------------|----------------|
-| `oneshot_charge`          | 30 s           |
-| `set_program`             | 120 s          |
-| `set_comfort_temperature` | 300 s          |
-| `set_reduced_temperature` | 300 s          |
-| `set_curve_slope`         | 300 s          |
-| `set_curve_shift`         | 300 s          |
-| `set_setpoint` (ECS)      | 120 s          |
+| ------------------------- | -------------- |
+| `heating/set_temperature` | 300 s          |
+| `heating/set_curve_slope` | 300 s          |
+| `heating/set_curve_shift` | 300 s          |
+| `dhw/set_setpoint`        | 120 s          |
 
-Ces valeurs sont des recommandations Arsenal. Elles PEUVENT être ajustées par contexte opérationnel.
+Ces valeurs sont des recommandations Arsenal.
+Elles PEUVENT être ajustées selon le contexte opérationnel.
+
+---
+
+### ⚠️ Évolution du modèle chauffage
+
+La distinction entre :
+
+* confort
+* réduit
+* programme
+
+n’existe plus au niveau du bus MQTT.
+
+Le pilotage chauffage repose désormais sur :
+
+* une consigne unifiée (`heating/set_temperature`)
+
+---
 
 ### Relation avec la déduplication
 
 L'expiration métier et la déduplication sont complémentaires :
-- `expires_at` protège contre les replays tardifs (commande périmée)
-- `request_id` + TTL protège contre les doublons dans la fenêtre de validité
+
+* `expires_at` protège contre les replays tardifs (commande périmée)
+* `request_id` + TTL protège contre les doublons dans la fenêtre de validité

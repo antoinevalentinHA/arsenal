@@ -1,10 +1,13 @@
 # Arsenal — Contrat de bus MQTT chaudière
 
 **Interface Arsenal ↔ passerelle chaudière (Optolink / KM-Bus)**
-Version : v1
-Date : 13/03/2026
-Statut : normatif
-Portée : locale (LAN uniquement)
+
+| Champ | Valeur |
+|---|---|
+| **Version** | v1.1 |
+| **Date** | 25/03/2026 |
+| **Statut** | Normatif |
+| **Portée** | Locale (LAN uniquement) |
 
 ---
 
@@ -12,17 +15,21 @@ Portée : locale (LAN uniquement)
 
 Les payloads JSON DOIVENT être encodés en UTF-8.
 
+---
+
 ### 13.1 Telemetry
 
 Payload simple autorisé :
 
-```
+```text
 42.3
 on
-comfort
+67
 ```
 
 Les payloads telemetry NE DOIVENT PAS être JSON.
+
+---
 
 ### 13.2 Command
 
@@ -38,20 +45,12 @@ Payload JSON obligatoire :
 }
 ```
 
-Pour les actions sans valeur (`oneshot_charge`) :
+Règles :
 
-```json
-{
-  "request_id": "550e8400-e29b-41d4-a716-446655440000",
-  "ts": "2026-03-13T19:15:00Z",
-  "expires_at": "2026-03-13T19:15:30Z",
-  "source": "arsenal"
-}
-```
-
-Règles : 
-- Le champ value est facultatif pour les commandes sans paramètre.
+- Le champ `value` porte la valeur de commande lorsqu'une valeur est requise.
 - La passerelle DOIT ignorer tout champ JSON non reconnu afin de préserver la compatibilité future.
+
+---
 
 ### 13.3 Ack
 
@@ -65,13 +64,16 @@ Payload JSON obligatoire :
 }
 ```
 
-Statuts possibles : 
-- accepted
-- applied
-- rejected
-- timeout
+Statuts possibles :
 
-En rejet :
+| Statut | Signification |
+|---|---|
+| `accepted` | Réception technique |
+| `applied` | Succès réel |
+| `rejected` | Rejet passerelle |
+| `timeout` | Délai dépassé |
+
+En cas de rejet :
 
 ```json
 {
@@ -82,6 +84,8 @@ En rejet :
 }
 ```
 
+---
+
 ### 13.4 Error
 
 Payload JSON obligatoire :
@@ -89,14 +93,16 @@ Payload JSON obligatoire :
 ```json
 {
   "request_id": "550e8400-e29b-41d4-a716-446655440000",
-  "domain": "dhw",
-  "action": "oneshot_charge",
+  "domain": "heating",
+  "action": "set_temperature",
   "reason": "write_failed",
   "details": "vcontrold timeout",
   "ts": "2026-03-13T19:15:02Z"
 }
 ```
 
-Règles : 
-- request_id PEUT être null si l'erreur n'est liée à aucune commande.
-- Les erreurs DOIVENT être publiées sur boiler/error/....
+Règles :
+
+- `request_id` PEUT être `null` si l'erreur n'est liée à aucune commande.
+- Le topic `boiler/error/last` est obligatoire.
+- Des topics spécialisés PEUVENT exister sous `boiler/error/...`.

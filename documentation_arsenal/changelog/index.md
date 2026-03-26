@@ -676,6 +676,133 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Alarme : alignement structurel sur couche `contact_*`, sans dérive métier.
 - Système : observabilité étendue (internet / stats) — couche purement diagnostic.
 
+---
+
+## 🧠 ARSENAL HA — v10 — STABLE — 2026-03-XX
+**Tags :** ouvertures, aeration, chauffage, temporalite, robustesse, anti_zombie, architecture  
+**Signal net :**
+- Fin de grâce explicitée (writer unique) : booléens `*_grace_echue` → causalité exclusivement portée par `timer.finished`.
+- Qualification d'ouverture refondée : marqueurs métier explicites + `binary_sensor.ouverture_qualifiee_maison` → fin des confirmations tardives.
+- Temporalité thermique canonisée : généralisation `as_timestamp`, calculs bornés, hiérarchie stricte `analyse < blocage`, M6 refondu.
+- Neutralisation des traces datetime : remise à zéro explicite des `input_datetime` → fin des états orphelins post-reboot.
+- Anti-zombie renforcé (M0) : détection blocages orphelins, cohérence enveloppe / timers / traces.
+- Pipeline blocage enrichi : déclenchement sur `ouverture_qualifiee_maison` → gestion déterministe des réouvertures (M5).
+- Observabilité étendue : bandeau de stabilité + outillage diagnostic.
+
+---
+
+## 🧠 ARSENAL HA — v10.3 — STABLE — 2026-03-XX
+**Tags :** infrastructure, ecs, vacances, eclairage, vicare, simplification, robustesse  
+**Signal net :**
+- Infrastructure : suppression complète de Pyscript → migration intégrale vers scripts natifs HA, élimination d'un custom component.
+- ECS : timestamp de début de cycle → fiabilisation des offsets, refactor logs + capacité sauvegardes JSON étendue.
+- Mode vacances : nouveau pipeline préconfort dédié (helpers + capteurs + automation) → gouvernance explicite des fenêtres, suppression ancien mécanisme.
+- Vicare : capteur + alerte gateway → détection explicite des pertes de connectivité.
+- Éclairage garage : capteur d'autorisation métier + alignement UI (template + couleurs canoniques).
+- Documentation : archivage versionné des changelogs v10.x, suppression journaux internes non versionnés.
+
+---
+
+## 🧠 ARSENAL HA — v10.7 — STABLE — 2026-03-XX
+**Tags :** ouvertures, zigbee, mouvements, aeration, chauffage, ui, documentation, robustesse  
+**Signal net :**
+- Ouvertures : généralisation redondance Zigbee (`_1/_2`) + fusion événementielle, harmonisation schéma `contact_<zone>_<type>` sur toutes les couches, extension porte d'entrée full stack.
+- Mouvements : couche N2 agrégée par zone (`binary_sensor.mouvement_<zone>`) → découplage total des automatisations des capteurs physiques.
+- Éclairage / Alarme : migration vers capteurs agrégés → robustesse accrue face aux défaillances Zigbee.
+- Aération : mémoire monotone ΔT de cycle (M3) + neutralisation systématique des artefacts fin de cycle (M4).
+- Chauffage : refonte normative des contrats capteurs (N1 / structurants / stabilisation), recadrage `chauffage_autorisation_cible`.
+- UI : observabilité chauffage enrichie (poêle, météo) + harmonisation palettes barres (opacité 0.2).
+- Système : métriques séjour (ΔT, CO₂) + capteur uptime + rétention recorder 30 jours.
+- Documentation : restructuration massive (contrats extraits, nettoyage obsolètes, archivage v10.4–v10.7).
+
+---
+
+## 🧠 ARSENAL HA — v10.8 — STABLE — 2026-03-11
+**Tags :** ouvertures, redondance, zigbee, architecture, automatisations, templates, robustesse  
+**Signal net :**
+- Ouvertures : passage last-valid-state (v2.0) → moteur de corroboration temporelle (v2.2) avec quarantaine et inhibition système.
+- Ouvertures : séparation stricte `observed_event` / `business_state` / `reconciliation_status` → fin des états ambigus.
+- Ouvertures : politique asymétrique fail-safe — `off` immédiat, `on` soumis à corroboration → suppression des faux positifs Zigbee.
+- Ouvertures : fenêtres de corroboration + statuts `divergent`, `quarantine`, `inhibited`.
+- Templates : refonte auto-paramétré (`this.entity_id`) + ancres YAML → suppression logique inline par capteur, externalisation totale de la décision.
+- Automations : moteur centralisé de réconciliation → pilotage timers, contextes (`input_text`) et timestamps.
+- Helpers : contextes de réconciliation, timestamps de transition et timers dédiés par capteur.
+- Diagnostic : alignement `reconciliation_status` v2.2 + états étendus (`quarantine`, `inhibited`).
+- UI : navigation dynamique pilotée par l'état système → suppression des couleurs statiques.
+- Infrastructure : nettoyage anciens diagnostics globaux + simplification architecture templates.
+
+---
+
+## 🧠 ARSENAL HA — v10.9 — STABLE — 2026-03-12
+**Tags :** ouvertures, scripts, meteo, ui, refactor, structure, nettoyage  
+**Signal net :**
+- Ouvertures : moteur de réconciliation → orchestrateur pur, logique métier extraite vers 5 scripts spécialisés, automation réduite au routage.
+- Scripts : module dédié `reconciliation_redondance` (traitement source, expiration, inhibition, levée, application).
+- Météo : KPI température min/max journaliers fusionnés → exploitation directe en UI.
+- Couleurs météo : reclassement structurel sans modification fonctionnelle.
+- Diagnostic : simplification résumé redondance → retrait statut métier ligne `A/B`, séparation UI / diagnostic.
+- Zigbee : simplification template reload → réutilisation variable locale, suppression redondance.
+- Documentation : purge changelogs v6/v7 + refonte historique en phases d'inflexion.
+- Timers : nettoyage cosmétique global sans impact fonctionnel.
+
+---
+
+## 🧠 ARSENAL HA — v10.9.1 — STABLE — 2026-03-12
+**Tags :** ouvertures, ui, nettoyage, semantique, normalisation  
+**Signal net :**
+- Ouvertures : clarification sémantique `aeration_confirmee` → renommage automation (rôle garantie de cohérence, non clôture d'épisode).
+- Réconciliation : normalisation typographique aliases (`Réconciliation`, `Résilience`) sur automations et scripts.
+- UI : libellés contacts séjour → identifiants minimalistes (`1–4`), suppression cartes météo min/max héritées.
+- Système : nettoyage global sans impact fonctionnel (moteurs décisionnels et pipeline aération inchangés).
+
+---
+
+## 🧠 ARSENAL HA — v10 — STABLE — 2026-03-XX
+**Tags :** architecture, contrats, meteo, chauffage, eclairage, viessmann, ui, robustesse  
+**Signal net :**
+- Architecture : transformation en système contractuel, déterministe, boot-safe et découplé → documentation prescriptive.
+- Contrats : éclatement des monolithes en sous-domaines (climatisation, météo, ouvertures, éclairage, pannes) + création contrats alarme et diagnostic.
+- Viessmann : promotion corpus ADR en architecture cible active + documents de migration.
+- Météo : modèle déterministe validation / fallback / TTL / abstention → fin des états persistants non bornés.
+- Température : consolidation intérieure/extérieure TTL 30 min + triggers temporels → mémoire strictement conditionnée.
+- Éclairage garage : pivot vers mesure physique (`lux < seuil`) → suppression heuristiques saison/météo + exposition UI du seuil.
+- Boiler : capteurs bridge local (état dégradé, feedback commande) + migration hors Vicare.
+- Alarme : signal métier `ouvrants_entree` → découplage total des capteurs physiques.
+- Automatisations : triggers `homeassistant.start` + garde `systeme_stable` → reconvergence post-boot généralisée.
+- UI : contrôle luminosité garage + nettoyage blocs clim/aération obsolètes.
+- Documentation : corpus UI couleurs, refonte socles UI status, dette technique, pré-changelog v11.
+- Nettoyage : contrats legacy, capteurs Vicare, helpers obsolètes et documentation non gouvernée supprimés.
+
+---
+
+## 🧠 ARSENAL HA — v11 — STABLE — 2026-03-23
+**Tags :** boiler, ecs, chauffage, climatisation, transactionnel, local, execution, robustesse  
+**Signal net :**
+- Boiler : exécution transactionnelle (request_id + ACK) → validation obligatoire (`applied`), suppression complète ViCare, souveraineté locale totale.
+- ECS : refonte modulaire transactionnelle sur température réelle post-inertie + température max de cycle → autocorrection physique des offsets, écriture centralisée via `ecs_appliquer_consigne_bridge`.
+- Chauffage : vérité interne Arsenal réaffirmée, script unifié `chauffage_appliquer_consigne` + verrou ACK, courbe de chauffe migrée en transactionnel (MQTT + ACK corrélé).
+- Climatisation : moteur résilient post-condition + retry contrôlé, séparation orchestrateur / exécution, helpers dédiés (retry, compteur, état échec).
+- Alarme : automation centrale v3 → exécution `restart` + garde `systeme_stable`.
+- Éclairage garage : recalage nocturne + formalisation contractuelle de l'action physique.
+- Système : capteurs transactionnels boiler (ACK, heartbeat, brûleur), helpers request_id, domaine `counter` introduit.
+- Recorder / UI : nettoyage massif entités obsolètes + restructuration dashboard système.
+- Documentation : refonte chauffage/ECS transactionnel + contrats boiler, ECS pipeline et recorder.
+
+---
+
+## 🧠 ARSENAL HA — v11.1 — STABLE — 2026-03-25
+**Tags :** systeme, panne, ecs, reseau, netatmo, boiler, ui, normalisation  
+**Signal net :**
+- Système : contexte explicite (panne secteur, campagne réseau, stabilité) → conditionne tout comportement nominal.
+- Panne secteur / réseau : sous-système structuré (helpers, timer, compteur, pipeline de remédiation cadencé) + orchestration réseau globale → fin des automations Netatmo concurrentes.
+- ECS : transactionnel vérifié sous contexte système → inhibition nominale en régime dérogatoire, clarification guard de démarrage.
+- Aération : persistance boot durcie + suppression massive `logbook.log` sur tout le pipeline.
+- Chauffage : nettoyage traces logbook diagnostic et décision centrale.
+- Boiler bridge : capteurs métier ajoutés (modulation brûleur, erreur récente, santé bridge, couleur modulation).
+- UI : refonte `button_card_templates/` en architecture déclarative (`socles` / `génériques` / `dashboards`), introduction `carte_timer_status` et `carte_base_v2`, suppression variantes redondantes.
+- Dashboard système : synthèse ECS remplacée par lecture santé boiler bridge.
+- Recorder / logbook / documentation : nettoyage structurel, recentrage entités métier observables, invariants ECS mis à jour.
+
 ==================================================
 FIN INDEX
 ==================================================

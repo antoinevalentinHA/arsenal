@@ -1,0 +1,99 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Alarme – Watchdog cohérence blocage armement
+#
+# ID : 10020000000034
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Détecter et corriger toute incohérence entre :
+#     - input_boolean.blocage_armement_auto
+#     - timer.blocage_armement_auto
+#
+# 🧩 PRINCIPE
+#   - Surveillance strictement événementielle
+#   - Laisse le chemin nominal se stabiliser
+#   - Détecte les états impossibles
+#   - Corrige de manière minimale et sûre
+#
+# 🛡️ STATUT
+#   - Mécanisme de sécurité uniquement
+#   - Ne constitue pas un chemin nominal
+#
+# ⚠️ INCOHÉRENCES SURVEILLÉES
+#   - Blocage ON + timer idle     → blocage orphelin
+#   - Blocage OFF + timer actif   → timer orphelin
+#
+# ==========================================================
+
+- id: "10020000000034"
+  alias: "Alarme - Watchdog cohérence blocage"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id:
+        - input_boolean.blocage_armement_auto
+        - timer.blocage_armement_auto
+
+  action:
+
+    # 🕒 Laisser le système nominal se stabiliser
+    - delay:
+        milliseconds: 300
+
+    # 🔍 Réévaluation cohérente des états
+    - variables:
+        blocage: "{{ states('input_boolean.blocage_armement_auto') }}"
+        timer_state: "{{ states('timer.blocage_armement_auto') }}"
+        incoherence: >
+          {{
+            (blocage == 'on' and timer_state == 'idle') or
+            (blocage == 'off' and timer_state in ['active', 'paused'])
+          }}
+
+    # 🚫 Sortie immédiate si tout est cohérent
+    - condition: template
+      value_template: "{{ incoherence }}"
+
+    # 🔔 Notification anomalie contextualisée
+    - action: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "⚠️ Anomalie blocage alarme"
+        message: >
+          Incohérence détectée entre le blocage d'armement et son timer.
+
+          **Type :**
+          {% if blocage == 'on' and timer_state == 'idle' %}
+          Blocage orphelin (timer absent)
+          {% else %}
+          Timer orphelin (blocage absent)
+          {% endif %}
+
+          **Blocage :** {{ blocage }}
+          **Timer :** {{ timer_state }}
+
+          Correction automatique en cours.
+
+    # 🔧 Correction minimale et déterministe
+    - choose:
+
+        # Cas 1 : blocage ON mais timer absent → libération
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ blocage == 'on' and timer_state == 'idle' }}
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.blocage_armement_auto
+
+        # Cas 2 : timer actif sans blocage → nettoyage timer
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ blocage == 'off' and timer_state in ['active', 'paused'] }}
+          sequence:
+            - action: timer.cancel
+              target:
+                entity_id: timer.blocage_armement_auto
