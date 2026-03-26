@@ -221,34 +221,82 @@ La v10 finale marque le moment où la documentation devient une contrainte de co
 ---
 
 ## Phase H — v11 → v11.1 (mars 2026)
+
 ### Ce qui s'est passé
 
-**v11 — Souveraineté locale et exécution transactionnelle :** 
-suppression complète de ViCare — Arsenal n'a plus aucune dépendance cloud sur la chaudière. 
-Toutes les interactions boiler passent par un bridge MQTT local. 
-L'exécution devient transactionnelle : chaque commande porte un `request_id`, 
-chaque résultat exige un ACK explicite (`applied`) — le succès implicite est supprimé. 
-L'ECS est refondu en pipeline modulaire sur température réelle post-inertie, 
-avec autocorrection physique des offsets via la température maximale de cycle. 
-La climatisation reçoit un moteur résilient avec post-condition vérifiée et retry contrôlé.
+**v11 — Souveraineté locale et exécution transactionnelle :**  
+suppression complète de ViCare — Arsenal n'a plus aucune dépendance cloud sur la chaudière.  
+Toutes les interactions boiler passent par un bridge MQTT local.  
 
-**v11.1 — Contexte système explicite :** 
-introduction d'un contexte système global (panne secteur, campagne réseau, stabilité) 
-qui conditionne l'ensemble des comportements nominaux. 
-Les remédiations réseau sont désormais orchestrées par ce contexte → fin des automations autonomes concurrentes. 
-L'ECS est inhibé explicitement en régime dérogatoire. 
-L'UI `button_card_templates/` est refondue en architecture déclarative structurée (`socles` / `génériques` / `dashboards`).
+L'exécution devient transactionnelle :  
+chaque commande porte un `request_id`,  
+chaque résultat exige un ACK explicite (`applied`) — le succès implicite est supprimé.  
+
+L'ECS est refondu en pipeline modulaire basé sur la température réelle post-inertie,  
+avec autocorrection physique des offsets via la température maximale de cycle.  
+
+La climatisation reçoit un moteur résilient :  
+post-condition vérifiée, retry contrôlé, séparation stricte décision / exécution.
+
+---
+
+**v11.1 — Contexte système explicite :**  
+introduction d'un contexte système global (panne secteur, campagne réseau, stabilité)  
+qui conditionne l'ensemble des comportements nominaux.  
+
+Les remédiations réseau sont orchestrées par ce contexte →  
+fin des automations autonomes concurrentes.  
+
+L'ECS devient context-aware :  
+inhibition explicite en régime dérogatoire.  
+
+L'UI est refondue en architecture déclarative (`socles` / `génériques` / `dashboards`).
+
+---
+
+**v11.1.1 — Bascule en vérité lue :**  
+le chauffage abandonne toute reconstruction interne.  
+
+- `programme_chauffage` devient une interprétation du `boiler_heating_setpoint`  
+- la consigne appliquée est lue directement depuis la chaudière  
+- la mémoire décisionnelle Arsenal cesse d’être une source de vérité exposée  
+
+L’état `Inconnu` devient un état normal et utile :  
+il signale une désynchronisation réelle, pas une anomalie logicielle.  
+
+👉 Arsenal cesse de “dire ce qu’il pense faire”  
+et commence à **montrer ce qui est réellement appliqué**.
+
+---
+
+**v11.1.2 — Correction et réalignement :**  
+correction d'écarts structurels révélés par la bascule précédente.  
+
+- climatisation : correction d’un capteur binaire invalide + fiabilisation des seuils  
+- alarme : externalisation canonique des temporalités (timer + watchdog)  
+- boiler : alignement complet du contrat MQTT avec l’implémentation réelle  
+- documentation : passage en corpus opposable  
+
+Cette version ne change pas le système — elle le rend **cohérent avec son propre modèle**.
+
+---
 
 ### Leçon retenue
-> **Le système devient vérifié et non-contradictoire.** 
-Aucune action physique ne peut être présumée réussie sans validation explicite. 
-Aucune logique nominale ne peut s'exécuter hors contexte système valide.
 
-La suppression de ViCare n'est pas une simplification — c'est une conséquence : 
+> **Le système devient vérifié, contextuel et ancré dans le réel.**
+
+- aucune action physique ne peut être présumée réussie sans validation explicite  
+- aucune logique nominale ne peut s'exécuter hors contexte système valide  
+- aucun état métier ne peut être reconstruit sans ancrage réel  
+
+La suppression de ViCare n'est pas une simplification — c'est une conséquence :  
 la souveraineté HA devient complète, de la décision jusqu'à la confirmation physique.
 
-v10 garantissait la cohérence logique. 
-v11 garantit la **validité physique et contextuelle**.
+v10 garantissait la cohérence logique.  
+v11 garantit la **validité physique**.  
+v11.1 garantit la **validité contextuelle**.  
+v11.1.1 impose la **vérité lue**.  
+v11.1.2 garantit la **conformité réelle du système à son modèle**.
 
 ---
 

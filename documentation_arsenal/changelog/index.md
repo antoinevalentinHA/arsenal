@@ -803,6 +803,38 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Dashboard système : synthèse ECS remplacée par lecture santé boiler bridge.
 - Recorder / logbook / documentation : nettoyage structurel, recentrage entités métier observables, invariants ECS mis à jour.
 
+---
+
+## 🧠 ARSENAL HA — v11.1.1 — STABLE — 2026-03-25  
+**Tags :** chauffage, boiler, verite, contrats, ui, normalisation  
+**Signal net :**
+- Chauffage : bascule complète en vérité chaudière → `programme_chauffage` et consigne appliquée dérivés du `boiler_heating_setpoint`, fin de toute reconstruction locale.
+- Chauffage : abandon de la mémoire décisionnelle comme source → les capteurs deviennent des lectures du réel, plus des projections Arsenal.
+- Chauffage : introduction assumée de l’état `Inconnu` → signal explicite des désynchronisations ou influences externes.
+- Chauffage : stabilisation des dérivations (tolérance flottante) + disponibilité alignée sur le bridge → capteurs cohérents avec la réalité système.
+- Contrats : correction conceptuelle majeure → passage de “frontière d’exécution” à “cohérence d’exécution”, séparation nette logique / physique.
+- Contrats : repositionnement des capteurs chauffage comme interfaces de lecture réelle.
+- Boiler : affirmation du bridge comme source unique de vérité exposée → Arsenal cesse toute reconstruction thermique.
+- UI : correction sémantique ACK → passage en logique statut (`socle_status_72`), clarification du cycle transactionnel (accepted ≠ applied).
+- Documentation : alignement complet des contrats chauffage avec le modèle boiler bridge.
+- Infrastructure : normalisation changelog v11 + nettoyage mineur sans impact fonctionnel.
+
+---
+
+## 🧠 ARSENAL HA — v11.1.2 — STABLE — 2026-03-26  
+**Tags :** climatisation, alarme, boiler, correction, normalisation, robustesse  
+**Signal net :**
+- Climatisation : correction critique d’un `binary_sensor` invalide (`seuil_extinction_heat_atteint`) → passage valeur numérique → condition booléenne réelle, rétablissement du seuil OFF.  
+- Climatisation : fiabilisation complète des capteurs seuils (COOL / HEAT / DRY) → suppression des conversions `float(default)`, introduction guard `unknown/unavailable`, fin des faux positifs silencieux.  
+- Climatisation : nettoyage structurel templates → suppression `default_entity_id`, homogénéisation Jinja, recentrage strict sur logique booléenne.  
+- Alarme : externalisation de la temporalité du blocage d’armement → suppression logique locale (`delay`), adoption `timer.blocage_armement_auto` comme mécanisme canonique.  
+- Alarme : introduction invariant structurel blocage ↔ timer + watchdog dédié → détection et correction minimale des incohérences (fin des blocages orphelins).  
+- Boiler : alignement complet du contrat MQTT avec l’implémentation réelle → suppression modèle confort/réduit/programme, unification `set_temperature`, clarification ACK et payload.  
+- Boiler : enrichissement télémétrie (modulation brûleur) + clarification frontière → chaudière = réalité technique, Arsenal = sémantique métier.  
+- Documentation : structuration massive des contrats climatisation (besoins, autorisations, blocages, cohérence, décision, seuils) → disparition des zones grises.  
+- Documentation : refonte contrats alarme (blocage, watchdog, diagnostic) → séparation stricte diagnostic vs correction structurelle.  
+- Système : nettoyage silencieux global (scripts, automations, incohérences diffuses) sans impact fonctionnel visible.  
+
 ==================================================
 FIN INDEX
 ==================================================
