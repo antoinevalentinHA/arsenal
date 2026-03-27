@@ -25,7 +25,7 @@ L'objectif est de pouvoir répondre, pour chaque période, à la question : **qu
 | fév. 2026 | v9 | Séparation structurelle : pipelines métier, contrats de domaine, abstraction logique |
 | fév.–début mars 2026 | v10 | Maturité physique : capteurs redondés, états réconciliés, temporalité explicite |
 | mars 2026 | v10 finale | Maturité contractuelle : documentation prescriptive, système déterministe et boot-safe |
-| mars 2026 | v11+ | Système vérifié : exécution transactionnelle, souveraineté locale, contexte système |
+| mars 2026 | v11 → v11.1.3 | Système vérifié : exécution transactionnelle, souveraineté locale, capacité d'exécution comme condition de vérité |
 
 ---
 
@@ -281,6 +281,31 @@ Cette version ne change pas le système — elle le rend **cohérent avec son pr
 
 ---
 
+**v11.1.3 — Verrouillage par la capacité d'exécution réelle :**  
+le système cesse définitivement de supposer qu'une action est exécutable.
+
+Le bridge boiler devient la **frontière contractuelle entre logique Arsenal et réalité physique**.  
+La capacité d'exécution réelle (`binary_sensor.boiler_bridge_online`) devient une condition canonique.
+
+Toute décision chauffage est désormais conditionnée à cette capacité :  
+aucune action ne peut être décidée si elle ne peut pas être physiquement exécutée.
+
+Cette contrainte est propagée à l'ensemble du système :
+
+- décision centrale : introduction d'un point d'entrée canonique de capacité (`boiler_bridge_online`)  
+- automations : condition systématique de disponibilité du bridge  
+- capteurs : suppression de tout fallback implicite  
+- auto-ajustement : séparation stricte domaine physique / domaine d'apprentissage  
+- helpers : bornes alignées sur les limites physiques réelles  
+
+👉 Le système ne raisonne plus en termes de validité logique seule,  
+mais en termes de **capacité effective à agir**.
+
+👉 Toute correction implicite, tout fallback silencieux, toute hypothèse d'exécution  
+est désormais considéré comme une violation du modèle.
+
+---
+
 ### Leçon retenue
 
 > **Le système devient vérifié, contextuel et ancré dans le réel.**
@@ -288,6 +313,7 @@ Cette version ne change pas le système — elle le rend **cohérent avec son pr
 - aucune action physique ne peut être présumée réussie sans validation explicite  
 - aucune logique nominale ne peut s'exécuter hors contexte système valide  
 - aucun état métier ne peut être reconstruit sans ancrage réel  
+- aucune action ne peut être décidée sans capacité d'exécution effective  
 
 La suppression de ViCare n'est pas une simplification — c'est une conséquence :  
 la souveraineté HA devient complète, de la décision jusqu'à la confirmation physique.
@@ -296,7 +322,8 @@ v10 garantissait la cohérence logique.
 v11 garantit la **validité physique**.  
 v11.1 garantit la **validité contextuelle**.  
 v11.1.1 impose la **vérité lue**.  
-v11.1.2 garantit la **conformité réelle du système à son modèle**.
+v11.1.2 garantit la **conformité réelle du système à son modèle**.  
+v11.1.3 impose la **capacité d'exécution comme condition de vérité**.
 
 ---
 

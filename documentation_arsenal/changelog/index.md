@@ -835,6 +835,20 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Documentation : refonte contrats alarme (blocage, watchdog, diagnostic) → séparation stricte diagnostic vs correction structurelle.  
 - Système : nettoyage silencieux global (scripts, automations, incohérences diffuses) sans impact fonctionnel visible.  
 
+---
+
+## 🧠 ARSENAL HA — v11.1.3 — STABLE — 2026-03-27
+**Tags :** chauffage, boiler, execution, contrats, normalisation, determinisme  
+**Signal net :**
+- Boiler : formalisation du socle transactionnel → contrats ACK, script exécutif et frontière MQTT ; le bridge devient la frontière contractuelle entre logique Arsenal et réalité physique.
+- Chauffage : introduction du guard `boiler_bridge_online` dans la décision centrale → point d'entrée canonique de la capacité d'exécution pour tout le domaine chauffage.
+- Chauffage : propagation de la condition bridge dans les automations (application courbe + démarrage) → fin de toute exécution hors capacité physique réelle.
+- Chauffage : séparation stricte domaine physique Viessmann / domaine d'apprentissage Arsenal → `input_number` alignés sur les bornes réelles, auto-ajustement limité au sous-domaine contrôlé, zéro retour progressif.
+- Chauffage : capteurs de suggestion refondus → propagation native `unknown/unavailable`, suppression des `float(default)` implicites, blocage hors domaine avec attributs diagnostics.
+- Climatisation : GUARD `mode: single → restart` → idempotence réelle, zéro événement perdu.
+- Notifications : `notification_envoyer_avance` sécurisé → validation service, résolution stricte `extra`, suppression des comportements implicites silencieux.
+- Système : suppression des plans `evolutions_futures/` absorbés par l'implémentation → corpus documentaire strictement aligné sur l’implémentation réelle.
+
 ==================================================
 FIN INDEX
 ==================================================
