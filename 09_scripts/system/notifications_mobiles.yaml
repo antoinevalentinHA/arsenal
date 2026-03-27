@@ -80,7 +80,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 notification_envoyer:
   alias: "Notification - Envoyer"
   mode: parallel
@@ -141,19 +140,34 @@ notification_envoyer_avance:
   mode: parallel
   fields:
     cible:
-      description: "Helper contenant le service notify"
+      description: "Entité contenant le service notify cible"
     titre:
       description: "Titre de la notification"
     message:
       description: "Message de la notification"
     extra:
       description: "Bloc data additionnel pour Android"
-      default: {}
   sequence:
     - variables:
         svc: "{{ states(cible) }}"
-    - service: "{{ svc }}"
-      data:
-        title: "{{ titre }}"
-        message: "{{ message }}"
-        data: "{{ extra }}"
+        extra_data: >
+          {{ extra if extra is defined and extra is mapping else {} }}
+
+    - condition: template
+      value_template: "{{ svc is string and svc.startswith('notify.') }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ extra_data | count > 0 }}"
+          sequence:
+            - action: "{{ svc }}"
+              data:
+                title: "{{ titre }}"
+                message: "{{ message }}"
+                data: "{{ extra_data }}"
+      default:
+        - action: "{{ svc }}"
+          data:
+            title: "{{ titre }}"
+            message: "{{ message }}"

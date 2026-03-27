@@ -3,20 +3,38 @@
 # ----------------------------------------------------------
 # 🧠 Rôle :
 #    Proposer, de manière réactive, un nouvel offset (parallèle)
-#    de la courbe de chauffe en fonction de l’écart global 24h.
+#    de la courbe de chauffe en fonction de l'écart global 24h.
 #
 # 🔎 Déclencheurs :
 #    - sensor.ecart_consigne_moyenne_24h
 #    - input_number.chauffage_parallele_consigne
 #
-# ⚙️ Critères :
+# ⚙️ Politique Arsenal d'auto-ajustement :
 #    - ecart_global < -0.4 → offset += 1
 #    - ecart_global > 0.4  → offset -= 1
 #    - sinon offset inchangé
-#    - bornes : -5 → +5
+#    - fenêtre auto-ajustement : -8 → +8
 #
 # 📌 Note :
 #    Proposition purement locale, jamais appliquée automatiquement.
+#    Les bornes ci-dessous sont celles de la politique d'auto-ajustement
+#    Arsenal, pas les bornes physiques complètes de la chaudière.
+#
+# ⚠️ Contrainte normative :
+#    Si la consigne courante est hors domaine d'auto-ajustement,
+#    aucune suggestion n'est produite :
+#    le capteur retourne strictement la valeur courante inchangée.
+#    Aucun mouvement de retour progressif n'est autorisé.
+#
+# 🧩 Comportement d'indisponibilité :
+#    - si la consigne actuelle est indisponible, le capteur propage
+#      cet état natif (`unknown` / `unavailable`)
+#    - si seule la grandeur d'écart est indisponible, le capteur
+#      retourne la consigne actuelle inchangée
+#
+#    Cette dissymétrie est intentionnelle :
+#    - absence de consigne = absence de base de calcul
+#    - absence d'écart = pas de nouvelle suggestion, mais consigne connue
 # ==========================================================
 
 - trigger:
@@ -32,25 +50,39 @@
       state: >
         {% set ecart_raw = states('sensor.ecart_consigne_moyenne_24h') %}
         {% set offset_raw = states('input_number.chauffage_parallele_consigne') %}
+        {% set offset_min = -8 %}
+        {% set offset_max = 8 %}
 
-        {% set offset_actuel = offset_raw | float(0) %}
-        {% set offset_min = -5 %}
-        {% set offset_max = 5 %}
-
-        {% if ecart_raw in ['unknown', 'unavailable', 'none', ''] %}
-          {{ offset_actuel }}
+        {% if offset_raw in ['unknown', 'unavailable', ''] %}
+          {{ offset_raw }}
+        {% elif ecart_raw in ['unknown', 'unavailable', ''] %}
+          {{ offset_raw | float(0) }}
         {% else %}
-          {% set ecart_global = ecart_raw | float(0) %}
-          {% if ecart_global < -0.4 %}
-            {{ [offset_actuel + 1, offset_max] | min }}
-          {% elif ecart_global > 0.4 %}
-            {{ [offset_actuel - 1, offset_min] | max }}
-          {% else %}
+          {% set offset_actuel = offset_raw | float(0) %}
+          {% if offset_actuel < offset_min or offset_actuel > offset_max %}
             {{ offset_actuel }}
+          {% else %}
+            {% set ecart_global = ecart_raw | float(0) %}
+            {% if ecart_global < -0.4 %}
+              {{ [offset_actuel + 1, offset_max] | min }}
+            {% elif ecart_global > 0.4 %}
+              {{ [offset_actuel - 1, offset_min] | max }}
+            {% else %}
+              {{ offset_actuel }}
+            {% endif %}
           {% endif %}
         {% endif %}
       attributes:
         source_ecart_state: "{{ states('sensor.ecart_consigne_moyenne_24h') }}"
         source_offset_state: "{{ states('input_number.chauffage_parallele_consigne') }}"
         ecart_disponible: >
-          {{ states('sensor.ecart_consigne_moyenne_24h') not in ['unknown','unavailable','none',''] }}
+          {{ states('sensor.ecart_consigne_moyenne_24h') not in ['unknown', 'unavailable', ''] }}
+        consigne_disponible: >
+          {{ states('input_number.chauffage_parallele_consigne') not in ['unknown', 'unavailable', ''] }}
+        consigne_dans_domaine_auto_ajustement: >
+          {% set offset_raw = states('input_number.chauffage_parallele_consigne') %}
+          {% if offset_raw in ['unknown', 'unavailable', ''] %}
+            false
+          {% else %}
+            {{ -8 <= offset_raw | float(0) <= 8 }}
+          {% endif %}

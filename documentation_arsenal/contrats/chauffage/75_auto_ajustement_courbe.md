@@ -6,22 +6,25 @@
 # 📌 STATUT :
 #   CONTRAT NORMATIF DE DOMAINE — CALIBRATION THERMIQUE SUPERVISÉE
 #
+# 📋 VERSION : 2.1
+# 📅 MISE À JOUR : 2026-03-27
+#
 # 🔒 AUTORITÉ :
 #   Ce document définit le comportement normatif du mécanisme
-#   d’**auto-ajustement de la courbe de chauffe** du sous-système Chauffage Arsenal.
+#   d'**auto-ajustement de la courbe de chauffe** du sous-système Chauffage Arsenal.
 #
 #   Il formalise la gouvernance officielle de la calibration thermique :
 #     • pente de courbe,
 #     • parallèle de courbe,
-#     • conditions d’apprentissage,
+#     • conditions d'apprentissage,
 #     • frontières décision / exécution / diagnostic.
 #
 #   Il est OPPOSABLE à toute implémentation :
 #     • capteurs de suggestion,
 #     • automations décisionnelles,
-#     • scripts d’application,
+#     • scripts d'application,
 #     • UI de réglage,
-#     • mécanismes d’apprentissage.
+#     • mécanismes d'apprentissage.
 #
 #   Subordonné à :
 #     /documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
@@ -37,15 +40,16 @@
 # ----------------------------------------------------------
 
 Ce contrat définit le comportement normatif du mécanisme
-d’**auto-ajustement de la courbe de chauffe**.
+d'**auto-ajustement de la courbe de chauffe**.
 
 Il formalise :
 
 - la finalité réelle de la calibration thermique,
-- les conditions légitimes d’apprentissage,
+- les conditions légitimes d'apprentissage,
 - la séparation stricte proposition / décision / exécution,
-- les garde-fous d’immunité thermique,
-- les interdictions absolues.
+- les garde-fous d'immunité thermique,
+- les interdictions absolues,
+- la distinction entre domaine physique et domaine d'auto-ajustement.
 
 Ce mécanisme constitue une **calibration supervisée lente**,  
 et non un pilotage adaptatif autonome.
@@ -53,14 +57,14 @@ et non un pilotage adaptatif autonome.
 ---
 
 # ----------------------------------------------------------
-# 🧠 2. FINALITÉ RÉELLE DE L’AUTO-AJUSTEMENT
+# 🧠 2. FINALITÉ RÉELLE DE L'AUTO-AJUSTEMENT
 # ----------------------------------------------------------
 
-L’auto-ajustement ne vise PAS :
+L'auto-ajustement ne vise PAS :
 
 - une régulation adaptative en boucle fermée,
 - une optimisation temps réel,
-- une compensation automatique d’erreur instantanée,
+- une compensation automatique d'erreur instantanée,
 - une décision thermique autonome,
 - un pilotage direct de la chaudière.
 
@@ -82,7 +86,7 @@ Objectif fondamental :
 # 🧱 3. POSITIONNEMENT ARCHITECTURAL
 # ----------------------------------------------------------
 
-L’auto-ajustement :
+L'auto-ajustement :
 
 - est hors décision centrale,
 - ne modifie jamais un mode thermique,
@@ -94,18 +98,20 @@ Il agit exclusivement sur :
 - `input_number.chauffage_pente_consigne`
 - `input_number.chauffage_parallele_consigne`
 
-via une chaîne stricte :
+via une chaîne stricte à six étapes — détaillée au §6 :
 
-1. **Diagnostics structurants**
-2. **Capteurs de suggestion**
-3. **Décision supervisée**
-4. **Scripts d’application blindés**
+1. **Qualification du signal** (représentativité thermique + immunité poêle)
+2. **Capteurs diagnostiques gouvernés**
+3. **Capteurs de proposition (`*_suggeree`)**
+4. **Automation décisionnelle supervisée**
+5. **Écriture helpers consigne → Scripts d'application**
+6. **Journalisation événementielle**
 
 Il est :
 
-- post-décisionnel  
-- non critique temps réel  
-- strictement supervisé  
+- post-décisionnel
+- non critique temps réel
+- strictement supervisé
 
 ---
 
@@ -116,7 +122,7 @@ Il est :
 Grandeurs de base autorisées :
 
 - écart consigne instantané (régime doux / froid)
-- moyenne glissante 24 h de l’écart
+- moyenne glissante 24 h de l'écart
 - moyennes spécialisées doux / froid
 - température extérieure locale
 - température intérieure minimale gouvernée
@@ -181,25 +187,114 @@ Effet autorisé :
 
 ---
 
+## 5.3 Distinction normative — Domaine physique vs auto-ajustement
+
+Deux domaines distincts sont définis :
+
+### Domaine physique chaudière (référence absolue)
+
+Correspond aux capacités réelles du système thermique :
+
+- pente : **0.2 → 3.5**, pas **0.1**
+- parallèle : **-13 → 40**, pas **1**
+
+Ces bornes :
+
+- sont définies par le constructeur (source : `CONTRAT_MQTT.md` §11)
+- sont utilisées par :
+  - le bridge MQTT
+  - les scripts d'exécution
+  - les helpers `input_number`
+- constituent la **frontière d'exécution matérielle**
+
+---
+
+### Domaine d'auto-ajustement Arsenal (politique)
+
+Correspond à la zone dans laquelle le système est autorisé à apprendre :
+
+- pente : **1.0 → 2.2**
+- parallèle : **-8 → 8**
+
+Ces bornes :
+
+- sont définies par la gouvernance Arsenal
+- sont utilisées exclusivement par :
+  - les capteurs de suggestion
+  - la logique d'apprentissage
+- sont volontairement plus restrictives que le domaine physique
+
+---
+
+Principe fondamental :
+
+> ⚠️ L'auto-ajustement n'a PAS le droit d'explorer l'ensemble du domaine physique.
+
+---
+
+Conséquences :
+
+- une consigne peut exister hors domaine d'auto-ajustement (réglage manuel, migration)
+- mais aucune suggestion ne doit en sortir
+- aucune logique d'apprentissage ne doit franchir cette frontière
+
+**Règle normative — consigne hors domaine d'auto-ajustement :**
+
+Si la consigne courante est hors domaine d'auto-ajustement Arsenal :
+
+- aucune suggestion ne doit être produite
+- le capteur de suggestion DOIT retourner la valeur courante inchangée
+- aucun mouvement de retour progressif n'est autorisé
+
+> ⚠️ Un retour progressif vers le domaine d'auto-ajustement constitue une violation.
+> Il produit des suggestions implicites non gouvernées, indétectables par la couche décision.
+
+---
+
 # ----------------------------------------------------------
-# 🧠 6. CHAÎNE NORMATIVE D’AUTO-AJUSTEMENT
+# 🧠 6. CHAÎNE NORMATIVE D'AUTO-AJUSTEMENT
 # ----------------------------------------------------------
 
 Chaîne obligatoire :
 
-1. **Capteurs diagnostiques gouvernés**
-2. **Capteurs de proposition (`*_suggeree`)**
-3. **Automation décisionnelle supervisée**
-4. **Écriture helpers consigne**
-5. **Scripts d’application**
+1. **Qualification du signal**
+   - évaluation de la représentativité thermique (`input_select.chauffage_representativite_thermique`)
+   - évaluation de l'immunité poêle (`binary_sensor.signature_thermique_poele`)
+   - toute condition bloquante à cette étape interrompt la chaîne — aucune suite n'est exécutée
+
+2. **Capteurs diagnostiques gouvernés**
+   - calcul des écarts thermiques gouvernés
+   - production des moyennes glissantes (24 h, doux, froid)
+
+3. **Capteurs de proposition (`*_suggeree`)**
+   - production de valeurs bornées au domaine d'auto-ajustement Arsenal
+   - aucune valeur hors domaine d'auto-ajustement ne peut être produite à cette étape
+
+4. **Automation décisionnelle supervisée**
+   - vérification des conditions d'autorisation (§7)
+   - décision unique, centralisée
+   - aucun calcul de suggestion ici
+
+5. **Écriture helpers consigne → Scripts d'application**
+   - l'automation écrit `input_number.chauffage_pente_consigne` et/ou `input_number.chauffage_parallele_consigne`
+   - les scripts d'application lisent ces helpers et appliquent la commande via MQTT
+   - les scripts d'application **DOIVENT** garantir la conformité au domaine physique chaudière
+     avant toute émission MQTT — cette vérification est obligatoire et non délégable
+   - toute émission hors domaine physique constitue une **violation du contrat**
+   - aucun script ne décide une valeur
+
 6. **Journalisation événementielle**
+   - production obligatoire d'un événement traçable
+   - entrée logbook explicite
+   - voir §11 pour les champs normatifs
 
 Interdictions absolues :
 
-- aucun capteur n’écrit directement un paramètre
+- aucun capteur n'écrit directement un paramètre
 - aucune automation ne calcule une suggestion
 - aucun script ne décide une valeur
-- aucune boucle fermée n’est autorisée
+- aucune boucle fermée n'est autorisée
+- aucune suggestion ne peut sortir du domaine d'auto-ajustement Arsenal
 
 Principe cardinal :
 
@@ -208,16 +303,22 @@ Principe cardinal :
 ---
 
 # ----------------------------------------------------------
-# 🛑 7. CONDITIONS D’AUTORISATION LÉGITIMES
+# 🛑 7. CONDITIONS D'AUTORISATION LÉGITIMES
 # ----------------------------------------------------------
 
-L’auto-ajustement est autorisé uniquement si :
+L'auto-ajustement est autorisé uniquement si toutes les conditions suivantes sont satisfaites,
+dans l'ordre d'évaluation indiqué :
 
-- auto-ajustement activé explicitement
-- régime maison = Normal
-- aucune influence poêle active ou récente
-- grandeurs diagnostiques valides et stables
-- au moins une suggestion différente de la consigne courante
+1. **état de représentativité thermique = REPRESENTATIF** ← précondition prioritaire (§8)
+2. **aucune signature thermique poêle active ou récente** ← verrou d'immunité (§9)
+3. auto-ajustement activé explicitement
+4. régime maison = Normal
+5. grandeurs diagnostiques valides et stables
+6. au moins une suggestion différente de la consigne courante
+
+> ⚠️ Les conditions 1 et 2 sont des préconditions de qualification du signal.
+> Elles sont évaluées avant toute autre condition.
+> Leur échec interrompt immédiatement l'évaluation — les conditions 3 à 6 ne sont pas examinées.
 
 Interdictions :
 
@@ -225,39 +326,32 @@ Interdictions :
 - jamais en absence
 - jamais en reprise
 - jamais en post-aération
-- jamais en présence d’apports externes
-
----
-
-Les conditions ci-dessus sont des conditions instantanées d’autorisation.
-
-La condition suivante constitue un état système stable,
-porté par un helper dédié et évalué avec hystérésis.
-
-Elle agit comme une précondition d’éligibilité à l’apprentissage,
-en amont de toute décision d’auto-ajustement.
+- jamais en présence d'apports externes
+- jamais hors domaine d'auto-ajustement Arsenal
 
 ---
 
 # ----------------------------------------------------------
-# 🧠 7.1 REPRÉSENTATIVITÉ THERMIQUE — ÉLIGIBILITÉ D’APPRENTISSAGE
+# 🧠 8. REPRÉSENTATIVITÉ THERMIQUE — ÉLIGIBILITÉ D'APPRENTISSAGE
 # ----------------------------------------------------------
 
 ## Principe
 
-L’auto-ajustement de la courbe de chauffe est autorisé uniquement si
-la période d’observation est **thermiquement représentative**.
+L'auto-ajustement de la courbe de chauffe est autorisé uniquement si
+la période d'observation est **thermiquement représentative**.
 
 Ce mécanisme constitue un **verrou de qualité de signal**.
 
 Il ne participe pas au calcul de la correction.
-Il conditionne uniquement le droit d’apprentissage.
+Il conditionne uniquement le droit d'apprentissage.
+
+Il est évalué en premier, avant toute autre condition d'autorisation.
 
 ---
 
 ## Indicateur canonique
 
-sensor.pourcentage_consigne_eco_24h_proxy
+`sensor.pourcentage_consigne_eco_24h_proxy`
 
 Sémantique :
 
@@ -266,17 +360,17 @@ peu sollicitée thermiquement, donc moins elle est représentative.
 
 ---
 
-## Définition de l’état
+## Définition de l'état
 
-L’état de représentativité thermique est un **état système stable**,
+L'état de représentativité thermique est un **état système stable**,
 déterminé avec hystérésis.
 
 Il ne reflète pas une valeur instantanée mais une position mémorisée.
 
 Règles de transition :
 
-- valeur > 55 %  → NON_REPRESENTATIF
-- valeur < 40 %  → REPRESENTATIF
+- valeur > 55 % → NON_REPRESENTATIF
+- valeur < 40 % → REPRESENTATIF
 - 40 % ≤ valeur ≤ 55 % → état conservé
 
 État initial :
@@ -285,14 +379,14 @@ Règles de transition :
 
 ---
 
-## Support d’état
+## Support d'état
 
-L’état de représentativité thermique est porté exclusivement par :
+L'état de représentativité thermique est porté exclusivement par :
 
-input_select.chauffage_representativite_thermique
+`input_select.chauffage_representativite_thermique`
 
 Toute modification de cet état doit être réalisée exclusivement
-par le mécanisme d’évaluation de la représentativité thermique.
+par le mécanisme d'évaluation de la représentativité thermique.
 
 Toute écriture externe constitue une violation du contrat.
 
@@ -300,13 +394,10 @@ Toute écriture externe constitue une violation du contrat.
 
 ## Usage contractuel
 
-- état = REPRESENTATIF → auto-ajustement autorisé
-- état = NON_REPRESENTATIF → auto-ajustement interdit
+- état = REPRESENTATIF → précondition satisfaite
+- état = NON_REPRESENTATIF → auto-ajustement interdit, chaîne interrompue
 
-Ce critère est une **précondition d’éligibilité**.
-Il est évalué prioritairement, avant toute autre condition d’autorisation.
-
-Toute décision d’ajustement produite hors état REPRESENTATIF est :
+Toute décision d'ajustement produite hors état REPRESENTATIF est :
 
 → contractuellement nulle
 
@@ -321,57 +412,50 @@ Toute décision d’ajustement produite hors état REPRESENTATIF est :
 
 ---
 
-## Positionnement architectural
-
-Ce mécanisme appartient à la **couche de qualification du signal**.
-
-Il est évalué en amont :
-
-- des grandeurs canoniques
-- des capteurs de suggestion
-- de toute décision
-
-Il est strictement indépendant :
-
-- du calcul d’écart thermique
-- de la logique de correction
-
----
-
 ## Traçabilité
 
-Toute transition d’état doit produire :
+Toute transition d'état doit produire :
 
 - un événement traçable
 - une entrée logbook explicite
 
 Principe :
 
-> 🧠 Une invalidation d’apprentissage doit être observable et explicable
+> 🧠 Une invalidation d'apprentissage doit être observable et explicable.
 
 ---
 
 # ----------------------------------------------------------
-# 🔒 8. IMMUNITÉ THERMIQUE & PROTECTIONS
+# 🔒 9. IMMUNITÉ THERMIQUE & PROTECTIONS
 # ----------------------------------------------------------
 
-Frontière d’immunité thermique :
+Frontière d'immunité thermique :
 
-- binary_sensor.signature_thermique_poele
+- `binary_sensor.signature_thermique_poele`
 - mémoire thermique récente (24 h)
 
 Principe :
 
 Toute signature thermique compatible avec un apport poêle
-rend la période thermique impropre à l’apprentissage.
+rend la période thermique impropre à l'apprentissage.
 
-La présence d’une signature thermique active ou récente
+La présence d'une signature thermique active ou récente
 suspend toute calibration de la courbe de chauffe.
+
+Ce mécanisme est indépendant :
+
+- du domaine physique chaudière
+- du domaine d'auto-ajustement Arsenal
+
+Il agit exclusivement comme **verrou d'apprentissage**.
+
+Il est évalué immédiatement après la représentativité thermique (§8),
+avant toute autre condition d'autorisation.
 
 ---
 
 # ----------------------------------------------------------
-# 🔁 9. TEMPORALITÉ & RYTHME
+# 🔁 10. TEMPORALITÉ & RYTHME
 # ----------------------------------------------------------
 
 Règles temporelles :
@@ -388,13 +472,18 @@ Objectifs :
 - garantir stabilité longue
 - préserver lisibilité utilisateur
 
+La temporalité s'applique :
+
+- uniquement au domaine d'auto-ajustement
+- jamais à la couche d'exécution physique
+
 ---
 
 # ----------------------------------------------------------
-# 🧩 10. TRAÇABILITÉ OBLIGATOIRE
+# 🧩 11. TRAÇABILITÉ OBLIGATOIRE
 # ----------------------------------------------------------
 
-Toute décision d’auto-ajustement doit produire :
+Toute décision d'auto-ajustement doit produire :
 
 - un événement `chauffage_adjustment`
 - un logbook explicite
@@ -403,19 +492,38 @@ Toute décision d’auto-ajustement doit produire :
 
 Champs normatifs minimaux :
 
-- mode (simulation / real)
-- pente_before / pente_after
-- para_before / para_after
-- timestamp
+| Champ | Description |
+|-------|-------------|
+| `mode` | `simulation` ou `real` |
+| `pente_before` | Valeur pente avant décision |
+| `pente_suggested` | Valeur suggérée par le capteur de proposition |
+| `pente_after` | Valeur pente après décision (ou `null` si non appliquée) |
+| `pente_applied` | `true` si la pente a été effectivement modifiée, `false` sinon |
+| `para_before` | Valeur parallèle avant décision |
+| `para_suggested` | Valeur suggérée par le capteur de proposition |
+| `para_after` | Valeur parallèle après décision (ou `null` si non appliquée) |
+| `para_applied` | `true` si le parallèle a été effectivement modifié, `false` sinon |
+| `representativite` | État `input_select.chauffage_representativite_thermique` au moment de la décision |
+| `timestamp` | Horodatage UTC ISO 8601 |
+| `refus_reason` | Présent si `pente_applied = false` ou `para_applied = false` — raison normative parmi : `non_representatif`, `immunite_poele`, `hors_domaine`, `conditions_non_remplies`, `suggestion_identique` |
 
 Principe :
 
 > 🧠 **Toute calibration doit être auditée humainement.**
 
+La trace doit permettre de distinguer sans ambiguïté :
+
+- refus qualité signal (`non_representatif`, `immunite_poele`)
+- refus politique (`conditions_non_remplies`, `hors_domaine`)
+- non-application fonctionnelle (`suggestion_identique`)
+- application effective avec ou sans écart entre suggestion et valeur appliquée
+
+Si `pente_suggested ≠ pente_after` ou `para_suggested ≠ para_after` (clamp domaine), l'écart doit être explicitement traçable.
+
 ---
 
 # ----------------------------------------------------------
-# 🔒 11. INTERDICTIONS FORMELLES
+# 🔒 12. INTERDICTIONS FORMELLES
 # ----------------------------------------------------------
 
 Il est strictement interdit :
@@ -428,17 +536,19 @@ Il est strictement interdit :
 - toute modification hors helpers consigne
 - toute application directe depuis un capteur
 - toute réécriture non tracée
+- toute suggestion sortant du domaine d'auto-ajustement Arsenal
+- toute tentative d'exploration automatique du domaine physique complet
 
 Toute violation constitue :
 
 - une rupture de gouvernance thermique,
-- un risque d’instabilité systémique,
+- un risque d'instabilité systémique,
 - une régression architecturale majeure.
 
 ---
 
 # ----------------------------------------------------------
-# 🧱 12. INVARIANTS DU MÉCANISME
+# 🧱 13. INVARIANTS DU MÉCANISME
 # ----------------------------------------------------------
 
 Invariants absolus :
@@ -450,11 +560,18 @@ Invariants absolus :
 - traçabilité complète
 - stabilité longue privilégiée
 - aucune urgence thermique
+- respect strict du domaine d'auto-ajustement Arsenal
+
+Relation d'invariant :
+
+- le domaine d'auto-ajustement est un **sous-ensemble strict**
+  du domaine physique chaudière
+- aucune couche d'apprentissage ne peut franchir cette frontière
 
 ---
 
 # ----------------------------------------------------------
-# 🧠 13. DÉPENDANCES CONTRACTUELLES
+# 🧠 14. DÉPENDANCES CONTRACTUELLES
 # ----------------------------------------------------------
 
 Subordonné à :
@@ -473,20 +590,25 @@ Gouverne directement :
 - toutes suggestions de pente / parallèle
 - toutes décisions de calibration
 - toutes écritures de courbe
-- tous mécanismes d’apprentissage thermique
+- tous mécanismes d'apprentissage thermique
+
+Dépend explicitement de :
+
+- `CONTRAT_MQTT.md` §11 — Règle normative de validation des bornes côté exécution Arsenal
+  (bornes physiques opposables : pente [0.2 ; 3.5] pas 0.1 / parallèle [-13 ; 40] pas 1)
 
 ---
 
 # ----------------------------------------------------------
-# 📌 14. PORTÉE & STABILITÉ
+# 📌 15. PORTÉE & STABILITÉ
 # ----------------------------------------------------------
 
 Ce contrat est :
 
-- stratégique dans l’architecture Chauffage,
-- frontière critique d’optimisation thermique,
+- stratégique dans l'architecture Chauffage,
+- frontière critique d'optimisation thermique,
 - stable long terme,
-- modifié uniquement lors d’évolutions majeures,
+- modifié uniquement lors d'évolutions majeures,
 - versionné explicitement,
 - opposable à toute implémentation.
 

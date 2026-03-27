@@ -8,44 +8,47 @@
 #     - Parallèle (décalage vertical)
 #
 # 🧱 Nature :
-#   - Ce sont des PARAMÈTRES DE COURBE, pas des commandes.
-#   - Ils n’allument ni n’éteignent jamais le chauffage.
-#   - Ils n’impliquent aucune décision ON / OFF.
+#   - Paramètres structurels de la courbe
+#   - Aucune action directe sur le chauffage
+#   - Aucune logique décisionnelle
 #
 # 🧠 Principe Arsenal :
-#   - Les capteurs analysent le comportement thermique.
-#   - Les capteurs suggèrent (pente / parallèle).
-#   - Les input_number FIGENT la consigne retenue.
-#   - Les automatisations décident si et quand appliquer.
-#   - Le pipeline d’exécution chauffage applique la modification.
+#   - Les capteurs analysent
+#   - Les capteurs suggèrent
+#   - Les input_number figent la consigne retenue
+#   - Les automatisations décident de l'application
+#   - Les scripts exécutifs appliquent via le bridge
 #
-# 🔗 Utilisation :
-#   - Référence officielle de la courbe active
-#   - Comparaison avec valeurs suggérées
-#   - Auto-ajustement contrôlé (simulé ou réel)
-#   - Application via scripts / automatisations dédiés
-#   - Affichage diagnostic et réglages manuels
+# ⚙️ Contraintes physiques chaudière (Viessmann) :
+#   - Pente :
+#       min  = 0.2
+#       max  = 3.5
+#       step = 0.1
+#   - Parallèle :
+#       min  = -13
+#       max  = 40
+#       step = 1
 #
 # ⚠️ Règles fondamentales :
-#   - Modifier une consigne ≠ appliquer immédiatement
-#   - Toute application doit passer par une automatisation
-#     explicitement identifiée comme autorité d’exécution
+#   - Modifier une consigne ≠ appliquer
+#   - Toute application passe par une couche d'exécution
+#   - Les valeurs doivent respecter bornes et granularité
 #
 # 📐 Unités :
 #   - Pente       : sans unité
-#   - Parallèle   : degrés Celsius (°C)
+#   - Parallèle   : °C
 # ==========================================================
 
 chauffage_pente_consigne:
   name: Pente (consigne)
-  min: 0.0
-  max: 3.0
+  min: 0.2
+  max: 3.5
   step: 0.1
   unit_of_measurement: ""
 
 chauffage_parallele_consigne:
   name: Parallèle (consigne)
-  min: -10
-  max: 10
+  min: -13
+  max: 40
   step: 1
   unit_of_measurement: "°C"

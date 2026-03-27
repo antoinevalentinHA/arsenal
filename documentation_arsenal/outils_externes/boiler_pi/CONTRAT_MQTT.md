@@ -3,7 +3,7 @@
 **Composant :** `arsenal-boiler-bridge`
 **Version bridge :** v0.4.3
 **Scope :** Télémétrie chaudière · Santé du bridge · Pipeline ACK transactionnel
-**Dernière mise à jour :** 2026-03-26
+**Dernière mise à jour :** 2026-03-27
 
 ---
 
@@ -280,11 +280,12 @@ L'évaluation est effectuée côté bridge au moment de la réception du message
 | **Topic ACK** | `boiler/ack/heating/set_curve_shift` |
 | **Commande vclient (écriture)** | `setNiveauM1 <value>` |
 | **Commande vclient (relecture)** | `getNiveauM1` |
-| **Type de `value`** | float |
-| **Bornes** | [-20 ; 20] ⚠️ provisoires |
-| **Tolérance de confirmation** | ± 0.01 |
+| **Type de `value`** | int |
+| **Bornes** | [-13 ; 40] |
+| **Pas** | 1 (entier strict — aucune décimale autorisée) |
+| **Tolérance de confirmation** | 0 (égalité stricte) |
 
-> ⚠️ Les bornes [-20 ; 20] sont marquées comme provisoires dans le code source. À remplacer par les bornes normatives réelles issues de la documentation Viessmann.
+> **Granularité entière.** Toute valeur float transmise doit être rejetée avant émission. Le bridge applique un arrondi entier si un float est reçu, mais la couche décision Arsenal doit émettre uniquement des entiers. Aucune tolérance de confirmation — l'égalité stricte est requise.
 
 ---
 
@@ -297,10 +298,11 @@ L'évaluation est effectuée côté bridge au moment de la réception du message
 | **Commande vclient (écriture)** | `setNeigungM1 <value>` |
 | **Commande vclient (relecture)** | `getNeigungM1` |
 | **Type de `value`** | float |
-| **Bornes** | [0.0 ; 4.0] ⚠️ provisoires |
+| **Bornes** | [0.2 ; 3.5] |
+| **Pas** | 0.1 (flottant discret — arrondi au dixième requis) |
 | **Tolérance de confirmation** | ± 0.01 |
 
-> ⚠️ Les bornes [0.0 ; 4.0] sont marquées comme provisoires dans le code source. À remplacer par les bornes normatives réelles.
+> **Granularité 0.1.** Toute valeur émise doit être un multiple de 0.1 dans l'intervalle [0.2 ; 3.5]. La couche exécution Arsenal doit arrondir explicitement à `round(value, 1)` avant émission — aucun arrondi implicite toléré.
 
 ---
 
@@ -403,9 +405,34 @@ HA                    Bridge
 
 ## 10. Points ouverts / dettes normatives
 
-| Réf | Description | Criticité |
-|-----|-------------|-----------|
-| OPEN-01 | Bornes `set_curve_shift` [-20 ; 20] à valider sur documentation Viessmann | Haute |
-| OPEN-02 | Bornes `set_curve_slope` [0.0 ; 4.0] à valider sur documentation Viessmann | Haute |
-| OPEN-03 | `boiler/error/last` retain = toujours la dernière erreur, pas d'historique. Envisager un topic d'historique si nécessaire | Basse |
-| OPEN-04 | `vcontrold_status` et `optolink_status` sont deux projections d'un seul probe `getTempKist` — pas de distinction fine entre panne Optolink et panne vcontrold | Moyenne |
+| Réf | Description | Criticité | Statut |
+|-----|-------------|-----------|--------|
+| ~~OPEN-01~~ | ~~Bornes `set_curve_shift` [-20 ; 20] à valider sur documentation Viessmann~~ | ~~Haute~~ | ✅ RÉSOLU — bornes normatives [-13 ; 40], pas entier strict |
+| ~~OPEN-02~~ | ~~Bornes `set_curve_slope` [0.0 ; 4.0] à valider sur documentation Viessmann~~ | ~~Haute~~ | ✅ RÉSOLU — bornes normatives [0.2 ; 3.5], pas 0.1 |
+| OPEN-03 | `boiler/error/last` retain = toujours la dernière erreur, pas d'historique. Envisager un topic d'historique si nécessaire | Basse | Ouvert |
+| OPEN-04 | `vcontrold_status` et `optolink_status` sont deux projections d'un seul probe `getTempKist` — pas de distinction fine entre panne Optolink et panne vcontrold | Moyenne | Ouvert |
+
+---
+
+## 11. Règle normative — Validation des bornes côté exécution Arsenal
+
+> **Décision d'architecture (opposable)** — La validation des bornes des commandes de courbe de chauffe est effectuée **côté couche exécution Arsenal**, avant toute émission MQTT. Le bridge ne constitue pas la frontière de sécurité primaire.
+
+### Rationale
+
+Laisser le bridge ou la chaudière rejeter une valeur hors bornes introduit :
+- un bruit ACK non maîtrisé (`rejected` / comportement silencieux selon firmware),
+- une dépendance à un comportement firmware non garanti.
+
+La frontière d'exécution Arsenal est le point de contrôle canonique.
+
+### Règles d'émission (normatives)
+
+| Paramètre | Bornes | Pas | Type émis | Règle d'arrondi |
+|-----------|--------|-----|-----------|-----------------|
+| `set_curve_slope` | [0.2 ; 3.5] | 0.1 | float | `round(value, 1)` — explicite, obligatoire |
+| `set_curve_shift` | [-13 ; 40] | 1 | int | `int(round(value))` — aucune décimale |
+
+- Toute valeur hors bornes après arrondi → **rejet avant émission** (log + abandon de la commande).
+- Toute valeur non conforme au pas → **arrondi explicite requis**, jamais implicite.
+- Le `value` publié sur le topic MQTT doit être du type attendu (float pour slope, int pour shift) — pas de coercition silencieuse côté HA.

@@ -32,12 +32,12 @@
 #     - Correction immédiate et UNILATÉRALE
 #
 #     Ce GUARD :
-#       • NE DÉCIDE PAS d’un mode
+#       • NE DÉCIDE PAS d'un mode
 #       • NE REMPLACE PAS la décision centrale
-#       • N’INTERPRÈTE AUCUNE logique de confort
+#       • N'INTERPRÈTE AUCUNE logique de confort
 #
-#     Il s’applique APRÈS la décision,
-#     sur l’exécution réelle uniquement.
+#     Il s'applique APRÈS la décision,
+#     sur l'exécution réelle uniquement.
 #
 # ----------------------------------------------------------
 #  🚫 CE QUE CE GUARD NE FAIT PAS
@@ -70,6 +70,13 @@
 #      décision centrale et ses autorisations)
 #
 # ----------------------------------------------------------
+#  ⚙️ MODE D'EXÉCUTION
+#
+#     Mode retenu : restart
+#
+#     Ce Guard est correctif et idempotent.
+#
+# ----------------------------------------------------------
 #  🧠 ARCHITECTURE ARSENAL
 #
 #     Niveau : GUARD fondamental (post-décision)
@@ -78,13 +85,13 @@
 #         → Décision centrale (sensor.clim_target_mode)
 #             → Exécution idempotente
 #
-#     Le GUARD corrige l’EXÉCUTION,
+#     Le GUARD corrige l'EXÉCUTION,
 #     jamais la DÉCISION.
 # ==========================================================
 
 - id: "10030000000101"
   alias: "CLIM – Guard logique anti-absurde"
-  mode: single
+  mode: restart
 
   trigger:
     - platform: state
