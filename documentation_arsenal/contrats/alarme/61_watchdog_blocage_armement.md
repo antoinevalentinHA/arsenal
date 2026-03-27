@@ -70,11 +70,11 @@ Le watchdog applique une **correction minimale** :
 
 ## ⚙️ Déclenchement
 
-Le watchdog est **strictement événementiel** :
+Le watchdog est **strictement événementiel** et piloté par un diagnostic dédié.
 
-- déclenché sur changement d'état de :
-  - `input_boolean.blocage_armement_auto`
-  - `timer.blocage_armement_auto`
+- déclenché sur le passage `off → on` de :
+  - `binary_sensor.blocage_armement_incoherent`
+- aucune dépendance directe aux entités sources
 - aucun polling
 - aucune boucle
 
@@ -82,16 +82,15 @@ Le watchdog est **strictement événementiel** :
 
 ## ⏱️ Stabilisation
 
-Avant toute évaluation :
+La stabilisation est portée par le déclencheur :
 
-```
-délai de stabilisation : 500 ms
-```
+- condition de persistance : 500 ms
 
 Objectif :
 
-- laisser le chemin nominal se terminer
-- éviter les faux positifs liés à l'ordre d'exécution HA
+- laisser le chemin nominal se stabiliser
+- éviter les faux positifs liés à l’ordre d’exécution
+- garantir que l’anomalie est réelle avant correction
 
 ---
 
@@ -210,6 +209,7 @@ Chaque déclenchement du watchdog doit :
 |--------|------|
 | `input_boolean.blocage_armement_auto` | État du verrou |
 | `timer.blocage_armement_auto` | Temporalité |
+| `binary_sensor.blocage_armement_incoherent` | Diagnostic structurel |
 | Automation `10020000000034` | Implémentation du watchdog |
 
 ---

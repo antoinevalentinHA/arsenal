@@ -1,0 +1,20 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : Chauffage retry
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porter la temporisation avant retry automatique
+#   d’une commande chauffage transactionnelle.
+#
+# 🧱 Nature :
+#   - Timer technique d’orchestration
+#   - 30 s de temporisation
+#
+# ⚠️ Regle :
+#   - timeout + bridge online  -> demarrage direct
+#   - timeout + bridge offline -> demarrage apres retour online
+# ==========================================================
+
+chauffage_retry:
+  name: Chauffage retry
+  duration: "00:00:30"
+  restore: true

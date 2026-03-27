@@ -63,12 +63,11 @@ Toute implémentation hybride est interdite.
 
 ### Invariant 2 — Cohérence blocage ↔ timer
 
-```
-Si input_boolean.blocage_armement_auto == on
-→ timer.blocage_armement_auto doit être actif.
+Si `input_boolean.blocage_armement_auto == on`
+→ `timer.blocage_armement_auto` doit être dans `{active, paused}`.
 
-Si timer.blocage_armement_auto == idle
-→ input_boolean.blocage_armement_auto doit être off.
+Si `timer.blocage_armement_auto == idle`
+→ `input_boolean.blocage_armement_auto` doit être `off`.
 
 Toute divergence constitue une anomalie système.
 ```
@@ -122,7 +121,7 @@ Toute autre source d'écriture est **interdite**.
 ### Cas nominal
 
 1. désarmement → blocage `on`
-2. `timer.blocage_armement_auto` actif
+2. `timer.blocage_armement_auto` actif ou en pause
 3. timer expire → blocage `off`
 4. armement automatique de nouveau possible
 

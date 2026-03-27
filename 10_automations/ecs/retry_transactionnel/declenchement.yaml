@@ -1,0 +1,105 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     ECS — Declenchement retry transactionnel
+#
+#  ID : 10250000000030
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Declencher la seconde tentative ECS a
+#     l'expiration du timer de retry.
+#
+#  🧱 PRINCIPE
+#     - uniquement si retry_pending == true
+#     - uniquement si bridge online
+#     - uniquement avec la cible de session actuelle et valide
+#     - jamais de payload historique rejoue
+#     - retry_pending mis a false AVANT invocation du script
+#       pour que etat_retry ne confonde pas tentative 1 et 2
+#     - ecs_retry_count incrementé juste avant invocation du script
+#       sémantique : ecs_retry_count == nombre de tentatives 2
+#       réellement exécutées (pas juste armées)
+#
+#  📦 DEPENDANCES
+#     - timer.ecs_retry
+#     - input_boolean.ecs_retry_pending
+#     - input_number.ecs_retry_count
+#     - binary_sensor.boiler_bridge_online
+#     - input_text.ecs_target_temp_session
+#     - input_text.ecs_retry_attempt2_id
+#       (vidé ici avant invocation, écrit par etat_retry au cleanup)
+# ==========================================================
+
+- id: "10250000000030"
+  alias: "ECS — Declenchement retry transactionnel"
+  description: >
+    Declenche la tentative 2 ECS a l'expiration du timer.
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.ecs_retry
+
+  condition:
+    # Vérification que le retry est toujours attendu
+    # (peut avoir été annulé par etat_retry si exécution amont intervenue)
+    - condition: state
+      entity_id: input_boolean.ecs_retry_pending
+      state: "on"
+
+    # ecs_retry_count doit être 0 ici : l'incrément n'a pas encore eu lieu.
+    # Si ecs_retry_count > 0, une tentative 2 a déjà été exécutée → abandon.
+    - condition: numeric_state
+      entity_id: input_number.ecs_retry_count
+      below: 1
+
+    - condition: state
+      entity_id: binary_sensor.boiler_bridge_online
+      state: "on"
+
+    # Vérification valeur session toujours valide au moment du déclenchement
+    - condition: template
+      value_template: >
+        {{
+          states('input_text.ecs_target_temp_session') not in ['unknown', 'unavailable', '']
+          and (states('input_text.ecs_target_temp_session') | int(-1)) >= 10
+          and (states('input_text.ecs_target_temp_session') | int(-1)) <= 60
+        }}
+
+  action:
+    - service: system_log.write
+      data:
+        level: warning
+        message: >
+          ECS retry declenche — tentative=2,
+          bridge={{ states('binary_sensor.boiler_bridge_online') }},
+          target={{ states('input_text.ecs_target_temp_session') }}°C,
+          attempt1_id={{ states('input_text.ecs_retry_attempt1_id') }}
+
+    # Mise à false AVANT l'invocation du script
+    # Garantit que etat_retry identifie correctement la tentative 2
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.ecs_retry_pending
+
+    # Incrément du compteur ici — sémantique : tentative réellement exécutée
+    # Placé après turn_off pour que etat_retry CAS 2 (retry_pending == off
+    # ET retry_count > 0) soit cohérent au moment du cleanup.
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.ecs_retry_count
+      data:
+        value: 1
+
+    # Vider attempt2_id avant l'invocation — etat_retry l'écrira
+    # au moment du cleanup avec la valeur lue dans le sensor ACK
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.ecs_retry_attempt2_id
+      data:
+        value: ""
+
+    - service: script.ecs_appliquer_consigne_bridge
+      data:
+        target_temp: "{{ states('input_text.ecs_target_temp_session') | int }}"

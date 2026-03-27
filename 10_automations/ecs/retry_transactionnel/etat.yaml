@@ -1,0 +1,206 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     ECS — Etat retry transactionnel
+#
+#  ID : 10250000000031
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Gerer l'annulation d'un retry en attente en cas
+#     de nouvelle execution amont, puis cloturer proprement
+#     l'etat retry apres la tentative 2.
+#
+#  🧱 PRINCIPE
+#     - nouvelle execution amont (helper non vide) pendant
+#       attente retry → annulation timer + reset état
+#     - fin de tentative 2 (helper repasse à vide, retry_pending
+#       déjà false, retry_count > 0) → cleanup complet
+#
+#  🔐 PROTECTION RACE CONDITION
+#     Les deux blocs choose sont mutuellement exclusifs par
+#     leurs conditions sur retry_pending :
+#       - Annulation : retry_pending == on ET helper non vide
+#       - Fin tentative 2 : retry_pending == off ET helper
+#         passe de non vide à vide
+#     Ces deux états ne peuvent pas être vrais simultanément
+#     car declenchement.yaml met retry_pending à false AVANT
+#     d'invoquer le script, rendant les conditions disjointes.
+#
+#  🔐 TRACABILITÉ TENTATIVE 2
+#     Corrélation ACK tentative 2 :
+#       ack2_status == 'applied'
+#       ET ack2_request_id != attempt1_id
+#     Garantit qu'on ne confond pas la conclusion de la
+#     tentative 1 avec celle de la tentative 2.
+#     attempt2_id est persisté dans input_text.ecs_retry_attempt2_id
+#     pour traçabilité post-mortem. Il n'est vidé que lors du cleanup
+#     de la prochaine exécution amont (CAS 1).
+#
+#  📦 DEPENDANCES
+#     - input_text.boiler_req_dhw_set_setpoint
+#     - input_boolean.ecs_retry_pending
+#     - input_number.ecs_retry_count
+#     - input_text.ecs_retry_attempt1_id
+#     - input_text.ecs_retry_attempt2_id
+#     - sensor.boiler_ack_dhw_set_setpoint_status
+#     - sensor.boiler_ack_dhw_set_setpoint_request_id
+#     - timer.ecs_retry
+# ==========================================================
+
+- id: "10250000000031"
+  alias: "ECS — Etat retry transactionnel"
+  description: >
+    Annule un retry ECS devenu obsolete et nettoie l'etat
+    apres la tentative 2.
+  mode: queued
+  max: 2
+
+  trigger:
+    - platform: state
+      entity_id: input_text.boiler_req_dhw_set_setpoint
+
+  action:
+    - choose:
+
+        # --------------------------------------------------
+        # CAS 1 : Nouvelle execution amont pendant attente retry
+        # Condition : retry_pending == on ET helper prend
+        # une nouvelle valeur non vide (nouvelle transaction)
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.ecs_retry_pending
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {{
+                  trigger.to_state is not none
+                  and trigger.to_state.state not in ['', 'unknown', 'unavailable']
+                }}
+          sequence:
+            - service: timer.cancel
+              target:
+                entity_id: timer.ecs_retry
+
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.ecs_retry_pending
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.ecs_retry_count
+              data:
+                value: 0
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.ecs_retry_attempt1_id
+              data:
+                value: ""
+
+            # attempt2_id vidé ici (pas au cleanup final)
+            # Il est persisté entre cleanup et prochaine exécution amont
+            # pour traçabilité post-mortem.
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.ecs_retry_attempt2_id
+              data:
+                value: ""
+
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  ECS retry annule — nouvelle execution amont detectee
+
+        # --------------------------------------------------
+        # CAS 2 : Fin de tentative 2 → cleanup final
+        # Condition : retry_pending == off (mis à false par
+        # declenchement.yaml avant invocation script)
+        # ET retry_count > 0 (tentative 2 réellement exécutée)
+        # ET helper passe de non vide à vide (fin de script)
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.ecs_retry_pending
+              state: "off"
+
+            - condition: numeric_state
+              entity_id: input_number.ecs_retry_count
+              above: 0
+
+            - condition: template
+              value_template: >
+                {{
+                  trigger.from_state is not none
+                  and trigger.from_state.state not in ['', 'unknown', 'unavailable']
+                  and trigger.to_state is not none
+                  and trigger.to_state.state == ''
+                }}
+          sequence:
+            # Corrélation ACK tentative 2 :
+            # ack2_request_id est lu depuis le sensor au moment du cleanup.
+            # On ne peut pas connaître ce request_id à l'avance (généré dans
+            # le script). La corrélation stricte est :
+            #   ack2_request_id != attempt1_id  → ce n'est pas un résidu T1
+            #   ack2_request_id non vide         → ACK réel, pas un état inconnu
+            #   ack2_status == 'applied'          → succès confirmé
+            # attempt2_id est écrit ici et CONSERVÉ pour traçabilité post-mortem.
+            # Il ne sera vidé que lors du cleanup de la prochaine exécution amont.
+            - variables:
+                ack2_request_id: "{{ states('sensor.boiler_ack_dhw_set_setpoint_request_id') }}"
+                ack2_status: "{{ states('sensor.boiler_ack_dhw_set_setpoint_status') }}"
+                attempt1_id: "{{ states('input_text.ecs_retry_attempt1_id') }}"
+
+            # Persister attempt2_id pour traçabilité post-mortem
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.ecs_retry_attempt2_id
+              data:
+                value: "{{ ack2_request_id }}"
+
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{
+                          ack2_status == 'applied'
+                          and ack2_request_id not in ['', 'unknown', 'unavailable']
+                          and ack2_request_id != attempt1_id
+                        }}
+                  sequence:
+                    - service: logbook.log
+                      data:
+                        name: "ECS"
+                        message: >
+                          Retry transactionnel reussi
+                          (attempt2_id={{ ack2_request_id }},
+                          attempt1_id={{ attempt1_id }})
+              default:
+                - service: system_log.write
+                  data:
+                    level: error
+                    message: >
+                      ECS retry epuise sans applied —
+                      attempt1_id={{ attempt1_id }},
+                      attempt2_id={{ ack2_request_id }},
+                      ack2_status={{ ack2_status }}
+
+            - service: timer.cancel
+              target:
+                entity_id: timer.ecs_retry
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.ecs_retry_count
+              data:
+                value: 0
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.ecs_retry_attempt1_id
+              data:
+                value: ""
+
+            # attempt2_id NON vidé ici — persisté pour traçabilité post-mortem.
+            # Il sera vidé lors du prochain CAS 1 (nouvelle exécution amont).

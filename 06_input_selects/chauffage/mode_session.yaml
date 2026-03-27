@@ -1,0 +1,24 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Chauffage mode session
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porter l’intention de session chauffage decidee
+#   juste avant l’appel du script executif.
+#
+# 🧱 Nature :
+#   - Memoire d’intention sessionnelle
+#   - Source officielle du retry chauffage
+#   - N’est pas une memoire de succes
+#
+# ⚠️ Regles :
+#   - Ecrit par la decision centrale avant execution
+#   - Jamais ecrit par le script executif
+#   - Valeurs bornees au vocabulaire d’execution
+# ==========================================================
+
+chauffage_mode_session:
+  name: Chauffage mode session
+  icon: mdi:radiator
+  options:
+    - confort
+    - reduite

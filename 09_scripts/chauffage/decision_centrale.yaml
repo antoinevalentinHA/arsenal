@@ -314,10 +314,34 @@ chauffage_decision_centrale:
             - condition: template
               value_template: "{{ not is_state('sensor.programme_chauffage', 'Confort') }}"
           sequence:
+
+            # ------------------------------------------------------
+            # Memoire d'intention sessionnelle chauffage
+            # ------------------------------------------------------
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.chauffage_mode_session
+              data:
+                option: "confort"
+
+            # ------------------------------------------------------
+            # Annulation retry chauffage en attente
+            # ------------------------------------------------------
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.chauffage_retry_pending
+
+            - service: timer.cancel
+              target:
+                entity_id: timer.chauffage_retry_timer
+
+            # ------------------------------------------------------
+            # Execution chauffage
+            # ------------------------------------------------------
             - alias: "Activer chauffage confort"
               service: script.chauffage_appliquer_consigne
               data:
-                consigne: confort
+                consigne: "{{ states('input_select.chauffage_mode_session') }}"
                 raison: "{{ reason }}"
 
             - alias: "Start anti-rebond"
@@ -334,9 +358,33 @@ chauffage_decision_centrale:
                 - condition: template
                   value_template: "{{ not is_state('sensor.programme_chauffage', 'Eco') }}"
               sequence:
+
+                # ------------------------------------------------------
+                # Memoire d'intention sessionnelle chauffage
+                # ------------------------------------------------------
+                - service: input_select.select_option
+                  target:
+                    entity_id: input_select.chauffage_mode_session
+                  data:
+                    option: "reduite"
+
+                # ------------------------------------------------------
+                # Annulation retry chauffage en attente
+                # ------------------------------------------------------
+                - service: input_boolean.turn_off
+                  target:
+                    entity_id: input_boolean.chauffage_retry_pending
+
+                - service: timer.cancel
+                  target:
+                    entity_id: timer.chauffage_retry_timer
+
+                # ------------------------------------------------------
+                # Execution chauffage
+                # ------------------------------------------------------
                 - service: script.chauffage_appliquer_consigne
                   data:
-                    consigne: reduite
+                    consigne: "{{ states('input_select.chauffage_mode_session') }}"
                     raison: "{{ reason }}"
 
         - alias: "Start anti-rebond"

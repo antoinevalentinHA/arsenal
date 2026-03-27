@@ -1,0 +1,55 @@
+# ==========================================================
+# 🧠 ARSENAL — DIAGNOSTIC STRUCTUREL
+#     Alarme — Cohérence structurelle du blocage armement
+#
+# RÔLE
+#   Exprimer uniquement l’incohérence structurelle entre :
+#     - input_boolean.blocage_armement_auto
+#     - timer.blocage_armement_auto
+#
+# NATURE
+#   - Diagnostic brut
+#   - Aucune correction
+#   - Aucune temporisation
+#   - Aucune notification
+#
+# SÉMANTIQUE
+#   - on  = incohérence structurelle détectée
+#   - off = cohérence structurelle
+#
+# CAS DÉTECTÉS
+#   - blocage on  + timer idle            -> blocage_orphelin
+#   - blocage off + timer active/paused   -> timer_orphelin
+# ==========================================================
+
+- binary_sensor:
+    - name: "Blocage armement incoherent"
+      unique_id: blocage_armement_incoherent
+
+      state: >-
+        {% set blocage = states('input_boolean.blocage_armement_auto') %}
+        {% set timer_state = states('timer.blocage_armement_auto') %}
+
+        {{
+          (blocage == 'on' and timer_state == 'idle') or
+          (blocage == 'off' and timer_state in ['active', 'paused'])
+        }}
+
+      attributes:
+        blocage: >-
+          {{ states('input_boolean.blocage_armement_auto') }}
+
+        timer_state: >-
+          {{ states('timer.blocage_armement_auto') }}
+
+        type_anomalie: >-
+          {% set blocage = states('input_boolean.blocage_armement_auto') %}
+          {% set timer_state = states('timer.blocage_armement_auto') %}
+
+          {% if blocage == 'on' and timer_state == 'idle' %}
+            blocage_orphelin
+          {% elif blocage == 'off' and timer_state in ['active', 'paused'] %}
+            timer_orphelin
+          {% else %}
+            aucune
+          {% endif %}

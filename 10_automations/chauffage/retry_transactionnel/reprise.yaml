@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Chauffage — Reprise retry apres retour bridge
+#
+#  ID : 10240000000023
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Demarrer la temporisation de retry chauffage apres
+#     retour du bridge online, si un retry est en attente.
+#
+#  🧱 PRINCIPE
+#     - aucun retry tant que le bridge est offline
+#     - temporisation 30 s apres retour online (portee par timer)
+#     - ne demarre pas si le timer est deja actif
+#       (cas bridge deja online au moment de l'armement)
+#
+#  🔐 CONDITION D'ARMEMENT
+#     retry_pending == on ET attempt1_id non vide suffisent
+#     pour qualifier un retry en attente.
+#     retry_count N'EST PAS utilisé ici : au retour bridge,
+#     retry_count est encore à 0 (il sera incrementé dans
+#     declenchement.yaml au moment de l'invocation effective).
+#
+#  📦 DEPENDANCES
+#     - binary_sensor.boiler_bridge_online
+#     - input_boolean.chauffage_retry_pending
+#     - input_text.chauffage_retry_attempt1_id
+#     - timer.chauffage_retry (duration: 30s en config)
+# ==========================================================
+
+- id: "10240000000023"
+  alias: "Chauffage — Reprise retry apres retour bridge"
+  description: >
+    Demarre le timer de retry chauffage apres retour online du bridge.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.boiler_bridge_online
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: input_boolean.chauffage_retry_pending
+      state: "on"
+
+    # retry_count non utilisé ici : il est encore à 0 au retour bridge
+    # (l'incrément a lieu dans declenchement.yaml, pas à l'armement).
+    # La combinaison retry_pending == on + attempt1_id non vide
+    # est la preuve suffisante d'un retry armé en attente.
+    - condition: template
+      value_template: >
+        {{ states('input_text.chauffage_retry_attempt1_id') | trim != '' }}
+
+    # Ne pas armer si le timer est déjà actif
+    # (bridge était déjà online au moment de l'armement)
+    - condition: template
+      value_template: >
+        {{ states('timer.chauffage_retry') not in ['active'] }}
+
+  action:
+    - service: system_log.write
+      data:
+        level: warning
+        message: >
+          Chauffage retry — bridge revenu online,
+          demarrage timer de stabilisation 30 s,
+          attempt1_id={{ states('input_text.chauffage_retry_attempt1_id') }}
+
+    - service: timer.start
+      target:
+        entity_id: timer.chauffage_retry

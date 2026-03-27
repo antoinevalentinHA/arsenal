@@ -1,0 +1,20 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN : ECS retry pending
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Indiquer qu’un retry ECS est en attente
+#   (timer arme ou retour bridge attendu).
+#
+# 🧱 Nature :
+#   - Helper technique d’orchestration
+#   - true  = retry en attente
+#   - false = aucun retry en attente
+#
+# ⚠️ Regle :
+#   Toute nouvelle execution amont doit remettre ce helper
+#   a false et annuler le timer actif.
+# ==========================================================
+
+ecs_retry_pending:
+  name: ECS retry pending
+  icon: mdi:reload-alert

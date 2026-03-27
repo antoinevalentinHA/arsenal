@@ -1,0 +1,14 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : Chauffage retry attempt2 id
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Conserver le request_id de la tentative 2 pour
+#   correlation post-mortem et tracabilite du retry.
+#
+# 🧱 Nature :
+#   - Helper technique d’orchestration
+# ==========================================================
+
+chauffage_retry_attempt2_id:
+  name: Chauffage retry attempt2 id
+  max: 64

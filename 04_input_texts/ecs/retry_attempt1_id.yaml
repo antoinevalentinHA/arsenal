@@ -1,0 +1,15 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : ECS retry attempt1 id
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Conserver le request_id de la tentative 1 pour
+#   correlation post-mortem et tracabilite du retry.
+#
+# 🧱 Nature :
+#   - Helper technique d’orchestration
+#   - jamais reutilise comme request_id de tentative 2
+# ==========================================================
+
+ecs_retry_attempt1_id:
+  name: ECS retry attempt1 id
+  max: 64

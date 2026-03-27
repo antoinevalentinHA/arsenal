@@ -1,0 +1,100 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Chauffage — Declenchement retry transactionnel
+#
+#  ID : 10240000000024
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Declencher la seconde tentative chauffage a
+#     l'expiration du timer de retry.
+#
+#  🧱 PRINCIPE
+#     - uniquement si retry_pending == true
+#     - uniquement si bridge online
+#     - uniquement avec l'intention sessionnelle actuelle
+#     - jamais de payload historique rejoue
+#     - retry_pending mis a false AVANT invocation du script
+#       pour que etat_retry ne confonde pas tentative 1 et 2
+#     - retry_count incrementé juste avant invocation du script
+#       sémantique : retry_count == nombre de tentatives 2
+#       réellement exécutées (pas juste armées)
+#
+#  📦 DEPENDANCES
+#     - timer.chauffage_retry
+#     - input_boolean.chauffage_retry_pending
+#     - input_number.chauffage_retry_count
+#     - binary_sensor.boiler_bridge_online
+#     - input_select.chauffage_mode_session
+#     - input_text.chauffage_retry_attempt2_id
+#       (vidé ici avant invocation, écrit par etat_retry au cleanup)
+# ==========================================================
+
+- id: "10240000000024"
+  alias: "Chauffage — Declenchement retry transactionnel"
+  description: >
+    Declenche la tentative 2 chauffage a l'expiration du timer.
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.chauffage_retry
+
+  condition:
+    # Vérification que le retry est toujours attendu
+    # (peut avoir été annulé par etat_retry si exécution amont intervenue)
+    - condition: state
+      entity_id: input_boolean.chauffage_retry_pending
+      state: "on"
+
+    # retry_count doit être 0 ici : l'incrément n'a pas encore eu lieu.
+    # Si retry_count > 0, une tentative 2 a déjà été exécutée → abandon.
+    - condition: numeric_state
+      entity_id: input_number.chauffage_retry_count
+      below: 1
+
+    - condition: state
+      entity_id: binary_sensor.boiler_bridge_online
+      state: "on"
+
+    - condition: template
+      value_template: >
+        {{ states('input_select.chauffage_mode_session') in ['confort', 'reduite'] }}
+
+  action:
+    - service: system_log.write
+      data:
+        level: warning
+        message: >
+          Chauffage retry declenche — tentative=2,
+          bridge={{ states('binary_sensor.boiler_bridge_online') }},
+          attempt1_id={{ states('input_text.chauffage_retry_attempt1_id') }}
+
+    # Mise à false AVANT l'invocation du script
+    # Garantit que etat_retry identifie correctement la tentative 2
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.chauffage_retry_pending
+
+    # Incrément du compteur ici — sémantique : tentative réellement exécutée
+    # Placé après turn_off pour que etat_retry CAS 2 (retry_pending == off
+    # ET retry_count > 0) soit cohérent au moment du cleanup.
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.chauffage_retry_count
+      data:
+        value: 1
+
+    # Vider attempt2_id avant l'invocation — etat_retry l'écrira
+    # au moment du cleanup avec la valeur lue dans le sensor ACK
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.chauffage_retry_attempt2_id
+      data:
+        value: ""
+
+    - service: script.chauffage_appliquer_consigne
+      data:
+        consigne: "{{ states('input_select.chauffage_mode_session') }}"
+        raison: "retry_transactionnel"

@@ -1,0 +1,25 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Chauffage retry count
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Compter le nombre de retries automatiques deja engages
+#   pour une commande chauffage transactionnelle.
+#
+# 🧱 Nature :
+#   - Helper technique d’orchestration
+#   - 0 = aucun retry effectue
+#   - 1 = un retry deja effectue
+#
+# ⚠️ Regle :
+#   - maximum contractuel : 1 retry
+#   - ne doit jamais etre incremente par le script executif
+# ==========================================================
+
+chauffage_retry_count:
+  name: Chauffage retry count
+  min: 0
+  max: 1
+  step: 1
+  unit_of_measurement: ""
+  mode: box
+  icon: mdi:counter

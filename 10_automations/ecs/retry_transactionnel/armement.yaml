@@ -1,0 +1,176 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     ECS — Armement retry transactionnel
+#
+#  ID : 10250000000028
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Armer un retry ECS apres une premiere tentative
+#     terminee en timeout, corrélé bridge ou local HA.
+#
+#  🧱 PRINCIPE
+#     - uniquement si timeout (ACK corrélé ou local HA)
+#     - uniquement si aucun retry deja en cours
+#     - jamais sur rejected / applied / aborted
+#     - jamais sur abort local (aucun ACK emis)
+#
+#  🔐 LOGIQUE timeout_kind
+#     Cas timeout corrélé :
+#       ack_request_id == attempt1_id ET ack_status == 'timeout'
+#     Cas timeout local HA :
+#       aucun ACK terminal corrélé reçu (ack_request_id != attempt1_id
+#       ou ack_status non terminal) ET ack_status != 'applied'
+#     Cas none (pas de retry) :
+#       conclusion propre — applied, rejected ou aborted
+#       sur bonne transaction
+#
+#  ⚠️ SI VALEUR HORS BORNES
+#     Si ecs_target_temp_session est hors bornes [10;60],
+#     l'armement est bloque et un log warning est emis.
+#
+#  🔒 GARANTIES
+#     - request_id de tentative 1 conserve pour traçabilité
+#     - timer direct si bridge online
+#     - attente du retour bridge sinon
+#     - durée timer portee par la definition de l'entite (30s)
+#     - compteur ecs_retry_count NON incrementé ici — incrementé dans 30
+#       au moment de l'invocation effective de la tentative 2
+#
+#  📦 DEPENDANCES
+#     - input_text.boiler_req_dhw_set_setpoint
+#     - input_number.ecs_retry_count
+#     - input_boolean.ecs_retry_pending
+#     - input_text.ecs_retry_attempt1_id
+#     - input_text.ecs_target_temp_session
+#     - sensor.boiler_ack_dhw_set_setpoint_request_id
+#     - sensor.boiler_ack_dhw_set_setpoint_status
+#     - binary_sensor.boiler_bridge_online
+#     - timer.ecs_retry (duration: 30s en config)
+# ==========================================================
+
+- id: "10250000000028"
+  alias: "ECS — Armement retry transactionnel"
+  description: >
+    Arme un retry ECS apres timeout de la tentative 1.
+    Distingue timeout corrélé et timeout local HA.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_text.boiler_req_dhw_set_setpoint
+      to: ""
+
+  condition:
+    # Le helper avait bien une valeur non vide — transaction réelle
+    - condition: template
+      value_template: >
+        {{
+          trigger.from_state is not none
+          and trigger.from_state.state not in ['', 'unknown', 'unavailable']
+        }}
+
+    # Pas encore de retry en cours
+    - condition: numeric_state
+      entity_id: input_number.ecs_retry_count
+      below: 1
+
+    - condition: state
+      entity_id: input_boolean.ecs_retry_pending
+      state: "off"
+
+  action:
+    - variables:
+        attempt1_id: "{{ trigger.from_state.state }}"
+        ack_request_id: "{{ states('sensor.boiler_ack_dhw_set_setpoint_request_id') }}"
+        ack_status: "{{ states('sensor.boiler_ack_dhw_set_setpoint_status') }}"
+        target_temp_raw: "{{ states('input_text.ecs_target_temp_session') }}"
+        target_temp_int: "{{ states('input_text.ecs_target_temp_session') | int(-1) }}"
+
+        # Qualification du type de timeout
+        # none = conclusion propre (applied/rejected/aborted sur la bonne transaction)
+        #        → pas de retry
+        # timeout_correle = ACK timeout corrélé reçu du bridge
+        # timeout_local_HA = aucun ACK terminal corrélé reçu dans le délai HA
+        #
+        # IMPORTANT : aborted est explicitement exclu (même branche que
+        # applied/rejected) — un aborted ne justifie jamais un retry automatique.
+        # IMPORTANT : ack_request_id != attempt1_id + ack_status == 'applied'
+        # → pas de retry car une autre transaction a réussi entretemps.
+        timeout_kind: >
+          {% if ack_request_id == attempt1_id and ack_status == 'timeout' %}
+            timeout_correle
+          {% elif ack_request_id == attempt1_id and ack_status in ['applied', 'rejected', 'aborted'] %}
+            none
+          {% elif ack_request_id != attempt1_id and ack_status == 'applied' %}
+            none
+          {% else %}
+            timeout_local_HA
+          {% endif %}
+
+    - choose:
+        # Timeout détecté mais valeur de session hors bornes ou indisponible
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  timeout_kind != 'none'
+                  and (
+                    target_temp_raw in ['unknown', 'unavailable', '']
+                    or target_temp_int < 10
+                    or target_temp_int > 60
+                  )
+                }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  ECS retry bloque — timeout={{ timeout_kind }},
+                  valeur session invalide ou hors bornes :
+                  {{ target_temp_raw }},
+                  attempt1_id={{ attempt1_id }}
+
+        # Timeout détecté + valeur de session valide → armement
+        # NB : ecs_retry_count n'est PAS incrémenté ici.
+        # Il sera incrémenté dans 10250000000030 (declenchement.yaml)
+        # juste avant l'invocation effective du script exécutif.
+        # Sémantique : ecs_retry_count == nombre de tentatives 2 réellement exécutées.
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  timeout_kind != 'none'
+                  and target_temp_raw not in ['unknown', 'unavailable', '']
+                  and target_temp_int >= 10
+                  and target_temp_int <= 60
+                }}
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.ecs_retry_pending
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.ecs_retry_attempt1_id
+              data:
+                value: "{{ attempt1_id }}"
+
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  ECS retry arme — type={{ timeout_kind }},
+                  attempt1_id={{ attempt1_id }},
+                  target={{ target_temp_int }}°C,
+                  bridge={{ states('binary_sensor.boiler_bridge_online') }}
+
+            - choose:
+                - conditions:
+                    - condition: state
+                      entity_id: binary_sensor.boiler_bridge_online
+                      state: "on"
+                  sequence:
+                    - service: timer.start
+                      target:
+                        entity_id: timer.ecs_retry
+              # Si bridge offline : pas de timer — reprise_online.yaml prend le relais

@@ -1,0 +1,20 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER : ECS retry
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Porter la temporisation avant retry automatique
+#   d’une commande ECS transactionnelle.
+#
+# 🧱 Nature :
+#   - Timer technique d’orchestration
+#   - 30 s de temporisation
+#
+# ⚠️ Regle :
+#   - timeout + bridge online  -> demarrage direct
+#   - timeout + bridge offline -> demarrage apres retour online
+# ==========================================================
+
+ecs_retry:
+  name: ECS retry
+  duration: "00:00:30"
+  restore: true

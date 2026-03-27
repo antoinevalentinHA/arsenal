@@ -1,40 +1,140 @@
 # ==========================================================
-# 🔥 SCRIPT ARSENAL — Chauffage : Appliquer pente
+# 🧠 ARSENAL — SCRIPT EXECUTIF SOUVERAIN
+#     Chauffage — Appliquer pente
+# ==========================================================
+#
+# 📌 STATUT
+#     SCRIPT EXECUTIF — CONTRAT OPPOSABLE
+#
+# 🎯 ROLE
+#     Appliquer la valeur de pente de la courbe de chauffe
+#     via le boiler bridge MQTT, dans un modele strictement
+#     transactionnel base sur ACK corrélé.
+#
+#     Ce script constitue une FRONTIERE D’EXECUTION locale
+#     pour la commande :
+#       boiler/command/heating/set_curve_slope
+#
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Appliquer la pente de la courbe de chauffe
-#   correspondant à la consigne Arsenal locale.
 #
-# 🧠 Nature du script :
-#   - Script STRICTEMENT executif
-#   - Aucune logique decisionnelle integree
-#   - Aucun declenchement direct par l’interface utilisateur
+# 🧱 NATURE
+#     - Script strictement executif
+#     - Aucune logique decisionnelle
+#     - Aucune priorisation
+#     - Aucun arbitrage
+#     - Aucun retry
 #
-# ⚙️ Comportement :
-#   - Lit la consigne cible depuis input_number.chauffage_pente_consigne
-#   - Genere un request_id UUID v4
-#   - Publie UNE commande MQTT vers boiler bridge
-#   - Attend une conclusion ACK corrélée :
-#       applied / rejected / timeout
-#   - Ne declare jamais de succes sans ACK corrélé = applied
+#     Il execute une valeur deja decidee et deja ecrite dans :
+#       input_number.chauffage_pente_consigne
 #
-# 🔒 Garanties :
-#   - Script executif pur
-#   - Aucune boucle de retry
+# ----------------------------------------------------------
 #
-# ⚠️ Important :
-#   - accepted n’est PAS un succes metier
-#   - seul un ACK corrélé = applied vaut succes d’execution
-#   - la conclusion transactionnelle est portee par
-#     sensor.boiler_ack_heating_set_curve_slope_result
-#   - le script n’ecrit aucune conclusion metier locale
+# 🔁 MODELE TRANSACTIONNEL
 #
-# 📌 Dependances :
-#   - input_number.chauffage_pente_consigne
-#   - input_text.boiler_req_heating_set_curve_slope
-#   - sensor.boiler_ack_heating_set_curve_slope_status
+#     1. Precheck bridge + valeur
+#     2. Generation d’un request_id unique
+#     3. Ancrage dans helper transactionnel
+#     4. Verification post-ecriture helper
+#     5. Publication MQTT
+#     6. Attente d’un ACK terminal corrélé
+#     7. Nettoyage terminal systematique
 #
-# 🗓️ Compatibilite : Home Assistant 2024.8+
+#     👉 Seul un ACK corrélé fait foi
+#
+# ----------------------------------------------------------
+#
+# 📡 ACK — REGLES OPPOSABLES
+#
+#     Etats terminaux :
+#       - applied
+#       - rejected
+#       - timeout
+#
+#     Etat transitoire ignore :
+#       - accepted
+#
+#     Invariants :
+#       - Aucun succes sans applied
+#       - Aucune inference par telemetrie
+#       - Aucune correlation approximative
+#       - Aucun request_id reutilise
+#
+# ----------------------------------------------------------
+#
+# 🔐 GARANTIES
+#
+#     - Aucune publication si bridge offline
+#     - Aucune publication si helper mal ancre
+#     - Aucun faux succes
+#     - Nettoyage transactionnel systematique
+#     - Aucune transaction fantome
+#
+# ----------------------------------------------------------
+#
+# ⚠️ PRECONDITIONS
+#
+#     - binary_sensor.boiler_bridge_online == on
+#     - input_number.chauffage_pente_consigne disponible
+#     - valeur numerique
+#     - valeur dans les bornes physiques [0.2 ; 3.5]
+#     - valeur conforme au pas 0.1
+#
+#     Sinon :
+#       → aborted immediat
+#
+# ----------------------------------------------------------
+#
+# 🧷 ANCRAGE TRANSACTIONNEL
+#
+#     Helper :
+#       input_text.boiler_req_heating_set_curve_slope
+#
+#     Invariants :
+#       - ecriture avant publication
+#       - verification immediate post-ecriture
+#       - cleanup obligatoire
+#
+# ----------------------------------------------------------
+#
+# 🔄 TIMEOUT
+#
+#     - Bridge : 10s
+#     - HA     : 15s
+#
+#     Cas :
+#       - ACK timeout corrélé → echec bridge confirme
+#       - Aucun ACK terminal corrélé → timeout local HA
+#
+#     Les deux cas sont distingues.
+#
+# ----------------------------------------------------------
+#
+# 🚫 INTERDICTIONS ABSOLUES
+#
+#     - Conclure sur accepted
+#     - Inferer depuis la telemetrie
+#     - Publier bridge offline
+#     - Reutiliser un request_id
+#     - Laisser un helper transactionnel sale
+#
+# ----------------------------------------------------------
+#
+# 📦 DEPENDANCES
+#
+#     - input_number.chauffage_pente_consigne
+#     - input_text.boiler_req_heating_set_curve_slope
+#     - sensor.boiler_ack_heating_set_curve_slope_status
+#     - sensor.boiler_ack_heating_set_curve_slope_request_id
+#     - sensor.boiler_ack_heating_set_curve_slope_reason
+#     - binary_sensor.boiler_bridge_online
+#
+# ----------------------------------------------------------
+#
+# 🗓️ COMPATIBILITE
+#
+#     - Home Assistant 2024.8+
+#     - arsenal-boiler-bridge v0.5+
+#
 # ==========================================================
 
 chauffage_appliquer_pente:
@@ -43,7 +143,7 @@ chauffage_appliquer_pente:
 
   sequence:
     # ======================================================
-    # 🧾 ETAPE 0 : VARIABLES TRANSACTIONNELLES
+    # ETAPE 0 : VARIABLES TRANSACTIONNELLES
     # ======================================================
     - variables:
         boiler_request_id: >
@@ -55,7 +155,7 @@ chauffage_appliquer_pente:
           {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
 
         boiler_expires_at: >
-          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+          {{ (as_timestamp(utcnow()) + 15) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
 
         boiler_pente_cible_raw: >
           {{ states('input_number.chauffage_pente_consigne') }}
@@ -64,25 +164,46 @@ chauffage_appliquer_pente:
           {{ states('input_number.chauffage_pente_consigne') | float(9999) }}
 
     # ======================================================
-    # 🚫 ETAPE 1 : VALIDATION ENTREE
+    # ETAPE 1 : PRECHECK
     # ======================================================
     - choose:
         - conditions:
             - condition: template
               value_template: >
-                {{ boiler_pente_cible_raw in ['unknown', 'unavailable', 'none', ''] }}
+                {{ states('binary_sensor.boiler_bridge_online') != 'on' }}
           sequence:
-            - stop: "Pente cible indisponible — aucun envoi boiler bridge"
+            - stop: "Bridge offline — aborted"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ boiler_pente_cible_raw in ['unknown', 'unavailable', ''] }}
+          sequence:
+            - stop: "Pente cible indisponible — aborted"
 
         - conditions:
             - condition: template
               value_template: >
                 {{ boiler_pente_cible == 9999 }}
           sequence:
-            - stop: "Pente cible invalide — aucun envoi boiler bridge"
+            - stop: "Pente cible non numerique — aborted"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ boiler_pente_cible < 0.2 or boiler_pente_cible > 3.5 }}
+          sequence:
+            - stop: "Pente cible hors bornes physiques — aborted"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ ((boiler_pente_cible * 10) | round(0)) != ((boiler_pente_cible * 10)) }}
+          sequence:
+            - stop: "Pente cible non conforme au pas 0.1 — aborted"
 
     # ======================================================
-    # 🧷 ETAPE 2 : ANCRAGE TRANSACTIONNEL
+    # ETAPE 2 : ANCRAGE TRANSACTIONNEL
     # ======================================================
     - service: input_text.set_value
       target:
@@ -91,7 +212,23 @@ chauffage_appliquer_pente:
         value: "{{ boiler_request_id }}"
 
     # ======================================================
-    # 📤 ETAPE 3 : ENVOI COMMANDE MQTT
+    # ETAPE 3 : VERIFICATION POST-ECRITURE
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('input_text.boiler_req_heating_set_curve_slope') != boiler_request_id }}
+          sequence:
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.boiler_req_heating_set_curve_slope
+              data:
+                value: ""
+            - stop: "Post-ecriture helper echouee — aborted"
+
+    # ======================================================
+    # ETAPE 4 : ENVOI COMMANDE MQTT
     # ======================================================
     - service: mqtt.publish
       data:
@@ -104,22 +241,76 @@ chauffage_appliquer_pente:
             "ts": "{{ boiler_ts }}",
             "expires_at": "{{ boiler_expires_at }}",
             "source": "arsenal",
-            "value": {{ boiler_pente_cible }}
+            "value": {{ boiler_pente_cible | round(1) }}
           }
 
     # ======================================================
-    # ⏳ ETAPE 4 : ATTENTE CONCLUSION ACK CORRELEE
+    # ETAPE 5 : ATTENTE CONCLUSION ACK CORRELEE
     # ======================================================
     - wait_template: >
         {{
           states('sensor.boiler_ack_heating_set_curve_slope_status') in ['applied', 'rejected', 'timeout']
           and states('sensor.boiler_ack_heating_set_curve_slope_request_id') == boiler_request_id
         }}
-      timeout: "00:00:20"
+      timeout: "00:00:15"
       continue_on_timeout: true
 
     # ======================================================
-    # 🧹 ETAPE 5 : LIBERATION TRANSACTIONNELLE
+    # ETAPE 6 : CONCLUSION TRANSACTIONNELLE
+    # ======================================================
+    - choose:
+        # SUCCESS
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  states('sensor.boiler_ack_heating_set_curve_slope_status') == 'applied'
+                  and states('sensor.boiler_ack_heating_set_curve_slope_request_id') == boiler_request_id
+                }}
+          sequence: []
+
+        # REJECTED
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  states('sensor.boiler_ack_heating_set_curve_slope_status') == 'rejected'
+                  and states('sensor.boiler_ack_heating_set_curve_slope_request_id') == boiler_request_id
+                }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  Chauffage pente rejected — reason:
+                  {{ states('sensor.boiler_ack_heating_set_curve_slope_reason') }}
+
+        # TIMEOUT BRIDGE CORRELE
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  states('sensor.boiler_ack_heating_set_curve_slope_status') == 'timeout'
+                  and states('sensor.boiler_ack_heating_set_curve_slope_request_id') == boiler_request_id
+                }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  Chauffage pente timeout corrélé — bridge:
+                  {{ states('binary_sensor.boiler_bridge_online') }}
+
+      default:
+        - service: system_log.write
+          data:
+            level: warning
+            message: >
+              Chauffage pente timeout local HA — bridge:
+              {{ states('binary_sensor.boiler_bridge_online') }}
+
+    # ======================================================
+    # ETAPE 7 : LIBERATION TRANSACTIONNELLE
     # ======================================================
     - service: input_text.set_value
       target:

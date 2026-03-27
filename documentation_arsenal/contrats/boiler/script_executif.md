@@ -1,10 +1,11 @@
 # ARSENAL — Contrat d'exécution transactionnelle · Script exécutif MQTT — Boiler Bridge
 
 **Composant :** `arsenal-ha`
-**Version :** v1.1
+**Version :** v1.3
 **Scope :** Script exécutif Home Assistant publiant une commande MQTT transactionnelle vers `arsenal-boiler-bridge`
+**Dernière mise à jour :** 2026-03-27
 **Dépendances :**
-- `arsenal-boiler-bridge` v0.4.3
+- `arsenal-boiler-bridge` v0.5
 - Contrat HA de consommation ACK v1.2
 
 ---
@@ -85,9 +86,23 @@ La valeur transmise au script doit déjà être conforme au contrat métier amon
 
 > Le script exécutif ne décide pas si la valeur est pertinente. Il exécute seulement une valeur déjà autorisée par la couche amont.
 
+À partir de `arsenal-boiler-bridge` v0.5, le bridge valide strictement les bornes physiques **et le pas** des paramètres de courbe avant toute émission boiler (voir §8.3 et §18). Une valeur hors bornes ou hors pas produit un ACK `rejected` avec une `reason` spécifique. Ces cas signalent un bug de pipeline Arsenal amont — ils ne doivent jamais se produire en production nominale.
+
+La couche décision Arsenal est contractuellement responsable d'émettre des valeurs conformes aux bornes et au pas physiques avant d'invoquer ce script.
+
 ### 4.4 Unicité locale
 
 Aucune seconde instance du même script ne doit manipuler le même `request_helper` simultanément.
+
+### 4.5 Synchronisation temporelle (NTP)
+
+Home Assistant et `arsenal-boiler-bridge` doivent être synchronisés sur une source NTP commune.
+
+**Dérive maximale tolérée : 2 secondes.**
+
+> Sans cette précondition, les champs `ts` et `expires_at` des payloads de commande peuvent être évalués de façon incohérente côté bridge, produisant des rejets `expired` erronés ou des fenêtres d'expiration imprévues. Ces dégradations sont silencieuses et difficiles à diagnostiquer.
+
+Cette précondition est une exigence d'infrastructure. Elle n'est pas vérifiable à chaque transaction — elle doit être garantie par la configuration système (NTP actif sur HA et sur le Pi).
 
 ---
 
@@ -105,6 +120,17 @@ Le script doit conclure par un statut terminal unique parmi : `applied`, `reject
 | `aborted` | Impossibilité de démarrer la transaction localement avant publication valide |
 
 > `aborted` est un statut local HA. Il ne remplace pas un ACK bridge — il décrit un échec d'entrée dans la transaction.
+
+**Table exhaustive des cas :**
+
+| Situation | Statut | Retry autorisé |
+|-----------|--------|----------------|
+| Bridge offline au départ de la transaction | `aborted` | Non — attendre retour bridge |
+| `request_helper` non vide au départ | `aborted` | Non — investiguer transaction précédente |
+| Vérification post-écriture helper échouée (§7.2) | `aborted` | Non — investiguer concurrence |
+| Échec de publication MQTT (erreur réseau ou broker) | `aborted` | Selon stratégie amont |
+| Aucun ACK terminal reçu dans `timeout_local` | `timeout` | Oui — si autorisé par stratégie amont (§12) |
+| Bridge passé offline pendant `pending` | `timeout` | **Non** — voir §10 |
 
 ---
 
@@ -155,6 +181,10 @@ Le script génère un `request_id` UUID v4 unique, l'écrit immédiatement dans 
 
 > **Ordre strict :** l'écriture du `request_id` dans `request_helper` doit être atomique et immédiate — avant toute publication MQTT. Cette contrainte garantit qu'aucun ACK ne peut être reçu sans contexte de corrélation actif, prévenant le cas — rare mais réel — d'un ACK ultra-rapide arrivant avant l'écriture du helper et ignoré faute de contexte.
 
+> **Vérification post-écriture obligatoire :** Home Assistant ne garantit pas l'atomicité des écritures de helpers au sens système. Une race condition reste possible en cas de mauvaise configuration ou d'instance concurrente. Le script **doit vérifier immédiatement après écriture** que `request_helper == request_id` attendu.
+>
+> Si la vérification échoue : statut `aborted`, aucune publication, nettoyage, sortie. Ne pas poursuivre avec un contexte de corrélation non fiable.
+
 ### 7.3 Publication
 
 Le script publie sur `topic_command` un payload conforme au contrat bridge :
@@ -171,6 +201,9 @@ Le script publie sur `topic_command` un payload conforme au contrat bridge :
 
 En JSON UTF-8 compact, conforme au format bridge.
 
+- QoS = 1 (au minimum)
+- retain = false
+
 ### 7.4 Attente
 
 Le script ouvre une attente bornée sur `topic_ack`, avec corrélation stricte sur `request_id`.
@@ -185,6 +218,8 @@ Le premier ACK terminal corrélé parmi `applied`, `rejected`, `timeout` clôtur
 
 Quel que soit le résultat terminal : suppression du `request_id` dans `request_helper`, nettoyage des états transitoires, retour à `idle`.
 
+Échec de nettoyage → journalisation obligatoire + état critique
+
 **Invariant : aucune transaction fantôme.**
 
 ---
@@ -195,6 +230,8 @@ Quel que soit le résultat terminal : suppression du `request_id` dans `request_
 
 Autorisé comme signal transitoire. Jamais terminal. Jamais propagé comme succès. Peut être ignoré purement et simplement.
 
+> **Note v0.5 :** `arsenal-boiler-bridge` v0.5 ne met plus `accepted` en cache de déduplication. Un duplicat MQTT reçu pendant la fenêtre d'exécution ne recevra donc plus `accepted` en replay — il ne recevra aucune réponse jusqu'à l'état final (`applied`, `rejected`, `timeout`). Ce comportement est conforme : `accepted` reste transitoire et le consommateur ne doit jamais l'attendre comme confirmation.
+
 ### 8.2 `applied`
 
 Actions obligatoires : conclure en succès, autoriser l'écriture mémoire souveraine aval, exposer le résultat terminal `applied`, nettoyer.
@@ -202,6 +239,19 @@ Actions obligatoires : conclure en succès, autoriser l'écriture mémoire souve
 ### 8.3 `rejected`
 
 Actions obligatoires : conclure en échec explicite, journaliser la `reason`, interdire toute écriture mémoire métier, nettoyer.
+
+À partir de `arsenal-boiler-bridge` v0.5, les commandes de courbe de chauffe (`set_curve_shift`, `set_curve_slope`) peuvent produire des `reason` granulaires. Leur sémantique diagnostique est normative :
+
+| `reason` | Origine | Diagnostic Arsenal |
+|----------|---------|--------------------|
+| `invalid_payload` | Payload malformé, champs manquants, types invalides | Bug de construction du payload côté HA |
+| `expired` | `expires_at` dépassé à la réception | Latence réseau ou horloge désynchronisée |
+| `invalid_type` | Valeur non numérique, NaN, Inf, bool | Bug de type côté couche décision Arsenal |
+| `invalid_value_out_of_range` | Valeur hors bornes physiques chaudière | Bug de validation côté couche décision Arsenal — valeur non bornée avant émission |
+| `invalid_step` | Valeur non conforme au pas physique (slope: 0.1 / shift: entier) | Bug de granularité côté couche décision Arsenal |
+| `bridge_unavailable` | Écriture vclient échouée | Problème bridge/vcontrold, non lié à la valeur |
+
+> `invalid_type`, `invalid_value_out_of_range` et `invalid_step` signalent **invariablement un bug de pipeline Arsenal amont**. Ils ne doivent jamais apparaître en production nominale. Leur occurrence doit déclencher une investigation de la couche décision émettrice, et non un retry.
 
 ### 8.4 `timeout`
 
@@ -232,6 +282,17 @@ Si `boiler/bridge/online` passe à `offline` pendant `pending` :
 - le script conclut en `timeout` fonctionnel,
 - tout ACK ultérieur est ignoré.
 
+**Distinction normative : incertitude vs interruption certaine**
+
+| Situation | Nature réelle | Statut | Retry |
+|-----------|--------------|--------|-------|
+| Aucun ACK reçu dans le délai, bridge toujours online | Incertitude — état boiler inconnu | `timeout` | Autorisé si stratégie amont le prévoit |
+| Bridge passé offline pendant `pending` | Interruption certaine — commande non exécutée | `timeout` | **Interdit** |
+
+> Ces deux cas produisent le même statut terminal `timeout`, mais leur sémantique opérationnelle est différente. Le script **doit exposer l'état du bridge au moment de la clôture** à la couche amont (via helper ou contexte de résultat) pour lui permettre de distinguer les deux situations et d'arbitrer correctement le retry.
+
+**Règle normative :** `timeout` avec bridge offline au moment de la clôture → **retry interdit**. La couche amont est responsable de lire l'état bridge avant de décider un éventuel retry.
+
 ---
 
 ## 11. ACK tardifs, dupliqués, résiduels
@@ -248,11 +309,21 @@ Le script doit ignorer strictement :
 
 Le script exécutif ne décide pas librement du retry.
 
-**Autorisé :** uniquement sur `timeout`, et seulement si une stratégie métier amont l'autorise explicitement.
+**Autorisé :** uniquement sur `timeout` avec bridge online au moment de la clôture, et seulement si une stratégie métier amont l'autorise explicitement.
 
-**Interdit :** retry sur `rejected`, retry infini, retry avec réutilisation du même `request_id`.
+**Interdit :**
+- retry sur `rejected` — le bridge a refusé explicitement, retenter la même valeur produirait le même résultat
+- retry sur `timeout` avec bridge offline au moment de la clôture (§10)
+- retry infini ou non borné
+- retry avec réutilisation du même `request_id`
 
-Le script expose `timeout` comme résultat — c'est la couche amont qui arbitre.
+**Règle normative — nouveau `request_id` obligatoire :**
+
+> Tout retry doit générer un **nouveau `request_id` UUID v4**. La réutilisation d'un `request_id` existant est strictement interdite.
+>
+> Le bridge maintient un cache de déduplication par `request_id`. Réutiliser un identifiant déjà traité peut produire un replay de l'ACK précédent (potentiellement `timeout` ou `rejected`) sans nouvelle tentative d'écriture boiler. Le comportement résultant est imprévisible et non conforme.
+
+Le script expose `timeout` comme résultat — c'est la couche amont qui arbitre, en tenant compte de l'état bridge (§10).
 
 ---
 
@@ -306,6 +377,9 @@ Aucune journalisation verbeuse pas-à-pas n'est conforme.
 | 15.4 | **Vérité d'exécution** — aucune exécution reconnue sans `applied` corrélé |
 | 15.5 | **Pas d'inférence** — le script n'utilise jamais la télémétrie comme preuve d'exécution |
 | 15.6 | **Pas de concurrence sauvage** — deux transactions ne partagent jamais simultanément le même helper de corrélation |
+| 15.7 | **Vérification post-écriture** — le script vérifie que `request_helper == request_id` immédiatement après écriture ; échec → `aborted` sans publication |
+| 15.8 | **Synchronisation temporelle** — HA et boiler bridge sont synchronisés NTP avec une dérive < 2s ; sans cette garantie, les rejets `expired` peuvent être erronés et indétectables |
+| 15.9 | **Retry avec nouveau `request_id`** — tout retry génère un nouvel UUID v4 ; la réutilisation d'un `request_id` est strictement interdite |
 
 ---
 
@@ -331,6 +405,25 @@ Aucune journalisation verbeuse pas-à-pas n'est conforme.
 > - il ne reconnaît le succès qu'en présence de `applied`,
 > - il nettoie systématiquement sa corrélation locale,
 > - il ignore tout signal non terminal, tardif, dupliqué ou hors ligne.
+
+---
+
+## 18. Bornes et pas physiques — paramètres de courbe (v0.5)
+
+Ces valeurs sont normatives et opposables à toute couche émettrice Arsenal.  
+Source : `CONTRAT_MQTT.md` §11 / `arsenal-boiler-bridge` v0.5.
+
+| Paramètre | Commande | Bornes | Pas | Type émis |
+|-----------|----------|--------|-----|-----------|
+| Pente courbe | `set_curve_slope` | [0.2 ; 3.5] | 0.1 | float (`round(1)`) |
+| Parallèle courbe | `set_curve_shift` | [-13 ; 40] | 1 | int (entier strict) |
+
+Toute valeur transmise à ce script pour ces commandes doit satisfaire simultanément :
+- appartenir aux bornes ci-dessus,
+- être conforme au pas (multiple exact de 0.1 pour la pente, entier pour le parallèle),
+- être du type attendu.
+
+Un échec sur l'un de ces critères produit un ACK `rejected` avec `reason` `invalid_value_out_of_range` ou `invalid_step` (voir §8.3). Ces cas sont des bugs Arsenal, pas des comportements bridge.
 
 ---
 

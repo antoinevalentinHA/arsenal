@@ -1,46 +1,160 @@
 # ==========================================================
-#  🧠 ARSENAL — SCRIPT :
-#     ECS – Appliquer consigne boiler bridge
+# 🧠 ARSENAL — SCRIPT EXECUTIF SOUVERAIN
+#     ECS — Appliquer consigne boiler bridge
+# ==========================================================
+#
+# 📌 STATUT
+#     SCRIPT EXECUTIF — CONTRAT OPPOSABLE
+#
+# 🎯 ROLE
+#     Appliquer une consigne ECS via le boiler bridge MQTT,
+#     dans un modele strictement transactionnel base sur ACK
+#     corrélé.
+#
+#     Ce script constitue une FRONTIERE D’EXECUTION locale
+#     pour la commande :
+#       boiler/command/dhw/set_setpoint
+#
 # ----------------------------------------------------------
-#  🎯 ROLE
-#     Script strictement executif charge d'appliquer
-#     une consigne ECS via boiler bridge.
 #
-#     Il :
-#       - recoit une valeur cible
-#       - valide la consigne demandee
-#       - verifie si la consigne est deja appliquee
-#       - genere une transaction si necessaire
-#       - publie la commande MQTT
-#       - attend une conclusion ACK correlee
-#       - nettoie le helper de correlation
+# 🧱 NATURE
+#     - Script strictement executif
+#     - Aucune logique decisionnelle
+#     - Aucun arbitrage
+#     - Aucun retry
+#     - Aucune notification
 #
-#  🧱 PRINCIPE ARSENAL
-#     - aucune decision metier
-#     - aucune notification
-#     - aucune gestion d'etat global ECS
-#     - resultat exploitable par l'appelant via ACK
-#     - no-op si la consigne reelle est deja conforme
+#     Il execute une valeur deja decidee par la couche amont.
 #
-#  ⚠️ HYPOTHESES V1
-#     - usage sequentiel et maitrise
-#     - aucune protection contre les appels concurrents
-#     - aucune verification d'occupation prealable du helper
-#     - la correlation ACK expose un request_id lisible
+# ----------------------------------------------------------
 #
-#  ⏱️ PARAMETRES TEMPORELS V1
-#     - TTL commande : 30 s
-#     - attente ACK  : 20 s
+# 🔁 MODELE TRANSACTIONNEL
 #
-#  ✅ CONTRAINTE
-#     - mode: single
+#     1. Precheck bridge + helper + valeur
+#     2. No-op local si consigne deja conforme
+#     3. Generation d’un request_id unique
+#     4. Ancrage dans helper transactionnel
+#     5. Verification post-ecriture helper
+#     6. Publication MQTT
+#     7. Attente d’un ACK terminal corrélé
+#     8. Nettoyage terminal systematique
+#
+#     👉 Seul un ACK corrélé fait foi
+#
+# ----------------------------------------------------------
+#
+# 📡 ACK — REGLES OPPOSABLES
+#
+#     Etats terminaux :
+#       - applied
+#       - rejected
+#       - timeout
+#
+#     Etat transitoire ignore :
+#       - accepted
+#
+#     Invariants :
+#       - Aucun succes sans applied
+#       - Aucune inference de succes par telemetrie
+#       - Aucune correlation approximative
+#       - Aucun request_id reutilise
+#
+# ----------------------------------------------------------
+#
+# 🔐 GARANTIES
+#
+#     - Aucune publication si bridge offline
+#     - Aucune publication si helper transactionnel non fiable
+#     - Aucune publication si helper residuel non nettoye
+#     - Aucun faux succes
+#     - Nettoyage transactionnel systematique
+#     - Aucune transaction fantome
+#
+# ----------------------------------------------------------
+#
+# ⚠️ PRECONDITIONS
+#
+#     - binary_sensor.boiler_bridge_online == on
+#     - input_text.boiler_req_dhw_set_setpoint vide
+#     - target_temp numerique
+#     - target_temp dans les bornes physiques [10 ; 60]
+#
+#     Sinon :
+#       → aborted immediat
+#
+# ----------------------------------------------------------
+#
+# 🧷 ANCRAGE TRANSACTIONNEL
+#
+#     Helper :
+#       input_text.boiler_req_dhw_set_setpoint
+#
+#     Invariants :
+#       - ecriture avant publication
+#       - verification immediate post-ecriture
+#       - cleanup obligatoire
+#
+# ----------------------------------------------------------
+#
+# 🔄 TIMEOUT
+#
+#     - Bridge : 10s
+#     - HA     : 15s
+#
+#     Cas :
+#       - ACK timeout corrélé → echec bridge confirme
+#       - Aucun ACK terminal corrélé → timeout local HA
+#
+#     Les deux cas sont distingues.
+#
+# ----------------------------------------------------------
+#
+# 🧪 NO-OP LOCAL
+#
+#     Si la consigne ECS reelle lue est deja egale a la
+#     consigne cible, le script peut sortir sans transaction.
+#
+#     ⚠️ Cette optimisation locale :
+#       - evite une commande inutile
+#       - ne constitue pas une preuve d’execution passee
+#       - ne remplace jamais un ACK corrélé
+#
+# ----------------------------------------------------------
+#
+# 🚫 INTERDICTIONS ABSOLUES
+#
+#     - Conclure sur accepted
+#     - Inferer un succes depuis la telemetrie
+#     - Publier bridge offline
+#     - Publier avec helper sale
+#     - Reutiliser un request_id
+#     - Laisser un helper transactionnel sale
+#
+# ----------------------------------------------------------
+#
+# 📦 DEPENDANCES
+#
+#     - sensor.boiler_dhw_setpoint
+#     - input_text.boiler_req_dhw_set_setpoint
+#     - sensor.boiler_ack_dhw_set_setpoint_status
+#     - sensor.boiler_ack_dhw_set_setpoint_request_id
+#     - sensor.boiler_ack_dhw_set_setpoint_reason
+#     - binary_sensor.boiler_bridge_online
+#
+# ----------------------------------------------------------
+#
+# 🗓️ COMPATIBILITE
+#
+#     - Home Assistant 2024.8+
+#     - arsenal-boiler-bridge v0.5+
+#
 # ==========================================================
 
 ecs_appliquer_consigne_bridge:
   alias: "ECS – Appliquer consigne boiler bridge"
   description: >
-    Applique une consigne ECS via boiler bridge, attend une conclusion ACK
-    correlee, puis nettoie le helper de correlation. Script strictement executif.
+    Applique une consigne ECS via boiler bridge selon un modele
+    strictement transactionnel base sur ACK corrélé.
   mode: single
 
   fields:
@@ -50,32 +164,50 @@ ecs_appliquer_consigne_bridge:
       required: true
       selector:
         number:
-          min: 0
-          max: 80
+          min: 10
+          max: 60
           step: 1
           mode: box
           unit_of_measurement: "°C"
 
   sequence:
+    # ======================================================
+    # ETAPE 0 : VARIABLES TRANSACTIONNELLES
+    # ======================================================
     - variables:
         effective_target_temp: "{{ target_temp | int(none) }}"
 
     # ======================================================
-    # 🛑 Rejet si consigne demandee invalide
+    # ETAPE 1 : PRECHECK
     # ======================================================
-    - if:
-        - condition: template
-          value_template: >
-            {{
-              effective_target_temp is none
-              or effective_target_temp < 0
-              or effective_target_temp > 80
-            }}
-      then:
-        - stop: "Consigne ECS invalide"
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('binary_sensor.boiler_bridge_online') != 'on' }}
+          sequence:
+            - stop: "Bridge offline — aborted"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('input_text.boiler_req_dhw_set_setpoint') | trim != '' }}
+          sequence:
+            - stop: "Helper transactionnel residuel non vide — aborted"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  effective_target_temp is none
+                  or effective_target_temp < 10
+                  or effective_target_temp > 60
+                }}
+          sequence:
+            - stop: "Consigne ECS invalide — aborted"
 
     # ======================================================
-    # 🛑 No-op si la consigne est deja conforme
+    # ETAPE 2 : NO-OP LOCAL SI DEJA CONFORME
     # ======================================================
     - if:
         - condition: template
@@ -85,20 +217,25 @@ ecs_appliquer_consigne_bridge:
               and (states('sensor.boiler_dhw_setpoint') | int) == effective_target_temp
             }}
       then:
-        - stop: "Consigne ECS deja appliquee"
+        - stop: "Consigne ECS deja appliquee — no-op local"
 
+    # ======================================================
+    # ETAPE 3 : VARIABLES D'EMISSION
+    # ======================================================
     - variables:
         boiler_request_id: >
           {% set h = '0123456789abcdef' %}
           {% set v = '89ab' %}
           {{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}-4{{ h|random }}{{ h|random }}{{ h|random }}-{{ v|random }}{{ h|random }}{{ h|random }}{{ h|random }}-{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}{{ h|random }}
+
         boiler_ts: >
           {{ as_timestamp(utcnow()) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+
         boiler_expires_at: >
-          {{ (as_timestamp(utcnow()) + 30) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
+          {{ (as_timestamp(utcnow()) + 15) | timestamp_custom('%Y-%m-%dT%H:%M:%SZ', false) }}
 
     # ======================================================
-    # 🧾 Correlation prealable
+    # ETAPE 4 : ANCRAGE TRANSACTIONNEL
     # ======================================================
     - service: input_text.set_value
       target:
@@ -107,7 +244,23 @@ ecs_appliquer_consigne_bridge:
         value: "{{ boiler_request_id }}"
 
     # ======================================================
-    # 📤 Publication commande boiler bridge
+    # ETAPE 5 : VERIFICATION POST-ECRITURE
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('input_text.boiler_req_dhw_set_setpoint') != boiler_request_id }}
+          sequence:
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.boiler_req_dhw_set_setpoint
+              data:
+                value: ""
+            - stop: "Post-ecriture helper echouee — aborted"
+
+    # ======================================================
+    # ETAPE 6 : PUBLICATION MQTT
     # ======================================================
     - service: mqtt.publish
       data:
@@ -120,22 +273,76 @@ ecs_appliquer_consigne_bridge:
             "ts": "{{ boiler_ts }}",
             "expires_at": "{{ boiler_expires_at }}",
             "source": "arsenal",
-            "value": {{ effective_target_temp }}
+            "value": {{ effective_target_temp | int }}
           }
 
     # ======================================================
-    # ⏳ Attente conclusion ACK corrélée
+    # ETAPE 7 : ATTENTE CONCLUSION ACK CORRELEE
     # ======================================================
     - wait_template: >
         {{
           states('sensor.boiler_ack_dhw_set_setpoint_status') in ['applied', 'rejected', 'timeout']
           and states('sensor.boiler_ack_dhw_set_setpoint_request_id') == boiler_request_id
         }}
-      timeout: "00:00:20"
+      timeout: "00:00:15"
       continue_on_timeout: true
 
     # ======================================================
-    # 🧹 Nettoyage transactionnel
+    # ETAPE 8 : CONCLUSION TRANSACTIONNELLE
+    # ======================================================
+    - choose:
+        # SUCCESS
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  states('sensor.boiler_ack_dhw_set_setpoint_status') == 'applied'
+                  and states('sensor.boiler_ack_dhw_set_setpoint_request_id') == boiler_request_id
+                }}
+          sequence: []
+
+        # REJECTED
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  states('sensor.boiler_ack_dhw_set_setpoint_status') == 'rejected'
+                  and states('sensor.boiler_ack_dhw_set_setpoint_request_id') == boiler_request_id
+                }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  ECS rejected — reason:
+                  {{ states('sensor.boiler_ack_dhw_set_setpoint_reason') }}
+
+        # TIMEOUT BRIDGE CORRELE
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  states('sensor.boiler_ack_dhw_set_setpoint_status') == 'timeout'
+                  and states('sensor.boiler_ack_dhw_set_setpoint_request_id') == boiler_request_id
+                }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  ECS timeout corrélé — bridge:
+                  {{ states('binary_sensor.boiler_bridge_online') }}
+
+      default:
+        - service: system_log.write
+          data:
+            level: warning
+            message: >
+              ECS timeout local HA — bridge:
+              {{ states('binary_sensor.boiler_bridge_online') }}
+
+    # ======================================================
+    # ETAPE 9 : LIBERATION TRANSACTIONNELLE
     # ======================================================
     - service: input_text.set_value
       target:

@@ -5,95 +5,81 @@
 # ID : 10020000000034
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Détecter et corriger toute incohérence entre :
+#   Corriger toute incohérence structurelle entre :
 #     - input_boolean.blocage_armement_auto
 #     - timer.blocage_armement_auto
 #
 # 🧩 PRINCIPE
 #   - Surveillance strictement événementielle
-#   - Laisse le chemin nominal se stabiliser
-#   - Détecte les états impossibles
-#   - Corrige de manière minimale et sûre
+#   - Déclenchement uniquement sur anomalie stabilisée
+#   - Stabilisation portée par le trigger (500 ms)
+#   - Consomme un diagnostic structurel dédié
+#   - Corrige de manière minimale et déterministe
 #
 # 🛡️ STATUT
 #   - Mécanisme de sécurité uniquement
 #   - Ne constitue pas un chemin nominal
 #
-# ⚠️ INCOHÉRENCES SURVEILLÉES
-#   - Blocage ON + timer idle     → blocage orphelin
-#   - Blocage OFF + timer actif   → timer orphelin
+# ⚠️ INCOHÉRENCES CORRIGÉES
+#   - Blocage ON  + timer idle              → blocage orphelin
+#   - Blocage OFF + timer actif ou en pause → timer orphelin
+#
+# ⚙️ MODE D'EXÉCUTION
+#   - mode: single
+#   - Une anomalie stabilisée déclenche une unique correction
+#   - Aucun restart, aucune file d'attente, aucun backlog
 #
 # ==========================================================
 
 - id: "10020000000034"
   alias: "Alarme - Watchdog cohérence blocage"
-  mode: restart
+  mode: single
 
   trigger:
     - platform: state
-      entity_id:
-        - input_boolean.blocage_armement_auto
-        - timer.blocage_armement_auto
+      entity_id: binary_sensor.blocage_armement_incoherent
+      from: "off"
+      to: "on"
+      for:
+        milliseconds: 500
 
   action:
-
-    # 🕒 Laisser le système nominal se stabiliser
-    - delay:
-        milliseconds: 300
-
-    # 🔍 Réévaluation cohérente des états
     - variables:
-        blocage: "{{ states('input_boolean.blocage_armement_auto') }}"
-        timer_state: "{{ states('timer.blocage_armement_auto') }}"
-        incoherence: >
-          {{
-            (blocage == 'on' and timer_state == 'idle') or
-            (blocage == 'off' and timer_state in ['active', 'paused'])
-          }}
+        blocage: "{{ state_attr('binary_sensor.blocage_armement_incoherent', 'blocage') }}"
+        timer_state: "{{ state_attr('binary_sensor.blocage_armement_incoherent', 'timer_state') }}"
+        type_anomalie: "{{ state_attr('binary_sensor.blocage_armement_incoherent', 'type_anomalie') }}"
 
-    # 🚫 Sortie immédiate si tout est cohérent
-    - condition: template
-      value_template: "{{ incoherence }}"
-
-    # 🔔 Notification anomalie contextualisée
-    - action: script.notification_envoyer_avance
-      data:
-        cible: input_text.telephone_antoine_notify
-        titre: "⚠️ Anomalie blocage alarme"
-        message: >
-          Incohérence détectée entre le blocage d'armement et son timer.
-
-          **Type :**
-          {% if blocage == 'on' and timer_state == 'idle' %}
-          Blocage orphelin (timer absent)
-          {% else %}
-          Timer orphelin (blocage absent)
-          {% endif %}
-
-          **Blocage :** {{ blocage }}
-          **Timer :** {{ timer_state }}
-
-          Correction automatique en cours.
-
-    # 🔧 Correction minimale et déterministe
     - choose:
-
-        # Cas 1 : blocage ON mais timer absent → libération
         - conditions:
             - condition: template
-              value_template: >
-                {{ blocage == 'on' and timer_state == 'idle' }}
+              value_template: "{{ type_anomalie == 'blocage_orphelin' }}"
           sequence:
             - action: input_boolean.turn_off
               target:
                 entity_id: input_boolean.blocage_armement_auto
 
-        # Cas 2 : timer actif sans blocage → nettoyage timer
+            - action: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "⚠️ Anomalie blocage alarme"
+                message: >-
+                  Incohérence détectée — blocage_orphelin.
+                  Blocage : {{ blocage }} | Timer : {{ timer_state }}.
+                  Correction automatique appliquée.
+
         - conditions:
             - condition: template
-              value_template: >
-                {{ blocage == 'off' and timer_state in ['active', 'paused'] }}
+              value_template: "{{ type_anomalie == 'timer_orphelin' }}"
           sequence:
             - action: timer.cancel
               target:
                 entity_id: timer.blocage_armement_auto
+
+            - action: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "⚠️ Anomalie blocage alarme"
+                message: >-
+                  Incohérence détectée — timer_orphelin.
+                  Blocage : {{ blocage }} | Timer : {{ timer_state }}.
+                  Correction automatique appliquée.

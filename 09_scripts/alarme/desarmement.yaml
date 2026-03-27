@@ -1,56 +1,57 @@
 # ==========================================================
 # 🔓 SCRIPT — Alarme : Désarmement unifié
 # ----------------------------------------------------------
-# 🎯 Rôle :
+# 🎯 RÔLE :
 #   Appliquer un désarmement COMPLET, SÛR et CENTRALISÉ
 #   de l’alarme à la suite d’une décision validée
 #   (clavier, badge, présence, automatisme).
 #
-# 🧱 Responsabilité :
+# 🧱 RESPONSABILITÉ :
 #   Ce script est un APPLICATEUR D’ACTION.
-#   Il exécute physiquement le désarmement et ses effets
-#   de sécurité associés.
+#   Il exécute physiquement le désarmement réel
+#   et ses effets immédiats de sécurité.
 #
-# 🛑 Actions garanties :
+# 🛑 ACTIONS GARANTIES :
 #   - Arrêt IMMÉDIAT de toute sirène, sans condition
 #   - Désarmement réel uniquement si l’alarme est armée
-#   - Blocage temporaire de l’armement automatique
 #   - Confirmation sonore (si hors mode test)
 #   - Notification utilisateur contextualisée
 #
-# 🚫 Ce script NE FAIT PAS :
+# 🚫 CE SCRIPT NE FAIT PAS :
 #   - Ne calcule AUCUNE décision
 #   - Ne détermine PAS s’il FAUT désarmer
 #   - Ne lit AUCUNE logique métier complexe
 #   - Ne remplace PAS le cerveau décisionnel
+#   - N’active PAS directement le blocage d’armement automatique
+#   - Ne gère AUCUNE temporalité de blocage
 #
-# 🧠 Séparation Arsenal stricte :
-#   - Décision → `script.alarme_decision_centrale`
-#   - Application → CE SCRIPT
+# 🧠 SÉPARATION ARSENAL STRICTE :
+#   - Décision     → `script.alarme_decision_centrale`
+#   - Application  → CE SCRIPT
+#   - Blocage auto → automatisations dédiées de blocage
 #   - Action sonore → scripts sirène dédiés
 #
-# 🔐 Sécurité intégrée :
-#   - Le blocage d’armement automatique empêche
-#     toute ré-activation immédiate non désirée
-#   - La temporalité du blocage est externalisée
-#     via un timer dédié (contrat 51)
+# 🔐 SÉCURITÉ INTÉGRÉE :
+#   - Le désarmement réel reste prioritaire sur toute logique annexe
+#   - Le blocage d’armement automatique, s’il est requis,
+#     est géré hors de ce script par le mécanisme contractuel dédié
 #
-# 🧪 Propriétés Arsenal :
+# 🧪 PROPRIÉTÉS ARSENAL :
 #   - Idempotent (désarmé ≠ redésarmé)
 #   - Sans effet de bord hors alarme
 #   - Tolérant à l’état réel (sirène stoppée quoi qu’il arrive)
 #
-# 📊 Type :
+# 📊 TYPE :
 #   Script applicatif critique (désarmement sécurisé)
 #
-# 📍 Entité :
+# 📍 ENTITÉ :
 #   script.alarme_desarmer
 #
-# 🧠 Sémantique Arsenal :
+# 🧠 SÉMANTIQUE ARSENAL :
 #   - Désarmer = action physique irréversible immédiate
 #   - Le silence de la sirène est prioritaire sur toute logique
 #
-# ✅ Architecture :
+# ✅ ARCHITECTURE :
 #   Arsenal v6+
 #   Home Assistant 2024.8+
 # ==========================================================
@@ -58,8 +59,9 @@
 alarme_desarmer:
   alias: Alarme - Désarmement unifié
   description: >
-    Désarme l’alarme proprement : coupe la sirène si active, coupe tout délai en cours,
-    active le blocage d’armement automatique (durée gérée par timer dédié), et envoie une notification/log.
+    Désarme l’alarme proprement : coupe la sirène si active,
+    applique le désarmement réel si nécessaire,
+    puis envoie une notification/log.
   mode: single
   fields:
     origine:
@@ -94,11 +96,6 @@ alarme_desarmer:
               state: 'off'
           sequence:
             - action: script.sirene_bip_bip
-
-    # 4) Active le blocage d'armement auto
-    - action: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.blocage_armement_auto
 
     # 5) Notification
     - action: script.notification_envoyer
