@@ -42,10 +42,13 @@ Ces entités sont requises soit par une fonctionnalité native active de Home As
 | Long-term statistics | Tout capteur `state_class: measurement / total / total_increasing` **effectivement utilisé** | HA compile les stats depuis le recorder |
 | `history_stats` | L'entité **source** de chaque helper history_stats actif | Sans historique de la source, le helper renvoie 0 ou N/A |
 | `statistics_graph` / `statistics` cards | Entités alimentant ces cards **effectivement déployées** | Dépendance directe aux short-term statistics |
+| `platform: statistics` | L'entité **source** de chaque capteur `platform: statistics` actif | Sans historique de la source, la fenêtre glissante ne peut pas être reconstruite après redémarrage ou purge — le capteur statistics opère sur une fenêtre tronquée sans signal explicite |
 
 **Règle** : ces entités sont listées explicitement dans la configuration, taguées `# OBLIGATOIRE — contrainte HA`, et non soumises au filtre discrétionnaire.
 
 > ⚠️ La Population A ne peut pas s'étendre librement. L'appartenance à cette population doit rester exceptionnelle, justifiée par dépendance réelle et active, et ne peut pas servir à contourner les exigences de la Population B. Une entité compatible avec une contrainte HA mais non utilisée reste en Population B.
+
+> ⚠️ `platform: statistics` et `history_stats` relèvent de la même catégorie de dépendance recorder : dans les deux cas, la fonctionnalité dépend de l'historique enregistré de l'entité source. L'absence d'enregistrement de la source dégrade silencieusement la fenêtre temporelle sans erreur visible.
 
 ---
 

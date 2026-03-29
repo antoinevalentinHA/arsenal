@@ -1,0 +1,79 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Présence – Activation High Accuracy sur approche sécurité
+#
+# ID : 10210000000007
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Activer le mode High Accuracy lors de l’entrée dans
+#   zone.approche_securite sous alarme armée, pour la
+#   personne déclenchante uniquement.
+#
+# 🧩 PRINCIPE
+#   - Déclenchement sur passage à on d’un capteur individuel
+#     d’approche sécurité
+#   - Vérification du contexte alarme
+#   - Résolution dynamique de la cible mobile
+#   - Activation du High Accuracy
+#   - Forçage immédiat de remontée capteurs
+#   - Démarrage du timer de sécurité
+#
+# 🛑 NON RESPONSABLE
+#   - Ne participe pas à la décision de désarmement
+#   - Ne vérifie pas le succès des commandes mobile
+#   - Ne gère aucun retry, watchdog ou ACK
+# ==========================================================
+
+- id: "10210000000007"
+  alias: "Présence - Activation High Accuracy sur approche sécurité"
+  description: "Active le High Accuracy à l'entrée dans zone.approche_securite sous alarme armée"
+
+  mode: parallel
+
+  trigger:
+    - platform: state
+      id: antoine
+      entity_id: binary_sensor.approche_securite_antoine
+      to: "on"
+
+    - platform: state
+      id: constance
+      entity_id: binary_sensor.approche_securite_constance
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: alarm_control_panel.alarme_maison
+      state: "armed_away"
+
+    - condition: template
+      value_template: >
+        {{ trigger.from_state is not none
+           and trigger.from_state.state != 'on' }}
+
+  action:
+    - variables:
+        cible_notify: >
+          {% if trigger.id == 'antoine' %}
+            input_text.telephone_antoine_notify
+          {% elif trigger.id == 'constance' %}
+            input_text.telephone_constance_notify
+          {% else %}
+            none
+          {% endif %}
+
+    - condition: template
+      value_template: >
+        {{ cible_notify != 'none' }}
+
+    - service: script.mobile_high_accuracy_on
+      data:
+        cible: "{{ cible_notify }}"
+
+    - service: script.mobile_update_sensors
+      data:
+        cible: "{{ cible_notify }}"
+
+    - service: timer.start
+      target:
+        entity_id: timer.high_accuracy_securite

@@ -154,6 +154,13 @@ include:
     - binary_sensor.vacances_actives
 
     # =====================================================
+    # ==== 🔥 CHAUFFAGE — AUTO-AJUSTEMENT ====
+    # =====================================================
+    - sensor.ecart_consigne_instantane
+    - sensor.ecart_consigne_instantane_froid
+    - sensor.ecart_consigne_instantane_doux
+
+    # =====================================================
     # ==== 🔥 CHAUFFAGE - DIAGNOSTIC THERMIQUE ====
     # =====================================================
     - sensor.temperature_arret_presence_chambres

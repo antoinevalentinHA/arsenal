@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — TIMER :
+#     High Accuracy – Fenêtre de sécurité
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Borner temporellement l’activation du mode High Accuracy
+#   afin de protéger la batterie en cas de :
+#     - non retour domicile
+#     - faux positif (passage dans la zone)
+#     - absence de désarmement
+#
+# 🧩 PRINCIPE
+#   - Démarre à l’activation du High Accuracy
+#   - Expire automatiquement après une durée courte
+#   - Sert de filet de sécurité uniquement
+#
+# 🛑 NON RESPONSABLE
+#   - Ne décide pas de l’activation
+#   - Ne décide pas de la désactivation nominale
+#   - Ne contient aucune logique métier
+#
+# 📏 PARAMÉTRAGE
+#   - Durée : 5 minutes (ajustable empiriquement)
+#   - restore: true pour résilience aux redémarrages
+# ==========================================================
+
+high_accuracy_securite:
+  name: "High Accuracy - Fenetre securite"
+  duration: "00:05:00"
+  restore: true

@@ -1,0 +1,160 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPTS : Mobile Companion (Core)
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Fournir une couche UNIQUE, stable et abstraite
+#   d'envoi de commandes Companion vers les téléphones.
+#
+#   Tous les scripts et automatisations Arsenal
+#   doivent passer EXCLUSIVEMENT par ces scripts
+#   pour piloter les fonctions système des téléphones.
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE D'ABSTRACTION
+#
+#   Les cibles ne sont JAMAIS codées en dur.
+#   Chaque téléphone est référencé via :
+#     - input_text.telephone_*_notify
+#
+#   ➜ Un changement de smartphone ou de service notify
+#     ne nécessite AUCUNE modification du code YAML.
+#
+# ----------------------------------------------------------
+# 📌 SCRIPTS FOURNIS
+#
+#   1️⃣ mobile_high_accuracy_on
+#      - Active le mode High Accuracy GPS
+#      - sur une cible dynamique
+#
+#   2️⃣ mobile_high_accuracy_off
+#      - Désactive le mode High Accuracy GPS
+#      - sur une cible dynamique
+#
+#   3️⃣ mobile_update_sensors
+#      - Force une remontée immédiate des capteurs
+#      - sur une cible dynamique
+#
+# ----------------------------------------------------------
+# 🔒 GARANTIES
+#
+#   - Aucun script métier ne dépend d'un service notify réel
+#   - Aucun téléphone n'est référencé directement
+#   - Validation du service avant envoi
+#   - Découplage total logique applicative / matériel
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne décide PAS quand activer le High Accuracy
+#   - Ne vérifie PAS l'état courant du mode GPS
+#   - Ne gère PAS les accusés de réception
+#   - Ne journalise PAS les commandes
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Scripts utilitaires — couche infrastructure
+#
+# 📍 Entités :
+#   - script.mobile_high_accuracy_on
+#   - script.mobile_high_accuracy_off
+#   - script.mobile_update_sensors
+#
+# 🔗 Dépendances :
+#   - input_text.telephone_*_notify (cible passée en paramètre)
+#   - App Companion Android (Home Assistant Companion)
+#
+# 🧩 Pipeline :
+#   Core / Mobile / Companion
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.12+
+#   Arsenal v6+
+#   Home Assistant Companion Android
+# ==========================================================
+
+mobile_high_accuracy_on:
+  alias: "Mobile - High Accuracy ON"
+  mode: parallel
+  fields:
+    cible:
+      description: "Helper contenant le service notify de la cible"
+      example: "input_text.telephone_constance_notify"
+  sequence:
+    # ------------------------------------------------------
+    # Résolution du service depuis le helper
+    # ------------------------------------------------------
+    - variables:
+        svc: "{{ states(cible) }}"
+
+    # ------------------------------------------------------
+    # Garde-fou — service valide uniquement
+    # ------------------------------------------------------
+    - condition: template
+      value_template: "{{ svc is string and svc.startswith('notify.') }}"
+
+    # ------------------------------------------------------
+    # Commande Companion — activation High Accuracy
+    # ------------------------------------------------------
+    - action: "{{ svc }}"
+      data:
+        message: "command_high_accuracy_mode"
+        data:
+          command: "turn_on"
+
+
+mobile_high_accuracy_off:
+  alias: "Mobile - High Accuracy OFF"
+  mode: parallel
+  fields:
+    cible:
+      description: "Helper contenant le service notify de la cible"
+      example: "input_text.telephone_constance_notify"
+  sequence:
+    # ------------------------------------------------------
+    # Résolution du service depuis le helper
+    # ------------------------------------------------------
+    - variables:
+        svc: "{{ states(cible) }}"
+
+    # ------------------------------------------------------
+    # Garde-fou — service valide uniquement
+    # ------------------------------------------------------
+    - condition: template
+      value_template: "{{ svc is string and svc.startswith('notify.') }}"
+
+    # ------------------------------------------------------
+    # Commande Companion — désactivation High Accuracy
+    # ------------------------------------------------------
+    - action: "{{ svc }}"
+      data:
+        message: "command_high_accuracy_mode"
+        data:
+          command: "turn_off"
+
+
+mobile_update_sensors:
+  alias: "Mobile - Forcer remontée capteurs"
+  mode: parallel
+  fields:
+    cible:
+      description: "Helper contenant le service notify de la cible"
+      example: "input_text.telephone_constance_notify"
+  sequence:
+    # ------------------------------------------------------
+    # Résolution du service depuis le helper
+    # ------------------------------------------------------
+    - variables:
+        svc: "{{ states(cible) }}"
+
+    # ------------------------------------------------------
+    # Garde-fou — service valide uniquement
+    # ------------------------------------------------------
+    - condition: template
+      value_template: "{{ svc is string and svc.startswith('notify.') }}"
+
+    # ------------------------------------------------------
+    # Commande Companion — remontée immédiate capteurs
+    # ------------------------------------------------------
+    - action: "{{ svc }}"
+      data:
+        message: "command_update_sensors"

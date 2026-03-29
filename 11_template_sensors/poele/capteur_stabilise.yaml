@@ -15,7 +15,6 @@
 
     - name: "Poele en fonctionnement (stable 24h)"
       unique_id: poele_en_fonction_stable
-      default_entity_id: binary_sensor.poele_en_fonction_stable
       device_class: heat
       icon: "mdi:fire"
 

@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Présence – Désactivation High Accuracy
+#
+# ID : 10210000000008
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Désactiver le mode High Accuracy lorsque le contexte
+#   justifiant son activation disparaît.
+#
+# 🧩 PRINCIPE
+#   - Déclenchement sur désarmement de l’alarme
+#   - Déclenchement sur expiration du timer de sécurité
+#   - Désactivation globale sur les téléphones éligibles
+#   - Aucun retry, aucun ACK, aucun fallback
+#
+# 🛑 NON RESPONSABLE
+#   - Ne participe pas à la décision de désarmement
+#   - Ne vérifie pas le succès des commandes mobile
+#   - Ne contient aucune logique métier
+# ==========================================================
+
+- id: "10210000000008"
+  alias: "Présence - Désactivation High Accuracy"
+  description: "Désactive le High Accuracy sur désarmement ou expiration du timer de sécurité"
+
+  mode: parallel
+
+  trigger:
+    - platform: state
+      id: alarme
+      entity_id: alarm_control_panel.alarme_maison
+      to: "disarmed"
+
+    - platform: event
+      id: timer
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.high_accuracy_securite
+
+  condition: []
+
+  action:
+    - service: script.mobile_high_accuracy_off
+      data:
+        cible: input_text.telephone_antoine_notify
+
+    - service: script.mobile_high_accuracy_off
+      data:
+        cible: input_text.telephone_constance_notify
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.id == 'alarme' }}
+          sequence:
+            - service: timer.cancel
+              target:
+                entity_id: timer.high_accuracy_securite
+      default: []

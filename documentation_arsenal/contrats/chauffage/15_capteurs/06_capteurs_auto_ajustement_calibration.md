@@ -110,7 +110,7 @@ servant d’indication de calibration destinée exclusivement
 🔒 Garanties exigées :
 - Logique strictement propositionnelle (aucune action embarquée)
 - Dépendance exclusive à des diagnostics gouvernés
-- Bornage strict des valeurs (-5 → +5)
+- Bornage strict des valeurs (-8 → +8) — domaine Arsenal d'auto-ajustement
 - Réactivité contrôlée par pas unitaires
 - Reload-safe / restart-safe
 - Indépendance totale vis-à-vis du matériel et de l’API
@@ -169,7 +169,7 @@ servant d’indication de calibration destinée exclusivement
 - Logique strictement propositionnelle (aucune action embarquée)
 - Dépendance exclusive à des diagnostics gouvernés de régime froid
 - Ajustement fin par pas limités (±0.1)
-- Bornage strict de la pente (1.2 → 1.8)
+- Bornage strict de la pente (1.0 → 2.2) — domaine Arsenal d'auto-ajustement
 - Réactivité lente et contrôlée
 - Reload-safe / restart-safe
 - Indépendance totale vis-à-vis du matériel et de l’API
@@ -262,13 +262,18 @@ Classe : Capteur DE RÉFÉRENCE STRUCTURANT
 
 🎯 Rôle :
 Fournir la moyenne glissante des écarts thermiques en régime froid,
-servant de référence synthétique principale pour l’évaluation de la loi de chauffe
-et l’alimentation des propositions de calibration de pente.
+servant de référence synthétique pour la surveillance de la loi de chauffe
+et l’observabilité du diagnostic thermique en régime froid.
+
+⚠️ Note architecturale :
+Ce capteur est un indicateur d’observabilité UI. Il n’est pas consommé
+par la chaîne de calibration active. `sensor.chauffage_pente_suggeree`
+consomme directement `sensor.ecart_consigne_stats_froid` — décision
+d’architecture assumée, documentée lors de l’audit v11.
 
 🧭 Périmètre d’influence autorisé :
 - UI de diagnostic spécialisé régime froid
 - Surveillance de dérive de loi de chauffe en conditions sévères
-- Base principale des propositions de pente suggérée
 - Indicateur de performance hivernale du bâtiment
 - Observabilité long terme de la réponse thermique en froid
 
@@ -285,7 +290,7 @@ et l’alimentation des propositions de calibration de pente.
 - Moyenne strictement conditionnée au contexte froid
 - Indépendance totale vis-à-vis de la présence et des modes dégradés
 - Reload-safe / restart-safe
-- Valeur directement exploitable pour calibration de pente
+- Valeur exploitable pour lecture et diagnostic UI
 - Absence totale de logique métier embarquée
 
 🔗 Dépendances :
@@ -299,13 +304,13 @@ Source statistique :
 - Mauvaise interprétation si distribution instable
 
 ❗ Statut particulier :
-INDICATEUR SYNTHÈSE DE LOI DE CHAUFFE  
-Référence officielle de calibration de pente en régime froid.
+INDICATEUR D’OBSERVABILITÉ — RÉGIME FROID  
+Capteur UI de surveillance. Non consommé par la chaîne de calibration active.
 
 ⚠️ Décision :
 INCLUS DANS `15_capteurs_thermiques.md`  
 Section : Diagnostic structurant / Auto-ajustement  
-Classe : Capteur DE RÉFÉRENCE STRUCTURANT
+Classe : Capteur DIAGNOSTIQUE STRUCTURANT
 
 # ----------------------------------------------------------
 

@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSORS
+#     Présence — Approche sécurité (individuel)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Projeter la présence individuelle dans zone.approche_securite
+#   sous forme de capteurs binaires d'infrastructure.
+#
+# 🧩 PRINCIPE
+#   - Projection directe, sans réconciliation ni temporalité
+#   - Un capteur par personne
+#   - Consommés uniquement par l'infrastructure High Accuracy
+#
+# 🛑 NON RESPONSABLE
+#   - Ne constituent pas une présence canonique
+#   - Ne constituent pas une autorisation métier
+#   - Ne doivent pas être consommés par des domaines métier
+#     (chauffage, sécurité, présence sécurité, climatisation)
+#
+# 📋 Contrat de référence
+#   mobile.high_accuracy.contextuel v2.1 — §5
+#
+# 📍 Entités générées
+#   - binary_sensor.approche_securite_antoine
+#   - binary_sensor.approche_securite_constance
+# ==========================================================
+
+- binary_sensor:
+    - name: "Approche sécurité Antoine"
+      unique_id: approche_securite_antoine
+      device_class: presence
+      state: >
+        {{ is_state('person.antoine', 'Zone approche securite') }}
+
+    - name: "Approche sécurité Constance"
+      unique_id: approche_securite_constance
+      device_class: presence
+      state: >
+        {{ is_state('person.constance', 'Zone approche securite') }}

@@ -6,19 +6,25 @@
 #    de pente de courbe de chauffe en fonction des écarts froids.
 #
 # 🔎 Déclencheurs :
-#    - sensor.ecart_consigne_stats_froid
+#    - sensor.ecart_consigne_stats_froid  ← source active de calibration
 #    - input_number.chauffage_pente_consigne
 #
 # ⚙️ Politique Arsenal d'auto-ajustement :
 #    - ecart_froid < -0.5 → pente += 0.1
 #    - ecart_froid > 0.5  → pente -= 0.1
 #    - sinon pente inchangée
-#    - fenêtre auto-ajustement : 1.0 → 2.2
+#    - domaine Arsenal d'auto-ajustement : 1.0 → 2.2
+#
+# 🔗 Architecture de source :
+#    Ce capteur consomme directement sensor.ecart_consigne_stats_froid.
+#    sensor.ecart_consigne_moyenne_froid est un indicateur d'observabilité
+#    UI uniquement — il n'est pas consommé par la chaîne de calibration active.
+#    Décision d'architecture assumée, documentée lors de l'audit v11.
 #
 # 📌 Note :
 #    Proposition purement locale, jamais appliquée automatiquement.
-#    Les bornes ci-dessous sont celles de la politique d'auto-ajustement
-#    Arsenal, pas les bornes physiques complètes de la chaudière.
+#    Les bornes ci-dessous sont celles du domaine Arsenal d'auto-ajustement,
+#    pas les bornes physiques complètes de la chaudière.
 #
 # ⚠️ Contrainte normative :
 #    Si la consigne courante est hors domaine d'auto-ajustement,
@@ -27,22 +33,20 @@
 #    Aucun mouvement de retour progressif n'est autorisé.
 #
 # 🧩 Comportement d'indisponibilité :
-#    - si la consigne actuelle est indisponible, le capteur propage
-#      cet état natif (`unknown` / `unavailable`)
-#    - si seule la grandeur d'écart est indisponible, le capteur
-#      retourne la consigne actuelle inchangée
+#    - si la consigne actuelle est indisponible → propagation état natif
+#    - si seul l'écart est indisponible → consigne actuelle retournée inchangée
 #
 #    Cette dissymétrie est intentionnelle :
 #    - absence de consigne = absence de base de calcul
 #    - absence d'écart = pas de nouvelle suggestion, mais consigne connue
+#
+#    Aucun faux zéro. Aucun fallback ambigu.
 # ==========================================================
-
 - trigger:
     - platform: state
       entity_id:
         - sensor.ecart_consigne_stats_froid
         - input_number.chauffage_pente_consigne
-
   sensor:
     - name: "chauffage_pente_suggeree"
       unique_id: chauffage_pente_suggeree
@@ -52,18 +56,19 @@
         {% set pente_raw = states('input_number.chauffage_pente_consigne') %}
         {% set pente_min = 1.0 %}
         {% set pente_max = 2.2 %}
-
         {% if pente_raw in ['unknown', 'unavailable', ''] %}
           {{ pente_raw }}
         {% elif ecart_raw in ['unknown', 'unavailable', ''] %}
-          {{ (pente_raw | float(0)) | round(1) }}
+          {{ (pente_raw | float) | round(1) }}
         {% else %}
-          {% set pente_actuelle = (pente_raw | float(0)) | round(1) %}
+          {% set pente_actuelle = (pente_raw | float) | round(1) %}
           {% if pente_actuelle < pente_min or pente_actuelle > pente_max %}
             {{ pente_actuelle }}
           {% else %}
-            {% set ecart_froid = ecart_raw | float(0) %}
-            {% if ecart_froid < -0.5 %}
+            {% set ecart_froid = ecart_raw | float(none) %}
+            {% if ecart_froid is none %}
+              {{ pente_actuelle }}
+            {% elif ecart_froid < -0.5 %}
               {{ ([pente_actuelle + 0.1, pente_max] | min) | round(1) }}
             {% elif ecart_froid > 0.5 %}
               {{ ([pente_actuelle - 0.1, pente_min] | max) | round(1) }}
@@ -84,5 +89,5 @@
           {% if pente_raw in ['unknown', 'unavailable', ''] %}
             false
           {% else %}
-            {{ 1.0 <= (pente_raw | float(0)) <= 2.2 }}
+            {{ 1.0 <= (pente_raw | float) <= 2.2 }}
           {% endif %}
