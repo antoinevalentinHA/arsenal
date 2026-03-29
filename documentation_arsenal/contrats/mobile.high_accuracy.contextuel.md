@@ -85,43 +85,26 @@ Conséquences :
 
 ---
 
-## 5. Infrastructure concernée
+## 5. Scripts d'infrastructure concernés
 
-### Scripts Core Mobile
-
-#### `script.mobile_high_accuracy_on`
+### `script.mobile_high_accuracy_on`
 
 - Active le mode High Accuracy sur une cible dynamique
 - Pure exécution — ne décide pas du contexte
 - Aucun retry, aucun ACK
 
-#### `script.mobile_high_accuracy_off`
+### `script.mobile_high_accuracy_off`
 
 - Désactive le mode High Accuracy sur une cible dynamique
 - Pure exécution
 
-#### `script.mobile_update_sensors`
+### `script.mobile_update_sensors`
 
 - Force une remontée immédiate des capteurs
 - Best-effort uniquement
 - Aucun ACK attendu, aucune garantie de résultat
-
-### Capteurs d'infrastructure
-
-| Entité | Sémantique |
-|--------|------------|
-| `binary_sensor.approche_securite_antoine` | `on` si `person.antoine` est dans `zone.approche_securite`, `off` sinon |
-| `binary_sensor.approche_securite_constance` | `on` si `person.constance` est dans `zone.approche_securite`, `off` sinon |
-
-**Règle** : ces capteurs sont des projections d'infrastructure pure. Ils ne constituent ni une présence canonique, ni une décision, ni une autorisation métier. Ils ne doivent pas être consommés par des domaines métier (chauffage, sécurité, présence canonique).
-
-### Timer d'infrastructure
-
-| Entité | Rôle |
-|--------|------|
-| `timer.high_accuracy_securite` | Borne la durée maximale d'activation du High Accuracy — déclenche la désactivation en cas de non-résolution |
-
-La durée de ce timer doit être cohérente avec un temps d'approche réel du domicile. Une valeur excessive constitue une mauvaise implémentation du contrat.
+- N'est pas utilisé dans le mécanisme High Accuracy contextuel v2.1
+- Peut être mobilisé dans d'autres contextes d'infrastructure si justifié
 
 ---
 
@@ -176,13 +159,13 @@ La désactivation est appliquée globalement à toutes les cibles lorsque la con
 Chronologie nominale attendue :
 
 ```
-extérieur → entrée zone.approche_securite → High Accuracy ON + timer start
+extérieur → entrée zone.approche_securite → High Accuracy ON
         → entrée zone.maison_securite → présence détectée → désarmement → High Accuracy OFF
 ```
 
 ### Clause fausse approche (hors périmètre v2.1)
 
-La gestion du cas "sortie de zone.approche_securite sans retour domicile" (demi-tour, fausse approche) n'est pas traitée explicitement en v2.1. Le timeout défensif de `timer.high_accuracy_securite` en limite les effets de consommation. Un mécanisme d'état dédié fera l'objet d'un avenant si le besoin est confirmé en production.
+La gestion du cas "sortie de zone.approche_securite sans retour domicile" (demi-tour, fausse approche) n'est pas traitée explicitement en v2.1. Le timeout défensif en limite les effets de consommation. Un mécanisme d'état dédié fera l'objet d'un avenant si le besoin est confirmé en production.
 
 ---
 
@@ -214,11 +197,11 @@ Le dimensionnement optimal ne peut pas être purement théorique. Il doit être 
 | Utiliser `zone.home` comme déclencheur du High Accuracy | détournement de rôle métier, activation parasite probable |
 | Utiliser `zone.maison_securite` comme déclencheur du High Accuracy | détournement de rôle métier, activation trop tardive probable |
 | Utiliser `zone.approche_securite` dans une logique métier de chauffage, climatisation, sécurité ou présence canonique | contamination infrastructure → métier |
-| Consommer `binary_sensor.approche_securite_*` dans un domaine métier | violation §5 — capteurs d'infrastructure uniquement |
 | Ajouter retry / watchdog | violation I-4 |
 | Conditionner un désarmement au succès supposé d'une commande Companion | violation I-7 |
-| Configurer `timer.high_accuracy_securite` avec une durée excessive | dérive batterie, mauvaise implémentation |
+| Configurer une durée maximale excessive | dérive batterie, mauvaise implémentation |
 | Dupliquer la logique géographique en template | violation I-8 |
+| Utiliser `script.mobile_update_sensors` pour influencer le désarmement | inefficace — aucun effet sur la décision |
 
 ---
 
@@ -227,7 +210,7 @@ Le dimensionnement optimal ne peut pas être purement théorique. Il doit être 
 - Activation anticipée mais pertinente
 - Réduction drastique des activations inutiles
 - Amélioration du taux de désarmement automatique
-- Impact batterie maîtrisé, borné par `timer.high_accuracy_securite`
+- Impact batterie maîtrisé, borné par durée maximale
 - Zones métier existantes intactes dans leur rôle et leur périmètre
 
 ---

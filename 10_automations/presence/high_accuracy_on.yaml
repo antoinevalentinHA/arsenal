@@ -15,7 +15,6 @@
 #   - Vérification du contexte alarme
 #   - Résolution dynamique de la cible mobile
 #   - Activation du High Accuracy
-#   - Forçage immédiat de remontée capteurs
 #   - Démarrage du timer de sécurité
 #
 # 🛑 NON RESPONSABLE
@@ -67,10 +66,6 @@
         {{ cible_notify != 'none' }}
 
     - service: script.mobile_high_accuracy_on
-      data:
-        cible: "{{ cible_notify }}"
-
-    - service: script.mobile_update_sensors
       data:
         cible: "{{ cible_notify }}"
 
