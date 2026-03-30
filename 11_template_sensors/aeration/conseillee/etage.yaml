@@ -68,7 +68,7 @@
           {% set dt_min = states('input_number.aeration_delta_t_min_inter')  | float(2.5) %}
         {% endif %}
 
-        {% set nuit = now().hour >= 22 or now().hour < 9 %}
+        {% set nuit = is_state('sensor.periode_meteo', 'nuit') %}
         {% if nuit %}
           {% set ha_min = [ha_min - (states('input_number.aeration_mod_nuit_delta_ha') | float(0.3)), 0.5] | max %}
           {% set dt_min = [dt_min - (states('input_number.aeration_mod_nuit_delta_t')  | float(1.5)), 0.5] | max %}
@@ -163,7 +163,7 @@
 
           {# Modulateurs #}
           {% set rh_out  = states('sensor.humidite_relative_jardin') | float(none) %}
-          {% set nuit = now().hour >= 22 or now().hour < 9 %}
+          {% set nuit = is_state('sensor.periode_meteo', 'nuit') %}
           {% set ha_min = ha_min0 %}
           {% set dt_min = dt_min0 %}
           {% if nuit %}
@@ -222,7 +222,7 @@
             {% set dt_min = states('input_number.aeration_delta_t_min_inter')  | float(2.5) %}
           {% endif %}
 
-          {% set nuit = now().hour >= 22 or now().hour < 9 %}
+          {% set nuit = is_state('sensor.periode_meteo', 'nuit') %}
           {% if nuit %}
             {% set ha_min = [ha_min - (states('input_number.aeration_mod_nuit_delta_ha') | float(0.3)), 0.5] | max %}
             {% set dt_min = [dt_min - (states('input_number.aeration_mod_nuit_delta_t')  | float(1.5)), 0.5] | max %}

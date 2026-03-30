@@ -1,0 +1,14 @@
+# =============================================================================
+# Arsenal — Zones
+# Fichier  : zones/approche_securite.yaml
+# Domaine  : Présence / Sécurité
+# Rôle     : Zone métier Arsenal — périmètre d'approche / anticipation
+# Entité   : zone.approche_securite
+# =============================================================================
+
+- name: Approche securite
+  latitude: 44.8522979
+  longitude: -0.5875885
+  radius: 400
+  icon: mdi:map-marker-radius
+  passive: false

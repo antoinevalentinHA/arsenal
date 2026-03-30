@@ -6,17 +6,17 @@
 ## 🎯 OBJET DU CONTRAT
 
 Ce contrat définit **exclusivement** le comportement normatif du système Arsenal
-concernant la **RECOMMANDATION d’aération naturelle**.
+concernant la **RECOMMANDATION d'aération naturelle**.
 
 Il encadre :
 
-- la **qualification de la pertinence d’aérer**,
-- la **production d’une décision de recommandation** (RDC, étage, globale),
-- la **restitution UI** de cette décision,
-- la **notification utilisateur associée**.
+- la **qualification de la pertinence d'aérer**,
+- la **production d'une décision de recommandation** (RDC, étage, globale),
+- la **restitution UI** de cette décision.
 
 👉 Ce contrat **NE DÉCLENCHE JAMAIS** une aération physique  
-et **N’IMPACTE JAMAIS** directement la régulation thermique.
+et **N'IMPACTE JAMAIS** directement la régulation thermique,  
+mais peut être utilisé comme **contrainte inhibitrice** par des domaines consommateurs.
 
 ---
 
@@ -24,9 +24,9 @@ et **N’IMPACTE JAMAIS** directement la régulation thermique.
 
 Le présent contrat couvre :
 
-- l’analyse hygro-thermique intérieure / extérieure,
+- l'analyse hygro-thermique intérieure / extérieure,
 - la prise en compte du CO₂ comme **priorité sanitaire**,
-- l’intégration des contextes :
+- l'intégration des contextes :
   - saison,
   - nuit,
   - pluie / brouillard,
@@ -36,7 +36,6 @@ Le présent contrat couvre :
   - `binary_sensor.aeration_preferable_rdc`,
   - `binary_sensor.aeration_preferable_etage`,
   - `binary_sensor.aeration_conseillee`,
-- la notification utilisateur d’ouverture / fermeture,
 - la restitution UI décisionnelle.
 
 ---
@@ -45,8 +44,8 @@ Le présent contrat couvre :
 
 Ce contrat **NE COUVRE PAS** :
 
-- la détection d’ouverture / fermeture de fenêtres,
-- la notion d’**épisode d’aération**,
+- la détection d'ouverture / fermeture de fenêtres,
+- la notion d'**épisode d'aération**,
 - le **blocage ou la reprise du chauffage / climatisation**,
 - toute action automatique sur un ouvrant,
 - toute temporisation thermique post-aération.
@@ -58,7 +57,7 @@ Ce contrat **NE COUVRE PAS** :
 
 ## 🧠 CONCEPT FONDAMENTAL : RECOMMANDATION
 
-La recommandation d’aération est :
+La recommandation d'aération est :
 
 - **non contraignante**,
 - **informatique uniquement**,
@@ -66,7 +65,7 @@ La recommandation d’aération est :
 - **sans effet mécanique ou thermique direct**.
 
 Elle représente une **opportunité environnementale**
-mise à disposition de l’utilisateur.
+mise à disposition de l'utilisateur.
 
 ---
 
@@ -75,11 +74,56 @@ mise à disposition de l’utilisateur.
 | Couche | Responsabilité |
 |------|----------------|
 | Capteurs template | Calcul décisionnel |
-| Automatisations | Notification uniquement |
+| Automatisations | Aucune |
 | UI | Restitution fidèle |
 | Utilisateur | Décision finale |
 
 👉 Aucune couche ne doit empiéter sur une autre.
+
+---
+
+## 🏛️ NATURE ARCHITECTURALE DU CAPTEUR CENTRAL
+
+### Statut
+
+`binary_sensor.aeration_preferable_etage` est le **capteur-synthèse transverse** du modèle d'aération.
+
+Il n'est pas une mesure physique brute.  
+Il est une **sortie décisionnelle composite**, issue de l'évaluation simultanée de :
+humidité absolue, température, météo, CO₂, saison, et modulateurs dynamiques.
+
+Ce statut est **volontaire et assumé**.
+
+### Périmètre de responsabilité transverse
+
+Son utilisation hors domaine aération est **intentionnelle** :
+
+| Domaine consommateur | Rôle |
+|---|---|
+| Climatisation | Contrainte inhibitrice (veto autorisation cool / dry) |
+| VMC | Source d'information contextuelle |
+| Agrégation globale | Composante de `binary_sensor.aeration_conseillee` |
+
+### Invariant de comportement
+
+Ce capteur :
+
+- **ne déclenche jamais** d'action directe,
+- **n'impose jamais** un mode opérationnel,
+- peut uniquement **autoriser ou inhiber** des comportements dans les domaines consommateurs.
+
+### Position vis-à-vis de la décomposition
+
+Aucune décomposition en capteurs élémentaires n'est prévue.
+
+Le maintien d'un capteur synthétique unique est un **choix de conception délibéré**,
+visant à garantir cohérence, stabilité et lisibilité globale du système.
+
+### Disponibilité
+
+La disponibilité de ce capteur est assurée par les couches amont.  
+Toute indisponibilité constitue une **anomalie système**  
+devant être traitée au niveau des capteurs sources.
 
 ---
 
@@ -139,123 +183,28 @@ Le capteur global :
 
 ---
 
-## 🪟 NOTIFICATIONS UTILISATEUR (VERSION RÉVISÉE)
+## 🔔 RESTITUTION UTILISATEUR
 
-Les notifications associées à la recommandation d’aération sont :
+La recommandation d'aération :
 
-- **purement informatives**,
-- **décisionnelles** (elles reflètent un état métier),
-- **zonées** :
-  - rez-de-chaussée,
-  - étage.
+- est exposée **uniquement via l'UI**,
+- ne génère **aucune notification** (ni persistante, ni mobile).
 
-Elles ne déclenchent **aucune action automatique**  
-et ne modifient **aucun état décisionnel**.
+L'UI constitue :
 
----
+- le **canal unique** de restitution,
+- la **projection fidèle de l'état métier courant**.
 
-### 🔔 Typologie des notifications
+L'UI est un canal **passif** :
 
-#### 1️⃣ Notification mobile (éphémère)
+- aucune sollicitation active de l'utilisateur,
+- aucune mise en avant intrusive,
+- aucune simulation de notification.
 
-La notification mobile est :
+L'utilisateur :
 
-- **contextuelle**,
-- émise **uniquement** lorsqu’une action utilisateur est pertinente :
-  - ouvrir les fenêtres si l’aération devient recommandée,
-  - fermer les fenêtres si l’aération n’est plus recommandée,
-- conditionnée par :
-  - la présence,
-  - l’état réel des fenêtres,
-  - l’autorisation utilisateur.
-
-👉 Aucune notification mobile n’est émise
-lorsqu’aucune action n’est nécessaire.
-
----
-
-#### 2️⃣ Notification persistante (décisionnelle)
-
-La notification persistante est :
-
-- **systématique** à chaque changement d’état de recommandation,
-- **unique par zone** (RDC / Étage),
-- identifiée par un `notification_id` stable,
-- **remplacée** à chaque évolution de la décision,
-- jamais empilée, jamais historique.
-
-Elle représente **l’état courant de la recommandation**.
-
----
-
-### 🔄 Cycle de vie normatif de la notification persistante (version unipolaire)
-
-À tout instant, pour chaque zone :
-
-- si l’aération est **recommandée** :
-  - une notification persistante *« Aération conseillée »* est affichée,
-- si l’aération n’est **plus recommandée** :
-  - la notification persistante précédente est **disqualifiée**,
-  - **aucune notification persistante négative n’est créée**.
-
-👉 La notification persistante est **unipolaire** :
-elle représente uniquement un **état positif valable**.
-
-👉 L’absence de notification persistante signifie :
-> *aération non recommandée*.
-
----
-
-### 🧠 Sémantique imposée
-
-- La **notification persistante** décrit **exclusivement un état métier positif** :
-  - *Aération conseillée*
-
-- L’état *« Aération non recommandée »* est représenté par :
-  - l’**absence de notification persistante**,
-  - jamais par une notification persistante négative.
-
-- Les **actions suggérées** (*ouvrir / fermer les fenêtres*) :
-  - sont **secondaires**,
-  - apparaissent uniquement dans le **contenu du message**,
-  - dépendent du contexte réel (fenêtres ouvertes / fermées).
-
-👉 Le titre, l’ID et l’alias d’une automation de notification
-ne doivent **jamais** être basés sur une action conditionnelle.
-
----
-
-### 🛡️ Robustesse & reload YAML (complément)
-
-Le système de notification garantit :
-
-- aucune dépendance à un état mémorisé fragile,
-- remplacement explicite des notifications persistantes,
-- absence de notification orpheline après reload YAML,
-- recalcul intégral à partir de l’état courant.
-
-La notification persistante est considérée comme :
-> une **projection UI de l’état métier courant**,  
-> jamais comme un historique d’événements.
-
----
-
-## 🛑 INVARIANTS ABSOLUS (COMPLÉTÉ)
-
-Il est **strictement interdit** que :
-
-- une notification persistante survive à un changement
-  de recommandation contraire,
-- une notification persistante décrive une action
-  plutôt qu’un état métier,
-- plusieurs notifications persistantes coexistent
-  pour une même zone,
-- une notification mobile soit utilisée
-  pour disqualifier un état précédent.
-- une notification persistante négative (*« non recommandée »*)
-  est **strictement interdite**,
-- l’absence de notification persistante est la **seule représentation valide**
-  d’un état non recommandé.
+- consulte librement l'information,
+- décide d'agir ou non.
 
 ---
 
@@ -263,7 +212,7 @@ Il est **strictement interdit** que :
 
 Les cartes UI :
 
-- n’introduisent **aucune logique métier**,
+- n'introduisent **aucune logique métier**,
 - ne modifient **aucun état**,
 - traduisent uniquement :
   - état,
@@ -271,7 +220,7 @@ Les cartes UI :
   - seuils,
   - contexte.
 
-La couleur, l’icône et le libellé sont :
+La couleur, l'icône et le libellé sont :
 - **des traductions visuelles**, jamais des décisions.
 
 ---
@@ -281,12 +230,12 @@ La couleur, l’icône et le libellé sont :
 Le système garantit :
 
 - tolérance aux états `unknown` / `unavailable`,
-- absence d’erreur au reload YAML,
+- absence d'erreur au reload YAML,
 - décision recalculable à tout instant,
 - aucune persistance décisionnelle figée.
 
 Une recommandation invalide :
-- s’annule naturellement,
+- s'annule naturellement,
 - ne laisse aucun état résiduel.
 
 ---
@@ -297,8 +246,14 @@ Il est **strictement interdit** que :
 
 - une recommandation déclenche une action thermique,
 - une recommandation pilote un ouvrant,
-- une notification modifie un état décisionnel,
-- l’UI décide à la place du moteur.
+- l'UI décide à la place du moteur,
+- toute notification soit émise — persistante ou mobile — en lien avec la recommandation d'aération,  
+  y compris de manière indirecte ou via un autre domaine,
+  dès lors qu'elle repose sur l'état de recommandation d'aération,
+- l'état de recommandation soit exposé ou restitué dans un canal autre que l'UI,  
+  en dehors de son usage comme entrée métier par des domaines consommateurs,
+- une logique déclenchée sur transition d'état (`on → off` / `off → on`)  
+  soit introduite dans ce domaine.
 
 ---
 
@@ -307,15 +262,14 @@ Il est **strictement interdit** que :
 Ce document est la **référence normative unique**
 pour toute évolution concernant :
 
-- la recommandation d’aération,
+- la recommandation d'aération,
 - les critères environnementaux associés,
-- la notification utilisateur,
 - la restitution UI décisionnelle.
 
 Toute extension devra :
 
 - créer un **nouveau contrat**,
-- ou faire l’objet d’une **fusion contractuelle explicite**.
+- ou faire l'objet d'une **fusion contractuelle explicite**.
 
 ---
 
@@ -324,6 +278,8 @@ Toute extension devra :
 - Contrat normatif : **ACTIF**
 - Domaine : **Aération — Recommandation**
 - Action thermique : **AUCUNE**
+- Notification : **AUCUNE**
+- Canal de restitution : **UI uniquement**
 - Dépendance avec `aeration.md` : **SÉPARÉE**
 - Fusion : **NON**
 

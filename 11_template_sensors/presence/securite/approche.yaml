@@ -30,7 +30,7 @@
       unique_id: approche_securite_antoine
       device_class: presence
       state: >
-        {{ is_state('person.antoine', 'Zone approche securite') }}
+        {{ is_state('person.valentin', 'Zone approche securite') }}
 
     - name: "Approche sécurité Constance"
       unique_id: approche_securite_constance

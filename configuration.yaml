@@ -6,6 +6,7 @@ mqtt:
   binary_sensor: !include_dir_merge_list mqtt_binary_sensors/
 
 # Inclusions par dossiers
+zone: !include_dir_merge_list zones/
 group: !include_dir_merge_named 02_groups
 input_number: !include_dir_merge_named 03_input_numbers
 input_text: !include_dir_merge_named 04_input_texts

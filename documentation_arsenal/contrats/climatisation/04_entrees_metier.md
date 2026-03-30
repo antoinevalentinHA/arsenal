@@ -66,3 +66,50 @@ Les seuils sont calculés ailleurs et consommés tels quels.
 Les contraintes :
 - **n'imposent jamais un mode**,
 - peuvent rendre un mode requis **non applicable**, sans jamais sélectionner un autre mode.
+
+### Aération favorable — nature de l’entrée
+
+`binary_sensor.aeration_preferable_etage` est une entrée métier particulière.
+
+Contrairement aux autres entrées, il ne représente pas un fait physique brut,
+mais une **évaluation composite optimisée** des conditions d’aération.
+
+Il agrège notamment :
+- humidité absolue intérieure / extérieure,
+- écart de température,
+- conditions météo,
+- seuils saisonniers dynamiques,
+- priorité sanitaire CO₂.
+
+### Rôle dans la climatisation
+
+Dans le domaine climatisation, ce capteur est utilisé comme **contrainte inhibitrice** :
+
+- il peut rendre un mode non applicable,
+- il ne déclenche jamais une action,
+- il ne participe pas à la sélection du mode.
+
+### Nature du compromis
+
+Ce choix constitue un compromis volontaire :
+
+- utilisation d’un capteur décisionnel comme contrainte métier,
+- au lieu d’un critère physique élémentaire (ex : delta humidité seul).
+
+Ce compromis est accepté car :
+- le capteur est stable et déterministe,
+- son rôle est uniquement inhibiteur,
+- un blocage est préférable à une activation incohérente.
+
+### Limites connues
+
+- la climatisation peut être inhibée dans des situations où elle resterait acceptable,
+- le comportement dépend d’une logique interne non visible dans le domaine clim,
+- la décision repose sur une optimisation orientée aération, non sur le confort global.
+
+### Invariant
+
+Ce capteur ne doit jamais :
+- déclencher directement une action,
+- être utilisé comme critère de sélection de mode,
+- être utilisé en dehors d’un rôle de contrainte.

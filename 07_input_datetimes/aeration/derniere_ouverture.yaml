@@ -27,7 +27,6 @@
 #       • Décision
 # ==========================================================
 
-
 aeration_reouverture_last:
   name: "Aération – Dernière réouverture pendant blocage"
   has_date: true

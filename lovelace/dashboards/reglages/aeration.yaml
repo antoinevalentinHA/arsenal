@@ -289,24 +289,3 @@ views:
                 features:
                   - type: numeric-input
                     style: buttons
-
-              - type: custom:button-card
-                template: section_header
-                name: 🔔 Notifications
-
-              - type: tile
-                entity: input_boolean.notifications_aeration_actives
-                name: Notifications (globales)
-
-              - type: grid
-                square: false
-                columns: 2
-                cards:
-
-                  - type: tile
-                    entity: input_boolean.notifications_aeration_rdc
-                    name: Notifications RDC
-
-                  - type: tile
-                    entity: input_boolean.notifications_aeration_etage
-                    name: Notifications Étage

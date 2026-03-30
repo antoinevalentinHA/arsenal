@@ -20,11 +20,11 @@
 #   - Ne contient aucune logique métier
 #
 # 📏 PARAMÉTRAGE
-#   - Durée : 5 minutes (ajustable empiriquement)
+#   - Durée : 8 minutes (ajustable empiriquement)
 #   - restore: true pour résilience aux redémarrages
 # ==========================================================
 
 high_accuracy_securite:
   name: "High Accuracy - Fenetre securite"
-  duration: "00:05:00"
+  duration: "00:08:00"
   restore: true

@@ -118,18 +118,64 @@ Validité du CO₂ :
   - ne déclenche jamais une haute vitesse,
   - ne bloque jamais un retour à la basse vitesse.
 
-
-### 4.3 Aération favorable (condition physique)
+### 4.3 Aération favorable (condition physique interprétée)
 
 Source :
-- Δ humidité absolue intérieur / extérieur
+- `binary_sensor.aeration_preferable_etage`
 
-Définitions :
-- **Aération favorable** : air extérieur plus sec que l’air intérieur
-- **Aération défavorable** : air extérieur plus humide ou équivalent
+Contrairement à ce que son nom peut suggérer, ce capteur ne représente
+pas une simple condition physique brute.
 
-⚠️ Cette notion décrit **une condition physique**, pas une décision métier.
+Il s’agit d’une **évaluation composite optimisée des conditions d’aération**,
+intégrant notamment :
+- delta d’humidité absolue intérieur / extérieur,
+- écart de température,
+- conditions météo,
+- seuils dynamiques,
+- logique sanitaire (CO₂).
 
+### Nature du signal
+
+Ce capteur constitue une **interprétation métier du contexte physique**,
+et non une mesure directe.
+
+Il exprime :
+- `ON`  → aération jugée pertinente
+- `OFF` → aération jugée non pertinente
+
+### Rôle dans la VMC
+
+Dans le système VMC, ce capteur est utilisé comme **proxy de condition physique** :
+
+- il remplace un critère brut (delta humidité seul),
+- il permet d’intégrer une logique plus robuste et contextuelle,
+- il simplifie la décision métier.
+
+### Nature du compromis
+
+Ce choix constitue un compromis volontaire :
+
+- la décision VMC dépend d’un capteur déjà interprété,
+- et non exclusivement de données physiques élémentaires.
+
+Ce compromis est accepté car :
+- le capteur est déterministe,
+- il encapsule une logique d’optimisation validée,
+- il évite des décisions physiquement correctes mais contextuellement absurdes.
+
+### Limites connues
+
+- la VMC peut ne pas s’activer dans des situations physiquement favorables
+  mais jugées non pertinentes par le modèle d’aération,
+- le comportement dépend d’une logique externe au domaine VMC,
+- la traçabilité nécessite de comprendre le capteur amont.
+
+### Invariant
+
+Ce capteur reste :
+- une entrée métier,
+- sans effet de bord,
+- sans pilotage direct de la VMC.
 
 ---
 

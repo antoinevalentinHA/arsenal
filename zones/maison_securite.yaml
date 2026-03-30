@@ -1,0 +1,14 @@
+# =============================================================================
+# Arsenal — Zones
+# Fichier  : zones/maison_securite.yaml
+# Domaine  : Présence / Sécurité
+# Rôle     : Zone métier Arsenal — périmètre strict de la maison
+# Entité   : zone.maison_securite
+# =============================================================================
+
+- name: Maison securite
+  latitude: 44.8522979
+  longitude: -0.5875885
+  radius: 40
+  icon: mdi:shield-home
+  passive: false
