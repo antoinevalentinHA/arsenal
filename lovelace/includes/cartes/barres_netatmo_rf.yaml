@@ -1,0 +1,35 @@
+type: custom:auto-entities
+filter:
+  include:
+    - entity_id: "sensor.rf_score_*"
+      state: "> 0"
+sort:
+  method: state
+  numeric: true
+  reverse: false
+card:
+  type: custom:bar-card
+  unit_of_measurement: ""
+  show_header_toggle: false
+  entity_row: true
+  min: 1
+  max: 4
+  severity:
+    - from: 1
+      to: 1.9
+      color: "rgba(244, 67, 54, 0.2)"      # 🔴 lien faible
+    - from: 2
+      to: 2.9
+      color: "rgba(255, 152, 0, 0.2)"      # 🟠 mediocre
+    - from: 3
+      to: 3.9
+      color: "rgba(255, 235, 59, 0.2)"     # 🟡 correct
+    - from: 4
+      to: 4.1
+      color: "rgba(76, 175, 80, 0.2)"      # 🟢 bon / excellent
+  style: |
+    ha-card {
+      border-radius: 12px;
+      box-shadow: var(--ha-card-box-shadow);
+      padding: 8px;
+    }

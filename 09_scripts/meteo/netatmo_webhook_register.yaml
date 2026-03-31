@@ -71,7 +71,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 netatmo_register_webhook:
   alias: Netatmo - Réenregistrer webhook
   mode: single

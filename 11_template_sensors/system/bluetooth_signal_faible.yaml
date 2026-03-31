@@ -1,0 +1,133 @@
+# ==========================================================
+# 📡 ARSENAL — BINARY SENSOR (triggered)
+#     Bluetooth — Qualite radio degradee
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Détecter si au moins UN signal Bluetooth actif présente
+#   un niveau radio insuffisant.
+#
+# 🎯 Critère :
+#   - RSSI < -80 dBm
+#
+# 🚫 Exclus :
+#   - valeur = 0
+#   - valeurs positives
+#   - unknown / unavailable
+#
+# 🟢 États :
+#   - off : aucun signal dégradé détecté
+#   - on  : au moins un signal radio dégradé
+#
+# 📊 Attributs :
+#   - worst_entity_id : entité la plus faible
+#   - worst_signal    : RSSI le plus faible observé
+#   - count_degrades  : nb d'entités sous seuil
+#   - degrades        : liste (entity_id -> valeur) sous seuil
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: "systeme_stable"
+
+    - platform: state
+      entity_id:
+        - sensor.bot_chambre_parents_bluetooth_signal
+        - sensor.bot_garage_1_bluetooth_signal
+        - sensor.bot_garage_2_bluetooth_signal
+        - sensor.bot_vmc_bluetooth_signal
+        - sensor.bot_deshumidificateur_bluetooth_signal
+        - sensor.meter_garage_bluetooth_signal
+        - sensor.remote_constance_bluetooth_signal
+      id: "any_bluetooth_signal_change"
+
+  binary_sensor:
+    - name: "Bluetooth – Qualite radio degradee"
+      unique_id: bluetooth_qualite_radio_degradee
+
+      state: >
+        {% set seuil = -80 %}
+        {% set entites = state_attr('group.bluetooth_signal_all', 'entity_id') or [] %}
+        {% set ns = namespace(any_degrade=false) %}
+
+        {% for e in entites %}
+          {% set s = states(e) %}
+          {% if s not in ['unknown', 'unavailable', ''] %}
+            {% set v = s | int(0) %}
+            {% if v < 0 and v < seuil %}
+              {% set ns.any_degrade = true %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+
+        {{ ns.any_degrade }}
+
+      attributes:
+        worst_entity_id: >
+          {% set entites = state_attr('group.bluetooth_signal_all', 'entity_id') or [] %}
+          {% set ns = namespace(worst_val=0, worst_id='') %}
+
+          {% for e in entites %}
+            {% set s = states(e) %}
+            {% if s not in ['unknown', 'unavailable', ''] %}
+              {% set v = s | int(0) %}
+              {% if v < 0 and (ns.worst_id == '' or v < ns.worst_val) %}
+                {% set ns.worst_val = v %}
+                {% set ns.worst_id = e %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {{ ns.worst_id if ns.worst_id != '' else none }}
+
+        worst_signal: >
+          {% set entites = state_attr('group.bluetooth_signal_all', 'entity_id') or [] %}
+          {% set ns = namespace(worst_val=0, worst_id='') %}
+
+          {% for e in entites %}
+            {% set s = states(e) %}
+            {% if s not in ['unknown', 'unavailable', ''] %}
+              {% set v = s | int(0) %}
+              {% if v < 0 and (ns.worst_id == '' or v < ns.worst_val) %}
+                {% set ns.worst_val = v %}
+                {% set ns.worst_id = e %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {{ ns.worst_val if ns.worst_id != '' else none }}
+
+        count_degrades: >
+          {% set seuil = -80 %}
+          {% set entites = state_attr('group.bluetooth_signal_all', 'entity_id') or [] %}
+          {% set ns = namespace(n=0) %}
+
+          {% for e in entites %}
+            {% set s = states(e) %}
+            {% if s not in ['unknown', 'unavailable', ''] %}
+              {% set v = s | int(0) %}
+              {% if v < 0 and v < seuil %}
+                {% set ns.n = ns.n + 1 %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {{ ns.n }}
+
+        degrades: >
+          {% set seuil = -80 %}
+          {% set entites = state_attr('group.bluetooth_signal_all', 'entity_id') or [] %}
+          {% set ns = namespace(items=[]) %}
+
+          {% for e in entites %}
+            {% set s = states(e) %}
+            {% if s not in ['unknown', 'unavailable', ''] %}
+              {% set v = s | int(0) %}
+              {% if v < 0 and v < seuil %}
+                {% set ns.items = ns.items + [e ~ ' -> ' ~ v] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+
+          {{ ns.items }}

@@ -1,0 +1,48 @@
+# ==========================================================
+# 📡 ARSENAL — BINARY SENSOR (triggered)
+#     Netatmo — RF degrade
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Détecter si au moins un module Netatmo RF présente
+#   une qualité radio insuffisante.
+#
+# 🎯 Critère :
+#   - valeur = Low
+#
+# 🧩 Source :
+#   - Capteurs *_puissance_rf
+#
+# 🚫 Interdits :
+#   - melanger avec le WiFi
+# ==========================================================
+- trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+    - platform: state
+      entity_id:
+        - sensor.pluviometre_puissance_rf
+        - sensor.bobst_102_exterieur_so_puissance_rf
+        - sensor.komori_exterieur_no_puissance_rf
+        - sensor.chambre_parents_puissance_rf
+        - sensor.entree_puissance_rf
+        - sensor.jardin_no_puissance_rf
+        - sensor.jardin_se_puissance_rf
+        - sensor.petite_maison_puissance_rf
+        - sensor.sejour_puissance_rf
+  binary_sensor:
+    - name: "Netatmo – RF degrade"
+      unique_id: netatmo_rf_degrade
+      state: >
+        {% set entites = state_attr('group.netatmo_rf_signal_all', 'entity_id') or [] %}
+        {{ entites | select('has_value') | map('states') | select('equalto', 'Low') | list | count > 0 }}
+      attributes:
+        degrades: >
+          {% set entites = state_attr('group.netatmo_rf_signal_all', 'entity_id') or [] %}
+          {% set ns = namespace(items=[]) %}
+          {% for e in entites %}
+            {% if states(e) == 'Low' %}
+              {% set ns.items = ns.items + [e ~ ' -> Low'] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}

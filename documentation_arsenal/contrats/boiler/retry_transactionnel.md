@@ -187,7 +187,7 @@ L'orchestrateur nécessite, par commande retryable :
 |--------|------|------|
 | `input_number.<domaine>_retry_count` | `input_number` | Compteur de tentatives (0 = aucun retry effectué) |
 | `input_boolean.<domaine>_retry_pending` | `input_boolean` | Indique qu'un retry est en attente — mis à `false` par toute nouvelle exécution amont pour annuler le timer |
-| `timer.<domaine>_retry_timer` | `timer` | Timer de temporisation avant retry |
+| `timer.<domaine>_retry` | `timer` | Timer de temporisation avant retry |
 | `input_text.<domaine>_retry_attempt1_id` | `input_text` | `request_id` de la tentative 1 — conservé pour corrélation post-mortem dans les logs |
 
 Le compteur est remis à 0 après `applied` ou après abandon définitif. Il n'est jamais remis à 0 par le script exécutif.

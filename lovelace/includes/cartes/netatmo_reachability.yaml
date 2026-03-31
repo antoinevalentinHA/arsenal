@@ -1,0 +1,31 @@
+type: conditional
+conditions:
+  - entity: binary_sensor.netatmo_connectivite_ko
+    state: "on"
+card:
+  type: vertical-stack
+  cards:
+    ########################################################
+    # 📡 SECTION : Reachability Netatmo
+    ########################################################
+    - type: custom:button-card
+      template: section_header
+      name: 🔌 Reachability
+
+    - type: custom:auto-entities
+      filter:
+        include:
+          - entity_id: "sensor.*_reachability"
+            options:
+              type: custom:button-card
+              template: carte_diagnostic_reachability
+        exclude:
+          - entity_id: "sensor.diagnostic_netatmo_*"
+      sort:
+        method: state
+        reverse: false
+      card:
+        type: grid
+        columns: 3
+        square: false
+      card_param: cards

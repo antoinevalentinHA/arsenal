@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE : Bluetooth Signal (diagnostic)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Centraliser l’affichage et l’identification des capteurs
+#    Bluetooth de niveau de signal radio (RSSI).
+#
+# 🧠 Lecture métier :
+#    Les valeurs RSSI représentent la qualité de réception
+#    Bluetooth vue par l’infrastructure locale.
+#    Elles sont STRICTEMENT diagnostiques.
+#
+# 🧩 Périmètre :
+#    - Définit les friendly_name et icônes
+#    - Facilite l’audit du maillage Bluetooth / ESPHome
+#    - Sert au diagnostic de pertes ou faiblesse radio
+#
+# 🔗 Dépendances :
+#    - ESPHome / Bluetooth Proxy / intégration BLE
+#    - Capteurs physiques Bluetooth
+#    - Utilisés par :
+#      • dashboards Bluetooth
+#      • audits radio
+#
+# 🚫 Interdits :
+#    - Utiliser le RSSI comme condition métier directe
+#    - Déclencher une action automatique
+#    - Dégrader une logique fonctionnelle
+#      en fonction du niveau radio
+#
+# 🏷️ Statut :
+#    - Arsenal v11.x
+#    - diagnostic réseau / non décisionnel
+# ==========================================================
+
+
+############################################################
+# 🔘 BOTS / ACTIONNEURS
+############################################################
+
+sensor.bot_chambre_parents_bluetooth_signal:
+  friendly_name: "Bot chambre parents"
+  icon: mdi:gesture-tap-button
+
+sensor.bot_garage_1_bluetooth_signal:
+  friendly_name: "Bot garage 1"
+  icon: mdi:gesture-tap-button
+
+sensor.bot_garage_2_bluetooth_signal:
+  friendly_name: "Bot garage 2"
+  icon: mdi:gesture-tap-button
+
+sensor.bot_vmc_bluetooth_signal:
+  friendly_name: "Bot VMC"
+  icon: mdi:gesture-tap-button
+
+sensor.bot_deshumidificateur_bluetooth_signal:
+  friendly_name: "Bot déshumidificateur"
+  icon: mdi:gesture-tap-button
+
+
+############################################################
+# 📟 APPAREILS DE MESURE / TELECOMMANDES
+############################################################
+
+sensor.meter_garage_bluetooth_signal:
+  friendly_name: "Meter garage"
+  icon: mdi:gauge
+
+sensor.remote_constance_bluetooth_signal:
+  friendly_name: "Remote Constance"
+  icon: mdi:remote

@@ -333,7 +333,7 @@ chauffage_decision_centrale:
 
             - service: timer.cancel
               target:
-                entity_id: timer.chauffage_retry_timer
+                entity_id: timer.chauffage_retry
 
             # ------------------------------------------------------
             # Execution chauffage
@@ -377,7 +377,7 @@ chauffage_decision_centrale:
 
                 - service: timer.cancel
                   target:
-                    entity_id: timer.chauffage_retry_timer
+                    entity_id: timer.chauffage_retry
 
                 # ------------------------------------------------------
                 # Execution chauffage

@@ -1,0 +1,28 @@
+# ==========================================================
+# 📡 ARSENAL — GROUPE
+#     Bluetooth — Tous les signaux radio (RSSI)
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Regrouper l’ensemble des capteurs Bluetooth RSSI
+#   utilisés pour le diagnostic radio global (ESP32 / BLE).
+#
+# 🎯 Usage :
+#   - Binary sensor qualité dégradée
+#   - Diagnostics présence BLE
+#   - Futures métriques (min / worst / perte signal)
+#
+# 🔒 Nature :
+#   - Statique
+#   - Infrastructure uniquement
+# ==========================================================
+
+bluetooth_signal_all:
+  name: "Bluetooth — Tous signaux radio"
+  entities:
+    - sensor.bot_chambre_parents_bluetooth_signal
+    - sensor.bot_garage_1_bluetooth_signal
+    - sensor.bot_garage_2_bluetooth_signal
+    - sensor.bot_vmc_bluetooth_signal
+    - sensor.bot_deshumidificateur_bluetooth_signal
+    - sensor.meter_garage_bluetooth_signal
+    - sensor.remote_constance_bluetooth_signal

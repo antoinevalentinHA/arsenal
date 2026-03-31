@@ -58,7 +58,6 @@
 #     sans jamais porter d’intelligence.
 # ==========================================================
 
-
 - id: "10070000000011"
   alias: "Garage - Bouton 1 (MQTT) SwitchBot via état logique"
   mode: single

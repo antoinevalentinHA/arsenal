@@ -317,7 +317,7 @@ en conditions normales d’occupation.
 🔗 Dépendances :
 Références thermiques :
 - sensor.temperature_min_chambres
-- sensor.temperature_de_consigne_appliquee_locale
+- sensor.temperature_consigne_appliquee_locale
 - input_number.chauffage_consigne_confort
 
 ⚠️ Risques :

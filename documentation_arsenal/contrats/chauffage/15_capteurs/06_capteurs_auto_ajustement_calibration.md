@@ -407,7 +407,7 @@ et aux mécanismes d’auto-ajustement supervisés.
 🔗 Dépendances :
 Références thermiques :
 - sensor.temperature_min_chambres
-- sensor.temperature_de_consigne_appliquee_locale
+- sensor.temperature_consigne_appliquee_locale
 - input_number.chauffage_consigne_confort
 - sensor.temperature_jardin
 
@@ -468,7 +468,7 @@ et à la calibration de la pente de courbe de chauffe.
 🔗 Dépendances :
 Références thermiques :
 - sensor.temperature_min_chambres
-- sensor.temperature_de_consigne_appliquee_locale
+- sensor.temperature_consigne_appliquee_locale
 - input_number.chauffage_consigne_confort
 - sensor.temperature_jardin
 

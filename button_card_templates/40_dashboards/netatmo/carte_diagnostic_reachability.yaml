@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Diagnostic — Reachability
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : interprétative
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Traduire un état de joignabilité textuel True/False
+#   exposé par un sensor avec la palette canonique Arsenal.
+#
+# 📡 SOURCE
+#   - entity.state
+#
+# ⚙️ LOGIQUE UI
+#   - True                → vert canon
+#   - False               → rouge canon
+#   - unknown/unavailable → gris indisponibilité canon
+#   - autre état          → gris indisponibilité canon
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : socle_diagnostic_compact
+# ==========================================================
+
+carte_diagnostic_reachability:
+  template:
+    - socle_diagnostic_compact
+
+  icon: mdi:lan-connect
+  show_state: true
+
+  tap_action:
+    action: more-info
+
+  state_display: >
+    [[[
+      if (entity.state === "True" || entity.state === "true") return "Joignable";
+      if (entity.state === "False" || entity.state === "false") return "KO";
+      return "—";
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            if (!entity || entity.state === undefined)
+              return 'rgba(158, 158, 158, 0.1)';
+
+            if (entity.state === 'True' || entity.state === 'true')
+              return 'rgba(76, 175, 80, 0.2)';
+
+            if (entity.state === 'False' || entity.state === 'false')
+              return 'rgba(244, 67, 54, 0.2)';
+
+            if (entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

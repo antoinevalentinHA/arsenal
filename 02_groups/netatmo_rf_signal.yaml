@@ -1,0 +1,30 @@
+# ==========================================================
+# 📡 ARSENAL — GROUPE
+#     Netatmo — Tous les signaux RF
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Regrouper l’ensemble des capteurs Netatmo de puissance
+#   radio RF utilises pour le diagnostic des modules distants.
+#
+# 🎯 Usage :
+#   - Diagnostics liaisons radio Netatmo
+#   - Futures métriques (min / count / worst)
+#   - UI radio dédiée
+#
+# 🔒 Nature :
+#   - Statique
+#   - Infrastructure uniquement
+# ==========================================================
+
+netatmo_rf_signal_all:
+  name: "Netatmo — Tous signaux RF"
+  entities:
+    - sensor.pluviometre_puissance_rf
+    - sensor.bobst_102_exterieur_so_puissance_rf
+    - sensor.komori_exterieur_no_puissance_rf
+    - sensor.chambre_parents_puissance_rf
+    - sensor.entree_puissance_rf
+    - sensor.jardin_no_puissance_rf
+    - sensor.jardin_se_puissance_rf
+    - sensor.petite_maison_puissance_rf
+    - sensor.sejour_puissance_rf

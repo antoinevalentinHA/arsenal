@@ -473,3 +473,17 @@ diagnostics-zigbee-dashboard:
   icon: mdi:zigbee
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/zigbee.yaml
+
+diagnostics-bluetooth-dashboard:
+  mode: yaml
+  title: Diagnostics Bluetooth
+  icon: mdi:bluetooth
+  show_in_sidebar: false
+  filename: lovelace/dashboards/diagnostics/bluetooth.yaml
+
+diagnostics-netatmo-dashboard:
+  mode: yaml
+  title: Diagnostics Netatmo
+  icon: mdi:weather-partly-rainy
+  show_in_sidebar: false
+  filename: lovelace/dashboards/diagnostics/netatmo.yaml

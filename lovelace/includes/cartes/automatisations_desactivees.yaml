@@ -1,0 +1,15 @@
+type: conditional
+conditions:
+  - entity: sensor.automatisations_desactivees
+    state_not: "0"
+
+card:
+  type: custom:button-card
+  template: carte_compteur_alerte
+  entity: sensor.automatisations_desactivees
+  name: Automatisations
+  icon: mdi:robot
+  show_state: true
+  tap_action:
+    action: navigate
+    navigation_path: /diagnostics-automatisations-dashboard/diagnostics-automatisations

@@ -5,65 +5,60 @@
 # ID : 10210000000007
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Activer le mode High Accuracy lors de l’entrée dans
-#   zone.approche_securite sous alarme armée, pour la
-#   personne déclenchante uniquement.
+#   Activer le mode High Accuracy lors de l’entrée d’une
+#   personne dans la zone d’approche sécurité, uniquement
+#   si l’alarme est armée.
 #
 # 🧩 PRINCIPE
-#   - Déclenchement sur passage à on d’un capteur individuel
-#     d’approche sécurité
-#   - Vérification du contexte alarme
-#   - Résolution dynamique de la cible mobile
+#   - Détection structurelle via trigger de zone (enter)
+#   - Filtrage par état alarme
+#   - Résolution déterministe de la cible mobile
 #   - Activation du High Accuracy
 #   - Démarrage du timer de sécurité
 #
+# ⚙️ GARANTIES
+#   - Aucune dépendance à des chaînes UI (friendly_name)
+#   - Déclenchement fiable basé sur zone.approche_securite
+#   - Mapping explicite trigger.id → cible notify
+#   - Aucune pollution whitespace dans les variables
+#
 # 🛑 NON RESPONSABLE
+#   - Ne gère pas les retries ou ACK
+#   - Ne vérifie pas le succès de la commande mobile
 #   - Ne participe pas à la décision de désarmement
-#   - Ne vérifie pas le succès des commandes mobile
-#   - Ne gère aucun retry, watchdog ou ACK
 # ==========================================================
 
 - id: "10210000000007"
   alias: "Présence - Activation High Accuracy sur approche sécurité"
-  description: "Active le High Accuracy à l'entrée dans zone.approche_securite sous alarme armée"
+  description: "Activation High Accuracy à l'entrée dans zone.approche_securite sous alarme armée"
 
   mode: parallel
 
   trigger:
-    - platform: state
-      id: antoine
-      entity_id: binary_sensor.approche_securite_antoine
-      to: "on"
+    - platform: zone
+      id: valentin
+      entity_id: person.valentin
+      zone: zone.approche_securite
+      event: enter
 
-    - platform: state
+    - platform: zone
       id: constance
-      entity_id: binary_sensor.approche_securite_constance
-      to: "on"
+      entity_id: person.constance
+      zone: zone.approche_securite
+      event: enter
 
   condition:
     - condition: state
       entity_id: alarm_control_panel.alarme_maison
       state: "armed_away"
 
-    - condition: template
-      value_template: >
-        {{ trigger.from_state is not none
-           and trigger.from_state.state != 'on' }}
-
   action:
     - variables:
-        cible_notify: >
-          {% if trigger.id == 'antoine' %}
-            input_text.telephone_antoine_notify
-          {% elif trigger.id == 'constance' %}
-            input_text.telephone_constance_notify
-          {% else %}
-            none
-          {% endif %}
+        cible_notify: >-
+          {% if trigger.id == 'valentin' %}input_text.telephone_antoine_notify{% elif trigger.id == 'constance' %}input_text.telephone_constance_notify{% else %}none{% endif %}
 
     - condition: template
-      value_template: >
-        {{ cible_notify != 'none' }}
+      value_template: "{{ cible_notify != 'none' }}"
 
     - service: script.mobile_high_accuracy_on
       data:

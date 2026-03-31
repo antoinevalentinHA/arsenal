@@ -6,7 +6,7 @@
 #   (mode HEAT de la climatisation) doit s’éteindre.
 #
 # ⚙️ Fonctionnement :
-#   - Base : sensor.temperature_de_consigne_appliquee_locale
+#   - Base : sensor.temperature_consigne_appliquee_locale
 #   - Ajustement : ajout de input_number.clim_offset_off
 #   - Résultat : consigne + offset_off
 #

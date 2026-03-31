@@ -61,7 +61,7 @@ Les seuils sont calculés ailleurs et consommés tels quels.
 - Autorisation chauffage par clim — `input_boolean.chauffage_clim_active_en_hiver`
   (autorité d'écriture unique : `automation.mode_maison_gestion_chauffage_clim_hiver`)
 - Blocage post-aération — `input_boolean.chauffage_blocage_aeration` (domaine chauffage, consommé par HEAT uniquement)
-- Consigne chauffage appliquée — `sensor.temperature_de_consigne_appliquee_locale` (domaine chauffage, base de calcul des seuils HEAT clim — HEAT clim est un appoint indexé sur la consigne du chauffage principal)
+- Consigne chauffage appliquée — `sensor.temperature_consigne_appliquee_locale` (domaine chauffage, base de calcul des seuils HEAT clim — HEAT clim est un appoint indexé sur la consigne du chauffage principal)
 
 Les contraintes :
 - **n'imposent jamais un mode**,

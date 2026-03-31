@@ -1,0 +1,121 @@
+# ==========================================================
+# 📡 ARSENAL — SENSORS (triggered)
+#     Netatmo — Scores UI WiFi
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Produire des capteurs miroir numeriques UI-only pour
+#   visualiser les niveaux qualitatifs WiFi Netatmo.
+#
+# 🧩 Convention :
+#   - sensor.netatmo_wifi_score_<suffix>
+#   - source derivee : sensor.<suffix>_puissance_du_wi_fi
+#
+# 🧠 Mapping :
+#   - Full   -> 4
+#   - High   -> 3
+#   - Medium -> 2
+#   - Low    -> 1
+#   - autre  -> 0
+#
+# 🔒 Nature :
+#   - UI uniquement
+#   - non decisionnel
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.chambre_arnaud_puissance_du_wi_fi
+        - sensor.chambre_matthieu_puissance_du_wi_fi
+        - sensor.bobst_102_puissance_du_wi_fi
+        - sensor.komori_puissance_du_wi_fi
+        - sensor.media_puissance_du_wi_fi
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+
+    - name: "WiFi Score Chambre Arnaud"
+      unique_id: wifi_score_chambre_arnaud
+
+      state: &logic_netatmo_wifi_score >
+        {% set prefix = 'sensor.wifi_score_' %}
+        {% set suffix = this.entity_id | replace(prefix, '') %}
+        {% set source = 'sensor.' ~ suffix ~ '_puissance_du_wi_fi' %}
+        {% set s = states(source) %}
+
+        {% if s == 'Full' %}
+          4
+        {% elif s == 'High' %}
+          3
+        {% elif s == 'Medium' %}
+          2
+        {% elif s == 'Low' %}
+          1
+        {% else %}
+          0
+        {% endif %}
+
+      icon: &icon_netatmo_wifi_score >
+        {% set prefix = 'sensor.wifi_score_' %}
+        {% set suffix = this.entity_id | replace(prefix, '') %}
+        {% set source = 'sensor.' ~ suffix ~ '_puissance_du_wi_fi' %}
+        {% set s = states(source) %}
+
+        {% if s == 'Full' %}
+          mdi:wifi-strength-4
+        {% elif s == 'High' %}
+          mdi:wifi-strength-3
+        {% elif s == 'Medium' %}
+          mdi:wifi-strength-2
+        {% elif s == 'Low' %}
+          mdi:wifi-strength-1-alert
+        {% else %}
+          mdi:wifi-strength-off-outline
+        {% endif %}
+
+      attributes: &attrs_netatmo_wifi_score
+        source_entity: >
+          {% set prefix = 'sensor.wifi_score_' %}
+          {% set suffix = this.entity_id | replace(prefix, '') %}
+          {{ 'sensor.' ~ suffix ~ '_puissance_du_wi_fi' }}
+
+        source_state: >
+          {% set prefix = 'sensor.wifi_score_' %}
+          {% set suffix = this.entity_id | replace(prefix, '') %}
+          {{ states('sensor.' ~ suffix ~ '_puissance_du_wi_fi') }}
+
+        score_label: >
+          {% set prefix = 'sensor.wifi_score_' %}
+          {% set suffix = this.entity_id | replace(prefix, '') %}
+          {% set s = states('sensor.' ~ suffix ~ '_puissance_du_wi_fi') %}
+          {% if s in ['Full', 'High', 'Medium', 'Low'] %}
+            {{ s }}
+          {% else %}
+            Indisponible
+          {% endif %}
+
+    - name: "WiFi Score Chambre Matthieu"
+      unique_id: wifi_score_chambre_matthieu
+      state: *logic_netatmo_wifi_score
+      icon: *icon_netatmo_wifi_score
+      attributes: *attrs_netatmo_wifi_score
+
+    - name: "WiFi Score Bobst 102"
+      unique_id: wifi_score_bobst_102
+      state: *logic_netatmo_wifi_score
+      icon: *icon_netatmo_wifi_score
+      attributes: *attrs_netatmo_wifi_score
+
+    - name: "WiFi Score Komori"
+      unique_id: wifi_score_komori
+      state: *logic_netatmo_wifi_score
+      icon: *icon_netatmo_wifi_score
+      attributes: *attrs_netatmo_wifi_score
+
+    - name: "WiFi Score Media"
+      unique_id: wifi_score_media
+      state: *logic_netatmo_wifi_score
+      icon: *icon_netatmo_wifi_score
+      attributes: *attrs_netatmo_wifi_score

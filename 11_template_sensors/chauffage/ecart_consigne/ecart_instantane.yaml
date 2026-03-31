@@ -19,14 +19,14 @@
     - platform: state
       entity_id:
         - sensor.temperature_min_chambres
-        - sensor.temperature_de_consigne_appliquee_locale
+        - sensor.temperature_consigne_appliquee_locale
         - input_number.chauffage_consigne_confort
   sensor:
     - name: "Ecart consigne instantane"
       unique_id: ecart_consigne_instantane
       unit_of_measurement: "°C"
       state: >
-        {% set consigne_appliquee = states('sensor.temperature_de_consigne_appliquee_locale') | float(none) %}
+        {% set consigne_appliquee = states('sensor.temperature_consigne_appliquee_locale') | float(none) %}
         {% set consigne_presence = states('input_number.chauffage_consigne_confort') | float(none) %}
         {% set t_int = states('sensor.temperature_min_chambres') | float(none) %}
         {% set previous = this.state | float(none) %}

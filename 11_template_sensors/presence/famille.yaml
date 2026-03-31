@@ -1,19 +1,47 @@
 # ==========================================================
-# 👨‍👩‍👧 TEMPLATE BINARY SENSOR — Présence famille (standard)
+# 🧠 ARSENAL — BINARY SENSOR :
+#     Présence — Famille (vérité unifiée)
 # ----------------------------------------------------------
-# 💡 Objectif :
-#   Déterminer la présence d’un membre de la famille
-#   dans la maison, en se basant sur :
-#     • Les entités `person.*` (Home Assistant)
-#     • Les indicateurs de présence enfants
-#     • Le mode babysitting
+# 🎯 RÔLE
+#   Produire une vérité binaire FIABLE et CENTRALISÉE
+#   de la présence humaine familiale dans le périmètre
+#   domestique étendu (maison + approche sécurité).
 #
-# ⚙️ Fonctionnement :
-#   - ON  → au moins une présence détectée
-#   - OFF → aucune présence active
+# 🧱 PÉRIMÈTRE
+#   Sources prises en compte :
+#     - Entités `person.*` (géolocalisation HA)
+#     - `binary_sensor.presence_enfants`
+#     - `input_boolean.presence_visiteur`
 #
-# 📊 Type : Template Binary Sensor
-# 📍 Entité générée : binary_sensor.presence_famille
+#   Zones reconnues comme présence :
+#     - home
+#     - Maison – Sécurité
+#     - Approche – Sécurité
+#
+# 🧠 DÉFINITION DE VÉRITÉ
+#   ON  si au moins UNE des conditions est vraie :
+#     - Une entité `person.*` est dans une zone reconnue
+#     - `binary_sensor.presence_enfants` = on
+#     - `input_boolean.presence_visiteur` = on
+#
+#   OFF sinon
+#
+# ⚖️ CONTRAT
+#   - Capteur de VÉRITÉ uniquement (aucune logique métier)
+#   - Aucun effet de bord
+#   - Aucune dépendance temporelle
+#   - Tolérance aux états `unknown` / `unavailable`
+#
+# 🛑 NON RESPONSABLE
+#   - Ne décide pas des modes (chauffage, alarme, etc.)
+#   - Ne gère pas la précision GPS (High Accuracy)
+#   - Ne corrige pas les incohérences de sources
+#
+# 📌 REMARQUE STRUCTURELLE
+#   La hiérarchie spatiale des zones n’est PAS interprétée
+#   par Home Assistant : chaque état de `person` est évalué
+#   littéralement → les zones doivent être listées explicitement.
+#
 # ==========================================================
 
 - binary_sensor:
@@ -31,19 +59,21 @@
           'input_boolean.presence_visiteur'
         ] %}
 
+        {% set etats_presence_personnes = [
+          'home',
+          'Maison – Sécurité',
+          'Approche – Sécurité'
+        ] %}
+
         {{
           entites_presence
             | select('is_state', 'on')
             | list
             | length > 0
           or
-          entites_presence
-            | select('is_state', 'Maison – Sécurité')
-            | list
-            | length > 0
-          or
-          entites_presence
-            | select('is_state', 'home')
+          expand(entites_presence)
+            | selectattr('domain', 'eq', 'person')
+            | selectattr('state', 'in', etats_presence_personnes)
             | list
             | length > 0
         }}

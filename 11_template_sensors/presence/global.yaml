@@ -1,19 +1,44 @@
 # ==========================================================
-# 🏡 TEMPLATE BINARY SENSOR — Présence famille unifiée
+# 🧠 ARSENAL — BINARY SENSOR :
+#     Présence — Famille unifiee (canonique)
 # ----------------------------------------------------------
-# 💡 Objectif :
-#   Créer une entité de présence consolidée, combinant
-#   les différentes sources de détection (zone sécurité,
-#   présence générale) avec temporisation anti-fluctuations.
+# 🎯 RÔLE
+#   Produire la vérité canonique de présence familiale
+#   consommable par le reste du système Arsenal.
 #
-# ⚙️ Fonctionnement :
-#   - ON  → si au moins une des présences (famille ou sécurité) est active
-#   - OFF → si aucune présence détectée, après délai de 2 minutes
-#   - Délai ON : 3 secondes  → évite les détections trop brèves
-#   - Délai OFF : 30 secondes   → évite les faux négatifs temporaires
+# 🧱 PRINCIPE
+#   Ce capteur agrège des vérités de présence amont
+#   déjà calculées par des capteurs spécialisés.
 #
-# 📊 Type : Template Binary Sensor
-# 📍 Entité générée : binary_sensor.presence_famille_unifiee
+#   Sources consolidées :
+#     - `binary_sensor.presence_famille`
+#     - `binary_sensor.presence_famille_securite`
+#
+# 🧠 DÉFINITION DE VÉRITÉ
+#   ON  si au moins une source consolidée est active
+#   OFF si aucune source consolidée n'est active,
+#       après temporisation de stabilisation
+#
+# ⏱️ TEMPORISATION
+#   - `delay_on`  : absorbe les activations fugitives
+#   - `delay_off` : absorbe les pertes temporaires de détection
+#
+# ⚖️ CONTRAT
+#   - Capteur canonique de consommation
+#   - N'introduit aucune logique métier propre
+#   - Ne redéfinit pas les critères de présence amont
+#   - Se contente d'unifier et de stabiliser
+#
+# 🛑 NON RESPONSABLE
+#   - Ne décide pas des zones reconnues comme présence
+#   - Ne pilote pas le High Accuracy mobile
+#   - Ne gère pas les politiques sécurité
+#   - Ne corrige pas une vérité amont mal définie
+#
+# 📌 NOTE D'ARCHITECTURE
+#   Toute évolution du modèle spatial ou des vérités
+#   de présence amont impose la révision explicite
+#   de ce capteur et de ses sources.
 # ==========================================================
 
 - binary_sensor:

@@ -31,7 +31,7 @@
 #     - entity                                        : sensor.programme_chauffage
 #     - binary_sensor.bruleur_mode_chauffage          : activité réelle brûleur
 #     - sensor.chauffage_raison_calculee              : raison active normalisée Arsenal
-#     - sensor.temperature_de_consigne_appliquee_locale : consigne affichée en label
+#     - sensor.temperature_consigne_appliquee_locale  : consigne affichée en label
 #     - input_boolean.blocage_geofencing              : contexte absence géofencing
 #
 # ⚠️ CONTRAINTES
@@ -138,7 +138,7 @@ carte_chauffage_synthese:
     [[[
       const prog = (entity.state || '').toLowerCase();
       const raison = states['sensor.chauffage_raison_calculee']?.state;
-      const c = states['sensor.temperature_de_consigne_appliquee_locale']?.state;
+      const c = states['sensor.temperature_consigne_appliquee_locale']?.state;
       const bruleur = states['binary_sensor.bruleur_mode_chauffage']?.state === 'on';
       const geofencing = states['input_boolean.blocage_geofencing']?.state === 'on';
 

@@ -53,11 +53,11 @@ garage_toggle:
       {% else %}
         {{ effective_action }}
       {% endif %}
-    selected_button: >-
+    selected_switch: >-
       {% if target_state == 'on' %}
-        button.garage_1
+        switch.garage_1
       {% else %}
-        button.garage_2
+        switch.garage_2
       {% endif %}
 
   sequence:
@@ -66,9 +66,9 @@ garage_toggle:
             - condition: template
               value_template: "{{ should_run }}"
           sequence:
-            - service: button.press
+            - service: switch.turn_on
               target:
-                entity_id: "{{ selected_button }}"
+                entity_id: "{{ selected_switch }}"
 
             - service: "input_boolean.turn_{{ target_state }}"
               target:

@@ -1,0 +1,45 @@
+# ==========================================================
+# 📡 ARSENAL — BINARY SENSOR (triggered)
+#     Netatmo — WiFi degrade
+# ----------------------------------------------------------
+# 🧠 Rôle :
+#   Détecter si au moins un module Netatmo Wi-Fi présente
+#   une qualité radio insuffisante.
+#
+# 🎯 Critère :
+#   - valeur = Low
+#
+# 🧩 Source :
+#   - Capteurs *_puissance_du_wi_fi (classes qualitatives)
+#
+# 🚫 Interdits :
+#   - conversion en valeurs numeriques fictives
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+    - platform: state
+      entity_id:
+        - sensor.chambre_arnaud_puissance_du_wi_fi
+        - sensor.chambre_matthieu_puissance_du_wi_fi
+        - sensor.bobst_102_puissance_du_wi_fi
+        - sensor.komori_puissance_du_wi_fi
+        - sensor.media_puissance_du_wi_fi
+  binary_sensor:
+    - name: "Netatmo – WiFi degrade"
+      unique_id: netatmo_wifi_degrade
+      state: >
+        {% set entites = state_attr('group.netatmo_wifi_signal_all', 'entity_id') or [] %}
+        {{ entites | select('has_value') | map('states') | select('equalto', 'Low') | list | count > 0 }}
+      attributes:
+        degrades: >
+          {% set entites = state_attr('group.netatmo_wifi_signal_all', 'entity_id') or [] %}
+          {% set ns = namespace(items=[]) %}
+          {% for e in entites %}
+            {% if states(e) == 'Low' %}
+              {% set ns.items = ns.items + [e ~ ' -> Low'] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}

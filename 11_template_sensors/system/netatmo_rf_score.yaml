@@ -1,0 +1,149 @@
+# ==========================================================
+# 📡 ARSENAL — SENSORS (triggered)
+#     Netatmo — Scores UI RF
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Produire des capteurs miroir numeriques UI-only pour
+#   visualiser les niveaux qualitatifs RF Netatmo.
+#
+# 🧩 Convention :
+#   - sensor.netatmo_rf_score_<suffix>
+#   - source derivee : sensor.<suffix>_puissance_rf
+#
+# 🧠 Mapping :
+#   - Full   -> 4
+#   - High   -> 3
+#   - Medium -> 2
+#   - Low    -> 1
+#   - autre  -> 0
+#
+# 🔒 Nature :
+#   - UI uniquement
+#   - non decisionnel
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.pluviometre_puissance_rf
+        - sensor.bobst_102_exterieur_so_puissance_rf
+        - sensor.komori_exterieur_no_puissance_rf
+        - sensor.chambre_parents_puissance_rf
+        - sensor.entree_puissance_rf
+        - sensor.jardin_no_puissance_rf
+        - sensor.jardin_se_puissance_rf
+        - sensor.petite_maison_puissance_rf
+        - sensor.sejour_puissance_rf
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+
+    - name: "RF Score Pluviometre"
+      unique_id: rf_score_pluviometre
+
+      state: &logic_netatmo_rf_score >
+        {% set prefix = 'sensor.rf_score_' %}
+        {% set suffix = this.entity_id | replace(prefix, '') %}
+        {% set source = 'sensor.' ~ suffix ~ '_puissance_rf' %}
+        {% set s = states(source) %}
+
+        {% if s == 'Full' %}
+          4
+        {% elif s == 'High' %}
+          3
+        {% elif s == 'Medium' %}
+          2
+        {% elif s == 'Low' %}
+          1
+        {% else %}
+          0
+        {% endif %}
+
+      icon: &icon_netatmo_rf_score >
+        {% set prefix = 'sensor.rf_score_' %}
+        {% set suffix = this.entity_id | replace(prefix, '') %}
+        {% set source = 'sensor.' ~ suffix ~ '_puissance_rf' %}
+        {% set s = states(source) %}
+
+        {% if s == 'Full' %}
+          mdi:signal-cellular-3
+        {% elif s == 'High' %}
+          mdi:signal-cellular-2
+        {% elif s == 'Medium' %}
+          mdi:signal-cellular-1
+        {% elif s == 'Low' %}
+          mdi:signal-cellular-outline
+        {% else %}
+          mdi:signal-off
+        {% endif %}
+
+      attributes: &attrs_netatmo_rf_score
+        source_entity: >
+          {% set prefix = 'sensor.rf_score_' %}
+          {% set suffix = this.entity_id | replace(prefix, '') %}
+          {{ 'sensor.' ~ suffix ~ '_puissance_rf' }}
+
+        source_state: >
+          {% set prefix = 'sensor.rf_score_' %}
+          {% set suffix = this.entity_id | replace(prefix, '') %}
+          {{ states('sensor.' ~ suffix ~ '_puissance_rf') }}
+
+        score_label: >
+          {% set prefix = 'sensor.rf_score_' %}
+          {% set suffix = this.entity_id | replace(prefix, '') %}
+          {% set s = states('sensor.' ~ suffix ~ '_puissance_rf') %}
+          {% if s in ['Full', 'High', 'Medium', 'Low'] %}
+            {{ s }}
+          {% else %}
+            Indisponible
+          {% endif %}
+
+    - name: "RF Score Bobst 102 Exterieur SO"
+      unique_id: rf_score_bobst_102_exterieur_so
+      state: *logic_netatmo_rf_score
+      icon: *icon_netatmo_rf_score
+      attributes: *attrs_netatmo_rf_score
+
+    - name: "RF Score Komori Exterieur NO"
+      unique_id: rf_score_komori_exterieur_no
+      state: *logic_netatmo_rf_score
+      icon: *icon_netatmo_rf_score
+      attributes: *attrs_netatmo_rf_score
+
+    - name: "RF Score Chambre Parents"
+      unique_id: rf_score_chambre_parents
+      state: *logic_netatmo_rf_score
+      icon: *icon_netatmo_rf_score
+      attributes: *attrs_netatmo_rf_score
+
+    - name: "RF Score Entree"
+      unique_id: rf_score_entree
+      state: *logic_netatmo_rf_score
+      icon: *icon_netatmo_rf_score
+      attributes: *attrs_netatmo_rf_score
+
+    - name: "RF Score Jardin NO"
+      unique_id: rf_score_jardin_no
+      state: *logic_netatmo_rf_score
+      icon: *icon_netatmo_rf_score
+      attributes: *attrs_netatmo_rf_score
+
+    - name: "RF Score Jardin SE"
+      unique_id: rf_score_jardin_se
+      state: *logic_netatmo_rf_score
+      icon: *icon_netatmo_rf_score
+      attributes: *attrs_netatmo_rf_score
+
+    - name: "RF Score Petite Maison"
+      unique_id: netatmo_rf_score_petite_maison
+      state: *logic_netatmo_rf_score
+      icon: *icon_netatmo_rf_score
+      attributes: *attrs_netatmo_rf_score
+
+    - name: "RF Score Sejour"
+      unique_id: rf_score_sejour
+      state: *logic_netatmo_rf_score
+      icon: *icon_netatmo_rf_score
+      attributes: *attrs_netatmo_rf_score
