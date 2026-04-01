@@ -56,7 +56,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 extinction_soir_maison:
   alias: Extinction soir maison
   mode: single

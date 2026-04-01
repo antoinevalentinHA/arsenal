@@ -18,7 +18,6 @@
 # 📍 Entité : input_boolean.presence_visiteur
 # ==========================================================
 
-
 presence_visiteur:
   name: "Presence visiteur"
   icon: mdi:account-tie

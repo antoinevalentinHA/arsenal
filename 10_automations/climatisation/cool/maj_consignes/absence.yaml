@@ -58,7 +58,6 @@
 #     est externalisée dans les pipelines dédiés.
 # ==========================================================
 
-
 - id: '1003000000008'
   alias: "Réglages - Clim consigne absence"
   mode: single

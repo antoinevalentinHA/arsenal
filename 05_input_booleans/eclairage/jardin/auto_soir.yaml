@@ -37,7 +37,6 @@
 #       être explicitement autorisé ou neutralisé
 # ==========================================================
 
-
 auto_lumiere_jardin_soir:
   name: Lumière jardin - auto soir
   icon: mdi:weather-sunset-down

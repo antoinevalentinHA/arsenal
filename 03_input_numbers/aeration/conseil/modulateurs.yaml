@@ -41,7 +41,6 @@
 #    - modulateurs décisionnels actifs (contextuels)
 # ==========================================================
 
-
 aeration_mod_nuit_delta_ha:
   name: "Mod. nuit ΔHA (−)"
   min: 0

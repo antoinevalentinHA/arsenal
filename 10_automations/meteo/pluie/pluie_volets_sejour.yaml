@@ -6,44 +6,37 @@
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
-#     Automation d’ORCHESTRATION MÉTIER (événementielle).
-#
-#     Ferme automatiquement les volets du séjour
-#     UNIQUEMENT lors du passage à "pluie forte",
-#     conformément au contrat : "Séjour = pluie forte only".
+#     Orchestration événementielle.
+#     Ferme les volets du séjour sur détection de pluie forte,
+#     si l'autorisation séjour est active.
 #
 #  🧱 NATURE
 #
 #     - Orchestration événementielle
-#     - Décision déléguée aux capteurs template
-#     - Exécution déléguée au script idempotent
+#     - Décision déléguée à sensor.cibles_volets_pluie_sejour
+#     - Exécution déléguée à script.volets_fermeture_execute
 #
 #  ⚙️ PRINCIPE
 #
-#     - Déclenchement principal :
-#         • binary_sensor.intention_pluie_forte -> ON
-#     - Déclenchement de reprise :
-#         • systeme_stable -> ON si pluie forte déjà active
-#
-#  ✅ CONDITIONS
-#
-#     - Présence sécurisée = OFF (absence)
-#     - Autorisation séjour = ON (helpers)
-#     - Cibles séjour disponibles (liste non vide)
+#     - Déclenchement principal : intention_pluie_forte → ON
+#     - Déclenchement de reprise : systeme_stable → ON si pluie forte déjà active
 #
 #  🚫 NE FAIT PAS
 #
 #     - Ne détecte pas la pluie
-#     - Ne décide pas du "fort" (capteur décide)
+#     - Ne recalcule pas l'autorisation (déléguée au sensor)
+#     - Ne filtre pas la présence (portée par autorisation_fermeture_volets_pluie_sejour)
 #     - Ne ferme aucun autre volet que le séjour
+#
+#  📐 CONTRAT
+#     CONTRAT_PLUIE_VOLETS.md v2.2.1 — sections 4.2, 5.7
 # ==========================================================
 
 - id: "10160000000010"
   alias: "Pluie forte – Fermeture volets Séjour"
   description: >
-    Ferme les volets du séjour uniquement lors du passage à "pluie forte",
-    en absence (présence sécurisée OFF) et si l’autorisation séjour est active.
-
+    Ferme les volets du séjour lors du passage à "pluie forte",
+    si l'autorisation séjour est active (politique présence déléguée au sensor).
   mode: single
   max_exceeded: silent
 
@@ -52,7 +45,6 @@
       id: pluie_forte
       entity_id: binary_sensor.intention_pluie_forte
       to: "on"
-
     - platform: state
       id: demarrage
       entity_id: input_boolean.systeme_stable
@@ -61,21 +53,11 @@
   condition:
     - condition: template
       alias: "Garde-fou : pluie forte active"
-      value_template: "{{ states('binary_sensor.intention_pluie_forte') == 'on' }}"
-
+      value_template: "{{ is_state('binary_sensor.intention_pluie_forte','on') }}"
     - condition: template
-      alias: "Condition : présence sécurisée OFF (absence)"
-      value_template: "{{ states('binary_sensor.presence_famille_securite') == 'off' }}"
-
-    - condition: template
-      alias: "Condition : autorisation séjour ON"
-      value_template: "{{ states('binary_sensor.autorisation_fermeture_volets_pluie_sejour') == 'on' }}"
-
-    - condition: template
-      alias: "Condition : cibles séjour non vides"
+      alias: "Optimisation : cibles séjour non vides"
       value_template: >
         {{ (state_attr('sensor.cibles_volets_pluie_sejour','entity_ids') or []) | length > 0 }}
-
     - condition: or
       conditions:
         - condition: trigger
@@ -86,16 +68,14 @@
               id: demarrage
             - condition: template
               alias: "Reprise : pluie forte déjà active"
-              value_template: "{{ states('binary_sensor.intention_pluie_forte') == 'on' }}"
+              value_template: "{{ is_state('binary_sensor.intention_pluie_forte','on') }}"
 
   action:
     - variables:
         cibles_sejour: "{{ state_attr('sensor.cibles_volets_pluie_sejour','entity_ids') or [] }}"
-
     - service: script.volets_fermeture_execute
       data:
         covers: "{{ cibles_sejour }}"
-
     - service: script.notification_envoyer_avance
       data:
         cible: input_text.telephone_antoine_notify
@@ -103,7 +83,6 @@
         message: >
           Pluie forte détectée.
           Fermeture automatique des volets du séjour à {{ now().strftime('%H:%M') }}.
-
           Cibles : {{ cibles_sejour | join(', ') }}.
         extra:
           group: "volets"

@@ -52,7 +52,6 @@
 #   Home Assistant 2024.8+
 # ==========================================================
 
-
 traitement_code_clavier:
   alias: Alarme - Traitement du code clavier
   description: >

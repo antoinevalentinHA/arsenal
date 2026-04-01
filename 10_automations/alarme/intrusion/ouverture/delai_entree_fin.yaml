@@ -31,7 +31,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10020000000032"
   alias: "Alarme - Délai entrée (fin)"
   mode: single

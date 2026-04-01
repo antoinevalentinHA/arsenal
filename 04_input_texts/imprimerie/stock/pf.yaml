@@ -33,7 +33,6 @@
 #   - Représente un état passé
 # ==========================================================
 
-
 conditions_pf_semaine_1:
   name: "PF – Semaine 1 (la + récente)"
   max: 255

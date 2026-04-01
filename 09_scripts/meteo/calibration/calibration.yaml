@@ -87,7 +87,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 calibration_capteurs_zigbee:
   alias: "Calibration ponctuelle des capteurs Zigbee"
   mode: restart

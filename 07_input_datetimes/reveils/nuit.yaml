@@ -50,7 +50,6 @@
 #   jamais le comportement immédiat du système.
 # ==========================================================
 
-
 heure_reveil_nuit_debut:
   name: Heure début réveil nuit
   has_time: true

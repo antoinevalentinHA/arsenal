@@ -24,7 +24,6 @@
 #   Ex. "28/11 07:12 • Désinfection • 2.1→2.4 • Err +1.2°C"
 # ==========================================================
 
-
 ecs_dernier_ajustement:
   name: ecs_dernier_ajustement
   max: 255

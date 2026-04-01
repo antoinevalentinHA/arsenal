@@ -29,7 +29,6 @@
 #       les actions automatisées
 # ==========================================================
 
-
 reset_mode_babysitting_auto:
   name: "Réinitialisation auto babysitting"
   icon: mdi:clock-check

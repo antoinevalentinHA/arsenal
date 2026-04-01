@@ -315,3 +315,21 @@
       attributes:
         temperature_source: sensor.temperature_qualite
         humidite_source: sensor.humidite_relative_qualite
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_exterieur
+        - sensor.humidite_relative_exterieur
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Point de rosée Extérieur"
+      unique_id: point_de_rosee_exterieur
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-water
+      state: *dewpoint_logic
+      attributes:
+        temperature_source: sensor.temperature_exterieur
+        humidite_source: sensor.humidite_relative_exterieur

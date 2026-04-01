@@ -73,7 +73,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 timer_ouverture_chambre_parents_start:
   alias: "Ouverture chambre parents – Timer dynamique"
   mode: restart

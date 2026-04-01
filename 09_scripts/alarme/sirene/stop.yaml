@@ -43,7 +43,6 @@
 #   Home Assistant 2024.8+
 # ==========================================================
 
-
 arret_sirene:
   alias: Arrêter la sirène (mode burglar)
   mode: single

@@ -35,7 +35,6 @@
 #    - temporalité métier (partiellement active)
 # ==========================================================
 
-
 aeration_stabilisation_minutes:
   name: "Stabilisation avant recommandation"
   min: 0

@@ -33,7 +33,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10020000000026"
   alias: "Alarme - Désarmement via badge"
   description: >

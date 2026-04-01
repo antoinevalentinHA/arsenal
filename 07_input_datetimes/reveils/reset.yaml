@@ -50,7 +50,6 @@
 #   jamais l’état immédiat du système.
 # ==========================================================
 
-
 heure_reset_reveils:
   name: Heure reset réveils
   has_time: true

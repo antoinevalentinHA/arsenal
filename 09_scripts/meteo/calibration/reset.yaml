@@ -84,7 +84,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 reset_calibration_capteurs_zigbee:
   alias: "Zigbee – Reset calibration T° & HR"
   mode: single

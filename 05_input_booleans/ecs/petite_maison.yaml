@@ -21,7 +21,6 @@
 # 📍 Entité : input_boolean.ecs_petite_maison_programmation
 # ==========================================================
 
-
 ecs_petite_maison_programmation:
   name: "Programmation ECS Petite Maison"
   icon: mdi:water-boiler

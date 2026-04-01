@@ -50,7 +50,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10180000000003"
   alias: "Atelier – Mémoire temps réel des min/max"
   description: >

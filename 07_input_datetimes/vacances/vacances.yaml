@@ -57,7 +57,6 @@
 #   jamais l’état immédiat du système.
 # ==========================================================
 
-
 debut_vacances:
   name: Début des vacances
   has_date: true

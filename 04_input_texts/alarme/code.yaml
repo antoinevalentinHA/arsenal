@@ -28,7 +28,6 @@
 #   - Le masquage d’affichage n’est PAS un chiffrement
 # ==========================================================
 
-
 alarm_code:
   name: Code Alarme
   initial: !secret code_alarme

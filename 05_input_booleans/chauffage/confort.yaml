@@ -23,7 +23,6 @@
 # 📍 Entité : input_boolean.mode_confort_chauffage
 # ==========================================================
 
-
 mode_confort_chauffage:
   name: Mode Confort Chauffage
   icon: mdi:radiator

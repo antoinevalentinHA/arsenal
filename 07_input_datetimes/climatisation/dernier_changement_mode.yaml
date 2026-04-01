@@ -33,7 +33,6 @@
 #   Ce helper ne doit JAMAIS être modifié manuellement.
 # ==========================================================
 
-
 clim_mode_last_change:
   name: "Clim - Dernier changement de mode"
   has_date: true

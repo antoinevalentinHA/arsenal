@@ -38,7 +38,6 @@
 #       disposer d’un mode test explicite
 # ==========================================================
 
-
 test_simulation_presence:
   name: Test simulation presence
   icon: mdi:test-tube

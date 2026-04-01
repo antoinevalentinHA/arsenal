@@ -82,7 +82,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 ecs_petite_maison_mode_eco:
   alias: "ECS Petite Maison - Mode Éco"
   sequence:

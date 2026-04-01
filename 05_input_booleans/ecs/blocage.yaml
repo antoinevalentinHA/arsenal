@@ -22,7 +22,6 @@
 # 📍 Entité : input_boolean.ecs_blocage_planifiee
 # ==========================================================
 
-
 ecs_blocage_planifiee:
   name: "Blocage chauffe planifiée"
   icon: mdi:water-boiler-off

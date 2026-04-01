@@ -1,0 +1,52 @@
+# =============================================================
+# ARSENAL — Capteurs de synthèse CO2 par zone
+# Position : perception → agrégation transverse
+# Logique  : moyenne simple, exclusion invalides
+# Usage    : aération (priorité CO2), domaines consommateurs
+# Invariant: aucune logique métier, aucune action
+# =============================================================
+
+- sensor:
+
+    # -----------------------------------------------------------
+    # CO2 moyen — Etage
+    # Sources : chambre_arnaud, chambre_matthieu, chambre_parents
+    # -----------------------------------------------------------
+    - name: "CO2 etage"
+      unique_id: co2_etage
+      device_class: carbon_dioxide
+      state_class: measurement
+      unit_of_measurement: "ppm"
+      state: >
+        {% set valeurs = [
+          states('sensor.co2_chambre_arnaud') | float(none),
+          states('sensor.co2_chambre_matthieu') | float(none),
+          states('sensor.co2_chambre_parents') | float(none)
+        ] %}
+        {% set valides = valeurs | reject('equalto', none) | list %}
+        {% if valides | length == 0 %}
+          unknown
+        {% else %}
+          {{ (valides | sum / (valides | length)) | round(0) }}
+        {% endif %}
+
+    # -----------------------------------------------------------
+    # CO2 moyen — RDC
+    # Sources : entree, sejour
+    # -----------------------------------------------------------
+    - name: "CO2 rdc"
+      unique_id: co2_rdc
+      device_class: carbon_dioxide
+      state_class: measurement
+      unit_of_measurement: "ppm"
+      state: >
+        {% set valeurs = [
+          states('sensor.co2_entree') | float(none),
+          states('sensor.co2_sejour') | float(none)
+        ] %}
+        {% set valides = valeurs | reject('equalto', none) | list %}
+        {% if valides | length == 0 %}
+          unknown
+        {% else %}
+          {{ (valides | sum / (valides | length)) | round(0) }}
+        {% endif %}

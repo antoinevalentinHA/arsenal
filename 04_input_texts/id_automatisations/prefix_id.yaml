@@ -33,7 +33,6 @@
 #   - Peut être modifiée indirectement uniquement
 # ==========================================================
 
-
 prefix_id:
   name: Prefix ID
   mode: text

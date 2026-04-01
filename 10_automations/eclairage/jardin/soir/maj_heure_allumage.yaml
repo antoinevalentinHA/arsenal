@@ -57,7 +57,6 @@
 #     sans jamais piloter le matériel.
 # ==========================================================
 
-
 - id: '1007000000005'
   alias: "Mise  à jour heure allumage jardin soir"
   description: >

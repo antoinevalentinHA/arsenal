@@ -35,7 +35,6 @@
 #     - Indépendance totale vis-à-vis du matériel réel
 # ==========================================================
 
-
 - id: "10120000000017"
   alias: "Téléphones - Sync helpers"
   mode: parallel

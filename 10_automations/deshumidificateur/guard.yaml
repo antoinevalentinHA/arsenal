@@ -61,7 +61,6 @@
 #     jamais l’inverse.
 # ==========================================================
 
-
 - id: "10060000000003"
   alias: "GUARD – Déshumidificateur – État interdit"
   mode: restart

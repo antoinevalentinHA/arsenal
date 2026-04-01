@@ -61,7 +61,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 ouvrir_tous_les_volets:
   alias: "Ouvrir tous les volets"
   mode: single

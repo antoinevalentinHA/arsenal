@@ -73,7 +73,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 timer_ouverture_sejour_start:
   alias: "Ouverture séjour – Timer dynamique"
   mode: restart

@@ -46,7 +46,6 @@
 #    - Correcteurs d’hystérésis clim chauffage
 # ==========================================================
 
-
 clim_offset_on:
   name: "Offset seuil ON (clim chauffage)"
   min: 0.1

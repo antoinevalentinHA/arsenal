@@ -20,7 +20,6 @@
 # 📍 Entité : input_boolean.mode_enfants
 # ==========================================================
 
-
 mode_enfants:
   name: Mode Enfants actif
   icon: mdi:human-child

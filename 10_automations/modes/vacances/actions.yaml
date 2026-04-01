@@ -60,7 +60,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1009000000006'
   alias: "Vacances – Application du contexte"
   description: >

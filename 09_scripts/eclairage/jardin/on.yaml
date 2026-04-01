@@ -58,7 +58,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 jardin_on:
   alias: "Éclairage Jardin - Allumage"
   mode: single

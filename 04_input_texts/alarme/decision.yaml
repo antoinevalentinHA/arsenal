@@ -34,7 +34,6 @@
 #     pas le processus de décision
 # ==========================================================
 
-
 alarme_decision:
   name: "Alarme – Decision centrale"
   max: 50

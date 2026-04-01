@@ -87,7 +87,6 @@
 #     en respectant strictement les contraintes matérielles.
 # ==========================================================
 
-
 - id: "10070000000024"
   alias: "Simulation présence - Garage - Pilotage lampe"
   mode: single

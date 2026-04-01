@@ -55,7 +55,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 mode_enfants_ecs_activer:
   alias: "Mode enfants ECS - Activer"
   mode: single

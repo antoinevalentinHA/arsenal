@@ -36,7 +36,6 @@
 #    - Paramètre éclairage jardin (matin)
 # ==========================================================
 
-
 delai_extinction_jardin_matin:
   name: Délai après lever du jour (min)
   icon: mdi:weather-sunset-up

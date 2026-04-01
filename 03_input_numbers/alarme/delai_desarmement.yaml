@@ -30,7 +30,6 @@
 #    - paramètre de sécurité actif (alarme)
 # ==========================================================
 
-
 alarme_delai_entree:
   name: Délai entrée (s)
   min: 10

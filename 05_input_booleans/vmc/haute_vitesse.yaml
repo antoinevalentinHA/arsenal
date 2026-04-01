@@ -19,7 +19,6 @@
 # 📍 Entité : input_boolean.vmc_haute_vitesse
 # ==========================================================
 
-
 vmc_haute_vitesse:
   name: "Haute vitesse"
   icon: mdi:fan

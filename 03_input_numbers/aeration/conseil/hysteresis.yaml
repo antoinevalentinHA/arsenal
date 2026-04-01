@@ -31,7 +31,6 @@
 #    - réglages UI / non utilisés
 # ==========================================================
 
-
 aeration_hysteresis_ha:
   name: "Hystérésis ΔHA (arrêt reco)"
   min: 0

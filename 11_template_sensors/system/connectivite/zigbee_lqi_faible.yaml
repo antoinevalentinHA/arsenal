@@ -36,49 +36,42 @@
         - sensor.bouton_garage_1_linkquality
         - sensor.bouton_garage_2_linkquality
         - sensor.bouton_sdb_linkquality
-    
-        - sensor.contact_chambre_arnaud_1_linkquality
-        - sensor.contact_chambre_arnaud_2_linkquality
-        - sensor.contact_chambre_matthieu_1_linkquality
-        - sensor.contact_chambre_matthieu_2_linkquality
-        - sensor.contact_chambre_parents_gauche_1_linkquality
-        - sensor.contact_chambre_parents_gauche_2_linkquality
-        - sensor.contact_chambre_parents_milieu_1_linkquality
-        - sensor.contact_chambre_parents_milieu_2_linkquality
-        - sensor.contact_chambre_parents_droite_1_linkquality
-        - sensor.contact_chambre_parents_droite_2_linkquality
-    
-        - sensor.contact_entree_fenetre_linkquality
-        - sensor.contact_sejour_1_linkquality
-        - sensor.contact_sejour_2_linkquality
-        - sensor.contact_sejour_3_1_linkquality
-        - sensor.contact_sejour_3_2_linkquality
-        - sensor.contact_sejour_4_linkquality
-    
         - sensor.capteur_mouvements_entree_linkquality
         - sensor.capteur_mouvements_garage_1_linkquality
         - sensor.capteur_mouvements_garage_2_linkquality
         - sensor.capteur_mouvements_garage_3_linkquality
         - sensor.capteur_mouvements_sejour_1_linkquality
         - sensor.capteur_mouvements_sejour_2_linkquality
-    
+        - sensor.clavier_alarme_1_linkquality
+        - sensor.clavier_alarme_2_linkquality
+        - sensor.contact_chambre_arnaud_1_linkquality
+        - sensor.contact_chambre_arnaud_2_linkquality
+        - sensor.contact_chambre_matthieu_1_linkquality
+        - sensor.contact_chambre_matthieu_2_linkquality
+        - sensor.contact_chambre_parents_droite_1_linkquality
+        - sensor.contact_chambre_parents_droite_2_linkquality
+        - sensor.contact_chambre_parents_gauche_1_linkquality
+        - sensor.contact_chambre_parents_gauche_2_linkquality
+        - sensor.contact_chambre_parents_milieu_1_linkquality
+        - sensor.contact_chambre_parents_milieu_2_linkquality
+        - sensor.contact_entree_fenetre_linkquality
         - sensor.contact_entree_porte_1_linkquality
         - sensor.contact_entree_porte_2_linkquality
         - sensor.contact_garage_1_linkquality
         - sensor.contact_garage_2_linkquality
-        
+        - sensor.contact_sejour_1_linkquality
+        - sensor.contact_sejour_2_linkquality
+        - sensor.contact_sejour_3_1_linkquality
+        - sensor.contact_sejour_3_2_linkquality
+        - sensor.contact_sejour_4_linkquality
+        - sensor.lumiere_garage_linkquality
         - sensor.luminosite_garage_linkquality
-    
-        - sensor.clavier_alarme_1_linkquality
-        - sensor.clavier_alarme_2_linkquality
-    
         - sensor.meteo_zigbee_chambre_arnaud_linkquality
         - sensor.meteo_zigbee_chambre_matthieu_linkquality
         - sensor.meteo_zigbee_chambre_parents_linkquality
         - sensor.meteo_zigbee_entree_linkquality
-        - sensor.meteo_zigbee_sejour_linkquality
         - sensor.meteo_zigbee_sdb_parents_linkquality
-    
+        - sensor.meteo_zigbee_sejour_linkquality
         - sensor.prise_bouclage_linkquality
         - sensor.prise_box_linkquality
         - sensor.prise_buanderie_linkquality
@@ -96,8 +89,7 @@
         - sensor.prise_sdb_enfants_linkquality
         - sensor.prise_sejour_baies_vitrees_linkquality
         - sensor.prise_sejour_placard_linkquality
-    
-        - sensor.sirene_alarm_linkquality
+        - sensor.sirene_linkquality
         - sensor.zigbee_pluie_linkquality
       id: "any_linkquality_change"
 

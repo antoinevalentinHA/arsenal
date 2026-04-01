@@ -28,7 +28,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1012000000002'
   alias: Maintenance - Batteries faibles - Réinitialisation quotidienne
   description: Réinitialise le booléen chaque nuit à minuit.

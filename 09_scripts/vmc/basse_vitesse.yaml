@@ -50,7 +50,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 vmc_basse_vitesse:
   alias: "VMC - Retour en basse vitesse"
   mode: single

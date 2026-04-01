@@ -35,7 +35,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10210000000002"
   alias: Présence sécurite - Durée absence 5 min
   description: >

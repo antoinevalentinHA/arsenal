@@ -42,7 +42,7 @@
 # 🧠 SOURCES UTILISÉES
 #
 #     - input_boolean.auto_lumiere_jardin_soir
-#     - input_number.lumiere_jardin_soir_offset_minutes
+#     - input_number.delai_allumage_jardin_soir
 #     - binary_sensor.jardin_soir_fin_absolue
 #     - sun.sun (last_setting / next_setting)
 #
@@ -55,7 +55,7 @@
       state: >
         {% set auto = is_state('input_boolean.auto_lumiere_jardin_soir', 'on') %}
         {% set fin_absolue = is_state('binary_sensor.jardin_soir_fin_absolue', 'on') %}
-        {% set offset = states('input_number.lumiere_jardin_soir_offset_minutes') | int(0) %}
+        {% set offset = states('input_number.delai_allumage_jardin_soir') | int(0) %}
 
         {# Etat nuit / jour #}
         {% set nuit = is_state('sun.sun', 'below_horizon') %}

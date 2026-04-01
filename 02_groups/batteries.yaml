@@ -32,17 +32,31 @@
 #    - diagnostic / maintenance
 # ==========================================================
 
-
 batteries:
   name: Batteries
   entities:
 
+    - sensor.netatmo_homekit_chambre_parents_batterie
+    - sensor.netatmo_homekit_jardin_se_batterie
+    - sensor.netatmo_homekit_petite_maison_batterie
+    - sensor.netatmo_homekit_sejour_batterie
+    - sensor.pluviometre_batterie
+    - sensor.netatmo_homekit_entree_batterie
+    - sensor.netatmo_homekit_jardin_no_batterie
+    - sensor.bobst_102_exterieur_so_batterie
+    - sensor.komori_exterieur_no_batterie
     - sensor.bouton_cuisine_battery
-    - sensor.bouton_sdb_battery
     - sensor.bouton_garage_1_battery
     - sensor.bouton_garage_2_battery
-    - sensor.switchbot_bot_garage_1
-    - sensor.switchbot_bot_garage_2
+    - sensor.bouton_sdb_battery
+    - sensor.capteur_mouvements_entree_battery
+    - sensor.capteur_mouvements_garage_1_battery
+    - sensor.capteur_mouvements_garage_2_battery
+    - sensor.capteur_mouvements_garage_3_battery
+    - sensor.capteur_mouvements_sejour_1_battery
+    - sensor.capteur_mouvements_sejour_2_battery
+    - sensor.clavier_alarme_1_battery
+    - sensor.clavier_alarme_2_battery
     - sensor.contact_chambre_arnaud_1_battery
     - sensor.contact_chambre_arnaud_2_battery
     - sensor.contact_chambre_matthieu_1_battery
@@ -54,51 +68,36 @@ batteries:
     - sensor.contact_chambre_parents_milieu_1_battery
     - sensor.contact_chambre_parents_milieu_2_battery
     - sensor.contact_entree_fenetre_battery
+    - sensor.contact_entree_porte_1_battery
+    - sensor.contact_entree_porte_2_battery
+    - sensor.contact_garage_1_battery
+    - sensor.contact_garage_2_battery
     - sensor.contact_sejour_1_battery
     - sensor.contact_sejour_2_battery
     - sensor.contact_sejour_3_1_battery
     - sensor.contact_sejour_3_2_battery
     - sensor.contact_sejour_4_battery
-    - sensor.capteur_mouvements_entree_battery
-    - sensor.capteur_mouvements_garage_1_battery
-    - sensor.capteur_mouvements_garage_2_battery
-    - sensor.capteur_mouvements_sejour_1_battery
-    - sensor.capteur_mouvements_sejour_2_battery
-    - sensor.contact_entree_porte_1_battery
-    - sensor.contact_entree_porte_2_battery
-    - sensor.contact_garage_1_battery
-    - sensor.contact_garage_2_battery
     - sensor.luminosite_garage_battery
-    - sensor.cave_batterie
-    - sensor.chambre_batterie
-    - sensor.chambre_parents_batterie
-    - sensor.exterieur_batterie
-    - sensor.jardin_se_batterie
-    - sensor.jardin_no_batterie
-    - sensor.petite_maison_batterie
-    - sensor.pluviometre_batterie
-    - sensor.sejour_batterie
-    - sensor.entree_batterie
-    - sensor.clavier_alarme_1_battery
-    - sensor.clavier_alarme_2_battery
-    - sensor.deshumidificateur_batterie
-    - sensor.garage_batterie
-    - sensor.sdb_enfants_batterie
-    - sensor.sirene_battery
     - sensor.meteo_zigbee_chambre_arnaud_battery
     - sensor.meteo_zigbee_chambre_matthieu_battery
     - sensor.meteo_zigbee_chambre_parents_battery
     - sensor.meteo_zigbee_entree_battery
     - sensor.meteo_zigbee_sdb_parents_battery
     - sensor.meteo_zigbee_sejour_battery
-    - sensor.bobst_102_exterieur_so_batterie
-    - sensor.komori_exterieur_no_batterie
-    - sensor.direction_batterie
-    - sensor.compta_batterie
-    - sensor.qualite_batterie
-    - sensor.devis_commandes_batterie
+    - sensor.sirene_battery
+    - sensor.zigbee_pluie_battery
+    - sensor.remote_chambre_parents_2_batterie
+    - sensor.bot_chambre_parents_batterie
+    - sensor.deshumidificateur_batterie
+    - sensor.vmc_batterie
+    - sensor.meter_cave_batterie
+    - sensor.meter_garage_batterie
     - sensor.commercial_batterie
+    - sensor.compta_batterie
+    - sensor.devis_commandes_batterie
+    - sensor.direction_batterie
+    - sensor.meter_jardin_batterie
+    - sensor.qualite_batterie
+    - sensor.sdb_enfants_batterie
     - sensor.stock_carton_batterie
     - sensor.stock_pf_batterie
-    - sensor.zigbee_pluie_battery
-    - sensor.vmc_batterie

@@ -76,7 +76,6 @@
 #     sans jamais influencer le système.
 # ==========================================================
 
-
 - id: '1007000000006'
   alias: "Vacances - Alerte lampe parents restée allumée"
   description: >

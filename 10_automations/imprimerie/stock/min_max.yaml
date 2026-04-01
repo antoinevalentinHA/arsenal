@@ -51,7 +51,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "1018000000001"
   alias: "Stock – Mémoire temps réel des min/max"
   description: >

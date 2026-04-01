@@ -19,7 +19,6 @@
 # 📍 Entité : input_boolean.vmc_force_haute_vitesse
 # ==========================================================
 
-
 vmc_force_haute_vitesse:
   name: "VMC - Forcer haute vitesse"
   icon: mdi:fan-alert

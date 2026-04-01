@@ -1,75 +1,77 @@
 # ==========================================================
-# 🧠 ARSENAL — SCRIPT :
-#     Garage — Action physique autoritaire
+# 🧠 ARSENAL — SCRIPT : Garage — Bascule eclairage synchronisee
+# ----------------------------------------------------------
+# 🎯 ROLE FONDAMENTAL
+#   Orchestrateur UNIQUE de bascule de l'eclairage du garage,
+#   base sur un etat logique memorise.
 #
-#  🎯 RÔLE
-#     Point d’exécution physique unique du sous-système
-#     d’éclairage garage.
+#   Ce script ne lit pas l'etat reel de la lampe.
+#   Il applique une bascule coherente entre :
+#     - un etat logique de reference
+#     - une commande de relais
 #
-#  ⚠️ CONTRAINTE STRUCTURELLE
-#     Système non observable — aucune vérité matérielle.
+# ----------------------------------------------------------
+# 🧱 CONTRAINTE MATERIELLE
 #
-#  📍 Entité :
-#     script.garage_toggle
+#   L'eclairage du garage est commande via :
+#     - un relais Zigbee
+#     - sans capteur de verite physique independant
+#
+#   Le relais n'est pas considere comme preuve suffisante
+#   de l'etat reel de la lampe au sens du contrat.
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPE DE VERITE
+#
+#   La source de verite logique du sous-systeme est :
+#     - input_boolean.garage_light_state
+#
+# ----------------------------------------------------------
+# 🧠 LOGIQUE DE BASCULE
+#
+#   - OFF → ON  : demande allumage
+#   - ON  → OFF : demande extinction
+#
+# ----------------------------------------------------------
+# 📍 Entite :
+#   script.garage_toggle
 # ==========================================================
 
 garage_toggle:
-  alias: "Garage - Action physique"
+  alias: "Garage - Toggle lumiere"
   mode: single
-
-  fields:
-    action:
-      name: Action
-      description: "Action logique demandée : on, off ou toggle"
-      example: "toggle"
-      default: "toggle"
-      selector:
-        select:
-          options:
-            - "on"
-            - "off"
-            - "toggle"
-
-  variables:
-    requested_action: "{{ action | default('toggle') }}"
-    current_state: "{{ states('input_boolean.garage_light_state') }}"
-    effective_action: >-
-      {% if requested_action in ['on', 'off', 'toggle'] %}
-        {{ requested_action }}
-      {% else %}
-        toggle
-      {% endif %}
-    should_run: >-
-      {{ effective_action == 'toggle'
-         or (effective_action == 'on' and current_state == 'off')
-         or (effective_action == 'off' and current_state == 'on') }}
-    target_state: >-
-      {% if effective_action == 'toggle' %}
-        {% if current_state == 'off' %}
-          on
-        {% else %}
-          off
-        {% endif %}
-      {% else %}
-        {{ effective_action }}
-      {% endif %}
-    selected_switch: >-
-      {% if target_state == 'on' %}
-        switch.garage_1
-      {% else %}
-        switch.garage_2
-      {% endif %}
 
   sequence:
     - choose:
+
+        # 🟢 Passage OFF → ON
         - conditions:
-            - condition: template
-              value_template: "{{ should_run }}"
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "off"
           sequence:
             - service: switch.turn_on
               target:
-                entity_id: "{{ selected_switch }}"
+                entity_id: switch.lumiere_garage
 
-            - service: "input_boolean.turn_{{ target_state }}"
+            - delay: "00:00:00.200"
+
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.garage_light_state
+
+        # 🔴 Passage ON → OFF
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "on"
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: switch.lumiere_garage
+
+            - delay: "00:00:00.200"
+
+            - service: input_boolean.turn_off
               target:
                 entity_id: input_boolean.garage_light_state

@@ -59,7 +59,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 ouvrir_volets_sejour:
   alias: "Ouvrir volets séjour"
   mode: single

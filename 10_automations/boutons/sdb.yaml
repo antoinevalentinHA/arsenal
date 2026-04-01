@@ -47,7 +47,6 @@
 #     dans les scripts et pipelines dédiés.
 # ==========================================================
 
-
 - id: '1014000000001'
   alias: Bouton SDB - Lancer bouclage ECS 5 minutes
   mode: restart

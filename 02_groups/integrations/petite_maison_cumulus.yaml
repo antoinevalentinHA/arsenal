@@ -36,7 +36,6 @@
 #    - socle système / ECS secondaire
 # ==========================================================
 
-
 petite_maison_cumulus:
   name: "Cumulus Petite Maison"
   entities:

@@ -35,7 +35,6 @@
 #    - seuils décisionnels actifs (hygrométrie)
 # ==========================================================
 
-
 aeration_delta_ha_min_ete:
   name: Aeration ΔHA min (été)
   min: 0

@@ -34,8 +34,6 @@
     - platform: state
       entity_id:
         - sensor.bot_chambre_parents_bluetooth_signal
-        - sensor.bot_garage_1_bluetooth_signal
-        - sensor.bot_garage_2_bluetooth_signal
         - sensor.bot_vmc_bluetooth_signal
         - sensor.bot_deshumidificateur_bluetooth_signal
         - sensor.meter_garage_bluetooth_signal

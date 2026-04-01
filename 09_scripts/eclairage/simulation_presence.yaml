@@ -76,7 +76,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 generer_horaires_simulation_presence:
   alias: "Générer horaires simulation présence"
   mode: single

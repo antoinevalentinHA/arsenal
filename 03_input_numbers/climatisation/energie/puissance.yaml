@@ -34,7 +34,6 @@
 #    - paramètres énergétiques de calcul
 # ==========================================================
 
-
 puissance_clim_cool:
   name: Puissance Cool (kW)
   min: 0

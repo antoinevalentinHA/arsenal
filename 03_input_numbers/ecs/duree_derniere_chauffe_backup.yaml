@@ -29,7 +29,6 @@
 #   - minutes
 # ==========================================================
 
-
 ecs_duree_chauffe_reel_backup:
   name: ECS duree chauffe reel backup
   min: 0

@@ -7,7 +7,7 @@
 #  🎯 RÔLE
 #
 #     Enregistrer automatiquement les BSSID Wi-Fi détectés
-#     comme candidats d’apprentissage lorsque :
+#     comme candidats d'apprentissage lorsque :
 #       - la présence sécurité est active
 #       - un nouveau BSSID non encore connu est détecté
 #
@@ -16,17 +16,34 @@
 #     la présence Wi-Fi.
 #
 #  🚫 NE FAIT PAS
-#     - Ne pilote pas l’alarme
+#     - Ne pilote pas l'alarme
 #     - Ne décide aucun état de sécurité
-#     - N’effectue aucune détection géographique
-#     - N’analyse aucun BSSID directement
+#     - N'effectue aucune détection géographique
+#     - N'analyse aucun BSSID directement
 #
 #  🧩 PRINCIPE
-#     - Déclenchement unique sur signal métier :
+#     - Déclenchement sur signal métier :
 #         • binary_sensor.wifi_nouveau_bssid = on
-#     - Lecture des candidats depuis les attributs du capteur
-#     - Enrichissement contrôlé de la liste maison
-#     - Journalisation uniquement en cas d’ajout réel
+#         • input_boolean.systeme_stable = on (reprise)
+#     - Filtrage présence sécurité active (l'automation filtre,
+#       le sensor est aveugle à la sécurité)
+#     - Parsing explicite de l'attribut candidats (chaîne CSV)
+#       → typage garanti (validé)
+#     - Validation canonique de chaque candidat (§7.1)
+#     - Contrôle de capacité avant toute écriture (§8)
+#     - Écriture uniquement si ajout réel (doctrine : impulsion métier)
+#     - Journalisation ajout réel et overflow
+#
+#  🔒 DÉCISIONS ARCHITECTURALES
+#     - candidats lu comme chaîne CSV puis splitté explicitement :
+#       élimine toute ambiguïté de type HA/Jinja entre sensor et automation
+#     - Écriture uniquement si added > 0 : le nettoyage canonique seul
+#       ne déclenche pas de réécriture
+#     - mode: single retenu : tentatives concurrentes perdues,
+#       couvertes par la reprise via input_boolean.systeme_stable
+#
+#  📐 CONTRAT
+#     CONTRAT_BSSID_MAISON.md
 #
 # ==========================================================
 
@@ -36,7 +53,7 @@
 
   trigger:
 
-    # Signal métier : nouveau BSSID détecté en présence sécurité
+    # Signal métier : nouveau BSSID détecté
     - platform: state
       entity_id: binary_sensor.wifi_nouveau_bssid
       to: "on"
@@ -46,46 +63,105 @@
       entity_id: input_boolean.systeme_stable
       to: "on"
 
+  condition:
+
+    # Apprentissage autorisé uniquement si Antoine (person.valentin) ou Constance
+    # est physiquement dans zone.maison_securite.
+    # Exclut : visiteur seul, babysitting, enfants sans adulte.
+    - condition: template
+      value_template: >
+        {{
+          is_state('person.valentin', 'Maison securite')
+          or is_state('person.constance', 'Maison securite')
+        }}
 
   action:
 
     - variables:
 
-        # --- Liste actuelle maison ---
+        # --- Référentiel actuel — normalisation canonique (§6) ---
+        # Parse la chaîne plate du helper, normalise, filtre les invalides.
+        # Type de sortie : liste Jinja construite par ns.result.
         current_list: >-
           {% set raw = states('input_text.bssid_maison') | string %}
-          {{ raw.split(',') | map('trim') | map('lower') | map('replace','-',':') | list }}
+          {% set ns = namespace(result=[]) %}
+          {% for item in raw.split(',') %}
+            {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+              {% set ns.result = ns.result + [b] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.result }}
 
-        # --- Candidats fournis par le capteur diagnostic ---
+        # --- Candidats — parsing CSV explicite (§7.1) ---
+        # L'attribut 'candidats' est une chaîne CSV canonique produite
+        # par binary_sensor.wifi_nouveau_bssid.
+        # On splitte explicitement : aucune ambiguïté de type, aucune
+        # dépendance au comportement Jinja inter-variables.
+        # Rejet de tout token non conforme après normalisation.
         candidats: >-
-          {{ state_attr('binary_sensor.wifi_nouveau_bssid','candidats') | default([], true) }}
+          {% set csv = state_attr('binary_sensor.wifi_nouveau_bssid', 'candidats') | default('', true) | string %}
+          {% set ns = namespace(result=[]) %}
+          {% for item in csv.split(',') %}
+            {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+              {% set ns.result = ns.result + [b] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.result }}
 
-        # --- Fusion / détection ajouts ---
-        merged: "{{ (current_list + candidats) | unique | list }}"
-        added:  "{{ merged | difference(current_list) | list }}"
+        # --- Fusion, déduplication, tri stable (§11) ---
+        # current_list et candidats sont deux listes construites
+        # par le même pattern ns.result — même type garanti.
+        merged: >-
+          {{ (current_list + candidats) | unique | sort | list }}
+
+        # --- Delta réel ---
+        added: >-
+          {{ merged | difference(current_list) | list }}
+
+        # --- Sérialisation finale et longueur (§8.1) ---
+        merged_str: "{{ merged | join(', ') }}"
+        merged_len: "{{ merged_str | length }}"
 
 
     - choose:
 
         # --------------------------------------------------
-        # Cas utile : au moins un BSSID réellement nouveau
+        # Cas overflow : rejet sans écriture (§8.2)
+        # --------------------------------------------------
+
+        - conditions: "{{ merged_len | int > 255 }}"
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                logger: custom_components.alarme
+                message: >
+                  [ALARME] BSSID — ajout rejeté (overflow) :
+                  longueur projetée={{ merged_len }} > 255.
+                  Nouveaux BSSID non intégrés : {{ added | join(', ') }}
+                  Référentiel inchangé ({{ current_list | length }}) : {{ current_list | join(', ') }}
+
+        # --------------------------------------------------
+        # Cas utile : ajout réel, capacité respectée
         # --------------------------------------------------
 
         - conditions: "{{ added | length > 0 }}"
           sequence:
 
-            # Mise à jour liste maison
+            # Écriture — format canonique trié (§4, §6, §11)
             - service: input_text.set_value
               target:
                 entity_id: input_text.bssid_maison
               data:
-                value: "{{ merged | join(', ') }}"
+                value: "{{ merged_str }}"
 
-            # Journalisation système
+            # Journalisation
             - service: system_log.write
               data:
                 level: info
                 logger: custom_components.alarme
                 message: >
-                  [ALARME] BSSID ajouté(s): {{ added | join(', ') }}
-                  Liste = {{ merged | join(', ') }}
+                  [ALARME] BSSID ajouté(s) : {{ added | join(', ') }}
+                  Référentiel ({{ merged | length }}) : {{ merged_str }}

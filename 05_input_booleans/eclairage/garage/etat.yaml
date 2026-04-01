@@ -37,6 +37,5 @@
 #     - L’état logique prime sur l’état matériel
 # ==========================================================
 
-
 garage_light_state:
   name: Garage

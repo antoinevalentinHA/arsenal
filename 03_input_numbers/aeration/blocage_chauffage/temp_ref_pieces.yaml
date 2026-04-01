@@ -34,7 +34,6 @@
 #    - référence thermique figée / aération
 # ==========================================================
 
-
 ref_temp_entree:
   name: "ref_temp_entree"
   min: -10

@@ -53,7 +53,6 @@
 #   de l’éclairage.
 # ==========================================================
 
-
 heure_allumage_jardin_matin:
   name: Heure allumage jardin matin
   icon: mdi:clock-time-seven-outline

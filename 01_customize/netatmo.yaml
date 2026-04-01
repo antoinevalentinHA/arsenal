@@ -23,54 +23,54 @@
 
 
 ############################################################
-# 📡 SCORES UI — WIFI
+# 📶 WIFI SCORE
 ############################################################
 
-sensor.netatmo_wifi_score_chambre_arnaud:
+sensor.wifi_score_chambre_arnaud:
   friendly_name: "Chambre Arnaud"
 
-sensor.netatmo_wifi_score_chambre_matthieu:
+sensor.wifi_score_chambre_matthieu:
   friendly_name: "Chambre Matthieu"
 
-sensor.netatmo_wifi_score_bobst_102:
+sensor.wifi_score_bobst_102:
   friendly_name: "Bobst 102"
 
-sensor.netatmo_wifi_score_komori:
+sensor.wifi_score_komori:
   friendly_name: "Komori"
 
-sensor.netatmo_wifi_score_media:
-  friendly_name: "Media"
+sensor.wifi_score_media:
+  friendly_name: "Média"
 
 
 ############################################################
-# 📡 SCORES UI — RF
+# 📡 RF (RADIO) SCORE
 ############################################################
 
-sensor.netatmo_rf_score_pluviometre:
+sensor.rf_score_pluviometre:
   friendly_name: "Pluviomètre"
 
-sensor.netatmo_rf_score_bobst_102_exterieur_so:
-  friendly_name: "Bobst 102 extérieur SO"
+sensor.rf_score_bobst_102_exterieur_so:
+  friendly_name: "Bobst 102 SO"
 
-sensor.netatmo_rf_score_komori_exterieur_no:
-  friendly_name: "Komori extérieur NO"
+sensor.rf_score_komori_exterieur_no:
+  friendly_name: "Komori NO"
 
-sensor.netatmo_rf_score_chambre_parents:
-  friendly_name: "Chambre Parents"
+sensor.rf_score_chambre_parents:
+  friendly_name: "Chambre parents"
 
-sensor.netatmo_rf_score_entree:
+sensor.rf_score_entree:
   friendly_name: "Entrée"
 
-sensor.netatmo_rf_score_jardin_no:
+sensor.rf_score_jardin_no:
   friendly_name: "Jardin NO"
 
-sensor.netatmo_rf_score_jardin_se:
+sensor.rf_score_jardin_se:
   friendly_name: "Jardin SE"
 
 sensor.netatmo_rf_score_petite_maison:
-  friendly_name: "Petite Maison"
+  friendly_name: "Petite maison"
 
-sensor.netatmo_rf_score_sejour:
+sensor.rf_score_sejour:
   friendly_name: "Séjour"
 
 
@@ -83,6 +83,15 @@ sensor.chambre_arnaud_reachability:
 
 sensor.chambre_matthieu_reachability:
   friendly_name: "Chambre Matthieu"
+
+sensor.chambre_parents_reachability:
+  friendly_name: "Chambre Parents"
+
+sensor.entree_reachability:
+  friendly_name: "Entrée"
+
+sensor.sejour_reachability:
+  friendly_name: "Séjour"
 
 sensor.pluviometre_reachability:
   friendly_name: "Pluviomètre"
@@ -102,23 +111,14 @@ sensor.komori_exterieur_no_reachability:
 sensor.media_reachability:
   friendly_name: "Media"
 
-sensor.chambre_parents_reachability:
-  friendly_name: "Chambre Parents"
-
-sensor.entree_reachability:
-  friendly_name: "Entrée"
-
-sensor.jardin_no_reachability:
+sensor.jardin_2_reachability:
   friendly_name: "Jardin NO"
 
-sensor.jardin_se_reachability:
+sensor.jardin_1_reachability:
   friendly_name: "Jardin SE"
 
 sensor.petite_maison_reachability:
   friendly_name: "Petite Maison"
-
-sensor.sejour_reachability:
-  friendly_name: "Séjour"
 
 
 ############################################################

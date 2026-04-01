@@ -54,7 +54,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "1008000000002"
   alias: "Lave-vaisselle – Détection fin de cycle"
   description: >

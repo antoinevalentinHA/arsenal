@@ -49,7 +49,6 @@
 #   de la climatisation.
 # ==========================================================
 
-
 clim_heure_silencieux_on:
   name: Début mode silencieux
   has_time: true

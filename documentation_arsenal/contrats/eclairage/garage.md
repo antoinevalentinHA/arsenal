@@ -1,6 +1,6 @@
 # ==========================================================
 # 🔧 ARSENAL — CONTRAT D'IMPLÉMENTATION
-# script.garage_action_physique
+# script.garage_toggle
 # ==========================================================
 
 #
@@ -12,7 +12,7 @@
 # Tout invariant du contrat métier prévaut sur le présent document.
 #
 # 📌 Portée :
-# Implémentation exclusive de script.garage_action_physique
+# Implémentation exclusive de script.garage_toggle
 #
 # ==========================================================
 
@@ -191,5 +191,5 @@ Ce contrat garantit :
 - extensibilité sans rupture de contrat.
 
 # ==========================================================
-# FIN CONTRAT D'IMPLÉMENTATION — script.garage_action_physique
+# FIN CONTRAT D'IMPLÉMENTATION — script.garage_toggle
 # ==========================================================

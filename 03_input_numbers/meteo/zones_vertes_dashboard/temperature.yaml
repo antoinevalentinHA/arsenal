@@ -36,7 +36,6 @@
 #
 # ==========================================================
 
-
 temperature_couleur_zone_verte:
   name: Zone verte température (± autour du centre)
   unit_of_measurement: "°C"

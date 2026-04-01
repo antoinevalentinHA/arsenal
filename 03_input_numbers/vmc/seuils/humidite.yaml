@@ -34,7 +34,6 @@
 #   - Humidité relative (%)
 # ==========================================================
 
-
 vmc_seuil_on:
   name: "VMC - Seuil déclenchement"
   min: 50

@@ -59,7 +59,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 ecs_vaisselle_lancer_si_ok:
   alias: "ECS - Vaisselle : Lancer si OK"
   mode: single

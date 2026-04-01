@@ -27,7 +27,6 @@
 #     - Le helper ne fait qu’en garder la trace
 # ==========================================================
 
-
 chauffage_last_adjustment:
   name: "Chauffage dernier auto-ajustement"
   icon: mdi:chart-line

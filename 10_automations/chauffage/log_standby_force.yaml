@@ -33,7 +33,6 @@
 #     - Source de vérité temporelle unique pour ce verrou
 # ==========================================================
 
-
 - id: "10240000000006"
   alias: "Chauffage – Mémoire standby forcé"
   description: >

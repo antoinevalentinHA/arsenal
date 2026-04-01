@@ -32,7 +32,6 @@
 #       les actions métier
 # ==========================================================
 
-
 mode_babysitting:
   name: "Mode Babysitting"
   icon: mdi:account-child

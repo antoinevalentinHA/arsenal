@@ -53,7 +53,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10180000000005"
   alias: "Atelier – Archivage hebdomadaire et reset min/max"
   mode: single

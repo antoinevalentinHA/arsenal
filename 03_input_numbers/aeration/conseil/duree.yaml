@@ -31,7 +31,6 @@
 #    - réglages UI / objectifs déclaratifs
 # ==========================================================
 
-
 aeration_duree_cible_minutes:
   name: "Durée cible aération"
   min: 2

@@ -65,7 +65,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 bouclage_ecs_5_minutes:
   alias: "Bouclage ECS 5 minutes"
   description: "Force le bouclage de l'eau chaude pendant 5 minutes via prise connectée"

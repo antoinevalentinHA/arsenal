@@ -46,7 +46,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "1008000000003"
   alias: "Buanderie - Début de cycle"
   description: >

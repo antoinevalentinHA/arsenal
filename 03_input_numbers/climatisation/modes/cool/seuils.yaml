@@ -35,7 +35,6 @@
 #    - Seuils décisionnels explicites
 # ==========================================================
 
-
 clim_seuil_declenchement_presence:
   name: Seuil déclenchement clim (présence)
   min: 22

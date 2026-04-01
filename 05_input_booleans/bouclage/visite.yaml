@@ -23,7 +23,6 @@
 # 📍 Entité : input_boolean.bouclage_visiteur
 # ==========================================================
 
-
 bouclage_visiteur:
   name: Bouclage ECS pendant visite
   icon: mdi:water-pump

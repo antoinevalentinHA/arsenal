@@ -50,7 +50,6 @@
 #   pas l’état immédiat de l’alarme.
 # ==========================================================
 
-
 visiteur_start:
   name: Heure début visiteur
   has_date: false

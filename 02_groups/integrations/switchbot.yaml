@@ -35,7 +35,6 @@
 #    - socle mesures / fiabilité système
 # ==========================================================
 
-
 switchbot_capteurs:
   name: "Capteurs SwitchBot"
   entities:

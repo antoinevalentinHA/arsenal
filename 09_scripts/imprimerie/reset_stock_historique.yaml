@@ -76,7 +76,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 reset_stock_historique:
   alias: "Stock – Reset historique hebdo + min/max"
   mode: single

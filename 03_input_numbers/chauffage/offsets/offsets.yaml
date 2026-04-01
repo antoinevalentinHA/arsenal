@@ -46,7 +46,6 @@
 #   - Rendre l’hystérésis explicite et réglable
 # ==========================================================
 
-
 chauffage_offset_on:
   name: "Offset seuil ON (chauffage)"
   min: 0.0

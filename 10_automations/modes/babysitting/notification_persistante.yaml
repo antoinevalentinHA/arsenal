@@ -56,7 +56,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10090000000011"
   alias: "Babysitting – État persistant du mode"
   description: >

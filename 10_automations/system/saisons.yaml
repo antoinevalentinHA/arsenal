@@ -29,7 +29,6 @@
 #     - Comportement déterministe et stable dans le temps
 # ==========================================================
 
-
 - id: '1012000000007'
   alias: "Système – Actualisation de la saison"
   mode: single

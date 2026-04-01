@@ -44,7 +44,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '10210000000003'
   alias: Alarme - Visiteur - Désactivation sécurité
   description: >

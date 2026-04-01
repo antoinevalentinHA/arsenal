@@ -53,7 +53,6 @@
 #   - Rendre le cadre météo explicite et ajustable
 # ==========================================================
 
-
 chauffage_seuil_ext_on:
   name: "Seuil activation chauffage"
   min: 5

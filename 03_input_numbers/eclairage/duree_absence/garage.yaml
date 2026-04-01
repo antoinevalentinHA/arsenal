@@ -35,7 +35,6 @@
 #    - Paramètre éclairage garage
 # ==========================================================
 
-
 duree_absence_garage:
   name: Durée absence garage (min)
   icon: mdi:timer-outline

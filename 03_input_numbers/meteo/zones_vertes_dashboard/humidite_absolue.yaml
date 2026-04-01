@@ -37,7 +37,6 @@
 #
 # ==========================================================
 
-
 humidite_absolue_couleur_zone_verte:
   name: Zone verte humidité absolue
   min: 0.2

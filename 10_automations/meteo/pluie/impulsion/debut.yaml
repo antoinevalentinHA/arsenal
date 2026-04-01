@@ -55,7 +55,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "1016000000005"
   alias: "Pluie – Normalisation capteur Zigbee"
   description: >

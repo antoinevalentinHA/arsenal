@@ -48,7 +48,6 @@
 #   explicite de la décision centrale.
 # ==========================================================
 
-
 mode_alarme:
   name: Mode d'armement alarme
   options:

@@ -29,7 +29,6 @@
 #    - référence interne / calcul thermique
 # ==========================================================
 
-
 chute_temp_reference:
   name: chute_temp_reference
   min: -10

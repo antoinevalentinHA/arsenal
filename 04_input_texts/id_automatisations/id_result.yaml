@@ -28,7 +28,6 @@
 #   - Peut être vide ou obsolète sans impact
 # ==========================================================
 
-
 next_id_result:
   name: Next ID Result
   mode: text

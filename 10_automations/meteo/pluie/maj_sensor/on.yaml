@@ -59,7 +59,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "1016000000002"
   alias: "Pluie – Décision de début d’épisode"
   description: >

@@ -36,7 +36,6 @@
 #     Arsenal
 # ==========================================================
 
-
 - id: '1012000000001'
   alias: Batteries faibles - Notification quotidienne
   description: Notifie si batteries faibles détectées, une seule fois par jour.

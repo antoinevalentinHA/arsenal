@@ -33,7 +33,6 @@
 #   - Représente un état passé
 # ==========================================================
 
-
 conditions_carton_semaine_1:
   name: "Carton – Semaine 1 (la + récente)"
   max: 255

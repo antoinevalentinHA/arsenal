@@ -31,7 +31,6 @@
 #    - socle mesures / interface
 # ==========================================================
 
-
 audi_capteurs:
   name: "Capteurs Audi"
   entities:

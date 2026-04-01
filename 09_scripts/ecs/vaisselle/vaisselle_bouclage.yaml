@@ -70,7 +70,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 lancer_vaisselle_et_bouclage:
   alias: "ECS - Vaisselle + Bouclage"
   mode: single

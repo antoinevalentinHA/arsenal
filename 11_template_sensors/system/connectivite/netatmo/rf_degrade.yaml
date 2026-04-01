@@ -26,8 +26,8 @@
         - sensor.komori_exterieur_no_puissance_rf
         - sensor.chambre_parents_puissance_rf
         - sensor.entree_puissance_rf
-        - sensor.jardin_no_puissance_rf
-        - sensor.jardin_se_puissance_rf
+        - sensor.jardin_2_puissance_rf
+        - sensor.jardin_1_puissance_rf
         - sensor.petite_maison_puissance_rf
         - sensor.sejour_puissance_rf
   binary_sensor:

@@ -33,7 +33,6 @@
 #   - Inerte sans désérialisation et application explicite
 # ==========================================================
 
-
 ecs_reglages_backup:
   name: ECS - Reglages backup
   max: 255

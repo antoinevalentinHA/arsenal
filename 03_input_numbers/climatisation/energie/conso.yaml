@@ -31,7 +31,6 @@
 #    - registre énergétique (climatisation)
 # ==========================================================
 
-
 clim_consommation_cumulee:
   name: Clim - Consommation cumulée
   unit_of_measurement: "kWh"

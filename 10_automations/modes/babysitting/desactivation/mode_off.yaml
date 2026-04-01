@@ -56,7 +56,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1009000000001'
   alias: "Babysitting – Sortie forcée quotidienne"
 

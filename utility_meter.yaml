@@ -256,13 +256,6 @@ bouclage_yearly_energy:
 # 🚗 MOBILITÉ
 ############################################################
 
-# Temps de charge Audi A3 (durée cumulée)
-
-audi_charge_duree_mensuelle:
-  source: input_number.audi_charge_last_duration
-  cycle: monthly
-  name: "Durée de charge Audi (mensuelle)"
-
 # Distance parcourue Audi e-tron (mensuelle)
 
 audi_e_tron_distance_mois:

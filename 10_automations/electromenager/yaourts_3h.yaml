@@ -49,7 +49,6 @@
 #     Home Assistant 2024.x
 # ==========================================================
 
-
 - id: "10080000000005"
   alias: "Prise placard – Extinction programmée après déclenchement"
   description: >

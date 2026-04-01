@@ -34,7 +34,6 @@
 #    - seuils décisionnels actifs (thermique)
 # ==========================================================
 
-
 aeration_seuil_ecart_temperature_min:
   name: Écart T° min extérieur < intérieur
   min: 0.1

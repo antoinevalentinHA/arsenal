@@ -34,7 +34,6 @@
 #       être explicitement activé ou désactivé
 # ==========================================================
 
-
 babyphone_matthieu:
   name: "Babyphone Matthieu"
   icon: mdi:baby-face-outline

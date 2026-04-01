@@ -37,7 +37,6 @@
 #    - Paramètre éclairage décoratif
 # ==========================================================
 
-
 duree_absence_guirlande:
   name: Durée absence guirlande (min)
   icon: mdi:timer-outline

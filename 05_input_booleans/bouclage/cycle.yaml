@@ -24,7 +24,6 @@
 # 📍 Entité : input_boolean.bouclage_ecs_5_minutes_en_cours
 # ==========================================================
 
-
 bouclage_ecs_5_minutes_en_cours:
   name: Bouclage ECS – 5 min en cours
   icon: mdi:clock-start

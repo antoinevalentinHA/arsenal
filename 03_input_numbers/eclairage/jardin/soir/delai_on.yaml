@@ -40,7 +40,6 @@
 #    - Paramètre éclairage jardin (soir)
 # ==========================================================
 
-
 delai_allumage_jardin_soir:
   name: Délai allumage jardin soir (min)
   icon: mdi:clock-fast

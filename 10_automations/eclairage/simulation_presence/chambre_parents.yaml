@@ -72,7 +72,6 @@
 #     sans jamais en être la source.
 # ==========================================================
 
-
 - id: "10070000000023"
   alias: "Simulation présence - Parents - Pilotage lampe"
   mode: single

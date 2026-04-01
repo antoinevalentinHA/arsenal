@@ -45,7 +45,6 @@
 #   ou autorisation directe est une erreur d’architecture.
 # ==========================================================
 
-
 analyse_deltat_disponible:
   name: "analyse deltaT dispo"
   has_date: true

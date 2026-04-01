@@ -41,7 +41,6 @@
 #
 # ==========================================================
 
-
 atelier_komori_temperature_min:
   name: "Atelier Komori – Température min nuit"
   min: -20

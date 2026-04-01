@@ -36,7 +36,6 @@
 #
 # ==========================================================
 
-
 humidite_relative_couleur_zone_verte:
   name: Zone verte humidite relative
   min: 1

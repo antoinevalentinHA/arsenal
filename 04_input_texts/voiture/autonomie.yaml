@@ -32,7 +32,6 @@
 #   - Valeur indicative uniquement
 # ==========================================================
 
-
 historique_autonomie_audi_etron:
   name: Historique autonomie Audi e-tron
   mode: text

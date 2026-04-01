@@ -50,7 +50,6 @@
 #     - Architecture strictement conforme au modèle Arsenal
 # ==========================================================
 
-
 - id: "10240000000002"
   alias: "Chauffage – Application autorisation automatique"
   mode: restart

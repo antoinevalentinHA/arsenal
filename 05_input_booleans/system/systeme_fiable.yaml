@@ -19,7 +19,6 @@
 # 📍 Entité : input_boolean.systeme_stable
 # ==========================================================
 
-
 systeme_stable:
   name: "Systeme stable"
   icon: mdi:check-decagram

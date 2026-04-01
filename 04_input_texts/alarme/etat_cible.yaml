@@ -35,7 +35,6 @@
 #   - Toute divergence est intentionnellement détectable
 # ==========================================================
 
-
 alarme_etat_cible:
   name: "Alarme – Etat cible"
   max: 20

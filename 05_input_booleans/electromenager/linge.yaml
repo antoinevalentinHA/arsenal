@@ -36,7 +36,6 @@
 #       représenté par une vérité logique unique
 # ==========================================================
 
-
 buanderie_cycle:
   name: Buanderie - cycle en cours
   icon: mdi:washing-machine

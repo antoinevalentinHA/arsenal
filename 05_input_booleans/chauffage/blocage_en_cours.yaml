@@ -13,7 +13,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 chauffage_blocage_aeration:
   name: Blocage aeration
   icon: mdi:heat-wave

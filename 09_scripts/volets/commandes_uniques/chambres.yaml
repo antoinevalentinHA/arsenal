@@ -58,7 +58,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 ouvrir_volet_arnaud:
   alias: "Ouvrir volet Arnaud"
   mode: single

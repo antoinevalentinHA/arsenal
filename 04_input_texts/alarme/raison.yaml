@@ -35,7 +35,6 @@
 #   - Il n’a AUCUN pouvoir causal
 # ==========================================================
 
-
 alarme_raison:
   name: "Alarme – Raison decision"
   max: 255

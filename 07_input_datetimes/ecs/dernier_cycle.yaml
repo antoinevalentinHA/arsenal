@@ -43,7 +43,6 @@
 #   Ce helper ne doit JAMAIS être modifié manuellement.
 # ==========================================================
 
-
 ecs_dernier_cycle_datetime:
   name: ECS – Dernier cycle
   has_date: true

@@ -39,7 +39,6 @@
 #   Home Assistant 2024.8+
 # ==========================================================
 
-
 sirene_bip:
   alias: Sirène - Bip court (sécurisé)
   mode: queued

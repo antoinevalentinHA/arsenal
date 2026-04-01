@@ -35,7 +35,6 @@
 #
 # ==========================================================
 
-
 seuil_pluie_fermeture_volets:
   name: Seuil pluie (fermeture volets)
   icon: mdi:weather-pouring

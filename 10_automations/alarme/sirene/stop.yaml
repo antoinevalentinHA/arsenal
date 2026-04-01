@@ -36,7 +36,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1002000000012'
   alias: Alarme - Arrêt automatique de la sirène
   description: >

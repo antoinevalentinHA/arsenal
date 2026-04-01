@@ -74,7 +74,7 @@
         - binary_sensor.contact_chambre_matthieu_1
         - binary_sensor.contact_chambre_matthieu_2
 
-        - binary_sensor.systeme_stable
+        - input_boolean.systeme_stable
 
   binary_sensor:
 
@@ -182,7 +182,7 @@
           {{ a in ['on', 'off'] and b in ['on', 'off'] and a != b }}
 
         systeme_stable: >
-          {{ states('binary_sensor.systeme_stable') }}
+          {{ states('input_boolean.systeme_stable') }}
 
       state: &contact_redondant_state_logic >
         {% set suffix = this.entity_id | replace('binary_sensor.contact_', '') %}

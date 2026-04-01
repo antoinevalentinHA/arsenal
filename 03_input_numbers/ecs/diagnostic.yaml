@@ -32,7 +32,6 @@
 #   - Température : °C
 # ==========================================================
 
-
 ecs_duree_dernier_cycle_figee:
   name: ECS - Durée cycle figée
   min: 0

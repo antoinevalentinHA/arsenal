@@ -39,7 +39,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1002000000007'
   alias: "Alarme – Intrusion (capteurs d’ouverture)"
   description: >

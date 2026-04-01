@@ -3,8 +3,8 @@
 #     Cibles volets pluie Chambres
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Exposer la liste des covers "chambres" à fermer
-#   uniquement si la fenêtre correspondante est ouverte.
+#   Exposer la liste des covers chambres à fermer :
+#   fenêtre ouverte + absence + verrou global ON.
 #
 # 🧱 ARCHITECTURE
 #   - Décision uniquement (stateless, recalculable)
@@ -13,29 +13,46 @@
 # 🚫 NE FAIT PAS
 #   - aucun service
 #   - aucune temporisation active
+#   - aucune notification
+#
+# 📐 CONTRAT
+#   CONTRAT_PLUIE_VOLETS.md v2.2.1 — sections 4.1, 5.3
+#   Conditions : fenêtre ouverte + présence OFF + fermeture_volets_pluie ON
 # ==========================================================
-
 - sensor:
     - name: "Cibles volets pluie Chambres"
       unique_id: cibles_volets_pluie_chambres
-      default_entity_id: sensor.cibles_volets_pluie_chambres
       icon: mdi:window-shutter
       state: >
-        {% set ns = namespace(n=0) %}
-        {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}
-          {% set ns.n = ns.n + 1 %}
-        {% endif %}
-        {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
-          {% set ns.n = ns.n + 1 %}
-        {% endif %}
-        {{ ns.n }}
-      attributes:
-        entity_ids: >
-          {% set ns = namespace(lst=[]) %}
+        {% set absence = is_state('binary_sensor.presence_famille_securite','off') %}
+        {% set verrou = is_state('input_boolean.fermeture_volets_pluie','on') %}
+        {% if absence and verrou %}
+          {% set ns = namespace(n=0) %}
           {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}
-            {% set ns.lst = ns.lst + ['cover.volet_arnaud'] %}
+            {% set ns.n = ns.n + 1 %}
           {% endif %}
           {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
-            {% set ns.lst = ns.lst + ['cover.volet_matthieu'] %}
+            {% set ns.n = ns.n + 1 %}
           {% endif %}
-          {{ ns.lst }}
+          {{ ns.n }}
+        {% else %}
+          0
+        {% endif %}
+      attributes:
+        entity_ids: >
+          {% set absence = is_state('binary_sensor.presence_famille_securite','off') %}
+          {% set verrou = is_state('input_boolean.fermeture_volets_pluie','on') %}
+          {% if absence and verrou %}
+            {% set ns = namespace(lst=[]) %}
+            {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}
+              {% set ns.lst = ns.lst + ['cover.volet_arnaud'] %}
+            {% endif %}
+            {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
+              {% set ns.lst = ns.lst + ['cover.volet_matthieu'] %}
+            {% endif %}
+            {{ ns.lst }}
+          {% else %}
+            {{ [] }}
+          {% endif %}
+        presence: "{{ states('binary_sensor.presence_famille_securite') }}"
+        verrou: "{{ states('input_boolean.fermeture_volets_pluie') }}"

@@ -37,7 +37,6 @@
 #    - Paramètre éclairage jardin (soir)
 # ==========================================================
 
-
 duree_lumiere_jardin_soir:
   name: Durée éclairage jardin soir (min)
   icon: mdi:lightbulb-on-10

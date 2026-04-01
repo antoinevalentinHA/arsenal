@@ -12,7 +12,7 @@ card:
   unit_of_measurement: ""
   show_header_toggle: false
   entity_row: true
-  min: 1
+  min: 0
   max: 4
   severity:
     - from: 1

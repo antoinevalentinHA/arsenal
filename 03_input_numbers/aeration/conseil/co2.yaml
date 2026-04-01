@@ -32,7 +32,6 @@
 #    - seuils décisionnels actifs (qualité de l’air)
 # ==========================================================
 
-
 aeration_co2_seuil:
   name: "Seuil CO₂ (priorité aération)"
   min: 400

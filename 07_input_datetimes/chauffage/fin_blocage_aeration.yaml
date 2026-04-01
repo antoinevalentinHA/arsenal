@@ -53,7 +53,6 @@
 #   du chauffage.
 # ==========================================================
 
-
 chauffage_fin_blocage_aeration:
   name: Chauffage - Fin blocage aeration
   has_date: true

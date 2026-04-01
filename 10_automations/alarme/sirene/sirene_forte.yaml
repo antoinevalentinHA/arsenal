@@ -33,7 +33,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1002000000011'
   alias: "Alarme - Sirène forte sur état triggered"
   description: >

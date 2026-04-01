@@ -27,7 +27,6 @@
 #   Arsenal V5+
 # ==========================================================
 
-
 poele_recent:
   name: "Poele utilise recemment"
   icon: mdi:fire-alert

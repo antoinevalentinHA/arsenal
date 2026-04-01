@@ -25,7 +25,6 @@
 # 📍 Entité : input_text.clim_mode_last
 # ==========================================================
 
-
 clim_mode_last:
   name: "Clim - Dernier mode connu"
   max: 16

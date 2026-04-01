@@ -36,7 +36,6 @@
 #    - socle système / données personnelles
 # ==========================================================
 
-
 withings_capteurs:
   name: "Capteurs Withings"
   entities:

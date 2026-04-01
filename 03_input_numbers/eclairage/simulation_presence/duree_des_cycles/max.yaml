@@ -41,7 +41,6 @@
 #    - Garde-fou simulation de présence
 # ==========================================================
 
-
 duree_max_cycle_simulation_presence:
   name: Durée max d’un cycle
   icon: mdi:timer-sand-full

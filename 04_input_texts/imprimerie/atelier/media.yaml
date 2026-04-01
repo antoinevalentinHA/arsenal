@@ -34,7 +34,6 @@
 #   - Représente un état passé
 # ==========================================================
 
-
 conditions_media_semaine_1:
   name: "Media – Semaine 1 (la + recente)"
   max: 255

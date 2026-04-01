@@ -59,7 +59,6 @@
 #     - Réactivité immédiate en cas de signal prioritaire
 # ==========================================================
 
-
 - id: "10240000000001"
   alias: "Chauffage – Trigger décision centrale"
   description: >

@@ -1,132 +1,91 @@
 # ==========================================================
-# 🧠 ARSENAL — BINARY SENSOR
-#     Wi-Fi — Nouveau BSSID (candidat apprentissage)
+# 📶 TEMPLATE BINARY SENSOR — Nouveau BSSID Wi-Fi détecté
+#
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Détecter si un téléphone est connecté à un BSSID
+#     non présent dans le référentiel maison.
+#
+#     Expose les BSSID inconnus comme candidats
+#     à l'apprentissage, en format canonique CSV (§6).
+#
+#  🚫 NE FAIT PAS
+#     - N'évalue pas la présence sécurité
+#     - Ne modifie pas le référentiel
+#     - Ne prend aucune décision de sécurité
+#
+#  🧩 PRINCIPE
+#     - Normalisation canonique des BSSID observés (§6)
+#     - Comparaison avec input_text.bssid_maison
+#     - state : on  → au moins un BSSID inconnu observé
+#     - state : off → tous les BSSID observés sont connus
+#
+#  📤 ATTRIBUT
+#     candidats : chaîne CSV des BSSID inconnus, format canonique
+#                 ex. "3460f9386080, a1b2c3d4e5f6"
+#                 chaîne vide si aucun candidat
+#
+#  📐 CONTRAT
+#     CONTRAT_BSSID_MAISON.md
+#
 # ==========================================================
-#
-# 🎯 RÔLE
-#
-#   Détecter qu’un téléphone, présent en présence sécurité,
-#   est connecté à un BSSID non encore enregistré dans
-#   input_text.bssid_maison.
-#
-#   Capteur STRICTEMENT DIAGNOSTIQUE :
-#     - ne décide rien
-#     - ne déclenche aucune action
-#     - ne modifie aucune donnée
-#
-#   Recalcul événementiel :
-#     - changement BSSID Antoine
-#     - changement BSSID Constance
-#     - changement présence sécurité
-#
-# ==========================================================
 
-- trigger:
-    - platform: state
-      entity_id:
-        - sensor.telephone_antoine_bssid_dynamic
-        - sensor.telephone_constance_bssid_dynamic
+- binary_sensor:
 
-    - platform: state
-      entity_id: binary_sensor.presence_maison_securite
-
-  binary_sensor:
-
-    - name: "Wifi Nouveau BSSID"
+    - name: "Wi-Fi nouveau BSSID"
       unique_id: wifi_nouveau_bssid
-      device_class: problem
 
       state: >
-
-        {# -------------------------------------------------- #}
-        {# Garde-fou principal : présence sécurité           #}
-        {# -------------------------------------------------- #}
-
-        {% if states('binary_sensor.presence_maison_securite') != 'on' %}
-          false
-
-        {% else %}
-
-          {# ---------------------------------------------- #}
-          {# Entrées & normalisation                        #}
-          {# ---------------------------------------------- #}
-
-          {% set bad = ['unknown','unavailable','none','<not connected>',''] %}
-
-          {% set bssid_a = states('sensor.telephone_antoine_bssid_dynamic') | string | lower | replace('-',':') | trim %}
-          {% set bssid_c = states('sensor.telephone_constance_bssid_dynamic') | string | lower | replace('-',':') | trim %}
-
-          {% set raw_list = states('input_text.bssid_maison') | string %}
-          {% set maison = raw_list.split(',') | map('trim') | map('lower') | map('replace','-',':') | reject('in', bad) | list %}
-
-          {# ---------------------------------------------- #}
-          {# Validation minimale format MAC                 #}
-          {# ---------------------------------------------- #}
-
-          {% set re = '^[0-9a-f]{2}(:[0-9a-f]{2}){5}$' %}
-
-          {% set ok_a = bssid_a not in bad and bssid_a | regex_match(re) %}
-          {% set ok_c = bssid_c not in bad and bssid_c | regex_match(re) %}
-
-          {# ---------------------------------------------- #}
-          {# Détection candidats                            #}
-          {# ---------------------------------------------- #}
-
-          {% set candidats = [] %}
-
-          {% if ok_a and bssid_a not in maison %}
-            {% set candidats = candidats + [bssid_a] %}
+        {# --- Référentiel maison — normalisation canonique (§6) --- #}
+        {% set raw_maison = states('input_text.bssid_maison') | string %}
+        {% set ns = namespace(maison=[]) %}
+        {% for item in raw_maison.split(',') %}
+          {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+            {% set ns.maison = ns.maison + [b] %}
           {% endif %}
+        {% endfor %}
 
-          {% if ok_c and bssid_c not in maison %}
-            {% set candidats = candidats + [bssid_c] %}
+        {# --- BSSID observés — normalisation canonique (§6) --- #}
+        {% set raw_antoine   = states('sensor.telephone_antoine_bssid_dynamic')   | trim | lower | replace(':', '') | replace('-', '') %}
+        {% set raw_constance = states('sensor.telephone_constance_bssid_dynamic') | trim | lower | replace(':', '') | replace('-', '') %}
+
+        {# --- Candidats : BSSID valides et inconnus du référentiel --- #}
+        {% set ns2 = namespace(candidats=[]) %}
+        {% for b in [raw_antoine, raw_constance] %}
+          {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+            {% if b not in ns.maison and b not in ns2.candidats %}
+              {% set ns2.candidats = ns2.candidats + [b] %}
+            {% endif %}
           {% endif %}
+        {% endfor %}
 
-          {{ candidats | length > 0 }}
-
-        {% endif %}
+        {{ ns2.candidats | length > 0 }}
 
       attributes:
-
-        bssid_antoine: >
-          {{ states('sensor.telephone_antoine_bssid_dynamic') | string | lower | replace('-',':') | trim }}
-
-        bssid_constance: >
-          {{ states('sensor.telephone_constance_bssid_dynamic') | string | lower | replace('-',':') | trim }}
-
         candidats: >
-
-          {% if states('binary_sensor.presence_maison_securite') != 'on' %}
-            []
-
-          {% else %}
-
-            {% set bad = ['unknown','unavailable','none','<not connected>',''] %}
-
-            {% set bssid_a = states('sensor.telephone_antoine_bssid_dynamic') | string | lower | replace('-',':') | trim %}
-            {% set bssid_c = states('sensor.telephone_constance_bssid_dynamic') | string | lower | replace('-',':') | trim %}
-
-            {% set raw_list = states('input_text.bssid_maison') | string %}
-            {% set maison = raw_list.split(',') | map('trim') | map('lower') | map('replace','-',':') | reject('in', bad) | list %}
-
-            {% set re = '^[0-9a-f]{2}(:[0-9a-f]{2}){5}$' %}
-
-            {% set ok_a = bssid_a not in bad and bssid_a | regex_match(re) %}
-            {% set ok_c = bssid_c not in bad and bssid_c | regex_match(re) %}
-
-            {% set candidats = [] %}
-
-            {% if ok_a and bssid_a not in maison %}
-              {% set candidats = candidats + [bssid_a] %}
+          {# --- Même logique que state — recalcul nécessaire (§6) --- #}
+          {# HA n'offre pas de partage de variables entre state et attributes #}
+          {% set raw_maison = states('input_text.bssid_maison') | string %}
+          {% set ns = namespace(maison=[]) %}
+          {% for item in raw_maison.split(',') %}
+            {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+              {% set ns.maison = ns.maison + [b] %}
             {% endif %}
+          {% endfor %}
 
-            {% if ok_c and bssid_c not in maison %}
-              {% set candidats = candidats + [bssid_c] %}
+          {% set raw_antoine   = states('sensor.telephone_antoine_bssid_dynamic')   | trim | lower | replace(':', '') | replace('-', '') %}
+          {% set raw_constance = states('sensor.telephone_constance_bssid_dynamic') | trim | lower | replace(':', '') | replace('-', '') %}
+
+          {% set ns2 = namespace(candidats=[]) %}
+          {% for b in [raw_antoine, raw_constance] %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+              {% if b not in ns.maison and b not in ns2.candidats %}
+                {% set ns2.candidats = ns2.candidats + [b] %}
+              {% endif %}
             {% endif %}
+          {% endfor %}
 
-            {{ candidats | unique | list }}
-
-          {% endif %}
-
-        liste_maison: >
-          {{ states('input_text.bssid_maison') }}
+          {{ ns2.candidats | sort | join(', ') }}

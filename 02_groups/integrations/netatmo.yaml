@@ -34,7 +34,6 @@
 #    - socle mesures / interface
 # ==========================================================
 
-
 netatmo_capteurs:
   name: "Capteurs Netatmo"
   entities:

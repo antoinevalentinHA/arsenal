@@ -35,7 +35,6 @@
 #       être explicitement autorisé
 # ==========================================================
 
-
 garage_auto_light:
   name: Garage Lumière Auto
   icon: mdi:auto-mode

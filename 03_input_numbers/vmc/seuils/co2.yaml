@@ -34,7 +34,6 @@
 #   - ppm (parties par million)
 # ==========================================================
 
-
 vmc_co2_seuil_on:
   name: Seuil déclenchement CO₂ (ppm)
   min: 400

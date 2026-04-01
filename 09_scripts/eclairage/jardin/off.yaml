@@ -58,7 +58,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 jardin_off:
   alias: "Éclairage Jardin - Extinction"
   mode: single

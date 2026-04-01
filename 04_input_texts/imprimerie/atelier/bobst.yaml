@@ -33,7 +33,6 @@
 #   - Représente un état passé
 # ==========================================================
 
-
 conditions_bobst_semaine_1:
   name: "Bobst – Semaine 1 (la + recente)"
   max: 255

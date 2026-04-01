@@ -63,7 +63,6 @@
 #     en s’appuyant sur une logique métier centralisée.
 # ==========================================================
 
-
 - id: "1005000000002"
   alias: "ECS Petite Maison - Fin séjour"
   description: >

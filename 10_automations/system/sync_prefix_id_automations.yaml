@@ -28,7 +28,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10120000000015"
   alias: "System – Synchronisation prefix_id"
 

@@ -43,7 +43,6 @@
 #     Arsenal
 # ==========================================================
 
-
 - id: '1011000000002'
   alias: "Réveils - Compteur Matthieu"
   mode: single

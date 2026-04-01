@@ -54,7 +54,6 @@ sensor.bouton_sdb_linkquality:
   friendly_name: "Bouton SDB parents"
   icon: mdi:gesture-tap-button
 
-
 ############################################################
 # 🪟 OUVERTURES (FENÊTRES / PORTES)
 ############################################################
@@ -103,6 +102,14 @@ sensor.contact_entree_fenetre_linkquality:
   friendly_name: "Fenêtre entrée"
   icon: mdi:window-closed
 
+sensor.contact_entree_porte_1_linkquality:
+  friendly_name: "Porte d’entrée 1"
+  icon: mdi:door-closed
+
+sensor.contact_entree_porte_2_linkquality:
+  friendly_name: "Porte d’entrée 2"
+  icon: mdi:door-closed
+
 sensor.contact_sejour_1_linkquality:
   friendly_name: "Baie vitrée 1 séjour"
   icon: mdi:window-closed
@@ -123,14 +130,6 @@ sensor.contact_sejour_4_linkquality:
   friendly_name: "Baie vitrée 4 séjour"
   icon: mdi:window-closed
 
-sensor.contact_entree_porte_1_linkquality:
-  friendly_name: "Porte d’entrée 1"
-  icon: mdi:door-closed
-
-sensor.contact_entree_porte_2_linkquality:
-  friendly_name: "Porte d’entrée 2"
-  icon: mdi:door-closed
-
 sensor.contact_garage_1_linkquality:
   friendly_name: "Porte garage"
   icon: mdi:door-closed
@@ -138,7 +137,6 @@ sensor.contact_garage_1_linkquality:
 sensor.contact_garage_2_linkquality:
   friendly_name: "Porte garage 2"
   icon: mdi:door-closed
-
 
 ############################################################
 # 🚶 MOUVEMENTS
@@ -168,15 +166,13 @@ sensor.capteur_mouvements_garage_3_linkquality:
   friendly_name: "Mouvements garage 3"
   icon: mdi:motion-sensor
 
-
 ############################################################
 # 💡 LUMINOSITE
 ############################################################
 
 sensor.luminosite_garage_linkquality:
-  friendly_name: "Lumière garage"
+  friendly_name: "Luminosité garage"
   icon: mdi:brightness-6
-
 
 ############################################################
 # 🌡️ CAPTEURS MÉTÉO / TEMPÉRATURE
@@ -210,7 +206,6 @@ sensor.zigbee_pluie_linkquality:
   friendly_name: "Capteur pluie Zigbee"
   icon: mdi:weather-rainy
 
-
 ############################################################
 # 🔌 PRISES CONNECTÉES
 ############################################################
@@ -237,10 +232,6 @@ sensor.prise_chambre_arnaud_linkquality:
 
 sensor.prise_chambre_matthieu_linkquality:
   friendly_name: "Prise chambre Matthieu"
-  icon: mdi:power-socket-fr
-
-sensor.prise_chambre_parents_2_linkquality:
-  friendly_name: "Prise chambre parents"
   icon: mdi:power-socket-fr
 
 sensor.prise_deshumidificateur_linkquality:
@@ -287,6 +278,13 @@ sensor.prise_sejour_placard_linkquality:
   friendly_name: "Placard séjour"
   icon: mdi:power-socket-fr
 
+############################################################
+# 🔘 MODULES CONNECTES
+############################################################
+
+sensor.lumiere_garage_linkquality:
+  friendly_name: "Lumière garage"
+  icon: mdi:lightbulb
 
 ############################################################
 # 🚨 ALARME
@@ -300,6 +298,6 @@ sensor.clavier_alarme_2_linkquality:
   friendly_name: "Clavier alarme (garage)"
   icon: mdi:dialpad
 
-sensor.sirene_alarm_linkquality:
+sensor.sirene_linkquality:
   friendly_name: "Sirène alarme"
   icon: mdi:alarm-bell

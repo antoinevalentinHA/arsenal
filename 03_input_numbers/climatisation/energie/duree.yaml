@@ -34,7 +34,6 @@
 #    - registre journalier (climatisation)
 # ==========================================================
 
-
 clim_duree_cool_aujourdhui:
   name: Clim - Durée Cool (h)
   min: 0

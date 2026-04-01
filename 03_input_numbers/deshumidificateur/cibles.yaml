@@ -49,7 +49,6 @@
 #    - Régulation déshumidification cave
 # ==========================================================
 
-
 cave_rh_cible_on:
   name: Cave - RH cible ON
   min: 60

@@ -39,7 +39,6 @@
 #     - Aucun effet de bord hors mode Enfants
 # ==========================================================
 
-
 - id: '10250000000003'
   alias: Mode Enfants – Restaurer planning bains ECS
   mode: single

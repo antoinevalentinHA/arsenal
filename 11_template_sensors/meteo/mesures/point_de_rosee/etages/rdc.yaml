@@ -1,56 +1,56 @@
 # ==========================================================
-# 💧 TEMPLATE TRIGGERED SENSOR — Point de rosée intérieur (WC - RDC)
-# ----------------------------------------------------------
-# 🎯 Objectif :
-#   Calculer le **point de rosée intérieur du rez-de-chaussée (RDC)**,
-#   basé sur :
-#     • la température maximale observée au RDC  
-#     • le taux d’humidité relatif de la pièce la plus humide du RDC  
+# 💧 ARSENAL — TEMPLATE TRIGGERED SENSOR
+#     Point de rosee interieur (wc) - RDC
+# ==========================================================
 #
-# ⚙️ Fonctionnement :
-#   - Utilise les entités :
-#       • `sensor.temperature_max_rdc` → température la plus élevée (RDC)  
-#       • `sensor.piece_rdc_la_plus_humide` → humidité relative max (RDC)  
-#   - Calcule le **point de rosée (°C)** selon la formule de Magnus-Tetens :
-#     ```
-#     Td = (b * γ(T, RH)) / (a - γ(T, RH))
-#     avec γ = (a*T)/(b+T) + ln(RH/100)
-#     ```
-#     où a = 17.62 et b = 243.12
+# 🎯 ROLE
+#   Calculer le point de rosee interieur du rez-de-chaussee
+#   a partir de :
+#   - sensor.temperature_max_rdc
+#   - sensor.humidite_relative_max_rdc
 #
-# 🧠 Détails techniques :
-#   - Déclenchement à chaque variation de température ou d’humidité
-#     ou au démarrage de Home Assistant.  
-#   - Ignore les valeurs non valides (`unknown`, `unavailable`, `none`, etc.)
-#     et les taux d’humidité hors plage (≤0 / >100 %).  
-#   - Si aucune donnée exploitable n’est disponible, conserve la dernière valeur connue.  
+# 🧩 PRINCIPE
+#   - Recalcul sur variation de la temperature max du RDC
+#   - Recalcul sur variation de l'humidite relative max du RDC
+#   - Recalcul au demarrage de Home Assistant
+#   - Application de la formule de Magnus-Tetens
+#   - Conservation de la derniere valeur connue si les donnees
+#     d'entree sont invalides
 #
-# 📊 Type : Trigger Template Sensor  
-# 🌡️ Unité : °C  
-# 💧 Icône : mdi:thermometer-water  
-# 📍 Entité : sensor.point_de_rosee_interieur_wc_rdc  
+# ⚙️ GARANTIES
+#   - Source d'humidite numerique et semantiquement coherente
+#   - Aucune dependance a un capteur ambigu de type "piece"
+#   - Rejet des valeurs invalides
+#   - Stabilite du capteur en cas d'entrees temporairement
+#     indisponibles
+#
+# 🛑 NON RESPONSABLE
+#   - Ne determine pas quelle piece du RDC est la plus humide
+#   - Ne produit pas de diagnostic de representativite metier
+#
 # ==========================================================
 
 - trigger:
     - platform: state
       entity_id:
         - sensor.temperature_max_rdc
-        - sensor.piece_rdc_la_plus_humide
+        - sensor.humidite_relative_max_rdc
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Point de rosée intérieur (wc) – RDC"
+    - name: "Point de rosee interieur (wc) - RDC"
       unique_id: point_de_rosee_interieur_wc_rdc
       unit_of_measurement: "°C"
       icon: mdi:thermometer-water
       state: >
         {% set t_raw = states('sensor.temperature_max_rdc') %}
-        {% set h_raw = states('sensor.piece_rdc_la_plus_humide') %}
+        {% set h_raw = states('sensor.humidite_relative_max_rdc') %}
         {% set t = t_raw | float(none) %}
         {% set h = h_raw | float(none) %}
         {% if t is not none and h is not none and 0 < h <= 100 %}
-          {% set a, b = 17.62, 243.12 %}
+          {% set a = 17.62 %}
+          {% set b = 243.12 %}
           {% set gamma = (a * t) / (b + t) + log(h / 100) %}
           {{ ((b * gamma) / (a - gamma)) | round(1) }}
         {% else %}

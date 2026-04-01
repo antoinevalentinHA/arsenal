@@ -31,8 +31,8 @@
         - sensor.media_reachability
         - sensor.chambre_parents_reachability
         - sensor.entree_reachability
-        - sensor.jardin_no_reachability
-        - sensor.jardin_se_reachability
+        - sensor.jardin_2_reachability
+        - sensor.jardin_1_reachability
         - sensor.petite_maison_reachability
         - sensor.sejour_reachability
 

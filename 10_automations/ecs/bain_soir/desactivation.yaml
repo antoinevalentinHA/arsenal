@@ -43,7 +43,6 @@
 #     - Réversibilité garantie par conception
 # ==========================================================
 
-
 - id: '10250000000004'
   alias: Mode Enfants – Désactiver planning bains ECS
   mode: single

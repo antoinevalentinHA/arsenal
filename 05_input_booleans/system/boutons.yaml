@@ -18,7 +18,6 @@
 # 📍 Entité : input_boolean.memo_hold_bouton_cuisine
 # ==========================================================
 
-
 memo_hold_bouton_cuisine:
   name: Mémo Hold Bouton Cuisine
   icon: mdi:gesture-tap-hold

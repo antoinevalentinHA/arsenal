@@ -50,7 +50,6 @@
 #   ou une commande thermique.
 # ==========================================================
 
-
 ecs_tmax_timestamp:
   name: "ECS tmax timestamp"
   has_date: true

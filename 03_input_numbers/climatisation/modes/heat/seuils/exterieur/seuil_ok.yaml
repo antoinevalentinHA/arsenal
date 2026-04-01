@@ -39,7 +39,6 @@
 #    - Garde-fou thermique climatisation COOL
 # ==========================================================
 
-
 clim_seuil_temperature_exterieure_minimum:
   name: Seuil température extérieure mini (clim)
   min: 15

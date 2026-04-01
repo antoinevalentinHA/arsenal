@@ -61,7 +61,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 jardin_toggle:
   alias: "Éclairage Jardin - Toggle"
   mode: single

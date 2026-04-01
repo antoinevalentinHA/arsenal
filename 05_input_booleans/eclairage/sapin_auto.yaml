@@ -34,6 +34,5 @@
 #       pouvoir être explicitement neutralisé
 # ==========================================================
 
-
 prise_baies_vitrees_auto:
   name: prise_baies_vitrees_auto

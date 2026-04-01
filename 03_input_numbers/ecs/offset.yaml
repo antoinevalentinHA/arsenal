@@ -49,7 +49,6 @@
 #   - degrés Celsius (°C)
 # ==========================================================
 
-
 ecs_off_tiny:
   name: ECS — Offset Tiny ΔT (consigne - X)
   min: 0.5

@@ -65,7 +65,6 @@
 #     robuste et traçable dans le temps.
 # ==========================================================
 
-
 - id: '1006000000002'
   alias: "Déshumidificateur OFF si non recommandé"
   description: >

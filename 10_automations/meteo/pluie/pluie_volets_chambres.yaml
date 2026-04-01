@@ -1,0 +1,124 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Pluie – Fermeture volets Chambres / Notification
+#
+#  ID : 10160000000011
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Orchestration événementielle — régime pluie détectée.
+#
+#     Sur détection de pluie (faible ou forte) :
+#       - présence ON  → notification exposition fenêtres chambres ouvertes
+#       - présence OFF → fermeture des volets des chambres exposées
+#
+#  🧱 NATURE
+#
+#     - Orchestration événementielle
+#     - Décision déléguée à sensor.cibles_volets_pluie_chambres
+#       et binary_sensor.presence_famille_securite
+#     - Exécution déléguée à script.volets_fermeture_execute
+#
+#  ⚙️ PRINCIPE
+#
+#     - Déclenchement principal : pluie_en_cours → ON
+#     - Déclenchement de reprise : systeme_stable → ON si pluie déjà active
+#
+#  🚫 NE FAIT PAS
+#
+#     - Ne détecte pas la pluie
+#     - Ne recalcule pas les cibles (déléguées au sensor)
+#     - Ne ferme aucun volet séjour
+#     - Ne notifie pas sur la base des fenêtres séjour
+#
+#  📐 CONTRAT
+#     CONTRAT_PLUIE_VOLETS.md v2.2.1 — sections 4.1, 5.7
+# ==========================================================
+
+- id: "10160000000011"
+  alias: "Pluie – Fermeture volets Chambres / Notification"
+  description: >
+    Sur pluie détectée : notification si présence (fenêtres chambres),
+    fermeture volets chambres si absence.
+    La sélection des cibles est déléguée à sensor.cibles_volets_pluie_chambres.
+  mode: single
+  max_exceeded: silent
+
+  trigger:
+    - platform: state
+      id: pluie
+      entity_id: input_boolean.pluie_en_cours
+      to: "on"
+    - platform: state
+      id: demarrage
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: template
+      alias: "Garde-fou : pluie en cours active"
+      value_template: "{{ is_state('input_boolean.pluie_en_cours','on') }}"
+    - condition: or
+      conditions:
+        - condition: trigger
+          id: pluie
+        - condition: and
+          conditions:
+            - condition: trigger
+              id: demarrage
+            - condition: template
+              alias: "Reprise : pluie déjà active"
+              value_template: "{{ is_state('input_boolean.pluie_en_cours','on') }}"
+
+  action:
+    - variables:
+        presence: "{{ is_state('binary_sensor.presence_famille_securite','on') }}"
+        fenetres_chambres_ouvertes: >
+          {{ ['binary_sensor.contact_chambre_arnaud','binary_sensor.contact_chambre_matthieu']
+             | select('is_state','on') | list }}
+        cibles_chambres: "{{ state_attr('sensor.cibles_volets_pluie_chambres','entity_ids') or [] }}"
+
+    - choose:
+
+        # ──────────────────────────────────────────────────
+        # A) Présence ON → notification exposition chambres
+        # ──────────────────────────────────────────────────
+        - conditions:
+            - condition: template
+              value_template: "{{ presence }}"
+          sequence:
+            - condition: template
+              alias: "Optimisation : au moins une fenêtre chambre ouverte"
+              value_template: "{{ fenetres_chambres_ouvertes | length > 0 }}"
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🌧️ Pluie – fenêtres chambres ouvertes"
+                message: >
+                  Pluie détectée.
+                  Fenêtres chambres ouvertes : {{ fenetres_chambres_ouvertes | join(', ') }}.
+
+        # ──────────────────────────────────────────────────
+        # B) Présence OFF → fermeture volets chambres exposés
+        # ──────────────────────────────────────────────────
+        - conditions:
+            - condition: template
+              value_template: "{{ not presence }}"
+          sequence:
+            - condition: template
+              alias: "Optimisation : cibles chambres non vides"
+              value_template: "{{ cibles_chambres | length > 0 }}"
+            - service: script.volets_fermeture_execute
+              data:
+                covers: "{{ cibles_chambres }}"
+            - service: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🌧️ Pluie – Protection chambres traitée"
+                message: >
+                  Pluie détectée.
+                  Fermeture volets chambres demandée à {{ now().strftime('%H:%M') }}.
+                  Cibles : {{ cibles_chambres | join(', ') }}.
+                extra:
+                  group: "volets"
+                  tag: "fermeture_volets_pluie_chambres"

@@ -48,7 +48,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "1016000000006"
   alias: "Pluie – Réarmement logique après temporisation"
   description: >

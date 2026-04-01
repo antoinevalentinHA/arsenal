@@ -67,7 +67,6 @@
 #     par les pipelines de décision dédiés.
 # ==========================================================
 
-
 - id: '1003000000009'
   alias: "Clim - Correction consigne manuelle si clim éteinte"
   mode: single

@@ -35,7 +35,6 @@
 #    - Consignes de confort autoritaires
 # ==========================================================
 
-
 clim_consigne_presence:
   name: Consigne clim si présence
   min: 18

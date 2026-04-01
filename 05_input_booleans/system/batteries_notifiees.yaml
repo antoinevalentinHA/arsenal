@@ -18,7 +18,6 @@
 # 📍 Entité : input_boolean.batteries_notifiees
 # ==========================================================
 
-
 batteries_notifiees:
   name: 🔋 Batteries notifiées aujourd'hui
   icon: mdi:battery-check

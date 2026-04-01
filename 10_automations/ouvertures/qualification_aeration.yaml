@@ -86,6 +86,7 @@
 #
 #     Home Assistant 2024.8+
 # ==========================================================
+
 - id: "10170000000009"
   alias: "Ouvertures – Qualification aération confirmée"
   mode: single

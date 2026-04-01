@@ -50,7 +50,6 @@
 # ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 vmc_haute_vitesse:
   alias: "VMC - Passage en haute vitesse"
   mode: single

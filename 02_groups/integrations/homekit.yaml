@@ -34,7 +34,6 @@
 #    - socle mesures / interface
 # ==========================================================
 
-
 homekit_capteurs:
   name: "Capteurs Homekit"
   entities:

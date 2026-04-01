@@ -36,7 +36,6 @@
 #       en vérités métier stables
 # ==========================================================
 
-
 pluie_en_cours:
   name: "Pluie en cours"
   icon: mdi:weather-rainy

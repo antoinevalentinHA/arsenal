@@ -65,7 +65,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 redemarrer_box:
   alias: Redémarrer la box manuellement
   description: Déclenche un cycle d’alimentation de la box avec traçabilité utilisateur

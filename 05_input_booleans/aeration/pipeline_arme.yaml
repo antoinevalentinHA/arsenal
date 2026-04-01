@@ -32,7 +32,6 @@
 #     - Tout pipeline doit être explicitement armé
 # ==========================================================
 
-
 aeration_pipeline_arme:
   name: "Aération — Pipeline armé"
   icon: mdi:shield-check

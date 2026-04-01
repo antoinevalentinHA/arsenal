@@ -37,7 +37,6 @@
 #
 # ==========================================================
 
-
 stock_carton_temperature_min:
   name: "Carton – Température min"
   min: -10

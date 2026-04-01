@@ -52,7 +52,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "1018000000002"
   alias: "Stock – Archivage hebdomadaire et reset min/max"
   description: >

@@ -40,7 +40,6 @@
 #    - Paramètre de réalisme comportemental
 # ==========================================================
 
-
 duree_min_cycle_simulation_presence:
   name: Durée min d’un cycle
   icon: mdi:timer-sand-empty

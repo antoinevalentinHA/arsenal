@@ -19,7 +19,6 @@
 # 📍 Entité : input_boolean.ecs_cycle_en_cours
 # ==========================================================
 
-
 ecs_cycle_en_cours:
   name: Chauffe
   icon: mdi:progress-clock

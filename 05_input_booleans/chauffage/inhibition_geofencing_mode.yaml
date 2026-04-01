@@ -27,7 +27,6 @@
 #   qui appliquent la restriction selon les conditions définies.
 # ==========================================================
 
-
 blocage_geofencing:
   name: Chauffage – Blocage geofencing
   icon: mdi:map-marker-off-outline

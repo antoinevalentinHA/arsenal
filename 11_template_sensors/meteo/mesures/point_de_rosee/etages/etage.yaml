@@ -1,55 +1,55 @@
 # ==========================================================
-# 💧 TEMPLATE TRIGGERED SENSOR — Point de rosée intérieur (WC - Étage)
-# ----------------------------------------------------------
-# 🎯 Objectif :
-#   Calculer le **point de rosée intérieur** à l’étage, basé sur :
-#     • la température maximale observée dans les chambres  
-#     • le taux d’humidité relatif de la chambre la plus humide  
+# 💧 ARSENAL — TEMPLATE TRIGGERED SENSOR
+#     Point de rosee interieur (wc) - Etage
+# ==========================================================
 #
-# ⚙️ Fonctionnement :
-#   - Utilise les entités :
-#       • `sensor.temperature_max_chambres` → température la plus élevée des chambres  
-#       • `sensor.chambre_la_plus_humide` → humidité relative de la chambre la plus humide  
-#   - Calcule le **point de rosée (°C)** selon la formule de Magnus-Tetens :
-#     ```
-#     Td = (b * γ(T, RH)) / (a - γ(T, RH))
-#     avec γ = (a*T)/(b+T) + ln(RH/100)
-#     ```
-#     où a = 17.62 et b = 243.12
+# 🎯 ROLE
+#   Calculer le point de rosee interieur de l'etage a partir de :
+#   - sensor.temperature_max_chambres
+#   - sensor.humidite_relative_max_chambres
 #
-# 🧠 Détails techniques :
-#   - Déclenchement à chaque changement des capteurs de température/humidité
-#     ou au démarrage de Home Assistant.
-#   - Ignore les valeurs invalides (`unknown`, `unavailable`, `none`, etc.)
-#     ou les humidités hors plage (≤0 / >100 %).
-#   - En cas d’indisponibilité, conserve la dernière valeur connue.
+# 🧩 PRINCIPE
+#   - Recalcul sur variation de la temperature max des chambres
+#   - Recalcul sur variation de l'humidite relative max des chambres
+#   - Recalcul au demarrage de Home Assistant
+#   - Application de la formule de Magnus-Tetens
+#   - Conservation de la derniere valeur connue si les donnees
+#     d'entree sont invalides
 #
-# 📊 Type : Trigger Template Sensor  
-# 🌡️ Unité : °C  
-# 💧 Icône : mdi:thermometer-water  
-# 📍 Entité : sensor.point_de_rosee_interieur_wc  
+# ⚙️ GARANTIES
+#   - Source d'humidite numerique et semantiquement coherente
+#   - Aucune dependance a un pseudo-capteur ambigu de type "chambre"
+#   - Rejet des valeurs invalides
+#   - Stabilite du capteur en cas d'entrees temporairement
+#     indisponibles
+#
+# 🛑 NON RESPONSABLE
+#   - Ne determine pas quelle chambre est la plus humide
+#   - Ne produit pas de diagnostic de representativite metier
+#
 # ==========================================================
 
 - trigger:
     - platform: state
       entity_id:
         - sensor.temperature_max_chambres
-        - sensor.chambre_la_plus_humide
+        - sensor.humidite_relative_max_chambres
     - platform: homeassistant
       event: start
 
   sensor:
-    - name: "Point de rosée intérieur (wc) – Étage"
+    - name: "Point de rosee interieur (wc) - Etage"
       unique_id: point_de_rosee_interieur_wc
       unit_of_measurement: "°C"
       icon: mdi:thermometer-water
       state: >
         {% set t_raw = states('sensor.temperature_max_chambres') %}
-        {% set h_raw = states('sensor.chambre_la_plus_humide') %}
+        {% set h_raw = states('sensor.humidite_relative_max_chambres') %}
         {% set t = t_raw | float(none) %}
         {% set h = h_raw | float(none) %}
         {% if t is not none and h is not none and 0 < h <= 100 %}
-          {% set a, b = 17.62, 243.12 %}
+          {% set a = 17.62 %}
+          {% set b = 243.12 %}
           {% set gamma = (a * t) / (b + t) + log(h / 100) %}
           {{ ((b * gamma) / (a - gamma)) | round(1) }}
         {% else %}

@@ -31,7 +31,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1002000000010'
   alias: "Sirene - Bip à la désactivation de l’alarme"
   description: >

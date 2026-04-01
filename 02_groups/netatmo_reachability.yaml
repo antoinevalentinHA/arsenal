@@ -19,17 +19,17 @@
 netatmo_reachability_all:
   name: "Netatmo — Toutes joignabilites"
   entities:
-    - sensor.chambre_arnaud_reachability
-    - sensor.chambre_matthieu_reachability
-    - sensor.pluviometre_reachability
     - sensor.bobst_102_reachability
     - sensor.bobst_102_exterieur_so_reachability
     - sensor.komori_reachability
     - sensor.komori_exterieur_no_reachability
     - sensor.media_reachability
+    - sensor.chambre_arnaud_reachability
+    - sensor.chambre_matthieu_reachability
     - sensor.chambre_parents_reachability
     - sensor.entree_reachability
-    - sensor.jardin_no_reachability
-    - sensor.jardin_se_reachability
+    - sensor.jardin_2_reachability
+    - sensor.jardin_1_reachability
     - sensor.petite_maison_reachability
+    - sensor.pluviometre_reachability
     - sensor.sejour_reachability

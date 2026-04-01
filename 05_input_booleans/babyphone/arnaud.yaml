@@ -34,7 +34,6 @@
 #       être explicitement activé ou désactivé
 # ==========================================================
 
-
 babyphone_arnaud:
   name: "Babyphone Arnaud"
   icon: mdi:baby-face

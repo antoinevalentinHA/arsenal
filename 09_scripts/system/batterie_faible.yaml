@@ -67,7 +67,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 notification_batteries_faibles:
   alias: Notification batteries faibles
   mode: single

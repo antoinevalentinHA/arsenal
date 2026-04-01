@@ -21,7 +21,6 @@
 # 📍 Entité : input_boolean.ecs_autocorrect_active
 # ==========================================================
 
-
 ecs_autocorrect_active:
   name: ECS - Auto ajustement actif
   icon: mdi:auto-fix

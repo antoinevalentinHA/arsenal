@@ -42,7 +42,6 @@
 #   Home Assistant 2024.8+
 # ==========================================================
 
-
 sirene_test:
   alias: Tester la sirène (bip court)
   mode: single

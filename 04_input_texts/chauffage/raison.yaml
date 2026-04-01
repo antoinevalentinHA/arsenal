@@ -33,7 +33,6 @@
 #   - Aucun rôle causal ou décisionnel
 # ==========================================================
 
-
 chauffage_raison:
   name: "Chauffage — Raison d'exécution"
   max: 255

@@ -29,7 +29,6 @@
 #   - Ne doit pas être interprétée comme un état courant
 # ==========================================================
 
-
 mode_enfants_ecs_soirs_sauvegarde:
   name: Mode enfants – ECS soirs sauvegarde
   icon: mdi:bathtub

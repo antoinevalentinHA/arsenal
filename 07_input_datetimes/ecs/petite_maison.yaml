@@ -51,7 +51,6 @@
 #   du chauffe-eau.
 # ==========================================================
 
-
 debut_ecs_petite_maison_programmee:
   name: "Début séjour ECS Petite Maison"
   has_date: true

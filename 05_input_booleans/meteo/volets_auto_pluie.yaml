@@ -26,7 +26,6 @@
 #     - Les booléens autorisent ou interdisent
 # ==========================================================
 
-
 fermeture_volets_pluie:
   name: Fermeture volets pluie
   icon: mdi:weather-pouring

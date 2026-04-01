@@ -25,7 +25,6 @@
 #   - Il n’a AUCUN rôle causal ou décisionnel
 # ==========================================================
 
-
 climatisation_raison:
   name: "Climatisation — Raison d'exécution"
   max: 255

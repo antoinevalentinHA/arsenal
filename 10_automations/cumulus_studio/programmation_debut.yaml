@@ -61,7 +61,6 @@
 #     avec une logique ECS centralisée.
 # ==========================================================
 
-
 - id: "1005000000001"
   alias: "ECS Petite Maison - Début séjour"
   description: >

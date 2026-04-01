@@ -33,7 +33,6 @@
 #   - Minutes
 # ==========================================================
 
-
 vmc_duree_min_haute:
   name: "VMC - Durée min haute vitesse"
   min: 5

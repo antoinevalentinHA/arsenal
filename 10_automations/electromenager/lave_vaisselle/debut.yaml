@@ -46,7 +46,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "1008000000001"
   alias: "Lave-vaisselle – Détection début de cycle"
   description: >

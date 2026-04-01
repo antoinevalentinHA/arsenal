@@ -55,7 +55,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1009000000003'
   alias: "Babysitting – Activation du mode"
 

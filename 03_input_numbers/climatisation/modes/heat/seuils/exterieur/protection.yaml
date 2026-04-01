@@ -38,7 +38,6 @@
 #    - Garde-fou thermique clim HEAT
 # ==========================================================
 
-
 clim_hiver_seuil_temperature_exterieure:
   name: Température extérieure minimale clim chauffage
   min: -5

@@ -26,7 +26,6 @@
 # ✅ Boot-safe + Reload-template-safe
 # ==========================================================
 
-
 - id: "1019000000001"
   alias: "VMC - Gestion automatique humidité"
   description: >

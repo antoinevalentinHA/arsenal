@@ -38,35 +38,19 @@
 # 🔘 BOTS / ACTIONNEURS
 ############################################################
 
-sensor.bot_chambre_parents_bluetooth_signal:
-  friendly_name: "Bot chambre parents"
-  icon: mdi:gesture-tap-button
-
-sensor.bot_garage_1_bluetooth_signal:
-  friendly_name: "Bot garage 1"
-  icon: mdi:gesture-tap-button
-
-sensor.bot_garage_2_bluetooth_signal:
-  friendly_name: "Bot garage 2"
-  icon: mdi:gesture-tap-button
-
-sensor.bot_vmc_bluetooth_signal:
-  friendly_name: "Bot VMC"
-  icon: mdi:gesture-tap-button
-
-sensor.bot_deshumidificateur_bluetooth_signal:
-  friendly_name: "Bot déshumidificateur"
-  icon: mdi:gesture-tap-button
-
 
 ############################################################
 # 📟 APPAREILS DE MESURE / TELECOMMANDES
 ############################################################
 
 sensor.meter_garage_bluetooth_signal:
-  friendly_name: "Meter garage"
+  friendly_name: "Meter Garage"
   icon: mdi:gauge
 
-sensor.remote_constance_bluetooth_signal:
-  friendly_name: "Remote Constance"
+sensor.meter_cave_bluetooth_signal:
+  friendly_name: "Meter Cave"
+  icon: mdi:gauge
+
+sensor.remote_chambre_parents_2_bluetooth_signal:
+  friendly_name: "Remote Chambre Parents 2"
   icon: mdi:remote

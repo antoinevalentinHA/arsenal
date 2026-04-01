@@ -35,7 +35,6 @@
 #       pouvoir être explicitement autorisé
 # ==========================================================
 
-
 sejour_auto_light:
   name: Séjour Lumière Auto
   icon: mdi:auto-mode

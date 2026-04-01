@@ -72,7 +72,6 @@
 #   Arsenal v6+
 # ==========================================================
 
-
 set_deshumidificateur_state:
   alias: "Déshumidificateur - Forcer un état (via SwitchBot)"
   description: "Appuie sur le bouton uniquement si l'état réel diffère. Double tentative + validation."

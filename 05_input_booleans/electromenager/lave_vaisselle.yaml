@@ -35,7 +35,6 @@
 #       par un état logique explicite
 # ==========================================================
 
-
 lave_vaisselle_cycle:
   name: Lave-vaisselle - cycle en cours
   icon: mdi:dishwasher

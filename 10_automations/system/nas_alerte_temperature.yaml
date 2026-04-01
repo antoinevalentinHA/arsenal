@@ -32,7 +32,6 @@
 #     - Notification unique par dépassement durable
 # ==========================================================
 
-
 - id: '1012000000005'
   alias: "NAS – Alerte surchauffe disque"
   description: >

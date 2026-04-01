@@ -35,7 +35,6 @@
 #    - Paramètre éclairage séjour
 # ==========================================================
 
-
 duree_absence_sejour:
   name: Durée absence séjour (min)
   icon: mdi:timer-outline

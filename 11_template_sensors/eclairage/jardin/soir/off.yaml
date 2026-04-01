@@ -73,7 +73,7 @@
 
         {% else %}
           {# Référence temporelle fiable : ouverture du cycle soir #}
-          {% set offset = states('input_number.lumiere_jardin_soir_offset_minutes') | int(0) %}
+          {% set offset = states('input_number.delai_allumage_jardin_soir') | int(0) %}
           {% set nuit = is_state('sun.sun', 'below_horizon') %}
           {% set ls = state_attr('sun.sun', 'last_setting') %}
           {% set ns = state_attr('sun.sun', 'next_setting') %}

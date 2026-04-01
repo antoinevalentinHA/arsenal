@@ -40,7 +40,6 @@
 #     - La vérité métier reste unique et consolidée
 # ==========================================================
 
-
 pluie_zigbee_virtuel:
   name: Pluie Zigbee virtuel
   icon: mdi:weather-pouring

@@ -22,7 +22,6 @@
 # 📍 Entité : input_boolean.ecs_desinfection_active
 # ==========================================================
 
-
 ecs_desinfection_active:
   name: "ECS – Desinfection active"
   icon: mdi:alert

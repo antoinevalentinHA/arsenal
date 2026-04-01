@@ -30,7 +30,6 @@
 #   - Format attendu par split(',')
 # ==========================================================
 
-
 badges_autorises:
   name: Badges autorises
   mode: text

@@ -49,7 +49,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1009000000002'
   alias: "Présence enfants – Remise à zéro quotidienne"
   description: >

@@ -59,28 +59,24 @@ sensor.bouton_sdb_battery:
 # 🔘 BOUTONS SWITCHBOT
 ############################################################
 
+sensor.remote_chambre_parents_2_batterie:
+  friendly_name: "Bouton Chambre Parents 2"
+  icon: mdi:gesture-tap-button
+
+############################################################
+# 🔘 BOTS SWITCHBOT
+############################################################
+
 sensor.vmc_batterie:
   friendly_name: "Bouton VMC"
   icon: mdi:gesture-tap-button
 
-sensor.jardin_batterie:
-  friendly_name: "Bouton jardin"
-  icon: mdi:gesture-tap-button
-
-sensor.chambre_batterie:
+sensor.bot_chambre_parents_batterie:
   friendly_name: "Bouton chambre parents"
   icon: mdi:gesture-tap-button
 
 sensor.deshumidificateur_batterie:
   friendly_name: "Bouton déshumidificateur"
-  icon: mdi:gesture-tap-button
-
-sensor.switchbot_bot_garage_1:
-  friendly_name: "Bouton Garage 1"
-  icon: mdi:gesture-tap-button
-
-sensor.switchbot_bot_garage_2:
-  friendly_name: "Bouton Garage 2"
   icon: mdi:gesture-tap-button
 
 ############################################################
@@ -200,7 +196,7 @@ sensor.capteur_mouvements_sejour_2_battery:
 ############################################################
 
 sensor.luminosite_garage_battery:
-  friendly_name: "Lumière garage"
+  friendly_name: "Luminosité garage"
   icon: mdi:brightness-6
 
 ############################################################
@@ -239,31 +235,27 @@ sensor.meteo_zigbee_sdb_parents_battery:
 # 🌡️ CAPTEURS METEO NETATMO
 ############################################################
 
-sensor.pluviometre_batterie:
-  friendly_name: "Pluviomètre Netatmo"
-  icon: mdi:thermometer
-
-sensor.jardin_no_batterie:
+sensor.netatmo_homekit_jardin_no_batterie:
   friendly_name: "Jardin Nord-Ouest"
   icon: mdi:thermometer
 
-sensor.jardin_se_batterie:
+sensor.netatmo_homekit_jardin_se_batterie:
   friendly_name: "Jardin Sud-Est"
   icon: mdi:thermometer
 
-sensor.petite_maison_batterie:
+sensor.netatmo_homekit_petite_maison_batterie:
   friendly_name: "Capteur Netatmo petite maison"
   icon: mdi:thermometer
 
-sensor.entree_batterie:
+sensor.netatmo_homekit_entree_batterie:
   friendly_name: "Capteur Netatmo entrée"
   icon: mdi:thermometer
 
-sensor.sejour_batterie:
+sensor.netatmo_homekit_sejour_batterie:
   friendly_name: "Capteur Netatmo séjour"
   icon: mdi:thermometer
 
-sensor.chambre_parents_batterie:
+sensor.netatmo_homekit_chambre_parents_batterie:
   friendly_name: "Capteur Netatmo parents"
   icon: mdi:thermometer
 
@@ -275,11 +267,15 @@ sensor.komori_exterieur_no_batterie:
   friendly_name: "Capteur Komori extérieur NO"
   icon: mdi:thermometer
 
+sensor.pluviometre_battery:
+  friendly_name: "Pluviomètre"
+  icon: mdi:weather-rainy
+
 ############################################################
 # 🌡️ CAPTEURS METEO SWITCHBOT
 ############################################################
 
-sensor.exterieur_batterie:
+sensor.meter_jardin_batterie:
   friendly_name: "SwitchBot extérieur"
   icon: mdi:thermometer
 
@@ -287,11 +283,11 @@ sensor.sdb_enfants_batterie:
   friendly_name: "Capteur SDB enfants"
   icon: mdi:thermometer
 
-sensor.garage_batterie:
+sensor.meter_garage_batterie:
   friendly_name: "SwitchBot garage"
   icon: mdi:thermometer
 
-sensor.cave_batterie:
+sensor.meter_cave_batterie:
   friendly_name: "Capteur cave"
   icon: mdi:thermometer
 
@@ -321,10 +317,6 @@ sensor.stock_carton_batterie:
 
 sensor.stock_pf_batterie:
   friendly_name: "Capteur stock produits finis"
-  icon: mdi:thermometer
-
-sensor.mezzanine_batterie:
-  friendly_name: "Capteur mezzanine"
   icon: mdi:thermometer
 
 ############################################################

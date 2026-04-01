@@ -63,7 +63,6 @@
 #     utilisée par les couches de calcul énergétique.
 # ==========================================================
 
-
 - id: "10030000000103"
   alias: "Clim - Cumul durée fonctionnement (événementiel)"
   description: >

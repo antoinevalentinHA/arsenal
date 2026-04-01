@@ -30,7 +30,6 @@
 #   - Casse normalisée lors de la lecture
 # ==========================================================
 
-
 bssid_maison:
   name: BSSIDs maison
   mode: text

@@ -40,7 +40,6 @@
 #   Home Assistant 2024.8+
 # ==========================================================
 
-
 sirene_bip_bip:
   alias: Bip bip sirène (désarmement)
   description: >

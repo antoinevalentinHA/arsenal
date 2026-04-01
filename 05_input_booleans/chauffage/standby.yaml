@@ -26,7 +26,6 @@
 # 📍 Entité : input_boolean.chauffage_standby_force
 # ==========================================================
 
-
 chauffage_standby_force:
   name: Chauffage standby forcé
   icon: mdi:radiator-off

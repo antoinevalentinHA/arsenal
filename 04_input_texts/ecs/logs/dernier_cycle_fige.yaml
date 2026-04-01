@@ -33,7 +33,6 @@
 #   - Toute logique d’interprétation est EXTERNE
 # ==========================================================
 
-
 ecs_resume_dernier_cycle_fige:
   name: ECS - Résumé figé dernier cycle
   max: 255

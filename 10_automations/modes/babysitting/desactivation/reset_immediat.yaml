@@ -58,7 +58,6 @@
 #     Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: "10090000000009"
   alias: "Babysitting – Reset mémoire présence enfants"
   description: >

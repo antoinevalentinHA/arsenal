@@ -1,0 +1,69 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     BSSID – Depassement seuil referentiel (diagnostic)
+#
+# ID : 10120000000026
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Détecter un dépassement du seuil métier (14 BSSID)
+#   dans le référentiel Wi-Fi maison.
+#
+# 🧱 NATURE
+#   - Diagnostic pur
+#   - Aucun effet métier
+#   - Aucune correction automatique
+#
+# 📐 CONTRAT
+#   CONTRAT_BSSID_MAISON.md §8.1 / §8.2
+#
+# ==========================================================
+
+- id: "10120000000026"
+  alias: BSSID – Dépassement seuil réferentiel
+  mode: single
+
+  trigger:
+
+    # Toute modification réelle du référentiel (hors états transitoires)
+    - platform: state
+      entity_id: input_text.bssid_maison
+      not_to:
+        - "unavailable"
+        - "unknown"
+
+    # Vérification au redémarrage stabilisé
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  action:
+
+    - variables:
+
+        # --- Référentiel courant — parsing canonique ---
+        current_list: >-
+          {% set raw = states('input_text.bssid_maison') | string %}
+          {% set ns = namespace(result=[]) %}
+          {% for item in raw.split(',') %}
+            {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+              {% set ns.result = ns.result + [b] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.result }}
+
+        count: "{{ current_list | length }}"
+
+    - choose:
+
+        - conditions: "{{ count | int > 14 }}"
+          sequence:
+
+            - service: system_log.write
+              data:
+                level: warning
+                logger: custom_components.alarme
+                message: >
+                  [ALARME] BSSID — depassement seuil :
+                  {{ count }} BSSID (seuil = 14).
+                  Referentiel : {{ current_list | join(', ') }}

@@ -36,7 +36,6 @@
 #       être explicitement autorisé ou neutralisé
 # ==========================================================
 
-
 auto_lumiere_jardin_matin:
   name: Lumière jardin - auto matin (inclut extinction lever)
   icon: mdi:weather-sunset-up

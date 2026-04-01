@@ -32,7 +32,6 @@
 #   - Valeur descriptive uniquement
 # ==========================================================
 
-
 ecs_dernier_cycle_resume:
   name: ECS - Dernier cycle (résumé)
   max: 255

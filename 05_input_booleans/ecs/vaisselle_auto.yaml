@@ -23,7 +23,6 @@
 # 📍 Entité : input_boolean.mode_vaisselle
 # ==========================================================
 
-
 mode_vaisselle:
   name: Mode vaisselle
   icon: mdi:dishwasher

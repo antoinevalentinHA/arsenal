@@ -78,7 +78,6 @@
 #     aux pertes d’état transitoires.
 # ==========================================================
 
-
 - id: '1003000000020'
   alias: Clim - Mode silencieux (exécution)
   description: >

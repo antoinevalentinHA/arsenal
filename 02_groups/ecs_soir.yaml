@@ -31,7 +31,6 @@
 #    - fonctionnel / paramétrique ECS
 # ==========================================================
 
-
 ecs_soir_actifs:
   name: ECS Soir – Jours actifs
   entities:

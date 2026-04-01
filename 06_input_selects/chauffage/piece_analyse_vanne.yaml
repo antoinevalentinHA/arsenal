@@ -47,7 +47,6 @@
 #   constitue une dérive architecturale.
 # ==========================================================
 
-
 adjustment_piece:
   name: "Pièce à analyser"
   options:

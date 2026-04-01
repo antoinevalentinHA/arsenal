@@ -33,7 +33,6 @@
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
-
 - id: '1002000000021'
   alias: Alarme - Notification persistante
   description: >
