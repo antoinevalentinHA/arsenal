@@ -138,7 +138,7 @@
 # ==========================================================
 
 chauffage_appliquer_parallele:
-  alias: "Chauffage – Appliquer parallele"
+  alias: "Chauffage – Appliquer parallèle"
   mode: single
 
   sequence:

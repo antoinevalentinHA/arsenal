@@ -24,7 +24,7 @@
 # ==========================================================
 
 - id: '1012000000012'
-  alias: "Overkiz – Relance intégration (auto)"
+  alias: "Système - Relance Overkiz"
   description: >
     Orchestration légère : déclenche la procédure de résilience Overkiz
     (reload config_entry) sur gel données, avec backoff et plafond

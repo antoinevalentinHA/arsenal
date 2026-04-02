@@ -26,7 +26,7 @@
 # ==========================================================
 
 - id: "10030000000104"
-  alias: "Clim – Gestion du timer absence prolongée"
+  alias: "Clim - Gestion absence prolongée"
   description: >
     Démarre ou annule le timer d’absence prolongée
     utilisé pour autoriser l’extinction de la climatisation.

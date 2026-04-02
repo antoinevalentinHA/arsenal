@@ -43,7 +43,7 @@
 # ==========================================================
 
 sirene_test:
-  alias: Tester la sirène (bip court)
+  alias: Alarme - Test sirène
   mode: single
   sequence:
     - action: mqtt.publish

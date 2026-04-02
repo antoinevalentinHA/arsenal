@@ -85,7 +85,7 @@
 # ==========================================================
 
 reboot_netatmo:
-  alias: Redémarrage station Netatmo
+  alias: "Météo - Redémarrage station Netatmo"
   mode: single
 
   fields:

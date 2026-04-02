@@ -31,7 +31,7 @@
 # ==========================================================
 
 - id: "10170000000013"
-  alias: "Ouvertures – Chambre parents – Marquer grâce échue"
+  alias: "Ouvertures - Chambre parents - Gestion grâce"
   mode: single
 
   trigger:

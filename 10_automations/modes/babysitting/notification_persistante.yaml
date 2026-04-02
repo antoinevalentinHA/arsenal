@@ -57,7 +57,7 @@
 # ==========================================================
 
 - id: "10090000000011"
-  alias: "Babysitting – État persistant du mode"
+  alias: "Modes - Babysitting - Notification"
   description: >
     Projette une notification persistante tant que le mode Babysitting
     est actif, et la disqualifie explicitement à sa désactivation.

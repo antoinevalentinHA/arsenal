@@ -88,7 +88,7 @@
 # ==========================================================
 
 calibration_capteurs_zigbee:
-  alias: "Calibration ponctuelle des capteurs Zigbee"
+  alias: "Météo - Calibration capteurs Zigbee"
   mode: restart
 
   sequence:

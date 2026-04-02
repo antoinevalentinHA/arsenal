@@ -27,7 +27,7 @@
 # ==========================================================
 
 - id: "10010000000024"
-  alias: "Chauffage - Aération - Mini-guard pipeline"
+  alias: "Aération - Surveillance pipeline"
   mode: queued
 
   ##########################################################

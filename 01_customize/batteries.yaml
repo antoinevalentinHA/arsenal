@@ -59,17 +59,11 @@ sensor.bouton_sdb_battery:
 # 🔘 BOUTONS SWITCHBOT
 ############################################################
 
-sensor.remote_chambre_parents_2_batterie:
-  friendly_name: "Bouton Chambre Parents 2"
-  icon: mdi:gesture-tap-button
+
 
 ############################################################
 # 🔘 BOTS SWITCHBOT
 ############################################################
-
-sensor.vmc_batterie:
-  friendly_name: "Bouton VMC"
-  icon: mdi:gesture-tap-button
 
 sensor.bot_chambre_parents_batterie:
   friendly_name: "Bouton chambre parents"

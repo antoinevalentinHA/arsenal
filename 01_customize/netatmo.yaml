@@ -75,53 +75,6 @@ sensor.rf_score_sejour:
 
 
 ############################################################
-# 🔌 REACHABILITY
-############################################################
-
-sensor.chambre_arnaud_reachability:
-  friendly_name: "Chambre Arnaud"
-
-sensor.chambre_matthieu_reachability:
-  friendly_name: "Chambre Matthieu"
-
-sensor.chambre_parents_reachability:
-  friendly_name: "Chambre Parents"
-
-sensor.entree_reachability:
-  friendly_name: "Entrée"
-
-sensor.sejour_reachability:
-  friendly_name: "Séjour"
-
-sensor.pluviometre_reachability:
-  friendly_name: "Pluviomètre"
-
-sensor.bobst_102_reachability:
-  friendly_name: "Bobst 102"
-
-sensor.bobst_102_exterieur_so_reachability:
-  friendly_name: "Bobst 102 extérieur SO"
-
-sensor.komori_reachability:
-  friendly_name: "Komori"
-
-sensor.komori_exterieur_no_reachability:
-  friendly_name: "Komori extérieur NO"
-
-sensor.media_reachability:
-  friendly_name: "Media"
-
-sensor.jardin_2_reachability:
-  friendly_name: "Jardin NO"
-
-sensor.jardin_1_reachability:
-  friendly_name: "Jardin SE"
-
-sensor.petite_maison_reachability:
-  friendly_name: "Petite Maison"
-
-
-############################################################
 # 🚨 DIAGNOSTICS SYNTHETIQUES
 ############################################################
 
@@ -130,6 +83,3 @@ binary_sensor.netatmo_wifi_degrade:
 
 binary_sensor.netatmo_rf_degrade:
   friendly_name: "RF Netatmo"
-
-binary_sensor.netatmo_connectivite_ko:
-  friendly_name: "Reachability"

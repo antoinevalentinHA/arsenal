@@ -57,7 +57,7 @@
 # ==========================================================
 
 alarme_desarmer:
-  alias: Alarme - Désarmement unifié
+  alias: Alarme - Désarmer
   description: >
     Désarme l’alarme proprement : coupe la sirène si active,
     applique le désarmement réel si nécessaire,

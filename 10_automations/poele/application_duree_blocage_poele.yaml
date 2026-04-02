@@ -33,7 +33,7 @@
 # ==========================================================
 
 - id: "10100000000008"
-  alias: "Poêle – Ajustement durée blocage en cours"
+  alias: "Poêle - Ajustement blocage"
   mode: single
 
   trigger:

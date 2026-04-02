@@ -33,7 +33,7 @@
 # ==========================================================
 
 - id: "10160000000010"
-  alias: "Pluie forte – Fermeture volets Séjour"
+  alias: "Météo - Pluie - Fermeture volets séjour"
   description: >
     Ferme les volets du séjour lors du passage à "pluie forte",
     si l'autorisation séjour est active (politique présence déléguée au sensor).

@@ -23,7 +23,7 @@
 # ==========================================================
 
 - id: "10240000000017"
-  alias: "Notifications — Chauffage — Pré-confort retour Vacances"
+  alias: "Chauffage — Notification Pré-confort"
   mode: single
 
   trigger:

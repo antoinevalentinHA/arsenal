@@ -61,7 +61,7 @@
 # ==========================================================
 
 - id: '1009000000006'
-  alias: "Vacances – Application du contexte"
+  alias: "Modes - Vacances - Application"
   description: >
     Applique les actions de contexte liées au mode *Vacances* :
     sécurité, climatisation, ECS, alarmes et désactivations générales.

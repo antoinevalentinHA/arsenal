@@ -47,7 +47,7 @@
 # ==========================================================
 
 - id: "10240000000025"
-  alias: "Chauffage — Etat retry transactionnel"
+  alias: "Chauffage — État retry transactionnel"
   description: >
     Annule un retry chauffage devenu obsolete et nettoie l'etat
     apres la tentative 2.

@@ -22,7 +22,7 @@
 # ==========================================================
 
 - id: "10010000000026"
-  alias: "Aération – Reset journalier durées stockées"
+  alias: "Aération - Reset journalier durées"
   mode: single
 
   trigger:

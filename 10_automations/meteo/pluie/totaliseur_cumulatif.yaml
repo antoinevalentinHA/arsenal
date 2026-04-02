@@ -35,7 +35,7 @@
 # ==========================================================
 
 - id: "10160000000009"
-  alias: "Pluie – Totalisateur cumulatif"
+  alias: "Météo - Pluie - Total"
   mode: single
 
   trigger:

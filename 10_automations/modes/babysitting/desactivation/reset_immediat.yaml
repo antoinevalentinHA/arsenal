@@ -59,7 +59,7 @@
 # ==========================================================
 
 - id: "10090000000009"
-  alias: "Babysitting – Reset mémoire présence enfants"
+  alias: "Modes - Babysitting - Reset immédiat présence enfants"
   description: >
     Reinitialise immediatement les presences enfants lorsque
     le mode babysitting est coupe, sans attendre les delais

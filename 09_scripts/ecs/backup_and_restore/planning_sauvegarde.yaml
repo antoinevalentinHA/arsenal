@@ -21,7 +21,7 @@
 # ==========================================================
 
 ecs_sauvegarde_planning:
-  alias: "ECS — Save planning"
+  alias: "ECS — Sauvegarde planning"
   mode: single
 
   sequence:

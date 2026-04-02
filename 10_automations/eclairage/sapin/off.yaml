@@ -58,7 +58,7 @@
 # ==========================================================
 
 - id: "10070000000019"
-  alias: "Guirlande - Extinction absence"
+  alias: "Éclairage - Guirlande - Extinction absence"
   mode: single
 
   trigger:

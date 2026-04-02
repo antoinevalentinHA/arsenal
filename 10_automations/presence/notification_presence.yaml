@@ -56,7 +56,7 @@
 # ==========================================================
 
 - id: "10210000000001"
-  alias: Présence — Notification persistante
+  alias: Présence - Notification
 
   trigger:
     # Valentin : absent explicite

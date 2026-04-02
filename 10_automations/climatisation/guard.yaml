@@ -90,7 +90,7 @@
 # ==========================================================
 
 - id: "10030000000101"
-  alias: "CLIM – Guard logique anti-absurde"
+  alias: "Clim – Guard"
   mode: restart
 
   trigger:

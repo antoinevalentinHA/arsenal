@@ -56,7 +56,7 @@
 # ==========================================================
 
 - id: "10170000000007"
-  alias: "Chauffage – Fenêtres chambre parents – Démarrage délai"
+  alias: "Ouvertures - Chauffage - Délai fenêtres chambre début"
   mode: restart
 
   trigger:

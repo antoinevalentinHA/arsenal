@@ -20,7 +20,7 @@
 # ==========================================================
 
 clim_exec_apply_dry:
-  alias: "Clim – Exécution DRY physique"
+  alias: "Clim – Dry"
   mode: single
   max_exceeded: silent
 

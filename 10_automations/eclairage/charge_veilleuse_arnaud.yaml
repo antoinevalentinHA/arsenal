@@ -73,7 +73,7 @@
 # ==========================================================
 
 - id: '1007000000009'
-  alias: "SDB Enfants - Charge veilleuse Arnaud"
+  alias: "Éclairage - SDB enfants - Charge veilleuse"
   description: >
     Aligne l’état de la prise de la salle de bain enfants
     selon la plage horaire 10h–11h30, hors mode Vacances,

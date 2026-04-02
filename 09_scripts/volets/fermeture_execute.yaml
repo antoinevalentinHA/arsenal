@@ -19,7 +19,7 @@
 # ==========================================================
 
 volets_fermeture_execute:
-  alias: "Volets – Fermeture (exécution idempotente)"
+  alias: "Volets – Fermeture"
   mode: queued
   max: 10
 

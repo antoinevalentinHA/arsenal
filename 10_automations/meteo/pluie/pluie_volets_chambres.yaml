@@ -36,7 +36,7 @@
 # ==========================================================
 
 - id: "10160000000011"
-  alias: "Pluie – Fermeture volets Chambres / Notification"
+  alias: "Météo - Pluie - Fermeture volets chambres"
   description: >
     Sur pluie détectée : notification si présence (fenêtres chambres),
     fermeture volets chambres si absence.

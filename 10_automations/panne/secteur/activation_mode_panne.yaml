@@ -77,7 +77,7 @@
 # ==========================================================
 
 - id: '1004000000001'
-  alias: "Mode panne – Entrée coupure secteur"
+  alias: "Panne - Détection coupure secteur"
   description: >
     Entre en mode panne secteur, active l’état système
     `input_boolean.panne_secteur_active`, publie le signal

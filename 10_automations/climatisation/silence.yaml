@@ -79,7 +79,7 @@
 # ==========================================================
 
 - id: '1003000000020'
-  alias: Clim - Mode silencieux (exécution)
+  alias: Clim - Mode silencieux
   description: >
     Applique l’état du mode silencieux de la climatisation
     selon la décision métier portée par

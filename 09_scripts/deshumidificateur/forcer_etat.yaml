@@ -73,7 +73,7 @@
 # ==========================================================
 
 set_deshumidificateur_state:
-  alias: "Déshumidificateur - Forcer un état (via SwitchBot)"
+  alias: "Déshumidificateur - Appliquer état"
   description: "Appuie sur le bouton uniquement si l'état réel diffère. Double tentative + validation."
   mode: single
 

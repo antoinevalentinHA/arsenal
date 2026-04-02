@@ -37,7 +37,7 @@
 # ==========================================================
 
 - id: '1002000000012'
-  alias: Alarme - Arrêt automatique de la sirène
+  alias: Alarme - Arrêt sirène
   description: >
     Éteint la sirène après la durée définie par number.sirene_max_duration.
     En mode test, la sirène est arrêtée immédiatement, sans notification.

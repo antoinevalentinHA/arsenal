@@ -74,7 +74,7 @@
 # ==========================================================
 
 - id: '1003000000019'
-  alias: Clim - Cumul consommation estimée journalière
+  alias: Clim - Consommation journalière
   description: >
     À 23:55, ajoute au cumul la conso du jour calculée
     à partir des durées Cool/Dry/Heat et des puissances réglables.

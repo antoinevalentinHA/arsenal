@@ -60,7 +60,7 @@
 # ==========================================================
 
 - id: "10240000000001"
-  alias: "Chauffage – Trigger décision centrale"
+  alias: "Chauffage - Décision centrale"
   description: >
     Declenche le script de decision centrale du chauffage
     sur toute transition hiérarchique, thermique ou structurelle

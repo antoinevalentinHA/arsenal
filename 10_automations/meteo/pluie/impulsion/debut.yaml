@@ -56,7 +56,7 @@
 # ==========================================================
 
 - id: "1016000000005"
-  alias: "Pluie – Normalisation capteur Zigbee"
+  alias: "Météo - Pluie - Normalisation capteur"
   description: >
     Transforme le capteur Zigbee pluie en impulsion unique :
     active un booléen virtuel et démarre un timer de 2 min

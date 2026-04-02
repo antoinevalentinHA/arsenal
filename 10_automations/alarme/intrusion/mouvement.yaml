@@ -32,7 +32,7 @@
 # ==========================================================
 
 - id: '1002000000009'
-  alias: "Alarme - Intrusion mouvements"
+  alias: "Alarme - Intrusion mouvement"
   description: >
     Déclenche l’alarme en cas de mouvement détecté dans des zones sensibles
     lorsque l’alarme est armée, sauf si le mode test ou un délai d’entrée est en cours.

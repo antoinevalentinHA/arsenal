@@ -27,7 +27,7 @@
 # ==========================================================
 
 - id: '1007000000002'
-  alias: "Lumière jardin - Désactivation cycle matin"
+  alias: "Éclairage - Jardin - Désactivation matin"
   description: >
     Éteint systématiquement l’éclairage du jardin à la fin
     du cycle matin. Aucun message persistant n’est émis,

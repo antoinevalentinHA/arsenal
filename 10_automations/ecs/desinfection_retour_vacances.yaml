@@ -16,7 +16,7 @@
 # ==========================================================
 
 - id: "10250000000021"
-  alias: "ECS - Désinfection au retour de Vacances"
+  alias: "ECS - Désinfection fin vacances"
   description: >
     Lance une désinfection ECS unique au retour de vacances,
     uniquement si la durée d’absence le justifie.

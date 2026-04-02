@@ -19,7 +19,7 @@
 # ==========================================================
 
 - id: "10240000000007"
-  alias: Chauffage – Mémorisation plateau thermique (par pièce)
+  alias: Chauffage – Mémorisation plateaux
 
   trigger:
     - platform: state

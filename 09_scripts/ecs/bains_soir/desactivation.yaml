@@ -57,7 +57,7 @@
 # ==========================================================
 
 mode_enfants_ecs_desactiver:
-  alias: "Mode enfants ECS - Désactiver"
+  alias: "ECS - Désactivation planning soir"
   mode: single
   sequence:
     # Lire soirs actifs dans le planning

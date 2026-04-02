@@ -37,7 +37,7 @@
 # ==========================================================
 
 - id: '1012000000001'
-  alias: Batteries faibles - Notification quotidienne
+  alias: Système - Notification batteries faibles
   description: Notifie si batteries faibles détectées, une seule fois par jour.
   mode: single
 

@@ -88,7 +88,7 @@
 # ==========================================================
 
 - id: "10170000000009"
-  alias: "Ouvertures – Qualification aération confirmée"
+  alias: "Ouvertures - Aération confirmée"
   mode: single
 
   trigger:

@@ -481,9 +481,16 @@ diagnostics-bluetooth-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/bluetooth.yaml
 
+diagnostics-netatmo-wifi-dashboard:
+  mode: yaml
+  title: Diagnostics Netatmo Wi-Fi
+  icon: mdi:wifi
+  show_in_sidebar: false
+  filename: lovelace/dashboards/diagnostics/netatmo_wifi.yaml
+
 diagnostics-netatmo-dashboard:
   mode: yaml
-  title: Diagnostics Netatmo
-  icon: mdi:weather-partly-rainy
+  title: Diagnostics Netatmo RF
+  icon: mdi:signal
   show_in_sidebar: false
-  filename: lovelace/dashboards/diagnostics/netatmo.yaml
+  filename: lovelace/dashboards/diagnostics/netatmo_rf.yaml

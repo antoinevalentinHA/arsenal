@@ -29,7 +29,7 @@
 # ==========================================================
 
 - id: "10240000000023"
-  alias: "Chauffage — Reprise retry apres retour bridge"
+  alias: "Chauffage — Reprise retry après retour bridge"
   description: >
     Demarre le timer de retry chauffage apres retour online du bridge.
   mode: single

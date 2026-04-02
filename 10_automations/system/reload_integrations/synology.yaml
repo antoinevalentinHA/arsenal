@@ -24,7 +24,7 @@
 # ==========================================================
 
 - id: '10120000000021'
-  alias: "Synology – Relance intégration (auto)"
+  alias: "Système - Relance Synology"
   description: >
     Orchestration légère : déclenche la procédure de résilience Synology
     (reload config_entry) sur gel données, avec backoff et plafond

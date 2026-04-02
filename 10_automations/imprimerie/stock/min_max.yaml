@@ -52,7 +52,7 @@
 # ==========================================================
 
 - id: "1018000000001"
-  alias: "Stock – Mémoire temps réel des min/max"
+  alias: "Imprimerie - Stock - Mémoire min/max"
   description: >
     Met à jour dynamiquement les extrêmes de température et d’humidité
     pour les stocks Carton et PF à chaque changement de mesure.

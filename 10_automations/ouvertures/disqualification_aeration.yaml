@@ -22,7 +22,7 @@
 # ==========================================================
 
 - id: "10010000000030"
-  alias: "Ouvertures – Garantie cohérence aeration_confirmee (fermeture stable)"
+  alias: "Ouvertures - Invalidation aération"
   mode: single
 
   trigger:

@@ -60,7 +60,7 @@
 # ==========================================================
 
 - id: "10070000000018"
-  alias: "Guirlande - Allumage presence"
+  alias: "Éclairage - Guirlande - Allumage présence"
   mode: single
 
   trigger:

@@ -31,7 +31,7 @@
 # ==========================================================
 
 - id: "10020000000028"
-  alias: "Alarme - Blocage armement auto (start)"
+  alias: "Alarme - Blocage armement auto début"
   mode: single
 
   trigger:

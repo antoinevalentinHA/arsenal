@@ -33,7 +33,7 @@
 # ==========================================================
 
 - id: '1012000000005'
-  alias: "NAS – Alerte surchauffe disque"
+  alias: "Système - Alerte NAS"
   description: >
     Notifie le téléphone si la température du disque NAS dépasse 40°C
     pendant au moins 10 minutes.

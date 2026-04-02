@@ -20,7 +20,7 @@
 # ==========================================================
 
 clim_exec_apply_off:
-  alias: "Clim – Exécution OFF physique"
+  alias: "Clim – Off"
   mode: single
   max_exceeded: silent
 

@@ -40,7 +40,7 @@
 # ==========================================================
 
 sirene_bip:
-  alias: Sirène - Bip court (sécurisé)
+  alias: Alarme - Bip court
   mode: queued
   max: 3
 

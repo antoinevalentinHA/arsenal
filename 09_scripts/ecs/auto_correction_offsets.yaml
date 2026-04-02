@@ -45,7 +45,7 @@
 # ==========================================================
 
 ecs_autocorrect_offsets:
-  alias: "ECS — Auto-correct offsets"
+  alias: "ECS — Auto-ajustement"
   mode: single
 
   sequence:

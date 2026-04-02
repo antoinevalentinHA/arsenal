@@ -67,7 +67,7 @@
 # ==========================================================
 
 - id: '1006000000001'
-  alias: "Déshumidificateur ON si recommandé"
+  alias: "Déshumidificateur - Activation auto"
   description: >
     Met le déshumidificateur en marche si la recommandation
     est active depuis 5 min ou déjà active au démarrage HA.

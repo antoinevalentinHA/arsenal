@@ -61,7 +61,7 @@
 # ==========================================================
 
 ouvrir_volet_sejour_droit:
-  alias: "Ouvrir volet séjour droit"
+  alias: "Volets - Ouvrir séjour droit"
   mode: single
   sequence:
     - service: cover.set_cover_position
@@ -71,7 +71,7 @@ ouvrir_volet_sejour_droit:
         position: 100
 
 fermer_volet_sejour_droit:
-  alias: "Fermer volet séjour droit"
+  alias: "Volets - Fermer séjour droit"
   mode: single
   sequence:
     - service: cover.close_cover
@@ -79,7 +79,7 @@ fermer_volet_sejour_droit:
         entity_id: cover.sejour_droit
 
 ouvrir_volet_sejour_gauche:
-  alias: "Ouvrir volet séjour gauche"
+  alias: "Volets - Ouvrir séjour gauche"
   mode: single
   sequence:
     - service: cover.set_cover_position
@@ -89,7 +89,7 @@ ouvrir_volet_sejour_gauche:
         position: 100
 
 fermer_volet_sejour_gauche:
-  alias: "Fermer volet séjour gauche"
+  alias: "Volets - Fermer séjour gauche"
   mode: single
   sequence:
     - service: cover.close_cover

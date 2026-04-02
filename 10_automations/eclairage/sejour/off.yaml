@@ -59,7 +59,7 @@
 # ==========================================================
 
 - id: "10070000000015"
-  alias: "Séjour - Extinction auto"
+  alias: "Éclairage - Séjour - Extinction automatique"
   mode: single
 
   trigger:

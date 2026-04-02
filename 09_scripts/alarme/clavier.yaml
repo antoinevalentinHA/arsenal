@@ -53,7 +53,7 @@
 # ==========================================================
 
 traitement_code_clavier:
-  alias: Alarme - Traitement du code clavier
+  alias: Alarme - Traitement code clavier
   description: >
     Gère armement/désarmement selon contexte.
     Utilise les scripts unifiés :

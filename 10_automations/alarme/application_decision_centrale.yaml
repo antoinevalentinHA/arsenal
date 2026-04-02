@@ -30,7 +30,7 @@
 # ==========================================================
 
 - id: "10020000000027"
-  alias: "Alarme - Application décision centrale"
+  alias: "Alarme - Décision centrale"
   mode: restart
 
   trigger:

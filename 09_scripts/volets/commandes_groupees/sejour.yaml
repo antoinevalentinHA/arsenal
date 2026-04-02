@@ -60,7 +60,7 @@
 # ==========================================================
 
 ouvrir_volets_sejour:
-  alias: "Ouvrir volets séjour"
+  alias: "Volets - Ouvrir séjour"
   mode: single
   sequence:
     - service: script.ouvrir_volet_sejour_gauche
@@ -68,7 +68,7 @@ ouvrir_volets_sejour:
     - service: script.ouvrir_volet_sejour_droit
 
 fermer_volets_sejour:
-  alias: "Fermer volets séjour"
+  alias: "Volets - Fermer séjour"
   mode: single
   sequence:
     - service: script.fermer_volet_sejour_gauche

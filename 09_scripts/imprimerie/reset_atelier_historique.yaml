@@ -70,7 +70,7 @@
 # ==========================================================
 
 reset_atelier_historique:
-  alias: "Atelier – Reset historique hebdo + min/max"
+  alias: "Imprimerie - Atelier - Reset historique"
   mode: single
 
   sequence:

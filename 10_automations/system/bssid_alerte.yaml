@@ -19,7 +19,7 @@
 # ==========================================================
 
 - id: "10120000000026"
-  alias: BSSID – Dépassement seuil réferentiel
+  alias: Système - Détection anomalie BSSID
   mode: single
 
   trigger:

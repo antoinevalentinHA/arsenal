@@ -34,7 +34,7 @@
 # ==========================================================
 
 - id: "10020000000030"
-  alias: "Alarme - Alerte divergence état réel / cible"
+  alias: "Alarme - Alerte incohérence"
   description: >
     Alerte critique si l'état réel de l'alarme ne correspond pas
     à l'état cible demandé par la décision centrale pendant plus

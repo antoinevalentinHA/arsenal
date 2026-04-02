@@ -73,7 +73,7 @@
 # ==========================================================
 
 - id: "10070000000023"
-  alias: "Simulation présence - Parents - Pilotage lampe"
+  alias: "Éclairage - Simulation présence - Pilotage chambre parents"
   mode: single
 
   # ======================================================

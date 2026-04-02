@@ -23,7 +23,7 @@
 # ==========================================================
 
 - id: "10020000000033"
-  alias: "Alarme - Délai entrée (cancel sur désarmement)"
+  alias: "Alarme - Délai entrée annulation"
   mode: single
 
   trigger:

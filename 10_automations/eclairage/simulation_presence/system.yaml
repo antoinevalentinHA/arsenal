@@ -70,7 +70,7 @@
 # ==========================================================
 
 - id: "1007000000008"
-  alias: "Simulation présence - Génération horaires"
+  alias: "Éclairage - Simulation présence - Génération horaires"
   description: >
     Génère chaque jour les horaires de simulation de présence
     (matin et soir) via un script dédié, 90 minutes avant

@@ -31,7 +31,7 @@
 # ==========================================================
 
 - id: "10100000000005"
-  alias: "Poêle – Démarrage blocage chauffage"
+  alias: "Poêle - Blocage chauffage début"
   mode: restart
 
   trigger:

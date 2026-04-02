@@ -24,7 +24,7 @@
 # ==========================================================
 
 reconciliation_appliquer_transition:
-  alias: "Réconciliation — Appliquer transition d'état"
+  alias: "Ouvertures - Réconciliation — Appliquer transition d'état"
   description: "Point d'écriture unique : timer + context + horodatage."
   mode: single
 

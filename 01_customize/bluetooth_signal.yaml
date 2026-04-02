@@ -46,11 +46,3 @@
 sensor.meter_garage_bluetooth_signal:
   friendly_name: "Meter Garage"
   icon: mdi:gauge
-
-sensor.meter_cave_bluetooth_signal:
-  friendly_name: "Meter Cave"
-  icon: mdi:gauge
-
-sensor.remote_chambre_parents_2_bluetooth_signal:
-  friendly_name: "Remote Chambre Parents 2"
-  icon: mdi:remote

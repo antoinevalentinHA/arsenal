@@ -50,7 +50,7 @@
 # ==========================================================
 
 - id: "10080000000005"
-  alias: "Prise placard – Extinction programmée après déclenchement"
+  alias: "Électroménager - Prise placard - Extinction auto"
   description: >
     Coupe la prise 3h après détection de consommation.
   trigger:

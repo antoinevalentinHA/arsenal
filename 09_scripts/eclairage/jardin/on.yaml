@@ -59,7 +59,7 @@
 # ==========================================================
 
 jardin_on:
-  alias: "Éclairage Jardin - Allumage"
+  alias: "Éclairage - Jardin - Allumage"
   mode: single
   sequence:
     - condition: state

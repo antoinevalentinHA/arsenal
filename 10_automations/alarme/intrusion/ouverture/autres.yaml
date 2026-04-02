@@ -40,7 +40,7 @@
 # ==========================================================
 
 - id: '1002000000007'
-  alias: "Alarme – Intrusion (capteurs d’ouverture)"
+  alias: "Alarme - Intrusion ouverture"
   description: >
     Déclenche une alarme ou une notification de test si un capteur d’ouverture
     s’active alors que l’alarme est armée en mode Absent. Évite les déclenchements

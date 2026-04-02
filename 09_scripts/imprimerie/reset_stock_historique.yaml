@@ -77,7 +77,7 @@
 # ==========================================================
 
 reset_stock_historique:
-  alias: "Stock – Reset historique hebdo + min/max"
+  alias: "Imprimerie - Stock - Reset historique"
   mode: single
   sequence:
     # 1) Vider l'historique des semaines

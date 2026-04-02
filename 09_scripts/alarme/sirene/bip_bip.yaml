@@ -41,7 +41,7 @@
 # ==========================================================
 
 sirene_bip_bip:
-  alias: Bip bip sirène (désarmement)
+  alias: Alarme - Bip désarmement
   description: >
     Deux bips brefs pour confirmer le désarmement de l’alarme.
   mode: restart

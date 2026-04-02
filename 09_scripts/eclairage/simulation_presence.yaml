@@ -77,7 +77,7 @@
 # ==========================================================
 
 generer_horaires_simulation_presence:
-  alias: "Générer horaires simulation présence"
+  alias: "Éclairage - Simulation présence - Génération horaires"
   mode: single
 
   sequence:

@@ -20,7 +20,7 @@
 # ==========================================================
 
 - id: "1002000000005"
-  alias: "Alarme – Armement par clavier"
+  alias: "Alarme - Armement clavier"
   description: >
     Déclenche le script central `traitement_code_clavier` à chaque
     saisie d’un code PIN sur l’un des claviers Frient de la maison.

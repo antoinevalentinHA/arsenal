@@ -51,7 +51,7 @@
 # ==========================================================
 
 - id: "1008000000004"
-  alias: "Buanderie - Fin de cycle"
+  alias: "Électroménager - Buanderie - Fin cycle"
   description: >
     Détecte la fin d’un cycle de lavage via seuil bas prolongé,
     confirme l’absence de reprise, puis envoie une notification

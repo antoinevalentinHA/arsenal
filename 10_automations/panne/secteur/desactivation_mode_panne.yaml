@@ -73,7 +73,7 @@
 # ==========================================================
 
 - id: '1004000000002'
-  alias: "Sécurité – Sortie mode panne secteur"
+  alias: "Panne - Sortie mode panne"
   description: >
     Clôt l’épisode de panne secteur après retour du courant,
     désactive les états système de secours et supprime la

@@ -83,7 +83,7 @@
 # ==========================================================
 
 ecs_petite_maison_arret_absence:
-  alias: "ECS Petite Maison - Arrêt logique + Absence"
+  alias: "ECS - Petite Maison - Absence"
   sequence:
 
     # ======================================================

@@ -31,7 +31,7 @@
 # ==========================================================
 
 - id: "1012000000010"
-  alias: "Zigbee2MQTT – Relance bridge (auto)"
+  alias: "Système - Relance Zigbee2MQTT"
   description: >
     Redémarre automatiquement l'add-on Zigbee2MQTT si le bridge reste
     OFF/UNAVAILABLE de façon persistante. Backoff via timer, plafond

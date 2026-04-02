@@ -20,5 +20,3 @@ bluetooth_signal_all:
   name: "Bluetooth — Tous signaux radio"
   entities:
     - sensor.meter_garage_bluetooth_signal
-    - sensor.meter_cave_bluetooth_signal
-    - sensor.remote_chambre_parents_2_bluetooth_signal

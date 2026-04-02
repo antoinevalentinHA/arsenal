@@ -14,7 +14,7 @@
 # ==========================================================
 
 - id: "10030000000108"
-  alias: "Clim – Reprise après échec d'exécution"
+  alias: "Clim - Reprise après erreur"
   mode: single
   max_exceeded: silent
 

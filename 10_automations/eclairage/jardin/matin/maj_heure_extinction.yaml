@@ -64,7 +64,7 @@
 # ==========================================================
 
 - id: '10070000000020'
-  alias: "Mise  à jour heure extinction jardin matin"
+  alias: "Éclairage - Jardin - Mise à jour heure matin"
   description: >
     Met à jour automatiquement l’heure d’extinction du jardin
     le matin selon le lever du soleil, l’heure d’allumage du matin

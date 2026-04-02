@@ -32,7 +32,7 @@
 # ==========================================================
 
 - id: "10210000000006"
-  alias: "Visiteur – Notification persistante d’état"
+  alias: "Présence - Mode visiteur notification"
 
   mode: single
 

@@ -28,7 +28,7 @@
 # ==========================================================
 
 - id: "10030000000105"
-  alias: "Clim – Transit décision vers exécution"
+  alias: "Clim - Application automatique"
   description: >
     Relais entre la décision centrale PURE
     (sensor.clim_target_mode)

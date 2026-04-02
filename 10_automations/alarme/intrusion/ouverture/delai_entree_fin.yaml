@@ -32,7 +32,7 @@
 # ==========================================================
 
 - id: "10020000000032"
-  alias: "Alarme - Délai entrée (fin)"
+  alias: "Alarme - Délai entrée fin"
   mode: single
 
   trigger:

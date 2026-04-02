@@ -30,7 +30,7 @@
 # ==========================================================
 
 - id: '10260000000002'
-  alias: Bouclage ECS - Arrêt automatique (fin timer)
+  alias: ECS - Bouclage - Fin de cycle
   description: Eteint la prise et marque la fin du bouclage lorsque le timer se termine
   mode: single
 

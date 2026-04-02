@@ -45,7 +45,7 @@
 # ==========================================================
 
 sirene_brutale:
-  alias: Déclencher la sirène - Mode burglar (durée dynamique)
+  alias: Alarme - Déclenchement sirène
   mode: single
 
   sequence:

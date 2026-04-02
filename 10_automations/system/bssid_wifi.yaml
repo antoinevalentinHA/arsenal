@@ -48,7 +48,7 @@
 # ==========================================================
 
 - id: "10120000000016"
-  alias: Alarme – Apprentissage BSSID en zone
+  alias: Système - Apprentissage BSSID
   mode: single
 
   trigger:

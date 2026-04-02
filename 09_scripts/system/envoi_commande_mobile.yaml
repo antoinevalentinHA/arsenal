@@ -73,7 +73,7 @@
 # ==========================================================
 
 mobile_high_accuracy_on:
-  alias: "Mobile - High Accuracy ON"
+  alias: "Système - Mobile - Activer haute précision"
   mode: parallel
   fields:
     cible:
@@ -103,7 +103,7 @@ mobile_high_accuracy_on:
 
 
 mobile_high_accuracy_off:
-  alias: "Mobile - High Accuracy OFF"
+  alias: "Système - Mobile - Désactiver haute précision"
   mode: parallel
   fields:
     cible:

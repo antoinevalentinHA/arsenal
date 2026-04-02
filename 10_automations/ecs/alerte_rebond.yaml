@@ -77,7 +77,7 @@
 # ==========================================================
 
 - id: '10250000000018'
-  alias: "ECS - Alerte rebond (chauffe sans demande HA)"
+  alias: "ECS - Alerte chauffe sans demande"
   description: >
     Notifie si la chaudière démarre une chauffe ECS alors qu'aucun script de cycle
     n'a été lancé récemment (détection de rebond en direct).

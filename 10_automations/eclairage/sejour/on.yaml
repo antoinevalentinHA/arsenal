@@ -71,7 +71,7 @@
 # ==========================================================
 
 - id: "10070000000014"
-  alias: "Séjour - Allumage auto"
+  alias: "Éclairage - Séjour - Allumage automatique"
   mode: single
 
   trigger:

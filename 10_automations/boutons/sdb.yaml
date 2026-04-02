@@ -48,7 +48,7 @@
 # ==========================================================
 
 - id: '1014000000001'
-  alias: Bouton SDB - Lancer bouclage ECS 5 minutes
+  alias: Boutons - SDB - Bouclage ECS
   mode: restart
 
   trigger:

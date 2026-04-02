@@ -74,7 +74,7 @@
 # ==========================================================
 
 mode_panne_coupure_secteur:
-  alias: "Mode panne – Coupure secteur"
+  alias: "Système - Mode panne – Coupure secteur"
   mode: single
   sequence:
 

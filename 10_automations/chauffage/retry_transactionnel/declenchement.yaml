@@ -30,7 +30,7 @@
 # ==========================================================
 
 - id: "10240000000024"
-  alias: "Chauffage — Declenchement retry transactionnel"
+  alias: "Chauffage — Déclenchement retry transactionnel"
   description: >
     Declenche la tentative 2 chauffage a l'expiration du timer.
   mode: single

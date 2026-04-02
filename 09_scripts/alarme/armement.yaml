@@ -54,7 +54,7 @@
 # ==========================================================
 
 alarme_armer:
-  alias: "Alarme - Armement unifié"
+  alias: "Alarme - Armer"
   description: >
     Arme l’alarme en mode Absent, joue un bip de confirmation,
     envoie notification et log. Centralise toute la logique d’armement.

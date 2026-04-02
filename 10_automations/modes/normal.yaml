@@ -72,7 +72,7 @@
 # ==========================================================
 
 - id: '1009000000007'
-  alias: "Normal – Sortie du contexte Vacances"
+  alias: "Modes - Normal - Sortie vacances"
   description: >
     Remet en service toutes les fonctions désactivées durant le
     mode *Vacances* : ECS, bouclage, etc.

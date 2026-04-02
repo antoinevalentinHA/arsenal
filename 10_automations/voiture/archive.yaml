@@ -18,7 +18,7 @@
 # ==========================================================
 
 - id: '1015000000004'
-  alias: Voiture - Archive moyenne mensuelle autonomie
+  alias: Voiture - Archive autonomie
   description: Archive la moyenne mensuelle à chaque nouvelle mesure complète
   mode: single
 

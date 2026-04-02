@@ -19,7 +19,7 @@
 # ==========================================================
 
 ecs_restore_reglages:
-  alias: "ECS — Restore réglages"
+  alias: "ECS — Restauration réglages"
   mode: single
 
   sequence:

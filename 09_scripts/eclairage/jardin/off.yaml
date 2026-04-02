@@ -59,7 +59,7 @@
 # ==========================================================
 
 jardin_off:
-  alias: "Éclairage Jardin - Extinction"
+  alias: "Éclairage - Jardin - Extinction"
   mode: single
   sequence:
     - condition: state

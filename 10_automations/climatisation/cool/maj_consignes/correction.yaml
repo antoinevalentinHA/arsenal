@@ -68,7 +68,7 @@
 # ==========================================================
 
 - id: '1003000000009'
-  alias: "Clim - Correction consigne manuelle si clim éteinte"
+  alias: "Clim - Correction consigne"
   mode: single
 
   description: >

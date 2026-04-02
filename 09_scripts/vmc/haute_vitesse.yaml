@@ -51,7 +51,7 @@
 # ==========================================================
 
 vmc_haute_vitesse:
-  alias: "VMC - Passage en haute vitesse"
+  alias: "VMC - Haute vitesse"
   mode: single
 
   sequence:

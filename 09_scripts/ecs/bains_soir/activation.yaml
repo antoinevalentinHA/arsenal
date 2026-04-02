@@ -56,7 +56,7 @@
 # ==========================================================
 
 mode_enfants_ecs_activer:
-  alias: "Mode enfants ECS - Activer"
+  alias: "ECS - Activation planning soir"
   mode: single
   sequence:
     # Lire la sauvegarde

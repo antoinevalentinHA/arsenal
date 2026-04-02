@@ -26,7 +26,7 @@
 # ==========================================================
 
 - id: "10240000000019"
-  alias: "Chauffage — UI — Notification persistante Confort"
+  alias: "Chauffage — Notification"
   description: >
     Affiche une notification persistante uniquement lorsque
     le chauffage est effectivement en mode Confort.

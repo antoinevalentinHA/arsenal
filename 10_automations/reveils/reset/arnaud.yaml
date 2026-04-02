@@ -36,7 +36,7 @@
 # ==========================================================
 
 - id: '1011000000003'
-  alias: "Réveils - Réinitialisation Arnaud"
+  alias: "Réveils - Reset Arnaud"
   description: >
     Réinitialise le compteur et l'historique des réveils d'Arnaud à l'heure définie.
   mode: single

@@ -55,7 +55,7 @@
 # ==========================================================
 
 ecs_vaisselle_lancer_via_bouton:
-  alias: "ECS - Vaisselle : Lancer via bouton"
+  alias: "ECS - Vaisselle - Lancer via bouton"
   mode: single
 
   sequence:

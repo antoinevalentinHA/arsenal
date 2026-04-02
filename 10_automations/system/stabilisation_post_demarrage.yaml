@@ -34,7 +34,7 @@
 # ==========================================================
 
 - id: "10120000000018"
-  alias: "Système - Stabilisation post-demarrage"
+  alias: "Système - Stabilisation démarrage"
   mode: single
 
   trigger:

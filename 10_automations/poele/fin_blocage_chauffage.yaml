@@ -30,7 +30,7 @@
 # ==========================================================
 
 - id: "10100000000006"
-  alias: "Poêle – Fin blocage chauffage"
+  alias: "Poêle - Blocage chauffage fin"
   mode: single
 
   trigger:

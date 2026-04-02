@@ -151,7 +151,7 @@
 # ==========================================================
 
 ecs_appliquer_consigne_bridge:
-  alias: "ECS – Appliquer consigne boiler bridge"
+  alias: "ECS - Appliquer consigne (bridge)"
   description: >
     Applique une consigne ECS via boiler bridge selon un modele
     strictement transactionnel base sur ACK corrélé.

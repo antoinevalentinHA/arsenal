@@ -20,7 +20,7 @@
 # ==========================================================
 
 - id: "10250000000022"
-  alias: "ECS - Reset verrou au demarrage si consigne deja à 10"
+  alias: "ECS - Gardien verrou"
   description: >
     Débloque automatiquement l'input_boolean.ecs_cycle_en_cours si Home Assistant
     redémarre avec la consigne ECS déjà rabaissée (10°C). Évite les blocages fantômes.

@@ -38,7 +38,7 @@
 # ==========================================================
 
 - id: "1009000000005"
-  alias: "Vacances – Désactivation automatique du mode"
+  alias: "Modes - Vacances - Désactivation auto"
   description: >
     Repasse en mode *Normal* lorsque l’état métier "Vacances actives"
     devient faux alors que la maison est encore en mode *Vacances*.

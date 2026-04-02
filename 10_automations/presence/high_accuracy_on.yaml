@@ -29,7 +29,7 @@
 # ==========================================================
 
 - id: "10210000000007"
-  alias: "Présence - Activation High Accuracy sur approche sécurité"
+  alias: "Présence - Activation haute précision"
   description: "Activation High Accuracy à l'entrée dans zone.approche_securite sous alarme armée"
 
   mode: parallel

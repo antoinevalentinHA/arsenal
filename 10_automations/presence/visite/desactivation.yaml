@@ -47,7 +47,7 @@
 # ==========================================================
 
 - id: '10210000000004'
-  alias: Alarme - Visiteur - Réactivation armement auto
+  alias: Présence - Mode visiteur désactivation
   description: >
     Sort du mode visiteur lorsque le créneau visiteur
     devient invalide, et nettoie l’ensemble des états

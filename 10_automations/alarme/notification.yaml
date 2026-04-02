@@ -34,7 +34,7 @@
 # ==========================================================
 
 - id: '1002000000021'
-  alias: Alarme - Notification persistante
+  alias: Alarme - Notification
   description: >
     Affiche une notification persistante lors de l’armement de l’alarme
     en mode Absent (armed_away), et la supprime lorsqu’elle est désarmée.

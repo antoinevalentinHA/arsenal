@@ -62,7 +62,7 @@
 # ==========================================================
 
 ouvrir_tous_les_volets:
-  alias: "Ouvrir tous les volets"
+  alias: "Volets - Ouvrir tous"
   mode: single
   sequence:
     - service: script.ouvrir_volets_enfants
@@ -70,7 +70,7 @@ ouvrir_tous_les_volets:
     - service: script.ouvrir_volets_sejour
 
 fermer_tous_les_volets:
-  alias: "Fermer tous les volets"
+  alias: "Volets - Fermer tous"
   mode: single
   sequence:
     - service: script.fermer_volets_enfants

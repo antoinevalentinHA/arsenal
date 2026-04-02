@@ -67,7 +67,7 @@
 # ==========================================================
 
 - id: "10100000000001"
-  alias: "Poele – Memoire thermique recente (24 h)"
+  alias: "Poêle - Mémoire fonctionnement 24h"
   description: >
     Active la memoire poele_recent et redemarre le timer 24h
     a chaque detection de signature thermique poele.

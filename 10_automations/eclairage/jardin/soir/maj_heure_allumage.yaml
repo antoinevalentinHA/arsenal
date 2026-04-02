@@ -58,7 +58,7 @@
 # ==========================================================
 
 - id: '1007000000005'
-  alias: "Mise  à jour heure allumage jardin soir"
+  alias: "Éclairage - Jardin - Mise à jour heure soir"
   description: >
     Met à jour automatiquement l’heure d’allumage du jardin le soir
     en fonction du coucher du soleil et du délai défini par l’utilisateur.

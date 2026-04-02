@@ -60,7 +60,7 @@
 # ==========================================================
 
 ecs_vaisselle_lancer_si_ok:
-  alias: "ECS - Vaisselle : Lancer si OK"
+  alias: "ECS - Vaisselle"
   mode: single
 
   sequence:

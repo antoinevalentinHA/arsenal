@@ -45,7 +45,7 @@
 # ==========================================================
 
 - id: '10210000000003'
-  alias: Alarme - Visiteur - Désactivation sécurité
+  alias: Présence - Mode visiteur activation
   description: >
     Désarme l'alarme, désactive l'armement auto, active le bouclage ECS si activé,
     et marque la visite en cours, uniquement lors du début effectif du créneau visiteur.

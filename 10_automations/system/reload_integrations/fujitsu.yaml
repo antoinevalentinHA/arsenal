@@ -24,7 +24,7 @@
 # ==========================================================
 
 - id: '1012000000013'
-  alias: "Airstage – Relance intégration (auto)"
+  alias: "Système - Relance Airstage"
   description: >
     Orchestration légère : déclenche la procédure de résilience Airstage
     (reload config_entry) sur gel données, avec backoff et plafond

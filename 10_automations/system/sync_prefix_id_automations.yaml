@@ -29,7 +29,7 @@
 # ==========================================================
 
 - id: "10120000000015"
-  alias: "System – Synchronisation prefix_id"
+  alias: "Système - Synchronisation IDs"
 
   trigger:
     - platform: state

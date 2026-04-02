@@ -47,7 +47,7 @@
 # ==========================================================
 
 - id: "1008000000001"
-  alias: "Lave-vaisselle – Détection début de cycle"
+  alias: "Électroménager - Lave-vaisselle - Début cycle"
   description: >
     Détecte le début de cycle du lave-vaisselle via seuil
     de consommation (30 W pendant 3 min). Active un flag

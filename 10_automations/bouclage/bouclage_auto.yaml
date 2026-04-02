@@ -43,7 +43,7 @@
 # ==========================================================
 
 - id: "10260000000001"
-  alias: "Bouclage automatique programmé"
+  alias: "ECS - Bouclage - Activation auto"
   description: "Pilotage automatique du bouclage ECS sur plage horaire autorisée (lundi à vendredi)."
   mode: restart
 

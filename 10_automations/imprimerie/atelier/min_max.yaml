@@ -51,7 +51,7 @@
 # ==========================================================
 
 - id: "10180000000003"
-  alias: "Atelier – Mémoire temps réel des min/max"
+  alias: "Imprimerie - Atelier - Mémoire min/max"
   description: >
     Met a jour dynamiquement les extremes de temperature
     pour l'atelier (Komori, Bobst, Media) a chaque changement

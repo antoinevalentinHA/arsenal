@@ -54,7 +54,7 @@
 # ==========================================================
 
 vmc_toggle:
-  alias: "VMC - Bascule"
+  alias: "VMC - Toggle"
   mode: single
 
   sequence:

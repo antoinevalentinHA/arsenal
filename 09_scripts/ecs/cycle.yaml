@@ -96,7 +96,7 @@
 # ==========================================================
 
 chauffage_ecs_cycle:
-  alias: "ECS - Cycle unifié"
+  alias: "ECS - Cycle"
   description: >
     Cycle ECS fiable : chauffe jusqu'à consigne effective,
     rabaissement confirme a 10 °C via boiler bridge,

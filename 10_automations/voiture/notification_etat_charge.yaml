@@ -24,7 +24,7 @@
 # ==========================================================
 
 - id: "10150000000005"
-  alias: Voiture — Notification état de charge
+  alias: Voiture - Notification charge
   description: >
     Affiche une notification persistante tant que le véhicule
     est en état de charge, et la supprime dès que cet état disparaît.

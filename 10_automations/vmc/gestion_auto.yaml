@@ -27,7 +27,7 @@
 # ==========================================================
 
 - id: "1019000000001"
-  alias: "VMC - Gestion automatique humidité"
+  alias: "VMC - Gestion humidité"
   description: >
     Applique automatiquement la haute ou la basse vitesse de la VMC
     en fonction de la décision métier fournie par

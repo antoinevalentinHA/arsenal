@@ -30,7 +30,7 @@
 # ==========================================================
 
 reconciliation_lever_inhibition:
-  alias: "Réconciliation — Lever l'inhibition"
+  alias: "Ouvertures - Réconciliation — Lever l'inhibition"
   description: "Levée d'inhibition batch sur system_stable = on (§5.3)."
   mode: single
 

@@ -19,7 +19,7 @@
 # ==========================================================
 
 - id: '1015000000001'
-  alias: Voiture - Enregistrement autonomie pleine charge
+  alias: Voiture - Enregistrement autonomie
   description: >
     Met à jour input_number.autonomie_audi_etron_full uniquement si la batterie est ≥ 99 %
     et que l’autonomie locale a changé depuis le dernier enregistrement.

@@ -62,7 +62,7 @@
 # ==========================================================
 
 jardin_toggle:
-  alias: "Éclairage Jardin - Toggle"
+  alias: "Éclairage - Jardin - Toggle"
   mode: single
   sequence:
     - action: switch.toggle

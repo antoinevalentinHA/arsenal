@@ -50,7 +50,7 @@
 # ==========================================================
 
 - id: '1009000000002'
-  alias: "Présence enfants – Remise à zéro quotidienne"
+  alias: "Modes - Babysitting - Reset quotidien présence enfants"
   description: >
     Réinitialise chaque jour les indicateurs de présence
     des enfants à 05:00.

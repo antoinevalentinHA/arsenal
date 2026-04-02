@@ -32,7 +32,7 @@
 # ==========================================================
 
 - id: '1002000000010'
-  alias: "Sirene - Bip à la désactivation de l’alarme"
+  alias: "Alarme - Bip désactivation"
   description: >
     Émet un bip bref de confirmation via la sirène dès que l’alarme est désarmée.
 

@@ -20,7 +20,7 @@
 # ==========================================================
 
 - id: "10250000000019"
-  alias: "ECS – Auto-ajustement offsets (fin de cycle)"
+  alias: "ECS – Auto-ajustement"
   description: "Consomme le signal de fin de cycle ECS, ajuste les offsets via script, puis acquitte le signal."
   mode: single
 

@@ -56,7 +56,7 @@
 # ==========================================================
 
 - id: "10090000000010"
-  alias: "Vacances – Gestion du timer longue durée ECS"
+  alias: "Modes - Vacances - Gestion ECS désinfection"
   description: >
     Démarre ou annule le timer mesurant la durée continue
     des vacances, utilisé pour l’autorisation de désinfection ECS.

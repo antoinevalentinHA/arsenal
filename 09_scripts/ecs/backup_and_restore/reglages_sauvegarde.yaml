@@ -18,7 +18,7 @@
 # ==========================================================
 
 ecs_sauvegarde_reglages:
-  alias: "ECS — Save réglages"
+  alias: "ECS — Sauvegarde réglages"
   mode: single
 
   sequence:

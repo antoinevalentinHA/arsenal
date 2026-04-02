@@ -40,7 +40,7 @@
 # ==========================================================
 
 - id: "10190000000002"
-  alias: "VMC - Sync reflet haute vitesse"
+  alias: "VMC - Synchronisation haute vitesse"
   description: >
     Synchronise l’état interne input_boolean.vmc_haute_vitesse à partir de
     l’état rapporté par switch.vmc. Si switch.vmc n’est pas exploitable

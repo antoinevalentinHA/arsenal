@@ -24,7 +24,7 @@
 # ==========================================================
 
 ecs_restore_planning:
-  alias: "ECS — Restore planning (strict snapshot)"
+  alias: "ECS — Restauration planning"
   mode: single
 
   sequence:

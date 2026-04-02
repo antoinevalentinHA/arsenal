@@ -54,7 +54,7 @@
 # ==========================================================
 
 - id: "10180000000005"
-  alias: "Atelier – Archivage hebdomadaire et reset min/max"
+  alias: "Imprimerie - Atelier - Archivage hebdo"
   mode: single
 
   trigger:

@@ -61,7 +61,7 @@
 # ==========================================================
 
 - id: '1014000000002'
-  alias: Bouton Cuisine - Jardin / Vaisselle
+  alias: Boutons - Cuisine - Actions multiples
   mode: queued
 
   trigger:

@@ -33,7 +33,7 @@
 # ==========================================================
 
 - id: '1007000000003'
-  alias: "Lumière jardin - Activation cycle soir"
+  alias: "Éclairage - Jardin - Activation soir"
   description: >
     Allume l’éclairage du jardin lorsque le cycle soir existe
     ET qu’une présence est détectée. Inclut un rattrapage à la

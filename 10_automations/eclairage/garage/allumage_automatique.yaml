@@ -70,7 +70,7 @@
 # ==========================================================
 
 - id: "10070000000012"
-  alias: "Garage - Allumage auto"
+  alias: "Éclairage - Garage - Allumage automatique"
   mode: single
 
   trigger:

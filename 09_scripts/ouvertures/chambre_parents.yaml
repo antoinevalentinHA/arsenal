@@ -74,7 +74,7 @@
 # ==========================================================
 
 timer_ouverture_chambre_parents_start:
-  alias: "Ouverture chambre parents – Timer dynamique"
+  alias: "Ouvertures - Chambre parents – Timer dynamique"
   mode: restart
 
   sequence:

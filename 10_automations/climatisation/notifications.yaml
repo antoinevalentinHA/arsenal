@@ -29,7 +29,7 @@
 # ==========================================================
 
 - id: "10030000000109"
-  alias: "Clim — UI — Notification persistante mode actif"
+  alias: "Clim - Notification"
   description: >
     Affiche une notification persistante uniquement lorsque
     la climatisation est effectivement en mode heat, cool ou dry.

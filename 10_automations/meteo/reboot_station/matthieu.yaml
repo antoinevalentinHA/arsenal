@@ -23,7 +23,7 @@
 # ==========================================================
 
 - id: "10160000000008"
-  alias: "Netatmo – Redémarrage sur panne réseau (Matthieu)"
+  alias: "Météo - Netatmo - Redémarrage Matthieu"
   mode: single
 
   trigger:

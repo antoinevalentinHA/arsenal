@@ -28,7 +28,7 @@
 # ==========================================================
 
 reconciliation_traiter_source:
-  alias: "Réconciliation — Traiter événement source"
+  alias: "Ouvertures - Réconciliation — Traiter événement source"
   description: "Logique métier v2.2 pour un changement d'état source (_1 ou _2)."
   mode: single
 

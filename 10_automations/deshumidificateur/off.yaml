@@ -66,7 +66,7 @@
 # ==========================================================
 
 - id: '1006000000002'
-  alias: "Déshumidificateur OFF si non recommandé"
+  alias: "Déshumidificateur - Désactivation auto"
   description: >
     Met le déshumidificateur hors tension si la recommandation
     est absente depuis 5 min et que l'appareil est actif depuis ≥ 20 min.

@@ -60,7 +60,7 @@
 # ==========================================================
 
 - id: "1016000000002"
-  alias: "Pluie – Décision de début d’épisode"
+  alias: "Météo - Pluie - Début épisode"
   description: >
     Active le suivi pluie (`pluie_en_cours`) dès qu’une pluie est détectée
     par Zigbee (virtuel) ou Netatmo, en ignorant les capteurs indisponibles.

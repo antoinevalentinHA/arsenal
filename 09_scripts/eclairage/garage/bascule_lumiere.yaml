@@ -38,7 +38,7 @@
 # ==========================================================
 
 garage_toggle:
-  alias: "Garage - Toggle lumiere"
+  alias: "Éclairage - Garage - Toggle"
   mode: single
 
   sequence:

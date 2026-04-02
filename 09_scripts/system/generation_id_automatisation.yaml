@@ -21,7 +21,7 @@
 # ==========================================================
 
 generate_next_id_from_prefix:
-  alias: "Arsenal — Generate next ID from prefix"
+  alias: "Système - Générer ID"
   mode: single
 
   sequence:

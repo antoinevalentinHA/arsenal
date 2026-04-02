@@ -62,7 +62,7 @@
 # ==========================================================
 
 - id: "10060000000003"
-  alias: "GUARD – Déshumidificateur – État interdit"
+  alias: "Déshumidificateur - Sécurité"
   mode: restart
 
   # ======================================================

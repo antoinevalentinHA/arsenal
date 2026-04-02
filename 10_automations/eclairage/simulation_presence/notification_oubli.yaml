@@ -77,7 +77,7 @@
 # ==========================================================
 
 - id: '1007000000006'
-  alias: "Vacances - Alerte lampe parents restée allumée"
+  alias: "Éclairage - Vacances - Alerte lumière allumée"
   description: >
     Alerte si la lampe des parents reste allumée plus longtemps que
     la durée maximale autorisée par la simulation, en mode Vacances

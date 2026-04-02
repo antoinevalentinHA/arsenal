@@ -34,7 +34,7 @@
 # ==========================================================
 
 - id: '1002000000011'
-  alias: "Alarme - Sirène forte sur état triggered"
+  alias: "Alarme - Sirène alarme"
   description: >
     Déclenche automatiquement la sirène forte si l’alarme passe à `triggered`,
     sauf si le mode test est actif.

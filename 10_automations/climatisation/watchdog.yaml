@@ -16,7 +16,7 @@
 # ==========================================================
 
 - id: "10030000000106"
-  alias: "Clim — Watchdog cohérence décision / réel"
+  alias: "Clim - Surveillance fonctionnement"
   mode: single
   max_exceeded: silent
 

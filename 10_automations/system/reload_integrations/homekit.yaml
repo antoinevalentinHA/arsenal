@@ -6,7 +6,7 @@
 # ==========================================================
 
 - id: "10120000000019"
-  alias: "HomeKit – Relance intégration (auto)"
+  alias: "Système - Relance HomeKit"
   mode: single
   max_exceeded: silent
 

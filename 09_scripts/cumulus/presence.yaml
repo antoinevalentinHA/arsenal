@@ -83,7 +83,7 @@
 # ==========================================================
 
 ecs_petite_maison_mode_eco:
-  alias: "ECS Petite Maison - Mode Éco"
+  alias: "ECS - Petite Maison - Présence"
   sequence:
     # 🔁 Désactivation du mode absence
     - service: water_heater.set_away_mode

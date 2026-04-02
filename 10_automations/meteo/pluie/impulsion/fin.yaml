@@ -49,7 +49,7 @@
 # ==========================================================
 
 - id: "1016000000006"
-  alias: "Pluie – Réarmement logique après temporisation"
+  alias: "Météo - Pluie - Réarmement"
   description: >
     Réarme le booléen virtuel utilisé pour simuler une impulsion pluie,
     en le repassant à OFF à la fin du timer. Ignore les états invalides

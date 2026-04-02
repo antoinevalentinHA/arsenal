@@ -18,7 +18,7 @@
 # ==========================================================
 
 - id: '10200000000001'
-  alias: "Santé — ScanWatch batterie faible"
+  alias: "Santé - Batterie ScanWatch"
 
   trigger:
     - platform: state

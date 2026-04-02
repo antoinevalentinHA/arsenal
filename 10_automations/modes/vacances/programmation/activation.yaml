@@ -39,7 +39,7 @@
 # ==========================================================
 
 - id: "1009000000004"
-  alias: "Vacances – Activation automatique du mode"
+  alias: "Modes - Vacances - Activation auto"
   description: >
     Passe en mode *Vacances* lorsque l’état métier
     "Vacances actives" devient vrai, si autorisé.

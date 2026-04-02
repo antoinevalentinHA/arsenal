@@ -57,7 +57,7 @@
 # ==========================================================
 
 - id: '1009000000001'
-  alias: "Babysitting – Sortie forcée quotidienne"
+  alias: "Modes - Babysitting - Sortie quotidienne"
 
   trigger:
     - platform: time

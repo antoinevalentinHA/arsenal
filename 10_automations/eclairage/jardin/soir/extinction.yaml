@@ -17,7 +17,7 @@
 # ==========================================================
 
 - id: '1007000000004'
-  alias: "Lumière jardin - Extinction automatique soir"
+  alias: "Éclairage - Jardin - Extinction soir"
   description: >
     Éteint automatiquement l’éclairage du jardin le soir
     lorsque toutes les conditions métier sont réunies

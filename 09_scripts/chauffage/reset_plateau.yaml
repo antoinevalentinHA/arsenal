@@ -54,7 +54,7 @@
 # ==========================================================
 
 reset_plateau_piece:
-  alias: "Reset plateau pièce"
+  alias: "Chauffage - Reset plateau"
   mode: single
   sequence:
     - variables:

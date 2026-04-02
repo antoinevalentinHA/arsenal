@@ -34,7 +34,7 @@
 # ==========================================================
 
 - id: "10020000000026"
-  alias: "Alarme - Désarmement via badge"
+  alias: "Alarme - Désarmement badge"
   description: >
     Désarme l'alarme si un badge autorisé est utilisé. Envoie une
     notification si le badge est inconnu. Utilise le script de

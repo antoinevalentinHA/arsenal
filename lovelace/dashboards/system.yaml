@@ -221,22 +221,9 @@ views:
                 name: Netatmo – Matthieu
 
           - type: grid
-            columns: 3
+            columns: 2
             square: false
             cards:
-
-              - type: custom:button-card
-                template: carte_alerte_binaire_critique
-                entity: binary_sensor.netatmo_connectivite_ko
-                name: Reachability
-                icon: mdi:lan-disconnect
-                state_display: >
-                  [[[
-                    return entity.state === "on" ? "Dégradé" : "Normal";
-                  ]]]
-                tap_action:
-                  action: navigate
-                  navigation_path: /diagnostics-netatmo-dashboard/netatmo
 
               - type: custom:button-card
                 template: carte_alerte_binaire_critique
@@ -249,7 +236,7 @@ views:
                   ]]]
                 tap_action:
                   action: navigate
-                  navigation_path: /diagnostics-netatmo-dashboard/netatmo
+                  navigation_path: /diagnostics-netatmo-wifi-dashboard/wifi
 
               - type: custom:button-card
                 template: carte_alerte_binaire_critique
@@ -262,7 +249,7 @@ views:
                   ]]]
                 tap_action:
                   action: navigate
-                  navigation_path: /diagnostics-netatmo-dashboard/netatmo
+                  navigation_path: /diagnostics-netatmo-dashboard/rf
 
           ####################################################
           # 🌐 INTÉGRATIONS CRITIQUES

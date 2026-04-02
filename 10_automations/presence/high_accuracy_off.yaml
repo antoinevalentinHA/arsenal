@@ -21,7 +21,7 @@
 # ==========================================================
 
 - id: "10210000000008"
-  alias: "Présence - Désactivation High Accuracy"
+  alias: "Présence - Désactivation haute précision"
   description: "Désactive le High Accuracy sur désarmement ou expiration du timer de sécurité"
 
   mode: parallel

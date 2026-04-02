@@ -51,7 +51,7 @@
 # ==========================================================
 
 vmc_basse_vitesse:
-  alias: "VMC - Retour en basse vitesse"
+  alias: "VMC - Basse vitesse"
   mode: single
 
   sequence:

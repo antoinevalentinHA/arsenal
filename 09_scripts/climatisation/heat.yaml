@@ -20,7 +20,7 @@
 # ==========================================================
 
 clim_exec_apply_heat:
-  alias: "Clim – Exécution HEAT physique"
+  alias: "Clim – Exécution Heat"
   mode: single
   max_exceeded: silent
 

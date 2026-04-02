@@ -38,7 +38,7 @@
 # ==========================================================
 
 - id: '1011000000005'
-  alias: "Babyphone Arnaud"
+  alias: "Réveils - Babyphone Arnaud"
   mode: single
 
   trigger:

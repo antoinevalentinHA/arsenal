@@ -44,7 +44,7 @@
 # ==========================================================
 
 - id: "10210000000005"
-  alias: "Visiteur - Correction au démarrage"
+  alias: "Présence - Mode visiteur correction"
   mode: single
 
   trigger:

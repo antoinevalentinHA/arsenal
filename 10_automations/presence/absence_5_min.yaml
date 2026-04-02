@@ -36,7 +36,7 @@
 # ==========================================================
 
 - id: "10210000000002"
-  alias: Présence sécurite - Durée absence 5 min
+  alias: Présence - Sécurité absence
   description: >
     Lance ou annule le timer presence_famille_securite_absence selon l'etat du binaire
     presence_famille_securite. Sert d'antirebond pour armer l'alarme apres 5 min d'absence stable.

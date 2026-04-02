@@ -85,7 +85,7 @@
 # ==========================================================
 
 reset_calibration_capteurs_zigbee:
-  alias: "Zigbee – Reset calibration T° & HR"
+  alias: "Météo - Reset calibration capteurs Zigbee"
   mode: single
   sequence:
     - action: number.set_value

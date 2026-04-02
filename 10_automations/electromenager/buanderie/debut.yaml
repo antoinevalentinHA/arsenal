@@ -47,7 +47,7 @@
 # ==========================================================
 
 - id: "1008000000003"
-  alias: "Buanderie - Début de cycle"
+  alias: "Électroménager - Buanderie - Début cycle"
   description: >
     Détecte le début de cycle électroménager (puissance > 50 W pendant 3 minutes),
     active le flag de cycle en cours et envoie une notification persistante.

@@ -55,7 +55,7 @@
 # ==========================================================
 
 - id: "1008000000002"
-  alias: "Lave-vaisselle – Détection fin de cycle"
+  alias: "Électroménager - Lave-vaisselle - Fin cycle"
   description: >
     Détecte la fin du cycle du lave-vaisselle si la puissance reste basse
     pendant 10 min. Confirme avec 5 min d’attente sans reprise, puis

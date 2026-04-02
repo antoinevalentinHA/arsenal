@@ -15,7 +15,7 @@
 # ==========================================================
 
 - id: '10260000000003'
-  alias: Visiteur - Watchdog bouclage ECS
+  alias: ECS - Bouclage - Sécurité mode visite
   mode: restart
 
   trigger:

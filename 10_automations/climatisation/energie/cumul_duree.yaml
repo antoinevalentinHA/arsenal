@@ -64,7 +64,7 @@
 # ==========================================================
 
 - id: "10030000000103"
-  alias: "Clim - Cumul durée fonctionnement (événementiel)"
+  alias: "Clim - Cumul durée"
   description: >
     Calcule et cumule les durées de fonctionnement par mode
     (cool / dry / heat) uniquement sur événements, sans polling.

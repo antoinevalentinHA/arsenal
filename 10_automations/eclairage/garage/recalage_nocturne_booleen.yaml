@@ -22,7 +22,7 @@
 # ==========================================================
 
 - id: "10070000000025"
-  alias: "Garage – Recalage nocturne etat logique eclairage"
+  alias: "Éclairage - Garage - Recalage état"
   description: >-
     Recale input_boolean.garage_light_state a partir de
     binary_sensor.garage_lumiere_reelle_estimee lors de

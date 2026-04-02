@@ -29,7 +29,7 @@
 # ==========================================================
 
 - id: '1012000000002'
-  alias: Maintenance - Batteries faibles - Réinitialisation quotidienne
+  alias: Système - Reset batteries faibles
   description: Réinitialise le booléen chaque nuit à minuit.
   mode: single
 

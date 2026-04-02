@@ -22,8 +22,8 @@ include:
     # 🚿 ECS (EAU CHAUDE SANITAIRE)
     # =====================================================
     - script.chauffage_ecs_cycle
-    - automation.ecs_desinfection_au_retour_de_vacances
-    - automation.ecs_alerte_rebond_chauffe_sans_demande_ha
+    - automation.ecs_desinfection_fin_vacances
+    - automation.ecs_alerte_chauffe_sans_demande
     - script.ecs_petite_maison_arret_absence
     - script.ecs_petite_maison_mode_eco
     - automation.ecs_petite_maison_debut_sejour
@@ -32,44 +32,46 @@ include:
     # =====================================================
     # ⚙️ ELECTROMENAGER
     # =====================================================
-    - automation.buanderie_debut_de_cycle
-    - automation.buanderie_fin_de_cycle
-    - automation.lave_vaisselle_detection_debut_de_cycle
-    - automation.lave_vaisselle_detection_fin_de_cycle
+    - automation.electromenager_buanderie_debut_cycle
+    - automation.electromenager_buanderie_fin_cycle
+    - automation.electromenager_lave_vaisselle_debut_cycle
+    - automation.electromenager_lave_vaisselle_fin_cycle
     
     # =====================================================
     # 🚨 ALARME — Événements significatifs
     # =====================================================
-    - automation.alarme_intrusion_capteurs_de_mouvement
-    - automation.alarme_desarmement_via_badge
-    - automation.alarme_visiteur_desactivation_securite
-    - automation.alarme_visiteur_reactivation_armement_auto
+    - automation.alarme_intrusion_mouvement
+    - automation.alarme_intrusion_ouverture
+    - automation.alarme_desarmement_badge
+    - automation.presence_mode_visiteur_activation
+    - automation.presence_mode_visiteur_desactivation
     
     # =====================================================
     # 🧩 MODES
     # =====================================================
-    - automation.babysitting_sortie_automatique_du_mode
-    - automation.babysitting_activation_du_mode
-    - automation.vacances_activation_automatique_du_mode
-    - automation.vacances_desactivation_automatique_du_mode
+    - automation.modes_babysitting_sortie_auto
+    - automation.modes_babysitting_activation
+    - automation.modes_vacances_activation_auto
+    - automation.modes_vacances_desactivation_auto
 
     # =====================================================
     # 🧒 ENFANTS / CONFORT
     # =====================================================
-    - automation.sdb_enfants_charge_veilleuse_arnaud
-    - automation.babyphone_arnaud
-    - automation.babyphone_matthieu
+    - automation.eclairage_sdb_enfants_charge_veilleuse
+    - automation.reveils_babyphone_arnaud
+    - automation.reveils_babyphone_matthieu
 
     # =====================================================
     # 🚨 SÉCURITÉ & SUPERVISION
     # =====================================================
-    - automation.netatmo_redemarrage_sur_panne_reseau_arnaud
-    - automation.netatmo_redemarrage_sur_panne_reseau_matthieu
-    - automation.mode_panne_coupure_secteur
-    - automation.securite_sortie_mode_panne_ecs
-    - automation.reseau_confirmation_retour_internet
+    - automation.meteo_netatmo_redemarrage_arnaud
+    - automation.meteo_netatmo_redemarrage_matthieu
+    - automation.panne_detection_coupure_secteur
+    - automation.panne_sortie_mode_panne
+    - automation.reseau_ouverture_campagne_remediation
+    - automation.reseau_fermeture_campagne_remediation
 
     # =====================================================
     # 🌐 RÉSEAU / STABILITÉ
     # =====================================================
-    - automation.nas_alerte_temperature_disque
+    - automation.systeme_alerte_nas

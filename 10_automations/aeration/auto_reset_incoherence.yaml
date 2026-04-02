@@ -19,7 +19,7 @@
 # ==========================================================
 
 - id: "10010000000029"
-  alias: "Chauffage - Aération - Cohérence - Signal recover"
+  alias: "Aération - Cohérence signal"
   mode: single
 
   trigger:

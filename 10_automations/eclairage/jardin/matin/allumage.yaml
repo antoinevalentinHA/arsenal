@@ -32,7 +32,7 @@
 # ==========================================================
 
 - id: '1007000000001'
-  alias: "Lumière jardin - Activation cycle matin"
+  alias: "Éclairage - Jardin - Activation matin"
   description: >
     Allume l’éclairage du jardin le matin lorsque
     la fenêtre de pertinence lumineuse est valide

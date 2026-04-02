@@ -58,7 +58,7 @@
 # ==========================================================
 
 - id: "1016000000003"
-  alias: "Pluie – Décision de fin d’épisode"
+  alias: "Météo - Pluie - Fin épisode"
   description: >
     Désactive `pluie_en_cours` si Netatmo ne détecte plus de pluie
     depuis au moins 5 minutes, en ignorant les indisponibilités du capteur.

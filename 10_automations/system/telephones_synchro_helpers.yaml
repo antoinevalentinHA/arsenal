@@ -36,7 +36,7 @@
 # ==========================================================
 
 - id: "10120000000017"
-  alias: "Téléphones - Sync helpers"
+  alias: "Système - Synchronisation téléphones"
   mode: parallel
   max: 2
 

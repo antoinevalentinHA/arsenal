@@ -59,7 +59,7 @@
 # ==========================================================
 
 - id: '1003000000010'
-  alias: "Réglages - Clim consigne présence"
+  alias: "Clim - Consigne présence"
   mode: single
 
   trigger:

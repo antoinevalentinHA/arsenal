@@ -43,7 +43,7 @@
 # ==========================================================
 
 ecs_cycle_boost_si_necessaire:
-  alias: "ECS - Boost si nécessaire"
+  alias: "ECS - Boost"
   mode: single
 
   fields:

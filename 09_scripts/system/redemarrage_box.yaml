@@ -28,7 +28,7 @@
 # ==========================================================
 
 cycle_alimentation_box:
-  alias: Cycle alimentation box Internet
+  alias: "Système - Cycle redémarrage box"
   mode: single
   sequence:
     - action: switch.turn_off

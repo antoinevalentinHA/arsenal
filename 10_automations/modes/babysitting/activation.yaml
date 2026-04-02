@@ -56,7 +56,7 @@
 # ==========================================================
 
 - id: '1009000000003'
-  alias: "Babysitting – Activation du mode"
+  alias: "Modes - Babysitting - Activation"
 
   mode: single
 
