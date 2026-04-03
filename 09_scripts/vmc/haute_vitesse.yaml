@@ -1,53 +1,23 @@
 # ==========================================================
 # 🧠 ARSENAL — SCRIPT : VMC – Passage en haute vitesse
 # ----------------------------------------------------------
-# 🎯 RÔLE FONDAMENTAL
-#   Script exécutif d’activation de la haute vitesse VMC.
+# 🎯 ROLE
+#   Appliquer l'etat physique renforce de la VMC :
+#   - switch.vmc_l1 = on
+#   - switch.vmc_l2 = off
 #
-#   Il force le passage en haute vitesse UNIQUEMENT si
-#   la VMC est actuellement déclarée en basse vitesse.
+# 🧱 CONTRAT
+#   Etat cible HIGH :
+#   - vmc_l1 on
+#   - vmc_l2 off
 #
-# ----------------------------------------------------------
-# 🧱 RESPONSABILITÉ UNIQUE
+#   Etat deja conforme :
+#   - aucune action
 #
-#   - Vérifier que la haute vitesse n’est pas déjà active
-#   - Actionner le relais physique SwitchBot vers ON
-#
-# ----------------------------------------------------------
-# 🔁 IDÉMPOTENCE & SÉCURITÉ
-#
-#   - Aucune action si la VMC est déjà en haute vitesse
-#   - Aucun toggle aveugle
-#   - Aucune hypothèse sur l’état réel du moteur
-#
-# ----------------------------------------------------------
-# ⚙️ NATURE DE L’ACTION
-#
-#   - Commande PHYSIQUE via SwitchBot
-#   - Action immédiate, sans temporisation
-#   - Aucune logique métier
-#   - Aucun calcul de besoin
-#
-# ----------------------------------------------------------
-# ❌ CE SCRIPT NE FAIT PAS
-#
-#   - Ne décide jamais QUAND passer en haute vitesse
-#   - Ne mesure ni l’humidité ni la qualité de l’air
-#   - Ne corrige pas un état incohérent
-#
-# ----------------------------------------------------------
-# 🧠 PHILOSOPHIE ARSENAL
-#
-#   - Les automatisations décident
-#   - Les scripts exécutent
-#
-# ----------------------------------------------------------
-# 🔗 DÉPENDANCES
-#
-#   - switch.vmc
-#
-# ----------------------------------------------------------
-# ✅ Compatibilité : Home Assistant 2024.8+
+# 🛡️ SECURITE
+#   - aucune dependance a un reflet legacy
+#   - aucune dependance a switch.vmc
+#   - ordre d'action compatible Bloc 10
 # ==========================================================
 
 vmc_haute_vitesse:
@@ -55,12 +25,28 @@ vmc_haute_vitesse:
   mode: single
 
   sequence:
-    # 1️⃣ Vérifie que la VMC est actuellement en basse vitesse
-    - condition: state
-      entity_id: input_boolean.vmc_haute_vitesse
-      state: "off"
+    - choose:
 
-    # 2️⃣ Commande SwitchBot → bascule en vitesse haute (ON)
-    - action: switch.turn_on
-      target:
-        entity_id: switch.vmc
+        # --------------------------------------------------
+        # Etat deja conforme : HIGH
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: switch.vmc_l1
+              state: "on"
+            - condition: state
+              entity_id: switch.vmc_l2
+              state: "off"
+          sequence: []
+
+      default:
+        # --------------------------------------------------
+        # Convergence vers HIGH
+        # --------------------------------------------------
+        - action: switch.turn_off
+          target:
+            entity_id: switch.vmc_l2
+
+        - action: switch.turn_on
+          target:
+            entity_id: switch.vmc_l1

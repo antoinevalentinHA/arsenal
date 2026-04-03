@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Éclairage – Entrée – Extinction après absence
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Éteindre la lumière de l’entrée après 30 secondes
+#   sans détection de mouvement.
+#
+# ----------------------------------------------------------
+# 🧱 LOGIQUE
+#
+#   Déclencheur :
+#     - Absence de mouvement pendant 30 secondes
+#
+#   Action :
+#     - Extinction lumière entrée
+#
+# ----------------------------------------------------------
+# 🛡️ GARANTIES
+#
+#   - Extinction uniquement après absence réelle
+#   - Pas de dépendance aux conditions de luminosité
+#   - Comportement déterministe et lisible
+#
+# ==========================================================
+
+- id: '10070000000027'
+  alias: "Éclairage – Entrée – Extinction"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.capteur_mouvements_entree_occupancy
+      to: 'off'
+      for:
+        seconds: 30
+
+  action:
+    - action: switch.turn_off
+      target:
+        entity_id: switch.lumiere_entree

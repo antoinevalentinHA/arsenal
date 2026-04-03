@@ -74,7 +74,7 @@ Aucun domaine ne saute une étape.
 ### Application (autorité d’exécution centralisée)
 
 - Toute application de la décision doit passer par :
-  - `automation.alarme_application_decision_centrale` (ID `10020000000027`)
+  - `automation.alarme_decision_centrale` (ID `10020000000027`)
   - scripts unifiés :
     - `script.alarme_armer`
     - `script.alarme_desarmer`

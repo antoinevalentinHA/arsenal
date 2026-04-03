@@ -22,8 +22,8 @@
 #   dans cette implémentation.
 #
 # 🔌 Consommé par :
-#   - automation.clim_transit_decision_vers_execution
-#   - automation.clim_watchdog_coherence_decision_reel
+#   - automation.clim_application_automatique
+#   - automation.clim_surveillance_fonctionnement
 #
 # 📍 Entité :
 #   sensor.clim_target_mode

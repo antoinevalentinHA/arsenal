@@ -15,7 +15,7 @@
 
 Définir la couche d’application unique :
 
-- `automation.alarme_application_decision_centrale` (ID `10020000000027`)
+- `automation.alarme_decision_centrale` (ID `10020000000027`)
 
 ---
 

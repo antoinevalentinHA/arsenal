@@ -166,8 +166,8 @@ Script **pur exécutif** : reçoit `covers`, ferme les covers non déjà `closed
 
 | Entité | Déclencheur | Rôle |
 |---|---|---|
-| `automation.pluie_fermeture_volets_chambres` | `pluie_en_cours` → on | Notification si présence, fermeture si absence et verrou ON |
-| `automation.pluie_forte_fermeture_volets_sejour` | `intention_pluie_forte` → on | Fermeture volets séjour si autorisation |
+| `automation.meteo_pluie_fermeture_volets_chambres` | `pluie_en_cours` → on | Notification si présence, fermeture si absence et verrou ON |
+| `automation.meteo_pluie_fermeture_volets_sejour` | `intention_pluie_forte` → on | Fermeture volets séjour si autorisation |
 
 **Invariant orchestration :** une automation ne redouble pas les conditions métier des sensors de cibles. La condition `entity_ids non vide` est une optimisation d'exécution — elle ne porte aucune logique métier.
 
@@ -182,28 +182,3 @@ Les notifications d'exposition **ne sont pas inhibées** par `input_boolean.ferm
 | Pluie détectée + présence + fenêtre chambre ouverte | Informative d'exposition | `pluie_fenetres_ouvertes` |
 | Pluie détectée + absence + verrou ON + fermeture volet chambre | Confirmation d'exécution | `fermeture_volets_pluie_chambres` |
 | Pluie forte + volets séjour fermés | Confirmation d'exécution | `fermeture_volets_pluie_forte_sejour` |
-
----
-
-## 7. Dettes et anomalies (consolidation)
-
-| # | Sévérité | Description |
-|---|---|---|
-| D1 | **Critique** | `script.volets_fermeture_execute` s'appelle récursivement et ignore `covers`. À réécrire en script pur exécutif avec `fields`. |
-| D2 | **Critique** | Architecture héritée autour de deux signaux (`pluie_en_cours` et `intention_pluie_forte`) non structurée — à réaligner explicitement sur les deux régimes définis par ce contrat. |
-| D3 | **Majeur** | `sensor.cibles_volets_pluie_sejour` dépend encore des contacts séjour — à corriger : entrées réduites à `intention_pluie_forte` + `autorisation_fermeture_volets_pluie_sejour`. |
-| D4 | **Majeur** | `sensor.cibles_volets_pluie_chambres` n'intègre pas la condition absence ni le verrou global — à corriger. |
-| D5 | **Majeur** | `automation.pluie_forte_fermeture_volets_sejour` filtre `presence_securisee == off` en dur — à supprimer, déléguer au sensor d'autorisation. |
-| D6 | **Majeur** | `script.pluie_detectee` recalcule localement `fermeture_autorisee` et `pluie_forte` — à déprécier. |
-| D7 | **Majeur** | Pas d'automation pour le régime pluie détectée + absence + chambres — à créer. |
-| D8 | **Mineur** | `sensor.cibles_volets_pluie_sejour.state` hardcodé à `2` — viole l'invariant cardinalité. |
-| D9 | **Mineur** | Référentiel ouvrants dupliqué manuellement — toute duplication doit rester alignée sur la référence canonique. |
-| D10 | **Mineur** | Commentaires helpers citent les scripts comme consommateurs — les vrais consommateurs sont les sensors de décision. |
-
----
-
-## 8. Entités à créer (consolidation)
-
-| Entité | Justification |
-|---|---|
-| `automation.pluie_fermeture_volets_chambres` | Régime pluie détectée — notif si présence, fermeture si absence et verrou ON |

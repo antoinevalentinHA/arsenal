@@ -56,12 +56,6 @@ sensor.bouton_sdb_battery:
   icon: mdi:gesture-tap-button
 
 ############################################################
-# 🔘 BOUTONS SWITCHBOT
-############################################################
-
-
-
-############################################################
 # 🔘 BOTS SWITCHBOT
 ############################################################
 
@@ -261,7 +255,7 @@ sensor.komori_exterieur_no_batterie:
   friendly_name: "Capteur Komori extérieur NO"
   icon: mdi:thermometer
 
-sensor.pluviometre_battery:
+sensor.pluviometre_batterie:
   friendly_name: "Pluviomètre"
   icon: mdi:weather-rainy
 
@@ -283,6 +277,10 @@ sensor.meter_garage_batterie:
 
 sensor.meter_cave_batterie:
   friendly_name: "Capteur cave"
+  icon: mdi:thermometer
+
+sensor.meter_petite_maison_batterie:
+  friendly_name: "Switchbot Petite Maison"
   icon: mdi:thermometer
 
 sensor.direction_batterie:
@@ -332,3 +330,11 @@ sensor.clavier_alarme_2_battery:
 sensor.sirene_battery:
   friendly_name: "Sirène alarme"
   icon: mdi:alarm-bell
+
+############################################################
+# 🔋 BATTERIES
+############################################################
+
+sensor.bluetti_battery_soc:
+  friendly_name: "Bluetti"
+  icon: mdi:battery-high

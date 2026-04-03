@@ -27,12 +27,6 @@ Définir :
 - `binary_sensor.alarme_systeme_coherent`
   - attribut : `raison`
 
-### Armement auto récent
-
-- `binary_sensor.alarme_armee_auto_recentement`
-  - fenêtre : 120 s
-  - basé sur `automation.alarme_armement_automatique_en_cas_d_absence` (last_triggered)
-
 ### Divergence réel / cible (alerte)
 
 - automation :

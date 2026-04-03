@@ -36,6 +36,7 @@ batteries:
   name: Batteries
   entities:
 
+    - sensor.bluetti_battery_soc
     - sensor.netatmo_homekit_chambre_parents_batterie
     - sensor.netatmo_homekit_jardin_se_batterie
     - sensor.netatmo_homekit_petite_maison_batterie
@@ -90,6 +91,7 @@ batteries:
     - sensor.deshumidificateur_batterie
     - sensor.meter_cave_batterie
     - sensor.meter_garage_batterie
+    - sensor.meter_petite_maison_batterie
     - sensor.commercial_batterie
     - sensor.compta_batterie
     - sensor.devis_commandes_batterie

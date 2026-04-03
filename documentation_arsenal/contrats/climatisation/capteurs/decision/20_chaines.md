@@ -107,8 +107,8 @@ Sinon, il conserve son état précédent via `this.state`.
 [besoin_clim_cool + autorisation_clim_cool] ─┐
 [besoin_clim_dry  + autorisation_clim_dry ] ─┼──► sensor.clim_target_mode
 [besoin_clim_heat + autorisation_clim_heat] ─┘          │
-                                                        ├──► automation.clim_transit_decision_vers_execution
-                                                        └──► automation.clim_watchdog_coherence_decision_reel
+                                                        ├──► automation.clim_application_automatique
+                                                        └──► automation.clim_surveillance_fonctionnement
 ```
 
 ### Description
@@ -182,8 +182,8 @@ DÉCISION CENTRALE
 [besoin dry  + autorisation dry ]
 [besoin heat + autorisation heat]
     └──► clim_target_mode
-            ├──► automation.clim_transit_decision_vers_execution
-            └──► automation.clim_watchdog_coherence_decision_reel
+            ├──► automation.clim_application_automatique
+            └──► automation.clim_surveillance_fonctionnement
 
 EXPLICATION
 [blocages] → [ouverture] → [humidité] → [seuil cool] → [seuil heat + présence]

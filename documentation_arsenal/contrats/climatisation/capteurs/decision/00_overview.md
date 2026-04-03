@@ -52,7 +52,7 @@ Toutes les entités de ce groupe ne relèvent pas du même patron :
 
 | Entité | Consommée par |
 |---|---|
-| `sensor.clim_target_mode` | `automation.clim_transit_decision_vers_execution`, `automation.clim_watchdog_coherence_decision_reel` |
+| `sensor.clim_target_mode` | `automation.clim_application_automatique`, `automation.clim_surveillance_fonctionnement` |
 | Autres entités | Non déterminable depuis le YAML fourni |
 
 ---

@@ -161,10 +161,3 @@ comme chemin nominal.
 | `input_boolean.blocage_armement_auto` | État du verrou |
 | `timer.blocage_armement_auto` | Mécanisme de levée canonique |
 | Automation watchdog | Détection et correction des divergences |
-
----
-
-## 🔗 Contrats liés
-
-- `50_intrusion_detection.md` — consomme `binary_sensor.alarme_armee_auto_recentement`
-  (dérivé du présent blocage)

@@ -27,7 +27,7 @@
 # ==========================================================
 
 - id: "10170000000014"
-  alias: "Ouvertures – Chambre parents – Reset grâce échue"
+  alias: "Ouvertures – Chambre parents – Réarmement grâce"
   mode: restart
 
   trigger:

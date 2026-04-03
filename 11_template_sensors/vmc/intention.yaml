@@ -9,10 +9,19 @@
 #   - Traduction sémantique PURE
 #   - Aucun état partagé entre templates
 #   - Compatible reload / redémarrage
+#
+# 🧠 NOTE UI
+#   L’évaluation "aération favorable" est ici basée sur
+#   delta_humidite_absolue > 0 pour une meilleure lisibilité
+#   humaine.
+#
+#   Elle peut diverger du capteur métier
+#   binary_sensor.aeration_preferable_etage.
 # ==========================================================
 
 - sensor:
     - name: "VMC intention"
+      unique_id: vmc_intention
       icon: mdi:brain
 
       state: >

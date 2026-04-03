@@ -38,6 +38,13 @@
 # 🔘 BOTS / ACTIONNEURS
 ############################################################
 
+sensor.bot_chambre_parents_bluetooth_signal:
+  friendly_name: "Bot Chambre Parents"
+  icon: mdi:gesture-tap-button
+
+sensor.bot_deshumidificateur_bluetooth_signal:
+  friendly_name: "Bot Déshumidificateur"
+  icon: mdi:gesture-tap-button
 
 ############################################################
 # 📟 APPAREILS DE MESURE / TELECOMMANDES
@@ -45,4 +52,20 @@
 
 sensor.meter_garage_bluetooth_signal:
   friendly_name: "Meter Garage"
+  icon: mdi:gauge
+
+sensor.meter_cave_bluetooth_signal:
+  friendly_name: "Meter Cave"
+  icon: mdi:gauge
+
+sensor.meter_jardin_bluetooth_signal:
+  friendly_name: "Meter Jardin"
+  icon: mdi:gauge
+
+sensor.meter_petite_maison_bluetooth_signal:
+  friendly_name: "Meter Petite Maison"
+  icon: mdi:home
+
+sensor.sdb_enfants_bluetooth_signal:
+  friendly_name: "Meter SDB Enfants"
   icon: mdi:gauge

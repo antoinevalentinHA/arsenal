@@ -28,7 +28,7 @@
 # ==========================================================
 
 - id: "10170000000012"
-  alias: "Ouvertures – Séjour – Reset grâce échue"
+  alias: "Ouvertures – Séjour – Réarmement grâce"
   mode: restart
 
   trigger:

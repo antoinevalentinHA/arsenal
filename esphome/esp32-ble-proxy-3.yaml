@@ -1,0 +1,28 @@
+esphome:
+  name: esp32-ble-proxy-3
+  friendly_name: ESP32 BLE Proxy 3
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+logger:
+
+api:
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: "VALENTIN "
+  password: "YK#]8kmz6;sh98TZVq89R](y/)84U"
+  ap:
+    ssid: "esp32-ble-proxy-3-fallback"
+    password: "12345678"
+
+captive_portal:
+
+esp32_ble_tracker:
+
+bluetooth_proxy:

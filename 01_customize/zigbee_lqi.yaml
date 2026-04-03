@@ -286,6 +286,14 @@ sensor.lumiere_garage_linkquality:
   friendly_name: "Lumière garage"
   icon: mdi:lightbulb
 
+sensor.lumiere_entree_linkquality:
+  friendly_name: "Lumière entrée"
+  icon: mdi:lightbulb
+
+sensor.vmc_linkquality:
+  friendly_name: "VMC"
+  icon: mdi:fan
+
 ############################################################
 # 🚨 ALARME
 ############################################################

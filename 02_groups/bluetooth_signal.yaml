@@ -20,3 +20,9 @@ bluetooth_signal_all:
   name: "Bluetooth — Tous signaux radio"
   entities:
     - sensor.meter_garage_bluetooth_signal
+    - sensor.bot_chambre_parents_bluetooth_signal
+    - sensor.bot_deshumidificateur_bluetooth_signal
+    - sensor.meter_cave_bluetooth_signal
+    - sensor.meter_jardin_bluetooth_signal
+    - sensor.sdb_enfants_bluetooth_signal
+    - sensor.meter_petite_maison_bluetooth_signal

@@ -168,6 +168,10 @@ devices:
     friendly_name: luminosite_garage
   '0xf082c0fffe491a7d':
     friendly_name: lumiere_garage
+  '0xd44867fffe003fda':
+    friendly_name: lumiere_entree
+  '0x8c73dafffe0388a2':
+    friendly_name: vmc
 groups:
   '1':
     friendly_name: Prises

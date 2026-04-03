@@ -1,0 +1,33 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR : VMC coherence physique
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Detecter si l'etat physique des relais est conforme
+#   au contrat Bloc 10 (XOR strict).
+#
+# 🧱 PRINCIPE
+#   ON  = etat valide (exactement un relais actif)
+#   OFF = etat invalide (double ON ou double OFF)
+#
+# ❌ AUCUN effet de bord
+#   - ne corrige rien
+#   - ne declenche rien
+#
+# 👉 PURE observabilite
+# ==========================================================
+
+- binary_sensor:
+    - name: "VMC cohérence physique"
+      unique_id: vmc_coherence_physique
+
+      state: >
+        {% set l1 = is_state('switch.vmc_l1', 'on') %}
+        {% set l2 = is_state('switch.vmc_l2', 'on') %}
+        {{ (l1 and not l2) or (l2 and not l1) }}
+
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:check-circle
+        {% else %}
+          mdi:alert-circle
+        {% endif %}

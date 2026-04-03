@@ -1,66 +1,52 @@
 # ==========================================================
 # 🧠 ARSENAL — SCRIPT : VMC – Retour en basse vitesse
 # ----------------------------------------------------------
-# 🎯 RÔLE FONDAMENTAL
-#   Script exécutif de retour à l’état nominal de la VMC.
+# 🎯 ROLE
+#   Appliquer l'etat physique nominal de la VMC :
+#   - switch.vmc_l1 = off
+#   - switch.vmc_l2 = on
 #
-#   Il replace la VMC en basse vitesse UNIQUEMENT si
-#   une phase de haute vitesse était précédemment active.
+# 🧱 CONTRAT
+#   Etat cible LOW :
+#   - vmc_l1 off
+#   - vmc_l2 on
 #
-# ----------------------------------------------------------
-# 🧱 RESPONSABILITÉ UNIQUE
+#   Etat deja conforme :
+#   - aucune action
 #
-#   - Vérifier que la VMC est bien déclarée en haute vitesse
-#   - Actionner le relais physique (SwitchBot) vers OFF
-#
-# ----------------------------------------------------------
-# 🔁 IDÉMPOTENCE & SÉCURITÉ
-#
-#   - Aucune action si la VMC est déjà en basse vitesse
-#   - Aucun toggle aveugle
-#   - Aucune supposition sur l’état réel du moteur
-#
-# ----------------------------------------------------------
-# ⚙️ NATURE DE L’ACTION
-#
-#   - Commande PHYSIQUE via SwitchBot
-#   - Pas de calcul métier
-#   - Pas de temporisation
-#   - Pas de logique décisionnelle
-#
-# ----------------------------------------------------------
-# ❌ CE SCRIPT NE FAIT PAS
-#
-#   - Ne décide jamais du passage en haute vitesse
-#   - Ne mesure pas l’efficacité de la ventilation
-#   - Ne corrige pas d’état incohérent
-#
-# ----------------------------------------------------------
-# 🧠 PHILOSOPHIE ARSENAL
-#
-#   - La décision appartient aux automatisations
-#   - Le script exécute, rien de plus
-#
-# ----------------------------------------------------------
-# 🔗 DÉPENDANCES
-#
-#   - switch.vmc
-#
-# ----------------------------------------------------------
-# ✅ Compatibilité : Home Assistant 2024.8+
+# 🛡️ SECURITE
+#   - aucune dependance a un reflet legacy
+#   - aucune dependance a switch.vmc
+#   - ordre d'action compatible Bloc 10
 # ==========================================================
 
 vmc_basse_vitesse:
   alias: "VMC - Basse vitesse"
-  mode: single
+  mode: restart
 
   sequence:
-    # 1️⃣ Vérifie que la VMC est actuellement en haute vitesse
-    - condition: state
-      entity_id: input_boolean.vmc_haute_vitesse
-      state: "on"
+    - choose:
 
-    # 2️⃣ Commande SwitchBot → bascule en vitesse basse (OFF)
-    - action: switch.turn_off
-      target:
-        entity_id: switch.vmc
+        # --------------------------------------------------
+        # Etat deja conforme : LOW
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: switch.vmc_l1
+              state: "off"
+            - condition: state
+              entity_id: switch.vmc_l2
+              state: "on"
+          sequence: []
+
+      default:
+        # --------------------------------------------------
+        # Repli / convergence vers LOW
+        # --------------------------------------------------
+        - action: switch.turn_off
+          target:
+            entity_id: switch.vmc_l1
+
+        - action: switch.turn_on
+          target:
+            entity_id: switch.vmc_l2

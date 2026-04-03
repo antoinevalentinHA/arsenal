@@ -87,7 +87,7 @@ La couche Exécution reste pure : elle applique, constate et délègue la repris
 
 | Entité | Rôle |
 |---|---|
-| `automation.clim_reprise_apres_echec` | Relance `script.clim_execution` à l'expiration de `timer.clim_retry` |
+| `automation.clim_reprise_apres_erreur` | Relance `script.clim_execution` à l'expiration de `timer.clim_retry` |
 
 Conditions de relance :
 - `input_boolean.clim_execution_echec` est `on`

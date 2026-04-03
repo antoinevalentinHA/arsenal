@@ -57,7 +57,7 @@ views:
                 variables:
                   action_service: automation.trigger
                   action_data:
-                    entity_id: automation.atelier_archive_hebdo_rotation_x4_refresh_minmax
+                    entity_id: automation.imprimerie_atelier_archivage_hebdo
                   confirm: 📋 Forcer l’archivage hebdo des conditions atelier ?
                   bg_color: rgba(33, 150, 243, 0.2)
                   icon_color: '#1565C0'

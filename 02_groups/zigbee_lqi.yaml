@@ -52,6 +52,8 @@ zigbee_linkquality_all:
     - sensor.contact_sejour_3_2_linkquality
     - sensor.contact_sejour_4_linkquality
     - sensor.lumiere_garage_linkquality
+    - sensor.lumiere_entree_linkquality
+    - sensor.vmc_linkquality
     - sensor.luminosite_garage_linkquality
     - sensor.meteo_zigbee_chambre_arnaud_linkquality
     - sensor.meteo_zigbee_chambre_matthieu_linkquality

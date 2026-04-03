@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : VMC – Watchdog
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Detecter un etat physique invalide et forcer
+#   un retour en basse vitesse (fail-safe Bloc 10).
+#
+# 🧱 DECLENCHEMENT
+#   - incoherence detectee
+#   - demarrage HA (securite)
+#
+# 🛡️ GARANTIES
+#   - aucune logique metier
+#   - aucune interpretation
+#   - correction immediate et deterministe
+#
+# 🎯 STRATEGIE
+#   - toujours converger vers basse vitesse
+# ==========================================================
+
+- id: "10190000000003"
+  alias: "VMC - Watchdog"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.vmc_coherence_physique
+      to: "off"
+
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ is_state('binary_sensor.vmc_coherence_physique', 'off') }}
+
+  action:
+    - service: script.vmc_basse_vitesse

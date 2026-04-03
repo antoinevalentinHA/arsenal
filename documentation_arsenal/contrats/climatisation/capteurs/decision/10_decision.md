@@ -288,14 +288,14 @@ L'absence de tout couple valide produit `off`.
 
 ```text
 besoin_clim_cool + autorisation_clim_cool ─┐
-besoin_clim_dry  + autorisation_clim_dry  ─┼──► clim_target_mode ──► automation.clim_transit_decision_vers_execution
-besoin_clim_heat + autorisation_clim_heat ─┘                      ──► automation.clim_watchdog_coherence_decision_reel
+besoin_clim_dry  + autorisation_clim_dry  ─┼──► clim_target_mode ──► automation.clim_application_automatique
+besoin_clim_heat + autorisation_clim_heat ─┘                      ──► automation.clim_surveillance_fonctionnement
 ```
 
 ### Consommateurs connus
 
-- `automation.clim_transit_decision_vers_execution`
-- `automation.clim_watchdog_coherence_decision_reel`
+- `automation.clim_application_automatique`
+- `automation.clim_surveillance_fonctionnement`
 
 ---
 

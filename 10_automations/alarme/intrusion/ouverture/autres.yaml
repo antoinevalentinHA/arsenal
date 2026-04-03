@@ -72,10 +72,6 @@
       state: 'armed_away'
 
     - condition: state
-      entity_id: binary_sensor.alarme_armee_auto_recentement
-      state: 'off'
-
-    - condition: state
       entity_id: binary_sensor.delai_desarmement_en_cours
       state: 'off'
 

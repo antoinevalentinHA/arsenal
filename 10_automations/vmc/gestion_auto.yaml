@@ -36,13 +36,25 @@
   mode: restart
 
   trigger:
-    - platform: state
-      entity_id: binary_sensor.vmc_haute_vitesse_requise
+  - platform: state
+    entity_id: binary_sensor.vmc_haute_vitesse_requise
+
+  - platform: homeassistant
+    event: start
 
   condition:
-    - condition: state
-      entity_id: input_boolean.systeme_stable
-      state: "on"
+  - condition: or
+    conditions:
+
+      # ✔ autorise exécution au démarrage
+      - condition: template
+        value_template: >
+          {{ trigger.platform == 'homeassistant' }}
+
+      # ✔ sinon comportement normal
+      - condition: state
+        entity_id: input_boolean.systeme_stable
+        state: "on"
 
   variables:
     duree_min: "{{ states('input_number.vmc_duree_min_haute') | int(15) }}"
@@ -68,6 +80,11 @@
               value_template: >
                 {{ states('binary_sensor.vmc_haute_vitesse_requise') == 'off' }}
           sequence:
-            - delay:
-                seconds: "{{ (duree_min * 60) | int }}"
+            - if:
+                - condition: template
+                  value_template: >
+                    {{ trigger.platform != 'homeassistant' }}
+              then:
+                - delay:
+                    seconds: "{{ (duree_min * 60) | int }}"
             - service: script.vmc_basse_vitesse

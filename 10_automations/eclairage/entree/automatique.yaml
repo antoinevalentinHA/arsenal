@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Éclairage – Entrée – Allumage sur mouvement si obscurité
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Allumer la lumière de l’entrée lorsqu’un mouvement est
+#   détecté, uniquement si les conditions de luminosité
+#   (temporelles ou réelles) le justifient.
+#
+# ----------------------------------------------------------
+# 🧱 LOGIQUE
+#
+#   Déclencheur :
+#     - Détection de mouvement entrée
+#
+#   Conditions :
+#     - Soit période météo ∈ {aube, crépuscule, nuit}
+#     - Soit luminosité garage < 25 ET lumière garage éteinte
+#
+#   Action :
+#     - Allumage lumière entrée
+#
+# ----------------------------------------------------------
+# 🛡️ GARANTIES
+#
+#   - Aucun allumage en pleine journée lumineuse
+#   - Double sécurité : logique temporelle + mesure réelle
+#   - Pas de dépendance à l’état actuel de la lumière entrée
+#
+# ==========================================================
+
+- id: '10070000000026'
+  alias: "Éclairage – Entrée - Allumage"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.capteur_mouvements_entree_occupancy
+      to: 'on'
+
+  condition:
+    - condition: or
+      conditions:
+
+        - condition: state
+          entity_id: sensor.periode_meteo
+          state: aube
+
+        - condition: state
+          entity_id: sensor.periode_meteo
+          state: nuit
+
+        - condition: state
+          entity_id: sensor.periode_meteo
+          state: crepuscule
+
+        - condition: and
+          conditions:
+
+            - condition: numeric_state
+              entity_id: sensor.luminosite_garage_illuminance
+              below: 25
+
+            - condition: state
+              entity_id: switch.lumiere_garage
+              state: 'off'
+
+  action:
+    - action: switch.turn_on
+      target:
+        entity_id: switch.lumiere_entree
