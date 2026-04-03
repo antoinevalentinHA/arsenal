@@ -135,8 +135,23 @@
       event: start
 
   sensor:
-    - name: "Humidite relative entree"
+    - name: "Humidite relative Entrée"
       unique_id: humidite_relative_entree
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_relative_consolidee_logic
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_petite_maison_1
+        - sensor.humidite_relative_petite_maison_2
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative Petite Maison"
+      unique_id: humidite_relative_petite_maison
       unit_of_measurement: "%"
       device_class: humidity
       state: *humidite_relative_consolidee_logic
