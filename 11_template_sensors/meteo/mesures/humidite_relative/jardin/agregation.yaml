@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — AGREGATION
+#     Humidite relative jardin — Sources valides
+# ----------------------------------------------------------
+# 🎯 ROLE
+#     - Construire la liste des valeurs physiquement valides
+#     - Calculer la mediane pivot (avant exclusion suspects)
+# ----------------------------------------------------------
+# ⚙️ PARAMETRES
+#     Aucun — agregation brute des sources valides
+# ==========================================================
+
+- sensor:
+
+    - name: "Humidite relative jardin valeurs valides"
+      unique_id: humidite_relative_jardin_valeurs_valides
+      state: >
+        {% set vals = [] %}
+        {% if is_state('binary_sensor.humidite_relative_jardin_1_valide', 'on') %}
+          {% set v = states('sensor.humidite_relative_jardin_1') | float(none) %}
+          {% if v is not none %}
+            {% set vals = vals + [v] %}
+          {% endif %}
+        {% endif %}
+        {% if is_state('binary_sensor.humidite_relative_jardin_2_valide', 'on') %}
+          {% set v = states('sensor.humidite_relative_jardin_2') | float(none) %}
+          {% if v is not none %}
+            {% set vals = vals + [v] %}
+          {% endif %}
+        {% endif %}
+        {% if is_state('binary_sensor.humidite_relative_jardin_3_valide', 'on') %}
+          {% set v = states('sensor.humidite_relative_jardin_3') | float(none) %}
+          {% if v is not none %}
+            {% set vals = vals + [v] %}
+          {% endif %}
+        {% endif %}
+        {{ vals | tojson }}
+
+    - name: "Humidite relative jardin mediane sources valides"
+      unique_id: humidite_relative_jardin_mediane_sources_valides
+      unit_of_measurement: "%"
+      device_class: humidity
+      state_class: measurement
+      availability: >
+        {% set raw = states('sensor.humidite_relative_jardin_valeurs_valides') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {{ vals | length > 0 }}
+      state: >
+        {% set raw = states('sensor.humidite_relative_jardin_valeurs_valides') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {% set s = vals | sort %}
+        {% set n = s | length %}
+        {% if n % 2 == 1 %}
+          {{ s[n // 2] }}
+        {% else %}
+          {{ (s[n // 2 - 1] + s[n // 2]) / 2 }}
+        {% endif %}

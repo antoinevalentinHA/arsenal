@@ -1,0 +1,55 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Vacances demandées
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#   Exprimer la DEMANDE MÉTIER de passage en Vacances.
+#
+#   Cette demande peut provenir de :
+#     - l’utilisateur (demande manuelle explicite)
+#     - la planification automatique
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#
+#   - Capteur de décision calculée
+#   - Lecture pure
+#   - Aucun effet de bord
+#   - Point d’entrée unique du domaine Vacances
+#
+# ----------------------------------------------------------
+# ✅ ON si :
+#
+#   - input_boolean.vacances_demande_manuel = on
+#     OU
+#   - binary_sensor.vacances_planifiees_actives = on
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne décide pas des vacances effectives
+#   - Ne lit pas la présence
+#   - Ne pilote aucun équipement
+#   - Ne dépend pas de `input_select.mode_maison`
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPE ARSENAL
+#
+#   Une demande n’est pas une réalité.
+#   Elle doit être validée par le contexte réel.
+#
+#   `input_select.mode_maison` est une projection du contexte,
+#   pas une source de demande.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Vacances demandées"
+      unique_id: vacances_demandees
+      state: >
+        {{
+          is_state('input_boolean.vacances_demande_manuel', 'on')
+          or is_state('binary_sensor.vacances_planifiees_actives', 'on')
+        }}
+      icon: >
+        mdi:beach

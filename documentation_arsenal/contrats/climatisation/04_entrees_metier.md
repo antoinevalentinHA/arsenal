@@ -1,16 +1,16 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 04 — Entrées métier
 
-**Version contrat :** v1.2
+**Version contrat :** v1.3
 
 ---
 
 ## Principe
 
-Les entrées métier définissent ce qui alimente la couche Décision.  
-Elles ne décident pas. Elles conditionnent.
+Les entrées métier alimentent les couches amont du système (Besoin et Admissibilité).
+Elles ne sont jamais consommées directement par la Décision.
 
-Les entrées métier sont des observations du contexte thermique, physique ou humain du logement.  
+Les entrées métier sont des observations du contexte thermique, physique ou humain du logement.
 Elles ne portent aucune décision de confort.
 
 ---
@@ -20,15 +20,25 @@ Elles ne portent aucune décision de confort.
 - Température minimale chambres
 - Température maximale chambres
 
-Utilisées pour déterminer les besoins thermiques consommés par la couche Décision.
+Utilisées pour déterminer les besoins thermiques bruts.
 
 Les seuils sont calculés ailleurs et consommés tels quels.
 
 ---
 
+## Rôle des besoins dans la chaîne décisionnelle
+
+Les entités `binary_sensor.besoin_clim_*` expriment un besoin thermique brut.
+
+Elles alimentent exclusivement la couche Admissibilité.
+
+Elles ne sont jamais consommées directement par la Décision.
+
+---
+
 ## Température extérieure
 
-- Peut rendre COOL ou HEAT non applicables
+- Peut empêcher l'émergence d'un besoin admissible pour COOL ou HEAT
 - **Ne force jamais un mode**
 
 ---
@@ -65,14 +75,16 @@ Les seuils sont calculés ailleurs et consommés tels quels.
 
 Les contraintes :
 - **n'imposent jamais un mode**,
-- peuvent rendre un mode requis **non applicable**, sans jamais sélectionner un autre mode.
+- peuvent empêcher la formation ou maintenir l'absence d'un besoin admissible.
 
-### Aération favorable — nature de l’entrée
+---
+
+### Aération favorable — nature de l'entrée
 
 `binary_sensor.aeration_preferable_etage` est une entrée métier particulière.
 
 Contrairement aux autres entrées, il ne représente pas un fait physique brut,
-mais une **évaluation composite optimisée** des conditions d’aération.
+mais une **évaluation composite optimisée** des conditions d'aération.
 
 Il agrège notamment :
 - humidité absolue intérieure / extérieure,
@@ -85,7 +97,7 @@ Il agrège notamment :
 
 Dans le domaine climatisation, ce capteur est utilisé comme **contrainte inhibitrice** :
 
-- il peut rendre un mode non applicable,
+- il peut empêcher l'émergence d'un besoin admissible,
 - il ne déclenche jamais une action,
 - il ne participe pas à la sélection du mode.
 
@@ -93,8 +105,8 @@ Dans le domaine climatisation, ce capteur est utilisé comme **contrainte inhibi
 
 Ce choix constitue un compromis volontaire :
 
-- utilisation d’un capteur décisionnel comme contrainte métier,
-- au lieu d’un critère physique élémentaire (ex : delta humidité seul).
+- utilisation d'un capteur décisionnel comme contrainte métier,
+- au lieu d'un critère physique élémentaire (ex : delta humidité seul).
 
 Ce compromis est accepté car :
 - le capteur est stable et déterministe,
@@ -104,7 +116,7 @@ Ce compromis est accepté car :
 ### Limites connues
 
 - la climatisation peut être inhibée dans des situations où elle resterait acceptable,
-- le comportement dépend d’une logique interne non visible dans le domaine clim,
+- le comportement dépend d'une logique interne non visible dans le domaine clim,
 - la décision repose sur une optimisation orientée aération, non sur le confort global.
 
 ### Invariant
@@ -112,4 +124,4 @@ Ce compromis est accepté car :
 Ce capteur ne doit jamais :
 - déclencher directement une action,
 - être utilisé comme critère de sélection de mode,
-- être utilisé en dehors d’un rôle de contrainte.
+- être utilisé en dehors d'un rôle de contrainte.

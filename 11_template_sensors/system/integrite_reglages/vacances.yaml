@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Intégrité paramètres — Vacances
+# ==========================================================
+
+- binary_sensor:
+    - name: "Vacances — Paramètres invalides"
+      unique_id: parametres_invalides_vacances
+      default_entity_id: binary_sensor.parametres_invalides_vacances
+      state: >
+        {{
+          not (
+            states('input_datetime.debut_vacances') not in ['unknown', 'unavailable', 'none', '']
+            and states('input_datetime.fin_vacances') not in ['unknown', 'unavailable', 'none', '']
+            and as_datetime(states('input_datetime.fin_vacances'))
+              > as_datetime(states('input_datetime.debut_vacances'))
+          )
+        }}
+      icon: >
+        mdi:alert-circle-outline
+      attributes:
+
+        debut_indisponible: >
+          {{
+            states('input_datetime.debut_vacances') in ['unknown', 'unavailable', 'none', '']
+          }}
+
+        fin_indisponible: >
+          {{
+            states('input_datetime.fin_vacances') in ['unknown', 'unavailable', 'none', '']
+          }}
+
+        fenetre_inversee: >
+          {{
+            states('input_datetime.debut_vacances') not in ['unknown', 'unavailable', 'none', '']
+            and states('input_datetime.fin_vacances') not in ['unknown', 'unavailable', 'none', '']
+            and as_datetime(states('input_datetime.fin_vacances'))
+              <= as_datetime(states('input_datetime.debut_vacances'))
+          }}

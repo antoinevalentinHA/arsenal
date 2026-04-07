@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 01 — Finalité du système
 
-**Version contrat :** v1.2
+**Version contrat :** v1.3
 
 ---
 
@@ -35,7 +35,10 @@ Le système repose sur quatre états exclusifs :
 
 Le système vise à :
 
-- répondre uniquement à des besoins thermiques réels,
+- répondre uniquement à des besoins thermiques admissibles,
 - respecter les contraintes physiques du logement,
 - éviter toute action « par principe »,
 - rester explicable, traçable et compréhensible par un humain.
+
+Un besoin thermique n'est pris en compte que s'il est admissible,
+c'est-à-dire s'il est né dans un contexte d'autorisation valide.

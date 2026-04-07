@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — VALIDATION
+#     Humidite relative jardin — Sources brutes
+# ----------------------------------------------------------
+# 🎯 ROLE
+#     Validation physique minimale des 3 capteurs HR jardin
+#     Critere : valeur numerique dans [-1, 101] %
+#     Tolerance instrument : ±1 % HR au-dela des bornes physiques
+#     Aucune logique metier
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Humidite relative jardin 1 valide"
+      unique_id: humidite_relative_jardin_1_valide
+      state: >
+        {% set s = states('sensor.humidite_relative_jardin_1') %}
+        {% set v = s | float(none) %}
+        {{
+          s not in ['unknown', 'unavailable']
+          and v is not none
+          and v >= -1
+          and v <= 101
+        }}
+
+    - name: "Humidite relative jardin 2 valide"
+      unique_id: humidite_relative_jardin_2_valide
+      state: >
+        {% set s = states('sensor.humidite_relative_jardin_2') %}
+        {% set v = s | float(none) %}
+        {{
+          s not in ['unknown', 'unavailable']
+          and v is not none
+          and v >= -1
+          and v <= 101
+        }}
+
+    - name: "Humidite relative jardin 3 valide"
+      unique_id: humidite_relative_jardin_3_valide
+      state: >
+        {% set s = states('sensor.humidite_relative_jardin_3') %}
+        {% set v = s | float(none) %}
+        {{
+          s not in ['unknown', 'unavailable']
+          and v is not none
+          and v >= -1
+          and v <= 101
+        }}

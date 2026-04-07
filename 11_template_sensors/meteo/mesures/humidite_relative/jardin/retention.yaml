@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — RETENTION
+#     Humidite relative jardin — Sources retenues
+# ----------------------------------------------------------
+# 🎯 ROLE
+#     Exclure les sources suspectes
+#     Produire la liste finale avant fusion
+# ==========================================================
+
+- sensor:
+
+    - name: "Humidite relative jardin valeurs retenues"
+      unique_id: humidite_relative_jardin_valeurs_retenues
+      state: >
+        {% set vals = [] %}
+        {% if is_state('binary_sensor.humidite_relative_jardin_1_valide', 'on')
+              and is_state('binary_sensor.humidite_relative_jardin_1_suspect', 'off') %}
+          {% set v = states('sensor.humidite_relative_jardin_1') | float(none) %}
+          {% if v is not none %}
+            {% set vals = vals + [v] %}
+          {% endif %}
+        {% endif %}
+        {% if is_state('binary_sensor.humidite_relative_jardin_2_valide', 'on')
+              and is_state('binary_sensor.humidite_relative_jardin_2_suspect', 'off') %}
+          {% set v = states('sensor.humidite_relative_jardin_2') | float(none) %}
+          {% if v is not none %}
+            {% set vals = vals + [v] %}
+          {% endif %}
+        {% endif %}
+        {% if is_state('binary_sensor.humidite_relative_jardin_3_valide', 'on')
+              and is_state('binary_sensor.humidite_relative_jardin_3_suspect', 'off') %}
+          {% set v = states('sensor.humidite_relative_jardin_3') | float(none) %}
+          {% if v is not none %}
+            {% set vals = vals + [v] %}
+          {% endif %}
+        {% endif %}
+        {{ vals | tojson }}

@@ -38,8 +38,8 @@
 # ==========================================================
 # 🔢 Nombre de cycles soir chambre
 # ==========================================================
-nb_cycles_simulation_presence_soir:
-  name: Nombre cycles soir
+nb_cycles_simulation_presence_soir_chambre_parents:
+  name: Nombre cycles soir Chambre Parents
   icon: mdi:counter
   min: 0
   max: 5
@@ -49,8 +49,19 @@ nb_cycles_simulation_presence_soir:
 # ==========================================================
 # 🔢 Nombre de cycles soir garage
 # ==========================================================
-nb_cycles_simulation_presence_garage_soir:
-  name: Nb cycles soir garage
+nb_cycles_simulation_presence_soir_garage:
+  name: Nb cycles soir Garage
+  icon: mdi:counter
+  min: 0
+  max: 5
+  step: 1
+  unit_of_measurement: "cycles"
+
+# ==========================================================
+# 🔢 Nombre de cycles soir entrée
+# ==========================================================
+nb_cycles_simulation_presence_soir_entree:
+  name: Nb cycles soir Entrée
   icon: mdi:counter
   min: 0
   max: 5

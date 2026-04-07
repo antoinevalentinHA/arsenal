@@ -15,17 +15,14 @@
 #   - Aucune modification d'état
 #
 # 🎯 Hiérarchie des causes (priorité décroissante) :
-#   1. Blocages transversaux (sécurité / cohérence énergétique)
+#   1. Blocages transversaux
 #   2. Blocages fonctionnels clim
-#   3. Contraintes environnementales
-#   4. Demandes thermiques
+#   3. Mode admissible retenu
+#   4. Absence de demande admissible
 #
 # ⚠️ IMPORTANT :
 #   - Ce capteur consomme UNIQUEMENT des vérités métier
-#   - Aucune comparaison de seuil n'est faite ici
-#
-# 🔌 Primitives consommées :
-#   - binary_sensor.chambre_max_humidex_au_dessus_seuil
+#   - Il reflète la décision réelle, pas les seuils bruts
 # ==========================================================
 
 - sensor:
@@ -41,13 +38,12 @@
           blocage_horaire
         {% elif is_state('binary_sensor.fenetre_ouverte_maison', 'on') %}
           fenetre_ouverte
-        {% elif is_state('binary_sensor.chambre_max_humidex_au_dessus_seuil', 'on') %}
-          humidite_elevee
-        {% elif is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
-          temperature_elevee
-        {% elif is_state('binary_sensor.clim_seuil_allumage_heat_atteint', 'on')
-              and is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+        {% elif is_state('binary_sensor.besoin_clim_cool_admissible', 'on') %}
+          refroidissement
+        {% elif is_state('binary_sensor.besoin_clim_dry_admissible', 'on') %}
+          deshumidification
+        {% elif is_state('binary_sensor.besoin_clim_heat_admissible', 'on') %}
           soutien_chauffage
         {% else %}
-          aucune_demande
+          aucune_demande_admissible
         {% endif %}

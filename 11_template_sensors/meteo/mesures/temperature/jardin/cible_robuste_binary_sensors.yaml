@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSORS
+# Température jardin — Incoherence retenue
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Détecter l'incohérence entre les deux plus basses sources
+#   retenues selon le contrat :
+#
+#     |v2 - v1| > 1.2
+#
+# 🧱 PRINCIPE
+#   - sources retenues = valides et non suspect_chaud
+#   - le test n'a de sens qu'à partir de 2 sources retenues
+#   - aucune persistance
+#
+# 🛡️ GARANTIES
+#   - aucune validation réimplémentée ici
+#   - aucune fusion ici
+#   - aucune stabilisation ici
+#
+# ⚠️ DÉPENDANCES
+#   Ce fichier consomme :
+#   - les sensors *_validee de la couche 1
+#   - les binary_sensors *_suspect_chaud de la couche 2
+#
+# ⚠️ NOTE
+#   Ce binary_sensor est destiné :
+#   - au statut global
+#   - à l'observabilité
+#
+#   Il n'est pas consommé par `sensor.temperature_jardin_cible_robuste`,
+#   afin d'éviter toute dépendance fonctionnelle inutile.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Temperature Jardin Incoherence Retenue"
+      unique_id: temperature_jardin_incoherence_retenue
+      availability: >
+        {% set ns = namespace(retenues=[]) %}
+        {% set candidats = [
+          ('sensor.temperature_jardin_1_validee', 'binary_sensor.temperature_jardin_1_suspect_chaud'),
+          ('sensor.temperature_jardin_2_validee', 'binary_sensor.temperature_jardin_2_suspect_chaud'),
+          ('sensor.temperature_jardin_3_validee', 'binary_sensor.temperature_jardin_3_suspect_chaud')
+        ] %}
+        {% for src, flag in candidats %}
+          {% set val = states(src) | float(none) %}
+          {% if val is not none and not is_state(flag, 'on') %}
+            {% set ns.retenues = ns.retenues + [val] %}
+          {% endif %}
+        {% endfor %}
+        {{ (ns.retenues | count) >= 2 }}
+      state: >
+        {% set ns = namespace(retenues=[]) %}
+        {% set candidats = [
+          ('sensor.temperature_jardin_1_validee', 'binary_sensor.temperature_jardin_1_suspect_chaud'),
+          ('sensor.temperature_jardin_2_validee', 'binary_sensor.temperature_jardin_2_suspect_chaud'),
+          ('sensor.temperature_jardin_3_validee', 'binary_sensor.temperature_jardin_3_suspect_chaud')
+        ] %}
+        {% for src, flag in candidats %}
+          {% set val = states(src) | float(none) %}
+          {% if val is not none and not is_state(flag, 'on') %}
+            {% set ns.retenues = ns.retenues + [val] %}
+          {% endif %}
+        {% endfor %}
+        {% set retenues = ns.retenues | sort %}
+        {{ (retenues[1] - retenues[0]) > 1.2 }}
+      icon: >
+        {% if is_state('binary_sensor.temperature_jardin_incoherence_retenue', 'on') %}
+          mdi:alert-circle-outline
+        {% else %}
+          mdi:check-circle-outline
+        {% endif %}

@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Maison — Demande manuelle Vacances (commande dashboard)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Commande et lecture de la demande manuelle Vacances
+#     depuis les dashboards de synthèse.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_toggle
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on  -> 🟢 vert "on"  (demande manuelle active)
+#     - state = off -> ⚪ gris "off" (demande manuelle inactive)
+#
+# 🔗 DEPENDANCES
+#     - entity : input_boolean.vacances_demande_manuel
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale obligatoire avec texte contextuel
+#     - hold_action navigue vers /reglages-dashboard/maison
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_vacances_demande_manuelle
+#     entity: input_boolean.vacances_demande_manuel
+#     name: Vacances
+#     icon: mdi:beach
+#
+# ==========================================================
+
+carte_vacances_demande_manuelle:
+  template: socle_toggle
+
+  show_state: true
+
+  tap_action:
+    action: toggle
+    confirmation:
+      text: |
+        [[[
+          return entity.state === 'on'
+            ? "Désactiver la demande manuelle Vacances ?"
+            : "Activer la demande manuelle Vacances ?";
+        ]]]
+
+  hold_action:
+    action: navigate
+    navigation_path: /reglages-dashboard/maison
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return entity.state === 'on'
+              ? 'rgba(76, 175, 80, 0.2)'
+              : 'rgba(158, 158, 158, 0.2)';
+          ]]]

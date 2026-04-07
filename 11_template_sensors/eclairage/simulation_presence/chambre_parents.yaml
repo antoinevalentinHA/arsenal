@@ -26,8 +26,8 @@
         {% set ns = namespace(active=false) %}
 
         {% set horaires = [] %}
-        {% set txt_matin = states('input_text.horaires_simulation_presence_matin') %}
-        {% set txt_soir  = states('input_text.horaires_simulation_presence_soir') %}
+        {% set txt_matin = states('input_text.horaires_simulation_presence_matin_chambre_parents') %}
+        {% set txt_soir  = states('input_text.horaires_simulation_presence_soir_chambre_parents') %}
 
         {% if txt_matin not in ['unknown','unavailable','none','Aucun',''] %}
           {% set horaires = horaires + txt_matin.split(', ') %}

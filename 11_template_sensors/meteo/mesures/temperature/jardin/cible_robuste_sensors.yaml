@@ -1,0 +1,147 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+# Température jardin — Cible robuste
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Produire les indicateurs numériques de sélection finale
+#   des sources retenues et la cible robuste instantanée
+#   avant stabilisation.
+#
+# 🧱 CONTENU
+#   - nombre de sources retenues
+#   - cible robuste instantanée
+#
+# 🛡️ GARANTIES
+#   - aucune validation réimplémentée ici
+#   - aucune stabilisation ici
+#   - aucune mémoire TTL ici
+#
+# ⚠️ DÉPENDANCES
+#   Ce fichier consomme :
+#   - les sensors *_validee de la couche 1
+#   - les binary_sensors *_suspect_chaud de la couche 2
+#
+# ⚠️ DÉPENDANCE CROISÉE
+#   `sensor.temperature_jardin_cible_robuste` et
+#   `sensor.temperature_jardin_nb_sources_retenues` reconstruisent
+#   localement la liste des sources retenues.
+#
+#   `binary_sensor.temperature_jardin_incoherence_retenue`
+#   défini dans `temperature_jardin_cible_robuste_binary_sensors.yaml`
+#   reconstruit lui aussi cette même liste, à des fins
+#   d'observabilité et de statut.
+#
+#   Cette duplication est volontaire :
+#   - pas de circularité de calcul
+#   - pas de dépendance fonctionnelle de la cible robuste
+#     vers le binary_sensor d'incohérence
+# ==========================================================
+
+- sensor:
+    - name: "Temperature Jardin - Nb Sources Retenues"
+      unique_id: temperature_jardin_nb_sources_retenues
+      state: >
+        {% set ns = namespace(retenues=[]) %}
+        {% set candidats = [
+          ('sensor.temperature_jardin_1_validee', 'binary_sensor.temperature_jardin_1_suspect_chaud'),
+          ('sensor.temperature_jardin_2_validee', 'binary_sensor.temperature_jardin_2_suspect_chaud'),
+          ('sensor.temperature_jardin_3_validee', 'binary_sensor.temperature_jardin_3_suspect_chaud')
+        ] %}
+        {% for src, flag in candidats %}
+          {% set val = states(src) | float(none) %}
+          {% if val is not none and not is_state(flag, 'on') %}
+            {% set ns.retenues = ns.retenues + [val] %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.retenues | count }}
+      icon: mdi:counter
+
+    - name: "Temperature Jardin - Cible Robuste"
+      unique_id: temperature_jardin_cible_robuste
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°C"
+      availability: >
+        {% set ns = namespace(retenues=[]) %}
+        {% set candidats = [
+          ('sensor.temperature_jardin_1_validee', 'binary_sensor.temperature_jardin_1_suspect_chaud'),
+          ('sensor.temperature_jardin_2_validee', 'binary_sensor.temperature_jardin_2_suspect_chaud'),
+          ('sensor.temperature_jardin_3_validee', 'binary_sensor.temperature_jardin_3_suspect_chaud')
+        ] %}
+        {% for src, flag in candidats %}
+          {% set val = states(src) | float(none) %}
+          {% if val is not none and not is_state(flag, 'on') %}
+            {% set ns.retenues = ns.retenues + [val] %}
+          {% endif %}
+        {% endfor %}
+        {{ (ns.retenues | count) > 0 }}
+      state: >
+        {% set ns = namespace(retenues=[]) %}
+        {% set candidats = [
+          ('sensor.temperature_jardin_1_validee', 'binary_sensor.temperature_jardin_1_suspect_chaud'),
+          ('sensor.temperature_jardin_2_validee', 'binary_sensor.temperature_jardin_2_suspect_chaud'),
+          ('sensor.temperature_jardin_3_validee', 'binary_sensor.temperature_jardin_3_suspect_chaud')
+        ] %}
+        {% for src, flag in candidats %}
+          {% set val = states(src) | float(none) %}
+          {% if val is not none and not is_state(flag, 'on') %}
+            {% set ns.retenues = ns.retenues + [val] %}
+          {% endif %}
+        {% endfor %}
+        {% set retenues = ns.retenues | sort %}
+        {% set n = retenues | count %}
+
+        {% if n == 1 %}
+          {{ retenues[0] | round(1) }}
+        {% elif n == 2 %}
+          {{ ((retenues[0] + retenues[1]) / 2) | round(1) }}
+        {% else %}
+          {% if (retenues[1] - retenues[0]) > 1.2 %}
+            {{ retenues[1] | round(1) }}
+          {% else %}
+            {{ ((retenues[0] + retenues[1]) / 2) | round(1) }}
+          {% endif %}
+        {% endif %}
+      attributes:
+        v1: >
+          {% set ns = namespace(retenues=[]) %}
+          {% set candidats = [
+            ('sensor.temperature_jardin_1_validee', 'binary_sensor.temperature_jardin_1_suspect_chaud'),
+            ('sensor.temperature_jardin_2_validee', 'binary_sensor.temperature_jardin_2_suspect_chaud'),
+            ('sensor.temperature_jardin_3_validee', 'binary_sensor.temperature_jardin_3_suspect_chaud')
+          ] %}
+          {% for src, flag in candidats %}
+            {% set val = states(src) | float(none) %}
+            {% if val is not none and not is_state(flag, 'on') %}
+              {% set ns.retenues = ns.retenues + [val] %}
+            {% endif %}
+          {% endfor %}
+          {% set retenues = ns.retenues | sort %}
+          {% if (retenues | count) >= 1 %}
+            {{ retenues[0] | round(1) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        v2: >
+          {% set ns = namespace(retenues=[]) %}
+          {% set candidats = [
+            ('sensor.temperature_jardin_1_validee', 'binary_sensor.temperature_jardin_1_suspect_chaud'),
+            ('sensor.temperature_jardin_2_validee', 'binary_sensor.temperature_jardin_2_suspect_chaud'),
+            ('sensor.temperature_jardin_3_validee', 'binary_sensor.temperature_jardin_3_suspect_chaud')
+          ] %}
+          {% for src, flag in candidats %}
+            {% set val = states(src) | float(none) %}
+            {% if val is not none and not is_state(flag, 'on') %}
+              {% set ns.retenues = ns.retenues + [val] %}
+            {% endif %}
+          {% endfor %}
+          {% set retenues = ns.retenues | sort %}
+          {% if (retenues | count) >= 2 %}
+            {{ retenues[1] | round(1) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        nb_retenues: "{{ states('sensor.temperature_jardin_nb_sources_retenues') }}"
+      icon: mdi:thermometer-check

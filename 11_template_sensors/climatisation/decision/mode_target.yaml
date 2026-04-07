@@ -6,7 +6,7 @@
 #
 # 🎯 Rôle :
 #   Décision centrale PURE du mode de climatisation,
-#   dérivée des besoins et autorisations,
+#   dérivée des besoins admissibles,
 #   sans aucune action ni effet de bord.
 #
 # 🧱 Principe Arsenal :
@@ -33,14 +33,11 @@
     - name: "Clim Target Mode"
       unique_id: clim_target_mode
       state: >
-        {% if is_state('binary_sensor.besoin_clim_cool', 'on')
-              and is_state('binary_sensor.autorisation_clim_cool', 'on') %}
+        {% if is_state('binary_sensor.besoin_clim_cool_admissible', 'on') %}
           cool
-        {% elif is_state('binary_sensor.besoin_clim_dry', 'on')
-              and is_state('binary_sensor.autorisation_clim_dry', 'on') %}
+        {% elif is_state('binary_sensor.besoin_clim_dry_admissible', 'on') %}
           dry
-        {% elif is_state('binary_sensor.besoin_clim_heat', 'on')
-              and is_state('binary_sensor.autorisation_clim_heat', 'on') %}
+        {% elif is_state('binary_sensor.besoin_clim_heat_admissible', 'on') %}
           heat
         {% else %}
           off

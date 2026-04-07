@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — DIAGNOSTIC
+#     Humidite relative jardin — Statut instantane
+# ----------------------------------------------------------
+# 🎯 ROLE
+#     Qualifier la fiabilite instantanee de l'axe
+# ----------------------------------------------------------
+# ⚠️  PERIMETRE
+#     Statut local de fusion uniquement — sans couche memoire
+#     L'etat "memoire" appartient au statut global final (aval)
+# ----------------------------------------------------------
+# 📐 PRIORITE (ordre decroissant de gravite)
+#     inconnu            → 0 source retenue
+#     degrade            → 1 source retenue
+#     suspect_hr         → 2+ retenues ET au moins 1 suspect actif
+#     incoherence_retenue→ 2+ retenues, pas de suspect, |v2-v1| > δ
+#     nominal            → 2+ retenues, pas de suspect, coherence OK
+# ==========================================================
+
+- sensor:
+
+    - name: "Humidite relative jardin statut instantane"
+      unique_id: humidite_relative_jardin_statut_instantane
+      state: >
+        {% set raw = states('sensor.humidite_relative_jardin_valeurs_retenues') %}
+        {% set retenues = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {% set n = retenues | length %}
+
+        {% if n == 0 %}
+          inconnu
+        {% elif n == 1 %}
+          degrade
+        {% else %}
+          {% set has_suspect =
+            is_state('binary_sensor.humidite_relative_jardin_1_suspect', 'on')
+            or is_state('binary_sensor.humidite_relative_jardin_2_suspect', 'on')
+            or is_state('binary_sensor.humidite_relative_jardin_3_suspect', 'on')
+          %}
+          {% if has_suspect %}
+            suspect_hr
+          {% else %}
+            {% set s = retenues | sort %}
+            {% if (s[1] - s[0]) | abs > 5 %}
+              incoherence_retenue
+            {% else %}
+              nominal
+            {% endif %}
+          {% endif %}
+        {% endif %}

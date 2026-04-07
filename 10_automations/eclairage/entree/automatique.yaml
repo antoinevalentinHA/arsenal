@@ -4,7 +4,8 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Allumer la lumière de l’entrée lorsqu’un mouvement est
-#   détecté, uniquement si les conditions de luminosité
+#   détecté, uniquement si l’automatisme d’éclairage est
+#   autorisé et si les conditions de luminosité
 #   (temporelles ou réelles) le justifient.
 #
 # ----------------------------------------------------------
@@ -14,6 +15,7 @@
 #     - Détection de mouvement entrée
 #
 #   Conditions :
+#     - `input_boolean.entree_auto_light` = on
 #     - Soit période météo ∈ {aube, crépuscule, nuit}
 #     - Soit luminosité garage < 25 ET lumière garage éteinte
 #
@@ -23,6 +25,7 @@
 # ----------------------------------------------------------
 # 🛡️ GARANTIES
 #
+#   - Aucun allumage si l’automatisme est désactivé
 #   - Aucun allumage en pleine journée lumineuse
 #   - Double sécurité : logique temporelle + mesure réelle
 #   - Pas de dépendance à l’état actuel de la lumière entrée
@@ -39,6 +42,10 @@
       to: 'on'
 
   condition:
+    - condition: state
+      entity_id: input_boolean.entree_auto_light
+      state: 'on'
+
     - condition: or
       conditions:
 

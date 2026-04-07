@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Humidite relative jardin — Memoire valide
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Indiquer si la memoire est exploitable
+#
+# 🧩 PRINCIPE
+#   - Valeur stabilisee valide
+#   - Age memoire <= TTL
+#
+# ⚙️ PARAMETRES
+#   TTL = 30 minutes
+#
+# 🚫 INTERDIT
+#   - Aucune fusion
+#   - Aucune stabilisation
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Humidite relative jardin memoire valide"
+      unique_id: humidite_relative_jardin_memoire_valide
+
+      state: >
+        {% set mem_state = states('input_number.humidite_relative_jardin_valeur_stabilisee') %}
+        {% set mem_val = states('input_number.humidite_relative_jardin_valeur_stabilisee') | float(none) %}
+
+        {% set mem_exploitable =
+          mem_state not in ['unknown', 'unavailable']
+          and mem_val is not none
+          and mem_val >= 10
+          and mem_val < 101
+        %}
+
+        {% set age = states('sensor.humidite_relative_jardin_age_memoire_minutes') %}
+
+        {{
+          mem_exploitable
+          and age not in ['unknown', 'unavailable']
+          and (age | int) <= 30
+        }}
+
+      attributes:
+        age_memoire_minutes: >
+          {{ states('sensor.humidite_relative_jardin_age_memoire_minutes') }}
+        ttl_minutes: >
+          30

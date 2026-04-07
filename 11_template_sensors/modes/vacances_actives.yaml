@@ -1,25 +1,50 @@
 # ==========================================================
-# 🏖️ BINARY SENSOR — Vacances actives
+# 🧠 ARSENAL — BINARY SENSOR
+#     Vacances actives
 # ----------------------------------------------------------
-# 🧠 Rôle :
-#   Indiquer si la maison est réellement en situation de
-#   vacances (absence humaine effective + intention).
+# 🎯 RÔLE
 #
-# ✅ ON si :
-#   - mode_maison = Vacances
-#   - aucune présence famille
-#   - aucune visite en cours
+#   Exprimer la VÉRITÉ MÉTIER FINALE du domaine Vacances.
 #
-# ❌ Ne déclenche aucune action
+#   Les vacances sont considérées comme actives
+#   uniquement si une demande existe
+#   ET si la réalité terrain confirme l'absence effective.
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#
+#   - Capteur de décision calculée
+#   - Lecture pure
+#   - Aucun effet de bord
+#   - Source de vérité unique du domaine Vacances
+#
+# ----------------------------------------------------------
+# ✅ ON si et seulement si :
+#
+#   - binary_sensor.vacances_demandees = on
+#   - binary_sensor.presence_famille_unifiee = off
+#   - input_boolean.visite_en_cours = off
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne pilote aucun équipement
+#   - Ne projette aucun contexte
+#   - Ne remplace pas `sensor.vacances_raison`
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPE ARSENAL
+#
+#   Une demande Vacances n'est pas suffisante.
+#   L'effectivité exige une absence réelle.
 # ==========================================================
 
 - binary_sensor:
     - name: "Vacances actives"
       unique_id: vacances_actives
-      default_entity_id: binary_sensor.vacances_actives
       state: >
         {{
-          is_state('input_select.mode_maison', 'Vacances')
+          is_state('binary_sensor.vacances_demandees', 'on')
           and is_state('binary_sensor.presence_famille_unifiee', 'off')
           and is_state('input_boolean.visite_en_cours', 'off')
         }}

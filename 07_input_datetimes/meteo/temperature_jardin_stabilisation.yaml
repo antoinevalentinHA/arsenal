@@ -1,0 +1,24 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER : Température jardin — Timestamp publication
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter l'horodatage de la dernière publication valide
+#   de l'axe `sensor.temperature_jardin`.
+#
+# 🧱 USAGE
+#   Utilisé exclusivement par l'automatisation de stabilisation
+#   pour :
+#   - la gestion du TTL mémoire
+#   - la distinction memoire / inconnu
+#
+# 🛡️ GARANTIES
+#   - aucun calcul métier
+#   - aucune logique de fusion
+#   - aucune logique de validation
+# ==========================================================
+
+temperature_jardin_etat_publie_ts:
+  name: "Temperature Jardin - Etat Publie Timestamp"
+  has_date: true
+  has_time: true
+  icon: mdi:clock-outline

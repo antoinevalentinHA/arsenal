@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Vacances planifiées actives
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#   Exprimer la DEMANDE PLANIFIÉE de Vacances
+#   lorsqu'une fenêtre planifiée est effectivement ouverte
+#   et autorisée.
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#
+#   - Capteur de décision calculée
+#   - Lecture pure
+#   - Aucun effet de bord
+#   - Aucune dépendance directe à `now()`
+#
+# ----------------------------------------------------------
+# ✅ ON si et seulement si :
+#
+#   - input_boolean.mode_vacances_auto = on
+#   - binary_sensor.parametres_invalides_vacances = off
+#   - input_boolean.vacances_fenetre_active = on
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - Ne décide pas de l'effectivité réelle des vacances
+#   - Ne lit pas la présence
+#   - Ne pilote aucun équipement
+#   - Ne remplace pas `binary_sensor.vacances_demandees`
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPE ARSENAL
+#
+#   La planification est une DEMANDE,
+#   pas une vérité terrain.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Vacances planifiées actives"
+      unique_id: vacances_planifiees_actives
+      state: >
+        {{
+          is_state('input_boolean.mode_vacances_auto', 'on')
+          and is_state('binary_sensor.parametres_invalides_vacances', 'off')
+          and is_state('input_boolean.vacances_fenetre_active', 'on')
+        }}
+      icon: >
+        mdi:calendar-check

@@ -1,0 +1,28 @@
+# ==========================================================
+#  INPUT BOOLEAN — Demande manuelle vacances
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Porter la DEMANDE MANUELLE explicite de Vacances,
+#     indépendamment de la planification automatique.
+#
+#     Ce boolean n'applique aucun contexte directement.
+#     Il exprime uniquement une intention utilisateur.
+#
+#  🔄 Cycle de vie :
+#     - Activé   : demande manuelle Vacances présente
+#     - Désactivé : aucune demande manuelle Vacances
+#
+#  📥 Pilotage :
+#     - Manuel via dashboard
+#
+#  📤 Consommation :
+#     - `binary_sensor.vacances_demandees`
+#
+#  🧱 Principe Arsenal :
+#     - La demande manuelle est distincte
+#       de la projection du contexte global
+# ==========================================================
+
+vacances_demande_manuel:
+  name: Demande manuelle vacances
+  icon: mdi:beach

@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom UI :
+#   Besoin chauffage d'appoint climatisation admissible
+#
+# 🎯 Rôle :
+#   Porter la vérité persistante de l'admissibilité
+#   décisionnelle du besoin HEAT.
+#
+# 🧱 Principe Arsenal :
+#   - Support technique interne
+#   - Aucune logique thermique
+#   - Aucune décision
+#   - Aucune exécution
+#
+# 🧠 Implémentation :
+#   Ce helper est piloté exclusivement par les automatisations
+#   d'admissibilité HEAT.
+#
+# 🔌 Exposé via :
+#   - binary_sensor.besoin_clim_heat_admissible
+#
+# 📍 Entité support :
+#   input_boolean.besoin_clim_heat_admissible
+# ==========================================================
+
+besoin_clim_heat_admissible:
+  name: Besoin chauffage d'appoint climatisation admissible
+  icon: mdi:thermometer-check

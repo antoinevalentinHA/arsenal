@@ -1,59 +1,29 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Vacances – Activation automatique du mode (etat metier)
+#     Vacances – Projection auto du mode global
 #
 #  ID : 1009000000004
-# ----------------------------------------------------------
-#  🎯 RÔLE
-#
-#     Automation d’ENTRÉE EN MODE MÉTIER.
-#
-#     Elle applique le passage en mode *Vacances*
-#     lorsque l’état métier "Vacances actives" devient VRAI.
-#
-#     L’état de vérité est porté par :
-#       binary_sensor.vacances_actives
-#
-#  🧱 NATURE
-#
-#     - Déclenchement événementiel (template)
-#     - Zéro polling
-#     - Basée sur état métier consolidé
-#
-#  ⚙️ PRINCIPE
-#
-#     - Déclenchement sur apparition de l’état VRAI
-#     - Vérification optionnelle d’autorisation utilisateur
-#     - Bascule idempotente vers "Vacances"
-#     - Notification utilisateur (persistante + mobile)
-#
-#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
-#
-#     - Ne surveille pas l’horloge
-#     - Ne gère pas la programmation de date/heure
-#     - Ne décide pas de l’état "Vacances actives"
-#
-#  ✅ COMPATIBILITÉ
-#
-#     Home Assistant 2024.8+
 # ==========================================================
 
 - id: "1009000000004"
-  alias: "Modes - Vacances - Activation auto"
+  alias: "Modes - Vacances - Projection auto"
   description: >
-    Passe en mode *Vacances* lorsque l’état métier
-    "Vacances actives" devient vrai, si autorisé.
+    Projette le contexte global en mode *Vacances* lorsque
+    la demande consolidée Vacances devient vraie.
 
-  mode: single
+  mode: restart
 
   trigger:
-    - platform: template
-      value_template: >
-        {{ is_state('binary_sensor.vacances_actives', 'on') }}
+    - platform: state
+      entity_id: binary_sensor.vacances_demandees
+      to: "on"
+
+    - platform: homeassistant
+      event: start
 
   condition:
     - condition: state
-      entity_id: input_boolean.mode_vacances_auto
+      entity_id: binary_sensor.vacances_demandees
       state: "on"
 
     - condition: template
@@ -61,28 +31,15 @@
         {{ states('input_select.mode_maison') != 'Vacances' }}
 
   action:
-
-    # 🏠 Bascule en mode Vacances
     - action: input_select.select_option
       target:
         entity_id: input_select.mode_maison
       data:
         option: "Vacances"
 
-    # 🔔 Notification persistante
     - action: persistent_notification.create
       data:
-        title: "✈️ Vacances actives"
+        notification_id: projection_vacances
+        title: "✈️ Maison – Mode Vacances"
         message: >
-          Le mode *Maison* est passé automatiquement en *Vacances*
-          à {{ now().strftime('%d/%m à %H:%M') }}
-          car l’état métier "Vacances actives" est devenu vrai.
-
-    # 📱 Notification mobile
-    - action: script.notification_envoyer
-      data:
-        cible: input_text.telephone_antoine_notify
-        titre: "✈️ Mode Vacances activé"
-        message: >
-          Mode *Vacances* activé automatiquement à {{ now().strftime('%H:%M') }}
-          (Vacances actives = ON).
+          Le contexte global Vacances est actif.

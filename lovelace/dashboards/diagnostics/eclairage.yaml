@@ -58,6 +58,34 @@ views:
                 name: Test simulation présence
                 icon: mdi:test-tube
 
+          # 🏠 Zone : Entrée
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🏠 Simulation entrée
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: switch.lumiere_entree
+                name: Lampes
+                icon: mdi:lightbulb
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_text.horaires_simulation_presence_matin_entree
+                name: Horaires matin
+                icon: mdi:weather-sunset-up
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: input_text.horaires_simulation_presence_soir_entree
+                name: Horaires soir
+                icon: mdi:weather-sunset-down
+
           # 🛏️ Zone : Parents
           - type: custom:button-card
             template: sub_section_header
@@ -76,13 +104,13 @@ views:
 
               - type: custom:button-card
                 template: socle_info_72
-                entity: input_text.horaires_simulation_presence_matin
+                entity: input_text.horaires_simulation_presence_matin_chambre_parents
                 name: Horaires matin
                 icon: mdi:weather-sunset-up
 
               - type: custom:button-card
                 template: socle_info_72
-                entity: input_text.horaires_simulation_presence_soir
+                entity: input_text.horaires_simulation_presence_soir_chambre_parents
                 name: Horaires soir
                 icon: mdi:weather-sunset-down
 
@@ -104,12 +132,12 @@ views:
 
               - type: custom:button-card
                 template: socle_info_72
-                entity: input_text.horaires_simulation_presence_garage_matin
+                entity: input_text.horaires_simulation_presence_matin_garage
                 name: Horaires matin
                 icon: mdi:weather-sunset-up
 
               - type: custom:button-card
                 template: socle_info_72
-                entity: input_text.horaires_simulation_presence_garage_soir
+                entity: input_text.horaires_simulation_presence_soir_garage
                 name: Horaires soir
                 icon: mdi:weather-sunset-down

@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS : Température jardin — Stabilisation
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter les paramètres et états numériques persistants
+#   utilisés par l'automatisation de stabilisation de
+#   l'axe `sensor.temperature_jardin`.
+#
+# 🧱 CONTENU
+#   - alpha EWMA
+#   - delta maximal inter-cycle
+#   - état publié courant
+#   - dernière cible robuste observée
+#
+# 🛡️ GARANTIES
+#   - aucun calcul métier
+#   - aucune logique de validation
+#   - aucune logique de fusion
+#   - aucune logique de publication
+#
+# ⚠️ NOTE D'INITIALISATION
+#   Les valeurs numériques initiales ne valent pas publication
+#   métier tant que `input_boolean.temperature_jardin_initialise`
+#   est à `off`.
+# ==========================================================
+
+temperature_jardin_alpha_ewma:
+  name: "Temperature Jardin - Alpha EWMA"
+  min: 0
+  max: 1
+  step: 0.01
+  mode: box
+  icon: mdi:tune-variant
+  initial: 0.3
+
+temperature_jardin_delta_max:
+  name: "Temperature Jardin - Delta Max"
+  min: 0
+  max: 5
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:arrow-expand-vertical
+  initial: 0.5
+
+temperature_jardin_etat_publie:
+  name: "Temperature Jardin - Etat Publie"
+  min: -50
+  max: 60
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer
+  initial: 0
+
+temperature_jardin_cible_brute_derniere:
+  name: "Temperature Jardin - Cible Brute Derniere"
+  min: -50
+  max: 60
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-lines
+  initial: 0

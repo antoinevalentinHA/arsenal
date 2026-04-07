@@ -55,12 +55,20 @@ views:
                     icon: mdi:lamp
                     entity: switch.prise_lampe_sejour
 
-                  # 🛏️ Lampe parents
+                  # Lumiere entrée
                   - type: custom:button-card
                     template: carte_action_eclairage
-                    name: Lampe parents
+                    name: Entrée
                     icon: mdi:lamp
-                    entity: switch.prise_lampe_parents
+                    entity: switch.lumiere_entree
+
+
+              # 🛏️ Lampe parents
+              - type: custom:button-card
+                template: carte_action_eclairage
+                name: Lampe parents
+                icon: mdi:lamp
+                entity: switch.prise_lampe_parents
 
           # ==================================================
           # 🎄 BAIES VITRÉES / SAPIN — CONDITIONNEL

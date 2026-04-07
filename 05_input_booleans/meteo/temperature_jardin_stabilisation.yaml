@@ -1,0 +1,20 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER : Température jardin — Initialisation pipeline
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Matérialiser l'état d'initialisation du pipeline de
+#   stabilisation de l'axe `sensor.temperature_jardin`.
+#
+# 🧱 PRINCIPE
+#   - off : aucune valeur publiée métier encore établie
+#   - on  : pipeline initialisé, EWMA autorisé
+#
+# 🛡️ GARANTIES
+#   - aucune logique de fusion
+#   - aucune logique de validation
+#   - aucun calcul numérique
+# ==========================================================
+
+temperature_jardin_initialise:
+  name: "Temperature Jardin - Initialise"
+  icon: mdi:check-circle-outline

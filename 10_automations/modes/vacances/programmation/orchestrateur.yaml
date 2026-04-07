@@ -1,0 +1,113 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Vacances – Orchestrateur fenêtre planifiée
+#
+#  ID : 10090000000012
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Matérialiser l’état de la fenêtre planifiée Vacances
+#     dans `input_boolean.vacances_fenetre_active`.
+#
+#     Cette automation :
+#       - réconcilie au démarrage
+#       - réagit aux changements de paramètres
+#       - réagit aux franchissements d’échéance
+#
+#  🧱 NATURE
+#
+#     - support temporel
+#     - aucune décision métier Vacances
+#     - aucune action de contexte
+#
+#  ⚙️ PRINCIPE
+#
+#     - paramètres invalides      -> fenêtre OFF
+#     - auto désactivé            -> fenêtre OFF
+#     - instant courant dans la fenêtre -> fenêtre ON
+#     - sinon                     -> fenêtre OFF
+#
+#  🛡️ GARANTIES
+#
+#     - `now()` utilisé uniquement sur déclenchement explicite
+#     - comparaison temporelle faite sur timestamps
+#     - aucune boucle
+#     - idempotent
+#     - boot-proof
+#
+#  ⚠️ BORNE DE FIN
+#
+#     La fenêtre est définie sur :
+#       [debut_vacances ; fin_vacances[
+#
+#     La borne de fin est EXCLUSIVE.
+#     Au déclenchement exact sur `fin_vacances`,
+#     la condition `maintenant_ts < fin_ts` devient fausse,
+#     ce qui ferme immédiatement la fenêtre.
+#
+#     Ne pas remplacer `<` par `<=`.
+# ==========================================================
+
+- id: "10090000000012"
+  alias: "Modes - Vacances - Orchestrateur"
+  description: >
+    Matérialise l’état de la fenêtre planifiée Vacances dans
+    input_boolean.vacances_fenetre_active.
+
+  mode: restart
+
+  trigger:
+    - platform: homeassistant
+      event: start
+      id: ha_start
+
+    - platform: state
+      entity_id:
+        - input_datetime.debut_vacances
+        - input_datetime.fin_vacances
+        - input_boolean.mode_vacances_auto
+        - binary_sensor.parametres_invalides_vacances
+      id: parametres_ou_autorisation
+
+    - platform: time
+      at: input_datetime.debut_vacances
+      id: debut_fenetre
+
+    - platform: time
+      at: input_datetime.fin_vacances
+      id: fin_fenetre
+
+  action:
+    - variables:
+        auto_ok: >
+          {{ is_state('input_boolean.mode_vacances_auto', 'on') }}
+        parametres_valides: >
+          {{ is_state('binary_sensor.parametres_invalides_vacances', 'off') }}
+        dans_fenetre: >
+          {% if is_state('input_boolean.mode_vacances_auto', 'on')
+                and is_state('binary_sensor.parametres_invalides_vacances', 'off') %}
+            {% set maintenant_ts = as_timestamp(now()) %}
+            {% set debut_ts = as_timestamp(states('input_datetime.debut_vacances')) %}
+            {% set fin_ts = as_timestamp(states('input_datetime.fin_vacances')) %}
+            {{
+              maintenant_ts >= debut_ts
+              and maintenant_ts < fin_ts
+            }}
+          {% else %}
+            false
+          {% endif %}
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ auto_ok and parametres_valides and dans_fenetre }}
+          sequence:
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.vacances_fenetre_active
+
+      default:
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.vacances_fenetre_active

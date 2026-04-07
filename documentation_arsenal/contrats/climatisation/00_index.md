@@ -2,7 +2,7 @@
 ## Index du dossier
 
 **Domaine :** Climatisation résidentielle  
-**Version contrat :** v1.2  
+**Version contrat :** v1.3  
 **Statut :** Stable — aligné implémentation Arsenal  
 
 ---
@@ -13,9 +13,9 @@
 |---|---|
 | `01_finalite.md` | Finalité du système, états exclusifs, objectifs |
 | `02_architecture.md` | Couches Arsenal, invariants globaux de déclenchement |
-| `03_decision_canonique.md` | Objet `sensor.clim_target_mode`, pureté, déterminisme, séparation besoin/autorisation |
+| `03_decision_canonique.md` | Objet `sensor.clim_target_mode`, pureté, déterminisme, consommation exclusive des besoins admissibles |
 | `04_entrees_metier.md` | Températures, humidex, présence, contraintes physiques |
-| `05_decision_candidats.md` | Production des candidats (besoin / applicable) par mode |
+| `05_decision_candidats.md` | Production des besoins admissibles par mode (verrou de requalification) |
 | `06_arbitrage_politique.md` | Politique d'arbitrage active, hiérarchie des modes |
 | `07_execution.md` | Application idempotente du mode cible |
 | `08_securite.md` | Guards et Watchdog |
@@ -28,14 +28,15 @@
 ### Dossier `capteurs/`
 
 Ce dossier contient la documentation technique détaillée des capteurs Home Assistant
-implémentant les différentes couches du système (besoins, autorisations, blocages, décision, cohérence, etc.).
+implémentant les différentes couches du système (besoins, admissibilité, autorisations, blocages, décision, cohérence, etc.).
 
 Il constitue la traduction concrète du contrat en entités.
 
 | Sous-dossier | Rôle |
 |---|---|
-| `besoins/` | Capteurs exprimant les besoins thermiques |
-| `autorisations/` | Capteurs d’autorisation d’exécution |
+| `besoins/` | Capteurs exprimant les besoins thermiques bruts |
+| `admissibilite/` | Capteurs d'admissibilité décisionnelle |
+| `autorisations/` | Capteurs d'autorisation d'exécution |
 | `blocages/` | Capteurs de blocage et contraintes |
 | `seuils_et_franchissements/` | Capteurs de seuils et franchissements |
 | `decision/` | Capteurs décisionnels, explicatifs et de lecture locale |
@@ -48,17 +49,31 @@ Il constitue la traduction concrète du contrat en entités.
 ```
 Finalité
   └─ Architecture (couches)
-       └─ Décision canonique (sensor.clim_target_mode)
-            ├─ Entrées métier
-            └─ Production des candidats
-                 └─ Arbitrage (politique active)
-                      └─ Exécution (idempotente)
-                           └─ Sécurité (Guards / Watchdog — voie orthogonale)
-                                └─ Observabilité (lecture seule)
+       └─ Entrées métier
+            └─ Besoins (bruts — hystérésis thermique / hygrométrique)
+                 └─ Admissibilité (verrou de requalification)
+                      └─ Décision canonique (sensor.clim_target_mode)
+                           └─ Arbitrage (politique active)
+                                └─ Exécution (idempotente)
+                                     └─ Sécurité (Guards / Watchdog — voie orthogonale)
+                                          └─ Observabilité (lecture seule)
 ```
 
 ---
 
-⚠️ Principe Arsenal fondamental
-La couche Exécution ne modifie jamais la décision.
-Elle applique uniquement sensor.clim_target_mode.
+## Principe de séparation des couches
+
+| Couche | Objet | Règle |
+|---|---|---|
+| Besoin brut | `binary_sensor.besoin_clim_*` | Fait physique pur — indépendant de l'autorisation |
+| Admissibilité | `binary_sensor.besoin_clim_*_admissible` | Verrou de requalification — naît sur front montant du besoin sous autorisation active |
+| Décision | `sensor.clim_target_mode` | Consomme exclusivement les besoins admissibles |
+
+Un besoin brut ne peut jamais être consommé directement par la Décision.  
+Un besoin préexistant à une interdiction ne devient jamais admissible par simple retour de l'autorisation.
+
+---
+
+⚠️ Principe Arsenal fondamental  
+La couche Exécution ne modifie jamais la décision.  
+Elle applique uniquement `sensor.clim_target_mode`.

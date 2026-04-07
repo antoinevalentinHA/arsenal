@@ -56,8 +56,8 @@
 # ==========================================================
 # 🌅 INPUT DATETIME — Début cycles matin chambre
 # ==========================================================
-debut_cycle_simulation_presence_matin:
-  name: Début cycles matin
+debut_cycle_simulation_presence_matin_chambre_parents:
+  name: Début cycles matin Chambre Parents
   icon: mdi:weather-sunset-up
   has_date: false
   has_time: true
@@ -65,17 +65,26 @@ debut_cycle_simulation_presence_matin:
 # ==========================================================
 # 🌅 INPUT DATETIME — Début cycles matin garage
 # ==========================================================
-debut_cycle_simulation_presence_garage_matin:
-  name: Debut cycles matin garage
-  icon: mdi:garage
+debut_cycle_simulation_presence_matin_garage:
+  name: Debut cycles matin Garage
+  icon: mdi:weather-sunset-up
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌅 INPUT DATETIME — Début cycles matin entrée
+# ==========================================================
+debut_cycle_simulation_presence_matin_entree:
+  name: Debut cycles matin Entrée
+  icon: mdi:weather-sunset-up
   has_date: false
   has_time: true
 
 # ==========================================================
 # 🌇 INPUT DATETIME — Fin cycles matin chambre
 # ==========================================================
-fin_cycle_simulation_presence_matin:
-  name: Fin cycles matin
+fin_cycle_simulation_presence_matin_chambre_parents:
+  name: Fin cycles matin Chambre Parents
   icon: mdi:weather-sunset-down
   has_date: false
   has_time: true
@@ -83,17 +92,26 @@ fin_cycle_simulation_presence_matin:
 # ==========================================================
 # 🌇 INPUT DATETIME — Fin cycles matin garage
 # ==========================================================
-fin_cycle_simulation_presence_garage_matin:
-  name: Fin cycles matin garage
-  icon: mdi:garage
+fin_cycle_simulation_presence_matin_garage:
+  name: Fin cycles matin Garage
+  icon: mdi:weather-sunset-down
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌇 INPUT DATETIME — Fin cycles matin garage
+# ==========================================================
+fin_cycle_simulation_presence_matin_entree:
+  name: Fin cycles matin Entrée
+  icon: mdi:weather-sunset-down
   has_date: false
   has_time: true
 
 # ==========================================================
 # 🌆 INPUT DATETIME — Début cycles soir chambre
 # ==========================================================
-debut_cycle_simulation_presence_soir:
-  name: Début cycles soir
+debut_cycle_simulation_presence_soir_chambre_parents:
+  name: Début cycles soir Chambre Parents
   icon: mdi:weather-sunset-up
   has_date: false
   has_time: true
@@ -101,17 +119,26 @@ debut_cycle_simulation_presence_soir:
 # ==========================================================
 # 🌆 INPUT DATETIME — Début cycles soir garage
 # ==========================================================
-debut_cycle_simulation_presence_garage_soir:
-  name: Debut cycles soir garage
-  icon: mdi:garage
+debut_cycle_simulation_presence_soir_garage:
+  name: Debut cycles soir Garage
+  icon: mdi:weather-sunset-up
+  has_date: false
+  has_time: true
+
+# ==========================================================
+# 🌆 INPUT DATETIME — Début cycles soir entrée
+# ==========================================================
+debut_cycle_simulation_presence_soir_entree:
+  name: Debut cycles soir Entrée
+  icon: mdi:weather-sunset-up
   has_date: false
   has_time: true
 
 # ==========================================================
 # 🌙 INPUT DATETIME — Fin cycles soir chambre
 # ==========================================================
-fin_cycle_simulation_presence_soir:
-  name: Fin cycles soir
+fin_cycle_simulation_presence_soir_chambre_parents:
+  name: Fin cycles soir Chambre Parents
   icon: mdi:weather-night
   has_date: false
   has_time: true
@@ -119,9 +146,17 @@ fin_cycle_simulation_presence_soir:
 # ==========================================================
 # 🌙 INPUT DATETIME — Fin cycles soir garage
 # ==========================================================
-fin_cycle_simulation_presence_garage_soir:
-  name: Fin cycles soir garage
-  icon: mdi:garage
+fin_cycle_simulation_presence_soir_garage:
+  name: Fin cycles soir Garage
+  icon: mdi:weather-night
   has_date: false
   has_time: true
-  
+
+# ==========================================================
+# 🌙 INPUT DATETIME — Fin cycles soir entrée
+# ==========================================================
+fin_cycle_simulation_presence_soir_entree:
+  name: Fin cycles soir Entrée
+  icon: mdi:weather-night
+  has_date: false
+  has_time: true

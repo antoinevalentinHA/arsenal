@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Humidite relative jardin — Age memoire
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Exposer l'age de la derniere publication valide
+#
+# 🧩 PRINCIPE
+#   - Lecture du timestamp persistant
+#   - Calcul en minutes
+#   - Reevaluation temporelle explicite (TTL)
+#
+# 🚫 INTERDIT
+#   - Aucune logique metier
+#   - Aucune validation
+# ==========================================================
+
+- trigger:
+
+    - platform: time_pattern
+      minutes: "/1"
+
+    - platform: state
+      entity_id:
+        - input_datetime.humidite_relative_jardin_derniere_publication_valide
+
+  sensor:
+
+    - name: "Humidite relative jardin age memoire minutes"
+      unique_id: humidite_relative_jardin_age_memoire_minutes
+      unit_of_measurement: "min"
+      state: >
+        {% set ts = states('input_datetime.humidite_relative_jardin_derniere_publication_valide') %}
+        {% set dt = as_datetime(ts, none) %}
+
+        {% if dt is none %}
+          unknown
+        {% else %}
+          {% set age = ((as_timestamp(now()) - as_timestamp(dt)) / 60) %}
+          {{ [0, (age | round(0)) | int] | max }}
+        {% endif %}

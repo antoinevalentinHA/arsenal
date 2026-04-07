@@ -1,77 +1,96 @@
 # CONTRAT ARSENAL — CLIMATISATION
-## 05 — Décision — Production des candidats
+## 05 — Admissibilité — Production des besoins admissibles
 
-**Version contrat :** v1.2
+**Version contrat :** v1.3
 
 ---
 
 ## Principe
 
-Cette section définit, pour chaque mode climatique, les conditions de **besoin (requis)** et d'**applicabilité (applicable)**.
+Cette section définit, pour chaque mode climatique, les conditions
+de formation d'un **besoin admissible**.
 
-- `requis` exprime un besoin thermique ou hygrométrique constaté.
-- `applicable` exprime uniquement la possibilité locale d'exécuter un mode. Il ne constitue jamais une priorité ni une sélection.
+Un besoin admissible est un besoin thermique ou hygrométrique :
 
-Elle ne contient :
-- aucune priorité inter-mode,
-- aucun choix final,
-- aucune notion de sélection.
+- né dans un contexte d'autorisation valide,
+- décisionnellement exploitable,
+- indépendant des variations ultérieures d'autorisation.
 
-Chaque mode est évalué de manière indépendante.  
-La couche Décision peut produire plusieurs candidats requis et applicables simultanément.  
-La sélection du mode cible relève exclusivement de la couche d'Arbitrage (`06_arbitrage_politique.md`).
+La production d'un besoin admissible repose sur un **verrou de requalification**.
+
+---
+
+## Règle fondamentale
+
+Un besoin admissible :
+
+- naît uniquement sur front montant d'un besoin brut,
+  lorsque l'ensemble des conditions d'autorisation du mode est satisfait,
+- ne peut pas être créé rétroactivement,
+- ne peut pas être réhabilité par le simple retour d'une autorisation,
+- doit s'éteindre puis renaître pour redevenir admissible.
+
+Un besoin admissible s'éteint lorsque :
+- le besoin brut correspondant repasse à `off`,
+- ou qu'une condition d'autorisation du mode devient invalide.
 
 ---
 
 ## COOL
 
-**Requis si :**
-- la température intérieure (chambre la plus chaude) est supérieure ou égale au seuil d'allumage COOL.
+Un besoin admissible COOL (`binary_sensor.besoin_clim_cool_admissible`)
+est produit si :
 
-**Applicable si :**
-- la température extérieure est compatible avec le refroidissement,
-- les fenêtres sont fermées,
-- l'aération n'est pas favorable,
-- aucun blocage horaire n'est actif,
-- COOL n'est pas inhibé par une absence prolongée.
+- un besoin brut COOL apparaît (front montant),
+- et que les conditions suivantes sont simultanément satisfaites :
+
+  - température extérieure compatible,
+  - fenêtres fermées,
+  - aération non favorable,
+  - aucun blocage horaire actif,
+  - absence prolongée non inhibitrice.
 
 ---
 
 ## DRY
 
-**Requis si :**
-- l'humidex intérieur dépasse le seuil de déclenchement DRY.
+Un besoin admissible DRY (`binary_sensor.besoin_clim_dry_admissible`)
+est produit si :
 
-**Applicable si :**
-- une présence est détectée ou le mode babysitting est actif,
-- les fenêtres sont fermées,
-- l'aération n'est pas favorable,
-- aucun blocage horaire n'est actif.
+- un besoin brut DRY apparaît (front montant),
+- et que les conditions suivantes sont simultanément satisfaites :
+
+  - présence réelle détectée ou babysitting actif,
+  - fenêtres fermées,
+  - aération non favorable,
+  - aucun blocage horaire actif.
 
 ---
 
 ## HEAT — Chauffage d'appoint
 
-**Requis si :**
-- la température intérieure est inférieure au seuil d'allumage HEAT.
+Un besoin admissible HEAT (`binary_sensor.besoin_clim_heat_admissible`)
+est produit si :
 
-**Applicable si :**
-- une présence réelle est détectée,
-- le chauffage par climatisation est explicitement autorisé,
-- la température extérieure est suffisante,
-- le poêle n'est pas actif,
-- les fenêtres sont fermées,
-- aucun blocage horaire n'est actif.
+- un besoin brut HEAT apparaît (front montant),
+- et que les conditions suivantes sont simultanément satisfaites :
 
-**Note :** Le mode HEAT est strictement un chauffage d'appoint. Il ne constitue jamais une source de chauffage principale.
+  - présence réelle détectée,
+  - chauffage par climatisation autorisé,
+  - température extérieure suffisante,
+  - poêle inactif,
+  - fenêtres fermées,
+  - aucun blocage horaire actif.
+
+**Note :** HEAT est strictement un appoint. Il ne constitue jamais une source de chauffage principale.
 
 ---
 
-## OFF — État neutre (hors production des candidats)
+## Invariants
 
-Le mode OFF n'est ni requis ni applicable.  
-Il n'est jamais produit comme candidat par la couche de Décision.
+- L'admissibilité ne réalise aucune sélection de mode.
+- L'admissibilité ne produit aucune priorité inter-mode.
+- L'admissibilité ne déclenche aucune action.
+- Chaque mode est traité indépendamment.
 
-OFF n'est pas évalué dans cette section.
-
-La sélection de OFF relève exclusivement de la politique d'arbitrage, lorsqu'aucun mode requis et applicable n'est sélectionnable.
+L'admissibilité constitue exclusivement une **requalification décisionnelle**.

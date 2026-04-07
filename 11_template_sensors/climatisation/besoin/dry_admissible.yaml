@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Besoin déshumidification climatisation admissible
+#
+# 🎯 Rôle :
+#   Exposer sous forme canonique l'admissibilité décisionnelle
+#   du besoin DRY, portée techniquement par un helper.
+#
+# 🧱 Principe Arsenal :
+#   - Wrapper canonique
+#   - Aucune logique métier propre
+#   - Aucune mémoire propre
+#   - Aucune exécution
+#
+# 🧠 Implémentation :
+#   Reflète strictement l'état de
+#   input_boolean.besoin_clim_dry_admissible.
+#
+# 🔌 Consommé par :
+#   - sensor.clim_target_mode
+#
+# 📍 Entité :
+#   binary_sensor.besoin_clim_dry_admissible
+# ==========================================================
+
+- binary_sensor:
+    - name: "Besoin déshumidification climatisation admissible"
+      unique_id: besoin_clim_dry_admissible
+      state: >
+        {{ is_state('input_boolean.besoin_clim_dry_admissible', 'on') }}

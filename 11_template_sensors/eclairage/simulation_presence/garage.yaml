@@ -22,8 +22,8 @@
         {% set ns = namespace(active=false) %}
 
         {% set horaires = [] %}
-        {% set txt_matin = states('input_text.horaires_simulation_presence_garage_matin') %}
-        {% set txt_soir  = states('input_text.horaires_simulation_presence_garage_soir') %}
+        {% set txt_matin = states('input_text.horaires_simulation_presence_matin_garage') %}
+        {% set txt_soir  = states('input_text.horaires_simulation_presence_soir_garage') %}
 
         {% if txt_matin not in ['unknown','unavailable','none','Aucun',''] %}
           {% set horaires = horaires + txt_matin.split(', ') %}
@@ -47,4 +47,4 @@
 
         {{ ns.active }}
       icon: >
-        mdi:garage-variant
+        mdi:home-lightbulb-outline

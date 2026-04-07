@@ -1,0 +1,95 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION (CLIM / DRY)
+# ----------------------------------------------------------
+# 📛 Domaine :
+#   Admissibilité décisionnelle du besoin DRY
+#
+# 🎯 Rôle :
+#   Piloter le verrou d'admissibilité du besoin DRY
+#   selon la doctrine physique Arsenal.
+#
+# 🧱 Principe Arsenal :
+#   - Activation sur naissance du besoin sous autorisation
+#   - Extinction sur retombée du besoin
+#   - Extinction de sécurité sur révocation d'autorisation
+#   - Réconciliation sûre au démarrage
+#
+# 🔌 Entité support pilotée :
+#   - input_boolean.besoin_clim_dry_admissible
+#
+# 📍 Portée :
+#   - DRY uniquement
+# ==========================================================
+
+- id: '10030000000115'
+  alias: "Clim - Dry - Admissibilité"
+  description: >
+    Pilotage complet de l'admissibilité DRY :
+    activation, extinctions et réconciliation au démarrage.
+  mode: single
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.besoin_clim_dry
+      to: 'on'
+      id: activation
+    - platform: state
+      entity_id: binary_sensor.besoin_clim_dry
+      to: 'off'
+      id: extinction_besoin
+    - platform: state
+      entity_id: binary_sensor.autorisation_clim_dry
+      to: 'off'
+      id: extinction_autorisation
+    - platform: homeassistant
+      event: start
+      id: boot
+  condition: []
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: activation
+            - condition: state
+              entity_id: binary_sensor.autorisation_clim_dry
+              state: 'on'
+          sequence:
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.besoin_clim_dry_admissible
+
+        - conditions:
+            - condition: trigger
+              id: extinction_besoin
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.besoin_clim_dry_admissible
+
+        - conditions:
+            - condition: trigger
+              id: extinction_autorisation
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.besoin_clim_dry_admissible
+
+        - conditions:
+            - condition: trigger
+              id: boot
+          sequence:
+            - wait_template: >
+                {{ states('binary_sensor.besoin_clim_dry') not in ['unknown', 'unavailable']
+                   and states('binary_sensor.autorisation_clim_dry') not in ['unknown', 'unavailable'] }}
+              timeout: '00:01:00'
+              continue_on_timeout: true
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: >
+                        {{ wait.completed == false
+                           or is_state('binary_sensor.besoin_clim_dry', 'off')
+                           or is_state('binary_sensor.autorisation_clim_dry', 'off') }}
+                  sequence:
+                    - action: input_boolean.turn_off
+                      target:
+                        entity_id: input_boolean.besoin_clim_dry_admissible

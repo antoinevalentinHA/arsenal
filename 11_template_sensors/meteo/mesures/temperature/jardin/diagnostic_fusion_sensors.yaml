@@ -1,0 +1,94 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+# Température jardin — Diagnostic fusion
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Produire les indicateurs numériques instantanés utiles
+#   au diagnostic local de fusion de l'axe température jardin.
+#
+# 🧱 CONTENU
+#   - nombre de sources validées disponibles
+#   - médiane des sources validées
+#   - nombre de sources suspect_chaud
+#
+# 🛡️ GARANTIES
+#   - aucune validation réimplémentée ici
+#   - consommation exclusive des sources *_validee
+#   - aucun calcul de cible robuste ici
+#   - aucune stabilisation ici
+#
+# ⚠️ DÉPENDANCE CROISÉE
+#   `sensor.temperature_jardin_nb_sources_suspectes` consomme les
+#   `binary_sensor.temperature_jardin_X_suspect_chaud` définis dans
+#   `temperature_jardin_diagnostic_fusion_binary_sensors.yaml`.
+#
+#   Au démarrage, avant première évaluation complète des binary_sensors,
+#   le comptage peut retomber transitoirement à 0. Ce comportement est
+#   accepté comme valeur par défaut conservative.
+# ==========================================================
+
+- sensor:
+    - name: "Temperature Jardin - Nb Sources Valides"
+      unique_id: temperature_jardin_nb_sources_valides
+      state: >
+        {% set sources = [
+          states('sensor.temperature_jardin_1_validee'),
+          states('sensor.temperature_jardin_2_validee'),
+          states('sensor.temperature_jardin_3_validee')
+        ] %}
+        {% set valeurs = sources
+          | reject('in', ['unknown', 'unavailable', 'none', ''])
+          | map('float', none)
+          | reject('none')
+          | list %}
+        {{ valeurs | count }}
+      icon: mdi:counter
+
+    - name: "Temperature Jardin - Mediane Valide"
+      unique_id: temperature_jardin_mediane_valide
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°C"
+      availability: >
+        {% set sources = [
+          states('sensor.temperature_jardin_1_validee'),
+          states('sensor.temperature_jardin_2_validee'),
+          states('sensor.temperature_jardin_3_validee')
+        ] %}
+        {% set valeurs = sources
+          | reject('in', ['unknown', 'unavailable', 'none', ''])
+          | map('float', none)
+          | reject('none')
+          | list %}
+        {{ valeurs | count > 0 }}
+      state: >
+        {% set sources = [
+          states('sensor.temperature_jardin_1_validee'),
+          states('sensor.temperature_jardin_2_validee'),
+          states('sensor.temperature_jardin_3_validee')
+        ] %}
+        {% set valeurs = sources
+          | reject('in', ['unknown', 'unavailable', 'none', ''])
+          | map('float', none)
+          | reject('none')
+          | list
+          | sort %}
+        {% set n = valeurs | count %}
+
+        {% if n == 1 %}
+          {{ valeurs[0] | round(1) }}
+        {% elif n == 2 %}
+          {{ ((valeurs[0] + valeurs[1]) / 2) | round(1) }}
+        {% else %}
+          {{ valeurs[1] | round(1) }}
+        {% endif %}
+      icon: mdi:thermometer-lines
+
+    - name: "Temperature Jardin - Nb Sources Suspectes"
+      unique_id: temperature_jardin_nb_sources_suspectes
+      state: >
+        {% set s1 = is_state('binary_sensor.temperature_jardin_1_suspect_chaud', 'on') %}
+        {% set s2 = is_state('binary_sensor.temperature_jardin_2_suspect_chaud', 'on') %}
+        {% set s3 = is_state('binary_sensor.temperature_jardin_3_suspect_chaud', 'on') %}
+        {{ [s1, s2, s3] | select('equalto', true) | list | count }}
+      icon: mdi:counter

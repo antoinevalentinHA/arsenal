@@ -1,0 +1,182 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+# Température jardin — Façade publication et statut
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer :
+#   - la valeur canonique publiée de l'axe `sensor.temperature_jardin`
+#   - le statut global contractuel de l'axe
+#
+# 🧱 PÉRIMÈTRE
+#   Ce fichier ne :
+#   - valide aucune source
+#   - ne calcule aucune médiane
+#   - ne détecte aucun `suspect_chaud`
+#   - ne calcule aucune cible robuste
+#   - n'applique aucun EWMA
+#
+#   Il consomme exclusivement :
+#   - les helpers de stabilisation couche 4
+#   - `sensor.temperature_jardin_cible_robuste`
+#   - les capteurs d'observabilité couches 2 et 3
+#
+# 🛡️ GARANTIES
+#   - la publication façade ne reflète jamais une valeur brute
+#   - `sensor.temperature_jardin` lit uniquement l'état publié persistant
+#   - le statut respecte strictement l'ordre de priorité contractuel
+#
+# ⚠️ NOTE D'INTERPRÉTATION
+#   - avant première initialisation du pipeline :
+#       `sensor.temperature_jardin` est `unavailable`
+#       `sensor.temperature_jardin_statut` est `inconnu`
+#   - après initialisation :
+#       la façade publie soit l'état persistant, soit `unavailable`
+#       selon l'âge mémoire et la disponibilité de la cible robuste
+# ==========================================================
+
+- sensor:
+    - name: "Température jardin"
+      unique_id: temperature_jardin
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°C"
+      availability: >
+        {% set initialise = is_state('input_boolean.temperature_jardin_initialise', 'on') %}
+        {% if not initialise %}
+          {{ false }}
+        {% else %}
+          {% set cible = states('sensor.temperature_jardin_cible_robuste') | float(none) %}
+          {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
+          {% set age = (as_timestamp(now()) - as_timestamp(ts)) | int(none)
+                       if ts not in ['unknown', 'unavailable', ''] else none %}
+          {{ cible is not none or (age is not none and age <= 1800) }}
+        {% endif %}
+      state: >
+        {{ states('input_number.temperature_jardin_etat_publie') | float | round(1) }}
+      attributes:
+        mode_publication: >
+          {% set cible = states('sensor.temperature_jardin_cible_robuste') | float(none) %}
+          {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
+          {% if ts in ['unknown', 'unavailable', ''] %}
+            {% set age = none %}
+          {% else %}
+            {% set age = (as_timestamp(now()) - as_timestamp(ts)) | int(0) %}
+          {% endif %}
+
+          {% if cible is not none %}
+            fusion
+          {% elif age is not none and age <= 1800 %}
+            memoire
+          {% else %}
+            abstention
+          {% endif %}
+
+        age_memoire_s: >
+          {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
+          {% if ts in ['unknown', 'unavailable', ''] %}
+            {{ none }}
+          {% else %}
+            {{ (as_timestamp(now()) - as_timestamp(ts)) | int(0) }}
+          {% endif %}
+
+        cible_robuste: "{{ states('sensor.temperature_jardin_cible_robuste') }}"
+        etat_publie: "{{ states('input_number.temperature_jardin_etat_publie') }}"
+        nb_sources_valides: "{{ states('sensor.temperature_jardin_nb_sources_valides') }}"
+        nb_sources_retenues: "{{ states('sensor.temperature_jardin_nb_sources_retenues') }}"
+        nb_sources_suspectes: "{{ states('sensor.temperature_jardin_nb_sources_suspectes') }}"
+        incoherence_retenue: "{{ states('binary_sensor.temperature_jardin_incoherence_retenue') }}"
+      icon: mdi:thermometer-check
+
+    - name: "Température jardin statut"
+      unique_id: temperature_jardin_statut
+      state: >
+        {% set initialise = is_state('input_boolean.temperature_jardin_initialise', 'on') %}
+        {% set cible = states('sensor.temperature_jardin_cible_robuste') | float(none) %}
+        {% set nb_retenues = states('sensor.temperature_jardin_nb_sources_retenues') | int(0) %}
+        {% set nb_suspectes = states('sensor.temperature_jardin_nb_sources_suspectes') | int(0) %}
+        {% set incoherence = is_state('binary_sensor.temperature_jardin_incoherence_retenue', 'on') %}
+        {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
+        {% if ts in ['unknown', 'unavailable', ''] %}
+          {% set age = none %}
+        {% else %}
+          {% set age = (as_timestamp(now()) - as_timestamp(ts)) | int(0) %}
+        {% endif %}
+
+        {% if (not initialise) or (cible is none and (age is none or age > 1800)) %}
+          inconnu
+        {% elif cible is none and age is not none and age <= 1800 %}
+          memoire
+        {% elif nb_retenues == 1 %}
+          degrade
+        {% elif incoherence %}
+          incoherence_retenue
+        {% elif nb_suspectes >= 1 %}
+          suspect_chaud
+        {% else %}
+          nominal
+        {% endif %}
+      attributes:
+        cause: >
+          {% set initialise = is_state('input_boolean.temperature_jardin_initialise', 'on') %}
+          {% set cible = states('sensor.temperature_jardin_cible_robuste') | float(none) %}
+          {% set nb_retenues = states('sensor.temperature_jardin_nb_sources_retenues') | int(0) %}
+          {% set nb_suspectes = states('sensor.temperature_jardin_nb_sources_suspectes') | int(0) %}
+          {% set incoherence = is_state('binary_sensor.temperature_jardin_incoherence_retenue', 'on') %}
+          {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
+          {% if ts in ['unknown', 'unavailable', ''] %}
+            {% set age = none %}
+          {% else %}
+            {% set age = (as_timestamp(now()) - as_timestamp(ts)) | int(0) %}
+          {% endif %}
+
+          {% if not initialise %}
+            jamais_initialise
+          {% elif cible is none and age is none %}
+            timestamp_absent
+          {% elif cible is none and age > 1800 %}
+            ttl_expire
+          {% elif cible is none and age is not none and age <= 1800 %}
+            cible_absente_memoire
+          {% elif nb_retenues == 1 and nb_suspectes >= 1 %}
+            source_unique_apres_exclusion_chaude
+          {% elif nb_retenues == 1 %}
+            source_unique
+          {% elif incoherence %}
+            incoherence_retenue
+          {% elif nb_suspectes >= 1 %}
+            exclusion_chaude_active
+          {% else %}
+            nominal
+          {% endif %}
+
+        age_memoire_s: >
+          {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
+          {% if ts in ['unknown', 'unavailable', ''] %}
+            {{ none }}
+          {% else %}
+            {{ (as_timestamp(now()) - as_timestamp(ts)) | int(0) }}
+          {% endif %}
+
+        initialise: "{{ states('input_boolean.temperature_jardin_initialise') }}"
+        cible_robuste_disponible: >
+          {{ states('sensor.temperature_jardin_cible_robuste') not in ['unknown', 'unavailable'] }}
+
+        nb_sources_valides: "{{ states('sensor.temperature_jardin_nb_sources_valides') }}"
+        nb_sources_retenues: "{{ states('sensor.temperature_jardin_nb_sources_retenues') }}"
+        nb_sources_suspectes: "{{ states('sensor.temperature_jardin_nb_sources_suspectes') }}"
+        incoherence_retenue: "{{ states('binary_sensor.temperature_jardin_incoherence_retenue') }}"
+      icon: >
+        {% set statut = states('sensor.temperature_jardin_statut') %}
+        {% if statut == 'nominal' %}
+          mdi:check-circle-outline
+        {% elif statut == 'suspect_chaud' %}
+          mdi:thermometer-alert
+        {% elif statut == 'incoherence_retenue' %}
+          mdi:alert-circle-outline
+        {% elif statut == 'degrade' %}
+          mdi:thermometer-low
+        {% elif statut == 'memoire' %}
+          mdi:history
+        {% else %}
+          mdi:help-circle-outline
+        {% endif %}

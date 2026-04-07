@@ -59,6 +59,18 @@ views:
             cards:
 
               - type: tile
+                entity: input_boolean.entree_auto_light
+                name: Entrée 🚪
+
+              - type: tile
+                entity: input_number.duree_absence_entree
+                name: Délai extinction entrée (s)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
                 entity: input_boolean.sejour_auto_light
                 name: Séjour 🛋️
 
@@ -177,6 +189,63 @@ views:
             entity: input_boolean.test_simulation_presence
             name: Activer le mode test
 
+          # 🏠 Entrée
+          - type: custom:button-card
+            template: section_header
+            name: 🏠 Simulation de présence – Entrée
+
+          # 🌅 Réglages matin - Entrée
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🌅 Réglages du matin (Entrée)
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_datetime.debut_cycle_simulation_presence_matin_entree
+                name: "de"
+
+              - type: tile
+                entity: input_datetime.fin_cycle_simulation_presence_matin_entree
+                name: "à"
+
+          - type: tile
+            entity: input_number.nb_cycles_simulation_presence_matin_entree
+            name: Cycles
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          # 🌇 Réglages soir - Entrée
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🌇 Réglages du soir (Entrée)
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_datetime.debut_cycle_simulation_presence_soir_entree
+                name: "de"
+
+              - type: tile
+                entity: input_datetime.fin_cycle_simulation_presence_soir_entree
+                name: "à"
+
+          - type: tile
+            entity: input_number.nb_cycles_simulation_presence_soir_entree
+            name: Cycles
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
           # 🌅 Réglages matin - Parents
           - type: custom:button-card
             template: sub_section_header
@@ -188,15 +257,15 @@ views:
             cards:
 
               - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_matin
+                entity: input_datetime.debut_cycle_simulation_presence_matin_chambre_parents
                 name: "de"
 
               - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_matin
+                entity: input_datetime.fin_cycle_simulation_presence_matin_chambre_parents
                 name: "à"
 
           - type: tile
-            entity: input_number.nb_cycles_simulation_presence_matin
+            entity: input_number.nb_cycles_simulation_presence_matin_chambre_parents
             name: Cycles
             features_position: inline
             features:
@@ -214,15 +283,15 @@ views:
             cards:
 
               - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_soir
+                entity: input_datetime.debut_cycle_simulation_presence_soir_chambre_parents
                 name: "de"
 
               - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_soir
+                entity: input_datetime.fin_cycle_simulation_presence_soir_chambre_parents
                 name: "à"
 
           - type: tile
-            entity: input_number.nb_cycles_simulation_presence_soir
+            entity: input_number.nb_cycles_simulation_presence_soir_chambre_parents
             name: Cycles
             features_position: inline
             features:
@@ -245,15 +314,15 @@ views:
             cards:
 
               - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_garage_matin
+                entity: input_datetime.debut_cycle_simulation_presence_matin_garage
                 name: "de"
 
               - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_garage_matin
+                entity: input_datetime.fin_cycle_simulation_presence_matin_garage
                 name: "à"
 
           - type: tile
-            entity: input_number.nb_cycles_simulation_presence_garage_matin
+            entity: input_number.nb_cycles_simulation_presence_matin_garage
             name: Cycles
             features_position: inline
             features:
@@ -271,15 +340,15 @@ views:
             cards:
 
               - type: tile
-                entity: input_datetime.debut_cycle_simulation_presence_garage_soir
+                entity: input_datetime.debut_cycle_simulation_presence_soir_garage
                 name: "de"
 
               - type: tile
-                entity: input_datetime.fin_cycle_simulation_presence_garage_soir
+                entity: input_datetime.fin_cycle_simulation_presence_soir_garage
                 name: "à"
 
           - type: tile
-            entity: input_number.nb_cycles_simulation_presence_garage_soir
+            entity: input_number.nb_cycles_simulation_presence_soir_garage
             name: Cycles
             features_position: inline
             features:

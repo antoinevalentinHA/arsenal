@@ -1,0 +1,216 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Température jardin — Stabilisation publication
+#
+#  ID : 10160000000012
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Orchestrateur unique de stabilisation de la publication
+#     canonique de l'axe `sensor.temperature_jardin`.
+#
+#     Cette automation :
+#       - initialise le pipeline au premier point valide
+#       - applique l'EWMA sur cible robuste disponible
+#       - borne la variation publiée par `delta_max`
+#       - maintient l'état publié persistant
+#       - conserve la dernière cible robuste observée
+#       - met à jour le timestamp de dernière publication valide
+#
+#  🧱 PÉRIMÈTRE
+#
+#     Cette automation ne :
+#       - valide aucune source
+#       - ne détecte aucun `suspect_chaud`
+#       - ne calcule aucune médiane
+#       - ne calcule aucune `incoherence_retenue`
+#       - ne publie aucun statut global
+#
+#     Elle consomme exclusivement :
+#       - `sensor.temperature_jardin_cible_robuste`
+#       - les helpers de stabilisation couche 4
+#
+#  🛡️ GARANTIES
+#
+#     - aucun reset implicite de l'état interne
+#     - première initialisation sans EWMA
+#     - EWMA uniquement après initialisation explicite
+#     - `delta_max` prioritaire sur la variation publiée
+#     - l'état persistant reflète toujours la valeur publiée
+#
+#  ⚠️ NOTE
+#
+#     La gestion `memoire` / `inconnu` n'est pas portée ici.
+#     Elle est interprétée en couche 5 à partir :
+#       - de `input_boolean.temperature_jardin_initialise`
+#       - de `input_datetime.temperature_jardin_etat_publie_ts`
+#       - de la disponibilité courante de la cible robuste
+#
+#  ⚠️ GARDE DE NON-RECALCUL
+#
+#     Si le pipeline est déjà initialisé, que la cible robuste
+#     courante est identique à la dernière cible robuste mémorisée,
+#     et que l'âge de la dernière publication reste strictement
+#     inférieur à 20 minutes, l'automation sort immédiatement
+#     sans recalcul.
+#
+#     Cette garde évite des réécritures inutiles tout en laissant
+#     la couche 5 gérer correctement la proximité d'expiration TTL.
+# ==========================================================
+
+- id: "10160000000012"
+  alias: "Température jardin — Stabilisation publication"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: sensor.temperature_jardin_cible_robuste
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  variables:
+    cible_robuste: "{{ states('sensor.temperature_jardin_cible_robuste') | float(none) }}"
+    cible_disponible: "{{ cible_robuste is not none }}"
+
+    alpha_ewma: "{{ states('input_number.temperature_jardin_alpha_ewma') | float(0.3) }}"
+    delta_max: "{{ states('input_number.temperature_jardin_delta_max') | float(0.5) }}"
+
+    etat_publie_precedent: "{{ states('input_number.temperature_jardin_etat_publie') | float(0) }}"
+    cible_brute_derniere: "{{ states('input_number.temperature_jardin_cible_brute_derniere') | float(0) }}"
+
+    pipeline_initialise: "{{ is_state('input_boolean.temperature_jardin_initialise', 'on') }}"
+    systeme_stable: "{{ is_state('input_boolean.systeme_stable', 'on') }}"
+
+    ts_publication_precedente: >
+      {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
+      {% if ts in ['unknown', 'unavailable', ''] %}
+        {{ none }}
+      {% else %}
+        {{ as_timestamp(ts, none) }}
+      {% endif %}
+
+    age_publication_s: >
+      {% if ts_publication_precedente is none %}
+        {{ none }}
+      {% else %}
+        {{ (as_timestamp(now()) - ts_publication_precedente) | int(0) }}
+      {% endif %}
+
+    garde_non_recalcul: >
+      {{
+        pipeline_initialise
+        and cible_disponible
+        and (cible_robuste | round(1)) == (cible_brute_derniere | round(1))
+        and age_publication_s is not none
+        and age_publication_s < 1200
+      }}
+
+  action:
+    - choose:
+
+        # ==================================================
+        # CAS 0 — Systeme non stable
+        #          -> aucune ecriture, aucune initialisation
+        # ==================================================
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.systeme_stable
+              state: "off"
+          sequence:
+            - stop: "Systeme non stable : publication et seed bloques."
+
+        # ==================================================
+        # CAS 1 — Première initialisation sur première cible valide
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ cible_disponible }}"
+            - condition: state
+              entity_id: input_boolean.temperature_jardin_initialise
+              state: "off"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.temperature_jardin_etat_publie
+              data:
+                value: "{{ cible_robuste | round(1) }}"
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.temperature_jardin_cible_brute_derniere
+              data:
+                value: "{{ cible_robuste | round(1) }}"
+
+            - service: input_datetime.set_datetime
+              target:
+                entity_id: input_datetime.temperature_jardin_etat_publie_ts
+              data:
+                datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.temperature_jardin_initialise
+
+        # ==================================================
+        # CAS 2 — Garde de non-recalcul
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ garde_non_recalcul }}"
+          sequence:
+            - stop: "Aucun recalcul nécessaire : cible inchangée et TTL non critique."
+
+        # ==================================================
+        # CAS 3 — Pipeline initialisé + cible robuste disponible
+        #          -> EWMA + borne delta_max + persistance
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ cible_disponible }}"
+            - condition: state
+              entity_id: input_boolean.temperature_jardin_initialise
+              state: "on"
+          sequence:
+            - variables:
+                cible_ewma_theorique: >
+                  {{ etat_publie_precedent + alpha_ewma * (cible_robuste - etat_publie_precedent) }}
+
+                delta_theorique: >
+                  {{ cible_ewma_theorique - etat_publie_precedent }}
+
+                delta_borne: >
+                  {% if delta_theorique > delta_max %}
+                    {{ delta_max }}
+                  {% elif delta_theorique < (0 - delta_max) %}
+                    {{ 0 - delta_max }}
+                  {% else %}
+                    {{ delta_theorique }}
+                  {% endif %}
+
+                etat_publie_nouveau: >
+                  {{ (etat_publie_precedent + delta_borne) | round(1) }}
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.temperature_jardin_etat_publie
+              data:
+                value: "{{ etat_publie_nouveau }}"
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.temperature_jardin_cible_brute_derniere
+              data:
+                value: "{{ cible_robuste | round(1) }}"
+
+            - service: input_datetime.set_datetime
+              target:
+                entity_id: input_datetime.temperature_jardin_etat_publie_ts
+              data:
+                datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+      default: []

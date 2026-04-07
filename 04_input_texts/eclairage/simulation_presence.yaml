@@ -33,31 +33,47 @@
 # ==========================================================
 # 📅 Horaires simulation chambre matin
 # ==========================================================
-horaires_simulation_presence_matin:
-  name: Horaires simulation matin
+horaires_simulation_presence_matin_chambre_parents:
+  name: Horaires simulation matin Chambre Parents
   icon: mdi:weather-sunset-up
   max: 255
 
 # ==========================================================
 # 📅 Horaires simulation chambre soir
 # ==========================================================
-horaires_simulation_presence_soir:
-  name: Horaires simulation soir
+horaires_simulation_presence_soir_chambre_parents:
+  name: Horaires simulation soir Chambre Parents
   icon: mdi:weather-sunset-down
   max: 255
 
 # ==========================================================
 # 📅 Horaires simulation garage matin
 # ==========================================================
-horaires_simulation_presence_garage_matin:
-  name: Horaires simulation garage matin
-  icon: mdi:garage
+horaires_simulation_presence_matin_garage:
+  name: Horaires simulation matin Garage
+  icon: mdi:weather-sunset-up
   max: 255
 
 # ==========================================================
 # 📅 Horaires simulation garage soir
 # ==========================================================
-horaires_simulation_presence_garage_soir:
-  name: Horaires simulation garage soir
-  icon: mdi:garage
+horaires_simulation_presence_soir_garage:
+  name: Horaires simulation soir Garage
+  icon: mdi:weather-sunset-down
+  max: 255
+
+# ==========================================================
+# 📅 Horaires simulation entree matin
+# ==========================================================
+horaires_simulation_presence_matin_entree:
+  name: Horaires simulation matin Entrée
+  icon: mdi:weather-sunset-up
+  max: 255
+
+# ==========================================================
+# 📅 Horaires simulation entree soir
+# ==========================================================
+horaires_simulation_presence_soir_entree:
+  name: Horaires simulation soir Entrée
+  icon: mdi:weather-sunset-down
   max: 255

@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom UI :
+#   Besoin déshumidification climatisation admissible
+#
+# 🎯 Rôle :
+#   Porter la vérité persistante de l'admissibilité
+#   décisionnelle du besoin DRY.
+#
+# 🧱 Principe Arsenal :
+#   - Support technique interne
+#   - Aucune logique hygrométrique
+#   - Aucune décision
+#   - Aucune exécution
+#
+# 🧠 Implémentation :
+#   Ce helper est piloté exclusivement par les automatisations
+#   d'admissibilité DRY.
+#
+# 🔌 Exposé via :
+#   - binary_sensor.besoin_clim_dry_admissible
+#
+# 📍 Entité support :
+#   input_boolean.besoin_clim_dry_admissible
+# ==========================================================
+
+besoin_clim_dry_admissible:
+  name: Besoin déshumidification climatisation admissible
+  icon: mdi:water-percent-alert

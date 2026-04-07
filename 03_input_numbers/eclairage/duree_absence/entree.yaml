@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER : Durée absence entrée
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Définir le délai d’inactivité requis dans l'entrée
+#    avant extinction automatique de l’éclairage.
+#
+# 🧩 Principe :
+#    - Le décompte commence après la DERNIÈRE détection
+#      de présence ou de mouvement dans l'entrée.
+#    - L’éclairage reste allumé tant que l’activité
+#      reprend avant l’expiration du délai.
+#
+# ⚙️ Fonctionnement :
+#    - Valeur exprimée en secondes
+#    - Utilisée directement par l’automatisation
+#    - Conversion explicite dans la logique OFF
+#
+# 🔍 Utilisation :
+#    - Automatisation :
+#        • 10070000000027
+#    - Dashboard :
+#        • réglages éclairage
+#
+# 📐 Unité :
+#    - secondes
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+#    - Paramètre éclairage entrée
+# ==========================================================
+
+duree_absence_entree:
+  name: "Durée absence entrée (s)"
+  icon: mdi:timer-outline
+  min: 0
+  max: 120
+  step: 5
+  unit_of_measurement: s
+  mode: slider

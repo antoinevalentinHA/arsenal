@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — DETECTION
+#     Humidite relative jardin — Suspects
+# ----------------------------------------------------------
+# 🎯 ROLE
+#     Detecter les capteurs deviant de la mediane pivot
+#     S'applique exclusivement aux sources valides
+# ----------------------------------------------------------
+# ⚙️ PARAMETRES
+#     δ_hr_suspect = 6 % HR
+#     Plage admissible contrat : [4 – 10] % HR
+#     Gouvernance : revision annuelle
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Humidite relative jardin 1 suspect"
+      unique_id: humidite_relative_jardin_1_suspect
+      state: >
+        {% if not is_state('binary_sensor.humidite_relative_jardin_1_valide', 'on') %}
+          false
+        {% else %}
+          {% set m_raw = states('sensor.humidite_relative_jardin_mediane_sources_valides') %}
+          {% set v_raw = states('sensor.humidite_relative_jardin_1') %}
+          {% if m_raw in ['unknown', 'unavailable'] or v_raw in ['unknown', 'unavailable'] %}
+            false
+          {% else %}
+            {{ (v_raw | float - m_raw | float) | abs > 6 }}
+          {% endif %}
+        {% endif %}
+
+    - name: "Humidite relative jardin 2 suspect"
+      unique_id: humidite_relative_jardin_2_suspect
+      state: >
+        {% if not is_state('binary_sensor.humidite_relative_jardin_2_valide', 'on') %}
+          false
+        {% else %}
+          {% set m_raw = states('sensor.humidite_relative_jardin_mediane_sources_valides') %}
+          {% set v_raw = states('sensor.humidite_relative_jardin_2') %}
+          {% if m_raw in ['unknown', 'unavailable'] or v_raw in ['unknown', 'unavailable'] %}
+            false
+          {% else %}
+            {{ (v_raw | float - m_raw | float) | abs > 6 }}
+          {% endif %}
+        {% endif %}
+
+    - name: "Humidite relative jardin 3 suspect"
+      unique_id: humidite_relative_jardin_3_suspect
+      state: >
+        {% if not is_state('binary_sensor.humidite_relative_jardin_3_valide', 'on') %}
+          false
+        {% else %}
+          {% set m_raw = states('sensor.humidite_relative_jardin_mediane_sources_valides') %}
+          {% set v_raw = states('sensor.humidite_relative_jardin_3') %}
+          {% if m_raw in ['unknown', 'unavailable'] or v_raw in ['unknown', 'unavailable'] %}
+            false
+          {% else %}
+            {{ (v_raw | float - m_raw | float) | abs > 6 }}
+          {% endif %}
+        {% endif %}

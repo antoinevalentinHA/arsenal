@@ -45,6 +45,11 @@ logs:
   roborock.version_1_apis.roborock_mqtt_client_v1: error
   roborock.cloud_api: error
 
+  # ── Bluetti BT ──────────────────────────────────────────
+  custom_components.bluetti_bt: error
+  bluetti_bt_lib: error
+  bluetti_bt_lib.bluetooth.device_reader: error
+
   # ── Intégrations tierces ────────────────────────────────
   homeassistant.components.withings: error
   aiowithings: error

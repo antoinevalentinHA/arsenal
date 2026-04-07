@@ -1,28 +1,69 @@
 # ==========================================================
-# 🧠 TEMPLATE SENSOR — Vacances : raison
+# 🧠 ARSENAL — SENSOR
+#     Vacances raison
 # ----------------------------------------------------------
-# 🎯 Objectif :
-#   Expliquer clairement pourquoi les vacances
-#   sont actives ou bloquées.
+# 🎯 RÔLE
 #
-# 🥇 Priorité :
-#   1. Mode maison non Vacances
-#   2. Présence famille
-#   3. Visite en cours
-#   4. Vacances actives
+#   Expliquer la raison MÉTIER de l'état courant
+#   du domaine Vacances.
+#
+#   Ce capteur répond à la question :
+#     "Pourquoi les vacances sont-elles actives ou non ?"
+#
+# ----------------------------------------------------------
+# 🧱 NATURE
+#
+#   - Capteur explicatif
+#   - Lecture pure
+#   - Aucun effet de bord
+#   - Aucun diagnostic de qualité de réglage
+#
+# ----------------------------------------------------------
+# 📊 PRIORITÉ DE CALCUL
+#
+#   1. Aucune demande active
+#   2. Présence indisponible
+#   3. Visite indisponible
+#   4. Présence famille détectée
+#   5. Visite en cours
+#   6. Vacances actives
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - N'explique pas l'invalidité des réglages calendaires
+#   - Ne remplace pas `binary_sensor.parametres_invalides_vacances`
+#   - Ne pilote aucun équipement
+#
+# ----------------------------------------------------------
+# 🧠 PRINCIPE ARSENAL
+#
+#   L'explication métier reste distincte :
+#   - de l'intégrité des réglages
+#   - de la projection de contexte
+#   - de l'action
 # ==========================================================
 
 - sensor:
     - name: "Vacances raison"
       unique_id: vacances_raison
-      icon: mdi:comment-text-outline
       state: >
-        {% if not is_state('input_select.mode_maison', 'Vacances') %}
-          mode_maison_normal
-        {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+        {% set demande = is_state('binary_sensor.vacances_demandees', 'on') %}
+        {% set presence = states('binary_sensor.presence_famille_unifiee') %}
+        {% set visite = states('input_boolean.visite_en_cours') %}
+
+        {% if not demande %}
+          aucune_demande
+        {% elif presence in ['unknown', 'unavailable'] %}
+          presence_indisponible
+        {% elif visite in ['unknown', 'unavailable'] %}
+          visite_indisponible
+        {% elif presence == 'on' %}
           presence_famille
-        {% elif is_state('input_boolean.visite_en_cours', 'on') %}
+        {% elif visite == 'on' %}
           visite_en_cours
         {% else %}
           vacances_actives
         {% endif %}
+      icon: >
+        mdi:comment-text-outline

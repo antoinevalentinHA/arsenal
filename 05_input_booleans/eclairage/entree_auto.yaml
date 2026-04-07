@@ -1,0 +1,24 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN : Auto light entrée
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Activer ou désactiver le comportement automatique
+#    de l’éclairage de l’entrée.
+#
+# 🧩 Principe :
+#    - ON  → automatisations autorisées
+#    - OFF → aucune action automatique
+#
+# 🔍 Utilisation :
+#    - Automatisation :
+#        • 10070000000027
+#    - Dashboard :
+#        • réglages éclairage
+#
+# 🏷️ Statut :
+#    - Arsenal v6.x
+# ==========================================================
+
+entree_auto_light:
+  name: "Entrée auto light"
+  icon: mdi:lightbulb-auto

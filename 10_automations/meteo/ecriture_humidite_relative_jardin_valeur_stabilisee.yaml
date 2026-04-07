@@ -1,0 +1,184 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Humidite relative jardin — Ecriture valeur stabilisee
+#
+#  ID : 10160000000013
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Automation centrale de persistance de l’axe humidite
+#     relative jardin.
+#
+#     Elle applique :
+#       - initialisation directe
+#       - EWMA (alpha = 0.3)
+#       - borne delta_max (±1.0)
+#       - report residuel reel
+#
+#     Elle ecrit :
+#       - input_number.humidite_relative_jardin_valeur_stabilisee
+#       - input_datetime.humidite_relative_jardin_derniere_publication_valide
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
+#
+#     - Declenchement sur cible robuste instantanee
+#     - Declenchement au demarrage Home Assistant
+#     - Aucune ecriture si cible non exploitable
+#     - Initialisation directe si aucune valeur precedente exploitable
+#     - Sinon :
+#         EWMA → borne delta → valeur publiee
+#
+#     Aucune memoire cachee
+#     La valeur ecrite est la seule verite
+#
+# ----------------------------------------------------------
+# ⚠️ CONVERGENCE
+#
+#     delta_max = 1.0 %HR / cycle
+#
+#     Un ecart important peut necessiter plusieurs cycles
+#     pour convergence complete.
+#
+#     Comportement voulu :
+#       stabilite prioritaire sur reactivite
+# ==========================================================
+
+- id: "10160000000013"
+  alias: "Humidité relative jardin — Ecriture valeur stabilisée"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_jardin_cible_robuste_instantanee
+
+    - platform: homeassistant
+      event: start
+
+  variables:
+
+    # ----------------------------------------------------------
+    # Parametres
+    # ----------------------------------------------------------
+
+    alpha_ewma: 0.3
+    delta_max: 1.0
+
+    # ----------------------------------------------------------
+    # Lecture cible instantanee
+    # ----------------------------------------------------------
+
+    cible_state: >
+      {{ states('sensor.humidite_relative_jardin_cible_robuste_instantanee') }}
+
+    cible_val: >
+      {{ states('sensor.humidite_relative_jardin_cible_robuste_instantanee') | float(none) }}
+
+    cible_exploitable: >
+      {{
+        cible_state not in ['unknown', 'unavailable']
+        and cible_val is not none
+        and cible_val > -1
+        and cible_val < 101
+      }}
+
+    # ----------------------------------------------------------
+    # Lecture valeur precedente
+    # ----------------------------------------------------------
+
+    precedent_state: >
+      {{ states('input_number.humidite_relative_jardin_valeur_stabilisee') }}
+
+    precedent_val: >
+      {{ states('input_number.humidite_relative_jardin_valeur_stabilisee') | float(none) }}
+
+    precedent_exploitable: >
+      {{
+        precedent_state not in ['unknown', 'unavailable']
+        and precedent_val is not none
+        and precedent_val >= 10
+        and precedent_val < 101
+      }}
+
+    # ----------------------------------------------------------
+    # Calcul final
+    # ----------------------------------------------------------
+
+    valeur_publiee: >
+      {% if not (precedent_exploitable and cible_exploitable) %}
+        {{ none }}
+      {% else %}
+        {% set ewma = precedent_val + alpha_ewma * (cible_val - precedent_val) %}
+        {% set delta = ewma - precedent_val %}
+        {% set delta_borne = [[-delta_max, delta] | max, delta_max] | min %}
+        {% set v = precedent_val + delta_borne %}
+        {% if v > -1 and v < 101 %}
+          {{ v }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+      {% endif %}
+
+  action:
+
+    - choose:
+
+        # ------------------------------------------------------
+        # Cas 1 — cible non exploitable
+        # ------------------------------------------------------
+
+        - conditions:
+            - condition: template
+              value_template: "{{ not cible_exploitable }}"
+          sequence: []
+
+        # ------------------------------------------------------
+        # Cas 2 — initialisation directe
+        # ------------------------------------------------------
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  not precedent_exploitable
+                  and cible_exploitable
+                }}
+          sequence:
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.humidite_relative_jardin_valeur_stabilisee
+              data:
+                value: "{{ cible_val }}"
+
+            - service: input_datetime.set_datetime
+              target:
+                entity_id: input_datetime.humidite_relative_jardin_derniere_publication_valide
+              data:
+                timestamp: "{{ now().timestamp() | int }}"
+
+        # ------------------------------------------------------
+        # Cas 3 — mise a jour EWMA + delta borne
+        # ------------------------------------------------------
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  precedent_exploitable
+                  and cible_exploitable
+                  and valeur_publiee not in [none, 'None', 'unknown', 'unavailable']
+                }}
+          sequence:
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.humidite_relative_jardin_valeur_stabilisee
+              data:
+                value: "{{ valeur_publiee }}"
+
+            - service: input_datetime.set_datetime
+              target:
+                entity_id: input_datetime.humidite_relative_jardin_derniere_publication_valide
+              data:
+                timestamp: "{{ now().timestamp() | int }}"

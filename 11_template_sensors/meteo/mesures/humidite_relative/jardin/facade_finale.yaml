@@ -1,0 +1,187 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Humidite relative jardin — Facade finale
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Exposer :
+#     - statut final contractuel
+#     - valeur canonique publiee
+#
+# 🧩 PRINCIPE
+#   - Lecture uniquement
+#   - Aucun calcul de stabilisation
+#   - Aucune ecriture
+#
+# 🛡️ GARANTIE
+#   - Jamais de valeur memoire non exploitable publiee
+#   - Le sensor numerique final utilise availability:
+#     pour ne jamais publier la chaine "unknown"
+# ==========================================================
+
+- sensor:
+
+    # ----------------------------------------------------------
+    # STATUT FINAL
+    # ----------------------------------------------------------
+
+    - name: "Humidite relative jardin statut final"
+      unique_id: humidite_relative_jardin_statut_final
+
+      state: >
+        {% set cible = states('sensor.humidite_relative_jardin_cible_robuste_instantanee') %}
+        {% set cible_val = cible | float(none) %}
+
+        {% set cible_ok =
+          cible not in ['unknown','unavailable']
+          and cible_val is not none
+          and cible_val > -1
+          and cible_val < 101
+        %}
+
+        {% set statut_inst = states('sensor.humidite_relative_jardin_statut_instantane') %}
+        {% set mem_ok = is_state('binary_sensor.humidite_relative_jardin_memoire_valide','on') %}
+
+        {% if cible_ok and statut_inst in ['nominal','suspect_hr','incoherence_retenue','degrade'] %}
+          {{ statut_inst }}
+        {% elif mem_ok %}
+          memoire
+        {% else %}
+          inconnu
+        {% endif %}
+
+      attributes:
+
+        statut_instantane: >
+          {{ states('sensor.humidite_relative_jardin_statut_instantane') }}
+
+        cible_robuste: >
+          {{ states('sensor.humidite_relative_jardin_cible_robuste_instantanee') }}
+
+        etat_publie: >
+          {% set s = states('input_number.humidite_relative_jardin_valeur_stabilisee') %}
+          {% set v = s | float(none) %}
+          {% if s not in ['unknown','unavailable'] and v is not none and v >= 10 and v < 101 %}
+            {{ v | round(1) }}
+          {% else %}
+            unknown
+          {% endif %}
+
+        age_memoire_minutes: >
+          {{ states('sensor.humidite_relative_jardin_age_memoire_minutes') }}
+
+        memoire_valide: >
+          {{ is_state('binary_sensor.humidite_relative_jardin_memoire_valide','on') }}
+
+        nb_sources_valides: >
+          {% set raw = states('sensor.humidite_relative_jardin_valeurs_valides') %}
+          {% set vals = raw | from_json if raw not in ['unknown','unavailable'] else [] %}
+          {{ vals | length }}
+
+        nb_sources_retenues: >
+          {% set raw = states('sensor.humidite_relative_jardin_valeurs_retenues') %}
+          {% set vals = raw | from_json if raw not in ['unknown','unavailable'] else [] %}
+          {{ vals | length }}
+
+        nb_sources_suspectes: >
+          {{
+            [
+              is_state('binary_sensor.humidite_relative_jardin_1_suspect','on'),
+              is_state('binary_sensor.humidite_relative_jardin_2_suspect','on'),
+              is_state('binary_sensor.humidite_relative_jardin_3_suspect','on')
+            ] | select('equalto', True) | list | length
+          }}
+
+        incoherence_retenue: >
+          {% set raw = states('sensor.humidite_relative_jardin_valeurs_retenues') %}
+          {% set vals = raw | from_json if raw not in ['unknown','unavailable'] else [] %}
+          {% if vals | length >= 2 %}
+            {% set s = vals | sort %}
+            {{ 'on' if (s[1] - s[0]) | abs > 5 else 'off' }}
+          {% else %}
+            off
+          {% endif %}
+
+
+    # ----------------------------------------------------------
+    # VALEUR FINALE
+    # ----------------------------------------------------------
+
+    - name: "Humidité relative jardin"
+      unique_id: humidite_relative_jardin
+      unit_of_measurement: "%"
+      device_class: humidity
+
+      availability: >
+        {% set statut = states('sensor.humidite_relative_jardin_statut_final') %}
+        {% set s = states('input_number.humidite_relative_jardin_valeur_stabilisee') %}
+        {% set v = s | float(none) %}
+        {{
+          statut != 'inconnu'
+          and s not in ['unknown','unavailable']
+          and v is not none
+          and v >= 10
+          and v < 101
+        }}
+
+      state: >
+        {% set v = states('input_number.humidite_relative_jardin_valeur_stabilisee') | float(none) %}
+        {{ v | round(0) }}
+
+      attributes:
+
+        mode_publication: >
+          {% set statut = states('sensor.humidite_relative_jardin_statut_final') %}
+          {% if statut in ['nominal','suspect_hr','incoherence_retenue','degrade'] %}
+            fusion
+          {% elif statut == 'memoire' %}
+            memoire
+          {% else %}
+            aucune
+          {% endif %}
+
+        age_memoire_minutes: >
+          {{ states('sensor.humidite_relative_jardin_age_memoire_minutes') }}
+
+        cible_robuste: >
+          {{ states('sensor.humidite_relative_jardin_cible_robuste_instantanee') }}
+
+        etat_publie: >
+          {% set s = states('input_number.humidite_relative_jardin_valeur_stabilisee') %}
+          {% set v = s | float(none) %}
+          {% if s not in ['unknown','unavailable'] and v is not none and v >= 10 and v < 101 %}
+            {{ v | round(1) }}
+          {% else %}
+            unknown
+          {% endif %}
+
+        nb_sources_valides: >
+          {% set raw = states('sensor.humidite_relative_jardin_valeurs_valides') %}
+          {% set vals = raw | from_json if raw not in ['unknown','unavailable'] else [] %}
+          {{ vals | length }}
+
+        nb_sources_retenues: >
+          {% set raw = states('sensor.humidite_relative_jardin_valeurs_retenues') %}
+          {% set vals = raw | from_json if raw not in ['unknown','unavailable'] else [] %}
+          {{ vals | length }}
+
+        nb_sources_suspectes: >
+          {{
+            [
+              is_state('binary_sensor.humidite_relative_jardin_1_suspect','on'),
+              is_state('binary_sensor.humidite_relative_jardin_2_suspect','on'),
+              is_state('binary_sensor.humidite_relative_jardin_3_suspect','on')
+            ] | select('equalto', True) | list | length
+          }}
+
+        incoherence_retenue: >
+          {% set raw = states('sensor.humidite_relative_jardin_valeurs_retenues') %}
+          {% set vals = raw | from_json if raw not in ['unknown','unavailable'] else [] %}
+          {% if vals | length >= 2 %}
+            {% set s = vals | sort %}
+            {{ 'on' if (s[1] - s[0]) | abs > 5 else 'off' }}
+          {% else %}
+            off
+          {% endif %}
+
+        statut_final: >
+          {{ states('sensor.humidite_relative_jardin_statut_final') }}

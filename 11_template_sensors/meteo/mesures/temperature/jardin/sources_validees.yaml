@@ -1,0 +1,118 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+# Température jardin — Sources validées
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Produire les trois sources validées amont de l'axe
+#   `temperature_jardin`, conformément à `contrat_validation.md`
+#   et au contrat d'axe `contrat_axe_temperature_jardin.md`.
+#
+# 🧱 SOURCES BRUTES
+#   - sensor.temperature_jardin_1
+#   - sensor.temperature_jardin_2
+#   - sensor.temperature_jardin_3
+#
+# 🧩 RÈGLES DE VALIDATION
+#   Une source est valide si et seulement si :
+#   - sa valeur est numérique
+#   - sa valeur est comprise dans [-10 ; 50]
+#   - son âge, mesuré sur `last_updated` de la source brute,
+#     est inférieur ou égal au TTL local
+#
+# 🕒 TTL PAR SOURCE
+#   - jardin_1 : 15 min
+#   - jardin_2 : 15 min
+#   - jardin_3 : 10 min
+#
+# 🛡️ GARANTIES
+#   - fraîcheur évaluée sur la source brute, jamais sur le sensor validé
+#   - invalidité représentée par `unavailable`
+#   - aucun fallback
+#   - aucune fusion
+#   - aucune logique aval
+# ==========================================================
+
+- sensor:
+    - name: "Temperature Jardin 1 Validee"
+      unique_id: temperature_jardin_1_validee
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°C"
+      availability: >
+        {% set brut = states('sensor.temperature_jardin_1') | float(none) %}
+        {% set obj = states.sensor.temperature_jardin_1 %}
+        {% if brut is none or obj is none %}
+          {{ false }}
+        {% else %}
+          {% set age = as_timestamp(now()) - as_timestamp(obj.last_updated) %}
+          {{ -10 <= brut <= 50 and age <= 900 }}
+        {% endif %}
+      state: >
+        {{ states('sensor.temperature_jardin_1') | float | round(1) }}
+      attributes:
+        source_brute: "sensor.temperature_jardin_1"
+        ttl_validation_s: 900
+        age_source_s: >
+          {% set obj = states.sensor.temperature_jardin_1 %}
+          {% if obj is none %}
+            {{ none }}
+          {% else %}
+            {{ (as_timestamp(now()) - as_timestamp(obj.last_updated)) | int(0) }}
+          {% endif %}
+      icon: mdi:thermometer
+
+    - name: "Temperature Jardin 2 Validee"
+      unique_id: temperature_jardin_2_validee
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°C"
+      availability: >
+        {% set brut = states('sensor.temperature_jardin_2') | float(none) %}
+        {% set obj = states.sensor.temperature_jardin_2 %}
+        {% if brut is none or obj is none %}
+          {{ false }}
+        {% else %}
+          {% set age = as_timestamp(now()) - as_timestamp(obj.last_updated) %}
+          {{ -10 <= brut <= 50 and age <= 900 }}
+        {% endif %}
+      state: >
+        {{ states('sensor.temperature_jardin_2') | float | round(1) }}
+      attributes:
+        source_brute: "sensor.temperature_jardin_2"
+        ttl_validation_s: 900
+        age_source_s: >
+          {% set obj = states.sensor.temperature_jardin_2 %}
+          {% if obj is none %}
+            {{ none }}
+          {% else %}
+            {{ (as_timestamp(now()) - as_timestamp(obj.last_updated)) | int(0) }}
+          {% endif %}
+      icon: mdi:thermometer
+
+    - name: "Temperature Jardin 3 Validee"
+      unique_id: temperature_jardin_3_validee
+      device_class: temperature
+      state_class: measurement
+      unit_of_measurement: "°C"
+      availability: >
+        {% set brut = states('sensor.temperature_jardin_3') | float(none) %}
+        {% set obj = states.sensor.temperature_jardin_3 %}
+        {% if brut is none or obj is none %}
+          {{ false }}
+        {% else %}
+          {% set age = as_timestamp(now()) - as_timestamp(obj.last_updated) %}
+          {{ -10 <= brut <= 50 and age <= 600 }}
+        {% endif %}
+      state: >
+        {{ states('sensor.temperature_jardin_3') | float | round(1) }}
+      attributes:
+        source_brute: "sensor.temperature_jardin_3"
+        ttl_validation_s: 600
+        age_source_s: >
+          {% set obj = states.sensor.temperature_jardin_3 %}
+          {% if obj is none %}
+            {{ none }}
+          {% else %}
+            {{ (as_timestamp(now()) - as_timestamp(obj.last_updated)) | int(0) }}
+          {% endif %}
+      icon: mdi:thermometer

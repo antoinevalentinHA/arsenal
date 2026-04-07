@@ -1,0 +1,31 @@
+# ==========================================================
+#  INPUT BOOLEAN — Fenêtre Vacances active
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Matérialiser l’état temporel de la fenêtre planifiée
+#     des vacances.
+#
+#     Cet état est porté EXCLUSIVEMENT par l’orchestrateur
+#     de fenêtre du domaine Vacances.
+#
+#  ✅ ON :
+#     - l’instant courant est dans la fenêtre
+#       [debut_vacances ; fin_vacances[
+#
+#  ❌ OFF :
+#     - hors fenêtre
+#     - auto désactivé
+#     - paramètres invalides
+#
+#  🚫 Ne fait pas :
+#     - ne décide pas du mode Vacances
+#     - ne pilote aucun équipement
+#     - ne remplace pas `vacances_planifiees_actives`
+#
+#  🧱 Principe Arsenal :
+#     Support temporel matérialisé
+# ==========================================================
+
+vacances_fenetre_active:
+  name: Fenêtre Vacances active
+  icon: mdi:calendar-arrow-right

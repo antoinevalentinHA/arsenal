@@ -36,10 +36,10 @@ views:
                 name: ⚙️ Modes
 
               - type: custom:button-card
-                template: carte_mode_maison_synthese
-                entity: input_select.mode_maison
-                name: Mode
-                icon: mdi:home-switch
+                template: carte_vacances_demande_manuelle
+                entity: input_boolean.vacances_demande_manuel
+                name: Vacances
+                icon: mdi:beach
 
               - type: custom:button-card
                 template: carte_mode_babysitting_synthese

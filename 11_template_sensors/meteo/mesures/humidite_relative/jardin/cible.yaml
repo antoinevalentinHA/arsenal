@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — FUSION
+#     Humidite relative jardin — Cible robuste instantanee
+# ----------------------------------------------------------
+# 🎯 ROLE
+#     Produire la valeur robuste instantanee exploitable en aval
+# ----------------------------------------------------------
+# ⚙️ PARAMETRES
+#     δ_hr_coherence = 5 % HR
+#     Plage admissible contrat : [3 – 8] % HR
+#     Gouvernance : revision annuelle
+# ----------------------------------------------------------
+# 📐 REGLE DE FUSION
+#     0 retenue   → indisponible
+#     1 retenue   → valeur unique
+#     2+ retenues → test coherence sur v1 et v2 (les deux plus petites)
+#                   |v2 - v1| <= 5 → (v1 + v2) / 2
+#                   |v2 - v1| >  5 → mediane des retenues
+#                   v3+ ignorees volontairement si coherence validee
+# ==========================================================
+
+- sensor:
+
+    - name: "Humidite relative jardin cible robuste instantanee"
+      unique_id: humidite_relative_jardin_cible_robuste_instantanee
+      unit_of_measurement: "%"
+      device_class: humidity
+      state_class: measurement
+      availability: >
+        {% set raw = states('sensor.humidite_relative_jardin_valeurs_retenues') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {{ vals | length > 0 }}
+      state: >
+        {% set raw = states('sensor.humidite_relative_jardin_valeurs_retenues') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {% set n = vals | length %}
+        {% if n == 1 %}
+          {{ vals[0] }}
+        {% else %}
+          {% set s = vals | sort %}
+          {% set v1 = s[0] %}
+          {% set v2 = s[1] %}
+          {% if (v2 - v1) | abs <= 5 %}
+            {{ (v1 + v2) / 2 }}
+          {% else %}
+            {% if n % 2 == 1 %}
+              {{ s[n // 2] }}
+            {% else %}
+              {{ (s[n // 2 - 1] + s[n // 2]) / 2 }}
+            {% endif %}
+          {% endif %}
+        {% endif %}

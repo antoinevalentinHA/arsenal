@@ -25,6 +25,7 @@
 #     - binary_sensor.parametres_invalides_eclairage
 #     - binary_sensor.parametres_invalides_alarme
 #     - binary_sensor.parametres_invalides_ecs
+#     - binary_sensor.parametres_invalides_vacances
 #
 # 🚫 INTERDITS
 #
@@ -49,3 +50,4 @@ parametres_invalides_domaines:
     - binary_sensor.parametres_invalides_eclairage
     - binary_sensor.parametres_invalides_alarme
     - binary_sensor.parametres_invalides_ecs
+    - binary_sensor.parametres_invalides_vacances

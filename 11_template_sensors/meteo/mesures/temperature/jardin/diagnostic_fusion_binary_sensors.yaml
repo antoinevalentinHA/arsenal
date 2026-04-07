@@ -1,0 +1,80 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSORS
+# Température jardin — Détection suspect_chaud
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Détecter, pour chaque source validée, une divergence haute
+#   locale au cycle courant selon le contrat :
+#
+#     valeur_source > mediane_valide + 1.5
+#
+# 🧱 PRINCIPE
+#   - une source invalide ne peut pas être suspect_chaud
+#   - la détection est purement instantanée
+#   - aucune persistance
+#
+# 🛡️ GARANTIES
+#   - aucune validation réimplémentée ici
+#   - aucune exclusion/fusion ici
+#   - aucune stabilisation ici
+#
+# ⚠️ DÉPENDANCE D'ÉVALUATION
+#   Ce fichier consomme `sensor.temperature_jardin_mediane_valide`
+#   défini dans `temperature_jardin_diagnostic_fusion_sensors.yaml`.
+#   Les deux fichiers doivent être chargés dans le même contexte HA.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Temperature Jardin 1 Suspect Chaud"
+      unique_id: temperature_jardin_1_suspect_chaud
+      availability: >
+        {% set valeur = states('sensor.temperature_jardin_1_validee') %}
+        {% set mediane = states('sensor.temperature_jardin_mediane_valide') %}
+        {{ valeur not in ['unknown', 'unavailable']
+           and mediane not in ['unknown', 'unavailable'] }}
+      state: >
+        {% set valeur = states('sensor.temperature_jardin_1_validee') | float(none) %}
+        {% set mediane = states('sensor.temperature_jardin_mediane_valide') | float(none) %}
+        {{ valeur > (mediane + 1.5) }}
+      icon: >
+        {% if is_state('binary_sensor.temperature_jardin_1_suspect_chaud', 'on') %}
+          mdi:thermometer-alert
+        {% else %}
+          mdi:thermometer
+        {% endif %}
+
+    - name: "Temperature Jardin 2 Suspect Chaud"
+      unique_id: temperature_jardin_2_suspect_chaud
+      availability: >
+        {% set valeur = states('sensor.temperature_jardin_2_validee') %}
+        {% set mediane = states('sensor.temperature_jardin_mediane_valide') %}
+        {{ valeur not in ['unknown', 'unavailable']
+           and mediane not in ['unknown', 'unavailable'] }}
+      state: >
+        {% set valeur = states('sensor.temperature_jardin_2_validee') | float(none) %}
+        {% set mediane = states('sensor.temperature_jardin_mediane_valide') | float(none) %}
+        {{ valeur > (mediane + 1.5) }}
+      icon: >
+        {% if is_state('binary_sensor.temperature_jardin_2_suspect_chaud', 'on') %}
+          mdi:thermometer-alert
+        {% else %}
+          mdi:thermometer
+        {% endif %}
+
+    - name: "Temperature Jardin 3 Suspect Chaud"
+      unique_id: temperature_jardin_3_suspect_chaud
+      availability: >
+        {% set valeur = states('sensor.temperature_jardin_3_validee') %}
+        {% set mediane = states('sensor.temperature_jardin_mediane_valide') %}
+        {{ valeur not in ['unknown', 'unavailable']
+           and mediane not in ['unknown', 'unavailable'] }}
+      state: >
+        {% set valeur = states('sensor.temperature_jardin_3_validee') | float(none) %}
+        {% set mediane = states('sensor.temperature_jardin_mediane_valide') | float(none) %}
+        {{ valeur > (mediane + 1.5) }}
+      icon: >
+        {% if is_state('binary_sensor.temperature_jardin_3_suspect_chaud', 'on') %}
+          mdi:thermometer-alert
+        {% else %}
+          mdi:thermometer
+        {% endif %}

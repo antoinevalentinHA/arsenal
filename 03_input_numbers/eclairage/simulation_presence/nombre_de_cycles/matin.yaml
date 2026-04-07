@@ -38,8 +38,8 @@
 # ==========================================================
 # 🔢 Nombre de cycles matin chambre
 # ==========================================================
-nb_cycles_simulation_presence_matin:
-  name: Nombre cycles matin
+nb_cycles_simulation_presence_matin_chambre_parents:
+  name: Nombre cycles matin Chambre Parents
   icon: mdi:counter
   min: 0
   max: 5
@@ -49,8 +49,19 @@ nb_cycles_simulation_presence_matin:
 # ==========================================================
 # 🔢 Nombre de cycles matin garage
 # ==========================================================
-nb_cycles_simulation_presence_garage_matin:
-  name: Nb cycles matin garage
+nb_cycles_simulation_presence_matin_garage:
+  name: Nb cycles matin Garage
+  icon: mdi:counter
+  min: 0
+  max: 5
+  step: 1
+  unit_of_measurement: "cycles"
+
+# ==========================================================
+# 🔢 Nombre de cycles matin entrée
+# ==========================================================
+nb_cycles_simulation_presence_matin_entree:
+  name: Nb cycles matin Entrée
   icon: mdi:counter
   min: 0
   max: 5

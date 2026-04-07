@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom UI :
+#   Besoin refroidissement climatisation admissible
+#
+# 🎯 Rôle :
+#   Porter la vérité persistante de l'admissibilité
+#   décisionnelle du besoin COOL.
+#
+# 🧱 Principe Arsenal :
+#   - Support technique interne
+#   - Aucune logique thermique
+#   - Aucune décision
+#   - Aucune exécution
+#
+# 🧠 Implémentation :
+#   Ce helper est piloté exclusivement par les automatisations
+#   d'admissibilité COOL.
+#
+# 🔌 Exposé via :
+#   - binary_sensor.besoin_clim_cool_admissible
+#
+# 📍 Entité support :
+#   input_boolean.besoin_clim_cool_admissible
+# ==========================================================
+
+besoin_clim_cool_admissible:
+  name: Besoin refroidissement climatisation admissible
+  icon: mdi:snowflake-check

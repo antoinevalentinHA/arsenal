@@ -1,86 +1,43 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Vacances – Désactivation automatique du mode (etat metier)
+#     Vacances – Fin de projection auto
 #
 #  ID : 1009000000005
-# ----------------------------------------------------------
-#  🎯 RÔLE
-#
-#     Automation de SORTIE DE MODE MÉTIER.
-#
-#     Elle restaure le mode *Normal* lorsque l’état métier
-#     "Vacances actives" cesse d’être vrai, tout en étant
-#     encore en mode Maison = Vacances.
-#
-#  🧱 NATURE
-#
-#     - Déclenchement événementiel (template)
-#     - Zéro polling
-#     - Basée sur état métier consolidé
-#
-#  ⚙️ PRINCIPE
-#
-#     - Déclenchement sur état "non vacances" pertinent :
-#         • Vacances actives = OFF
-#         • mode_maison = Vacances
-#     - Vérification optionnelle d’autorisation utilisateur
-#     - Bascule explicite vers "Normal"
-#     - Notifications
-#
-#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
-#
-#     - Ne gère pas la date de retour
-#     - Ne décide pas de l’état "Vacances actives"
-#
-#  ✅ COMPATIBILITÉ
-#
-#     Home Assistant 2024.8+
 # ==========================================================
 
 - id: "1009000000005"
-  alias: "Modes - Vacances - Désactivation auto"
+  alias: "Modes - Vacances - Fin projection auto"
   description: >
-    Repasse en mode *Normal* lorsque l’état métier "Vacances actives"
-    devient faux alors que la maison est encore en mode *Vacances*.
+    Repasse en mode *Normal* lorsque la demande consolidée
+    Vacances devient fausse alors que la maison est encore
+    projetée en mode *Vacances*.
 
-  mode: single
+  mode: restart
 
   trigger:
-    - platform: template
-      value_template: >
-        {{
-          is_state('binary_sensor.vacances_actives', 'off')
-          and is_state('input_select.mode_maison', 'Vacances')
-        }}
+    - platform: state
+      entity_id: binary_sensor.vacances_demandees
+      to: "off"
+
+    - platform: homeassistant
+      event: start
 
   condition:
     - condition: state
-      entity_id: input_boolean.mode_vacances_auto
-      state: "on"
+      entity_id: binary_sensor.vacances_demandees
+      state: "off"
+
+    - condition: state
+      entity_id: input_select.mode_maison
+      state: "Vacances"
 
   action:
-
-    # 🏠 Retour au mode Normal
     - action: input_select.select_option
       target:
         entity_id: input_select.mode_maison
       data:
         option: "Normal"
 
-    # 🔔 Notification persistante
-    - action: persistent_notification.create
+    - action: persistent_notification.dismiss
       data:
-        title: "🏠 Fin des vacances"
-        message: >
-          Le mode *Maison* est repassé automatiquement en *Normal*
-          à {{ now().strftime('%d/%m à %H:%M') }}
-          car l’état métier "Vacances actives" est devenu faux.
-
-    # 📱 Notification mobile
-    - action: script.notification_envoyer
-      data:
-        cible: input_text.telephone_antoine_notify
-        titre: "🏠 Retour à la normale"
-        message: >
-          Mode *Normal* réactivé automatiquement à {{ now().strftime('%H:%M') }}
-          (Vacances actives = OFF).
+        notification_id: projection_vacances

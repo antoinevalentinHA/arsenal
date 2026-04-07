@@ -1,0 +1,26 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS (INPUT_DATETIME)
+#    Humidite relative jardin — Horodatage publication
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#    Stocker l'instant de derniere publication valide
+#    de la valeur stabilisee.
+#
+# 🧱 CONTRAT
+#
+#    - Ecrit simultanement avec input_number associe
+#    - Sert au calcul du TTL (30 minutes)
+#    - Source utilisee par la couche continuite
+#
+# 🚫 INTERDIT
+#
+#    - Aucun calcul
+#    - Aucune interpretation temporelle
+#
+# ==========================================================
+
+humidite_relative_jardin_derniere_publication_valide:
+  name: "Humidite relative jardin derniere publication valide"
+  has_date: true
+  has_time: true

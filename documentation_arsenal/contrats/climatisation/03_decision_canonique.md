@@ -1,7 +1,7 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 03 — Décision canonique
 
-**Version contrat :** v1.2
+**Version contrat :** v1.3
 
 ---
 
@@ -32,18 +32,32 @@ La décision est :
 - jetable,
 - sans mémoire implicite,
 - **non modifiable manuellement**,
-- **non persistante** — ne constitue pas une vérité système.
+- **non persistant** — ne constitue pas une vérité système.
 
 Il ne constitue pas une vérité, mais uniquement la sortie canonique consommée par l'exécution.
 
 ---
 
-## Séparation besoin / autorisation
+## Invariant d'entrée
 
-La décision est dérivée exclusivement de :
+La Décision consomme exclusivement des besoins admissibles :
 
-- **besoins thermiques** — `binary_sensor.besoin_clim_*`
-- **autorisations physiques / métier** — `binary_sensor.autorisation_clim_*`
+- `binary_sensor.besoin_clim_cool_admissible`
+- `binary_sensor.besoin_clim_dry_admissible`
+- `binary_sensor.besoin_clim_heat_admissible`
 
-**Un besoin légitime peut être interdit par une autorisation.**  
-**Une autorisation n'implique jamais une action.**
+Ces besoins sont, par construction, décisionnellement valides.
+
+La Décision ne réalise aucune requalification, filtrage ou validation supplémentaire.
+
+---
+
+## Séparation des responsabilités
+
+- La couche Besoin exprime un fait physique brut.
+- La couche Admissibilité garantit la validité décisionnelle.
+- La Décision consomme uniquement des besoins admissibles.
+
+La Décision ne consomme jamais directement :
+- un besoin brut (`binary_sensor.besoin_clim_*`)
+- une autorisation (`binary_sensor.autorisation_clim_*`)
