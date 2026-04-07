@@ -1,0 +1,307 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Humidite relative stabilisee
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Lissage EWMA + limitation de delta sur la base de :
+#     - sensor.humidite_relative_brute_consolidee_<zone>
+#
+# 🧱 CONTRAT
+#   - alpha : 0.25
+#   - delta_max : 4 %
+#   - TTL memoire : 1800 s
+#   - Abstention explicite : {{ 'unknown' }}
+#
+# 🧪 OBSERVABILITE
+#   - source_brute
+#   - mode_stabilisation
+#   - delta_brute (brute - precedente)
+#   - delta_applique (publiee - precedente)
+#   - alpha
+#   - delta_max
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_chambre_arnaud
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative stabilisee chambre arnaud"
+      unique_id: humidite_relative_stabilisee_chambre_arnaud
+      unit_of_measurement: "%"
+      device_class: humidity
+
+      state: &humidite_stabilisee_state >
+        {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
+        {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
+
+        {% set brute_raw = states(src) %}
+        {% set brute = brute_raw | float(none) %}
+
+        {% set brute_valide =
+          brute_raw not in ['unknown','unavailable','none']
+          and brute is not none
+          and 10 <= brute <= 100
+        %}
+
+        {% set last_raw = this.state %}
+        {% set last_val = last_raw | float(none) %}
+        {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+        {% set now_ts = as_timestamp(now()) %}
+
+        {% set age_ok =
+          last_changed_ts is not none
+          and (now_ts - last_changed_ts) <= 1800
+        %}
+
+        {% set this_exploitable =
+          last_raw not in ['unknown','unavailable','none']
+          and last_val is not none
+          and age_ok
+        %}
+
+        {% if brute_valide and this_exploitable %}
+
+          {% set ewma = 0.25 * brute + 0.75 * last_val %}
+          {% set delta = ewma - last_val %}
+
+          {% if (delta | abs) <= 4 %}
+            {{ ewma | round(0) }}
+          {% else %}
+            {% if delta > 0 %}
+              {{ (last_val + 4) | round(0) }}
+            {% else %}
+              {{ (last_val - 4) | round(0) }}
+            {% endif %}
+          {% endif %}
+
+        {% elif brute_valide and not this_exploitable %}
+          {{ brute | round(0) }}
+
+        {% elif not brute_valide and this_exploitable %}
+          {{ last_val | round(0) }}
+
+        {% else %}
+          {{ 'unknown' }}
+        {% endif %}
+
+      attributes:
+        source_brute: &humidite_stabilisee_source >
+          {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
+          {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
+          {% set brute = states(src) | float(none) %}
+          {{ brute }}
+
+        mode_stabilisation: &humidite_stabilisee_mode >
+          {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
+          {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
+
+          {% set brute_raw = states(src) %}
+          {% set brute = brute_raw | float(none) %}
+
+          {% set brute_valide =
+            brute_raw not in ['unknown','unavailable','none']
+            and brute is not none
+            and 10 <= brute <= 100
+          %}
+
+          {% set last_raw = this.state %}
+          {% set last_val = last_raw | float(none) %}
+          {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+          {% set now_ts = as_timestamp(now()) %}
+
+          {% set age_ok =
+            last_changed_ts is not none
+            and (now_ts - last_changed_ts) <= 1800
+          %}
+
+          {% set this_exploitable =
+            last_raw not in ['unknown','unavailable','none']
+            and last_val is not none
+            and age_ok
+          %}
+
+          {% if brute_valide and this_exploitable %}
+            {% set ewma = 0.25 * brute + 0.75 * last_val %}
+            {% set delta = ewma - last_val %}
+            {% if (delta | abs) <= 4 %}
+              ewma
+            {% else %}
+              limitation_delta
+            {% endif %}
+
+          {% elif brute_valide and not this_exploitable %}
+            initialisation
+
+          {% elif not brute_valide and this_exploitable %}
+            memoire
+
+          {% else %}
+            abstention
+          {% endif %}
+
+        delta_brute: &humidite_stabilisee_delta_brute >
+          {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
+          {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
+
+          {% set brute = states(src) | float(none) %}
+          {% set last = this.state | float(none) %}
+
+          {% if brute is not none and last is not none %}
+            {{ (brute - last) | round(2) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        delta_applique: &humidite_stabilisee_delta_applique >
+          {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
+          {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
+
+          {% set brute_raw = states(src) %}
+          {% set brute = brute_raw | float(none) %}
+
+          {% set brute_valide =
+            brute_raw not in ['unknown','unavailable','none']
+            and brute is not none
+            and 10 <= brute <= 100
+          %}
+
+          {% set last = this.state | float(none) %}
+
+          {% if brute_valide and last is not none %}
+            {% set ewma = 0.25 * brute + 0.75 * last %}
+            {% set delta = ewma - last %}
+
+            {% if (delta | abs) <= 4 %}
+              {{ delta | round(2) }}
+            {% else %}
+              {% if delta > 0 %}
+                4
+              {% else %}
+                -4
+              {% endif %}
+            {% endif %}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        alpha: &humidite_stabilisee_alpha 0.25
+        delta_max: &humidite_stabilisee_delta_max 4
+
+# ----------------------------------------------------------
+# DUPLICATION ZONES
+# ----------------------------------------------------------
+
+- trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_chambre_matthieu
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative stabilisee chambre matthieu"
+      unique_id: humidite_relative_stabilisee_chambre_matthieu
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_stabilisee_state
+      attributes:
+        source_brute: *humidite_stabilisee_source
+        mode_stabilisation: *humidite_stabilisee_mode
+        delta_brute: *humidite_stabilisee_delta_brute
+        delta_applique: *humidite_stabilisee_delta_applique
+        alpha: *humidite_stabilisee_alpha
+        delta_max: *humidite_stabilisee_delta_max
+
+- trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_chambre_parents
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative stabilisee chambre parents"
+      unique_id: humidite_relative_stabilisee_chambre_parents
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_stabilisee_state
+      attributes:
+        source_brute: *humidite_stabilisee_source
+        mode_stabilisation: *humidite_stabilisee_mode
+        delta_brute: *humidite_stabilisee_delta_brute
+        delta_applique: *humidite_stabilisee_delta_applique
+        alpha: *humidite_stabilisee_alpha
+        delta_max: *humidite_stabilisee_delta_max
+
+- trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_sejour
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative stabilisee sejour"
+      unique_id: humidite_relative_stabilisee_sejour
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_stabilisee_state
+      attributes:
+        source_brute: *humidite_stabilisee_source
+        mode_stabilisation: *humidite_stabilisee_mode
+        delta_brute: *humidite_stabilisee_delta_brute
+        delta_applique: *humidite_stabilisee_delta_applique
+        alpha: *humidite_stabilisee_alpha
+        delta_max: *humidite_stabilisee_delta_max
+
+- trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_entree
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative stabilisee entree"
+      unique_id: humidite_relative_stabilisee_entree
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_stabilisee_state
+      attributes:
+        source_brute: *humidite_stabilisee_source
+        mode_stabilisation: *humidite_stabilisee_mode
+        delta_brute: *humidite_stabilisee_delta_brute
+        delta_applique: *humidite_stabilisee_delta_applique
+        alpha: *humidite_stabilisee_alpha
+        delta_max: *humidite_stabilisee_delta_max
+
+- trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_petite_maison
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative stabilisee petite maison"
+      unique_id: humidite_relative_stabilisee_petite_maison
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_stabilisee_state
+      attributes:
+        source_brute: *humidite_stabilisee_source
+        mode_stabilisation: *humidite_stabilisee_mode
+        delta_brute: *humidite_stabilisee_delta_brute
+        delta_applique: *humidite_stabilisee_delta_applique
+        alpha: *humidite_stabilisee_alpha
+        delta_max: *humidite_stabilisee_delta_max

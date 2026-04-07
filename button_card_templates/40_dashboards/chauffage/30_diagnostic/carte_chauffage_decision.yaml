@@ -20,8 +20,7 @@
 # 🎨 SEMANTIQUE
 #     - Cohérent + pas de blocage            -> 🟢 vert    (nominal)
 #     - Blocage actif / protection thermique -> 🟠 orange  (warn — contrainte externe)
-#     - Standby / autorisation en attente
-#       / anticipation / pré-confort         -> 🔵 bleu    (info — état transitoire)
+#     - Pré-confort                          -> 🔵 bleu    (info — état transitoire)
 #     - Incohérence état réel ≠ intention    -> 🔴 rouge   (ko — divergence à investiguer)
 #
 # 🔗 DEPENDANCES
@@ -56,34 +55,34 @@ carte_chauffage_decision:
 
         const labels = {
           confort_force: 'override opérateur',
-          blocage_poele: 'poêle actif',
+          chauffage_non_autorise: 'chauffage non autorisé',
           aeration_en_cours: 'aération en cours',
-          blocage_aeration: 'post-aération',
-          fenetre_ouverte: 'fenêtre ouverte',
+          blocage_aeration_en_cours: 'post-aération',
+          fenetre_ouverte_maison: 'fenêtre ouverte',
+          pre_confort_vacances: 'pré-confort',
           mode_maison_vacances: 'mode vacances',
-          autorisation_en_attente: 'autorisation en attente',
-          standby_force: 'standby forcé',
-          pre_confort_retour_vacances: 'pré-confort',
-          anticipation_meteo: 'anticipation météo',
+          poele_actif: 'poêle actif',
+          besoin_thermique: 'besoin thermique',
           presence_on: 'présence',
+          confort_suffisant: 'confort suffisant',
           absence_protection_thermique: 'protection thermique',
           absence: 'absence'
         };
 
         const blocages = [
-          'blocage_poele',
+          'chauffage_non_autorise',
           'aeration_en_cours',
-          'blocage_aeration',
-          'fenetre_ouverte',
-          'mode_maison_vacances'
+          'blocage_aeration_en_cours',
+          'fenetre_ouverte_maison',
+          'mode_maison_vacances',
+          'poele_actif'
         ];
 
         const r = raison;
         const is_inconnu = (reel === 'Inconnu');
         const is_blocage = blocages.includes(r);
         const is_absence_protection = (r === 'absence_protection_thermique');
-        const is_standby = (r === 'standby_force' || r === 'autorisation_en_attente');
-        const is_info = (r === 'anticipation_meteo' || r === 'pre_confort_retour_vacances');
+        const is_info = (r === 'pre_confort_vacances');
 
         const coherent = (() => {
           if (is_inconnu) return false;
@@ -93,10 +92,10 @@ carte_chauffage_decision:
         })();
 
         const category = (() => {
+          if (!coherent) return 'ko';
           if (is_blocage || is_absence_protection) return 'warn';
-          if (is_standby || is_info) return 'info';
-          if (coherent) return 'ok';
-          return 'ko';
+          if (is_info) return 'info';
+          return 'ok';
         })();
 
         const bg = (() => {

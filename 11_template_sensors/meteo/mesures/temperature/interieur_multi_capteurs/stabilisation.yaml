@@ -1,0 +1,303 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Temperature stabilisee interieure
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Lissage EWMA + limitation de delta sur la base de :
+#     - sensor.temperature_brute_consolidee_<zone>
+#
+# 🧱 CONTRAT
+#   - alpha : 0.35
+#   - delta_max : 0.3 °C
+#   - TTL memoire : 1800 s
+#   - Abstention explicite : {{ 'unknown' }}
+#
+# 🧪 OBSERVABILITE
+#   - source_brute
+#   - mode_stabilisation
+#   - delta_brute (brute - precedente)
+#   - delta_applique (publiee - precedente)
+#   - alpha
+#   - delta_max
+#
+# ⚠️ CONTRAINTE HA
+#   Logique recalculee dans chaque bloc (state + attributs)
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_brute_consolidee_chambre_arnaud
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature stabilisee chambre arnaud"
+      unique_id: temperature_stabilisee_chambre_arnaud
+      device_class: temperature
+      unit_of_measurement: "°C"
+
+      state: &temperature_stabilisee_state >
+        {% set suffixe = this.entity_id | replace('sensor.temperature_stabilisee_', '') %}
+        {% set src = 'sensor.temperature_brute_consolidee_' ~ suffixe %}
+
+        {% set brute_raw = states(src) %}
+        {% set brute = brute_raw | float(none) %}
+
+        {% set brute_valide =
+          brute_raw not in ['unknown','unavailable','none']
+          and brute is not none
+          and 5 <= brute <= 45
+        %}
+
+        {% set last_raw = this.state %}
+        {% set last_val = last_raw | float(none) %}
+        {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+        {% set now_ts = as_timestamp(now()) %}
+        {% set age_ok =
+          last_changed_ts is not none
+          and (now_ts - last_changed_ts) <= 1800
+        %}
+        {% set this_exploitable =
+          last_raw not in ['unknown','unavailable','none']
+          and last_val is not none
+          and age_ok
+        %}
+
+        {% if brute_valide and this_exploitable %}
+          {% set ewma = 0.35 * brute + (1 - 0.35) * last_val %}
+          {% set delta = ewma - last_val %}
+
+          {% if (delta | abs) <= 0.3 %}
+            {{ ewma | round(1) }}
+          {% else %}
+            {% if delta > 0 %}
+              {{ (last_val + 0.3) | round(1) }}
+            {% else %}
+              {{ (last_val - 0.3) | round(1) }}
+            {% endif %}
+          {% endif %}
+
+        {% elif brute_valide and not this_exploitable %}
+          {{ brute | round(1) }}
+
+        {% elif not brute_valide and this_exploitable %}
+          {{ last_val | round(1) }}
+
+        {% else %}
+          {{ 'unknown' }}
+        {% endif %}
+
+      attributes:
+        source_brute: &temperature_stabilisee_source_brute >
+          {% set suffixe = this.entity_id | replace('sensor.temperature_stabilisee_', '') %}
+          {% set src = 'sensor.temperature_brute_consolidee_' ~ suffixe %}
+          {% set brute = states(src) | float(none) %}
+          {{ brute }}
+
+        mode_stabilisation: &temperature_stabilisee_mode >
+          {% set suffixe = this.entity_id | replace('sensor.temperature_stabilisee_', '') %}
+          {% set src = 'sensor.temperature_brute_consolidee_' ~ suffixe %}
+
+          {% set brute_raw = states(src) %}
+          {% set brute = brute_raw | float(none) %}
+
+          {% set brute_valide =
+            brute_raw not in ['unknown','unavailable','none']
+            and brute is not none
+            and 5 <= brute <= 45
+          %}
+
+          {% set last_raw = this.state %}
+          {% set last_val = last_raw | float(none) %}
+          {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+          {% set now_ts = as_timestamp(now()) %}
+          {% set age_ok =
+            last_changed_ts is not none
+            and (now_ts - last_changed_ts) <= 1800
+          %}
+          {% set this_exploitable =
+            last_raw not in ['unknown','unavailable','none']
+            and last_val is not none
+            and age_ok
+          %}
+
+          {% if brute_valide and this_exploitable %}
+            {% set ewma = 0.35 * brute + (1 - 0.35) * last_val %}
+            {% set delta = ewma - last_val %}
+            {% if (delta | abs) <= 0.3 %}
+              ewma
+            {% else %}
+              limitation_delta
+            {% endif %}
+
+          {% elif brute_valide and not this_exploitable %}
+            initialisation
+
+          {% elif not brute_valide and this_exploitable %}
+            memoire
+
+          {% else %}
+            abstention
+          {% endif %}
+
+        delta_brute: &temperature_stabilisee_delta_brute >
+          {% set suffixe = this.entity_id | replace('sensor.temperature_stabilisee_', '') %}
+          {% set src = 'sensor.temperature_brute_consolidee_' ~ suffixe %}
+
+          {% set brute = states(src) | float(none) %}
+          {% set last = this.state | float(none) %}
+
+          {% if brute is not none and last is not none %}
+            {{ (brute - last) | round(3) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        delta_applique: &temperature_stabilisee_delta_applique >
+          {% set suffixe = this.entity_id | replace('sensor.temperature_stabilisee_', '') %}
+          {% set src = 'sensor.temperature_brute_consolidee_' ~ suffixe %}
+
+          {% set brute_raw = states(src) %}
+          {% set brute = brute_raw | float(none) %}
+
+          {% set brute_valide =
+            brute_raw not in ['unknown','unavailable','none']
+            and brute is not none
+            and 5 <= brute <= 45
+          %}
+
+          {% set last = this.state | float(none) %}
+
+          {% if brute_valide and last is not none %}
+            {% set ewma = 0.35 * brute + (1 - 0.35) * last %}
+            {% set delta = ewma - last %}
+
+            {% if (delta | abs) <= 0.3 %}
+              {{ delta | round(3) }}
+            {% else %}
+              {% if delta > 0 %}
+                {{ 0.3 }}
+              {% else %}
+                {{ -0.3 }}
+              {% endif %}
+            {% endif %}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        alpha: &temperature_stabilisee_alpha 0.35
+        delta_max: &temperature_stabilisee_delta_max 0.3
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_brute_consolidee_chambre_matthieu
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature stabilisee chambre matthieu"
+      unique_id: temperature_stabilisee_chambre_matthieu
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_stabilisee_state
+      attributes:
+        source_brute: *temperature_stabilisee_source_brute
+        mode_stabilisation: *temperature_stabilisee_mode
+        delta_brute: *temperature_stabilisee_delta_brute
+        delta_applique: *temperature_stabilisee_delta_applique
+        alpha: *temperature_stabilisee_alpha
+        delta_max: *temperature_stabilisee_delta_max
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_brute_consolidee_chambre_parents
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature stabilisee chambre parents"
+      unique_id: temperature_stabilisee_chambre_parents
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_stabilisee_state
+      attributes:
+        source_brute: *temperature_stabilisee_source_brute
+        mode_stabilisation: *temperature_stabilisee_mode
+        delta_brute: *temperature_stabilisee_delta_brute
+        delta_applique: *temperature_stabilisee_delta_applique
+        alpha: *temperature_stabilisee_alpha
+        delta_max: *temperature_stabilisee_delta_max
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_brute_consolidee_sejour
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature stabilisee sejour"
+      unique_id: temperature_stabilisee_sejour
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_stabilisee_state
+      attributes:
+        source_brute: *temperature_stabilisee_source_brute
+        mode_stabilisation: *temperature_stabilisee_mode
+        delta_brute: *temperature_stabilisee_delta_brute
+        delta_applique: *temperature_stabilisee_delta_applique
+        alpha: *temperature_stabilisee_alpha
+        delta_max: *temperature_stabilisee_delta_max
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_brute_consolidee_entree
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature stabilisee entree"
+      unique_id: temperature_stabilisee_entree
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_stabilisee_state
+      attributes:
+        source_brute: *temperature_stabilisee_source_brute
+        mode_stabilisation: *temperature_stabilisee_mode
+        delta_brute: *temperature_stabilisee_delta_brute
+        delta_applique: *temperature_stabilisee_delta_applique
+        alpha: *temperature_stabilisee_alpha
+        delta_max: *temperature_stabilisee_delta_max
+
+- trigger:
+    - platform: state
+      entity_id: sensor.temperature_brute_consolidee_petite_maison
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature stabilisee petite maison"
+      unique_id: temperature_stabilisee_petite_maison
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_stabilisee_state
+      attributes:
+        source_brute: *temperature_stabilisee_source_brute
+        mode_stabilisation: *temperature_stabilisee_mode
+        delta_brute: *temperature_stabilisee_delta_brute
+        delta_applique: *temperature_stabilisee_delta_applique
+        alpha: *temperature_stabilisee_alpha
+        delta_max: *temperature_stabilisee_delta_max

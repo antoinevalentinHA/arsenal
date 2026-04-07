@@ -26,7 +26,7 @@
 # ==========================================================
 
 - binary_sensor:
-    - name: "Besoin déshumidification climatisation admissible"
+    - name: "Besoin clim dry admissible"
       unique_id: besoin_clim_dry_admissible
       state: >
         {{ is_state('input_boolean.besoin_clim_dry_admissible', 'on') }}

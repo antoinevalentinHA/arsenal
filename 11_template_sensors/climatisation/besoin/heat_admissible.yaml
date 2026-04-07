@@ -26,7 +26,7 @@
 # ==========================================================
 
 - binary_sensor:
-    - name: "Besoin chauffage d'appoint climatisation admissible"
+    - name: "Besoin clim heat admissible"
       unique_id: besoin_clim_heat_admissible
       state: >
         {{ is_state('input_boolean.besoin_clim_heat_admissible', 'on') }}

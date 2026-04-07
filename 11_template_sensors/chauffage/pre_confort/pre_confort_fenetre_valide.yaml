@@ -34,7 +34,7 @@
         {% set fin_ts = states('sensor.pre_confort_fin_ts') %}
 
         {% if debut_ts in UNAV or fin_ts in UNAV %}
-          false
+          off
         {% else %}
           {{ (debut_ts | int(0)) < (fin_ts | int(0)) }}
         {% endif %}

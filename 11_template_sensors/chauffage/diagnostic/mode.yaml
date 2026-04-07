@@ -34,6 +34,10 @@
 #   - Blocages hiérarchiques (hors override) :
 #       → Eco
 #
+#   - Vacances :
+#       → Confort si pré-confort actif
+#       → Sinon Eco
+#
 #   - Présence :
 #       → Confort / Neutre / Eco selon `chauffage_autorisation_cible`
 #       (autorisation, jamais décision autonome)
@@ -73,19 +77,29 @@
            ================================================== #}
         {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
           Eco
-        {% elif is_state('input_boolean.aeration_episode_en_cours', 'on') %}
+        {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
+                 and is_state('input_boolean.aeration_confirmee', 'on') %}
           Eco
         {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
           Eco
         {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
           Eco
+
+        {# ==================================================
+           3. VACANCES — EXCEPTION NORMATIVE PRE-CONFORT
+           ================================================== #}
         {% elif is_state('input_select.mode_maison', 'Vacances') %}
-          Eco
+          {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
+            Confort
+          {% else %}
+            Eco
+          {% endif %}
+
         {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
           Eco
 
         {# ==================================================
-           3. RÉGIME PRÉSENCE — AUTORISATION THERMIQUE
+           4. RÉGIME PRÉSENCE — AUTORISATION THERMIQUE
            ================================================== #}
         {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
 
@@ -95,18 +109,20 @@
             Confort
           {% elif cible == 'neutre' %}
             Neutre
-          {% else %}
+          {% elif cible == 'reduced' %}
             Eco
+          {% else %}
+            Neutre
           {% endif %}
 
         {# ==================================================
-           4. RÉGIME ABSENCE — PROTECTION THERMIQUE
+           5. RÉGIME ABSENCE — PROTECTION THERMIQUE
            ================================================== #}
         {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
           Confort
 
         {# ==================================================
-           5. ABSENCE — SOBRIÉTÉ NOMINALE
+           6. ABSENCE — SOBRIÉTÉ NOMINALE
            ================================================== #}
         {% else %}
           Eco

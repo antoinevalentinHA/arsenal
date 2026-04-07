@@ -1,0 +1,92 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Humidite relative — Facade UI (LTS ready)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Projection pure des humidites stabilisees vers des
+#   entites UI exploitables (LTS compatibles).
+#
+# 🧱 PRINCIPE
+#   - Aucune logique metier
+#   - Aucune correction
+#   - Aucune memoire
+#   - Filtrage UNIQUEMENT via availability
+#
+# 🔒 GARANTIE
+#   - state toujours numerique
+#   - pas de pollution LTS
+# ==========================================================
+
+- sensor:
+
+    - name: "Humidite relative chambre arnaud"
+      unique_id: humidite_relative_chambre_arnaud
+      device_class: humidity
+      state_class: measurement
+      unit_of_measurement: "%"
+
+      availability: >
+        {{ states('sensor.humidite_relative_stabilisee_chambre_arnaud') not in ['unknown','unavailable','none'] }}
+
+      state: >
+        {{ states('sensor.humidite_relative_stabilisee_chambre_arnaud') | float | round(0) }}
+
+    - name: "Humidite relative chambre matthieu"
+      unique_id: humidite_relative_chambre_matthieu
+      device_class: humidity
+      state_class: measurement
+      unit_of_measurement: "%"
+
+      availability: >
+        {{ states('sensor.humidite_relative_stabilisee_chambre_matthieu') not in ['unknown','unavailable','none'] }}
+
+      state: >
+        {{ states('sensor.humidite_relative_stabilisee_chambre_matthieu') | float | round(0) }}
+
+    - name: "Humidite relative chambre parents"
+      unique_id: humidite_relative_chambre_parents
+      device_class: humidity
+      state_class: measurement
+      unit_of_measurement: "%"
+
+      availability: >
+        {{ states('sensor.humidite_relative_stabilisee_chambre_parents') not in ['unknown','unavailable','none'] }}
+
+      state: >
+        {{ states('sensor.humidite_relative_stabilisee_chambre_parents') | float | round(0) }}
+
+    - name: "Humidite relative sejour"
+      unique_id: humidite_relative_sejour
+      device_class: humidity
+      state_class: measurement
+      unit_of_measurement: "%"
+
+      availability: >
+        {{ states('sensor.humidite_relative_stabilisee_sejour') not in ['unknown','unavailable','none'] }}
+
+      state: >
+        {{ states('sensor.humidite_relative_stabilisee_sejour') | float | round(0) }}
+
+    - name: "Humidite relative entree"
+      unique_id: humidite_relative_entree
+      device_class: humidity
+      state_class: measurement
+      unit_of_measurement: "%"
+
+      availability: >
+        {{ states('sensor.humidite_relative_stabilisee_entree') not in ['unknown','unavailable','none'] }}
+
+      state: >
+        {{ states('sensor.humidite_relative_stabilisee_entree') | float | round(0) }}
+
+    - name: "Humidite relative petite maison"
+      unique_id: humidite_relative_petite_maison
+      device_class: humidity
+      state_class: measurement
+      unit_of_measurement: "%"
+
+      availability: >
+        {{ states('sensor.humidite_relative_stabilisee_petite_maison') not in ['unknown','unavailable','none'] }}
+
+      state: >
+        {{ states('sensor.humidite_relative_stabilisee_petite_maison') | float | round(0) }}

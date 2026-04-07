@@ -59,7 +59,7 @@
 # ==========================================================
 
 - id: "10160000000012"
-  alias: "Température jardin — Stabilisation publication"
+  alias: "Météo - Température jardin"
   mode: restart
 
   trigger:

@@ -1,0 +1,116 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Chauffage — Pré-confort retour Vacances — Cycle
+# ----------------------------------------------------------
+# ID : 10240000000026
+#
+# 🎯 RÔLE
+#   Gérer la mémoire de cycle du mécanisme de pré-confort.
+#
+#   - Consommation :
+#       Marque le cycle comme consommé dès que
+#       input_boolean.pre_confort_actif_calcule passe à on.
+#
+#   - Override opérateur :
+#       Marque le cycle comme invalidé dès que
+#       input_boolean.mode_confort_chauffage est activé
+#       pendant la fenêtre effective de pré-confort.
+#
+#   - Réinitialisation :
+#       Remet les deux helpers à off à la fin du cycle Vacances.
+#
+# 🔒 INVARIANTS
+#   - Cette automation ne pilote jamais la fenêtre calculée.
+#   - Cette automation ne décide jamais l’activation du pré-confort.
+#   - Cette automation ne fait que mémoriser des événements de cycle.
+#   - La réinitialisation des marqueurs de cycle n’est autorisée
+#     qu’à la désactivation de binary_sensor.vacances_actives.
+#
+# 🧱 NATURE
+#   - Mémoire de cycle — non décisionnelle
+#   - Complémentaire de l’orchestrateur 10240000000020
+# ==========================================================
+
+- id: "10240000000026"
+  alias: "Chauffage — Pré-confort retour Vacances — Cycle"
+  description: "Mémoire de cycle : consommation, override, réinitialisation."
+  mode: single
+
+  trigger:
+    # --------------------------------------------------
+    # Première activation réelle du pré-confort
+    # --------------------------------------------------
+    - platform: state
+      entity_id: input_boolean.pre_confort_actif_calcule
+      to: "on"
+      id: actif_on
+
+    # --------------------------------------------------
+    # Override opérateur explicite
+    # --------------------------------------------------
+    - platform: state
+      entity_id: input_boolean.mode_confort_chauffage
+      to: "on"
+      id: override_operateur
+
+    # --------------------------------------------------
+    # Fin du cycle Vacances
+    # --------------------------------------------------
+    - platform: state
+      entity_id: binary_sensor.vacances_actives
+      to: "off"
+      id: vacances_off
+
+  condition: []
+
+  action:
+    - choose:
+
+        # --------------------------------------------------
+        # Consommation normale du cycle
+        # --------------------------------------------------
+        - conditions:
+            - condition: trigger
+              id: actif_on
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.pre_confort_cycle_consomme
+
+        # --------------------------------------------------
+        # Override opérateur dans la fenêtre effective
+        # --------------------------------------------------
+        - conditions:
+            - condition: trigger
+              id: override_operateur
+            - condition: state
+              entity_id: binary_sensor.vacances_actives
+              state: "on"
+            - condition: state
+              entity_id: binary_sensor.pre_confort_fenetre_valide
+              state: "on"
+            - condition: template
+              value_template: >
+                {{ (as_timestamp(now()) | int(0)) >= (states('sensor.pre_confort_debut_ts') | int(0))
+                   and (as_timestamp(now()) | int(0)) < (states('sensor.pre_confort_fin_ts') | int(0)) }}
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.pre_confort_cycle_override
+
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.pre_confort_actif_calcule
+
+        # --------------------------------------------------
+        # Réinitialisation stricte à la fin du cycle Vacances
+        # --------------------------------------------------
+        - conditions:
+            - condition: trigger
+              id: vacances_off
+          sequence:
+            - service: input_boolean.turn_off
+              target:
+                entity_id:
+                  - input_boolean.pre_confort_cycle_consomme
+                  - input_boolean.pre_confort_cycle_override

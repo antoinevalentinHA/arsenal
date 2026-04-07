@@ -5,6 +5,11 @@
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF DE DOMAINE — ANTICIPATION THERMIQUE TEMPORISÉE
+#   Révision normative V3.1 :
+#     • §4  : autorisation conditionnelle non prioritaire (ex "forcée")
+#     • §3b : comportement post-override tranché (invalidation définitive)
+#     • §6  : effets reformulés en cohérence avec §4
+#     • §7  : anti-rebond formalisé et opposable
 #
 # 🔒 AUTORITÉ :
 #   Ce document définit le comportement normatif du mécanisme
@@ -128,7 +133,14 @@ En présence d’un forçage opérateur :
 
 - toute logique de pré-confort est neutralisée,
 - seule la souveraineté humaine s’applique,
-- aucune temporisation automatique n’est opposable.
+- aucune temporisation automatique n’est opposable,
+- **le mécanisme de pré-confort est définitivement invalidé pour le cycle Vacances en cours**.
+
+Conséquence impérative :
+
+> 🔒 Le pré-confort ne reprend jamais automatiquement après la fin d’un override
+> opérateur intervenu pendant la fenêtre du cycle courant.
+> Seule l’ouverture d’un nouveau cycle Vacances peut réautoriser un futur pré-confort.
 
 Objectif :
 
@@ -141,24 +153,31 @@ Objectif :
 # 🌡️ 4. PRINCIPE DE FONCTIONNEMENT
 # ----------------------------------------------------------
 
-Lorsque les conditions temporelles sont réunies :
+Lorsque les conditions temporelles et hiérarchiques sont réunies :
 
-- une **autorisation forcée de type `comfort`** est produite,
+- une **autorisation conditionnelle non prioritaire de type `comfort`** est émise,
 - cette autorisation est injectée dans la couche thermostat logique,
-- la Décision Centrale peut décider une montée en confort.
+- la Décision Centrale peut, si toutes les conditions métier restent réunies,
+  décider une montée en confort.
+
+Cette autorisation est strictement soumise à l’ensemble des conditions métier,
+hiérarchiques et de sécurité actives au moment de son exploitation
+par la Décision Centrale.
 
 Mais :
 
 - le régime reste officiellement **Vacances**,
 - toute hiérarchie supérieure continue de s’appliquer,
-- toute abstention reste souveraine.
+- toute abstention reste souveraine,
+- aucune inhibition active ne peut être levée par le seul pré-confort.
 
 Le pré-confort :
 
 - n’est jamais une décision,
 - n’est jamais une transition,
 - n’est jamais une reprise,
-- n’est jamais un retour de présence.
+- n’est jamais un retour de présence,
+- n’est jamais un override.
 
 ---
 
@@ -349,8 +368,11 @@ Statut :
 
 Lorsque le pré-confort est actif :
 
-- l’autorisation thermique simulée devient `comfort`,
-- la Décision Centrale peut décider un passage en confort,
+- une autorisation conditionnelle non prioritaire de type `comfort`
+  est rendue disponible à la couche de décision,
+- la Décision Centrale peut décider un passage en confort
+  si, et seulement si, l’ensemble des conditions métier et hiérarchiques
+  reste satisfait,
 - le régime Vacances reste pleinement actif,
 - toute hiérarchie continue de s’appliquer.
 
@@ -359,7 +381,8 @@ Effets interdits :
 - aucune levée du régime Vacances,
 - aucune simulation de présence,
 - aucune continuité de confort prolongée,
-- aucune annulation automatique post-retour.
+- aucune annulation automatique post-retour,
+- aucune levée implicite d’une inhibition métier ou de sécurité.
 
 ---
 
@@ -374,12 +397,24 @@ Garde-fous absolus :
 - anti-rebond obligatoire,
 - durée maximale impérative.
 
+Définition normative de l’anti-rebond :
+
+> 🔒 Un cycle Vacances, défini comme une occurrence continue de
+> `binary_sensor.vacances_actives = on` depuis son activation jusqu’à sa désactivation,
+> ne peut contenir qu’une seule activation du mécanisme de pré-confort.
+
 Règles :
 
 - aucune activation hors fenêtre définie,
-- aucune réactivation rapprochée autorisée,
-- En fin de fenêtre, l’autorisation simulée comfort est retirée.
-Toute décision ultérieure relève exclusivement de la Décision Centrale.
+- une première activation de `input_boolean.pre_confort_actif_calcule` consomme
+  définitivement le droit à pré-confort pour le cycle courant,
+- toute modification ultérieure de `input_datetime.fin_vacances`,
+  `input_number.duree_prechauffage_retour_vacances`, `input_boolean.pre_confort_enable`
+  ou de tout paramètre annexe ne peut autoriser une seconde activation dans ce même cycle,
+- toute neutralisation anticipée du mécanisme n’ouvre aucun droit à réactivation
+  pour le cycle courant,
+- en fin de fenêtre, l’autorisation simulée `comfort` est retirée,
+- toute décision ultérieure relève exclusivement de la Décision Centrale,
 - aucune continuité de confort possible sans décision fraîche.
 
 Objectifs :

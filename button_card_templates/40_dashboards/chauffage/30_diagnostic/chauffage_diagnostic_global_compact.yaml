@@ -8,9 +8,8 @@
 #
 # 🎯 ROLE
 #     Tuile de synthèse diagnostic du chauffage : agrège programme,
-#     intention calculée, raison active et état des blocages pour
-#     produire un état global classifié avec icône, label et
-#     couleur adaptés. Remplace un affichage markdown.
+#     intention calculée et raison active pour produire un état
+#     global classifié avec icône, label et couleur adaptés.
 #
 # 🧱 NATURE
 #     - Template button-card
@@ -22,30 +21,23 @@
 #     - blocage               -> 🔴 rouge   (verrou thermique actif)
 #     - absence_protection    -> 🟠 orange  (protection thermique absence)
 #     - override              -> 🔵 bleu    (confort forcé opérateur)
-#     - standby               -> 🔵 bleu    (action inhibée)
+#     - pre_confort           -> 🔵 bleu    (état transitoire autorisé)
 #     - absence               -> 🔵 bleu    (surveillance absence)
 #     - attente               -> 🔵 bleu    (attente confort, dérive surveillée)
-#     - anticipation          -> 🔵 bleu    (confort différé météo)
 #     - confort_ok / stable   -> 🟢 vert    (nominal)
 #
 # 🔗 DEPENDANCES
 #     - sensor.programme_chauffage
 #     - sensor.chauffage_mode_calcule
 #     - sensor.chauffage_raison_calculee
-#     - input_boolean.blocage_geofencing
-#     - input_boolean.chauffage_inhibition_geofencing
-#     - input_boolean.chauffage_standby_force
-#     - input_boolean.blocage_chauffage_poele
-#     - input_boolean.chauffage_blocage_aeration
 #
 # ⚠️ CONTRAINTES
 #     - Les 3 sensors principaux sont requis — un seul unavailable bascule en gris
-#     - Les booléens de blocage sont lus en complément de la raison calculée
 #     - Priorité de classification : override > blocage > absence_protection
-#       > standby > absence > anticipation > confort_ok > attente > stable
-#     - triggers_update déclaré explicitement sur les 8 entités sources
+#       > pre_confort > absence > confort_ok > attente > stable
+#     - triggers_update déclaré explicitement sur les 3 entités sources
 #     - Aucune action (tap, hold désactivés)
-#     - La variable `diagnostic` est un objet calculé inline — ne pas surcharger
+#     - La variable `diagnostic` est un objet calculé inline — ne pas la surcharger
 #
 # 🧩 USAGE
 #     type: custom:button-card
@@ -72,11 +64,6 @@ chauffage_diagnostic_global_compact:
     - sensor.programme_chauffage
     - sensor.chauffage_mode_calcule
     - sensor.chauffage_raison_calculee
-    - input_boolean.blocage_geofencing
-    - input_boolean.chauffage_inhibition_geofencing
-    - input_boolean.chauffage_standby_force
-    - input_boolean.blocage_chauffage_poele
-    - input_boolean.chauffage_blocage_aeration
 
   variables:
     diagnostic: |
@@ -86,73 +73,68 @@ chauffage_diagnostic_global_compact:
 
         const programme = st('sensor.programme_chauffage');
         const intention = st('sensor.chauffage_mode_calcule');
-        const raison    = st('sensor.chauffage_raison_calculee');
+        const raison = st('sensor.chauffage_raison_calculee');
 
-        if ([programme,intention,raison].some(v => UNAV.includes(v))) {
+        if ([programme, intention, raison].some(v => UNAV.includes(v))) {
           return { type: 'indisponible' };
         }
 
-        const geo_arme  = st('input_boolean.blocage_geofencing') === 'on';
-        const inhib     = st('input_boolean.chauffage_inhibition_geofencing') === 'on';
-        const standby_b = st('input_boolean.chauffage_standby_force') === 'on';
-        const poele     = st('input_boolean.blocage_chauffage_poele') === 'on';
-        const aeration  = st('input_boolean.chauffage_blocage_aeration') === 'on';
-
         const r = raison;
+        const prog_l = (programme || '').toLowerCase();
+        const intention_l = (intention || '').toLowerCase();
 
         const override = (r === 'confort_force');
 
         const blocages_raison = [
-          'blocage_poele',
-          'blocage_aeration',
+          'chauffage_non_autorise',
           'aeration_en_cours',
-          'fenetre_ouverte',
-          'mode_maison_vacances'
+          'blocage_aeration_en_cours',
+          'fenetre_ouverte_maison',
+          'mode_maison_vacances',
+          'poele_actif'
         ];
 
-        const is_blocage_raison = blocages_raison.includes(r);
-        const is_blocage = poele || aeration || is_blocage_raison;
-
+        const is_blocage = blocages_raison.includes(r);
         const is_absence_protection = (r === 'absence_protection_thermique');
-        const is_standby = standby_b || (r === 'standby_force') || (r === 'autorisation_en_attente');
-        const is_anticipation = (r === 'anticipation_meteo');
+        const is_pre_confort = (r === 'pre_confort_vacances');
+        const is_absence = (r === 'absence');
+
+        const coherent = (() => {
+          if (intention === 'Neutre' && (programme === 'Eco' || programme === 'Confort')) return true;
+          if (intention_l === 'confort' && prog_l.includes('comfort')) return true;
+          if (intention_l === 'eco' && prog_l.includes('eco')) return true;
+          return false;
+        })();
 
         if (override) {
-          return { type: 'override' };
+          return { type: 'override', raison: r };
         }
 
         if (is_blocage) {
-          return { type: 'blocage', r };
+          return { type: 'blocage', raison: r };
         }
 
         if (is_absence_protection) {
-          return { type: 'absence_protection', geo_arme, inhib };
+          return { type: 'absence_protection', raison: r };
         }
 
-        if (is_standby) {
-          return { type: 'standby' };
+        if (is_pre_confort) {
+          return { type: 'pre_confort', raison: r };
         }
 
-        if (r === 'absence') {
-          return { type: 'absence', geo_arme, inhib };
+        if (is_absence) {
+          return { type: 'absence', raison: r };
         }
 
-        const prog_l = (programme || '').toLowerCase();
-        const intention_l = (intention || '').toLowerCase();
-
-        if (intention_l === 'neutre' && prog_l === 'confort') {
-          return { type: 'confort_ok' };
+        if (intention === 'Neutre') {
+          return { type: 'attente', raison: r };
         }
 
-        if (is_anticipation) {
-          return { type: 'anticipation' };
+        if (coherent && r === 'besoin_thermique') {
+          return { type: 'confort_ok', raison: r };
         }
 
-        if (intention_l === 'neutre') {
-          return { type: 'attente' };
-        }
-
-        return { type: 'stable' };
+        return { type: 'stable', raison: r };
       ]]]
 
   icon: |
@@ -162,9 +144,9 @@ chauffage_diagnostic_global_compact:
       if (d.type === 'override') return 'mdi:account-alert';
       if (d.type === 'blocage') return 'mdi:lock-alert';
       if (d.type === 'absence_protection') return 'mdi:shield-home';
-      if (d.type === 'standby') return 'mdi:pause-circle';
+      if (d.type === 'pre_confort') return 'mdi:radiator';
       if (d.type === 'absence') return 'mdi:home-export-outline';
-      if (d.type === 'anticipation') return 'mdi:weather-sunny';
+      if (d.type === 'attente') return 'mdi:timer-sand';
       if (d.type === 'confort_ok') return 'mdi:shield-check';
       if (d.type === 'indisponible') return 'mdi:shield-off';
       return 'mdi:shield-check';
@@ -179,11 +161,10 @@ chauffage_diagnostic_global_compact:
         case 'override': return "Override";
         case 'blocage': return "Bloqué";
         case 'absence_protection': return "Protection";
-        case 'standby': return "Standby";
+        case 'pre_confort': return "Pré-confort";
         case 'absence': return "Absence";
-        case 'anticipation': return "Anticipation";
-        case 'confort_ok': return "Confort OK";
         case 'attente': return "Attente";
+        case 'confort_ok': return "Confort OK";
         default: return "Stable";
       }
     ]]]
@@ -204,20 +185,17 @@ chauffage_diagnostic_global_compact:
       if (d.type === 'absence_protection')
         return "Protection absence • Thermique";
 
-      if (d.type === 'standby')
-        return "Standby • Action inhibée";
+      if (d.type === 'pre_confort')
+        return "Pré-confort Vacances • Autorisation transitoire";
 
       if (d.type === 'absence')
-        return "Protection absence • Surveillance";
-
-      if (d.type === 'anticipation')
-        return "Confort différé • Météo favorable";
-
-      if (d.type === 'confort_ok')
-        return "Confort satisfait • Au repos";
+        return "Absence • Surveillance";
 
       if (d.type === 'attente')
-        return "Attente confort • Surveillance dérive";
+        return "Attente • Autorisation sans action";
+
+      if (d.type === 'confort_ok')
+        return "Confort cohérent • Besoin thermique";
 
       return "Cohérent contrat • Aucune action requise";
     ]]]
@@ -228,27 +206,20 @@ chauffage_diagnostic_global_compact:
           [[[
             const d = variables.diagnostic;
 
-            // Indisponible
-            // Arsenal : gris indispo unknown/unavailable
             if (d.type === 'indisponible')
               return "rgba(158, 158, 158, 0.1)";
 
-            // Blocage / critique
             if (d.type === 'blocage')
               return "rgba(244, 67, 54, 0.2)";
 
-            // Avertissement / dégradé
             if (d.type === 'absence_protection')
               return "rgba(255, 152, 0, 0.2)";
 
-            // Information / technique
             if (d.type === 'override'
-                || d.type === 'standby'
+                || d.type === 'pre_confort'
                 || d.type === 'absence'
-                || d.type === 'attente'
-                || d.type === 'anticipation')
+                || d.type === 'attente')
               return "rgba(33, 150, 243, 0.2)";
 
-            // OK / nominal
             return "rgba(76, 175, 80, 0.2)";
           ]]]

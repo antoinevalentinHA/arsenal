@@ -1,0 +1,357 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Humidite relative brute consolidee
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Consolidation brute symetrique de deux sources physiques
+#   avec abstention stricte et arbitrage par continuite.
+#
+# 🧱 CONTRAT
+#   Voir : sensor.humidite_relative_brute_consolidee_<zone> v1.0
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_arnaud_1
+        - sensor.humidite_relative_chambre_arnaud_2
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative brute consolidee chambre arnaud"
+      unique_id: humidite_relative_brute_consolidee_chambre_arnaud
+      unit_of_measurement: "%"
+      device_class: humidity
+
+      state: &humidite_brute_state >
+        {% set suffixe = this.entity_id | replace('sensor.humidite_relative_brute_consolidee_', '') %}
+        {% set src1 = 'sensor.humidite_relative_' ~ suffixe ~ '_1' %}
+        {% set src2 = 'sensor.humidite_relative_' ~ suffixe ~ '_2' %}
+
+        {% set h1_raw = states(src1) %}
+        {% set h2_raw = states(src2) %}
+
+        {% set h1 = h1_raw | float(none) %}
+        {% set h2 = h2_raw | float(none) %}
+
+        {% set h1_valide =
+          h1_raw not in ['unknown','unavailable','none']
+          and h1 is not none
+          and 10 <= h1 <= 100
+        %}
+        {% set h2_valide =
+          h2_raw not in ['unknown','unavailable','none']
+          and h2 is not none
+          and 10 <= h2 <= 100
+        %}
+
+        {% set last_raw = this.state %}
+        {% set last_val = last_raw | float(none) %}
+        {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+        {% set now_ts = as_timestamp(now()) %}
+        {% set age_ok =
+          last_changed_ts is not none
+          and (now_ts - last_changed_ts) <= 1800
+        %}
+        {% set this_exploitable =
+          last_raw not in ['unknown','unavailable','none']
+          and last_val is not none
+          and age_ok
+        %}
+
+        {% if not h1_valide and not h2_valide %}
+
+          {% if this_exploitable %}
+            {{ last_val | round(0) }}
+          {% else %}
+            {{ 'unknown' }}
+          {% endif %}
+
+        {% elif h1_valide and not h2_valide %}
+          {{ h1 | round(0) }}
+
+        {% elif h2_valide and not h1_valide %}
+          {{ h2 | round(0) }}
+
+        {% else %}
+          {% set ecart = (h1 - h2) | abs %}
+
+          {% if ecart <= 5 %}
+            {{ ((h1 + h2) / 2) | round(0) }}
+
+          {% else %}
+            {% if not this_exploitable %}
+              {{ 'unknown' }}
+            {% else %}
+              {% set d1 = (h1 - last_val) | abs %}
+              {% set d2 = (h2 - last_val) | abs %}
+
+              {% if d1 < d2 %}
+                {{ h1 | round(0) }}
+              {% elif d2 < d1 %}
+                {{ h2 | round(0) }}
+              {% else %}
+                {{ 'unknown' }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+
+      attributes:
+        source_active: &humidite_brute_source >
+          {% set suffixe = this.entity_id | replace('sensor.humidite_relative_brute_consolidee_', '') %}
+          {% set src1 = 'sensor.humidite_relative_' ~ suffixe ~ '_1' %}
+          {% set src2 = 'sensor.humidite_relative_' ~ suffixe ~ '_2' %}
+
+          {% set h1_raw = states(src1) %}
+          {% set h2_raw = states(src2) %}
+
+          {% set h1 = h1_raw | float(none) %}
+          {% set h2 = h2_raw | float(none) %}
+
+          {% set h1_valide =
+            h1_raw not in ['unknown','unavailable','none']
+            and h1 is not none
+            and 10 <= h1 <= 100
+          %}
+          {% set h2_valide =
+            h2_raw not in ['unknown','unavailable','none']
+            and h2 is not none
+            and 10 <= h2 <= 100
+          %}
+
+          {% set last_raw = this.state %}
+          {% set last_val = last_raw | float(none) %}
+          {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+          {% set now_ts = as_timestamp(now()) %}
+          {% set age_ok =
+            last_changed_ts is not none
+            and (now_ts - last_changed_ts) <= 1800
+          %}
+          {% set this_exploitable =
+            last_raw not in ['unknown','unavailable','none']
+            and last_val is not none
+            and age_ok
+          %}
+
+          {% if not h1_valide and not h2_valide %}
+            {% if this_exploitable %}
+              memoire
+            {% else %}
+              abstention
+            {% endif %}
+
+          {% elif h1_valide and not h2_valide %}
+            1
+
+          {% elif h2_valide and not h1_valide %}
+            2
+
+          {% else %}
+            {% set ecart = (h1 - h2) | abs %}
+
+            {% if ecart <= 5 %}
+              moyenne
+            {% else %}
+              {% if not this_exploitable %}
+                abstention
+              {% else %}
+                {% set d1 = (h1 - last_val) | abs %}
+                {% set d2 = (h2 - last_val) | abs %}
+
+                {% if d1 < d2 %}
+                  1
+                {% elif d2 < d1 %}
+                  2
+                {% else %}
+                  abstention
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+
+        ecart_sources: &humidite_brute_ecart >
+          {% set suffixe = this.entity_id | replace('sensor.humidite_relative_brute_consolidee_', '') %}
+          {% set src1 = 'sensor.humidite_relative_' ~ suffixe ~ '_1' %}
+          {% set src2 = 'sensor.humidite_relative_' ~ suffixe ~ '_2' %}
+
+          {% set h1 = states(src1) | float(none) %}
+          {% set h2 = states(src2) | float(none) %}
+
+          {% if h1 is not none and h2 is not none %}
+            {{ (h1 - h2) | abs | round(2) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        mode_resolution: &humidite_brute_mode >
+          {% set suffixe = this.entity_id | replace('sensor.humidite_relative_brute_consolidee_', '') %}
+          {% set src1 = 'sensor.humidite_relative_' ~ suffixe ~ '_1' %}
+          {% set src2 = 'sensor.humidite_relative_' ~ suffixe ~ '_2' %}
+
+          {% set h1_raw = states(src1) %}
+          {% set h2_raw = states(src2) %}
+
+          {% set h1 = h1_raw | float(none) %}
+          {% set h2 = h2_raw | float(none) %}
+
+          {% set h1_valide =
+            h1_raw not in ['unknown','unavailable','none']
+            and h1 is not none
+            and 10 <= h1 <= 100
+          %}
+          {% set h2_valide =
+            h2_raw not in ['unknown','unavailable','none']
+            and h2 is not none
+            and 10 <= h2 <= 100
+          %}
+
+          {% set last_raw = this.state %}
+          {% set last_val = last_raw | float(none) %}
+          {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+          {% set now_ts = as_timestamp(now()) %}
+          {% set age_ok =
+            last_changed_ts is not none
+            and (now_ts - last_changed_ts) <= 1800
+          %}
+          {% set this_exploitable =
+            last_raw not in ['unknown','unavailable','none']
+            and last_val is not none
+            and age_ok
+          %}
+
+          {% if not h1_valide and not h2_valide %}
+            {% if this_exploitable %}
+              memoire
+            {% else %}
+              abstention
+            {% endif %}
+
+          {% elif (h1_valide and not h2_valide) or (h2_valide and not h1_valide) %}
+            source_unique
+
+          {% else %}
+            {% set ecart = (h1 - h2) | abs %}
+
+            {% if ecart <= 5 %}
+              fusion
+            {% else %}
+              {% if not this_exploitable %}
+                abstention
+              {% else %}
+                continuite
+              {% endif %}
+            {% endif %}
+          {% endif %}
+
+# ----------------------------------------------------------
+# DUPLICATION ZONES
+# ----------------------------------------------------------
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_matthieu_1
+        - sensor.humidite_relative_chambre_matthieu_2
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative brute consolidee chambre matthieu"
+      unique_id: humidite_relative_brute_consolidee_chambre_matthieu
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_brute_state
+      attributes:
+        source_active: *humidite_brute_source
+        ecart_sources: *humidite_brute_ecart
+        mode_resolution: *humidite_brute_mode
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_chambre_parents_1
+        - sensor.humidite_relative_chambre_parents_2
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative brute consolidee chambre parents"
+      unique_id: humidite_relative_brute_consolidee_chambre_parents
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_brute_state
+      attributes:
+        source_active: *humidite_brute_source
+        ecart_sources: *humidite_brute_ecart
+        mode_resolution: *humidite_brute_mode
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_sejour_1
+        - sensor.humidite_relative_sejour_2
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative brute consolidee sejour"
+      unique_id: humidite_relative_brute_consolidee_sejour
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_brute_state
+      attributes:
+        source_active: *humidite_brute_source
+        ecart_sources: *humidite_brute_ecart
+        mode_resolution: *humidite_brute_mode
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_entree_1
+        - sensor.humidite_relative_entree_2
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative brute consolidee entree"
+      unique_id: humidite_relative_brute_consolidee_entree
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_brute_state
+      attributes:
+        source_active: *humidite_brute_source
+        ecart_sources: *humidite_brute_ecart
+        mode_resolution: *humidite_brute_mode
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.humidite_relative_petite_maison_1
+        - sensor.humidite_relative_petite_maison_2
+    - platform: time_pattern
+      minutes: "/5"
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Humidite relative brute consolidee petite maison"
+      unique_id: humidite_relative_brute_consolidee_petite_maison
+      unit_of_measurement: "%"
+      device_class: humidity
+      state: *humidite_brute_state
+      attributes:
+        source_active: *humidite_brute_source
+        ecart_sources: *humidite_brute_ecart
+        mode_resolution: *humidite_brute_mode

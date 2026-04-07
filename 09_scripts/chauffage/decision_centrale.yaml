@@ -36,11 +36,14 @@
 #     - Chauffage non autorisé système
 #
 #   🧠 NIVEAU 2 — CONTEXTES MAJEURS (RÉGIME AUTOMATIQUE)
-#     (imposent Réduit hors override opérateur, ordre d'évaluation strict)
+#     (imposent Réduit hors override opérateur, ordre d'évaluation strict,
+#      avec exception normative explicite pour le pré-confort Vacances)
 #     1. Aération en cours et confirmée
 #     2. Blocage aération
 #     3. Fenêtres ouvertes (avec délai)
 #     4. Mode maison = Vacances
+#        - Pré-confort actif -> Confort
+#        - Sinon -> Réduit
 #     5. Poêle actif
 #
 #   🌡️ NIVEAU 3 — CONFORT D'OPPORTUNITÉ (RÉGIME AUTOMATIQUE)
@@ -57,7 +60,8 @@
 #
 #   ➜ Fin de blocage ≠ reprise chauffage
 #   ➜ Passage en Confort uniquement si le BESOIN THERMIQUE
-#     est confirmé par les capteurs métier.
+#     est confirmé par les capteurs métier
+#     ou par le pré-confort Vacances contractuellement autorisé
 #
 #   Objectifs :
 #     - Zéro effet yo-yo
@@ -108,18 +112,19 @@
 #     - Une raison métier traçable (voir table ci-dessous)
 #
 #   Raisons émises :
-#     confort_force              — override opérateur
-#     chauffage_non_autorise     — système non autorisé
-#     aeration_en_cours          — aération en cours et confirmée
-#     blocage_aeration_en_cours  — blocage aération actif
-#     fenetre_ouverte_maison     — fenêtre ouverte (avec délai)
-#     mode_maison_vacances       — mode vacances actif
-#     poele_actif                — poêle en fonctionnement
-#     besoin_thermique           — présence + cible = comfort
-#     presence_on                — présence + cible = neutre
-#     confort_suffisant          — présence + cible = reduced
+#     confort_force                — override opérateur
+#     chauffage_non_autorise       — système non autorisé
+#     aeration_en_cours            — aération en cours et confirmée
+#     blocage_aeration_en_cours    — blocage aération actif
+#     fenetre_ouverte_maison       — fenêtre ouverte (avec délai)
+#     pre_confort_vacances         — pré-confort retour Vacances actif
+#     mode_maison_vacances         — mode vacances actif
+#     poele_actif                  — poêle en fonctionnement
+#     besoin_thermique             — présence + cible = comfort
+#     presence_on                  — présence + cible = neutre
+#     confort_suffisant            — présence + cible = reduced
 #     absence_protection_thermique — inhibition géofencing
-#     absence                    — défaut (absence non inhibée)
+#     absence                      — défaut (absence non inhibée)
 #
 # ----------------------------------------------------------
 # 🧱 GARANTIES SYSTÈME
@@ -157,7 +162,6 @@ chauffage_decision_centrale:
     # ------------------------------------------------------
     # Protection initiale : anti-rebond geoloc
     # ------------------------------------------------------
-
     - alias: "Guard anti-rebond (hors override)"
       condition: template
       value_template: >
@@ -180,7 +184,9 @@ chauffage_decision_centrale:
     - alias: "Set variables"
       variables:
 
+        # --------------------------------------------------
         # Programme chauffage actuel (lecture locale sécurisée)
+        # --------------------------------------------------
         prog_actuel: >
           {% set v = states('sensor.programme_chauffage') | lower %}
           {% if 'eco' in v %}
@@ -191,7 +197,9 @@ chauffage_decision_centrale:
             unknown
           {% endif %}
 
+        # --------------------------------------------------
         # Mode désiré calculé selon le contexte global
+        # --------------------------------------------------
         desired_mode: >
           {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
             comfort
@@ -210,7 +218,11 @@ chauffage_decision_centrale:
             reduced
 
           {% elif is_state('input_select.mode_maison', 'Vacances') %}
-            reduced
+            {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
+              comfort
+            {% else %}
+              reduced
+            {% endif %}
 
           {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
             reduced
@@ -230,6 +242,9 @@ chauffage_decision_centrale:
             reduced
           {% endif %}
 
+        # --------------------------------------------------
+        # Raison métier associée à la décision
+        # --------------------------------------------------
         reason: >
           {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
             confort_force
@@ -248,7 +263,11 @@ chauffage_decision_centrale:
             fenetre_ouverte_maison
 
           {% elif is_state('input_select.mode_maison', 'Vacances') %}
-            mode_maison_vacances
+            {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
+              pre_confort_vacances
+            {% else %}
+              mode_maison_vacances
+            {% endif %}
 
           {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
             poele_actif
@@ -307,26 +326,26 @@ chauffage_decision_centrale:
     - alias: "Decision centrale"
       choose:
 
-        # ---------- Passage en Comfort ----------
+        # --------------------------------------------------
+        # Passage en Comfort
+        # --------------------------------------------------
         - conditions:
             - condition: template
               value_template: "{{ desired_mode == 'comfort' }}"
-            - condition: template
-              value_template: "{{ not is_state('sensor.programme_chauffage', 'Confort') }}"
           sequence:
 
-            # ------------------------------------------------------
+            # --------------------------------------------------
             # Memoire d'intention sessionnelle chauffage
-            # ------------------------------------------------------
+            # --------------------------------------------------
             - service: input_select.select_option
               target:
                 entity_id: input_select.chauffage_mode_session
               data:
                 option: "confort"
 
-            # ------------------------------------------------------
+            # --------------------------------------------------
             # Annulation retry chauffage en attente
-            # ------------------------------------------------------
+            # --------------------------------------------------
             - service: input_boolean.turn_off
               target:
                 entity_id: input_boolean.chauffage_retry_pending
@@ -335,15 +354,18 @@ chauffage_decision_centrale:
               target:
                 entity_id: timer.chauffage_retry
 
-            # ------------------------------------------------------
+            # --------------------------------------------------
             # Execution chauffage
-            # ------------------------------------------------------
+            # --------------------------------------------------
             - alias: "Activer chauffage confort"
               service: script.chauffage_appliquer_consigne
               data:
                 consigne: "{{ states('input_select.chauffage_mode_session') }}"
                 raison: "{{ reason }}"
 
+            # --------------------------------------------------
+            # Anti-rebond post-decision
+            # --------------------------------------------------
             - alias: "Start anti-rebond"
               service: timer.start
               target:
@@ -351,43 +373,44 @@ chauffage_decision_centrale:
 
       default:
 
-        # ---------- Passage en Reduced ----------
+        # --------------------------------------------------
+        # Passage en Reduced
+        # --------------------------------------------------
         - alias: "Activer chauffage reduit"
-          choose:
-            - conditions:
-                - condition: template
-                  value_template: "{{ not is_state('sensor.programme_chauffage', 'Eco') }}"
-              sequence:
+          sequence:
 
-                # ------------------------------------------------------
-                # Memoire d'intention sessionnelle chauffage
-                # ------------------------------------------------------
-                - service: input_select.select_option
-                  target:
-                    entity_id: input_select.chauffage_mode_session
-                  data:
-                    option: "reduite"
+            # --------------------------------------------------
+            # Memoire d'intention sessionnelle chauffage
+            # --------------------------------------------------
+            - service: input_select.select_option
+              target:
+                entity_id: input_select.chauffage_mode_session
+              data:
+                option: "reduite"
 
-                # ------------------------------------------------------
-                # Annulation retry chauffage en attente
-                # ------------------------------------------------------
-                - service: input_boolean.turn_off
-                  target:
-                    entity_id: input_boolean.chauffage_retry_pending
+            # --------------------------------------------------
+            # Annulation retry chauffage en attente
+            # --------------------------------------------------
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.chauffage_retry_pending
 
-                - service: timer.cancel
-                  target:
-                    entity_id: timer.chauffage_retry
+            - service: timer.cancel
+              target:
+                entity_id: timer.chauffage_retry
 
-                # ------------------------------------------------------
-                # Execution chauffage
-                # ------------------------------------------------------
-                - service: script.chauffage_appliquer_consigne
-                  data:
-                    consigne: "{{ states('input_select.chauffage_mode_session') }}"
-                    raison: "{{ reason }}"
+            # --------------------------------------------------
+            # Execution chauffage
+            # --------------------------------------------------
+            - service: script.chauffage_appliquer_consigne
+              data:
+                consigne: "{{ states('input_select.chauffage_mode_session') }}"
+                raison: "{{ reason }}"
 
-        - alias: "Start anti-rebond"
-          service: timer.start
-          target:
-            entity_id: timer.chauffage_geoloc_antirebond
+            # --------------------------------------------------
+            # Anti-rebond post-decision
+            # --------------------------------------------------
+            - alias: "Start anti-rebond"
+              service: timer.start
+              target:
+                entity_id: timer.chauffage_geoloc_antirebond

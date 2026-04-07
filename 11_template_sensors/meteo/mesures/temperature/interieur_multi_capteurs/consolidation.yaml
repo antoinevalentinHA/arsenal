@@ -1,0 +1,404 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Temperature brute consolidee interieure
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Publier une verite thermique brute exploitable par zone
+#   a partir de deux sources physiques :
+#     - sensor.temperature_<zone>_1
+#     - sensor.temperature_<zone>_2
+#
+# 🧱 CONTRAT
+#   - Plage valide : 5..45 °C
+#   - Seuil coherence inter-sources : 0.8 °C
+#   - Memoire TTL : 1800 s via this.last_changed
+#   - Abstention si divergence forte sans continuite
+#
+# 🧪 OBSERVABILITE
+#   - source_active
+#   - ecart_sources
+#   - mode_resolution
+#
+# ⚠️ CONTRAINTE HA
+#   La logique est recalculee independamment dans chaque
+#   bloc template (state + attributs). C'est une contrainte
+#   structurelle Home Assistant, pas une violation du DRY.
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_arnaud_1
+        - sensor.temperature_chambre_arnaud_2
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature brute consolidee chambre arnaud"
+      unique_id: temperature_brute_consolidee_chambre_arnaud
+      device_class: temperature
+      unit_of_measurement: "°C"
+
+      state: &temperature_brute_consolidee_state >
+        {% set suffixe = this.entity_id | replace('sensor.temperature_brute_consolidee_', '') %}
+        {% set src1 = 'sensor.temperature_' ~ suffixe ~ '_1' %}
+        {% set src2 = 'sensor.temperature_' ~ suffixe ~ '_2' %}
+
+        {% set v1_raw = states(src1) %}
+        {% set v2_raw = states(src2) %}
+
+        {% set v1 = v1_raw | float(none) %}
+        {% set v2 = v2_raw | float(none) %}
+
+        {% set v1_valide =
+          v1_raw not in ['unknown', 'unavailable', 'none']
+          and v1 is not none
+          and 5 <= v1 <= 45
+        %}
+        {% set v2_valide =
+          v2_raw not in ['unknown', 'unavailable', 'none']
+          and v2 is not none
+          and 5 <= v2 <= 45
+        %}
+
+        {% set last_raw = this.state %}
+        {% set last_val = last_raw | float(none) %}
+        {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+        {% set now_ts = as_timestamp(now()) %}
+        {% set age_ok =
+          last_changed_ts is not none
+          and (now_ts - last_changed_ts) <= 1800
+        %}
+        {% set this_exploitable =
+          last_raw not in ['unknown', 'unavailable', 'none']
+          and last_val is not none
+          and age_ok
+        %}
+
+        {% if not v1_valide and not v2_valide %}
+          {% if this_exploitable %}
+            {{ last_val | round(1) }}
+          {% else %}
+            {{ 'unknown' }}
+          {% endif %}
+
+        {% elif v1_valide and not v2_valide %}
+          {{ v1 | round(1) }}
+
+        {% elif v2_valide and not v1_valide %}
+          {{ v2 | round(1) }}
+
+        {% else %}
+          {% set ecart = (v1 - v2) | abs %}
+
+          {% if ecart <= 0.8 %}
+            {{ ((v1 + v2) / 2) | round(1) }}
+          {% else %}
+            {% if not this_exploitable %}
+              {{ 'unknown' }}
+            {% else %}
+              {% set d1 = (v1 - last_val) | abs %}
+              {% set d2 = (v2 - last_val) | abs %}
+
+              {% if d1 < d2 %}
+                {{ v1 | round(1) }}
+              {% elif d2 < d1 %}
+                {{ v2 | round(1) }}
+              {% else %}
+                {{ 'unknown' }}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+
+      attributes:
+        source_active: &temperature_brute_consolidee_source_active >
+          {% set suffixe = this.entity_id | replace('sensor.temperature_brute_consolidee_', '') %}
+          {% set src1 = 'sensor.temperature_' ~ suffixe ~ '_1' %}
+          {% set src2 = 'sensor.temperature_' ~ suffixe ~ '_2' %}
+
+          {% set v1_raw = states(src1) %}
+          {% set v2_raw = states(src2) %}
+
+          {% set v1 = v1_raw | float(none) %}
+          {% set v2 = v2_raw | float(none) %}
+
+          {% set v1_valide =
+            v1_raw not in ['unknown', 'unavailable', 'none']
+            and v1 is not none
+            and 5 <= v1 <= 45
+          %}
+          {% set v2_valide =
+            v2_raw not in ['unknown', 'unavailable', 'none']
+            and v2 is not none
+            and 5 <= v2 <= 45
+          %}
+
+          {% set last_raw = this.state %}
+          {% set last_val = last_raw | float(none) %}
+          {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+          {% set now_ts = as_timestamp(now()) %}
+          {% set age_ok =
+            last_changed_ts is not none
+            and (now_ts - last_changed_ts) <= 1800
+          %}
+          {% set this_exploitable =
+            last_raw not in ['unknown', 'unavailable', 'none']
+            and last_val is not none
+            and age_ok
+          %}
+
+          {% if not v1_valide and not v2_valide %}
+            {% if this_exploitable %}
+              memoire
+            {% else %}
+              abstention
+            {% endif %}
+
+          {% elif v1_valide and not v2_valide %}
+            1
+
+          {% elif v2_valide and not v1_valide %}
+            2
+
+          {% else %}
+            {% set ecart = (v1 - v2) | abs %}
+
+            {% if ecart <= 0.8 %}
+              moyenne
+            {% else %}
+              {% if not this_exploitable %}
+                abstention
+              {% else %}
+                {% set d1 = (v1 - last_val) | abs %}
+                {% set d2 = (v2 - last_val) | abs %}
+
+                {% if d1 < d2 %}
+                  1
+                {% elif d2 < d1 %}
+                  2
+                {% else %}
+                  abstention
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+
+        ecart_sources: &temperature_brute_consolidee_ecart_sources >
+          {% set suffixe = this.entity_id | replace('sensor.temperature_brute_consolidee_', '') %}
+          {% set src1 = 'sensor.temperature_' ~ suffixe ~ '_1' %}
+          {% set src2 = 'sensor.temperature_' ~ suffixe ~ '_2' %}
+
+          {% set v1_raw = states(src1) %}
+          {% set v2_raw = states(src2) %}
+
+          {% set v1 = v1_raw | float(none) %}
+          {% set v2 = v2_raw | float(none) %}
+
+          {% set v1_valide =
+            v1_raw not in ['unknown', 'unavailable', 'none']
+            and v1 is not none
+            and 5 <= v1 <= 45
+          %}
+          {% set v2_valide =
+            v2_raw not in ['unknown', 'unavailable', 'none']
+            and v2 is not none
+            and 5 <= v2 <= 45
+          %}
+
+          {% if v1_valide and v2_valide %}
+            {{ ((v1 - v2) | abs) | round(3) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        mode_resolution: &temperature_brute_consolidee_mode_resolution >
+          {% set suffixe = this.entity_id | replace('sensor.temperature_brute_consolidee_', '') %}
+          {% set src1 = 'sensor.temperature_' ~ suffixe ~ '_1' %}
+          {% set src2 = 'sensor.temperature_' ~ suffixe ~ '_2' %}
+
+          {% set v1_raw = states(src1) %}
+          {% set v2_raw = states(src2) %}
+
+          {% set v1 = v1_raw | float(none) %}
+          {% set v2 = v2_raw | float(none) %}
+
+          {% set v1_valide =
+            v1_raw not in ['unknown', 'unavailable', 'none']
+            and v1 is not none
+            and 5 <= v1 <= 45
+          %}
+          {% set v2_valide =
+            v2_raw not in ['unknown', 'unavailable', 'none']
+            and v2 is not none
+            and 5 <= v2 <= 45
+          %}
+
+          {% set last_raw = this.state %}
+          {% set last_val = last_raw | float(none) %}
+          {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
+          {% set now_ts = as_timestamp(now()) %}
+          {% set age_ok =
+            last_changed_ts is not none
+            and (now_ts - last_changed_ts) <= 1800
+          %}
+          {% set this_exploitable =
+            last_raw not in ['unknown', 'unavailable', 'none']
+            and last_val is not none
+            and age_ok
+          %}
+
+          {% if not v1_valide and not v2_valide %}
+            {% if this_exploitable %}
+              memoire
+            {% else %}
+              abstention
+            {% endif %}
+
+          {% elif v1_valide and not v2_valide %}
+            source_unique
+
+          {% elif v2_valide and not v1_valide %}
+            source_unique
+
+          {% else %}
+            {% set ecart = (v1 - v2) | abs %}
+
+            {% if ecart <= 0.8 %}
+              fusion
+            {% else %}
+              {% if not this_exploitable %}
+                abstention
+              {% else %}
+                {% set d1 = (v1 - last_val) | abs %}
+                {% set d2 = (v2 - last_val) | abs %}
+
+                {% if d1 < d2 %}
+                  continuite
+                {% elif d2 < d1 %}
+                  continuite
+                {% else %}
+                  abstention
+                {% endif %}
+              {% endif %}
+            {% endif %}
+          {% endif %}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_matthieu_1
+        - sensor.temperature_chambre_matthieu_2
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature brute consolidee chambre matthieu"
+      unique_id: temperature_brute_consolidee_chambre_matthieu
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_brute_consolidee_state
+      attributes:
+        source_active: *temperature_brute_consolidee_source_active
+        ecart_sources: *temperature_brute_consolidee_ecart_sources
+        mode_resolution: *temperature_brute_consolidee_mode_resolution
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_chambre_parents_1
+        - sensor.temperature_chambre_parents_2
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature brute consolidee chambre parents"
+      unique_id: temperature_brute_consolidee_chambre_parents
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_brute_consolidee_state
+      attributes:
+        source_active: *temperature_brute_consolidee_source_active
+        ecart_sources: *temperature_brute_consolidee_ecart_sources
+        mode_resolution: *temperature_brute_consolidee_mode_resolution
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_sejour_1
+        - sensor.temperature_sejour_2
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature brute consolidee sejour"
+      unique_id: temperature_brute_consolidee_sejour
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_brute_consolidee_state
+      attributes:
+        source_active: *temperature_brute_consolidee_source_active
+        ecart_sources: *temperature_brute_consolidee_ecart_sources
+        mode_resolution: *temperature_brute_consolidee_mode_resolution
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree_1
+        - sensor.temperature_entree_2
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature brute consolidee entree"
+      unique_id: temperature_brute_consolidee_entree
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_brute_consolidee_state
+      attributes:
+        source_active: *temperature_brute_consolidee_source_active
+        ecart_sources: *temperature_brute_consolidee_ecart_sources
+        mode_resolution: *temperature_brute_consolidee_mode_resolution
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_petite_maison_1
+        - sensor.temperature_petite_maison_2
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature brute consolidee petite maison"
+      unique_id: temperature_brute_consolidee_petite_maison
+      device_class: temperature
+      unit_of_measurement: "°C"
+      state: *temperature_brute_consolidee_state
+      attributes:
+        source_active: *temperature_brute_consolidee_source_active
+        ecart_sources: *temperature_brute_consolidee_ecart_sources
+        mode_resolution: *temperature_brute_consolidee_mode_resolution

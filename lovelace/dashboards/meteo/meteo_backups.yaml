@@ -268,3 +268,41 @@ views:
                     template: humidite
                     entity: sensor.humidite_relative_chambre_matthieu_2
                     name: Zigbee
+
+          # ======================================================
+          # PETITE MAISON
+          # ======================================================
+          - type: vertical-stack
+            cards:
+
+              - !include ../../includes/section_headers/petite_maison.yaml
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_petite_maison_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_petite_maison_2
+                    name: Switchbot
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_petite_maison_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_petite_maison_2
+                    name: Switchbot

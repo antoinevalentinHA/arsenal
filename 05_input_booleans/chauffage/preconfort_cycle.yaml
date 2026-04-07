@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     Chauffage — Pré-confort retour Vacances — Cycle
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter la mémoire de cycle du mécanisme de pré-confort.
+#
+#   - input_boolean.pre_confort_cycle_consomme :
+#       Le mécanisme a exercé son droit d’activation dans ce cycle.
+#       Aucune réactivation possible jusqu’à la fin des Vacances.
+#
+#   - input_boolean.pre_confort_cycle_override :
+#       Le mécanisme a été neutralisé par un acte opérateur explicite
+#       pendant la fenêtre effective de pré-confort.
+#       Aucune reprise possible jusqu’à la fin des Vacances.
+#
+# 🔒 RÈGLE DE RÉINITIALISATION
+#   Les deux helpers sont remis à off exclusivement
+#   à la désactivation de binary_sensor.vacances_actives.
+#   Aucune autre condition ne peut les remettre à off.
+#
+# 🧱 INTEGRATION
+#   input_boolean: !include_dir_merge_named 05_input_booleans/
+# ==========================================================
+
+pre_confort_cycle_consomme:
+  name: "Pré-confort — Cycle consommé"
+  icon: mdi:check-circle-outline
+
+pre_confort_cycle_override:
+  name: "Pré-confort — Cycle invalidé (override)"
+  icon: mdi:account-cancel-outline

@@ -123,7 +123,7 @@ views:
             name: 🩺 Systèmes critiques
 
           - type: grid
-            columns: 2
+            columns: 3
             square: false
             cards:
 
@@ -146,43 +146,6 @@ views:
                 hold_action:
                   action: more-info
 
-          - type: grid
-            columns: 3
-            square: false
-            cards:
-
-              # Zigbee – Qualité réseau
-              - type: custom:button-card
-                template: carte_alerte_binaire_critique
-                entity: binary_sensor.zigbee_qualite_radio_degradee
-                name: Zigbee
-                icon: mdi:zigbee
-                state_display: >
-                  [[[
-                    return entity.state === "on" ? "Dégradé" : "Normal";
-                  ]]]
-                tap_action:
-                  action: navigate
-                  navigation_path: /diagnostics-zigbee-dashboard/zigbee
-                hold_action:
-                  action: more-info
-
-              # Bluetooth – Qualité réseau
-              - type: custom:button-card
-                template: carte_alerte_binaire_critique
-                entity: binary_sensor.bluetooth_qualite_radio_degradee
-                name: Bluetooth
-                icon: mdi:bluetooth
-                state_display: >
-                  [[[
-                    return entity.state === "on" ? "Dégradé" : "Normal";
-                  ]]]
-                tap_action:
-                  action: navigate
-                  navigation_path: /diagnostics-bluetooth-dashboard/bluetooth
-                hold_action:
-                  action: more-info
-
               # Boiler Bridge – Santé
               - type: custom:button-card
                 template: boiler_status_health
@@ -200,35 +163,54 @@ views:
           - !include ../includes/cartes/automatisations_desactivees.yaml
 
           ####################################################
-          # 🔌 CONNECTIVITÉ NETATMO HOMEKIT
+          # 📡 CONNECTIVITÉ
           ####################################################
           - type: custom:button-card
             template: section_header
-            name: 📡 Netatmo
+            name: 📡 Connectivité
 
           - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: netatmo_diagnostic
-                entity: sensor.diagnostic_netatmo_arnaud
-                name: Netatmo – Arnaud
-
-              - type: custom:button-card
-                template: netatmo_diagnostic
-                entity: sensor.diagnostic_netatmo_matthieu
-                name: Netatmo – Matthieu
-
-          - type: grid
-            columns: 2
+            columns: 4
             square: false
             cards:
 
+              # Zigbee
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.zigbee_qualite_radio_degradee
+                name: Zigbee
+                icon: mdi:zigbee
+                state_display: >
+                  [[[
+                    return entity.state === "on" ? "Dégradé" : "Normal";
+                  ]]]
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-zigbee-dashboard/zigbee
+                hold_action:
+                  action: more-info
+
+              # Bluetooth
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.bluetooth_qualite_radio_degradee
+                name: Bluetooth
+                icon: mdi:bluetooth
+                state_display: >
+                  [[[
+                    return entity.state === "on" ? "Dégradé" : "Normal";
+                  ]]]
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-bluetooth-dashboard/bluetooth
+                hold_action:
+                  action: more-info
+
+              # WiFi
               - type: custom:button-card
                 template: carte_alerte_binaire_critique
                 entity: binary_sensor.netatmo_wifi_degrade
-                name: WiFi Netatmo
+                name: WiFi
                 icon: mdi:wifi
                 state_display: >
                   [[[
@@ -238,10 +220,11 @@ views:
                   action: navigate
                   navigation_path: /diagnostics-netatmo-wifi-dashboard/wifi
 
+              # RF
               - type: custom:button-card
                 template: carte_alerte_binaire_critique
                 entity: binary_sensor.netatmo_rf_degrade
-                name: RF Netatmo
+                name: RF
                 icon: mdi:radio-tower
                 state_display: >
                   [[[
@@ -343,3 +326,24 @@ views:
                   couleur: sensor.couleur_age_audi
                 triggers_update:
                   - sensor.couleur_age_audi
+
+          ####################################################
+          # 🌡️ NETATMO
+          ####################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🌡️ Netatmo
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: netatmo_diagnostic
+                entity: sensor.diagnostic_netatmo_arnaud
+                name: Netatmo – Arnaud
+
+              - type: custom:button-card
+                template: netatmo_diagnostic
+                entity: sensor.diagnostic_netatmo_matthieu
+                name: Netatmo – Matthieu

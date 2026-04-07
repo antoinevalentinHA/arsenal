@@ -24,18 +24,22 @@
 
       state: >
         {% set UNAV = ['unknown','unavailable','none','None',''] %}
-
         {% set fin_raw = states('input_datetime.fin_vacances') %}
-        {% set duree_h = states('input_number.duree_prechauffage_retour_vacances') | float(0) %}
+        {% set duree_raw = states('input_number.duree_prechauffage_retour_vacances') %}
 
-        {% if fin_raw in UNAV or duree_h <= 0 %}
+        {% if fin_raw in UNAV or duree_raw in UNAV %}
           unknown
         {% else %}
-          {% set fin_dt = strptime(fin_raw, '%Y-%m-%d %H:%M:%S') %}
-          {% if fin_dt is none %}
+          {% set duree_h = duree_raw | float(0) %}
+          {% if duree_h <= 0 %}
             unknown
           {% else %}
-            {{ (as_timestamp(fin_dt) - (duree_h * 3600)) | int(0) }}
+            {% set fin_ts = as_timestamp(fin_raw, default=none) %}
+            {% if fin_ts is none %}
+              unknown
+            {% else %}
+              {{ (fin_ts - (duree_h * 3600)) | int }}
+            {% endif %}
           {% endif %}
         {% endif %}
 
@@ -46,16 +50,15 @@
 
       state: >
         {% set UNAV = ['unknown','unavailable','none','None',''] %}
-
         {% set fin_raw = states('input_datetime.fin_vacances') %}
 
         {% if fin_raw in UNAV %}
           unknown
         {% else %}
-          {% set fin_dt = strptime(fin_raw, '%Y-%m-%d %H:%M:%S') %}
-          {% if fin_dt is none %}
+          {% set fin_ts = as_timestamp(fin_raw, default=none) %}
+          {% if fin_ts is none %}
             unknown
           {% else %}
-            {{ as_timestamp(fin_dt) | int(0) }}
+            {{ fin_ts | int }}
           {% endif %}
         {% endif %}

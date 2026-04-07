@@ -55,6 +55,12 @@
           {% elif duree_h <= 0 %}
             duree_invalide
 
+          {% elif is_state('input_boolean.pre_confort_cycle_override', 'on') %}
+            cycle_override
+
+          {% elif is_state('input_boolean.pre_confort_cycle_consomme', 'on') %}
+            cycle_consomme
+
           {% else %}
             {% set debut_raw = states('input_datetime.pre_confort_debut_calcule') %}
             {% set fin_calc_raw = states('input_datetime.pre_confort_fin_calcule') %}
@@ -63,8 +69,8 @@
               fenetre_invalide
             {% else %}
               {% set now_ts = as_timestamp(now()) %}
-              {% set debut_ts = as_timestamp(debut_raw) %}
-              {% set fin_ts = as_timestamp(fin_calc_raw) %}
+              {% set debut_ts = as_timestamp(debut_raw, default=none) %}
+              {% set fin_ts = as_timestamp(fin_calc_raw, default=none) %}
 
               {% if debut_ts is none or fin_ts is none %}
                 fenetre_invalide

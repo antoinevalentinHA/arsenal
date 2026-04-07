@@ -19,7 +19,7 @@
 # 🎨 SEMANTIQUE
 #     - intention = Confort                              -> 🟢 vert  "Confort requis"
 #     - intention = Neutre                               -> ⚪ gris  "Confort autorisé"
-#     - intention = Eco + raison absence_inhibition      -> ⚪ gris  "Sobriété • protection thermique"
+#     - intention = Eco + raison absence_protection      -> ⚪ gris  "Sobriété • protection thermique"
 #     - intention = Eco + raison absence                 -> ⚪ gris  "Sobriété • absence"
 #     - intention = Eco (autre raison)                   -> ⚪ gris  "Sobriété thermique"
 #     - autre                                            -> état brut
@@ -66,7 +66,7 @@ carte_chauffage_intention:
       }
 
       if (intention === 'Eco') {
-        if (raison === 'absence_inhibition_thermique') {
+        if (raison === 'absence_protection_thermique') {
           return 'Sobriété • protection thermique';
         }
         if (raison === 'absence') {

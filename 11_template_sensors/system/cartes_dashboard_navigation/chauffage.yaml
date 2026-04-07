@@ -2,13 +2,18 @@
 #  TEMPLATE SENSOR : État Dashboard – Chauffage
 # ----------------------------------------------------------
 #  🧠 Rôle :
-#     Fournir un état visuel unique destiné aux dashboards.
+#     Fournir un état visuel synthétique destiné aux dashboards
+#     de navigation (lecture rapide uniquement).
 #
-#  🎯 États possibles :
-#     - alert    → brûleur actif
-#     - confort  → programme Confort
-#     - eco      → programme Eco
-#     - off      → programme Off ou état non qualifié
+#  🎯 États possibles (volontairement réduits) :
+#     - alert    → brûleur actif (chauffe réelle)
+#     - confort  → programme Confort (demande active)
+#     - off      → tout autre état (Eco, Off, inconnu, indisponible)
+#
+#  ⚠️ Simplification assumée :
+#     - Le mode Eco n’est pas distingué (absorbé dans off)
+#     - Les états unknown / unavailable sont absorbés dans off
+#     - Aucun diagnostic fin : usage purement visuel NAV/HUB
 # ==========================================================
 
 - sensor:
@@ -23,10 +28,6 @@
           alert
         {% elif prog == 'Confort' %}
           confort
-        {% elif prog in ['Eco', 'Éco'] %}
-          eco
-        {% elif prog == 'Off' %}
-          off
         {% else %}
           off
         {% endif %}

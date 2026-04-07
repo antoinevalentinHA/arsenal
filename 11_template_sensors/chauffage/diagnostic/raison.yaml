@@ -24,14 +24,18 @@
 # ----------------------------------------------------------
 # 🧠 HIÉRARCHIE DES CAUSES (ORDRE STRICT)
 #
-#   0. Override opérateur (commande souveraine)
-#   1. Blocages hiérarchiques (régime automatique)
-#   2. Autorisation système en attente (hystérésis centrale)
-#   3. Standby forcé
-#   4. Confort d’opportunité (pré-confort, présence)
-#   5. Régime d’absence (avec ou sans protection thermique)
-#
-#   ⚠️ La présence n’est JAMAIS une autorité thermique.
+#   0. Override opérateur
+#   1. Chauffage non autorisé système
+#   2. Aération en cours et confirmée
+#   3. Blocage aération
+#   4. Fenêtre ouverte
+#   5. Vacances
+#      - Pré-confort actif
+#      - Sinon mode vacances
+#   6. Poêle actif
+#   7. Présence / autorisation cible
+#   8. Absence avec protection thermique
+#   9. Absence nominale
 #
 # ----------------------------------------------------------
 # 🛑 GARANTIES
@@ -67,79 +71,62 @@
         {# ======================================================
            👤 NIVEAU 0 — OVERRIDE OPÉRATEUR (SOUVERAIN)
            ====================================================== #}
-
         {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
           confort_force
 
+        {# ======================================================
+           🛑 NIVEAU 1 — INTERDICTIONS SYSTÈME
+           ====================================================== #}
+        {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
+          chauffage_non_autorise
 
         {# ======================================================
-           🛑 NIVEAU 1 — BLOCAGES HIÉRARCHIQUES (AUTOMATIQUE)
+           🧠 NIVEAU 2 — CONTEXTES MAJEURS
            ====================================================== #}
-
-        {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
-          blocage_poele
-
-        {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
-          blocage_aeration
-
-        {% elif is_state('input_boolean.aeration_episode_en_cours', 'on') %}
+        {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
+               and is_state('input_boolean.aeration_confirmee', 'on') %}
           aeration_en_cours
 
+        {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+          blocage_aeration_en_cours
+
         {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
-          fenetre_ouverte
+          fenetre_ouverte_maison
 
-        {% elif is_state('binary_sensor.vacances_actives', 'on') %}
-          mode_maison_vacances
+        {% elif is_state('input_select.mode_maison', 'Vacances') %}
+          {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
+            pre_confort_vacances
+          {% else %}
+            mode_maison_vacances
+          {% endif %}
 
-
-        {# ======================================================
-           🧠 NIVEAU 2 — AUTORISATION SYSTÈME EN ATTENTE
-           (hystérésis centrale, post-blocage)
-           ====================================================== #}
-
-        {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on')
-              and not is_state('input_boolean.chauffage_standby_force', 'on') %}
-          autorisation_en_attente
-
+        {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
+          poele_actif
 
         {# ======================================================
-           🔒 NIVEAU 3 — STANDBY (HYSTÉRÉSIS THERMIQUE)
+           🌡️ NIVEAU 3 — PRÉSENCE / AUTORISATION CIBLE
            ====================================================== #}
-
-        {% elif is_state('input_boolean.chauffage_standby_force', 'on') %}
-          standby_force
-
-
-        {# ======================================================
-           🌡️ NIVEAU 4 — CONFORT D’OPPORTUNITÉ
-           ====================================================== #}
-
-        {% elif is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
-          pre_confort_retour_vacances
-
-        {% elif is_state('input_boolean.chauffage_anticipation_meteo', 'on')
-              and is_state('binary_sensor.meteo_favorable_chauffage', 'on')
-              and is_state('sensor.chauffage_autorisation_cible', 'neutre')
-              and is_state('binary_sensor.presence_famille_unifiee', 'on') %}
-          anticipation_meteo
-
         {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
-          presence_on
-
+          {% set cible = states('sensor.chauffage_autorisation_cible') %}
+          {% if cible == 'comfort' %}
+            besoin_thermique
+          {% elif cible == 'neutre' %}
+            presence_on
+          {% elif cible == 'reduced' %}
+            confort_suffisant
+          {% else %}
+            presence_on
+          {% endif %}
 
         {# ======================================================
-           🟠 NIVEAU 5 — ABSENCE / PROTECTION THERMIQUE
+           🟠 NIVEAU 4 — ABSENCE / PROTECTION THERMIQUE
            ====================================================== #}
-
         {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
           absence_protection_thermique
-
 
         {# ======================================================
            ⚪ FALLBACK — ABSENCE NOMINALE
            ====================================================== #}
-
         {% else %}
           absence
-
         {% endif %}

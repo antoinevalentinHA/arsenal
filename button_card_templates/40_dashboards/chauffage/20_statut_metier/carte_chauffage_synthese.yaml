@@ -8,9 +8,9 @@
 #
 # 🎯 ROLE
 #     Carte de lecture consolidée du chauffage : traduit en langage
-#     humain l'état réel (brûleur), le programme, la raison calculée
-#     et le contexte géofencing. Distingue activité réelle, blocages,
-#     attentes thermiques et repos nominal. Aucune interaction.
+#     humain l'état réel (brûleur), le programme et la raison calculée.
+#     Distingue activité réelle, blocages, attentes thermiques,
+#     pré-confort et repos nominal. Aucune interaction.
 #
 # 🧱 NATURE
 #     - Template button-card
@@ -20,10 +20,10 @@
 # 🎨 SEMANTIQUE
 #     - Brûleur ON                              -> 🔴 rouge   (chauffe réelle)
 #     - raison = confort_force                  -> 🔵 bleu    (override opérateur)
-#     - raison = blocage_poele / aeration /
+#     - raison = poele_actif / aeration /
 #       fenetre_ouverte / vacances / non_autorisé -> 🟠 orange (blocage thermique)
-#     - raison = standby_force / presence_on
-#       (hors confort) / absence               -> 🔵 bleu    (attente thermique)
+#     - raison = pre_confort_vacances
+#       / presence_on / absence                 -> 🔵 bleu    (attente thermique)
 #     - prog = confort + brûleur OFF            -> 🟢 vert    (confort satisfait)
 #     - défaut                                  -> ⚪ gris    (état non classifié)
 #
@@ -32,7 +32,6 @@
 #     - binary_sensor.bruleur_mode_chauffage          : activité réelle brûleur
 #     - sensor.chauffage_raison_calculee              : raison active normalisée Arsenal
 #     - sensor.temperature_consigne_appliquee_locale  : consigne affichée en label
-#     - input_boolean.blocage_geofencing              : contexte absence géofencing
 #
 # ⚠️ CONTRAINTES
 #     - Priorité stricte : brûleur > override > blocage > attente > confort > défaut
@@ -75,56 +74,46 @@ carte_chauffage_synthese:
       const prog = (entity.state || '').toLowerCase();
       const raison = states['sensor.chauffage_raison_calculee']?.state;
       const bruleur = states['binary_sensor.bruleur_mode_chauffage']?.state === 'on';
-      const geofencing = states['input_boolean.blocage_geofencing']?.state === 'on';
 
-      /* 🔥 Chauffage actif */
       if (bruleur) {
         return 'Actif';
       }
 
-      /* 🟦 Override opérateur */
       if (raison === 'confort_force') {
         return 'Override • confort';
       }
 
-      /* ⛔ Blocages thermiques absolus */
       if ([
-        'blocage_poele',
+        'poele_actif',
         'aeration_en_cours',
-        'blocage_aeration',
-        'fenetre_ouverte',
+        'blocage_aeration_en_cours',
+        'fenetre_ouverte_maison',
         'mode_maison_vacances',
         'chauffage_non_autorise'
       ].includes(raison)) {
         return 'Bloqué';
       }
 
-      /* 🔒 Standby — hystérésis thermique */
-      if (raison === 'standby_force') {
-        return 'Attente • thermique';
+      if (raison === 'pre_confort_vacances') {
+        return 'Pré-confort';
       }
 
-      /* 🟢 Repos nominal — confort satisfait */
       if (prog === 'confort') {
         return 'Confort';
       }
 
-      /* ⏳ Attente confort — présence */
       if (raison === 'presence_on' && prog !== 'confort') {
         return 'Attente • confort';
       }
 
-      /* ⏳ Attente protection — absence avec geofencing */
-      if ((prog === 'eco' || prog === 'éco') && raison === 'absence' && geofencing) {
-        return 'Attente • protection';
+      if (raison === 'absence_protection_thermique') {
+        return 'Protection • absence';
       }
 
-      /* ⏳ Attente confort — absence sans geofencing */
-      if ((prog === 'eco' || prog === 'éco') && raison === 'absence' && !geofencing) {
-        return 'Attente • confort';
+      if ((prog === 'eco' || prog === 'éco') && raison === 'absence') {
+        return 'Attente • absence';
       }
 
-      /* 🧊 Régime réduit / veille */
       if (prog === 'eco' || prog === 'éco') return 'Réduit';
       if (prog === 'off' || prog === 'veille' || prog === 'standby') return 'Veille';
 
@@ -140,13 +129,12 @@ carte_chauffage_synthese:
       const raison = states['sensor.chauffage_raison_calculee']?.state;
       const c = states['sensor.temperature_consigne_appliquee_locale']?.state;
       const bruleur = states['binary_sensor.bruleur_mode_chauffage']?.state === 'on';
-      const geofencing = states['input_boolean.blocage_geofencing']?.state === 'on';
 
       const blocages = {
-        blocage_poele: 'poêle actif',
+        poele_actif: 'poêle actif',
         aeration_en_cours: 'aération en cours',
-        blocage_aeration: 'post-aération',
-        fenetre_ouverte: 'fenêtre ouverte',
+        blocage_aeration_en_cours: 'post-aération',
+        fenetre_ouverte_maison: 'fenêtre ouverte',
         mode_maison_vacances: 'mode vacances',
         chauffage_non_autorise: 'chauffage non autorisé'
       };
@@ -169,8 +157,8 @@ carte_chauffage_synthese:
         return `Chauffage bloqué • ${blocages[raison]}`;
       }
 
-      if (raison === 'standby_force') {
-        return 'Attente thermique • seuil non atteint';
+      if (raison === 'pre_confort_vacances') {
+        return 'Pré-confort Vacances • autorisation transitoire';
       }
 
       if (prog === 'confort') {
@@ -181,12 +169,12 @@ carte_chauffage_synthese:
         return 'Confort autorisé • seuil non atteint';
       }
 
-      if ((prog === 'eco' || prog === 'éco') && raison === 'absence' && geofencing) {
+      if (raison === 'absence_protection_thermique') {
         return 'Protection thermique • absence';
       }
 
       if ((prog === 'eco' || prog === 'éco') && raison === 'absence') {
-        return 'Confort autorisé • absence';
+        return 'Sobriété • absence';
       }
 
       return `Régime ${entity.state}`;
@@ -206,7 +194,7 @@ carte_chauffage_synthese:
         card:
           - background-color: rgba(244, 67, 54, 0.2)
 
-    # 🔵 Override opérateur (confort forcé) → BLEU (info/action utile)
+    # 🔵 Override opérateur → BLEU
     - operator: template
       value: |
         [[[
@@ -216,15 +204,15 @@ carte_chauffage_synthese:
         card:
           - background-color: rgba(33, 150, 243, 0.2)
 
-    # ⛔ Blocages absolus → ORANGE
+    # ⛔ Blocages → ORANGE
     - operator: template
       value: |
         [[[
           return [
-            'blocage_poele',
+            'poele_actif',
             'aeration_en_cours',
-            'blocage_aeration',
-            'fenetre_ouverte',
+            'blocage_aeration_en_cours',
+            'fenetre_ouverte_maison',
             'mode_maison_vacances',
             'chauffage_non_autorise'
           ].includes(states['sensor.chauffage_raison_calculee']?.state);
@@ -233,15 +221,16 @@ carte_chauffage_synthese:
         card:
           - background-color: rgba(255, 152, 0, 0.2)
 
-    # ⏳ Attentes thermiques (dont standby) → BLEU (CANON)
+    # 🔵 Attentes / pré-confort / absence → BLEU
     - operator: template
       value: |
         [[[
           const prog = (entity.state || '').toLowerCase();
           const raison = states['sensor.chauffage_raison_calculee']?.state;
           return (
-            raison === 'standby_force' ||
+            raison === 'pre_confort_vacances' ||
             (raison === 'presence_on' && prog !== 'confort') ||
+            raison === 'absence_protection_thermique' ||
             ((prog === 'eco' || prog === 'éco') && raison === 'absence')
           );
         ]]]

@@ -45,7 +45,7 @@
 # ==========================================================
 
 - id: "10160000000013"
-  alias: "Humidité relative jardin — Ecriture valeur stabilisée"
+  alias: "Météo - Humidité relative jardin"
   mode: single
 
   trigger:
