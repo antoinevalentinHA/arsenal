@@ -2,12 +2,17 @@
 #  TEMPLATE SENSOR : État Dashboard – Modes
 # ----------------------------------------------------------
 #  🧠 Rôle :
-#     Convertir le mode de la maison en indicateur visuel
-#     pour le dashboard.
+#     Fournir un indicateur visuel minimal pour la navigation
+#     à partir de l’état global des modes maison.
 #
-#  🎯 États :
-#     - normal → bleu (#1976D2)
-#     - alert  → couleur alternative (à définir)
+#  🎯 États (volontairement réduits) :
+#     - alert → un mode particulier est actif
+#     - off   → état normal
+#
+#  ⚠️ Simplification assumée :
+#     - Aucun détail sur le type de mode actif
+#     - Aucun diagnostic fin
+#     - Usage purement visuel NAV/HUB
 # ==========================================================
 
 - sensor:
@@ -15,10 +20,14 @@
     - name: "etat_modes_dashboard"
       unique_id: etat_modes_dashboard
       state: >
-        {% set mode = states('input_select.mode_maison') %}
+        {% set babysitting = states('input_boolean.mode_babysitting') %}
+        {% set vacances_manuel = states('input_boolean.vacances_demande_manuel') %}
+        {% set mode_maison = states('input_select.mode_maison') %}
 
-        {% if mode == 'Normal' %}
-          normal
-        {% else %}
+        {% if babysitting == 'on'
+              or vacances_manuel == 'on'
+              or mode_maison != 'Normal' %}
           alert
+        {% else %}
+          off
         {% endif %}

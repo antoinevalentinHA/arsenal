@@ -3,19 +3,18 @@
 #     Etat systeme dashboard
 # ----------------------------------------------------------
 # 🎯 ROLE
-#   Produire une synthese exploitable de la sante systeme
-#   pour la navigation et pour une carte de diagnostic compact.
+#   Produire un indicateur visuel minimal pour la navigation.
 #
 # 🧱 PRINCIPE
-#   - alert  : anomalie systeme reelle, indisponibilite d'un signal
-#              structurant, ou derive forte des ressources
-#   - normal : derive moderee sur les ressources
-#   - off    : RAS global
+#   - alert : anomalie systeme structurante ou indisponibilite
+#   - off   : RAS global
 #
-# 🛡️ NOTE DE MAINTENANCE
-#   Les blocs de variables sont volontairement dupliques entre
-#   state et resume, limitation native des template sensors HA.
-#   Toute evolution du perimetre doit etre reportee aux 2 endroits.
+# ⚠️ SIMPLIFICATION ASSUMEE
+#   - Aucun etat intermediaire
+#   - Les degradations radio Zigbee / Bluetooth ne sont pas
+#     exposees ici
+#   - Les derives moderees des ressources ne sont pas exposees ici
+#   - Les details restent reserves aux cartes de diagnostic
 # ==========================================================
 
 - sensor:
@@ -33,8 +32,6 @@
         {% set internet = states('sensor.internet_qualite_7j') %}
         {% set coupure = states('binary_sensor.coupure_secteur') %}
         {% set batterie = states('binary_sensor.batterie_a_remplacer') %}
-        {% set zigbee = states('binary_sensor.zigbee_qualite_radio_degradee') %}
-        {% set bluetooth = states('binary_sensor.bluetooth_qualite_radio_degradee') %}
         {% set boiler_bridge = states('sensor.boiler_bridge_sante') %}
         {% set netatmo_arnaud = states('sensor.diagnostic_netatmo_arnaud') %}
         {% set netatmo_matthieu = states('sensor.diagnostic_netatmo_matthieu') %}
@@ -48,15 +45,12 @@
         ) + (
           couleurs | select('equalto', 'orange') | list
         ) %}
-        {% set couleurs_moderees = couleurs | select('equalto', 'yellow') | list %}
         {% set couleurs_indispo = couleurs | select('in', indispo) | list %}
 
         {% if stable in indispo
               or internet in indispo
               or coupure in indispo
               or batterie in indispo
-              or zigbee in indispo
-              or bluetooth in indispo
               or boiler_bridge in indispo
               or netatmo_arnaud in indispo
               or netatmo_matthieu in indispo
@@ -72,18 +66,12 @@
               or netatmo_matthieu != 'ok'
               or couleurs_critiques | count > 0 %}
           alert
-        {% elif zigbee == 'on'
-              or bluetooth == 'on'
-              or couleurs_moderees | count > 0 %}
-          normal
         {% else %}
           off
         {% endif %}
       icon: >
         {% if this.state == 'alert' %}
           mdi:alert-circle
-        {% elif this.state == 'normal' %}
-          mdi:server-network
         {% else %}
           mdi:server
         {% endif %}
@@ -99,8 +87,6 @@
           {% set internet = states('sensor.internet_qualite_7j') %}
           {% set coupure = states('binary_sensor.coupure_secteur') %}
           {% set batterie = states('binary_sensor.batterie_a_remplacer') %}
-          {% set zigbee = states('binary_sensor.zigbee_qualite_radio_degradee') %}
-          {% set bluetooth = states('binary_sensor.bluetooth_qualite_radio_degradee') %}
           {% set boiler_bridge = states('sensor.boiler_bridge_sante') %}
           {% set netatmo_arnaud = states('sensor.diagnostic_netatmo_arnaud') %}
           {% set netatmo_matthieu = states('sensor.diagnostic_netatmo_matthieu') %}
@@ -114,7 +100,6 @@
           ) + (
             couleurs | select('equalto', 'orange') | list
           ) %}
-          {% set couleurs_moderees = couleurs | select('equalto', 'yellow') | list %}
           {% set couleurs_indispo = couleurs | select('in', indispo) | list %}
 
           {% if stable in indispo %}
@@ -125,10 +110,6 @@
             Etat secteur indisponible
           {% elif batterie in indispo %}
             Etat batteries indisponible
-          {% elif zigbee in indispo %}
-            Etat radio Zigbee indisponible
-          {% elif bluetooth in indispo %}
-            Etat radio Bluetooth indisponible
           {% elif boiler_bridge in indispo %}
             Etat boiler bridge indisponible
           {% elif netatmo_arnaud in indispo %}
@@ -163,12 +144,6 @@
             Diagnostic Netatmo Matthieu en echec reseau
           {% elif couleurs_critiques | count > 0 %}
             Derive ressources significative
-          {% elif zigbee == 'on' %}
-            Qualite radio Zigbee degradee
-          {% elif bluetooth == 'on' %}
-            Qualite radio Bluetooth degradee
-          {% elif couleurs_moderees | count > 0 %}
-            Legere derive ressources
           {% else %}
             Systeme nominal
           {% endif %}
@@ -178,8 +153,6 @@
         secteur: "{{ states('binary_sensor.coupure_secteur') }}"
         batterie: "{{ states('binary_sensor.batterie_a_remplacer') }}"
         automatisations_desactivees: "{{ states('sensor.automatisations_desactivees') }}"
-        zigbee: "{{ states('binary_sensor.zigbee_qualite_radio_degradee') }}"
-        bluetooth: "{{ states('binary_sensor.bluetooth_qualite_radio_degradee') }}"
         boiler_bridge: "{{ states('sensor.boiler_bridge_sante') }}"
         diagnostic_netatmo_arnaud: "{{ states('sensor.diagnostic_netatmo_arnaud') }}"
         diagnostic_netatmo_matthieu: "{{ states('sensor.diagnostic_netatmo_matthieu') }}"

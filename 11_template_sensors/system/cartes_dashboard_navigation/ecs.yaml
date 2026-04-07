@@ -2,13 +2,17 @@
 #  TEMPLATE SENSOR : État Dashboard – ECS
 # ----------------------------------------------------------
 #  🧠 Rôle :
-#     Fournir un état visuel simplifié (2 états) pour le
-#     bouton ECS du tableau de bord Navigation.
+#     Fournir un indicateur visuel minimal pour la navigation
+#     du dashboard ECS.
 #
-#  🎯 États normalisés :
-#     - eco    → ballon à chauffer (bleu)
-#     - alert  → ballon chaud (≥ 39 °C)
-#     - off    → gris (valeur invalide ou inconnue)
+#  🎯 États (volontairement réduits) :
+#     - alert → ECS active ou ballon encore chaud
+#     - off   → rien à signaler
+#
+#  ⚠️ Simplification assumée :
+#     - Aucun état intermédiaire
+#     - Aucun bleu
+#     - Les valeurs invalides retombent sur off
 # ==========================================================
 
 - sensor:
@@ -16,19 +20,16 @@
     - name: "etat_ecs_dashboard"
       unique_id: etat_ecs_dashboard
       state: >
-        {% set raw = states('sensor.ecs_temperature_ballon_securisee') %}
+        {% set consigne_raw = states('sensor.ecs_consigne_chaudiere_securisee') %}
+        {% set temp_raw = states('sensor.ecs_temperature_ballon_securisee') %}
 
-        {# ⚠️ Valeurs invalides #}
-        {% if raw in ['unavailable', 'unknown', 'none'] %}
-          off
+        {% set consigne = consigne_raw | float(none) %}
+        {% set temp = temp_raw | float(none) %}
+
+        {% if consigne is not none and consigne != 10 %}
+          alert
+        {% elif temp is not none and temp > 35 %}
+          alert
         {% else %}
-          {% set t = raw | float(0) %}
-
-          {% if t < 39 %}
-            eco
-          {% elif t >= 39 %}
-            alert
-          {% else %}
-            off
-          {% endif %}
+          off
         {% endif %}
