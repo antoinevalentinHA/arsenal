@@ -1,89 +1,45 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF FORMEL
-#     CHAUFFAGE — TABLE DE DÉCISION CANONIQUE (V3 PRO)
-# ==========================================================
-#
-# 📌 STATUT :
-#   CONTRAT NORMATIF FORMEL — SPÉCIFICATION ULTIME DE DÉCISION
-#
-# 🔒 AUTORITÉ :
-#   Ce document définit la TABLE DE DÉCISION CANONIQUE
-#   du sous-système Chauffage Arsenal.
-#
-#   Il constitue la RÉFÉRENCE FORMELLE UNIQUE décrivant,
-#   pour chaque combinaison de contextes, la décision thermique autorisée.
-#
-#   Il est OPPOSABLE à toute implémentation :
-#     • scripts,
-#     • automatismes,
-#     • moteurs de règles,
-#     • refactors futurs.
-#
-#   Toute divergence entre ce contrat et le comportement réel
-#   constitue une erreur critique de conception.
-#
-#   Subordonné à :
-#     /documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
-#
-#   Implémenté par :
-#     /documentation_arsenal/contrats/chauffage/30_decision_centrale.md
-#
-# ==========================================================
+# ARSENAL — Contrat Normatif Formel
+## Chauffage — Table de Décision Canonique V3
 
-
-# ----------------------------------------------------------
-# 🎯 1. OBJET DU CONTRAT
-# ----------------------------------------------------------
-
-Ce contrat définit la **table de décision canonique** du Chauffage Arsenal.
-
-Il formalise :
-
-- l’ensemble des cas décisionnels légitimes,
-- leur ordre hiérarchique strict,
-- les états finaux autorisés,
-- les interdictions explicites,
-- les règles d’abstention,
-- la cohérence globale du moteur.
-
-Ce document est la **spécification finale opposable**  
-du comportement décisionnel du système Chauffage V3 PRO.
+**Statut :** Contrat normatif formel — spécification ultime de décision — opposable  
+**Subordonné à :** `contrats/chauffage/00_gouvernance_chauffage.md`  
+**Implémenté par :** `contrats/chauffage/30_decision_centrale.md`  
+**Complémentaire de :** `40_blocages.md` · `60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`  
+**Date :** 2026-04-07
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 2. PRINCIPES GÉNÉRAUX DE LA TABLE
-# ----------------------------------------------------------
+## 1. Objet du contrat
 
-Principes structurants :
+Ce contrat définit la table de décision canonique du Chauffage Arsenal.
+
+Il formalise l'ensemble des cas décisionnels légitimes, leur ordre hiérarchique strict, les états finaux autorisés, les interdictions explicites, les règles d'abstention, et la cohérence globale du moteur.
+
+Ce document est la **spécification finale opposable** du comportement décisionnel du système Chauffage V3.
+
+---
+
+## 2. Principes généraux de la table
 
 - la table est évaluée de haut en bas,
 - la première règle applicable est souveraine,
 - aucune règle ultérieure ne peut être évaluée,
 - toute décision est déterministe,
-- aucun cas implicite n’est autorisé.
+- aucun cas implicite n'est autorisé.
 
-Règles cardinales :
-
-- tout cas non listé est interdit,
-- toute ambiguïté est une erreur,
-- toute absence de règle produit une abstention.
+Règles cardinales : tout cas non listé est interdit, toute ambiguïté est une erreur, toute absence de règle produit une abstention.
 
 ---
 
-# ----------------------------------------------------------
-# ⚖️ 3. AXES D’ÉVALUATION OFFICIELS
-# ----------------------------------------------------------
+## 3. Axes d'évaluation officiels
 
-Chaque ligne de la table est évaluée selon les axes suivants :
-
-### 3.1 Blocages hiérarchiques
+### 3.1 Blocages et contextes contraignants
 
 - chauffage autorisé système
 - fenêtres ouvertes
 - aération en cours / bloquée
 - poêle actif / mémoire poêle
-- mode maison Vacances
+- mode maison Vacances (contexte majeur à effet conditionnel — voir §4)
 
 ### 3.2 Régime global
 
@@ -93,48 +49,29 @@ Chaque ligne de la table est évaluée selon les axes suivants :
 
 ### 3.3 Autorisation thermique locale
 
-Valeurs possibles :
+Valeurs possibles : `comfort`, `neutre`, `reduced`.
 
-- `comfort`
-- `neutre`
-- `reduced`
+### 3.4 Sources d'autorisation amont
 
----
+**Override opérateur** via `input_boolean.mode_confort_chauffage` :
 
-### Autorisations forcées amont
+- constitue une commande opérateur souveraine,
+- impose la décision finale `comfort` indépendamment des blocages hiérarchiques et des règles d'abstention,
+- est évalué avant toute application de la table décisionnelle standard,
+- ne contourne jamais les sécurités matérielles hors périmètre Arsenal.
 
-Certaines valeurs d’autorisation peuvent être produites
-par des mécanismes amont non thermiques.
+**Inhibition géofencing** (`input_boolean.chauffage_inhibition_geofencing`) :
 
-Sources reconnues :
+- ne constitue pas un override,
+- est évaluée en régime absence, en fallback après la présence réelle,
+- reste soumise aux blocages hiérarchiques et aux règles d'abstention.
 
-- **override opérateur** via `mode_confort_chauffage`,
-- inhibition géofencing,
-- pré-confort retour vacances.
+**Pré-confort retour vacances** (`input_boolean.pre_confort_actif_calcule`) :
 
-Règles cardinales :
-
-- `mode_confort_chauffage` constitue une **commande opérateur souveraine**.
-- Lorsqu’il est actif, il est équivalent à l’exécution manuelle
-  du script de passage en mode confort.
-- Il impose la décision finale `comfort` indépendamment
-  des blocages hiérarchiques et des règles d’abstention.
-- Il est évalué **avant** toute application de la table décisionnelle standard.
-- Il ne contourne jamais les sécurités matérielles hors périmètre Arsenal.
-
-- Les sources **inhibition géofencing** et **pré-confort retour vacances**
-  ne constituent pas des overrides.
-- Elles sont évaluées strictement comme une autorisation `comfort` standard
-  et restent intégralement soumises :
-  - aux blocages hiérarchiques,
-  - au régime global,
-  - aux règles d’absence / vacances,
-  - aux cas interdits formels.
-
-### 3.4 Inhibition géofencing
-
-- inactive
-- active
+- ne constitue pas un override,
+- est une exception normative interne au contexte `mode_maison = Vacances`,
+- elle est évaluée exclusivement dans ce contexte, pas comme autorisation amont générique,
+- elle reste soumise à l'absence de tout blocage pur actif et à la validation complète de la Décision Centrale.
 
 ### 3.5 État actuel du programme
 
@@ -144,156 +81,84 @@ Règles cardinales :
 
 ---
 
-# ----------------------------------------------------------
-# 🧱 4. PRIORITÉ ABSOLUE — BLOCAGES
-# ----------------------------------------------------------
+## 4. Priorité absolue — blocages
 
-Exception souveraine :
+**Exception souveraine :** lorsque `input_boolean.mode_confort_chauffage` est actif, la présente section n'est pas évaluée. La décision finale imposée est `comfort`.
 
-Lorsque `input_boolean.mode_confort_chauffage` est actif,
-la présente section n’est pas évaluée.
-La décision finale imposée est `comfort`.
+Hors override opérateur, les règles ci-dessous s'appliquent strictement.
 
-Hors override opérateur, les règles ci-dessous s’appliquent strictement.
+| Ordre | Contexte actif | Décision finale | Justification |
+|-------|----------------|-----------------|---------------|
+| 1 | Chauffage non autorisé système | Abstention | Interdiction système |
+| 2 | Fenêtre ouverte | `reduced` | Chauffe vers l'extérieur interdite |
+| 3 | Aération en cours | `reduced` | Respect inertie et purge thermique |
+| 4 | Blocage post-aération | `reduced` | Interdiction reprise prématurée |
+| 5 | Blocage poêle événementiel actif (timer) | `reduced` | Verrou de sûreté temporisé poêle |
+| 6 | Mode maison = Vacances, pré-confort inactif | `reduced` | Sobriété maximale imposée |
+| 6* | Mode maison = Vacances, pré-confort actif *(exception)* | `comfort` | Exception normative explicite |
 
----
+**Exception normative Vacances (ligne 6\*) :** lorsque `input_boolean.pre_confort_actif_calcule` est actif en contexte Vacances, et en absence de tout blocage pur actif (lignes 1 à 5), la Décision Centrale peut produire `comfort`. Cette exception est interne au contexte Vacances. Elle ne constitue pas un contournement de blocage.
 
-| Ordre | Blocage actif                               | Décision finale | Justification |
-|-------|---------------------------------------------|-----------------|---------------|
-| 1     | Chauffage non autorisé système              | Abstention      | Interdiction système (hors override opérateur) |
-| 2     | Fenêtre ouverte                             | `reduced`       | Chauffe vers l’extérieur interdite |
-| 3     | Aération en cours                           | `reduced`       | Respect inertie et purge thermique |
-| 4     | Blocage post-aération                       | `reduced`       | Interdiction reprise prématurée |
-| 5     | Blocage poêle événementiel actif (timer)    | `reduced`       | Verrou de sûreté temporisé poêle |
-| 6     | Mode maison = Vacances                      | `reduced`       | Sobriété maximale imposée |
-
-Règles :
-
-- hors override opérateur, toute autorisation est ignorée,
-- toute inhibition géofencing est annulée,
-- les blocages ci-dessus sont souverains en régime automatique,
-- l’override utilisateur constitue l’unique exception autorisée.
+Règles générales (hors override) : toute autorisation ordinaire est ignorée en présence d'un blocage pur actif. Toute inhibition géofencing est sans effet. Les blocages purs (lignes 1 à 5) sont souverains en régime automatique.
 
 ---
 
-# ----------------------------------------------------------
-# 🌡️ 5. RÉGIME PRÉSENCE — TABLE PRINCIPALE
-# ----------------------------------------------------------
+## 5. Régime présence — table principale
 
-Contexte :  
-- override opérateur inactif  
-- aucun blocage actif  
-- régime = présence  
+**Contexte :** override opérateur inactif · aucun blocage actif · régime = présence
 
 | Autorisation cible | Programme actuel | Décision finale | Règle |
 |-------------------|------------------|-----------------|-------|
-| `comfort`         | `reduced`        | `comfort`       | Besoin thermique avéré |
-| `comfort`         | `comfort`        | Abstention      | Déjà en confort |
-| `neutre`          | `comfort`        | Abstention      | Confort suffisant |
-| `neutre`          | `reduced`        | Abstention      | Sobriété maintenue |
-| `reduced`         | `comfort`        | `reduced`       | Fin de besoin / sobriété |
-| `reduced`         | `reduced`        | Abstention      | Déjà en reduced |
+| `comfort` | `reduced` | `comfort` | Besoin thermique avéré |
+| `comfort` | `comfort` | Abstention | Déjà en confort |
+| `neutre` | `comfort` | Abstention | Confort suffisant |
+| `neutre` | `reduced` | Abstention | Sobriété maintenue |
+| `reduced` | `comfort` | `reduced` | Fin de besoin / sobriété |
+| `reduced` | `reduced` | Abstention | Déjà en reduced |
 
-Règles cardinales :
-
-- `neutre` produit toujours une abstention,
-- aucune oscillation `comfort ↔ reduced` n’est autorisée sans justification thermique,
-- cette table n’est jamais évaluée lorsque `mode_confort_chauffage` est actif.
+Règles cardinales : `neutre` produit toujours une abstention. Aucune oscillation `comfort ↔ reduced` sans justification thermique. Cette table n'est jamais évaluée lorsque `mode_confort_chauffage` est actif.
 
 ---
 
-# ----------------------------------------------------------
-# 🔁 6. RÉGIME ABSENCE — TABLE PRINCIPALE
-# ----------------------------------------------------------
+## 6. Régime absence — table principale
 
-Contexte :  
-- override opérateur inactif  
-- aucun blocage actif  
-- régime = absence  
-- inhibition géofencing inactive  
+**Contexte :** override opérateur inactif · aucun blocage actif · régime = absence · inhibition géofencing inactive
 
 | Autorisation | Programme actuel | Décision finale | Règle |
 |--------------|------------------|-----------------|-------|
-| `comfort`    | `reduced`        | Abstention      | Confort interdit en absence |
-| `comfort`    | `comfort`        | `reduced`       | Retour sobriété |
-| `neutre`     | `comfort`        | `reduced`       | Fin confort absence |
-| `neutre`     | `reduced`        | Abstention      | Sobriété normale |
-| `reduced`    | `comfort`        | `reduced`       | Forçage sobriété |
-| `reduced`    | `reduced`        | Abstention      | État nominal absence |
+| `comfort` | `reduced` | Abstention | Confort interdit en absence |
+| `comfort` | `comfort` | `reduced` | Retour sobriété |
+| `neutre` | `comfort` | `reduced` | Fin confort absence |
+| `neutre` | `reduced` | Abstention | Sobriété normale |
+| `reduced` | `comfort` | `reduced` | Forçage sobriété |
+| `reduced` | `reduced` | Abstention | État nominal absence |
 
-Règle cardinale :
+> En régime automatique d'absence, toute recherche de confort est interdite hors inhibition géofencing.
 
-> ⚠️ En régime automatique d’absence, toute recherche de confort
-> est interdite hors inhibition géofencing.
-
----
-
-### Autorisations forcées en absence
-
-En régime **Vacances effectif** (au sens strict : `binary_sensor.vacances_actives = on`),
-hors override opérateur, toute autorisation `comfort`
-produite :
-
-- par pré-confort retour vacances,
-- par mécanisme amont non utilisateur,
-
-est traitée comme une autorisation locale standard
-et soumise intégralement aux règles suivantes :
-
-- sans inhibition géofencing active :
-  - toute autorisation `comfort` produit une abstention,
-  - aucun passage en confort n’est autorisé.
-
-Note :
-
-Le forçage utilisateur via `mode_confort_chauffage`
-ne relève pas de la présente section.
-Il constitue un override souverain et impose `comfort`
-indépendamment du régime Vacances.
-
-Règle absolue :
-
-> ⚠️ Le pré-confort retour vacances ne peut JAMAIS
-> produire une décision de confort en absence réelle
-> hors inhibition géofencing explicitement active.
+**Note sur le pré-confort retour vacances :** cette source d'autorisation n'est pas évaluée en régime absence standard. Elle est traitée exclusivement dans le contexte `mode_maison = Vacances` (§4, ligne 6\*). Elle ne bénéficie d'aucun effet en dehors de ce contexte, quelle que soit l'activité de `binary_sensor.vacances_actives`.
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 7. ABSENCE AVEC INHIBITION GÉOFENCING ACTIVE
-# ----------------------------------------------------------
+## 7. Absence avec inhibition géofencing active
 
-Contexte :  
-- override opérateur inactif  
-- régime = absence  
-- inhibition géofencing active  
-- aucun blocage hiérarchique  
+**Contexte :** override opérateur inactif · régime = absence · inhibition géofencing active · aucun blocage hiérarchique
 
 | Autorisation simulée | Programme actuel | Décision finale | Justification |
 |---------------------|------------------|-----------------|---------------|
-| `comfort`           | `reduced`        | `comfort`       | Préservation reprise thermique |
-| `comfort`           | `comfort`        | Abstention      | Déjà stabilisé |
-| `neutre`            | `comfort`        | `reduced`       | Fin phase confort différé |
-| `neutre`            | `reduced`        | Abstention      | Sobriété restaurée |
-| `reduced`           | `comfort`        | `reduced`       | Retour sobriété |
-| `reduced`           | `reduced`        | Abstention      | Nominal |
+| `comfort` | `reduced` | `comfort` | Préservation reprise thermique |
+| `comfort` | `comfort` | Abstention | Déjà stabilisé |
+| `neutre` | `comfort` | `reduced` | Fin phase confort différé |
+| `neutre` | `reduced` | Abstention | Sobriété restaurée |
+| `reduced` | `comfort` | `reduced` | Retour sobriété |
+| `reduced` | `reduced` | Abstention | Nominal |
 
-Règles :
-
-- confort strictement temporaire,
-- retour automatique à `reduced` obligatoire,
-- une seule activation par cycle d’absence,
-- cette table n’est jamais évaluée lorsque `mode_confort_chauffage` est actif.
+Règles : confort strictement temporaire, retour automatique à `reduced` obligatoire, une seule activation par cycle d'absence. Cette table n'est jamais évaluée lorsque `mode_confort_chauffage` est actif.
 
 ---
 
-# ----------------------------------------------------------
-# 🔒 8. CAS D’ABSTENTION FORCÉE
-# ----------------------------------------------------------
+## 8. Cas d'abstention forcée
 
-La décision est obligatoirement une abstention lorsque
-l’override opérateur est inactif et que l’un des cas suivants
-est vérifié :
+La décision est obligatoirement une abstention lorsque l'override opérateur est inactif et que l'un des cas suivants est vérifié :
 
 - programme actuel = `unknown`,
 - mode désiré = programme actuel,
@@ -301,89 +166,50 @@ est vérifié :
 - anti-rebond actif,
 - verrou géolocalisation actif.
 
-Ces règles ne s’appliquent jamais lorsque
-`mode_confort_chauffage` est actif.
+Ces règles ne s'appliquent jamais lorsque `mode_confort_chauffage` est actif.
 
-Effet (hors override opérateur) :
+**Effet hors override :** aucune action, aucune notification, aucun log décisionnel.
 
-- aucune action,
-- aucune notification,
-- aucun log décisionnel.
-
-Effet (en override opérateur) :
-
-- la décision est évaluée normalement,
-- un log explicite est obligatoire,
-- la raison `confort_force` est prioritaire.
+**Effet en override :** décision évaluée normalement, log explicite obligatoire, raison `confort_force` prioritaire.
 
 ---
 
-# ----------------------------------------------------------
-# 🛑 9. CAS INTERDITS FORMELLEMENT
-# ----------------------------------------------------------
+## 9. Cas interdits formellement
 
-Les cas suivants sont STRICTEMENT interdits
-en régime automatique, hors override opérateur :
+Les cas suivants sont strictement interdits en régime automatique, hors override opérateur :
 
 | Cas | Interdiction | Justification |
 |-----|--------------|---------------|
-| Confort en Vacances | ❌ | Sobriété maximale |
+| Confort en Vacances hors pré-confort autorisé | ❌ | Sobriété maximale |
 | Confort avec fenêtre ouverte | ❌ | Chauffe absurde |
 | Confort pendant aération | ❌ | Violation inertie |
 | Confort pendant blocage poêle actif | ❌ | Double source & fenêtre sécurité |
 | Confort sans autorisation | ❌ | Violation séparation faits / décision |
 | Reprise automatique post-blocage | ❌ | Risque oscillation |
 | Maintien confort prolongé en absence | ❌ | Dérive énergétique |
-| Confort produit par pré-confort en régime absence | ❌ | Anticipation hors cadre thermique légitime |
-| Confort produit par pré-confort pendant Vacances | ❌ | Violation sobriété Vacances |
-| Pré-confort cumulée avec inhibition géofencing   | ❌ | Double confort absence interdit |
-| Restauration pré-confort après blocage           | ❌ | Reprise automatique interdite |
+| Confort produit par pré-confort en régime absence | ❌ | Exception hors contexte Vacances |
+| Confort produit par pré-confort hors contexte Vacances | ❌ | Exception bornée à Vacances |
+| Pré-confort cumulé avec inhibition géofencing | ❌ | Double confort absence interdit |
+| Restauration pré-confort après blocage | ❌ | Reprise automatique interdite |
 
-Note :
+Lorsque `mode_confort_chauffage` est actif, les interdictions ci-dessus sont contournables — elles résultent d'un choix opérateur explicite. Dans ce cas : décision autorisée, log explicite obligatoire, raison `confort_force` obligatoire, blocages contournés identifiables.
 
-Lorsque `mode_confort_chauffage` est actif,
-les interdictions ci-dessus sont contournables,
-car elles résultent d’un choix opérateur explicite.
-
-Dans ce cas :
-
-- la décision est autorisée,
-- elle doit être explicitement tracée,
-- la raison `confort_force` est obligatoire,
-- les blocages contournés doivent être identifiables.
-
-Toute apparition d’un cas interdit hors override opérateur constitue :
-
-- une erreur critique,
-- une rupture de contrat,
-- une régression majeure.
+Toute apparition d'un cas interdit hors override opérateur constitue une erreur critique, une rupture de contrat, une régression majeure.
 
 ---
 
-# ----------------------------------------------------------
-# 🔁 10. RÈGLES DE TRANSITION & STABILITÉ
-# ----------------------------------------------------------
-
-Règles globales :
+## 10. Règles de transition & stabilité
 
 - toute transition déclenche un anti-rebond,
 - aucune transition silencieuse,
 - aucune transition sans raison métier,
 - aucune transition en chaîne rapide.
 
-Stabilité :
-
-- priorité à la stabilité sur la réactivité,
-- inertie respectée systématiquement,
-- cycles courts éliminés.
+Priorité à la stabilité sur la réactivité. Inertie respectée systématiquement. Cycles courts éliminés.
 
 ---
 
-# ----------------------------------------------------------
-# 🧱 11. INVARIANTS CANONIQUES
-# ----------------------------------------------------------
-
-Invariants absolus :
+## 11. Invariants canoniques
 
 - une seule règle applicable à un instant donné,
 - une seule décision possible,
@@ -392,53 +218,24 @@ Invariants absolus :
 - aucune exception non documentée hors table,
 - tout override opérateur est explicitement formalisé.
 
-Toute violation constitue :
-
-- une incohérence formelle,
-- une perte de déterminisme,
-- une erreur d’architecture majeure.
+Toute violation constitue une incohérence formelle, une perte de déterminisme, une erreur d'architecture majeure.
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 12. DÉPENDANCES CONTRACTUELLES
-# ----------------------------------------------------------
+## 12. Dépendances contractuelles
 
-Ce contrat est :
+**Subordonné à :** `00_gouvernance_chauffage.md`
 
-- subordonné à :
-  - `00_gouvernance_chauffage.md`
+**Implémenté par :** `30_decision_centrale.md`
 
-- implémenté par :
-  - `30_decision_centrale.md`
+**Complémentaire de :** `40_blocages.md` · `60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`
 
-- complémentaire de :
-  - `40_blocages.md`
-  - `60_absence_inhibition_geofencing.md`
-  - `70_autorisation_thermostat.md`
-
-Il gouverne directement :
-
-- toute transition de programme chauffage,
-- toute validation de décision centrale,
-- toute évolution future du moteur.
+Gouverne directement : toute transition de programme chauffage, toute validation de décision centrale, toute évolution future du moteur.
 
 ---
 
-# ----------------------------------------------------------
-# 📌 13. PORTÉE & STABILITÉ
-# ----------------------------------------------------------
+## 13. Portée & stabilité
 
-Ce contrat est :
+Ce contrat est la référence ultime du moteur Chauffage, stable long terme, intégrant explicitement l'override opérateur comme invariant, modifié uniquement lors d'évolutions majeures, versionné explicitement, et opposable à toute implémentation.
 
-- la référence ultime du moteur Chauffage,
-- stable long terme,
-- intégrant explicitement l’override opérateur comme invariant,
-- modifié uniquement lors d’évolutions majeures,
-- versionné explicitement,
-- opposable à toute implémentation.
-
-Il constitue la **spécification décisionnelle canonique finale  
-du Chauffage Arsenal V3 PRO**.
-
-# ==========================================================
+Il constitue la **spécification décisionnelle canonique finale du Chauffage Arsenal V3**.

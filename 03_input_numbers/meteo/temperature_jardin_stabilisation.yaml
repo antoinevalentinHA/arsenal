@@ -1,27 +1,23 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPERS : Température jardin — Stabilisation
-# ----------------------------------------------------------
-# 🎯 RÔLE
-#   Porter les paramètres et états numériques persistants
-#   utilisés par l'automatisation de stabilisation de
-#   l'axe `sensor.temperature_jardin`.
+# 🧠 ARSENAL — HELPERS
+#     Temperature jardin — Stabilisation
+# ==========================================================
 #
-# 🧱 CONTENU
-#   - alpha EWMA
-#   - delta maximal inter-cycle
-#   - état publié courant
-#   - dernière cible robuste observée
+# STRUCTURE
+#   A. Parametres
+#   B. Memoire filtre
+#   C. Qualification (hors fichier)
 #
-# 🛡️ GARANTIES
-#   - aucun calcul métier
-#   - aucune logique de validation
-#   - aucune logique de fusion
-#   - aucune logique de publication
-#
-# ⚠️ NOTE D'INITIALISATION
-#   Les valeurs numériques initiales ne valent pas publication
-#   métier tant que `input_boolean.temperature_jardin_initialise`
-#   est à `off`.
+# ⚠️ CRITIQUE
+#   temperature_jardin_etat_publie :
+#     - S(t-1) EWMA
+#     - memoire continuite
+#     - verite facade
+# ==========================================================
+
+
+# ==========================================================
+# A. PARAMETRES
 # ==========================================================
 
 temperature_jardin_alpha_ewma:
@@ -43,6 +39,12 @@ temperature_jardin_delta_max:
   icon: mdi:arrow-expand-vertical
   initial: 0.5
 
+
+# ==========================================================
+# B. MEMOIRE FILTRE
+# ==========================================================
+
+# ⚠️ ENTITE CRITIQUE
 temperature_jardin_etat_publie:
   name: "Temperature Jardin - Etat Publie"
   min: -50
@@ -51,7 +53,7 @@ temperature_jardin_etat_publie:
   unit_of_measurement: "°C"
   mode: box
   icon: mdi:thermometer
-  initial: 0
+  initial: -20
 
 temperature_jardin_cible_brute_derniere:
   name: "Temperature Jardin - Cible Brute Derniere"
@@ -61,4 +63,11 @@ temperature_jardin_cible_brute_derniere:
   unit_of_measurement: "°C"
   mode: box
   icon: mdi:thermometer-lines
-  initial: 0
+  initial: -20
+
+
+# ==========================================================
+# C. QUALIFICATION (hors fichier)
+# ==========================================================
+# - input_boolean.temperature_jardin_initialise
+# - input_datetime.temperature_jardin_etat_publie_ts

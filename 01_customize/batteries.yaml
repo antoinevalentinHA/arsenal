@@ -60,11 +60,11 @@ sensor.bouton_sdb_battery:
 ############################################################
 
 sensor.bot_chambre_parents_batterie:
-  friendly_name: "Bouton chambre parents"
+  friendly_name: "Bot chambre parents"
   icon: mdi:gesture-tap-button
 
 sensor.deshumidificateur_batterie:
-  friendly_name: "Bouton déshumidificateur"
+  friendly_name: "Bot déshumidificateur"
   icon: mdi:gesture-tap-button
 
 ############################################################

@@ -28,7 +28,8 @@
 #
 #     Effet :
 #       - impose immédiatement le programme Confort
-#       - contourne les blocages hiérarchiques et les abstentions
+#       - contourne les blocages métier hiérarchiques et les abstentions
+#       - ne contourne pas les gardes techniques non négociables
 #       - reste subordonné aux sécurités matérielles hors périmètre Arsenal
 #
 #   🛑 NIVEAU 1 — INTERDICTIONS SYSTÈME (RÉGIME AUTOMATIQUE)
@@ -55,13 +56,13 @@
 # ----------------------------------------------------------
 # 🔁 HYSTÉRÉSIS DÉCISIONNELLE & ÉTAT D'ATTENTE
 #
-#   Hors override opérateur, ce script ne force JAMAIS
-#   une reprise automatique à la levée d'un blocage ou d'un délai.
+#   Hors override opérateur, la levée d'un blocage ou d'un délai
+#   ne constitue jamais, à elle seule, un motif suffisant de reprise.
 #
-#   ➜ Fin de blocage ≠ reprise chauffage
-#   ➜ Passage en Confort uniquement si le BESOIN THERMIQUE
-#     est confirmé par les capteurs métier
-#     ou par le pré-confort Vacances contractuellement autorisé
+#   ➜ Fin de blocage ≠ reprise par principe
+#   ➜ Passage en Confort uniquement si le calcul métier courant
+#     conclut explicitement à un besoin valide
+#     ou au pré-confort Vacances contractuellement autorisé
 #
 #   Objectifs :
 #     - Zéro effet yo-yo
@@ -75,11 +76,8 @@
 #         Timer actif ET pas d'override → STOP
 #         (contournable par override opérateur)
 #
-#   G2 — Bridge online [CONTRAT SOCLE BOILER]
-#         binary_sensor.boiler_bridge_online != on → STOP
-#         Point d'entrée canonique : c'est ICI que bridge_online
-#         est évalué pour le domaine chauffage consigne.
-#         (non contournable)
+#   SET — Variables principales
+#         desired_mode / reason / prog_actuel calculés ici
 #
 #   G3 — Programme inconnu
 #         prog_actuel == unknown ET pas d'override → STOP
@@ -91,7 +89,11 @@
 #
 #   G5 — Idempotence
 #         desired_mode == prog_actuel → STOP
-#         Zéro appel inutile.
+#         Zéro appel inutile. (non contournable)
+#
+#   G2 — Bridge online [GARDE D'EXÉCUTION PURE]
+#         binary_sensor.boiler_bridge_online != on → STOP
+#         Évalué après décision métier complète.
 #         (non contournable)
 #
 # ----------------------------------------------------------
@@ -132,7 +134,7 @@
 #   - Une seule décision à la fois (mode: restart)
 #   - Zéro appel inutile (G5 idempotence)
 #   - Zéro oscillation en régime automatique (anti-rebond)
-#   - Zéro ambiguïté d'état (prog_actuel normalisé)
+#   - Normalisation locale robuste de prog_actuel avec repli sur unknown
 #   - Override toujours lisible (raison confort_force prioritaire)
 #
 # ----------------------------------------------------------
@@ -169,14 +171,6 @@ chauffage_decision_centrale:
           is_state('input_boolean.mode_confort_chauffage', 'on')
           or is_state('timer.chauffage_geoloc_antirebond', 'idle')
         }}
-
-    # ------------------------------------------------------
-    # Garde capacité d'exécution boiler
-    # ------------------------------------------------------
-    - alias: "Guard boiler bridge online"
-      condition: state
-      entity_id: binary_sensor.boiler_bridge_online
-      state: "on"
 
     # ------------------------------------------------------
     # Variables principales (programme actuel et évaluation)
@@ -319,6 +313,16 @@ chauffage_decision_centrale:
     - alias: "Guard aucun changement"
       condition: template
       value_template: "{{ desired_mode != prog_actuel }}"
+
+    # ------------------------------------------------------
+    # Garde d'exécution : capacité boiler (non contournable)
+    # La décision métier est déjà produite à ce stade.
+    # Ce garde conditionne uniquement l'exécution descendante.
+    # ------------------------------------------------------
+    - alias: "Guard boiler bridge online"
+      condition: state
+      entity_id: binary_sensor.boiler_bridge_online
+      state: "on"
 
     # ------------------------------------------------------
     # Decision centrale (un seul choose, seulement si changement)

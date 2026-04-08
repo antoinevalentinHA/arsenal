@@ -35,8 +35,10 @@
 #     - aucun reset implicite de l'état interne
 #     - première initialisation sans EWMA
 #     - EWMA uniquement après initialisation explicite
+#     - aucun calcul EWMA sans base qualifiée (§8.1, §8.5 — v1.2)
 #     - `delta_max` prioritaire sur la variation publiée
 #     - l'état persistant reflète toujours la valeur publiée
+#     - reseed de secours si base corrompue et pipeline initialisé
 #
 #  ⚠️ NOTE
 #
@@ -50,12 +52,43 @@
 #
 #     Si le pipeline est déjà initialisé, que la cible robuste
 #     courante est identique à la dernière cible robuste mémorisée,
-#     et que l'âge de la dernière publication reste strictement
-#     inférieur à 20 minutes, l'automation sort immédiatement
-#     sans recalcul.
+#     que l'âge de la dernière publication reste strictement
+#     inférieur à 20 minutes, et que l'état publié est déjà
+#     convergé au voisinage de la cible, l'automation sort
+#     immédiatement sans recalcul.
 #
-#     Cette garde évite des réécritures inutiles tout en laissant
-#     la couche 5 gérer correctement la proximité d'expiration TTL.
+#     Cette garde évite des réécritures inutiles sans bloquer
+#     le rattrapage EWMA quand la cible reste stable mais que
+#     l'état publié est encore éloigné.
+#
+#  ⚠️ CORRECTIONS v1.2
+#
+#     C-01 : float(none) sur les helpers de mémoire
+#            Un restore_state raté ou un helper transitoirement
+#            indisponible retourne none — jamais 0. Empêche la
+#            fabrication silencieuse d'un S(t-1) artificiel.
+#
+#     C-02 : qualification explicite de S(t-1) en précondition CAS 3
+#            Le CAS 3 vérifie que etat_publie_precedent est numérique
+#            et dans la plage §4 [-10 ; +50] avant tout calcul EWMA.
+#            La sentinelle -20 échoue ce test structurellement.
+#            Conforme à contrat §8.1 et §8.5.
+#
+#     C-03 : CAS 2bis — reseed de secours
+#            Si pipeline_initialise = on et etat_publie_precedent
+#            est hors plage §4 (sentinelle restaurée, helper corrompu),
+#            le pipeline effectue un reseed sur cible_robuste sans EWMA,
+#            sans modifier pipeline_initialise.
+#            Ferme le cas où C-02 bloque le CAS 3 sans chemin de sortie.
+#
+#     D-01 : plausibilité §4 vérifiée sur cible_robuste (garde défensive)
+#            La cible_robuste doit être dans [-10 ; +50] pour être
+#            considérée disponible. Défense en profondeur contre une
+#            cible aberrante produite par la couche 3 en boot instable.
+#
+#     D-02 : garde finale sur etat_publie_nouveau avant écriture
+#            Le résultat du calcul EWMA est vérifié dans [-10 ; +50]
+#            avant toute écriture dans le helper. Filet de dernier recours.
 # ==========================================================
 
 - id: "10160000000012"
@@ -75,13 +108,19 @@
 
   variables:
     cible_robuste: "{{ states('sensor.temperature_jardin_cible_robuste') | float(none) }}"
-    cible_disponible: "{{ cible_robuste is not none }}"
+
+    # D-01 : plausibilité §4 exigée — garde défensive contre cible aberrante
+    cible_disponible: >
+      {{ cible_robuste is not none
+         and cible_robuste >= -10
+         and cible_robuste <= 50 }}
 
     alpha_ewma: "{{ states('input_number.temperature_jardin_alpha_ewma') | float(0.3) }}"
     delta_max: "{{ states('input_number.temperature_jardin_delta_max') | float(0.5) }}"
 
-    etat_publie_precedent: "{{ states('input_number.temperature_jardin_etat_publie') | float(0) }}"
-    cible_brute_derniere: "{{ states('input_number.temperature_jardin_cible_brute_derniere') | float(0) }}"
+    # C-01 : float(none) — indisponibilité retourne none, jamais 0
+    etat_publie_precedent: "{{ states('input_number.temperature_jardin_etat_publie') | float(none) }}"
+    cible_brute_derniere: "{{ states('input_number.temperature_jardin_cible_brute_derniere') | float(none) }}"
 
     pipeline_initialise: "{{ is_state('input_boolean.temperature_jardin_initialise', 'on') }}"
     systeme_stable: "{{ is_state('input_boolean.systeme_stable', 'on') }}"
@@ -101,13 +140,19 @@
         {{ (as_timestamp(now()) - ts_publication_precedente) | int(0) }}
       {% endif %}
 
+    # Garde enrichie : cible stable + TTL non critique + état publié convergé.
+    # La condition de convergence empêche le blocage du rattrapage EWMA
+    # quand la cible est stable mais l'état publié est encore éloigné.
     garde_non_recalcul: >
       {{
         pipeline_initialise
         and cible_disponible
+        and cible_brute_derniere is not none
         and (cible_robuste | round(1)) == (cible_brute_derniere | round(1))
         and age_publication_s is not none
         and age_publication_s < 1200
+        and etat_publie_precedent is not none
+        and ((cible_robuste - etat_publie_precedent) | abs) <= delta_max
       }}
 
   action:
@@ -158,16 +203,34 @@
 
         # ==================================================
         # CAS 2 — Garde de non-recalcul
+        #          -> stop uniquement si :
+        #             - cible stable
+        #             - TTL non critique
+        #             - etat publie deja converge
         # ==================================================
         - conditions:
             - condition: template
               value_template: "{{ garde_non_recalcul }}"
           sequence:
-            - stop: "Aucun recalcul nécessaire : cible inchangée et TTL non critique."
+            - stop: "Aucun recalcul necessaire : cible stable et etat publie deja converge."
 
         # ==================================================
-        # CAS 3 — Pipeline initialisé + cible robuste disponible
-        #          -> EWMA + borne delta_max + persistance
+        # CAS 2bis — Reseed de secours (C-03)
+        #
+        # Condition : pipeline déjà initialisé (pipeline_initialise = on)
+        #             + cible robuste disponible
+        #             + etat_publie_precedent non qualifié au sens §8.1
+        #               (none, sentinelle -20, ou hors plage §4)
+        #
+        # Cause typique : restore_state a ramené la sentinelle -20,
+        # ou le helper était indisponible au boot. Le pipeline ne peut
+        # pas entrer en CAS 3 (base EWMA invalide) ni en CAS 1
+        # (pipeline_initialise = on). Sans ce cas, le pipeline reste
+        # bloqué en default [] indéfiniment malgré une cible disponible.
+        #
+        # Action : reseed de l'état interne sur cible_robuste, sans EWMA,
+        # sans modifier pipeline_initialise. La sémantique du flag
+        # (initialisé historiquement) reste intacte.
         # ==================================================
         - conditions:
             - condition: template
@@ -175,6 +238,54 @@
             - condition: state
               entity_id: input_boolean.temperature_jardin_initialise
               state: "on"
+            - condition: template
+              value_template: >
+                {{ etat_publie_precedent is none
+                   or etat_publie_precedent < -10
+                   or etat_publie_precedent > 50 }}
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.temperature_jardin_etat_publie
+              data:
+                value: "{{ cible_robuste | round(1) }}"
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.temperature_jardin_cible_brute_derniere
+              data:
+                value: "{{ cible_robuste | round(1) }}"
+
+            - service: input_datetime.set_datetime
+              target:
+                entity_id: input_datetime.temperature_jardin_etat_publie_ts
+              data:
+                datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+        # ==================================================
+        # CAS 3 — Pipeline initialisé + cible robuste disponible
+        #          -> EWMA + borne delta_max + persistance
+        #
+        # C-02 : précondition explicite sur S(t-1) — contrat §8.1 / §8.5
+        #   etat_publie_precedent doit être :
+        #     - numérique (not none)
+        #     - dans la plage de plausibilité §4 [-10 ; +50]
+        #   Si non satisfait : default [] — aucune écriture.
+        #   Le CAS 2bis fournit le chemin de sortie si la précondition
+        #   échoue avec pipeline_initialise = on.
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: "{{ cible_disponible }}"
+            - condition: state
+              entity_id: input_boolean.temperature_jardin_initialise
+              state: "on"
+            # C-02 : qualification explicite de S(t-1)
+            - condition: template
+              value_template: >
+                {{ etat_publie_precedent is not none
+                   and etat_publie_precedent >= -10
+                   and etat_publie_precedent <= 50 }}
           sequence:
             - variables:
                 cible_ewma_theorique: >
@@ -194,6 +305,14 @@
 
                 etat_publie_nouveau: >
                   {{ (etat_publie_precedent + delta_borne) | round(1) }}
+
+            # D-02 : garde finale — etat_publie_nouveau dans [-10 ; +50]
+            #        Filet de dernier recours. Si le calcul EWMA produit
+            #        une valeur hors plage malgré les gardes amont,
+            #        aucune écriture n'est effectuée.
+            - condition: template
+              value_template: >
+                {{ etat_publie_nouveau >= -10 and etat_publie_nouveau <= 50 }}
 
             - service: input_number.set_value
               target:

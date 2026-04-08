@@ -1,6 +1,6 @@
 # contrat_axe_temperature_jardin.md
 # Arsenal — Contrat d'axe : Température jardin
-# Version : 1.1
+# Version : 1.2
 # Statut : normatif
 # Dépend de : contrat_meteo.md (non versionné), contrat_validation.md (non versionné), contrat_fallback.md (non versionné)
 # Note : les contrats amont ne sont pas versionnés — dette documentaire à solder en v1.2
@@ -11,6 +11,11 @@
 # - §10   : reformulation indicateurs secondaires (sans "obligatoirement")
 # - §11.1 : ajout input_boolean.systeme_stable comme dépendance bloquante publication
 # - §9.2  : condition mémoire renforcée (plausibilité §4 exigée)
+#
+# Delta v1.1 → v1.2
+# - §8.1  : ajout précondition de qualification de S(t-1) avant tout calcul EWMA
+# - §8.5  : ajout nouveau paragraphe — principe de non-assimilation mémoire/qualification
+# - §9.2  : écho normatif du principe §8.5 dans le contexte de la continuité
 
 ---
 
@@ -284,6 +289,14 @@ S(t) = S(t-1) + α_EWMA × (cible(t) - S(t-1))
 `S(t-1)` est l'état interne du filtre au cycle précédent,
 maintenu en mémoire persistante entre cycles.
 
+**Précondition obligatoire :** avant tout calcul EWMA, l'état
+interne `S(t-1)` doit être explicitement qualifié : valeur
+numérique présente, dans la plage de plausibilité §4.
+
+Si cette précondition n'est pas satisfaite, aucun calcul EWMA
+n'est effectué pour le cycle courant. L'axe bascule vers le
+mécanisme de continuité défini au §9.
+
 ### 8.2 Priorité de δ_max sur EWMA
 
 La variation effectivement publiée entre deux cycles successifs
@@ -330,6 +343,20 @@ progressivement sur les cycles suivants, borné par δ_max.
 Aucun reset de l'état interne n'est autorisé, même après
 une longue période de mémoire.
 
+### 8.5 Non-assimilation mémoire restaurée / état qualifié
+
+La restauration d'un état persistant (par exemple via le
+mécanisme restore_state de Home Assistant) ne constitue pas
+en elle-même une qualification métier de cet état.
+
+Un état restauré doit satisfaire la précondition §8.1 —
+valeur numérique présente, dans la plage de plausibilité §4 —
+avant d'être utilisé comme base de calcul EWMA.
+
+Cette règle s'applique indépendamment de l'état du flag
+`pipeline_initialise` : l'initialisation historique du pipeline
+ne certifie pas la validité de l'état interne pour le cycle courant.
+
 ---
 
 ## 9. Continuité et abstention
@@ -369,6 +396,12 @@ de continuité s'appliquent :
   plausibilité §4, et que son âge est inférieur ou égal à TTL_effectif :
   publication de la mémoire de continuité
 - sinon : abstention (`unknown`)
+
+La restauration d'un état persistant ne constitue pas en elle-même
+une qualification de cet état au sens du présent paragraphe.
+Les conditions ci-dessus — numérique, plausible §4, âge ≤ TTL —
+doivent être vérifiées explicitement avant toute publication
+en mode continuité.
 
 Cette garde est transverse à l'axe. Elle ne modifie ni la fusion
 ni la détection : les couches 1 à 3 continuent de calculer
@@ -514,37 +547,4 @@ sont effectués en précision native.
 ## 13. Renvois contractuels
 
 - Cadre du domaine    → `contrat_meteo.md`
-- Validation sources  → `contrat_validation.md`
-- Continuité/fallback → `contrat_fallback.md`
-
----
-
-## 14. Note d'évolution
-
-La présente version introduit une fusion locale défensive
-anti-biais chaud, sans hiérarchie primaire/secours entre sources.
-
-### 14.1 Évolutions autorisées en version mineure
-
-- Révision documentée de `δ_suspect` dans sa plage admissible
-- Révision documentée de `δ_coherence` dans sa plage admissible
-- Révision documentée de `α_EWMA` et `δ_max` dans leurs plages admissibles
-- Caractérisation formelle de l'exposition de sensor.temperature_jardin_3
-- Versionnement des dépendances contractuelles amont
-- Promotion des indicateurs secondaires §10.3 au rang obligatoire
-- Révision du périmètre de la garde systeme_stable si le contrat système évolue
-
-### 14.2 Évolutions requérant une version majeure
-
-- Modification du modèle de fusion (source canonique unique,
-  hiérarchie primaire/secours, etc.)
-- Modification du modèle de stabilisation
-
-### 14.3 Anti-pattern verrouillé
-
-Aucune évolution future ne pourra réintroduire une bascule
-opportuniste non gouvernée entre capteurs.
-
-Toute logique du type "si source A disponible, utiliser A ;
-sinon basculer sur B" est explicitement interdite par le présent
-contrat, sauf révision majeure documentée.
+- Validation sources  → `contrat_v

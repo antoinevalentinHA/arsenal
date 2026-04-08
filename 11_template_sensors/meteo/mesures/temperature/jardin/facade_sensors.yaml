@@ -1,37 +1,50 @@
 # ==========================================================
 # 🧠 ARSENAL — TEMPLATE SENSORS
-# Température jardin — Façade publication et statut
+#     Temperature jardin — Façade publication et statut
 # ----------------------------------------------------------
-# 🎯 RÔLE
+# 🎯 ROLE
 #   Exposer :
-#   - la valeur canonique publiée de l'axe `sensor.temperature_jardin`
+#   - la valeur canonique publiee de l'axe `sensor.temperature_jardin`
 #   - le statut global contractuel de l'axe
 #
-# 🧱 PÉRIMÈTRE
+# 🧱 PERIMETRE
 #   Ce fichier ne :
 #   - valide aucune source
-#   - ne calcule aucune médiane
-#   - ne détecte aucun `suspect_chaud`
+#   - ne calcule aucune mediane
+#   - ne detecte aucun `suspect_chaud`
 #   - ne calcule aucune cible robuste
 #   - n'applique aucun EWMA
 #
 #   Il consomme exclusivement :
 #   - les helpers de stabilisation couche 4
 #   - `sensor.temperature_jardin_cible_robuste`
-#   - les capteurs d'observabilité couches 2 et 3
+#   - les capteurs d'observabilite couches 2 et 3
 #
 # 🛡️ GARANTIES
-#   - la publication façade ne reflète jamais une valeur brute
-#   - `sensor.temperature_jardin` lit uniquement l'état publié persistant
-#   - le statut respecte strictement l'ordre de priorité contractuel
+#   - la publication facade ne reflete jamais une valeur brute
+#   - `sensor.temperature_jardin` lit uniquement l'etat publie persistant
+#   - aucune valeur hors plage §4 [-10 ; +50] n'est publiee
+#   - le capteur est indisponible si la valeur qu'il publie est invalide
+#   - le statut respecte strictement l'ordre de priorite contractuel
 #
-# ⚠️ NOTE D'INTERPRÉTATION
-#   - avant première initialisation du pipeline :
+# ⚠️ NOTE D'INTERPRETATION
+#   - avant premiere initialisation du pipeline :
 #       `sensor.temperature_jardin` est `unavailable`
 #       `sensor.temperature_jardin_statut` est `inconnu`
-#   - après initialisation :
-#       la façade publie soit l'état persistant, soit `unavailable`
-#       selon l'âge mémoire et la disponibilité de la cible robuste
+#   - apres initialisation :
+#       la facade publie soit l'etat persistant, soit `unavailable`
+#       selon l'age memoire, la plausibilite §4 et la disponibilite
+#       de la cible robuste
+#
+# ⚠️ NOTE v1.2 — couplage availability / state
+#   `availability` exige mem_ok comme precondition obligatoire.
+#   La cible robuste ne suffit pas a ouvrir la publication :
+#   la facade publie etat_publie, pas cible_robuste.
+#   Si mem_ok est faux (sentinelle, valeur corrompue), le capteur
+#   est unavailable meme si la cible est presente.
+#   Formellement :
+#     availability = mem_ok AND (cible_disponible OR age <= TTL)
+#   La sentinelle -20 des helpers echoue structurellement mem_ok.
 # ==========================================================
 
 - sensor:
@@ -46,16 +59,25 @@
           {{ false }}
         {% else %}
           {% set cible = states('sensor.temperature_jardin_cible_robuste') | float(none) %}
+          {% set mem_val = states('input_number.temperature_jardin_etat_publie') | float(none) %}
+          {% set mem_ok = mem_val is not none and mem_val >= -10 and mem_val <= 50 %}
           {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
           {% set age = (as_timestamp(now()) - as_timestamp(ts)) | int(none)
                        if ts not in ['unknown', 'unavailable', ''] else none %}
-          {{ cible is not none or (age is not none and age <= 1800) }}
+          {{ mem_ok and (cible is not none or (age is not none and age <= 1800)) }}
         {% endif %}
       state: >
-        {{ states('input_number.temperature_jardin_etat_publie') | float | round(1) }}
+        {% set val = states('input_number.temperature_jardin_etat_publie') | float(none) %}
+        {% if val is not none and val >= -10 and val <= 50 %}
+          {{ val | round(1) }}
+        {% else %}
+          unknown
+        {% endif %}
       attributes:
         mode_publication: >
           {% set cible = states('sensor.temperature_jardin_cible_robuste') | float(none) %}
+          {% set mem_val = states('input_number.temperature_jardin_etat_publie') | float(none) %}
+          {% set mem_ok = mem_val is not none and mem_val >= -10 and mem_val <= 50 %}
           {% set ts = states('input_datetime.temperature_jardin_etat_publie_ts') %}
           {% if ts in ['unknown', 'unavailable', ''] %}
             {% set age = none %}
@@ -65,7 +87,7 @@
 
           {% if cible is not none %}
             fusion
-          {% elif age is not none and age <= 1800 %}
+          {% elif mem_ok and age is not none and age <= 1800 %}
             memoire
           {% else %}
             abstention
@@ -92,6 +114,8 @@
       state: >
         {% set initialise = is_state('input_boolean.temperature_jardin_initialise', 'on') %}
         {% set cible = states('sensor.temperature_jardin_cible_robuste') | float(none) %}
+        {% set mem_val = states('input_number.temperature_jardin_etat_publie') | float(none) %}
+        {% set mem_ok = mem_val is not none and mem_val >= -10 and mem_val <= 50 %}
         {% set nb_retenues = states('sensor.temperature_jardin_nb_sources_retenues') | int(0) %}
         {% set nb_suspectes = states('sensor.temperature_jardin_nb_sources_suspectes') | int(0) %}
         {% set incoherence = is_state('binary_sensor.temperature_jardin_incoherence_retenue', 'on') %}
@@ -102,9 +126,9 @@
           {% set age = (as_timestamp(now()) - as_timestamp(ts)) | int(0) %}
         {% endif %}
 
-        {% if (not initialise) or (cible is none and (age is none or age > 1800)) %}
+        {% if (not initialise) or (cible is none and ((age is none) or (age > 1800) or (not mem_ok))) %}
           inconnu
-        {% elif cible is none and age is not none and age <= 1800 %}
+        {% elif cible is none and mem_ok and age is not none and age <= 1800 %}
           memoire
         {% elif nb_retenues == 1 %}
           degrade
@@ -119,6 +143,8 @@
         cause: >
           {% set initialise = is_state('input_boolean.temperature_jardin_initialise', 'on') %}
           {% set cible = states('sensor.temperature_jardin_cible_robuste') | float(none) %}
+          {% set mem_val = states('input_number.temperature_jardin_etat_publie') | float(none) %}
+          {% set mem_ok = mem_val is not none and mem_val >= -10 and mem_val <= 50 %}
           {% set nb_retenues = states('sensor.temperature_jardin_nb_sources_retenues') | int(0) %}
           {% set nb_suspectes = states('sensor.temperature_jardin_nb_sources_suspectes') | int(0) %}
           {% set incoherence = is_state('binary_sensor.temperature_jardin_incoherence_retenue', 'on') %}
@@ -133,9 +159,11 @@
             jamais_initialise
           {% elif cible is none and age is none %}
             timestamp_absent
+          {% elif cible is none and not mem_ok %}
+            memoire_non_plausible
           {% elif cible is none and age > 1800 %}
             ttl_expire
-          {% elif cible is none and age is not none and age <= 1800 %}
+          {% elif cible is none and mem_ok and age is not none and age <= 1800 %}
             cible_absente_memoire
           {% elif nb_retenues == 1 and nb_suspectes >= 1 %}
             source_unique_apres_exclusion_chaude
@@ -160,6 +188,10 @@
         initialise: "{{ states('input_boolean.temperature_jardin_initialise') }}"
         cible_robuste_disponible: >
           {{ states('sensor.temperature_jardin_cible_robuste') not in ['unknown', 'unavailable'] }}
+
+        memoire_plausible: >
+          {% set mem_val = states('input_number.temperature_jardin_etat_publie') | float(none) %}
+          {{ mem_val is not none and mem_val >= -10 and mem_val <= 50 }}
 
         nb_sources_valides: "{{ states('sensor.temperature_jardin_nb_sources_valides') }}"
         nb_sources_retenues: "{{ states('sensor.temperature_jardin_nb_sources_retenues') }}"

@@ -1,12 +1,12 @@
 # ARSENAL — Contrat Normatif Central
 ## Chauffage — Décision Centrale V3
 
-**Statut :** Contrat normatif central — opposable
-**Rôle :** Cerveau métier du domaine Chauffage · Point d'entrée canonique de décision
-**Subordonné à :** `contrats/chauffage/00_gouvernance_chauffage.md`
-**Complémentaire de :** `20_triggers_decisionnels.md` · `70_autorisation_thermostat.md` · `80_table_decision_canonique.md`
-**Références boiler :** `contrats/boiler/CONTRAT_BOILER_SOCLE_TRANSACTIONNEL.md` · `outils_externes/boiler_pi/AUDIT_CHAINE_MQTT_ACK_ECS.md`
-**Date :** 2026-03-26
+**Statut :** Contrat normatif central — opposable  
+**Rôle :** Cerveau métier du domaine Chauffage · Point d'entrée canonique de décision  
+**Subordonné à :** `contrats/chauffage/00_gouvernance_chauffage.md`  
+**Complémentaire de :** `20_triggers_decisionnels.md` · `70_autorisation_thermostat.md` · `80_table_decision_canonique.md`  
+**Références boiler :** `contrats/boiler/CONTRAT_BOILER_SOCLE_TRANSACTIONNEL.md` · `outils_externes/boiler_pi/AUDIT_CHAINE_MQTT_ACK_ECS.md`  
+**Date :** 2026-04-07
 
 ---
 
@@ -15,7 +15,7 @@
 La Décision Centrale est un système de décision souverain soumis aux invariants suivants :
 
 - aucune action sans cause explicite
-- aucune reprise automatique post-blocage
+- aucune reprise par simple levée d'un blocage
 - aucune oscillation de régime autorisée
 - abstention par défaut en absence de besoin valide
 - une autorisation n'est jamais une décision
@@ -59,7 +59,9 @@ L'exécution réelle est confirmée uniquement par la couche transactionnelle av
 
 **Inclus :** arbitrage confort / sobriété, hiérarchie des causes métier, production d'une décision explicite, abstention volontaire, traçabilité métier.
 
-**Exclu :** calcul des besoins thermiques, estimation d'inertie, réglage des consignes, pilotage matériel, logique UI.
+**Exclu :** calcul primaire des besoins thermiques, estimation d'inertie, réglage des consignes, pilotage matériel, logique UI.
+
+**Note :** ce script consomme des vérités amont déjà calculées par des capteurs contractuels (`sensor.chauffage_autorisation_cible`, `binary_sensor.chauffage_autorise_systeme`, `binary_sensor.fenetre_ouverte_maison_avec_delai`, `input_boolean.pre_confort_actif_calcule`). Il n'en est pas la source.
 
 ---
 
@@ -71,7 +73,7 @@ Aucune cause de niveau inférieur ne peut contredire un niveau supérieur.
 
 `input_boolean.mode_confort_chauffage`
 
-Impose `comfort`. Écrase toute logique inférieure, y compris les abstentions.
+Impose `comfort`. Écrase toute logique métier inférieure, sans contourner les gardes techniques non négociables (bridge offline, idempotence G5).
 
 ### Niveau 1 — Interdictions système
 
@@ -83,21 +85,21 @@ Impose `reduced`. Stop hiérarchique — aucune autre cause évaluée.
 
 Aération en cours confirmée, blocage aération, fenêtres ouvertes (avec délai), mode maison = Vacances, poêle actif.
 
-Impose `reduced`. Aucune autorisation confort ne survit à ce niveau.
+Effets :
+- aération confirmée / blocage aération / fenêtres ouvertes / poêle actif → `reduced`
+- mode maison = Vacances → `reduced`, **sauf exception normative explicite** : pré-confort retour vacances actif (`input_boolean.pre_confort_actif_calcule`) → `comfort`
 
 ### Niveau 3 — Confort d'opportunité
 
-`binary_sensor.presence_famille_unifiee` → délégation à `sensor.chauffage_autorisation_cible`.
+**3a — Présence réelle :** `binary_sensor.presence_famille_unifiee` → délégation à `sensor.chauffage_autorisation_cible`.
 
 Valeurs possibles : `comfort`, `neutre`, `reduced`.
 
 La présence n'est jamais une décision — elle délègue. L'autorisation `neutre` produit une abstention stricte.
 
-### Niveau 4 — Autorisations forcées
+**3b — Inhibition géofencing :** en absence de présence réelle, `input_boolean.chauffage_inhibition_geofencing` peut imposer `comfort` comme protection thermique. Toute interdiction de niveau 1 ou 2 l'écrase immédiatement.
 
-Inhibition géofencing, pré-confort retour vacances.
-
-Ces autorisations ne sont jamais des décisions. Elles ne modifient jamais la hiérarchie et ne produisent jamais de reprise automatique post-blocage. Toute interdiction niveau 1 ou 2 les écrase immédiatement.
+**3c — Défaut :** `reduced`.
 
 ---
 
@@ -105,7 +107,7 @@ Ces autorisations ne sont jamais des décisions. Elles ne modifient jamais la hi
 
 ### Abstention (principe cardinal)
 
-L'abstention est l'état nominal du système. Une décision n'est valide que si une cause métier existe, qu'aucune interdiction supérieure n'est active, et qu'une autorisation explicite est présente. Sinon : le système refuse d'agir.
+L'abstention est l'état nominal du système. Une décision n'est valide que si une cause métier identifiable la fonde, qu'aucune interdiction supérieure ne s'y oppose, et qu'aucun garde-fou d'abstention ne l'annule. Sinon : le système refuse d'agir.
 
 > La Décision Centrale ne cherche jamais à agir. Elle cherche à ne pas agir tant que cela n'est pas nécessaire.
 
@@ -119,36 +121,32 @@ Il constitue un état valide et stable.
 
 ### Hystérésis décisionnelle
 
-Fin de blocage ≠ reprise automatique. Aucune action par principe. Respect strict de l'inertie thermique. Zéro oscillation autorisée.
+La levée d'un blocage ne constitue jamais, à elle seule, un motif suffisant de reprise. Une reprise en `comfort` n'est possible que si la réévaluation métier complète le justifie indépendamment. Respect strict de l'inertie thermique. Zéro oscillation autorisée.
 
 ---
 
 ## 6. Garde-fous d'abstention (doctrine)
 
-Aucune action n'est autorisée si : programme inconnu, autorisation = `neutre`, mode déjà actif, anti-rebond actif.
+Aucune action métier n'est produite si : programme inconnu, autorisation = `neutre`, mode déjà actif, anti-rebond actif.
 
 > Une autorisation sans besoin produit une abstention stricte.
+
+La disponibilité du bridge (`binary_sensor.boiler_bridge_online`) constitue un garde-fou d'exécution distinct, évalué après la décision métier. Voir §7.
 
 ---
 
 ## 7. Garde d'exécution — Disponibilité du système
 
-La disponibilité du système d'exécution est une condition préalable à toute action. Elle est évaluée via `binary_sensor.boiler_bridge_online`.
+La disponibilité du système d'exécution est une condition préalable à toute exécution descendante. Elle est évaluée via `binary_sensor.boiler_bridge_online`.
 
 Règles :
 
 - cette garde ne participe pas à la décision métier,
 - elle conditionne uniquement la capacité d'exécution,
-- elle est évaluée au point d'entrée canonique,
+- elle est évaluée après la finalisation complète de `desired_mode` et `reason`,
 - elle est non contournable.
 
 Conséquence : une décision valide peut être produite mais non exécutée. La décision et l'exécution sont deux événements distincts.
-
----
-
----
-
-## ⚙️ Implémentation actuelle (référence YAML)
 
 ---
 
@@ -158,11 +156,11 @@ Conséquence : une décision valide peut être produite mais non exécutée. La 
 START
   │
   ├─ G1  Anti-rebond actif ET pas override ? → STOP
-  ├─ G2  Bridge offline ? → STOP
   ├─ SET variables : prog_actuel / desired_mode / reason
   ├─ G3  Programme unknown ET pas override ? → STOP
   ├─ G4  desired_mode == neutre ? → STOP
   ├─ G5  desired_mode == prog_actuel ? → STOP
+  ├─ G2  Bridge offline ? → STOP
   │
   └─ EXÉCUTION
        → script.chauffage_appliquer_consigne (consigne, raison)
@@ -176,10 +174,10 @@ START
 | Garde | Condition | Contournable par override |
 |-------|-----------|--------------------------|
 | G1 | Anti-rebond actif | Oui |
-| G2 | Bridge offline | Non |
 | G3 | Programme unknown | Oui |
 | G4 | `desired_mode == neutre` | Non |
 | G5 | `desired_mode == prog_actuel` | Non |
+| G2 | Bridge offline | Non |
 
 ---
 
@@ -196,7 +194,8 @@ La raison est calculée localement et transmise à `chauffage_appliquer_consigne
 | Aération en cours confirmée | `aeration_en_cours` |
 | Blocage aération actif | `blocage_aeration_en_cours` |
 | Fenêtre ouverte (avec délai) | `fenetre_ouverte_maison` |
-| Mode vacances | `mode_maison_vacances` |
+| Mode vacances + pré-confort actif | `pre_confort_vacances` |
+| Mode vacances (sans pré-confort) | `mode_maison_vacances` |
 | Poêle actif | `poele_actif` |
 | Présence + cible = comfort | `besoin_thermique` |
 | Présence + cible = neutre | `presence_on` |
@@ -224,8 +223,8 @@ La Décision Centrale ne doit jamais : appeler directement le matériel, modifie
 - Une seule décision à la fois — mode `restart`
 - Zéro appel inutile — G5 idempotence
 - Zéro oscillation — anti-rebond systématique
-- Zéro ambiguïté d'état — `prog_actuel` normalisé
-- Zéro reprise automatique post-blocage
+- Normalisation locale robuste de `prog_actuel` avec repli explicite sur `unknown`
+- Zéro reprise par simple levée de blocage
 - Zéro décision sans cause référencée
 
 Toute violation constitue une régression critique et une rupture de gouvernance.

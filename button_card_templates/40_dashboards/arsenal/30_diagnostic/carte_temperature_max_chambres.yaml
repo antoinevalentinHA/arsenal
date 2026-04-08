@@ -1,6 +1,6 @@
 # ==========================================================
 # 🧠 ARSENAL — TEMPLATE UI METIER
-#     Climatisation — Température maximum des chambres
+#     Climatisation / Chauffage — Température maximum chambres
 # ==========================================================
 #
 # 📌 STATUT
@@ -8,9 +8,12 @@
 #
 # 🎯 ROLE
 #     Affiche la température maximale parmi les chambres et
-#     positionne cette valeur dans la plage de confort arbitrée
-#     entre les consignes chauffage et climatisation, offsets
-#     inclus. Indique aussi la chambre la plus chaude en label.
+#     positionne cette valeur dans une lecture thermique globale :
+#
+#       - Surchauffe → basée sur la vérité contractuelle clim COOL
+#       - Froid      → basé sur un seuil chauffage avec offset
+#
+#     Indique aussi la chambre la plus chaude en label.
 #
 # 🧱 NATURE
 #     - Template button-card
@@ -18,24 +21,22 @@
 #     - UI uniquement (aucune décision)
 #
 # 🎨 SEMANTIQUE
-#     - temp_max > (cons_clim + off_clim)         -> 🔴 rouge (surchauffe, clim requise)
-#     - temp_max < (cons_chauff - off_chauff)      -> 🔵 bleu  (trop froid pour les chambres)
-#     - entre les deux seuils                      -> 🟢 vert  (zone de confort)
-#     - une valeur manquante / unavailable         -> ⚪ gris  (données insuffisantes)
+#     - clim seuil allumage atteint              -> 🔴 rouge
+#     - temp_max < seuil chauffage ON            -> 🔵 bleu
+#     - entre les deux                           -> 🟢 vert
+#     - valeur manquante / état invalide         -> ⚪ gris
 #
 # 🔗 DEPENDANCES
-#     - entity                              : (héritée de carte_temperature_confort)
-#     - sensor.temperature_max_chambres     : temp max + attribut chambre_la_plus_chaude
-#     - input_number.clim_consigne_presence : consigne climatisation (cool)
-#     - input_number.clim_offset_on         : offset déclenchement clim
-#     - input_number.chauffage_consigne_confort : consigne chauffage confort
-#     - input_number.chauffage_offset_on    : offset déclenchement chauffage
+#     - sensor.temperature_max_chambres
+#     - binary_sensor.clim_seuil_allumage_cool_atteint
+#     - input_number.chauffage_consigne_confort
+#     - input_number.chauffage_offset_on
 #
 # ⚠️ CONTRAINTES
-#     - Les 5 valeurs numériques sont toutes requises — une seule absence bascule en gris
-#     - La logique de seuil est purement visuelle — aucune action déclenchée
-#     - Spécialisation de carte_temperature_confort : ne pas dupliquer les styles de base
-#     - Le label "chambre la plus chaude" dépend de l'attribut upstream — non garanti
+#     - La surchauffe est pilotée UNIQUEMENT par la vérité clim
+#     - Le froid est évalué localement via seuil chauffage
+#     - Aucune reconstruction de logique clim
+#     - Aucune dépendance à clim_consigne_presence
 #
 # 🧩 USAGE
 #     type: custom:button-card
@@ -57,11 +58,10 @@ carte_temperature_max_chambres:
               return Number.isFinite(v) ? v : null;
             };
 
-            const temp_max      = get('sensor.temperature_max_chambres');
-            const cons_clim     = get('input_number.clim_consigne_presence');
-            const off_clim      = get('input_number.clim_offset_on');
-            const cons_chauff   = get('input_number.chauffage_consigne_confort');
-            const off_chauff    = get('input_number.chauffage_offset_on');
+            const temp_max        = get('sensor.temperature_max_chambres');
+            const cons_chauff     = get('input_number.chauffage_consigne_confort');
+            const off_chauff      = get('input_number.chauffage_offset_on');
+            const cool_on_atteint = states['binary_sensor.clim_seuil_allumage_cool_atteint']?.state;
 
             const RED   = 'rgba(244, 67, 54, 0.2)';
             const GREEN = 'rgba(76, 175, 80, 0.2)';
@@ -70,19 +70,17 @@ carte_temperature_max_chambres:
 
             if (
               temp_max === null ||
-              cons_clim === null ||
-              off_clim === null ||
               cons_chauff === null ||
-              off_chauff === null
+              off_chauff === null ||
+              !['on', 'off'].includes(cool_on_atteint)
             ) {
               return GREY;
             }
 
-            const seuil_clim_on   = cons_clim + off_clim;
             const seuil_chauff_on = cons_chauff - off_chauff;
 
-            if (temp_max > seuil_clim_on)   return RED;
-            if (temp_max < seuil_chauff_on) return BLUE;
+            if (cool_on_atteint === 'on')     return RED;
+            if (temp_max < seuil_chauff_on)   return BLUE;
             return GREEN;
           ]]]
 

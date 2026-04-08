@@ -1,8 +1,8 @@
 # CONTRAT — `sensor.humidite_relative_brute_consolidee_<zone>`
 
-**Version** : 1.0  
-**Domaine** : Humidité relative — couche consolidation brute  
-**Statut** : Normatif  
+**Version** : 1.0
+**Domaine** : Humidité relative — couche consolidation brute
+**Statut** : Normatif
 
 ---
 
@@ -27,12 +27,12 @@ Cette entité est la **couche de vérité métier**. Elle n'est pas une couche d
 ```
 sensor.humidite_relative_<zone>_1  ──┐
                                       ├──▶  sensor.humidite_relative_brute_consolidee_<zone>
-sensor.humidite_relative_<zone>_2  ──┘                 │
+sensor.humidite_relative_<zone>_2  ──┘                  │
                                                         ▼
                                sensor.humidite_relative_stabilisee_<zone>  (phase 2)
                                                         │
                                                         ▼
-                               sensor.humidite_relative_<zone>  (façade UI, phase 3)
+                               sensor.humidite_relative_<zone>  (façade — interface métier canonique)
 ```
 
 ---
@@ -135,8 +135,13 @@ Ces attributs sont passifs et non décisionnels. Ils décrivent le cycle courant
 | Attribut | Valeurs | Rôle |
 |---|---|---|
 | `source_active` | `1`, `2`, `moyenne`, `memoire`, `abstention` | Source ou mécanisme ayant produit l'état publié |
-| `ecart_sources` | numérique ou `none` | Écart absolu entre les deux sources lorsqu'elles sont toutes deux valides ; `none` sinon |
+| `ecart_sources` | numérique ou `none` | Écart absolu entre les deux sources lorsqu'elles sont toutes deux **valides** (plage `[10, 100]%` incluse) ; `none` sinon |
 | `mode_resolution` | `fusion`, `source_unique`, `continuite`, `memoire`, `abstention` | Mode de résolution effectivement appliqué |
+
+**Notes d'implémentation** :
+
+- `ecart_sources` : conditionné à `h1_valide AND h2_valide`. Une source numériquement castable mais hors plage produit `none`, pas un écart calculé.
+- `mode_resolution` : le sous-cas `d1 == d2` en CAS 4 produit `abstention`, pas `continuite`. Les deux situations productrices d'`unknown` en CAS 4 (absence de continuité et égalité stricte) sont toutes deux signalées par `mode_resolution = abstention`.
 
 **Exemple de lecture** :
 - `source_active = 1` + `mode_resolution = continuite` → la source 1 a gagné par arbitrage de proximité, pas parce qu'elle était seule valide
@@ -169,6 +174,8 @@ Le déclenchement sur `state` capture tout changement d'état des sources, y com
 - Aucune hiérarchie implicite entre `_1` et `_2` dans le code
 - Tout tie-break introduit doit être explicitement nommé et documenté
 - Les attributs diagnostics sont mis à jour à chaque cycle, y compris en cas d'abstention
+- `ecart_sources` conditionné à la validité complète des deux sources (plage incluse)
+- `mode_resolution` distingue explicitement le sous-cas `d1 == d2` → `abstention`
 - Factorisation par ancres YAML : une ancre `state`, une ancre par attribut diagnostic
 - `this.entity_id` utilisé dans tous les blocs avec préfixe `sensor.humidite_relative_brute_consolidee_`
 
@@ -189,6 +196,7 @@ Le déclenchement sur `state` capture tout changement d'état des sources, y com
 - Détection de dérive longue durée
 - Scoring qualité dynamique
 - Préférence déclarée par zone
+- Stratégie de sortie de divergence persistante post-boot → couche stabilisée (phase 2)
 
 ---
 
@@ -198,5 +206,5 @@ Le déclenchement sur `state` capture tout changement d'état des sources, y com
 |---|---|---|
 | Sources physiques | `sensor.humidite_relative_<zone>_1/2` | Mesure brute capteur |
 | Vérité métier | `sensor.humidite_relative_brute_consolidee_<zone>` | Consolidation, arbitrage, abstention |
-| Confort visuel | `sensor.humidite_relative_stabilisee_<zone>` | Lissage, continuité courte (phase 2) |
-| Façade UI | `sensor.humidite_relative_<zone>` | Lecture simple, sans logique (phase 3) |
+| Confort visuel + continuité métier | `sensor.humidite_relative_stabilisee_<zone>` | Lissage, continuité garantie (phase 2) |
+| Interface métier canonique | `sensor.humidite_relative_<zone>` | Lecture simple, sans logique (phase 3) |

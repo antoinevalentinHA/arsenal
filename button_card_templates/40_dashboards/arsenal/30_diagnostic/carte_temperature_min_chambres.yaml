@@ -1,6 +1,6 @@
 # ==========================================================
 # 🧠 ARSENAL — TEMPLATE UI METIER
-#     Chauffage — Température minimum des chambres
+#     Chauffage / Climatisation — Température minimum chambres
 # ==========================================================
 #
 # 📌 STATUT
@@ -8,9 +8,12 @@
 #
 # 🎯 ROLE
 #     Affiche la température minimale parmi les chambres et
-#     positionne cette valeur dans la plage de confort arbitrée
-#     entre les consignes chauffage et climatisation, offsets
-#     inclus. Indique aussi la chambre la plus froide en label.
+#     positionne cette valeur dans une lecture thermique globale :
+#
+#       - Froid      → basé sur un seuil chauffage avec offset
+#       - Surchauffe → basée sur la vérité contractuelle clim COOL
+#
+#     Indique aussi la chambre la plus froide en label.
 #
 # 🧱 NATURE
 #     - Template button-card
@@ -18,24 +21,21 @@
 #     - UI uniquement (aucune décision)
 #
 # 🎨 SEMANTIQUE
-#     - temp_min < (cons_chauff - off_chauff)      -> 🔵 bleu  (trop froid, chauffage requis)
-#     - temp_min > (cons_clim + off_clim)          -> 🔴 rouge (surchauffe inattendue)
-#     - entre les deux seuils                      -> 🟢 vert  (zone de confort)
-#     - une valeur manquante / unavailable         -> ⚪ gris  (données insuffisantes)
+#     - clim seuil allumage atteint              -> 🔴 rouge
+#     - temp_min < seuil chauffage ON            -> 🔵 bleu
+#     - entre les deux                           -> 🟢 vert
+#     - valeur manquante / état invalide         -> ⚪ gris
 #
 # 🔗 DEPENDANCES
-#     - entity                              : (héritée de carte_temperature_confort)
-#     - sensor.temperature_min_chambres     : temp min + attribut chambre_la_plus_froide
-#     - input_number.chauffage_consigne_confort : consigne chauffage confort
-#     - input_number.chauffage_offset_on    : offset déclenchement chauffage
-#     - input_number.clim_consigne_presence : consigne climatisation (cool)
-#     - input_number.clim_offset_on         : offset déclenchement clim
+#     - sensor.temperature_min_chambres
+#     - binary_sensor.clim_seuil_allumage_cool_atteint
+#     - input_number.chauffage_consigne_confort
+#     - input_number.chauffage_offset_on
 #
 # ⚠️ CONTRAINTES
-#     - Les 5 valeurs numériques sont toutes requises — une seule absence bascule en gris
-#     - Symétrique de carte_temperature_max_chambres (orientation chauffage vs clim)
-#     - Spécialisation de carte_temperature_confort : ne pas dupliquer les styles de base
-#     - Le label "chambre la plus froide" dépend de l'attribut upstream — non garanti
+#     - Symétrie stricte avec carte_temperature_max_chambres
+#     - Aucun recalcul clim local
+#     - Le froid reste basé sur chauffage principal
 #
 # 🧩 USAGE
 #     type: custom:button-card
@@ -57,11 +57,10 @@ carte_temperature_min_chambres:
               return Number.isFinite(v) ? v : null;
             };
 
-            const temp_min      = get('sensor.temperature_min_chambres');
-            const cons_chauff   = get('input_number.chauffage_consigne_confort');
-            const off_chauff    = get('input_number.chauffage_offset_on');
-            const cons_clim     = get('input_number.clim_consigne_presence');
-            const off_clim      = get('input_number.clim_offset_on');
+            const temp_min        = get('sensor.temperature_min_chambres');
+            const cons_chauff     = get('input_number.chauffage_consigne_confort');
+            const off_chauff      = get('input_number.chauffage_offset_on');
+            const cool_on_atteint = states['binary_sensor.clim_seuil_allumage_cool_atteint']?.state;
 
             const RED   = 'rgba(244, 67, 54, 0.2)';
             const GREEN = 'rgba(76, 175, 80, 0.2)';
@@ -72,17 +71,15 @@ carte_temperature_min_chambres:
               temp_min === null ||
               cons_chauff === null ||
               off_chauff === null ||
-              cons_clim === null ||
-              off_clim === null
+              !['on', 'off'].includes(cool_on_atteint)
             ) {
               return GREY;
             }
 
             const seuil_chauff_on = cons_chauff - off_chauff;
-            const seuil_clim_on   = cons_clim + off_clim;
 
-            if (temp_min < seuil_chauff_on) return BLUE;
-            if (temp_min > seuil_clim_on)   return RED;
+            if (cool_on_atteint === 'on')     return RED;
+            if (temp_min < seuil_chauff_on)   return BLUE;
             return GREEN;
           ]]]
 

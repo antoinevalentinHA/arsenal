@@ -1,0 +1,382 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Humidite relative — Mise a jour last_valid_ts chambre arnaud
+#
+#  ID : 10160000000014
+# ----------------------------------------------------------
+#  🎯 ROLE
+#
+#     Maintenir a jour le helper technique :
+#       input_datetime.humidite_relative_last_valid_ts_chambre_arnaud
+#
+#     Ce helper porte le timestamp de derniere evaluation valide
+#     de la brute consolidee de la zone.
+#
+#  🧱 CONTRAT
+#
+#     Lie a :
+#       sensor.humidite_relative_stabilisee_<zone> v1.1
+#
+#     Cette automation :
+#       - ecrit uniquement le timestamp
+#       - n'intervient pas dans la logique de stabilisation
+#       - ne modifie jamais la brute
+#       - ne prend aucune decision metier
+#
+#  🔒 REGLE
+#
+#     Mise a jour uniquement si la brute consolidee est valide :
+#       - numerique
+#       - non unknown / unavailable / none
+#       - dans la plage [10 ; 100]
+# ==========================================================
+
+- alias: "Météo — HR last_valid_ts chambre arnaud"
+  id: "10160000000014"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_chambre_arnaud
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: template
+      value_template: >
+        {% set brute_raw = states('sensor.humidite_relative_brute_consolidee_chambre_arnaud') %}
+        {% set brute = brute_raw | float(none) %}
+        {{ brute_raw not in ['unknown','unavailable','none']
+           and brute is not none
+           and 10 <= brute <= 100 }}
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.humidite_relative_last_valid_ts_chambre_arnaud
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Humidite relative — Mise a jour last_valid_ts chambre matthieu
+#
+#  ID : 10160000000015
+# ----------------------------------------------------------
+#  🎯 ROLE
+#
+#     Maintenir a jour le helper technique :
+#       input_datetime.humidite_relative_last_valid_ts_chambre_matthieu
+#
+#     Ce helper porte le timestamp de derniere evaluation valide
+#     de la brute consolidee de la zone.
+#
+#  🧱 CONTRAT
+#
+#     Lie a :
+#       sensor.humidite_relative_stabilisee_<zone> v1.1
+#
+#     Cette automation :
+#       - ecrit uniquement le timestamp
+#       - n'intervient pas dans la logique de stabilisation
+#       - ne modifie jamais la brute
+#       - ne prend aucune decision metier
+#
+#  🔒 REGLE
+#
+#     Mise a jour uniquement si la brute consolidee est valide :
+#       - numerique
+#       - non unknown / unavailable / none
+#       - dans la plage [10 ; 100]
+# ==========================================================
+
+- alias: "Météo — HR last_valid_ts chambre matthieu"
+  id: "10160000000015"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_chambre_matthieu
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: template
+      value_template: >
+        {% set brute_raw = states('sensor.humidite_relative_brute_consolidee_chambre_matthieu') %}
+        {% set brute = brute_raw | float(none) %}
+        {{ brute_raw not in ['unknown','unavailable','none']
+           and brute is not none
+           and 10 <= brute <= 100 }}
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.humidite_relative_last_valid_ts_chambre_matthieu
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Humidite relative — Mise a jour last_valid_ts chambre parents
+#
+#  ID : 10160000000016
+# ----------------------------------------------------------
+#  🎯 ROLE
+#
+#     Maintenir a jour le helper technique :
+#       input_datetime.humidite_relative_last_valid_ts_chambre_parents
+#
+#     Ce helper porte le timestamp de derniere evaluation valide
+#     de la brute consolidee de la zone.
+#
+#  🧱 CONTRAT
+#
+#     Lie a :
+#       sensor.humidite_relative_stabilisee_<zone> v1.1
+#
+#     Cette automation :
+#       - ecrit uniquement le timestamp
+#       - n'intervient pas dans la logique de stabilisation
+#       - ne modifie jamais la brute
+#       - ne prend aucune decision metier
+#
+#  🔒 REGLE
+#
+#     Mise a jour uniquement si la brute consolidee est valide :
+#       - numerique
+#       - non unknown / unavailable / none
+#       - dans la plage [10 ; 100]
+# ==========================================================
+
+- alias: "Météo — HR last_valid_ts chambre parents"
+  id: "10160000000016"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_chambre_parents
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: template
+      value_template: >
+        {% set brute_raw = states('sensor.humidite_relative_brute_consolidee_chambre_parents') %}
+        {% set brute = brute_raw | float(none) %}
+        {{ brute_raw not in ['unknown','unavailable','none']
+           and brute is not none
+           and 10 <= brute <= 100 }}
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.humidite_relative_last_valid_ts_chambre_parents
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Humidite relative — Mise a jour last_valid_ts sejour
+#
+#  ID : 10160000000017
+# ----------------------------------------------------------
+#  🎯 ROLE
+#
+#     Maintenir a jour le helper technique :
+#       input_datetime.humidite_relative_last_valid_ts_sejour
+#
+#     Ce helper porte le timestamp de derniere evaluation valide
+#     de la brute consolidee de la zone.
+#
+#  🧱 CONTRAT
+#
+#     Lie a :
+#       sensor.humidite_relative_stabilisee_<zone> v1.1
+#
+#     Cette automation :
+#       - ecrit uniquement le timestamp
+#       - n'intervient pas dans la logique de stabilisation
+#       - ne modifie jamais la brute
+#       - ne prend aucune decision metier
+#
+#  🔒 REGLE
+#
+#     Mise a jour uniquement si la brute consolidee est valide :
+#       - numerique
+#       - non unknown / unavailable / none
+#       - dans la plage [10 ; 100]
+# ==========================================================
+
+- alias: "Météo — HR last_valid_ts sejour"
+  id: "10160000000017"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_sejour
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: template
+      value_template: >
+        {% set brute_raw = states('sensor.humidite_relative_brute_consolidee_sejour') %}
+        {% set brute = brute_raw | float(none) %}
+        {{ brute_raw not in ['unknown','unavailable','none']
+           and brute is not none
+           and 10 <= brute <= 100 }}
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.humidite_relative_last_valid_ts_sejour
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Humidite relative — Mise a jour last_valid_ts entree
+#
+#  ID : 10160000000018
+# ----------------------------------------------------------
+#  🎯 ROLE
+#
+#     Maintenir a jour le helper technique :
+#       input_datetime.humidite_relative_last_valid_ts_entree
+#
+#     Ce helper porte le timestamp de derniere evaluation valide
+#     de la brute consolidee de la zone.
+#
+#  🧱 CONTRAT
+#
+#     Lie a :
+#       sensor.humidite_relative_stabilisee_<zone> v1.1
+#
+#     Cette automation :
+#       - ecrit uniquement le timestamp
+#       - n'intervient pas dans la logique de stabilisation
+#       - ne modifie jamais la brute
+#       - ne prend aucune decision metier
+#
+#  🔒 REGLE
+#
+#     Mise a jour uniquement si la brute consolidee est valide :
+#       - numerique
+#       - non unknown / unavailable / none
+#       - dans la plage [10 ; 100]
+# ==========================================================
+
+- alias: "Météo — HR last_valid_ts entree"
+  id: "10160000000018"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_entree
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: template
+      value_template: >
+        {% set brute_raw = states('sensor.humidite_relative_brute_consolidee_entree') %}
+        {% set brute = brute_raw | float(none) %}
+        {{ brute_raw not in ['unknown','unavailable','none']
+           and brute is not none
+           and 10 <= brute <= 100 }}
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.humidite_relative_last_valid_ts_entree
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Humidite relative — Mise a jour last_valid_ts petite maison
+#
+#  ID : 10160000000019
+# ----------------------------------------------------------
+#  🎯 ROLE
+#
+#     Maintenir a jour le helper technique :
+#       input_datetime.humidite_relative_last_valid_ts_petite_maison
+#
+#     Ce helper porte le timestamp de derniere evaluation valide
+#     de la brute consolidee de la zone.
+#
+#  🧱 CONTRAT
+#
+#     Lie a :
+#       sensor.humidite_relative_stabilisee_<zone> v1.1
+#
+#     Cette automation :
+#       - ecrit uniquement le timestamp
+#       - n'intervient pas dans la logique de stabilisation
+#       - ne modifie jamais la brute
+#       - ne prend aucune decision metier
+#
+#  🔒 REGLE
+#
+#     Mise a jour uniquement si la brute consolidee est valide :
+#       - numerique
+#       - non unknown / unavailable / none
+#       - dans la plage [10 ; 100]
+# ==========================================================
+
+- alias: "Météo — HR last_valid_ts petite maison"
+  id: "10160000000019"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.humidite_relative_brute_consolidee_petite_maison
+
+    - platform: time_pattern
+      minutes: "/5"
+
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: template
+      value_template: >
+        {% set brute_raw = states('sensor.humidite_relative_brute_consolidee_petite_maison') %}
+        {% set brute = brute_raw | float(none) %}
+        {{ brute_raw not in ['unknown','unavailable','none']
+           and brute is not none
+           and 10 <= brute <= 100 }}
+
+  action:
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.humidite_relative_last_valid_ts_petite_maison
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

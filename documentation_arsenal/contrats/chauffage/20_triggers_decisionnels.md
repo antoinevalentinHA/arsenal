@@ -124,8 +124,8 @@
 # 🧠 TABLE NORMATIVE DES TRIGGERS DÉCISIONNELS
 # ==========================================================
 
-Statut : DOCUMENT NORMATIF  
-Portée : Gouvernance décisionnelle Chauffage  
+Statut : DOCUMENT NORMATIF
+Portée : Gouvernance décisionnelle Chauffage
 Rôle   : Référence unique des causes autorisant / imposant un rappel de la Décision Centrale Chauffage.
 
 Ce document définit EXHAUSTIVEMENT :
@@ -146,14 +146,18 @@ Toute implémentation divergente constitue :
 # 🛑 PRIORITÉ ZÉRO — OVERRIDES UTILISATEUR / SYSTÈME
 # ----------------------------------------------------------
 
-| Cause                         | Transition   | Trigger | Criticité | Commentaire |
-|------------------------------|--------------|---------|-----------|-------------|
-| chauffage_autorise_systeme   | OFF → ON      | OUI     | CRITIQUE  | Revalidation complète espace décisionnel |
-| chauffage_autorise_systeme   | ON → OFF      | OUI     | CRITIQUE  | Interdiction immédiate absolue |
-| mode_confort_chauffage       | OFF → ON      | OUI     | CRITIQUE  | Override prioritaire immédiat |
-| mode_confort_chauffage       | ON → OFF      | OUI     | MAJEUR    | Retour régime normal |
-| pre_confort_actif             | OFF → ON      | OUI     | CRITIQUE  | Entrée fenêtre anticipation retour Vacances |
-| pre_confort_actif             | ON → OFF      | OUI     | CRITIQUE  | Fin fenêtre anticipation / nettoyage autorisation |
+| Cause                       | Transition | Trigger | Criticité | Commentaire |
+|----------------------------|------------|---------|-----------|-------------|
+| chauffage_autorise_systeme | OFF → ON   | OUI     | CRITIQUE  | Revalidation complète espace décisionnel |
+| chauffage_autorise_systeme | ON → OFF   | OUI     | CRITIQUE  | Interdiction immédiate absolue |
+| mode_confort_chauffage     | OFF → ON   | OUI     | CRITIQUE  | Override prioritaire immédiat, y compris en contournement d’anti-rebond |
+| mode_confort_chauffage     | ON → OFF   | OUI     | MAJEUR    | Retour régime normal |
+
+Règle cardinale :
+
+- l’override opérateur contourne l’anti-rebond géoloc,
+- aucun délai de stabilisation n’est opposable à `mode_confort_chauffage`,
+- cette priorité ne contourne jamais les sécurités matérielles hors périmètre Arsenal.
 
 ---
 
@@ -168,12 +172,19 @@ et doivent donc rappeler la Décision Centrale.
 Elles sont strictement limitées à la couche d’autorisation
 et ne produisent jamais d’action directe.
 
-| Cause                     | Transition | Trigger | Criticité | Commentaire |
-|--------------------------|------------|---------|-----------|-------------|
-| pre_confort_actif        | OFF → ON   | OUI     | CRITIQUE  | Ouverture fenêtre anticipation retour |
-| pre_confort_actif        | ON → OFF   | OUI     | CRITIQUE  | Fermeture fenêtre / fin autorisation |
-| mode_maison              | autre → Vacances | OUI | CRITIQUE  | Réinitialisation espace autorisations |
-| mode_maison              | Vacances → autre | OUI | CRITIQUE  | Nettoyage autorisations automatiques |
+| Cause                                      | Transition         | Trigger | Criticité | Commentaire |
+|-------------------------------------------|--------------------|---------|-----------|-------------|
+| input_boolean.pre_confort_actif_calcule   | OFF → ON           | OUI     | CRITIQUE  | Ouverture fenêtre anticipation retour Vacances |
+| input_boolean.pre_confort_actif_calcule   | ON → OFF           | OUI     | CRITIQUE  | Fermeture fenêtre / fin autorisation contextuelle |
+| mode_maison                               | autre → Vacances   | OUI     | CRITIQUE  | Réinitialisation espace autorisations |
+| mode_maison                               | Vacances → autre   | OUI     | CRITIQUE  | Nettoyage autorisations automatiques |
+
+Note :
+
+- la présence de `mode_maison` dans cette table et dans la table des contextes contraignants est volontaire,
+- la redondance est assumée :
+  - ici, `mode_maison` agit comme signal de reconfiguration de l’espace d’autorisation,
+  - ailleurs, il agit comme contexte hiérarchique contraignant.
 
 Règles cardinales :
 
@@ -181,27 +192,29 @@ Règles cardinales :
   doit rappeler immédiatement la Décision Centrale,
 - aucune autorisation automatique ne peut subsister
   sans réévaluation décisionnelle explicite,
-- ces triggers ne constituent jamais une cause hiérarchique,
-  mais uniquement une modification de l’espace d’autorisation.
+- ces triggers ne constituent jamais une cause hiérarchique autonome,
+  mais une modification de l’espace d’autorisation.
 
 ---
 
 # ----------------------------------------------------------
-# 🛑 NIVEAU 1 — INTERDICTIONS ABSOLUES (BLOCAGES MAJEURS)
+# 🛑 NIVEAU 1 — CONTEXTES CONTRAIGNANTS / BLOCAGES MAJEURS
 # ----------------------------------------------------------
 
-| Cause                               | Transition   | Trigger | Criticité | Commentaire |
-|------------------------------------|--------------|---------|-----------|-------------|
-| aeration_episode_en_cours           | OFF → ON      | OUI     | CRITIQUE  | Début blocage thermique |
-| aeration_episode_en_cours           | ON → OFF      | OUI     | MAJEUR    | Entrée post-aération |
-| chauffage_blocage_aeration          | OFF → ON      | OUI     | CRITIQUE  | Blocage post-aération |
-| chauffage_blocage_aeration          | ON → OFF      | OUI     | CRITIQUE  | Fin blocage post-aération |
-| fenetre_ouverte_maison_avec_delai   | OFF → ON      | OUI     | CRITIQUE  | Blocage fenêtre |
-| fenetre_ouverte_maison_avec_delai   | ON → OFF      | OUI     | MAJEUR    | Fin blocage fenêtre |
-| blocage_chauffage_poele             | OFF → ON      | OUI     | CRITIQUE  | Blocage poêle temporisé |
-| blocage_chauffage_poele             | ON → OFF      | OUI     | MAJEUR    | Fin blocage poêle |
-| mode_maison                         | autre → Vacances | OUI | CRITIQUE  | Interdiction globale |
-| mode_maison                         | Vacances → autre | OUI | MAJEUR    | Revalidation régime |
+| Cause                               | Transition         | Trigger | Criticité | Commentaire |
+|------------------------------------|--------------------|---------|-----------|-------------|
+| aeration_episode_en_cours          | OFF → ON           | OUI     | CRITIQUE  | Début contexte d’aération |
+| aeration_episode_en_cours          | ON → OFF           | OUI     | MAJEUR    | Fin épisode, bascule potentielle vers post-aération |
+| aeration_confirmee                 | OFF → ON           | OUI     | CRITIQUE  | Qualification de l’aération en blocage effectif |
+| aeration_confirmee                 | ON → OFF           | OUI     | MAJEUR    | Déqualification du contexte d’aération |
+| chauffage_blocage_aeration         | OFF → ON           | OUI     | CRITIQUE  | Blocage post-aération actif |
+| chauffage_blocage_aeration         | ON → OFF           | OUI     | CRITIQUE  | Fin blocage post-aération |
+| fenetre_ouverte_maison_avec_delai  | OFF → ON           | OUI     | CRITIQUE  | Blocage fenêtre qualifié |
+| fenetre_ouverte_maison_avec_delai  | ON → OFF           | OUI     | MAJEUR    | Fin blocage fenêtre qualifié |
+| blocage_chauffage_poele            | OFF → ON           | OUI     | CRITIQUE  | Blocage poêle temporisé |
+| blocage_chauffage_poele            | ON → OFF           | OUI     | MAJEUR    | Fin blocage poêle |
+| mode_maison                        | autre → Vacances   | OUI     | CRITIQUE  | Entrée contexte majeur Vacances |
+| mode_maison                        | Vacances → autre   | OUI     | MAJEUR    | Sortie contexte Vacances / revalidation régime |
 
 ---
 
@@ -209,10 +222,10 @@ Règles cardinales :
 # 🧠 NIVEAU 2 — CHANGEMENT DE RÉGIME (PRÉSENCE / ABSENCE)
 # ----------------------------------------------------------
 
-| Cause                       | Transition | Trigger | Criticité | Commentaire |
-|----------------------------|------------|---------|-----------|-------------|
-| presence_famille_unifiee   | OFF → ON   | OUI     | CRITIQUE  | ABSENCE → PRÉSENCE |
-| presence_famille_unifiee   | ON → OFF   | OUI     | CRITIQUE  | PRÉSENCE → ABSENCE |
+| Cause                     | Transition | Trigger | Criticité | Commentaire |
+|--------------------------|------------|---------|-----------|-------------|
+| presence_famille_unifiee | OFF → ON   | OUI     | CRITIQUE  | ABSENCE → PRÉSENCE |
+| presence_famille_unifiee | ON → OFF   | OUI     | CRITIQUE  | PRÉSENCE → ABSENCE |
 
 ---
 
@@ -220,13 +233,13 @@ Règles cardinales :
 # 🔁 ABSENCE — INHIBITION GÉOFENCING / PROTECTION THERMIQUE
 # ----------------------------------------------------------
 
-| Cause                                   | Transition | Trigger | Criticité | Commentaire |
-|----------------------------------------|------------|---------|-----------|-------------|
-| chauffage_inhibition_geofencing         | OFF → ON   | OUI     | CRITIQUE  | Entrée confort différé |
-| chauffage_inhibition_geofencing         | ON → OFF   | OUI     | CRITIQUE  | Sortie confort différé |
-| protection annulée par présence         | OFF → ON   | OUI     | MAJEUR    | Fin protection par retour |
-| protection annulée par blocage          | OFF → ON   | OUI     | CRITIQUE  | Blocage prioritaire |
-| protection annulée par mode_maison      | OFF → ON   | OUI     | MAJEUR    | Régime changé |
+| Cause                           | Transition | Trigger | Criticité | Commentaire |
+|--------------------------------|------------|---------|-----------|-------------|
+| chauffage_inhibition_geofencing| OFF → ON   | OUI     | CRITIQUE  | Entrée confort différé |
+| chauffage_inhibition_geofencing| ON → OFF   | OUI     | CRITIQUE  | Sortie confort différé |
+| protection annulée par présence| OFF → ON   | OUI     | MAJEUR    | Fin protection par retour |
+| protection annulée par blocage | OFF → ON   | OUI     | CRITIQUE  | Blocage prioritaire |
+| protection annulée par mode_maison | OFF → ON | OUI   | MAJEUR    | Régime changé |
 
 ---
 
@@ -236,14 +249,14 @@ Règles cardinales :
 
 Capteur pivot : `sensor.chauffage_autorisation_cible`
 
-| Transition            | Trigger | Criticité | Signification |
-|---------------------|---------|-----------|---------------|
-| reduced → neutre    | OUI     | MAJEUR    | Entrée zone morte |
-| neutre → reduced    | OUI     | MAJEUR    | Sortie zone morte |
-| neutre → comfort    | OUI     | CRITIQUE  | Apparition besoin thermique |
-| reduced → comfort   | OUI     | CRITIQUE  | Besoin thermique direct |
-| comfort → reduced   | OUI     | CRITIQUE  | Fin besoin thermique |
-| comfort → neutre    | OUI     | CRITIQUE  | Retour abstention |
+| Transition          | Trigger | Criticité | Signification |
+|--------------------|---------|-----------|---------------|
+| reduced → neutre   | OUI     | MAJEUR    | Entrée zone morte |
+| neutre → reduced   | OUI     | MAJEUR    | Sortie zone morte |
+| neutre → comfort   | OUI     | CRITIQUE  | Apparition besoin thermique |
+| reduced → comfort  | OUI     | CRITIQUE  | Besoin thermique direct |
+| comfort → reduced  | OUI     | CRITIQUE  | Fin besoin thermique |
+| comfort → neutre   | OUI     | CRITIQUE  | Retour abstention |
 
 👉 Tout changement de valeur DOIT rappeler la Décision Centrale.
 
@@ -264,12 +277,12 @@ Il sert uniquement de lecture explicative transverse.
 # ⏳ ATTENTE THERMIQUE (STATUTS)
 # ----------------------------------------------------------
 
-| Cause                     | Transition | Trigger | Criticité | Commentaire |
-|--------------------------|------------|---------|-----------|-------------|
-| entrée attente confort   | faux → vrai | OUI    | MAJEUR    | Surveillance seuil |
-| sortie attente confort   | vrai → faux | OUI    | CRITIQUE  | Déclenchement |
-| entrée attente protection| faux → vrai | OUI    | MAJEUR    | Surveillance |
-| sortie attente protection| vrai → faux | OUI    | CRITIQUE  | Chauffe protection |
+| Cause                      | Transition   | Trigger | Criticité | Commentaire |
+|---------------------------|--------------|---------|-----------|-------------|
+| entrée attente confort    | faux → vrai  | OUI     | MAJEUR    | Surveillance seuil |
+| sortie attente confort    | vrai → faux  | OUI     | CRITIQUE  | Déclenchement |
+| entrée attente protection | faux → vrai  | OUI     | MAJEUR    | Surveillance |
+| sortie attente protection | vrai → faux  | OUI     | CRITIQUE  | Chauffe protection |
 
 ---
 
@@ -277,9 +290,9 @@ Il sert uniquement de lecture explicative transverse.
 # 🧾 RAISON DOMINANTE
 # ----------------------------------------------------------
 
-| Cause                     | Transition | Trigger | Criticité | Commentaire |
-|--------------------------|------------|---------|-----------|-------------|
-| raison dominante         | A → B      | OUI     | STRUCTUREL| Cohérence hiérarchie / UI |
+| Cause            | Transition | Trigger | Criticité | Commentaire |
+|-----------------|------------|---------|-----------|-------------|
+| raison dominante| A → B      | OUI     | STRUCTUREL| Cohérence hiérarchie / UI |
 
 ---
 
@@ -287,9 +300,29 @@ Il sert uniquement de lecture explicative transverse.
 # ⏱️ ORDONNANCEMENT & CONVERGENCE
 # ----------------------------------------------------------
 
-| Cause           | Transition | Trigger | Criticité | Commentaire |
-|----------------|------------|---------|-----------|-------------|
-| systeme_stable | OFF → ON   | OUI     | CRITIQUE  | Recalcul initial |
+| Cause                           | Transition | Trigger | Criticité | Commentaire |
+|--------------------------------|------------|---------|-----------|-------------|
+| systeme_stable                 | OFF → ON   | OUI     | CRITIQUE  | Recalcul initial |
+| chauffage_application_en_cours | ON → OFF   | OUI     | MAJEUR    | Fin de transaction exécutive / convergence technique |
+
+---
+
+# ----------------------------------------------------------
+# ⚙️ CAPACITÉ D’EXÉCUTION — INFRASTRUCTURE BOILER BRIDGE
+# ----------------------------------------------------------
+
+| Cause               | Transition | Trigger | Criticité | Commentaire |
+|--------------------|------------|---------|-----------|-------------|
+| boiler_bridge_online | OFF → ON | OUI     | CRITIQUE  | Revalidation après indisponibilité technique — décision due non tentée (G2 pré-exécution) |
+| boiler_bridge_online | ON → OFF | OUI     | MAJEUR    | Perte capacité d’exécution — convergence / observabilité |
+
+Règle cardinale :
+
+- ce trigger ne remplace pas le retry transactionnel,
+- il couvre spécifiquement le cas où la Décision Centrale a pu calculer une décision valide,
+  mais s’est arrêtée sur la garde de capacité d’exécution avant toute tentative descendante,
+- il garantit qu’aucune décision due ne reste sans nouvelle évaluation
+  au retour du bridge online.
 
 ---
 
@@ -305,6 +338,7 @@ Il sert uniquement de lecture explicative transverse.
    - le besoin thermique,
    - un blocage majeur,
    - l’intégrité décisionnelle,
+   - la capacité effective d’exécution,
 
    **DOIT rappeler la Décision Centrale.**
 
@@ -328,9 +362,9 @@ Il sert uniquement de lecture explicative transverse.
 # ✅ STATUT FINAL
 # ----------------------------------------------------------
 
-Document : OFFICIEL — ARSENAL  
-Version  : Chauffage V3 PRO  
-Rôle     : Référence normative des triggers décisionnels  
+Document : OFFICIEL — ARSENAL
+Version  : Chauffage V3 PRO
+Rôle     : Référence normative des triggers décisionnels
 
 Toute évolution nécessite :
 

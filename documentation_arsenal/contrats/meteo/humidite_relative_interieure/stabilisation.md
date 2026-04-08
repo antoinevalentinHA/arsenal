@@ -1,8 +1,8 @@
 # CONTRAT — `sensor.humidite_relative_stabilisee_<zone>`
 
-**Version** : 1.0  
-**Domaine** : Humidité relative — couche stabilisation  
-**Statut** : Normatif  
+**Version** : 1.1
+**Domaine** : Humidité relative — couche stabilisation
+**Statut** : Normatif
 
 ---
 
@@ -10,15 +10,18 @@
 
 | Version | Modifications |
 |---|---|
+| 1.1 | Remplacement du mécanisme de fraîcheur mémoire : `this.last_changed` remplacé par `last_valid_ts` porté par helper `input_datetime` dédié par zone. Double TTL : nominal `1800 s` / post-boot `7200 s` sur trigger `homeassistant start`. Convention de nommage helper : `input_datetime.humidite_relative_last_valid_ts_<zone>`. Correction NC-01 (`ecart_sources` → `source_brute` conditionné à `brute_valide`), NC-03 (`delta_brute` conditionné à `brute_valide`). Ajout attribut `last_valid_ts_age`. |
 | 1.0 | Version initiale |
 
 ---
 
 ## 1. Rôle
 
-Publier une valeur hygrométrique lissée, visuellement stable, destinée à la lecture UI et à l'historique. Cette couche réduit le jitter capteur et absorbe les trous brefs sans réinventer une vérité, tout en restant réactive aux variations réelles rapides (douche, cuisson).
+Publier une valeur hygrométrique lissée, visuellement stable, destinée à la lecture UI et à l'historique. Cette couche réduit le jitter capteur et garantit la continuité de la chaîne métier en absorbant les trous brefs et les transitions post-redémarrage, sans réinventer une vérité.
 
-Cette entité est la **couche de confort visuel**. Elle ne corrige pas, ne remplace pas et ne rétroagit jamais sur la couche de vérité métier.
+Cette entité est la **couche de confort visuel et de continuité métier**. Elle ne corrige pas, ne remplace pas et ne rétroagit jamais sur la couche de vérité métier.
+
+**Invariant** : aucune perte de continuité ne peut être causée par un artefact de représentation (arrondi) ou par un mécanisme interne (`last_changed`).
 
 ---
 
@@ -27,12 +30,12 @@ Cette entité est la **couche de confort visuel**. Elle ne corrige pas, ne rempl
 ```
 sensor.humidite_relative_<zone>_1  ──┐
                                       ├──▶  sensor.humidite_relative_brute_consolidee_<zone>
-sensor.humidite_relative_<zone>_2  ──┘                 │
+sensor.humidite_relative_<zone>_2  ──┘                  │
                                                         ▼
                                sensor.humidite_relative_stabilisee_<zone>  ◀── ce contrat
                                                         │
                                                         ▼
-                               sensor.humidite_relative_<zone>  (façade UI, phase 3)
+                               sensor.humidite_relative_<zone>  (façade — interface métier canonique)
 ```
 
 ---
@@ -47,13 +50,22 @@ Une instance par zone active.
 
 ---
 
-## 4. Source consommée
+## 4. Sources consommées
 
 | Source | Nature |
 |---|---|
 | `sensor.humidite_relative_brute_consolidee_<zone>` | Vérité métier brute — couche phase 1 |
+| helper `input_datetime` dédié par zone | Timestamp de dernière évaluation valide |
 
 **Contrainte d'architecture** : cette couche consomme exclusivement la brute consolidée. Tout retour direct aux sources physiques `_1` / `_2` est interdit. La séparation des couches est inviolable.
+
+**Helper `last_valid_ts`** : chaque zone dispose d'un helper `input_datetime` dédié, avec date et heure activées. L'`entity_id` réel est la source de vérité — il doit être déclaré explicitement dans l'implémentation. La convention de nommage cible est `input_datetime.humidite_relative_last_valid_ts_<zone>` ; toute déviation doit être documentée par zone. Le template sensor référence cet `entity_id` via :
+
+```jinja
+{% set lv_entity = 'input_datetime.humidite_relative_last_valid_ts_' ~ suffixe %}
+```
+
+Si l'`entity_id` réel du helper diffère de cette convention, cette ligne doit être adaptée en conséquence. Un helper absent ou mal configuré produit `lv_ts = none`, ce qui rend la mémoire systématiquement non exploitable — comportement identique à v1.0.
 
 ---
 
@@ -65,11 +77,27 @@ La brute est considérée valide si son état est numérique et dans `[10, 100]%
 
 > Note : la brute consolidée a déjà appliqué sa propre validation. La vérification ici est un garde-fou défensif, pas une re-validation complète.
 
-### Stabilisée précédente exploitable
+### Évaluation valide
 
-`this.state` est considéré exploitable si et seulement si :
-- la valeur est numérique (non `unknown`, non `unavailable`)
-- l'âge depuis `this.last_changed` est ≤ TTL (1800 s)
+Une évaluation est valide si et seulement si la brute est valide au cycle courant. Cette condition est indépendante de la valeur publiée en sortie.
+
+### last_valid_ts
+
+`input_datetime.humidite_relative_last_valid_ts_<zone>` est le timestamp de la dernière évaluation valide. Il est mis à jour à chaque cycle où la brute est valide, même si la valeur publiée ne change pas. Il est persistant entre redémarrages HA.
+
+**Contrainte** : `last_changed` de la stabilisée est exclu de tout mécanisme de fraîcheur. Il ne constitue pas un signal de validité.
+
+### Mémoire exploitable
+
+La mémoire est considérée exploitable si et seulement si :
+- la valeur courante de `this.state` est numérique (non `unknown`, non `unavailable`)
+- `(now - last_valid_ts) ≤ TTL applicable`
+
+Le TTL applicable dépend du contexte de déclenchement :
+- cycle déclenché par `homeassistant start` → TTL post-boot (`7200 s`)
+- cycle déclenché par `state` ou `time_pattern` → TTL nominal (`1800 s`)
+
+Dès le premier cycle suivant le boot (`state` ou `time_pattern`), le TTL nominal reprend. Le TTL post-boot ne s'applique qu'au cycle `homeassistant start` lui-même.
 
 ---
 
@@ -81,46 +109,53 @@ La brute est considérée valide si son état est numérique et dans `[10, 100]%
 |---|---|
 | `alpha` | `0.25` |
 | `delta_max` | `4%` par cycle |
-| TTL mémoire | `1800 s` |
+| TTL mémoire nominal | `1800 s` |
+| TTL mémoire post-boot | `7200 s` |
 | Plage défensive | `[10, 100]%` |
 | Arrondi sortie | `round(0)` — entier |
 
 ### Justification des paramètres
 
-`alpha = 0.25` (plus doux que la température à `0.35`) : l'humidité est plus bruitée ; un lissage plus fort réduit le jitter sans sacrifier la réactivité.
+`alpha = 0.25` : lissage fort adapté au bruit hygrométrique, sans sacrifier la réactivité aux variations rapides.
 
-`delta_max = 4%` : permet de capturer les variations rapides réelles (douche, cuisson typiquement +10–20% en quelques minutes) tout en bridant les sauts artificiels.
+`delta_max = 4%` : capture les variations réelles rapides (douche, cuisson) tout en bridant les sauts artificiels.
+
+`TTL post-boot = 7200 s` : couvre un redémarrage HA avec latence capteur et période calme pré-redémarrage. Au-delà de 2 h, la valeur conservée est considérée trop ancienne pour être défendable comme interface métier canonique.
 
 ### Arrondi
 
-L'arrondi à l'entier (`round(0)`) s'applique **uniquement sur la valeur publiée en sortie**. Tous les calculs internes (EWMA, delta, comparaisons) opèrent sur les valeurs brutes non arrondies.
+L'arrondi à l'entier (`round(0)`) s'applique **uniquement sur la valeur publiée en sortie**. Tous les calculs internes opèrent sur les valeurs brutes non arrondies.
 
 ### Publication de l'abstention
 
-Les branches d'abstention dans le bloc `state` publient explicitement `{{ 'unknown' }}`. L'absence de sortie et `{{ none }}` sont interdits dans ce bloc.
+Les branches d'abstention publient explicitement `{{ 'unknown' }}`. L'absence de sortie et `{{ none }}` sont interdits dans le bloc `state`.
+
+### Mise à jour de last_valid_ts
+
+À chaque cycle où la brute est valide, le helper `last_valid_ts` est mis à jour via une automation technique dédiée. Cette mise à jour est indépendante du résultat de la publication (EWMA, initialisation, limitation delta). Elle n'est pas effectuée en CAS 3 ni en CAS 4.
 
 ### Cas couverts (ordre d'évaluation strict)
 
-#### Cas 1 — Brute valide, stabilisée précédente exploitable
+#### Cas 1 — Brute valide, mémoire exploitable
 
 1. Calculer `ewma = 0.25 * brute + 0.75 * stabilisee_precedente`
 2. Calculer `delta = ewma - stabilisee_precedente`
-3. Si `abs(delta) <= 4` → publier `ewma` arrondi à l'entier (`mode = ewma`)
-4. Si `abs(delta) > 4` → publier `stabilisee_precedente + sign(delta) * 4` arrondi à l'entier (`mode = limitation_delta`)
+3. Si `abs(delta) <= 4` → publier `ewma` arrondi (`mode = ewma`)
+4. Si `abs(delta) > 4` → publier `stabilisee_precedente + sign(delta) * 4` arrondi (`mode = limitation_delta`)
 
-#### Cas 2 — Brute valide, stabilisée précédente non exploitable
+#### Cas 2 — Brute valide, mémoire non exploitable
 
-Publier directement la valeur brute arrondie à l'entier (`mode = initialisation`).
+Publier directement la valeur brute arrondie (`mode = initialisation`).
 
 > Pas de faux lissage au démarrage ou après un trou long. La brute est la meilleure vérité disponible.
 
-#### Cas 3 — Brute `unknown`, stabilisée précédente encore fraîche
+#### Cas 3 — Brute invalide, mémoire exploitable
 
-Republier `this.state` arrondi à l'entier (`mode = memoire`).
+Republier `this.state` arrondi (`mode = memoire`). Ne pas mettre à jour `last_valid_ts`.
 
-#### Cas 4 — Brute `unknown`, stabilisée précédente expirée
+#### Cas 4 — Brute invalide, mémoire non exploitable
 
-Publier `{{ 'unknown' }}` (`mode = abstention`).
+Publier `{{ 'unknown' }}` (`mode = abstention`). Ne pas mettre à jour `last_valid_ts`.
 
 ---
 
@@ -130,22 +165,23 @@ Ces attributs sont passifs et non décisionnels. Ils décrivent le cycle courant
 
 | Attribut | Valeurs | Rôle |
 |---|---|---|
-| `source_brute` | numérique ou `none` | Valeur brute lue lors du cycle courant |
-| `mode_stabilisation` | `initialisation`, `ewma`, `limitation_delta`, `memoire`, `abstention` | Mode de stabilisation effectivement appliqué |
-| `delta_brute` | numérique ou `none` | Écart entre la brute et la stabilisée précédente ; `none` si l'une est indisponible |
-| `delta_applique` | numérique ou `none` | Variation réellement publiée par rapport à la stabilisée précédente ; `none` si non calculable |
-| `alpha` | `0.25` | Paramètre EWMA appliqué |
-| `delta_max` | `4` | Paramètre garde-fou appliqué |
+| `source_brute` | numérique ou `none` | Valeur brute lue si `brute_valide` ; `none` sinon |
+| `mode_stabilisation` | `initialisation`, `ewma`, `limitation_delta`, `memoire`, `abstention` | Mode effectivement appliqué |
+| `delta_brute` | numérique ou `none` | Écart brute − stabilisée précédente si `brute_valide` ET `this.state` numérique ; `none` sinon |
+| `delta_applique` | numérique ou `none` | Variation publiée par rapport à la stabilisée précédente ; indicatif |
+| `last_valid_ts_age` | numérique ou `none` | Âge en secondes depuis `last_valid_ts` au cycle courant ; `none` si helper indisponible |
+| `alpha` | `0.25` | Paramètre EWMA |
+| `delta_max` | `4` | Paramètre garde-fou |
 
-**Limite d'implémentation — attributs indicatifs**
+**`source_brute`** : publié uniquement si `brute_valide` ; `none` sinon. Ne publie pas de valeur hors plage `[10, 100]`.
 
-Les attributs `delta_brute` et `delta_applique` sont calculés à partir de `this.state` au moment de l'évaluation du bloc d'attribut. En raison du modèle d'exécution Home Assistant, cette valeur peut déjà correspondre à l'état publié du cycle courant. Ces attributs sont donc **indicatifs et non transactionnels** : ils ne garantissent pas une correspondance stricte avec la stabilisée pré-cycle.
+**`delta_brute`** : conditionné à `brute_valide` ET `this.state` numérique. Une brute hors plage produit `none`, pas un delta calculé.
 
-Les attributs `state`, `mode_stabilisation` et `source_brute` restent fiables et contractuels.
+**Attributs indicatifs** : `delta_brute`, `delta_applique` et `last_valid_ts_age` sont indicatifs. Voir contrainte §9 sur la non-transactionnalité des attributs.
 
 **Lecture diagnostique clé** :
-- `mode_stabilisation = limitation_delta` signale explicitement que le garde-fou a mordu sur ce cycle
-- `delta_brute > delta_applique` confirme l'amplitude de la limitation
+- `mode_stabilisation = limitation_delta` signale que le garde-fou a mordu sur ce cycle
+- `last_valid_ts_age > 1800` en régime nominal signale un problème de mise à jour du helper
 
 ---
 
@@ -161,36 +197,40 @@ trigger:
     event: start
 ```
 
-Le déclenchement sur `state` capture tout changement de la brute, y compris les transitions vers ou depuis `unknown`. Le `time_pattern` est obligatoire pour permettre l'expiration effective du TTL mémoire.
+Le `time_pattern` est obligatoire pour permettre l'expiration effective du TTL et la mise à jour de `last_valid_ts` en l'absence de changement de la brute.
 
 ---
 
 ## 9. Contraintes d'implémentation
 
-- Arrondi uniquement en sortie, jamais dans les calculs internes
-- Référence temporelle TTL : `this.last_changed` exclusivement
-- `{{ 'unknown' }}` explicite dans les branches d'abstention du bloc `state`
+- Arrondi uniquement en sortie
+- `last_changed` exclu de tout calcul de fraîcheur
+- `{{ 'unknown' }}` explicite dans les branches d'abstention
 - Aucun accès direct aux sources `_1` / `_2`
 - Aucune rétroaction sur `sensor.humidite_relative_brute_consolidee_<zone>`
-- Dans `delta_applique`, la validation `brute_valide` est appliquée avant tout calcul EWMA, en cohérence avec le bloc `state`
-- Factorisation par ancres YAML : une ancre `state`, une ancre par attribut diagnostic
-- `this.entity_id` utilisé dans tous les blocs avec préfixe `sensor.humidite_relative_stabilisee_`
+- `last_valid_ts` mis à jour par automation technique dédiée — le template sensor est en lecture seule
+- `source_brute` et `delta_brute` conditionnés à `brute_valide`
+- TTL post-boot applicable uniquement sur le cycle `homeassistant start`
+- Factorisation par ancres YAML
+- `this.entity_id` utilisé avec préfixe `sensor.humidite_relative_stabilisee_`
 
 ```jinja
 {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
 {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
+{% set lv_entity = 'input_datetime.humidite_relative_last_valid_ts_' ~ suffixe %}
 ```
 
-- La logique est recalculée indépendamment dans chaque bloc template. Cette duplication résulte d'une contrainte structurelle HA, non d'une violation du principe DRY. Le contrat normatif reste l'unique source de cohérence fonctionnelle.
+- La logique est recalculée indépendamment dans chaque bloc template. Cette duplication résulte d'une contrainte structurelle HA. Le contrat normatif reste l'unique source de cohérence fonctionnelle. Les attributs `delta_brute`, `delta_applique` et `last_valid_ts_age` sont non transactionnels : ils peuvent refléter l'état post-cycle courant.
 
 ---
 
 ## 10. Ce que ce contrat ne couvre pas
 
 - Façade UI canonique → `sensor.humidite_relative_<zone>` (phase 3)
-- Adaptation dynamique de `alpha` selon contexte
+- Adaptation dynamique de `alpha`
 - Lissage asymétrique montée/descente
 - Détection de dérive longue durée
+- Stratégie de sortie de divergence persistante dans la brute
 
 ---
 
@@ -200,5 +240,5 @@ Le déclenchement sur `state` capture tout changement de la brute, y compris les
 |---|---|---|
 | Sources physiques | `sensor.humidite_relative_<zone>_1/2` | Mesure brute capteur |
 | Vérité métier | `sensor.humidite_relative_brute_consolidee_<zone>` | Consolidation, arbitrage, abstention |
-| Confort visuel | `sensor.humidite_relative_stabilisee_<zone>` | Lissage, continuité courte, publication |
-| Façade UI | `sensor.humidite_relative_<zone>` | Lecture simple, sans logique (phase 3) |
+| Confort visuel + continuité métier | `sensor.humidite_relative_stabilisee_<zone>` | Lissage, continuité garantie |
+| Interface métier canonique | `sensor.humidite_relative_<zone>` | Lecture simple, sans logique |

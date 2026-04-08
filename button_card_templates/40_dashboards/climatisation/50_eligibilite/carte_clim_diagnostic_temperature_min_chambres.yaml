@@ -1,13 +1,13 @@
 # ==========================================================
 # 🧠 ARSENAL — TEMPLATE UI METIER
-#     Climatisation — Diagnostic température min chambres
+#     Climatisation — Diagnostic température max chambres
 # ==========================================================
 #
 # 📌 STATUT
 #     TEMPLATE UI METIER
 #
 # 🎯 ROLE
-#     Affiche la température minimale des chambres et la confronte
+#     Affiche la température maximale des chambres et la confronte
 #     au seuil d'allumage clim appliqué. Vert si le seuil est
 #     atteint (clim éligible), gris sinon.
 #
@@ -22,7 +22,7 @@
 #     - valeur non numérique   -> ⚪ gris clair (unavailable)
 #
 # 🔗 DEPENDANCES
-#     - entity                              : sensor.temperature_min_chambres
+#     - entity                              : sensor.temperature_max_chambres
 #     - sensor.seuil_allumage_clim_applique : seuil dynamique calculé upstream
 #
 # ⚠️ CONTRAINTES
@@ -35,15 +35,15 @@
 #
 # 🧩 USAGE
 #     type: custom:button-card
-#     template: carte_clim_diagnostic_temperature_min_chambres
-#     entity: sensor.temperature_min_chambres
+#     template: carte_clim_diagnostic_temperature_max_chambres
+#     entity: sensor.temperature_max_chambres
 #
 # ==========================================================
 
-carte_clim_diagnostic_temperature_min_chambres:
+carte_clim_diagnostic_temperature_max_chambres:
   template: socle_kpi_label_72_sans_icone
 
-  entity: sensor.temperature_min_chambres
+  entity: sensor.temperature_max_chambres
 
   label: |
     [[[

@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT DATETIMES
+#     Humidite relative — last_valid_ts par zone
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Stocker le timestamp de dernière évaluation valide
+#   de la couche stabilisee par zone.
+#   Utilisé par sensor.humidite_relative_stabilisee_<zone>
+#   pour le mécanisme de fraîcheur mémoire (v1.1).
+#
+# 🧱 CONTRAT
+#   sensor.humidite_relative_stabilisee_<zone> v1.1
+# ==========================================================
+
+humidite_relative_last_valid_ts_chambre_arnaud:
+  name: "HR last valid ts chambre arnaud"
+  has_date: true
+  has_time: true
+
+humidite_relative_last_valid_ts_chambre_matthieu:
+  name: "HR last valid ts chambre matthieu"
+  has_date: true
+  has_time: true
+
+humidite_relative_last_valid_ts_chambre_parents:
+  name: "HR last valid ts chambre parents"
+  has_date: true
+  has_time: true
+
+humidite_relative_last_valid_ts_sejour:
+  name: "HR last valid ts sejour"
+  has_date: true
+  has_time: true
+
+humidite_relative_last_valid_ts_entree:
+  name: "HR last valid ts entree"
+  has_date: true
+  has_time: true
+
+humidite_relative_last_valid_ts_petite_maison:
+  name: "HR last valid ts petite maison"
+  has_date: true
+  has_time: true

@@ -1,24 +1,15 @@
 # ==========================================================
 # 🧠 ARSENAL — TEMPLATE SENSORS
-#     Humidite relative stabilisee
+#     Humidite relative stabilisee — v1.1
 # ----------------------------------------------------------
 # 🎯 ROLE
-#   Lissage EWMA + limitation de delta sur la base de :
-#     - sensor.humidite_relative_brute_consolidee_<zone>
+#   Lissage EWMA + limitation de delta.
+#   Fraîcheur mémoire via input_datetime dédié par zone.
+#   Double TTL : nominal 1800 s / post-boot 7200 s.
+#   Aucun effet de bord. Lecture seule.
 #
 # 🧱 CONTRAT
-#   - alpha : 0.25
-#   - delta_max : 4 %
-#   - TTL memoire : 1800 s
-#   - Abstention explicite : {{ 'unknown' }}
-#
-# 🧪 OBSERVABILITE
-#   - source_brute
-#   - mode_stabilisation
-#   - delta_brute (brute - precedente)
-#   - delta_applique (publiee - precedente)
-#   - alpha
-#   - delta_max
+#   sensor.humidite_relative_stabilisee_<zone> v1.1
 # ==========================================================
 
 - trigger:
@@ -38,10 +29,10 @@
       state: &humidite_stabilisee_state >
         {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
         {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
+        {% set lv_entity = 'input_datetime.humidite_relative_last_valid_ts_' ~ suffixe %}
 
         {% set brute_raw = states(src) %}
         {% set brute = brute_raw | float(none) %}
-
         {% set brute_valide =
           brute_raw not in ['unknown','unavailable','none']
           and brute is not none
@@ -50,25 +41,26 @@
 
         {% set last_raw = this.state %}
         {% set last_val = last_raw | float(none) %}
-        {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
-        {% set now_ts = as_timestamp(now()) %}
-
-        {% set age_ok =
-          last_changed_ts is not none
-          and (now_ts - last_changed_ts) <= 1800
-        %}
-
-        {% set this_exploitable =
+        {% set this_numerique =
           last_raw not in ['unknown','unavailable','none']
           and last_val is not none
-          and age_ok
         %}
 
-        {% if brute_valide and this_exploitable %}
+        {% set lv_ts = as_timestamp(states(lv_entity), none) %}
+        {% set now_ts = as_timestamp(now()) %}
 
+        {% set ttl = 7200 if trigger.platform == 'homeassistant' else 1800 %}
+
+        {% set lv_age_ok =
+          lv_ts is not none
+          and (now_ts - lv_ts) <= ttl
+        %}
+
+        {% set memoire_exploitable = this_numerique and lv_age_ok %}
+
+        {% if brute_valide and memoire_exploitable %}
           {% set ewma = 0.25 * brute + 0.75 * last_val %}
           {% set delta = ewma - last_val %}
-
           {% if (delta | abs) <= 4 %}
             {{ ewma | round(0) }}
           {% else %}
@@ -79,10 +71,10 @@
             {% endif %}
           {% endif %}
 
-        {% elif brute_valide and not this_exploitable %}
+        {% elif brute_valide and not memoire_exploitable %}
           {{ brute | round(0) }}
 
-        {% elif not brute_valide and this_exploitable %}
+        {% elif not brute_valide and memoire_exploitable %}
           {{ last_val | round(0) }}
 
         {% else %}
@@ -93,16 +85,26 @@
         source_brute: &humidite_stabilisee_source >
           {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
           {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
-          {% set brute = states(src) | float(none) %}
-          {{ brute }}
+          {% set brute_raw = states(src) %}
+          {% set brute = brute_raw | float(none) %}
+          {% set brute_valide =
+            brute_raw not in ['unknown','unavailable','none']
+            and brute is not none
+            and 10 <= brute <= 100
+          %}
+          {% if brute_valide %}
+            {{ brute }}
+          {% else %}
+            {{ none }}
+          {% endif %}
 
         mode_stabilisation: &humidite_stabilisee_mode >
           {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
           {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
+          {% set lv_entity = 'input_datetime.humidite_relative_last_valid_ts_' ~ suffixe %}
 
           {% set brute_raw = states(src) %}
           {% set brute = brute_raw | float(none) %}
-
           {% set brute_valide =
             brute_raw not in ['unknown','unavailable','none']
             and brute is not none
@@ -111,21 +113,24 @@
 
           {% set last_raw = this.state %}
           {% set last_val = last_raw | float(none) %}
-          {% set last_changed_ts = as_timestamp(this.last_changed, none) %}
-          {% set now_ts = as_timestamp(now()) %}
-
-          {% set age_ok =
-            last_changed_ts is not none
-            and (now_ts - last_changed_ts) <= 1800
-          %}
-
-          {% set this_exploitable =
+          {% set this_numerique =
             last_raw not in ['unknown','unavailable','none']
             and last_val is not none
-            and age_ok
           %}
 
-          {% if brute_valide and this_exploitable %}
+          {% set lv_ts = as_timestamp(states(lv_entity), none) %}
+          {% set now_ts = as_timestamp(now()) %}
+
+          {% set ttl = 7200 if trigger.platform == 'homeassistant' else 1800 %}
+
+          {% set lv_age_ok =
+            lv_ts is not none
+            and (now_ts - lv_ts) <= ttl
+          %}
+
+          {% set memoire_exploitable = this_numerique and lv_age_ok %}
+
+          {% if brute_valide and memoire_exploitable %}
             {% set ewma = 0.25 * brute + 0.75 * last_val %}
             {% set delta = ewma - last_val %}
             {% if (delta | abs) <= 4 %}
@@ -133,13 +138,10 @@
             {% else %}
               limitation_delta
             {% endif %}
-
-          {% elif brute_valide and not this_exploitable %}
+          {% elif brute_valide and not memoire_exploitable %}
             initialisation
-
-          {% elif not brute_valide and this_exploitable %}
+          {% elif not brute_valide and memoire_exploitable %}
             memoire
-
           {% else %}
             abstention
           {% endif %}
@@ -147,12 +149,21 @@
         delta_brute: &humidite_stabilisee_delta_brute >
           {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
           {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
-
-          {% set brute = states(src) | float(none) %}
-          {% set last = this.state | float(none) %}
-
-          {% if brute is not none and last is not none %}
-            {{ (brute - last) | round(2) }}
+          {% set brute_raw = states(src) %}
+          {% set brute = brute_raw | float(none) %}
+          {% set brute_valide =
+            brute_raw not in ['unknown','unavailable','none']
+            and brute is not none
+            and 10 <= brute <= 100
+          %}
+          {% set last_raw = this.state %}
+          {% set last_val = last_raw | float(none) %}
+          {% set last_numerique =
+            last_raw not in ['unknown','unavailable','none']
+            and last_val is not none
+          %}
+          {% if brute_valide and last_numerique %}
+            {{ (brute - last_val) | round(2) }}
           {% else %}
             {{ none }}
           {% endif %}
@@ -160,22 +171,36 @@
         delta_applique: &humidite_stabilisee_delta_applique >
           {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
           {% set src = 'sensor.humidite_relative_brute_consolidee_' ~ suffixe %}
+          {% set lv_entity = 'input_datetime.humidite_relative_last_valid_ts_' ~ suffixe %}
 
           {% set brute_raw = states(src) %}
           {% set brute = brute_raw | float(none) %}
-
           {% set brute_valide =
             brute_raw not in ['unknown','unavailable','none']
             and brute is not none
             and 10 <= brute <= 100
           %}
 
-          {% set last = this.state | float(none) %}
+          {% set last_raw = this.state %}
+          {% set last_val = last_raw | float(none) %}
+          {% set last_numerique =
+            last_raw not in ['unknown','unavailable','none']
+            and last_val is not none
+          %}
 
-          {% if brute_valide and last is not none %}
-            {% set ewma = 0.25 * brute + 0.75 * last %}
-            {% set delta = ewma - last %}
+          {% set lv_ts = as_timestamp(states(lv_entity), none) %}
+          {% set now_ts = as_timestamp(now()) %}
 
+          {% set ttl = 7200 if trigger.platform == 'homeassistant' else 1800 %}
+
+          {% set lv_age_ok =
+            lv_ts is not none
+            and (now_ts - lv_ts) <= ttl
+          %}
+
+          {% if brute_valide and last_numerique and lv_age_ok %}
+            {% set ewma = 0.25 * brute + 0.75 * last_val %}
+            {% set delta = ewma - last_val %}
             {% if (delta | abs) <= 4 %}
               {{ delta | round(2) }}
             {% else %}
@@ -185,6 +210,16 @@
                 -4
               {% endif %}
             {% endif %}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+        last_valid_ts_age: &humidite_stabilisee_lv_age >
+          {% set suffixe = this.entity_id | replace('sensor.humidite_relative_stabilisee_', '') %}
+          {% set lv_entity = 'input_datetime.humidite_relative_last_valid_ts_' ~ suffixe %}
+          {% set lv_ts = as_timestamp(states(lv_entity), none) %}
+          {% if lv_ts is not none %}
+            {{ (as_timestamp(now()) - lv_ts) | round(0) }}
           {% else %}
             {{ none }}
           {% endif %}
@@ -215,6 +250,7 @@
         mode_stabilisation: *humidite_stabilisee_mode
         delta_brute: *humidite_stabilisee_delta_brute
         delta_applique: *humidite_stabilisee_delta_applique
+        last_valid_ts_age: *humidite_stabilisee_lv_age
         alpha: *humidite_stabilisee_alpha
         delta_max: *humidite_stabilisee_delta_max
 
@@ -237,6 +273,7 @@
         mode_stabilisation: *humidite_stabilisee_mode
         delta_brute: *humidite_stabilisee_delta_brute
         delta_applique: *humidite_stabilisee_delta_applique
+        last_valid_ts_age: *humidite_stabilisee_lv_age
         alpha: *humidite_stabilisee_alpha
         delta_max: *humidite_stabilisee_delta_max
 
@@ -259,6 +296,7 @@
         mode_stabilisation: *humidite_stabilisee_mode
         delta_brute: *humidite_stabilisee_delta_brute
         delta_applique: *humidite_stabilisee_delta_applique
+        last_valid_ts_age: *humidite_stabilisee_lv_age
         alpha: *humidite_stabilisee_alpha
         delta_max: *humidite_stabilisee_delta_max
 
@@ -281,6 +319,7 @@
         mode_stabilisation: *humidite_stabilisee_mode
         delta_brute: *humidite_stabilisee_delta_brute
         delta_applique: *humidite_stabilisee_delta_applique
+        last_valid_ts_age: *humidite_stabilisee_lv_age
         alpha: *humidite_stabilisee_alpha
         delta_max: *humidite_stabilisee_delta_max
 
@@ -303,5 +342,6 @@
         mode_stabilisation: *humidite_stabilisee_mode
         delta_brute: *humidite_stabilisee_delta_brute
         delta_applique: *humidite_stabilisee_delta_applique
+        last_valid_ts_age: *humidite_stabilisee_lv_age
         alpha: *humidite_stabilisee_alpha
         delta_max: *humidite_stabilisee_delta_max

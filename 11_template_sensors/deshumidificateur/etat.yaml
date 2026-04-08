@@ -11,6 +11,7 @@
 #   - Seuil d’activation : 100 W
 #   - Si la puissance > 100 W → capteur actif (on)
 #     sinon → inactif (off)
+#   - En cas d’indisponibilité → OFF (pas de fausse détection ON)
 #
 # 📊 Type : Template Binary Sensor
 # 📍 Entité générée : binary_sensor.deshumidificateur_actif
@@ -23,12 +24,17 @@
     # ------------------------------------------------------
     - name: "Déshumidificateur actif"
       unique_id: deshumidificateur_actif
-      default_entity_id: binary_sensor.deshumidificateur_actif
       device_class: power
 
       # --------------------------------------------------
       # 🧮 Active si la consommation dépasse 100 W
       # --------------------------------------------------
       state: >
-        {% set p = states('sensor.prise_deshumidificateur_power') | float(0) %}
-        {{ p > 100 }}
+        {% set p_raw = states('sensor.prise_deshumidificateur_power') %}
+        {% set invalides = ['unknown', 'unavailable', 'none', ''] %}
+
+        {% if p_raw in invalides %}
+          false
+        {% else %}
+          {{ (p_raw | float) > 100 }}
+        {% endif %}

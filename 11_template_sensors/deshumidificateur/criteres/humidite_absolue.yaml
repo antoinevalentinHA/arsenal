@@ -15,6 +15,8 @@
 #       • sensor.humidite_absolue_cible_off_cave
 #   - L’état actuel du capteur influence la comparaison
 #     (permet d’éviter les oscillations rapides ON/OFF).
+#   - En cas d’indisponibilité d’une entrée, l’état courant
+#     est conservé
 #
 # 📊 Type : Template Binary Sensor
 # 📍 Entité générée : binary_sensor.critere_deshumidification_ha_cave
@@ -27,28 +29,29 @@
     # ------------------------------------------------------
     - name: "Critère déshumidification HA cave"
       unique_id: critere_deshumidification_ha_cave
-      default_entity_id: binary_sensor.critere_deshumidification_ha_cave
       device_class: moisture
 
       # --------------------------------------------------
       # 🧮 Hystérésis basée sur l’humidité absolue
       # --------------------------------------------------
       state: >
-        {# --- Lecture des valeurs --- #}
-        {% set ha        = states('sensor.humidite_absolue_cave') | float(0) %}
-        {% set seuil_on  = states('sensor.humidite_absolue_cible_on_cave')  | float(99) %}
-        {% set seuil_off = states('sensor.humidite_absolue_cible_off_cave') | float(0) %}
+        {% set ha_raw = states('sensor.humidite_absolue_cave') %}
+        {% set seuil_on_raw = states('sensor.humidite_absolue_cible_on_cave') %}
+        {% set seuil_off_raw = states('sensor.humidite_absolue_cible_off_cave') %}
 
-        {# --- Mémoire d’état actuelle --- #}
-        {% set current_on = is_state(this.entity_id, 'on') %}
+        {% set invalides = ['unknown', 'unavailable', 'none', ''] %}
 
-        {# --- Hystérésis :
-             - Si déjà ON  → rester ON tant que ha > seuil_off
-             - Si OFF      → s'activer seulement si ha >= seuil_on
-        #}
-        {% if current_on %}
-          {{ ha > seuil_off }}
+        {% if ha_raw in invalides or seuil_on_raw in invalides or seuil_off_raw in invalides %}
+          {{ is_state(this.entity_id, 'on') }}
         {% else %}
-          {{ ha >= seuil_on }}
-        {% endif %}
+          {% set ha = ha_raw | float %}
+          {% set seuil_on = seuil_on_raw | float %}
+          {% set seuil_off = seuil_off_raw | float %}
+          {% set current_on = is_state(this.entity_id, 'on') %}
 
+          {% if current_on %}
+            {{ ha > seuil_off }}
+          {% else %}
+            {{ ha >= seuil_on }}
+          {% endif %}
+        {% endif %}

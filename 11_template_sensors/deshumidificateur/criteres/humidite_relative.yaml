@@ -15,6 +15,8 @@
 #       • input_number.cave_rh_cible_off
 #   - L’état actuel du capteur est pris en compte pour
 #     stabiliser le comportement (évite les basculements rapides).
+#   - En cas d’indisponibilité d’une entrée, l’état courant
+#     est conservé
 #
 # 📊 Type : Template Binary Sensor
 # 📍 Entité générée : binary_sensor.critere_deshumidification_cave
@@ -27,25 +29,29 @@
     # ------------------------------------------------------
     - name: "Critère déshumidification cave"
       unique_id: critere_deshumidification_cave
-      default_entity_id: binary_sensor.critere_deshumidification_cave
       device_class: moisture
 
       # --------------------------------------------------
       # 🧮 Hystérésis basée sur l’humidité relative (RH)
       # --------------------------------------------------
       state: >
-        {# --- Lecture des données --- #}
-        {% set rh        = states('sensor.humidite_relative_cave') | float(0) %}
-        {% set seuil_on  = states('input_number.cave_rh_cible_on')  | float(80) %}
-        {% set seuil_off = states('input_number.cave_rh_cible_off') | float(70) %}
+        {% set rh_raw = states('sensor.humidite_relative_cave') %}
+        {% set seuil_on_raw = states('input_number.cave_rh_cible_on') %}
+        {% set seuil_off_raw = states('input_number.cave_rh_cible_off') %}
 
-        {# --- État actuel (mémoire) --- #}
-        {% set current_on = is_state(this.entity_id, 'on') %}
+        {% set invalides = ['unknown', 'unavailable', 'none', ''] %}
 
-        {# --- Hystérésis RH --- #}
-        {% if current_on %}
-          {{ rh > seuil_off }}
+        {% if rh_raw in invalides or seuil_on_raw in invalides or seuil_off_raw in invalides %}
+          {{ is_state(this.entity_id, 'on') }}
         {% else %}
-          {{ rh >= seuil_on }}
-        {% endif %}
+          {% set rh = rh_raw | float %}
+          {% set seuil_on = seuil_on_raw | float %}
+          {% set seuil_off = seuil_off_raw | float %}
+          {% set current_on = is_state(this.entity_id, 'on') %}
 
+          {% if current_on %}
+            {{ rh > seuil_off }}
+          {% else %}
+            {{ rh >= seuil_on }}
+          {% endif %}
+        {% endif %}

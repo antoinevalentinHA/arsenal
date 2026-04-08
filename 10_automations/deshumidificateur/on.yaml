@@ -34,11 +34,8 @@
 #  🧠 DÉCLENCHEURS UTILISÉS
 #
 #     - Stabilisation de la recommandation
-#     - Redémarrage stabilisé du système
-#     - Vérification périodique (polling volontaire)
 #
-#     Le polling est assumé pour garantir
-#     qu’aucune activation légitime ne soit manquée.
+#     Cette automation est strictement événementielle.
 #
 #  🧠 AUTORITÉ D’EXÉCUTION
 #
@@ -60,8 +57,7 @@
 #     Automation de gestion d’entrée :
 #     recommandation ≠ invariant.
 #
-#     Elle complète le GUARD défensif
-#     en assurant qu’un état recommandé
+#     Elle assure qu’un état recommandé
 #     devienne effectif de manière robuste
 #     et tolérante au bruit système.
 # ==========================================================
@@ -70,24 +66,17 @@
   alias: "Déshumidificateur - Activation auto"
   description: >
     Met le déshumidificateur en marche si la recommandation
-    est active depuis 5 min ou déjà active au démarrage HA.
+    est active depuis 5 min.
   mode: single
 
   # ======================================================
-  # 🔔 Déclencheurs — Recommandation stable / Reboot HA / Vérification périodique
+  # 🔔 Déclencheur — Recommandation stable
   # ======================================================
   trigger:
     - platform: state
       entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
       to: 'on'
       for: '00:05:00'
-
-    - platform: state
-      entity_id: input_boolean.systeme_stable
-      to: "on"
-
-    - platform: time_pattern
-      minutes: "/10"
 
   # ======================================================
   # ✅ Conditions — Recommandation active + appareil OFF
@@ -99,7 +88,7 @@
            and is_state('binary_sensor.deshumidificateur_actif', 'off') }}
 
   # ======================================================
-  # 🔄 Action — Allumage + log + notification
+  # 🔄 Action — Allumage contrôlé
   # ======================================================
   action:
     - action: script.set_deshumidificateur_state

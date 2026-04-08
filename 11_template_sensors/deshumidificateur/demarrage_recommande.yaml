@@ -1,0 +1,40 @@
+# ==========================================================
+# 💧 TEMPLATE BINARY SENSOR — Démarrage recommandé du déshumidificateur (Cave)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Exposer la recommandation métier de démarrage du
+#   déshumidificateur de cave à partir des deux critères
+#   locaux déjà calculés :
+#     • binary_sensor.critere_deshumidification_cave
+#     • binary_sensor.critere_deshumidification_ha_cave
+#
+# ⚙️ Fonctionnement :
+#   - Cette entité n'effectue aucun recalcul RH / HA
+#   - Cette entité n'applique aucune hystérésis propre
+#   - La stabilité est portée exclusivement par les
+#     critères locaux
+#   - En cas d'indisponibilité d'un critère, l'état
+#     courant est conservé
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.deshumidificateur_cave_demarrage_recommande
+# ==========================================================
+
+- binary_sensor:
+    - name: "Deshumidificateur cave demarrage recommande"
+      unique_id: deshumidificateur_cave_demarrage_recommande
+      device_class: running
+
+      # --------------------------------------------------
+      # 🧮 Agrégation pure des critères RH / HA
+      # --------------------------------------------------
+      state: >
+        {% set critere_rh = states('binary_sensor.critere_deshumidification_cave') %}
+        {% set critere_ha = states('binary_sensor.critere_deshumidification_ha_cave') %}
+        {% set invalides = ['unknown', 'unavailable', 'none', ''] %}
+
+        {% if critere_rh in invalides or critere_ha in invalides %}
+          {{ is_state(this.entity_id, 'on') }}
+        {% else %}
+          {{ critere_rh == 'on' or critere_ha == 'on' }}
+        {% endif %}

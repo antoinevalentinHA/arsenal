@@ -119,8 +119,8 @@ views:
                 icon: mdi:weather-windy
 
               - type: custom:button-card
-                template: carte_clim_diagnostic_temperature_min_chambres
-                name: Chambre la plus froide
+                template: carte_clim_diagnostic_temperature_max_chambres
+                name: Chambre la plus chaude
 
               - type: custom:button-card
                 template: carte_clim_diagnostic_extinction_temperature_min_chambres

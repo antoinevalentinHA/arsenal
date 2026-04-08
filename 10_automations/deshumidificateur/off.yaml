@@ -34,12 +34,13 @@
 #
 #  🧠 DÉCLENCHEURS UTILISÉS
 #
-#     - Changement d’état de la recommandation
-#     - Redémarrage stabilisé du système
-#     - Vérification périodique (polling volontaire)
+#     - Stabilisation de l’absence de recommandation
 #
-#     Le polling est assumé pour garantir
-#     qu’aucun état prolongé ne soit manqué.
+#     Cette automation est strictement événementielle.
+#
+#     En cas de redémarrage de Home Assistant alors que la
+#     recommandation est déjà OFF, aucune extinction n’est
+#     rejouée automatiquement. Ce comportement est intentionnel.
 #
 #  🧠 AUTORITÉ D’EXÉCUTION
 #
@@ -52,16 +53,24 @@
 #
 #     - Ne calcule PAS l’humidité
 #     - Ne décide PAS quand déshumidifier
-#     - Ne remplace PAS le GUARD invariant
-#     - Ne corrige PAS immédiatement un état interdit
+#     - Ne remplace PAS un invariant instantané
+#     - Ne corrige PAS immédiatement un écart transitoire
+#
+#  ⚠️ LIMITE CONNUE
+#
+#     La durée minimale de fonctionnement est actuellement
+#     approximée via `last_changed` de
+#     `binary_sensor.deshumidificateur_actif`.
+#
+#     Cette approximation est acceptable tant que l’état
+#     actif reste stable et sans micro-cycles résiduels.
 #
 #  🧠 ARCHITECTURE ARSENAL
 #
 #     Automation de gestion temporelle :
 #     tolérance ≠ invariant.
 #
-#     Elle complète le GUARD défensif
-#     en apportant une extinction propre,
+#     Elle apporte une extinction propre,
 #     robuste et traçable dans le temps.
 # ==========================================================
 
@@ -73,20 +82,13 @@
   mode: restart
 
   # ======================================================
-  # 🔔 Déclencheurs — Non recommandé / Vérification périodique / Reboot HA
+  # 🔔 Déclencheur — Absence de recommandation stable
   # ======================================================
   trigger:
     - platform: state
       entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
       to: 'off'
       for: '00:05:00'
-
-    - platform: state
-      entity_id: input_boolean.systeme_stable
-      to: "on"
-
-    - platform: time_pattern
-      minutes: "/10"
 
   # ======================================================
   # ✅ Conditions — Non recommandé + actif ≥ 20 min
@@ -99,10 +101,9 @@
            and (as_timestamp(now()) - as_timestamp(states.binary_sensor.deshumidificateur_actif.last_changed)) > 20*60 }}
 
   # ======================================================
-  # 🔄 Action — Extinction + log + notification
+  # 🔄 Action — Extinction contrôlée
   # ======================================================
   action:
-
     - action: script.set_deshumidificateur_state
       data:
         target_state: "off"

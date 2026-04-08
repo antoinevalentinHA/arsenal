@@ -3,8 +3,8 @@
 # ----------------------------------------------------------
 # 🎯 ROLE
 #   Orchestrateur UNIQUE de synchronisation entre :
-#     - l’état réel du déshumidificateur (prise connectée)
-#     - l’état cible demandé (ON / OFF)
+#     - l’état réel du déshumidificateur
+#     - l’état cible demandé
 #
 # 🧱 PRINCIPE DE VERITE
 #   La seule source de verite est :
@@ -16,6 +16,11 @@
 #
 #   Le switch sert a commander.
 #   Le binary_sensor sert a verifier.
+#
+# 🛡️ GARDE DE SECURITE
+#   Aucune action n'est emise si :
+#     - la source de verite est indisponible
+#     - ou la commande n'est pas disponible
 # ==========================================================
 
 set_deshumidificateur_state:
@@ -36,6 +41,8 @@ set_deshumidificateur_state:
     - variables:
         target_state_normalized: "{{ target_state | default('on') | lower }}"
         want_on: "{{ target_state_normalized == 'on' }}"
+        actif_state: "{{ states('binary_sensor.deshumidificateur_actif') }}"
+        switch_state: "{{ states('switch.deshumidificateur') }}"
         is_on: "{{ is_state('binary_sensor.deshumidificateur_actif','on') }}"
 
     # ======================================================
@@ -48,7 +55,24 @@ set_deshumidificateur_state:
         - stop: "target_state invalide : utiliser 'on' ou 'off'"
 
     # ======================================================
-    # 3️⃣ Vérification préalable : si déjà conforme, on sort
+    # 3️⃣ Validation des prerequis de securite
+    # ======================================================
+    - if:
+        - condition: template
+          value_template: >
+            {{ actif_state in ['unknown', 'unavailable', 'none', ''] }}
+      then:
+        - stop: "Source de verite indisponible : binary_sensor.deshumidificateur_actif"
+
+    - if:
+        - condition: template
+          value_template: >
+            {{ switch_state in ['unknown', 'unavailable', 'none', ''] }}
+      then:
+        - stop: "Commande indisponible : switch.deshumidificateur"
+
+    # ======================================================
+    # 4️⃣ Verification prealable : si deja conforme, on sort
     # ======================================================
     - choose:
         - conditions: "{{ want_on and is_on }}"
@@ -59,7 +83,7 @@ set_deshumidificateur_state:
             - stop: "Déjà OFF - pas d'action nécessaire"
 
     # ======================================================
-    # 4️⃣ Première tentative de commande
+    # 5️⃣ Premiere tentative de commande
     # ======================================================
     - choose:
         - conditions: "{{ want_on }}"
@@ -74,7 +98,6 @@ set_deshumidificateur_state:
 
     - delay: "00:00:05"
 
-    # Attente de la mise à jour de l'état reel
     - wait_template: >
         {{ (want_on and is_state('binary_sensor.deshumidificateur_actif','on')) or
            ((not want_on) and is_state('binary_sensor.deshumidificateur_actif','off')) }}
@@ -82,7 +105,7 @@ set_deshumidificateur_state:
       continue_on_timeout: true
 
     # ======================================================
-    # 5️⃣ Seconde tentative si l’état réel n’a pas changé
+    # 6️⃣ Seconde tentative si l'etat reel n'a pas change
     # ======================================================
     - if:
         - condition: template
@@ -110,7 +133,7 @@ set_deshumidificateur_state:
           continue_on_timeout: true
 
     # ======================================================
-    # 6️⃣ Échec final si l’état réel reste non conforme
+    # 7️⃣ Echec final si l'etat reel reste non conforme
     # ======================================================
     - if:
         - condition: template

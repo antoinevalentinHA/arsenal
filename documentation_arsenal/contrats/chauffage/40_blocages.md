@@ -1,39 +1,17 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE
-#     CHAUFFAGE — BLOCAGES & INTERDICTIONS HIÉRARCHIQUES (V3 PRO)
-# ==========================================================
-#
-# 📌 STATUT :
-#   CONTRAT NORMATIF DE DOMAINE — SÛRETÉ HIÉRARCHIQUE CHAUFFAGE
-#
-# 🔒 AUTORITÉ :
-#   Ce document définit l’ensemble des **blocages et interdictions**
-#   applicables au sous-système Chauffage Arsenal.
-#
-#   Il formalise les contextes dans lesquels toute recherche de confort
-#   est interdite, quelle que soit l’autorisation thermique locale.
-#
-#   Il est OPPOSABLE à toute implémentation :
-#     • capteurs de blocage,
-#     • helpers d’interdiction,
-#     • scripts de décision,
-#     • automatismes d’application.
-#
-#   Subordonné à :
-#     /documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
-#
-#   Utilisé directement par :
-#     /documentation_arsenal/contrats/chauffage/30_decision_centrale.md
-#
-# ==========================================================
+# ARSENAL — Contrat Normatif de Domaine
+## Chauffage — Blocages & Interdictions Hiérarchiques V3
 
+**Statut :** Contrat normatif de domaine — sûreté hiérarchique chauffage — opposable  
+**Subordonné à :** `contrats/chauffage/00_gouvernance_chauffage.md`  
+**Utilisé par :** `contrats/chauffage/30_decision_centrale.md`  
+**Complémentaire de :** `45_aeration.md` · `60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`  
+**Date :** 2026-04-07
 
-# ----------------------------------------------------------
-# 🎯 1. OBJET DU CONTRAT
-# ----------------------------------------------------------
+---
 
-Ce contrat définit le comportement normatif des **blocages hiérarchiques**
-du sous-système Chauffage Arsenal.
+## 1. Objet du contrat
+
+Ce contrat définit le comportement normatif des blocages hiérarchiques du sous-système Chauffage Arsenal.
 
 Il formalise :
 
@@ -47,361 +25,191 @@ Ces mécanismes constituent la **couche de sûreté hiérarchique** du système.
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 2. RÔLE DES BLOCAGES
-# ----------------------------------------------------------
+## 2. Rôle des blocages
 
-Les blocages ont pour rôle :
-
-- garantir la cohérence thermique globale,
-- éviter toute chauffe illégitime,
-- prévenir les incohérences fonctionnelles,
-- protéger contre des situations dangereuses ou absurdes,
-- assurer la sobriété structurelle.
+Les blocages garantissent la cohérence thermique globale, évitent toute chauffe illégitime, préviennent les incohérences fonctionnelles, et assurent la sobriété structurelle.
 
 Principes cardinaux :
 
-- un blocage écrase toujours une autorisation,
-- un blocage écrase toujours une opportunité de confort,
+- un blocage écrase toujours une autorisation ordinaire,
+- un blocage écrase toujours une opportunité de confort ordinaire,
 - un blocage ne peut jamais être contourné par une logique locale.
 
 ---
 
-# ----------------------------------------------------------
-# ⚖️ 3. POSITION HIÉRARCHIQUE
-# ----------------------------------------------------------
+## 3. Position hiérarchique
 
-Les blocages appartiennent au :
+Les blocages appartiennent au **niveau hiérarchique supérieur**. Ils sont évalués avant toute autorisation, avant toute décision confort, avant toute inhibition géofencing.
 
-> 🛑 **NIVEAU HIÉRARCHIQUE SUPÉRIEUR**
-
-Ils sont évalués :
-
-- avant toute autorisation,
-- avant toute décision confort,
-- avant toute inhibition géofencing.
-
-Règle absolue :
-
-> ⚠️ Tant qu’un blocage est actif,  
-> toute décision de confort est strictement interdite.
+> Tant qu'un blocage pur est actif, toute décision de confort est strictement interdite.
 
 ---
 
-# ----------------------------------------------------------
-# 🔒 4. LISTE OFFICIELLE DES BLOCAGES
-# ----------------------------------------------------------
+## 4. Taxonomie des contextes contraignants
 
-Les blocages reconnus officiellement sont :
+Ce contrat distingue deux natures :
 
-### 4.1 Fenêtres ouvertes
+**Blocages purs** : effet contraignant absolu sur la décision, pouvant être soit une contrainte en `reduced`, soit une abstention forcée selon la nature du blocage.
 
-Contexte :
+**Contextes majeurs à effet conditionnel** : effet nominal `reduced`, mais susceptibles de porter une exception normative explicite et documentée. Vacances appartient à cette catégorie.
 
-- une ou plusieurs fenêtres sont ouvertes,
-- un délai de stabilisation peut être actif.
-
-Objectifs :
-
-- éviter une chauffe inutile vers l’extérieur,
-- empêcher toute compensation absurde.
-
-Effet normatif :
-
-- décision forcée en `reduced`,
-- toute autorisation `comfort` est ignorée.
+Cette distinction est intentionnelle et opposable. Aucune exception implicite n'existe dans aucune des deux catégories.
 
 ---
 
-### 4.2 Épisode d’aération
+## 5. Blocages purs
 
-Contexte :
+### 5.1 Fenêtres ouvertes
 
-- aération en cours,
-- ou blocage post-aération actif.
+**Contexte :** une ou plusieurs fenêtres ouvertes, délai de stabilisation éventuellement actif.
 
-Objectifs :
+**Objectifs :** éviter une chauffe vers l'extérieur, empêcher toute compensation absurde.
 
-- préserver la dynamique thermique,
-- éviter toute reprise prématurée,
-- respecter l’inertie du bâti.
-
-Effet normatif :
-
-- décision forcée en `reduced`,
-- interdiction de toute reprise automatique,
-- temporisation obligatoire post-aération.
+**Effet normatif :** décision forcée en `reduced`. Toute autorisation `comfort` est ignorée.
 
 ---
 
-### 4.3 Poêle — Blocage événementiel temporisé
+### 5.2 Épisode d'aération
 
-Contexte :
+**Contexte :** aération en cours, ou blocage post-aération actif.
 
-- détection événementielle de fonctionnement du poêle,
-- activation immédiate d’un verrou de blocage chauffage,
-- déclenchement d’un timer de sûreté.
+**Objectifs :** préserver la dynamique thermique, éviter toute reprise prématurée, respecter l'inertie du bâti.
 
-Caractéristiques architecturales :
+**Effet normatif :** décision forcée en `reduced`. Interdiction de toute reprise automatique. Temporisation obligatoire post-aération.
 
-- le capteur poêle est STRICTEMENT événementiel,
+---
+
+### 5.3 Poêle — blocage événementiel temporisé
+
+**Contexte :** détection événementielle de fonctionnement du poêle.
+
+**Caractéristiques architecturales :**
+
+- le capteur poêle est strictement événementiel,
 - le passage OFF est volontairement ignoré,
-- aucune lecture thermique n’est effectuée,
-- aucune estimation d’inertie n’est produite,
-- aucune mémoire inter-cycle n’existe.
+- aucune lecture thermique n'est effectuée,
+- aucune estimation d'inertie n'est produite,
+- aucune mémoire inter-cycle n'existe.
 
-Le blocage est :
+Le blocage est déclenché uniquement par événement ON, maintenu exclusivement par la durée du timer, levé uniquement à expiration du timer, totalement indépendant de l'état réel du poêle.
 
-- déclenché uniquement par événement ON,
-- maintenu exclusivement par la durée du timer,
-- levé uniquement à expiration du timer,
-- totalement indépendant de l’état réel du poêle.
+**Objectifs :** éviter toute double source de chauffe, prévenir une reprise prématurée, laisser se dissiper l'effet thermique du poêle.
 
-Objectifs :
-
-- éviter toute double source de chauffe,
-- prévenir une reprise prématurée,
-- laisser se dissiper l’effet thermique du poêle,
-- garantir une fenêtre de sécurité énergétique.
-
-Effet normatif :
-
-- décision forcée en `reduced`,
-- toute autorisation `comfort` est ignorée,
-- toute inhibition géofencing est désactivée,
-- aucune reprise automatique autorisée avant fin du timer.
+**Effet normatif :** décision forcée en `reduced`. Toute autorisation `comfort` est ignorée. toute inhibition géofencing est sans effet. Aucune reprise automatique autorisée avant fin du timer.
 
 ---
 
-### 4.4 Mode maison = Vacances
+### 5.4 Interdiction système chauffage
 
-Contexte :
+**Contexte :** chauffage global non autorisé système, maintenance, défaut critique.
 
-- maison déclarée en mode Vacances.
+**Objectifs :** préserver l'intégrité matérielle, éviter toute action risquée, garantir la sûreté système.
 
-Objectifs :
-
-- imposer une sobriété maximale,
-- supprimer toute recherche de confort,
-- garantir une gestion minimale sécurisée.
-
-Effet normatif :
-
-- décision forcée en `reduced`,
-- inhibition géofencing interdite,
-- aucune exception autorisée.
+**Effet normatif :** décision strictement interdite. Aucun changement de programme autorisé. Abstention forcée.
 
 ---
 
----
+## 6. Contexte majeur à effet conditionnel
 
-### Autorisations amont en contexte Vacances
+### 6.1 Mode maison = Vacances
 
-En contexte `mode_maison = Vacances` :
+**Contexte :** maison déclarée en mode Vacances.
 
-- toute interdiction hiérarchique demeure absolue,
-- aucune autorisation de confort ne peut produire une décision active,
-- aucune anticipation ne peut lever un blocage.
+**Objectifs :** imposer une sobriété maximale, supprimer toute recherche de confort ordinaire, garantir une gestion minimale sécurisée.
 
-Toute autorisation amont active dans ce contexte :
+**Effet normatif nominal :** décision forcée en `reduced`. Inhibition géofencing interdite.
 
-- est immédiatement écrasée par le blocage Vacances,
-- ne constitue jamais une exception hiérarchique,
-- ne peut jamais produire une reprise anticipée.
+**Exception normative explicite :** si `input_boolean.pre_confort_actif_calcule` est actif, la Décision Centrale peut produire `comfort`. Cette exception est bornée : elle ne vaut que dans le bloc Vacances, sous réserve d'absence de tout blocage pur actif, et sous réserve de validation complète par la Décision Centrale.
 
-Le pré-confort retour vacances :
+Cette exception ne constitue pas un contournement hiérarchique. Elle est une règle normative explicite, documentée et opposable, reconnue par `30_decision_centrale.md`.
 
-- ne lève jamais le blocage Vacances,
-- ne modifie jamais l’effet normatif `reduced`,
-- ne bénéficie d’aucun privilège temporel ou hiérarchique.
+Aucune autre exception n'existe en contexte Vacances. Toute autorisation ordinaire de confort reste écrasée.
 
 ---
 
-### 4.5 Interdiction système chauffage
+## 7. Hystérésis & temporisations
 
-Contexte :
-
-- chauffage global non autorisé système,
-- maintenance,
-- défaut critique.
-
-Objectifs :
-
-- préserver l’intégrité matérielle,
-- éviter toute action risquée,
-- garantir la sûreté système.
-
-Effet normatif :
-
-- décision strictement interdite,
-- aucun changement de programme autorisé,
-- abstention forcée.
-
----
-
-# ----------------------------------------------------------
-# 🔁 5. HYSTÉRÉSIS & TEMPORISATIONS
-# ----------------------------------------------------------
-
-Chaque blocage peut être assorti :
-
-- d’un délai d’activation,
-- d’un délai de désactivation,
-- d’une temporisation post-blocage.
+Chaque blocage peut être assorti d'un délai d'activation, d'un délai de désactivation, ou d'une temporisation post-blocage.
 
 Règles cardinales :
 
-- fin de blocage ≠ reprise automatique,
+- la levée d'un blocage ne constitue jamais, à elle seule, un motif suffisant de reprise,
 - aucune transition immédiate autorisée,
-- inertie thermique toujours respectée.
+- l'inertie thermique est toujours respectée.
 
-Objectifs :
-
-- éviter les oscillations,
-- stabiliser le système,
-- éliminer les effets yo-yo.
+Ces règles s'appliquent également au pré-confort Vacances : toute reprise ultérieure, y compris via cette exception normative, doit repasser par la Décision Centrale complète.
 
 ---
 
-# ----------------------------------------------------------
-# 🛑 6. EFFETS NORMATIFS GLOBAUX
-# ----------------------------------------------------------
+## 8. Effets normatifs globaux
 
-Lorsqu’un blocage est actif :
+Lorsqu'un blocage pur est actif :
 
 - la Décision Centrale est contrainte en `reduced`,
-- toute autorisation `comfort` est ignorée,
-- toute inhibition géofencing est désactivée,
-- toute opportunité de pré-confort est annulée.
+- toute autorisation `comfort` ordinaire est ignorée,
+- toute inhibition géofencing est sans effet,
+- toute opportunité de confort ordinaire est annulée.
 
 Effets interdits :
 
-- aucune reprise automatique,
+- aucune reprise automatique par simple levée de blocage,
 - aucune montée partielle en confort,
-- aucune exception locale.
-
----
-
----
-
-### Autorisations contextuelles automatiques & blocages
-
-Toute autorisation contextuelle automatique active lors de l’entrée d’un blocage :
-
-- est immédiatement annulée,
-- ne peut jamais être mémorisée comme valide,
-- ne peut jamais être restaurée automatiquement après fin de blocage.
-
-Règles cardinales :
-
-- aucun pré-confort ne peut survivre à l’entrée d’un blocage,
-- aucun pré-confort ne peut être réactivé automatiquement après fin de blocage,
-- toute réactivation ultérieure doit repasser par une fenêtre légitime
-  et une validation décisionnelle complète.
-
-Le pré-confort retour vacances est intégralement soumis à ces règles.
-
----
-
-# ----------------------------------------------------------
-# 🧩 7. INDÉPENDANCE & NEUTRALITÉ
-# ----------------------------------------------------------
-
-Les blocages :
-
-- ne connaissent PAS les seuils thermiques,
-- ne produisent AUCUNE autorisation,
-- ne déclenchent AUCUNE décision autonome,
-- ne pilotent AUCUN équipement.
-
-Ils se contentent de :
-
-> 🧠 **POSER UNE INTERDICTION HIÉRARCHIQUE**
-
-que la Décision Centrale applique strictement.
-
----
-
-# ----------------------------------------------------------
-# 🔒 8. INTERDICTIONS FORMELLES
-# ----------------------------------------------------------
-
-Un blocage ne doit JAMAIS :
-
-- déclencher une chauffe,
-- forcer un confort,
-- court-circuiter la décision centrale,
-- annuler un verrou anti-rebond,
-- ignorer une autre interdiction.
-
-Toute dérive constitue :
-
-- une violation hiérarchique,
-- une régression de sûreté,
-- une erreur critique d’architecture.
-
----
-
-# ----------------------------------------------------------
-# 🧱 9. INVARIANTS DES BLOCAGES
-# ----------------------------------------------------------
-
-Invariants absolus :
-
-- tout blocage écrase toute autorisation,
-- tout blocage interdit toute reprise automatique,
-- un seul effet normatif : `reduced`,
-- aucune mémoire inter-cycle non contrôlée,
 - aucune exception implicite.
 
-Toute violation constitue :
-
-- une perte de maîtrise thermique,
-- une incohérence hiérarchique,
-- une rupture de gouvernance.
+L'exception normative du pré-confort Vacances (§6.1) ne relève pas de la logique des blocages purs. Elle est traitée dans le contexte Vacances par la Décision Centrale, après évaluation complète de la hiérarchie.
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 10. DÉPENDANCES CONTRACTUELLES
-# ----------------------------------------------------------
+## 9. Autorisations contextuelles & blocages
 
-Ce contrat est :
+L'entrée d'un blocage invalide immédiatement toute décision confort en cours. Aucune autorisation active au moment de l'entrée d'un blocage ne peut être mémorisée comme valide ni restaurée automatiquement après fin de blocage.
 
-- subordonné à :
-  - `00_gouvernance_chauffage.md`
-
-- utilisé par :
-  - `30_decision_centrale.md`
-
-- complémentaire de :
-  - `45_aeration.md`
-  - `60_absence_inhibition_geofencing.md`
-  - `70_autorisation_thermostat.md`
-
-Il gouverne directement :
-
-- les capteurs de blocage fenêtres,
-- les helpers poêle,
-- les états aération,
-- `binary_sensor.chauffage_autorise_systeme`,
-- toute interdiction hiérarchique du chauffage.
+La fin d'un blocage ne provoque jamais de reprise automatique. Toute reprise ultérieure, y compris via une exception normative, doit repasser par une fenêtre légitime et une validation décisionnelle complète par la Décision Centrale.
 
 ---
 
-# ----------------------------------------------------------
-# 📌 11. PORTÉE & STABILITÉ
-# ----------------------------------------------------------
+## 10. Indépendance & neutralité
 
-Ce contrat est :
+Les blocages ne connaissent pas les seuils thermiques, ne produisent aucune autorisation, ne déclenchent aucune décision autonome, ne pilotent aucun équipement.
 
-- critique pour la sûreté thermique,
-- stable long terme,
-- modifié uniquement lors d’évolutions majeures,
-- versionné explicitement,
-- opposable à toute implémentation.
+Ils posent une interdiction hiérarchique que la Décision Centrale applique strictement.
 
-Il constitue la **couche de sûreté hiérarchique officielle  
-du Chauffage Arsenal V3 PRO**.
+---
 
-# ==========================================================
+## 11. Interdictions formelles
+
+Un blocage ne doit jamais : déclencher une chauffe, forcer un confort, court-circuiter la décision centrale, annuler un verrou anti-rebond, ignorer une autre interdiction.
+
+Toute dérive constitue une violation hiérarchique, une régression de sûreté, une erreur critique d'architecture.
+
+---
+
+## 12. Invariants des blocages
+
+- tout blocage supérieur applicable écrase toute autorisation inférieure ordinaire,
+- toute reprise par simple levée de blocage est interdite,
+- l'effet normatif usuel d'un blocage pur est `reduced`, sans exception,
+- les exceptions normatives explicites documentées sont admises uniquement pour les contextes majeurs à effet conditionnel (§6),
+- aucune exception implicite n'existe dans aucune catégorie.
+
+Toute violation constitue une perte de maîtrise thermique, une incohérence hiérarchique, une rupture de gouvernance.
+
+---
+
+## 13. Dépendances contractuelles
+
+**Subordonné à :** `00_gouvernance_chauffage.md`
+
+**Utilisé par :** `30_decision_centrale.md`
+
+**Complémentaire de :** `45_aeration.md` · `60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`
+
+Gouverne directement : capteurs de blocage fenêtres, helpers poêle, états aération, `binary_sensor.chauffage_autorise_systeme`, toute interdiction hiérarchique du chauffage.
+
+---
+
+## 14. Portée & stabilité
+
+Ce contrat est critique pour la sûreté thermique, stable long terme, modifié uniquement lors d'évolutions majeures, versionné explicitement, et opposable à toute implémentation.
+
+Il constitue la **couche de sûreté hiérarchique officielle du Chauffage Arsenal V3**.

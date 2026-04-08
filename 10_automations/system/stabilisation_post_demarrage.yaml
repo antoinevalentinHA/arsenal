@@ -49,7 +49,7 @@
         entity_id: input_boolean.systeme_stable
 
     # Delai de stabilisation technique
-    - delay: "00:02:00"
+    - delay: "00:00:45"
 
     # Systeme declare stable
     - action: input_boolean.turn_on
