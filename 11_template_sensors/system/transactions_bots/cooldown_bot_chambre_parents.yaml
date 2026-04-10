@@ -1,0 +1,30 @@
+# ==========================================================
+# 📊 ARSENAL — TEMPLATE BINARY SENSOR
+#     Cooldown transaction — Bot chambre parents
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Indiquer le cooldown pour un Bot non observable (F1).
+#
+# 🧩 PERIMETRE
+#   - Protection contre emission trop frequente
+#
+# 🔗 DEPENDANCES
+#   - timer.bot_tx_cooldown_bot_chambre_parents
+#
+# 🚫 NE FAIT PAS
+#   - Ne valide aucun effet reel
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Observabilite — F1
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Bot TX Cooldown Bot Chambre Parents"
+      unique_id: bot_tx_cooldown_bot_chambre_parents
+      icon: mdi:timer-sand
+      state: >
+        {{ is_state('timer.bot_tx_cooldown_bot_chambre_parents', 'active') }}

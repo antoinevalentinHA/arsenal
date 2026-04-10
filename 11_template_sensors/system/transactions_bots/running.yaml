@@ -1,0 +1,36 @@
+# ==========================================================
+# 📊 ARSENAL — TEMPLATE BINARY SENSOR
+#     Etat global execution Bot TX
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Indiquer si au moins une transaction est active.
+#
+# 🧩 PERIMETRE
+#   - Derive des locks par cible
+#
+# 🔗 DEPENDANCES
+#   - input_boolean.bot_tx_lock_deshumidificateur
+#   - input_boolean.bot_tx_lock_bot_chambre_parents
+#
+# 🚫 NE FAIT PAS
+#   - Ne remplace pas les locks individuels
+#   - Ne constitue pas une preuve d'execution
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Observabilite — Etat global
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Bot TX Running"
+      unique_id: bot_tx_running
+      icon: mdi:cog-sync
+      state: >
+        {{
+          is_state('input_boolean.bot_tx_lock_deshumidificateur', 'on')
+          or
+          is_state('input_boolean.bot_tx_lock_bot_chambre_parents', 'on')
+        }}

@@ -1,0 +1,24 @@
+# ==========================================================
+# ARSENAL — MQTT SENSOR
+# Boiler Guard — Status
+# ----------------------------------------------------------
+# Role :
+#   Exposer l'etat du guard boiler tel que publie par le Pi.
+#
+# Source :
+#   - Topic : boiler/guard/status
+#   - Valeurs attendues :
+#       - nominal
+#       - recovery
+#       - degraded
+#
+# Contrat :
+#   - aucune transformation
+#   - aucune validation cote HA
+#   - lecture brute MQTT uniquement
+# ==========================================================
+
+- name: "boiler_guard_status"
+  unique_id: boiler_guard_status
+  state_topic: "boiler/guard/status"
+  qos: 1

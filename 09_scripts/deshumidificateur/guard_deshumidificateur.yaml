@@ -1,0 +1,164 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Déshumidificateur - Guard
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Qualifier honnêtement l'effet observable d'une commande
+#   déjà émise sur le déshumidificateur de la cave.
+#
+# 🧩 PERIMETRE
+#   - lit exclusivement binary_sensor.deshumidificateur_actif
+#   - attend au maximum 120 secondes
+#   - produit un verdict canonique :
+#       * confirmed
+#       * not_confirmed
+#       * command_error
+#   - persiste un diagnostic minimal
+#
+# 🔗 DEPENDANCES
+#   - binary_sensor.deshumidificateur_actif
+#   - input_text.deshum_guard_last_verdict
+#   - input_text.deshum_guard_last_expected_state
+#   - input_text.deshum_guard_last_observed_state
+#   - input_text.deshum_guard_last_reason
+#   - input_text.deshum_guard_last_ts
+#   - input_text.deshum_guard_last_request_source
+#   - input_text.deshum_guard_last_request_id
+#
+# 🚫 NE FAIT PAS
+#   - ne déclenche aucune action matérielle
+#   - ne réémet jamais de commande
+#   - ne prend aucune décision métier
+#   - ne lit jamais switch.deshumidificateur comme preuve
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Script de qualification post-commande.
+#   Validation instantanée V1, sans exigence de stabilité.
+# ==========================================================
+
+guard_deshumidificateur:
+  alias: "Déshumidificateur - Guard"
+  mode: single
+
+  fields:
+    expected_state:
+      description: "Etat attendu apres commande : on ou off"
+    request_source:
+      description: "Appelant pour diagnostic"
+    request_id:
+      description: "Identifiant de correlation"
+
+  sequence:
+    - variables:
+        expected_state_normalized: "{{ expected_state | default('', true) | lower }}"
+        observed_state_initial: "{{ states('binary_sensor.deshumidificateur_actif') }}"
+        verdict: ""
+        reason: ""
+        observed_state_final: "{{ observed_state_initial }}"
+        timeout_seconds: 120
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ observed_state_initial in ['unknown', 'unavailable'] }}
+          sequence:
+            - variables:
+                verdict: "command_error"
+                reason: "unavailable_at_open"
+                observed_state_final: "{{ observed_state_initial }}"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ observed_state_initial == expected_state_normalized }}
+          sequence:
+            - variables:
+                verdict: "confirmed"
+                reason: "converged_immediate"
+                observed_state_final: "{{ observed_state_initial }}"
+
+      default:
+        - wait_template: >
+            {% set s = states('binary_sensor.deshumidificateur_actif') %}
+            {{ s == expected_state_normalized or s in ['unknown', 'unavailable'] }}
+          timeout:
+            seconds: "{{ timeout_seconds }}"
+          continue_on_timeout: true
+
+        - variables:
+            observed_state_final: "{{ states('binary_sensor.deshumidificateur_actif') }}"
+
+        - choose:
+            - conditions:
+                - condition: template
+                  value_template: >
+                    {{ observed_state_final in ['unknown', 'unavailable'] }}
+              sequence:
+                - variables:
+                    verdict: "command_error"
+                    reason: "unavailable_during_wait"
+
+            - conditions:
+                - condition: template
+                  value_template: >
+                    {{ observed_state_final == expected_state_normalized }}
+              sequence:
+                - variables:
+                    verdict: "confirmed"
+                    reason: "converged_early"
+
+          default:
+            - variables:
+                verdict: "not_confirmed"
+                reason: "timeout_reached"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.deshum_guard_last_verdict
+      data:
+        value: "{{ verdict }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.deshum_guard_last_expected_state
+      data:
+        value: "{{ expected_state_normalized }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.deshum_guard_last_observed_state
+      data:
+        value: "{{ observed_state_final }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.deshum_guard_last_reason
+      data:
+        value: "{{ reason }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.deshum_guard_last_ts
+      data:
+        value: "{{ now().isoformat() }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.deshum_guard_last_request_source
+      data:
+        value: "{{ request_source | default('', true) }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.deshum_guard_last_request_id
+      data:
+        value: "{{ request_id | default('', true) }}"
+
+    - variables:
+        result:
+          verdict: "{{ verdict }}"
+          reason: "{{ reason }}"
+          observed_state: "{{ observed_state_final }}"
+
+    - stop: "Guard termine"

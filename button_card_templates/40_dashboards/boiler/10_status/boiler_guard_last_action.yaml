@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Boiler — Guard dernière action
+#
+# 🗂️ COUCHE : diagnostic système
+# 🧱 TYPE UI : information système
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Exposer la dernière action exécutée par le boiler guard
+#   sous forme d’information lisible et interprétable.
+#
+# 📡 SOURCE
+#   - sensor.boiler_guard_last_action
+#
+# ⚙️ LOGIQUE UI
+#   - none             -> aucune
+#   - restart_service  -> restart service
+#   - restart_network  -> restart réseau
+#   - reboot           -> reboot
+#   - unknown/...      -> inconnue
+#
+#   Carte purement informative (bleu constant).
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : dashboard Boiler
+#
+# ==========================================================
+
+boiler_guard_action_72:
+  template:
+    - socle_info_72
+
+  state_display: >
+    [[[
+      const action = states['sensor.boiler_guard_last_action']?.state;
+
+      if (!action || ['unknown', 'unavailable', 'none'].includes(action)) {
+        return 'Inconnue';
+      }
+
+      if (action === 'none') {
+        return 'Aucune';
+      }
+
+      if (action === 'restart_service') {
+        return 'Restart service';
+      }
+
+      if (action === 'restart_network') {
+        return 'Restart réseau';
+      }
+
+      if (action === 'reboot') {
+        return 'Reboot';
+      }
+
+      return action;
+    ]]]

@@ -1,0 +1,55 @@
+- platform: statistics
+  name: "bot_deshumidificateur_signal_moyenne_24h"
+  entity_id: sensor.bot_deshumidificateur_bluetooth_signal
+  state_characteristic: mean
+  max_age:
+    hours: 24
+
+- platform: statistics
+  name: "bot_deshumidificateur_signal_min_24h"
+  entity_id: sensor.bot_deshumidificateur_bluetooth_signal
+  state_characteristic: value_min
+  max_age:
+    hours: 24
+
+- platform: statistics
+  name: "bot_candidat_1_signal_moyenne_24h"
+  entity_id: sensor.bot_candidat_signal_1
+  state_characteristic: mean
+  max_age:
+    hours: 24
+
+- platform: statistics
+  name: "bot_candidat_1_signal_min_24h"
+  entity_id: sensor.bot_candidat_signal_1
+  state_characteristic: value_min
+  max_age:
+    hours: 24
+
+- platform: statistics
+  name: "bot_candidat_2_signal_moyenne_24h"
+  entity_id: sensor.bot_candidat_signal_2
+  state_characteristic: mean
+  max_age:
+    hours: 24
+
+- platform: statistics
+  name: "bot_candidat_2_signal_min_24h"
+  entity_id: sensor.bot_candidat_signal_2
+  state_characteristic: value_min
+  max_age:
+    hours: 24
+
+- platform: statistics
+  name: "bot_candidat_3_signal_moyenne_24h"
+  entity_id: sensor.bot_candidat_signal_3
+  state_characteristic: mean
+  max_age:
+    hours: 24
+
+- platform: statistics
+  name: "bot_candidat_3_signal_min_24h"
+  entity_id: sensor.bot_candidat_signal_3
+  state_characteristic: value_min
+  max_age:
+    hours: 24

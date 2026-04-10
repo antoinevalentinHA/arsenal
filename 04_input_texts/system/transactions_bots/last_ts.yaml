@@ -1,0 +1,26 @@
+# ==========================================================
+# 📊 ARSENAL — HELPER
+#     Timestamp derniere transaction Bot
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Stocker l’horodatage ISO 8601 de la derniere execution.
+#
+# 🧩 PERIMETRE
+#   - Ecrit a chaque fin de transaction ou rejet
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#
+# 🚫 NE FAIT PAS
+#   - Ne pilote aucun comportement
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Diagnostic — Horodatage
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_last_ts:
+  name: "Bot TX Last Timestamp"
+  icon: mdi:clock-outline

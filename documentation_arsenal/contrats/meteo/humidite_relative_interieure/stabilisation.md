@@ -112,7 +112,7 @@ Dès le premier cycle suivant le boot (`state` ou `time_pattern`), le TTL nomina
 | TTL mémoire nominal | `1800 s` |
 | TTL mémoire post-boot | `7200 s` |
 | Plage défensive | `[10, 100]%` |
-| Arrondi sortie | `round(0)` — entier |
+| Arrondi sortie | `round(1)` |
 
 ### Justification des paramètres
 
@@ -124,7 +124,11 @@ Dès le premier cycle suivant le boot (`state` ou `time_pattern`), le TTL nomina
 
 ### Arrondi
 
-L'arrondi à l'entier (`round(0)`) s'applique **uniquement sur la valeur publiée en sortie**. Tous les calculs internes opèrent sur les valeurs brutes non arrondies.
+L’arrondi à `0.1` (`round(1)`) s’applique sur la valeur publiée en sortie.
+
+La stabilisation utilise cette valeur comme mémoire interne (`this.state`), ce qui introduit une quantification contrôlée à 0.1% sur les calculs successifs.
+
+Les calculs internes (EWMA, delta) opèrent sur cette mémoire discrétisée, ce qui permet l’accumulation des variations faibles tout en conservant une stabilité visuelle adaptée à l’UI.
 
 ### Publication de l'abstention
 

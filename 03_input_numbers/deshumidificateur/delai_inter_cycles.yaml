@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER (PARAMÈTRE)
+#     Déshumidificateur – Délai minimum de redémarrage
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Porter la durée minimale à respecter entre
+#     un arrêt réel du déshumidificateur et un
+#     redémarrage autorisé.
+#
+# 🧩 PÉRIMÈTRE
+#
+#     - Définit une durée en minutes
+#     - Utilisé exclusivement par :
+#         timer.deshumidificateur_blocage_redemarrage
+#
+# 🔗 DÉPENDANCES
+#
+#     - timer.deshumidificateur_blocage_redemarrage
+#
+# 🚫 NE FAIT PAS
+#
+#     - Ne déclenche aucune action
+#     - Ne contient aucune logique métier
+#     - Ne décide pas du démarrage ou de l’arrêt
+#
+# 🧠 STATUT ARCHITECTURAL
+#
+#     Helper de paramètre.
+#
+#     Source unique de configuration pour le
+#     blocage de redémarrage.
+#
+# ==========================================================
+
+deshumidificateur_delai_min_redemarrage:
+  name: "Deshumidificateur - Delai min redemarrage"
+  min: 0
+  max: 180
+  step: 15
+  unit_of_measurement: "min"

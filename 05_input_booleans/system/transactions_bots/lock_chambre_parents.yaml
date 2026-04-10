@@ -1,0 +1,29 @@
+# ==========================================================
+# 🔐 ARSENAL — HELPER
+#     Lock transaction Bot — Chambre parents
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Marquer l’existence d’une transaction active sur le Bot
+#   `switch.bot_chambre_parents`.
+#
+# 🧩 PERIMETRE
+#   - Exclusif au socle transactionnel
+#   - Permet de garantir l’unicité de transaction
+#
+# 🔗 DEPENDANCES
+#   - Script souverain : bot_transaction_execute
+#
+# 🚫 NE FAIT PAS
+#   - Ne reflète pas l’état réel du Bot
+#   - Ne constitue pas une preuve d’exécution
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Helper technique — Concurrence
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1 — F1 (non observable)
+# ==========================================================
+
+bot_tx_lock_bot_chambre_parents:
+  name: "Bot TX Lock Bot Chambre Parents"
+  icon: mdi:lock-outline

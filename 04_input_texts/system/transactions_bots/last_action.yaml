@@ -1,0 +1,26 @@
+# ==========================================================
+# 📊 ARSENAL — HELPER
+#     Derniere action transaction Bot
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Stocker l’action demandee lors du dernier appel.
+#
+# 🧩 PERIMETRE
+#   - Ecrit a chaque appel
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#
+# 🚫 NE FAIT PAS
+#   - Ne garantit pas que l’action a ete executee
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Diagnostic — Trace brute
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_last_action:
+  name: "Bot TX Last Action"
+  icon: mdi:gesture-tap-button

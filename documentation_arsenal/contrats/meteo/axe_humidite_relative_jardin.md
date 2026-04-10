@@ -492,18 +492,23 @@ dans les composants de fusion ou de stabilisation.
 
 ## 12. Unité et arrondi
 
-| Paramètre | Valeur |
-|-----------|--------|
-| Unité     | % HR   |
-| Arrondi   | 1 % HR |
+| Paramètre | Valeur   |
+|-----------|----------|
+| Unité     | % HR     |
+| Arrondi   | 0.1 % HR |
 
 L'arrondi s'applique à la valeur publiée finale uniquement.
-Tous les calculs intermédiaires (médiane, EWMA, cible robuste)
-sont effectués en précision native.
 
-L'arrondi à 1 % HR est cohérent avec la précision réelle
-des capteurs grand public utilisés sur cet axe. Un arrondi à
-0.1 % serait une fausse précision.
+Tous les calculs intermédiaires (médiane, EWMA, cible robuste)
+sont effectués en précision native ou à une résolution suffisante
+pour garantir la continuité du signal.
+
+L'arrondi à 0.1 % HR est un **choix d'affichage et de comportement** :
+il permet de conserver une courbe visuellement continue après lissage
+tout en évitant les effets d'escalier introduits par un arrondi à l'entier.
+
+Il ne reflète pas la précision physique des capteurs, mais une résolution
+adaptée à la perception humaine et à la stabilité visuelle attendue.
 
 ---
 

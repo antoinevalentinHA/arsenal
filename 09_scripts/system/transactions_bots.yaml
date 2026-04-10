@@ -1,0 +1,432 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Exécution transactionnelle Bot
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Orchestrer l’exécution complète d’une transaction Bot :
+#   validation, émission, observation, qualification, clôture.
+#
+# 🧩 PÉRIMÈTRE
+#   - Gère niveaux A et B
+#   - Applique strictement le registre interne
+#   - Produit un verdict canonique
+#
+# 🔗 DÉPENDANCES
+#   - Helpers bot_tx_*
+#
+# 🚫 NE FAIT PAS
+#   - Ne prouve pas l’effet physique
+#   - Ne fait aucun retry
+#   - Ne contient aucune logique métier
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Exécution — Script souverain
+#
+# 🏷️ STATUT
+#   Arsenal V2.0.1
+# ==========================================================
+
+bot_transaction_execute:
+  alias: "Système - Bot TX Execute"
+  mode: single
+
+  fields:
+    target_bot:
+      required: true
+    action:
+      required: true
+    request_id:
+      required: false
+    request_source:
+      required: false
+
+  sequence:
+
+    # ======================================================
+    # Phase 0 — Prévalidation
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_phase
+      data:
+        value: phase_0_validate
+
+    - variables:
+        target_bot: "{{ target_bot }}"
+        action: "{{ action }}"
+        request_id: "{{ request_id | default('none') }}"
+        request_source: "{{ request_source | default('none') }}"
+
+        is_deshumidificateur: "{{ target_bot == 'deshumidificateur' }}"
+        is_bot_chambre_parents: "{{ target_bot == 'bot_chambre_parents' }}"
+
+        entity: >
+          {% if is_deshumidificateur %}
+            switch.deshumidificateur
+          {% elif is_bot_chambre_parents %}
+            switch.bot_chambre_parents
+          {% else %}
+            none
+          {% endif %}
+
+        proof_level: >
+          {% if is_deshumidificateur %}
+            B
+          {% elif is_bot_chambre_parents %}
+            A
+          {% else %}
+            none
+          {% endif %}
+
+        cooldown_entity: >
+          {% if is_deshumidificateur %}
+            timer.bot_tx_cooldown_deshumidificateur
+          {% elif is_bot_chambre_parents %}
+            timer.bot_tx_cooldown_bot_chambre_parents
+          {% else %}
+            none
+          {% endif %}
+
+        cooldown_duration: >
+          {% if is_deshumidificateur %}
+            00:00:30
+          {% elif is_bot_chambre_parents %}
+            00:00:10
+          {% else %}
+            00:00:00
+          {% endif %}
+
+        lock_entity: >
+          {% if is_deshumidificateur %}
+            input_boolean.bot_tx_lock_deshumidificateur
+          {% elif is_bot_chambre_parents %}
+            input_boolean.bot_tx_lock_bot_chambre_parents
+          {% else %}
+            none
+          {% endif %}
+
+        failures_counter: >
+          {% if is_deshumidificateur %}
+            counter.bot_tx_failures_deshumidificateur
+          {% elif is_bot_chambre_parents %}
+            counter.bot_tx_failures_bot_chambre_parents
+          {% else %}
+            none
+          {% endif %}
+
+    - choose:
+
+        - conditions:
+            - condition: template
+              value_template: "{{ entity == 'none' }}"
+          sequence:
+            - variables:
+                result_verdict: rejected_precondition
+                result_reason: unknown_target
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_verdict
+              data:
+                value: "{{ result_verdict }}"
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_reason
+              data:
+                value: "{{ result_reason }}"
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_ts
+              data:
+                value: "{{ now().isoformat() }}"
+
+            - stop: "rejected_precondition"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ (proof_level == 'A' and action != 'turn_on')
+                   or (proof_level == 'B' and action not in ['turn_on', 'turn_off']) }}
+          sequence:
+            - variables:
+                result_verdict: rejected_precondition
+                result_reason: invalid_action
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_verdict
+              data:
+                value: "{{ result_verdict }}"
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_reason
+              data:
+                value: "{{ result_reason }}"
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_ts
+              data:
+                value: "{{ now().isoformat() }}"
+
+            - stop: "rejected_precondition"
+
+        - conditions:
+            - condition: template
+              value_template: "{{ is_state(cooldown_entity, 'active') }}"
+          sequence:
+            - variables:
+                result_verdict: rejected_cooldown
+                result_reason: cooldown_active
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_verdict
+              data:
+                value: "{{ result_verdict }}"
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_reason
+              data:
+                value: "{{ result_reason }}"
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_ts
+              data:
+                value: "{{ now().isoformat() }}"
+
+            - stop: "rejected_cooldown"
+
+        - conditions:
+            - condition: template
+              value_template: "{{ is_state(lock_entity, 'on') }}"
+          sequence:
+            - variables:
+                result_verdict: rejected_busy
+                result_reason: lock_active
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_verdict
+              data:
+                value: "{{ result_verdict }}"
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_reason
+              data:
+                value: "{{ result_reason }}"
+
+            - service: input_text.set_value
+              target:
+                entity_id: input_text.bot_tx_last_ts
+              data:
+                value: "{{ now().isoformat() }}"
+
+            - stop: "rejected_busy"
+
+    # ======================================================
+    # Phase 1 — Ouverture
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_phase
+      data:
+        value: phase_1_open
+
+    - service: input_boolean.turn_on
+      target:
+        entity_id: "{{ lock_entity }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_target
+      data:
+        value: "{{ target_bot }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_action
+      data:
+        value: "{{ action }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_request_id
+      data:
+        value: "{{ request_id }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_request_source
+      data:
+        value: "{{ request_source }}"
+
+    # ======================================================
+    # Phase 2 — Émission
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_phase
+      data:
+        value: phase_2_emit
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ action == 'turn_on' }}"
+          sequence:
+            - service: switch.turn_on
+              target:
+                entity_id: "{{ entity }}"
+
+        - conditions:
+            - condition: template
+              value_template: "{{ action == 'turn_off' }}"
+          sequence:
+            - service: switch.turn_off
+              target:
+                entity_id: "{{ entity }}"
+
+    # ======================================================
+    # Phase 3 — Observation
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_phase
+      data:
+        value: phase_3_observe
+
+    - delay: "00:00:01"
+
+    - variables:
+        last_run_success: "{{ state_attr(entity, 'last_run_success') }}"
+        result_verdict: command_not_confirmed
+        result_reason: uninitialized_result_guard
+
+    - choose:
+
+        - conditions:
+            - condition: template
+              value_template: "{{ proof_level == 'A' }}"
+          sequence:
+            - variables:
+                result_verdict: sent_unconfirmed
+                result_reason: no_proof_level_A
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ proof_level == 'B' and last_run_success == true }}
+          sequence:
+            - variables:
+                result_verdict: command_confirmed
+                result_reason: command_acknowledged
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ proof_level == 'B' and last_run_success in [false, none, 'unknown', 'unavailable'] }}
+          sequence:
+            - variables:
+                result_verdict: command_not_confirmed
+                result_reason: no_acknowledgement
+
+    # ======================================================
+    # Phase 4 — Qualification / compteurs
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_phase
+      data:
+        value: phase_4_qualify
+
+    - choose:
+
+        - conditions:
+            - condition: template
+              value_template: "{{ result_verdict == 'command_confirmed' }}"
+          sequence:
+            - service: counter.reset
+              target:
+                entity_id: "{{ failures_counter }}"
+
+        - conditions:
+            - condition: template
+              value_template: "{{ result_verdict == 'sent_unconfirmed' }}"
+          sequence:
+            - service: counter.reset
+              target:
+                entity_id: "{{ failures_counter }}"
+
+        - conditions:
+            - condition: template
+              value_template: "{{ result_verdict == 'command_not_confirmed' }}"
+          sequence:
+            - service: counter.increment
+              target:
+                entity_id: "{{ failures_counter }}"
+
+    # ======================================================
+    # Phase 5 — Clôture
+    # ======================================================
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_phase
+      data:
+        value: phase_5_close
+
+    - service: input_boolean.turn_off
+      target:
+        entity_id: "{{ lock_entity }}"
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ result_verdict in ['command_confirmed', 'command_not_confirmed', 'sent_unconfirmed'] }}
+          sequence:
+            - service: timer.start
+              target:
+                entity_id: "{{ cooldown_entity }}"
+              data:
+                duration: "{{ cooldown_duration }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_verdict
+      data:
+        value: "{{ result_verdict }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_reason
+      data:
+        value: "{{ result_reason }}"
+
+    - service: input_select.select_option
+      target:
+        entity_id: input_select.bot_tx_last_proof_level
+      data:
+        option: "{{ proof_level }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.bot_tx_last_ts
+      data:
+        value: "{{ now().isoformat() }}"
+
+    - event: arsenal_bot_transaction_result
+      event_data:
+        target_bot: "{{ target_bot }}"
+        action: "{{ action }}"
+        request_id: "{{ request_id }}"
+        request_source: "{{ request_source }}"
+        verdict: "{{ result_verdict }}"
+        proof_level: "{{ proof_level }}"
+        reason: "{{ result_reason }}"

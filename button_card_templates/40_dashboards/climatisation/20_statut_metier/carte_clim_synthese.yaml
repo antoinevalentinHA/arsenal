@@ -42,16 +42,9 @@
 # ==========================================================
 
 carte_clim_synthese:
-  template: socle_status_label_xl_interactif
+  template: socle_status_label_xl
 
   entity: sensor.clim_mode_local
-
-  tap_action:
-    action: navigate
-    navigation_path: /clim-dashboard/climatisation
-
-  hold_action:
-    action: more-info
 
   icon: |
     [[[

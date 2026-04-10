@@ -1,0 +1,30 @@
+# ==========================================================
+# 📊 ARSENAL — HELPER
+#     Dernier verdict transaction Bot
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Stocker le dernier verdict produit par le socle
+#   transactionnel Bot.
+#
+# 🧩 PERIMETRE
+#   - Écrit à chaque fin de transaction
+#   - Écrit également sur rejet Phase 0
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#   - Consommé par dashboards et diagnostic
+#
+# 🚫 NE FAIT PAS
+#   - Ne décide rien
+#   - Ne déclenche rien
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Diagnostic — Lecture uniquement
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_last_verdict:
+  name: "Bot TX Last Verdict"
+  icon: mdi:clipboard-check-outline

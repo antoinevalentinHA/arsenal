@@ -1,0 +1,31 @@
+# ==========================================================
+# 📊 ARSENAL — TEMPLATE BINARY SENSOR
+#     Occupation transaction — Bot chambre parents
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Exposer l'etat d'occupation du socle pour un Bot F1.
+#
+# 🧩 PERIMETRE
+#   - Reflet strict du verrou technique
+#
+# 🔗 DEPENDANCES
+#   - input_boolean.bot_tx_lock_bot_chambre_parents
+#
+# 🚫 NE FAIT PAS
+#   - Ne constitue pas une preuve d'execution
+#   - Ne valide aucun effet reel
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Observabilite — Concurrence (F1)
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Bot TX Busy Bot Chambre Parents"
+      unique_id: bot_tx_busy_bot_chambre_parents
+      icon: mdi:lock
+      state: >
+        {{ is_state('input_boolean.bot_tx_lock_bot_chambre_parents', 'on') }}

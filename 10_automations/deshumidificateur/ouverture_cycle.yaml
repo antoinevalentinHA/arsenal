@@ -1,0 +1,40 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Déshumidificateur - Ouverture cycle temporel
+#
+#  ID : 10060000000003
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Démarrer le timer de cycle minimal lors de
+#     l'activation réelle du déshumidificateur.
+#
+#  🧠 SOURCE DE VERITE
+#     binary_sensor.deshumidificateur_actif
+#
+#  🧱 CONTRAINTE
+#     - aucun redémarrage du timer s'il est déjà actif
+#     - aucune action matérielle
+# ==========================================================
+
+- id: '10060000000003'
+  alias: "Déshumidificateur - Ouverture cycle temporel"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.deshumidificateur_actif
+      to: 'on'
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ not is_state('timer.deshumidificateur_cycle', 'active') }}
+
+  action:
+    - action: timer.start
+      target:
+        entity_id: timer.deshumidificateur_cycle
+      data:
+        duration: >
+          {% set total = (states('input_number.deshumidificateur_duree_mini_cycle') | int(0)) * 60 %}
+          {{ '%02d:%02d:%02d' | format(total // 3600, (total % 3600) // 60, total % 60) }}

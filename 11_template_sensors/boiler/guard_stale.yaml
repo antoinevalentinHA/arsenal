@@ -1,0 +1,37 @@
+# ==========================================================
+# ARSENAL — TEMPLATE BINARY SENSOR
+# Boiler Guard — Stale
+# ----------------------------------------------------------
+# Role :
+#   Detecter un guard stale (absence de preuve de vie recente).
+#
+# Logique :
+#   ON si :
+#     - last_run est unknown / unavailable
+#     - ou age > 6 minutes
+#
+#   OFF sinon
+#
+# Contrat :
+#   - derive uniquement de sensor.boiler_guard_last_run
+#   - aucune logique metier
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "boiler_guard_stale"
+      unique_id: boiler_guard_stale
+
+      state: >
+        {% set raw = states('sensor.boiler_guard_last_run') %}
+
+        {% if raw in ['unknown', 'unavailable', 'none'] %}
+          true
+        {% else %}
+          {% set ts = as_timestamp(raw, none) %}
+          {% if ts is none %}
+            true
+          {% else %}
+            {{ (now().timestamp() - ts) > 360 }}
+          {% endif %}
+        {% endif %}

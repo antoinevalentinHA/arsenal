@@ -1,0 +1,24 @@
+# ==========================================================
+# ⏱️ ARSENAL — TIMER
+#     Cooldown transaction Bot — Chambre parents
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Limiter la fréquence d’émission sur un Bot non observable.
+#
+# 🧩 PERIMETRE
+#   - Protège contre spam BLE
+#   - Ne constitue pas une preuve d’exécution
+#
+# 🚫 NE FAIT PAS
+#   - Ne valide aucun effet réel
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Contrainte technique — F1
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_cooldown_bot_chambre_parents:
+  name: "Cooldown Bot TX Bot Chambre Parents"
+  duration: "00:00:00"

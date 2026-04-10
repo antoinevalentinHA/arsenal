@@ -62,20 +62,20 @@
           {% set ewma = 0.25 * brute + 0.75 * last_val %}
           {% set delta = ewma - last_val %}
           {% if (delta | abs) <= 4 %}
-            {{ ewma | round(0) }}
+            {{ ewma | round(1) }}
           {% else %}
             {% if delta > 0 %}
-              {{ (last_val + 4) | round(0) }}
+              {{ (last_val + 4) | round(1) }}
             {% else %}
-              {{ (last_val - 4) | round(0) }}
+              {{ (last_val - 4) | round(1) }}
             {% endif %}
           {% endif %}
 
         {% elif brute_valide and not memoire_exploitable %}
-          {{ brute | round(0) }}
+          {{ brute | round(1) }}
 
         {% elif not brute_valide and memoire_exploitable %}
-          {{ last_val | round(0) }}
+          {{ last_val | round(1) }}
 
         {% else %}
           {{ 'unknown' }}

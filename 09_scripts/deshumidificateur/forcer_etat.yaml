@@ -1,144 +1,153 @@
 # ==========================================================
-# 🧠 ARSENAL — SCRIPT : Déshumidificateur — Synchronisation d’état forcée
+# 🧠 ARSENAL — SCRIPT
+#     Déshumidificateur - Appliquer état
 # ----------------------------------------------------------
 # 🎯 ROLE
-#   Orchestrateur UNIQUE de synchronisation entre :
-#     - l’état réel du déshumidificateur
-#     - l’état cible demandé
+#   Appliquer une intention d'état (ON / OFF) sur le
+#   déshumidificateur via son actionneur physique,
+#   puis déléguer la qualification de l'effet au guard.
 #
-# 🧱 PRINCIPE DE VERITE
-#   La seule source de verite est :
-#     - binary_sensor.deshumidificateur_actif
+# 🧩 PERIMETRE
+#   - reçoit une intention (on / off)
+#   - vérifie les préconditions immédiates :
+#       * validité de l'entrée
+#       * disponibilité de la source de vérité
+#       * disponibilité de l'entité de commande
+#   - émet au plus une commande matérielle
+#   - délègue la qualification post-commande à :
+#       script.guard_deshumidificateur
+#   - attend explicitement la mise à jour du diagnostic guard
+#   - retourne un verdict structuré
 #
-# 🧩 PRINCIPE D'ACTION
-#   L'action est portee par :
-#     - switch.deshumidificateur
+# 🔗 DEPENDANCES
+#   - binary_sensor.deshumidificateur_actif
+#   - switch.deshumidificateur
+#   - script.guard_deshumidificateur
+#   - input_text.deshum_guard_last_verdict
+#   - input_text.deshum_guard_last_reason
+#   - input_text.deshum_guard_last_observed_state
+#   - input_text.deshum_guard_last_ts
 #
-#   Le switch sert a commander.
-#   Le binary_sensor sert a verifier.
+# 🚫 NE FAIT PAS
+#   - ne valide pas l'effet dans le temps
+#   - ne contient aucune logique métier
+#   - ne réémet jamais de commande
+#   - ne corrige pas un état incohérent
 #
-# 🛡️ GARDE DE SECURITE
-#   Aucune action n'est emise si :
-#     - la source de verite est indisponible
-#     - ou la commande n'est pas disponible
+# 🧠 STATUT ARCHITECTURAL
+#   Script d'application.
+#   Autorité d'exécution unique du domaine.
+#   La qualification est déléguée au guard.
+#
+# ⚠️ LIMITES ASSUMEES
+#   - La disponibilité de switch.deshumidificateur est vérifiée
+#     à l'ouverture uniquement (T0). Une indisponibilité survenant
+#     entre la vérification et l'émission n'est pas détectée.
+#   - Toute validation repose exclusivement sur le guard.
+#   - La synchronisation avec le guard repose sur l'écriture de
+#     input_text.deshum_guard_last_ts.
 # ==========================================================
 
 set_deshumidificateur_state:
   alias: "Déshumidificateur - Appliquer état"
-  description: "Commande via switch.deshumidificateur, validation via binary_sensor.deshumidificateur_actif."
   mode: single
 
   fields:
     target_state:
-      description: "État souhaité : 'on' ou 'off'"
-      example: "on"
+      description: "Etat cible demande : on ou off"
+    request_source:
+      description: "Appelant pour diagnostic"
+    request_id:
+      description: "Identifiant de correlation"
 
   sequence:
-
-    # ======================================================
-    # 1️⃣ Variables de contexte
-    # ======================================================
     - variables:
-        target_state_normalized: "{{ target_state | default('on') | lower }}"
-        want_on: "{{ target_state_normalized == 'on' }}"
-        actif_state: "{{ states('binary_sensor.deshumidificateur_actif') }}"
-        switch_state: "{{ states('switch.deshumidificateur') }}"
-        is_on: "{{ is_state('binary_sensor.deshumidificateur_actif','on') }}"
+        target_state_normalized: "{{ target_state | default('', true) | lower }}"
+        current_real_state: "{{ states('binary_sensor.deshumidificateur_actif') }}"
+        command_entity_state: "{{ states('switch.deshumidificateur') }}"
+        guard_last_ts_before: "{{ states('input_text.deshum_guard_last_ts') }}"
 
-    # ======================================================
-    # 2️⃣ Validation minimale
-    # ======================================================
-    - if:
-        - condition: template
-          value_template: "{{ target_state_normalized not in ['on', 'off'] }}"
-      then:
-        - stop: "target_state invalide : utiliser 'on' ou 'off'"
-
-    # ======================================================
-    # 3️⃣ Validation des prerequis de securite
-    # ======================================================
-    - if:
-        - condition: template
-          value_template: >
-            {{ actif_state in ['unknown', 'unavailable', 'none', ''] }}
-      then:
-        - stop: "Source de verite indisponible : binary_sensor.deshumidificateur_actif"
-
-    - if:
-        - condition: template
-          value_template: >
-            {{ switch_state in ['unknown', 'unavailable', 'none', ''] }}
-      then:
-        - stop: "Commande indisponible : switch.deshumidificateur"
-
-    # ======================================================
-    # 4️⃣ Verification prealable : si deja conforme, on sort
-    # ======================================================
     - choose:
-        - conditions: "{{ want_on and is_on }}"
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ target_state_normalized not in ['on', 'off'] }}
           sequence:
-            - stop: "Déjà ON - pas d'action nécessaire"
-        - conditions: "{{ (not want_on) and (not is_on) }}"
-          sequence:
-            - stop: "Déjà OFF - pas d'action nécessaire"
+            - stop: "target_state invalide"
 
-    # ======================================================
-    # 5️⃣ Premiere tentative de commande
-    # ======================================================
-    - choose:
-        - conditions: "{{ want_on }}"
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ current_real_state in ['unknown', 'unavailable'] }}
           sequence:
-            - action: switch.turn_on
-              target:
-                entity_id: switch.deshumidificateur
+            - stop: "Source de verite indisponible"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ command_entity_state in ['unknown', 'unavailable'] }}
+          sequence:
+            - stop: "Entite de commande indisponible"
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ current_real_state == target_state_normalized }}
+          sequence:
+            - action: script.guard_deshumidificateur
+              data:
+                expected_state: "{{ target_state_normalized }}"
+                request_source: >
+                  {{ request_source | default('script.set_deshumidificateur_state', true) }}
+                request_id: "{{ request_id | default('', true) }}"
+
+            - wait_template: >
+                {{ states('input_text.deshum_guard_last_ts') != guard_last_ts_before }}
+              timeout:
+                seconds: 35
+              continue_on_timeout: true
+
+            - variables:
+                result:
+                  verdict: "{{ states('input_text.deshum_guard_last_verdict') }}"
+                  reason: "{{ states('input_text.deshum_guard_last_reason') }}"
+                  observed_state: "{{ states('input_text.deshum_guard_last_observed_state') }}"
+
+            - stop: "Etat deja conforme"
+
       default:
-        - action: switch.turn_off
-          target:
-            entity_id: switch.deshumidificateur
-
-    - delay: "00:00:05"
-
-    - wait_template: >
-        {{ (want_on and is_state('binary_sensor.deshumidificateur_actif','on')) or
-           ((not want_on) and is_state('binary_sensor.deshumidificateur_actif','off')) }}
-      timeout: "00:01:00"
-      continue_on_timeout: true
-
-    # ======================================================
-    # 6️⃣ Seconde tentative si l'etat reel n'a pas change
-    # ======================================================
-    - if:
-        - condition: template
-          value_template: >
-            {{ (want_on and not is_state('binary_sensor.deshumidificateur_actif','on')) or
-               ((not want_on) and not is_state('binary_sensor.deshumidificateur_actif','off')) }}
-      then:
         - choose:
-            - conditions: "{{ want_on }}"
+            - conditions:
+                - condition: template
+                  value_template: >
+                    {{ target_state_normalized == 'on' }}
               sequence:
                 - action: switch.turn_on
                   target:
                     entity_id: switch.deshumidificateur
+
           default:
             - action: switch.turn_off
               target:
                 entity_id: switch.deshumidificateur
 
-        - delay: "00:00:10"
+        - action: script.guard_deshumidificateur
+          data:
+            expected_state: "{{ target_state_normalized }}"
+            request_source: >
+              {{ request_source | default('script.set_deshumidificateur_state', true) }}
+            request_id: "{{ request_id | default('', true) }}"
 
         - wait_template: >
-            {{ (want_on and is_state('binary_sensor.deshumidificateur_actif','on')) or
-               ((not want_on) and is_state('binary_sensor.deshumidificateur_actif','off')) }}
-          timeout: "00:01:00"
+            {{ states('input_text.deshum_guard_last_ts') != guard_last_ts_before }}
+          timeout:
+            seconds: 35
           continue_on_timeout: true
 
-    # ======================================================
-    # 7️⃣ Echec final si l'etat reel reste non conforme
-    # ======================================================
-    - if:
-        - condition: template
-          value_template: >
-            {{ (want_on and not is_state('binary_sensor.deshumidificateur_actif','on')) or
-               ((not want_on) and not is_state('binary_sensor.deshumidificateur_actif','off')) }}
-      then:
-        - stop: "Échec de synchronisation : état réel non conforme après deux tentatives"
+        - variables:
+            result:
+              verdict: "{{ states('input_text.deshum_guard_last_verdict') }}"
+              reason: "{{ states('input_text.deshum_guard_last_reason') }}"
+              observed_state: "{{ states('input_text.deshum_guard_last_observed_state') }}"
+
+        - stop: "Commande executee et qualifiee"

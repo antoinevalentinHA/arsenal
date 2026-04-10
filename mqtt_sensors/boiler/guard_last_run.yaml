@@ -1,0 +1,26 @@
+# ==========================================================
+# ARSENAL — MQTT SENSOR
+# Boiler Guard — Last Run
+# ----------------------------------------------------------
+# Role :
+#   Exposer le timestamp du dernier cycle du guard.
+#
+# Source :
+#   - Topic : boiler/guard/last_run
+#   - Format : ISO8601 UTC (ex: 2026-04-08T10:39:20Z)
+#
+# Contrat :
+#   - aucune transformation
+#   - utilise directement le timestamp publie par le guard
+#
+# Remarque :
+#   Ce capteur est la reference pour le calcul de stale.
+# ==========================================================
+
+- name: "boiler_guard_last_run"
+  unique_id: boiler_guard_last_run
+
+  state_topic: "boiler/guard/last_run"
+
+  device_class: timestamp
+  qos: 1

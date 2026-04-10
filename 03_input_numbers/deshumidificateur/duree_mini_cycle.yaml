@@ -1,0 +1,26 @@
+# ==========================================================
+#  🧠 ARSENAL — INPUT NUMBER :
+#     Déshumidificateur - Duree mini cycle
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Porter la durée minimale d'un cycle réel de
+#     déshumidification avant qu'une extinction soit
+#     autorisée.
+#
+#  🧱 STATUT ARSENAL
+#     parameter
+#
+#  ⚠️ CONTRAT
+#     - valeur réglable en minutes
+#     - aucune autorité d'exécution
+#     - aucune logique portée par ce helper
+# ==========================================================
+
+deshumidificateur_duree_mini_cycle:
+  name: Déshumidificateur - Duree mini cycle
+  min: 5
+  max: 180
+  step: 5
+  unit_of_measurement: min
+  mode: box
+  icon: mdi:timer-cog

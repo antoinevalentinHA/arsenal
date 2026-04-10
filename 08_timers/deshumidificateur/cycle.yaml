@@ -1,0 +1,21 @@
+# ==========================================================
+#  🧠 ARSENAL — TIMER :
+#     Déshumidificateur - Cycle
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Porter la fenêtre minimale d'un cycle réel de
+#     déshumidification.
+#
+#  🧱 STATUT ARSENAL
+#     context
+#
+#  ⚠️ CONTRAT
+#     - timer consulté par la discipline d'extinction
+#     - aucune action directe
+#     - continuité temporelle souhaitée au redémarrage
+# ==========================================================
+
+deshumidificateur_cycle:
+  name: Déshumidificateur - Cycle
+  duration: "00:45:00"
+  restore: true

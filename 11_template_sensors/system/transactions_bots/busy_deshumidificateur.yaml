@@ -1,0 +1,34 @@
+# ==========================================================
+# 📊 ARSENAL — TEMPLATE BINARY SENSOR
+#     Occupation transaction — Deshumidificateur
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Exposer l'etat d'occupation du socle transactionnel
+#   pour le Bot deshumidificateur.
+#
+# 🧩 PERIMETRE
+#   - Derive directement du lock technique
+#   - Consomme en Phase 0 (rejet concurrent)
+#
+# 🔗 DEPENDANCES
+#   - input_boolean.bot_tx_lock_deshumidificateur
+#
+# 🚫 NE FAIT PAS
+#   - Ne mesure pas l'activite physique
+#   - Ne constitue pas une preuve d'execution
+#   - Ne prend aucune decision
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Observabilite — Concurrence execution
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Bot TX Busy Deshumidificateur"
+      unique_id: bot_tx_busy_deshumidificateur
+      icon: mdi:lock
+      state: >
+        {{ is_state('input_boolean.bot_tx_lock_deshumidificateur', 'on') }}

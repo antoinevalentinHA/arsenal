@@ -180,3 +180,48 @@ views:
           # 🧠 SECTION — DERNIERE ERREUR
           # ==========================================================
           - !include ../../includes/cartes/boiler_bloc_erreur_recente.yaml
+
+          # ==========================================================
+          # 🧠 SECTION — SUPERVISION
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🛡 Supervision
+
+          # Synthèse
+          - type: custom:button-card
+            template: boiler_guard_synthese_72
+            entity: binary_sensor.boiler_guard_stale
+            name: Guard
+            icon: mdi:shield-check
+
+          # Capteurs exposés
+          - type: horizontal-stack
+            cards:
+
+              - type: custom:button-card
+                template: boiler_guard_stale_72
+                entity: binary_sensor.boiler_guard_stale
+                name: Stale
+                icon: mdi:alert-octagon
+
+              - type: custom:button-card
+                template: boiler_guard_status_72
+                entity: sensor.boiler_guard_status
+                name: Statut
+                icon: mdi:shield-check
+
+          - type: horizontal-stack
+            cards:
+
+              - type: custom:button-card
+                template: boiler_guard_action_72
+                entity: sensor.boiler_guard_last_action
+                name: Action
+                icon: mdi:history
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.boiler_guard_version
+                name: Version
+                icon: mdi:tag

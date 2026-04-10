@@ -1,0 +1,78 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Boiler — Guard statut
+#
+# 🗂️ COUCHE : diagnostic système
+# 🧱 TYPE UI : statut équipement
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Exposer le statut contractuel du boiler guard sous forme
+#   de carte unitaire lisible immédiatement.
+#
+# 📡 SOURCE
+#   - sensor.boiler_guard_status
+#
+# ⚙️ LOGIQUE UI
+#   - nominal      -> Nominal
+#   - recovery     -> Rétabli
+#   - degraded     -> Dégradé
+#   - unknown/...  -> Indisponible
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : dashboard Boiler
+#
+# ==========================================================
+
+boiler_guard_status_72:
+  template:
+    - socle_status_72
+
+  state_display: >
+    [[[
+      const status = states['sensor.boiler_guard_status']?.state;
+
+      if (!status || ['unknown', 'unavailable', 'none'].includes(status)) {
+        return 'Indisponible';
+      }
+
+      if (status === 'nominal') {
+        return 'Nominal';
+      }
+
+      if (status === 'recovery') {
+        return 'Rétabli';
+      }
+
+      if (status === 'degraded') {
+        return 'Dégradé';
+      }
+
+      return 'Indisponible';
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const status = states['sensor.boiler_guard_status']?.state;
+
+            if (!status || ['unknown', 'unavailable', 'none'].includes(status)) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            if (status === 'nominal' || status === 'recovery') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            if (status === 'degraded') {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

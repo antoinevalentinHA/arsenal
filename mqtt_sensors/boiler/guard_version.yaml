@@ -1,0 +1,24 @@
+# ==========================================================
+# ARSENAL — MQTT SENSOR
+# Boiler Guard — Version
+# ----------------------------------------------------------
+# Role :
+#   Exposer la version du guard boiler.
+#
+# Source :
+#   - Topic : boiler/guard/version
+#   - Format : v{MAJOR}.{MINOR}
+#
+# Contrat :
+#   - aucune transformation
+#   - lecture brute MQTT uniquement
+#
+# Usage :
+#   - audit de deploiement
+#   - verification coherence version Pi
+# ==========================================================
+
+- name: "boiler_guard_version"
+  unique_id: boiler_guard_version
+  state_topic: "boiler/guard/version"
+  qos: 1

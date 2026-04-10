@@ -1,0 +1,27 @@
+# ==========================================================
+# 📊 ARSENAL — HELPER
+#     Phase courante transaction Bot (debug)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Indiquer la phase d’execution en cours.
+#
+# 🧩 PERIMETRE
+#   - Mis a jour pendant l’execution
+#   - Non contractuel
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#
+# 🚫 NE FAIT PAS
+#   - Ne doit jamais etre utilise pour decision
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Debug technique — Non opposable
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_last_phase:
+  name: "Bot TX Last Phase"
+  icon: mdi:timeline-clock-outline

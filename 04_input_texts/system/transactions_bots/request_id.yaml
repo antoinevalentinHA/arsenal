@@ -1,0 +1,26 @@
+# ==========================================================
+# 📊 ARSENAL — HELPER
+#     Dernier request_id transaction Bot
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Permettre la correlation des executions.
+#
+# 🧩 PERIMETRE
+#   - Stocke le dernier identifiant de demande
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#
+# 🚫 NE FAIT PAS
+#   - Ne garantit pas l’unicite globale
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Diagnostic — Correlation
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_last_request_id:
+  name: "Bot TX Last Request ID"
+  icon: mdi:identifier

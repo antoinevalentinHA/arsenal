@@ -80,7 +80,6 @@ Quelle est la nature de la carte ?
 ├── Lecture seule — statut équipement
 │   ├── Interactif (more-info)
 │   │   ├── Standard                   → socle_status
-│   │   └── XL avec label              → socle_status_label_xl_interactif
 │   └── Non interactif
 │       ├── Compact sans icône (64px)  → socle_status_compact
 │       ├── Avec label sans icône      → socle_status_label
@@ -146,7 +145,6 @@ Quelle est la nature de la carte ?
 | `socle_status_label_72` | 72px | oui | oui | non | oui | non |
 | `socle_status_label_sans_nom` | 72px | oui | non | oui (15/600) | oui | non |
 | `socle_status_label_xl` | 80px | oui | non | oui (15/600) | oui | non |
-| `socle_status_label_xl_interactif` | 80px | oui | non | oui (15/600) | oui | oui |
 | `socle_status_state_bottom_72` | 72px | oui | oui | oui (bas) | non | non |
 
 **Critères discriminants**
@@ -217,10 +215,6 @@ Carte non interactive → `socle_status_72`.
 Même typographie (state 15/600, label 12/400).
 `_label` : avec name, sans icône.
 `_sans_nom` : sans name, avec icône.
-
-### `socle_status_label_xl` vs `socle_status_label_xl_interactif`
-Identiques visuellement (80px, icon + state + label).
-Seule différence : `more-info` au tap pour `_interactif`.
 
 ### `socle_kpi` vs `socle_kpi_72`
 `socle_kpi` : couleur de fond pilotée par entité `sensor.couleur_*` (JS).

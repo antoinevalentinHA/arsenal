@@ -64,6 +64,21 @@ views:
                     icon: mdi:water-percent
                     tap_action: none
 
+                  - type: custom:button-card
+                    template: carte_timer_status
+                    entity: timer.deshumidificateur_cycle
+                    name: Cycle déshumidificateur
+                    icon: mdi:timer-outline
+                    variables:
+                      active_semantic: info
+
+                  - type: custom:button-card
+                    template: carte_timer_status
+                    entity: timer.deshumidificateur_blocage_redemarrage
+                    name: Blocage inter-cycles
+                    icon: mdi:timer-outline
+                    variables:
+                      active_semantic: info
 
           # ==================================================
           # 🧠 DÉCISION / ÉTAT RÉEL

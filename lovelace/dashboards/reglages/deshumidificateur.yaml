@@ -43,3 +43,27 @@ views:
             features:
               - type: numeric-input
                 style: buttons
+
+          - type: custom:button-card
+            template: section_header
+            name: ⏱️ Cycle minimal
+
+          - type: tile
+            entity: input_number.deshumidificateur_duree_mini_cycle
+            name: Durée mini cycle
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔁 Blocage redemarrage
+
+          - type: tile
+            entity: input_number.deshumidificateur_delai_min_redemarrage
+            name: Delai min redemarrage
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons

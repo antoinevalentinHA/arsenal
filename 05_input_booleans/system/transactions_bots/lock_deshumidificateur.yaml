@@ -1,0 +1,32 @@
+# ==========================================================
+# 🔐 ARSENAL — HELPER
+#     Lock transaction Bot — Deshumidificateur
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Marquer l’existence d’une transaction active sur le Bot
+#   `switch.deshumidificateur`.
+#
+# 🧩 PERIMETRE
+#   - Activé à l’ouverture de transaction (Phase 1)
+#   - Désactivé à la clôture (Phase 5)
+#   - Utilisé en Phase 0 pour rejeter les demandes concurrentes
+#
+# 🔗 DEPENDANCES
+#   - Script souverain : bot_transaction_execute
+#   - Consommé indirectement via binary_sensor dérivé (busy)
+#
+# 🚫 NE FAIT PAS
+#   - Ne pilote aucun équipement
+#   - Ne contient aucune logique métier
+#   - Ne gère pas le cooldown
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Helper technique — Exécution / Concurrence
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1 — Socle transactionnel Bot
+# ==========================================================
+
+bot_tx_lock_deshumidificateur:
+  name: "Bot TX Lock Deshumidificateur"
+  icon: mdi:lock-outline

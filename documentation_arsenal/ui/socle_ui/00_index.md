@@ -80,7 +80,6 @@ Référence structurelle : fichiers, socles, héritages.
 | `socle_status_label_72` | `carte_base_v2` |
 | `socle_status_label_sans_nom` | `carte_base_v2` |
 | `socle_status_label_xl` | `carte_base_v2` |
-| `socle_status_label_xl_interactif` | `socle_status_label_xl` |
 | `socle_status_state_bottom_72` | `socle_status_72` |
 
 ### Toggle (08)

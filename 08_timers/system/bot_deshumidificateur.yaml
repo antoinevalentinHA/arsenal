@@ -1,0 +1,30 @@
+# ==========================================================
+# ⏱️ ARSENAL — TIMER
+#     Cooldown transaction Bot — Deshumidificateur
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Empêcher toute nouvelle transaction pendant une période
+#   post-exécution sur le Bot déshumidificateur.
+#
+# 🧩 PERIMETRE
+#   - Démarré uniquement si émission tentée
+#   - Consommé en Phase 0 (rejet cooldown)
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#   - Binary sensor cooldown dérivé
+#
+# 🚫 NE FAIT PAS
+#   - Ne déclenche aucune action
+#   - Ne mesure aucun état physique
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Contrainte temporelle — Exécution
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_cooldown_deshumidificateur:
+  name: "Cooldown Bot TX Deshumidificateur"
+  duration: "00:00:00"

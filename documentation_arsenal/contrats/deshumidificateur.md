@@ -1,6 +1,6 @@
-# 💧 Contrat Arsenal — Déshumidificateur Cave
+# Contrat Arsenal — Déshumidificateur Cave
 
-## 🎯 Objet
+## Objet
 
 Ce contrat définit **le comportement attendu du système Arsenal**
 concernant le **pilotage logique, la discipline d'activation et la supervision**
@@ -21,7 +21,7 @@ liée à la déshumidification.
 
 ---
 
-## 🧱 Périmètre
+## Périmètre
 
 Ce contrat couvre exclusivement :
 
@@ -42,7 +42,7 @@ Il ne couvre pas :
 
 ---
 
-## ⚙️ Réalité matérielle
+## Réalité matérielle
 
 Le déshumidificateur est un **appareil non pilotable** :
 
@@ -55,14 +55,14 @@ Le système ne suppose jamais qu'une commande a réussi.
 
 ---
 
-## 🧠 Principe fondamental Arsenal
+## Principe fondamental Arsenal
 
 > Un système non pilotable ne peut être gouverné
 > que par observation, jamais par supposition.
 
 ---
 
-## 🔎 Source de vérité unique
+## Source de vérité unique
 
 L'état réel du déshumidificateur est défini exclusivement par :
 
@@ -81,7 +81,7 @@ Toute incohérence est :
 
 ---
 
-## 📏 Mesures physiques (sans décision)
+## Mesures physiques (sans décision)
 
 Les capteurs suivants fournissent des données brutes :
 
@@ -95,7 +95,7 @@ Ils ne déclenchent :
 
 ---
 
-## 🧮 Critères logiques locaux
+## Critères logiques locaux
 
 ### Critère humidité relative (RH)
 
@@ -123,7 +123,7 @@ et n'imposent jamais un état.
 
 ---
 
-## 🧠 Recommandation métier
+## Recommandation métier
 
 La décision logique globale est exposée par :
 
@@ -146,28 +146,95 @@ Cette recommandation est :
 
 ---
 
-## 🔁 Discipline opérationnelle
+## Artefacts de gouvernance temporelle
+
+Cette section définit les deux artefacts portant la gouvernance temporelle du cycle
+de déshumidification de façon explicite, sans recours à l'historique implicite de
+Home Assistant.
+
+### Helper de durée minimale de cycle
+
+- **Statut Arsenal** : `parameter`
+- **Rôle** : définir la durée minimale qu'un cycle d'activation doit respecter avant
+  qu'une extinction soit autorisée
+- **Nature** : valeur réglable, exprimée en minutes
+- **Portée** : politique d'usage — non invariante, ajustable sans modifier le contrat
+- **Autorité** : aucune — ce helper ne déclenche aucune action, n'observe aucun état,
+  ne porte aucune logique
+
+Ce helper est la seule source contractuelle de la durée minimale de cycle. Toute
+formulation reposant sur une durée codée en dur dans une automatisation ou inférée
+via `last_changed` est proscrite.
+
+### Timer de cycle minimal
+
+- **Statut Arsenal** : `context`
+- **Rôle** : représenter la fenêtre minimale de fonctionnement d'un cycle réel en cours
+- **Déclenchement** : démarré à la confirmation stable de l'activation réelle de
+  l'appareil par `binary_sensor.deshumidificateur_actif`, avec une durée égale à la
+  valeur courante du helper de durée minimale
+- **Condition de démarrage** : le démarrage du timer ne peut intervenir qu'après
+  confirmation stable de l'état actif de l'appareil. Toute activation transitoire ou
+  instable ne constitue pas une ouverture de cycle et n'autorise pas le démarrage du
+  timer
+- **Unicité** : un seul timer de cycle minimal peut être actif à un instant donné.
+  Toute tentative de redémarrage du timer alors qu'il est déjà actif est interdite
+  et doit être ignorée
+- **Expiration** : signale que la fenêtre minimale est échue — la condition
+  d'autorisation d'extinction est satisfaite sur cet axe
+- **Continuité au redémarrage** : la persistance du timer à travers un redémarrage
+  Home Assistant est souhaitable et doit être assurée si le mécanisme le permet ;
+  à défaut, le timer repart à zéro à la prochaine activation réelle stable confirmée
+- **Autorité** : aucune — ce timer ne déclenche aucune action directe ; il est
+  consulté comme condition par la discipline d'extinction différée
+
+**Limitation assumée** : le système ne garantit pas la cohérence absolue entre la
+fenêtre minimale de cycle et la durée réelle de fonctionnement en cas de
+désynchronisation événementielle (redémarrage, latence, perte d'événement). Cette
+limitation est assumée contractuellement.
+
+Ces deux artefacts sont complémentaires et indissociables. Le helper fixe la
+politique ; le timer l'applique dans le temps réel du système.
+
+---
+
+## Discipline opérationnelle
 
 Deux automatisations assurent la discipline temporelle.
-Elles sont **strictement événementielles** : aucun polling, aucune vérification périodique.
-En cas de redémarrage de Home Assistant, aucune action n'est rejouée automatiquement.
-Ce comportement est intentionnel.
+Elles sont **strictement événementielles** : aucun polling, aucune vérification
+périodique.
 
 ### Activation différée
 
-- déclencheur : recommandation passe ON et reste stable ≥ 5 minutes
-- condition : appareil actuellement OFF
-- activation contrôlée via `script.set_deshumidificateur_state`
+- Déclencheur : recommandation passe ON et reste stable ≥ 5 minutes
+- Condition : appareil actuellement OFF
+- Action : activation via `script.set_deshumidificateur_state`
+- Effet de bord contractuel : démarrage du timer de cycle minimal à la confirmation
+  stable de l'activation réelle par `binary_sensor.deshumidificateur_actif`
 
 ### Extinction différée
 
-- déclencheur : recommandation passe OFF et reste stable ≥ 5 minutes
-- condition : appareil actif depuis ≥ 20 minutes
-- extinction contrôlée via `script.set_deshumidificateur_state`
+- Déclencheur : recommandation passe OFF et reste stable ≥ 5 minutes
+- Conditions cumulatives :
+  - appareil réellement actif (`binary_sensor.deshumidificateur_actif == on`)
+  - fenêtre minimale de cycle échue (timer de cycle minimal à l'état `idle`)
+- Action : extinction via `script.set_deshumidificateur_state`
 
-**Limite connue** : la durée de fonctionnement est approximée via `last_changed`
-de `binary_sensor.deshumidificateur_actif`. Cette approximation est acceptable
-tant que l'état actif reste stable et sans micro-cycles résiduels.
+La durée minimale de cycle n'est jamais inférée à partir de `last_changed` ni
+d'aucun attribut d'historique Home Assistant. Elle est portée exclusivement par le
+timer dédié décrit à la section **Artefacts de gouvernance temporelle**. Toute
+formulation contractuelle reposant sur une approximation temporelle implicite est
+nulle.
+
+### Comportement au redémarrage
+
+Aucune action n'est rejouée automatiquement au redémarrage de Home Assistant.
+
+La continuité temporelle de la fenêtre minimale de cycle doit être préservée si le
+mécanisme de timer le permet. La restauration d'un timer en cours ne constitue pas
+une réémission d'action et ne déclenche aucune commande matérielle. En l'absence de
+continuité restaurable, le timer est considéré comme non démarré : la fenêtre
+minimale repart à zéro à la prochaine activation réelle stable confirmée.
 
 Ces règles sont :
 - des politiques d'usage
@@ -176,20 +243,25 @@ Ces règles sont :
 
 ---
 
-## 🛡️ Invariant défensif — Persistance anormale
+## Invariant défensif — Persistance anormale
 
 ### État de transition normale (non-violation)
 
-La coexistence temporaire des deux conditions suivantes constitue un **état normal de transition**,
-gouverné exclusivement par la discipline d'extinction différée :
+La coexistence des deux conditions suivantes constitue un **état normal de transition** :
 
 - `binary_sensor.deshumidificateur_actif == on`
 - `binary_sensor.deshumidificateur_cave_demarrage_recommande == off`
 
-**Aucune violation instantanée n'est reconnue sur cette seule base.**
+**Aucune violation n'est reconnue sur cette seule base.**
 
-Cet état est la conséquence directe et attendue de la politique d'extinction différée.
-Il dure structurellement le temps que les préconditions d'extinction soient satisfaites.
+Cet état est nominal tant que l'une au moins des conditions suivantes est vraie :
+
+- la recommandation OFF n'est pas encore suffisamment établie (délai de discipline
+  non écoulé)
+- la fenêtre minimale de cycle n'est pas encore échue (timer de cycle minimal encore
+  actif)
+
+Ces deux conditions sont indépendantes. Aucune ne peut être substituée à l'autre.
 
 ---
 
@@ -197,7 +269,8 @@ Il dure structurellement le temps que les préconditions d'extinction soient sat
 
 #### Niveau 1 — Transition nominale
 
-Recommandation OFF, fenêtre de discipline non encore échue.
+Recommandation OFF, fenêtre de discipline non encore échue *ou* fenêtre minimale de
+cycle encore active.
 
 - aucun problème
 - aucune action défensive
@@ -205,8 +278,8 @@ Recommandation OFF, fenêtre de discipline non encore échue.
 
 #### Niveau 2 — Écart prolongé sous discipline
 
-Les conditions d'extinction prévues par la discipline opérationnelle sont atteintes
-ou en cours de satisfaction, mais aucune anomalie d'exécution n'est encore démontrée.
+Les conditions d'extinction sont atteintes ou en cours de satisfaction, sans anomalie
+d'exécution démontrée.
 
 - diagnostic autorisé
 - observabilité activée
@@ -214,9 +287,9 @@ ou en cours de satisfaction, mais aucune anomalie d'exécution n'est encore dém
 
 #### Niveau 3 — Anomalie réelle d'exécution
 
-Toutes les conditions contractuelles d'extinction sont satisfaites,
-une tentative d'extinction a été émise via l'autorité d'exécution unique,
-et l'état réel de l'appareil demeure actif au-delà du délai de vérification post-action.
+Toutes les conditions contractuelles d'extinction sont satisfaites, une tentative
+d'extinction a été émise via l'autorité d'exécution unique, et l'appareil demeure
+actif au-delà du délai de vérification post-action.
 
 - anomalie défensive qualifiée
 - correction défensive légitime
@@ -226,19 +299,20 @@ et l'état réel de l'appareil demeure actif au-delà du délai de vérification
 
 ### Qualification de l'anomalie réelle
 
-Une anomalie réelle ne peut être qualifiée qu'après satisfaction **complète et séquentielle**
-des conditions suivantes :
+Une anomalie réelle ne peut être qualifiée qu'après satisfaction **complète et
+séquentielle** des conditions suivantes :
 
 1. la recommandation est OFF de façon persistante
-2. la durée minimale de fonctionnement de l'appareil est atteinte
+2. la fenêtre minimale de cycle est échue (timer de cycle minimal à l'état `idle`)
 3. le délai d'extinction différée est écoulé
 4. une tentative d'extinction a été émise via `script.set_deshumidificateur_state`
 5. l'appareil est toujours actif au-delà du délai de vérification post-action
 
 **Aucun raccourci sur cette séquence n'est admis.**
 
-La qualification ne repose pas sur une durée fixe abstraite,
-mais sur l'accomplissement effectif de chaque précondition.
+La qualification ne repose sur aucune inférence temporelle implicite. Elle repose
+exclusivement sur l'accomplissement effectif de chaque précondition, y compris
+l'expiration du timer explicite.
 
 ---
 
@@ -246,12 +320,13 @@ mais sur l'accomplissement effectif de chaque précondition.
 
 Il n'existe aucun état instantané qui constitue une violation contractuelle majeure.
 
-Un invariant défensif ne se caractérise jamais sur une coïncidence ponctuelle.
-Il se caractérise exclusivement sur une **persistance anormale après séquence d'extinction complète**.
+Un invariant défensif ne se caractérise jamais sur une coïncidence ponctuelle, ni sur
+une durée inférée depuis l'historique du système. Il se caractérise exclusivement sur
+une **persistance anormale après séquence d'extinction complète**.
 
 ---
 
-## ⚙️ Autorité d'exécution unique
+## Autorité d'exécution unique
 
 Toute action matérielle passe exclusivement par :
 
@@ -269,7 +344,7 @@ Aucun autre composant n'est autorisé à agir sur le bouton physique.
 
 ---
 
-## 🖥️ Interface utilisateur (UI)
+## Interface utilisateur (UI)
 
 Les cartes UI associées sont :
 
@@ -291,7 +366,7 @@ ni ne masque une incohérence.
 
 ---
 
-## 🚫 Comportements strictement interdits
+## Comportements strictement interdits
 
 - piloter le bouton hors du script dédié
 - déclencher une action depuis un capteur
@@ -300,10 +375,14 @@ ni ne masque une incohérence.
 - masquer une incohérence matérielle
 - introduire un état implicite non observable
 - qualifier une anomalie sans tentative d'extinction préalable
+- démarrer le timer de cycle minimal sur une activation transitoire ou instable
+- relancer le timer de cycle minimal alors qu'il est déjà actif
+- inférer une durée de fonctionnement depuis `last_changed` ou tout attribut
+  d'historique Home Assistant
 
 ---
 
-## 🛡️ Garanties apportées par ce contrat
+## Garanties apportées par ce contrat
 
 Ce contrat garantit :
 
@@ -313,13 +392,16 @@ Ce contrat garantit :
 - lisibilité complète du système
 - architecture refaisable from scratch
 - conformité stricte aux principes Arsenal
+- absence de dépendance à l'historique implicite de Home Assistant pour toute décision
+  temporelle
 
 ---
 
-## 📌 Statut
+## Statut
 
 - Contrat actif
-- Version : Arsenal v12 — révision GUARD + refactoring recommandation
+- Version : Arsenal v12 — révision GUARD + refactoring recommandation + gouvernance
+  temporelle explicite
 
 Toute modification doit être :
 

@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Déshumidificateur – Extinction différée hors recommandation
 #
-#  ID : 1006000000002
+#  ID : 10060000000007
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -18,7 +18,8 @@
 #  🧩 PRINCIPE
 #
 #     - Détection d’une absence de recommandation persistante
-#     - Vérification que l’appareil est actif depuis suffisamment longtemps
+#     - Vérification que l’appareil est réellement actif
+#     - Vérification que la fenêtre minimale de cycle est échue
 #     - Extinction contrôlée et assumée
 #
 #     Une tolérance temporelle est volontairement appliquée
@@ -27,7 +28,7 @@
 #  🕒 TEMPORISATIONS APPLIQUÉES
 #
 #     - Recommandation absente ≥ 5 minutes
-#     - Appareil actif ≥ 20 minutes
+#     - Fenêtre minimale de cycle échue
 #
 #     Ces durées constituent une politique d’usage,
 #     pas une règle logique absolue.
@@ -56,14 +57,17 @@
 #     - Ne remplace PAS un invariant instantané
 #     - Ne corrige PAS immédiatement un écart transitoire
 #
-#  ⚠️ LIMITE CONNUE
+#  🧠 GOUVERNANCE TEMPORELLE
 #
-#     La durée minimale de fonctionnement est actuellement
-#     approximée via `last_changed` de
-#     `binary_sensor.deshumidificateur_actif`.
+#     La durée minimale de fonctionnement n’est plus
+#     inférée via l’historique d’état Home Assistant.
 #
-#     Cette approximation est acceptable tant que l’état
-#     actif reste stable et sans micro-cycles résiduels.
+#     Elle est portée explicitement par :
+#       - input_number.deshumidificateur_duree_mini_cycle
+#       - timer.deshumidificateur_cycle
+#
+#     Le timer représente la fenêtre minimale d’un cycle réel.
+#     L’extinction n’est autorisée qu’après son expiration.
 #
 #  🧠 ARCHITECTURE ARSENAL
 #
@@ -74,36 +78,30 @@
 #     robuste et traçable dans le temps.
 # ==========================================================
 
-- id: '1006000000002'
+- id: "10060000000007"
   alias: "Déshumidificateur - Désactivation auto"
   description: >
     Met le déshumidificateur hors tension si la recommandation
     est absente depuis 5 min et que l'appareil est actif depuis ≥ 20 min.
   mode: restart
 
-  # ======================================================
-  # 🔔 Déclencheur — Absence de recommandation stable
-  # ======================================================
   trigger:
     - platform: state
       entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
       to: 'off'
       for: '00:05:00'
 
-  # ======================================================
-  # ✅ Conditions — Non recommandé + actif ≥ 20 min
-  # ======================================================
   condition:
     - condition: template
       value_template: >
         {{ is_state('binary_sensor.deshumidificateur_cave_demarrage_recommande', 'off')
            and is_state('binary_sensor.deshumidificateur_actif', 'on')
-           and (as_timestamp(now()) - as_timestamp(states.binary_sensor.deshumidificateur_actif.last_changed)) > 20*60 }}
+           and is_state('timer.deshumidificateur_cycle', 'idle') }}
 
-  # ======================================================
-  # 🔄 Action — Extinction contrôlée
-  # ======================================================
   action:
     - action: script.set_deshumidificateur_state
       data:
         target_state: "off"
+        request_source: "automation.deshumidificateur_desactivation_auto"
+        request_id: >
+          desactivation_auto_{{ now().strftime('%Y%m%dT%H%M%S') }}

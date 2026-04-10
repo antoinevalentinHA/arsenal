@@ -13,7 +13,6 @@ include:
     - sensor.temperature_min_chambres
     - sensor.temperature_max_chambres
     - sensor.temperature_jardin
-    - sensor.temperature_jardin_statut
     - sensor.temperature_entree
     - sensor.temperature_sejour
     - sensor.temperature_palier

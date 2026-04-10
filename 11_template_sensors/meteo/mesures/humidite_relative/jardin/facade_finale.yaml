@@ -125,7 +125,7 @@
 
       state: >
         {% set v = states('input_number.humidite_relative_jardin_valeur_stabilisee') | float(none) %}
-        {{ v | round(0) }}
+        {{ v | round(1) }}
 
       attributes:
 

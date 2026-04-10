@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Déshumidificateur – Blocage redemarrage apres arret reel
+#
+# ID : 10060000000008
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Demarrer une fenetre de blocage de redemarrage
+#     apres un arret reel du deshumidificateur.
+#
+#     Cette automation materialise une protection
+#     anti court-cycle purement temporelle.
+#
+# 🧩 PERIMETRE
+#
+#     - Detecte une transition reelle ON → OFF
+#     - Demarre timer.deshumidificateur_blocage_redemarrage
+#     - Utilise la duree definie par :
+#         input_number.deshumidificateur_delai_min_redemarrage
+#
+# 🔗 DEPENDANCES
+#
+#     - binary_sensor.deshumidificateur_actif
+#     - timer.deshumidificateur_blocage_redemarrage
+#     - input_number.deshumidificateur_delai_min_redemarrage
+#
+# 🚫 NE FAIT PAS
+#
+#     - Ne declenche PAS l'arret du deshumidificateur
+#     - Ne decide PAS du redemarrage
+#     - Ne qualifie PAS l'etat reel
+#     - Ne remplace PAS le guard
+#     - Ne depend PAS de last_changed
+#
+# 🧠 STATUT ARCHITECTURAL
+#
+#     Automation de contexte temporel.
+#
+#     Elle porte une contrainte systeme,
+#     sans autorite decisionnelle.
+# ==========================================================
+
+- id: "10060000000008"
+  alias: "Déshumidificateur - Blocage redemarrage"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.deshumidificateur_actif
+      from: 'on'
+      to: 'off'
+
+  action:
+    - action: timer.start
+      target:
+        entity_id: timer.deshumidificateur_blocage_redemarrage
+      data:
+        duration: >
+          {{ (states('input_number.deshumidificateur_delai_min_redemarrage') | int(0)) * 60 }}

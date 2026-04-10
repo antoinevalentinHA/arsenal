@@ -1,0 +1,122 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Boiler — Guard synthèse
+#
+# 🗂️ COUCHE : diagnostic système
+# 🧱 TYPE UI : statut équipement
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournir une lecture immédiate de l’état du boiler guard :
+#   statut global + fraîcheur du dernier cycle.
+#
+# 📡 SOURCE
+#   - binary_sensor.boiler_guard_stale
+#   - sensor.boiler_guard_status
+#   - sensor.boiler_guard_last_run
+#
+# ⚙️ LOGIQUE UI
+#   Priorité :
+#     1. indisponibilité
+#     2. stale
+#     3. degraded
+#     4. recovery / nominal
+#
+#   Le label expose uniquement l’âge du cycle.
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : dashboard Boiler
+#
+# ==========================================================
+
+boiler_guard_synthese_72:
+  template:
+    - socle_status_label
+
+  show_label: true
+
+  state_display: >
+    [[[
+      const stale = states['binary_sensor.boiler_guard_stale']?.state;
+      const status = states['sensor.boiler_guard_status']?.state;
+
+      const invalid = (v) => !v || ['unknown', 'unavailable', 'none'].includes(v);
+
+      if (invalid(stale) || invalid(status)) {
+        return 'Indisponible';
+      }
+
+      if (stale === 'on') {
+        return 'STALE';
+      }
+
+      if (status === 'degraded') {
+        return 'Dégradé';
+      }
+
+      if (status === 'recovery') {
+        return 'Rétabli';
+      }
+
+      if (status === 'nominal') {
+        return 'Nominal';
+      }
+
+      return 'Indisponible';
+    ]]]
+
+  label: >
+    [[[
+      const lastRun = states['sensor.boiler_guard_last_run']?.state;
+
+      if (!lastRun || ['unknown', 'unavailable', 'none'].includes(lastRun)) {
+        return 'Cycle: inconnu';
+      }
+
+      const ts = new Date(lastRun);
+
+      if (isNaN(ts)) {
+        return 'Cycle: invalide';
+      }
+
+      const diffMin = Math.floor((Date.now() - ts.getTime()) / 60000);
+
+      if (diffMin < 1) {
+        return 'Cycle: < 1 min';
+      }
+
+      return `Cycle: ${diffMin} min`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const stale = states['binary_sensor.boiler_guard_stale']?.state;
+            const status = states['sensor.boiler_guard_status']?.state;
+
+            const invalid = (v) => !v || ['unknown', 'unavailable', 'none'].includes(v);
+
+            if (invalid(stale) || invalid(status)) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            if (stale === 'on') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            if (status === 'degraded') {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            if (status === 'recovery' || status === 'nominal') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

@@ -1,0 +1,31 @@
+# ==========================================================
+# 📊 ARSENAL — TEMPLATE BINARY SENSOR
+#     Cooldown transaction — Deshumidificateur
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Indiquer si le cooldown est actif apres execution.
+#
+# 🧩 PERIMETRE
+#   - Consomme en Phase 0 (rejet cooldown)
+#
+# 🔗 DEPENDANCES
+#   - timer.bot_tx_cooldown_deshumidificateur
+#
+# 🚫 NE FAIT PAS
+#   - Ne mesure pas l'etat physique du systeme
+#   - Ne constitue pas une preuve d'execution
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Observabilite — Contrainte temporelle
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Bot TX Cooldown Deshumidificateur"
+      unique_id: bot_tx_cooldown_deshumidificateur
+      icon: mdi:timer-sand
+      state: >
+        {{ is_state('timer.bot_tx_cooldown_deshumidificateur', 'active') }}

@@ -1,0 +1,29 @@
+# ==========================================================
+# 📉 ARSENAL — COUNTER
+#     Echecs consecutifs — Deshumidificateur
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Compter les echecs consecutifs du Bot F2.
+#
+# 🧩 PERIMETRE
+#   - Reset sur applied_confirmed
+#   - Increment sur timeout_unconfirmed / execution_error
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#
+# 🚫 NE FAIT PAS
+#   - Ne declenche aucune action
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Diagnostic — Robustesse execution
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_failures_deshumidificateur:
+  name: "Bot TX Failures Deshumidificateur"
+  icon: mdi:alert-outline
+  initial: 0
+  step: 1

@@ -1,0 +1,26 @@
+# ==========================================================
+# 📊 ARSENAL — HELPER
+#     Dernier motif transaction Bot
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Stocker le motif associe au dernier verdict.
+#
+# 🧩 PERIMETRE
+#   - Peut provenir du validateur ou de la Phase 0
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#
+# 🚫 NE FAIT PAS
+#   - Ne constitue pas une preuve
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Diagnostic — Explicatif
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_last_reason:
+  name: "Bot TX Last Reason"
+  icon: mdi:comment-text-outline

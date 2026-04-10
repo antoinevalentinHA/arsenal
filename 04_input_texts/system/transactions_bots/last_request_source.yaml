@@ -1,0 +1,26 @@
+# ==========================================================
+# 📊 ARSENAL — HELPER
+#     Source de la demande transaction Bot
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Identifier le composant ayant declenche l’appel.
+#
+# 🧩 PERIMETRE
+#   - Stocke le script ou domaine appelant
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#
+# 🚫 NE FAIT PAS
+#   - Ne valide pas l’autorite de la source
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Diagnostic — Traçabilité
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_last_request_source:
+  name: "Bot TX Last Request Source"
+  icon: mdi:source-branch

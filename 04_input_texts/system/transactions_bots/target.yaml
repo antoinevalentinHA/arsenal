@@ -1,0 +1,27 @@
+# ==========================================================
+# 📊 ARSENAL — HELPER
+#     Derniere cible transaction Bot
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Stocker la cible du dernier appel au socle transactionnel.
+#
+# 🧩 PERIMETRE
+#   - Ecrit a chaque appel (transaction ou rejet Phase 0)
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#
+# 🚫 NE FAIT PAS
+#   - Ne valide aucune execution
+#   - Ne declenche aucune logique
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Diagnostic — Trace brute
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_last_target:
+  name: "Bot TX Last Target"
+  icon: mdi:crosshairs-gps

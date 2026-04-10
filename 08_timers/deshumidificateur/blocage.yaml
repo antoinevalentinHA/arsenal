@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER (TIMER)
+#     Déshumidificateur – Blocage redémarrage
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Représenter la fenêtre temporelle pendant laquelle
+#     tout redémarrage du déshumidificateur est interdit
+#     après un arrêt réel.
+#
+# 🧩 PÉRIMÈTRE
+#
+#     - Démarré sur arrêt réel du déshumidificateur
+#     - Durée pilotée par :
+#         input_number.deshumidificateur_delai_min_redemarrage
+#     - Consommé par les automatisations de démarrage
+#
+# 🔗 DÉPENDANCES
+#
+#     - input_number.deshumidificateur_delai_min_redemarrage
+#     - automation 10060000000008
+#
+# 🚫 NE FAIT PAS
+#
+#     - Ne déclenche aucune action
+#     - Ne décide pas du redémarrage
+#     - Ne remplace pas une logique métier
+#
+# 🧠 STATUT ARCHITECTURAL
+#
+#     Helper de contexte temporel.
+#
+#     Porte l’état du blocage sans autorité.
+#
+# 🧠 INVARIANT ASSOCIÉ
+#
+#     Tant que ce timer est actif,
+#     aucun démarrage automatique ne doit être autorisé.
+#
+# ==========================================================
+
+deshumidificateur_blocage_redemarrage:
+  name: "Deshumidificateur - Blocage redemarrage"

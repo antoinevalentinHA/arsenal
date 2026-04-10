@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Boiler — Guard stale
+#
+# 🗂️ COUCHE : diagnostic système
+# 🧱 TYPE UI : statut équipement
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Exposer l’état stale du boiler guard sous forme de
+#   signal binaire critique, lisible immédiatement.
+#
+# 📡 SOURCE
+#   - binary_sensor.boiler_guard_stale
+#
+# ⚙️ LOGIQUE UI
+#   - on           -> STALE
+#   - off          -> Nominal
+#   - unknown/...  -> Indisponible
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : dashboard Boiler
+#
+# ==========================================================
+
+boiler_guard_stale_72:
+  template:
+    - socle_status_72
+
+  state_display: >
+    [[[
+      const stale = states['binary_sensor.boiler_guard_stale']?.state;
+
+      if (!stale || ['unknown', 'unavailable', 'none'].includes(stale)) {
+        return 'Indisponible';
+      }
+
+      if (stale === 'on') {
+        return 'STALE';
+      }
+
+      if (stale === 'off') {
+        return 'Nominal';
+      }
+
+      return 'Indisponible';
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const stale = states['binary_sensor.boiler_guard_stale']?.state;
+
+            if (!stale || ['unknown', 'unavailable', 'none'].includes(stale)) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            if (stale === 'on') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            if (stale === 'off') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

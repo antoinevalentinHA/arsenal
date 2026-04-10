@@ -253,43 +253,6 @@ Affiche icon + state + label. Sans nom. Icon 28px. State 15/600.
 | label | 13px / 400 / #111 |
 
 **Particularités** : format XL contractuel (80px, icon 28px).
-Socle parent de `socle_status_label_xl_interactif`.
-
----
-
-## `socle_status_label_xl_interactif`
-
-**Rôle** : Variante interactive de `socle_status_label_xl`.
-Identique visuellement — autorise `tap: more-info`.
-
-**Héritage** : `socle_status_label_xl`
-
-| Champ | Valeur |
-|-------|--------|
-| show_icon | true (hérité) |
-| show_name | false (hérité) |
-| show_state | true (hérité) |
-| show_label | true (hérité) |
-
-**Actions**
-
-| Événement | Action |
-|-----------|--------|
-| tap | more-info |
-| hold | none |
-| double_tap | none |
-
-**Métriques-clés**
-
-| Élément | Valeur |
-|---------|--------|
-| height | 80px (hérité) |
-| icon | 28×28px / #111 (hérité) |
-| state | 15px / 600 / #111 (hérité) |
-| label | 13px / 400 / #111 (hérité) |
-
-**Particularités** : surcharge minimale — modifie uniquement `tap_action`.
-Aucune différence visuelle avec `socle_status_label_xl`.
 
 ---
 
@@ -332,5 +295,4 @@ via `align-self: end`. State réduit à 13px (vs 14px hérité).
 - Aucune logique métier, aucun mapping d'état dans les socles Status
 - Le mapping FR (`state_display`) est défini exclusivement au niveau carte métier
 - Aucun `background-color` dynamique
-- `socle_status_label_xl_interactif` ne doit pas être utilisé
   hors contexte synthèse XL

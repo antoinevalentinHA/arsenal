@@ -1,0 +1,24 @@
+# ==========================================================
+# ARSENAL — MQTT SENSOR
+# Boiler Guard — Last Action
+# ----------------------------------------------------------
+# Role :
+#   Exposer la derniere action corrective du guard.
+#
+# Source :
+#   - Topic : boiler/guard/last_action
+#   - Valeurs attendues :
+#       - none
+#       - restart_service
+#       - restart_network
+#       - reboot
+#
+# Contrat :
+#   - aucune transformation
+#   - lecture brute MQTT uniquement
+# ==========================================================
+
+- name: "boiler_guard_last_action"
+  unique_id: boiler_guard_last_action
+  state_topic: "boiler/guard/last_action"
+  qos: 1

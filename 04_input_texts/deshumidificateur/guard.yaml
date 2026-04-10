@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS INPUT_TEXT
+#     Déshumidificateur - Guard diagnostic minimal
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Porter la persistance diagnostique minimale du guard
+#   post commande du déshumidificateur.
+#
+# 🧩 PERIMETRE
+#   - dernier verdict
+#   - état attendu
+#   - état observé
+#   - motif normalisé
+#   - horodatage de clôture
+#   - source appelante
+#   - identifiant de corrélation
+#
+# 🚫 NE FAIT PAS
+#   - ne prend aucune décision
+#   - ne déclenche aucune action
+#   - ne constitue pas une preuve d'état réel
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Helpers de diagnostic.
+#   Consommés par script.guard_deshumidificateur.
+# ==========================================================
+
+deshum_guard_last_verdict:
+  name: "Déshumidificateur - Guard dernier verdict"
+  max: 32
+
+deshum_guard_last_expected_state:
+  name: "Déshumidificateur - Guard état attendu"
+  max: 16
+
+deshum_guard_last_observed_state:
+  name: "Déshumidificateur - Guard état observé"
+  max: 16
+
+deshum_guard_last_reason:
+  name: "Déshumidificateur - Guard dernier motif"
+  max: 64
+
+deshum_guard_last_ts:
+  name: "Déshumidificateur - Guard dernier horodatage"
+  max: 40
+
+deshum_guard_last_request_source:
+  name: "Déshumidificateur - Guard source appelante"
+  max: 128
+
+deshum_guard_last_request_id:
+  name: "Déshumidificateur - Guard identifiant requête"
+  max: 128

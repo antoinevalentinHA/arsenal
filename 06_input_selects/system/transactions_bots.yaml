@@ -1,0 +1,31 @@
+# ==========================================================
+# 📊 ARSENAL — HELPER
+#     Niveau de preuve transaction Bot
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Indiquer le niveau de preuve applique au dernier verdict.
+#
+# 🧩 PERIMETRE
+#   - Valeur imposee par le registre (A ou B)
+#
+# 🔗 DEPENDANCES
+#   - Script souverain
+#
+# 🚫 NE FAIT PAS
+#   - Ne constitue pas une preuve en soi
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Diagnostic — Niveau de preuve
+#
+# 🏷️ STATUT
+#   Arsenal V1.1.1
+# ==========================================================
+
+bot_tx_last_proof_level:
+  name: "Bot TX Last Proof Level"
+  icon: mdi:shield-check-outline
+  options:
+    - none
+    - A
+    - B
+  initial: none

@@ -1,0 +1,34 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Déshumidificateur - Fermeture cycle temporel
+#
+#  ID : 10060000000004
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Maintenir la cohérence du timer avec l'état réel.
+#
+#     Si l'appareil s'arrête avant la fin du timer,
+#     le contexte temporel est fermé immédiatement.
+#
+#  🧠 SOURCE DE VERITE
+#     binary_sensor.deshumidificateur_actif
+# ==========================================================
+
+- id: '10060000000004'
+  alias: "Déshumidificateur - Fermeture cycle temporel"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.deshumidificateur_actif
+      to: 'off'
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ is_state('timer.deshumidificateur_cycle', 'active') }}
+
+  action:
+    - action: timer.cancel
+      target:
+        entity_id: timer.deshumidificateur_cycle

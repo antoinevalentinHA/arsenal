@@ -2,7 +2,7 @@
 #  🧠 ARSENAL — AUTOMATION :
 #     Déshumidificateur – Activation différée sur recommandation
 #
-#  ID : 1006000000001
+#  ID : 10060000000006
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
@@ -62,35 +62,33 @@
 #     et tolérante au bruit système.
 # ==========================================================
 
-- id: '1006000000001'
+- id: "10060000000006"
   alias: "Déshumidificateur - Activation auto"
   description: >
     Met le déshumidificateur en marche si la recommandation
     est active depuis 5 min.
   mode: single
 
-  # ======================================================
-  # 🔔 Déclencheur — Recommandation stable
-  # ======================================================
   trigger:
     - platform: state
       entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
       to: 'on'
       for: '00:05:00'
 
-  # ======================================================
-  # ✅ Conditions — Recommandation active + appareil OFF
-  # ======================================================
   condition:
     - condition: template
       value_template: >
         {{ is_state('binary_sensor.deshumidificateur_cave_demarrage_recommande', 'on')
            and is_state('binary_sensor.deshumidificateur_actif', 'off') }}
 
-  # ======================================================
-  # 🔄 Action — Allumage contrôlé
-  # ======================================================
+    - condition: state
+      entity_id: timer.deshumidificateur_blocage_redemarrage
+      state: "idle"
+
   action:
     - action: script.set_deshumidificateur_state
       data:
         target_state: "on"
+        request_source: "automation.deshumidificateur_activation_auto"
+        request_id: >
+          activation_auto_{{ now().strftime('%Y%m%dT%H%M%S') }}
