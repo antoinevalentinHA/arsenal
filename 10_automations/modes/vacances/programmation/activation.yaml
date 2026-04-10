@@ -3,13 +3,52 @@
 #     Vacances – Projection auto du mode global
 #
 #  ID : 1009000000004
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de PROJECTION DU CONTEXTE GLOBAL.
+#
+#     Elle projette le contexte Vacances dans
+#     `input_select.mode_maison` lorsque la demande consolidee
+#     du domaine Vacances devient vraie, ou lors d’une
+#     reconciliation au demarrage.
+#
+#     Elle represente un niveau de contexte global lisible
+#     par les sous-systemes, sans jamais fabriquer a elle seule
+#     la verite metier d’effectivite.
+#
+#  🧱 NATURE
+#
+#     - Projection de contexte global
+#     - Consommation d’un etat metier deja calcule
+#     - Aucune logique decisionnelle autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Declenchement sur activation de
+#       `binary_sensor.vacances_demandees`
+#       ou au demarrage si la demande est deja vraie
+#     - Projection de l’etat global dans
+#       `input_select.mode_maison`
+#     - Notification persistante de projection de contexte
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne decide pas si les vacances sont effectives
+#     - Ne consomme pas la presence comme source de verite
+#     - Ne pilote pas les inhibitions ou actions metier reelles
+#     - Ne remplace pas `binary_sensor.vacances_actives`
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
 # ==========================================================
 
 - id: "1009000000004"
   alias: "Modes - Vacances - Projection auto"
   description: >
-    Projette le contexte global en mode *Vacances* lorsque
-    la demande consolidée Vacances devient vraie.
+    Projette le contexte global en mode Vacances lorsque
+    la demande consolidee Vacances devient vraie.
 
   mode: restart
 

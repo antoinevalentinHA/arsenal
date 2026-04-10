@@ -9,17 +9,17 @@
 #     Automation de discipline opérationnelle.
 #
 #     Elle éteint le déshumidificateur lorsque celui-ci
-#     fonctionne sans recommandation logique depuis
-#     une durée significative, afin d’éviter tout
-#     fonctionnement inutile ou prolongé.
+#     fonctionne sans recommandation logique persistante
+#     et que la fenêtre minimale de cycle est échue,
+#     afin d’éviter tout fonctionnement inutile ou prolongé.
 #
 #     Cette automation n’est PAS un garde-fou invariant.
 #
 #  🧩 PRINCIPE
 #
 #     - Détection d’une absence de recommandation persistante
+#     - Prise en compte explicite de l’échéance du cycle minimal
 #     - Vérification que l’appareil est réellement actif
-#     - Vérification que la fenêtre minimale de cycle est échue
 #     - Extinction contrôlée et assumée
 #
 #     Une tolérance temporelle est volontairement appliquée
@@ -36,6 +36,7 @@
 #  🧠 DÉCLENCHEURS UTILISÉS
 #
 #     - Stabilisation de l’absence de recommandation
+#     - Fin de la fenêtre minimale de cycle
 #
 #     Cette automation est strictement événementielle.
 #
@@ -82,21 +83,33 @@
   alias: "Déshumidificateur - Désactivation auto"
   description: >
     Met le déshumidificateur hors tension si la recommandation
-    est absente depuis 5 min et que l'appareil est actif depuis ≥ 20 min.
+    est absente depuis 5 min, que l'appareil est encore actif
+    et que la fenêtre minimale de cycle est échue.
   mode: restart
 
   trigger:
     - platform: state
       entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
-      to: 'off'
-      for: '00:05:00'
+      to: "off"
+      for: "00:05:00"
+
+    - platform: state
+      entity_id: timer.deshumidificateur_cycle
+      to: "idle"
 
   condition:
-    - condition: template
-      value_template: >
-        {{ is_state('binary_sensor.deshumidificateur_cave_demarrage_recommande', 'off')
-           and is_state('binary_sensor.deshumidificateur_actif', 'on')
-           and is_state('timer.deshumidificateur_cycle', 'idle') }}
+    - condition: state
+      entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
+      state: "off"
+      for: "00:05:00"
+
+    - condition: state
+      entity_id: binary_sensor.deshumidificateur_actif
+      state: "on"
+
+    - condition: state
+      entity_id: timer.deshumidificateur_cycle
+      state: "idle"
 
   action:
     - action: script.set_deshumidificateur_state

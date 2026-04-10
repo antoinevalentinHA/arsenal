@@ -44,7 +44,7 @@ views:
 
                   - type: custom:button-card
                     template: carte_mode_maison
-                    entity: input_select.mode_maison
+                    entity: binary_sensor.vacances_actives
                     name: Mode
                     icon: mdi:home-switch
 

@@ -10,8 +10,8 @@
 #
 #     Elle met en marche le déshumidificateur lorsque
 #     la recommandation logique de fonctionnement est
-#     confirmée et stable, afin de garantir que l’état
-#     recommandé soit effectivement appliqué.
+#     confirmée et stable, et que le blocage inter-cycles
+#     est échu.
 #
 #     Cette automation n’est PAS un garde-fou invariant.
 #
@@ -19,6 +19,7 @@
 #
 #     - Détection d’une recommandation logique persistante
 #     - Vérification que l’appareil est actuellement à l’arrêt
+#     - Vérification que le blocage de redémarrage est échu
 #     - Activation contrôlée et assumée
 #
 #     Une tolérance temporelle est volontairement appliquée
@@ -27,13 +28,15 @@
 #  🕒 TEMPORISATIONS APPLIQUÉES
 #
 #     - Recommandation active ≥ 5 minutes
+#     - Blocage de redémarrage échu
 #
-#     Cette durée constitue une politique d’usage,
+#     Ces durées constituent une politique d’usage,
 #     pas une règle logique absolue.
 #
 #  🧠 DÉCLENCHEURS UTILISÉS
 #
 #     - Stabilisation de la recommandation
+#     - Fin du blocage de redémarrage
 #
 #     Cette automation est strictement événementielle.
 #
@@ -66,20 +69,29 @@
   alias: "Déshumidificateur - Activation auto"
   description: >
     Met le déshumidificateur en marche si la recommandation
-    est active depuis 5 min.
+    est active depuis 5 min, que l'appareil est à l'arrêt
+    et que le blocage de redémarrage est échu.
   mode: single
 
   trigger:
     - platform: state
       entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
-      to: 'on'
-      for: '00:05:00'
+      to: "on"
+      for: "00:05:00"
+
+    - platform: state
+      entity_id: timer.deshumidificateur_blocage_redemarrage
+      to: "idle"
 
   condition:
-    - condition: template
-      value_template: >
-        {{ is_state('binary_sensor.deshumidificateur_cave_demarrage_recommande', 'on')
-           and is_state('binary_sensor.deshumidificateur_actif', 'off') }}
+    - condition: state
+      entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
+      state: "on"
+      for: "00:05:00"
+
+    - condition: state
+      entity_id: binary_sensor.deshumidificateur_actif
+      state: "off"
 
     - condition: state
       entity_id: timer.deshumidificateur_blocage_redemarrage

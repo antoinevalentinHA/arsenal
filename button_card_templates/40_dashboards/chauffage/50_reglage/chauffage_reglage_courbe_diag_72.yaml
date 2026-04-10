@@ -104,7 +104,7 @@ chauffage_reglage_courbe_diag_72:
            bothCold ? 'Trop froid' :
            'Cohérent');
 
-        return `${status} • Froid ${r(ef)}°C • Doux ${r(ed)}°C`;
+        return `${status} • ❄️ ${r(ef)}°C • 🌤️ ${r(ed)}°C`;
       }
 
       if (kind === 'froid') {

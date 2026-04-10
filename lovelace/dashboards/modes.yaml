@@ -26,14 +26,14 @@ views:
           # ==================================================
           # ⚙️ MODES MAISON & BABYSITTING
           # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Activation manuelle
+
           - type: grid
             square: false
-            columns: 1
+            columns: 2
             cards:
-
-              - type: custom:button-card
-                template: section_header
-                name: ⚙️ Modes
 
               - type: custom:button-card
                 template: carte_vacances_demande_manuelle

@@ -115,9 +115,9 @@ Si l'état n'est pas encore conforme :
 
 | Paramètre | Valeur V1 | Source |
 |---|---|---|
-| `timeout_seconds` | 30 | Fixé dans le registre du guard — non transmis par l'appelant |
+| `timeout_seconds` | 120 | Fixé dans le registre du guard — non transmis par l'appelant |
 
-> La fenêtre de 30 s est cohérente avec la réactivité observée de
+> La fenêtre de 120 s est cohérente avec la réactivité observée de
 > `binary_sensor.deshumidificateur_actif` (seuil 100 W, délai de mise en charge
 > variable selon l'état thermique de l'appareil).
 

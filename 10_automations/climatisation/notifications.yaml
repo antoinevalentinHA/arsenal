@@ -38,7 +38,7 @@
 
   trigger:
     - platform: state
-      entity_id: climate.clim
+      entity_id: sensor.clim_mode_local
 
     - platform: state
       entity_id: input_boolean.systeme_stable
@@ -47,7 +47,7 @@
   condition: []
 
   variables:
-    clim_mode: "{{ states('climate.clim') }}"
+    clim_mode: "{{ states('sensor.clim_mode_local') }}"
 
   action:
     - choose:

@@ -1,0 +1,93 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Vacances – Application du contexte global
+#
+#  ID : 1009000000006
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d’APPLICATION DU CONTEXTE GLOBAL.
+#
+#     Elle applique les mesures transverses associees aux
+#     vacances lorsque celles-ci sont effectivement actives,
+#     ou lors d’une reconciliation au demarrage.
+#
+#     Elle consomme la verite metier finale du domaine
+#     Vacances et applique un contexte global coherent,
+#     sans jamais fabriquer elle-meme cette verite.
+#
+#  🧱 NATURE
+#
+#     - Orchestration de contexte global
+#     - Application de regles transverses
+#     - Consommation d’un etat metier deja calcule
+#     - Aucune logique decisionnelle autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Declenchement sur activation de
+#       `binary_sensor.vacances_actives`
+#       ou au demarrage si cet etat est deja vrai
+#     - Disqualification de la notification persistante
+#       de projection devenue redondante
+#     - Application sequentielle des mesures de contexte
+#     - Creation d’une notification persistante d’etat
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne decide pas si les vacances sont actives
+#     - Ne depend pas de `input_select.mode_maison`
+#       comme source de verite
+#     - Ne pilote pas la decision thermique centrale
+#     - Ne gere pas la sortie du mode Vacances
+#     - Ne remplace aucun moteur metier specialise
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+- id: "1009000000006"
+  alias: "Modes - Vacances - Application"
+  description: >
+    Applique les actions de contexte global liees aux vacances
+    lorsque celles-ci sont effectivement actives.
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.vacances_actives
+      to: "on"
+
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.vacances_actives
+      state: "on"
+
+  action:
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: projection_vacances
+
+    - action: input_boolean.turn_on
+      target:
+        entity_id:
+          - input_boolean.ecs_blocage_planifiee
+
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.mode_vaisselle
+          - input_boolean.ecs_desinfection_active
+          - input_boolean.bouclage_visiteur
+
+    - action: persistent_notification.create
+      data:
+        notification_id: contexte_vacances
+        title: "✈️ Vacances – Contexte actif"
+        message: >
+          Le mode Vacances est actif.

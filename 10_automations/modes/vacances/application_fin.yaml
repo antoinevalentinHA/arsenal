@@ -1,0 +1,69 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Vacances – Fin d’application du contexte global
+#
+#  ID : 10090000000013
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de FIN D’APPLICATION DU CONTEXTE GLOBAL.
+#
+#     Elle disqualifie la notification persistante associee
+#     au contexte Vacances effectif lorsque les vacances
+#     ne sont plus effectivement actives.
+#
+#     Elle garantit qu’aucune notification persistante
+#     d’effectivite ne subsiste alors que l’etat est faux.
+#
+#  🧱 NATURE
+#
+#     - Fin d’application de contexte global
+#     - Consommation d’un etat metier deja calcule
+#     - Aucune logique decisionnelle autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Declenchement sur desactivation de
+#       `binary_sensor.vacances_actives`
+#       ou au demarrage si cet etat est deja faux
+#     - Disqualification de la notification persistante
+#       associee au contexte Vacances effectif
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne decide pas si les vacances sont actives
+#     - Ne modifie pas `input_select.mode_maison`
+#     - Ne pilote pas les decisions metier specialisees
+#     - Ne remplace pas les automations de projection
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10090000000013"
+  alias: "Modes - Vacances - Fin application"
+  description: >
+    Disqualifie la notification persistante du contexte
+    Vacances effectif lorsque les vacances ne sont plus
+    actives.
+
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.vacances_actives
+      to: "off"
+
+    - platform: homeassistant
+      event: start
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.vacances_actives
+      state: "off"
+
+  action:
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: contexte_vacances

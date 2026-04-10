@@ -209,8 +209,8 @@ views:
               - type: custom:button-card
                 template: prise_template
                 entity: switch.prise_sdb_enfants
-                name: Veilleuse Arnaud
-                icon: mdi:flashlight
+                name: SDB Enfants
+                icon: mdi:access-point
                 tap_action:
                   action: toggle
                   confirmation:

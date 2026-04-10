@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Déshumidificateur - Retry automatique sur non confirmation OFF
+#
+# ID : 10060000000009
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Déclencher une unique réémission automatique de la
+#   commande OFF si le guard post-commande conclut à une
+#   non-convergence observable.
+#
+# 🧩 PERIMETRE
+#   - surveille le verdict du guard
+#   - agit uniquement sur :
+#       * verdict = not_confirmed
+#       * etat attendu = off
+#       * etat reel encore on
+#   - déclenche une seule réémission automatique
+#
+# 🔗 DEPENDANCES
+#   - input_text.deshum_guard_last_verdict
+#   - input_text.deshum_guard_last_reason
+#   - input_text.deshum_guard_last_expected_state
+#   - input_text.deshum_guard_last_request_source
+#   - binary_sensor.deshumidificateur_actif
+#   - script.set_deshumidificateur_state
+#
+# 🚫 NE FAIT PAS
+#   - ne qualifie pas l'effet reel
+#   - ne remplace pas le guard
+#   - ne boucle pas sur ses propres retries
+#   - ne prend aucune decision metier de seuil ou de cycle
+#
+# 🧠 STATUT ARCHITECTURAL
+#   Automation d'invariant defensif.
+#   La reemission reste explicite et exterieure au guard.
+# ==========================================================
+
+- id: "10060000000009"
+  alias: "Déshumidificateur - Retry OFF"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_text.deshum_guard_last_verdict
+      to: "not_confirmed"
+
+  condition:
+    - condition: state
+      entity_id: input_text.deshum_guard_last_expected_state
+      state: "off"
+
+    - condition: state
+      entity_id: binary_sensor.deshumidificateur_actif
+      state: "on"
+
+    - condition: state
+      entity_id: input_text.deshum_guard_last_reason
+      state: "timeout_reached"
+
+    - condition: template
+      value_template: >
+        {{ states('input_text.deshum_guard_last_request_source')
+           != 'automation.deshumidificateur_retry_non_confirmation_off' }}
+
+  action:
+    - action: script.set_deshumidificateur_state
+      data:
+        target_state: "off"
+        request_source: "automation.deshumidificateur_retry_non_confirmation_off"
+        request_id: >
+          retry_off_{{ now().strftime('%Y%m%dT%H%M%S') }}

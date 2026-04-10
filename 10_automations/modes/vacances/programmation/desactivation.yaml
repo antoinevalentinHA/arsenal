@@ -3,14 +3,52 @@
 #     Vacances – Fin de projection auto
 #
 #  ID : 1009000000005
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de FIN DE PROJECTION DU CONTEXTE GLOBAL.
+#
+#     Elle repasse la projection globale en mode Normal
+#     lorsque la demande consolidee Vacances devient fausse
+#     alors que la maison est encore projetee en mode Vacances.
+#
+#     Elle disqualifie egalement la notification persistante
+#     de projection associee.
+#
+#  🧱 NATURE
+#
+#     - Fin de projection de contexte global
+#     - Consommation d’un etat metier deja calcule
+#     - Aucune logique decisionnelle autonome
+#
+#  ⚙️ PRINCIPE
+#
+#     - Declenchement sur desactivation de
+#       `binary_sensor.vacances_demandees`
+#       ou au demarrage si la demande est deja fausse
+#     - Retour de `input_select.mode_maison` a `Normal`
+#       si la projection est encore sur `Vacances`
+#     - Disqualification de la notification persistante
+#       de projection
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne decide pas si les vacances sont actives
+#     - Ne depend pas de la presence comme source de verite
+#     - Ne gere pas l’application effective du contexte
+#     - Ne remplace pas `binary_sensor.vacances_actives`
+#
+#  ✅ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
 # ==========================================================
 
 - id: "1009000000005"
   alias: "Modes - Vacances - Fin projection auto"
   description: >
-    Repasse en mode *Normal* lorsque la demande consolidée
+    Repasse en mode Normal lorsque la demande consolidee
     Vacances devient fausse alors que la maison est encore
-    projetée en mode *Vacances*.
+    projetee en mode Vacances.
 
   mode: restart
 

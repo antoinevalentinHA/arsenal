@@ -87,7 +87,7 @@
           {% if min == 999 or max == 999 %}
             unknown
           {% else %}
-            {{ "%.1f"|format(min)|replace('.',',') }} / {{ "%.1f"|format(max)|replace('.',',') }} °C
+            {{ "%.1f"|format(min)|replace('.',',') }}° · {{ "%.1f"|format(max)|replace('.',',') }}°
           {% endif %}
         {% endif %}
 

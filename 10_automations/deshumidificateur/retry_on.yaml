@@ -37,7 +37,7 @@
 # ==========================================================
 
 - id: "10060000000005"
-  alias: "Déshumidificateur - Retry automatique sur non confirmation"
+  alias: "Déshumidificateur - Retry ON"
   mode: single
 
   trigger:

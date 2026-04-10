@@ -8,23 +8,25 @@
 # ==========================================================
 #
 # 🎯 RÔLE
-#   Afficher le mode maison courant et donner accès au
-#   dashboard des modes, avec une lecture visuelle simple
-#   entre état nominal et état dégradé.
+#   Afficher le mode maison courant (Normal / Vacances)
+#   à partir de la référence canonique, avec navigation
+#   vers le dashboard des modes.
+
 #
 # 📡 SOURCE
 #   - entity.state
 #
 # ⚙️ LOGIQUE UI
-#   - Lit le mode maison porté par l'entité
-#   - Applique une lecture binaire du mode :
-#       - normal → état nominal
-#       - tout autre état → état dégradé
+#   - Lit la référence canonique des vacances
+#   - Traduit l'état binaire en libellé utilisateur :
+#       - off → Normal
+#       - on  → Vacances
 #   - Code visuel :
-#       - normal → vert
-#       - autre → rouge
+#       - Normal   → vert
+#       - Vacances → rouge
 #   - Navigation vers le dashboard des modes sur appui
 #   - Aucune action d'écriture
+#   - Aucun comportement de type toggle
 #   - Aucun calcul de décision
 #
 # ----------------------------------------------------------
@@ -32,23 +34,29 @@
 #   SATELLITE et PIVOT sont mutuellement exclusifs
 # ----------------------------------------------------------
 #
-# 🔗 SATELLITE DE : socle_toggle
+# 🔗 SATELLITE DE : socle_status
 #
 # ==========================================================
 
 carte_mode_maison:
-  template: socle_toggle
+  template: socle_status
 
   tap_action:
     action: navigate
     navigation_path: /modes-dashboard/home
 
+  state_display: |
+    [[[
+      const vacances = entity?.state === 'on';
+      return vacances ? 'Vacances' : 'Normal';
+    ]]]
+
   styles:
     card:
       - background-color: |
           [[[
-            const mode = (entity?.state || '').toLowerCase();
-            return mode === 'normal'
-              ? 'rgba(76, 175, 80, 0.2)'
-              : 'rgba(244, 67, 54, 0.2)';
+            const vacances = entity?.state === 'on';
+            return vacances
+              ? 'rgba(244, 67, 54, 0.2)'
+              : 'rgba(76, 175, 80, 0.2)';
           ]]]

@@ -143,16 +143,24 @@ La stabilité est portée exclusivement par les critères locaux.
 Cette recommandation est :
 - observable
 - sans action directe
+- sans obligation d'exécution à elle seule
+
+La recommandation constitue une **condition nécessaire mais non suffisante** à
+l'activation réelle. Son application peut être conditionnée par des contraintes de
+discipline temporelle et de réarmement physique portées par la couche de discipline
+d'activation.
 
 ---
 
 ## Artefacts de gouvernance temporelle
 
-Cette section définit les deux artefacts portant la gouvernance temporelle du cycle
+Cette section définit les artefacts portant la gouvernance temporelle du cycle
 de déshumidification de façon explicite, sans recours à l'historique implicite de
 Home Assistant.
 
-### Helper de durée minimale de cycle
+### Axe extinction — durée minimale de cycle
+
+#### Helper de durée minimale de cycle
 
 - **Statut Arsenal** : `parameter`
 - **Rôle** : définir la durée minimale qu'un cycle d'activation doit respecter avant
@@ -166,7 +174,7 @@ Ce helper est la seule source contractuelle de la durée minimale de cycle. Tout
 formulation reposant sur une durée codée en dur dans une automatisation ou inférée
 via `last_changed` est proscrite.
 
-### Timer de cycle minimal
+#### Timer de cycle minimal — `timer.deshumidificateur_cycle`
 
 - **Statut Arsenal** : `context`
 - **Rôle** : représenter la fenêtre minimale de fonctionnement d'un cycle réel en cours
@@ -180,7 +188,8 @@ via `last_changed` est proscrite.
 - **Unicité** : un seul timer de cycle minimal peut être actif à un instant donné.
   Toute tentative de redémarrage du timer alors qu'il est déjà actif est interdite
   et doit être ignorée
-- **Expiration** : signale que la fenêtre minimale est échue — la condition
+- **Passage à `idle`** : le passage du timer à l'état `idle` après échéance de la
+  contrainte temporelle signale que la fenêtre minimale est échue — la condition
   d'autorisation d'extinction est satisfaite sur cet axe
 - **Continuité au redémarrage** : la persistance du timer à travers un redémarrage
   Home Assistant est souhaitable et doit être assurée si le mécanisme le permet ;
@@ -193,8 +202,45 @@ fenêtre minimale de cycle et la durée réelle de fonctionnement en cas de
 désynchronisation événementielle (redémarrage, latence, perte d'événement). Cette
 limitation est assumée contractuellement.
 
-Ces deux artefacts sont complémentaires et indissociables. Le helper fixe la
-politique ; le timer l'applique dans le temps réel du système.
+### Axe redémarrage — gel post-arrêt
+
+#### Helper de délai minimal de redémarrage
+
+- **Statut Arsenal** : `parameter`
+- **Entité** : `input_number.deshumidificateur_delai_min_redemarrage`
+- **Rôle** : définir la durée minimale d'attente imposée après un arrêt réel avant
+  qu'un redémarrage automatique soit autorisé
+- **Nature** : valeur réglable, exprimée en minutes
+- **Portée** : politique d'usage — non invariante, ajustable sans modifier le contrat
+- **Autorité** : aucune — ce helper ne déclenche aucune action, n'observe aucun état,
+  ne porte aucune logique
+
+#### Timer de blocage redémarrage — `timer.deshumidificateur_blocage_redemarrage`
+
+- **Statut Arsenal** : `context`
+- **Rôle** : représenter la fenêtre de gel interdisant tout redémarrage automatique
+  immédiatement après un arrêt réel
+- **Déclenchement** : démarré par une automatisation dédiée sur transition
+  `binary_sensor.deshumidificateur_actif` de `on` vers `off`, avec une durée égale
+  à la valeur courante du helper de délai minimal de redémarrage
+- **Passage à `idle`** : le passage du timer à l'état `idle` après échéance de la
+  contrainte temporelle signale que la fenêtre de gel est échue — la contrainte
+  temporelle de redémarrage est levée sur cet axe
+- **Continuité au redémarrage** : même politique que le timer de cycle minimal
+- **Autorité** : aucune — ce timer ne déclenche aucune action directe ; il est
+  consulté comme condition par la discipline d'activation différée
+
+### Relation entre les deux timers
+
+Ces deux timers sont indépendants, successifs dans le temps, et non substituables :
+
+- `timer.deshumidificateur_cycle` protège la **sortie** d'un cycle actif ;
+  il est actif pendant le fonctionnement de l'appareil
+- `timer.deshumidificateur_blocage_redemarrage` protège la **réentrée** dans un
+  nouveau cycle ; il est actif après l'arrêt de l'appareil
+
+Aucun ne peut être substitué à l'autre. Leur rôle, leur déclencheur et leur portée
+sont distincts.
 
 ---
 
@@ -206,35 +252,72 @@ périodique.
 
 ### Activation différée
 
-- Déclencheur : recommandation passe ON et reste stable ≥ 5 minutes
-- Condition : appareil actuellement OFF
-- Action : activation via `script.set_deshumidificateur_state`
-- Effet de bord contractuel : démarrage du timer de cycle minimal à la confirmation
-  stable de l'activation réelle par `binary_sensor.deshumidificateur_actif`
+- **Déclencheurs** (l'un ou l'autre) :
+  - recommandation passe ON et reste stable ≥ 5 minutes
+  - passage de `timer.deshumidificateur_blocage_redemarrage` à l'état `idle` après
+    échéance (libération temporelle : réévaluation des conditions lorsqu'elles étaient
+    précédemment satisfaites mais bloquées par le timer de gel)
+- **Conditions cumulatives** :
+  - recommandation ON présente et stable
+  - appareil actuellement OFF
+  - timer de blocage redémarrage à l'état `idle`
+  - en cas de redémarrage après arrêt réel : réarmement physique satisfait
+    (voir section **Réarmement du redémarrage** ci-dessous)
+- **Action** : activation via `script.set_deshumidificateur_state`
+- **Effet de bord contractuel** : démarrage de `timer.deshumidificateur_cycle` à la
+  confirmation stable de l'activation réelle par `binary_sensor.deshumidificateur_actif`
+
+Le trigger sur passage à `idle` du timer ne remplace pas la recommandation. Il
+provoque uniquement une réévaluation des conditions à un instant où le blocage
+temporel vient d'être levé. La recommandation ON doit être présente et stable pour
+que l'activation soit autorisée.
+
+### Réarmement du redémarrage
+
+Après un arrêt réel, une recommandation persistante ne suffit pas à autoriser un
+redémarrage automatique.
+
+Un réarmement physique est exigé avant toute nouvelle activation dans ce contexte.
+Cette contrainte est portée par la couche de discipline d'activation. Elle ne modifie
+pas la sémantique des critères locaux ni celle de la recommandation.
+
+Dans l'implémentation actuelle, le réarmement est satisfait uniquement si :
+
+- `sensor.humidite_relative_cave <= input_number.cave_rh_cible_off`
+
+Cette condition est évaluée au moment de l'application de la recommandation, pas au
+moment où celle-ci est devenue ON.
 
 ### Extinction différée
 
-- Déclencheur : recommandation passe OFF et reste stable ≥ 5 minutes
-- Conditions cumulatives :
+- **Déclencheurs** (l'un ou l'autre) :
+  - recommandation passe OFF et reste stable ≥ 5 minutes
+  - passage de `timer.deshumidificateur_cycle` à l'état `idle` après échéance
+    (libération temporelle : réévaluation des conditions lorsqu'elles étaient
+    précédemment satisfaites mais bloquées par la fenêtre minimale de cycle)
+- **Conditions cumulatives** :
   - appareil réellement actif (`binary_sensor.deshumidificateur_actif == on`)
-  - fenêtre minimale de cycle échue (timer de cycle minimal à l'état `idle`)
-- Action : extinction via `script.set_deshumidificateur_state`
+  - fenêtre minimale de cycle échue (`timer.deshumidificateur_cycle` à l'état `idle`)
+- **Action** : extinction via `script.set_deshumidificateur_state`
 
-La durée minimale de cycle n'est jamais inférée à partir de `last_changed` ni
-d'aucun attribut d'historique Home Assistant. Elle est portée exclusivement par le
-timer dédié décrit à la section **Artefacts de gouvernance temporelle**. Toute
-formulation contractuelle reposant sur une approximation temporelle implicite est
-nulle.
+Le trigger sur passage à `idle` du timer ne remplace pas la recommandation. Il
+provoque uniquement une réévaluation des conditions à un instant où le blocage
+temporel vient d'être levé. La recommandation OFF doit être présente et stable pour
+que l'extinction soit autorisée.
+
+Aucune durée n'est jamais inférée depuis `last_changed` ni depuis aucun attribut
+d'historique Home Assistant. Toute contrainte temporelle est portée exclusivement par
+les timers dédiés décrits à la section **Artefacts de gouvernance temporelle**.
 
 ### Comportement au redémarrage
 
 Aucune action n'est rejouée automatiquement au redémarrage de Home Assistant.
 
-La continuité temporelle de la fenêtre minimale de cycle doit être préservée si le
-mécanisme de timer le permet. La restauration d'un timer en cours ne constitue pas
-une réémission d'action et ne déclenche aucune commande matérielle. En l'absence de
-continuité restaurable, le timer est considéré comme non démarré : la fenêtre
-minimale repart à zéro à la prochaine activation réelle stable confirmée.
+La continuité temporelle des timers doit être préservée si le mécanisme le permet.
+La restauration d'un timer en cours ne constitue pas une réémission d'action et ne
+déclenche aucune commande matérielle. En l'absence de continuité restaurable, le
+timer est considéré comme non démarré : la fenêtre correspondante repart à zéro à
+l'événement déclencheur suivant.
 
 Ces règles sont :
 - des politiques d'usage
@@ -337,8 +420,14 @@ Ce script :
 - compare état réel et état cible
 - agit uniquement en cas de divergence
 - valide systématiquement par capteur
-- tente au maximum deux corrections
 - signale explicitement l'échec et interrompt la séquence
+
+Le système tente au maximum deux corrections :
+
+- une tentative initiale via le script d'exécution
+- une tentative supplémentaire via une couche de retry externe
+
+Ces deux tentatives sont distinctes et portées par des composants différents.
 
 Aucun autre composant n'est autorisé à agir sur le bouton physique.
 
@@ -377,8 +466,12 @@ ni ne masque une incohérence.
 - qualifier une anomalie sans tentative d'extinction préalable
 - démarrer le timer de cycle minimal sur une activation transitoire ou instable
 - relancer le timer de cycle minimal alors qu'il est déjà actif
-- inférer une durée de fonctionnement depuis `last_changed` ou tout attribut
-  d'historique Home Assistant
+- démarrer le timer de blocage redémarrage sur un arrêt non confirmé par
+  `binary_sensor.deshumidificateur_actif`
+- activer le déshumidificateur en cas de redémarrage après arrêt réel sans satisfaire
+  la condition de réarmement physique
+- inférer une durée de fonctionnement ou d'attente depuis `last_changed` ou tout
+  attribut d'historique Home Assistant
 
 ---
 
@@ -388,6 +481,7 @@ Ce contrat garantit :
 
 - stabilité du comportement
 - absence d'oscillation
+- absence de redémarrage immédiat après arrêt réel
 - correction défensive explicite et séquentielle
 - lisibilité complète du système
 - architecture refaisable from scratch
@@ -401,7 +495,7 @@ Ce contrat garantit :
 
 - Contrat actif
 - Version : Arsenal v12 — révision GUARD + refactoring recommandation + gouvernance
-  temporelle explicite
+  temporelle explicite + timer blocage redémarrage + discipline de réarmement
 
 Toute modification doit être :
 

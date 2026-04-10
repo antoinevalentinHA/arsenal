@@ -104,7 +104,7 @@ set_deshumidificateur_state:
             - wait_template: >
                 {{ states('input_text.deshum_guard_last_ts') != guard_last_ts_before }}
               timeout:
-                seconds: 35
+                seconds: 125
               continue_on_timeout: true
 
             - variables:
@@ -141,7 +141,7 @@ set_deshumidificateur_state:
         - wait_template: >
             {{ states('input_text.deshum_guard_last_ts') != guard_last_ts_before }}
           timeout:
-            seconds: 35
+            seconds: 125
           continue_on_timeout: true
 
         - variables:

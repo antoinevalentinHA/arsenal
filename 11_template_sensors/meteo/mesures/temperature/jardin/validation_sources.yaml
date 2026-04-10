@@ -22,7 +22,7 @@
 # 🕒 TTL PAR SOURCE
 #   - jardin_1 : 15 min
 #   - jardin_2 : 15 min
-#   - jardin_3 : 10 min
+#   - jardin_3 : 15 min
 #
 # 🛡️ GARANTIES
 #   - fraîcheur évaluée sur la source brute, jamais sur le sensor validé
@@ -101,13 +101,13 @@
           {{ false }}
         {% else %}
           {% set age = as_timestamp(now()) - as_timestamp(obj.last_updated) %}
-          {{ -10 <= brut <= 50 and age <= 600 }}
+          {{ -10 <= brut <= 50 and age <= 900 }}
         {% endif %}
       state: >
         {{ states('sensor.temperature_jardin_3') | float | round(1) }}
       attributes:
         source_brute: "sensor.temperature_jardin_3"
-        ttl_validation_s: 600
+        ttl_validation_s: 900
         age_source_s: >
           {% set obj = states.sensor.temperature_jardin_3 %}
           {% if obj is none %}
