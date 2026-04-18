@@ -1,16 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Éclairage
-
 views:
-  - title: Éclairage
-    path: eclairage
-    icon: mdi:lamp
-
-    # ======================================================
-    # 🔔 BADGES — Accès rapides & navigation globale
-    # ======================================================
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

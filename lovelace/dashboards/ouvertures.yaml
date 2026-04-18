@@ -1,17 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Ouvertures
-icon: mdi:lock
-
 views:
-  ####################################
-  # 🚪 PORTES ET FENÊTRES
-  ####################################
-  - title: Ouvertures
-    path: ouvertures
-    icon: mdi:lock
-
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

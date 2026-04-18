@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER
+#     Simulation presence — Activation en mode vacances
+#
+# 🗂️ COUCHE : parametre (intention utilisateur)
+# 🧱 TYPE : input_boolean
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 ROLE
+#   Autoriser explicitement l'activation de la simulation de
+#   presence lorsque le mode maison est "Vacances".
+#
+#   Ce helper ne declenche aucune action directe.
+#   Il participe uniquement a la construction de la verite
+#   metier d'autorisation.
+#
+# ⚙️ UTILISATION
+#   - ON  : la simulation de presence est autorisee en mode Vacances
+#   - OFF : la simulation de presence reste desactivee meme en Vacances
+#
+# 🔗 DEPENDANCES
+#   - binary_sensor.vacances_actives
+#   - input_boolean.test_simulation_presence
+#   - binary_sensor.simulation_presence_autorisee (cible)
+#
+# 🚫 INTERDIT
+#   - Aucun pilotage direct d'equipement
+#   - Aucune logique temporelle
+#   - Aucune decision implicite
+#
+# ==========================================================
+
+activation_simulation_presence_vacances:
+  name: Simulation presence (vacances)
+  icon: mdi:home-account

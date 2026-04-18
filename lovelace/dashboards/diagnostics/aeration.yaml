@@ -1,20 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Diagnostics Aération
-icon: mdi:window-open-variant
-
 views:
-  ####################################
-  # 🪟 DIAGNOSTICS AÉRATION
-  ####################################
-  - title: Diagnostics Aération
-    path: diagnostics-aeration
-    icon: mdi:window-open-variant
-
-    # ==========================================================
-    # 🧭 BADGES — Navigation & retour contextuel
-    # ==========================================================
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

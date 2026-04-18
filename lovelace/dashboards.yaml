@@ -1,13 +1,13 @@
 arsenal-dashboard:
   mode: yaml
-  title: Arsenal
+  title: Accueil
   icon: mdi:view-dashboard
   show_in_sidebar: true
   filename: lovelace/dashboards/arsenal.yaml
 
 navigation-dashboard:
   mode: yaml
-  title: Navigation
+  title: Menu
   icon: mdi:compass
   show_in_sidebar: false
   filename: lovelace/dashboards/navigation.yaml
@@ -35,7 +35,7 @@ chauffage-dashboard:
 
 clim-dashboard:
   mode: yaml
-  title: Clim
+  title: Climatisation
   icon: mdi:snowflake
   show_in_sidebar: false
   filename: lovelace/dashboards/clim.yaml
@@ -140,56 +140,56 @@ imprimerie-dashboard:
 
 meteo-temperature-dashboard:
   mode: yaml
-  title: Météo Température
+  title: Température
   icon: mdi:thermometer
   show_in_sidebar: false
   filename: lovelace/dashboards/meteo/meteo_temperature.yaml
 
 meteo-humidite-relative-dashboard:
   mode: yaml
-  title: Météo Humidité Relative
+  title: Humidité relative
   icon: mdi:water-percent
   show_in_sidebar: false
   filename: lovelace/dashboards/meteo/meteo_humidite_relative.yaml
 
 meteo-humidite-absolue-dashboard:
   mode: yaml
-  title: Météo Humidité Absolue
+  title: Humidité absolue
   icon: mdi:water
   show_in_sidebar: false
   filename: lovelace/dashboards/meteo/meteo_humidite_absolue.yaml
 
 meteo-humidex-dashboard:
   mode: yaml
-  title: Météo Humidex
+  title: Humidex
   icon: mdi:thermometer-water
   show_in_sidebar: false
   filename: lovelace/dashboards/meteo/meteo_humidex.yaml
 
 meteo-bruit-dashboard:
   mode: yaml
-  title: Météo Bruit
+  title: Bruit
   icon: mdi:volume-medium
   show_in_sidebar: false
   filename: lovelace/dashboards/meteo/meteo_bruit.yaml
 
 meteo-co2-dashboard:
   mode: yaml
-  title: Météo CO₂
+  title: CO₂
   icon: mdi:molecule-co2
   show_in_sidebar: false
   filename: lovelace/dashboards/meteo/meteo_co2.yaml
 
 meteo-precipitations-dashboard:
   mode: yaml
-  title: Météo Précipitations
+  title: Précipitations
   icon: mdi:weather-pouring
   show_in_sidebar: false
   filename: lovelace/dashboards/meteo/meteo_precipitations.yaml
 
 meteo-pression-dashboard:
   mode: yaml
-  title: Météo Pression
+  title: Pression
   icon: mdi:gauge
   show_in_sidebar: false
   filename: lovelace/dashboards/meteo/meteo_pression.yaml
@@ -203,7 +203,7 @@ meteo-publique-dashboard:
 
 meteo-min-max-temperature-dashboard:
   mode: yaml
-  title: Températures Min Max
+  title: Températures Min · Max
   icon: mdi:chart-line
   show_in_sidebar: false
   filename: lovelace/dashboards/meteo/meteo_temperature_min_max.yaml
@@ -217,42 +217,42 @@ meteo-backups-dashboard:
 
 audi-batterie-dashboard:
   mode: yaml
-  title: Audi Batterie
+  title: Batterie
   icon: mdi:car-battery
   show_in_sidebar: false
   filename: lovelace/dashboards/voiture/audi_batterie.yaml
 
 audi-securite-dashboard:
   mode: yaml
-  title: Audi Sécurité
+  title: Sécurité
   icon: mdi:lock
   show_in_sidebar: false
   filename: lovelace/dashboards/voiture/audi_securite.yaml
 
 imprimerie-bruit-dashboard:
   mode: yaml
-  title: Imprimerie Bruit
+  title: Bruit
   icon: mdi:volume-high
   show_in_sidebar: false
   filename: lovelace/dashboards/imprimerie/imprimerie_bruit.yaml
 
 imprimerie-meteo-dashboard:
   mode: yaml
-  title: Imprimerie Météo
+  title: Météo
   icon: mdi:factory
   show_in_sidebar: false
   filename: lovelace/dashboards/imprimerie/imprimerie_meteo.yaml
 
 imprimerie-stockage-dashboard:
   mode: yaml
-  title: Imprimerie Stockage
+  title: Stockage
   icon: mdi:archive
   show_in_sidebar: false
   filename: lovelace/dashboards/imprimerie/imprimerie_stockage.yaml
 
 imprimerie-atelier-dashboard:
   mode: yaml
-  title: Imprimerie Atelier
+  title: Atelier
   icon: mdi:factory
   show_in_sidebar: false
   filename: lovelace/dashboards/imprimerie/imprimerie_atelier.yaml
@@ -266,35 +266,35 @@ id-automatisations-dashboard:
 
 reglages-maison-dashboard:
   mode: yaml
-  title: Réglages Maison
+  title: Modes
   icon: mdi:home-variant
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/modes.yaml
 
 reglages-alarme-dashboard:
   mode: yaml
-  title: Réglages Alarme
+  title: Alarme
   icon: mdi:shield-home
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/alarme.yaml
 
 reglages-climatisation-dashboard:
   mode: yaml
-  title: Réglages Climatisation
+  title: Climatisation
   icon: mdi:snowflake
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/climatisation.yaml
 
 reglages-chauffage-dashboard:
   mode: yaml
-  title: Réglages Chauffage
+  title: Chauffage
   icon: mdi:fire
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/chauffage.yaml
 
 reglages-ecs-dashboard:
   mode: yaml
-  title: Réglages ECS
+  title: ECS
   icon: mdi:water-pump
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/ecs.yaml
@@ -308,98 +308,98 @@ reglages-ecs-planning-dashboard:
 
 reglages-ouvertures-dashboard:
   mode: yaml
-  title: "Réglages Ouvertures"
+  title: Ouvertures
   icon: mdi:door-open
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/ouvertures.yaml
 
 reglages-aeration-dashboard:
   mode: yaml
-  title: Réglages Aération
+  title: Aération
   icon: mdi:window-open-variant
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/aeration.yaml
 
 reglages-meteo-dashboard:
   mode: yaml
-  title: Réglages Météo
+  title: Calibration
   icon: mdi:weather-cloudy-clock
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/meteo.yaml
 
 reglages-deshumidificateur-dashboard:
   mode: yaml
-  title: Réglages Déshumidificateur
+  title: Déshumidificateur
   icon: mdi:air-filter
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/deshumidificateur.yaml
 
 reglages-vmc-dashboard:
   mode: yaml
-  title: Réglages VMC
+  title: VMC
   icon: mdi:fan
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/vmc.yaml
 
 reglages-eclairage-dashboard:
   mode: yaml
-  title: Réglages Éclairage
+  title: Éclairage
   icon: mdi:lightbulb
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/eclairage.yaml
 
 reglages-volets-dashboard:
   mode: yaml
-  title: Réglages Volets
+  title: Volets
   icon: mdi:window-shutter
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/volets.yaml
 
 reglages-sommeil-dashboard:
   mode: yaml
-  title: Réglages Sommeil
+  title: Sommeil
   icon: mdi:sleep
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/sommeil.yaml
 
 reglages-telephones-dashboard:
   mode: yaml
-  title: Réglages Téléphones
+  title: Téléphones
   icon: mdi:cellphone-cog
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/telephones.yaml
 
 diagnostics-alarme-dashboard:
   mode: yaml
-  title: Diagnostics Alarme
+  title: Alarme
   icon: mdi:shield-home
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/alarme.yaml
 
 diagnostics-climatisation-dashboard:
   mode: yaml
-  title: Diagnostics Climatisation
+  title: Climatisation
   icon: mdi:snowflake
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/climatisation.yaml
 
 diagnostics-boiler-dashboard:
   mode: yaml
-  title: Diagnostics Boiler
+  title: Boiler
   icon: mdi:fire
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/boiler.yaml
 
 diagnostics-chauffage-dashboard:
   mode: yaml
-  title: Diagnostics Chauffage
+  title: Chauffage
   icon: mdi:fire
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/chauffage.yaml
 
 diagnostics-vannes-dashboard:
   mode: yaml
-  title: Diagnostics Vannes
+  title: Vannes
   icon: mdi:radiator
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/vannes_thermo.yaml
@@ -413,84 +413,84 @@ diagnostics-thermiques-dashboard:
 
 diagnostics-ecs-dashboard:
   mode: yaml
-  title: Diagnostics ECS
+  title: ECS
   icon: mdi:water-pump
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/ecs.yaml
 
 diagnostics-aeration-dashboard:
   mode: yaml
-  title: Diagnostics Aération
+  title: Aération
   icon: mdi:window-open-variant
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/aeration.yaml
 
 diagnostics-eclairage-dashboard:
   mode: yaml
-  title: Diagnostics Éclairage
+  title: Simulation de présence
   icon: mdi:lightbulb
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/eclairage.yaml
 
 diagnostics-ouvertures-dashboard:
   mode: yaml
-  title: Diagnostics Ouvertures
+  title: Ouvertures
   icon: mdi:radar
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/ouvertures.yaml
 
 diagnostics-mouvements-dashboard:
   mode: yaml
-  title: Diagnostics Mouvements
+  title: Mouvements
   icon: mdi:radar
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/mouvements.yaml
 
 diagnostics-volets-dashboard:
   mode: yaml
-  title: Diagnostics Volets
+  title: Volets
   icon: mdi:weather-pouring
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/volets.yaml
 
 diagnostics-automatisations-dashboard:
   mode: yaml
-  title: Diagnostics Automatisations
+  title: Automatisations
   icon: mdi:toggle-switch-off
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/automatisations.yaml
 
 diagnostics-batteries-dashboard:
   mode: yaml
-  title: Diagnostics Batteries
+  title: Batteries
   icon: mdi:battery
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/batteries.yaml
 
 diagnostics-zigbee-dashboard:
   mode: yaml
-  title: Diagnostics Zigbee
+  title: Zigbee
   icon: mdi:zigbee
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/zigbee.yaml
 
 diagnostics-bluetooth-dashboard:
   mode: yaml
-  title: Diagnostics Bluetooth
+  title: Bluetooth
   icon: mdi:bluetooth
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/bluetooth.yaml
 
 diagnostics-netatmo-wifi-dashboard:
   mode: yaml
-  title: Diagnostics Netatmo Wi-Fi
+  title: Netatmo Wi-Fi
   icon: mdi:wifi
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/netatmo_wifi.yaml
 
 diagnostics-netatmo-dashboard:
   mode: yaml
-  title: Diagnostics Netatmo RF
+  title: Netatmo RF
   icon: mdi:signal
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/netatmo_rf.yaml

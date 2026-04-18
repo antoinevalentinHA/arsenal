@@ -1,11 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
-title: Précipitations
-views:
-  - title: Précipitations
-    path: precipitations
-    icon: mdi:server
 
-    badges: !include ../../includes/badges/base.yaml
+views:
+  - badges: !include ../../includes/badges/base.yaml
 
     # ======================================================
     # 🌧️ CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL

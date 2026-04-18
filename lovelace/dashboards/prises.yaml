@@ -1,17 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Prises
-icon: mdi:power-socket
-
 views:
-  ####################################
-  # ⚡️ PRISES CONNECTÉES – HOME
-  ####################################
-  - title: Prises
-    path: prises
-    icon: mdi:power-socket
-
-    badges: !include ../includes/badges/base.yaml
+  - badges: !include ../includes/badges/base.yaml
 
     ########################################################
     # 🧱 VERTICAL STACK PRINCIPAL

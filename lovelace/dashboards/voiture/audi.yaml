@@ -21,14 +21,9 @@
 # ✅ Compatible : Lovelace / button-card / HA 2024.8+
 # ==========================================================
 button_card_templates: !include_dir_merge_named /config/button_card_templates
-title: Audi A3 e-tron
 
 views:
-  - title: Audi A3 e-tron
-    path: audi_a3_e-tron
-    icon: mdi:server
-
-    badges: !include ../../includes/badges/base.yaml
+  - badges: !include ../../includes/badges/base.yaml
 
     # ==========================================================
     # 🧩 CONTENEUR PRINCIPAL

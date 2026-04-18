@@ -1,12 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Chauffage
 views:
-  - title: Chauffage
-    path: chauffage
-    icon: mdi:server
-
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

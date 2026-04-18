@@ -1,13 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Réglages Ouvertures
-icon: mdi:door-open
-
 views:
-  - title: Réglages Ouvertures
-    path: reglages_ouvertures
-    icon: mdi:door-open
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

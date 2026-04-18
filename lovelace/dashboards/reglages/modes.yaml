@@ -1,13 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Réglages Maison
-icon: mdi:home-variant
-
 views:
-  - title: Réglages Modes
-    path: maison
-    icon: mdi:home-variant
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

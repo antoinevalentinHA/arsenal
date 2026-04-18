@@ -1,40 +1,46 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Vacances – Fin d’application du contexte global
+#     Vacances – Fin application
 #
 #  ID : 10090000000013
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
-#     Automation de FIN D’APPLICATION DU CONTEXTE GLOBAL.
+#     Met fin au contexte Vacances lorsque celui-ci n’est
+#     plus actif de manière stable, ou lors d’une
+#     réconciliation au démarrage.
 #
-#     Elle disqualifie la notification persistante associee
-#     au contexte Vacances effectif lorsque les vacances
-#     ne sont plus effectivement actives.
-#
-#     Elle garantit qu’aucune notification persistante
-#     d’effectivite ne subsiste alors que l’etat est faux.
+#     Elle consomme la vérité métier finale du domaine
+#     Vacances et retire les effets de contexte associés,
+#     sans jamais fabriquer elle-même cette vérité.
 #
 #  🧱 NATURE
 #
 #     - Fin d’application de contexte global
-#     - Consommation d’un etat metier deja calcule
-#     - Aucune logique decisionnelle autonome
+#     - Retrait de mesures transverses
+#     - Consommation d’un état métier déjà calculé
+#     - Aucune logique décisionnelle autonome
 #
 #  ⚙️ PRINCIPE
 #
-#     - Declenchement sur desactivation de
-#       `binary_sensor.vacances_actives`
-#       ou au demarrage si cet etat est deja faux
+#     - Déclenchement sur `binary_sensor.vacances_actives`
+#       à `off` stable
+#       ou au démarrage si cet état est déjà faux
+#     - Temporisation courte au démarrage pour laisser
+#       les entités retrouver un état stable
+#     - Retrait de l’adaptation de consigne réduite
+#       chauffage via script dédié
 #     - Disqualification de la notification persistante
-#       associee au contexte Vacances effectif
+#       associée au contexte Vacances
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
-#     - Ne decide pas si les vacances sont actives
-#     - Ne modifie pas `input_select.mode_maison`
-#     - Ne pilote pas les decisions metier specialisees
-#     - Ne remplace pas les automations de projection
+#     - Ne décide pas si les vacances sont actives
+#     - Ne dépend pas de `input_select.mode_maison`
+#       comme source de vérité
+#     - Ne pilote pas la décision thermique centrale
+#     - Ne réagit pas aux états transitoires non stabilisés
+#     - Ne remplace aucun moteur métier spécialisé
 #
 #  ✅ COMPATIBILITÉ
 #
@@ -44,16 +50,18 @@
 - id: "10090000000013"
   alias: "Modes - Vacances - Fin application"
   description: >
-    Disqualifie la notification persistante du contexte
-    Vacances effectif lorsque les vacances ne sont plus
-    actives.
+    Met fin au contexte Vacances lorsque celui-ci n’est
+    plus effectivement actif, y compris en réconciliation
+    au démarrage.
 
-  mode: restart
+  mode: single
 
   trigger:
     - platform: state
       entity_id: binary_sensor.vacances_actives
       to: "off"
+      for:
+        minutes: 1
 
     - platform: homeassistant
       event: start
@@ -64,6 +72,14 @@
       state: "off"
 
   action:
+    - if:
+        - condition: template
+          value_template: "{{ trigger.platform == 'homeassistant' }}"
+      then:
+        - delay: "00:00:20"
+
+    - action: script.vacances_retirer_consigne_reduite
+
     - action: persistent_notification.dismiss
       data:
         notification_id: contexte_vacances

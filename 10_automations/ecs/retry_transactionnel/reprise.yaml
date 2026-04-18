@@ -29,7 +29,7 @@
 # ==========================================================
 
 - id: "10250000000029"
-  alias: "ECS — Reprise retry apres retour bridge"
+  alias: "ECS — Reprise retry après retour bridge"
   description: >
     Demarre le timer de retry ECS apres retour online du bridge.
   mode: single

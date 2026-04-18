@@ -1,0 +1,85 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Bouton Entree – Lumiere / Auto light
+#
+#  ID : 10140000000003
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Interface physique utilisateur.
+#
+#     - Appui simple  → pilotage direct lumiere
+#     - Appui long    → activation / desactivation
+#                       de l’allumage automatique
+#
+# ==========================================================
+
+- id: '10140000000003'
+  alias: Boutons - Entrée - Lumière
+  mode: queued
+
+  trigger:
+    # 🖱️ Appui simple
+    - id: single
+      platform: mqtt
+      topic: zigbee2mqtt/bouton_entree
+      value_template: "{{ value_json.get('action', '') }}"
+      payload: "single"
+
+    # ⏱️ Appui long
+    - id: hold
+      platform: mqtt
+      topic: zigbee2mqtt/bouton_entree
+      value_template: "{{ value_json.get('action', '') }}"
+      payload: "hold"
+
+    # ✋ Relâchement
+    - id: release
+      platform: mqtt
+      topic: zigbee2mqtt/bouton_entree
+      value_template: "{{ value_json.get('action', '') }}"
+      payload: "release"
+
+  action:
+    - choose:
+
+        # ==================================================
+        #  Appui simple → Toggle lumiere
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: single
+          sequence:
+            - service: switch.toggle
+              target:
+                entity_id: switch.lumiere_entree
+
+        # ==================================================
+        #  Début appui long → mémorisation
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: hold
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.memo_hold_bouton_entree
+
+        # ==================================================
+        #  Fin appui long → Toggle auto light
+        # ==================================================
+        - conditions:
+            - condition: trigger
+              id: release
+          sequence:
+            - condition: state
+              entity_id: input_boolean.memo_hold_bouton_entree
+              state: 'on'
+
+            - service: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.memo_hold_bouton_entree
+
+            - service: input_boolean.toggle
+              target:
+                entity_id: input_boolean.entree_auto_light

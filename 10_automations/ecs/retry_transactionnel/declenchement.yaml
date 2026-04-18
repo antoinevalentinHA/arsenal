@@ -30,7 +30,7 @@
 # ==========================================================
 
 - id: "10250000000030"
-  alias: "ECS — Declenchement retry transactionnel"
+  alias: "ECS — Déclenchement retry transactionnel"
   description: >
     Declenche la tentative 2 ECS a l'expiration du timer.
   mode: single

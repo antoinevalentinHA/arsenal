@@ -1,13 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Réglages Alarme
-icon: mdi:shield-home
-
 views:
-  - title: Réglages Alarme
-    path: alarme
-    icon: mdi:shield-home
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

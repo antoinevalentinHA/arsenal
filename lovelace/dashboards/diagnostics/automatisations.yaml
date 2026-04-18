@@ -1,20 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Diagnostics Automatisations
-icon: mdi:toggle-switch-off
-
 views:
-  ####################################
-  # ⚙️ DIAGNOSTICS AUTOMATISATIONS
-  ####################################
-  - title: Automatisations OFF
-    path: diagnostics-automatisations
-    icon: mdi:toggle-switch-off
-
-    # ==========================================================
-    # 🧭 BADGES — Navigation
-    # ==========================================================
-    badges: !include ../../includes/badges/diagnostics_systeme.yaml
+  - badges: !include ../../includes/badges/diagnostics_systeme.yaml
 
     # ==========================================================
     # 🧩 CONTENU PRINCIPAL

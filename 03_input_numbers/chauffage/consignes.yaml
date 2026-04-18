@@ -1,35 +1,38 @@
 # ==========================================================
 # 🧠 ARSENAL — INPUT_NUMBER : Consignes thermiques chauffage
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir les CONSIGNES DE TEMPÉRATURE de référence
-#   utilisées par le système de décision chauffage :
-#     - Consigne en présence
-#     - Consigne en absence
+# 🎯 RÔLE :
+#   Définir les consignes de température de référence
+#   utilisées par le domaine Chauffage selon les
+#   contextes prévus par l’architecture Arsenal :
+#     - consigne confort
+#     - consigne réduite
+#     - consigne vacances
 #
-# 🧱 Nature :
-#   - Ce sont des CONSIGNES, pas des seuils.
-#   - Elles n’exécutent aucune action directe.
-#   - Elles ne déclenchent jamais le chauffage à elles seules.
+# 🧱 NATURE :
+#   - Helpers de configuration thermique
+#   - Paramètres de consigne, non décisionnels
+#   - Aucune action directe sur le chauffage
 #
-# 🧠 Principe Arsenal :
-#   - Les capteurs MESURENT.
-#   - Les consignes EXPRIMENT une intention thermique.
-#   - Les scripts / automatisations DÉCIDENT.
-#   - Le pipeline d’exécution chauffage APPLIQUE.
+# 🧠 PRINCIPE ARSENAL :
+#   - Les capteurs mesurent.
+#   - Les consignes expriment une cible thermique.
+#   - Les moteurs décisionnels arbitrent.
+#   - Les scripts et pipelines d’exécution appliquent.
 #
-# 🔗 Utilisation :
-#   - Calcul des écarts à la consigne
-#   - Logique décisionnelle centrale chauffage
-#   - Application des décisions chauffage
-#   - Affichage et réglage via dashboards
+# 🔗 UTILISATION :
+#   - Qualification thermique des situations
+#   - Calculs d’écarts à la consigne
+#   - Décision centrale chauffage
+#   - Application des programmes chauffage
+#   - Affichage et réglages UI
 #
-# ⚠️ Règle fondamentale :
+# ⚠️ RÈGLE FONDAMENTALE :
 #   - Une consigne n’est jamais un ordre.
-#   - Aucun ON/OFF ne doit dépendre uniquement
-#     de la valeur de ces helpers.
+#   - Aucun déclenchement chauffage ne doit dépendre
+#     uniquement de la valeur brute de ces helpers.
 #
-# 📐 Unité :
+# 📐 UNITÉ :
 #   - Degrés Celsius (°C)
 # ==========================================================
 
@@ -44,6 +47,22 @@ chauffage_consigne_confort:
 chauffage_consigne_reduite:
   name: Consigne réduite
   min: 12
+  max: 20
+  step: 1
+  unit_of_measurement: "°C"
+  mode: box
+
+chauffage_consigne_vacances:
+  name: Consigne vacances
+  min: 12
+  max: 20
+  step: 1
+  unit_of_measurement: "°C"
+  mode: box
+
+chauffage_consigne_reduite_sauvegarde:
+  name: Sauvegarde consigne reduite
+  min: 0
   max: 20
   step: 1
   unit_of_measurement: "°C"

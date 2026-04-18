@@ -1,13 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Réglages Éclairage
-icon: mdi:lightbulb
-
 views:
-  - title: Réglages Éclairage
-    path: eclairage
-    icon: mdi:lightbulb
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 
@@ -28,22 +22,19 @@ views:
             template: section_header
             name: 💡 Éclairage auto
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
+          - !include ../../includes/sub_section_headers/garage.yaml
 
-              - type: tile
-                entity: input_boolean.garage_auto_light
-                name: Garage 🚘
+          - type: tile
+            entity: input_boolean.garage_auto_light
+            name: Mode auto
 
-              - type: tile
-                entity: input_number.duree_absence_garage
-                name: Délai extinction garage (min)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.duree_absence_garage
+            name: Délai extinction garage (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: tile
             entity: input_number.garage_seuil_luminosite_allumage_auto
@@ -52,51 +43,52 @@ views:
             features:
               - type: numeric-input
                 style: buttons
+    
+          - !include ../../includes/sub_section_headers/entree.yaml
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
+          - type: tile
+            entity: input_boolean.entree_auto_light
+            name: Mode auto
 
-              - type: tile
-                entity: input_boolean.entree_auto_light
-                name: Entrée 🚪
+          - type: tile
+            entity: input_number.duree_absence_entree
+            name: Délai extinction entrée (s)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-              - type: tile
-                entity: input_number.duree_absence_entree
-                name: Délai extinction entrée (s)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - !include ../../includes/sub_section_headers/sejour.yaml
 
-              - type: tile
-                entity: input_boolean.sejour_auto_light
-                name: Séjour 🛋️
+          - type: tile
+            entity: input_boolean.sejour_auto_light
+            name: Mode auto
 
-              - type: tile
-                entity: input_number.duree_absence_sejour
-                name: Délai extinction séjour (min)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_boolean.prise_baies_vitrees_auto
-                name: Allumage auto Sapin 🎄
-
-              - type: tile
-                entity: input_number.duree_absence_guirlande
-                name: Délai extinction sapin (min)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.duree_absence_sejour
+            name: Délai extinction séjour (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
-            template: section_header
-            name: 💡 Jardin
+            template: sub_section_header
+            name: Sapin 🎄
+
+          - type: tile
+            entity: input_boolean.prise_baies_vitrees_auto
+            name: Mode auto
+
+          - type: tile
+            entity: input_number.duree_absence_guirlande
+            name: Délai extinction sapin (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - !include ../../includes/section_headers/jardin.yaml
 
           - type: custom:button-card
             template: sub_section_header
@@ -117,7 +109,7 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
-            name: 🌅 Réglages du matin
+            name: 🌅 Matin
 
           - type: tile
             entity: input_datetime.heure_allumage_jardin_matin
@@ -137,7 +129,7 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
-            name: 🌇 Réglages du soir
+            name: 🌇 Soir
 
           - type: tile
             entity: input_number.delai_allumage_jardin_soir
@@ -157,7 +149,15 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 🛏️ Simulation de présence (Vacances)
+            name: 🛏️ Simulation de présence
+
+          - type: tile
+            entity: input_boolean.activation_simulation_presence_vacances
+            name: Activer en vacances
+
+          - type: tile
+            entity: input_boolean.test_simulation_presence
+            name: Activer le mode test
 
           # ⏱️ Durée
           - type: custom:button-card
@@ -185,19 +185,12 @@ views:
                   - type: numeric-input
                     style: buttons
 
-          - type: tile
-            entity: input_boolean.test_simulation_presence
-            name: Activer le mode test
-
-          # 🏠 Entrée
-          - type: custom:button-card
-            template: section_header
-            name: 🏠 Simulation de présence – Entrée
+          - !include ../../includes/section_headers/entree.yaml
 
           # 🌅 Réglages matin - Entrée
           - type: custom:button-card
             template: sub_section_header
-            name: 🌅 Réglages du matin (Entrée)
+            name: 🌅 Matin
 
           - type: grid
             square: false
@@ -223,7 +216,7 @@ views:
           # 🌇 Réglages soir - Entrée
           - type: custom:button-card
             template: sub_section_header
-            name: 🌇 Réglages du soir (Entrée)
+            name: 🌇 Soir
 
           - type: grid
             square: false
@@ -246,10 +239,12 @@ views:
               - type: numeric-input
                 style: buttons
 
+          - !include ../../includes/section_headers/chambre_parents.yaml
+
           # 🌅 Réglages matin - Parents
           - type: custom:button-card
             template: sub_section_header
-            name: 🌅 Réglages du matin (Parents)
+            name: 🌅 Matin
 
           - type: grid
             square: false
@@ -275,7 +270,7 @@ views:
           # 🌇 Réglages soir - Parents
           - type: custom:button-card
             template: sub_section_header
-            name: 🌇 Réglages du soir (Parents)
+            name: 🌇 Soir
 
           - type: grid
             square: false
@@ -299,14 +294,12 @@ views:
                 style: buttons
 
           # 🏠 Garage
-          - type: custom:button-card
-            template: section_header
-            name: 🏠 Simulation de présence – Garage
+          - !include ../../includes/section_headers/garage.yaml
 
           # 🌅 Réglages matin - Garage
           - type: custom:button-card
             template: sub_section_header
-            name: 🌅 Réglages du matin (Garage)
+            name: 🌅 Matin
 
           - type: grid
             square: false
@@ -332,7 +325,7 @@ views:
           # 🌇 Réglages soir - Garage
           - type: custom:button-card
             template: sub_section_header
-            name: 🌇 Réglages du soir (Garage)
+            name: 🌇 Soir
 
           - type: grid
             square: false

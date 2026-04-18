@@ -101,16 +101,16 @@ Vérité métier :
 Ces capteurs sont **la seule vérité consommable** par les actions.
 
 ---
+### 4️⃣ Autorisation d'exécution
 
-### 4️⃣ Autorisation d’exécution
+La simulation de présence **n'est autorisée** que si :
 
-La simulation de présence **n’est autorisée** que si :
-
-* `input_select.mode_maison == "Vacances"`
-  **OU**
 * `input_boolean.test_simulation_presence == on`
+  **OU**
+* `binary_sensor.vacances_actives == on`
+  **ET** `input_boolean.activation_simulation_presence_vacances == on`
 
-En dehors de ces contextes, **aucune matérialisation n’est autorisée**.
+En dehors de ces contextes, **aucune matérialisation n'est autorisée**.
 
 ---
 

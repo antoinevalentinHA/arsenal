@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Simulation presence — Autorisation d'execution
+#
+# 🗂️ COUCHE : interpretation metier
+# 🧱 TYPE : binary_sensor template state-based
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 ROLE
+#   Porter la verite metier unique d'autorisation de la
+#   simulation de presence.
+#
+#   Ce capteur est ON uniquement si :
+#   - le mode test est actif
+#     OU
+#   - les vacances sont actives et l'autorisation explicite
+#     en mode vacances est active
+#
+#   Ce capteur ne pilote rien directement.
+#   Il doit etre la verite consommee par les automatisations
+#   de materialisation.
+#
+# 🔗 DEPENDANCES
+#   - input_boolean.test_simulation_presence
+#   - binary_sensor.vacances_actives
+#   - input_boolean.activation_simulation_presence_vacances
+#
+# 🚫 INTERDIT
+#   - Aucune action directe
+#   - Aucune logique horaire
+#   - Aucune decision dispersee dans les automatisations
+#
+# ==========================================================
+
+- binary_sensor:
+    - name: Simulation presence autorisee
+      unique_id: simulation_presence_autorisee
+      icon: >
+        {% if value == 'on' %}
+          mdi:lightbulb-auto
+        {% else %}
+          mdi:lightbulb-auto-outline
+        {% endif %}
+      attributes:
+        test_actif: >
+          {{ is_state('input_boolean.test_simulation_presence', 'on') }}
+        vacances_actives: >
+          {{ is_state('binary_sensor.vacances_actives', 'on') }}
+        activation_vacances: >
+          {{ is_state('input_boolean.activation_simulation_presence_vacances', 'on') }}
+      state: >
+        {{
+          is_state('input_boolean.test_simulation_presence', 'on')
+          or (
+            is_state('binary_sensor.vacances_actives', 'on')
+            and
+            is_state('input_boolean.activation_simulation_presence_vacances', 'on')
+          )
+        }}

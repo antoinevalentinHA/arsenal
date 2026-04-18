@@ -19,13 +19,8 @@
 # ==========================================================
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Sécurité
 views:
-  - title: Sécurité
-    path: securite
-    icon: mdi:car-lock
-
-    badges: !include ../../includes/badges/base.yaml
+  - badges: !include ../../includes/badges/base.yaml
 
     # ======================================================
     # 🚘 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL

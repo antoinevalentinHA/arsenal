@@ -1,14 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Diagnostics Climatisation
-icon: mdi:snowflake
-
 views:
-  - title: Diagnostics Climatisation
-    path: diagnostics-climatisation
-    icon: mdi:snowflake
-
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

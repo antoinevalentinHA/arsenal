@@ -22,6 +22,7 @@ zigbee_linkquality_all:
     - sensor.bouton_cuisine_linkquality
     - sensor.bouton_garage_1_linkquality
     - sensor.bouton_garage_2_linkquality
+    - sensor.bouton_entree_linkquality
     - sensor.bouton_sdb_linkquality
     - sensor.capteur_mouvements_entree_linkquality
     - sensor.capteur_mouvements_garage_1_linkquality

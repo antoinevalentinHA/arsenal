@@ -88,6 +88,7 @@ include:
     # =====================================================
     # ==== 🌧️ PLUIE / PRESSION ====
     # =====================================================
+    - binary_sensor.zigbee_pluie_water_leak
     - sensor.pluviometre_precipitation
     - sensor.pluie_aujourdhui_local
     - sensor.pluie_total_local

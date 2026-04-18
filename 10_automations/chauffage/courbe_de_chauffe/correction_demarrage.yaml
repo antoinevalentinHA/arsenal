@@ -38,7 +38,7 @@
 # ==========================================================
 
 - id: "10240000000010"
-  alias: "Chauffage – Réappliquer courbe au demarrage"
+  alias: "Chauffage – Réappliquer courbe au démarrage"
   description: >
     Réapplique au démarrage les consignes locales de pente
     et de parallèle de la courbe de chauffe après stabilisation

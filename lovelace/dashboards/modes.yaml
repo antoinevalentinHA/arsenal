@@ -1,12 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Modes
 views:
-  - title: Modes
-    path: modes
-    icon: mdi:home-switch
-
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

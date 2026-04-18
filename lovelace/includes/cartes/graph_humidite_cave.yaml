@@ -15,13 +15,13 @@ show:
   name: true
   state: true
 color_thresholds:
-  - value: 78
-    color: '#2196F3'
-  - value: 76
-    color: '#4FC3F7'
-  - value: 74
-    color: '#FFEB3B'
-  - value: 72
+  - value: 73
+    color: '#66BB6A'
+  - value: 75
+    color: '#9CCC65'
+  - value: 77
+    color: '#FFCA28'
+  - value: 79
     color: '#FF9800'
-  - value: 70
+  - value: 80
     color: '#F44336'

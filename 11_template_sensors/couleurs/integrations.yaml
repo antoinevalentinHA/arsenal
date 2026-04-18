@@ -64,8 +64,8 @@
 
         {% set centre_map = {
           'homekit': 1.0,
-          'netatmo': 1.0,
-          'switchbot': 1.0,
+          'netatmo': 2.0,
+          'switchbot': 5.0,
           'fujitsu': 2.0,
           'cumulus': 2.0,
           'synology': 2.0,
@@ -74,8 +74,8 @@
 
         {% set seuil_map = {
           'homekit': 15,
-          'netatmo': 15,
-          'switchbot': 15,
+          'netatmo': 30,
+          'switchbot': 30,
           'fujitsu': 45,
           'cumulus': 60,
           'synology': 30,
@@ -84,8 +84,8 @@
 
         {% set band_map = {
           'homekit': 0.5,
-          'netatmo': 0.5,
-          'switchbot': 0.5,
+          'netatmo': 1.0,
+          'switchbot': 2.0,
           'fujitsu': 1.0,
           'cumulus': 1.0,
           'synology': 1.0,

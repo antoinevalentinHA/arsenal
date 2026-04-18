@@ -8,39 +8,43 @@
 #
 #     Automation d’APPLICATION DU CONTEXTE GLOBAL.
 #
-#     Elle applique les mesures transverses associees aux
+#     Elle applique les mesures transverses associées aux
 #     vacances lorsque celles-ci sont effectivement actives,
-#     ou lors d’une reconciliation au demarrage.
+#     ou lors d’une réconciliation au démarrage.
 #
-#     Elle consomme la verite metier finale du domaine
-#     Vacances et applique un contexte global coherent,
-#     sans jamais fabriquer elle-meme cette verite.
+#     Elle consomme la vérité métier finale du domaine
+#     Vacances et applique un contexte global cohérent,
+#     sans jamais fabriquer elle-même cette vérité.
 #
 #  🧱 NATURE
 #
 #     - Orchestration de contexte global
-#     - Application de regles transverses
-#     - Consommation d’un etat metier deja calcule
-#     - Aucune logique decisionnelle autonome
+#     - Application de règles transverses
+#     - Consommation d’un état métier déjà calculé
+#     - Aucune logique décisionnelle autonome
 #
 #  ⚙️ PRINCIPE
 #
-#     - Declenchement sur activation de
+#     - Déclenchement sur activation de
 #       `binary_sensor.vacances_actives`
-#       ou au demarrage si cet etat est deja vrai
+#       ou au démarrage si cet état est déjà vrai
+#     - Temporisation courte au démarrage pour laisser
+#       les entités retrouver un état stable
 #     - Disqualification de la notification persistante
 #       de projection devenue redondante
-#     - Application sequentielle des mesures de contexte
-#     - Creation d’une notification persistante d’etat
+#     - Application séquentielle des mesures de contexte
+#     - Adaptation contextuelle de la consigne réduite
+#       chauffage via script dédié
+#     - Création d’une notification persistante d’état
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
-#     - Ne decide pas si les vacances sont actives
-#     - Ne depend pas de `input_select.mode_maison`
-#       comme source de verite
-#     - Ne pilote pas la decision thermique centrale
-#     - Ne gere pas la sortie du mode Vacances
-#     - Ne remplace aucun moteur metier specialise
+#     - Ne décide pas si les vacances sont actives
+#     - Ne dépend pas de `input_select.mode_maison`
+#       comme source de vérité
+#     - Ne pilote pas la décision thermique centrale
+#     - Ne gère pas la sortie du mode Vacances
+#     - Ne remplace aucun moteur métier spécialisé
 #
 #  ✅ COMPATIBILITÉ
 #
@@ -50,8 +54,9 @@
 - id: "1009000000006"
   alias: "Modes - Vacances - Application"
   description: >
-    Applique les actions de contexte global liees aux vacances
-    lorsque celles-ci sont effectivement actives.
+    Applique les mesures transverses du contexte Vacances
+    lorsque les vacances sont effectivement actives,
+    y compris en réconciliation au démarrage.
 
   mode: single
 
@@ -69,9 +74,17 @@
       state: "on"
 
   action:
+    - if:
+        - condition: template
+          value_template: "{{ trigger.platform == 'homeassistant' }}"
+      then:
+        - delay: "00:00:20"
+
     - action: persistent_notification.dismiss
       data:
         notification_id: projection_vacances
+
+    - action: script.vacances_adapter_consigne_reduite
 
     - action: input_boolean.turn_on
       target:

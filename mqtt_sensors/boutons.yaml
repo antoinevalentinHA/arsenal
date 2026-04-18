@@ -21,3 +21,9 @@
   state_topic: "zigbee2mqtt/bouton_garage_2"
   value_template: "{{ (value_json | default({}, true)).get('action', '') }}"
   icon: mdi:gesture-tap-button
+
+- name: "bouton_entree_action"
+  unique_id: bouton_entree_action
+  state_topic: "zigbee2mqtt/bouton_entree"
+  value_template: "{{ (value_json | default({}, true)).get('action', '') }}"
+  icon: mdi:gesture-tap-button

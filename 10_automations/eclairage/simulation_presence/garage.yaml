@@ -43,11 +43,9 @@
 #  🧠 AUTORISATION D’EXÉCUTION
 #
 #     L’action réelle n’est autorisée que si :
-#       • le mode maison est "Vacances"
-#         OU
-#       • le mode test de simulation est actif
+#       • binary_sensor.simulation_presence_autorisee == on
 #
-#     En dehors de ces cas, la simulation est inopérante.
+#     En dehors de ce cas, la simulation est inopérante.
 #
 #  🧠 SOURCE MÉTIER
 #
@@ -106,15 +104,9 @@
   # 🔐 CONDITIONS — Autorisation de la simulation
   # ======================================================
   condition:
-    - condition: or
-      conditions:
-        - condition: state
-          entity_id: input_select.mode_maison
-          state: "Vacances"
-
-        - condition: state
-          entity_id: input_boolean.test_simulation_presence
-          state: "on"
+    - condition: state
+      entity_id: binary_sensor.simulation_presence_autorisee
+      state: "on"
 
   # ======================================================
   # 🔄 ACTION — Application réelle + notifications

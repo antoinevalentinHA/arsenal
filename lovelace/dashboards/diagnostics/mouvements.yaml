@@ -1,17 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Diagnostics Mouvements
-icon: mdi:motion-sensor
-
 views:
-  ####################################
-  # 🚶 MOUVEMENTS
-  ####################################
-  - title: Diagnostics Mouvements
-    path: diagnostics-mouvements
-    icon: mdi:motion-sensor
-
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

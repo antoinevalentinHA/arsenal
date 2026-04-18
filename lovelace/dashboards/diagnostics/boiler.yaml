@@ -1,12 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Boiler
 views:
-  - title: Boiler
-    path: boiler
-    icon: mdi:fire
-
-    badges: !include ../../includes/badges/diagnostics_systeme.yaml
+  - badges: !include ../../includes/badges/diagnostics_systeme.yaml
 
     cards:
       - type: vertical-stack

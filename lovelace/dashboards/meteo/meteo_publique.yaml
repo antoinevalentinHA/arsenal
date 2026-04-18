@@ -1,13 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Prévisions Météo
 views:
-
-  - title: Prévisions Météo
-    path: previsions_meteo
-    icon: mdi:weather-cloudy
-
-    badges: !include ../../includes/badges/base.yaml
+  - badges: !include ../../includes/badges/base.yaml
 
     cards:
 

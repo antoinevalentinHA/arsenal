@@ -1,17 +1,8 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Système
-icon: mdi:server
-
 views:
-  ####################################
-  # 🧩 SYSTÈME – RASPBERRY PI
-  ####################################
-  - title: Système
-    path: systeme
-    icon: mdi:server
 
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

@@ -1,11 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
-title: Températures Min/Max
-views:
-  - title: Températures Min/Max
-    path: temperature_minmax
-    icon: mdi:chart-line
 
-    badges:
+views:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

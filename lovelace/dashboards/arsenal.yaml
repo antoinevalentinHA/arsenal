@@ -1,13 +1,8 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Arsenal
 views:
 
-  - title: Arsenal
-    path: arsenal
-    icon: mdi:view-dashboard
-
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_navigation_badge_carre
 

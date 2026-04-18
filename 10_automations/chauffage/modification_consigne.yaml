@@ -1,0 +1,118 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION :
+#     Chauffage — Réappliquer consigne active sur modification
+#
+#  ID : 10240000000027
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Réappliquer la consigne chauffage lorsque la valeur
+#     numérique associée au mode actuellement décidé change.
+#
+#     Cette automatisation assure la cohérence entre :
+#       - les helpers de consigne (input_number)
+#       - l’état réellement appliqué à la chaudière
+#
+# ----------------------------------------------------------
+#
+# 🧱 NATURE
+#
+#     - Réaction à modification de paramètre
+#     - Aucune logique décisionnelle
+#     - Réapplication contrôlée
+#     - Délégation stricte au script exécutif souverain
+#
+# ----------------------------------------------------------
+#
+# ⚙️ PRINCIPE
+#
+#     - Déclenchement sur modification des consignes :
+#         - chauffage_consigne_confort
+#         - chauffage_consigne_reduite
+#
+#     - Lecture du mode actuellement décidé :
+#         input_select.chauffage_dernier_mode_decide
+#
+#     - Si la consigne modifiée correspond au mode actif :
+#         → réapplication via script souverain
+#
+#     - Sinon :
+#         → abstention stricte
+#
+# ----------------------------------------------------------
+#
+# 🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne décide pas du mode chauffage
+#     - Ne modifie aucune consigne
+#     - Ne dépend pas du contexte Vacances
+#     - N’interagit pas directement avec MQTT
+#
+# ----------------------------------------------------------
+#
+# 🔗 DÉPENDANCES
+#
+#     - input_number.chauffage_consigne_confort
+#     - input_number.chauffage_consigne_reduite
+#     - input_select.chauffage_dernier_mode_decide
+#     - script.chauffage_appliquer_consigne
+#
+# ----------------------------------------------------------
+#
+# ⚠️ INVARIANTS
+#
+#     - Aucune réapplication si mode inchangé non concerné
+#     - Aucun appel concurrent (script en mode single)
+#     - Aucune boucle de déclenchement (helpers non modifiés ici)
+#
+# ----------------------------------------------------------
+#
+# 🗓️ COMPATIBILITÉ
+#
+#     Home Assistant 2024.8+
+# ==========================================================
+
+- id: "10240000000027"
+  alias: "Chauffage - Réappliquer consigne active"
+  description: >
+    Réapplique la consigne chauffage lorsque la valeur
+    numérique associée au mode actif est modifiée.
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id:
+        - input_number.chauffage_consigne_confort
+        - input_number.chauffage_consigne_reduite
+
+  action:
+    - variables:
+        mode_actuel: >
+          {{ states('input_select.chauffage_dernier_mode_decide') }}
+
+    - choose:
+
+        # CAS CONFORT
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.entity_id == 'input_number.chauffage_consigne_confort'
+                   and mode_actuel == 'comfort' }}
+          sequence:
+            - action: script.chauffage_appliquer_consigne
+              data:
+                consigne: confort
+                raison: "reapplication_consigne_confort_modifiee"
+
+        # CAS REDUITE
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ trigger.entity_id == 'input_number.chauffage_consigne_reduite'
+                   and mode_actuel == 'reduced' }}
+          sequence:
+            - action: script.chauffage_appliquer_consigne
+              data:
+                consigne: reduite
+                raison: "reapplication_consigne_reduite_modifiee"

@@ -42,7 +42,7 @@
 # ==========================================================
 
 - id: "10060000000008"
-  alias: "Déshumidificateur - Blocage redemarrage"
+  alias: "Déshumidificateur - Blocage redémarrage"
   mode: single
 
   trigger:

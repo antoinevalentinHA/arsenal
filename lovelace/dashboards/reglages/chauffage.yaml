@@ -1,13 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Réglages Chauffage
-icon: mdi:fire
-
 views:
-  - title: Réglages Chauffage
-    path: chauffage
-    icon: mdi:fire
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 
@@ -58,6 +52,14 @@ views:
                 features:
                   - type: numeric-input
                     style: buttons
+
+          - type: tile
+            entity: input_number.chauffage_consigne_vacances
+            name: Vacances
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: section_header

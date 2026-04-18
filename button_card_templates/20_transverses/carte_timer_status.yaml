@@ -19,7 +19,7 @@
 #   - état idle                → fond gris       rgba(158, 158, 158, 0.2)
 #   - état active + ok         → fond vert        rgba(76, 175, 80, 0.2)
 #   - état active + warning    → fond orange      rgba(255, 152, 0, 0.2)
-#   - état active + info       → fond bleu clair  rgba(144, 202, 249, 0.25)
+#   - état active + info       → fond bleu clair  rgba(33, 150, 243, 0.2)
 #   - unknown / unavailable    → fond gris atténué rgba(158, 158, 158, 0.1)
 #   - aucune interaction
 #
@@ -56,7 +56,7 @@ carte_timer_status:
                 const semantic = variables?.active_semantic || "ok";
 
                 if (semantic === "warning") return "rgba(255, 152, 0, 0.2)";
-                if (semantic === "info") return "rgba(144, 202, 249, 0.25)";
+                if (semantic === "info") return "rgba(33, 150, 243, 0.2)";
                 return "rgba(76, 175, 80, 0.2)";
               ]]]
 

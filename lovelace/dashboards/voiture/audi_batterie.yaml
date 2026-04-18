@@ -19,13 +19,8 @@
 # ==========================================================
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Statistiques
 views:
-  - title: Statistiques
-    path: statistiques
-    icon: mdi:server
-
-    badges: !include ../../includes/badges/base.yaml
+  - badges: !include ../../includes/badges/base.yaml
 
     # ======================================================
     # 📊 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL

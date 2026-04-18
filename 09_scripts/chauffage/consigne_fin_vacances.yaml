@@ -1,0 +1,101 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Vacances - Retirer adaptation consigne reduite
+# ==========================================================
+#
+# 📌 STATUT
+#     SCRIPT DE PARAMETRAGE CONTEXTUEL
+#
+# 🎯 ROLE
+#     Retirer l’adaptation de la consigne reduite appliquee
+#     pendant le contexte Vacances.
+#
+#     Ce script restaure `input_number.chauffage_consigne_reduite`
+#     depuis `input_number.chauffage_consigne_reduite_sauvegarde`,
+#     puis remet la sauvegarde a `0`.
+#
+# 🧱 NATURE
+#     - Script de sortie de contexte
+#     - Parametrage thermique reversible
+#     - Idempotent
+#     - Sans logique decisionnelle chauffage
+#
+# 🧠 PRINCIPE
+#     - Si une sauvegarde valide existe (> 0) :
+#         restauration de la consigne reduite
+#         puis remise a zero de la sauvegarde
+#     - Sinon (sauvegarde absente, nulle ou entite indisponible) :
+#         abstention stricte avec trace differenciee selon le cas
+#
+# 🚫 CE QUE CE SCRIPT NE FAIT PAS
+#     - Ne force jamais `confort`
+#     - N’appelle jamais `chauffage_appliquer_consigne`
+#     - Ne publie rien en MQTT
+#     - Ne modifie pas la decision centrale chauffage
+#     - N’invente jamais une valeur de restauration
+#
+# 🔗 ENTITES UTILISEES
+#     - input_number.chauffage_consigne_reduite
+#     - input_number.chauffage_consigne_reduite_sauvegarde
+#
+# ⚠️ INVARIANT
+#     `input_number.chauffage_consigne_reduite_sauvegarde`
+#     doit avoir `min: 0`
+#     La valeur `0` est une sentinelle de non-sauvegarde
+#
+# ✅ COMPATIBILITE
+#     Home Assistant 2024.8+
+# ==========================================================
+
+vacances_retirer_consigne_reduite:
+  alias: "Modes - Vacances - Consigne réduite normale"
+  mode: single
+
+  sequence:
+    - variables:
+        sauvegarde_brute: >
+          {{ states('input_number.chauffage_consigne_reduite_sauvegarde') }}
+        sauvegarde_existante: >
+          {% if sauvegarde_brute not in ['unknown', 'unavailable', none] %}
+            {{ sauvegarde_brute | float(0) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ sauvegarde_existante is none }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  Vacances - Retirer adaptation consigne reduite :
+                  sauvegarde indisponible (unknown/unavailable), abstention.
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ sauvegarde_existante > 0 }}
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.chauffage_consigne_reduite
+              data:
+                value: "{{ sauvegarde_existante }}"
+
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.chauffage_consigne_reduite_sauvegarde
+              data:
+                value: 0
+
+      default:
+        - service: system_log.write
+          data:
+            level: warning
+            message: >
+              Vacances - Retirer adaptation consigne reduite :
+              aucune sauvegarde valide (sentinelle = 0), abstention.

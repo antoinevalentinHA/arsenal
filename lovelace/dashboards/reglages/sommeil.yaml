@@ -1,13 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Réglages Sommeil
-icon: mdi:sleep
-
 views:
-  - title: Réglages Sommeil
-    path: sommeil
-    icon: mdi:sleep
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

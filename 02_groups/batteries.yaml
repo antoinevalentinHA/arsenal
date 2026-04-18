@@ -49,6 +49,7 @@ batteries:
     - sensor.bouton_cuisine_battery
     - sensor.bouton_garage_1_battery
     - sensor.bouton_garage_2_battery
+    - sensor.bouton_entree_battery
     - sensor.bouton_sdb_battery
     - sensor.capteur_mouvements_entree_battery
     - sensor.capteur_mouvements_garage_1_battery

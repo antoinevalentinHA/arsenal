@@ -1,0 +1,122 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Vacances - Adapter consigne reduite
+# ==========================================================
+#
+# 📌 STATUT
+#     SCRIPT DE PARAMETRAGE CONTEXTUEL
+#
+# 🎯 ROLE
+#     Appliquer l’adaptation de la consigne reduite chauffage
+#     lorsque le contexte Vacances est effectif.
+#
+#     Ce script sauvegarde d’abord la consigne reduite normale
+#     dans `input_number.chauffage_consigne_reduite_sauvegarde`
+#     si aucune sauvegarde valide n’existe, puis applique
+#     `input_number.chauffage_consigne_vacances`.
+#
+# 🧱 NATURE
+#     - Script de paramétrage contextuel
+#     - Reversible
+#     - Idempotent
+#     - Sans logique decisionnelle chauffage
+#
+# 🧠 PRINCIPE
+#     - Si les preconditions sont invalides :
+#         abstention stricte avec trace locale
+#     - Si aucune sauvegarde n’existe (sentinelle = 0) :
+#         sauvegarde de la consigne reduite actuelle
+#         puis application de la consigne Vacances
+#     - Si une sauvegarde existe deja :
+#         ne jamais resauvegarder
+#         appliquer seulement la consigne Vacances si necessaire
+#     - Si la sauvegarde est indisponible :
+#         abstention stricte avec trace locale
+#
+# 🚫 CE QUE CE SCRIPT NE FAIT PAS
+#     - Ne jamais appeler chauffage_appliquer_consigne
+#     - Ne jamais modifier le moteur chauffage
+#     - Ne jamais resauvegarder une valeur deja adaptee
+#
+# 🔗 ENTITES UTILISEES
+#     - input_number.chauffage_consigne_reduite
+#     - input_number.chauffage_consigne_vacances
+#     - input_number.chauffage_consigne_reduite_sauvegarde
+#
+# ⚠️ INVARIANT
+#     `input_number.chauffage_consigne_reduite_sauvegarde`
+#     doit avoir `min: 0`
+#     La valeur `0` est une sentinelle de non-sauvegarde
+#
+# ✅ COMPATIBILITE
+#     Home Assistant 2024.8+
+# ==========================================================
+
+vacances_adapter_consigne_reduite:
+  alias: "Modes - Vacances - Consigne réduite spéciale"
+  mode: single
+  sequence:
+    - variables:
+        consigne_reduite_actuelle: >
+          {{ states('input_number.chauffage_consigne_reduite') | float(none) }}
+        consigne_vacances: >
+          {{ states('input_number.chauffage_consigne_vacances') | float(none) }}
+        sauvegarde_existante: >
+          {% if states('input_number.chauffage_consigne_reduite_sauvegarde')
+               not in ['unknown', 'unavailable', none] %}
+            {{ states('input_number.chauffage_consigne_reduite_sauvegarde') | float(0) }}
+          {% else %}
+            {{ none }}
+          {% endif %}
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{
+                  consigne_reduite_actuelle is none
+                  or consigne_reduite_actuelle <= 0
+                  or consigne_vacances is none
+                  or consigne_vacances <= 0
+                }}
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  Vacances - Adapter consigne reduite :
+                  precheck invalide
+                  (reduite={{ consigne_reduite_actuelle }},
+                  vacances={{ consigne_vacances }}).
+        - conditions:
+            - condition: template
+              value_template: "{{ sauvegarde_existante is none }}"
+          sequence:
+            - service: system_log.write
+              data:
+                level: warning
+                message: >
+                  Vacances - Adapter consigne reduite :
+                  sauvegarde indisponible (unknown/unavailable), abstention.
+        - conditions:
+            - condition: template
+              value_template: "{{ sauvegarde_existante == 0 }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.chauffage_consigne_reduite_sauvegarde
+              data:
+                value: "{{ consigne_reduite_actuelle }}"
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.chauffage_consigne_reduite
+              data:
+                value: "{{ consigne_vacances }}"
+        - conditions:
+            - condition: template
+              value_template: "{{ consigne_reduite_actuelle != consigne_vacances }}"
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.chauffage_consigne_reduite
+              data:
+                value: "{{ consigne_vacances }}"

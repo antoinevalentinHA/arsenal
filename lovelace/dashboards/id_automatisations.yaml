@@ -1,14 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Numérotation
-icon: mdi:numeric
-
 views:
-  - title: ID automatisations
-    path: id-automatisations
-    icon: mdi:format-list-numbered
-
-    badges: !include ../includes/badges/diagnostics_systeme.yaml
+  - badges: !include ../includes/badges/diagnostics_systeme.yaml
 
     ########################################################
     # 📐 VERTICAL STACK PRINCIPAL

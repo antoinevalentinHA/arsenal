@@ -1,20 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Diagnostics Alarme
-icon: mdi:shield-home
-
 views:
-  ####################################
-  # 🛡️ DIAGNOSTICS ALARME
-  ####################################
-  - title: Diagnostics Alarme
-    path: alarme
-    icon: mdi:shield-home
-
-    # ==========================================================
-    # 🧭 BADGES — Navigation & retour contextuel
-    # ==========================================================
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

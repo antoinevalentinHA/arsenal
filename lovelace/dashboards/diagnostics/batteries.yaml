@@ -1,20 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Diagnostics Batteries
-icon: mdi:battery
-
 views:
-  ####################################
-  # 🔋 DIAGNOSTICS BATTERIES
-  ####################################
-  - title: Batteries
-    path: batteries
-    icon: mdi:battery
-
-    # ==========================================================
-    # 🧭 BADGES — Navigation
-    # ==========================================================
-    badges: !include ../../includes/badges/diagnostics_systeme.yaml
+  - badges: !include ../../includes/badges/diagnostics_systeme.yaml
 
     # ==========================================================
     # 🧩 CONTENU PRINCIPAL

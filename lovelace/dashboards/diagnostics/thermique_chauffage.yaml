@@ -1,18 +1,7 @@
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
-title: Chauffage - Diagnostic thermique
-icon: mdi:fire
-
 views:
-
-  - title: Chauffage - Diagnostic thermique
-    path: diagnostic-thermique
-    icon: mdi:fire
-
-    # ==========================================================
-    # 🧭 BADGES — Navigation & retour contextuel
-    # ==========================================================
-    badges:
+  - badges:
       - type: custom:button-card
         template: bouton_accueil_badge_carre
 

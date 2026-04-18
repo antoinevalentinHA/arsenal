@@ -7,7 +7,7 @@
 #   un niveau radio insuffisant.
 #
 # 🎯 Critère :
-#   - RSSI < -80 dBm
+#   - RSSI < -85 dBm
 #
 # 🚫 Exclus :
 #   - valeur = 0
@@ -47,7 +47,7 @@
       unique_id: bluetooth_qualite_radio_degradee
 
       state: >
-        {% set seuil = -80 %}
+        {% set seuil = -85 %}
         {% set entites = state_attr('group.bluetooth_signal_all', 'entity_id') or [] %}
         {% set ns = namespace(any_degrade=false) %}
 
@@ -99,7 +99,7 @@
           {{ ns.worst_val if ns.worst_id != '' else none }}
 
         count_degrades: >
-          {% set seuil = -80 %}
+          {% set seuil = -85 %}
           {% set entites = state_attr('group.bluetooth_signal_all', 'entity_id') or [] %}
           {% set ns = namespace(n=0) %}
 
@@ -116,7 +116,7 @@
           {{ ns.n }}
 
         degrades: >
-          {% set seuil = -80 %}
+          {% set seuil = -85 %}
           {% set entites = state_attr('group.bluetooth_signal_all', 'entity_id') or [] %}
           {% set ns = namespace(items=[]) %}
 

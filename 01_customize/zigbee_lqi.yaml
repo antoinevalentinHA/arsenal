@@ -54,6 +54,10 @@ sensor.bouton_sdb_linkquality:
   friendly_name: "Bouton SDB parents"
   icon: mdi:gesture-tap-button
 
+sensor.bouton_entree_linkquality:
+  friendly_name: "Bouton Entrée"
+  icon: mdi:gesture-tap-button
+
 ############################################################
 # 🪟 OUVERTURES (FENÊTRES / PORTES)
 ############################################################
