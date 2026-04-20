@@ -1,5 +1,5 @@
 type: custom:mini-graph-card
-name: Humidité relevative (4 jours)
+name: Humidité relative (4 jours)
 icon: mdi:water-percent
 entities:
   - entity: sensor.humidite_relative_cave

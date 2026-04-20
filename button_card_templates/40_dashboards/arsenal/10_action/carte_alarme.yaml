@@ -25,7 +25,8 @@
 #       - si désarmée → armement explicite
 #       - sinon → désarmement explicite
 #   - Confirmation obligatoire avant exécution
-#   - Aucune action implicite de type toggle natif
+#   - Aucun appel direct à alarm_control_panel
+#   - Délégation systématique aux scripts canoniques
 #   - Navigation vers le dashboard alarme sur maintien
 #   - Code visuel :
 #       - disarmed → vert
@@ -65,11 +66,11 @@ carte_alarme:
     service: |
       [[[
         return entity?.state === 'disarmed'
-          ? 'alarm_control_panel.alarm_arm_away'
-          : 'alarm_control_panel.alarm_disarm';
+          ? 'script.alarme_armer'
+          : 'script.alarme_desarmer';
       ]]]
     service_data:
-      entity_id: alarm_control_panel.alarme_maison
+      origine: dashboard
 
   hold_action:
     action: navigate
@@ -82,9 +83,9 @@ carte_alarme:
     - value: disarmed
       styles:
         card:
-          - background-color: rgba(76, 175, 80, 0.2)   # 🟢 Désarmée
+          - background-color: rgba(76, 175, 80, 0.2)
 
     - value: armed_away
       styles:
         card:
-          - background-color: rgba(244, 67, 54, 0.2)   # 🔴 Armée
+          - background-color: rgba(244, 67, 54, 0.2)

@@ -1,107 +1,134 @@
 # ==========================================================
-# 🔓 SCRIPT — Alarme : Désarmement unifié
+# 🔓 SCRIPT — Alarme : Desarmement unifie
 # ----------------------------------------------------------
-# 🎯 RÔLE :
-#   Appliquer un désarmement COMPLET, SÛR et CENTRALISÉ
-#   de l’alarme à la suite d’une décision validée
-#   (clavier, badge, présence, automatisme).
+# 🎯 ROLE
+#   Point d'entree unique pour le desarmement de l'alarme.
 #
-# 🧱 RESPONSABILITÉ :
-#   Ce script est un APPLICATEUR D’ACTION.
-#   Il exécute physiquement le désarmement réel
-#   et ses effets immédiats de sécurité.
+# 🧱 RESPONSABILITE
+#   Ce script applique le desarmement de facon centralisee
+#   et priorise l'arret immediat de la sirene avant toute
+#   autre action.
 #
-# 🛑 ACTIONS GARANTIES :
-#   - Arrêt IMMÉDIAT de toute sirène, sans condition
-#   - Désarmement réel uniquement si l’alarme est armée
-#   - Confirmation sonore (si hors mode test)
-#   - Notification utilisateur contextualisée
+# ✅ GARANTIES
+#   - Validation / normalisation de `origine`
+#   - Arret immediat de la sirene, sans condition
+#   - Desarmement reel uniquement si l'alarme est dans
+#     un etat armed_away / arming / pending / triggered
+#   - Si le guard de desarmement passe :
+#       - ecriture d'un marqueur minimal dans
+#         `input_text.alarme_raison`
+#       - bip de confirmation hors mode test
+#       - notification utilisateur avec origine reelle
 #
-# 🚫 CE SCRIPT NE FAIT PAS :
-#   - Ne calcule AUCUNE décision
-#   - Ne détermine PAS s’il FAUT désarmer
-#   - Ne lit AUCUNE logique métier complexe
-#   - Ne remplace PAS le cerveau décisionnel
-#   - N’active PAS directement le blocage d’armement automatique
-#   - Ne gère AUCUNE temporalité de blocage
+# 🚫 CE SCRIPT NE FAIT PAS
+#   - Ne decide pas s'il faut desarmer
+#   - Ne deduit pas "automatique" / "manuel"
+#   - Ne gere pas les blocages d'armement automatique
+#   - Ne remplace pas le moteur decisionnel
+#   - Ne fige aucun format structure de persistance
+#   - Ne confirme pas un succes materiel post-action
 #
-# 🧠 SÉPARATION ARSENAL STRICTE :
-#   - Décision     → `script.alarme_decision_centrale`
-#   - Application  → CE SCRIPT
-#   - Blocage auto → automatisations dédiées de blocage
-#   - Action sonore → scripts sirène dédiés
+# 🧠 CONTRAT `origine`
+#   - `origine` represente une provenance technique
+#   - Valeurs admises :
+#       - dashboard
+#       - clavier
+#       - badge
+#       - automatisme
+#       - inconnu
+#   - Valeur absente ou invalide -> `inconnu`
 #
-# 🔐 SÉCURITÉ INTÉGRÉE :
-#   - Le désarmement réel reste prioritaire sur toute logique annexe
-#   - Le blocage d’armement automatique, s’il est requis,
-#     est géré hors de ce script par le mécanisme contractuel dédié
+# 🧱 DEPENDANCES
+#   - alarm_control_panel.alarme_maison
+#   - script.arret_sirene
+#   - script.sirene_bip_bip
+#   - script.notification_envoyer
+#   - input_text.alarme_raison
+#   - input_boolean.mode_test_alarme
 #
-# 🧪 PROPRIÉTÉS ARSENAL :
-#   - Idempotent (désarmé ≠ redésarmé)
-#   - Sans effet de bord hors alarme
-#   - Tolérant à l’état réel (sirène stoppée quoi qu’il arrive)
+# 📊 TYPE
+#   Script d'application centralisee
 #
-# 📊 TYPE :
-#   Script applicatif critique (désarmement sécurisé)
-#
-# 📍 ENTITÉ :
+# 📍 ENTITE
 #   script.alarme_desarmer
 #
-# 🧠 SÉMANTIQUE ARSENAL :
-#   - Désarmer = action physique irréversible immédiate
-#   - Le silence de la sirène est prioritaire sur toute logique
-#
-# ✅ ARCHITECTURE :
-#   Arsenal v6+
-#   Home Assistant 2024.8+
+# 🔁 SEMANTIQUE ARSENAL
+#   - Toute demande de desarmement doit passer par ce script
+#   - Le silence de la sirene est prioritaire
+#   - La decision est externe, l'execution est ici
 # ==========================================================
 
 alarme_desarmer:
-  alias: Alarme - Désarmer
+  alias: "Alarme - Désarmer"
   description: >
-    Désarme l’alarme proprement : coupe la sirène si active,
-    applique le désarmement réel si nécessaire,
-    puis envoie une notification/log.
+    Arrete immediatement la sirene, desarme l'alarme si
+    necessaire, normalise l'origine, ecrit un marqueur
+    minimal, joue un bip hors mode test et envoie une
+    notification.
   mode: single
+
   fields:
     origine:
-      description: Origine du désarmement (optionnel)
-      example: "Clavier, Présence auto, App mobile"
+      description: >
+        Provenance technique de la demande.
+        Valeurs admises : dashboard, clavier, badge,
+        automatisme, inconnu.
+      example: "clavier"
 
   sequence:
-    # 1) Stop immédiat de la sirène (peu importe l’état de l’alarme)
+    # ------------------------------------------------------
+    # 0) Normalisation de l'origine
+    # ------------------------------------------------------
+    - variables:
+        origine_norm: >-
+          {% set o = origine | default('inconnu') | trim | lower %}
+          {{ o if o in ['dashboard', 'clavier', 'badge', 'automatisme'] else 'inconnu' }}
+
+    # ------------------------------------------------------
+    # 1) Arret immediat de la sirene
+    # ------------------------------------------------------
     - action: script.arret_sirene
 
-    # 2) Désarmer uniquement si l'alarme est armée (armed_away ou pending ou triggered)
+    # ------------------------------------------------------
+    # 2) Desarmement reel si l'alarme est dans un etat
+    #    compatible avec un desarmement explicite
+    # ------------------------------------------------------
     - condition: template
       value_template: >
-        {{ states('alarm_control_panel.alarme_maison') in ['armed_away', 'pending', 'triggered'] }}
+        {{ states('alarm_control_panel.alarme_maison') in
+           ['armed_away', 'arming', 'pending', 'triggered'] }}
 
     - action: alarm_control_panel.alarm_disarm
       target:
         entity_id: alarm_control_panel.alarme_maison
 
-    # 2bis) Mémoire — raison de désarmement (après succès réel)
+    # ------------------------------------------------------
+    # 3) Memoire metier minimale
+    # ------------------------------------------------------
     - action: input_text.set_value
       target:
         entity_id: input_text.alarme_raison
       data:
-        value: "Désarmement — présence détectée"
+        value: "desarmement"
 
-    # 3) Bip si pas en mode test (double-bip court de confirmation)
+    # ------------------------------------------------------
+    # 4) Bip de confirmation hors mode test
+    # ------------------------------------------------------
     - choose:
         - conditions:
             - condition: state
               entity_id: input_boolean.mode_test_alarme
-              state: 'off'
+              state: "off"
           sequence:
             - action: script.sirene_bip_bip
 
-    # 5) Notification
+    # ------------------------------------------------------
+    # 5) Notification utilisateur
+    # ------------------------------------------------------
     - action: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
         titre: "🔓 Alarme désactivée"
-        message: >
-          L'alarme a été désactivée {{ 'automatiquement' if origine|default('Automatisme') == 'Automatisme' else 'manuellement' }}
-          à {{ now().strftime('%H:%M') }}.
+        message: >-
+          Alarme désactivée à {{ now().strftime('%H:%M') }}.
+          Origine : {{ origine_norm }}.

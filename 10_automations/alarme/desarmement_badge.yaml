@@ -83,7 +83,7 @@
           sequence:
             - action: script.alarme_desarmer
               data:
-                origine: "Badge RFID"
+                origine: badge
 
       # --------------------------------------------------------
       # Cas 2 : Badge inconnu → notification immédiate

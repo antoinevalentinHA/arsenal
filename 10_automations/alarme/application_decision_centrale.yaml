@@ -94,7 +94,7 @@
           sequence:
             - action: script.alarme_desarmer
               data:
-                origine: "Decision centrale"
+                origine: automatisme
 
         # --------------------------------------------------
         # 🔐 ARMEMENT AUTO
@@ -107,6 +107,6 @@
           sequence:
             - action: script.alarme_armer
               data:
-                origine: "Decision centrale"
+                origine: automatisme
 
       default: []

@@ -1,71 +1,88 @@
 # ==========================================================
-# 🔒 SCRIPT — Alarme : Armement unifié
+# 🔒 SCRIPT — Alarme : Armement unifie
 # ----------------------------------------------------------
-# 🧠 Rôle :
-#   Point d’entrée UNIQUE pour l’armement de l’alarme
+# 🎯 ROLE
+#   Point d'entree unique pour l'armement de l'alarme
 #   en mode ABSENT.
 #
-#   Ce script centralise :
-#   - la condition d’armement
-#   - l’action d’armement réelle
-#   - le feedback utilisateur (bip)
-#   - la notification
-#   - la journalisation métier
+# 🧱 RESPONSABILITE
+#   Ce script applique la demande d'armement si l'alarme
+#   est reellement desarmee, puis produit les effets
+#   immediats standardises associes a cette execution.
 #
-# 🎯 Objectif :
-#   Garantir un armement cohérent, traçable et idempotent,
-#   quelle que soit l’origine de la demande
-#   (automatisation, clavier, application, scénario).
+# ✅ GARANTIES
+#   - Validation / normalisation de `origine`
+#   - Armement reel uniquement si l'alarme est desarmee
+#   - Ecriture d'un marqueur minimal dans
+#     `input_text.alarme_raison`
+#   - Bip de confirmation hors mode test
+#   - Notification utilisateur avec origine reelle
 #
-# ⚙️ Fonctionnement :
-#   - Vérifie que l’alarme est réellement désarmée.
-#   - Arme l’alarme en mode "away".
-#   - Enregistre la raison d’armement (mémoire métier).
-#   - Émet un bip de confirmation (hors mode test).
-#   - Envoie une notification enrichie (heure + origine).
+# 🚫 CE SCRIPT NE FAIT PAS
+#   - Ne decide pas s'il faut armer
+#   - Ne deduit pas "automatique" / "manuel"
+#   - Ne gere pas la logique de presence / absence
+#   - Ne force pas un armement si l'alarme est deja armee
+#   - Ne fige aucun format structure de persistance
+#   - Ne confirme pas un succes materiel post-action
 #
-# 🚫 Ce script NE FAIT PAS :
-#   - Ne décide PAS si l’alarme DOIT être armée
-#   - Ne gère PAS la logique de présence / absence
-#   - Ne force PAS un armement si l’alarme est déjà armée
-#   - Ne traite PAS les cas d’erreur ou d’échec matériel
+# 🧠 CONTRAT `origine`
+#   - `origine` represente une provenance technique
+#   - Valeurs admises :
+#       - dashboard
+#       - clavier
+#       - badge
+#       - automatisme
+#       - inconnu
+#   - Valeur absente ou invalide -> `inconnu`
 #
-# 🧱 Dépendances :
+# 🧱 DEPENDANCES
 #   - alarm_control_panel.alarme_maison
 #   - script.sirene_bip
 #   - script.notification_envoyer
 #   - input_text.alarme_raison
 #   - input_boolean.mode_test_alarme
 #
-# 📊 Type :
-#   Script d’exécution centralisée (action terminale)
+# 📊 TYPE
+#   Script d'application centralisee
 #
-# 📍 Entité :
+# 📍 ENTITE
 #   script.alarme_armer
 #
-# 🔁 Sémantique Arsenal :
-#   - Toute demande d’armement DOIT passer par ce script.
-#   - Aucune automatisation ne doit armer l’alarme directement.
-#   - La décision est externe, l’exécution est ici.
-#
-# ✅ Architecture :
-#   Arsenal v6+
-#   Home Assistant 2024.8+
+# 🔁 SEMANTIQUE ARSENAL
+#   - Toute demande d'armement doit passer par ce script
+#   - Aucun appelant ne doit armer l'alarme directement
+#   - La decision est externe, l'execution est ici
 # ==========================================================
 
 alarme_armer:
   alias: "Alarme - Armer"
   description: >
-    Arme l’alarme en mode Absent, joue un bip de confirmation,
-    envoie notification et log. Centralise toute la logique d’armement.
+    Arme l'alarme en mode Absent si elle est desarmee,
+    normalise l'origine, ecrit un marqueur minimal,
+    joue un bip hors mode test et envoie une notification.
   mode: single
+
   fields:
     origine:
-      description: Origine de l’armement (optionnel)
-      example: "Clavier, Armement auto, App mobile"
+      description: >
+        Provenance technique de la demande.
+        Valeurs admises : dashboard, clavier, badge,
+        automatisme, inconnu.
+      example: "dashboard"
 
   sequence:
-    # 1) Arme en mode Absent uniquement si désarmée
+    # ------------------------------------------------------
+    # 0) Normalisation de l'origine
+    # ------------------------------------------------------
+    - variables:
+        origine_norm: >-
+          {% set o = origine | default('inconnu') | trim | lower %}
+          {{ o if o in ['dashboard', 'clavier', 'badge', 'automatisme'] else 'inconnu' }}
+
+    # ------------------------------------------------------
+    # 1) Armement reel uniquement si l'alarme est desarmee
+    # ------------------------------------------------------
     - condition: state
       entity_id: alarm_control_panel.alarme_maison
       state: disarmed
@@ -74,27 +91,33 @@ alarme_armer:
       target:
         entity_id: alarm_control_panel.alarme_maison
 
-    # 1bis) Mémoire — raison d’armement (après succès réel)
+    # ------------------------------------------------------
+    # 2) Memoire metier minimale
+    # ------------------------------------------------------
     - action: input_text.set_value
       target:
         entity_id: input_text.alarme_raison
       data:
-        value: "Armement automatique — absence confirmée"
+        value: "armement"
 
-    # 2) Bip si pas en mode test
+    # ------------------------------------------------------
+    # 3) Bip de confirmation hors mode test
+    # ------------------------------------------------------
     - choose:
         - conditions:
             - condition: state
               entity_id: input_boolean.mode_test_alarme
-              state: 'off'
+              state: "off"
           sequence:
             - action: script.sirene_bip
 
-    # 3) Notification
+    # ------------------------------------------------------
+    # 4) Notification utilisateur
+    # ------------------------------------------------------
     - action: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
         titre: "🔒 Alarme activée"
-        message: >
-          L'alarme a été activée {{ 'automatiquement' if origine is not defined else 'manuellement' }}
-          à {{ now().strftime('%H:%M') }}.
+        message: >-
+          Alarme activée à {{ now().strftime('%H:%M') }}.
+          Origine : {{ origine_norm }}.

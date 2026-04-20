@@ -78,7 +78,7 @@
           {{ last_val | round(1) }}
 
         {% else %}
-          {{ 'unknown' }}
+          {{ none }}
         {% endif %}
 
       attributes:

@@ -67,7 +67,7 @@
           {% if this_exploitable %}
             {{ last_val | round(0) }}
           {% else %}
-            {{ 'unknown' }}
+            {{ none }}
           {% endif %}
 
         {% elif h1_valide and not h2_valide %}
@@ -84,7 +84,7 @@
 
           {% else %}
             {% if not this_exploitable %}
-              {{ 'unknown' }}
+              {{ none }}
             {% else %}
               {% set d1 = (h1 - last_val) | abs %}
               {% set d2 = (h2 - last_val) | abs %}
@@ -94,7 +94,7 @@
               {% elif d2 < d1 %}
                 {{ h2 | round(0) }}
               {% else %}
-                {{ 'unknown' }}
+                {{ none }}
               {% endif %}
             {% endif %}
           {% endif %}
