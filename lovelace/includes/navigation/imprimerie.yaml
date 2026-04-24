@@ -6,10 +6,6 @@ cards:
     color_type: blank-card
 
   - type: custom:button-card
-    template: bouton_spacer
-    color_type: blank-card
-
-  - type: custom:button-card
     template: bouton_navigation_badge_carre
     icon: mdi:magnify
     tap_action:
