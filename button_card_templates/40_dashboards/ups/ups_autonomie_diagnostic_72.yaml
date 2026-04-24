@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Infrastructure — UPS autonomie
+#
+# 🗂️ COUCHE : UI / Diagnostic infrastructure
+# 🧱 TYPE UI : Lecture seule — diagnostic capteur
+# 🔍 NIVEAU DE CONFIANCE : Élevé (capteur NUT)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher l’autonomie restante de l’UPS sous forme lisible.
+#
+# 📡 SOURCE
+#   sensor.ups_autonomie_de_la_batterie
+#
+# ⚙️ LOGIQUE UI
+#   - secondes → minutes
+#   - unknown/unavailable → indisponible
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : Dashboard UPS
+#
+# ==========================================================
+
+ups_autonomie_diagnostic_72:
+  template: socle_diagnostic_compact_readonly_72
+
+  icon: mdi:timer-outline
+
+  label: >
+    Diagnostic UPS

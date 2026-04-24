@@ -1,0 +1,64 @@
+# ============================================================
+# ARSENAL — AUTOMATION UPS / ARRET HOME ASSISTANT
+#
+# Domaine : Infrastructure
+# ID : 10120000000027
+# Version : v1.1
+# Statut : Actif
+#
+# Rôle :
+# Déclencher l'arrêt propre de Home Assistant lorsque :
+# - l'UPS est sur batterie de manière durable (>= 60 s)
+# - et que les critères d'autonomie HA sont atteints
+#
+# Périmètre :
+# - Lecture des binary_sensor UPS normalisés
+# - Arrêt propre de l'hôte Home Assistant
+#
+# Ce que cette automation fait :
+# - Implémente le critère CD via "for: 60 s"
+# - Couvre le franchissement tardif du seuil d'autonomie
+# - Vérifie la recommandation d'arrêt Home Assistant
+# - Appelle hassio.host_shutdown
+#
+# Ce que cette automation ne fait pas :
+# - Ne pilote pas le NAS
+# - Ne pilote pas l'UPS
+# - Ne pilote pas les équipements réseau
+# - Ne déclenche aucune action après l'arrêt HA
+#
+# Contrat associé :
+# - contrat_ups_arret_home_assistant_v1.0.md
+#
+# Invariants :
+# - Aucun arrêt immédiat au passage sur batterie
+# - Aucune action si les critères d'autonomie HA ne sont pas atteints
+# - L'arrêt HA est terminal
+# ============================================================
+
+- id: '10120000000027'
+  alias: "UPS - Arret Home Assistant sur autonomie critique"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.critere_ups_sur_batterie
+      to: 'on'
+      for: '00:01:00'
+
+    - platform: state
+      entity_id: binary_sensor.ups_arret_ha_recommande
+      to: 'on'
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.critere_ups_sur_batterie
+      state: 'on'
+      for: '00:01:00'
+
+    - condition: state
+      entity_id: binary_sensor.ups_arret_ha_recommande
+      state: 'on'
+
+  action:
+    - service: hassio.host_shutdown

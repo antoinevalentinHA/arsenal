@@ -114,7 +114,7 @@ views:
             name: 🩺 Systèmes critiques
 
           - type: grid
-            columns: 3
+            columns: 4
             square: false
             cards:
 
@@ -124,6 +124,15 @@ views:
                 entity: binary_sensor.coupure_secteur
                 name: Secteur
                 icon: mdi:power-plug
+
+              # UPS
+              - type: custom:button-card
+                template: ups_status_72
+                entity: binary_sensor.critere_ups_sur_batterie
+                name: UPS
+                tap_action:
+                  action: navigate
+                  navigation_path: /ups-dashboard/0
 
               # Batteries
               - type: custom:button-card

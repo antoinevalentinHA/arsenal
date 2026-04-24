@@ -1,0 +1,93 @@
+# ==========================================================
+# ARSENAL — TEMPLATE SENSORS
+# Domaine : monitoring_imprimerie
+# Entités : Santé de chaîne NAS imprimerie
+# ----------------------------------------------------------
+# Role :
+#   Exposer les 3 signaux orthogonaux de santé de chaîne
+#   définis par le contrat_monitoring_nas_distant.md v1.0
+#   (invariant I-HA-01).
+#
+# Perimetre :
+#   - sensor.nas_imprimerie_sonde_age
+#   - sensor.nas_imprimerie_transport_age
+#   - sensor.nas_imprimerie_republisher_age
+#
+# Sources :
+#   - sensor.nas_imprimerie_raw                            (MQTT status brut)
+#   - sensor.nas_imprimerie_republisher_heartbeat_raw      (MQTT heartbeat brut)
+#
+# Ne fait PAS :
+#   - aucune acquisition
+#   - aucune émission
+#   - aucune décision métier
+#   - aucune agrégation critique
+#
+# Invariants :
+#   - les 3 signaux sont calculés indépendamment (I-HA-01)
+#   - aucun signal n'est dérivé d'un autre
+#   - un défaut de donnée source rend l'entité 'unavailable'
+#     plutôt que de fabriquer une valeur fausse
+#   - les valeurs sont clampées à 0 minimum pour éviter
+#     les âges négatifs en cas de dérive d'horloge
+# ==========================================================
+
+- sensor:
+
+    # ------------------------------------------------------
+    # SONDE AGE
+    # Source : sensor.nas_imprimerie_raw (last_emit_ts)
+    # Segment observé : vitalité de la sonde distante
+    # ------------------------------------------------------
+    - name: NAS Imprimerie Sonde Age
+      unique_id: nas_imprimerie_sonde_age
+      unit_of_measurement: "s"
+      device_class: duration
+      icon: mdi:timer-outline
+      availability: >
+        {{ is_number(states('sensor.nas_imprimerie_raw')) }}
+      state: >
+        {% set ts = states('sensor.nas_imprimerie_raw') | int(0) %}
+        {{ [now().timestamp() - ts, 0] | max | int }}
+
+    # ------------------------------------------------------
+    # TRANSPORT AGE
+    # Source : heartbeat.ts - heartbeat.source_file_mtime
+    # Segment observé : vitalité de Drive ShareSync
+    #
+    # Note : si source_file_mtime est absent (fichier non
+    # reçu côté republisher), l'entité devient 'unavailable'.
+    # L'étape C devra traiter explicitement ce cas comme
+    # un transport critique.
+    # ------------------------------------------------------
+    - name: NAS Imprimerie Transport Age
+      unique_id: nas_imprimerie_transport_age
+      unit_of_measurement: "s"
+      device_class: duration
+      icon: mdi:swap-horizontal
+      availability: >
+        {{
+          is_number(states('sensor.nas_imprimerie_republisher_heartbeat_raw'))
+          and state_attr('sensor.nas_imprimerie_republisher_heartbeat_raw', 'source_file_mtime') is not none
+        }}
+      state: >
+        {% set hb_ts = states('sensor.nas_imprimerie_republisher_heartbeat_raw') | int(0) %}
+        {% set mtime = state_attr('sensor.nas_imprimerie_republisher_heartbeat_raw', 'source_file_mtime') | int(0) %}
+        {{ [hb_ts - mtime, 0] | max | int }}
+
+    # ------------------------------------------------------
+    # REPUBLISHER AGE
+    # Source : now() - heartbeat.ts
+    # Segment observé : vitalité de la chaîne locale
+    # (republisher + broker MQTT)
+    # ------------------------------------------------------
+    - name: NAS Imprimerie Republisher Age
+      unique_id: nas_imprimerie_republisher_age
+      unit_of_measurement: "s"
+      device_class: duration
+      icon: mdi:timer-refresh-outline
+      availability: >
+        {{ is_number(states('sensor.nas_imprimerie_republisher_heartbeat_raw')) }}
+      state: >
+        {% set ts = states('sensor.nas_imprimerie_republisher_heartbeat_raw') | int(0) %}
+        {{ [now().timestamp() - ts, 0] | max | int }}

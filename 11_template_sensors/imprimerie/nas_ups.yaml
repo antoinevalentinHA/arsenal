@@ -1,0 +1,53 @@
+# ==========================================================
+# ARSENAL — TEMPLATE SENSORS
+# Domaine : monitoring_imprimerie
+# Entités : NAS Imprimerie - UPS
+# ----------------------------------------------------------
+# Role :
+#   Exposer les informations UPS issues du payload brut
+#   du NAS imprimerie, sans réintroduire de logique
+#   d'acquisition ni interprétation excessive.
+#
+# Perimetre :
+#   - statut UPS brut
+#   - détection ON_BATTERY
+#
+# Ne fait PAS :
+#   - aucune acquisition
+#   - aucune estimation batterie (non fiable côté sonde)
+#   - aucune décision globale
+#
+# Contrat :
+#   Source unique : sensor.nas_imprimerie_raw
+#   Champs utilisés :
+#     - ups_status (enum)
+#
+# Invariant :
+#   - les valeurs sont dérivées directement du payload
+#   - aucune donnée n’est fabriquée
+#   - si la donnée source est absente → unavailable
+# ==========================================================
+
+- sensor:
+    - name: NAS Imprimerie UPS Status
+      unique_id: nas_imprimerie_ups_status
+      icon: mdi:battery
+      availability: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'ups_status') is not none }}
+      state: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'ups_status') }}
+
+- binary_sensor:
+    - name: NAS Imprimerie UPS Sur Batterie
+      unique_id: nas_imprimerie_ups_on_battery
+      device_class: power
+      icon: >
+        {% if is_state('binary_sensor.nas_imprimerie_ups_on_battery', 'on') %}
+          mdi:battery-alert
+        {% else %}
+          mdi:battery-check
+        {% endif %}
+      availability: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'ups_status') is not none }}
+      state: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'ups_status') == 'ON_BATTERY' }}

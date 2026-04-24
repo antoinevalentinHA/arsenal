@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     NAS Imprimerie — Alerte critique mobile
+#
+# 🗂️ COUCHE : Notification / Événement
+# 🧱 TYPE : Alerte mobile éphémère
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Signaler l’entrée confirmée du NAS imprimerie dans un
+#   état critique ou hors ligne.
+#
+# 📡 SOURCE
+#   binary_sensor.nas_imprimerie_alerte_active
+#   sensor.nas_imprimerie_sante_synthese
+#
+# ⚙️ LOGIQUE
+#   - déclenchement uniquement sur passage à on
+#   - aucune notification si retour à la normale
+#   - aucun persistant
+#   - aucun logbook
+#   - aucun system_log
+#
+# 🚫 NE FAIT PAS
+#   - ne surveille pas directement les axes
+#   - ne duplique pas la décision de santé
+#   - ne notifie pas les états nominaux
+#
+# ⚠️ COMPORTEMENT AU DÉMARRAGE
+#   Aucun rattrapage n’est effectué si l’alerte est déjà active
+#   au démarrage ou après rechargement YAML.
+#
+#   Justification :
+#   - éviter une notification mobile sur état déjà constitué
+#   - réserver le mobile à l’entrée observée dans l’incident
+#   - laisser le dashboard porter l’état courant
+# ==========================================================
+
+- id: "10180000000006"
+  alias: "Imprimerie - Alerte NAS"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.nas_imprimerie_alerte_active
+      from: "off"
+      to: "on"
+
+  action:
+    - variables:
+        sante: "{{ states('sensor.nas_imprimerie_sante_synthese') }}"
+        raison: "{{ state_attr('sensor.nas_imprimerie_sante_synthese', 'raison') | default('raison inconnue', true) }}"
+        priorite: "{{ state_attr('sensor.nas_imprimerie_sante_synthese', 'priorite_active') | default('?', true) }}"
+
+    - service: notify.mobile_app_pixel_7a
+      data:
+        title: "🖥️ NAS Imprimerie – Incident détecté"
+        message: >-
+          Santé : {{ sante }}.
+          Raison : {{ raison }}.
+          Priorité : {{ priorite }}.
+        data:
+          tag: nas_imprimerie_alerte
+          notification_icon: mdi:nas

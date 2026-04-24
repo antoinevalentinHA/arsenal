@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     NAS imprimerie — Information technique
+#
+# 🗂️ COUCHE : UI / Information
+# 🧱 TYPE UI : KPI informatif
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher une mesure technique informative ne portant pas
+#   directement une décision métier.
+#
+# 📡 SOURCE
+#   sensor.* du domaine monitoring_imprimerie.
+#
+# ⚙️ LOGIQUE UI
+#   disponible → bleu information
+#   unknown / unavailable → gris indisponibilité
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : Dashboard NAS imprimerie
+# ==========================================================
+
+nas_imprimerie_info:
+  template:
+    - socle_kpi_72
+  styles:
+    card:
+      - background-color: >
+          [[[
+            if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            return 'rgba(33, 150, 243, 0.2)';
+          ]]]

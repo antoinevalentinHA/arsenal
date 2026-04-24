@@ -1,0 +1,36 @@
+# ==========================================================
+# ARSENAL — TEMPLATE SENSORS
+# Domaine : monitoring_imprimerie
+# Entites : NAS Imprimerie - Alerte Active
+# ----------------------------------------------------------
+# Role :
+#   Produire la decision d'alerte a partir de la synthese
+#   de sante du NAS imprimerie.
+#
+# Perimetre :
+#   - binary_sensor.nas_imprimerie_alerte_active
+#
+# Source :
+#   - sensor.nas_imprimerie_sante_synthese (state uniquement)
+#
+# Regle :
+#   - Alerte brute si state in ['critical','offline']
+#   - Confirmation uniquement si condition vraie 2 min continues
+#   - Retour immediat des que condition fausse
+#
+# Ne fait PAS :
+#   - aucune notification
+#   - aucune lecture des attributs de la synthese
+#   - aucune logique metier complementaire
+#
+# Invariant :
+#   - source unique (state de la synthese uniquement)
+#   - decision pure sans effet de bord
+# ==========================================================
+
+- binary_sensor:
+    - name: NAS Imprimerie Alerte Active
+      unique_id: nas_imprimerie_alerte_active
+      state: >-
+        {{ states('sensor.nas_imprimerie_sante_synthese') in ['critical', 'offline'] }}
+      delay_on: "00:02:00"

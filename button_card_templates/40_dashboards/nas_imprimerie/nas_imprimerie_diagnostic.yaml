@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     NAS imprimerie — Diagnostic brut
+#
+# 🗂️ COUCHE : UI / Diagnostic
+# 🧱 TYPE UI : Diagnostic readonly
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Exposer une donnée technique brute sans décision UI.
+#
+# 📡 SOURCE
+#   sensor.* de diagnostic NAS imprimerie
+#
+# ⚙️ LOGIQUE UI
+#   disponible → bleu information
+#   unknown / unavailable → gris indisponibilité
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : Dashboard NAS imprimerie
+# ==========================================================
+
+nas_imprimerie_diagnostic:
+  template:
+    - socle_diagnostic_compact_readonly_72
+  styles:
+    card:
+      - background-color: >
+          [[[
+            if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            return 'rgba(33, 150, 243, 0.2)';
+          ]]]

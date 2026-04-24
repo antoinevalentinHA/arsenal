@@ -1,0 +1,89 @@
+# ============================================================
+# ARSENAL — TEMPLATE BINARY SENSORS UPS
+#
+# Domaine : Infrastructure
+# Version : v1.1
+# Statut : Actif
+#
+# Rôle :
+# Exposer les critères UPS normalisés utilisés par Arsenal pour
+# l'observation, le diagnostic et l'arrêt propre de Home Assistant.
+#
+# Périmètre :
+# - Lecture uniquement des capteurs UPS (NUT)
+# - Aucune logique temporelle (pas de for:, délai, debounce)
+# - Aucune action directe
+#
+# Ce que ce fichier fait :
+# - Détecte le mode batterie (OB)
+# - Détecte le seuil batterie faible UPS (SBF)
+# - Évalue l’autonomie critique pour arrêt Home Assistant
+# - Agrège une recommandation d’arrêt Home Assistant (hors CD)
+#
+# Ce que ce fichier ne fait pas :
+# - Ne décide pas seul l’arrêt Home Assistant
+# - Ne gère pas la coupure durable (CD)
+# - Ne déclenche aucune action
+# - Ne pilote pas le NAS
+#
+# Contrats associés :
+# - contrat_ups_arret_home_assistant_v1.0.md
+#
+# Invariants :
+# - unknown/unavailable → false
+# - Aucun effet de bord
+# - La discipline temporelle appartient aux automatisations
+# ============================================================
+
+- binary_sensor:
+
+    # ============================================================
+    # CRITERE — UPS SUR BATTERIE
+    # ============================================================
+    - name: "critere_ups_sur_batterie"
+      unique_id: critere_ups_sur_batterie
+      state: >
+        {% set etat = states('sensor.ups_code_d_etat') %}
+        {% if etat not in ['unknown', 'unavailable', ''] %}
+          {{ 'OB' in etat }}
+        {% else %}
+          false
+        {% endif %}
+
+    # ============================================================
+    # CRITERE — BATTERIE FAIBLE UPS (SBF)
+    # ============================================================
+    - name: "critere_ups_batterie_faible"
+      unique_id: critere_ups_batterie_faible
+      state: >
+        {% set autonomie = states('sensor.ups_autonomie_de_la_batterie') %}
+        {% set seuil = states('sensor.ups_autonomie_de_la_batterie_faible') %}
+        {% if autonomie not in ['unknown', 'unavailable', '']
+              and seuil not in ['unknown', 'unavailable', ''] %}
+          {{ autonomie | float(0) <= seuil | float(0) }}
+        {% else %}
+          false
+        {% endif %}
+
+    # ============================================================
+    # CRITERE — AUTONOMIE HA CRITIQUE (AHC)
+    # ============================================================
+    - name: "critere_ups_autonomie_ha_critique"
+      unique_id: critere_ups_autonomie_ha_critique
+      state: >
+        {% set autonomie = states('sensor.ups_autonomie_de_la_batterie') %}
+        {% if autonomie not in ['unknown', 'unavailable', ''] %}
+          {{ autonomie | float(0) < 600 }}
+        {% else %}
+          false
+        {% endif %}
+
+    # ============================================================
+    # RECOMMANDATION — ARRET HOME ASSISTANT
+    # AHC OR SBF (sans critère temporel CD)
+    # ============================================================
+    - name: "ups_arret_ha_recommande"
+      unique_id: ups_arret_ha_recommande
+      state: >
+        {{ is_state('binary_sensor.critere_ups_autonomie_ha_critique', 'on')
+           or is_state('binary_sensor.critere_ups_batterie_faible', 'on') }}

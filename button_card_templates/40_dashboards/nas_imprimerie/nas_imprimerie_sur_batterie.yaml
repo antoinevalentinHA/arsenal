@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     NAS imprimerie — UPS sur batterie
+#
+# 🗂️ COUCHE : UI / État réel
+# 🧱 TYPE UI : Statut binaire critique
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher si l’UPS du NAS imprimerie fonctionne sur batterie.
+#
+# 📡 SOURCE
+#   binary_sensor.nas_imprimerie_ups_sur_batterie
+#
+# ⚙️ LOGIQUE UI
+#   off → vert OK
+#   on → rouge critique
+#   unknown / unavailable → gris indisponibilité
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : Dashboard NAS imprimerie
+# ==========================================================
+
+nas_imprimerie_sur_batterie:
+  template:
+    - socle_status_72
+  show_state: true
+  state_display: >
+    [[[
+      if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+        return 'Indisponible';
+
+      if (entity.state === 'on')
+        return 'Activé';
+
+      return 'Désactivé';
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            if (entity.state === 'on')
+              return 'rgba(244, 67, 54, 0.2)';
+
+            return 'rgba(76, 175, 80, 0.2)';
+          ]]]

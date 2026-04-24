@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     NAS imprimerie — Connectivité
+#
+# 🗂️ COUCHE : UI / État réel
+# 🧱 TYPE UI : Statut binaire
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher la fraîcheur effective du flux NAS imprimerie.
+#
+# 📡 SOURCE
+#   binary_sensor.nas_imprimerie_connectivite
+#
+# ⚙️ LOGIQUE UI
+#   on → vert
+#   off → rouge
+#   unknown / unavailable → gris indisponibilité
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : nas_imprimerie_pivot_sante
+# ==========================================================
+
+nas_imprimerie_statut_connectivite:
+  template:
+    - socle_status_72
+  show_state: true
+  state_display: >
+    [[[
+      if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+        return 'Indisponible';
+
+      if (entity.state === 'on')
+        return 'Connecté';
+
+      return 'Déconnecté';
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            if (entity.state === 'on')
+              return 'rgba(76, 175, 80, 0.2)';
+
+            return 'rgba(244, 67, 54, 0.2)';
+          ]]]

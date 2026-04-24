@@ -1,0 +1,42 @@
+# ==========================================================
+# ARSENAL — MQTT SENSOR
+# Domaine : monitoring_imprimerie
+# Entité  : NAS Imprimerie Republisher Heartbeat Raw
+# ----------------------------------------------------------
+# Role :
+#   Source de vérité brute du heartbeat du republisher
+#   exécuté sur le NAS maison.
+#
+# Perimetre :
+#   - lecture du topic MQTT heartbeat
+#   - extraction de ts comme état principal
+#   - exposition des attributs JSON associés
+#
+# Ne fait PAS :
+#   - aucune dérivation temporelle
+#   - aucune décision
+#   - aucune interprétation métier
+#
+# Contrat :
+#   contrat_monitoring_nas_distant.md v1.0
+#   Topic : monitoring/imprimerie/nas/republisher_hb
+#   Payload :
+#     - ts                       (epoch du heartbeat)
+#     - source_file_mtime        (epoch mtime fichier source, null si absent)
+#     - source_file_present      (bool)
+#     - last_publish_action      (enum I-REPUB-05)
+#
+# Invariant :
+#   state = ts (epoch du heartbeat republisher)
+#   Toute logique temporelle est dérivée dans template:
+# ==========================================================
+
+- name: NAS Imprimerie Republisher Heartbeat Raw
+  unique_id: nas_imprimerie_republisher_hb_raw
+  state_topic: monitoring/imprimerie/nas/republisher_hb
+  value_template: "{{ value_json.ts }}"
+  json_attributes_topic: monitoring/imprimerie/nas/republisher_hb
+  icon: mdi:heartbeat
+  # force_update retiré : ts est strictement monotone par construction
+  # (I-SONDE-01 côté sonde, ts = epoch d'exécution côté republisher),
+  # donc chaque publish change déjà la valeur d'état.

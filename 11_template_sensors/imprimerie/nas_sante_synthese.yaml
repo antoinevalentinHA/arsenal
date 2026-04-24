@@ -1,0 +1,277 @@
+# ==========================================================
+# ARSENAL — TEMPLATE SENSOR
+# Domaine : monitoring_imprimerie
+# Entite  : NAS Imprimerie Sante Synthese
+# ----------------------------------------------------------
+# Role :
+#   Produire la synthese interpretative de sante du NAS
+#   imprimerie a partir des signaux deja exposes par Arsenal.
+#
+# Perimetre :
+#   - axe connectivite
+#   - axe VPN
+#   - axe UPS
+#   - axe stockage
+#   - axe uptime (neutralise a unknown en v1.1)
+#
+# Ne fait PAS :
+#   - aucune acquisition
+#   - aucune emission
+#   - aucune action
+#   - aucune notification
+#   - aucune logique UI
+#   - aucune correction de donnee source
+#
+# Contrat :
+#   Synthese de sante NAS Imprimerie v1.1
+#
+# Dette acceptee v1.1 :
+#   - logique chaine dupliquee dans plusieurs attributs
+#   - factorisation possible en v1.2 via entite intermediaire
+#   - axe uptime non implemente
+#
+# Notes v1.1 :
+#   - donnees_incompletes prime volontairement sur les defauts metier,
+#     y compris ups_low_battery et stockage_critique : la synthese
+#     privilegie l'honnetete de classification avant le danger interprete.
+#   - la priorite 7 est reservee a une future detection de reboot.
+#   - la protection contre une chaine indisponible repose sur
+#     availability: la logique interne suppose les 3 ages chaine
+#     numeriques et binary_sensor.nas_imprimerie_connectivite exploitable.
+#
+# Invariants :
+#   - state dans enum fermee : ok / degraded / critical / offline / unknown
+#   - raison canonique obligatoire
+#   - priorite deterministe
+#   - sous-etats par axe toujours exposes
+# ==========================================================
+
+- sensor:
+    - name: NAS Imprimerie Sante Synthese
+      unique_id: nas_imprimerie_sante_synthese
+      availability: >-
+        {{
+          is_number(states('sensor.nas_imprimerie_sonde_age'))
+          and is_number(states('sensor.nas_imprimerie_transport_age'))
+          and is_number(states('sensor.nas_imprimerie_republisher_age'))
+          and states('binary_sensor.nas_imprimerie_connectivite') in ['on', 'off']
+        }}
+      state: >-
+        {% set sonde_age = states('sensor.nas_imprimerie_sonde_age') | int(-1) %}
+        {% set transport_age = states('sensor.nas_imprimerie_transport_age') | int(-1) %}
+        {% set republisher_age = states('sensor.nas_imprimerie_republisher_age') | int(-1) %}
+        {% set vpn = states('sensor.nas_imprimerie_vpn') %}
+        {% set ups = states('sensor.nas_imprimerie_ups_status') %}
+        {% set stockage = states('sensor.nas_imprimerie_stockage_etat') %}
+
+        {% set chaine_critical =
+          sonde_age > 300
+          or transport_age > 300
+          or republisher_age > 180
+          or is_state('binary_sensor.nas_imprimerie_connectivite', 'off')
+        %}
+        {% set chaine_degraded =
+          not chaine_critical
+          and (
+            sonde_age >= 120
+            or transport_age >= 120
+            or republisher_age >= 120
+          )
+        %}
+
+        {% set vpn_unknown = vpn not in ['CONNECTED', 'DISCONNECTED', 'ERROR'] %}
+        {% set vpn_critical = vpn in ['DISCONNECTED', 'ERROR'] %}
+
+        {% set ups_unknown = ups not in ['ONLINE', 'ON_BATTERY', 'LOW_BATTERY', 'OFF'] %}
+        {% set ups_degraded = ups == 'ON_BATTERY' %}
+        {% set ups_critical = ups in ['LOW_BATTERY', 'OFF'] %}
+
+        {% set stockage_unknown = stockage not in ['ok', 'bas', 'critique', 'unknown'] or stockage == 'unknown' %}
+        {% set stockage_degraded = stockage == 'bas' %}
+        {% set stockage_critical = stockage == 'critique' %}
+
+        {% if chaine_critical %}
+          offline
+        {% elif vpn_unknown or ups_unknown or stockage_unknown %}
+          unknown
+        {% elif vpn_critical or ups_critical or stockage_critical %}
+          critical
+        {% elif chaine_degraded or ups_degraded or stockage_degraded %}
+          degraded
+        {% else %}
+          ok
+        {% endif %}
+      attributes:
+        axe_connectivite: >-
+          {% set sonde_age = states('sensor.nas_imprimerie_sonde_age') | int(-1) %}
+          {% set transport_age = states('sensor.nas_imprimerie_transport_age') | int(-1) %}
+          {% set republisher_age = states('sensor.nas_imprimerie_republisher_age') | int(-1) %}
+          {% if sonde_age < 0 or transport_age < 0 or republisher_age < 0 or states('binary_sensor.nas_imprimerie_connectivite') not in ['on', 'off'] %}
+            unknown
+          {% elif sonde_age > 300 or transport_age > 300 or republisher_age > 180 or is_state('binary_sensor.nas_imprimerie_connectivite', 'off') %}
+            critical
+          {% elif sonde_age >= 120 or transport_age >= 120 or republisher_age >= 120 %}
+            degraded
+          {% else %}
+            ok
+          {% endif %}
+        axe_vpn: >-
+          {% set vpn = states('sensor.nas_imprimerie_vpn') %}
+          {% if vpn == 'CONNECTED' %}
+            ok
+          {% elif vpn in ['DISCONNECTED', 'ERROR'] %}
+            critical
+          {% else %}
+            unknown
+          {% endif %}
+        axe_ups: >-
+          {% set ups = states('sensor.nas_imprimerie_ups_status') %}
+          {% if ups == 'ONLINE' %}
+            ok
+          {% elif ups == 'ON_BATTERY' %}
+            degraded
+          {% elif ups in ['LOW_BATTERY', 'OFF'] %}
+            critical
+          {% else %}
+            unknown
+          {% endif %}
+        axe_stockage: >-
+          {% set stockage = states('sensor.nas_imprimerie_stockage_etat') %}
+          {% if stockage == 'ok' %}
+            ok
+          {% elif stockage == 'bas' %}
+            degraded
+          {% elif stockage == 'critique' %}
+            critical
+          {% elif stockage == 'unknown' %}
+            unknown
+          {% else %}
+            unknown
+          {% endif %}
+        axe_uptime: unknown
+        raison: >-
+          {% set sonde_age = states('sensor.nas_imprimerie_sonde_age') | int(-1) %}
+          {% set transport_age = states('sensor.nas_imprimerie_transport_age') | int(-1) %}
+          {% set republisher_age = states('sensor.nas_imprimerie_republisher_age') | int(-1) %}
+          {% set vpn = states('sensor.nas_imprimerie_vpn') %}
+          {% set ups = states('sensor.nas_imprimerie_ups_status') %}
+          {% set stockage = states('sensor.nas_imprimerie_stockage_etat') %}
+
+          {% if sonde_age > 300 or transport_age > 300 or republisher_age > 180 or is_state('binary_sensor.nas_imprimerie_connectivite', 'off') %}
+            chaine_rompue
+          {% elif vpn not in ['CONNECTED', 'DISCONNECTED', 'ERROR'] or ups not in ['ONLINE', 'ON_BATTERY', 'LOW_BATTERY', 'OFF'] or stockage not in ['ok', 'bas', 'critique'] %}
+            donnees_incompletes
+          {% elif ups == 'LOW_BATTERY' %}
+            ups_low_battery
+          {% elif ups == 'OFF' %}
+            ups_off
+          {% elif vpn == 'DISCONNECTED' %}
+            vpn_down
+          {% elif vpn == 'ERROR' %}
+            vpn_error
+          {% elif stockage == 'critique' %}
+            stockage_critique
+          {% elif ups == 'ON_BATTERY' %}
+            ups_on_battery
+          {% elif stockage == 'bas' %}
+            stockage_bas
+          {% elif sonde_age >= 120 or transport_age >= 120 or republisher_age >= 120 %}
+            chaine_degradee
+          {% else %}
+            nominal
+          {% endif %}
+        priorite_active: >-
+          {% set sonde_age = states('sensor.nas_imprimerie_sonde_age') | int(-1) %}
+          {% set transport_age = states('sensor.nas_imprimerie_transport_age') | int(-1) %}
+          {% set republisher_age = states('sensor.nas_imprimerie_republisher_age') | int(-1) %}
+          {% set vpn = states('sensor.nas_imprimerie_vpn') %}
+          {% set ups = states('sensor.nas_imprimerie_ups_status') %}
+          {% set stockage = states('sensor.nas_imprimerie_stockage_etat') %}
+
+          {% if sonde_age > 300 or transport_age > 300 or republisher_age > 180 or is_state('binary_sensor.nas_imprimerie_connectivite', 'off') %}
+            1
+          {% elif vpn not in ['CONNECTED', 'DISCONNECTED', 'ERROR'] or ups not in ['ONLINE', 'ON_BATTERY', 'LOW_BATTERY', 'OFF'] or stockage not in ['ok', 'bas', 'critique'] %}
+            2
+          {% elif ups == 'LOW_BATTERY' %}
+            3
+          {% elif ups == 'OFF' %}
+            4
+          {% elif vpn in ['DISCONNECTED', 'ERROR'] %}
+            5
+          {% elif stockage == 'critique' %}
+            6
+          {% elif ups == 'ON_BATTERY' %}
+            8
+          {% elif stockage == 'bas' %}
+            9
+          {% elif sonde_age >= 120 or transport_age >= 120 or republisher_age >= 120 %}
+            10
+          {% else %}
+            0
+          {% endif %}
+        defauts_actifs: >-
+          {% set ns = namespace(defauts=[]) %}
+          {% set sonde_age = states('sensor.nas_imprimerie_sonde_age') | int(-1) %}
+          {% set transport_age = states('sensor.nas_imprimerie_transport_age') | int(-1) %}
+          {% set republisher_age = states('sensor.nas_imprimerie_republisher_age') | int(-1) %}
+          {% set vpn = states('sensor.nas_imprimerie_vpn') %}
+          {% set ups = states('sensor.nas_imprimerie_ups_status') %}
+          {% set stockage = states('sensor.nas_imprimerie_stockage_etat') %}
+
+          {% set chaine_rompue =
+            sonde_age > 300
+            or transport_age > 300
+            or republisher_age > 180
+            or is_state('binary_sensor.nas_imprimerie_connectivite', 'off')
+          %}
+
+          {% set chaine_degradee =
+            not chaine_rompue
+            and (
+              sonde_age >= 120
+              or transport_age >= 120
+              or republisher_age >= 120
+            )
+          %}
+
+          {% if chaine_rompue %}
+            {% set ns.defauts = ns.defauts + ['chaine_rompue'] %}
+          {% endif %}
+
+          {% if vpn not in ['CONNECTED', 'DISCONNECTED', 'ERROR'] or ups not in ['ONLINE', 'ON_BATTERY', 'LOW_BATTERY', 'OFF'] or stockage not in ['ok', 'bas', 'critique'] %}
+            {% set ns.defauts = ns.defauts + ['donnees_incompletes'] %}
+          {% endif %}
+
+          {% if ups == 'LOW_BATTERY' %}
+            {% set ns.defauts = ns.defauts + ['ups_low_battery'] %}
+          {% endif %}
+
+          {% if ups == 'OFF' %}
+            {% set ns.defauts = ns.defauts + ['ups_off'] %}
+          {% endif %}
+
+          {% if vpn == 'DISCONNECTED' %}
+            {% set ns.defauts = ns.defauts + ['vpn_down'] %}
+          {% endif %}
+
+          {% if vpn == 'ERROR' %}
+            {% set ns.defauts = ns.defauts + ['vpn_error'] %}
+          {% endif %}
+
+          {% if stockage == 'critique' %}
+            {% set ns.defauts = ns.defauts + ['stockage_critique'] %}
+          {% endif %}
+
+          {% if ups == 'ON_BATTERY' %}
+            {% set ns.defauts = ns.defauts + ['ups_on_battery'] %}
+          {% endif %}
+
+          {% if stockage == 'bas' %}
+            {% set ns.defauts = ns.defauts + ['stockage_bas'] %}
+          {% endif %}
+
+          {% if chaine_degradee %}
+            {% set ns.defauts = ns.defauts + ['chaine_degradee'] %}
+          {% endif %}
+
+          {{ ns.defauts }}

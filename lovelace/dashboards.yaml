@@ -124,6 +124,13 @@ nas-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/nas.yaml
 
+ups-dashboard:
+  mode: yaml
+  title: UPS
+  icon: mdi:power-plug-battery
+  show_in_sidebar: false
+  filename: lovelace/dashboards/ups.yaml
+
 audi-dashboard:
   mode: yaml
   title: Audi
@@ -256,6 +263,13 @@ imprimerie-atelier-dashboard:
   icon: mdi:factory
   show_in_sidebar: false
   filename: lovelace/dashboards/imprimerie/imprimerie_atelier.yaml
+
+imprimerie-nas-dashboard:
+  mode: yaml
+  title: NAS Imprimerie
+  icon: mdi:nas
+  show_in_sidebar: false
+  filename: lovelace/dashboards/imprimerie/nas.yaml
 
 id-automatisations-dashboard:
   mode: yaml

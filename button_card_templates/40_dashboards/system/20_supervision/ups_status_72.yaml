@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Infrastructure — UPS statut
+#
+# 🗂️ COUCHE : UI / Statut système
+# 🧱 TYPE UI : Lecture seule — statut équipement
+# 🔍 NIVEAU DE CONFIANCE : Élevé (capteur dérivé NUT)
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher l’état de l’UPS du point de vue métier :
+#   - OK (secteur présent)
+#   - Batterie (fonctionnement sur batterie)
+#
+# 📡 SOURCE
+#   binary_sensor.critere_ups_sur_batterie
+#
+# ⚙️ LOGIQUE UI
+#   - on  → UPS sur batterie → état "Batterie" → couleur orange
+#   - off → secteur présent → état "OK" → couleur verte
+#   - autre → indisponible → couleur grise
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : Systeme — Systemes critiques
+#
+# ==========================================================
+
+ups_status_72:
+  template:
+    - socle_status_72
+
+  icon: mdi:power-plug-battery
+
+  state_display: >
+    [[[
+      if (entity.state === 'on') return 'Batterie';
+      if (entity.state === 'off') return 'OK';
+      return 'Indispo';
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            if (entity.state === 'on') return 'rgba(255, 152, 0, 0.25)';
+            if (entity.state === 'off') return 'rgba(76, 175, 80, 0.2)';
+            return 'rgba(224, 224, 224, 0.2)';
+          ]]]

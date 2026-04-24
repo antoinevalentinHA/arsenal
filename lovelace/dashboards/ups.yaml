@@ -1,0 +1,96 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+views:
+  - badges: !include ../includes/badges/diagnostics_systeme.yaml
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          # ==========================================================
+          # SECTION — Etat UPS
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔌 Etat
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+
+              - type: custom:button-card
+                template: ups_status_72
+                entity: binary_sensor.critere_ups_sur_batterie
+                name: UPS
+
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.critere_ups_batterie_faible
+                name: Batterie faible
+                icon: mdi:battery-alert
+
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.ups_arret_ha_recommande
+                name: Arrêt HA
+                icon: mdi:power-settings
+
+          # ==========================================================
+          # SECTION — Valeurs UPS
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔋 Valeurs
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+
+              # Autonomie restante
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.ups_autonomie_de_la_batterie
+                name: Autonomie
+                icon: mdi:timer-outline
+
+              # Charge batterie
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.ups_charge_de_la_batterie
+                name: Batterie
+                unit: "%"
+
+              # Charge UPS (% load)
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.ups_charge
+                name: Charge UPS
+                unit: "%"
+
+          # ==========================================================
+          # SECTION — Diagnostic électrique
+          # ==========================================================
+          - type: custom:button-card
+            template: section_header
+            name: ⚡ Diagnostic électrique
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+
+              # Tension entrée
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.ups_tension_d_entree
+                name: Entrée
+                icon: mdi:power-plug
+
+              # Tension sortie
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.ups_tension_de_sortie
+                name: Sortie
+                icon: mdi:flash

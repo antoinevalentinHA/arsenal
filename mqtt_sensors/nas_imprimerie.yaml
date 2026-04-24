@@ -1,0 +1,24 @@
+# ==========================================================
+# ARSENAL — MQTT SENSOR
+# Domaine : monitoring_imprimerie
+# Entité  : NAS Imprimerie Raw
+# ----------------------------------------------------------
+# Role :
+#   Source de vérité brute issue du NAS imprimerie.
+#   Transporte le payload MQTT sans interprétation.
+#
+# Contrat :
+#   Topic : monitoring/imprimerie/nas/status
+#   Payload : JSON
+#
+# Invariant :
+#   state = last_emit_ts (epoch)
+# ==========================================================
+
+- name: NAS Imprimerie Raw
+  unique_id: nas_imprimerie_raw
+  state_topic: monitoring/imprimerie/nas/status
+  value_template: "{{ value_json.last_emit_ts }}"
+  json_attributes_topic: monitoring/imprimerie/nas/status
+  icon: mdi:server
+  force_update: true

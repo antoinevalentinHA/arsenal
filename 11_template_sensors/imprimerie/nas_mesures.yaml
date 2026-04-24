@@ -1,0 +1,79 @@
+# ==========================================================
+# ARSENAL — TEMPLATE SENSORS
+# Domaine : monitoring_imprimerie
+# Entites : NAS Imprimerie - Mesures
+# ----------------------------------------------------------
+# Role :
+#   Exposer les mesures derivees du payload MQTT brut du NAS
+#   imprimerie, sans reintroduire de logique d'acquisition.
+#
+# Perimetre :
+#   - uptime
+#   - espace libre absolu
+#   - espace libre relatif
+#   - statut VPN
+#   - age du dernier signal
+#
+# Ne fait PAS :
+#   - aucune acquisition
+#   - aucune emission
+#   - aucune decision d'alerte
+#
+# Contrat :
+#   Source unique : sensor.nas_imprimerie_raw
+#   Les attributs JSON sont portes par le sensor MQTT brut.
+#
+# Invariant :
+#   Si l'attribut source est absent, l'entite devient indisponible
+#   plutot que de fabriquer une valeur fausse.
+# ==========================================================
+
+- sensor:
+    - name: NAS Imprimerie Uptime
+      unique_id: nas_imprimerie_uptime
+      unit_of_measurement: "s"
+      device_class: duration
+      availability: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'uptime_sec') is not none }}
+      state: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'uptime_sec') | int }}
+
+    - name: NAS Imprimerie Free Space
+      unique_id: nas_imprimerie_free_space
+      unit_of_measurement: "GB"
+      device_class: data_size
+      availability: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'vol_free_gb') is not none }}
+      state: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'vol_free_gb') | float | round(2) }}
+
+    - name: NAS Imprimerie Free Space Percent
+      unique_id: nas_imprimerie_free_space_percent
+      unit_of_measurement: "%"
+      availability: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'vol_free_pct') is not none }}
+      state: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'vol_free_pct') | float | round(2) }}
+
+    - name: NAS Imprimerie VPN
+      unique_id: nas_imprimerie_vpn
+      availability: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'vpn_status') is not none }}
+      icon: >
+        {% if state_attr('sensor.nas_imprimerie_raw', 'vpn_status') == 'CONNECTED' %}
+          mdi:vpn
+        {% else %}
+          mdi:vpn-off
+        {% endif %}
+      state: >
+        {{ state_attr('sensor.nas_imprimerie_raw', 'vpn_status') | upper }}
+
+    - name: NAS Imprimerie Last Emit Age
+      unique_id: nas_imprimerie_last_emit_age
+      unit_of_measurement: "s"
+      device_class: duration
+      availability: >
+        {{ is_number(states('sensor.nas_imprimerie_raw')) }}
+      state: >
+        {% set ts = states('sensor.nas_imprimerie_raw') | int(0) %}
+        {{ (now().timestamp() - ts) | int }}

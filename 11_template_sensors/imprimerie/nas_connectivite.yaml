@@ -1,0 +1,45 @@
+# ==========================================================
+# ARSENAL — TEMPLATE BINARY SENSOR
+# Domaine : monitoring_imprimerie
+# Entité  : NAS Imprimerie Connectivite
+# ----------------------------------------------------------
+# Role :
+#   Autorite de vie du flux NAS imprimerie.
+#   Determine si la chaine de donnees est fraiche ou non.
+#
+# Perimetre :
+#   - lecture de sensor.nas_imprimerie_raw
+#   - derivation temporelle sur last_emit_ts
+#
+# Ne fait PAS :
+#   - aucune acquisition
+#   - aucune logique de stockage
+#   - aucune logique VPN
+#
+# Contrat :
+#   Source : sensor.nas_imprimerie_raw
+#   Etat   : epoch last_emit_ts
+#
+# Invariant :
+#   on  = donnees fraiches (< 180 s)
+#   off = donnees absentes, invalides ou trop anciennes
+# ==========================================================
+
+- binary_sensor:
+    - name: NAS Imprimerie Connectivite
+      unique_id: nas_imprimerie_connectivite
+      device_class: connectivity
+      icon: >
+        {% if is_state('binary_sensor.nas_imprimerie_connectivite', 'on') %}
+          mdi:server-network
+        {% else %}
+          mdi:server-network-off
+        {% endif %}
+      state: >
+        {% set raw = states('sensor.nas_imprimerie_raw') %}
+        {% if is_number(raw) %}
+          {% set ts = raw | int(0) %}
+          {{ (now().timestamp() - ts) < 180 }}
+        {% else %}
+          false
+        {% endif %}

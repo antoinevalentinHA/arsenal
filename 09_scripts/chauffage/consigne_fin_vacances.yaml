@@ -91,11 +91,3 @@ vacances_retirer_consigne_reduite:
                 entity_id: input_number.chauffage_consigne_reduite_sauvegarde
               data:
                 value: 0
-
-      default:
-        - service: system_log.write
-          data:
-            level: warning
-            message: >
-              Vacances - Retirer adaptation consigne reduite :
-              aucune sauvegarde valide (sentinelle = 0), abstention.

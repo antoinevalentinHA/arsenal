@@ -1,0 +1,36 @@
+# ==========================================================
+# ARSENAL — TEMPLATE SENSOR
+# Domaine : monitoring_imprimerie
+# Entite  : NAS Imprimerie Stockage Etat
+# ----------------------------------------------------------
+# Role :
+#   Produire un etat categoriel du niveau de stockage
+#   a partir de la mesure brute free_space_percent.
+#
+# Contrat :
+#   nas_stockage_decision.md v1.0-durci
+#
+# Invariants :
+#   - enum fermee : ok / bas / critique / unknown
+#   - source unique : sensor.nas_imprimerie_free_space_percent
+#   - aucune logique UI
+# ==========================================================
+
+- sensor:
+    - name: NAS Imprimerie Stockage Etat
+      unique_id: nas_imprimerie_stockage_etat
+      state: >-
+        {% set raw = states('sensor.nas_imprimerie_free_space_percent') %}
+        {% set val = raw | float(none) %}
+
+        {% if val is none %}
+          unknown
+        {% elif val < 0 or val > 100 %}
+          critique
+        {% elif val < 10 %}
+          critique
+        {% elif val < 20 %}
+          bas
+        {% else %}
+          ok
+        {% endif %}

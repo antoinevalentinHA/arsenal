@@ -1,0 +1,35 @@
+# ==========================================================
+# ARSENAL — TEMPLATE SENSOR
+# Domaine : monitoring_imprimerie
+# Entité  : NAS Imprimerie Dernier demarrage
+# ----------------------------------------------------------
+# Role :
+#   Dériver la date/heure du dernier démarrage du NAS
+#   imprimerie à partir de son uptime remonté dans Home
+#   Assistant.
+#
+# Perimetre :
+#   - lecture de sensor.nas_imprimerie_uptime
+#   - conversion uptime -> timestamp de boot
+#
+# Ne fait PAS :
+#   - aucune acquisition
+#   - aucune décision métier
+#   - aucune alerte
+#
+# Invariants :
+#   - la source est sensor.nas_imprimerie_uptime
+#   - si l'uptime est absent ou invalide, l'entité devient
+#     unavailable plutôt que de fabriquer une valeur fausse
+# ==========================================================
+
+- sensor:
+    - name: NAS Imprimerie Dernier démarrage
+      unique_id: nas_imprimerie_dernier_demarrage
+      device_class: timestamp
+      icon: mdi:clock-start
+      availability: >
+        {{ is_number(states('sensor.nas_imprimerie_uptime')) }}
+      state: >
+        {% set uptime = states('sensor.nas_imprimerie_uptime') | int(0) %}
+        {{ (now().timestamp() - uptime) | timestamp_local }}

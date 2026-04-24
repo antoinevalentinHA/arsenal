@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     NAS imprimerie — Axe de santé
+#
+# 🗂️ COUCHE : UI / Synthèse satellite
+# 🧱 TYPE UI : Statut d’axe
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher un axe de santé exposé par la synthèse souveraine
+#   du NAS imprimerie.
+#
+# 📡 SOURCE
+#   sensor.nas_imprimerie_sante_synthese
+#   Attribut sélectionné via variables.axe.
+#
+# ⚙️ LOGIQUE UI
+#   ok       → vert OK
+#   degraded → orange avertissement
+#   critical → rouge critique
+#   unknown / unavailable → gris indisponibilité
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : nas_imprimerie_pivot_sante
+# ==========================================================
+
+nas_imprimerie_axe_sante:
+  template:
+    - socle_status_72
+  show_state: true
+  state_display: >
+    [[[
+      if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+        return 'Indisponible';
+
+      const value = entity.attributes[variables.axe];
+
+      const map = {
+        ok: 'OK',
+        degraded: 'Dégradé',
+        critical: 'Critique',
+        unknown: 'Inconnu'
+      };
+
+      return map[value] || 'Inconnu';
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            const value = entity.attributes[variables.axe];
+
+            if (value === 'ok')
+              return 'rgba(76, 175, 80, 0.2)';
+
+            if (value === 'degraded')
+              return 'rgba(255, 152, 0, 0.2)';
+
+            if (value === 'critical')
+              return 'rgba(244, 67, 54, 0.2)';
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

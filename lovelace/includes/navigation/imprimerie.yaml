@@ -59,6 +59,16 @@ cards:
       icon:
         - color: '#1B5E20'
 
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:nas
+    tap_action:
+      action: navigate
+      navigation_path: /imprimerie-nas-dashboard/nas-imprimerie
+    styles:
+      icon:
+        - color: '#424242'
+
   # marge droite
   - type: custom:button-card
     template: bouton_spacer

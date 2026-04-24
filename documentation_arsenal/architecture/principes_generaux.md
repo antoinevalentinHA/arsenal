@@ -1,88 +1,139 @@
-# ==========================================================
-# ⏱️ Robustesse au rechargement YAML
-# ==========================================================
+# Principes généraux Arsenal
 
-## 🧠 Principe fondamental
+Ce document énonce les invariants universels d'Arsenal.
+Ils s'appliquent à tous les domaines, tous les composants,
+toutes les versions du système.
 
-Dans l’architecture Arsenal, un **rechargement complet de la configuration YAML**
-(Home Assistant restart ou reload global) est considéré comme :
+Chaque principe est normatif : toute conception, tout refactor,
+toute revue doit pouvoir être confrontée à cette liste.
 
-→ **un test structurel volontaire de robustesse**,  
-et non comme un événement exceptionnel ou tolérable.
+Les règles d'implémentation spécifiques à une plateforme
+(Home Assistant, MQTT, shell, etc.) sont traitées dans
+des documents dédiés qui citent ces principes et les instancient.
 
-Toute erreur apparaissant de manière fiable lors d’un reload
-est interprétée comme le symptôme d’une **dette de conception réelle**.
+---
 
+## 1. Contrat avant YAML
 
-## 🔍 Problème identifié (comportement Home Assistant)
+**Doctrine.** Aucune entité, automation ou script n'est créé
+avant que son contrat d'interface soit explicite : entrées,
+sorties, invariants, régimes de fonctionnement.
 
-Lors d’un rechargement global :
+**Justification.** Le YAML est la matérialisation d'une intention
+architecturale, pas sa source ; sans contrat préalable,
+l'implémentation devient l'unique source de vérité et la dérive
+devient inévitable.
 
-- Home Assistant évalue immédiatement les blocs `choose`
-  et leurs conditions associées
-- Certaines entités peuvent ne pas être encore enregistrées
-  ou disponibles à cet instant
+---
 
-Toute utilisation de :
+## 2. Autorité unique par domaine
 
-- `condition: state`
-- ciblant une entité non garantie présente au reload
+**Doctrine.** Un domaine fonctionnel (chauffage, ECS, VMC, vacances,
+présence, climatisation…) possède une et une seule entité
+responsable de la décision. Un domaine se définit par la grandeur
+physique ou l'effet observable qu'il contrôle (température d'un
+volume, production d'ECS, débit d'air, état de présence…), pas
+par le périmètre du code qui le gère.
 
-entraîne alors des erreurs systématiques du type :
+**Justification.** Deux décideurs en parallèle produisent des conflits
+silencieux, non reproductibles et non diagnostiquables ;
+l'unicité du décideur est la condition de la traçabilité.
 
-- `unknown entity …`
+---
 
-Ce comportement est **déterministe**, reproductible,
-et indépendant du fonctionnement nominal du système.
+## 3. Séparation perception / décision / exécution
 
+**Doctrine.** Toute entité appartient à une seule des trois couches :
+perception (capteurs, dérivés, synthèses), décision (automations
+et scripts de choix), exécution (actuateurs et ponts physiques).
 
-## ✅ Doctrine Arsenal
+**Justification.** Le mélange des couches crée des boucles implicites
+où un capteur agit ou un actuateur mesure, rendant le système
+impossible à raisonner domaine par domaine.
 
-Les règles suivantes sont **désormais invariantes** :
+---
 
-- AUCUN `condition: state` dans un bloc `choose`
-  lorsque l’existence de l’entité n’est pas strictement garantie
-  au moment du reload
+## 4. Idempotence structurelle
 
-- Utilisation systématique de conditions `template`
-  basées sur :
-  - `states('…')`
-  - comparaisons tolérantes aux états :
-    • `unknown`
-    • `unavailable`
+**Doctrine.** Toute action doit pouvoir être rejouée sans effet
+de bord ; tout état doit pouvoir être recalculé depuis ses sources.
 
-- Toute automation doit être :
-  - fonctionnelle en régime normal
-  - ET structurellement saine au reload YAML
+**Justification.** Sans idempotence, un redémarrage, une reprise
+après incident ou un double déclenchement produisent des états
+divergents ; l'idempotence est la condition de la réconciliation
+automatique.
 
+---
 
-## 🧱 Conséquence architecturale
+## 5. Robustesse au redémarrage comme critère d'acceptation
 
-- Une automation peut sembler correcte en fonctionnement courant
-  tout en étant architecturale­ment fragile
-- Le reload YAML devient un **outil de diagnostic volontaire**
-- Une erreur au reload n’est jamais considérée comme bénigne
+**Doctrine.** Un composant n'est validé que s'il se reconstruit
+proprement après un reload YAML ou un redémarrage complet
+de Home Assistant ; le fonctionnement nominal ne suffit pas.
 
+**Justification.** Un système robuste ne se juge pas à son régime
+courant mais à sa capacité à atteindre un état cohérent depuis
+n'importe quelle condition initiale.
 
-## 🧩 Cas d’application canonique
+---
 
-Ce principe a notamment conduit à la correction de :
+## 6. Traitement explicite des trois régimes d'un état externe
 
-- Automations de gestion temporelle
-- Automations à timers longs
-- Automations d’absence prolongée
+**Doctrine.** Tout consommateur d'un état (entité HA, topic MQTT,
+retour d'API, lecture capteur) doit définir explicitement son
+comportement dans trois régimes : valeur nominale, valeur absente,
+valeur incohérente.
 
-où des conditions `state` ont été remplacées par des
-templates tolérants, éliminant définitivement
-les erreurs post-rechargement.
+**Justification.** Une dépendance à un état non garanti sans
+traitement des trois régimes est une fragilité structurelle ;
+aucun des trois régimes n'est optionnel, même si l'un d'eux
+est jugé improbable.
 
+---
 
-## 🧠 Principe Arsenal renforcé
+## 7. Nommage par représentation, jamais par calcul
 
-> Un système robuste ne se juge pas uniquement
-> à son fonctionnement nominal,
-> mais à sa capacité à se reconstruire proprement
-> dans un état cohérent après redémarrage.
+**Doctrine.** Une entité est nommée par ce qu'elle représente
+(grandeur physique, qualificatif fonctionnel, zone), jamais par
+la méthode utilisée pour la produire. Le nom est stable dans le
+temps et ne dépend pas de son implémentation.
 
-Ce principe s’applique **à l’ensemble du système Arsenal**,
-tous domaines confondus.
+**Justification.** Un nom qui décrit le calcul devient faux dès
+le premier refactor de l'implémentation ; un nom qui décrit
+la représentation survit à toutes les évolutions techniques.
+
+---
+
+## 8. Disponibilité explicite plutôt qu'état factice
+
+**Doctrine.** Un composant qui ne peut pas produire de valeur valide
+doit déclarer explicitement son indisponibilité (`availability`),
+jamais retourner une valeur de substitution (`0`, chaîne vide,
+`unknown` forcé, dernière valeur connue silencieuse).
+
+**Justification.** Une valeur factice propage une fausse certitude
+dans toute la chaîne décisionnelle ; l'indisponibilité déclarée
+force chaque consommateur à traiter explicitement le cas absent,
+conformément au principe 6.
+
+---
+
+## 9. Traçabilité des décisions
+
+**Doctrine.** Toute décision prise par le système doit laisser une
+trace observable permettant de reconstituer, a posteriori, les
+états d'entrée et la règle qui l'a produite.
+
+**Justification.** Un système non traçable est indéboguable et non
+auditable ; la traçabilité transforme un comportement correct en
+comportement maîtrisé, et c'est cette maîtrise qui distingue un
+système opérationnel d'un système qui marche par accident.
+
+---
+
+## Invariant synthétique
+
+> Arsenal est un système **contractuel**, **stratifié**, **idempotent**,
+> **traçable** et **honnête sur son état** — toute dérogation à l'un
+> de ces cinq axes est une dette de conception, pas un compromis
+> acceptable.

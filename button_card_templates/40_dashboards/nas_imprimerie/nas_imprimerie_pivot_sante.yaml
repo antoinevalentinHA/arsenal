@@ -1,0 +1,83 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     NAS imprimerie — Pivot santé
+#
+# 🗂️ COUCHE : UI / Synthèse
+# 🧱 TYPE UI : Pivot
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher l’état souverain de santé du NAS imprimerie.
+#
+# 📡 SOURCE
+#   sensor.nas_imprimerie_sante_synthese
+#
+# ⚙️ LOGIQUE UI
+#   ok        → vert
+#   degraded  → orange
+#   critical  → rouge
+#   offline   → rouge
+#   unknown / unavailable → gris indisponibilité
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   CARTE PIVOT
+# ----------------------------------------------------------
+#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - connectivité
+#     - VPN
+#     - UPS
+#     - stockage
+# ==========================================================
+
+nas_imprimerie_pivot_sante:
+  template:
+    - socle_status_label_xl
+  show_state: true
+  show_label: true
+  state_display: >
+    [[[
+      if (!entity) return 'Indisponible';
+
+      const map = {
+        ok: 'Nominal',
+        degraded: 'Dégradé',
+        critical: 'Critique',
+        offline: 'Hors ligne',
+        unknown: 'Inconnu',
+        unavailable: 'Indisponible'
+      };
+
+      return map[entity.state] || entity.state;
+    ]]]
+  label: >
+    [[[
+      if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+        return 'donnée indisponible';
+
+      const raison = entity.attributes.raison || 'raison inconnue';
+      const priorite = entity.attributes.priorite_active ?? '?';
+
+      return `raison : ${raison} · priorité : ${priorite}`;
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            if (!entity || entity.state === 'unknown' || entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)';
+
+            if (entity.state === 'ok')
+              return 'rgba(76, 175, 80, 0.2)';
+
+            if (entity.state === 'degraded')
+              return 'rgba(255, 152, 0, 0.2)';
+
+            if (entity.state === 'critical' || entity.state === 'offline')
+              return 'rgba(244, 67, 54, 0.2)';
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]
