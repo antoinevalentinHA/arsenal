@@ -134,6 +134,13 @@ views:
                   action: navigate
                   navigation_path: /ups-dashboard/0
 
+              # Bluetti – Energie chaudière
+              - type: custom:button-card
+                template: carte_bluetti_energie_chaudiere
+                tap_action:
+                  action: navigate
+                  navigation_path: /bluetti-dashboard/0
+
               # Batteries
               - type: custom:button-card
                 template: carte_alerte_binaire_critique
@@ -146,15 +153,15 @@ views:
                 hold_action:
                   action: more-info
 
-              # Boiler Bridge – Santé
-              - type: custom:button-card
-                template: boiler_status_health
-                entity: sensor.boiler_bridge_sante
-                name: Boiler Bridge
-                icon: mdi:lan-connect
-                tap_action:
-                  action: navigate
-                  navigation_path: /diagnostics-boiler-dashboard/boiler
+          # Boiler Bridge – Santé
+          - type: custom:button-card
+            template: boiler_status_health
+            entity: sensor.boiler_bridge_sante
+            name: Boiler Bridge
+            icon: mdi:lan-connect
+            tap_action:
+              action: navigate
+              navigation_path: /diagnostics-boiler-dashboard/boiler
 
           ####################################################
           # ⚠️ AUTOMATISATIONS DÉSACTIVÉES

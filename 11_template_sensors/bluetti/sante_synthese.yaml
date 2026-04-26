@@ -1,0 +1,57 @@
+# ============================================================
+# ARSENAL — ENERGIE CHAUDIERE — BLUETTI SANTE SYNTHESE
+#
+# Domaine : energie_chaudiere
+# Contrat : energie_chaudiere v1.3
+# Role :
+# Produire la sante locale de la chaine thermique alimentee
+# par le Bluetti AC180.
+#
+# Etats :
+# unknown > offline > critical > degraded > ok
+# ============================================================
+
+- sensor:
+    - name: "Bluetti sante synthese"
+      unique_id: bluetti_sante_synthese
+      state: >
+        {% set vin = states('sensor.bluetti_ac_input_voltage') %}
+        {% set vout = states('sensor.bluetti_ac_output_voltage') %}
+        {% set soc = states('sensor.bluetti_battery_soc') %}
+
+        {% if vin in ['unknown', 'unavailable']
+              or vout in ['unknown', 'unavailable']
+              or soc in ['unknown', 'unavailable']
+              or not (vin | is_number)
+              or not (vout | is_number)
+              or not (soc | is_number) %}
+          unknown
+        {% elif vout | float < 50 %}
+          offline
+        {% elif soc | float < 15 %}
+          critical
+        {% elif vin | float <= 200
+              and vout | float > 200 %}
+          degraded
+        {% elif soc | float < 30 %}
+          degraded
+        {% elif vin | float > 200
+              and vout | float > 200
+              and soc | float >= 30 %}
+          ok
+        {% else %}
+          unknown
+        {% endif %}
+      attributes:
+        ac_input_voltage: >
+          {{ states('sensor.bluetti_ac_input_voltage') }}
+        ac_output_voltage: >
+          {{ states('sensor.bluetti_ac_output_voltage') }}
+        battery_soc: >
+          {{ states('sensor.bluetti_battery_soc') }}
+        ac_output_power: >
+          {{ states('sensor.bluetti_ac_output_power') }}
+        ac_input_power: >
+          {{ states('sensor.bluetti_ac_input_power') }}
+        sur_batterie: >
+          {{ states('binary_sensor.bluetti_sur_batterie') }}

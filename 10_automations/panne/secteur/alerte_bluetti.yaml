@@ -1,0 +1,71 @@
+# ============================================================
+# ARSENAL — ENERGIE CHAUDIERE — ALERTE BLUETTI
+#
+# Domaine : energie_chaudiere
+# Contrat : energie_chaudiere v1.3
+# ID : 10040000000003
+#
+# Role :
+# Signaler une perte ou degradation critique de l'alimentation
+# locale de la chaine thermique protegee par le Bluetti AC180.
+#
+# Invariant :
+# Cette automation ne qualifie jamais une panne secteur Arsenal.
+# Elle ne pilote ni chauffage, ni ECS, ni mode panne secteur.
+# ============================================================
+
+- id: "10040000000003"
+  alias: "Energie chaudiere - Alerte Bluetti"
+  description: >
+    Signale une alerte locale Bluetti pour la chaine thermique.
+    Ne qualifie pas une panne secteur Arsenal et ne pilote ni
+    chauffage, ni ECS, ni mode panne secteur.
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.bluetti_alerte_active
+      to: "on"
+      id: alerte_active
+
+    - platform: state
+      entity_id: binary_sensor.bluetti_alerte_active
+      to: "off"
+      id: alerte_resolue
+
+  condition: []
+
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: alerte_active
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: energie_chaudiere_bluetti
+                title: "Energie chaudiere"
+                message: >
+                  Alerte Bluetti active.
+
+                  Etat : {{ states('sensor.bluetti_sante_synthese') }}
+
+                  SOC : {{ states('sensor.bluetti_battery_soc') }} %
+
+                  Tension sortie : {{ states('sensor.bluetti_ac_output_voltage') }} V
+
+            - service: notify.mobile_app_pixel_7a
+              data:
+                title: "Energie chaudiere"
+                message: >
+                  Alerte Bluetti : {{ states('sensor.bluetti_sante_synthese') }}.
+                data:
+                  tag: energie_chaudiere_bluetti
+
+        - conditions:
+            - condition: trigger
+              id: alerte_resolue
+          sequence:
+            - service: persistent_notification.dismiss
+              data:
+                notification_id: energie_chaudiere_bluetti

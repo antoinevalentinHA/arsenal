@@ -1,0 +1,43 @@
+type: horizontal-stack
+card_mod:
+  style: |
+    :host {
+      display: flex !important;
+      justify-content: center !important;
+    }
+    #root {
+      display: flex !important;
+      justify-content: center !important;
+      flex-wrap: nowrap;
+    }
+    #root > * {
+      flex: 0 0 auto !important;
+      width: auto !important;
+    }
+cards:
+
+  # sauvegarde
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:content-save
+    tap_action:
+      action: call-service
+      service: script.ecs_sauvegarde_planning
+      confirmation:
+        text: "Confirmer la sauvegarde du planning ECS ?"
+    styles:
+      icon:
+        - color: '#2E7D32'
+
+  # restauration
+  - type: custom:button-card
+    template: bouton_navigation_badge_carre
+    icon: mdi:backup-restore
+    tap_action:
+      action: call-service
+      service: script.ecs_restore_planning
+      confirmation:
+        text: "⚠️ Confirmer la RESTAURATION du planning ECS ?"
+    styles:
+      icon:
+        - color: '#B71C1C'

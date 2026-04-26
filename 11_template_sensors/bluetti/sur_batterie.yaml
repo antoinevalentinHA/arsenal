@@ -1,0 +1,22 @@
+# ============================================================
+# ARSENAL — ENERGIE CHAUDIERE — BLUETTI SUR BATTERIE
+#
+# Domaine : energie_chaudiere
+# Contrat : energie_chaudiere v1.3
+# Role :
+# Detecter que la chaine thermique fonctionne sur autonomie
+# locale Bluetti.
+#
+# Invariant :
+# Ne qualifie jamais binary_sensor.coupure_secteur.
+# ============================================================
+
+- binary_sensor:
+    - name: "Bluetti sur batterie"
+      unique_id: bluetti_sur_batterie
+      state: >
+        {{ is_state('binary_sensor.bluetti_secteur_present', 'off')
+           and is_state('binary_sensor.bluetti_sortie_ac_active', 'on') }}
+      availability: >
+        {{ states('binary_sensor.bluetti_secteur_present') not in ['unknown', 'unavailable']
+           and states('binary_sensor.bluetti_sortie_ac_active') not in ['unknown', 'unavailable'] }}

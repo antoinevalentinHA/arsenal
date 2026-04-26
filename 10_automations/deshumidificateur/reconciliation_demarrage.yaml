@@ -1,0 +1,84 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Déshumidificateur – Réconciliation post-redémarrage
+#
+#  ID : 10060000000010
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Réévaluer l’état courant du déshumidificateur après
+#     un redémarrage de Home Assistant.
+#
+#     Cette automation ne rejoue aucune commande passée.
+#     Elle applique une décision fraîche fondée uniquement
+#     sur les états courants disponibles après stabilisation.
+#
+#  🧩 PRINCIPE
+#
+#     - Attendre la stabilisation minimale de Home Assistant
+#     - Vérifier que les entités nécessaires sont disponibles
+#     - Vérifier que la déshumidification est recommandée
+#     - Vérifier que l’appareil est réellement arrêté
+#     - Vérifier que le blocage de redémarrage est échu
+#     - Appliquer l’activation via le script exécutif unique
+#
+#  ⚠️ LIMITE ASSUMÉE
+#
+#     Si le timer de blocage redémarrage n’a pas été restauré
+#     après reboot et revient à idle, Arsenal privilégie la
+#     reprise de service à l’absence prolongée de cycle.
+#
+#  🧠 AUTORITÉ D’EXÉCUTION
+#
+#     script.set_deshumidificateur_state
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne restaure PAS les timers
+#     - Ne reconstruit PAS l’historique
+#     - Ne lit PAS last_changed
+#     - Ne recalcule PAS les critères RH / HA
+#     - Ne force PAS l’appareil si la recommandation est absente
+#     - Ne contourne PAS le script exécutif
+# ==========================================================
+
+- id: "10060000000010"
+  alias: "Déshumidificateur - Reconciliation post-redemarrage"
+  description: >
+    Réévalue après redémarrage Home Assistant si le déshumidificateur
+    doit être activé lorsque la recommandation est déjà présente.
+  mode: single
+
+  trigger:
+    - platform: homeassistant
+      event: start
+
+  action:
+    - delay: "00:01:30"
+
+    - condition: template
+      value_template: >
+        {{
+          states('binary_sensor.deshumidificateur_cave_demarrage_recommande') not in ['unknown', 'unavailable']
+          and states('binary_sensor.deshumidificateur_actif') not in ['unknown', 'unavailable']
+          and states('timer.deshumidificateur_blocage_redemarrage') not in ['unknown', 'unavailable']
+        }}
+
+    - condition: state
+      entity_id: binary_sensor.deshumidificateur_cave_demarrage_recommande
+      state: "on"
+
+    - condition: state
+      entity_id: binary_sensor.deshumidificateur_actif
+      state: "off"
+
+    - condition: state
+      entity_id: timer.deshumidificateur_blocage_redemarrage
+      state: "idle"
+
+    - action: script.set_deshumidificateur_state
+      data:
+        target_state: "on"
+        request_source: "automation.deshumidificateur_reconciliation_post_redemarrage"
+        request_id: >
+          reconciliation_post_redemarrage_{{ now().strftime('%Y%m%dT%H%M%S') }}

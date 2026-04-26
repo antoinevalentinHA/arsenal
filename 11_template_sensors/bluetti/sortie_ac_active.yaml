@@ -1,0 +1,20 @@
+# ============================================================
+# ARSENAL — ENERGIE CHAUDIERE — BLUETTI SORTIE AC ACTIVE
+#
+# Domaine : energie_chaudiere
+# Contrat : energie_chaudiere v1.3
+# Role :
+# Confirmer que la chaine thermique est alimentee en sortie AC.
+#
+# Invariant :
+# La tension de sortie est la source de verite.
+# binary_sensor.bluetti_ac_output est volontairement ignore.
+# ============================================================
+
+- binary_sensor:
+    - name: "Bluetti sortie ac active"
+      unique_id: bluetti_sortie_ac_active
+      state: >
+        {{ states('sensor.bluetti_ac_output_voltage') | float(0) > 200 }}
+      availability: >
+        {{ states('sensor.bluetti_ac_output_voltage') | is_number }}

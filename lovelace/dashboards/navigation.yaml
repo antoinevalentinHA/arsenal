@@ -82,7 +82,7 @@ views:
                     variables: 
                       etat_dashboard: sensor.etat_vmc_dashboard
                     name: VMC
-                    icon: mdi:air-filter
+                    icon: mdi:fan
                     tap_action:
                       action: navigate
                       navigation_path: /vmc-dashboard/home
@@ -215,7 +215,7 @@ views:
                   - type: custom:button-card
                     template: bouton_navigation
                     name: NAS
-                    icon: mdi:lan-connect
+                    icon: mdi:nas
                     tap_action:
                       action: navigate
                       navigation_path: /nas-dashboard/dashboard
@@ -228,7 +228,7 @@ views:
                     variables: 
                       etat_dashboard: sensor.etat_systeme_dashboard
                     name: Système
-                    icon: mdi:server
+                    icon: mdi:monitor-dashboard
                     tap_action:
                       action: navigate
                       navigation_path: /system-dashboard/systeme

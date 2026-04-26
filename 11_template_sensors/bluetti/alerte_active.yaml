@@ -1,0 +1,22 @@
+# ============================================================
+# ARSENAL — ENERGIE CHAUDIERE — BLUETTI ALERTE ACTIVE
+#
+# Domaine : energie_chaudiere
+# Contrat : energie_chaudiere v1.3
+# Role :
+# Exposer l'alerte metier locale Bluetti apres confirmation
+# temporelle.
+#
+# Invariant :
+# Ne declenche aucune action chauffage ou ECS.
+# ============================================================
+
+- binary_sensor:
+    - name: "Bluetti alerte active"
+      unique_id: bluetti_alerte_active
+      device_class: problem
+      state: >
+        {{ states('sensor.bluetti_sante_synthese') in ['critical', 'offline'] }}
+      availability: >
+        {{ states('sensor.bluetti_sante_synthese') not in ['unknown', 'unavailable'] }}
+      delay_on: "00:02:00"

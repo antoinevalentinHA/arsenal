@@ -1,0 +1,17 @@
+# ============================================================
+# ARSENAL — ENERGIE CHAUDIERE — BLUETTI BATTERIE CRITIQUE
+#
+# Domaine : energie_chaudiere
+# Contrat : energie_chaudiere v1.3
+# Role :
+# Signaler un niveau de batterie critique du Bluetti AC180.
+# ============================================================
+
+- binary_sensor:
+    - name: "Bluetti batterie critique"
+      unique_id: bluetti_batterie_critique
+      device_class: problem
+      state: >
+        {{ states('sensor.bluetti_battery_soc') | float(100) < 15 }}
+      availability: >
+        {{ states('sensor.bluetti_battery_soc') | is_number }}

@@ -1,0 +1,17 @@
+# ============================================================
+# ARSENAL — ENERGIE CHAUDIERE — BLUETTI BATTERIE FAIBLE
+#
+# Domaine : energie_chaudiere
+# Contrat : energie_chaudiere v1.3
+# Role :
+# Signaler un niveau de batterie faible du Bluetti AC180.
+# ============================================================
+
+- binary_sensor:
+    - name: "Bluetti batterie faible"
+      unique_id: bluetti_batterie_faible
+      device_class: problem
+      state: >
+        {{ states('sensor.bluetti_battery_soc') | float(100) < 30 }}
+      availability: >
+        {{ states('sensor.bluetti_battery_soc') | is_number }}

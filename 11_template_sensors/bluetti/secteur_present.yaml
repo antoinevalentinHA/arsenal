@@ -1,0 +1,20 @@
+# ============================================================
+# ARSENAL — ENERGIE CHAUDIERE — BLUETTI SECTEUR PRESENT
+#
+# Domaine : energie_chaudiere
+# Contrat : energie_chaudiere v1.3
+# Role :
+# Detecter la presence secteur en entree du Bluetti AC180.
+#
+# Invariant :
+# Ce capteur decrit uniquement l'etat local du Bluetti.
+# Il ne qualifie jamais une panne secteur Arsenal.
+# ============================================================
+
+- binary_sensor:
+    - name: "Bluetti secteur present"
+      unique_id: bluetti_secteur_present
+      state: >
+        {{ states('sensor.bluetti_ac_input_voltage') | float(0) > 200 }}
+      availability: >
+        {{ states('sensor.bluetti_ac_input_voltage') | is_number }}

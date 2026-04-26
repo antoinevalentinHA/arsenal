@@ -1,9 +1,10 @@
 type: horizontal-stack
+card_mod:
+  style: |
+    #root {
+      justify-content: center;
+    }
 cards:
-
-  - type: custom:button-card
-    template: bouton_spacer
-    color_type: blank-card
 
   - type: custom:button-card
     template: bouton_navigation_badge_carre
@@ -64,8 +65,3 @@ cards:
     styles:
       icon:
         - color: '#424242'
-
-  # marge droite
-  - type: custom:button-card
-    template: bouton_spacer
-    color_type: blank-card

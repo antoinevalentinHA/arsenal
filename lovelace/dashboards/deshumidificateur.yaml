@@ -62,7 +62,7 @@ views:
                   - type: custom:button-card
                     template: carte_timer_status
                     entity: timer.deshumidificateur_cycle
-                    name: Cycle déshumidificateur
+                    name: Cycle mini
                     icon: mdi:timer-outline
                     variables:
                       active_semantic: info

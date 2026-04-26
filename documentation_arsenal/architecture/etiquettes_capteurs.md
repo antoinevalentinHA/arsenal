@@ -18,6 +18,8 @@
 
 Ce contrat définit le système de labels applicable aux entités de type `sensor` dans Arsenal.
 
+Ce contrat s'applique aux entités de plateforme sensor et binary_sensor.
+
 Son périmètre est strictement architectural : navigation, audit, cohérence Recorder/Logbook, traçabilité des décisions. Il ne régit pas le comportement des capteurs.
 
 ---

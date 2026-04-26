@@ -22,59 +22,7 @@ views:
           # ======================================================
           # 🟦 BARRE D’ACTIONS
           # ======================================================
-          - type: horizontal-stack
-            cards:
-
-              # marge gauche
-              - type: custom:button-card
-                template: bouton_spacer
-                color_type: blank-card
-              - type: custom:button-card
-                template: bouton_spacer
-                color_type: blank-card
-              - type: custom:button-card
-                template: bouton_spacer
-                color_type: blank-card
-
-              # sauvegarde
-              - type: custom:button-card
-                template: bouton_navigation_badge_carre
-                icon: mdi:content-save
-                tap_action:
-                  action: call-service
-                  service: script.ecs_sauvegarde_planning
-                  confirmation:
-                    text: "Confirmer la sauvegarde du planning ECS ?"
-                styles:
-                  icon:
-                    - color: '#2E7D32'
-
-              # restauration
-              - type: custom:button-card
-                template: bouton_navigation_badge_carre
-                icon: mdi:backup-restore
-                tap_action:
-                  action: call-service
-                  service: script.ecs_restore_planning
-                  confirmation:
-                    text: "⚠️ Confirmer la RESTAURATION du planning ECS ?"
-                styles:
-                  icon:
-                    - color: '#B71C1C'
-
-              # marge droite
-              - type: custom:button-card
-                template: bouton_spacer
-                color_type: blank-card
-              - type: custom:button-card
-                template: bouton_spacer
-                color_type: blank-card
-              - type: custom:button-card
-                template: bouton_spacer
-                color_type: blank-card
-              - type: custom:button-card
-                template: bouton_spacer
-                color_type: blank-card
+          - !include ../../includes/navigation/ecs_planning.yaml
 
           # ======================================================
           # 📅 LUNDI
@@ -88,13 +36,8 @@ views:
             columns: 2
             cards:
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛁 Matin"
-
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛀 Soir"
+              - !include ../../includes/sub_section_headers/ecs_matin.yaml
+              - !include ../../includes/sub_section_headers/ecs_soir.yaml
 
               - type: horizontal-stack
                 cards:
@@ -130,13 +73,8 @@ views:
             columns: 2
             cards:
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛁 Matin"
-
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛀 Soir"
+              - !include ../../includes/sub_section_headers/ecs_matin.yaml
+              - !include ../../includes/sub_section_headers/ecs_soir.yaml
 
               - type: horizontal-stack
                 cards:
@@ -172,13 +110,8 @@ views:
             columns: 2
             cards:
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛁 Matin"
-
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛀 Soir"
+              - !include ../../includes/sub_section_headers/ecs_matin.yaml
+              - !include ../../includes/sub_section_headers/ecs_soir.yaml
 
               - type: horizontal-stack
                 cards:
@@ -214,13 +147,8 @@ views:
             columns: 2
             cards:
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛁 Matin"
-
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛀 Soir"
+              - !include ../../includes/sub_section_headers/ecs_matin.yaml
+              - !include ../../includes/sub_section_headers/ecs_soir.yaml
 
               - type: horizontal-stack
                 cards:
@@ -256,13 +184,8 @@ views:
             columns: 2
             cards:
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛁 Matin"
-
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛀 Soir"
+              - !include ../../includes/sub_section_headers/ecs_matin.yaml
+              - !include ../../includes/sub_section_headers/ecs_soir.yaml
 
               - type: horizontal-stack
                 cards:
@@ -298,13 +221,8 @@ views:
             columns: 2
             cards:
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛁 Matin"
-
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛀 Soir"
+              - !include ../../includes/sub_section_headers/ecs_matin.yaml
+              - !include ../../includes/sub_section_headers/ecs_soir.yaml
 
               - type: horizontal-stack
                 cards:
@@ -340,13 +258,8 @@ views:
             columns: 2
             cards:
 
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛁 Matin"
-
-              - type: custom:button-card
-                template: sub_section_header
-                name: "🛀 Soir"
+              - !include ../../includes/sub_section_headers/ecs_matin.yaml
+              - !include ../../includes/sub_section_headers/ecs_soir.yaml
 
               - type: horizontal-stack
                 cards:

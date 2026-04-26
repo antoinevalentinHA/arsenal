@@ -1,17 +1,10 @@
-square: false
-type: grid
+type: horizontal-stack
+card_mod:
+  style: |
+    #root {
+      justify-content: center;
+    }
 cards:
-
-  # marge gauche
-  - type: custom:button-card
-    template: bouton_spacer
-    color_type: blank-card
-  - type: custom:button-card
-    template: bouton_spacer
-    color_type: blank-card
-  - type: custom:button-card
-    template: bouton_spacer
-    color_type: blank-card
 
   - type: custom:button-card
     template: bouton_navigation_badge_carre
@@ -45,16 +38,3 @@ cards:
     styles:
       icon:
         - color: '#2E7D32'
-
-  # marge droite
-  - type: custom:button-card
-    template: bouton_spacer
-    color_type: blank-card
-  - type: custom:button-card
-    template: bouton_spacer
-    color_type: blank-card
-  - type: custom:button-card
-    template: bouton_spacer
-    color_type: blank-card
-
-columns: 9

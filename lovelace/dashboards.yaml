@@ -131,6 +131,13 @@ ups-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/ups.yaml
 
+bluetti-dashboard:
+  mode: yaml
+  title: Bluetti
+  icon: mdi:power-plug-battery
+  show_in_sidebar: false
+  filename: lovelace/dashboards/bluetti.yaml
+
 audi-dashboard:
   mode: yaml
   title: Audi

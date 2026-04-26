@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Énergie chaudière — Bluetti AC180
+#
+# 🗂️ COUCHE : UI / Systèmes critiques
+# 🧱 TYPE UI : Carte métier — statut équipement
+# 🔍 NIVEAU DE CONFIANCE : Synthèse contractuelle
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher l’état local du Bluetti AC180 protégeant la
+#   chaîne thermique.
+#
+# 📡 SOURCE
+#   - sensor.bluetti_sante_synthese
+#
+# ⚙️ LOGIQUE UI
+#   Traduction visuelle de la santé locale Bluetti.
+#   Aucune qualification de panne secteur Arsenal.
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - état énergétique local
+#     - autonomie Bluetti
+#     - diagnostic thermique local
+# ==========================================================
+
+carte_bluetti_energie_chaudiere:
+  template: socle_status_72
+  entity: sensor.bluetti_sante_synthese
+  name: Bluetti
+  icon: mdi:car-battery
+  state_display: >
+    [[[
+      const s = entity.state;
+
+      if (s === 'ok') return 'OK';
+      if (s === 'degraded') return 'Dégradé';
+      if (s === 'critical') return 'Critique';
+      if (s === 'offline') return 'Hors ligne';
+      return 'Indispo';
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity.state;
+
+            if (s === 'ok')
+              return 'rgba(76, 175, 80, 0.2)';
+
+            if (s === 'degraded')
+              return 'rgba(255, 152, 0, 0.2)';
+
+            if (s === 'critical' || s === 'offline')
+              return 'rgba(244, 67, 54, 0.2)';
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]
