@@ -42,6 +42,18 @@ views:
                 name: Babysitting
                 icon: mdi:account-child
 
+          # ==================================================
+          # 🧑‍🤝‍🧑️ MODES VISITEUR
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🧑‍🤝‍🧑 Mode visiteur
+
+          - type: custom:button-card
+            template: status_72_on_off
+            entity: input_boolean.visite_en_cours
+            name: Visiteur
+            icon: mdi:account-group
 
           # ==================================================
           # 🏖️ DÉCISION VACANCES

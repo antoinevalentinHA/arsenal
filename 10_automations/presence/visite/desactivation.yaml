@@ -25,7 +25,6 @@
 #       en cours
 #     - Désactive systématiquement les états métier
 #       associés à la visite :
-#         • bouclage ECS visiteur
 #         • visite en cours
 #         • présence visiteur
 #
@@ -67,10 +66,6 @@
       state: "on"
 
   action:
-    - alias: Éteindre la prise de bouclage ECS
-      action: switch.turn_off
-      target:
-        entity_id: switch.prise_bouclage
 
     - alias: Désactiver le capteur "visite en cours"
       action: input_boolean.turn_off

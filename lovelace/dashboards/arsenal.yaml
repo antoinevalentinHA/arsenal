@@ -98,17 +98,17 @@ views:
             columns: 3
             cards:
 
-              - type: custom:button-card
-                template: carte_action_bonne_nuit
-                name: Bonne nuit
-                icon: mdi:weather-night
+              - !include ../includes/cartes/bouclage.yaml
 
               - type: custom:button-card
                 template: carte_action_ecs_vaisselle
                 name: Vaisselle
                 icon: mdi:silverware-clean
 
-              - !include ../includes/cartes/bouclage.yaml
+              - type: custom:button-card
+                template: carte_action_bonne_nuit
+                name: Bonne nuit
+                icon: mdi:weather-night
 
           # ==========================================================
           # 🌡️ TEMPÉRATURES

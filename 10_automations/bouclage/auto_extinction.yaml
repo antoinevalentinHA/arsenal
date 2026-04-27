@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     ECS — Bouclage AUTO extinction / reconciliation
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Desactiver le bouclage ECS lorsque l'autorisation AUTO
+#     devient fausse.
+#
+#     Reconciler l'etat physique apres stabilisation systeme
+#     sur la base de l'autorisation AUTO effective.
+#
+# 🧩 PERIMETRE
+#
+#     - Front descendant de binary_sensor.bouclage_autorise
+#     - Reconciliation sur input_boolean.systeme_stable
+#     - Pilotage conditionnel de switch.prise_bouclage
+#
+# 🔗 DEPENDANCES
+#
+#     - binary_sensor.bouclage_autorise
+#     - input_boolean.systeme_stable
+#     - switch.prise_bouclage
+#
+# 🚫 INTERDITS
+#
+#     - Aucune prolongation
+#     - Aucune logique horaire
+#     - Aucune correction inter-domaine
+#     - Aucune notification
+#
+# 🧠 STATUT
+#
+#     Automation d'application — Bouclage ECS AUTO OFF
+# ==========================================================
+
+- id: "10260000000005"
+  alias: "Bouclage ECS — AUTO extinction"
+  description: "Desactive le bouclage ECS lorsque l'autorisation AUTO devient fausse ou apres stabilisation systeme."
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.bouclage_autorise
+      from: "on"
+      to: "off"
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.bouclage_autorise
+      state: "off"
+
+  action:
+    - if:
+        - condition: state
+          entity_id: switch.prise_bouclage
+          state: "on"
+      then:
+        - service: switch.turn_off
+          target:
+            entity_id: switch.prise_bouclage

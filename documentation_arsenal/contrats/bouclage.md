@@ -3,18 +3,25 @@
 #     ECS — BOUCLAGE
 # ==========================================================
 
+**Version :** 2.1.2  
+**Statut :** Actif  
+**Rupture :** Abandon des plages horaires au profit d'un maintien conditionnel opportuniste (AUTO) + cycle manuel borné par timer (5 min)  
+**Migration :** `binary_sensor.bouclage_autorise` conservé — migration sémantique contrôlée (v1 : plage horaire + présence → v2 : disponibilité thermique + présence)
+
+---
+
 ## 🎯 OBJET DU CONTRAT
 
 Ce contrat définit le **cadre normatif global** de conception,
-d’implémentation et d’interprétation du **sous-système Bouclage ECS** dans Arsenal.
+d'implémentation et d'interprétation du **sous-système Bouclage ECS** dans Arsenal.
 
 Il établit :
 
 - la **sémantique officielle** du bouclage ECS,
-- la **distinction stricte** entre autorisation, qualification, état effectif, action et orchestration,
-- la **machine d’état normative**,
-- les **priorités AUTO / MANUEL**,
-- les **invariants énergétiques et temporels**,
+- la **distinction stricte** entre qualification thermique, autorisation, état effectif, action et orchestration,
+- la **machine d'état normative**,
+- l'**arbitrage AUTO / cycle manuel**,
+- les **invariants énergétiques**,
 - les **règles inter-domaines** (ECS / Alarme / UI).
 
 Ce contrat constitue une **référence structurante** destinée à figer
@@ -26,21 +33,20 @@ définitivement la gouvernance du bouclage ECS.
 
 Le présent contrat couvre :
 
-- le **bouclage manuel temporisé** (5 minutes),
-- le **bouclage automatique programmé**,
-- l’arbitrage AUTO / MANUEL,
-- l’usage du timer comme borne unique,
-- l’orchestration post-cycle ECS,
-- l’interaction avec les domaines :
+- le **bouclage automatique opportuniste** (modèle thermique + présence),
+- le **cycle manuel de bouclage** (déclenchement explicite borné à 5 minutes),
+- l'**arbitrage AUTO / cycle manuel**,
+- l'orchestration post-cycle ECS,
+- l'interaction avec les domaines :
   - Alarme / Visite,
   - UI directe.
 
 Il ne couvre pas :
 
 - le pilotage thermique ECS,
-- la production d’eau chaude,
+- la production d'eau chaude,
 - les consignes ou offsets,
-- l’optimisation énergétique future.
+- l'optimisation énergétique future.
 
 ---
 
@@ -48,20 +54,82 @@ Il ne couvre pas :
 
 Dans Arsenal :
 
-> **Le bouclage ECS est un actionneur énergétique secondaire, jamais décisionnel.**
+> **Le bouclage ECS est un actionneur de confort opportuniste,
+> actif uniquement lorsque de l'eau chaude est réellement disponible
+> et qu'un usage est probable.**
 
 Il est :
 
-- toujours **explicitement déclenché**,
-- toujours **temporellement borné**,
-- toujours **arbitré par un état effectif souverain**,
-- jamais auto-prolongé,
-- jamais heuristique,
+- toujours **conditionné à la disponibilité thermique réelle**,
+- toujours **conditionné à la présence famille**,
+- jamais basé sur une plage horaire,
+- jamais auto-prolongé artificiellement,
+- jamais soumis à une heuristique comportementale ou prédictive,
 - jamais auto-corrigé inter-domaines.
+
+En mode AUTO, l'actionneur est **maintenu actif tant que les conditions d'autorisation sont réunies**.
+Il ne s'agit pas d'une impulsion déclenchée par un front — c'est un maintien conditionnel continu.
+Ce maintien est passif : il résulte uniquement de la persistance des conditions d'autorisation, sans logique de maintien actif.
+
+La thermique du ballon constitue la **borne naturelle** du bouclage :
+lorsque le ballon se refroidit sous le seuil d'extinction, le bouclage s'arrête de lui-même.
+Aucun timer n'est nécessaire en mode AUTO.
+
+La température du ballon est interprétée comme un **signal de disponibilité d'usage ECS**,
+et non comme un indicateur de stock thermique exploitable.
 
 ---
 
 ## 🧩 OBJETS STRUCTURANTS OFFICIELS
+
+### 🔹 Capteur de disponibilité thermique
+
+- `binary_sensor.ecs_disponible`
+
+Rôle :
+- Indiquer si le ballon est dans une plage thermique exploitable pour le bouclage.
+
+Règles :
+
+| Condition | État |
+|---|---|
+| `sensor.ecs_temperature_ballon_securisee` >= 45 °C | `on` |
+| `sensor.ecs_temperature_ballon_securisee` <= 40 °C | `off` |
+
+Hystérésis : 5 °C (seuil_on = 45 °C, seuil_off = 40 °C)
+
+Statut :
+- **CAPTEUR DE QUALIFICATION THERMIQUE**
+- non décisionnel
+- non actionneur
+
+---
+
+### 🔹 Capteur d'autorisation de bouclage AUTO
+
+- `binary_sensor.bouclage_autorise`
+
+> ⚠️ Migration sémantique v1 → v2 : cette entité existait en v1 avec une sémantique temporelle (plage horaire + présence).
+> Sa sémantique est remplacée intégralement. Le nom est conservé pour éviter toute rupture UI ou référence externe.
+
+Définition normative v2 :
+
+```
+bouclage_autorise =
+  binary_sensor.ecs_disponible == on
+  AND
+  binary_sensor.presence_famille_unifiee == on
+```
+
+Rôle :
+- Autoriser le bouclage automatique lorsque les deux conditions sont simultanément réunies.
+
+Statut :
+- **AUTORITÉ LOGIQUE DU SOUS-SYSTÈME AUTO**
+- ne pilote pas directement l'actionneur
+- ne constitue pas un état actif — c'est une condition d'autorisation
+
+---
 
 ### 🔹 Actionneur physique partagé
 
@@ -77,148 +145,65 @@ Règles :
 
 - ne constitue jamais une source de vérité,
 - peut être piloté par plusieurs domaines,
-- n’est jamais corrigé automatiquement par ECS,
-- peut diverger volontairement de l’état logique.
+- n'est jamais corrigé automatiquement par ECS,
+- peut diverger volontairement de l'état logique.
 
 ---
 
-### 🔹 Autorisation système AUTO (clé politique)
-
-- `input_boolean.bouclage_plage_active`
-
-Rôle :
-- Autoriser ou interdire **l’existence même du système AUTO**.
-
-Statut :
-- **CLÉ D’ACTIVATION DU SYSTÈME AUTO**
-
-Propriétés :
-
-- statique,
-- politique,
-- non temporel,
-- non décisionnel.
-
-Règles normatives :
-
-- Si ce boolean est `off` :
-    • le système AUTO est **désactivé globalement**,
-    • aucun démarrage automatique n’est autorisé,
-    • aucun arbitrage AUTO / MANUEL n’est actif,
-    • aucun blocage de timer manuel n’est permis.
-
-- Ce boolean :
-    • ne représente jamais un état actif,
-    • ne qualifie jamais une plage,
-    • ne sert jamais d’arbitre.
-
----
-
-### 🔹 Qualification temporelle & contexte
-
-- `binary_sensor.bouclage_autorise`
-
-Rôle :
-- Indiquer si les **conditions temporelles et de présence** sont réunies
-  pour qu’un bouclage automatique soit *potentiellement autorisé*.
-
-Dépendances :
-
-- heure courante,
-- jour ouvré (lundi → vendredi),
-- `binary_sensor.presence_famille_unifiee`.
-
-Statut :
-- **CAPTEUR DE QUALIFICATION AUTO**
-
-Règles normatives :
-
-- Ce capteur :
-    • n’active jamais un moteur à lui seul,
-    • ne représente pas un état AUTO effectif,
-    • ne constitue jamais une autorité souveraine.
-
-- Il signifie uniquement :
-    “AUTO serait autorisé SI le système est activé”.
-
----
-
-### 🔹 État AUTO effectif (autorité réelle)
-
-Définition normative :
-
-L’état AUTO réel est défini comme :
-
-  AUTO_EFFECTIF =
-    input_boolean.bouclage_plage_active == on
-    AND
-    binary_sensor.bouclage_autorise == on
-
-Statut :
-- **AUTORITÉ SOUVERAINE EFFECTIVE DU SOUS-SYSTÈME**
-
-Gouverne exclusivement :
-
-- démarrage automatique,
-- arrêt automatique,
-- blocage de fin de timer manuel,
-- arbitrage AUTO / MANUEL.
-
-Règle absolue :
-
-- Si `input_boolean.bouclage_plage_active == off` :
-    • AUTO est considéré **inactif**
-    • même si `binary_sensor.bouclage_autorise == on`.
-
----
-
-### 🔹 Timer de limitation
+### 🔹 Timer de cycle manuel
 
 - `timer.bouclage_ecs_5_minutes`
 
 Rôle :
-- Borner strictement la durée d’un cycle manuel.
+- Borner strictement la durée d'un cycle manuel à 5 minutes.
 
 Propriétés :
-
 - durée fixe : 5 minutes,
 - restore: true,
 - reboot-safe.
 
 Invariant :
 
-> Aucun bouclage manuel ne peut dépasser 5 minutes.
+> Aucun cycle manuel ne peut dépasser 5 minutes.
+
+Statut :
+- **BORNE OBLIGATOIRE DU CYCLE MANUEL**
+- absent du mode AUTO — interdit en mode AUTO
 
 ---
 
-### 🔹 Flag d’état manuel
+### 🔹 Flag d'état cycle manuel
 
 - `input_boolean.bouclage_ecs_5_minutes_en_cours`
 
 Rôle :
-- Représenter l’état logique d’un cycle manuel actif.
+- Représenter l'état logique d'un cycle manuel actif (durée bornée par timer).
 
 Statut :
-
 - observabilité pure,
 - anti-rebond,
 - inter-automations.
 
 Interdits :
-
 - ne pilote rien,
 - ne décide rien,
 - ne corrige rien.
 
 ---
 
-## 🔗 ÉCRIVAINS OFFICIELS DE L’ACTIONNEUR
+## 🔗 ÉCRIVAINS OFFICIELS DE L'ACTIONNEUR
 
 ### Domaine ECS (légitimes)
 
-- `script.bouclage_ecs_5_minutes` → ON  
-- `automation 10260000000001` — Bouclage automatique programmé → ON / OFF  
-- `automation 10260000000002` — Arrêt automatique fin timer → OFF  
+- `automation 10260000000001` — Bouclage AUTO : démarrage → ON
+  Déclencheur : front montant de `binary_sensor.bouclage_autorise`
+
+- `automation 10260000000002` — Bouclage AUTO : extinction → OFF
+  Déclencheur : front descendant de `binary_sensor.bouclage_autorise`
+
+- `script.bouclage_ecs_manuel` → ON + flag
+- `automation 10260000000003` — Extinction bouclage manuel → OFF + flag
+  Déclencheur : fin de `timer.bouclage_ecs_5_minutes`
 
 ---
 
@@ -252,86 +237,68 @@ Règle :
 
 Principe normatif :
 
-- ALARME est souverain sur l’actionneur,
-- UI est souveraine sur l’actionneur,
+- ALARME est souverain sur l'actionneur,
+- UI est souveraine sur l'actionneur,
 - ECS **ne corrige jamais** un état imposé par un autre domaine.
 
 Conséquences :
 
-- aucune lutte d’autorité,
+- aucune lutte d'autorité,
 - aucune oscillation corrective,
 - aucune reprise de main automatique.
 
 ---
 
-## 🔄 MACHINE D’ÉTAT OFFICIELLE
+## 🔄 MACHINE D'ÉTAT OFFICIELLE
 
 États reconnus :
 
-- **IDLE**  
-  Aucun bouclage actif.
+- **IDLE**
+  Aucun bouclage actif. Ballon froid ou famille absente.
 
-- **BOUCLAGE_MANUEL**  
-  Timer actif, flag manuel actif.
+- **BOUCLAGE_AUTO**
+  `binary_sensor.bouclage_autorise == on`.
 
-- **BOUCLAGE_AUTO**  
-  AUTO_EFFECTIF = vrai.
+- **CYCLE_MANUEL_5_MIN**
+  Cycle explicitement déclenché et automatiquement borné à 5 minutes. Flag manuel actif. Ne constitue pas un état de maintien.
 
-- **SUPERPOSITION**  
-  Manuel déclenché pendant AUTO_EFFECTIF.
+- **SUPERPOSITION**
+  Cycle manuel déclenché pendant BOUCLAGE_AUTO.
 
 ---
 
 ### Transitions autorisées
 
-1. IDLE → BOUCLAGE_MANUEL  
-   déclencheur : `script.bouclage_ecs_5_minutes`
-
-2. IDLE → BOUCLAGE_AUTO  
-   condition : AUTO_EFFECTIF devient vrai
-
-3. BOUCLAGE_MANUEL → IDLE  
-   condition : fin timer ET AUTO_EFFECTIF faux
-
-4. BOUCLAGE_MANUEL → SUPERPOSITION  
-   condition : AUTO_EFFECTIF devient vrai pendant timer
-
-5. SUPERPOSITION → BOUCLAGE_AUTO  
-   condition : fin timer (ignorée)
-
-6. BOUCLAGE_AUTO → IDLE  
-   condition : AUTO_EFFECTIF devient faux
+| # | De | Vers | Condition |
+|---|---|---|---|
+| 1 | IDLE | BOUCLAGE_AUTO | `bouclage_autorise` devient `on` |
+| 2 | IDLE | CYCLE_MANUEL_5_MIN | déclenchement `script.bouclage_ecs_manuel` |
+| 3 | BOUCLAGE_AUTO | IDLE | `bouclage_autorise` devient `off` |
+| 4 | CYCLE_MANUEL_5_MIN | IDLE | fin timer ET `bouclage_autorise == off` |
+| 5 | CYCLE_MANUEL_5_MIN | SUPERPOSITION | `bouclage_autorise` devient `on` pendant cycle |
+| 6 | SUPERPOSITION | BOUCLAGE_AUTO | fin timer (AUTO continue) |
+| 7 | BOUCLAGE_AUTO | SUPERPOSITION | déclenchement `script.bouclage_ecs_manuel` pendant AUTO |
 
 ---
 
-## 🔒 ARBITRAGE AUTO / MANUEL
+## 🔒 ARBITRAGE AUTO / CYCLE MANUEL
 
 Règle fondamentale :
 
-> **PRIORITÉ ABSOLUE AUTO_EFFECTIF > MANUEL**
+> **Le cycle manuel est une impulsion indépendante, bornée par timer. Il ne constitue pas un mode.**
 
 Implémentation normative :
 
-- La fin de timer manuel est ignorée  
-  **uniquement si AUTO_EFFECTIF est vrai**.
+- Le cycle manuel :
+  - est une impulsion de 5 minutes,
+  - ne constitue pas un état de maintien,
+  - ne prolonge jamais AUTO,
+  - ne bloque jamais AUTO,
+  - ne peut jamais interrompre AUTO.
 
-- Si :
-    binary_sensor.bouclage_autorise == on  
-    ET  
-    input_boolean.bouclage_plage_active == off  
-
-  Alors :
-
-    • AUTO_EFFECTIF est faux  
-    • le timer manuel s’arrête normalement  
-    • aucun blocage n’est appliqué  
-
-- Un cycle manuel déclenché pendant AUTO_EFFECTIF :
-
-    • est autorisé,  
-    • ne prolonge pas AUTO,  
-    • ne renforce pas AUTO,  
-    • ne peut jamais interrompre AUTO.
+- Fin de timer pendant SUPERPOSITION :
+  - éteint le flag manuel,
+  - laisse l'actionneur sous gouverne AUTO.
 
 ---
 
@@ -345,13 +312,11 @@ Statut :
 - **ORCHESTRATEUR SÉQUENTIEL**
 
 Rôle :
-
 - lancer cycle ECS vaisselle,
 - attendre fin moteur,
 - déclencher un bouclage manuel standard.
 
 Interdits :
-
 - ne pilote aucun actionneur,
 - ne modifie aucun état,
 - ne décide aucune autorisation.
@@ -360,15 +325,23 @@ Interdits :
 
 ## 🔒 INVARIANTS STRUCTURANTS
 
-Invariants absolus :
-
-- toute action manuelle est bornée par un timer,
-- aucun AUTO_EFFECTIF n’est interruptible,
-- aucun arrêt manuel n’est bloqué hors AUTO_EFFECTIF réel,
+- aucun bouclage AUTO si `ecs_disponible == off`,
+- aucun bouclage AUTO si `presence_famille_unifiee == off`,
+- aucune prolongation artificielle du bouclage,
+- aucune logique basée sur l'heure ou le jour,
+- aucune heuristique comportementale ou prédictive,
 - aucun helper ne pilote un actionneur,
 - aucun script ne décide,
-- aucun moteur ne corrige un domaine externe,
-- aucune prolongation automatique n’existe.
+- aucun moteur ne corrige un domaine externe.
+
+`binary_sensor.bouclage_autorise` ne pilote jamais directement l'actionneur.
+Seules les automatisations sont habilitées à écrire dans `switch.prise_bouclage`.
+
+Le bouclage ECS ne doit jamais être utilisé pour influencer ou maintenir la température du ballon.
+Toute interaction thermique est considérée comme un effet secondaire non exploité.
+
+La température du ballon constitue la **borne naturelle et suffisante** du bouclage AUTO.
+Aucun timer n'est requis ni autorisé en mode AUTO.
 
 ---
 
@@ -376,13 +349,31 @@ Invariants absolus :
 
 Sont strictement interdits :
 
-- bloquer une transition sur un input_boolean utilisateur,
-- utiliser l’état matériel comme vérité,
+- toute plage horaire comme condition de bouclage AUTO,
+- tout timer comme borne du mode AUTO,
+- utiliser l'état matériel `switch.prise_bouclage` comme vérité logique,
 - corriger un état imposé par ALARME ou UI,
-- déclencher un bouclage sans timer,
 - créer une logique de prolongation automatique,
-- heuristiques basées sur température ECS,
 - correction automatique post-reboot.
+
+---
+
+## ❌ SUPPRESSIONS STRUCTURELLES (rupture v1 → v2)
+
+Sont supprimés :
+
+- `input_boolean.bouclage_plage_active` — clé d'activation plage horaire, devenue sans objet
+- toute automation de bouclage AUTO basée sur plage horaire
+
+Sont migrés sémantiquement (nom conservé, logique remplacée) :
+
+- `binary_sensor.bouclage_autorise` — sémantique v1 (plage horaire + présence) remplacée par sémantique v2 (disponibilité thermique + présence)
+
+Sont conservés intacts :
+
+- `timer.bouclage_ecs_5_minutes` — borne obligatoire du cycle manuel
+- `switch.prise_bouclage` — actionneur physique
+- `input_boolean.bouclage_ecs_5_minutes_en_cours` — flag d'état cycle manuel
 
 ---
 
@@ -390,14 +381,17 @@ Sont strictement interdits :
 
 Sources officielles :
 
-- AUTO_EFFECTIF → combinaison booléenne
-- Qualification AUTO → `binary_sensor.bouclage_autorise`
-- Autorisation système → `input_boolean.bouclage_plage_active`
-- Manuel actif → `input_boolean.bouclage_ecs_5_minutes_en_cours`
-- Durée restante → `timer.bouclage_ecs_5_minutes`
-- État physique → `switch.prise_bouclage`
+| Entité | Rôle |
+|---|---|
+| `sensor.ecs_temperature_ballon_securisee` | Température ballon (source physique) |
+| `binary_sensor.ecs_disponible` | Qualification thermique |
+| `binary_sensor.presence_famille_unifiee` | Présence famille |
+| `binary_sensor.bouclage_autorise` | Autorisation AUTO effective |
+| `timer.bouclage_ecs_5_minutes` | Borne temporelle du cycle manuel |
+| `input_boolean.bouclage_ecs_5_minutes_en_cours` | État cycle manuel actif |
+| `switch.prise_bouclage` | État physique actionneur |
 
-Toute divergence est :
+Toute divergence entre état logique et état physique est :
 
 - volontaire,
 - inter-domaine,
@@ -407,9 +401,9 @@ Toute divergence est :
 
 ## 🧠 STATUT
 
-- Contrat normatif : **ACTIF**  
-- Domaine : **ECS / Bouclage**  
-- Rôle : **STRUCTURANT**  
+- Contrat normatif : **ACTIF**
+- Domaine : **ECS / Bouclage**
+- Rôle : **STRUCTURANT**
 - Évolutivité : **MAÎTRISÉE**
 
 # ==========================================================

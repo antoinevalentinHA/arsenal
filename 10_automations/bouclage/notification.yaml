@@ -1,0 +1,77 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     ECS — Bouclage notification persistante (etat reel)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Materialiser l'etat reel du bouclage ECS via une
+#     notification persistante strictement correlee a
+#     switch.prise_bouclage.
+#
+# 🧩 PERIMETRE
+#
+#     - Creation notification si bouclage actif
+#     - Suppression notification si bouclage inactif
+#     - Projection UI uniquement (etat physique)
+#
+# 🔗 DEPENDANCES
+#
+#     - switch.prise_bouclage
+#     - input_boolean.systeme_stable
+#
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage materiel
+#     - Aucune logique AUTO
+#     - Aucune interpretation thermique
+#     - Aucune correction d'etat
+#
+# 🧠 STATUT
+#
+#     Automation UI — Projection etat physique bouclage
+# ==========================================================
+
+- id: "10260000000006"
+  alias: "Bouclage ECS — notification etat reel"
+  description: "Gere la notification persistante du bouclage ECS en fonction de l'etat reel du switch."
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: switch.prise_bouclage
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ states('switch.prise_bouclage') in ['on', 'off'] }}
+
+  action:
+    - choose:
+
+        # --------------------------------------------------
+        # 🟢 Bouclage actif
+        # --------------------------------------------------
+        - conditions:
+            - condition: state
+              entity_id: switch.prise_bouclage
+              state: "on"
+
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: bouclage_ecs_actif
+                title: "🔁 Bouclage ECS actif"
+                message: >
+                  Le bouclage ECS est actuellement actif.
+
+      # --------------------------------------------------
+      # 🔴 Bouclage inactif
+      # --------------------------------------------------
+      default:
+        - service: persistent_notification.dismiss
+          data:
+            notification_id: bouclage_ecs_actif

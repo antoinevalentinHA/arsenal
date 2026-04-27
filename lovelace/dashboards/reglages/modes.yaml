@@ -46,6 +46,34 @@ views:
             name: Réinit auto à 5h
             icon: mdi:clock-check
 
+          - type: custom:button-card
+            template: section_header
+            name: 🧑‍🤝‍🧑 Mode visiteur
+
+          - type: tile
+            entity: input_boolean.mode_visiteur
+            name: Programmation du mode visiteur
+
+          - type: tile
+            entity: input_select.jour_visiteur
+            name: Jour planifié
+            features_position: bottom
+            features:
+              - type: select-options
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_datetime.visiteur_start
+                name: Heure de début
+
+              - type: tile
+                entity: input_datetime.visiteur_end
+                name: Heure de fin
+
           # === Vacances ===
           - type: custom:button-card
             template: section_header

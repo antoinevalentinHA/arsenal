@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBERS
+#     Bouclage ECS — Parametres thermiques
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Definir les seuils thermiques d'activation et
+#     d'extinction du bouclage ECS automatique.
+#
+# 🧩 PERIMETRE
+#
+#     - Seuil d'activation (ON) du bouclage ECS
+#     - Seuil d'extinction (OFF) du bouclage ECS
+#     - Hystérèse garantie par le binary_sensor consommateur
+#
+# 🔗 DEPENDANCES
+#
+#     - Utilises par :
+#         binary_sensor.ecs_disponible
+#
+# ⚠️ CONTRAINTES
+#
+#     - seuil_off doit être strictement inférieur à seuil_on
+#     - Cette contrainte est vérifiée par le consommateur,
+#       pas ici
+#
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage direct
+#     - Aucune logique metier
+#
+# ==========================================================
+
+bouclage_ecs_seuil_on:
+  name: Bouclage ECS — Seuil activation
+  min: 35
+  max: 60
+  step: 1
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-chevron-up
+
+bouclage_ecs_seuil_off:
+  name: Bouclage ECS — Seuil extinction
+  min: 30
+  max: 50
+  step: 1
+  unit_of_measurement: "°C"
+  icon: mdi:thermometer-chevron-down

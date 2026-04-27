@@ -56,38 +56,32 @@ views:
             template: section_header
             name: 🔁 Bouclage automatique
 
-
+          - type: tile
+            entity: input_boolean.bouclage_auto_active
+            name: Activé
 
           - type: grid
             square: false
             columns: 2
             cards:
 
-              - type: markdown
-                content: |
-                  Actif du lundi au vendredi sur la plage horaire définie si présence.
-
+              # Seuil ON
               - type: tile
-                entity: input_boolean.bouclage_plage_active
-                name: Activé
+                entity: input_number.bouclage_ecs_seuil_on
+                name: Activation
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
-          - type: conditional
-            conditions:
-              - entity: input_boolean.bouclage_plage_active
-                state: "on"
-            card:
-              type: grid
-              square: false
-              columns: 2
-              cards:
-
-                - type: tile
-                  entity: input_datetime.heure_debut_bouclage_ecs
-                  name: Début
-
-                - type: tile
-                  entity: input_datetime.heure_fin_bouclage_ecs
-                  name: Fin
+              # Seuil OFF
+              - type: tile
+                entity: input_number.bouclage_ecs_seuil_off
+                name: Extinction
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
 
           - type: custom:button-card
             template: section_header
@@ -95,16 +89,12 @@ views:
 
           - type: grid
             square: false
-            columns: 3
+            columns: 2
             cards:
 
               - type: tile
                 entity: input_boolean.mode_enfants
                 name: Bains
-
-              - type: tile
-                entity: input_boolean.ecs_desinfection_active
-                name: Désinfection
 
               - type: tile
                 entity: input_boolean.mode_vaisselle
@@ -140,8 +130,12 @@ views:
             name: 🧼 Désinfection
 
           - type: tile
+            entity: input_boolean.ecs_desinfection_active
+            name: Activation
+
+          - type: tile
             entity: input_number.ecs_temperature_desinfection
-            name: Désinfection
+            name: Consigne
             features_position: inline
             features:
               - type: numeric-input
@@ -243,6 +237,12 @@ views:
             name: 💾 Sauvegarde / restauration réglages
           
           - type: horizontal-stack
+            card_mod:
+              style: |
+                #root {
+                  display: flex;
+                  justify-content: center;
+                }
             cards:
           
               # === Bouton Sauvegarde ===

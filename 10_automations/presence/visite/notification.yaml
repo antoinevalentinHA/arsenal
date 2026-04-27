@@ -60,7 +60,6 @@
                   Tant que cette notification est visible :
                   • l’alarme est adaptée,
                   • la présence visiteur est forcée,
-                  • le bouclage ECS peut être actif.
 
         # 🔴 État OFF → disqualification
       default:

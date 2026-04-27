@@ -246,7 +246,7 @@ views:
           ####################################################
           - type: custom:button-card
             template: section_header
-            name: 🌐 Intégrations critiques
+            name: 🌐 Intégrations
 
           - type: grid
             columns: 4

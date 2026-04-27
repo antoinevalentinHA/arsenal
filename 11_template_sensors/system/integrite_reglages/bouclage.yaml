@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Bouclage ECS — Parametres invalides
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Detecter une incoherence de configuration des seuils
+#     de temperature du bouclage ECS.
+#
+# 🧩 PERIMETRE
+#
+#     - Lecture des seuils ON / OFF
+#     - Detection de seuil_off >= seuil_on
+#     - Aucun pilotage materiel
+#
+# 🔗 DEPENDANCES
+#
+#     - input_number.bouclage_ecs_seuil_on
+#     - input_number.bouclage_ecs_seuil_off
+#
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage de switch
+#     - Aucune logique thermique
+#     - Aucune correction automatique
+#
+# 🧠 STATUT
+#
+#     Capteur de diagnostic — Parametrage Bouclage ECS
+# ==========================================================
+
+- binary_sensor:
+    - name: "Parametres invalides Bouclage ECS"
+      unique_id: parametres_invalides_bouclage
+      state: >
+        {% set seuil_on = states('input_number.bouclage_ecs_seuil_on') | float(none) %}
+        {% set seuil_off = states('input_number.bouclage_ecs_seuil_off') | float(none) %}
+        {{ seuil_on is not none
+           and seuil_off is not none
+           and seuil_off >= seuil_on }}
+      attributes:
+        seuil_on: >
+          {{ states('input_number.bouclage_ecs_seuil_on') | float(none) }}
+        seuil_off: >
+          {{ states('input_number.bouclage_ecs_seuil_off') | float(none) }}

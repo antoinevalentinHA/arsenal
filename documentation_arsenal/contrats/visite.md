@@ -78,11 +78,6 @@ Il ne couvre pas :
 - input_boolean.visite_en_cours
 - input_boolean.presence_visiteur
 
-### Énergie
-
-- input_boolean.bouclage_visiteur
-- switch.prise_bouclage
-
 ### Temporalité
 
 - binary_sensor.creneau_visiteur_actif
@@ -158,9 +153,8 @@ visite_en_cours = on ⇔ presence_visiteur = on
 
 - visite_en_cours = off
 - presence_visiteur = off
-- prise_bouclage = off
 
-forcément.
+Aucun effet sur les équipements énergétiques.
 
 ---
 
@@ -181,6 +175,17 @@ Après redémarrage :
 systeme_stable = on ⇒ réalignement sur creneau_visiteur_actif
 
 sans historique.
+
+---
+
+### I8 — Isolation énergétique
+
+Le mode visite ne pilote aucun équipement énergétique.
+
+En particulier :
+
+- aucun accès à switch.prise_bouclage
+- aucune influence sur le bouclage ECS
 
 ---
 
@@ -229,7 +234,6 @@ Condition :
 
 Effets :
 
-- si bouclage_visiteur = on → prise_bouclage on
 - visite_en_cours → on
 - presence_visiteur → on
 - notification mobile
@@ -248,7 +252,6 @@ Condition :
 
 Effets :
 
-- prise_bouclage → off
 - visite_en_cours → off
 - presence_visiteur → off
 
@@ -267,13 +270,11 @@ Si creneau_visiteur_actif = on :
 
 - visite_en_cours → on
 - presence_visiteur → on
-- si bouclage_visiteur = on → prise_bouclage on
 
 Sinon :
 
 - visite_en_cours → off
 - presence_visiteur → off
-- prise_bouclage → off
 
 ---
 
@@ -313,6 +314,16 @@ Aucun autre composant n’écrit :
 ### D3 — Concurrence UI
 
 Aucun autre composant ne manipule visiteur_etat.
+
+---
+
+### D4 — Pilotage énergétique interdit
+
+Le domaine VISITE ne doit jamais :
+
+- piloter un switch énergétique
+- influencer le bouclage ECS
+- introduire de logique thermique
 
 ---
 

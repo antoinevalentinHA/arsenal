@@ -21,10 +21,10 @@
 #
 #     - binary_sensor.parametres_invalides_chauffage
 #     - binary_sensor.parametres_invalides_vmc
+#     - binary_sensor.parametres_invalides_bouclage
 #     - binary_sensor.parametres_invalides_deshumidificateur
 #     - binary_sensor.parametres_invalides_eclairage
 #     - binary_sensor.parametres_invalides_alarme
-#     - binary_sensor.parametres_invalides_ecs
 #     - binary_sensor.parametres_invalides_vacances
 #
 # 🚫 INTERDITS
@@ -49,5 +49,5 @@ parametres_invalides_domaines:
     - binary_sensor.parametres_invalides_deshumidificateur
     - binary_sensor.parametres_invalides_eclairage
     - binary_sensor.parametres_invalides_alarme
-    - binary_sensor.parametres_invalides_ecs
+    - binary_sensor.parametres_invalides_bouclage
     - binary_sensor.parametres_invalides_vacances

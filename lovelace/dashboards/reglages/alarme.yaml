@@ -24,47 +24,15 @@ views:
             name: 🔐 Modes
 
           - type: tile
+            entity: input_boolean.mode_test_alarme
+            name: Mode test
+
+          - type: tile
             entity: input_select.mode_alarme
             name: Mode d’armement
             features_position: bottom
             features:
               - type: select-options
-
-          - type: tile
-            entity: input_boolean.mode_test_alarme
-            name: Mode test
-
-          - type: custom:button-card
-            template: section_header
-            name: 🧑‍🤝‍🧑 Mode visiteur
-
-          - type: tile
-            entity: input_boolean.mode_visiteur
-            name: Programmation du mode visiteur
-
-          - type: tile
-            entity: input_boolean.bouclage_visiteur
-            name: Bouclage ECS pendant visite
-
-          - type: tile
-            entity: input_select.jour_visiteur
-            name: Jour planifié
-            features_position: bottom
-            features:
-              - type: select-options
-
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-
-              - type: tile
-                entity: input_datetime.visiteur_start
-                name: Heure de début
-
-              - type: tile
-                entity: input_datetime.visiteur_end
-                name: Heure de fin
 
           - type: custom:button-card
             template: section_header
@@ -82,25 +50,20 @@ views:
             template: section_header
             name: ⌛ Délais (s)
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
+          - type: tile
+            entity: input_number.alarme_delai_entree
+            name: 📡 Delai d'entrée
+            icon: mdi:timer-outline
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
-              - type: tile
-                entity: input_number.alarme_delai_entree
-                name: 📡
-                icon: mdi:timer-outline
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: number.sirene_max_duration
-                name: 🚨 
-                icon: mdi:timer-alert
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: number.sirene_max_duration
+            name: 🚨 Durée max sirène
+            icon: mdi:timer-alert
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons

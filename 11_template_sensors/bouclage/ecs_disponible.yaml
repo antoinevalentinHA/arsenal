@@ -1,0 +1,60 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     ECS — Disponibilite thermique pour bouclage
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Qualifier si le ballon ECS est thermiquement disponible
+#     pour autoriser le bouclage automatique opportuniste.
+#
+# 🧩 PERIMETRE
+#
+#     - Lecture temperature ballon ECS
+#     - Seuils parametrables via helpers
+#     - Hysteresis ON / OFF
+#     - Aucun pilotage materiel
+#
+# 🔗 DEPENDANCES
+#
+#     - sensor.ecs_temperature_ballon_securisee
+#     - input_number.bouclage_ecs_seuil_on
+#     - input_number.bouclage_ecs_seuil_off
+#
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage de switch
+#     - Aucune production ECS
+#     - Aucune logique horaire
+#     - Aucune regulation thermique
+#
+# 🧠 STATUT
+#
+#     Capteur de qualification thermique — Bouclage ECS v2
+# ==========================================================
+
+- binary_sensor:
+    - name: ECS Disponible
+      unique_id: ecs_disponible
+      state: >
+        {% set temperature = states('sensor.ecs_temperature_ballon_securisee') | float(none) %}
+        {% set seuil_on = states('input_number.bouclage_ecs_seuil_on') | float(none) %}
+        {% set seuil_off = states('input_number.bouclage_ecs_seuil_off') | float(none) %}
+
+        {% if temperature is none
+              or seuil_on is none
+              or seuil_off is none
+              or seuil_off >= seuil_on %}
+          false
+        {% elif this.state == 'on' %}
+          {{ temperature > seuil_off }}
+        {% else %}
+          {{ temperature >= seuil_on }}
+        {% endif %}
+
+      attributes:
+        temperature_ballon: >
+          {{ states('sensor.ecs_temperature_ballon_securisee') | float(none) }}
+        seuil_on: >
+          {{ states('input_number.bouclage_ecs_seuil_on') | float(none) }}
+        seuil_off: >
+          {{ states('input_number.bouclage_ecs_seuil_off') | float(none) }}

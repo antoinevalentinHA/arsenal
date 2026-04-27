@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     ECS — Bouclage AUTO demarrage / reconciliation
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Activer le bouclage ECS lorsque l'autorisation AUTO
+#     devient vraie.
+#
+#     Reconciler l'etat physique apres stabilisation systeme,
+#     sans transformer un cycle manuel 5 minutes en AUTO.
+#
+# 🧩 PERIMETRE
+#
+#     - Front montant de binary_sensor.bouclage_autorise
+#     - Reconciliation sur input_boolean.systeme_stable
+#     - Pilotage conditionnel de switch.prise_bouclage
+#
+# 🔗 DEPENDANCES
+#
+#     - binary_sensor.bouclage_autorise
+#     - input_boolean.systeme_stable
+#     - input_boolean.bouclage_ecs_5_minutes_en_cours
+#     - switch.prise_bouclage
+#
+# 🚫 INTERDITS
+#
+#     - Aucun timer AUTO
+#     - Aucune logique horaire
+#     - Aucune lecture directe de temperature
+#     - Aucune notification
+#
+# 🧠 STATUT
+#
+#     Automation d'application — Bouclage ECS AUTO ON
+# ==========================================================
+
+- id: "10260000000004"
+  alias: "Bouclage ECS — AUTO demarrage"
+  description: "Active le bouclage ECS lorsque l'autorisation AUTO devient vraie ou apres stabilisation systeme."
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.bouclage_autorise
+      from: "off"
+      to: "on"
+
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: binary_sensor.bouclage_autorise
+      state: "on"
+
+    - condition: state
+      entity_id: input_boolean.bouclage_ecs_5_minutes_en_cours
+      state: "off"
+
+  action:
+    - if:
+        - condition: state
+          entity_id: switch.prise_bouclage
+          state: "off"
+      then:
+        - service: switch.turn_on
+          target:
+            entity_id: switch.prise_bouclage

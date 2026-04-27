@@ -24,7 +24,6 @@
 #     - Reconstruit les états métier en conséquence :
 #         • présence visiteur
 #         • visite en cours
-#         • bouclage ECS (optionnel)
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
@@ -73,14 +72,6 @@
                   - input_boolean.presence_visiteur
                   - input_boolean.visite_en_cours
 
-            - condition: state
-              entity_id: input_boolean.bouclage_visiteur
-              state: "on"
-
-            - action: switch.turn_on
-              target:
-                entity_id: switch.prise_bouclage
-
       # ---------------------------------------------
       # 🔴 Cas 2 : aucun creneau valide
       # ---------------------------------------------
@@ -90,7 +81,3 @@
             entity_id:
               - input_boolean.presence_visiteur
               - input_boolean.visite_en_cours
-
-        - action: switch.turn_off
-          target:
-            entity_id: switch.prise_bouclage

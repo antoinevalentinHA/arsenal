@@ -1,33 +1,55 @@
 # ==========================================================
-# 🚿 TEMPLATE TRIGGERED SENSOR — Couleur Température ECS
+# 🚿 TEMPLATE TRIGGERED SENSOR — Couleur Temperature ECS
 # ----------------------------------------------------------
 # 💡 Objectif :
-#   Représenter visuellement la température du ballon d’eau chaude
-#   sanitaire (ECS) à l’aide d’un code couleur simple.
+#   Representer visuellement la temperature du ballon ECS
+#   selon les seuils reels du bouclage automatique.
 #
 # ⚙️ Fonctionnement :
-#   - Source : sensor.ecs_temperature_ballon_securisee
-#   - Interprétation :
-#       • < 35°C  → blue   → eau tiède / insuffisante
-#       • < 40°C  → orange → en cours de chauffe
-#       • ≥ 40°C  → red    → température correcte
+#   - Source temperature : sensor.ecs_temperature_ballon_securisee
+#   - Seuil bas : input_number.bouclage_ecs_seuil_off
+#   - Seuil haut : input_number.bouclage_ecs_seuil_on
 #
-# 🔁 Rafraîchissement :
-#   - À chaque changement de température ECS
+#   Interpretation :
+#       • < seuil_off  → blue   → eau insuffisante
+#       • < seuil_on   → orange → zone intermediaire
+#       • ≥ seuil_on   → red    → temperature correcte
+#
+# 🔁 Rafraichissement :
+#   - A chaque changement de temperature ECS
+#   - A chaque changement des seuils bouclage
 #
 # 📊 Type : Trigger Template Sensor
-# 📍 Nom de l’entité : temperature_ecs_couleur
+# 📍 Nom de l’entite : temperature_ecs_couleur
 # ==========================================================
 
 - trigger:
     - platform: state
       entity_id: sensor.ecs_temperature_ballon_securisee
+
+    - platform: state
+      entity_id: input_number.bouclage_ecs_seuil_on
+
+    - platform: state
+      entity_id: input_number.bouclage_ecs_seuil_off
+
   sensor:
     - name: "Température ECS - couleur"
       unique_id: temperature_ecs_couleur
       state: >
-        {% set t = states('sensor.ecs_temperature_ballon_securisee') | float %}
-        {% if t < 35 %} blue
-        {% elif t < 40 %} orange
-        {% else %} red
+        {% set t = states('sensor.ecs_temperature_ballon_securisee') | float(none) %}
+        {% set seuil_on = states('input_number.bouclage_ecs_seuil_on') | float(none) %}
+        {% set seuil_off = states('input_number.bouclage_ecs_seuil_off') | float(none) %}
+
+        {% if t is none
+              or seuil_on is none
+              or seuil_off is none
+              or seuil_off >= seuil_on %}
+          grey
+        {% elif t < seuil_off %}
+          blue
+        {% elif t < seuil_on %}
+          orange
+        {% else %}
+          red
         {% endif %}
