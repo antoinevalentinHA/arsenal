@@ -83,12 +83,10 @@ views:
                 {% set perte = None %}
               {% endif %}
 
-              <b>🚗 Audi A3 e-tron — Santé batterie</b><br>
-
               {% if actuel > 0 %}
-              🔋 <b>Moyenne du mois en cours :</b> {{ actuel }} km<br>
+              <b>Moyenne du mois en cours :</b> {{ actuel }} km<br>
               {% else %}
-              🔋 <b>Moyenne du mois en cours :</b> <i>en attente de données</i><br>
+              <b>Moyenne du mois en cours :</b> <i>en attente de données</i><br>
               {% endif %}
 
               {% if perte is not none and actuel > 0 %}

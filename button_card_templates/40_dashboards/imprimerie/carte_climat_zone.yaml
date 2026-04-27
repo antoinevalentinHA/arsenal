@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Climat — Synthese zone
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : statut metier
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher l'etat climat d'une zone a partir d'un capteur
+#   de synthese humidex.
+#
+# 📡 SOURCE
+#   - entity.state (ok / attention / degrade / indisponible)
+#
+# ⚙️ LOGIQUE UI
+#   - ok           → vert
+#   - attention    → jaune
+#   - degrade      → orange
+#   - indisponible → gris indispo
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : dashboard_imprimerie_principal
+# ==========================================================
+
+carte_climat_zone:
+  template: socle_status_72
+
+  state_display: |
+    [[[
+      const s = entity.state;
+      if (s === 'ok') return 'OK';
+      if (s === 'attention') return 'Attention';
+      if (s === 'degrade') return 'Dégradé';
+      return '—';
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity.state;
+
+            if (s === 'ok')
+              return 'rgba(76, 175, 80, 0.2)';
+
+            if (s === 'attention')
+              return 'rgba(255, 235, 59, 0.2)';
+
+            if (s === 'degrade')
+              return 'rgba(255, 152, 0, 0.2)';
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

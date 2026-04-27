@@ -45,7 +45,7 @@ views:
     
               - type: custom:button-card
                 template: bouton_navigation
-                name: 🗓️ Planning ECS
+                name: Réglages Planning
                 icon: mdi:calendar-clock
                 tap_action:
                   action: navigate

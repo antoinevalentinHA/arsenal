@@ -43,11 +43,11 @@ views:
                 icon: mdi:account-child
 
           # ==================================================
-          # 🧑‍🤝‍🧑️ MODES VISITEUR
+          # 🔑️️ MODE VISITEUR
           # ==================================================
           - type: custom:button-card
             template: section_header
-            name: 🧑‍🤝‍🧑 Mode visiteur
+            name: 🔑 Mode visiteur
 
           - type: custom:button-card
             template: status_72_on_off

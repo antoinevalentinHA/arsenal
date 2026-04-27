@@ -33,7 +33,7 @@ views:
           # === Babysitting ===
           - type: custom:button-card
             template: section_header
-            name: 👶 Babysitting
+            name: 👀 Babysitting
 
           - type: custom:button-card
             template: carte_mode_toggle
@@ -48,7 +48,7 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 🧑‍🤝‍🧑 Mode visiteur
+            name: 🔑 Mode visiteur
 
           - type: tile
             entity: input_boolean.mode_visiteur

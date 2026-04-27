@@ -1,0 +1,146 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Humidex Imprimerie Atelier
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Synthétiser l'état humidex de l'atelier de l'imprimerie
+#     à partir du maximum observé.
+#
+# 🧩 PERIMETRE
+#
+#     - Komori
+#     - Bobst
+#     - Media
+#
+# ⚙️ LOGIQUE
+#
+#     - Sources indisponibles ignorées
+#     - Calcul maintenu si au moins une source est valide
+#     - max < 27        → ok
+#     - max >= 27 < 29  → attention
+#     - max >= 29       → degrade
+#     - aucune source valide → indisponible
+#
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage
+#     - Aucune action climatique
+#     - Aucune logique UI
+# ==========================================================
+
+- sensor:
+
+    - name: Humidex Imprimerie Atelier
+      unique_id: humidex_imprimerie_atelier
+      icon: >
+        {% set ns = namespace(values=[]) %}
+        {% for item in [
+          {'entity': 'sensor.humidex_komori', 'zone': 'Komori'},
+          {'entity': 'sensor.humidex_bobst', 'zone': 'Bobst'},
+          {'entity': 'sensor.humidex_media', 'zone': 'Media'}
+        ] %}
+          {% if has_value(item.entity) %}
+            {% set ns.values = ns.values + [states(item.entity) | float] %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.values | count == 0 %}
+          mdi:cloud-question
+        {% elif ns.values | max >= 29 %}
+          mdi:thermometer-alert
+        {% elif ns.values | max >= 27 %}
+          mdi:thermometer-lines
+        {% else %}
+          mdi:thermometer-check
+        {% endif %}
+      attributes:
+        humidex_max: >
+          {% set ns = namespace(values=[]) %}
+          {% for item in [
+            {'entity': 'sensor.humidex_komori', 'zone': 'Komori'},
+            {'entity': 'sensor.humidex_bobst', 'zone': 'Bobst'},
+            {'entity': 'sensor.humidex_media', 'zone': 'Media'}
+          ] %}
+            {% if has_value(item.entity) %}
+              {% set ns.values = ns.values + [states(item.entity) | float] %}
+            {% endif %}
+          {% endfor %}
+          {% if ns.values | count > 0 %}
+            {{ ns.values | max | round(1) }}
+          {% else %}
+            unknown
+          {% endif %}
+        zone_max: >
+          {% set ns = namespace(max_value=none, max_zone='unknown') %}
+          {% for item in [
+            {'entity': 'sensor.humidex_komori', 'zone': 'Komori'},
+            {'entity': 'sensor.humidex_bobst', 'zone': 'Bobst'},
+            {'entity': 'sensor.humidex_media', 'zone': 'Media'}
+          ] %}
+            {% if has_value(item.entity) %}
+              {% set v = states(item.entity) | float %}
+              {% if ns.max_value is none or v > ns.max_value %}
+                {% set ns.max_value = v %}
+                {% set ns.max_zone = item.zone %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.max_zone }}
+        nb_sources_ok: >
+          {% set ns = namespace(count=0) %}
+          {% for entity in [
+            'sensor.humidex_komori',
+            'sensor.humidex_bobst',
+            'sensor.humidex_media'
+          ] %}
+            {% if has_value(entity) %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+        nb_sources_ko: >
+          {% set ns = namespace(count=0) %}
+          {% for entity in [
+            'sensor.humidex_komori',
+            'sensor.humidex_bobst',
+            'sensor.humidex_media'
+          ] %}
+            {% if not has_value(entity) %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+        sources_ko: >
+          {% set ns = namespace(items=[]) %}
+          {% for item in [
+            {'entity': 'sensor.humidex_komori', 'zone': 'Komori'},
+            {'entity': 'sensor.humidex_bobst', 'zone': 'Bobst'},
+            {'entity': 'sensor.humidex_media', 'zone': 'Media'}
+          ] %}
+            {% if not has_value(item.entity) %}
+              {% set ns.items = ns.items + [item.zone] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items | join(', ') if ns.items | count > 0 else 'none' }}
+        seuil_attention: 27
+        seuil_degrade: 29
+      state: >
+        {% set ns = namespace(values=[]) %}
+        {% for entity in [
+          'sensor.humidex_komori',
+          'sensor.humidex_bobst',
+          'sensor.humidex_media'
+        ] %}
+          {% if has_value(entity) %}
+            {% set ns.values = ns.values + [states(entity) | float] %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.values | count == 0 %}
+          indisponible
+        {% elif ns.values | max >= 29 %}
+          degrade
+        {% elif ns.values | max >= 27 %}
+          attention
+        {% else %}
+          ok
+        {% endif %}

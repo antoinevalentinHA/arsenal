@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Bruit — Activite globale
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : statut metier
+# 🔍 NIVEAU DE CONFIANCE : indicatif
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher l'etat d'activite sonore de l'imprimerie.
+#
+# 📡 SOURCE
+#   - entity.state (repos / activite / production / indisponible)
+#
+# ⚙️ LOGIQUE UI
+#   - repos        → gris neutre
+#   - activite     → jaune
+#   - production   → orange
+#   - indisponible → gris indispo
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : dashboard_imprimerie_principal
+# ==========================================================
+
+carte_bruit_activite:
+  template: socle_status_72
+
+  state_display: |
+    [[[
+      const s = entity.state;
+      if (s === 'repos') return 'Repos';
+      if (s === 'activite') return 'Activité';
+      if (s === 'production') return 'Production';
+      return '—';
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity.state;
+
+            if (s === 'repos')
+              return 'rgba(158, 158, 158, 0.2)';
+
+            if (s === 'activite')
+              return 'rgba(255, 235, 59, 0.2)';
+
+            if (s === 'production')
+              return 'rgba(255, 152, 0, 0.2)';
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

@@ -16,61 +16,37 @@ views:
           - !include ../../includes/navigation/imprimerie.yaml
 
           ########################################################
+          # 🖥️ NAS
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🖥️ NAS
+
+          - !include ../../includes/cartes/imprimerie_synthese_nas.yaml
+
+          ########################################################
           # 🌡️💦 HUMIDEX
           ########################################################
           - type: custom:button-card
             template: section_header
-            name: 🌡️💦 Humidex
+            name: 🌡️ Humidex
 
-          - square: false
-            type: grid
-            columns: 5
+          - type: grid
+            columns: 2
+            square: false
             cards:
 
               - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.humidex_direction
-                name: Direction
+                template: carte_climat_zone
+                entity: sensor.humidex_imprimerie_administratif
+                name: Administratif
+                icon: mdi:office-building
 
               - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.humidex_compta
-                name: Compta
-
-              - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.humidex_qualite
-                name: Qualité
-
-              - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.humidex_devis
-                name: Devis
-
-              - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.humidex_commercial
-                name: Commercial
-
-          - square: false
-            type: grid
-            columns: 3
-            cards:
-
-              - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.humidex_komori
-                name: Komori
-
-              - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.humidex_bobst
-                name: Bobst
-
-              - type: custom:button-card
-                template: socle_kpi
-                entity: sensor.humidex_media
-                name: Media
+                template: carte_climat_zone
+                entity: sensor.humidex_imprimerie_atelier
+                name: Atelier
+                icon: mdi:factory
 
           ########################################################
           # 🔊 BRUIT
@@ -79,57 +55,13 @@ views:
             template: section_header
             name: 🔊 Bruit
 
-          - square: false
-            type: grid
-            columns: 3
+          - type: grid
+            columns: 1
+            square: false
             cards:
 
               - type: custom:button-card
-                template: carte_bruit_seuils_variables
-                entity: sensor.bruit_komori
-                name: Komori
+                template: carte_bruit_activite
+                entity: sensor.bruit_imprimerie_activite
+                name: Activité sonore
                 icon: mdi:volume-high
-                variables:
-                  seuil_1: 45
-                  seuil_2: 55
-                  seuil_3: 65
-                  seuil_4: 75
-                  seuil_5: 80
-
-              - type: custom:button-card
-                template: carte_bruit_seuils_variables
-                entity: sensor.bruit_bobst
-                name: Bobst 102
-                icon: mdi:volume-high
-                variables:
-                  seuil_1: 45
-                  seuil_2: 55
-                  seuil_3: 65
-                  seuil_4: 75
-                  seuil_5: 80
-
-              - type: custom:button-card
-                template: carte_bruit_seuils_variables
-                entity: sensor.bruit_media
-                name: Media
-                icon: mdi:volume-high
-                variables:
-                  seuil_1: 45
-                  seuil_2: 55
-                  seuil_3: 65
-                  seuil_4: 72
-                  seuil_5: 79
-
-          ########################################################
-          # 📦 CONDITIONS DE STOCKAGE
-          ########################################################
-          - !include ../../includes/section_headers/stockage.yaml
-
-          - !include ../../includes/cartes/imprimerie_conditions_stockage.yaml
-
-          ########################################################
-          # 🏭 ATELIER
-          ########################################################
-          - !include ../../includes/section_headers/atelier.yaml
-
-          - !include ../../includes/cartes/imprimerie_conditions_atelier.yaml

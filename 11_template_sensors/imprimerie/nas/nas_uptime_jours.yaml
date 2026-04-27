@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     NAS Imprimerie — Uptime en jours
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Exposer l'uptime du NAS Imprimerie dans un format lisible
+#     pour l'interface utilisateur.
+#
+# 🧩 PERIMETRE
+#
+#     - Lecture du capteur technique en secondes
+#     - Conversion en jours
+#     - Arrondi a une decimale
+#
+# 🔗 DEPENDANCES
+#
+#     - sensor.nas_imprimerie_uptime
+#
+# 🚫 INTERDITS
+#
+#     - Aucun acces direct au JSON brut
+#     - Aucun diagnostic de connectivite
+#     - Aucune decision de sante systeme
+#     - Aucun pilotage
+#
+# 📊 SORTIE
+#
+#     - sensor.nas_imprimerie_uptime_jours
+#     - Unite : j
+#
+# 🧠 NOTE ARCHITECTURALE
+#
+#     Ce capteur est un derive UI.
+#     Le capteur source conserve la duree technique en secondes.
+# ==========================================================
+
+- sensor:
+    - name: NAS Imprimerie Uptime jours
+      unique_id: nas_imprimerie_uptime_jours
+      unit_of_measurement: "j"
+      state: >
+        {% set source = states('sensor.nas_imprimerie_uptime') %}
+        {% if source not in ['unknown', 'unavailable', 'none', ''] %}
+          {% set v = source | float(0) %}
+          {{ (v / 86400) | round(1) }}
+        {% else %}
+          unknown
+        {% endif %}

@@ -19,6 +19,10 @@ apex_config:
   xaxis:
     labels:
       datetimeUTC: false
+      format: MMM
+      rotate: -45
+      hideOverlappingLabels: true
+    tickAmount: 12
   yaxis:
     min: 0
     decimalsInFloat: 1

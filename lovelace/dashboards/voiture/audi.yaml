@@ -55,7 +55,7 @@ views:
                   - type: custom:button-card
                     template: carte_etat_charge_vehicule
                     entity: sensor.audi_e_tron_etat_de_charge_local
-                    name: Charge
+                    name: Recharge en cours
                     icon: mdi:ev-station
     
                   # 🔋 Niveau de batterie

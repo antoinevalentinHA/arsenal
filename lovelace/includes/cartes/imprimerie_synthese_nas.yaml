@@ -1,0 +1,5 @@
+type: custom:button-card
+template: nas_imprimerie_pivot_sante
+entity: sensor.nas_imprimerie_sante_synthese
+name: NAS Imprimerie
+icon: mdi:nas

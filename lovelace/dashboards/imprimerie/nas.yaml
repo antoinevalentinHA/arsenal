@@ -22,12 +22,7 @@ views:
             template: section_header
             name: 🧭 Synthèse
 
-          - type: custom:button-card
-            template: nas_imprimerie_pivot_sante
-            entity: sensor.nas_imprimerie_sante_synthese
-            name: NAS Imprimerie
-            icon: mdi:nas
-
+          - !include ../../includes/cartes/imprimerie_synthese_nas.yaml
 
           # ==================================================
           # 🧩 AXES DE SANTÉ
@@ -73,7 +68,6 @@ views:
                 variables:
                   axe: axe_stockage
 
-
           # ==================================================
           # 🛰️ CHAÎNE DISTANTE
           # ==================================================
@@ -95,21 +89,20 @@ views:
               - type: custom:button-card
                 template: nas_imprimerie_info
                 entity: sensor.nas_imprimerie_sonde_age
-                name: Sonde
+                name: Âge sonde
                 icon: mdi:satellite-uplink
 
               - type: custom:button-card
                 template: nas_imprimerie_info
                 entity: sensor.nas_imprimerie_transport_age
-                name: Transport
+                name: Âge fichier
                 icon: mdi:swap-horizontal
 
               - type: custom:button-card
                 template: nas_imprimerie_info
                 entity: sensor.nas_imprimerie_republisher_age
-                name: Republisher
+                name: Âge MQTT
                 icon: mdi:timer-refresh-outline
-
 
           # ==================================================
           # 💾 STOCKAGE
@@ -143,7 +136,6 @@ views:
                 name: Libre %
                 icon: mdi:chart-pie
 
-
           # ==================================================
           # 🔋 ALIMENTATION
           # ==================================================
@@ -170,7 +162,6 @@ views:
                 name: Sur batterie
                 icon: mdi:battery-alert
 
-
           # ==================================================
           # 🖥️ SYSTÈME
           # ==================================================
@@ -191,10 +182,9 @@ views:
 
               - type: custom:button-card
                 template: nas_imprimerie_info
-                entity: sensor.nas_imprimerie_uptime
+                entity: sensor.nas_imprimerie_uptime_jours
                 name: Uptime
                 icon: mdi:timer-check-outline
-
 
           # ==================================================
           # 🧪 DIAGNOSTIC

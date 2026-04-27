@@ -42,7 +42,7 @@ views:
           # ==========================================================
           - type: custom:button-card
             template: section_header
-            name: 📡 Activite
+            name: 📡 Activité
 
           - type: horizontal-stack
             cards:
@@ -80,7 +80,7 @@ views:
               - type: custom:button-card
                 template: boiler_kpi_temperature
                 entity: sensor.boiler_supply_temperature
-                name: Départ
+                name: T° de départ
 
           - type: horizontal-stack
             cards:

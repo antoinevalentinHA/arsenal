@@ -12,7 +12,7 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 🏠 Maison – Réseau & Énergie
+            name: ⚙️ Infrastructure
 
           - type: grid
             columns: 2
@@ -189,7 +189,7 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: 🔌📡 Prises relais
+            name: 📡 Prises relais
 
           - type: grid
             columns: 4
