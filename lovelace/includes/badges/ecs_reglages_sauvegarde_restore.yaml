@@ -1,0 +1,33 @@
+type: custom:layout-card
+layout_type: custom:grid-layout
+layout:
+  grid-template-columns: 1fr repeat(2, 60px) 1fr
+  justify-items: center
+  align-items: center
+cards:
+
+  # === Bouton Sauvegarde ===
+  - type: custom:button-card
+    view_layout:
+      grid-column: 2
+    template: badge_action_confirmee
+    icon: mdi:content-save
+    name: Sauvegarder
+    variables:
+     action_service: script.ecs_sauvegarde_reglages
+     confirm: 💾 Sauvegarder tous les réglages ECS ?
+     bg_color: rgba(33, 150, 243, 0.2)
+     icon_color: '#1565C0'
+
+  # === Bouton Restauration ===
+  - type: custom:button-card
+    view_layout:
+      grid-column: 3
+    template: badge_action_confirmee
+    icon: mdi:backup-restore
+    name: Restaurer
+    variables:
+     action_service: script.ecs_restore_reglages
+     confirm: ♻️ Restaurer les réglages ECS depuis la sauvegarde ?
+     bg_color: rgba(76, 175, 80, 0.2)
+     icon_color: '#2E7D32'

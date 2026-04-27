@@ -15,3 +15,6 @@ v2.2.3
 
 # ⚙️ Auto Entities
 v1.16.1
+
+# 📐 Layout Card
+v2.4.7

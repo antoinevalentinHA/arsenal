@@ -1,12 +1,14 @@
-type: horizontal-stack
-card_mod:
-  style: |
-    #root {
-      justify-content: center;
-    }
+type: custom:layout-card
+layout_type: custom:grid-layout
+layout:
+  grid-template-columns: 1fr repeat(3, 50px) 1fr
+  justify-items: center
+  align-items: center
 cards:
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 2
     template: bouton_navigation_badge_carre
     name: Aperçu
     icon: mdi:car
@@ -18,6 +20,8 @@ cards:
         - color: '#1565C0'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 3
     template: bouton_navigation_badge_carre
     name: Sécurité
     icon: mdi:shield
@@ -29,6 +33,8 @@ cards:
         - color: '#B71C1C'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 4
     template: bouton_navigation_badge_carre
     name: Batterie
     icon: mdi:battery

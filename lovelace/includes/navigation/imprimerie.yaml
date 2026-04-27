@@ -1,12 +1,15 @@
-type: horizontal-stack
-card_mod:
-  style: |
-    #root {
-      justify-content: center;
-    }
+type: custom:layout-card
+layout_type: custom:grid-layout
+layout:
+  grid-template-columns: 1fr repeat(6, 42px) 1fr
+  grid-gap: 8px
+  align-items: center
 cards:
 
+  # === Imprimerie menu ===
   - type: custom:button-card
+    view_layout:
+      grid-column: 2
     template: bouton_navigation_badge_carre
     icon: mdi:magnify
     tap_action:
@@ -16,7 +19,10 @@ cards:
       icon:
         - color: '#424242'
 
+  # === Météo ===
   - type: custom:button-card
+    view_layout:
+      grid-column: 3
     template: bouton_navigation_badge_carre
     icon: mdi:thermometer
     tap_action:
@@ -26,7 +32,10 @@ cards:
       icon:
         - color: '#B71C1C'
 
+  # === Bruit ===
   - type: custom:button-card
+    view_layout:
+      grid-column: 4
     template: bouton_navigation_badge_carre
     icon: mdi:volume-high
     tap_action:
@@ -36,7 +45,10 @@ cards:
       icon:
         - color: '#1565C0'
 
+  # === Stockage ===
   - type: custom:button-card
+    view_layout:
+      grid-column: 5
     template: bouton_navigation_badge_carre
     icon: mdi:warehouse
     tap_action:
@@ -46,7 +58,10 @@ cards:
       icon:
         - color: '#1B5E20'
 
+  # === Atelier ===
   - type: custom:button-card
+    view_layout:
+      grid-column: 6
     template: bouton_navigation_badge_carre
     icon: mdi:factory
     tap_action:
@@ -56,7 +71,10 @@ cards:
       icon:
         - color: '#1B5E20'
 
+  # === NAS ===
   - type: custom:button-card
+    view_layout:
+      grid-column: 7
     template: bouton_navigation_badge_carre
     icon: mdi:nas
     tap_action:

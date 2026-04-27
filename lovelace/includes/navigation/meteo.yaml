@@ -1,9 +1,14 @@
-square: false
-type: grid
-columns: 9
+type: custom:layout-card
+layout_type: custom:grid-layout
+layout:
+  grid-template-columns: 1fr repeat(9, 50px) 1fr
+  justify-items: center
+  align-items: center
 cards:
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 2
     template: bouton_navigation_badge_carre
     icon: mdi:thermometer
     tap_action:
@@ -14,6 +19,8 @@ cards:
         - color: '#B71C1C'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 3
     template: bouton_navigation_badge_carre
     icon: mdi:water-percent
     tap_action:
@@ -24,6 +31,8 @@ cards:
         - color: '#1565C0'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 4
     template: bouton_navigation_badge_carre
     icon: mdi:water
     tap_action:
@@ -34,6 +43,8 @@ cards:
         - color: '#1B5E20'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 5
     template: bouton_navigation_badge_carre
     icon: mdi:thermometer-water
     tap_action:
@@ -44,6 +55,8 @@ cards:
         - color: '#E65100'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 6
     template: bouton_navigation_badge_carre
     icon: mdi:molecule-co2
     tap_action:
@@ -54,6 +67,8 @@ cards:
         - color: '#3E2723'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 7
     template: bouton_navigation_badge_carre
     icon: mdi:volume-high
     tap_action:
@@ -64,6 +79,8 @@ cards:
         - color: '#6A1B9A'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 8
     template: bouton_navigation_badge_carre
     icon: mdi:weather-rainy
     tap_action:
@@ -74,6 +91,8 @@ cards:
         - color: '#0277BD'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 9
     template: bouton_navigation_badge_carre
     icon: mdi:gauge
     tap_action:
@@ -84,6 +103,8 @@ cards:
         - color: '#455A64'
 
   - type: custom:button-card
+    view_layout:
+      grid-column: 10
     template: bouton_navigation_badge_carre
     icon: mdi:weather-partly-cloudy
     tap_action:

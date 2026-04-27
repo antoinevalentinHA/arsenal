@@ -36,8 +36,7 @@ Le mode Visiteur matérialise un contexte humain explicite indiquant la présenc
 Il permet d’adapter les raisonnements :
 
 - alarme,
-- présence,
-- énergie.
+- présence. 
 
 Il ne repose sur aucune déduction automatique.
 

@@ -21,3 +21,7 @@
 # ⚙️ Auto Entities
 - url: /local/lovelace-auto-entities/auto-entities.js
   type: module
+
+# 📐 Layout Card
+- url: /local/lovelace-layout-card/layout-card.js
+  type: module

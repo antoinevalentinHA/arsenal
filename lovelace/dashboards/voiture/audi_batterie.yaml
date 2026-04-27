@@ -51,15 +51,13 @@ views:
           # ------------------------------------------------------
           - type: statistics-graph
             chart_type: line
-            period: day
+            period: week
             days_to_show: 365
             entities:
               - entity: sensor.autonomie_audi_e_tron_mensuelle
-                name: Moyenne (km)
+                name: Moyenne hebdomadaire (km)
                 stat_types:
                   - mean
-                  - min
-                  - max
 
           # ------------------------------------------------------
           # 🧮 Analyse textuelle complète (bilan mensuel)

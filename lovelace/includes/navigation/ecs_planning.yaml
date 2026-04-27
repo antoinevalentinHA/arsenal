@@ -1,23 +1,15 @@
-type: horizontal-stack
-card_mod:
-  style: |
-    :host {
-      display: flex !important;
-      justify-content: center !important;
-    }
-    #root {
-      display: flex !important;
-      justify-content: center !important;
-      flex-wrap: nowrap;
-    }
-    #root > * {
-      flex: 0 0 auto !important;
-      width: auto !important;
-    }
+type: custom:layout-card
+layout_type: custom:grid-layout
+layout:
+  grid-template-columns: 1fr repeat(2, 50px) 1fr
+  justify-items: center
+  align-items: center
 cards:
 
   # sauvegarde
   - type: custom:button-card
+    view_layout:
+      grid-column: 2
     template: bouton_navigation_badge_carre
     icon: mdi:content-save
     tap_action:
@@ -31,6 +23,8 @@ cards:
 
   # restauration
   - type: custom:button-card
+    view_layout:
+      grid-column: 3
     template: bouton_navigation_badge_carre
     icon: mdi:backup-restore
     tap_action:
