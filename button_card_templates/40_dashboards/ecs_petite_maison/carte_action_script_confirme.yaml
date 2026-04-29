@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Action — Script confirmé
+#
+# 🗂️ COUCHE : UI / Action
+# 🧱 TYPE UI : Action script confirmée
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Déclencher un script Home Assistant après confirmation
+#   explicite de l’utilisateur.
+#
+# 📡 SOURCE
+#   entity de type script.* fournie à l’instance.
+#
+# ⚙️ LOGIQUE UI
+#   Exécute script.turn_on sur l’entité portée par la carte.
+#   La confirmation est obligatoire et surchargeable via
+#   variables.confirmation.
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : socle_action_script_confirme
+# ==========================================================
+
+carte_action_script_confirme:
+  template: socle_action_script_confirme
+
+  tap_action:
+    action: call-service
+    service: script.turn_on
+    confirmation:
+      text: >
+        [[[
+          return variables?.confirmation
+            || "Confirmer l’exécution de ce script ?";
+        ]]]
+    service_data:
+      entity_id: '[[[ return entity.entity_id ]]]'

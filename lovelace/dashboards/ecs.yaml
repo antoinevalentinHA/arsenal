@@ -20,6 +20,13 @@ views:
           action: navigate
           navigation_path: /diagnostics-ecs-dashboard/diagnostics-ecs
 
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+        icon: mdi:home-outline
+        tap_action:
+          action: navigate
+          navigation_path: /ecs-petite-maison-dashboard/0
+
     cards:
       - type: vertical-stack
         cards:

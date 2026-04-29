@@ -1,0 +1,60 @@
+# ==========================================================
+# 🚿 TEMPLATE TRIGGERED SENSOR — Couleur Temperature ECS Petite Maison
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Représenter visuellement la température du cumulus ECS
+#   de la Petite Maison selon un critère de confort réel.
+#
+# ⚙️ Fonctionnement :
+#   - Source canonique contractuelle :
+#       water_heater.petite_maison.current_temperature
+#   - Source UI autorisée :
+#       sensor.ecs_petite_maison_temperature_eau_locale
+#   - Cette source UI est le capteur local fiabilisé produit
+#     par la couche observation Arsenal.
+#
+#   Interprétation :
+#       • donnée indisponible / invalide → grey (indisponibilité)
+#       • < 45 °C                      → blue   (insuffisant)
+#       • < 60 °C                      → orange (limite)
+#       • ≥ 60 °C                      → green  (nominal)
+#
+#   Invalidation explicite :
+#       • 0.0 °C est considéré invalide
+#
+# 🔁 Rafraîchissement :
+#   - À chaque changement de température ECS Petite Maison
+#   - Au démarrage de Home Assistant
+#
+# 📊 Type : Trigger Template Sensor
+# 📍 Nom de l’entité : temperature_ecs_petite_maison_couleur
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: sensor.ecs_petite_maison_temperature_eau_locale
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Temperature ECS Petite Maison - couleur"
+      unique_id: temperature_ecs_petite_maison_couleur
+      state: >
+        {% set raw = states('sensor.ecs_petite_maison_temperature_eau_locale') %}
+
+        {% if raw in ['unknown', 'unavailable', 'none', ''] %}
+          grey
+        {% else %}
+          {% set t = raw | float(none) %}
+
+          {% if t is none or t == 0.0 %}
+            grey
+          {% elif t < 45 %}
+            blue
+          {% elif t < 60 %}
+            orange
+          {% else %}
+            green
+          {% endif %}
+        {% endif %}

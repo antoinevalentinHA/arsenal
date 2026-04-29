@@ -3,3 +3,6 @@ template: nas_imprimerie_pivot_sante
 entity: sensor.nas_imprimerie_sante_synthese
 name: NAS Imprimerie
 icon: mdi:nas
+tap_action:
+  action: navigate
+  navigation_path: /imprimerie-nas-dashboard/nas-imprimerie

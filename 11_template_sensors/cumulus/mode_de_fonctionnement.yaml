@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     ECS Petite Maison — Libelle UI mode de fonctionnement
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Fournir un libelle lisible pour l'affichage UI du mode
+#   de fonctionnement du cumulus Petite Maison.
+#
+# 🧩 PERIMETRE
+#   - Presentation uniquement
+#   - Aucune decision
+#   - Aucune action
+#   - Aucun diagnostic materiel
+#
+# 📡 SOURCE
+#   - sensor.ecs_petite_maison_mode_fonctionnement_local
+#
+# ⚙️ LOGIQUE
+#   - Traduction des etats techniques en libelles UI courts
+#   - Conservation explicite des modes inconnus sous forme brute
+#
+# 🚫 INTERDITS
+#   - Ne pas utiliser ce capteur comme source de decision
+#   - Ne pas piloter d'automatisation depuis ce capteur
+#   - Ne pas l'utiliser comme etat canonique du cumulus
+# ==========================================================
+
+- sensor:
+    - name: "ecs_petite_maison_mode_fonctionnement_libelle"
+      unique_id: "ecs_petite_maison_mode_fonctionnement_libelle"
+      icon: mdi:water-boiler
+      state: >
+        {% set mode = states('sensor.ecs_petite_maison_mode_fonctionnement_local') %}
+        {% if mode == 'eco' %}
+          Éco
+        {% elif mode == 'manual' %}
+          Manuel
+        {% elif mode == 'boost' %}
+          Boost
+        {% elif mode == 'absence' %}
+          Absence
+        {% elif mode in ['unknown', 'unavailable', 'none', ''] %}
+          Indisponible
+        {% else %}
+          {{ mode }}
+        {% endif %}

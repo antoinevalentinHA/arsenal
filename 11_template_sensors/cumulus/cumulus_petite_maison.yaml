@@ -25,11 +25,14 @@
       unit_of_measurement: "°C"
       device_class: temperature
       state: >
-        {% set v = states('sensor.petite_maison_bottom_tank_water_temperature') %}
-        {% if v not in ['unknown', 'unavailable', '', None] %}
+        {% set v = state_attr('water_heater.petite_maison', 'current_temperature') %}
+        {% set current = states('sensor.ecs_petite_maison_temperature_eau_locale') %}
+        {% if v is not none and (v | float(0)) >= 20 and (v | float(0)) <= 80 %}
           {{ (v | float(0)) | round(1) }}
+        {% elif current not in ['unknown', 'unavailable', '', 'none'] %}
+          {{ current }}
         {% else %}
-          {{ states('sensor.ecs_petite_maison_temperature_eau_locale') }}
+          unknown
         {% endif %}
 
     - name: "ecs_petite_maison_consigne_locale"

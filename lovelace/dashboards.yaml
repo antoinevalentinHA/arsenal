@@ -61,6 +61,13 @@ ecs-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/ecs.yaml
 
+ecs-petite-maison-dashboard:
+  mode: yaml
+  title: ECS Petite Maison
+  icon: mdi:water-boiler
+  show_in_sidebar: false
+  filename: lovelace/dashboards/ecs_petite_maison.yaml
+
 system-dashboard:
   mode: yaml
   title: Système
@@ -326,6 +333,13 @@ reglages-ecs-planning-dashboard:
   icon: mdi:calendar-week
   show_in_sidebar: false
   filename: lovelace/dashboards/reglages/ecs_planning.yaml
+
+reglages-ecs-petite-maison-dashboard:
+  mode: yaml
+  title: ECS Petite Maison
+  icon: mdi:water-pump
+  show_in_sidebar: false
+  filename: lovelace/dashboards/reglages/ecs_petite_maison.yaml
 
 reglages-ouvertures-dashboard:
   mode: yaml

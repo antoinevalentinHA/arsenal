@@ -1,0 +1,54 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     ECS Petite Maison — Mode de fonctionnement
+#
+# 🗂️ COUCHE : UI / Dashboard / ECS Petite Maison
+# 🧱 TYPE UI : Statut équipement
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher le mode de fonctionnement observé du cumulus
+#   Petite Maison avec une couleur sémantique canonique.
+#
+# 📡 SOURCE
+#   sensor.ecs_petite_maison_mode_fonctionnement_local
+#
+# ⚙️ LOGIQUE UI
+#   Traduit l’état métier observé en libellé lisible et en
+#   couleur canonique Arsenal.
+#   Aucune décision, aucune action, aucun diagnostic matériel.
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : socle_status_72
+#
+# ==========================================================
+
+carte_ecs_petite_maison_mode:
+  template: socle_status_72
+  entity: sensor.ecs_petite_maison_mode_fonctionnement_local
+  name: Mode
+  icon: mdi:water-boiler
+  state_display: >
+    [[[
+      if (entity.state === 'eco') return 'Éco';
+      if (entity.state === 'manual') return 'Manuel';
+      if (entity.state === 'boost') return 'Boost';
+      if (entity.state === 'absence') return 'Absence';
+      if (entity.state === 'unknown' || entity.state === 'unavailable') return 'Indisponible';
+      return entity.state;
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            if (entity.state === 'eco') return 'rgba(76, 175, 80, 0.2)';
+            if (entity.state === 'absence') return 'rgba(158, 158, 158, 0.2)';
+            if (entity.state === 'boost') return 'rgba(33, 150, 243, 0.2)';
+            if (entity.state === 'manual') return 'rgba(255, 152, 0, 0.2)';
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

@@ -32,11 +32,3 @@ views:
             template: ecs_chauffe_planifiee_status
 
           - !include ../../includes/cartes/ecs_dernier_cycle.yaml
-
-          ########################################################
-          # 🏠 SECTION : ECS – Petite Maison
-          ########################################################
-
-          - !include ../../includes/section_headers/ecs_petite_maison.yaml
-
-          - !include ../../includes/cartes/ecs_petite_maison.yaml

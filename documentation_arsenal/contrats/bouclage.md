@@ -3,7 +3,7 @@
 #     ECS — BOUCLAGE
 # ==========================================================
 
-**Version :** 2.1.2  
+**Version :** 2.2.1  
 **Statut :** Actif  
 **Rupture :** Abandon des plages horaires au profit d'un maintien conditionnel opportuniste (AUTO) + cycle manuel borné par timer (5 min)  
 **Migration :** `binary_sensor.bouclage_autorise` conservé — migration sémantique contrôlée (v1 : plage horaire + présence → v2 : disponibilité thermique + présence)
@@ -22,7 +22,7 @@ Il établit :
 - la **machine d'état normative**,
 - l'**arbitrage AUTO / cycle manuel**,
 - les **invariants énergétiques**,
-- les **règles inter-domaines** (ECS / Alarme / UI).
+- les **règles inter-domaines** (ECS / UI).
 
 Ce contrat constitue une **référence structurante** destinée à figer
 définitivement la gouvernance du bouclage ECS.
@@ -38,7 +38,6 @@ Le présent contrat couvre :
 - l'**arbitrage AUTO / cycle manuel**,
 - l'orchestration post-cycle ECS,
 - l'interaction avec les domaines :
-  - Alarme / Visite,
   - UI directe.
 
 Il ne couvre pas :
@@ -189,35 +188,36 @@ Interdits :
 - ne décide rien,
 - ne corrige rien.
 
+Invariant de non-survie :
+
+> `input_boolean.bouclage_ecs_5_minutes_en_cours` ne peut jamais survivre à un timer idle.
+
+Garanties obligatoires d'implémentation :
+
+- `timer.bouclage_ecs_5_minutes` → `finished` : flag → `off` **inconditionnel**,
+- `homeassistant.start` + timer idle + flag `on` → flag → `off` (**purge d'état logique incohérent — ne touche pas `switch.prise_bouclage`**),
+- [optionnel] watchdog : timer idle + flag `on` depuis > 10 min → flag → `off`.
+
+Conséquence normative :
+
+> Un flag `on` avec timer idle est un état interdit. Il constitue un défaut d'implémentation, non un état légitime.
+
 ---
 
 ## 🔗 ÉCRIVAINS OFFICIELS DE L'ACTIONNEUR
 
 ### Domaine ECS (légitimes)
 
-- `automation 10260000000001` — Bouclage AUTO : démarrage → ON
-  Déclencheur : front montant de `binary_sensor.bouclage_autorise`
+- `automation 10260000000001` — Bouclage AUTO : démarrage → ON  
+  Déclencheur : front montant de `binary_sensor.bouclage_autorise`  
+  **Règle : ne teste jamais `input_boolean.bouclage_ecs_5_minutes_en_cours`. Le cycle manuel ne constitue pas un verrou d'entrée AUTO.**
 
 - `automation 10260000000002` — Bouclage AUTO : extinction → OFF
   Déclencheur : front descendant de `binary_sensor.bouclage_autorise`
 
 - `script.bouclage_ecs_manuel` → ON + flag
-- `automation 10260000000003` — Extinction bouclage manuel → OFF + flag
+- `automation 10260000000003` — Extinction bouclage manuel → flag OFF inconditionnel + switch OFF si `bouclage_autorise == off`  
   Déclencheur : fin de `timer.bouclage_ecs_5_minutes`
-
----
-
-### Domaine ALARME / VISITE
-
-- `activation.yaml`
-- `securite_reboot.yaml`
-- `desactivation.yaml`
-
-Statut :
-- **DOMAINE EXTERNE SOUVERAIN**
-
-Règle :
-- ECS ne corrige jamais une action ALARME.
 
 ---
 
@@ -237,9 +237,8 @@ Règle :
 
 Principe normatif :
 
-- ALARME est souverain sur l'actionneur,
 - UI est souveraine sur l'actionneur,
-- ECS **ne corrige jamais** un état imposé par un autre domaine.
+- ECS **ne corrige jamais** un état imposé par UI.
 
 Conséquences :
 
@@ -332,7 +331,9 @@ Interdits :
 - aucune heuristique comportementale ou prédictive,
 - aucun helper ne pilote un actionneur,
 - aucun script ne décide,
-- aucun moteur ne corrige un domaine externe.
+- aucun moteur ECS ne corrige un domaine externe,
+- `input_boolean.bouclage_ecs_5_minutes_en_cours` ne peut jamais survivre à un timer idle,
+- l'automation AUTO de démarrage ne teste jamais le flag de cycle manuel.
 
 `binary_sensor.bouclage_autorise` ne pilote jamais directement l'actionneur.
 Seules les automatisations sont habilitées à écrire dans `switch.prise_bouclage`.
@@ -352,9 +353,11 @@ Sont strictement interdits :
 - toute plage horaire comme condition de bouclage AUTO,
 - tout timer comme borne du mode AUTO,
 - utiliser l'état matériel `switch.prise_bouclage` comme vérité logique,
-- corriger un état imposé par ALARME ou UI,
+- corriger un état imposé par UI,
 - créer une logique de prolongation automatique,
-- correction automatique post-reboot.
+- utiliser le reboot pour corriger arbitrairement l'état physique de `switch.prise_bouclage`,
+- tester `input_boolean.bouclage_ecs_5_minutes_en_cours` dans l'automation de démarrage AUTO,
+- laisser subsister un flag `on` après expiration ou idle du timer.
 
 ---
 
@@ -399,11 +402,24 @@ Toute divergence entre état logique et état physique est :
 
 ---
 
-## 🧠 STATUT
+## 📋 CHANGELOG
 
-- Contrat normatif : **ACTIF**
-- Domaine : **ECS / Bouclage**
-- Rôle : **STRUCTURANT**
-- Évolutivité : **MAÎTRISÉE**
+### v2.2.1
+- **§ Périmètre / Objet** : retrait de la référence Alarme / Visite.
+- **§ Écrivains officiels** : suppression du bloc domaine ALARME / VISITE (`activation.yaml`, `securite_reboot.yaml`, `desactivation.yaml`) — domaine désormais hors périmètre.
+- **§ Règle inter-domaines** : retrait de la souveraineté ALARME ; seule UI reste domaine externe reconnu.
+- **§ Interdits formels** : remplacement de *"correction automatique post-reboot"* et *"corriger un état imposé par ALARME ou UI"* par formulations précises — le reset du flag au boot est **légitime** (purge d'état logique, sans toucher l'actionneur) ; seule la correction arbitraire de `switch.prise_bouclage` au reboot est interdite.
+- **§ Flag — garanties** : clarification explicite que la purge reboot-safe ne concerne que le flag, jamais l'actionneur.
+
+### v2.2.0
+- **§ Flag d'état cycle manuel** : ajout invariant de non-survie + garanties obligatoires d'implémentation (timer.finished → flag off inconditionnel, reboot-safe reset, watchdog optionnel).
+- **§ Écrivains officiels** : `automation 10260000000001` — ajout de la règle explicite interdisant tout test du flag dans AUTO démarrage.
+- **§ Écrivains officiels** : `automation 10260000000003` — clarification : flag off **inconditionnel** à l'expiration, switch off conditionnel à `bouclage_autorise`.
+- **§ Invariants structurants** : ajout des deux invariants manquants (non-survie du flag, absence de garde AUTO sur flag manuel).
+- **§ Interdits formels** : ajout de deux interdits explicites (garde flag dans AUTO, flag orphelin post-timer).
+- **Motivation** : bug production — flag `bouclage_ecs_5_minutes_en_cours` resté `on` après expiration timer → paralysie du mode AUTO.
+
+### v2.1.2
+- Version précédente (actif).
 
 # ==========================================================

@@ -1,0 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     ECS — Bouclage manuel purge flag au demarrage
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Purger un flag de cycle manuel reste actif apres reboot
+#     alors que le timer 5 minutes est idle.
+#
+# 🧩 PERIMETRE
+#
+#     - Rattrapage post-demarrage Home Assistant
+#     - Correction logique du flag manuel uniquement
+#     - Aucun pilotage de switch.prise_bouclage
+#
+# 🔗 DEPENDANCES
+#
+#     - input_boolean.systeme_stable
+#     - timer.bouclage_ecs_5_minutes
+#     - input_boolean.bouclage_ecs_5_minutes_en_cours
+#
+# 🚫 INTERDITS
+#
+#     - Ne jamais piloter switch.prise_bouclage
+#     - Ne jamais corriger l'actionneur physique
+#     - Aucune logique AUTO
+#     - Aucune notification
+#
+# 🧠 STATUT
+#
+#     Automation de coherence — Purge etat logique orphelin
+# ==========================================================
+
+- id: "10260000000007"
+  alias: "Bouclage ECS — Purge flag manuel au démarrage"
+  description: "Purge le flag manuel si le timer 5 minutes est idle apres stabilisation systeme."
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  condition:
+    - condition: state
+      entity_id: timer.bouclage_ecs_5_minutes
+      state: "idle"
+
+    - condition: state
+      entity_id: input_boolean.bouclage_ecs_5_minutes_en_cours
+      state: "on"
+
+  action:
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.bouclage_ecs_5_minutes_en_cours

@@ -134,6 +134,24 @@ L’action :
 
 ---
 
+### 🔹 Validité des mesures observées
+
+Une valeur observée n’est valide que si elle respecte simultanément :
+
+- la disponibilité technique de la source,
+- la cohérence métier attendue,
+- une plage physique plausible,
+- l’absence de contradiction manifeste avec une source canonique plus fiable.
+
+Pour la température ECS de la Petite Maison :
+
+- la source canonique est `water_heater.petite_maison.current_temperature`,
+- `sensor.petite_maison_bottom_tank_water_temperature` n’est pas une source canonique,
+- une température `0.0 °C` est considérée comme invalide pour l’état thermique exploitable du cumulus,
+- toute valeur invalide doit être ignorée au profit de la dernière valeur valide ou d’un état diagnostique explicite.
+
+Aucun capteur local fiabilisé ne doit considérer une valeur simplement “non unknown” comme valide.
+
 ---
 
 ## 📢 Notifications & traçabilité ECS

@@ -1,48 +1,48 @@
 # ==========================================================
-# 🧠 ARSENAL — AUTOMATION :
-#     Alarme – Apprentissage contrôlé des BSSID Wi-Fi en zone
-#
-#  ID : 10120000000016
+# 🧠 ARSENAL — AUTOMATION
+#     Alarme — Apprentissage contrôlé des BSSID Wi-Fi maison
 # ----------------------------------------------------------
-#  🎯 RÔLE
+# 🆔 ID
 #
-#     Enregistrer automatiquement les BSSID Wi-Fi détectés
-#     comme candidats d'apprentissage lorsque :
-#       - la présence sécurité est active
-#       - un nouveau BSSID non encore connu est détecté
+#     10120000000016
 #
-#     Cette automation enrichit progressivement
-#     input_text.bssid_maison, utilisé ensuite pour qualifier
-#     la présence Wi-Fi.
+# 🎯 ROLE
 #
-#  🚫 NE FAIT PAS
+#     Enrichir automatiquement le référentiel canonique des
+#     BSSID Wi-Fi maison lorsque de nouveaux BSSID valides sont
+#     observés par une source individuellement éligible.
+#
+# 🧩 PRINCIPE CONTRACTUEL
+#
+#     Cohérence source ↔ personne :
+#     - téléphone Antoine  → person.valentin
+#     - téléphone Constance → person.constance
+#
+#     Un BSSID ne peut être appris que si la personne couplée à
+#     sa source est dans 'Maison securite' au moment de l'écriture.
+#
+# 🚫 NE FAIT PAS
+#
 #     - Ne pilote pas l'alarme
 #     - Ne décide aucun état de sécurité
-#     - N'effectue aucune détection géographique
-#     - N'analyse aucun BSSID directement
+#     - Ne qualifie pas la présence Wi-Fi maison
+#     - Ne lit jamais un candidat global sans garde source/personne
+#     - Ne purge jamais automatiquement le référentiel
 #
-#  🧩 PRINCIPE
-#     - Déclenchement sur signal métier :
-#         • binary_sensor.wifi_nouveau_bssid = on
-#         • input_boolean.systeme_stable = on (reprise)
-#     - Filtrage présence sécurité active (l'automation filtre,
-#       le sensor est aveugle à la sécurité)
-#     - Parsing explicite de l'attribut candidats (chaîne CSV)
-#       → typage garanti (validé)
-#     - Validation canonique de chaque candidat (§7.1)
-#     - Contrôle de capacité avant toute écriture (§8)
-#     - Écriture uniquement si ajout réel (doctrine : impulsion métier)
-#     - Journalisation ajout réel et overflow
+# ⚙️ COMPORTEMENT
 #
-#  🔒 DÉCISIONS ARCHITECTURALES
-#     - candidats lu comme chaîne CSV puis splitté explicitement :
-#       élimine toute ambiguïté de type HA/Jinja entre sensor et automation
-#     - Écriture uniquement si added > 0 : le nettoyage canonique seul
-#       ne déclenche pas de réécriture
-#     - mode: single retenu : tentatives concurrentes perdues,
-#       couvertes par la reprise via input_boolean.systeme_stable
+#     - Déclenchement sur nouveau BSSID détecté
+#     - Reprise possible après stabilisation du système
+#     - Lecture des candidats séparés par source
+#     - Ré-évaluation de la cohérence source ↔ personne à l'écriture
+#     - Validation canonique de chaque BSSID
+#     - Fusion ensembliste avec le référentiel existant
+#     - Sérialisation triée stable
+#     - Rejet sans écriture en cas de dépassement de capacité
+#     - Écriture uniquement si ajout réel
 #
-#  📐 CONTRAT
+# 📐 CONTRAT
+#
 #     CONTRAT_BSSID_MAISON.md
 #
 # ==========================================================
@@ -53,35 +53,23 @@
 
   trigger:
 
-    # Signal métier : nouveau BSSID détecté
+    # Signal métier : nouveau BSSID détecté.
     - platform: state
       entity_id: binary_sensor.wifi_nouveau_bssid
       to: "on"
 
-    # Stabilisation HA (reprise apprentissage éventuelle)
+    # Reprise éventuelle après stabilisation du système.
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
 
-  condition:
-
-    # Apprentissage autorisé uniquement si Antoine (person.valentin) ou Constance
-    # est physiquement dans zone.maison_securite.
-    # Exclut : visiteur seul, babysitting, enfants sans adulte.
-    - condition: template
-      value_template: >
-        {{
-          is_state('person.valentin', 'Maison securite')
-          or is_state('person.constance', 'Maison securite')
-        }}
+  condition: []
 
   action:
 
     - variables:
 
-        # --- Référentiel actuel — normalisation canonique (§6) ---
-        # Parse la chaîne plate du helper, normalise, filtre les invalides.
-        # Type de sortie : liste Jinja construite par ns.result.
+        # Référentiel actuel — normalisation canonique.
         current_list: >-
           {% set raw = states('input_text.bssid_maison') | string %}
           {% set ns = namespace(result=[]) %}
@@ -91,48 +79,52 @@
               {% set ns.result = ns.result + [b] %}
             {% endif %}
           {% endfor %}
-          {{ ns.result }}
+          {{ ns.result | unique | sort | list }}
 
-        # --- Candidats — parsing CSV explicite (§7.1) ---
-        # L'attribut 'candidats' est une chaîne CSV canonique produite
-        # par binary_sensor.wifi_nouveau_bssid.
-        # On splitte explicitement : aucune ambiguïté de type, aucune
-        # dépendance au comportement Jinja inter-variables.
-        # Rejet de tout token non conforme après normalisation.
+        # Candidats retenus — garde résiduelle source ↔ personne.
         candidats: >-
-          {% set csv = state_attr('binary_sensor.wifi_nouveau_bssid', 'candidats') | default('', true) | string %}
           {% set ns = namespace(result=[]) %}
-          {% for item in csv.split(',') %}
-            {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
-            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
-              {% set ns.result = ns.result + [b] %}
-            {% endif %}
-          {% endfor %}
-          {{ ns.result }}
 
-        # --- Fusion, déduplication, tri stable (§11) ---
-        # current_list et candidats sont deux listes construites
-        # par le même pattern ns.result — même type garanti.
+          {% if is_state('person.valentin', 'Maison securite') %}
+            {% set csv = state_attr('binary_sensor.wifi_nouveau_bssid', 'candidats_antoine') | default('', true) | string %}
+            {% for item in csv.split(',') %}
+              {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+              {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+                {% set ns.result = ns.result + [b] %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {% if is_state('person.constance', 'Maison securite') %}
+            {% set csv = state_attr('binary_sensor.wifi_nouveau_bssid', 'candidats_constance') | default('', true) | string %}
+            {% for item in csv.split(',') %}
+              {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+              {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+                {% set ns.result = ns.result + [b] %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {{ ns.result | unique | sort | list }}
+
+        # Fusion, déduplication et tri stable.
         merged: >-
           {{ (current_list + candidats) | unique | sort | list }}
 
-        # --- Delta réel ---
+        # Delta réel.
         added: >-
           {{ merged | difference(current_list) | list }}
 
-        # --- Sérialisation finale et longueur (§8.1) ---
+        # Sérialisation finale et contrôle de capacité.
         merged_str: "{{ merged | join(', ') }}"
         merged_len: "{{ merged_str | length }}"
 
-
     - choose:
 
-        # --------------------------------------------------
-        # Cas overflow : rejet sans écriture (§8.2)
-        # --------------------------------------------------
-
+        # Cas overflow : rejet sans écriture.
         - conditions: "{{ merged_len | int > 255 }}"
           sequence:
+
             - service: system_log.write
               data:
                 level: warning
@@ -143,21 +135,16 @@
                   Nouveaux BSSID non intégrés : {{ added | join(', ') }}
                   Référentiel inchangé ({{ current_list | length }}) : {{ current_list | join(', ') }}
 
-        # --------------------------------------------------
-        # Cas utile : ajout réel, capacité respectée
-        # --------------------------------------------------
-
+        # Cas utile : ajout réel, capacité respectée.
         - conditions: "{{ added | length > 0 }}"
           sequence:
 
-            # Écriture — format canonique trié (§4, §6, §11)
             - service: input_text.set_value
               target:
                 entity_id: input_text.bssid_maison
               data:
                 value: "{{ merged_str }}"
 
-            # Journalisation
             - service: system_log.write
               data:
                 level: info

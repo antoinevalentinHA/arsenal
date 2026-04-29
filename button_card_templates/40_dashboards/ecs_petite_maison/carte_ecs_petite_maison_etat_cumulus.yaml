@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     ECS Petite Maison — État cumulus (KPI)
+#
+# 🗂️ COUCHE : UI / Dashboard / ECS Petite Maison
+# 🧱 TYPE UI : KPI métier
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher la température du cumulus ECS Petite Maison
+#   sous forme de KPI, avec couleur contextuelle.
+#
+# 📡 SOURCE
+#   sensor.ecs_petite_maison_temperature_eau_locale
+#
+# 🎨 SEMANTIQUE
+#   Déléguée à :
+#     sensor.temperature_ecs_petite_maison_couleur
+#   et au profil ui_profile: ecs
+#
+# ⚙️ LOGIQUE UI
+#   Aucune logique locale.
+#   La couleur et la lecture sont entièrement déléguées.
+#
+# ==========================================================
+
+carte_ecs_petite_maison_etat_cumulus:
+  template: socle_kpi
+  variables:
+    ui_profile: ecs
+    couleur: sensor.temperature_ecs_petite_maison_couleur

@@ -1,18 +1,17 @@
 # ==========================================================
 # 🧠 ARSENAL — CARTE UI
-#     NAS imprimerie — Information technique
+#     Générique — KPI informatif bleu
 #
 # 🗂️ COUCHE : UI / Information
-# 🧱 TYPE UI : KPI informatif
+# 🧱 TYPE UI : KPI informatif générique
 # 🔍 NIVEAU DE CONFIANCE : Élevé
 # ==========================================================
 #
 # 🎯 RÔLE
-#   Afficher une mesure technique informative ne portant pas
-#   directement une décision métier.
+#   Afficher une valeur informative sous forme de KPI.
 #
 # 📡 SOURCE
-#   sensor.* du domaine monitoring_imprimerie.
+#   entity fournie à l'instance.
 #
 # ⚙️ LOGIQUE UI
 #   disponible → bleu information
@@ -23,10 +22,10 @@
 #   SATELLITE et PIVOT sont mutuellement exclusifs
 # ----------------------------------------------------------
 #
-# 🔗 SATELLITE DE : Dashboard NAS imprimerie
+# 🔗 SATELLITE DE : socle_kpi_72
 # ==========================================================
 
-nas_imprimerie_info:
+carte_kpi_bleu:
   template:
     - socle_kpi_72
   styles:

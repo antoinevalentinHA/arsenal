@@ -1,0 +1,64 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /ecs-petite-maison-dashboard/0
+
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Modes
+
+          - type: horizontal-stack
+            cards:
+
+              - type: custom:button-card
+                template: carte_action_script_confirme
+                entity: script.ecs_petite_maison_mode_eco
+                name: Mode Éco
+                icon: mdi:water-boiler
+                variables:
+                  confirmation: "⚠️ Activer le mode Éco du chauffe-eau ?"
+
+              - type: custom:button-card
+                template: carte_action_script_confirme
+                entity: script.ecs_petite_maison_arret_absence
+                name: Absence
+                icon: mdi:home-outline
+                variables:
+                  confirmation: "⚠️ Passer le chauffe-eau en mode Absence ?"
+
+          - type: custom:button-card
+            template: section_header
+            name: 📅 Programmation
+
+          - type: tile
+            entity: input_boolean.ecs_petite_maison_programmation
+            name: "Programmation ECS"
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+
+              - type: tile
+                entity: input_datetime.debut_ecs_petite_maison_programmee
+                name: "Début"
+
+              - type: tile
+                entity: input_datetime.fin_ecs_petite_maison_programmee
+                name: "Fin"

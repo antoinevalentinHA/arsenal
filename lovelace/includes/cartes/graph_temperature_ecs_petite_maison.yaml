@@ -1,0 +1,32 @@
+type: custom:mini-graph-card
+name: 💧 Température ECS
+icon: mdi:thermometer-water
+entities:
+  - entity: sensor.ecs_petite_maison_temperature_eau_locale
+    name: Cumulus
+hours_to_show: 48
+points_per_hour: 6
+line_width: 3
+animate: true
+smoothing: true
+show:
+  labels: true
+  legend: false
+  extrema: true
+  fill: fade
+  icon: false
+font_size: 75
+height: 160
+align_state: center
+decimals: 1
+color_thresholds:
+  - value: 25
+    color: rgba(144, 202, 249, 0.8)
+  - value: 37
+    color: rgba(144, 202, 249, 0.6)
+  - value: 45
+    color: rgba(255, 152, 0, 0.8)
+  - value: 50
+    color: rgba(244, 67, 54, 0.8)
+tap_action:
+  action: more-info

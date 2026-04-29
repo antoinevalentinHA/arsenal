@@ -87,19 +87,19 @@ views:
                 icon: mdi:server-network
 
               - type: custom:button-card
-                template: nas_imprimerie_info
+                template: carte_kpi_bleu
                 entity: sensor.nas_imprimerie_sonde_age
                 name: Âge sonde
                 icon: mdi:satellite-uplink
 
               - type: custom:button-card
-                template: nas_imprimerie_info
+                template: carte_kpi_bleu
                 entity: sensor.nas_imprimerie_transport_age
                 name: Âge fichier
                 icon: mdi:swap-horizontal
 
               - type: custom:button-card
-                template: nas_imprimerie_info
+                template: carte_kpi_bleu
                 entity: sensor.nas_imprimerie_republisher_age
                 name: Âge MQTT
                 icon: mdi:timer-refresh-outline
@@ -125,13 +125,13 @@ views:
                   axe: axe_stockage
 
               - type: custom:button-card
-                template: nas_imprimerie_info
+                template: carte_kpi_bleu
                 entity: sensor.nas_imprimerie_free_space
                 name: Libre
                 icon: mdi:harddisk
 
               - type: custom:button-card
-                template: nas_imprimerie_info
+                template: carte_kpi_bleu
                 entity: sensor.nas_imprimerie_free_space_percent
                 name: Libre %
                 icon: mdi:chart-pie
@@ -175,13 +175,13 @@ views:
             cards:
 
               - type: custom:button-card
-                template: nas_imprimerie_info
+                template: carte_kpi_bleu
                 entity: sensor.nas_imprimerie_dernier_demarrage
                 name: Dernier démarrage
                 icon: mdi:clock-start
 
               - type: custom:button-card
-                template: nas_imprimerie_info
+                template: carte_kpi_bleu
                 entity: sensor.nas_imprimerie_uptime_jours
                 name: Uptime
                 icon: mdi:timer-check-outline

@@ -1,66 +1,63 @@
 # ==========================================================
-#  AUTOMATION : Bouclage ECS – Arrêt automatique (fin timer)
-#  ----------------------------------------------------------
-#  🧠 Rôle :
-#     Arrêter automatiquement la pompe de bouclage ECS à la
-#     fin d’un cycle manuel temporisé, sous réserve qu’aucune
-#     plage automatique ne soit en cours.
+# 🧠 ARSENAL — AUTOMATION
+#     ECS — Bouclage manuel fin timer
+# ----------------------------------------------------------
+# 🎯 ROLE
 #
-#  💡 Avantages :
-#     - Fonctionnement autonome du cycle manuel
-#     - Protection contre les oublis d’arrêt
-#     - Respect de la souveraineté du bouclage automatique
-#     - Absence d’interruption inter-contexte
+#     Clore un cycle manuel de bouclage ECS a l'expiration
+#     du timer 5 minutes.
 #
-#  ⚙️ Comportement :
-#     - Déclenché à l’expiration du timer 5 minutes
-#     - Vérifie qu’aucune plage automatique n’est en cours
-#     - Si autorisé :
-#         • extinction de la prise
-#         • fin du mode bouclage manuel
-#     - Sinon :
-#         • événement ignoré (AUTO souverain)
+#     Le flag manuel est toujours eteint.
+#     L'actionneur est eteint uniquement si l'AUTO n'est pas autorise.
 #
-#  🔒 Gouvernance :
-#     - Priorité AUTO > MANUEL
-#     - Arrêt interdit si `binary_sensor.bouclage_autorise = on`
-#     - Idempotence garantie en superposition de contextes
+# 🧩 PERIMETRE
 #
-#  ✅ Compatibilité : Home Assistant 2024.8+
+#     - Fin de timer.bouclage_ecs_5_minutes
+#     - Extinction inconditionnelle du flag manuel
+#     - Extinction conditionnelle de switch.prise_bouclage
+#
+# 🔗 DEPENDANCES
+#
+#     - timer.bouclage_ecs_5_minutes
+#     - input_boolean.bouclage_ecs_5_minutes_en_cours
+#     - binary_sensor.bouclage_autorise
+#     - switch.prise_bouclage
+#
+# 🚫 INTERDITS
+#
+#     - Ne jamais laisser le flag manuel a on apres expiration
+#     - Ne jamais couper le switch si l'AUTO est autorise
+#     - Aucun timer AUTO
+#     - Aucune logique horaire
+#
+# 🧠 STATUT
+#
+#     Automation d'application — Bouclage ECS fin cycle manuel
 # ==========================================================
 
-- id: '10260000000002'
-  alias: ECS - Bouclage - Fin de cycle
-  description: Eteint la prise et marque la fin du bouclage lorsque le timer se termine
+- id: "10260000000002"
+  alias: "ECS - Bouclage - Fin de cycle"
+  description: "Clot le cycle manuel ECS a expiration du timer : flag off inconditionnel, switch off seulement hors AUTO."
   mode: single
 
-  # ======================================================
-  # 🔔 Déclencheur — Fin du timer
-  # ======================================================
   trigger:
     - platform: event
       event_type: timer.finished
       event_data:
         entity_id: timer.bouclage_ecs_5_minutes
 
-  # ======================================================
-  # 🔒 Condition — Arrêt autorisé uniquement hors plage automatique
-  # ======================================================
-  condition:
-    - condition: state
-      entity_id: binary_sensor.bouclage_autorise
-      state: 'off'
-
-  # ======================================================
-  # 🔄 Actions — Arrêt légitime du bouclage manuel
-  # ======================================================
   action:
-    - alias: Eteindre la prise
-      service: switch.turn_off
-      target:
-        entity_id: switch.prise_bouclage
-
-    - alias: Marquer fin du bouclage 5 minutes
+    - alias: "Marquer fin du bouclage 5 minutes"
+      service: input_boolean.turn_off
       target:
         entity_id: input_boolean.bouclage_ecs_5_minutes_en_cours
-      service: input_boolean.turn_off
+
+    - if:
+        - condition: state
+          entity_id: binary_sensor.bouclage_autorise
+          state: "off"
+      then:
+        - alias: "Eteindre la prise hors AUTO"
+          service: switch.turn_off
+          target:
+            entity_id: switch.prise_bouclage

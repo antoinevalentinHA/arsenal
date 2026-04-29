@@ -21,7 +21,7 @@ views:
           # === Mode maison ===
           - type: custom:button-card
             template: section_header
-            name: 🏠 Modes maison
+            name: ✈️ Vacances
 
           - type: tile
             entity: input_select.mode_maison

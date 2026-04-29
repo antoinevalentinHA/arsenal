@@ -182,6 +182,7 @@ include:
     - sensor.ecs_consigne_dernier_cycle
     - sensor.ecs_consigne_chaudiere_securisee
     - binary_sensor.ecs_chauffe_en_cours_local
+    - sensor.ecs_petite_maison_temperature_eau_locale
 
     # =====================================================
     # ==== 💨 DÉSHUMIDIFICATEUR ====

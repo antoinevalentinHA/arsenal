@@ -1,32 +1,29 @@
 # ==========================================================
-# 📶 TEMPLATE BINARY SENSOR — Nouveau BSSID Wi-Fi détecté
-#
+# 📶 ARSENAL — TEMPLATE BINARY SENSOR
+#     Wi-Fi — Nouveau BSSID maison détecté
 # ----------------------------------------------------------
-#  🎯 RÔLE
+# 🎯 ROLE
 #
-#     Détecter si un téléphone est connecté à un BSSID
-#     non présent dans le référentiel maison.
+#     Détecter les BSSID Wi-Fi inconnus du référentiel maison,
+#     uniquement depuis les sources individuellement éligibles.
 #
-#     Expose les BSSID inconnus comme candidats
-#     à l'apprentissage, en format canonique CSV (§6).
+# 🧩 PRINCIPE CONTRACTUEL
 #
-#  🚫 NE FAIT PAS
-#     - N'évalue pas la présence sécurité
+#     Cohérence source ↔ personne :
+#     - téléphone Antoine  → person.valentin
+#     - téléphone Constance → person.constance
+#
+#     Aucun BSSID ne peut être candidat si la personne couplée
+#     à sa source n'est pas dans 'Maison securite'.
+#
+# 🚫 NE FAIT PAS
+#
 #     - Ne modifie pas le référentiel
-#     - Ne prend aucune décision de sécurité
+#     - Ne décide pas de la présence maison
+#     - Ne fusionne jamais avant filtrage source/personne
 #
-#  🧩 PRINCIPE
-#     - Normalisation canonique des BSSID observés (§6)
-#     - Comparaison avec input_text.bssid_maison
-#     - state : on  → au moins un BSSID inconnu observé
-#     - state : off → tous les BSSID observés sont connus
+# 📐 CONTRAT
 #
-#  📤 ATTRIBUT
-#     candidats : chaîne CSV des BSSID inconnus, format canonique
-#                 ex. "3460f9386080, a1b2c3d4e5f6"
-#                 chaîne vide si aucun candidat
-#
-#  📐 CONTRAT
 #     CONTRAT_BSSID_MAISON.md
 #
 # ==========================================================
@@ -37,9 +34,9 @@
       unique_id: wifi_nouveau_bssid
 
       state: >
-        {# --- Référentiel maison — normalisation canonique (§6) --- #}
         {% set raw_maison = states('input_text.bssid_maison') | string %}
-        {% set ns = namespace(maison=[]) %}
+        {% set ns = namespace(maison=[], candidats=[]) %}
+
         {% for item in raw_maison.split(',') %}
           {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
           {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
@@ -47,28 +44,28 @@
           {% endif %}
         {% endfor %}
 
-        {# --- BSSID observés — normalisation canonique (§6) --- #}
-        {% set raw_antoine   = states('sensor.telephone_antoine_bssid_dynamic')   | trim | lower | replace(':', '') | replace('-', '') %}
-        {% set raw_constance = states('sensor.telephone_constance_bssid_dynamic') | trim | lower | replace(':', '') | replace('-', '') %}
-
-        {# --- Candidats : BSSID valides et inconnus du référentiel --- #}
-        {% set ns2 = namespace(candidats=[]) %}
-        {% for b in [raw_antoine, raw_constance] %}
-          {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
-            {% if b not in ns.maison and b not in ns2.candidats %}
-              {% set ns2.candidats = ns2.candidats + [b] %}
-            {% endif %}
+        {% if states('person.valentin') == 'Maison securite' %}
+          {% set b = states('sensor.telephone_antoine_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison %}
+            {% set ns.candidats = ns.candidats + [b] %}
           {% endif %}
-        {% endfor %}
+        {% endif %}
 
-        {{ ns2.candidats | length > 0 }}
+        {% if states('person.constance') == 'Maison securite' %}
+          {% set b = states('sensor.telephone_constance_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison and b not in ns.candidats %}
+            {% set ns.candidats = ns.candidats + [b] %}
+          {% endif %}
+        {% endif %}
+
+        {{ ns.candidats | length > 0 }}
 
       attributes:
+
         candidats: >
-          {# --- Même logique que state — recalcul nécessaire (§6) --- #}
-          {# HA n'offre pas de partage de variables entre state et attributes #}
           {% set raw_maison = states('input_text.bssid_maison') | string %}
-          {% set ns = namespace(maison=[]) %}
+          {% set ns = namespace(maison=[], candidats=[]) %}
+
           {% for item in raw_maison.split(',') %}
             {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
             {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
@@ -76,16 +73,84 @@
             {% endif %}
           {% endfor %}
 
-          {% set raw_antoine   = states('sensor.telephone_antoine_bssid_dynamic')   | trim | lower | replace(':', '') | replace('-', '') %}
-          {% set raw_constance = states('sensor.telephone_constance_bssid_dynamic') | trim | lower | replace(':', '') | replace('-', '') %}
+          {% if states('person.valentin') == 'Maison securite' %}
+            {% set b = states('sensor.telephone_antoine_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison %}
+              {% set ns.candidats = ns.candidats + [b] %}
+            {% endif %}
+          {% endif %}
 
-          {% set ns2 = namespace(candidats=[]) %}
-          {% for b in [raw_antoine, raw_constance] %}
+          {% if states('person.constance') == 'Maison securite' %}
+            {% set b = states('sensor.telephone_constance_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison and b not in ns.candidats %}
+              {% set ns.candidats = ns.candidats + [b] %}
+            {% endif %}
+          {% endif %}
+
+          {{ ns.candidats | sort | join(', ') }}
+
+        candidats_antoine: >
+          {% set raw_maison = states('input_text.bssid_maison') | string %}
+          {% set ns = namespace(maison=[], candidats=[]) %}
+
+          {% for item in raw_maison.split(',') %}
+            {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
             {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
-              {% if b not in ns.maison and b not in ns2.candidats %}
-                {% set ns2.candidats = ns2.candidats + [b] %}
-              {% endif %}
+              {% set ns.maison = ns.maison + [b] %}
             {% endif %}
           {% endfor %}
 
-          {{ ns2.candidats | sort | join(', ') }}
+          {% if states('person.valentin') == 'Maison securite' %}
+            {% set b = states('sensor.telephone_antoine_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison %}
+              {% set ns.candidats = ns.candidats + [b] %}
+            {% endif %}
+          {% endif %}
+
+          {{ ns.candidats | sort | join(', ') }}
+
+        candidats_constance: >
+          {% set raw_maison = states('input_text.bssid_maison') | string %}
+          {% set ns = namespace(maison=[], candidats=[]) %}
+
+          {% for item in raw_maison.split(',') %}
+            {% set b = item | trim | lower | replace(':', '') | replace('-', '') %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') %}
+              {% set ns.maison = ns.maison + [b] %}
+            {% endif %}
+          {% endfor %}
+
+          {% if states('person.constance') == 'Maison securite' %}
+            {% set b = states('sensor.telephone_constance_bssid_dynamic') | string | trim | lower | replace(':', '') | replace('-', '') %}
+            {% if b | length == 12 and b | regex_match('^[0-9a-f]{12}$') and b not in ns.maison %}
+              {% set ns.candidats = ns.candidats + [b] %}
+            {% endif %}
+          {% endif %}
+
+          {{ ns.candidats | sort | join(', ') }}
+
+        sources_eligibles: >
+          {% set ns = namespace(sources=[]) %}
+
+          {% if states('person.valentin') == 'Maison securite' %}
+            {% set ns.sources = ns.sources + ['antoine'] %}
+          {% endif %}
+
+          {% if states('person.constance') == 'Maison securite' %}
+            {% set ns.sources = ns.sources + ['constance'] %}
+          {% endif %}
+
+          {{ ns.sources | sort | join(', ') }}
+
+        sources_inertes: >
+          {% set ns = namespace(sources=[]) %}
+
+          {% if states('person.valentin') != 'Maison securite' %}
+            {% set ns.sources = ns.sources + ['antoine'] %}
+          {% endif %}
+
+          {% if states('person.constance') != 'Maison securite' %}
+            {% set ns.sources = ns.sources + ['constance'] %}
+          {% endif %}
+
+          {{ ns.sources | sort | join(', ') }}

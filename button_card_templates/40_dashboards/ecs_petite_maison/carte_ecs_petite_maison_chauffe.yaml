@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     ECS Petite Maison — Chauffe en cours
+#
+# 🗂️ COUCHE : UI / Dashboard / ECS Petite Maison
+# 🧱 TYPE UI : État réel équipement
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher si le cumulus est en train de chauffer.
+#
+# 📡 SOURCE
+#   sensor.ecs_petite_maison_chauffe_en_cours_locale
+#
+# ⚙️ LOGIQUE UI
+#   Traduction directe de l’état matériel.
+#   Aucune décision.
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : socle_status_72
+#
+# ==========================================================
+
+carte_ecs_petite_maison_chauffe:
+  template: socle_status_72
+  entity: sensor.ecs_petite_maison_chauffe_en_cours_locale
+  name: Chauffe
+  icon: mdi:fire
+  state_display: >
+    [[[
+      if (entity.state === 'on') return 'En cours';
+      if (entity.state === 'off') return 'Arrêtée';
+      return 'Indisponible';
+    ]]]
+  styles:
+    card:
+      - background-color: >
+          [[[
+            if (entity.state === 'on') return 'rgba(244, 67, 54, 0.2)';
+            if (entity.state === 'off') return 'rgba(158, 158, 158, 0.2)';
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]
