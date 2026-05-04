@@ -18,11 +18,14 @@
 #   - aucune dependance a un reflet legacy
 #   - aucune dependance a switch.vmc
 #   - ordre d'action compatible Bloc 10
+#   - sequence non interrompue par un nouvel appel
+#   - delai inter-commandes defensif de 200 ms
 # ==========================================================
 
 vmc_haute_vitesse:
   alias: "VMC - Haute vitesse"
   mode: single
+  max_exceeded: silent
 
   sequence:
     - choose:
@@ -46,6 +49,9 @@ vmc_haute_vitesse:
         - action: switch.turn_off
           target:
             entity_id: switch.vmc_l2
+
+        - delay:
+            milliseconds: 200
 
         - action: switch.turn_on
           target:

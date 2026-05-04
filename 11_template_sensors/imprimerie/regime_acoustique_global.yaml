@@ -1,0 +1,214 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Perception — Régime acoustique Imprimerie
+# ----------------------------------------------------------
+# 📜 Contrats  : CONTRAT_PERCEPTION_BRUIT_KOMORI.md v1.1
+#                CONTRAT_PERCEPTION_BRUIT_BOBST.md  v1.0
+#                CONTRAT_PERCEPTION_BRUIT_MEDIA.md  v1.0
+# 🎯 Rôle      : Synthétiser le régime acoustique global de
+#                l'imprimerie à partir des régimes machines.
+# 🧱 Principe  : Lecture pure — aucune interprétation métier,
+#                aucun seuil dB global, aucune logique action.
+# 📡 Sources   : sensor.regime_acoustique_komori
+#                sensor.regime_acoustique_bobst
+#                sensor.regime_acoustique_media
+#
+# États :
+#   bas / transition / haut_modere / haut_eleve / haut_extreme
+#   indisponible
+#
+# Règle :
+#   - Prend le régime le plus élevé observé parmi les sources valides
+#   - Sources indisponibles ignorées
+#   - Aucune source valide → indisponible
+# ==========================================================
+
+- sensor:
+
+    - name: "Régime acoustique Imprimerie"
+      unique_id: regime_acoustique_imprimerie
+      icon: mdi:factory
+      state: >
+        {% set ranks = {
+          'bas': 0,
+          'transition': 1,
+          'haut_modere': 2,
+          'haut_eleve': 3,
+          'haut_extreme': 4
+        } %}
+        {% set labels = {
+          0: 'bas',
+          1: 'transition',
+          2: 'haut_modere',
+          3: 'haut_eleve',
+          4: 'haut_extreme'
+        } %}
+        {% set ns = namespace(max_rank=none) %}
+        {% for entity in [
+          'sensor.regime_acoustique_komori',
+          'sensor.regime_acoustique_bobst',
+          'sensor.regime_acoustique_media'
+        ] %}
+          {% set s = states(entity) %}
+          {% if s in ranks %}
+            {% set r = ranks[s] %}
+            {% if ns.max_rank is none or r > ns.max_rank %}
+              {% set ns.max_rank = r %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {% if ns.max_rank is none %}
+          indisponible
+        {% else %}
+          {{ labels[ns.max_rank] }}
+        {% endif %}
+
+      attributes:
+
+        couche: "perception"
+        role: "synthese_regime_acoustique_imprimerie"
+        interpretation_metier: false
+        logique_action: false
+        seuil_db_global: false
+
+        sources: >
+          sensor.regime_acoustique_komori,
+          sensor.regime_acoustique_bobst,
+          sensor.regime_acoustique_media
+
+        regime_komori: >
+          {{ states('sensor.regime_acoustique_komori') }}
+
+        regime_bobst: >
+          {{ states('sensor.regime_acoustique_bobst') }}
+
+        regime_media: >
+          {{ states('sensor.regime_acoustique_media') }}
+
+        nb_sources_ok: >
+          {% set ranks = ['bas', 'transition', 'haut_modere', 'haut_eleve', 'haut_extreme'] %}
+          {% set ns = namespace(count=0) %}
+          {% for entity in [
+            'sensor.regime_acoustique_komori',
+            'sensor.regime_acoustique_bobst',
+            'sensor.regime_acoustique_media'
+          ] %}
+            {% if states(entity) in ranks %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+
+        nb_sources_ko: >
+          {% set ranks = ['bas', 'transition', 'haut_modere', 'haut_eleve', 'haut_extreme'] %}
+          {% set ns = namespace(count=0) %}
+          {% for entity in [
+            'sensor.regime_acoustique_komori',
+            'sensor.regime_acoustique_bobst',
+            'sensor.regime_acoustique_media'
+          ] %}
+            {% if states(entity) not in ranks %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+
+        sources_ko: >
+          {% set ranks = ['bas', 'transition', 'haut_modere', 'haut_eleve', 'haut_extreme'] %}
+          {% set ns = namespace(items=[]) %}
+          {% for item in [
+            {'entity': 'sensor.regime_acoustique_komori', 'machine': 'Komori'},
+            {'entity': 'sensor.regime_acoustique_bobst', 'machine': 'Bobst'},
+            {'entity': 'sensor.regime_acoustique_media', 'machine': 'Media'}
+          ] %}
+            {% if states(item.entity) not in ranks %}
+              {% set ns.items = ns.items + [item.machine] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items | join(', ') }}
+
+        machines_regime_max: >
+          {% set ranks = {
+            'bas': 0,
+            'transition': 1,
+            'haut_modere': 2,
+            'haut_eleve': 3,
+            'haut_extreme': 4
+          } %}
+          {% set ns = namespace(max_rank=none, machines=[]) %}
+          {% for item in [
+            {'entity': 'sensor.regime_acoustique_komori', 'machine': 'Komori'},
+            {'entity': 'sensor.regime_acoustique_bobst', 'machine': 'Bobst'},
+            {'entity': 'sensor.regime_acoustique_media', 'machine': 'Media'}
+          ] %}
+            {% set s = states(item.entity) %}
+            {% if s in ranks %}
+              {% set r = ranks[s] %}
+              {% if ns.max_rank is none or r > ns.max_rank %}
+                {% set ns.max_rank = r %}
+                {% set ns.machines = [item.machine] %}
+              {% elif r == ns.max_rank %}
+                {% set ns.machines = ns.machines + [item.machine] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.machines | join(', ') }}
+
+        nb_machines_haut: >
+          {% set ns = namespace(count=0) %}
+          {% for entity in [
+            'sensor.regime_acoustique_komori',
+            'sensor.regime_acoustique_bobst',
+            'sensor.regime_acoustique_media'
+          ] %}
+            {% if states(entity) in ['haut_modere', 'haut_eleve', 'haut_extreme'] %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+
+        nb_machines_extreme: >
+          {% set ns = namespace(count=0) %}
+          {% for entity in [
+            'sensor.regime_acoustique_komori',
+            'sensor.regime_acoustique_bobst',
+            'sensor.regime_acoustique_media'
+          ] %}
+            {% if states(entity) == 'haut_extreme' %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+
+        bruit_max_db: >
+          {% set ns = namespace(values=[]) %}
+          {% for entity in [
+            'sensor.bruit_komori',
+            'sensor.bruit_bobst',
+            'sensor.bruit_media'
+          ] %}
+            {% set v = states(entity) | float(none) %}
+            {% if v is not none %}
+              {% set ns.values = ns.values + [v] %}
+            {% endif %}
+          {% endfor %}
+          {% if ns.values | count > 0 %}
+            {{ ns.values | max | round(1) }}
+          {% endif %}
+
+        machine_bruit_max: >
+          {% set ns = namespace(max_value=none, machine='') %}
+          {% for item in [
+            {'entity': 'sensor.bruit_komori', 'machine': 'Komori'},
+            {'entity': 'sensor.bruit_bobst', 'machine': 'Bobst'},
+            {'entity': 'sensor.bruit_media', 'machine': 'Media'}
+          ] %}
+            {% set v = states(item.entity) | float(none) %}
+            {% if v is not none %}
+              {% if ns.max_value is none or v > ns.max_value %}
+                {% set ns.max_value = v %}
+                {% set ns.machine = item.machine %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.machine }}

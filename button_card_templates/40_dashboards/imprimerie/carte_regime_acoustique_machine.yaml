@@ -1,0 +1,92 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Imprimerie — Régime acoustique machine
+#
+# 🗂️ COUCHE : Perception / Imprimerie / Bruit
+# 🧱 TYPE UI : Carte statut métier compacte
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher le régime acoustique discret d’une machine
+#   d’imprimerie, avec la valeur brute de bruit associée.
+#
+# 📡 SOURCE
+#   - entity : sensor.regime_acoustique_<machine>
+#   - variables.source_db : sensor.bruit_<machine>
+#
+# ⚙️ LOGIQUE UI
+#   - bas           → gris neutre
+#   - transition    → jaune attention
+#   - haut_modere   → orange léger
+#   - haut_eleve    → orange renforcé
+#   - haut_extreme  → rouge critique
+#   - indisponible  → gris indisponibilité
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : dashboard_imprimerie_bruit
+# ==========================================================
+
+carte_regime_acoustique_machine:
+  template: socle_status_label
+
+  tap_action:
+    action: more-info
+    entity: >
+      [[[
+        return variables.source_db;
+      ]]]
+
+  hold_action:
+    action: none
+
+  double_tap_action:
+    action: none
+
+  label: >
+    [[[
+      const v = states[variables.source_db]?.state;
+
+      if (v === undefined || v === 'unknown' || v === 'unavailable') {
+        return '';
+      }
+
+      return `${v} dB`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity.state;
+
+            if (s === 'bas') {
+              return 'rgba(158, 158, 158, 0.2)';
+            }
+
+            if (s === 'transition') {
+              return 'rgba(255, 193, 7, 0.25)';
+            }
+
+            if (s === 'haut_modere') {
+              return 'rgba(255, 152, 0, 0.20)';
+            }
+
+            if (s === 'haut_eleve') {
+              return 'rgba(255, 152, 0, 0.30)';
+            }
+
+            if (s === 'haut_extreme') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            if (s === 'indisponible') {
+              return 'rgba(224, 224, 224, 0.2)';
+            }
+
+            return 'rgba(224, 224, 224, 0.2)';
+          ]]]

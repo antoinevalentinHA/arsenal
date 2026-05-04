@@ -1,45 +1,91 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
-#     Bouclage ECS — Parametres invalides
+# 🧠 ARSENAL — BINARY SENSOR
+#     Intégrité paramètres — Bouclage ECS
 # ----------------------------------------------------------
-# 🎯 ROLE
+# 🎯 RÔLE
 #
-#     Detecter une incoherence de configuration des seuils
-#     de temperature du bouclage ECS.
+#     Détecter toute incohérence de configuration des seuils
+#     de température du bouclage ECS.
 #
-# 🧩 PERIMETRE
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
 #
-#     - Lecture des seuils ON / OFF
-#     - Detection de seuil_off >= seuil_on
-#     - Aucun pilotage materiel
+#     - Lecture pure
+#     - Aucune action, aucune correction
+#     - Toute source indisponible est considérée comme
+#       rendant l'invariant violé (pas d'optimisme silencieux).
 #
-# 🔗 DEPENDANCES
+# ----------------------------------------------------------
+# 🚨 INVARIANTS SURVEILLÉS
+#
+#     1) seuil_on > seuil_off
+#
+#     Toute violation = paramètres INVALIDES
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
 #
 #     - input_number.bouclage_ecs_seuil_on
 #     - input_number.bouclage_ecs_seuil_off
 #
+# ----------------------------------------------------------
+# 📊 ATTRIBUTS EXPOSÉS
+#
+#     - seuils_invalides       : invariant 1 violé
+#     - seuil_on_indisponible  : helper seuil_on indispo
+#     - seuil_off_indisponible : helper seuil_off indispo
+#     - cause                  : énumération priorisée
+#
+# ----------------------------------------------------------
 # 🚫 INTERDITS
 #
-#     - Aucun pilotage de switch
+#     - Aucun pilotage de switch / climate / cover
 #     - Aucune logique thermique
 #     - Aucune correction automatique
 #
+# ----------------------------------------------------------
+# 📍 ENTITÉ
+#
+#     binary_sensor.parametres_invalides_bouclage_ecs
+#
+# ----------------------------------------------------------
 # 🧠 STATUT
 #
-#     Capteur de diagnostic — Parametrage Bouclage ECS
+#     Capteur de diagnostic — Intégrité paramètres Bouclage ECS
 # ==========================================================
 
 - binary_sensor:
-    - name: "Parametres invalides Bouclage ECS"
-      unique_id: parametres_invalides_bouclage
+    - name: "Bouclage ECS — Paramètres invalides"
+      unique_id: parametres_invalides_bouclage_ecs
+      default_entity_id: binary_sensor.parametres_invalides_bouclage_ecs
+      icon: >
+        mdi:alert-circle-outline
       state: >
         {% set seuil_on = states('input_number.bouclage_ecs_seuil_on') | float(none) %}
         {% set seuil_off = states('input_number.bouclage_ecs_seuil_off') | float(none) %}
-        {{ seuil_on is not none
-           and seuil_off is not none
-           and seuil_off >= seuil_on }}
+        {% set indisponible = seuil_on is none or seuil_off is none %}
+        {% set seuils_invalides = indisponible or not (seuil_on > seuil_off) %}
+        {{ seuils_invalides }}
       attributes:
-        seuil_on: >
-          {{ states('input_number.bouclage_ecs_seuil_on') | float(none) }}
-        seuil_off: >
-          {{ states('input_number.bouclage_ecs_seuil_off') | float(none) }}
+        seuils_invalides: >
+          {% set seuil_on = states('input_number.bouclage_ecs_seuil_on') | float(none) %}
+          {% set seuil_off = states('input_number.bouclage_ecs_seuil_off') | float(none) %}
+          {{ seuil_on is none
+             or seuil_off is none
+             or not (seuil_on > seuil_off) }}
+        seuil_on_indisponible: >
+          {{ states('input_number.bouclage_ecs_seuil_on')
+             in ['unknown', 'unavailable', 'none', ''] }}
+        seuil_off_indisponible: >
+          {{ states('input_number.bouclage_ecs_seuil_off')
+             in ['unknown', 'unavailable', 'none', ''] }}
+        cause: >
+          {% set seuil_on = states('input_number.bouclage_ecs_seuil_on') | float(none) %}
+          {% set seuil_off = states('input_number.bouclage_ecs_seuil_off') | float(none) %}
+          {% if seuil_on is none or seuil_off is none %}
+            helpers_indisponibles
+          {% elif not (seuil_on > seuil_off) %}
+            seuils_invalides
+          {% else %}
+            none
+          {% endif %}

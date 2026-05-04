@@ -3,11 +3,15 @@
 # ----------------------------------------------------------
 # 🎯 ROLE
 #   Detecter si l'etat physique des relais est conforme
-#   au contrat Bloc 10 (XOR strict).
+#   au contrat Bloc 10 (XOR strict), en tolerant les etats
+#   transitoires brefs de bascule.
 #
 # 🧱 PRINCIPE
-#   ON  = etat valide (exactement un relais actif)
-#   OFF = etat invalide (double ON ou double OFF)
+#   ON  = etat valide stable (exactement un relais actif)
+#   OFF = etat invalide persistant (double ON ou double OFF)
+#
+# ⏱️ TOLERANCE
+#   Les ecarts transitoires inferieurs a 2 secondes sont ignores.
 #
 # ❌ AUCUN effet de bord
 #   - ne corrige rien
@@ -19,6 +23,9 @@
 - binary_sensor:
     - name: "VMC cohérence physique"
       unique_id: vmc_coherence_physique
+
+      delay_off:
+        seconds: 2
 
       state: >
         {% set l1 = is_state('switch.vmc_l1', 'on') %}

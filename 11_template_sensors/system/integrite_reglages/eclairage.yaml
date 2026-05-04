@@ -2,112 +2,264 @@
 # 🧠 ARSENAL — BINARY SENSOR
 #     Intégrité paramètres — Éclairage
 # ----------------------------------------------------------
-# 🎯 ROLE
-#   Signaler qu'au moins un paramètre temporel d'éclairage
-#   est invalide.
+# 🎯 RÔLE
+#
+#     Détecter toute incohérence de configuration des
+#     fenêtres horaires de l'éclairage : extinction matinale
+#     du jardin et cycles de simulation de présence
+#     (chambre parents, garage, entrée — matin et soir).
 #
 # ----------------------------------------------------------
 # 🧱 PRINCIPE
 #
-#   Le capteur passe à on si au moins une fenêtre horaire
-#   configurée est incohérente :
-#
-#     - heure debut >= heure fin
-#
-#   Le détail des incohérences est exposé dans les attributs.
+#     - Lecture pure
+#     - Aucune action, aucune correction
+#     - Toute source indisponible est considérée comme
+#       rendant l'invariant violé (pas d'optimisme silencieux).
+#     - Les helpers sont des fenêtres intra-journée
+#       (HH:MM:SS, sans franchissement de minuit) : la
+#       comparaison lexicale de strings est licite UNE FOIS
+#       la garde d'indisponibilité passée — pas besoin de
+#       parsing via as_datetime.
 #
 # ----------------------------------------------------------
-# 📍 ENTITE
-#   binary_sensor.parametres_invalides_eclairage
+# 🚨 INVARIANTS SURVEILLÉS
+#
+#     Pour chaque fenêtre : début < fin
+#
+#     1) heure_allumage_jardin_matin
+#        < heure_extinction_jardin_matin_fixe
+#
+#     2) debut_cycle_simulation_presence_matin_chambre_parents
+#        < fin_cycle_simulation_presence_matin_chambre_parents
+#
+#     3) debut_cycle_simulation_presence_soir_chambre_parents
+#        < fin_cycle_simulation_presence_soir_chambre_parents
+#
+#     4) debut_cycle_simulation_presence_matin_garage
+#        < fin_cycle_simulation_presence_matin_garage
+#
+#     5) debut_cycle_simulation_presence_soir_garage
+#        < fin_cycle_simulation_presence_soir_garage
+#
+#     6) debut_cycle_simulation_presence_matin_entree
+#        < fin_cycle_simulation_presence_matin_entree
+#
+#     7) debut_cycle_simulation_presence_soir_entree
+#        < fin_cycle_simulation_presence_soir_entree
+#
+#     Toute violation = paramètres INVALIDES
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#     - input_datetime.heure_allumage_jardin_matin
+#     - input_datetime.heure_extinction_jardin_matin_fixe
+#     - input_datetime.debut_cycle_simulation_presence_matin_chambre_parents
+#     - input_datetime.fin_cycle_simulation_presence_matin_chambre_parents
+#     - input_datetime.debut_cycle_simulation_presence_soir_chambre_parents
+#     - input_datetime.fin_cycle_simulation_presence_soir_chambre_parents
+#     - input_datetime.debut_cycle_simulation_presence_matin_garage
+#     - input_datetime.fin_cycle_simulation_presence_matin_garage
+#     - input_datetime.debut_cycle_simulation_presence_soir_garage
+#     - input_datetime.fin_cycle_simulation_presence_soir_garage
+#     - input_datetime.debut_cycle_simulation_presence_matin_entree
+#     - input_datetime.fin_cycle_simulation_presence_matin_entree
+#     - input_datetime.debut_cycle_simulation_presence_soir_entree
+#     - input_datetime.fin_cycle_simulation_presence_soir_entree
+#
+# ----------------------------------------------------------
+# 📊 ATTRIBUTS EXPOSÉS
+#
+#     - jardin_matin_invalide                              : invariant 1 violé
+#     - simulation_presence_matin_chambre_parents_invalide : invariant 2 violé
+#     - simulation_presence_soir_chambre_parents_invalide  : invariant 3 violé
+#     - simulation_presence_matin_garage_invalide          : invariant 4 violé
+#     - simulation_presence_soir_garage_invalide           : invariant 5 violé
+#     - simulation_presence_matin_entree_invalide          : invariant 6 violé
+#     - simulation_presence_soir_entree_invalide           : invariant 7 violé
+#     - helpers_indisponibles                              : liste des helpers
+#                                                            indisponibles
+#                                                            (14 sources > 5
+#                                                            → règle liste)
+#     - cause                                              : énumération priorisée
+#
+# ----------------------------------------------------------
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage de luminaire
+#     - Aucune logique de simulation de présence
+#     - Aucune correction automatique
+#
+# ----------------------------------------------------------
+# 📍 ENTITÉ
+#
+#     binary_sensor.parametres_invalides_eclairage
+#
+# ----------------------------------------------------------
+# 🧠 STATUT
+#
+#     Capteur de diagnostic — Intégrité paramètres Éclairage
 # ==========================================================
 
 - binary_sensor:
     - name: "Éclairage — Paramètres invalides"
       unique_id: parametres_invalides_eclairage
       default_entity_id: binary_sensor.parametres_invalides_eclairage
-
-      state: >
-        {{
-          not (
-            states('input_datetime.heure_allumage_jardin_matin')
-              < states('input_datetime.heure_extinction_jardin_matin_fixe')
-          and
-            states('input_datetime.debut_cycle_simulation_presence_matin_chambre_parents')
-              < states('input_datetime.fin_cycle_simulation_presence_matin_chambre_parents')
-          and
-            states('input_datetime.debut_cycle_simulation_presence_soir_chambre_parents')
-              < states('input_datetime.fin_cycle_simulation_presence_soir_chambre_parents')
-          and
-            states('input_datetime.debut_cycle_simulation_presence_matin_garage')
-              < states('input_datetime.fin_cycle_simulation_presence_matin_garage')
-          and
-            states('input_datetime.debut_cycle_simulation_presence_soir_garage')
-              < states('input_datetime.fin_cycle_simulation_presence_soir_garage')
-          and
-            states('input_datetime.debut_cycle_simulation_presence_matin_entree')
-              < states('input_datetime.fin_cycle_simulation_presence_matin_entree')
-          and
-            states('input_datetime.debut_cycle_simulation_presence_soir_entree')
-              < states('input_datetime.fin_cycle_simulation_presence_soir_entree')
-          )
-        }}
-
       icon: >
         mdi:alert-circle-outline
-
+      state: >
+        {% set jardin_debut = states('input_datetime.heure_allumage_jardin_matin') %}
+        {% set jardin_fin = states('input_datetime.heure_extinction_jardin_matin_fixe') %}
+        {% set sim_matin_cp_debut = states('input_datetime.debut_cycle_simulation_presence_matin_chambre_parents') %}
+        {% set sim_matin_cp_fin = states('input_datetime.fin_cycle_simulation_presence_matin_chambre_parents') %}
+        {% set sim_soir_cp_debut = states('input_datetime.debut_cycle_simulation_presence_soir_chambre_parents') %}
+        {% set sim_soir_cp_fin = states('input_datetime.fin_cycle_simulation_presence_soir_chambre_parents') %}
+        {% set sim_matin_gar_debut = states('input_datetime.debut_cycle_simulation_presence_matin_garage') %}
+        {% set sim_matin_gar_fin = states('input_datetime.fin_cycle_simulation_presence_matin_garage') %}
+        {% set sim_soir_gar_debut = states('input_datetime.debut_cycle_simulation_presence_soir_garage') %}
+        {% set sim_soir_gar_fin = states('input_datetime.fin_cycle_simulation_presence_soir_garage') %}
+        {% set sim_matin_ent_debut = states('input_datetime.debut_cycle_simulation_presence_matin_entree') %}
+        {% set sim_matin_ent_fin = states('input_datetime.fin_cycle_simulation_presence_matin_entree') %}
+        {% set sim_soir_ent_debut = states('input_datetime.debut_cycle_simulation_presence_soir_entree') %}
+        {% set sim_soir_ent_fin = states('input_datetime.fin_cycle_simulation_presence_soir_entree') %}
+        {% set indispos = ['unknown', 'unavailable', 'none', ''] %}
+        {% set indisponible =
+             jardin_debut in indispos or jardin_fin in indispos
+          or sim_matin_cp_debut in indispos or sim_matin_cp_fin in indispos
+          or sim_soir_cp_debut in indispos or sim_soir_cp_fin in indispos
+          or sim_matin_gar_debut in indispos or sim_matin_gar_fin in indispos
+          or sim_soir_gar_debut in indispos or sim_soir_gar_fin in indispos
+          or sim_matin_ent_debut in indispos or sim_matin_ent_fin in indispos
+          or sim_soir_ent_debut in indispos or sim_soir_ent_fin in indispos %}
+        {% set jardin_matin_invalide =
+             indisponible or not (jardin_debut < jardin_fin) %}
+        {% set sim_matin_cp_invalide =
+             indisponible or not (sim_matin_cp_debut < sim_matin_cp_fin) %}
+        {% set sim_soir_cp_invalide =
+             indisponible or not (sim_soir_cp_debut < sim_soir_cp_fin) %}
+        {% set sim_matin_gar_invalide =
+             indisponible or not (sim_matin_gar_debut < sim_matin_gar_fin) %}
+        {% set sim_soir_gar_invalide =
+             indisponible or not (sim_soir_gar_debut < sim_soir_gar_fin) %}
+        {% set sim_matin_ent_invalide =
+             indisponible or not (sim_matin_ent_debut < sim_matin_ent_fin) %}
+        {% set sim_soir_ent_invalide =
+             indisponible or not (sim_soir_ent_debut < sim_soir_ent_fin) %}
+        {{ jardin_matin_invalide
+           or sim_matin_cp_invalide
+           or sim_soir_cp_invalide
+           or sim_matin_gar_invalide
+           or sim_soir_gar_invalide
+           or sim_matin_ent_invalide
+           or sim_soir_ent_invalide }}
       attributes:
         jardin_matin_invalide: >
-          {{
-            not (
-              states('input_datetime.heure_allumage_jardin_matin')
-                < states('input_datetime.heure_extinction_jardin_matin_fixe')
-            )
-          }}
-
+          {% set debut = states('input_datetime.heure_allumage_jardin_matin') %}
+          {% set fin = states('input_datetime.heure_extinction_jardin_matin_fixe') %}
+          {{ debut in ['unknown', 'unavailable', 'none', '']
+             or fin in ['unknown', 'unavailable', 'none', '']
+             or not (debut < fin) }}
         simulation_presence_matin_chambre_parents_invalide: >
-          {{
-            not (
-              states('input_datetime.debut_cycle_simulation_presence_matin_chambre_parents')
-                < states('input_datetime.fin_cycle_simulation_presence_matin_chambre_parents')
-            )
-          }}
-
+          {% set debut = states('input_datetime.debut_cycle_simulation_presence_matin_chambre_parents') %}
+          {% set fin = states('input_datetime.fin_cycle_simulation_presence_matin_chambre_parents') %}
+          {{ debut in ['unknown', 'unavailable', 'none', '']
+             or fin in ['unknown', 'unavailable', 'none', '']
+             or not (debut < fin) }}
         simulation_presence_soir_chambre_parents_invalide: >
-          {{
-            not (
-              states('input_datetime.debut_cycle_simulation_presence_soir_chambre_parents')
-                < states('input_datetime.fin_cycle_simulation_presence_soir_chambre_parents')
-            )
-          }}
-
+          {% set debut = states('input_datetime.debut_cycle_simulation_presence_soir_chambre_parents') %}
+          {% set fin = states('input_datetime.fin_cycle_simulation_presence_soir_chambre_parents') %}
+          {{ debut in ['unknown', 'unavailable', 'none', '']
+             or fin in ['unknown', 'unavailable', 'none', '']
+             or not (debut < fin) }}
         simulation_presence_matin_garage_invalide: >
-          {{
-            not (
-              states('input_datetime.debut_cycle_simulation_presence_matin_garage')
-                < states('input_datetime.fin_cycle_simulation_presence_matin_garage')
-            )
-          }}
-
+          {% set debut = states('input_datetime.debut_cycle_simulation_presence_matin_garage') %}
+          {% set fin = states('input_datetime.fin_cycle_simulation_presence_matin_garage') %}
+          {{ debut in ['unknown', 'unavailable', 'none', '']
+             or fin in ['unknown', 'unavailable', 'none', '']
+             or not (debut < fin) }}
         simulation_presence_soir_garage_invalide: >
-          {{
-            not (
-              states('input_datetime.debut_cycle_simulation_presence_soir_garage')
-                < states('input_datetime.fin_cycle_simulation_presence_soir_garage')
-            )
-          }}
-
+          {% set debut = states('input_datetime.debut_cycle_simulation_presence_soir_garage') %}
+          {% set fin = states('input_datetime.fin_cycle_simulation_presence_soir_garage') %}
+          {{ debut in ['unknown', 'unavailable', 'none', '']
+             or fin in ['unknown', 'unavailable', 'none', '']
+             or not (debut < fin) }}
         simulation_presence_matin_entree_invalide: >
-          {{
-            not (
-              states('input_datetime.debut_cycle_simulation_presence_matin_entree')
-                < states('input_datetime.fin_cycle_simulation_presence_matin_entree')
-            )
-          }}
-
+          {% set debut = states('input_datetime.debut_cycle_simulation_presence_matin_entree') %}
+          {% set fin = states('input_datetime.fin_cycle_simulation_presence_matin_entree') %}
+          {{ debut in ['unknown', 'unavailable', 'none', '']
+             or fin in ['unknown', 'unavailable', 'none', '']
+             or not (debut < fin) }}
         simulation_presence_soir_entree_invalide: >
-          {{
-            not (
-              states('input_datetime.debut_cycle_simulation_presence_soir_entree')
-                < states('input_datetime.fin_cycle_simulation_presence_soir_entree')
-            )
-          }}
+          {% set debut = states('input_datetime.debut_cycle_simulation_presence_soir_entree') %}
+          {% set fin = states('input_datetime.fin_cycle_simulation_presence_soir_entree') %}
+          {{ debut in ['unknown', 'unavailable', 'none', '']
+             or fin in ['unknown', 'unavailable', 'none', '']
+             or not (debut < fin) }}
+        helpers_indisponibles: >
+          {% set sources = [
+              'input_datetime.heure_allumage_jardin_matin',
+              'input_datetime.heure_extinction_jardin_matin_fixe',
+              'input_datetime.debut_cycle_simulation_presence_matin_chambre_parents',
+              'input_datetime.fin_cycle_simulation_presence_matin_chambre_parents',
+              'input_datetime.debut_cycle_simulation_presence_soir_chambre_parents',
+              'input_datetime.fin_cycle_simulation_presence_soir_chambre_parents',
+              'input_datetime.debut_cycle_simulation_presence_matin_garage',
+              'input_datetime.fin_cycle_simulation_presence_matin_garage',
+              'input_datetime.debut_cycle_simulation_presence_soir_garage',
+              'input_datetime.fin_cycle_simulation_presence_soir_garage',
+              'input_datetime.debut_cycle_simulation_presence_matin_entree',
+              'input_datetime.fin_cycle_simulation_presence_matin_entree',
+              'input_datetime.debut_cycle_simulation_presence_soir_entree',
+              'input_datetime.fin_cycle_simulation_presence_soir_entree',
+          ] %}
+          {% set ns = namespace(items=[]) %}
+          {% for entity in sources %}
+            {% if states(entity) in ['unknown', 'unavailable', 'none', ''] %}
+              {% set ns.items = ns.items + [entity] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
+        cause: >
+          {% set jardin_debut = states('input_datetime.heure_allumage_jardin_matin') %}
+          {% set jardin_fin = states('input_datetime.heure_extinction_jardin_matin_fixe') %}
+          {% set sim_matin_cp_debut = states('input_datetime.debut_cycle_simulation_presence_matin_chambre_parents') %}
+          {% set sim_matin_cp_fin = states('input_datetime.fin_cycle_simulation_presence_matin_chambre_parents') %}
+          {% set sim_soir_cp_debut = states('input_datetime.debut_cycle_simulation_presence_soir_chambre_parents') %}
+          {% set sim_soir_cp_fin = states('input_datetime.fin_cycle_simulation_presence_soir_chambre_parents') %}
+          {% set sim_matin_gar_debut = states('input_datetime.debut_cycle_simulation_presence_matin_garage') %}
+          {% set sim_matin_gar_fin = states('input_datetime.fin_cycle_simulation_presence_matin_garage') %}
+          {% set sim_soir_gar_debut = states('input_datetime.debut_cycle_simulation_presence_soir_garage') %}
+          {% set sim_soir_gar_fin = states('input_datetime.fin_cycle_simulation_presence_soir_garage') %}
+          {% set sim_matin_ent_debut = states('input_datetime.debut_cycle_simulation_presence_matin_entree') %}
+          {% set sim_matin_ent_fin = states('input_datetime.fin_cycle_simulation_presence_matin_entree') %}
+          {% set sim_soir_ent_debut = states('input_datetime.debut_cycle_simulation_presence_soir_entree') %}
+          {% set sim_soir_ent_fin = states('input_datetime.fin_cycle_simulation_presence_soir_entree') %}
+          {% set indispos = ['unknown', 'unavailable', 'none', ''] %}
+          {% set indisponible =
+               jardin_debut in indispos or jardin_fin in indispos
+            or sim_matin_cp_debut in indispos or sim_matin_cp_fin in indispos
+            or sim_soir_cp_debut in indispos or sim_soir_cp_fin in indispos
+            or sim_matin_gar_debut in indispos or sim_matin_gar_fin in indispos
+            or sim_soir_gar_debut in indispos or sim_soir_gar_fin in indispos
+            or sim_matin_ent_debut in indispos or sim_matin_ent_fin in indispos
+            or sim_soir_ent_debut in indispos or sim_soir_ent_fin in indispos %}
+          {% if indisponible %}
+            helpers_indisponibles
+          {% elif not (jardin_debut < jardin_fin) %}
+            jardin_matin_invalide
+          {% elif not (sim_matin_cp_debut < sim_matin_cp_fin) %}
+            simulation_presence_matin_chambre_parents_invalide
+          {% elif not (sim_soir_cp_debut < sim_soir_cp_fin) %}
+            simulation_presence_soir_chambre_parents_invalide
+          {% elif not (sim_matin_gar_debut < sim_matin_gar_fin) %}
+            simulation_presence_matin_garage_invalide
+          {% elif not (sim_soir_gar_debut < sim_soir_gar_fin) %}
+            simulation_presence_soir_garage_invalide
+          {% elif not (sim_matin_ent_debut < sim_matin_ent_fin) %}
+            simulation_presence_matin_entree_invalide
+          {% elif not (sim_soir_ent_debut < sim_soir_ent_fin) %}
+            simulation_presence_soir_entree_invalide
+          {% else %}
+            none
+          {% endif %}

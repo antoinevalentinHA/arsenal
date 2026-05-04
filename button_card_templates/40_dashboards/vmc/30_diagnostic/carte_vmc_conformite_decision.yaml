@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     VMC — Conformité décision
+#
+# 🗂️ COUCHE : Diagnostic VMC
+# 🧱 TYPE UI : Carte décisionnelle métier
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+
+carte_vmc_conformite_decision:
+  template: carte_conformite_contractuelle
+
+  entity: binary_sensor.vmc_conformite_decision
+  icon: mdi:clipboard-check-outline
+  name: Conformité décision
+
+  variables:
+    diag: |
+      [[[
+        const state = entity?.state;
+
+        const decision = entity?.attributes?.decision_attendue || '—';
+        const reel = entity?.attributes?.etat_physique_reel || '—';
+        const legitime = entity?.attributes?.non_conformite_legitime === true;
+        const cause = entity?.attributes?.cause_indetermination || 'none';
+
+        const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+
+        const category = (() => {
+          if (UNAV.includes(state)) return 'indispo';
+          if (state === 'on') return 'ok';
+          if (state === 'off' && legitime) return 'info';
+          if (state === 'off') return 'ko';
+          return 'indispo';
+        })();
+
+        const bg = (() => {
+          if (category === 'ok') return 'rgba(76, 175, 80, 0.2)';
+          if (category === 'info') return 'rgba(33, 150, 243, 0.2)';
+          if (category === 'ko') return 'rgba(244, 67, 54, 0.2)';
+          return 'rgba(158, 158, 158, 0.1)';
+        })();
+
+        const stateText = (() => {
+          if (category === 'ok') return 'Conforme';
+          if (category === 'info') return 'Hystérésis légitime';
+          if (category === 'ko') return 'Non conforme';
+          return 'Non interprétable';
+        })();
+
+        const labelText = (() => {
+          if (category === 'ok') return `Attendu : ${decision} — Réel : ${reel}`;
+          if (category === 'info') return `Attendu : ${decision} — Réel : ${reel} — maintien temporaire`;
+          if (category === 'ko') return `Attendu : ${decision} — Réel : ${reel}`;
+          if (cause && cause !== 'none') return cause;
+          return 'Source indisponible ou état physique non interprétable';
+        })();
+
+        return {
+          bg,
+          stateText,
+          labelText
+        };
+      ]]]

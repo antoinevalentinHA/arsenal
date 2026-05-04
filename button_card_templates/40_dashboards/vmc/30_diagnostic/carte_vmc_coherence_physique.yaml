@@ -1,0 +1,93 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     VMC — Cohérence physique
+#
+# 🗂️ COUCHE : Diagnostic VMC
+# 🧱 TYPE UI : Statut diagnostic textuel
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher la validité physique des relais VMC selon la
+#   contrainte XOR stricte :
+#     - exactement un relais actif
+#     - jamais deux relais actifs
+#     - jamais aucun relais actif hors transition tolérée
+#
+# 📡 SOURCE
+#   binary_sensor.vmc_coherence_physique
+#
+# ⚙️ LOGIQUE UI
+#   - Vert  : XOR valide
+#   - Rouge : XOR invalide
+#   - Gris indispo : source indisponible ou non interprétable
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : carte_vmc_conformite_decision
+#
+# ==========================================================
+
+carte_vmc_coherence_physique:
+  template: socle_status_label
+
+  name: Cohérence physique
+
+  variables:
+    diag: |
+      [[[
+        const state = entity?.state;
+        const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+
+        const category = (() => {
+          if (UNAV.includes(state)) return 'indispo';
+          if (state === 'on') return 'ok';
+          if (state === 'off') return 'ko';
+          return 'indispo';
+        })();
+
+        const bg = (() => {
+          if (category === 'ok') return 'rgba(76, 175, 80, 0.2)';
+          if (category === 'ko') return 'rgba(244, 67, 54, 0.2)';
+          return 'rgba(158, 158, 158, 0.1)';
+        })();
+
+        const stateText = (() => {
+          if (category === 'ok') return 'Cohérent';
+          if (category === 'ko') return 'Invalide';
+          return 'Indisponible';
+        })();
+
+        const labelText = (() => {
+          if (category === 'ok') return 'XOR valide';
+          if (category === 'ko') return 'Double ON ou double OFF';
+          return 'État relais non interprétable';
+        })();
+
+        return {
+          category,
+          bg,
+          stateText,
+          labelText
+        };
+      ]]]
+
+  state_display: |
+    [[[
+      return variables.diag.stateText;
+    ]]]
+
+  label: |
+    [[[
+      return variables.diag.labelText;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return variables.diag.bg;
+          ]]]

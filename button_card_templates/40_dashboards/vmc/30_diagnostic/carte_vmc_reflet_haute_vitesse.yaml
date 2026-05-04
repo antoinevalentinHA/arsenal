@@ -1,0 +1,88 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     VMC — Reflet UI haute vitesse
+#
+# 🗂️ COUCHE : Diagnostic VMC
+# 🧱 TYPE UI : Statut legacy / compatibilité
+# 🔍 NIVEAU DE CONFIANCE : Moyen
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher le reflet UI historique de l'état haute vitesse VMC.
+#
+# 📡 SOURCE
+#   input_boolean.vmc_haute_vitesse
+#
+# ⚙️ LOGIQUE UI
+#   - Bleu : reflet haute vitesse actif
+#   - Gris neutre : reflet inactif
+#   - Gris indispo : état indisponible / inconnu
+#
+# ❌ NE FAIT PAS
+#   - Ne représente pas l'état physique réel
+#   - Ne constitue pas une source de vérité
+#   - Ne juge pas la conformité décision / réel
+#
+# 🔗 SATELLITE DE : carte_vmc_conformite_decision
+# ==========================================================
+
+carte_vmc_reflet_haute_vitesse:
+  template: socle_status_label
+
+  name: Reflet haute vitesse
+
+  variables:
+    diag: |
+      [[[
+        const state = entity?.state;
+        const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+
+        const category = (() => {
+          if (UNAV.includes(state)) return 'indispo';
+          if (state === 'on') return 'info';
+          if (state === 'off') return 'repos';
+          return 'indispo';
+        })();
+
+        const bg = (() => {
+          if (category === 'info') return 'rgba(33, 150, 243, 0.2)';
+          if (category === 'repos') return 'rgba(158, 158, 158, 0.2)';
+          return 'rgba(158, 158, 158, 0.1)';
+        })();
+
+        const stateText = (() => {
+          if (category === 'info') return 'Actif';
+          if (category === 'repos') return 'Inactif';
+          return 'Indisponible';
+        })();
+
+        const labelText = (() => {
+          if (category === 'info') return 'Reflet UI — non autoritatif';
+          if (category === 'repos') return 'Reflet UI — non autoritatif';
+          return 'Source non exploitable';
+        })();
+
+        return {
+          category,
+          bg,
+          stateText,
+          labelText
+        };
+      ]]]
+
+  state_display: |
+    [[[
+      return variables.diag.stateText;
+    ]]]
+
+  label: |
+    [[[
+      return variables.diag.labelText;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return variables.diag.bg;
+          ]]]

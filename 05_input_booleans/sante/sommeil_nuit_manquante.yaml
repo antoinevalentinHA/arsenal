@@ -1,0 +1,27 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER
+#     Sommeil — Nuit manquante
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Indiquer qu'aucune donnée de sommeil exploitable
+#     n'a pu être consolidée dans la fenêtre autorisée.
+#
+# 🧩 Périmètre
+#     - Mémorisation d'un état d'anomalie de consolidation
+#
+# 🔗 Dépendances
+#     - automation.sommeil_consolidation_nuit_evenementielle (OFF)
+#     - automation.sommeil_nuit_manquante (ON)
+#
+# 🚫 Interdits
+#     - Ne doit pas être modifié manuellement
+#     - Ne porte aucune logique métier
+#     - Ne déclenche aucune action directement
+#
+# 🧠 Statut
+#     Mémoire d'état — anomalie sommeil
+# ==========================================================
+
+sommeil_nuit_manquante:
+  name: Sommeil nuit manquante
+  icon: mdi:sleep-off

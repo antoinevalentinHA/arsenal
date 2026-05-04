@@ -61,12 +61,12 @@
     - condition: template
       value_template: >
         {{ states('input_text.deshum_guard_last_request_source')
-           != 'automation.deshumidificateur_retry_non_confirmation' }}
+           != 'automation.deshumidificateur_retry_on' }}
 
   action:
     - action: script.set_deshumidificateur_state
       data:
         target_state: "on"
-        request_source: "automation.deshumidificateur_retry_non_confirmation"
+        request_source: "automation.deshumidificateur_retry_on"
         request_id: >
           retry_{{ now().strftime('%Y%m%dT%H%M%S') }}

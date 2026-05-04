@@ -1,29 +1,19 @@
-# ==========================================================
-# ❤️ DASHBOARD : Withings
-# ----------------------------------------------------------
-# 🧠 Rôle :
-#   Centralise les données de santé, sommeil et activité
-#   issues des capteurs Withings fiabilisés localement.
-#
-# 💡 Objectif :
-#   Offrir une interface synthétique, stable et claire, permettant :
-#     - de suivre les tendances du sommeil et de la récupération
-#     - d’analyser la fréquence cardiaque et la respiration
-#     - de visualiser l’activité quotidienne (pas, distance, calories)
-#     - de diagnostiquer la fraîcheur des données Withings
-#
-# 🧩 Structure :
-#   1️⃣ Sommeil & récupération
-#   2️⃣ Santé / activité physiologique
-#   3️⃣ Activité physique
-#   4️⃣ Diagnostic données & fraîcheur
-#
-# ✅ Compatible : Lovelace / button-card / HA 2024.8+
-# ==========================================================
 button_card_templates: !include_dir_merge_named /config/button_card_templates
 
 views:
-  - badges: !include ../includes/badges/base.yaml
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+        icon: mdi:sleep
+        tap_action:
+          action: navigate
+          navigation_path: /sommeil-dashboard/0
 
     # ==========================================================
     # 🧩 CONTENEUR PRINCIPAL
@@ -34,196 +24,109 @@ views:
           ########################################################
           # 💤 SOMMEIL & RÉCUPÉRATION
           ########################################################
-          - type: vertical-stack
-            cards:
-              - type: custom:button-card
-                template: section_header
-                name: 💤 Sommeil
+          - type: custom:button-card
+            template: section_header
+            name: 💤 Sommeil
 
-              - type: grid
-                columns: 3
-                square: false
-                cards:
-                  # Score de sommeil
-                  - type: custom:button-card
-                    template: carte_score_qualitatif
-                    entity: sensor.withings_sleep_score_local
-                    name: Score sommeil
-                    icon: mdi:sleep
-
-                  # Durée totale (texte)
-                  - type: custom:button-card
-                    template: carte_duree_qualitative
-                    entity: sensor.withings_sommeil_total_texte
-                    name: Sommeil total
-                    icon: mdi:bed-clock
-                    tap_action:
-                      action: more-info
-                      entity: sensor.withings_sommeil_total_local
-
-                  # Réveils
-                  - type: custom:button-card
-                    template: carte_compteur_seuils_variables
-                    entity: sensor.withings_wakeup_count_local
-                    name: Réveils
-                    icon: mdi:bed
-                    variables:
-                      seuil_1: 0
-                      seuil_2: 1
-                      seuil_3: 2
-                      seuil_4: 3
-
-              - type: grid
-                columns: 2
-                square: false
-                cards:
-
-                  # Episodes de ronflements
-                  - type: custom:button-card
-                    template: carte_compteur_seuils_variables
-                    entity: sensor.withings_snoring_episode_count_local
-                    name: Ronflements (épisodes)
-                    icon: mdi:waveform
-                    variables:
-                      seuil_1: 0
-                      seuil_2: 1
-                      seuil_3: 2
-                      seuil_4: 3
-
-                  # Durée ronflements
-                  - type: custom:button-card
-                    template: carte_duree_ronflements
-                    entity: sensor.withings_ronflement_local
-                    name: Ronflements (durée)
-                    icon: mdi:clock-outline
-
-          # Répartition des phases
-          - type: custom:bar-card
-            name: Répartition des phases de sommeil
-            entities:
-              - entity: sensor.withings_sommeil_profond_pourcentage
-                name: " "
-                icon: mdi:power-sleep
-              - entity: sensor.withings_sommeil_leger_pourcentage
-                name: " "
-                icon: mdi:weather-night
-              - entity: sensor.withings_sommeil_rem_pourcentage
-                name: " "
-                icon: mdi:brain
-            height: 24px
-            positions:
-              icon: outside
-              name: outside
-              value: inside
-            severity:
-              - from: 0
-                to: 25
-                color: "rgba(76, 175, 80, 0.85)" # 🟢 faible proportion
-              - from: 25
-                to: 60
-                color: "rgba(255, 193, 7, 0.85)" # 🟡 dominante
-              - from: 60
-                to: 100
-                color: "rgba(144, 202, 249, 0.9)" # 🔵 très dominante
-            style: |
-              bar-card-background {
-                background: rgba(158, 158, 158, 0.2);
-                border-radius: 8px;
-              }
+          # Durée totale (texte)
+          - type: custom:button-card
+            template: carte_duree_qualitative
+            entity: input_text.sommeil_derniere_nuit_texte
+            name: Sommeil total
+            icon: mdi:bed-clock
+            tap_action:
+              action: more-info
+              entity: input_number.sommeil_derniere_nuit_total
 
           ########################################################
           # ❤️ SANTÉ / ACTIVITÉ PHYSIOLOGIQUE
           ########################################################
-          - type: vertical-stack
+          - type: custom:button-card
+            template: section_header
+            name: 🫀 Fréquence cardiaque
+
+          - type: grid
+            columns: 3
+            square: false
             cards:
+              # Fréquence cardiaque min
               - type: custom:button-card
-                template: section_header
-                name: 🫀 Fréquence cardiaque
+                template: carte_frequence_cardiaque_qualitative
+                entity: sensor.withings_frequence_cardiaque_minimale_local
+                name: Mini
+                icon: mdi:heart-pulse
 
-              - type: grid
-                columns: 3
-                square: false
-                cards:
-                  # Fréquence cardiaque min
-                  - type: custom:button-card
-                    template: carte_frequence_cardiaque_qualitative
-                    entity: sensor.withings_frequence_cardiaque_minimale_local
-                    name: Mini
-                    icon: mdi:heart-pulse
-
-                  # Fréquence cardiaque moyenne
-                  - type: custom:button-card
-                    template: carte_frequence_cardiaque_qualitative
-                    entity: sensor.withings_average_heart_rate_local
-                    name: Moyenne
-                    icon: mdi:heart-pulse
-
-                  # Fréquence cardiaque max
-                  - type: custom:button-card
-                    template: carte_frequence_cardiaque_qualitative
-                    entity: sensor.withings_frequence_cardiaque_maximale_local
-                    name: Maxi
-                    icon: mdi:heart-pulse
-
+              # Fréquence cardiaque moyenne
               - type: custom:button-card
-                template: section_header
-                name: 🫁 Fréquence respiratoire
+                template: carte_frequence_cardiaque_qualitative
+                entity: sensor.withings_average_heart_rate_local
+                name: Moyenne
+                icon: mdi:heart-pulse
 
-              - type: grid
-                columns: 3
-                square: false
-                cards:
-                  # Fréquence respiratoire min
-                  - type: custom:button-card
-                    template: carte_frequence_respiratoire_qualitative
-                    entity: sensor.withings_minimum_respiratory_rate_local
-                    name: Mini
-                    icon: mdi:lungs
+              # Fréquence cardiaque max
+              - type: custom:button-card
+                template: carte_frequence_cardiaque_qualitative
+                entity: sensor.withings_frequence_cardiaque_maximale_local
+                name: Maxi
+                icon: mdi:heart-pulse
 
-                  # Fréquence respiratoire moyenne
-                  - type: custom:button-card
-                    template: carte_frequence_respiratoire_qualitative
-                    entity: sensor.withings_average_respiratory_rate_local
-                    name: Moyenne
-                    icon: mdi:lungs
+          - type: custom:button-card
+            template: section_header
+            name: 🫁 Fréquence respiratoire
 
-                  # Fréquence respiratoire max
-                  - type: custom:button-card
-                    template: carte_frequence_respiratoire_qualitative
-                    entity: sensor.withings_maximum_respiratory_rate_local
-                    name: Maxi
-                    icon: mdi:lungs
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              # Fréquence respiratoire min
+              - type: custom:button-card
+                template: carte_frequence_respiratoire_qualitative
+                entity: sensor.withings_minimum_respiratory_rate_local
+                name: Mini
+                icon: mdi:lungs
+
+              # Fréquence respiratoire moyenne
+              - type: custom:button-card
+                template: carte_frequence_respiratoire_qualitative
+                entity: sensor.withings_average_respiratory_rate_local
+                name: Moyenne
+                icon: mdi:lungs
+
+              # Fréquence respiratoire max
+              - type: custom:button-card
+                template: carte_frequence_respiratoire_qualitative
+                entity: sensor.withings_maximum_respiratory_rate_local
+                name: Maxi
+                icon: mdi:lungs
 
           ########################################################
           # 🏃 ACTIVITÉ PHYSIQUE
           ########################################################
-          - type: vertical-stack
+          - type: custom:button-card
+            template: section_header
+            name: 🏃 Activité
+
+          - type: grid
+            columns: 3
+            square: false
             cards:
+              # Nombre de pas
               - type: custom:button-card
-                template: section_header
-                name: 🏃 Activité
+                template: carte_activite_pas_quotidiens
+                entity: sensor.withings_steps_today_local
+                name: Pas du jour
+                icon: mdi:walk
 
-              - type: grid
-                columns: 3
-                square: false
-                cards:
-                  # Nombre de pas
-                  - type: custom:button-card
-                    template: carte_activite_pas_quotidiens
-                    entity: sensor.withings_steps_today_local
-                    name: Pas du jour
-                    icon: mdi:walk
+              # Distance parcourue
+              - type: custom:button-card
+                template: carte_activite_distance_quotidienne
+                entity: sensor.withings_distance_travelled_today_local
+                name: Distance parcourue
+                icon: mdi:map-marker-distance
 
-                  # Distance parcourue
-                  - type: custom:button-card
-                    template: carte_activite_distance_quotidienne
-                    entity: sensor.withings_distance_travelled_today_local
-                    name: Distance parcourue
-                    icon: mdi:map-marker-distance
-
-                  # Calories brûlées
-                  - type: custom:button-card
-                    template: carte_activite_calories_quotidiennes
-                    entity: sensor.withings_total_calories_burnt_today_local
-                    name: Calories totales
-                    icon: mdi:fire
+              # Calories brûlées
+              - type: custom:button-card
+                template: carte_activite_calories_quotidiennes
+                entity: sensor.withings_total_calories_burnt_today_local
+                name: Calories totales
+                icon: mdi:fire

@@ -1,0 +1,185 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR : VMC conformité décision
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Vérifier que l'état physique réel de la VMC est conforme
+#   à la décision métier centrale.
+#
+# 🧱 PRINCIPE
+#   Ce capteur mesure l'écart entre :
+#     - ce que le système a décidé  → binary_sensor.vmc_haute_vitesse_requise
+#     - ce qui est physiquement actif → switch.vmc_l1 / switch.vmc_l2
+#
+#   ON  = état réel conforme à la décision
+#   OFF = état réel contradictoire avec la décision (non-conformité)
+#
+# ❌ NE PAS CONFONDRE AVEC
+#   binary_sensor.vmc_coherence_physique
+#     → vérifie uniquement la validité électrique (XOR relais)
+#     → ne connaît pas la décision métier
+#
+#   binary_sensor.vmc_conformite_decision  (ce capteur)
+#     → vérifie la cohérence fonctionnelle décision ↔ réel
+#     → ne juge pas la validité électrique
+#
+# 📐 TABLE DE VÉRITÉ
+#
+#   décision          | relais actif | XOR valide | état
+#   ------------------+--------------+------------+--------
+#   unavailable       | (any)        | (any)      | unavailable
+#   (any)             | unavailable  | (any)      | unavailable
+#   (any)             | (any)        | invalide   | unknown
+#   ON (haute)        | L1           | ✔          | ON
+#   ON (haute)        | L2           | ✔          | OFF
+#   OFF (basse)       | L2           | ✔          | ON  ← peut être OFF légitimement
+#   OFF (basse)       | L1           | ✔          | OFF ← non-conformité réelle ou hystérésis
+#
+# ⏱️ HYSTÉRÉSIS
+#   Lors du retour en basse vitesse, l'automation impose une durée
+#   minimale de maintien en haute vitesse (input_number.vmc_duree_min_haute).
+#   Pendant cette fenêtre, un état OFF de ce capteur est LÉGITIME.
+#
+#   Ce capteur ne masque PAS cette fenêtre dans son state.
+#   Il l'expose via l'attribut non_conformite_legitime.
+#
+#   → Le state reflète toujours la réalité brute.
+#   → Le contexte est dans les attributs.
+#
+# ⏱️ TOLÉRANCE TRANSITOIRE
+#   delay_off: 8s — absorbe les transitoires de bascule relais.
+#   N'a pas vocation à couvrir la fenêtre d'hystérésis complète.
+#
+# 📐 ÉTATS POSSIBLES
+#   ON          → conforme
+#   OFF         → non-conforme (peut être légitime, voir attributs)
+#   unavailable → source indisponible (décision ou relais)
+#   unknown     → état réel non interprétable (XOR invalide)
+#
+# ❌ AUCUN EFFET DE BORD
+#   - ne corrige rien
+#   - ne déclenche rien
+#   - ne pilote aucun relais
+#
+# 👉 PURE observabilité fonctionnelle
+# ==========================================================
+
+- binary_sensor:
+    - name: "VMC conformité décision"
+      unique_id: vmc_conformite_decision
+      default_entity_id: binary_sensor.vmc_conformite_decision
+
+      delay_off:
+        seconds: 8
+
+      availability: >
+        {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+        {% set l1 = states('switch.vmc_l1') %}
+        {% set l2 = states('switch.vmc_l2') %}
+        {{ decision in ['on', 'off']
+           and l1 in ['on', 'off']
+           and l2 in ['on', 'off'] }}
+
+      state: >
+        {# Sources disponibles (garanties par availability) #}
+        {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+        {% set l1 = states('switch.vmc_l1') == 'on' %}
+        {% set l2 = states('switch.vmc_l2') == 'on' %}
+        {% set xor_valide = (l1 and not l2) or (l2 and not l1) %}
+
+        {# XOR invalide → unknown (état réel non interprétable) #}
+        {% if not xor_valide %}
+          unknown
+        {# Conformité fonctionnelle #}
+        {% elif decision == 'on' %}
+          {{ l1 and not l2 }}
+        {% else %}
+          {{ l2 and not l1 }}
+        {% endif %}
+
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:check-circle-outline
+        {% elif is_state(this.entity_id, 'off') %}
+          mdi:alert-circle-outline
+        {% else %}
+          mdi:help-circle-outline
+        {% endif %}
+
+      attributes:
+
+        decision_attendue: >
+          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% if decision == 'on' %}
+            haute
+          {% elif decision == 'off' %}
+            basse
+          {% else %}
+            {{ decision }}
+          {% endif %}
+
+        etat_physique_reel: >
+          {% set l1 = states('switch.vmc_l1') %}
+          {% set l2 = states('switch.vmc_l2') %}
+          {% if l1 in ['unavailable', 'unknown']
+                or l2 in ['unavailable', 'unknown'] %}
+            indisponible
+          {% elif l1 == 'on' and l2 == 'off' %}
+            haute
+          {% elif l2 == 'on' and l1 == 'off' %}
+            basse
+          {% else %}
+            invalide
+          {% endif %}
+
+        xor_valide: >
+          {% set l1 = states('switch.vmc_l1') == 'on' %}
+          {% set l2 = states('switch.vmc_l2') == 'on' %}
+          {{ (l1 and not l2) or (l2 and not l1) }}
+
+        dans_fenetre_hysteresis: >
+          {#
+            Estimation conservative : on est dans la fenêtre d'hystérésis
+            si la décision est OFF et que L1 est encore actif,
+            et que le temps écoulé depuis le dernier passage OFF
+            est inférieur à la durée minimale configurée.
+          #}
+          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set l1 = states('switch.vmc_l1') %}
+          {% set duree_min = states('input_number.vmc_duree_min_haute') | float(15) %}
+          {% if decision == 'off' and l1 == 'on' %}
+            {% set last_off = states.binary_sensor.vmc_haute_vitesse_requise.last_changed %}
+            {% set elapsed = (now() - last_off).total_seconds() / 60 %}
+            {{ elapsed < duree_min }}
+          {% else %}
+            false
+          {% endif %}
+
+        non_conformite_legitime: >
+          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set l1 = states('switch.vmc_l1') %}
+          {% set duree_min = states('input_number.vmc_duree_min_haute') | float(15) %}
+          {% set dans_fenetre = false %}
+          {% if decision == 'off' and l1 == 'on' %}
+            {% set last_off = states.binary_sensor.vmc_haute_vitesse_requise.last_changed %}
+            {% set elapsed = (now() - last_off).total_seconds() / 60 %}
+            {% set dans_fenetre = elapsed < duree_min %}
+          {% endif %}
+          {{ is_state(this.entity_id, 'off')
+             and is_state('binary_sensor.vmc_haute_vitesse_requise', 'off')
+             and is_state('switch.vmc_l1', 'on')
+             and dans_fenetre }}
+
+        cause_indetermination: >
+          {% set decision = states('binary_sensor.vmc_haute_vitesse_requise') %}
+          {% set l1 = states('switch.vmc_l1') %}
+          {% set l2 = states('switch.vmc_l2') %}
+          {% if decision in ['unavailable', 'unknown'] %}
+            Décision métier indisponible
+          {% elif l1 in ['unavailable', 'unknown']
+                  or l2 in ['unavailable', 'unknown'] %}
+            Relais indisponible
+          {% elif (l1 == 'on' and l2 == 'on') or (l1 == 'off' and l2 == 'off') %}
+            XOR relais invalide — état physique non interprétable
+          {% else %}
+            none
+          {% endif %}

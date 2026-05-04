@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Déshumidificateur — Conformité exécution
+#
+# 🗂️ COUCHE : Diagnostic déshumidificateur
+# 🧱 TYPE UI : Carte décisionnelle métier
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+
+carte_deshumidificateur_conformite_execution:
+  template: carte_conformite_contractuelle
+
+  entity: binary_sensor.deshumidificateur_conformite_execution
+  icon: mdi:clipboard-check-outline
+  name: Conformité exécution
+
+  variables:
+    diag: |
+      [[[
+        const niveau = entity?.attributes?.niveau || 'unknown';
+        const cause = entity?.attributes?.cause || 'indetermine';
+
+        const bg = (() => {
+          if (niveau === 'ok') return 'rgba(76, 175, 80, 0.2)';
+          if (niveau === 'degraded') return 'rgba(255, 152, 0, 0.2)';
+          if (niveau === 'critical') return 'rgba(244, 67, 54, 0.2)';
+          return 'rgba(158, 158, 158, 0.1)';
+        })();
+
+        const stateText = (() => {
+          if (niveau === 'ok') return 'Conforme';
+          if (niveau === 'degraded') return 'Dégradé';
+          if (niveau === 'critical') return 'Critique';
+          return 'Non interprétable';
+        })();
+
+        return {
+          bg,
+          stateText,
+          labelText: cause
+        };
+      ]]]

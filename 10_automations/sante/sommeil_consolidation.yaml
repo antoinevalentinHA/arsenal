@@ -1,0 +1,124 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Sommeil — Consolidation nuit evenementielle
+#
+# ID : 10200000000003
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Figer les données de sommeil de la nuit précédente
+#     dès qu'elles deviennent exploitables et stables.
+#
+# 🧩 Périmètre
+#     - Déclenchement sur données sommeil exploitables
+#     - Stabilisation 5 minutes
+#     - Bornage temporel 06:00–11:00
+#     - Vérification d'idempotence
+#     - Écriture du snapshot sommeil Couche 2
+#
+# 🔗 Dépendances
+#     - binary_sensor.sommeil_donnees_exploitables
+#     - sensor.withings_sommeil_total_local
+#     - sensor.withings_sommeil_profond_local
+#     - sensor.withings_sommeil_leger_local
+#     - sensor.withings_rem_sleep_local
+#     - sensor.withings_sleep_score_local
+#     - input_number.sommeil_derniere_nuit_*
+#     - input_text.sommeil_derniere_nuit_texte
+#     - input_datetime.sommeil_derniere_nuit_date
+#     - input_boolean.sommeil_nuit_manquante
+#
+# 🚫 Interdits
+#     - Ne recalcule pas le total depuis les phases
+#     - Ne lit aucune entité UI
+#     - Ne produit aucune décision santé
+#     - Ne pilote aucun équipement
+#
+# 🧠 Statut
+#     Consolidation métier — Couche 2
+# ==========================================================
+
+- id: "10200000000003"
+  alias: Sommeil — Consolidation nuit evenementielle
+  description: Consolidation sommeil déclenchée par données exploitables stabilisées
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.sommeil_donnees_exploitables
+      to: "on"
+      for: "00:05:00"
+
+  condition:
+    - condition: time
+      after: "06:00:00"
+      before: "11:00:00"
+
+    - condition: template
+      value_template: >
+        {{ states('input_datetime.sommeil_derniere_nuit_date') != now().strftime('%Y-%m-%d') }}
+
+  action:
+    - variables:
+        sommeil_total: "{{ states('sensor.withings_sommeil_total_local') | float(-1) }}"
+        sommeil_profond: "{{ states('sensor.withings_sommeil_profond_local') | float(-1) }}"
+        sommeil_leger: "{{ states('sensor.withings_sommeil_leger_local') | float(-1) }}"
+        sommeil_rem: "{{ states('sensor.withings_rem_sleep_local') | float(-1) }}"
+        sommeil_score: "{{ states('sensor.withings_sleep_score_local') | float(-1) }}"
+
+    - condition: template
+      value_template: >
+        {{ sommeil_total > 0 and sommeil_total <= 16
+           and sommeil_profond >= 0 and sommeil_profond <= 16
+           and sommeil_leger >= 0 and sommeil_leger <= 16
+           and sommeil_rem >= 0 and sommeil_rem <= 16
+           and sommeil_score > 0 and sommeil_score <= 100 }}
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.sommeil_derniere_nuit_total
+      data:
+        value: "{{ sommeil_total }}"
+
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.sommeil_derniere_nuit_texte
+      data:
+        value: >
+          {% set total_minutes = (sommeil_total * 60) | round(0) | int %}
+          {% set heures = total_minutes // 60 %}
+          {% set minutes = total_minutes % 60 %}
+          {{ "%d h %02d min" | format(heures, minutes) }}
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.sommeil_derniere_nuit_profond
+      data:
+        value: "{{ sommeil_profond }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.sommeil_derniere_nuit_leger
+      data:
+        value: "{{ sommeil_leger }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.sommeil_derniere_nuit_rem
+      data:
+        value: "{{ sommeil_rem }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.sommeil_derniere_nuit_score
+      data:
+        value: "{{ sommeil_score }}"
+
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.sommeil_derniere_nuit_date
+      data:
+        date: "{{ now().strftime('%Y-%m-%d') }}"
+
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.sommeil_nuit_manquante

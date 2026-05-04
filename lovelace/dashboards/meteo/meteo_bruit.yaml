@@ -8,12 +8,6 @@ views:
       - type: custom:button-card
         template: bouton_navigation_badge_carre
 
-      - type: custom:button-card
-        template: bouton_parametres_badge_carre
-        tap_action:
-          action: navigate
-          navigation_path: /reglages-sommeil-dashboard/sommeil
-
     # ======================================================
     # 🔊 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
     # ------------------------------------------------------
@@ -68,63 +62,3 @@ views:
           - !include ../../includes/cartes/graph_bruit_arnaud.yaml
 
           - !include ../../includes/cartes/graph_bruit_matthieu.yaml
-
-          # ======================================================
-          # ⏰ SECTION : Réveils nocturnes
-          # ======================================================
-          - type: custom:button-card
-            template: section_header
-            name: ⏰ Réveils nocturnes
-            tap_action:
-              action: navigate
-              navigation_path: /reglages-dashboard/sommeil
-
-          - type: horizontal-stack
-            cards:
-
-              - type: custom:button-card
-                template: carte_compteur_seuils_variables
-                entity: input_number.reveils_nocturnes_arnaud
-                name: Arnaud
-                icon: mdi:bed
-                variables:
-                  seuil_1: 0
-                  seuil_2: 1
-                  seuil_3: 2
-                  seuil_4: 3
-
-              - type: custom:button-card
-                template: carte_compteur_seuils_variables
-                entity: input_number.reveils_nocturnes_matthieu
-                name: Matthieu
-                icon: mdi:bed
-                variables:
-                  seuil_1: 0
-                  seuil_2: 1
-                  seuil_3: 2
-                  seuil_4: 3
-
-          # ======================================================
-          # 📝 DÉTAIL HEURES DE RÉVEILS
-          # ======================================================
-          - type: markdown
-            content: >
-              **Heures des réveils – Arnaud :**  
-
-              {{ states('input_text.reveils_arnaud_heures') or 'Aucun réveil détecté' }}
-            visibility:
-              - condition: numeric_state
-                entity: input_number.reveils_nocturnes_arnaud
-                above: 0
-            text_only: true
-
-          - type: markdown
-            content: >
-              **Heures des réveils – Matthieu :**  
-
-              {{ states('input_text.reveils_matthieu_heures') or 'Aucun réveil détecté' }}
-            visibility:
-              - condition: numeric_state
-                entity: input_number.reveils_nocturnes_matthieu
-                above: 0
-            text_only: true

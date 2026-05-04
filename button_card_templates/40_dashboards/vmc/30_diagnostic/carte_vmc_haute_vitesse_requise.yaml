@@ -1,0 +1,99 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     VMC — Haute vitesse requise
+#
+# 🗂️ COUCHE : Diagnostic VMC
+# 🧱 TYPE UI : Carte décisionnelle métier
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher la décision brute du moteur VMC :
+#   la nécessité d'activer la haute vitesse.
+#
+# 📡 SOURCE
+#   binary_sensor.vmc_haute_vitesse_requise
+#
+# ⚙️ LOGIQUE UI
+#   - Vert  : haute vitesse requise (action justifiée)
+#   - Gris  : aucune demande
+#   - Gris clair : indisponible / non interprétable
+#
+# 📐 PÉRIMÈTRE
+#   - Ne confronte PAS l'état réel
+#   - Ne juge PAS la conformité
+#   - Expose uniquement la décision
+#
+# 🔗 COMPLÉMENTAIRE DE
+#   carte_vmc_conformite_decision
+#
+# ⚠️ NOTE
+#   La couleur verte indique une demande active,
+#   pas un état "bon" ou "mauvais".
+# ==========================================================
+
+carte_vmc_haute_vitesse_requise:
+  template: socle_decision_72
+
+  name: Haute vitesse requise
+  icon: mdi:fan-alert
+
+  variables:
+    diag: |
+      [[[
+        const state = entity?.state;
+        const UNAV = ['unknown', 'unavailable', undefined, null, 'none', ''];
+
+        const category = (() => {
+          if (UNAV.includes(state)) return 'indispo';
+          if (state === 'on') return 'active';
+          if (state === 'off') return 'idle';
+          return 'indispo';
+        })();
+
+        const bg = (() => {
+          if (category === 'active') return 'rgba(76, 175, 80, 0.2)';
+          if (category === 'idle') return 'rgba(158, 158, 158, 0.2)';
+          return 'rgba(224, 224, 224, 0.2)';
+        })();
+
+        const stateText = (() => {
+          if (category === 'active') return 'Requise';
+          if (category === 'idle') return 'Non requise';
+          return 'Indéterminée';
+        })();
+
+        const labelText = (() => {
+          if (category === 'active') {
+            return 'Une condition impose la haute vitesse';
+          }
+          if (category === 'idle') {
+            return 'Aucune condition ne justifie la haute vitesse';
+          }
+          return 'Décision non disponible';
+        })();
+
+        return {
+          category,
+          bg,
+          stateText,
+          labelText
+        };
+      ]]]
+
+  state_display: |
+    [[[
+      return variables.diag.stateText;
+    ]]]
+
+  label: |
+    [[[
+      return variables.diag.labelText;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return variables.diag.bg;
+          ]]]

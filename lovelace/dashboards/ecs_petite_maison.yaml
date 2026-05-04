@@ -64,3 +64,8 @@ views:
           - !include ../includes/section_headers/historique.yaml
 
           - !include ../includes/cartes/graph_temperature_ecs_petite_maison.yaml
+
+          - type: history-graph
+            entities:
+              - entity: sensor.ecs_petite_maison_chauffe_en_cours_locale
+            logarithmic_scale: true

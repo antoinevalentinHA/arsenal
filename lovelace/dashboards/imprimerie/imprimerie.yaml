@@ -61,7 +61,7 @@ views:
             cards:
 
               - type: custom:button-card
-                template: carte_bruit_activite
-                entity: sensor.bruit_imprimerie_activite
-                name: Activité sonore
+                template: carte_regime_acoustique_imprimerie
+                entity: sensor.regime_acoustique_imprimerie
+                name: Régime acoustique
                 icon: mdi:volume-high

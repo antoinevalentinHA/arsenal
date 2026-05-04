@@ -1,0 +1,104 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Intégrité paramètres — Modes maison
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Détecter toute incohérence de configuration de la
+#     fenêtre horaire visiteur du sous-système Modes Maison.
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
+#
+#     - Lecture pure
+#     - Aucune action, aucune correction
+#     - Toute source indisponible est considérée comme
+#       rendant l'invariant violé (pas d'optimisme silencieux).
+#     - Les helpers visiteur_start / visiteur_end sont des
+#       fenêtres intra-journée (HH:MM:SS) : la comparaison
+#       lexicale de strings est licite UNE FOIS la garde
+#       d'indisponibilité passée — pas besoin de parsing.
+#
+# ----------------------------------------------------------
+# 🚨 INVARIANTS SURVEILLÉS
+#
+#     1) visiteur_start < visiteur_end
+#
+#     Toute violation = paramètres INVALIDES
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#     - input_datetime.visiteur_start
+#     - input_datetime.visiteur_end
+#
+# ----------------------------------------------------------
+# 📊 ATTRIBUTS EXPOSÉS
+#
+#     - plage_visiteur_invalide  : invariant 1 violé
+#     - debut_indisponible       : helper visiteur_start indispo
+#     - fin_indisponible         : helper visiteur_end indispo
+#     - cause                    : énumération priorisée
+#
+# ----------------------------------------------------------
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage des modes maison
+#     - Aucune logique de présence ou d'absence
+#     - Aucune correction automatique
+#
+# ----------------------------------------------------------
+# 📍 ENTITÉ
+#
+#     binary_sensor.parametres_invalides_modes_maison
+#
+# ----------------------------------------------------------
+# 🧠 STATUT
+#
+#     Capteur de diagnostic — Intégrité paramètres Modes maison
+# ==========================================================
+
+- binary_sensor:
+    - name: "Modes maison — Paramètres invalides"
+      unique_id: parametres_invalides_modes_maison
+      default_entity_id: binary_sensor.parametres_invalides_modes_maison
+      icon: >
+        mdi:alert-circle-outline
+      state: >
+        {% set debut = states('input_datetime.visiteur_start') %}
+        {% set fin = states('input_datetime.visiteur_end') %}
+        {% set indisponible =
+             debut in ['unknown', 'unavailable', 'none', '']
+          or fin in ['unknown', 'unavailable', 'none', ''] %}
+        {% set plage_invalide = indisponible or not (debut < fin) %}
+        {{ plage_invalide }}
+      attributes:
+        plage_visiteur_invalide: >
+          {% set debut = states('input_datetime.visiteur_start') %}
+          {% set fin = states('input_datetime.visiteur_end') %}
+          {{ debut in ['unknown', 'unavailable', 'none', '']
+             or fin in ['unknown', 'unavailable', 'none', '']
+             or not (debut < fin) }}
+        debut_indisponible: >
+          {{ states('input_datetime.visiteur_start')
+             in ['unknown', 'unavailable', 'none', ''] }}
+        fin_indisponible: >
+          {{ states('input_datetime.visiteur_end')
+             in ['unknown', 'unavailable', 'none', ''] }}
+        cause: >
+          {% set debut = states('input_datetime.visiteur_start') %}
+          {% set fin = states('input_datetime.visiteur_end') %}
+          {% set indispos = [] %}
+          {% if debut in ['unknown', 'unavailable', 'none', ''] %}
+            {% set indispos = indispos + ['visiteur_start'] %}
+          {% endif %}
+          {% if fin in ['unknown', 'unavailable', 'none', ''] %}
+            {% set indispos = indispos + ['visiteur_end'] %}
+          {% endif %}
+          {% if indispos | count > 0 %}
+            helpers_indisponibles
+          {% elif not (debut < fin) %}
+            plage_visiteur_invalide
+          {% else %}
+            none
+          {% endif %}

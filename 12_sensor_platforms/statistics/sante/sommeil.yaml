@@ -1,82 +1,75 @@
 # ==========================================================
-#  STATISTICS SENSORS — Withings : Sommeil
+# 🧠 ARSENAL — STATISTICS SENSORS
+#     Sommeil — Moyennes glissantes
 # ----------------------------------------------------------
-#  🧠 Rôle :
-#     Calculer les moyennes mobiles des indicateurs de sommeil
-#     issus des capteurs Withings fiabilisés localement.
+# 🎯 Rôle
+#     Calculer les moyennes mobiles des données de sommeil
+#     consolidées par Arsenal.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Agrège les valeurs enregistrées (state_characteristic)
-#     - Fournit des tendances 7 / 14 / 30 jours
+# 🧩 Périmètre
+#     - Total sommeil consolidé
+#     - Score sommeil consolidé
+#     - Fenêtres 7 / 14 / 30 jours
 #
-#  🧩 Entrées surveillées :
-#     - sensor.withings_sleep_score
-#     - sensor.withings_sommeil_total_local
+# 🚫 Interdits
+#     - Ne consomme aucune entité Withings locale
+#     - Ne consomme aucune donnée non consolidée
+#     - Ne produit aucune décision santé
 #
-#  📊 Objectif :
-#     - Suivre l’évolution de la qualité et de la durée du sommeil
-#     - Alimenter le futur module "Coach Santé"
-#
-#  ✅ Périodes : 7 j / 14 j / 30 j
-#  ✅ Échantillons : 1000 / 2000 / 4000
+# 🧠 Statut
+#     Analyse statistique — consommation exclusive du snapshot
 # ==========================================================
 
-# ----------------------------------------------------------
-# 💤 SCORE DE SOMMEIL — Moyennes glissantes
-# ----------------------------------------------------------
 - platform: statistics
-  name: "Withings Sleep Score Moyenne 7j"
-  unique_id: withings_sleep_score_moyenne_7j
-  entity_id: sensor.withings_sleep_score_local
+  name: Sommeil Total Moyenne 7j
+  unique_id: sommeil_total_moyenne_7j
+  entity_id: input_number.sommeil_derniere_nuit_total
   state_characteristic: mean
   max_age:
     days: 7
-  sampling_size: 1000
+  sampling_size: 20
 
 - platform: statistics
-  name: "Withings Sleep Score Moyenne 14j"
-  unique_id: withings_sleep_score_moyenne_14j
-  entity_id: sensor.withings_sleep_score_local
+  name: Sommeil Total Moyenne 14j
+  unique_id: sommeil_total_moyenne_14j
+  entity_id: input_number.sommeil_derniere_nuit_total
   state_characteristic: mean
   max_age:
     days: 14
-  sampling_size: 2000
+  sampling_size: 30
 
 - platform: statistics
-  name: "Withings Sleep Score Moyenne 30j"
-  unique_id: withings_sleep_score_moyenne_30j
-  entity_id: sensor.withings_sleep_score_local
+  name: Sommeil Total Moyenne 30j
+  unique_id: sommeil_total_moyenne_30j
+  entity_id: input_number.sommeil_derniere_nuit_total
   state_characteristic: mean
   max_age:
     days: 30
-  sampling_size: 4000
+  sampling_size: 60
 
-# ----------------------------------------------------------
-# 🕒 DURÉE TOTALE DU SOMMEIL — Moyennes glissantes
-# ----------------------------------------------------------
 - platform: statistics
-  name: "Withings Sommeil Total Moyenne 7j"
-  unique_id: withings_sommeil_total_moyenne_7j
-  entity_id: sensor.withings_sommeil_total_local
+  name: Sommeil Score Moyenne 7j
+  unique_id: sommeil_score_moyenne_7j
+  entity_id: input_number.sommeil_derniere_nuit_score
   state_characteristic: mean
   max_age:
     days: 7
-  sampling_size: 1000
+  sampling_size: 20
 
 - platform: statistics
-  name: "Withings Sommeil Total Moyenne 14j"
-  unique_id: withings_sommeil_total_moyenne_14j
-  entity_id: sensor.withings_sommeil_total_local
+  name: Sommeil Score Moyenne 14j
+  unique_id: sommeil_score_moyenne_14j
+  entity_id: input_number.sommeil_derniere_nuit_score
   state_characteristic: mean
   max_age:
     days: 14
-  sampling_size: 2000
+  sampling_size: 30
 
 - platform: statistics
-  name: "Withings Sommeil Total Moyenne 30j"
-  unique_id: withings_sommeil_total_moyenne_30j
-  entity_id: sensor.withings_sommeil_total_local
+  name: Sommeil Score Moyenne 30j
+  unique_id: sommeil_score_moyenne_30j
+  entity_id: input_number.sommeil_derniere_nuit_score
   state_characteristic: mean
   max_age:
     days: 30
-  sampling_size: 4000
+  sampling_size: 60

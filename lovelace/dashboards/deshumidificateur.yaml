@@ -14,6 +14,12 @@ views:
           action: navigate
           navigation_path: /reglages-deshumidificateur-dashboard/deshumidificateur
 
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-deshumidificateur-dashboard/0
+
     cards:
       - type: vertical-stack
         cards:

@@ -1,0 +1,86 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Sommeil — Répartition des phases (%)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#
+#     Calculer la répartition (%) des phases de sommeil
+#     (profond, léger, REM) à partir des données consolidées
+#     de la dernière nuit.
+#
+# 🧩 PERIMETRE
+#
+#     - Consomme exclusivement les entités consolidées :
+#         • input_number.sommeil_derniere_nuit_total
+#         • input_number.sommeil_derniere_nuit_profond
+#         • input_number.sommeil_derniere_nuit_leger
+#         • input_number.sommeil_derniere_nuit_rem
+#
+#     - Produit trois capteurs :
+#         • profond %
+#         • léger %
+#         • REM %
+#
+# 🚫 INTERDITS
+#
+#     - Ne lit jamais les capteurs withings_*_local
+#     - Ne produit aucune donnée métier (UI uniquement)
+#     - Ne doit pas être utilisé sans validation du guard :
+#         binary_sensor.sommeil_derniere_nuit_valide
+#
+# ⚠️ CONTRAINTE TECHNIQUE HA
+#
+#     - Sensor numérique ⇒ état obligatoire numérique
+#     - Fallback = 0 (et non "unavailable")
+#
+# ⚠️ Fallback numérique : 0 (contrainte HA — sensor numérique)
+# La validité métier est portée par binary_sensor.sommeil_derniere_nuit_valide
+# Ces capteurs ne doivent pas être consommés sans vérification du guard.
+#
+# 🧠 STATUT
+#
+#     - Couche UI dérivée
+#     - Non décisionnel
+#     - Non critique
+#
+# ==========================================================
+
+- sensor:
+
+    - name: "Sommeil Derniere Nuit — Profond (%)"
+      unique_id: sommeil_derniere_nuit_profond_pourcentage
+      unit_of_measurement: "%"
+      state_class: measurement
+      icon: mdi:power-sleep
+      state: &sommeil_phase_pct >
+        {% set total = states('input_number.sommeil_derniere_nuit_total') | float(0) %}
+
+        {% set mapping = {
+          'sensor.sommeil_derniere_nuit_profond_pourcentage': 'input_number.sommeil_derniere_nuit_profond',
+          'sensor.sommeil_derniere_nuit_leger_pourcentage': 'input_number.sommeil_derniere_nuit_leger',
+          'sensor.sommeil_derniere_nuit_rem_pourcentage': 'input_number.sommeil_derniere_nuit_rem'
+        } %}
+
+        {% set source = mapping[this.entity_id] if this.entity_id in mapping else none %}
+        {% set phase_raw = states(source) if source is not none else none %}
+        {% set phase = phase_raw | float(-1) if phase_raw is not none else -1 %}
+
+        {% if total > 0 and source is not none and phase >= 0 %}
+          {{ ((phase / total) * 100) | round(1) }}
+        {% else %}
+          0
+        {% endif %}
+
+    - name: "Sommeil Derniere Nuit — Leger (%)"
+      unique_id: sommeil_derniere_nuit_leger_pourcentage
+      unit_of_measurement: "%"
+      state_class: measurement
+      icon: mdi:weather-night
+      state: *sommeil_phase_pct
+
+    - name: "Sommeil Derniere Nuit — REM (%)"
+      unique_id: sommeil_derniere_nuit_rem_pourcentage
+      unit_of_measurement: "%"
+      state_class: measurement
+      icon: mdi:brain
+      state: *sommeil_phase_pct

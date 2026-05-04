@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Sommeil — Derniere nuit texte
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Présenter la durée consolidée de la dernière nuit
+#     dans un format lisible.
+#
+# 🧩 Périmètre
+#     - Lecture du snapshot total
+#     - Conversion heures décimales vers format texte
+#
+# 🚫 Interdits
+#     - Ne lit aucune entité Withings
+#     - Ne consolide aucune donnée
+#     - Ne produit aucune statistique
+#
+# 🧠 Statut
+#     Présentation métier issue du snapshot consolidé
+# ==========================================================
+
+- sensor:
+    - name: Sommeil derniere nuit texte
+      unique_id: sommeil_derniere_nuit_texte
+      icon: mdi:bed-clock
+      availability: >
+        {{ is_state('binary_sensor.sommeil_derniere_nuit_valide', 'on') }}
+      state: >
+        {% set total = states('input_number.sommeil_derniere_nuit_total') | float(0) %}
+        {% set h = total | int %}
+        {% set m = ((total - h) * 60) | round(0) | int %}
+        {{ "%d h %02d min" | format(h, m) }}

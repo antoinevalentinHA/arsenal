@@ -1,0 +1,45 @@
+type: custom:apexcharts-card
+graph_span: 15d
+header:
+  show: true
+  title: Durée 15 nuits
+  show_states: false
+  floating: false
+apex_config:
+  chart:
+    height: 220
+    animations:
+      enabled: true
+  grid:
+    borderColor: rgba(0,0,0,0.08)
+  tooltip:
+    shared: false
+    x:
+      show: true
+  xaxis:
+    labels:
+      datetimeUTC: false
+  yaxis:
+    min: 0
+    max: 10
+    decimalsInFloat: 1
+  legend:
+    show: true
+series:
+  - entity: input_number.sommeil_derniere_nuit_total
+    name: Durée
+    type: column
+    stroke_width: 0
+    group_by:
+      duration: 1d
+      func: last
+
+  - entity: sensor.sommeil_total_moyenne_7j
+    name: Moyenne 7j
+    type: line
+    stroke_width: 2
+    group_by:
+      duration: 1d
+      func: last
+show:
+  loading: false

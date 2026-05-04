@@ -1,0 +1,28 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Conformité — Socle métier
+#
+# 🗂️ COUCHE : Diagnostic transversal
+# 🧱 TYPE UI : Socle conformité contractuelle
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+
+carte_conformite_contractuelle:
+  template: socle_decision_72
+
+  state_display: |
+    [[[
+      return variables.diag.stateText;
+    ]]]
+
+  label: |
+    [[[
+      return variables.diag.labelText;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return variables.diag.bg;
+          ]]]

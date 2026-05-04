@@ -1,27 +1,93 @@
 # ==========================================================
 # 🧠 ARSENAL — BINARY SENSOR
 #     Intégrité paramètres — Déshumidificateur
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Détecter toute incohérence de configuration des seuils
+#     d'humidité relative cible du déshumidificateur cave.
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
+#
+#     - Lecture pure
+#     - Aucune action, aucune correction
+#     - Toute source indisponible est considérée comme
+#       rendant l'invariant violé (pas d'optimisme silencieux).
+#
+# ----------------------------------------------------------
+# 🚨 INVARIANTS SURVEILLÉS
+#
+#     1) cave_rh_cible_on > cave_rh_cible_off
+#        (le seuil de déclenchement doit être supérieur au
+#        seuil d'arrêt, sinon hystérésis inversée)
+#
+#     Toute violation = paramètres INVALIDES
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#     - input_number.cave_rh_cible_on
+#     - input_number.cave_rh_cible_off
+#
+# ----------------------------------------------------------
+# 📊 ATTRIBUTS EXPOSÉS
+#
+#     - seuils_humidite_invalides    : invariant 1 violé
+#     - cible_on_indisponible        : helper cible_on indispo
+#     - cible_off_indisponible       : helper cible_off indispo
+#     - cause                        : énumération priorisée
+#
+# ----------------------------------------------------------
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage du déshumidificateur
+#     - Aucune logique hygrométrique
+#     - Aucune correction automatique
+#
+# ----------------------------------------------------------
+# 📍 ENTITÉ
+#
+#     binary_sensor.parametres_invalides_deshumidificateur
+#
+# ----------------------------------------------------------
+# 🧠 STATUT
+#
+#     Capteur de diagnostic — Intégrité paramètres Déshumidificateur
 # ==========================================================
 
 - binary_sensor:
     - name: "Déshumidificateur — Paramètres invalides"
       unique_id: parametres_invalides_deshumidificateur
       default_entity_id: binary_sensor.parametres_invalides_deshumidificateur
-      state: >
-        {{
-          not (
-            states('input_number.cave_rh_cible_on') | float(0)
-              > states('input_number.cave_rh_cible_off') | float(0)
-          )
-        }}
       icon: >
         mdi:alert-circle-outline
+      state: >
+        {% set cible_on = states('input_number.cave_rh_cible_on') | float(none) %}
+        {% set cible_off = states('input_number.cave_rh_cible_off') | float(none) %}
+        {% set indisponible = cible_on is none or cible_off is none %}
+        {% set seuils_humidite_invalides = indisponible or not (cible_on > cible_off) %}
+        {{ seuils_humidite_invalides }}
       attributes:
-
         seuils_humidite_invalides: >
-          {{
-            not (
-              states('input_number.cave_rh_cible_on') | float(0)
-                > states('input_number.cave_rh_cible_off') | float(0)
-            )
-          }}
+          {% set cible_on = states('input_number.cave_rh_cible_on') | float(none) %}
+          {% set cible_off = states('input_number.cave_rh_cible_off') | float(none) %}
+          {{ cible_on is none
+             or cible_off is none
+             or not (cible_on > cible_off) }}
+        cible_on_indisponible: >
+          {{ states('input_number.cave_rh_cible_on')
+             in ['unknown', 'unavailable', 'none', ''] }}
+        cible_off_indisponible: >
+          {{ states('input_number.cave_rh_cible_off')
+             in ['unknown', 'unavailable', 'none', ''] }}
+        cause: >
+          {% set cible_on = states('input_number.cave_rh_cible_on') | float(none) %}
+          {% set cible_off = states('input_number.cave_rh_cible_off') | float(none) %}
+          {% if cible_on is none or cible_off is none %}
+            helpers_indisponibles
+          {% elif not (cible_on > cible_off) %}
+            seuils_humidite_invalides
+          {% else %}
+            none
+          {% endif %}

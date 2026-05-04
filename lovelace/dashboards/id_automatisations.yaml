@@ -15,7 +15,7 @@ views:
           ####################################################
           - type: custom:button-card
             template: section_header
-            name: 🆔 Création d'ID pour automatisations
+            name: 🆔 ID Automatisations
 
           - type: tile
             entity: input_select.prefix_id_select

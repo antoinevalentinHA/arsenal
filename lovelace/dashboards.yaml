@@ -103,6 +103,13 @@ sante-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/sante.yaml
 
+sommeil-dashboard:
+  mode: yaml
+  title: Sommeil
+  icon: mdi:sleep
+  show_in_sidebar: false
+  filename: lovelace/dashboards/sommeil.yaml
+
 ouvertures-dashboard:
   mode: yaml
   title: Ouvertures
@@ -257,12 +264,33 @@ imprimerie-bruit-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/imprimerie/imprimerie_bruit.yaml
 
-imprimerie-meteo-dashboard:
+imprimerie-meteo-temperature-dashboard:
   mode: yaml
-  title: Météo
-  icon: mdi:factory
+  title: Temperature
+  icon: mdi:thermometer
   show_in_sidebar: false
-  filename: lovelace/dashboards/imprimerie/imprimerie_meteo.yaml
+  filename: lovelace/dashboards/imprimerie/meteo/temperature.yaml
+
+imprimerie-meteo-humidite-relative-dashboard:
+  mode: yaml
+  title: Humidite relative
+  icon: mdi:water-percent
+  show_in_sidebar: false
+  filename: lovelace/dashboards/imprimerie/meteo/humidite_relative.yaml
+
+imprimerie-meteo-humidite-absolue-dashboard:
+  mode: yaml
+  title: Humidite absolue
+  icon: mdi:water
+  show_in_sidebar: false
+  filename: lovelace/dashboards/imprimerie/meteo/humidite_absolue.yaml
+
+imprimerie-meteo-humidex-dashboard:
+  mode: yaml
+  title: Humidex
+  icon: mdi:thermometer-water
+  show_in_sidebar: false
+  filename: lovelace/dashboards/imprimerie/meteo/humidex.yaml
 
 imprimerie-stockage-dashboard:
   mode: yaml
@@ -460,6 +488,13 @@ diagnostics-aeration-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/aeration.yaml
 
+diagnostics-deshumidificateur-dashboard:
+  mode: yaml
+  title: Déshumidificateur
+  icon: mdi:water-off
+  show_in_sidebar: false
+  filename: lovelace/dashboards/diagnostics/deshumidificateur.yaml
+
 diagnostics-eclairage-dashboard:
   mode: yaml
   title: Simulation de présence
@@ -487,6 +522,13 @@ diagnostics-volets-dashboard:
   icon: mdi:weather-pouring
   show_in_sidebar: false
   filename: lovelace/dashboards/diagnostics/volets.yaml
+
+diagnostics-vmc-dashboard:
+  mode: yaml
+  title: VMC
+  icon: mdi:fan
+  show_in_sidebar: false
+  filename: lovelace/dashboards/diagnostics/vmc.yaml
 
 diagnostics-automatisations-dashboard:
   mode: yaml

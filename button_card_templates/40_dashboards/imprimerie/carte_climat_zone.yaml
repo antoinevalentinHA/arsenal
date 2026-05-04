@@ -31,6 +31,10 @@
 carte_climat_zone:
   template: socle_status_72
 
+  tap_action:
+    action: navigate
+    navigation_path: /imprimerie-meteo-humidex-dashboard/humidex
+
   state_display: |
     [[[
       const s = entity.state;

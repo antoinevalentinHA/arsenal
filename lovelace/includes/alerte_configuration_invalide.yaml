@@ -4,6 +4,6 @@ conditions:
     state: "on"
 card:
   type: custom:button-card
-  template: carte_alerte_binaire_critique
+  template: carte_alerte_parametres_invalides
   entity: binary_sensor.parametres_invalides_global
   name: "⚠️ CONFIGURATION INVALIDE"

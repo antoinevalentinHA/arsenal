@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Système — Alerte paramètres invalides
+#
+# 🗂️ COUCHE : 20_systeme
+# 🧱 TYPE UI : pivot
+# 🔍 NIVEAU DE CONFIANCE : fort
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Signaler une incohérence globale de configuration et
+#   exposer un résumé synthétique des domaines impactés.
+#
+# 📡 SOURCE
+#   - binary_sensor.parametres_invalides_global
+#   - attributs :
+#       • nombre_domaines_invalides
+#       • domaines_invalides
+#
+# ⚙️ LOGIQUE UI
+#   - état = on → carte visible (alerte critique)
+#   - affichage :
+#       • titre : CONFIGURATION INVALIDE
+#       • nombre de domaines impactés
+#       • liste des domaines
+#   - tap_action :
+#       → navigation vers sous-vue diagnostic paramètres
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - diagnostic global (sentinelle)
+#     - agrégation multi-domaines
+#     - navigation vers analyse détaillée
+# ==========================================================
+
+carte_alerte_parametres_invalides:
+  template: carte_base_v2
+
+  show_state: false
+  show_label: true
+
+  tap_action:
+    action: none
+
+  label: |
+    [[[
+      const n = entity.attributes.nombre_domaines_invalides ?? 0;
+      const domaines = entity.attributes.domaines_invalides ?? [];
+
+      if (n === 0) return "Aucun domaine impacté";
+
+      return `${n} domaine${n > 1 ? "s" : ""} impacté${n > 1 ? "s" : ""}\n${domaines.join(", ")}`;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            return 'rgba(244, 67, 54, 0.2)';
+          ]]]

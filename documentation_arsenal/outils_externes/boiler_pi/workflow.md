@@ -197,7 +197,7 @@ Ne jamais mettre dans git :
 **Emplacement obligatoire :**
 
 ```
-/etc/arsenal/boiler_bridge.env
+/home/pi/boiler_bridge.env
 ```
 
 Créer le fichier :
@@ -210,17 +210,17 @@ MQTT_PASSWORD=monpassword
 Verrouiller les droits (obligatoire) :
 
 ```bash
-chmod 600 /etc/arsenal/boiler_bridge.env
-chown pi:pi /etc/arsenal/boiler_bridge.env
+chmod 600 /home/pi/boiler_bridge.env
+chown pi:pi /home/pi/boiler_bridge.env
 ```
 
 Référencer dans le service :
 
 ```ini
-EnvironmentFile=/etc/arsenal/boiler_bridge.env
+EnvironmentFile=/home/pi/boiler_bridge.env
 ```
 
-> Le fichier `/etc/arsenal/boiler_bridge.env` est hors du dépôt git et hors de `/home/pi/boiler-bridge/`. Il n'est jamais versionné.
+> Le fichier `/home/pi/boiler_bridge.env` est hors du dépôt git et hors de `/home/pi/boiler-bridge/`. Il n'est jamais versionné.
 
 ---
 
@@ -322,7 +322,7 @@ mkdir -p "$DEST"
 
 cp -a /home/pi/boiler-bridge/ "$DEST/"
 cp /etc/systemd/system/boiler_bridge.service "$DEST/"
-cp /etc/arsenal/boiler_bridge.env "$DEST/"
+cp /home/pi/boiler_bridge.env "$DEST/"
 
 # Rotation : conserver les 7 dernières sauvegardes
 ls -dt /mnt/backups_boiler_pi/*/ | tail -n +8 | xargs -r rm -rf
@@ -339,7 +339,7 @@ Contenu sauvegardé :
 ```
 /home/pi/boiler-bridge/
 /etc/systemd/system/boiler_bridge.service
-/etc/arsenal/boiler_bridge.env
+/home/pi/boiler_bridge.env
 ```
 
 Destination :
@@ -361,7 +361,7 @@ Politique : conservation des 7 dernières sauvegardes, rotation automatique.
 | Versioning | Git (local + GitHub privé) |
 | Déploiement | `git fetch` + `reset --hard origin/main` + restart |
 | Rollback | `git reset --hard <commit_id>` + restart |
-| Secrets | `/etc/arsenal/boiler_bridge.env`, hors git |
+| Secrets | `/home/pi/boiler_bridge.env`, hors git |
 | Remote GitHub | SSH obligatoire |
 
 **Invariants de production :**
@@ -369,5 +369,5 @@ Politique : conservation des 7 dernières sauvegardes, rotation automatique.
 ```
 service actif  = boiler_bridge.service
 script exécuté = /home/pi/boiler-bridge/boiler_mqtt.py
-config         = /etc/arsenal/boiler_bridge.env
+config         = /home/pi/boiler_bridge.env
 ```

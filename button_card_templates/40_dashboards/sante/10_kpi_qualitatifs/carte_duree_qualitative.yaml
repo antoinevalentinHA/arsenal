@@ -7,36 +7,33 @@
 #     TEMPLATE UI METIER
 #
 # 🎯 ROLE
-#     Affiche la durée de sommeil en heures sous forme de KPI.
-#     La couleur est pilotée par un sensor de couleur upstream
-#     (charte Arsenal santé). Délègue toute la logique visuelle
-#     au socle via variables.
+#     Affiche une durée de sommeil numérique en heures sous
+#     forme de KPI.
 #
 # 🧱 NATURE
 #     - Template button-card
 #     - Spécialisation de socle_kpi
-#     - UI uniquement (aucune décision)
+#     - UI uniquement
+#     - Aucune décision métier
 #
 # 🎨 SEMANTIQUE
-#     - Déléguée à sensor.couleur_sante_duree_sommeil
-#       et au profil ui_profile: arsenal du socle_kpi
+#     - Couleur déléguée à sensor.couleur_sante_duree_sommeil
+#     - Rendu délégué au profil ui_profile: arsenal du socle_kpi
 #
 # 🔗 DEPENDANCES
-#     - entity                               : sensor durée sommeil (state numérique, heures)
+#     - entity                               : durée sommeil numérique en heures
 #     - sensor.couleur_sante_duree_sommeil   : clé couleur upstream
-#     - variables.ui_profile                 : "arsenal" (profil de rendu socle_kpi)
 #
 # ⚠️ CONTRAINTES
-#     - Aucune logique de couleur propre — entièrement déléguée upstream
-#     - triggers_update déclaré sur le sensor couleur (réactivité)
-#     - Valeur affichée avec 1 décimale (toFixed(1)) et unité h
-#     - Même pattern que carte_activite_calories_quotidiennes et
-#       carte_ecs_etat_ballon — famille socle_kpi + sensor couleur upstream
+#     - Ne pas utiliser avec input_text
+#     - Etat attendu : nombre décimal en heures
+#     - Exemple : 3.87 => 3.9 h
+#     - Valeur invalide, unknown ou unavailable => —
 #
 # 🧩 USAGE
 #     type: custom:button-card
 #     template: carte_duree_qualitative
-#     entity: sensor.duree_sommeil
+#     entity: input_number.sommeil_derniere_nuit_total
 #
 # ==========================================================
 
@@ -55,8 +52,35 @@ carte_duree_qualitative:
 
   state_display: |
     [[[
-      const v = parseFloat(entity?.state);
-      if (isNaN(v)) return "—";
-      return `${v.toFixed(1)} h`;
-    ]]]
+      const raw = entity?.state;
 
+      if (
+        raw === undefined ||
+        raw === null ||
+        raw === "" ||
+        raw === "unknown" ||
+        raw === "unavailable"
+      ) {
+        return "—";
+      }
+
+      // --- Cas 1 : déjà un nombre (sécurité)
+      const numeric = Number(raw);
+      if (Number.isFinite(numeric)) {
+        return `${numeric.toFixed(1)} h`;
+      }
+
+      // --- Cas 2 : format texte type "3h52" / "3 h 52"
+      const match = raw.match(/(\d+)\s*h\s*(\d+)?/i);
+
+      if (match) {
+        const hours = parseInt(match[1], 10);
+        const minutes = match[2] ? parseInt(match[2], 10) : 0;
+
+        const total = hours + minutes / 60;
+        return `${total.toFixed(1)} h`;
+      }
+
+      // --- Cas fallback : afficher brut
+      return raw;
+    ]]]

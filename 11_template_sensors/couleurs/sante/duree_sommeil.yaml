@@ -1,28 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (TRIGGERED)
+#     Santé — Couleur durée sommeil
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Déterminer la couleur qualitative de la durée de sommeil
+#     à partir du snapshot consolidé de la dernière nuit.
+#
+# 🧩 Périmètre
+#     - Lecture de la durée sommeil consolidée
+#     - Application de seuils qualitatifs
+#     - Gestion indisponibilité si snapshot invalide
+#
+# 🔗 Dépendances
+#     - input_number.sommeil_derniere_nuit_total
+#     - binary_sensor.sommeil_derniere_nuit_valide
+#
+# 🚫 Interdits
+#     - Ne lit aucune entité Withings (_local ou autre)
+#     - Ne parse aucune donnée texte
+#     - Ne calcule aucune durée
+#     - Ne prend aucune décision métier
+#     - Ne pilote aucun équipement
+#
+# 🧠 Statut
+#     Présentation — dérivation qualitative UI
+# ==========================================================
+
 - trigger:
     - platform: state
       entity_id:
-        - sensor.withings_sommeil_total_texte
+        - input_number.sommeil_derniere_nuit_total
+        - binary_sensor.sommeil_derniere_nuit_valide
     - platform: homeassistant
       event: start
+
   sensor:
     - name: "Couleur Santé — Durée sommeil"
       unique_id: couleur_sante_duree_sommeil
       state: >
-        {% set raw = states('sensor.withings_sommeil_total_texte') %}
-        {% set m = raw | regex_findall('[0-9]+(?:[\\.,][0-9]+)?') %}
-        {% set num = (m | first) | default('') %}
-        {% set h = (num | replace(',', '.') | float(999)) %}
-
-        {% if raw in ['unknown', 'unavailable', None, ''] or h == 999 %}
+        {% if not is_state('binary_sensor.sommeil_derniere_nuit_valide', 'on') %}
           unavailable
-        {% elif h < 6.0 %}
-          red
-        {% elif h < 6.75 %}
-          orange
-        {% elif h < 7.25 %}
-          yellow
-        {% elif h < 8.0 %}
-          green
         {% else %}
-          blue
+          {% set v = states('input_number.sommeil_derniere_nuit_total') | float(999) %}
+
+          {% if v == 999 %}
+            unavailable
+          {% elif v < 6.0 %}
+            red
+          {% elif v < 6.75 %}
+            orange
+          {% elif v < 7.25 %}
+            yellow
+          {% elif v < 8.0 %}
+            green
+          {% else %}
+            blue
+          {% endif %}
         {% endif %}

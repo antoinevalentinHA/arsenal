@@ -1,0 +1,75 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /vmc-dashboard/home
+
+    cards:
+      - type: vertical-stack
+        cards:
+
+          - type: custom:button-card
+            template: section_header
+            name: ⚖️ Décision du système
+
+          - type: custom:button-card
+            template: carte_vmc_haute_vitesse_requise
+            entity: binary_sensor.vmc_haute_vitesse_requise
+
+          - type: custom:button-card
+            template: carte_vmc_intention
+            entity: sensor.vmc_intention
+
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Exécution physique
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.vmc_l1
+                name: Relais L1
+                icon: mdi:electric-switch
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.vmc_l2
+                name: Relais L2
+                icon: mdi:electric-switch
+
+          - type: custom:button-card
+            template: section_header
+            name: 🛡️ Cohérence & conformité
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_vmc_coherence_physique
+                entity: binary_sensor.vmc_coherence_physique
+
+              - type: custom:button-card
+                template: carte_vmc_conformite_decision
+                entity: binary_sensor.vmc_conformite_decision
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔁 Reflets UI
+
+          - type: custom:button-card
+            template: carte_vmc_reflet_haute_vitesse
+            entity: input_boolean.vmc_haute_vitesse

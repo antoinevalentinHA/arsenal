@@ -18,13 +18,40 @@ views:
       - type: vertical-stack
         cards:
 
-          # 🔊 Section — Bruit
+          # 🔊 Section — Régime acoustique machines
           - type: custom:button-card
             template: section_header
-            name: 🔊 Bruit
+            name: 🔊 Régime acoustique
 
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+          
+              - type: custom:button-card
+                template: carte_regime_acoustique_machine
+                entity: sensor.regime_acoustique_komori
+                name: Komori
+                variables:
+                  source_db: sensor.bruit_komori
+          
+              - type: custom:button-card
+                template: carte_regime_acoustique_machine
+                entity: sensor.regime_acoustique_bobst
+                name: Bobst
+                variables:
+                  source_db: sensor.bruit_bobst
+          
+              - type: custom:button-card
+                template: carte_regime_acoustique_machine
+                entity: sensor.regime_acoustique_media
+                name: Media
+                variables:
+                  source_db: sensor.bruit_media
+
+          # 🔊 Section — Historique
+          - !include ../../includes/section_headers/historique.yaml
           - !include ../../includes/cartes/graph_bruit_komori.yaml
-
           - !include ../../includes/cartes/graph_bruit_bobst.yaml
-
           - !include ../../includes/cartes/graph_bruit_media.yaml
+

@@ -14,6 +14,12 @@ views:
           action: navigate
           navigation_path: /reglages-vmc-dashboard/vmc
 
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-vmc-dashboard/vmc
+
     ########################################################
     # 🧩 VERTICAL STACK PRINCIPAL
     ########################################################
@@ -29,11 +35,6 @@ views:
               - type: custom:button-card
                 template: section_header
                 name: 💨 État général
-
-              # 🧠 INTENTION VMC (lecture métier)
-              - type: custom:button-card
-                template: carte_vmc_intention
-                entity: sensor.vmc_intention
 
               - type: custom:button-card
                 template: carte_mode_binaire_interprete

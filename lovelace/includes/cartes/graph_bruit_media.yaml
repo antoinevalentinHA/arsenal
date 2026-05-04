@@ -5,7 +5,7 @@ entities:
 hours_to_show: 24
 points_per_hour: 4
 line_width: 3
-height: 75
+height: 65
 show:
   fill: true
   extrema: true

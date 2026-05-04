@@ -1,12 +1,12 @@
 type: custom:layout-card
 layout_type: custom:grid-layout
 layout:
-  grid-template-columns: 1fr repeat(6, 42px) 1fr
-  grid-gap: 8px
+  grid-template-columns: 1fr repeat(9, 46px) 1fr
+  justify-items: center
   align-items: center
 cards:
 
-  # === Imprimerie menu ===
+  # === Menu Imprimerie ===
   - type: custom:button-card
     view_layout:
       grid-column: 2
@@ -19,7 +19,7 @@ cards:
       icon:
         - color: '#424242'
 
-  # === Météo ===
+  # === Température ===
   - type: custom:button-card
     view_layout:
       grid-column: 3
@@ -27,15 +27,54 @@ cards:
     icon: mdi:thermometer
     tap_action:
       action: navigate
-      navigation_path: /imprimerie-meteo-dashboard/meteo
+      navigation_path: /imprimerie-meteo-temperature-dashboard/temperature
     styles:
       icon:
         - color: '#B71C1C'
 
-  # === Bruit ===
+  # === Humidité relative ===
   - type: custom:button-card
     view_layout:
       grid-column: 4
+    template: bouton_navigation_badge_carre
+    icon: mdi:water-percent
+    tap_action:
+      action: navigate
+      navigation_path: /imprimerie-meteo-humidite-relative-dashboard/humidite_relative
+    styles:
+      icon:
+        - color: '#1565C0'
+
+  # === Humidité absolue ===
+  - type: custom:button-card
+    view_layout:
+      grid-column: 5
+    template: bouton_navigation_badge_carre
+    icon: mdi:water
+    tap_action:
+      action: navigate
+      navigation_path: /imprimerie-meteo-humidite-absolue-dashboard/humidite_absolue
+    styles:
+      icon:
+        - color: '#1B5E20'
+
+  # === Humidex ===
+  - type: custom:button-card
+    view_layout:
+      grid-column: 6
+    template: bouton_navigation_badge_carre
+    icon: mdi:thermometer-water
+    tap_action:
+      action: navigate
+      navigation_path: /imprimerie-meteo-humidex-dashboard/humidex
+    styles:
+      icon:
+        - color: '#E65100'
+
+  # === Bruit ===
+  - type: custom:button-card
+    view_layout:
+      grid-column: 7
     template: bouton_navigation_badge_carre
     icon: mdi:volume-high
     tap_action:
@@ -48,7 +87,7 @@ cards:
   # === Stockage ===
   - type: custom:button-card
     view_layout:
-      grid-column: 5
+      grid-column: 8
     template: bouton_navigation_badge_carre
     icon: mdi:warehouse
     tap_action:
@@ -61,7 +100,7 @@ cards:
   # === Atelier ===
   - type: custom:button-card
     view_layout:
-      grid-column: 6
+      grid-column: 9
     template: bouton_navigation_badge_carre
     icon: mdi:factory
     tap_action:
@@ -69,12 +108,12 @@ cards:
       navigation_path: /imprimerie-atelier-dashboard/atelier
     styles:
       icon:
-        - color: '#1B5E20'
+        - color: '#2E7D32'
 
   # === NAS ===
   - type: custom:button-card
     view_layout:
-      grid-column: 7
+      grid-column: 10
     template: bouton_navigation_badge_carre
     icon: mdi:nas
     tap_action:

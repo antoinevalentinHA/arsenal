@@ -1,0 +1,76 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Bruit — Régime acoustique global
+#
+# 🗂️ COUCHE : Perception / Imprimerie / Bruit
+# 🧱 TYPE UI : statut métier
+# 🔍 NIVEAU DE CONFIANCE : élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher la synthèse du régime acoustique global de
+#   l'imprimerie, calculée à partir des régimes machines.
+#
+# 📡 SOURCE
+#   - entity.state (bas / transition / haut_modere /
+#     haut_eleve / haut_extreme / indisponible)
+#
+# ⚙️ LOGIQUE UI
+#   - bas           → gris neutre
+#   - transition    → jaune attention
+#   - haut_modere   → orange léger
+#   - haut_eleve    → orange renforcé
+#   - haut_extreme  → rouge critique
+#   - indisponible  → gris indispo
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : dashboard_imprimerie_principal
+# ==========================================================
+
+carte_regime_acoustique_imprimerie:
+  template: socle_status_72
+
+  tap_action:
+    action: navigate
+    navigation_path: /imprimerie-bruit-dashboard/bruit
+
+  state_display: |
+    [[[
+      const s = entity.state;
+
+      if (s === 'bas') return 'Bas';
+      if (s === 'transition') return 'Transition';
+      if (s === 'haut_modere') return 'Haut modéré';
+      if (s === 'haut_eleve') return 'Haut élevé';
+      if (s === 'haut_extreme') return 'Haut extrême';
+
+      return '—';
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const s = entity.state;
+
+            if (s === 'bas')
+              return 'rgba(158, 158, 158, 0.2)';
+
+            if (s === 'transition')
+              return 'rgba(255, 193, 7, 0.25)';
+
+            if (s === 'haut_modere')
+              return 'rgba(255, 152, 0, 0.20)';
+
+            if (s === 'haut_eleve')
+              return 'rgba(255, 152, 0, 0.30)';
+
+            if (s === 'haut_extreme')
+              return 'rgba(244, 67, 54, 0.2)';
+
+            return 'rgba(224, 224, 224, 0.2)';
+          ]]]

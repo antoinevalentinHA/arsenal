@@ -1,0 +1,25 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT
+#     Sommeil — Derniere nuit texte
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Stocker la représentation textuelle de la durée de
+#     sommeil consolidée pour la dernière nuit.
+#
+# 🧩 Périmètre
+#     - Valeur calculée depuis input_number.sommeil_derniere_nuit_total
+#     - Usage UI uniquement
+#
+# 🚫 Interdits
+#     - Ne doit jamais être parsé
+#     - Ne porte aucune vérité numérique
+#     - Ne doit jamais être utilisé en décision
+#
+# 🧠 Statut
+#     Mémoire UI — helper:memory
+# ==========================================================
+
+sommeil_derniere_nuit_texte:
+  name: Sommeil derniere nuit texte
+  max: 32
+  icon: mdi:bed-clock

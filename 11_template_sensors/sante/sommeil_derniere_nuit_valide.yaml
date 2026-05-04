@@ -1,0 +1,29 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Sommeil — Validite derniere nuit
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Indiquer si la donnée de sommeil consolidée est
+#     exploitable.
+#
+# 🧩 Périmètre
+#     - Vérification de fraîcheur
+#     - Vérification de cohérence minimale
+#
+# 🚫 Interdits
+#     - Ne produit aucune donnée sommeil
+#     - Ne lit aucune entité Withings
+#
+# 🧠 Statut
+#     Guard métier pour UI et statistiques
+# ==========================================================
+
+- binary_sensor:
+    - name: Sommeil derniere nuit valide
+      unique_id: sommeil_derniere_nuit_valide
+      state: >
+        {% set d = states('input_datetime.sommeil_derniere_nuit_date') %}
+        {% set today = now().strftime('%Y-%m-%d') %}
+        {% set yesterday = (now() - timedelta(days=1)).strftime('%Y-%m-%d') %}
+        {% set total = states('input_number.sommeil_derniere_nuit_total') | float(0) %}
+        {{ d in [today, yesterday] and total > 0 }}

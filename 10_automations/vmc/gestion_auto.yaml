@@ -1,63 +1,64 @@
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATION : VMC – Gestion automatique humidite
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Appliquer la vitesse de la VMC (haute / basse)
-#   selon la décision métier centralisée fournie par
-#   binary_sensor.vmc_haute_vitesse_requise.
+# 🎯 ROLE
+#   Appliquer la vitesse de la VMC selon la demande métier
+#   instantanée fournie par binary_sensor.vmc_haute_vitesse_requise.
 #
-# 🧱 Principe d’architecture :
-#   - Aucune logique métier ici
+# 🧱 PRINCIPE D'ARCHITECTURE
+#   - Aucune décision métier locale
 #   - Aucun polling
-#   - Application stricte et immédiate de la décision
+#   - Application stricte de la demande ON
+#   - Maintien temporel exécutif sur retour OFF
 #
-# 🔁 Hystérésis temporelle :
+# 🔁 HYSTERESIS TEMPORELLE §6.2
 #   - ON  → haute vitesse immédiate
-#   - OFF → retour en basse vitesse après durée minimale
+#   - OFF → retour basse vitesse après durée minimale
 #
-#   ➜ Toute nouvelle demande ON pendant le délai
-#     annule implicitement la descente.
+#   Toute nouvelle demande ON pendant le délai annule la descente
+#   grâce au mode restart.
 #
-# ⚙️ Garanties :
-#   - Pas d’oscillation rapide
-#   - Pas de décision locale
+# ⚙️ GARANTIES
+#   - Pas d'oscillation rapide
+#   - Maintien exécutif hors capteur décisionnel
 #   - Comportement déterministe
 #
-# ✅ Boot-safe + Reload-template-safe
+# ✅ BOOT-SAFE + RELOAD-TEMPLATE-SAFE
 # ==========================================================
 
 - id: "1019000000001"
   alias: "VMC - Gestion humidité"
   description: >
     Applique automatiquement la haute ou la basse vitesse de la VMC
-    en fonction de la décision métier fournie par
+    en fonction de la demande métier fournie par
     binary_sensor.vmc_haute_vitesse_requise, en respectant une durée
     minimale de fonctionnement en haute vitesse.
   mode: restart
 
   trigger:
-  - platform: state
-    entity_id: binary_sensor.vmc_haute_vitesse_requise
+    - platform: state
+      entity_id: binary_sensor.vmc_haute_vitesse_requise
+      to:
+        - "on"
+        - "off"
 
-  - platform: homeassistant
-    event: start
+    - platform: homeassistant
+      event: start
 
   condition:
-  - condition: or
-    conditions:
+    - condition: or
+      conditions:
 
-      # ✔ autorise exécution au démarrage
-      - condition: template
-        value_template: >
-          {{ trigger.platform == 'homeassistant' }}
+        - condition: template
+          value_template: >
+            {{ trigger.platform == 'homeassistant' }}
 
-      # ✔ sinon comportement normal
-      - condition: state
-        entity_id: input_boolean.systeme_stable
-        state: "on"
+        - condition: state
+          entity_id: input_boolean.systeme_stable
+          state: "on"
 
   variables:
-    duree_min: "{{ states('input_number.vmc_duree_min_haute') | int(15) }}"
+    duree_min_minutes: "{{ states('input_number.vmc_duree_min_haute') | int(15) }}"
 
   action:
     - choose:
@@ -66,9 +67,9 @@
         # 🚀 HAUTE VITESSE
         # ==================================================
         - conditions:
-            - condition: template
-              value_template: >
-                {{ states('binary_sensor.vmc_haute_vitesse_requise') == 'on' }}
+            - condition: state
+              entity_id: binary_sensor.vmc_haute_vitesse_requise
+              state: "on"
           sequence:
             - service: script.vmc_haute_vitesse
 
@@ -76,9 +77,9 @@
         # 🔽 BASSE VITESSE
         # ==================================================
         - conditions:
-            - condition: template
-              value_template: >
-                {{ states('binary_sensor.vmc_haute_vitesse_requise') == 'off' }}
+            - condition: state
+              entity_id: binary_sensor.vmc_haute_vitesse_requise
+              state: "off"
           sequence:
             - if:
                 - condition: template
@@ -86,5 +87,18 @@
                     {{ trigger.platform != 'homeassistant' }}
               then:
                 - delay:
-                    seconds: "{{ (duree_min * 60) | int }}"
+                    seconds: "{{ (duree_min_minutes * 60) | int }}"
+
+            # Réévaluation après délai :
+            # si une demande ON est revenue entre-temps, le mode restart
+            # aura déjà annulé cette séquence. Cette garde protège aussi
+            # contre les cas limites reload / état modifié sans trigger.
+            - condition: state
+              entity_id: binary_sensor.vmc_haute_vitesse_requise
+              state: "off"
+
             - service: script.vmc_basse_vitesse
+
+      default:
+        # État décisionnel indisponible : retour fail-safe basse vitesse.
+        - service: script.vmc_basse_vitesse

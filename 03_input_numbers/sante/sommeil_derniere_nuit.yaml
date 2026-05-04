@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Sommeil — Derniere nuit
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Stocker les valeurs consolidées de la dernière nuit.
+#
+# 🧩 Périmètre
+#     - Durée totale
+#     - Phases de sommeil
+#     - Score Withings
+#
+# 🚫 Interdits
+#     - Aucune écriture manuelle
+#     - Aucune consommation directe des capteurs Withings locaux
+#
+# 🧠 Statut
+#     Snapshot métier consolidé — source UI/statistiques
+# ==========================================================
+
+sommeil_derniere_nuit_total:
+  name: Sommeil derniere nuit total
+  min: 0
+  max: 16
+  step: 0.01
+  unit_of_measurement: h
+  mode: box
+  icon: mdi:sleep
+
+sommeil_derniere_nuit_profond:
+  name: Sommeil derniere nuit profond
+  min: 0
+  max: 16
+  step: 0.01
+  unit_of_measurement: h
+  mode: box
+  icon: mdi:power-sleep
+
+sommeil_derniere_nuit_leger:
+  name: Sommeil derniere nuit leger
+  min: 0
+  max: 16
+  step: 0.01
+  unit_of_measurement: h
+  mode: box
+  icon: mdi:weather-night
+
+sommeil_derniere_nuit_rem:
+  name: Sommeil derniere nuit rem
+  min: 0
+  max: 16
+  step: 0.01
+  unit_of_measurement: h
+  mode: box
+  icon: mdi:brain
+
+sommeil_derniere_nuit_score:
+  name: Sommeil derniere nuit score
+  min: 0
+  max: 100
+  step: 1
+  unit_of_measurement: pts
+  mode: box
+  icon: mdi:sleep

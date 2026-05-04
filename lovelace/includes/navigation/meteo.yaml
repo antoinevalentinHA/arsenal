@@ -37,7 +37,7 @@ cards:
     icon: mdi:water
     tap_action:
       action: navigate
-      navigation_path: /meteo-humidite_absolue-dashboard/humidite_absolue
+      navigation_path: /meteo-humidite-absolue-dashboard/0
     styles:
       icon:
         - color: '#1B5E20'

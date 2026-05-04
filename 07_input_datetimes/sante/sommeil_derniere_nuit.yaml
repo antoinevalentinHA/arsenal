@@ -1,0 +1,21 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Sommeil — Derniere nuit (date)
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Stocker la date associée à la nuit consolidée.
+#
+# 🧩 Périmètre
+#     - Mise à jour uniquement lors de la consolidation
+#
+# 🚫 Interdits
+#     - Aucune modification manuelle
+#
+# 🧠 Statut
+#     Référence temporelle du snapshot sommeil
+# ==========================================================
+
+sommeil_derniere_nuit_date:
+  name: Sommeil derniere nuit date
+  has_date: true
+  has_time: false

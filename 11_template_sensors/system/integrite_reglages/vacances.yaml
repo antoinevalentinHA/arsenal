@@ -1,39 +1,108 @@
 # ==========================================================
 # 🧠 ARSENAL — BINARY SENSOR
 #     Intégrité paramètres — Vacances
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Détecter toute incohérence de configuration de la
+#     fenêtre temporelle des vacances (helpers de date+heure).
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
+#
+#     - Lecture pure
+#     - Aucune action, aucune correction
+#     - Toute source indisponible est considérée comme
+#       rendant l'invariant violé (pas d'optimisme silencieux).
+#     - Les helpers debut_vacances / fin_vacances sont des
+#       datetime complets : parsing via as_datetime(...) après
+#       garde d'indisponibilité.
+#
+# ----------------------------------------------------------
+# 🚨 INVARIANTS SURVEILLÉS
+#
+#     1) fin_vacances > debut_vacances
+#
+#     Toute violation = paramètres INVALIDES
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#     - input_datetime.debut_vacances
+#     - input_datetime.fin_vacances
+#
+# ----------------------------------------------------------
+# 📊 ATTRIBUTS EXPOSÉS
+#
+#     - fenetre_invalide      : invariant 1 violé
+#     - debut_indisponible    : helper debut_vacances indispo
+#     - fin_indisponible      : helper fin_vacances indispo
+#     - cause                 : énumération priorisée
+#                               (valeur fenetre_inversee
+#                                pour la violation métier)
+#
+# ----------------------------------------------------------
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage métier vacances
+#     - Aucune logique de mode absence
+#     - Aucune correction automatique
+#
+# ----------------------------------------------------------
+# 📍 ENTITÉ
+#
+#     binary_sensor.parametres_invalides_vacances
+#
+# ----------------------------------------------------------
+# 🧠 STATUT
+#
+#     Capteur de diagnostic — Intégrité paramètres Vacances
 # ==========================================================
 
 - binary_sensor:
     - name: "Vacances — Paramètres invalides"
       unique_id: parametres_invalides_vacances
       default_entity_id: binary_sensor.parametres_invalides_vacances
-      state: >
-        {{
-          not (
-            states('input_datetime.debut_vacances') not in ['unknown', 'unavailable', 'none', '']
-            and states('input_datetime.fin_vacances') not in ['unknown', 'unavailable', 'none', '']
-            and as_datetime(states('input_datetime.fin_vacances'))
-              > as_datetime(states('input_datetime.debut_vacances'))
-          )
-        }}
       icon: >
         mdi:alert-circle-outline
+      state: >
+        {% set debut_raw = states('input_datetime.debut_vacances') %}
+        {% set fin_raw = states('input_datetime.fin_vacances') %}
+        {% set debut_indispo = debut_raw in ['unknown', 'unavailable', 'none', ''] %}
+        {% set fin_indispo = fin_raw in ['unknown', 'unavailable', 'none', ''] %}
+        {% set indisponible = debut_indispo or fin_indispo %}
+        {% if indisponible %}
+          true
+        {% else %}
+          {{ not (as_datetime(fin_raw) > as_datetime(debut_raw)) }}
+        {% endif %}
       attributes:
-
+        fenetre_invalide: >
+          {% set debut_raw = states('input_datetime.debut_vacances') %}
+          {% set fin_raw = states('input_datetime.fin_vacances') %}
+          {% set indisponible =
+               debut_raw in ['unknown', 'unavailable', 'none', '']
+            or fin_raw in ['unknown', 'unavailable', 'none', ''] %}
+          {% if indisponible %}
+            true
+          {% else %}
+            {{ not (as_datetime(fin_raw) > as_datetime(debut_raw)) }}
+          {% endif %}
         debut_indisponible: >
-          {{
-            states('input_datetime.debut_vacances') in ['unknown', 'unavailable', 'none', '']
-          }}
-
+          {{ states('input_datetime.debut_vacances')
+             in ['unknown', 'unavailable', 'none', ''] }}
         fin_indisponible: >
-          {{
-            states('input_datetime.fin_vacances') in ['unknown', 'unavailable', 'none', '']
-          }}
-
-        fenetre_inversee: >
-          {{
-            states('input_datetime.debut_vacances') not in ['unknown', 'unavailable', 'none', '']
-            and states('input_datetime.fin_vacances') not in ['unknown', 'unavailable', 'none', '']
-            and as_datetime(states('input_datetime.fin_vacances'))
-              <= as_datetime(states('input_datetime.debut_vacances'))
-          }}
+          {{ states('input_datetime.fin_vacances')
+             in ['unknown', 'unavailable', 'none', ''] }}
+        cause: >
+          {% set debut_raw = states('input_datetime.debut_vacances') %}
+          {% set fin_raw = states('input_datetime.fin_vacances') %}
+          {% set debut_indispo = debut_raw in ['unknown', 'unavailable', 'none', ''] %}
+          {% set fin_indispo = fin_raw in ['unknown', 'unavailable', 'none', ''] %}
+          {% if debut_indispo or fin_indispo %}
+            helpers_indisponibles
+          {% elif not (as_datetime(fin_raw) > as_datetime(debut_raw)) %}
+            fenetre_inversee
+          {% else %}
+            none
+          {% endif %}

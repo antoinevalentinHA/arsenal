@@ -1,0 +1,94 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION : VMC – Non conformite decision
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Projeter en notification persistante l'etat courant de
+#   non-conformite fonctionnelle entre la decision metier VMC
+#   et l'etat physique reel.
+#
+# 🧱 PRINCIPE
+#   - Notification persistante = etat courant
+#   - Aucun historique
+#   - Aucun evenement deguise
+#   - Aucune correction automatique
+#   - Aucun pilotage relais
+#
+# 🚨 ETAT REPRESENTE
+#   binary_sensor.vmc_conformite_decision = off
+#   ET non_conformite_legitime = false
+#
+# 🔁 CYCLE DE VIE
+#   - apparition : etat non conforme persistant
+#   - maintien   : tant que l'etat reste vrai
+#   - extinction : retour conforme ou indetermine
+#
+# 🔁 MODE
+#   mode: restart
+#   Permet de recalculer proprement la persistance de l'etat
+#   en cas d'oscillation OFF/ON/OFF avant les 3 minutes.
+#
+# 🛡️ GARANTIES
+#   - Ne confond pas hysteresis normale et anomalie
+#   - Ne duplique pas le watchdog physique
+#   - Ne traite pas les cas XOR invalide
+# ==========================================================
+
+- id: "10190000000005"
+  alias: "VMC - Non conformite decision"
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.vmc_conformite_decision
+      to: "off"
+      for: "00:03:00"
+
+    - platform: state
+      entity_id: binary_sensor.vmc_conformite_decision
+      to:
+        - "on"
+        - "unknown"
+        - "unavailable"
+
+  action:
+    - choose:
+
+        # ==================================================
+        # 🟥 ETAT NON CONFORME → NOTIFICATION PERSISTANTE
+        # ==================================================
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.vmc_conformite_decision
+              state: "off"
+
+            - condition: template
+              value_template: >
+                {{ state_attr('binary_sensor.vmc_conformite_decision', 'non_conformite_legitime') != true }}
+
+          sequence:
+            - service: persistent_notification.create
+              data:
+                notification_id: "vmc_non_conformite_decision"
+                title: "💨 VMC – Non conforme"
+                message: >
+                  La VMC n'est pas conforme à la décision métier courante.
+
+                  Décision attendue :
+                  {{ state_attr('binary_sensor.vmc_conformite_decision', 'decision_attendue') }}
+
+                  État physique réel :
+                  {{ state_attr('binary_sensor.vmc_conformite_decision', 'etat_physique_reel') }}
+
+        # ==================================================
+        # 🟩 ETAT NON CONFORME DISPARU → EXTINCTION
+        # ==================================================
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ not is_state('binary_sensor.vmc_conformite_decision', 'off')
+                   or state_attr('binary_sensor.vmc_conformite_decision', 'non_conformite_legitime') == true }}
+
+          sequence:
+            - service: persistent_notification.dismiss
+              data:
+                notification_id: "vmc_non_conformite_decision"

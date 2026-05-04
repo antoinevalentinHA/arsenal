@@ -2,104 +2,223 @@
 # 🧠 ARSENAL — BINARY SENSOR
 #     Intégrité paramètres — Chauffage
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Détecter toute incohérence logique dans les paramètres
-#   structurants du sous-système Chauffage.
+# 🎯 RÔLE
 #
-# 🧱 Principe Arsenal :
-#   - Observation pure
-#   - Aucune correction automatique
-#   - Aucune action
-#   - Aucune dépendance métier
+#     Détecter toute incohérence logique dans les paramètres
+#     structurants du sous-système Chauffage : seuils
+#     extérieurs, consignes confort/réduite, inhibition
+#     géofencing, et chaîne ordonnée des seuils d'aération.
 #
-# 🚨 Invariants surveillés :
-#   1) seuil_ext_off  > seuil_ext_on
-#   2) consigne_presence > consigne_absence
-#   3) inhibition_offset_on > inhibition_offset_off
-#   4) aeration_m3_seuil_tiny < aeration_m3_seuil_medium < aeration_m3_seuil_high
-#   5) aeration_m3_prolongation_tiny ≤ aeration_m3_prolongation_medium ≤ aeration_m3_prolongation_high
+# ----------------------------------------------------------
+# 🧱 PRINCIPE
 #
-# 🔴 Toute violation = paramètres INVALIDES
+#     - Lecture pure
+#     - Aucune action, aucune correction
+#     - Aucune dépendance métier
+#     - Toute source indisponible est considérée comme
+#       rendant les invariants violés (pas d'optimisme silencieux).
+#
+# ----------------------------------------------------------
+# 🚨 INVARIANTS SURVEILLÉS
+#
+#     1) seuil_ext_off > seuil_ext_on
+#        (température extérieure : on s'arrête au-dessus
+#        du seuil OFF qui est haut, on déclenche en-dessous
+#        du seuil ON qui est bas — hystérésis inversée vs
+#        seuils internes par construction)
+#
+#     2) consigne_confort > consigne_reduite
+#
+#     3) inhibition_geofencing_offset_on >
+#        inhibition_geofencing_offset_off
+#
+#     4) aeration_m3_seuil_tiny < aeration_m3_seuil_medium
+#                               < aeration_m3_seuil_high
+#        (chaîne ordonnée stricte)
+#
+#     5) aeration_m3_prolongation_tiny ≤
+#        aeration_m3_prolongation_medium ≤
+#        aeration_m3_prolongation_high
+#        (chaîne ordonnée non stricte)
+#
+#     Toute violation = paramètres INVALIDES
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#     - input_number.chauffage_seuil_ext_off
+#     - input_number.chauffage_seuil_ext_on
+#     - input_number.chauffage_consigne_confort
+#     - input_number.chauffage_consigne_reduite
+#     - input_number.inhibition_geofencing_offset_on
+#     - input_number.inhibition_geofencing_offset_off
+#     - input_number.aeration_m3_seuil_tiny
+#     - input_number.aeration_m3_seuil_medium
+#     - input_number.aeration_m3_seuil_high
+#     - input_number.aeration_m3_prolongation_tiny
+#     - input_number.aeration_m3_prolongation_medium
+#     - input_number.aeration_m3_prolongation_high
+#
+# ----------------------------------------------------------
+# 📊 ATTRIBUTS EXPOSÉS
+#
+#     - seuils_exterieurs_invalides       : invariant 1 violé
+#     - consignes_invalides               : invariant 2 violé
+#     - inhibition_geofencing_invalide    : invariant 3 violé
+#     - aeration_seuils_invalides         : invariant 4 violé
+#     - aeration_prolongations_invalides  : invariant 5 violé
+#     - helpers_indisponibles             : liste des helpers
+#                                           indisponibles
+#                                           (12 sources > 5
+#                                           → règle liste)
+#     - cause                             : énumération priorisée
+#
+# ----------------------------------------------------------
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage chaudière / vannes / pompes
+#     - Aucune logique thermique
+#     - Aucune correction automatique
+#
+# ----------------------------------------------------------
+# 📍 ENTITÉ
+#
+#     binary_sensor.parametres_invalides_chauffage
+#
+# ----------------------------------------------------------
+# 🧠 STATUT
+#
+#     Capteur de diagnostic — Intégrité paramètres Chauffage
 # ==========================================================
 
 - binary_sensor:
     - name: "Chauffage — Paramètres invalides"
       unique_id: parametres_invalides_chauffage
       default_entity_id: binary_sensor.parametres_invalides_chauffage
-
-      state: >
-        {{
-          not (
-            states('input_number.chauffage_seuil_ext_off') | float(0)
-              > states('input_number.chauffage_seuil_ext_on') | float(0)
-          and
-            states('input_number.chauffage_consigne_confort') | float(0)
-              > states('input_number.chauffage_consigne_reduite') | float(0)
-          and
-            states('input_number.inhibition_geofencing_offset_on') | float(0)
-              > states('input_number.inhibition_geofencing_offset_off') | float(0)
-          and
-            states('input_number.aeration_m3_seuil_tiny') | float(0)
-              < states('input_number.aeration_m3_seuil_medium') | float(0)
-          and
-            states('input_number.aeration_m3_seuil_medium') | float(0)
-              < states('input_number.aeration_m3_seuil_high') | float(0)
-          and
-            states('input_number.aeration_m3_prolongation_tiny') | float(0)
-              <= states('input_number.aeration_m3_prolongation_medium') | float(0)
-          and
-            states('input_number.aeration_m3_prolongation_medium') | float(0)
-              <= states('input_number.aeration_m3_prolongation_high') | float(0)
-          )
-        }}
-
       icon: >
         mdi:alert-circle-outline
-
+      state: >
+        {% set ext_off = states('input_number.chauffage_seuil_ext_off') | float(none) %}
+        {% set ext_on = states('input_number.chauffage_seuil_ext_on') | float(none) %}
+        {% set cons_confort = states('input_number.chauffage_consigne_confort') | float(none) %}
+        {% set cons_reduite = states('input_number.chauffage_consigne_reduite') | float(none) %}
+        {% set inh_on = states('input_number.inhibition_geofencing_offset_on') | float(none) %}
+        {% set inh_off = states('input_number.inhibition_geofencing_offset_off') | float(none) %}
+        {% set aer_s_tiny = states('input_number.aeration_m3_seuil_tiny') | float(none) %}
+        {% set aer_s_med = states('input_number.aeration_m3_seuil_medium') | float(none) %}
+        {% set aer_s_high = states('input_number.aeration_m3_seuil_high') | float(none) %}
+        {% set aer_p_tiny = states('input_number.aeration_m3_prolongation_tiny') | float(none) %}
+        {% set aer_p_med = states('input_number.aeration_m3_prolongation_medium') | float(none) %}
+        {% set aer_p_high = states('input_number.aeration_m3_prolongation_high') | float(none) %}
+        {% set indisponible =
+             ext_off is none or ext_on is none
+          or cons_confort is none or cons_reduite is none
+          or inh_on is none or inh_off is none
+          or aer_s_tiny is none or aer_s_med is none or aer_s_high is none
+          or aer_p_tiny is none or aer_p_med is none or aer_p_high is none %}
+        {% set seuils_exterieurs_invalides =
+             indisponible or not (ext_off > ext_on) %}
+        {% set consignes_invalides =
+             indisponible or not (cons_confort > cons_reduite) %}
+        {% set inhibition_geofencing_invalide =
+             indisponible or not (inh_on > inh_off) %}
+        {% set aeration_seuils_invalides =
+             indisponible
+          or not (aer_s_tiny < aer_s_med and aer_s_med < aer_s_high) %}
+        {% set aeration_prolongations_invalides =
+             indisponible
+          or not (aer_p_tiny <= aer_p_med and aer_p_med <= aer_p_high) %}
+        {{ seuils_exterieurs_invalides
+           or consignes_invalides
+           or inhibition_geofencing_invalide
+           or aeration_seuils_invalides
+           or aeration_prolongations_invalides }}
       attributes:
-
         seuils_exterieurs_invalides: >
-          {{
-            not (
-              states('input_number.chauffage_seuil_ext_off') | float(0)
-                > states('input_number.chauffage_seuil_ext_on') | float(0)
-            )
-          }}
-
+          {% set ext_off = states('input_number.chauffage_seuil_ext_off') | float(none) %}
+          {% set ext_on = states('input_number.chauffage_seuil_ext_on') | float(none) %}
+          {{ ext_off is none or ext_on is none or not (ext_off > ext_on) }}
         consignes_invalides: >
-          {{
-            not (
-              states('input_number.chauffage_consigne_confort') | float(0)
-                > states('input_number.chauffage_consigne_reduite') | float(0)
-            )
-          }}
-
+          {% set cons_confort = states('input_number.chauffage_consigne_confort') | float(none) %}
+          {% set cons_reduite = states('input_number.chauffage_consigne_reduite') | float(none) %}
+          {{ cons_confort is none
+             or cons_reduite is none
+             or not (cons_confort > cons_reduite) }}
         inhibition_geofencing_invalide: >
-          {{
-            not (
-              states('input_number.inhibition_geofencing_offset_on') | float(0)
-                > states('input_number.inhibition_geofencing_offset_off') | float(0)
-            )
-          }}
-
+          {% set inh_on = states('input_number.inhibition_geofencing_offset_on') | float(none) %}
+          {% set inh_off = states('input_number.inhibition_geofencing_offset_off') | float(none) %}
+          {{ inh_on is none
+             or inh_off is none
+             or not (inh_on > inh_off) }}
         aeration_seuils_invalides: >
-          {{
-            not (
-              states('input_number.aeration_m3_seuil_tiny') | float(0)
-                < states('input_number.aeration_m3_seuil_medium') | float(0)
-            and
-              states('input_number.aeration_m3_seuil_medium') | float(0)
-                < states('input_number.aeration_m3_seuil_high') | float(0)
-            )
-          }}
-        
+          {% set aer_s_tiny = states('input_number.aeration_m3_seuil_tiny') | float(none) %}
+          {% set aer_s_med = states('input_number.aeration_m3_seuil_medium') | float(none) %}
+          {% set aer_s_high = states('input_number.aeration_m3_seuil_high') | float(none) %}
+          {{ aer_s_tiny is none
+             or aer_s_med is none
+             or aer_s_high is none
+             or not (aer_s_tiny < aer_s_med and aer_s_med < aer_s_high) }}
         aeration_prolongations_invalides: >
-          {{
-            not (
-              states('input_number.aeration_m3_prolongation_tiny') | float(0)
-                <= states('input_number.aeration_m3_prolongation_medium') | float(0)
-            and
-              states('input_number.aeration_m3_prolongation_medium') | float(0)
-                <= states('input_number.aeration_m3_prolongation_high') | float(0)
-            )
-          }}
+          {% set aer_p_tiny = states('input_number.aeration_m3_prolongation_tiny') | float(none) %}
+          {% set aer_p_med = states('input_number.aeration_m3_prolongation_medium') | float(none) %}
+          {% set aer_p_high = states('input_number.aeration_m3_prolongation_high') | float(none) %}
+          {{ aer_p_tiny is none
+             or aer_p_med is none
+             or aer_p_high is none
+             or not (aer_p_tiny <= aer_p_med and aer_p_med <= aer_p_high) }}
+        helpers_indisponibles: >
+          {% set sources = [
+              'input_number.chauffage_seuil_ext_off',
+              'input_number.chauffage_seuil_ext_on',
+              'input_number.chauffage_consigne_confort',
+              'input_number.chauffage_consigne_reduite',
+              'input_number.inhibition_geofencing_offset_on',
+              'input_number.inhibition_geofencing_offset_off',
+              'input_number.aeration_m3_seuil_tiny',
+              'input_number.aeration_m3_seuil_medium',
+              'input_number.aeration_m3_seuil_high',
+              'input_number.aeration_m3_prolongation_tiny',
+              'input_number.aeration_m3_prolongation_medium',
+              'input_number.aeration_m3_prolongation_high',
+          ] %}
+          {% set ns = namespace(items=[]) %}
+          {% for entity in sources %}
+            {% if states(entity) in ['unknown', 'unavailable', 'none', ''] %}
+              {% set ns.items = ns.items + [entity] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.items }}
+        cause: >
+          {% set ext_off = states('input_number.chauffage_seuil_ext_off') | float(none) %}
+          {% set ext_on = states('input_number.chauffage_seuil_ext_on') | float(none) %}
+          {% set cons_confort = states('input_number.chauffage_consigne_confort') | float(none) %}
+          {% set cons_reduite = states('input_number.chauffage_consigne_reduite') | float(none) %}
+          {% set inh_on = states('input_number.inhibition_geofencing_offset_on') | float(none) %}
+          {% set inh_off = states('input_number.inhibition_geofencing_offset_off') | float(none) %}
+          {% set aer_s_tiny = states('input_number.aeration_m3_seuil_tiny') | float(none) %}
+          {% set aer_s_med = states('input_number.aeration_m3_seuil_medium') | float(none) %}
+          {% set aer_s_high = states('input_number.aeration_m3_seuil_high') | float(none) %}
+          {% set aer_p_tiny = states('input_number.aeration_m3_prolongation_tiny') | float(none) %}
+          {% set aer_p_med = states('input_number.aeration_m3_prolongation_medium') | float(none) %}
+          {% set aer_p_high = states('input_number.aeration_m3_prolongation_high') | float(none) %}
+          {% set indisponible =
+               ext_off is none or ext_on is none
+            or cons_confort is none or cons_reduite is none
+            or inh_on is none or inh_off is none
+            or aer_s_tiny is none or aer_s_med is none or aer_s_high is none
+            or aer_p_tiny is none or aer_p_med is none or aer_p_high is none %}
+          {% if indisponible %}
+            helpers_indisponibles
+          {% elif not (ext_off > ext_on) %}
+            seuils_exterieurs_invalides
+          {% elif not (cons_confort > cons_reduite) %}
+            consignes_invalides
+          {% elif not (inh_on > inh_off) %}
+            inhibition_geofencing_invalide
+          {% elif not (aer_s_tiny < aer_s_med and aer_s_med < aer_s_high) %}
+            aeration_seuils_invalides
+          {% elif not (aer_p_tiny <= aer_p_med and aer_p_med <= aer_p_high) %}
+            aeration_prolongations_invalides
+          {% else %}
+            none
+          {% endif %}

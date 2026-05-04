@@ -1,26 +1,49 @@
-- trigger:
-    - platform: state
-      entity_id:
-        - sensor.withings_sleep_score_local
-    - platform: homeassistant
-      event: start
-  sensor:
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Santé — Couleur score sommeil
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Déterminer la couleur qualitative du score de sommeil
+#     à partir du snapshot consolidé de la dernière nuit.
+#
+# 🧩 Périmètre
+#     - Lecture du score sommeil consolidé
+#     - Application de seuils qualitatifs
+#     - Gestion indisponibilité si snapshot invalide
+#
+# 🔗 Dépendances
+#     - input_number.sommeil_derniere_nuit_score
+#     - binary_sensor.sommeil_derniere_nuit_valide
+#
+# 🚫 Interdits
+#     - Ne lit aucune entité Withings (_local ou autre)
+#     - Ne calcule aucun score
+#     - Ne prend aucune décision métier
+#     - Ne pilote aucun équipement
+#
+# 🧠 Statut
+#     Présentation — dérivation qualitative UI
+# ==========================================================
+
+- sensor:
     - name: "Couleur Santé — Score sommeil"
       unique_id: couleur_sante_score_sommeil
       state: >
-        {% set raw = states('sensor.withings_sleep_score_local') %}
-        {% set v = raw | replace(',', '.') | float(999) %}
-
-        {% if raw in ['unknown', 'unavailable', None] or v == 999 %}
+        {% if not is_state('binary_sensor.sommeil_derniere_nuit_valide', 'on') %}
           unavailable
-        {% elif v < 70 %}
-          red
-        {% elif v < 76 %}
-          orange
-        {% elif v < 81 %}
-          yellow
-        {% elif v < 86 %}
-          green
         {% else %}
-          blue
+          {% set v = states('input_number.sommeil_derniere_nuit_score') | float(999) %}
+          {% if v == 999 %}
+            unavailable
+          {% elif v < 70 %}
+            red
+          {% elif v < 76 %}
+            orange
+          {% elif v < 81 %}
+            yellow
+          {% elif v < 86 %}
+            green
+          {% else %}
+            blue
+          {% endif %}
         {% endif %}

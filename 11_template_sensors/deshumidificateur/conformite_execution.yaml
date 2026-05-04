@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR
+#     Déshumidificateur — Conformité exécution
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Dire si la dernière exécution qualifiée par le guard
+#     post-commande est conforme.
+#
+# ----------------------------------------------------------
+# 🧩 PÉRIMÈTRE
+#
+#     - Lecture du dernier verdict guard
+#     - Détection d'échec après retry explicite
+#     - Exposition d'une cause diagnostique minimale
+#
+# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#
+#     - input_text.deshum_guard_last_verdict
+#     - input_text.deshum_guard_last_reason
+#     - input_text.deshum_guard_last_request_source
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#     - Ne pilote aucun matériel
+#     - Ne déclenche aucune automation
+#     - Ne réémet aucune commande
+#     - Ne remplace pas le guard
+#     - Ne produit aucune synthèse UI
+#
+# ----------------------------------------------------------
+# 🧠 STATUT ARCHITECTURAL
+#
+#     Capteur de diagnostic — Conformité runtime.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Déshumidificateur — Conformité exécution"
+      unique_id: deshum_conformite_execution
+      icon: >
+        {% set verdict = states('input_text.deshum_guard_last_verdict') %}
+        {% set source = states('input_text.deshum_guard_last_request_source') %}
+        {% set retry_sources = [
+          'automation.deshumidificateur_retry_on',
+          'automation.deshumidificateur_retry_off'
+        ] %}
+        {% if verdict == 'confirmed' %}
+          mdi:check-circle-outline
+        {% elif verdict == 'not_confirmed' and source in retry_sources %}
+          mdi:alert-octagon-outline
+        {% elif verdict == 'not_confirmed' %}
+          mdi:alert-circle-outline
+        {% else %}
+          mdi:help-circle-outline
+        {% endif %}
+      state: >
+        {% set verdict = states('input_text.deshum_guard_last_verdict') %}
+        {{ verdict == 'confirmed' }}
+      attributes:
+        niveau: >
+          {% set verdict = states('input_text.deshum_guard_last_verdict') %}
+          {% set source = states('input_text.deshum_guard_last_request_source') %}
+          {% set retry_sources = [
+            'automation.deshumidificateur_retry_on',
+            'automation.deshumidificateur_retry_off'
+          ] %}
+          {% if verdict == 'confirmed' %}
+            ok
+          {% elif verdict == 'not_confirmed' and source in retry_sources %}
+            critical
+          {% elif verdict == 'not_confirmed' %}
+            degraded
+          {% elif verdict == 'command_error' %}
+            unknown
+          {% else %}
+            unknown
+          {% endif %}
+        cause: >
+          {% set verdict = states('input_text.deshum_guard_last_verdict') %}
+          {% set reason = states('input_text.deshum_guard_last_reason') %}
+          {% if verdict == 'confirmed' %}
+            converged
+          {% elif verdict == 'not_confirmed' %}
+            {{ reason }}
+          {% elif verdict == 'command_error' %}
+            source_indisponible
+          {% else %}
+            indetermine
+          {% endif %}

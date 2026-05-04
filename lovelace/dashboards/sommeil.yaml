@@ -1,0 +1,202 @@
+button_card_templates: !include_dir_merge_named /config/button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-sommeil-dashboard/sommeil
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /sante-dashboard/sante
+
+    # ======================================================
+    # 🔊 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    # ======================================================
+    cards:
+
+      - type: vertical-stack
+        cards:
+
+          ########################################################
+          # 💤 ANTOINE
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: 💤 Antoine
+
+          # Durée totale (texte)
+          - type: custom:button-card
+            template: carte_duree_qualitative
+            entity: input_text.sommeil_derniere_nuit_texte
+            name: Sommeil total
+            icon: mdi:bed-clock
+            tap_action:
+              action: more-info
+              entity: input_number.sommeil_derniere_nuit_total
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              # Score de sommeil
+              - type: custom:button-card
+                template: carte_score_qualitatif
+                entity: input_number.sommeil_derniere_nuit_score
+                name: Score sommeil
+                icon: mdi:sleep
+
+              # Réveils
+              - type: custom:button-card
+                template: carte_compteur_seuils_variables
+                entity: sensor.withings_wakeup_count_local
+                name: Réveils
+                icon: mdi:bed
+                variables:
+                  seuil_1: 0
+                  seuil_2: 1
+                  seuil_3: 2
+                  seuil_4: 3
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🔊 Ronflements
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+
+              # Episodes de ronflements
+              - type: custom:button-card
+                template: carte_compteur_seuils_variables
+                entity: sensor.withings_snoring_episode_count_local
+                name: Ronflements (épisodes)
+                icon: mdi:waveform
+                variables:
+                  seuil_1: 0
+                  seuil_2: 1
+                  seuil_3: 2
+                  seuil_4: 3
+
+              # Durée ronflements
+              - type: custom:button-card
+                template: carte_duree_ronflements
+                entity: sensor.withings_ronflement_local
+                name: Ronflements (durée)
+                icon: mdi:clock-outline
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🔍 Répartition des phases
+
+          # Répartition des phases
+          - type: custom:bar-card
+            name: Répartition des phases de sommeil
+            entities:
+              - entity: sensor.sommeil_derniere_nuit_profond_pourcentage
+                name: " "
+                icon: mdi:power-sleep
+              - entity: sensor.sommeil_derniere_nuit_leger_pourcentage
+                name: " "
+                icon: mdi:weather-night
+              - entity: sensor.sommeil_derniere_nuit_rem_pourcentage
+                name: " "
+                icon: mdi:brain
+            height: 24px
+            positions:
+              icon: outside
+              name: outside
+              value: inside
+            severity:
+              - from: 0
+                to: 25
+                color: "rgba(76, 175, 80, 0.85)" # 🟢 faible proportion
+              - from: 25
+                to: 60
+                color: "rgba(255, 193, 7, 0.85)" # 🟡 dominante
+              - from: 60
+                to: 100
+                color: "rgba(144, 202, 249, 0.9)" # 🔵 très dominante
+            style: |
+              bar-card-background {
+                background: rgba(158, 158, 158, 0.2);
+                border-radius: 8px;
+              }
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 📈 Historique
+
+          - !include ../includes/cartes/graph_sommeil.yaml
+
+          ########################################################
+          # 💤 ENFANTS
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: ⏰ Réveils enfants
+
+          - type: horizontal-stack
+            cards:
+
+              - type: custom:button-card
+                template: carte_compteur_seuils_variables
+                entity: input_number.reveils_nocturnes_arnaud
+                name: Arnaud
+                icon: mdi:bed
+                variables:
+                  seuil_1: 0
+                  seuil_2: 1
+                  seuil_3: 2
+                  seuil_4: 3
+
+              - type: custom:button-card
+                template: carte_compteur_seuils_variables
+                entity: input_number.reveils_nocturnes_matthieu
+                name: Matthieu
+                icon: mdi:bed
+                variables:
+                  seuil_1: 0
+                  seuil_2: 1
+                  seuil_3: 2
+                  seuil_4: 3
+
+          # ======================================================
+          # 📝 DÉTAIL HEURES DE RÉVEILS
+          # ======================================================
+          - type: markdown
+            content: >
+              **Heures des réveils – Arnaud :**  
+
+              {{ states('input_text.reveils_arnaud_heures') or 'Aucun réveil détecté' }}
+            visibility:
+              - condition: numeric_state
+                entity: input_number.reveils_nocturnes_arnaud
+                above: 0
+            text_only: true
+
+          - type: markdown
+            content: >
+              **Heures des réveils – Matthieu :**  
+
+              {{ states('input_text.reveils_matthieu_heures') or 'Aucun réveil détecté' }}
+            visibility:
+              - condition: numeric_state
+                entity: input_number.reveils_nocturnes_matthieu
+                above: 0
+            text_only: true

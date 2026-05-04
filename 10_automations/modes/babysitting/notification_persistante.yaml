@@ -79,7 +79,7 @@
     - choose:
 
         ####################################################
-        # 🧸 Entrée en mode Babysitting → création état
+        # 👀 Entrée en mode Babysitting → création état
         ####################################################
         - conditions:
             - condition: state
@@ -89,7 +89,7 @@
             - service: persistent_notification.create
               data:
                 notification_id: mode_babysitting_actif
-                title: "🧸 Mode Babysitting actif"
+                title: "👀 Mode Babysitting actif"
                 message: >
                   Le mode *Babysitting* est actuellement actif.
 
