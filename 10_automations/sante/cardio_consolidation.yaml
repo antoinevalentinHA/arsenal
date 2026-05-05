@@ -1,0 +1,62 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Sante — Consolidation cardio nuit evenementielle
+#
+# ID : 10200000000005
+# ----------------------------------------------------------
+# 🎯 Rôle
+#     Figer la fréquence cardiaque moyenne de la nuit
+#     dès qu'elle devient exploitable et stable.
+#
+# 🧩 Périmètre
+#     - Déclenchement sur donnée cardio disponible
+#     - Bornage temporel 06:00–11:00
+#     - Vérification d'idempotence
+#     - Appel du script de consolidation
+#
+# 🔗 Dépendances
+#     - sensor.withings_average_heart_rate_local
+#     - script.consolider_cardio_nuit
+#     - input_datetime.cardio_nuit_horodatage
+#
+# 🚫 Interdits
+#     - Ne recalcule pas la FC
+#     - Ne lit aucune entité UI
+#     - Ne produit aucune décision santé
+#     - Ne pilote aucun équipement
+#
+# 🧠 Statut
+#     Consolidation métier — Couche Perception
+# ==========================================================
+
+- id: "10200000000005"
+  alias: Sante — Consolidation cardio nuit
+  description: Consolidation cardio déclenchée sur donnée disponible
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.withings_average_heart_rate_local
+
+    - platform: time
+      at: "06:00:00"
+
+    - platform: time
+      at: "09:00:00"
+
+  condition:
+    - condition: time
+      after: "06:00:00"
+      before: "11:00:00"
+
+    - condition: template
+      value_template: >
+        {% set last = states('input_datetime.cardio_nuit_horodatage') %}
+        {% if last in ['unknown', 'unavailable', '', none] %}
+          true
+        {% else %}
+          {{ as_datetime(last).date() != now().date() }}
+        {% endif %}
+
+  action:
+    - action: script.consolider_cardio_nuit

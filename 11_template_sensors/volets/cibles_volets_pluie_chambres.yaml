@@ -45,10 +45,10 @@
           {% if absence and verrou %}
             {% set ns = namespace(lst=[]) %}
             {% if is_state('binary_sensor.contact_chambre_arnaud','on') %}
-              {% set ns.lst = ns.lst + ['cover.volet_arnaud'] %}
+              {% set ns.lst = ns.lst + ['cover.chambre_arnaud'] %}
             {% endif %}
             {% if is_state('binary_sensor.contact_chambre_matthieu','on') %}
-              {% set ns.lst = ns.lst + ['cover.volet_matthieu'] %}
+              {% set ns.lst = ns.lst + ['cover.chambre_matthieu'] %}
             {% endif %}
             {{ ns.lst }}
           {% else %}

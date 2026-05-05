@@ -15,6 +15,13 @@ views:
           action: navigate
           navigation_path: /sommeil-dashboard/0
 
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+        icon: mdi:heart-pulse
+        tap_action:
+          action: navigate
+          navigation_path: /cardio-dashboard/0
+
     # ==========================================================
     # 🧩 CONTENEUR PRINCIPAL
     # ----------------------------------------------------------
@@ -35,69 +42,33 @@ views:
             name: Sommeil total
             icon: mdi:bed-clock
             tap_action:
-              action: more-info
-              entity: input_number.sommeil_derniere_nuit_total
+              action: navigate
+              navigation_path: /sommeil-dashboard/0
 
           ########################################################
           # ❤️ SANTÉ / ACTIVITÉ PHYSIOLOGIQUE
           ########################################################
           - type: custom:button-card
             template: section_header
-            name: 🫀 Fréquence cardiaque
+            name: 🫀 Fréquence cardiaque nocturne
 
-          - type: grid
-            columns: 3
-            square: false
-            cards:
-              # Fréquence cardiaque min
-              - type: custom:button-card
-                template: carte_frequence_cardiaque_qualitative
-                entity: sensor.withings_frequence_cardiaque_minimale_local
-                name: Mini
-                icon: mdi:heart-pulse
-
-              # Fréquence cardiaque moyenne
-              - type: custom:button-card
-                template: carte_frequence_cardiaque_qualitative
-                entity: sensor.withings_average_heart_rate_local
-                name: Moyenne
-                icon: mdi:heart-pulse
-
-              # Fréquence cardiaque max
-              - type: custom:button-card
-                template: carte_frequence_cardiaque_qualitative
-                entity: sensor.withings_frequence_cardiaque_maximale_local
-                name: Maxi
-                icon: mdi:heart-pulse
+          - type: custom:button-card
+            template: carte_cardio_nuit_synthese
+            entity: sensor.cardio_nuit_etat
+            name: Cardio nuit
+            icon: mdi:heart-pulse
 
           - type: custom:button-card
             template: section_header
             name: 🫁 Fréquence respiratoire
 
-          - type: grid
-            columns: 3
-            square: false
-            cards:
-              # Fréquence respiratoire min
-              - type: custom:button-card
-                template: carte_frequence_respiratoire_qualitative
-                entity: sensor.withings_minimum_respiratory_rate_local
-                name: Mini
-                icon: mdi:lungs
-
-              # Fréquence respiratoire moyenne
-              - type: custom:button-card
-                template: carte_frequence_respiratoire_qualitative
-                entity: sensor.withings_average_respiratory_rate_local
-                name: Moyenne
-                icon: mdi:lungs
-
-              # Fréquence respiratoire max
-              - type: custom:button-card
-                template: carte_frequence_respiratoire_qualitative
-                entity: sensor.withings_maximum_respiratory_rate_local
-                name: Maxi
-                icon: mdi:lungs
+          - type: custom:button-card
+            template: socle_kpi
+            entity: sensor.withings_average_respiratory_rate_local
+            name: Respiration
+            icon: mdi:lungs
+            variables:
+              couleur: sensor.couleur_sante_frequence_respiratoire
 
           ########################################################
           # 🏃 ACTIVITÉ PHYSIQUE

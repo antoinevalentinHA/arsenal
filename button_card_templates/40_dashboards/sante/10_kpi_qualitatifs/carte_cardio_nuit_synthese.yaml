@@ -1,0 +1,88 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Santé — Cardio nuit (synthèse)
+#
+# 🗂️ COUCHE : 10_generiques
+# 🧱 TYPE UI : Carte synthese pivot
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournir une synthèse immédiate de l'état cardio nocturne.
+#   Lecture en 1 seconde + accès au dashboard détaillé.
+#
+# 📡 SOURCE
+#   - sensor.cardio_nuit_etat
+#   - sensor.cardio_nuit_delta_baseline
+#   - binary_sensor.cardio_anomalie
+#
+# ⚙️ LOGIQUE UI
+#   - Couleur pilotée par sensor.couleur_cardio_nuit_etat
+#   - State = état qualitatif (mapping lisible)
+#   - Label = delta baseline + anomalie éventuelle
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - intention
+#     - état réel
+#     - diagnostic
+# ==========================================================
+
+carte_cardio_nuit_synthese:
+  template: socle_kpi
+
+  entity: sensor.cardio_nuit_etat
+  name: Cardio nuit
+  icon: mdi:heart-pulse
+
+  variables:
+    couleur: sensor.couleur_cardio_nuit_etat
+
+  triggers_update:
+    - sensor.cardio_nuit_etat
+    - sensor.cardio_nuit_delta_baseline
+    - binary_sensor.cardio_anomalie
+
+  state_display: |
+    [[[
+      const s = entity?.state;
+
+      if (s === "optimal") return "Optimal";
+      if (s === "normal") return "Normal";
+      if (s === "eleve") return "Élevé";
+      if (s === "anormal") return "Anormal";
+
+      return "—";
+    ]]]
+
+  label: |
+    [[[
+      const delta = states['sensor.cardio_nuit_delta_baseline']?.state;
+      const anomaly = states['binary_sensor.cardio_anomalie']?.state;
+      const confirm = states['binary_sensor.cardio_anomalie']?.attributes?.confirmation;
+
+      let deltaText = "";
+
+      const d = parseFloat(delta);
+      if (!isNaN(d)) {
+        const sign = d > 0 ? "+" : "";
+        deltaText = `${sign}${Math.round(d)} bpm`;
+      }
+
+      const sep = deltaText ? " • " : "";
+
+      if (anomaly === "on") {
+        return `${deltaText}${sep}${confirm === true ? "anomalie confirmee" : "anomalie"}`;
+      }
+
+      return deltaText;
+    ]]]
+
+  tap_action:
+    action: navigate
+    navigation_path: /cardio-dashboard/0

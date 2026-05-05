@@ -38,7 +38,7 @@
 # ==========================================================
 
 - id: "10200000000003"
-  alias: Sommeil — Consolidation nuit evenementielle
+  alias: Sommeil — Consolidation nuit
   description: Consolidation sommeil déclenchée par données exploitables stabilisées
   mode: single
 
@@ -47,6 +47,12 @@
       entity_id: binary_sensor.sommeil_donnees_exploitables
       to: "on"
       for: "00:05:00"
+
+    - platform: time
+      at: "06:00:00"
+
+    - platform: time
+      at: "09:00:00"
 
   condition:
     - condition: time

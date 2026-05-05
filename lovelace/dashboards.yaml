@@ -110,6 +110,13 @@ sommeil-dashboard:
   show_in_sidebar: false
   filename: lovelace/dashboards/sommeil.yaml
 
+cardio-dashboard:
+  mode: yaml
+  title: Cardio Nuit
+  icon: mdi:heart-pulse
+  show_in_sidebar: false
+  filename: lovelace/dashboards/frequence_cardiaque.yaml
+
 ouvertures-dashboard:
   mode: yaml
   title: Ouvertures

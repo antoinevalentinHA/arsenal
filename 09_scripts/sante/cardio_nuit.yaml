@@ -1,0 +1,189 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Cardio nuit — Consolidation snapshot
+#
+# 🗂️ COUCHE : Perception / Consolidation
+# 🧱 TYPE : Script idempotent
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Consolider la fréquence cardiaque moyenne nocturne exposée
+#   par Withings Sleep Analyzer dans un snapshot Arsenal stable.
+#
+# 📡 SOURCE
+#   sensor.withings_average_heart_rate_local
+#
+# 🔒 CONTRAT
+#   - Arsenal ne recalcule pas la FC moyenne.
+#   - Arsenal lit la dernière valeur stable disponible.
+#   - Une valeur 0 est rejetée.
+#   - Une valeur hors plage physiologique est rejetée.
+#   - La mémoire J-1 est capturée avant écriture du nouveau snapshot.
+#
+# 🧩 HELPERS ÉCRITS
+#   - input_number.cardio_nuit_moyenne
+#   - input_number.cardio_nuit_duree_stabilite
+#   - input_boolean.cardio_nuit_valide
+#   - input_boolean.cardio_anomalie_nuit_precedente
+#   - input_text.cardio_nuit_raison_invalidite
+#   - input_text.cardio_nuit_historique_7j
+#   - input_datetime.cardio_nuit_horodatage
+# ==========================================================
+
+consolider_cardio_nuit:
+  alias: Cardio nuit - Consolider snapshot
+  mode: single
+
+  sequence:
+    - variables:
+        source_entity: sensor.withings_average_heart_rate_local
+
+        # Capture volontaire AVANT écriture du nouveau snapshot.
+        # Sert à mémoriser l'état anomalie de la nuit précédente.
+        anomalie_avant_consolidation: "{{ is_state('binary_sensor.cardio_anomalie', 'on') }}"
+
+    - variables:
+        valeur_1: "{{ states(source_entity) | float(none) }}"
+        duree_stabilite_1: >
+          {% set obj = states[source_entity] %}
+          {% if obj is not none %}
+            {{ ((now() - obj.last_changed).total_seconds() / 60) | int(0) }}
+          {% else %}
+            0
+          {% endif %}
+
+    - delay:
+        seconds: 60
+
+    - variables:
+        valeur_2: "{{ states(source_entity) | float(none) }}"
+        duree_stabilite_2: >
+          {% set obj = states[source_entity] %}
+          {% if obj is not none %}
+            {{ ((now() - obj.last_changed).total_seconds() / 60) | int(0) }}
+          {% else %}
+            0
+          {% endif %}
+
+    - variables:
+        source_indisponible: "{{ valeur_1 is none or valeur_2 is none }}"
+        valeur_zero: "{{ valeur_2 == 0 }}"
+        hors_plage: "{{ valeur_2 is not none and (valeur_2 < 35 or valeur_2 > 90) }}"
+        stable_30_minutes: "{{ duree_stabilite_2 >= 30 }}"
+        stable_deux_lectures: "{{ valeur_1 is not none and valeur_2 is not none and valeur_1 == valeur_2 }}"
+
+    - variables:
+        valeur_stable: "{{ stable_30_minutes or stable_deux_lectures }}"
+        snapshot_valide: >
+          {{
+            not source_indisponible
+            and not valeur_zero
+            and not hors_plage
+            and valeur_stable
+          }}
+
+    - variables:
+        raison_invalidite: >
+          {% if source_indisponible %}
+            source_indisponible
+          {% elif valeur_zero %}
+            valeur_zero
+          {% elif hors_plage %}
+            hors_plage
+          {% elif not valeur_stable %}
+            source_indisponible
+          {% else %}
+            aucune
+          {% endif %}
+
+    - variables:
+        historique_nouveau: >
+          {% set raw = states('input_text.cardio_nuit_historique_7j') %}
+          {% if raw in ['unknown', 'unavailable', '', none] %}
+            {% set h = [] %}
+          {% else %}
+            {% set h = raw | from_json %}
+          {% endif %}
+          {% set v = valeur_2 | float(0) | round(0) | int %}
+          {{ (h + [v])[-7:] | to_json }}
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ snapshot_valide }}"
+          sequence:
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.cardio_nuit_moyenne
+              data:
+                value: "{{ valeur_2 | round(0) | int }}"
+
+            - action: input_number.set_value
+              target:
+                entity_id: input_number.cardio_nuit_duree_stabilite
+              data:
+                value: "{{ duree_stabilite_2 | int(0) }}"
+
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.cardio_nuit_valide
+
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.cardio_nuit_raison_invalidite
+              data:
+                value: aucune
+
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.cardio_nuit_historique_7j
+              data:
+                value: "{{ historique_nouveau }}"
+
+            - choose:
+                - conditions:
+                    - condition: template
+                      value_template: "{{ anomalie_avant_consolidation }}"
+                  sequence:
+                    - action: input_boolean.turn_on
+                      target:
+                        entity_id: input_boolean.cardio_anomalie_nuit_precedente
+              default:
+                - action: input_boolean.turn_off
+                  target:
+                    entity_id: input_boolean.cardio_anomalie_nuit_precedente
+
+      default:
+        - action: input_number.set_value
+          target:
+            entity_id: input_number.cardio_nuit_duree_stabilite
+          data:
+            value: "{{ duree_stabilite_2 | int(0) }}"
+
+        - action: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.cardio_nuit_valide
+
+        - action: input_text.set_value
+          target:
+            entity_id: input_text.cardio_nuit_raison_invalidite
+          data:
+            value: "{{ raison_invalidite | trim }}"
+
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.cardio_nuit_horodatage
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+    - action: logbook.log
+      data:
+        name: Cardio nuit
+        message: >
+          Consolidation cardio nuit :
+          valide={{ snapshot_valide }},
+          valeur={{ valeur_2 }},
+          stabilite={{ duree_stabilite_2 }} min,
+          raison={{ raison_invalidite | trim }}.
+        entity_id: input_number.cardio_nuit_moyenne

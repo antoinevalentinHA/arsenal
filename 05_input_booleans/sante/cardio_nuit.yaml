@@ -1,0 +1,12 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS
+#     Cardio nuit — Validité et mémoire
+# ==========================================================
+
+cardio_nuit_valide:
+  name: Cardio nuit valide
+  icon: mdi:check-decagram
+
+cardio_anomalie_nuit_precedente:
+  name: Cardio anomalie nuit precedente
+  icon: mdi:heart-alert

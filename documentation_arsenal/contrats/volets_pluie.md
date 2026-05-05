@@ -32,9 +32,9 @@ La **référence canonique** du périmètre ouvrants pluie est portée par `bina
 
 | Sous-ensemble | Entités contact | Cover associé | Rôle dans la décision |
 |---|---|---|---|
-| Chambre Arnaud | `contact_chambre_arnaud` | `cover.volet_arnaud` | Conditionne la fermeture chambre |
-| Chambre Matthieu | `contact_chambre_matthieu` | `cover.volet_matthieu` | Conditionne la fermeture chambre |
-| Séjour | `contact_sejour_1..4` | `cover.volet_sejour_gauche`, `cover.volet_sejour_droit` | **Ne conditionnent pas** la fermeture séjour |
+| Chambre Arnaud | `contact_chambre_arnaud` | `cover.chambre_arnaud` | Conditionne la fermeture chambre |
+| Chambre Matthieu | `contact_chambre_matthieu` | `cover.chambre_matthieu` | Conditionne la fermeture chambre |
+| Séjour | `contact_sejour_1..4` | `cover.sejour_gauche`, `cover.sejour_droit` | **Ne conditionnent pas** la fermeture séjour |
 | Hors périmètre volets | `contact_entree_fenetre`, `contact_chambre_parents_*` | — | Hors contrat |
 
 > Les contacts séjour ne sont pas structurants pour la décision de fermeture séjour. Le séjour est une **protection globale**, pas une réaction à l'exposition.
@@ -121,7 +121,7 @@ Aucune dépendance à l'ouverture des fenêtres séjour.
 
 **Invariant cardinalité :** `state` d'un sensor de cibles = `entity_ids | length`.
 
-**Invariant séjour :** `sensor.cibles_volets_pluie_sejour` ne dépend d'aucun contact séjour. Il retourne `[cover.volet_sejour_gauche, cover.volet_sejour_droit]` si les conditions sont réunies, liste vide sinon.
+**Invariant séjour :** `sensor.cibles_volets_pluie_sejour` ne dépend d'aucun contact séjour. Il retourne `[cover.sejour_gauche, cover.sejour_droit]` si les conditions sont réunies, liste vide sinon.
 
 **Invariant verrou global :** `input_boolean.fermeture_volets_pluie` inhibe exclusivement les actions de fermeture automatique des volets — chambres et séjour. Il ne bloque pas les notifications d'exposition.
 

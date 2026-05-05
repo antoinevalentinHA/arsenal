@@ -1,26 +1,110 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Santé — Couleur fréquence respiratoire
+#
+# 🗂️ COUCHE : UI / Couleurs backend
+# 🧱 TYPE : Capteur dérivé UI
+# 🔍 NIVEAU DE CONFIANCE : Moyen
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Déterminer la clé couleur UI de la fréquence respiratoire
+#   moyenne nocturne par comparaison à son historique Arsenal.
+#
+# 📡 SOURCE
+#   - sensor.withings_average_respiratory_rate_local
+#   - sensor.withings_frequence_respiratoire_moyenne_14j
+#
+# 🧪 ATTRIBUTS DIAGNOSTIC
+#   - reference_7j et reference_30j sont exposés pour audit UI
+#   - ils ne participent pas à la décision couleur en v1
+#
+# ⚙️ LOGIQUE UI
+#   - Référence principale : moyenne 14 jours
+#   - Plage plausible : 8 à 30 rpm
+#   - Delta = valeur actuelle - moyenne 14 jours
+#   - blue        : respiration inférieure à l'historique
+#   - green       : conforme à l'historique
+#   - yellow      : élévation légère
+#   - orange      : élévation marquée
+#   - red         : élévation forte
+#   - unavailable : source ou référence invalide
+# ==========================================================
+
 - trigger:
     - platform: state
       entity_id:
         - sensor.withings_average_respiratory_rate_local
+        - sensor.withings_frequence_respiratoire_moyenne_14j
     - platform: homeassistant
       event: start
+
   sensor:
     - name: "Couleur Santé — Fréquence respiratoire"
       unique_id: couleur_sante_frequence_respiratoire
       state: >
-        {% set raw = states('sensor.withings_average_respiratory_rate_local') %}
-        {% set rpm = raw | replace(',', '.') | float(999) %}
+        {% set rpm = states('sensor.withings_average_respiratory_rate_local') | replace(',', '.') | float(none) %}
+        {% set ref = states('sensor.withings_frequence_respiratoire_moyenne_14j') | replace(',', '.') | float(none) %}
+        {% set rpm_min = 8 %}
+        {% set rpm_max = 30 %}
 
-        {% if raw in ['unknown', 'unavailable', None] or rpm == 999 %}
+        {% if rpm is none or ref is none %}
           unavailable
-        {% elif rpm < 11 %}
-          blue
-        {% elif rpm < 17 %}
-          green
-        {% elif rpm < 20 %}
-          yellow
-        {% elif rpm < 23 %}
-          orange
+        {% elif rpm < rpm_min or rpm > rpm_max %}
+          unavailable
+        {% elif ref < rpm_min or ref > rpm_max %}
+          unavailable
         {% else %}
-          red
+          {% set delta = rpm - ref %}
+          {% if delta <= -1.5 %}
+            blue
+          {% elif delta <= 1 %}
+            green
+          {% elif delta <= 2 %}
+            yellow
+          {% elif delta <= 3 %}
+            orange
+          {% else %}
+            red
+          {% endif %}
         {% endif %}
+
+      attributes:
+        reason: >
+          {% set rpm = states('sensor.withings_average_respiratory_rate_local') | replace(',', '.') | float(none) %}
+          {% set ref = states('sensor.withings_frequence_respiratoire_moyenne_14j') | replace(',', '.') | float(none) %}
+          {% set rpm_min = 8 %}
+          {% set rpm_max = 30 %}
+
+          {% if rpm is none %}
+            source_unavailable
+          {% elif ref is none %}
+            reference_unavailable
+          {% elif rpm < rpm_min or rpm > rpm_max %}
+            source_out_of_range
+          {% elif ref < rpm_min or ref > rpm_max %}
+            reference_out_of_range
+          {% else %}
+            ok
+          {% endif %}
+
+        rpm: >
+          {{ states('sensor.withings_average_respiratory_rate_local') }}
+
+        reference_7j: >
+          {{ states('sensor.withings_frequence_respiratoire_moyenne_7j') }}
+
+        reference_14j: >
+          {{ states('sensor.withings_frequence_respiratoire_moyenne_14j') }}
+
+        reference_30j: >
+          {{ states('sensor.withings_frequence_respiratoire_moyenne_30j') }}
+
+        delta_14j: >
+          {% set rpm = states('sensor.withings_average_respiratory_rate_local') | replace(',', '.') | float(none) %}
+          {% set ref = states('sensor.withings_frequence_respiratoire_moyenne_14j') | replace(',', '.') | float(none) %}
+          {% if rpm is none or ref is none %}
+            unavailable
+          {% else %}
+            {{ (rpm - ref) | round(1) }}
+          {% endif %}

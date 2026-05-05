@@ -1,0 +1,123 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Santé — Cardio nuit
+#
+# 🗂️ COUCHE : Dashboard Santé
+# 🧱 TYPE UI : KPI métier
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Afficher la synthèse métier du cardio nocturne :
+#   état qualitatif, écart à la baseline et anomalie.
+#
+# 📡 SOURCE
+#   - sensor.cardio_nuit_etat
+#   - sensor.cardio_nuit_delta_baseline
+#   - binary_sensor.cardio_anomalie
+#
+# ⚙️ LOGIQUE UI
+#   - Les cartes consomment uniquement les entités métier Cardio nuit.
+#   - Les couleurs sont fournies par les capteurs backend couleur.
+#   - Aucune décision métier n'est recalculée dans l'UI.
+#
+# ----------------------------------------------------------
+# 🔒 STRUCTURE
+#   SATELLITE et PIVOT sont mutuellement exclusifs
+# ----------------------------------------------------------
+#
+# 🔗 SATELLITE DE : dashboard_sante
+#
+# ⚠️ CARTE PIVOT
+#   Traverse :
+#     - snapshot cardio nuit
+#     - baseline personnelle
+#     - anomalie confirmée
+# ==========================================================
+
+carte_cardio_nuit_etat:
+  template: socle_kpi
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_cardio_nuit_etat
+
+  triggers_update:
+    - sensor.cardio_nuit_etat
+    - sensor.couleur_cardio_nuit_etat
+    - binary_sensor.cardio_anomalie
+
+  state_display: |
+    [[[
+      const s = entity?.state;
+
+      const map = {
+        optimal: "Optimal",
+        normal: "Normal",
+        eleve: "Élevé",
+        anormal: "Anormal",
+        indisponible: "—",
+        unavailable: "—",
+        unknown: "—"
+      };
+
+      return map[s] ?? "—";
+    ]]]
+
+carte_cardio_nuit_delta:
+  template: socle_kpi
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_cardio_nuit_delta_baseline
+
+  triggers_update:
+    - sensor.couleur_cardio_nuit_delta_baseline
+
+  state_display: |
+    [[[
+      const v = parseFloat(entity?.state);
+
+      if (isNaN(v)) return "—";
+
+      const rounded = Math.round(v);
+      const sign = rounded > 0 ? "+" : "";
+
+      return `${sign}${rounded} bpm`;
+    ]]]
+
+carte_cardio_nuit_anomalie:
+  template: socle_kpi
+
+  variables:
+    ui_profile: arsenal
+    couleur: sensor.couleur_cardio_nuit_anomalie
+
+  triggers_update:
+    - sensor.couleur_cardio_nuit_anomalie
+    - binary_sensor.cardio_anomalie
+
+  state_display: |
+    [[[
+      const s = entity?.state;
+      const confirmed = entity?.attributes?.confirmation === true;
+
+      if (s === "unavailable" || s === "unknown") return "—";
+      if (s === "off") return "Aucune";
+      if (s === "on" && confirmed) return "Confirmée";
+      if (s === "on") return "Vigilance";
+
+      return "—";
+    ]]]
+
+  icon: >
+    [[[
+      if (!entity) return "mdi:heart-off";
+  
+      const anomaly = entity.state === "on";
+      const confirmed = entity.attributes?.confirmation === true;
+  
+      if (!anomaly) return "mdi:heart-outline";   // OK
+      if (confirmed) return "mdi:heart-alert";    // OK
+      return "mdi:heart-pulse";                   // OK
+    ]]]

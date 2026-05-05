@@ -27,7 +27,7 @@
         {% set autorise = is_state('binary_sensor.autorisation_fermeture_volets_pluie_sejour','on') %}
         {% set pluie_forte = is_state('binary_sensor.intention_pluie_forte','on') %}
         {% if autorise and pluie_forte %}
-          {{ ['cover.volet_sejour_gauche', 'cover.volet_sejour_droit'] | length }}
+          {{ ['cover.sejour_gauche', 'cover.sejour_droit'] | length }}
         {% else %}
           0
         {% endif %}
@@ -36,7 +36,7 @@
           {% set autorise = is_state('binary_sensor.autorisation_fermeture_volets_pluie_sejour','on') %}
           {% set pluie_forte = is_state('binary_sensor.intention_pluie_forte','on') %}
           {% if autorise and pluie_forte %}
-            {{ ['cover.volet_sejour_gauche', 'cover.volet_sejour_droit'] }}
+            {{ ['cover.sejour_gauche', 'cover.sejour_droit'] }}
           {% else %}
             {{ [] }}
           {% endif %}

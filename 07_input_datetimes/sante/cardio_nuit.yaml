@@ -1,0 +1,10 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPER
+#     Cardio nuit — Horodatage
+# ==========================================================
+
+cardio_nuit_horodatage:
+  name: Cardio nuit horodatage
+  has_date: true
+  has_time: true
+  icon: mdi:clock-check-outline

@@ -198,7 +198,6 @@ include:
     # =====================================================
     # ==== 🛌 WITHINGS ====
     # =====================================================
-    - sensor.withings_average_heart_rate_local
     - sensor.withings_average_respiratory_rate_local
     - sensor.withings_temperature_du_corps_local
     - sensor.withings_steps_today_local
@@ -208,29 +207,21 @@ include:
     # =====================================================
     # ==== 🛌 SOMMEIL — SNAPSHOT ARSENAL ====
     # =====================================================
-
-    # RECORDER — Population B
-    # Rôle      : Snapshot sommeil consolidé
-    # Utilité   : Analyse historique durée / phases / score
-    # Logbook   : acceptable
-    # Cardinalité : finie — 0-16 h / 0-100 score
-    # Fréquence : 1/jour
     - input_number.sommeil_derniere_nuit_total
     - input_number.sommeil_derniere_nuit_profond
     - input_number.sommeil_derniere_nuit_leger
     - input_number.sommeil_derniere_nuit_rem
     - input_number.sommeil_derniere_nuit_score
     - input_datetime.sommeil_derniere_nuit_date
-
-    # RECORDER — Population A — OBLIGATOIRE contrainte HA
-    # Contrainte : platform: statistics
-    # Entité source de : moyennes glissantes sommeil 7j / 14j / 30j
     - sensor.sommeil_total_moyenne_7j
     - sensor.sommeil_total_moyenne_14j
     - sensor.sommeil_total_moyenne_30j
     - sensor.sommeil_score_moyenne_7j
     - sensor.sommeil_score_moyenne_14j
     - sensor.sommeil_score_moyenne_30j
+    - input_number.cardio_nuit_moyenne
+    - sensor.cardio_nuit_etat
+    - binary_sensor.cardio_anomalie
 
     # =====================================================
     # ==== 🏭🌫️ IMPRIMERIE – HUMIDEX ====

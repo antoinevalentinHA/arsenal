@@ -1,0 +1,16 @@
+# ==========================================================
+# 🧠 ARSENAL — HELPERS
+#     Cardio nuit — Diagnostic et historique
+# ==========================================================
+
+cardio_nuit_raison_invalidite:
+  name: Cardio nuit raison invalidite
+  max: 64
+  initial: source_indisponible
+  icon: mdi:alert-circle-outline
+
+cardio_nuit_historique_7j:
+  name: Cardio nuit historique 7j
+  max: 255
+  initial: "[]"
+  icon: mdi:chart-line

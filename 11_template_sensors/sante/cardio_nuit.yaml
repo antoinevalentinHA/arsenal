@@ -1,0 +1,129 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Santé — Cardio nocturne
+#
+# 🗂️ COUCHE : Décision
+# 🧱 TYPE : Capteurs métier
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+
+- sensor:
+
+    - name: Cardio baseline 7j
+      unique_id: cardio_baseline_7j
+      unit_of_measurement: bpm
+      icon: mdi:chart-line
+      availability: >
+        {% set raw = states('input_text.cardio_nuit_historique_7j') %}
+        {% if raw in ['unknown', 'unavailable', '', none] %}
+          false
+        {% else %}
+          {% set valeurs = raw | from_json %}
+          {{ valeurs | count >= 4 }}
+        {% endif %}
+      state: >
+        {% set raw = states('input_text.cardio_nuit_historique_7j') %}
+        {% set valeurs = raw | from_json %}
+        {{ ((valeurs | sum) / (valeurs | count)) | round(0) | int }}
+      attributes:
+        nb_nuits_valides: >
+          {% set raw = states('input_text.cardio_nuit_historique_7j') %}
+          {% if raw in ['unknown', 'unavailable', '', none] %}
+            0
+          {% else %}
+            {{ (raw | from_json) | count }}
+          {% endif %}
+        historique: "{{ states('input_text.cardio_nuit_historique_7j') }}"
+
+    - name: Cardio nuit delta baseline
+      unique_id: cardio_nuit_delta_baseline
+      unit_of_measurement: bpm
+      icon: mdi:heart-pulse
+      availability: >
+        {{
+          is_state('input_boolean.cardio_nuit_valide', 'on')
+          and states('input_number.cardio_nuit_moyenne') | float(none) is not none
+          and states('sensor.cardio_baseline_7j') | float(none) is not none
+        }}
+      state: >
+        {% set moyenne = states('input_number.cardio_nuit_moyenne') | float %}
+        {% set baseline = states('sensor.cardio_baseline_7j') | float %}
+        {{ (moyenne - baseline) | round(0) | int }}
+      attributes:
+        affichage: >
+          {% set moyenne = states('input_number.cardio_nuit_moyenne') | float(none) %}
+          {% set baseline = states('sensor.cardio_baseline_7j') | float(none) %}
+          {% if moyenne is none or baseline is none %}
+            indisponible
+          {% else %}
+            {% set delta = (moyenne - baseline) | round(0) | int %}
+            {% if delta > 0 %}
+              +{{ delta }} bpm
+            {% else %}
+              {{ delta }} bpm
+            {% endif %}
+          {% endif %}
+
+    - name: Cardio nuit etat
+      unique_id: cardio_nuit_etat
+      icon: mdi:heart-pulse
+      state: >
+        {% set valide = is_state('input_boolean.cardio_nuit_valide', 'on') %}
+        {% set moyenne = states('input_number.cardio_nuit_moyenne') | float(none) %}
+        {% set baseline = states('sensor.cardio_baseline_7j') | float(none) %}
+        {% set delta = states('sensor.cardio_nuit_delta_baseline') | float(none) %}
+
+        {% if not valide or moyenne is none %}
+          indisponible
+        {% elif baseline is none or delta is none %}
+          {% if moyenne > 72 %}
+            anormal
+          {% elif moyenne > 65 %}
+            eleve
+          {% elif moyenne <= 55 %}
+            optimal
+          {% else %}
+            normal
+          {% endif %}
+        {% elif delta > 8 %}
+          anormal
+        {% elif delta > 3 %}
+          eleve
+        {% elif delta < -5 %}
+          optimal
+        {% else %}
+          normal
+        {% endif %}
+      attributes:
+        moyenne: "{{ states('input_number.cardio_nuit_moyenne') }}"
+        baseline_7j: "{{ states('sensor.cardio_baseline_7j') }}"
+        delta_baseline: "{{ states('sensor.cardio_nuit_delta_baseline') }}"
+        nuit_valide: "{{ is_state('input_boolean.cardio_nuit_valide', 'on') }}"
+        raison_invalidite: "{{ states('input_text.cardio_nuit_raison_invalidite') }}"
+        duree_stabilite: "{{ states('input_number.cardio_nuit_duree_stabilite') }}"
+        horodatage: "{{ states('input_datetime.cardio_nuit_horodatage') }}"
+
+- binary_sensor:
+
+    - name: Cardio anomalie
+      unique_id: cardio_anomalie
+      icon: >
+        {% if is_state('sensor.cardio_nuit_etat', 'anormal') %}
+          mdi:heart-alert
+        {% else %}
+          mdi:heart-check
+        {% endif %}
+      state: >
+        {{
+          is_state('input_boolean.cardio_nuit_valide', 'on')
+          and is_state('sensor.cardio_nuit_etat', 'anormal')
+        }}
+      attributes:
+        confirmation: >
+          {{
+            is_state('sensor.cardio_nuit_etat', 'anormal')
+            and is_state('input_boolean.cardio_anomalie_nuit_precedente', 'on')
+          }}
+        nuit_precedente_anormale: "{{ is_state('input_boolean.cardio_anomalie_nuit_precedente', 'on') }}"
+        raison_invalidite: "{{ states('input_text.cardio_nuit_raison_invalidite') }}"
+        duree_stabilite: "{{ states('input_number.cardio_nuit_duree_stabilite') }}"

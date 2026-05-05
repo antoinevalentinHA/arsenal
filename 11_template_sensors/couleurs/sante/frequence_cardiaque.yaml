@@ -1,26 +1,91 @@
-- trigger:
-    - platform: state
-      entity_id:
-        - sensor.withings_average_heart_rate_local
-    - platform: homeassistant
-      event: start
-  sensor:
-    - name: "Couleur Santé — Fréquence cardiaque"
-      unique_id: couleur_sante_frequence_cardiaque
-      state: >
-        {% set raw = states('sensor.withings_average_heart_rate_local') %}
-        {% set bpm = raw | replace(',', '.') | float(999) %}
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Santé — Couleurs Cardio nuit
+#
+# 🗂️ COUCHE : UI / Couleurs backend
+# 🧱 TYPE : Capteurs dérivés UI
+# 🔍 NIVEAU DE CONFIANCE : Élevé
+# ==========================================================
+#
+# 🎯 RÔLE
+#   Fournir les clés sémantiques de couleur consommées par
+#   le socle UI `socle_kpi`.
+#
+# 📡 SOURCES
+#   - sensor.cardio_nuit_etat
+#   - sensor.cardio_nuit_delta_baseline
+#   - binary_sensor.cardio_anomalie
+#
+# 🎨 SORTIES
+#   - blue
+#   - green
+#   - yellow
+#   - orange
+#   - red
+#   - grey
+#   - unavailable
+# ==========================================================
 
-        {% if raw in ['unknown', 'unavailable', None] or bpm == 999 %}
+- sensor:
+
+    - name: Couleur Cardio nuit etat
+      unique_id: couleur_cardio_nuit_etat
+      icon: mdi:palette
+      state: >
+        {% set etat = states('sensor.cardio_nuit_etat') %}
+        {% set confirme_raw = state_attr('binary_sensor.cardio_anomalie', 'confirmation') %}
+        {% set confirme = confirme_raw == true or confirme_raw | string | lower == 'true' %}
+
+        {% if etat in ['unknown', 'unavailable', 'indisponible'] %}
           unavailable
-        {% elif bpm < 55 %}
+        {% elif etat == 'optimal' %}
           blue
-        {% elif bpm < 70 %}
+        {% elif etat == 'normal' %}
           green
-        {% elif bpm < 80 %}
+        {% elif etat == 'eleve' %}
           yellow
-        {% elif bpm < 90 %}
+        {% elif etat == 'anormal' and confirme %}
+          red
+        {% elif etat == 'anormal' %}
           orange
         {% else %}
+          unavailable
+        {% endif %}
+
+    - name: Couleur Cardio nuit delta baseline
+      unique_id: couleur_cardio_nuit_delta_baseline
+      icon: mdi:palette
+      state: >
+        {% set delta = states('sensor.cardio_nuit_delta_baseline') | float(none) %}
+
+        {% if delta is none %}
+          unavailable
+        {% elif delta < -5 %}
+          blue
+        {% elif delta <= 3 %}
+          green
+        {% elif delta <= 8 %}
+          yellow
+        {% else %}
+          orange
+        {% endif %}
+
+    - name: Couleur Cardio nuit anomalie
+      unique_id: couleur_cardio_nuit_anomalie
+      icon: mdi:palette
+      state: >
+        {% set anomalie = states('binary_sensor.cardio_anomalie') %}
+        {% set confirme_raw = state_attr('binary_sensor.cardio_anomalie', 'confirmation') %}
+        {% set confirme = confirme_raw == true or confirme_raw | string | lower == 'true' %}
+
+        {% if anomalie in ['unknown', 'unavailable'] %}
+          unavailable
+        {% elif anomalie == 'off' %}
+          grey
+        {% elif anomalie == 'on' and confirme %}
           red
+        {% elif anomalie == 'on' %}
+          yellow
+        {% else %}
+          unavailable
         {% endif %}

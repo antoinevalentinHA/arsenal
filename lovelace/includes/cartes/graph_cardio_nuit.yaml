@@ -1,0 +1,54 @@
+type: custom:apexcharts-card
+graph_span: 15d
+
+header:
+  show: true
+  title: FC 15 nuits
+  show_states: false
+  floating: false
+
+apex_config:
+  chart:
+    height: 220
+    animations:
+      enabled: true
+
+  grid:
+    borderColor: rgba(0,0,0,0.08)
+
+  tooltip:
+    shared: false
+    x:
+      show: true
+
+  xaxis:
+    labels:
+      datetimeUTC: false
+
+  yaxis:
+    min: 40
+    max: 90
+    decimalsInFloat: 0
+
+  legend:
+    show: true
+
+series:
+  - entity: input_number.cardio_nuit_moyenne
+    name: FC nuit
+    type: column
+    stroke_width: 0
+    group_by:
+      duration: 1d
+      func: last
+
+  - entity: sensor.cardio_baseline_7j
+    name: Baseline 7j
+    type: line
+    stroke_width: 2
+    group_by:
+      duration: 1d
+      func: last
+
+show:
+  loading: false
