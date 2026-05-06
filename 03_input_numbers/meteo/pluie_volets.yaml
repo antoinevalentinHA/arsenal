@@ -20,7 +20,7 @@
 #
 # 🔗 Utilisé par :
 #   - Scripts :
-#       • 09_scripts/meteo/pluie.yaml
+#       • 10_scripts/meteo/pluie.yaml
 #   - Dashboards :
 #       • lovelace/dashboards/reglages/volets.yaml
 #

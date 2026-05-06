@@ -1,0 +1,87 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /ouvertures-dashboard/ouvertures
+
+    ########################################################
+    # 🔧 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:button-card
+            template: contact_sensor
+            entity: binary_sensor.ouvertures_maison
+            name: Ouvertures maison
+
+          - type: custom:button-card
+            template: section_header
+            name: 🪟 Fenêtres
+
+          - type: custom:button-card
+            template: contact_sensor
+            entity: binary_sensor.fenetre_ouverte_maison
+            name: Fenêtres maison
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: contact_sensor
+                entity: binary_sensor.fenetre_ouverte_rdc
+                name: Fenêtres RDC
+
+              - type: custom:button-card
+                template: contact_sensor
+                entity: binary_sensor.fenetre_ouverte_etage
+                name: Fenêtres étage
+
+          - type: custom:button-card
+            template: section_header
+            name: ⏳ États avec délais
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: binary_sensor.fenetre_ouverte_maison_avec_delai
+                name: Maison
+                icon: mdi:home-clock-outline
+
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: binary_sensor.fenetre_ouverte_etage_avec_delai
+                name: Étage
+                icon: mdi:stairs-up
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: status_72_info_transitoire
+                entity: timer.fenetre_sejour_ouverte_grace
+                name: Séjour
+                icon: mdi:sofa
+
+              - type: custom:button-card
+                template: status_72_info_transitoire
+                entity: timer.fenetre_chambre_parents_grace
+                name: Chambre parents
+                icon: mdi:bed-king-outline
+
+          - !include ../../includes/cartes/diagnostic_redondance_contact.yaml

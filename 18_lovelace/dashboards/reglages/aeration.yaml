@@ -1,0 +1,279 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /aeration-dashboard/aeration
+
+    # ======================================================
+    # 🪟 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    #       ↓
+    #       blocs métier empilés
+    # ======================================================
+    cards:
+      - type: vertical-stack
+        cards:
+          # === Bloc 1 : Introduction + Seuils par saison ===
+          - type: vertical-stack
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🪟 Aération – Réglages
+
+              - type: markdown
+                content: >
+                  <div style="font-size: 13px; line-height: 1.4;">
+                  <b>But :</b> ouvrir quand l’air extérieur est plus sec et plus frais que l’intérieur.<br>
+                  La décision repose sur deux critères :<br>
+                  • ∆HA = humidité absolue intérieure − extérieure<br>
+                  • ∆T = température intérieure − extérieure<br><br>
+                  L’aération est recommandée si <b>∆HA ≥ seuil</b> <i>et</i> <b>∆T ≥ seuil</b>,
+                  sauf exception (CO₂, canicule, etc.).
+                  </div>
+
+              - type: custom:button-card
+                template: section_header
+                name: 📊 Seuils par saison
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: ☀️ Été
+
+              - type: tile
+                entity: input_number.aeration_delta_ha_min_ete
+                name: ∆HA min (été)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_seuil_ecart_temperature_min
+                name: ∆T min (été)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: 🍂 Inter-saison
+
+              - type: tile
+                entity: input_number.aeration_delta_ha_min_inter
+                name: ∆HA min (inter)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_delta_t_min_inter
+                name: ∆T min (inter)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: ❄️ Hiver
+
+              - type: tile
+                entity: input_number.aeration_delta_ha_min_hiver
+                name: ∆HA min (hiver)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_delta_t_min_hiver
+                name: ∆T min (hiver)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+          # === Bloc 2 : 🎛️ Modulateurs ===
+          - type: vertical-stack
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🎛️ Modulateurs
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: 🌙 Nuit (22:00 → 09:00)
+
+              - type: tile
+                entity: input_number.aeration_mod_nuit_delta_ha
+                name: Réduction ∆HA la nuit (g/m³)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_mod_nuit_delta_t
+                name: Réduction ∆T la nuit (°C)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: 🌧️ Pluie / Brouillard
+
+              - type: tile
+                entity: input_number.aeration_pluie_rh_ext_seuil
+                name: RH ext ≥ (seuil %)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_mod_pluie_delta_ha
+                name: Majoration ∆HA si RH ext élevée (g/m³)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_rain_max_mm
+                name: Pluie max admissible (mm sur 1h)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: 🥶 Grand froid
+
+              - type: tile
+                entity: input_number.aeration_grand_froid_seuil_ext
+                name: T° ext < (seuil °C)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_mod_grand_froid_add_delta_t
+                name: Majoration ∆T en grand froid (°C)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: ☀️ Canicule
+
+              - type: tile
+                entity: input_number.aeration_canicule_seuil_ext
+                name: T° ext ≥ (seuil °C)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: 🧪 Modulateur – CO₂
+
+              - type: tile
+                entity: input_number.aeration_co2_seuil
+                name: Seuil CO₂ (priorité)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_co2_seuil_fort
+                name: Seuil CO₂ fort
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+          # === Bloc 3 : ⚙️ Comportement général ===
+          - type: vertical-stack
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: ⚙️ Comportement
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: ⏱️ Durées & Fréquence
+
+              - type: tile
+                entity: input_number.aeration_duree_cible_minutes
+                name: Durée cible (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_duree_grand_froid_max_minutes
+                name: Durée max en grand froid (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_intervalle_min_heures
+                name: Intervalle minimal entre aérations (h)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: custom:button-card
+                template: sub_section_header
+                name: 🧽 Stabilité & anti-flapping
+
+              - type: tile
+                entity: input_number.aeration_stabilisation_minutes
+                name: Stabilisation avant reco (min)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_hysteresis_ha
+                name: Hystérésis ∆HA (arrêt reco)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.aeration_hysteresis_t
+                name: Hystérésis ∆T (arrêt reco)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons

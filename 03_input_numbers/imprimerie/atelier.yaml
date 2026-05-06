@@ -27,10 +27,10 @@
 #   - Dashboards :
 #       • lovelace/dashboards/imprimerie/imprimerie_atelier.yaml
 #   - Automatisations :
-#       • 10_automations/imprimerie/atelier/min_max.yaml
-#       • 10_automations/imprimerie/atelier/archivage.yaml
+#       • 11_automations/imprimerie/atelier/min_max.yaml
+#       • 11_automations/imprimerie/atelier/archivage.yaml
 #   - Scripts :
-#       • 09_scripts/imprimerie/reset_atelier_historique.yaml
+#       • 10_scripts/imprimerie/reset_atelier_historique.yaml
 #
 # 🧠 Principe Arsenal :
 #   - Les capteurs MESURENT.

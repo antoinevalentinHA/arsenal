@@ -1,0 +1,33 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /ecs-dashboard/home
+
+    ########################################################
+    # 🔧 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+          ########################################################
+          # 🚿 SECTION : ECS – Données internes
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🚿 ECS – Données internes
+
+          - type: custom:button-card
+            template: ecs_chauffe_planifiee_status
+
+          - !include ../../includes/cartes/ecs_dernier_cycle.yaml

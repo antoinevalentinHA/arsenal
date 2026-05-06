@@ -23,8 +23,8 @@
 #       • lovelace/dashboards/diagnostics/sommeil.yaml
 #       • lovelace/dashboards/reglages/sommeil.yaml
 #   - Automatisations :
-#       • 10_automations/reveils/babyphone/*.yaml
-#       • 10_automations/reveils/compteurs/*.yaml
+#       • 11_automations/reveils/babyphone/*.yaml
+#       • 11_automations/reveils/compteurs/*.yaml
 #
 # 📐 Unité :
 #   - Décibels (dB)

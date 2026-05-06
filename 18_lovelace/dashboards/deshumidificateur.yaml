@@ -1,0 +1,113 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-deshumidificateur-dashboard/deshumidificateur
+
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-deshumidificateur-dashboard/0
+
+    cards:
+      - type: vertical-stack
+        cards:
+          # ==================================================
+          # 💧 MESURES HUMIDITÉ — CAVE
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - !include ../includes/section_headers/cave.yaml
+
+              - !include ../includes/cartes/graph_humidite_cave.yaml
+
+          # ==================================================
+          # ⚖️ CONDITIONS DE DÉSHUMIDIFICATION
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - !include ../includes/section_headers/conditions.yaml
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: deshumidificateur_capteur
+                    entity: binary_sensor.critere_deshumidification_ha_cave
+                    name: Critère HA (g/m³)
+                    icon: mdi:water
+                    tap_action: none
+
+                  - type: custom:button-card
+                    template: deshumidificateur_capteur
+                    entity: binary_sensor.critere_deshumidification_cave
+                    name: Critère HR (%)
+                    icon: mdi:water-percent
+                    tap_action: none
+
+                  - type: custom:button-card
+                    template: carte_timer_status
+                    entity: timer.deshumidificateur_cycle
+                    name: Cycle mini
+                    icon: mdi:timer-outline
+                    variables:
+                      active_semantic: info
+
+                  - type: custom:button-card
+                    template: carte_timer_status
+                    entity: timer.deshumidificateur_blocage_redemarrage
+                    name: Blocage inter-cycles
+                    icon: mdi:timer-outline
+                    variables:
+                      active_semantic: info
+
+          # ==================================================
+          # 🧠 DÉCISION / ÉTAT RÉEL
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - !include ../includes/section_headers/decision.yaml
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: carte_deshumidificateur_decision_logique
+                    name: Décision logique
+
+                  - type: custom:button-card
+                    template: carte_deshumidificateur_etat_reel
+                    name: État réel (prise)
+
+          # ==================================================
+          # 📜 HISTORIQUE
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - !include ../includes/section_headers/historique.yaml
+
+              - type: history-graph
+                entities:
+                  - entity: binary_sensor.deshumidificateur_actif
+                logarithmic_scale: false

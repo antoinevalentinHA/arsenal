@@ -1,0 +1,79 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /clim-dashboard/climatisation
+
+    ########################################################
+    # ❄️ VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+          ########################################################
+          # 🧠 SECTION : Décision centrale
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: ⚖️ Décision du système
+
+          - type: custom:button-card
+            template: clim_decision_synthetique_72
+
+          ########################################################
+          # 🌡 SECTION : Conditions actuelles & seuils
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🔎 Lecture métier
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: custom:button-card
+                template: clim_synthese_status_72
+                name: Cool
+                icon: mdi:snowflake
+                variables:
+                  kind: cool
+                  entity_on: binary_sensor.clim_seuil_allumage_cool_atteint
+                  entity_off: binary_sensor.clim_seuil_extinction_cool_atteint
+
+              - type: custom:button-card
+                template: clim_synthese_status_72
+                name: Heat
+                icon: mdi:fire
+                variables:
+                  kind: heat
+                  entity_on: binary_sensor.clim_seuil_allumage_heat_atteint
+                  entity_off: binary_sensor.clim_seuil_extinction_heat_atteint
+
+              - type: custom:button-card
+                template: clim_synthese_status_72
+                name: Dry
+                icon: mdi:water-percent
+                variables:
+                  kind: dry
+                  entity_on: binary_sensor.clim_humidex_sup_cible_dry
+
+          ########################################################
+          # 🚫 SECTION : Blocages clim & Saison
+          ########################################################
+          # Sous-section : Blocages clim
+          - type: custom:button-card
+            template: section_header
+            name: 🚫 Blocages
+
+          - type: custom:button-card
+            template: clim_blocages_synthese_xl

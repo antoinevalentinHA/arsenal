@@ -1,0 +1,99 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Voiture — Audi A3 e-tron — Snapshot pleine charge
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Consolider les valeurs de référence au moment où le
+#   véhicule atteint une charge complète.
+#
+# 🧱 Principe :
+#   - Détection événementielle pleine charge
+#   - Écriture atomique des helpers de snapshot
+#   - Calcul thermique uniquement à l’événement
+#
+# 🔗 Sources :
+#   - sensor.audi_e_tron_pourcentage_moteur_principal_local
+#   - sensor.audi_e_tron_autonomie_local
+#   - sensor.temperature_jardin
+#
+# 📤 Écritures :
+#   - input_number.autonomie_audi_etron_full
+#   - input_number.audi_temperature_charge
+#   - input_number.audi_autonomie_corrigee_temperature
+#
+# ❌ Ne fait PAS :
+#   - recalcul a posteriori
+#   - estimation entre deux charges
+#   - écriture hors pleine charge
+#
+# CHANGELOG 1015000000001
+# v1.0 — création : snapshot autonomie_full
+# v1.1 — extension : ajout sous-bloc corrélation thermique
+#         (température snapshot + autonomie corrigée 20°C)
+#         atomicité préservée, autorité inchangée
+# ==========================================================
+
+- id: "1015000000001"
+  alias: Voiture - Audi - Snapshot pleine charge
+  description: >
+    Consolide l'autonomie pleine charge de l'Audi A3 e-tron et écrit
+    les snapshots thermiques associés au même instant logique.
+  mode: single
+
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.audi_e_tron_pourcentage_moteur_principal_local
+      above: 98.9
+
+  condition:
+    - condition: template
+      value_template: >
+        {{
+          states('sensor.audi_e_tron_autonomie_local') | is_number
+          and states('sensor.temperature_jardin') | is_number
+        }}
+
+  action:
+    - variables:
+        autonomie_full: >
+          {{ states('sensor.audi_e_tron_autonomie_local') | float }}
+        temperature_charge: >
+          {{ states('sensor.temperature_jardin') | float }}
+        coefficient_thermique: 0.007
+        temperature_reference: 20
+
+    - variables:
+        autonomie_corrigee_temperature: >
+          {{
+            autonomie_full
+            / (1 + coefficient_thermique * (temperature_reference - temperature_charge))
+          }}
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.autonomie_audi_etron_full
+      data:
+        value: >
+          {{ autonomie_full | round(0) }}
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.audi_temperature_charge
+      data:
+        value: >
+          {{ temperature_charge | round(1) }}
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.audi_autonomie_corrigee_temperature
+      data:
+        value: >
+          {{ autonomie_corrigee_temperature | round(1) }}
+
+    - service: notify.mobile_app_pixel_7a
+      data:
+        title: "Audi A3 e-tron"
+        message: >
+          Pleine charge consolidée : {{ autonomie_full | round(0) }} km,
+          {{ temperature_charge | round(1) }} °C,
+          corrigé 20°C : {{ autonomie_corrigee_temperature | round(1) }} km.

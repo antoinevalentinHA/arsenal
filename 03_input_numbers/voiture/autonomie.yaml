@@ -1,19 +1,22 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBER : Audi A3 e-tron — Autonomie pleine charge
+# 🧠 ARSENAL — INPUT NUMBER : Audi A3 e-tron — Snapshots pleine charge
 # ----------------------------------------------------------
 # 🎯 Rôle :
-#   Mémoriser l’autonomie ÉLECTRIQUE réelle observée
-#   lorsque le véhicule atteint une charge complète (≈ 100 %).
+#   Mémoriser les valeurs de référence observées
+#   au moment d’une charge complète (≈ 100 %).
 #
 # 🧱 Principe :
-#   - Valeur FIGÉE par cycle de charge
-#   - Mise à jour UNIQUEMENT lorsque la batterie est pleine
-#   - Sert de référence stable (baseline)
+#   - Valeurs FIGÉES par cycle de charge
+#   - Mise à jour UNIQUEMENT lors d’un événement pleine charge
+#   - Snapshot atomique de plusieurs grandeurs cohérentes :
+#       • autonomie électrique réelle
+#       • température extérieure
+#       • autonomie corrigée (20°C)
 #
 # ❌ Ne fait PAS :
 #   - mesure instantanée
 #   - estimation dynamique
-#   - projection restante
+#   - recalcul a posteriori
 #
 # 🔗 Utilisation :
 #   - Alimenté par :
@@ -25,11 +28,17 @@
 # 🧠 Principe Arsenal :
 #   - Le véhicule mesure
 #   - L’automatisation sélectionne le moment valide
-#   - Le helper mémorise
+#   - Les helpers mémorisent
 #   - Les dashboards comparent
 #
-# 📐 Unité :
-#   - Kilomètres (km)
+# 📐 Unités :
+#   - autonomie : km
+#   - température : °C
+#
+# ⚠️ Invariant critique :
+#   - Tous les helpers de ce fichier doivent être écrits
+#     dans la MÊME automation et au MÊME instant logique
+#     (snapshot pleine charge).
 # ==========================================================
 
 autonomie_audi_etron_full:
@@ -39,3 +48,21 @@ autonomie_audi_etron_full:
   step: 1
   unit_of_measurement: "km"
   mode: box
+
+audi_temperature_charge:
+  name: "Audi température charge"
+  min: -20
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer
+
+audi_autonomie_corrigee_temperature:
+  name: "Audi autonomie corrigée température"
+  min: 0
+  max: 100
+  step: 0.1
+  unit_of_measurement: "km"
+  mode: box
+  icon: mdi:car-electric

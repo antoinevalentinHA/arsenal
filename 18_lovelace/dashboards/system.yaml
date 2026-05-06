@@ -1,0 +1,349 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+        name: Téléphones
+        icon: mdi:cellphone-cog
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-telephones-dashboard/reglages-telephones
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+        name: ID
+        icon: mdi:numeric
+        tap_action:
+          action: navigate
+          navigation_path: /id-automatisations-dashboard/id-automatisations
+
+    ########################################################
+    # 🧱 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+          - !include ../includes/cartes/systeme_stable.yaml
+
+          ####################################################
+          # 🍓 RASPBERRY PI
+          ####################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🍓 Raspberry Pi
+
+          # --- Sous-titre Raspberry Pi ---
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              # Uptime
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.uptime_jours
+                name: Uptime
+                icon: mdi:clock-outline
+
+              # Internet
+              - type: custom:button-card
+                template: carte_etat_internet
+                entity: binary_sensor.internet_disponible
+                name: Internet
+                icon: mdi:web
+
+          - type: grid
+            columns: 4
+            square: false
+            cards:
+              # Supervisor CPU (météo interne)# Supervisor CPU (KPI lissé / courbe brute)
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.cpu_moyenne_10_min_supervisor
+                name: Supervisor CPU
+                icon: mdi:chip
+                tap_action:
+                  action: more-info
+                  entity: sensor.home_assistant_supervisor_cpu_percent
+
+              # Supervisor RAM (KPI lissé / courbe brute)
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.memoire_moyenne_10_min_supervisor
+                name: Supervisor RAM
+                icon: mdi:memory
+                tap_action:
+                  action: more-info
+                  entity: sensor.home_assistant_supervisor_memory_percent
+
+              # Core CPU (KPI lissé / courbe brute)
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.cpu_moyenne_10_min_core
+                name: Core CPU
+                icon: mdi:chip
+                tap_action:
+                  action: more-info
+                  entity: sensor.home_assistant_core_cpu_percent
+
+              # Core RAM (KPI lissé / courbe brute)
+              - type: custom:button-card
+                template: socle_kpi
+                entity: sensor.memoire_moyenne_10_min_core
+                name: Core RAM
+                icon: mdi:memory
+                tap_action:
+                  action: more-info
+                  entity: sensor.home_assistant_core_memory_percent
+
+          ####################################################
+          # 🩺 SYSTÈMES CRITIQUES
+          ####################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🩺 Systèmes critiques
+
+          - type: grid
+            columns: 4
+            square: false
+            cards:
+              # État secteur
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.coupure_secteur
+                name: Secteur
+                icon: mdi:power-plug
+
+              # UPS
+              - type: custom:button-card
+                template: ups_status_72
+                entity: binary_sensor.critere_ups_sur_batterie
+                name: UPS
+                tap_action:
+                  action: navigate
+                  navigation_path: /ups-dashboard/0
+
+              # Bluetti – Energie chaudière
+              - type: custom:button-card
+                template: carte_bluetti_energie_chaudiere
+                tap_action:
+                  action: navigate
+                  navigation_path: /bluetti-dashboard/0
+
+              # Batteries
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.batterie_a_remplacer
+                name: Batteries
+                icon: mdi:battery-alert
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-batteries-dashboard/batteries
+                hold_action:
+                  action: more-info
+
+          # Boiler Bridge – Santé
+          - type: custom:button-card
+            template: boiler_status_health
+            entity: sensor.boiler_bridge_sante
+            name: Boiler Bridge
+            icon: mdi:lan-connect
+            tap_action:
+              action: navigate
+              navigation_path: /diagnostics-boiler-dashboard/boiler
+
+          ####################################################
+          # ⚠️ AUTOMATISATIONS DÉSACTIVÉES
+          ####################################################
+
+          - !include ../includes/cartes/automatisations_desactivees.yaml
+
+          ####################################################
+          # 📡 CONNECTIVITÉ
+          ####################################################
+          - type: custom:button-card
+            template: section_header
+            name: 📡 Connectivité
+
+          - type: grid
+            columns: 4
+            square: false
+            cards:
+              # Zigbee
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.zigbee_qualite_radio_degradee
+                name: Zigbee
+                icon: mdi:zigbee
+                state_display: >
+                  [[[
+                    return entity.state === "on" ? "Dégradé" : "Normal";
+                  ]]]
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-zigbee-dashboard/zigbee
+                hold_action:
+                  action: more-info
+
+              # Bluetooth
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.bluetooth_qualite_radio_degradee
+                name: Bluetooth
+                icon: mdi:bluetooth
+                state_display: >
+                  [[[
+                    return entity.state === "on" ? "Dégradé" : "Normal";
+                  ]]]
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-bluetooth-dashboard/bluetooth
+                hold_action:
+                  action: more-info
+
+              # WiFi
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.netatmo_wifi_degrade
+                name: WiFi
+                icon: mdi:wifi
+                state_display: >
+                  [[[
+                    return entity.state === "on" ? "Dégradé" : "Normal";
+                  ]]]
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-netatmo-wifi-dashboard/wifi
+
+              # RF
+              - type: custom:button-card
+                template: carte_alerte_binaire_critique
+                entity: binary_sensor.netatmo_rf_degrade
+                name: RF
+                icon: mdi:radio-tower
+                state_display: >
+                  [[[
+                    return entity.state === "on" ? "Dégradé" : "Normal";
+                  ]]]
+                tap_action:
+                  action: navigate
+                  navigation_path: /diagnostics-netatmo-dashboard/rf
+
+          ####################################################
+          # 🌐 INTÉGRATIONS CRITIQUES
+          ####################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🌐 Intégrations
+
+          - type: grid
+            columns: 4
+            square: false
+            cards:
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.homekit_age_donnees
+                name: HomeKit
+                icon: mdi:apple
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_homekit
+                triggers_update:
+                  - sensor.couleur_age_homekit
+
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.netatmo_age_donnees
+                name: Netatmo
+                icon: mdi:cloud-outline
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_netatmo
+                triggers_update:
+                  - sensor.couleur_age_netatmo
+
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.switchbot_age_donnees
+                name: SwitchBot
+                icon: mdi:bluetooth-connect
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_switchbot
+                triggers_update:
+                  - sensor.couleur_age_switchbot
+
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.fujitsu_age_donnees
+                name: Fujitsu
+                icon: mdi:air-conditioner
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_fujitsu
+                triggers_update:
+                  - sensor.couleur_age_fujitsu
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.petite_maison_cumulus_age_donnees
+                name: Cumulus
+                icon: mdi:water-boiler
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_cumulus
+                triggers_update:
+                  - sensor.couleur_age_cumulus
+
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.synology_age_donnees
+                name: Synology
+                icon: mdi:nas
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_synology
+                triggers_update:
+                  - sensor.couleur_age_synology
+
+              - type: custom:button-card
+                template: kpi_no_action
+                entity: sensor.audi_age_donnees
+                name: Audi
+                icon: mdi:car
+                variables:
+                  ui_profile: arsenal
+                  couleur: sensor.couleur_age_audi
+                triggers_update:
+                  - sensor.couleur_age_audi
+
+          ####################################################
+          # 🌡️ NETATMO
+          ####################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🌡️ Netatmo
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: netatmo_diagnostic
+                entity: sensor.diagnostic_netatmo_arnaud
+                name: Netatmo – Arnaud
+
+              - type: custom:button-card
+                template: netatmo_diagnostic
+                entity: sensor.diagnostic_netatmo_matthieu
+                name: Netatmo – Matthieu

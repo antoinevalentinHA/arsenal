@@ -2,28 +2,28 @@ default_config:
 
 # Configuration mqtt (sensors et binary_sensors zigbee2mqtt)
 mqtt:
-  sensor: !include_dir_merge_list mqtt_sensors/
-  binary_sensor: !include_dir_merge_list mqtt_binary_sensors/
+  sensor: !include_dir_merge_list 14_mqtt_sensors/
+  binary_sensor: !include_dir_merge_list 15_mqtt_binary_sensors/
 
 # Inclusions par dossiers
-zone: !include_dir_merge_list zones/
-group: !include_dir_merge_named 02_groups
-input_number: !include_dir_merge_named 03_input_numbers
-input_text: !include_dir_merge_named 04_input_texts
-input_boolean: !include_dir_merge_named 05_input_booleans
-input_select: !include_dir_merge_named 06_input_selects
-input_datetime: !include_dir_merge_named 07_input_datetimes
-timer: !include_dir_merge_named 08_timers
-counter: !include_dir_merge_named 08b_counters
-alarm_control_panel: !include_dir_merge_list template_alarm_panels
-script: !include_dir_merge_named 09_scripts
-automation: !include_dir_merge_list 10_automations
+group: !include_dir_merge_named 02_groups/
+input_number: !include_dir_merge_named 03_input_numbers/
+input_text: !include_dir_merge_named 04_input_texts/
+input_boolean: !include_dir_merge_named 05_input_booleans/
+input_select: !include_dir_merge_named 06_input_selects/
+input_datetime: !include_dir_merge_named 07_input_datetimes/
+timer: !include_dir_merge_named 08_timers/
+counter: !include_dir_merge_named 09_counters/
+script: !include_dir_merge_named 10_scripts/
+automation: !include_dir_merge_list 11_automations/
+template: !include_dir_merge_list 12_template_sensors/
+sensor: !include_dir_merge_list 13_sensor_platforms/
+alarm_control_panel: !include_dir_merge_list 16_template_alarm_panels/
+zone: !include_dir_merge_list 17_zones/
 utility_meter: !include utility_meter.yaml
-template: !include_dir_merge_list 11_template_sensors/
-sensor: !include_dir_merge_list 12_sensor_platforms/
 
 # Configuration lovelace (mode yaml, ressources et dashboards)
-lovelace: !include lovelace/lovelace_main.yaml
+lovelace: !include 18_lovelace/lovelace_main.yaml
 
 # Configuration http (proxys et adresses de confiance)
 http:

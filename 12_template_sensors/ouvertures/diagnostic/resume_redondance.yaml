@@ -1,0 +1,81 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS (OUVERTURES / DIAGNOSTIC)
+#     Resume diagnostic redondance contacts
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/12_template_sensors/ouvertures/diagnostic/resume_diagnostic_redondance_contacts.yaml
+#
+# 🎯 ROLE
+#   - Exposer un resume court lisible des diagnostics de redondance
+#   - Alimenter la restitution UI de diagnostic
+#
+# 🧱 PRINCIPE
+#   - Source reconciliee deduite depuis this.entity_id
+#   - Diagnostic deduit depuis this.entity_id
+#   - Sortie courte de type : A=off | B=off
+#
+# ⚠️ NOTE
+#   - Aucun calcul de diagnostic en Lovelace
+#   - Aucun role metier
+#   - Le diagnostic reste porte par l'etat principal de la carte
+#   - Fallback explicite a unknown si attributs absents
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - binary_sensor.contact_sejour_3
+        - binary_sensor.contact_garage
+        - binary_sensor.contact_entree_porte
+        - binary_sensor.contact_chambre_parents_gauche
+        - binary_sensor.contact_chambre_parents_milieu
+        - binary_sensor.contact_chambre_parents_droite
+        - binary_sensor.contact_chambre_arnaud
+        - binary_sensor.contact_chambre_matthieu
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+    - name: "Resume diagnostic redondance Contact Sejour 3"
+      unique_id: resume_diagnostic_redondance_contact_sejour_3
+
+      state: &resume_diagnostic_redondance_logic >
+        {% set suffixe = this.entity_id | replace('sensor.resume_diagnostic_redondance_', '') %}
+        {% set src = 'binary_sensor.' ~ suffixe %}
+
+        {% set a_raw = state_attr(src, 'etat_a') %}
+        {% set b_raw = state_attr(src, 'etat_b') %}
+
+        {% set a = a_raw if a_raw not in [none, '', 'None'] else 'unknown' %}
+        {% set b = b_raw if b_raw not in [none, '', 'None'] else 'unknown' %}
+
+        A={{ a }} | B={{ b }}
+
+    - name: "Resume diagnostic redondance Contact Garage"
+      unique_id: resume_diagnostic_redondance_contact_garage
+      state: *resume_diagnostic_redondance_logic
+
+    - name: "Resume diagnostic redondance Contact Entree Porte"
+      unique_id: resume_diagnostic_redondance_contact_entree_porte
+      state: *resume_diagnostic_redondance_logic
+
+    - name: "Resume diagnostic redondance Contact Chambre Parents Gauche"
+      unique_id: resume_diagnostic_redondance_contact_chambre_parents_gauche
+      state: *resume_diagnostic_redondance_logic
+
+    - name: "Resume diagnostic redondance Contact Chambre Parents Milieu"
+      unique_id: resume_diagnostic_redondance_contact_chambre_parents_milieu
+      state: *resume_diagnostic_redondance_logic
+
+    - name: "Resume diagnostic redondance Contact Chambre Parents Droite"
+      unique_id: resume_diagnostic_redondance_contact_chambre_parents_droite
+      state: *resume_diagnostic_redondance_logic
+
+    - name: "Resume diagnostic redondance Contact Chambre Arnaud"
+      unique_id: resume_diagnostic_redondance_contact_chambre_arnaud
+      state: *resume_diagnostic_redondance_logic
+
+    - name: "Resume diagnostic redondance Contact Chambre Matthieu"
+      unique_id: resume_diagnostic_redondance_contact_chambre_matthieu
+      state: *resume_diagnostic_redondance_logic

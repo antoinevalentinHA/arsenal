@@ -17,7 +17,7 @@
 #
 # 🔗 Écrit par :
 #   - Automatisation :
-#       10_automations/system/sync_prefix_id_automations.yaml
+#       11_automations/system/sync_prefix_id_automations.yaml
 #     → synchronisation depuis input_select.prefix_id_select
 #
 # 🔗 Utilisation :

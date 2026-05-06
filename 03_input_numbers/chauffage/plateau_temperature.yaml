@@ -24,12 +24,12 @@
 #
 # 🔗 Utilisés par :
 #   - Template sensors :
-#       • 11_template_sensors/chauffage/vannes_thermostatiques/plateaux_stricts.yaml
-#       • 11_template_sensors/chauffage/vannes_thermostatiques/affichage_plateau.yaml
+#       • 12_template_sensors/chauffage/vannes_thermostatiques/plateaux_stricts.yaml
+#       • 12_template_sensors/chauffage/vannes_thermostatiques/affichage_plateau.yaml
 #   - Automatisation :
-#       • 10_automations/chauffage/update_plateaux_thermostatiques.yaml
+#       • 11_automations/chauffage/update_plateaux_thermostatiques.yaml
 #   - Script :
-#       • 09_scripts/chauffage/reset_plateau.yaml
+#       • 10_scripts/chauffage/reset_plateau.yaml
 #
 # 🧠 Principe Arsenal :
 #   - Les capteurs DÉTECTENT

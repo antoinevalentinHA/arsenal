@@ -27,8 +27,8 @@
 #
 # 🔗 Utilisés par :
 #   - Automatisations :
-#       • 10_automations/aeration/sauvegarde_duree.yaml
-#       • 10_automations/aeration/reset_duree.yaml
+#       • 11_automations/aeration/sauvegarde_duree.yaml
+#       • 11_automations/aeration/reset_duree.yaml
 #   - Dashboards :
 #       • lovelace/dashboards/aeration.yaml
 #   - Recorder :

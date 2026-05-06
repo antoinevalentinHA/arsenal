@@ -11,7 +11,7 @@
 #   - Ces helpers sont purement PARAMÉTRIQUES.
 #   - Ils ne pilotent aucun équipement directement.
 #   - Ils sont lus par le script central :
-#       `09_scripts/eclairage/simulation_presence.yaml`
+#       `10_scripts/eclairage/simulation_presence.yaml`
 #     qui génère des séquences réalistes et non déterministes.
 #
 # 🧩 Logique métier :
@@ -23,7 +23,7 @@
 #
 # 🔗 Utilisé par :
 #   - Script :
-#       • 09_scripts/eclairage/simulation_presence.yaml
+#       • 10_scripts/eclairage/simulation_presence.yaml
 #   - Dashboards :
 #       • lovelace/dashboards/reglages/eclairage.yaml
 #       • lovelace/dashboards/diagnostics/eclairage.yaml
@@ -33,7 +33,6 @@
 #   - Les scripts exécutent.
 #   - Aucune logique métier cachée dans l’UI.
 # ==========================================================
-
 
 # ==========================================================
 # 🔢 Nombre de cycles soir chambre

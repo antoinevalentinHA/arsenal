@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — SENSOR PLATFORM
+#     Voiture — Audi A3 e-tron — Statistiques température charge
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Produire une moyenne glissante de la température extérieure
+#   observée lors des pleines charges Audi.
+#
+# 🧱 Principe :
+#   - Source : snapshot pleine charge
+#   - Fenêtre : 31 jours
+#   - Usage : co-visualisation avec l’autonomie mensuelle
+#
+# ❌ Ne fait PAS :
+#   - correction thermique
+#   - décision automatique
+#   - lecture météo continue
+#
+# 🔗 Source :
+#   - input_number.audi_temperature_charge
+#
+# 📤 Entité exposée :
+#   - sensor.audi_temperature_charge_mensuelle
+# ==========================================================
+
+- platform: statistics
+  name: Audi temperature charge mensuelle
+  entity_id: input_number.audi_temperature_charge
+  state_characteristic: mean
+  max_age:
+    days: 31

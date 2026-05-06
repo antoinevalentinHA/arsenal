@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Voiture — Audi A3 e-tron — Exposition snapshots pleine charge
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Exposer en lecture les helpers de snapshot pleine charge.
+#
+# 🧱 Principe :
+#   - Les input_number sont les sources de vérité
+#   - Les sensors sont des miroirs de lecture
+#   - Aucun calcul métier n’est réalisé ici
+#
+# ❌ Ne fait PAS :
+#   - correction thermique
+#   - recalcul dynamique
+#   - fallback
+#   - estimation
+#
+# 🔗 Sources :
+#   - input_number.audi_temperature_charge
+#   - input_number.audi_autonomie_corrigee_temperature
+#
+# 📤 Entités exposées :
+#   - sensor.audi_temperature_charge
+#   - sensor.audi_autonomie_corrigee_temperature
+# ==========================================================
+
+- sensor:
+    - name: Audi temperature charge
+      unique_id: audi_temperature_charge
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: >
+        mdi:thermometer
+      availability: >
+        {{ states('input_number.audi_temperature_charge') | is_number }}
+      state: >
+        {{ states('input_number.audi_temperature_charge') | float | round(1) }}
+
+    - name: Audi autonomie corrigee temperature
+      unique_id: audi_autonomie_corrigee_temperature
+      unit_of_measurement: "km"
+      state_class: measurement
+      icon: >
+        mdi:car-electric
+      availability: >
+        {{ states('input_number.audi_autonomie_corrigee_temperature') | is_number }}
+      state: >
+        {{ states('input_number.audi_autonomie_corrigee_temperature') | float | round(1) }}

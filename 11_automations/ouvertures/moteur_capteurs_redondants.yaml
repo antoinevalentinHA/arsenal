@@ -1,0 +1,161 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Ouvertures — Capteurs redondants critiques — Moteur de reconciliation
+# ----------------------------------------------------------
+# 📌 Fichier
+#   homeassistant/11_automations/ouvertures/capteurs_redondants_critiques_moteur.yaml
+#
+# 🎯 ROLE
+#   Orchestrateur du moteur de reconciliation v2.2.
+#   Capte les triggers, route vers les scripts métier.
+#   Ne contient aucune logique métier.
+#
+# 🧱 PERIMETRE
+#   - entree_porte
+#   - chambre_parents_gauche
+#   - chambre_parents_milieu
+#   - chambre_parents_droite
+#   - garage
+#   - sejour_3
+#   - chambre_arnaud
+#   - chambre_matthieu
+#
+# 🧩 SCRIPTS APPELES
+#   - script.reconciliation_traiter_source
+#   - script.reconciliation_traiter_expiration
+#   - script.reconciliation_inhiber_tous
+#   - script.reconciliation_lever_inhibition
+#
+# 🛡️ GARANTIES
+#   - Idempotence portée par les scripts
+#   - Pas de logique métier inline
+#   - Mode queued — sérialisation des événements concurrents
+# ==========================================================
+
+- id: "10170000000015"
+  alias: "Ouvertures - Réconciliation capteurs"
+  description: "Orchestrateur v2.2 — route les triggers vers les scripts de reconciliation."
+  mode: queued
+  max: 20
+
+  trigger:
+    # ----------------------------------------------------------
+    # Sources brutes _1 / _2
+    # ----------------------------------------------------------
+    - platform: state
+      id: source_state
+      entity_id:
+        - binary_sensor.contact_entree_porte_1
+        - binary_sensor.contact_entree_porte_2
+        - binary_sensor.contact_chambre_parents_gauche_1
+        - binary_sensor.contact_chambre_parents_gauche_2
+        - binary_sensor.contact_chambre_parents_milieu_1
+        - binary_sensor.contact_chambre_parents_milieu_2
+        - binary_sensor.contact_chambre_parents_droite_1
+        - binary_sensor.contact_chambre_parents_droite_2
+        - binary_sensor.contact_garage_1
+        - binary_sensor.contact_garage_2
+        - binary_sensor.contact_sejour_3_1
+        - binary_sensor.contact_sejour_3_2
+        - binary_sensor.contact_chambre_arnaud_1
+        - binary_sensor.contact_chambre_arnaud_2
+        - binary_sensor.contact_chambre_matthieu_1
+        - binary_sensor.contact_chambre_matthieu_2
+
+    # ----------------------------------------------------------
+    # Expirations de timers de corroboration
+    # ----------------------------------------------------------
+    - platform: event
+      id: timer_finished
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.contact_reconciliation_entree_porte
+
+    - platform: event
+      id: timer_finished
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.contact_reconciliation_chambre_parents_gauche
+
+    - platform: event
+      id: timer_finished
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.contact_reconciliation_chambre_parents_milieu
+
+    - platform: event
+      id: timer_finished
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.contact_reconciliation_chambre_parents_droite
+
+    - platform: event
+      id: timer_finished
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.contact_reconciliation_garage
+
+    - platform: event
+      id: timer_finished
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.contact_reconciliation_sejour_3
+
+    - platform: event
+      id: timer_finished
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.contact_reconciliation_chambre_arnaud
+
+    - platform: event
+      id: timer_finished
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.contact_reconciliation_chambre_matthieu
+
+    # ----------------------------------------------------------
+    # Signal de stabilité système
+    # ----------------------------------------------------------
+    - platform: state
+      id: system_stable_off
+      entity_id: input_boolean.systeme_stable
+      to: "off"
+
+    - platform: state
+      id: system_stable_on
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+
+  action:
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: source_state
+          sequence:
+            - action: script.reconciliation_traiter_source
+              data:
+                source_entity: "{{ trigger.entity_id }}"
+                new_state: "{{ trigger.to_state.state if trigger.to_state is not none else '' }}"
+                from_state: "{{ trigger.from_state.state if trigger.from_state is not none else '' }}"
+
+        - conditions:
+            - condition: trigger
+              id: timer_finished
+          sequence:
+            - action: script.reconciliation_traiter_expiration
+              data:
+                timer_entity: "{{ trigger.event.data.entity_id }}"
+
+        - conditions:
+            - condition: trigger
+              id: system_stable_off
+          sequence:
+            - action: script.reconciliation_inhiber_tous
+
+        - conditions:
+            - condition: trigger
+              id: system_stable_on
+          sequence:
+            - action: script.reconciliation_lever_inhibition
+
+      default: []

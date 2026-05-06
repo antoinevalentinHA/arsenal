@@ -1,0 +1,75 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-ecs-dashboard/ecs
+
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-ecs-dashboard/diagnostics-ecs
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+        icon: mdi:home-outline
+        tap_action:
+          action: navigate
+          navigation_path: /ecs-petite-maison-dashboard/0
+
+    cards:
+      - type: vertical-stack
+        cards:
+          # ==================================================
+          # 🚿 ECS — ÉTAT & COMMANDES
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🚿 ECS
+
+              - type: custom:button-card
+                template: carte_ecs_etat_ballon
+                entity: sensor.ecs_temperature_ballon_securisee
+                name: Eau chaude
+                icon: mdi:water-thermometer
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: carte_action_ecs_vaisselle
+                    name: Vaisselle
+                    icon: mdi:silverware-clean
+
+                  - !include ../includes/cartes/bouclage.yaml
+
+          # ==================================================
+          # 📜 HISTORIQUE ECS
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - !include ../includes/section_headers/historique.yaml
+
+              - !include ../includes/cartes/graph_temperature_ecs.yaml
+
+              - type: history-graph
+                entities:
+                  - entity: binary_sensor.ecs_chauffe_en_cours_local
+                logarithmic_scale: true

@@ -1,0 +1,94 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /modes-dashboard/home
+
+    cards:
+      - type: vertical-stack
+        cards:
+          # === Mode maison ===
+          - type: custom:button-card
+            template: section_header
+            name: ✈️ Vacances
+
+          - type: tile
+            entity: input_select.mode_maison
+            name: Mode actuel
+            features_position: bottom
+            features:
+              - type: select-options
+
+          # === Babysitting ===
+          - type: custom:button-card
+            template: section_header
+            name: 👀 Babysitting
+
+          - type: custom:button-card
+            template: carte_mode_toggle
+            entity: input_boolean.mode_babysitting
+            name: Activer Babysitting
+            icon: mdi:account-child
+
+          - type: tile
+            entity: input_boolean.reset_mode_babysitting_auto
+            name: Réinit auto à 5h
+            icon: mdi:clock-check
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔑 Mode visiteur
+
+          - type: tile
+            entity: input_boolean.mode_visiteur
+            name: Programmation du mode visiteur
+
+          - type: tile
+            entity: input_select.jour_visiteur
+            name: Jour planifié
+            features_position: bottom
+            features:
+              - type: select-options
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: tile
+                entity: input_datetime.visiteur_start
+                name: Heure de début
+
+              - type: tile
+                entity: input_datetime.visiteur_end
+                name: Heure de fin
+
+          # === Vacances ===
+          - type: custom:button-card
+            template: section_header
+            name: 🧳 Vacances
+
+          - type: tile
+            entity: input_boolean.mode_vacances_auto
+            name: Activer la programmation
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: input_datetime.debut_vacances
+                name: Début des vacances
+
+              - type: tile
+                entity: input_datetime.fin_vacances
+                name: Fin des vacances

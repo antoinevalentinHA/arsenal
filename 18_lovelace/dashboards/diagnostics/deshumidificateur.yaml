@@ -1,0 +1,31 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /deshumidificateur-dashboard/cave
+
+    ########################################################
+    # ❄️ VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+          # ==================================================
+          # 🧠 CONFORMITÉ EXÉCUTION
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: ⚖️ Conformité
+
+          - type: custom:button-card
+            template: carte_deshum_conformite_execution

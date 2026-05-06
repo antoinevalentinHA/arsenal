@@ -1,0 +1,59 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /aeration-dashboard/aeration
+
+    # ==========================================================
+    # 🧩 CONTENU PRINCIPAL
+    # ==========================================================
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:button-card
+            template: section_header
+            name: 🪟 Statut de l’aération
+
+          - type: custom:button-card
+            template: aeration_episode_status_72
+            name: Aération
+
+          - type: custom:button-card
+            template: section_header
+            name: 🔒 Effet sur chauffage
+
+          - !include ../../includes/cartes/aeration_timers.yaml
+
+          - type: custom:button-card
+            template: section_header
+            name: 🌡️ Chute thermique (ΔT réel)
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: aeration_deltat_chute_72
+                name: Chute thermique
+
+              - type: custom:button-card
+                template: aeration_reference_thermique_72
+                name: Référence thermique
+
+          - type: custom:button-card
+            template: section_header
+            name: 🧩 Synthèse
+
+          - type: custom:button-card
+            template: aeration_synthese_72
+            name: Synthèse aération

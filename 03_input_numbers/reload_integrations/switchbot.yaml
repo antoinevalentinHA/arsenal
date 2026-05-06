@@ -29,7 +29,7 @@
 #
 # 🔗 Utilisé par :
 #   - Automatisations :
-#       • 10_automations/system/reload_integrations/switchbot.yaml
+#       • 11_automations/system/reload_integrations/switchbot.yaml
 #
 # 📐 Unité :
 #   - Tentatives (compteur entier)

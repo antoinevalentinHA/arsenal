@@ -1,0 +1,64 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS (MODERN)
+#     Chauffage — Pré-confort retour Vacances — Timestamps fenêtre
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer les timestamps (epoch seconds) de la fenêtre de pré-confort.
+#
+#   - sensor.pre_confort_debut_ts
+#   - sensor.pre_confort_fin_ts
+#
+# 🔗 DEPENDANCES
+#   - input_datetime.fin_vacances
+#   - input_number.duree_prechauffage_retour_vacances
+#
+# 🧱 INTEGRATION
+#   template: !include_dir_merge_list 12_template_sensors/
+# ==========================================================
+
+- sensor:
+    - name: "pre_confort_debut_ts"
+      unique_id: pre_confort_debut_ts
+      unit_of_measurement: "s"
+      icon: mdi:clock-start
+
+      state: >
+        {% set UNAV = ['unknown','unavailable','none','None',''] %}
+        {% set fin_raw = states('input_datetime.fin_vacances') %}
+        {% set duree_raw = states('input_number.duree_prechauffage_retour_vacances') %}
+
+        {% if fin_raw in UNAV or duree_raw in UNAV %}
+          unknown
+        {% else %}
+          {% set duree_h = duree_raw | float(0) %}
+          {% if duree_h <= 0 %}
+            unknown
+          {% else %}
+            {% set fin_ts = as_timestamp(fin_raw, default=none) %}
+            {% if fin_ts is none %}
+              unknown
+            {% else %}
+              {{ (fin_ts - (duree_h * 3600)) | int }}
+            {% endif %}
+          {% endif %}
+        {% endif %}
+
+    - name: "pre_confort_fin_ts"
+      unique_id: pre_confort_fin_ts
+      unit_of_measurement: "s"
+      icon: mdi:clock-end
+
+      state: >
+        {% set UNAV = ['unknown','unavailable','none','None',''] %}
+        {% set fin_raw = states('input_datetime.fin_vacances') %}
+
+        {% if fin_raw in UNAV %}
+          unknown
+        {% else %}
+          {% set fin_ts = as_timestamp(fin_raw, default=none) %}
+          {% if fin_ts is none %}
+            unknown
+          {% else %}
+            {{ fin_ts | int }}
+          {% endif %}
+        {% endif %}

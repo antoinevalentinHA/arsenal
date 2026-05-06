@@ -1,0 +1,96 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Diagnostic station météo Netatmo
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Décrire l'état observable global de chaque station Netatmo
+#   afin d'alimenter une politique de remédiation externe.
+#
+# 📜 CONTRAT
+#   Contrat — Diagnostic station météo Netatmo
+#   Version : v1.1
+#   Couche  : observation
+#
+# ⚙️ ÉTATS POSSIBLES
+#   ok            → au moins une preuve de vie numérique exploitable
+#   muet_ping_ok  → aucune preuve de vie, mais ping station OK
+#   muet_ping_ko  → aucune preuve de vie, ping station KO
+#
+# 🧱 RÈGLES CONTRACTUELLES
+#   - toute preuve de vie numérique suffit
+#   - le jardin reste une sonde rapide documentaire
+#     sans aucun poids logique spécifique
+#   - le ping n'intervient qu'en second niveau
+#     après échec de toutes les preuves de vie
+#   - les états sont strictement observationnels
+#   - sélection positive uniquement :
+#     une preuve de vie est valide si son état
+#     est numériquement interprétable
+#
+# 🚫 CONTRAINTES
+#   - seules des entités sensor à état numérique continu
+#     figurent dans les preuves de vie
+#   - aucun binary_sensor, input_boolean ou état textuel discret
+#     ne doit être ajouté à cette liste sans révision explicite
+#     du contrat
+#   - aucune remédiation n'est décidée dans ce fichier
+# ==========================================================
+
+- sensor:
+    - name: "diagnostic_netatmo_arnaud"
+      unique_id: diagnostic_netatmo_arnaud
+      state: >
+        {% set preuves = [
+          states('sensor.temperature_chambre_arnaud_1'),
+          states('sensor.temperature_chambre_parents_1'),
+          states('sensor.temperature_jardin_1'),
+          states('sensor.temperature_petite_maison'),
+          states('sensor.temperature_sejour_1'),
+          states('sensor.humidite_relative_chambre_arnaud_1'),
+          states('sensor.humidite_relative_chambre_parents_1'),
+          states('sensor.humidite_relative_jardin_1'),
+          states('sensor.humidite_relative_petite_maison'),
+          states('sensor.humidite_relative_sejour_1'),
+          states('sensor.co2_chambre_arnaud'),
+          states('sensor.co2_chambre_parents'),
+          states('sensor.co2_petite_maison'),
+          states('sensor.co2_sejour'),
+          states('sensor.bruit_chambre_arnaud')
+        ] %}
+        {% set valides = preuves
+          | map('float', default=none)
+          | reject('eq', none)
+          | list %}
+        {% if valides | count > 0 %}
+          ok
+        {% elif is_state('binary_sensor.station_meteo_netatmo_1', 'on') %}
+          muet_ping_ok
+        {% else %}
+          muet_ping_ko
+        {% endif %}
+
+    - name: "diagnostic_netatmo_matthieu"
+      unique_id: diagnostic_netatmo_matthieu
+      state: >
+        {% set preuves = [
+          states('sensor.temperature_chambre_matthieu_1'),
+          states('sensor.temperature_entree_1'),
+          states('sensor.temperature_jardin_2'),
+          states('sensor.humidite_relative_chambre_matthieu_1'),
+          states('sensor.humidite_relative_entree_1'),
+          states('sensor.humidite_relative_jardin_2'),
+          states('sensor.co2_chambre_matthieu'),
+          states('sensor.co2_entree'),
+          states('sensor.bruit_chambre_matthieu')
+        ] %}
+        {% set valides = preuves
+          | map('float', default=none)
+          | reject('eq', none)
+          | list %}
+        {% if valides | count > 0 %}
+          ok
+        {% elif is_state('binary_sensor.station_meteo_netatmo_2', 'on') %}
+          muet_ping_ok
+        {% else %}
+          muet_ping_ko
+        {% endif %}

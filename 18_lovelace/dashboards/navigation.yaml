@@ -1,0 +1,401 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+    cards:
+      - type: vertical-stack
+        cards:
+          # ==================================================
+          # 🌤️ MÉTÉO — NAVIGATION DOMAINE
+          # ==================================================
+          - !include ../includes/navigation/meteo.yaml
+
+          # ==========================================================
+          # 🚨 ALERTE CRITIQUE — INTÉGRITÉ PARAMÈTRES
+          # ==========================================================
+          - !include ../includes/alerte_configuration_invalide.yaml
+
+          # ==================================================
+          # ☰ NAVIGATION PRINCIPALE
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: ☰ Navigation
+
+              - type: grid
+                square: false
+                columns: 4
+                cards:
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_modes_dashboard
+                    name: Modes
+                    icon: mdi:home
+                    tap_action:
+                      action: navigate
+                      navigation_path: /modes-dashboard/home
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_chauffage_dashboard
+                    name: Chauffage
+                    icon: mdi:fire
+                    tap_action:
+                      action: navigate
+                      navigation_path: /chauffage-dashboard/chauffage
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_clim_dashboard
+                    name: Clim
+                    icon: mdi:air-conditioner
+                    tap_action:
+                      action: navigate
+                      navigation_path: /clim-dashboard/climatisation
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_ecs_dashboard
+                    name: Eau Chaude
+                    icon: mdi:water-pump
+                    tap_action:
+                      action: navigate
+                      navigation_path: /ecs-dashboard/home
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_vmc_dashboard
+                    name: VMC
+                    icon: mdi:fan
+                    tap_action:
+                      action: navigate
+                      navigation_path: /vmc-dashboard/home
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_aeration_dashboard
+                    name: Aération
+                    icon: mdi:air-filter
+                    tap_action:
+                      action: navigate
+                      navigation_path: /aeration-dashboard/aeration
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_deshumidificateur_dashboard
+                    name: Désh. Cave
+                    icon: mdi:water-percent
+                    tap_action:
+                      action: navigate
+                      navigation_path: /deshumidificateur-dashboard/cave
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_eclairage_dashboard
+                    name: Éclairage
+                    icon: mdi:lightbulb
+                    tap_action:
+                      action: navigate
+                      navigation_path: /eclairage-dashboard/home
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_alarme_dashboard
+                    name: Alarme
+                    icon: mdi:shield-home
+                    tap_action:
+                      action: navigate
+                      navigation_path: /alarme-dashboard/alarme
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_ouvertures_dashboard
+                    name: Ouvertures
+                    icon: mdi:door-open
+                    tap_action:
+                      action: navigate
+                      navigation_path: /ouvertures-dashboard/portes_et_fenetres
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_mouvements_dashboard
+                    name: Mouvements
+                    icon: mdi:motion-sensor
+                    tap_action:
+                      action: navigate
+                      navigation_path: /mouvements-dashboard/mouvements
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Volets
+                    icon: mdi:window-shutter
+                    tap_action:
+                      action: navigate
+                      navigation_path: /volets-dashboard/general
+                    styles:
+                      icon:
+                        - color: "#6D4C41"
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Prises
+                    icon: mdi:power-plug
+                    tap_action:
+                      action: navigate
+                      navigation_path: /prises-dashboard/home
+                    styles:
+                      icon:
+                        - color: "#607D8B"
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Santé
+                    icon: mdi:heart-pulse
+                    tap_action:
+                      action: navigate
+                      navigation_path: /sante-dashboard/sante
+                    styles:
+                      icon:
+                        - color: "#E91E63"
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_voiture_dashboard
+                    name: Audi
+                    icon: mdi:car
+                    tap_action:
+                      action: navigate
+                      navigation_path: /audi-dashboard/audi_a3_e-tron
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Énergie
+                    icon: mdi:flash
+                    tap_action:
+                      action: navigate
+                      navigation_path: /energy
+                    styles:
+                      icon:
+                        - color: "#FBC02D"
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Imprimerie
+                    icon: mdi:factory
+                    tap_action:
+                      action: navigate
+                      navigation_path: /imprimerie-dashboard/menu
+                    styles:
+                      icon:
+                        - color: "#1E468C"
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: NAS
+                    icon: mdi:nas
+                    tap_action:
+                      action: navigate
+                      navigation_path: /nas-dashboard/dashboard
+                    styles:
+                      icon:
+                        - color: "#1976D2"
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_systeme_dashboard
+                    name: Système
+                    icon: mdi:monitor-dashboard
+                    tap_action:
+                      action: navigate
+                      navigation_path: /system-dashboard/systeme
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Journal
+                    icon: mdi:book-open-variant
+                    styles:
+                      icon:
+                        - color: "#5D4037"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /logbook
+
+          # ==================================================
+          # ⚙️ SYSTÈME — OUTILS & ADMINISTRATION
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: ⚙️ Système
+
+              - type: grid
+                square: false
+                columns: 4
+                cards:
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Sauvegardes
+                    icon: mdi:backup-restore
+                    styles:
+                      icon:
+                        - color: "#E53935"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/backup/overview
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Automations
+                    icon: mdi:cogs
+                    styles:
+                      icon:
+                        - color: "#F9A825"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/automation/dashboard
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Scripts
+                    icon: mdi:script-text
+                    styles:
+                      icon:
+                        - color: "#D84315"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/script/dashboard
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Logs HA
+                    icon: mdi:clipboard-text
+                    styles:
+                      icon:
+                        - color: "#8E24AA"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/logs
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: États
+                    icon: mdi:state-machine
+                    styles:
+                      icon:
+                        - color: "#3949AB"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /developer-tools/state
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Entités
+                    icon: mdi:database-eye
+                    styles:
+                      icon:
+                        - color: "#3F51B5"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/entities
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Historique
+                    icon: mdi:chart-line
+                    styles:
+                      icon:
+                        - color: "#1E88E5"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /history
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: File Editor
+                    icon: mdi:wrench
+                    styles:
+                      icon:
+                        - color: "#0288D1"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /hassio/ingress/core_configurator
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Dashboards
+                    icon: mdi:view-dashboard
+                    styles:
+                      icon:
+                        - color: "#009688"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/lovelace/dashboards
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Intégrations
+                    icon: mdi:puzzle-outline
+                    tap_action:
+                      action: navigate
+                      navigation_path: /config/integrations/dashboard
+                    styles:
+                      icon:
+                        - color: "#1E88E5"
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Templates
+                    icon: mdi:code-tags
+                    styles:
+                      icon:
+                        - color: "#6A1B9A"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /developer-tools/template
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: YAML
+                    icon: mdi:code-braces
+                    styles:
+                      icon:
+                        - color: "#F4511E"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /developer-tools/yaml
+
+              - type: custom:button-card
+                template: bouton_navigation
+                name: Reboot HA
+                icon: mdi:restart
+                styles:
+                  icon:
+                    - color: "#F57C00"
+                tap_action:
+                  action: call-service
+                  service: homeassistant.restart
+                confirmation:
+                  text: ❓ Redémarrer Home Assistant maintenant ?

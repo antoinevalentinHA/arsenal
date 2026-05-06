@@ -34,7 +34,7 @@
 #
 # 🔗 Utilisé par :
 #   - Scripts :
-#       • 09_scripts/ouvertures/sejour.yaml
+#       • 10_scripts/ouvertures/sejour.yaml
 #   - Dashboards :
 #       • lovelace/dashboards/reglages/ouvertures.yaml
 #

@@ -28,7 +28,7 @@
 #
 # 🔗 Utilisé par :
 #   - Automatisations :
-#       • 10_automations/system/reload_integrations/homekit.yaml
+#       • 11_automations/system/reload_integrations/homekit.yaml
 #
 # 📐 Unité :
 #   - Tentatives (compteur entier)

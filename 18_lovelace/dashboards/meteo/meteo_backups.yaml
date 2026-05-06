@@ -1,0 +1,280 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-meteo-dashboard/reglages-meteo
+
+    # ======================================================
+    # 🌦️ CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    # ======================================================
+    cards:
+      - type: vertical-stack
+        cards:
+          # ======================================================
+          # 🌿 JARDIN
+          # ======================================================
+          - type: vertical-stack
+            cards:
+              - !include ../../includes/section_headers/jardin.yaml
+
+              - square: false
+                type: grid
+                columns: 3
+                cards:
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_jardin_1
+                    name: Netatmo 1
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_jardin_2
+                    name: Netatmo 2
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_jardin_3
+                    name: Switchbot
+
+              - square: false
+                type: grid
+                columns: 3
+                cards:
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_jardin_1
+                    name: Netatmo 1
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_jardin_2
+                    name: Netatmo 2
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_jardin_3
+                    name: Switchbot
+
+          # ======================================================
+          # 🚪 ENTRÉE
+          # ======================================================
+          - type: vertical-stack
+            cards:
+              - !include ../../includes/section_headers/entree.yaml
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_entree_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_entree_2
+                    name: Zigbee
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_entree_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_entree_2
+                    name: Zigbee
+
+          # ======================================================
+          # 🛋️ SÉJOUR
+          # ======================================================
+          - type: vertical-stack
+            cards:
+              - !include ../../includes/section_headers/sejour.yaml
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_sejour_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_sejour_2
+                    name: Zigbee
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_sejour_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_sejour_2
+                    name: Zigbee
+
+          # ======================================================
+          # 🛏️ CHAMBRE PARENTS
+          # ======================================================
+          - type: vertical-stack
+            cards:
+              - !include ../../includes/section_headers/chambre_parents.yaml
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_chambre_parents_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_chambre_parents_2
+                    name: Zigbee
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_chambre_parents_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_chambre_parents_2
+                    name: Zigbee
+
+          # ======================================================
+          # 🧒 CHAMBRE ARNAUD
+          # ======================================================
+          - type: vertical-stack
+            cards:
+              - !include ../../includes/section_headers/chambre_arnaud.yaml
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_chambre_arnaud_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_chambre_arnaud_2
+                    name: Zigbee
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_chambre_arnaud_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_chambre_arnaud_2
+                    name: Zigbee
+
+          # ======================================================
+          # 👶 CHAMBRE MATTHIEU
+          # ======================================================
+          - type: vertical-stack
+            cards:
+              - !include ../../includes/section_headers/chambre_matthieu.yaml
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_chambre_matthieu_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_chambre_matthieu_2
+                    name: Zigbee
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_chambre_matthieu_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_chambre_matthieu_2
+                    name: Zigbee
+
+          # ======================================================
+          # PETITE MAISON
+          # ======================================================
+          - type: vertical-stack
+            cards:
+              - !include ../../includes/section_headers/petite_maison.yaml
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_petite_maison_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: temperature
+                    entity: sensor.temperature_petite_maison_2
+                    name: Switchbot
+
+              - square: false
+                type: grid
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_petite_maison_1
+                    name: Netatmo
+
+                  - type: custom:button-card
+                    template: humidite
+                    entity: sensor.humidite_relative_petite_maison_2
+                    name: Switchbot

@@ -34,7 +34,7 @@
 #
 # 🔗 Utilisé par :
 #   - Scripts :
-#       • 09_scripts/ouvertures/chambre_parents.yaml
+#       • 10_scripts/ouvertures/chambre_parents.yaml
 #   - Dashboards :
 #       • lovelace/dashboards/reglages/ouvertures.yaml
 #

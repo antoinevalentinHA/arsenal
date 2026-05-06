@@ -28,7 +28,7 @@
 #
 # 🔗 Utilisé par :
 #   - Automatisations :
-#       • 10_automations/system/reload_integrations/netatmo.yaml
+#       • 11_automations/system/reload_integrations/netatmo.yaml
 #
 # 📐 Unité :
 #   - Tentatives (compteur entier)

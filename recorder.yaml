@@ -283,6 +283,9 @@ include:
     - input_number.autonomie_audi_etron_full
     - sensor.distance_audi_e_tron_mensuelle
     - sensor.distance_audi_e_tron_annuelle
+    - input_number.audi_temperature_charge
+    - input_number.audi_autonomie_corrigee_temperature
+    - sensor.audi_temperature_charge_mensuelle
 
     # =====================================================
     # ==== ⚡ CONSOMMATION – PRISES ====
@@ -301,3 +304,8 @@ include:
     - sensor.deshumidificateur_energy_proxy
     - sensor.lave_vaisselle_energy_proxy
     - sensor.refrigerateur_energy_proxy
+
+    # =====================================================
+    # ==== ⚡ CONSOMMATION – CUMULUS PETITE MAISON ====
+    # =====================================================
+    - sensor.petite_maison_modbuslink_1_2_electric_energy_consumption

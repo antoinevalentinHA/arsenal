@@ -1,0 +1,53 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY SENSOR
+#     Bouclage ECS — Autorisation AUTO opportuniste
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Exposer l'autorisation logique du bouclage ECS AUTO
+#     selon l'activation utilisateur de l'automatisme,
+#     la disponibilité thermique réelle du ballon, la présence
+#     famille stricte ou la présence visiteur explicite.
+#
+# 🧩 PÉRIMÈTRE
+#
+#     - Automatisme AUTO activé par l'utilisateur
+#     - Disponibilité thermique ECS requise
+#     - Présence famille sécurité OU présence visiteur requise
+#     - Aucune plage horaire
+#     - Aucun pilotage matériel
+#
+# 🔗 DÉPENDANCES
+#
+#     - input_boolean.bouclage_auto_active
+#     - binary_sensor.ecs_disponible
+#     - binary_sensor.presence_famille_securite
+#     - input_boolean.presence_visiteur
+#
+# 🚫 INTERDITS
+#
+#     - Aucun pilotage matériel
+#     - Aucune logique horaire
+#     - Aucune écriture dans un actionneur
+#     - Aucune décision thermique ECS
+#
+# 🧠 STATUT
+#
+#     Capteur logique — Autorisation AUTO v2.3
+# ==========================================================
+
+- binary_sensor:
+    - name: "Autorisation Bouclage ECS"
+      unique_id: bouclage_autorise
+      default_entity_id: binary_sensor.bouclage_autorise
+      state: >
+        {% set auto_active = states('input_boolean.bouclage_auto_active') %}
+        {% set ecs_disponible = states('binary_sensor.ecs_disponible') %}
+        {% set presence_famille = states('binary_sensor.presence_famille_securite') %}
+        {% set presence_visiteur = states('input_boolean.presence_visiteur') %}
+        {{ auto_active == 'on'
+           and ecs_disponible == 'on'
+           and (
+             presence_famille == 'on'
+             or presence_visiteur == 'on'
+           ) }}

@@ -1,0 +1,230 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+    cards:
+      - type: vertical-stack
+        cards:
+          # ==================================================
+          # 🌤️ MÉTÉO — NAVIGATION DOMAINE
+          # ==================================================
+          - !include ../includes/navigation/meteo.yaml
+
+          # ==========================================================
+          # 🚨 ALERTE CRITIQUE — INTÉGRITÉ PARAMÈTRES
+          # ==========================================================
+          - !include ../includes/alerte_configuration_invalide.yaml
+
+          # ==========================================================
+          # ⚙️ MODES DE LA MAISON
+          # ==========================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: ⚙️ Modes
+
+              - type: grid
+                square: false
+                columns: 3
+                cards:
+                  - type: custom:button-card
+                    template: carte_mode_maison
+                    entity: binary_sensor.vacances_actives
+                    name: Mode
+                    icon: mdi:home-switch
+
+                  - type: custom:button-card
+                    template: carte_mode_babysitting
+                    entity: input_boolean.mode_babysitting
+                    name: Babysitting
+                    icon: mdi:account-child
+
+                  - type: custom:button-card
+                    template: carte_alarme
+                    entity: alarm_control_panel.alarme_maison
+                    name: Alarme
+                    icon: mdi:shield-home
+
+          # ==========================================================
+          # 🔥❄️ CONFORT THERMIQUE
+          # ==========================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🔥❄️ Confort thermique
+
+              - type: grid
+                square: false
+                columns: 3
+                cards:
+                  - type: custom:button-card
+                    template: carte_ecs_action
+                    entity: sensor.ecs_temperature_ballon_securisee
+                    name: Eau chaude
+                    icon: mdi:water-thermometer
+
+                  - type: custom:button-card
+                    template: carte_chauffage_etat
+                    entity: sensor.programme_chauffage
+                    name: Chauffage
+                    icon: mdi:fire
+
+                  - type: custom:button-card
+                    template: carte_clim_etat
+                    entity: sensor.clim_mode_local
+                    name: Climatisation
+                    icon: mdi:snowflake
+
+          # ==========================================================
+          # 🌙 NUIT & EAU CHAUDE SANITAIRE
+          # ==========================================================
+          - type: grid
+            square: false
+            columns: 3
+            cards:
+              - !include ../includes/cartes/bouclage.yaml
+
+              - type: custom:button-card
+                template: carte_action_ecs_vaisselle
+                name: Vaisselle
+                icon: mdi:silverware-clean
+
+              - type: custom:button-card
+                template: carte_action_bonne_nuit
+                name: Bonne nuit
+                icon: mdi:weather-night
+
+          # ==========================================================
+          # 🌡️ TEMPÉRATURES
+          # ==========================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🌡️ Températures
+
+              - type: grid
+                square: false
+                columns: 3
+                cards:
+                  - type: custom:button-card
+                    template: kpi_icone_meteo
+                    entity: sensor.temperature_jardin
+                    name: Extérieur
+
+                  - type: custom:button-card
+                    template: socle_kpi
+                    name: Séjour
+                    entity: sensor.temperature_sejour
+
+                  - type: custom:button-card
+                    template: socle_kpi
+                    name: Maison
+                    entity: sensor.temperature_moyenne_maison
+
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: carte_temperature_min_chambres
+                    entity: sensor.temperature_min_chambres
+                    name: Température minimale
+
+                  - type: custom:button-card
+                    template: carte_temperature_max_chambres
+                    entity: sensor.temperature_max_chambres
+                    name: Température maximale
+
+          # ==========================================================
+          # 🪟 VENTILATION & OUVERTURES
+          # ==========================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🪟 Ventilation et ouvertures
+
+              - type: grid
+                square: false
+                columns: 3
+                cards:
+                  - type: custom:button-card
+                    template: carte_aeration_intention_globale
+                    name: Aération
+
+                  - type: custom:button-card
+                    template: carte_mode_binaire_interprete
+                    entity: input_boolean.vmc_haute_vitesse
+                    name: VMC
+                    icon: mdi:fan
+
+                    tap_action:
+                      action: navigate
+                      navigation_path: /vmc-dashboard/home
+
+                    hold_action:
+                      action: none
+
+                    double_tap_action:
+                      action: none
+
+                    variables:
+                      label_on: High
+                      label_off: Normal
+                      color_on: rgba(244, 67, 54, 0.2)
+                      color_off: rgba(76, 175, 80, 0.2)
+
+                  - type: custom:button-card
+                    template: carte_ouvertures_diagnostic
+                    name: Ouvertures
+
+          # ==========================================================
+          # 💡 ÉCLAIRAGE INTÉRIEUR & EXTÉRIEUR
+          # ==========================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - !include ../includes/section_headers/lumieres.yaml
+
+              - type: grid
+                square: false
+                columns: 4
+                cards:
+                  - type: custom:button-card
+                    template: carte_action_eclairage
+                    entity: switch.prise_jardin
+                    name: Jardin
+                    icon: mdi:lightbulb
+
+                  - type: custom:button-card
+                    template: carte_action_eclairage
+                    entity: switch.prise_lampe_sejour
+                    name: Séjour
+                    icon: mdi:lamp
+
+                  - type: custom:button-card
+                    template: carte_action_eclairage
+                    entity: switch.prise_lampe_parents
+                    name: Parents
+                    icon: mdi:lamp
+
+                  - type: custom:button-card
+                    template: carte_action_eclairage_script
+                    entity: input_boolean.garage_light_state
+                    name: Garage
+                    icon: mdi:lightbulb

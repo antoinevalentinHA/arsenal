@@ -1,0 +1,131 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-ouvertures-dashboard/reglages_ouvertures
+
+      - type: custom:button-card
+        template: bouton_diagnostics_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /diagnostics-ouvertures-dashboard/diagnostics-ouvertures
+
+    ########################################################
+    # 🧱 VERTICAL STACK PRINCIPAL
+    ########################################################
+    cards:
+      - type: vertical-stack
+        cards:
+          # 🏠 Entrée
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+              - !include ../includes/section_headers/entree.yaml
+
+              - type: grid
+                columns: 3
+                square: false
+                cards:
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_garage
+                    name: Garage
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_entree_porte
+                    name: Porte
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_entree_fenetre
+                    name: Fenêtre
+
+          # 🛋️ Séjour
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+              - !include ../includes/section_headers/sejour.yaml
+
+              - type: grid
+                columns: 4
+                square: false
+                cards:
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_sejour_1
+                    name: "1"
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_sejour_2
+                    name: "2"
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_sejour_3
+                    name: "3"
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_sejour_4
+                    name: "4"
+
+          # 🛏️ Chambre parents
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+              - !include ../includes/section_headers/chambre_parents.yaml
+
+              - type: grid
+                columns: 3
+                square: false
+                cards:
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_chambre_parents_gauche
+                    name: Dressing
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_chambre_parents_milieu
+                    name: Fenêtre Gauche
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_chambre_parents_droite
+                    name: Fenêtre Droite
+
+          # 🛏️ Chambre enfants
+          - type: grid
+            columns: 1
+            square: false
+            cards:
+              - !include ../includes/section_headers/chambre_enfants.yaml
+
+              - type: grid
+                columns: 2
+                square: false
+                cards:
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_chambre_matthieu
+                    name: Fenêtre Matthieu
+
+                  - type: custom:button-card
+                    template: contact_sensor
+                    entity: binary_sensor.contact_chambre_arnaud
+                    name: Fenêtre Arnaud

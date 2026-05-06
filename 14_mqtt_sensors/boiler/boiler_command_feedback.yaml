@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSORS (BOILER / COMMAND FEEDBACK)
+# ----------------------------------------------------------
+# 📌 Fichier
+#   14_mqtt_sensors/boiler/boiler_command_feedback.yaml
+#
+# 🎯 ROLE
+#   Exposer les retours bruts du bus de commande chaudiere :
+#   acquittements d'execution et derniere erreur publiee
+#   par la passerelle.
+#
+# 🧱 PRINCIPE
+#   - Mapping direct des topics MQTT ack/error vers des
+#     sensors Home Assistant
+#   - Payloads JSON conserves bruts comme etat du sensor
+#   - Aucun value_template ni extraction de champs a ce stade
+#   - Aucune logique metier
+#
+# 📥 SOURCE
+#   Namespace contrat :
+#     - boiler/ack/...
+#     - boiler/error/...
+#   References :
+#     - 03_namespace_canonique.md §3.4 et §3.5
+#     - 13_politique_payload.md
+#     - 14_semantique_ack.md
+#
+# ⚠️ IMPORTANT
+#   - Couche strictement observation
+#   - accepted n'est PAS un succes metier
+#   - L'interpretation des champs JSON est deleguee aux
+#     couches template / diagnostic
+# ==========================================================
+
+- name: "Boiler ack heating set temperature raw"
+  unique_id: boiler_ack_heating_set_temperature_raw
+  state_topic: "boiler/ack/heating/set_temperature"
+  qos: 1
+  icon: mdi:message-processing-outline
+
+- name: "Boiler ack heating set curve slope raw"
+  unique_id: boiler_ack_heating_set_curve_slope_raw
+  state_topic: "boiler/ack/heating/set_curve_slope"
+  qos: 1
+  icon: mdi:message-processing-outline
+
+- name: "Boiler ack heating set curve shift raw"
+  unique_id: boiler_ack_heating_set_curve_shift_raw
+  state_topic: "boiler/ack/heating/set_curve_shift"
+  qos: 1
+  icon: mdi:message-processing-outline
+
+- name: "Boiler ack dhw set setpoint raw"
+  unique_id: boiler_ack_dhw_set_setpoint_raw
+  state_topic: "boiler/ack/dhw/set_setpoint"
+  qos: 1
+  icon: mdi:message-processing-outline
+
+- name: "Boiler error last raw"
+  unique_id: boiler_error_last_raw
+  state_topic: "boiler/error/last"
+  qos: 1
+  icon: mdi:alert-circle-outline

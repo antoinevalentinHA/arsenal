@@ -1,0 +1,580 @@
+arsenal-dashboard:
+  mode: yaml
+  title: Accueil
+  icon: mdi:view-dashboard
+  show_in_sidebar: true
+  filename: 18_lovelace/dashboards/arsenal.yaml
+
+navigation-dashboard:
+  mode: yaml
+  title: Menu
+  icon: mdi:compass
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/navigation.yaml
+
+aeration-dashboard:
+  mode: yaml
+  title: Aération
+  icon: mdi:air-filter
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/aeration.yaml
+
+alarme-dashboard:
+  mode: yaml
+  title: Alarme
+  icon: mdi:shield-home
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/alarme.yaml
+
+chauffage-dashboard:
+  mode: yaml
+  title: Chauffage
+  icon: mdi:fire
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/chauffage.yaml
+
+clim-dashboard:
+  mode: yaml
+  title: Climatisation
+  icon: mdi:snowflake
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/clim.yaml
+
+deshumidificateur-dashboard:
+  mode: yaml
+  title: Déshumidificateur
+  icon: mdi:water-off
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/deshumidificateur.yaml
+
+eclairage-dashboard:
+  mode: yaml
+  title: Éclairage
+  icon: mdi:lightbulb
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/eclairage.yaml
+
+ecs-dashboard:
+  mode: yaml
+  title: ECS
+  icon: mdi:water-boiler
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/ecs.yaml
+
+ecs-petite-maison-dashboard:
+  mode: yaml
+  title: ECS Petite Maison
+  icon: mdi:water-boiler
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/ecs_petite_maison.yaml
+
+system-dashboard:
+  mode: yaml
+  title: Système
+  icon: mdi:server
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/system.yaml
+
+prises-dashboard:
+  mode: yaml
+  title: Prises
+  icon: mdi:power-socket
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/prises.yaml
+
+vmc-dashboard:
+  mode: yaml
+  title: VMC
+  icon: mdi:fan
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/vmc.yaml
+
+volets-dashboard:
+  mode: yaml
+  title: Volets
+  icon: mdi:window-shutter
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/volets.yaml
+
+sante-dashboard:
+  mode: yaml
+  title: Santé
+  icon: mdi:stethoscope
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/sante.yaml
+
+sommeil-dashboard:
+  mode: yaml
+  title: Sommeil
+  icon: mdi:sleep
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/sommeil.yaml
+
+cardio-dashboard:
+  mode: yaml
+  title: Cardio Nuit
+  icon: mdi:heart-pulse
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/frequence_cardiaque.yaml
+
+ouvertures-dashboard:
+  mode: yaml
+  title: Ouvertures
+  icon: mdi:door
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/ouvertures.yaml
+
+mouvements-dashboard:
+  mode: yaml
+  title: Mouvements
+  icon: mdi:motion-sensor
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/mouvements.yaml
+
+modes-dashboard:
+  mode: yaml
+  title: Modes
+  icon: mdi:account-switch
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/modes.yaml
+
+nas-dashboard:
+  mode: yaml
+  title: NAS
+  icon: mdi:nas
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/nas.yaml
+
+ups-dashboard:
+  mode: yaml
+  title: UPS
+  icon: mdi:power-plug-battery
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/ups.yaml
+
+bluetti-dashboard:
+  mode: yaml
+  title: Bluetti
+  icon: mdi:power-plug-battery
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/bluetti.yaml
+
+audi-dashboard:
+  mode: yaml
+  title: Audi
+  icon: mdi:car
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/voiture/audi.yaml
+
+imprimerie-dashboard:
+  mode: yaml
+  title: Imprimerie
+  icon: mdi:office-building
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/imprimerie/imprimerie.yaml
+
+meteo-temperature-dashboard:
+  mode: yaml
+  title: Température
+  icon: mdi:thermometer
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_temperature.yaml
+
+meteo-humidite-relative-dashboard:
+  mode: yaml
+  title: Humidité relative
+  icon: mdi:water-percent
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_humidite_relative.yaml
+
+meteo-humidite-absolue-dashboard:
+  mode: yaml
+  title: Humidité absolue
+  icon: mdi:water
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_humidite_absolue.yaml
+
+meteo-humidex-dashboard:
+  mode: yaml
+  title: Humidex
+  icon: mdi:thermometer-water
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_humidex.yaml
+
+meteo-bruit-dashboard:
+  mode: yaml
+  title: Bruit
+  icon: mdi:volume-medium
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_bruit.yaml
+
+meteo-co2-dashboard:
+  mode: yaml
+  title: CO₂
+  icon: mdi:molecule-co2
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_co2.yaml
+
+meteo-precipitations-dashboard:
+  mode: yaml
+  title: Précipitations
+  icon: mdi:weather-pouring
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_precipitations.yaml
+
+meteo-pression-dashboard:
+  mode: yaml
+  title: Pression
+  icon: mdi:gauge
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_pression.yaml
+
+meteo-publique-dashboard:
+  mode: yaml
+  title: Météo Publique
+  icon: mdi:weather-cloudy
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_publique.yaml
+
+meteo-min-max-temperature-dashboard:
+  mode: yaml
+  title: Températures Min · Max
+  icon: mdi:chart-line
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_temperature_min_max.yaml
+
+meteo-backups-dashboard:
+  mode: yaml
+  title: Météo Backups
+  icon: mdi:database
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_backups.yaml
+
+audi-batterie-dashboard:
+  mode: yaml
+  title: Batterie
+  icon: mdi:car-battery
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/voiture/audi_batterie.yaml
+
+audi-securite-dashboard:
+  mode: yaml
+  title: Sécurité
+  icon: mdi:lock
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/voiture/audi_securite.yaml
+
+imprimerie-bruit-dashboard:
+  mode: yaml
+  title: Bruit
+  icon: mdi:volume-high
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/imprimerie/imprimerie_bruit.yaml
+
+imprimerie-meteo-temperature-dashboard:
+  mode: yaml
+  title: Temperature
+  icon: mdi:thermometer
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/imprimerie/meteo/temperature.yaml
+
+imprimerie-meteo-humidite-relative-dashboard:
+  mode: yaml
+  title: Humidite relative
+  icon: mdi:water-percent
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/imprimerie/meteo/humidite_relative.yaml
+
+imprimerie-meteo-humidite-absolue-dashboard:
+  mode: yaml
+  title: Humidite absolue
+  icon: mdi:water
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/imprimerie/meteo/humidite_absolue.yaml
+
+imprimerie-meteo-humidex-dashboard:
+  mode: yaml
+  title: Humidex
+  icon: mdi:thermometer-water
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/imprimerie/meteo/humidex.yaml
+
+imprimerie-stockage-dashboard:
+  mode: yaml
+  title: Stockage
+  icon: mdi:archive
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/imprimerie/imprimerie_stockage.yaml
+
+imprimerie-atelier-dashboard:
+  mode: yaml
+  title: Atelier
+  icon: mdi:factory
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/imprimerie/imprimerie_atelier.yaml
+
+imprimerie-nas-dashboard:
+  mode: yaml
+  title: NAS Imprimerie
+  icon: mdi:nas
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/imprimerie/nas.yaml
+
+id-automatisations-dashboard:
+  mode: yaml
+  title: ID Automatisations
+  icon: mdi:numeric
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/id_automatisations.yaml
+
+reglages-maison-dashboard:
+  mode: yaml
+  title: Modes
+  icon: mdi:home-variant
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/modes.yaml
+
+reglages-alarme-dashboard:
+  mode: yaml
+  title: Alarme
+  icon: mdi:shield-home
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/alarme.yaml
+
+reglages-climatisation-dashboard:
+  mode: yaml
+  title: Climatisation
+  icon: mdi:snowflake
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/climatisation.yaml
+
+reglages-chauffage-dashboard:
+  mode: yaml
+  title: Chauffage
+  icon: mdi:fire
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/chauffage.yaml
+
+reglages-ecs-dashboard:
+  mode: yaml
+  title: ECS
+  icon: mdi:water-pump
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/ecs.yaml
+
+reglages-ecs-planning-dashboard:
+  mode: yaml
+  title: Planning ECS
+  icon: mdi:calendar-week
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/ecs_planning.yaml
+
+reglages-ecs-petite-maison-dashboard:
+  mode: yaml
+  title: ECS Petite Maison
+  icon: mdi:water-pump
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/ecs_petite_maison.yaml
+
+reglages-ouvertures-dashboard:
+  mode: yaml
+  title: Ouvertures
+  icon: mdi:door-open
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/ouvertures.yaml
+
+reglages-aeration-dashboard:
+  mode: yaml
+  title: Aération
+  icon: mdi:window-open-variant
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/aeration.yaml
+
+reglages-meteo-dashboard:
+  mode: yaml
+  title: Calibration
+  icon: mdi:weather-cloudy-clock
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/meteo.yaml
+
+reglages-deshumidificateur-dashboard:
+  mode: yaml
+  title: Déshumidificateur
+  icon: mdi:air-filter
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/deshumidificateur.yaml
+
+reglages-vmc-dashboard:
+  mode: yaml
+  title: VMC
+  icon: mdi:fan
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/vmc.yaml
+
+reglages-eclairage-dashboard:
+  mode: yaml
+  title: Éclairage
+  icon: mdi:lightbulb
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/eclairage.yaml
+
+reglages-volets-dashboard:
+  mode: yaml
+  title: Volets
+  icon: mdi:window-shutter
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/volets.yaml
+
+reglages-sommeil-dashboard:
+  mode: yaml
+  title: Sommeil
+  icon: mdi:sleep
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/sommeil.yaml
+
+reglages-telephones-dashboard:
+  mode: yaml
+  title: Téléphones
+  icon: mdi:cellphone-cog
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/reglages/telephones.yaml
+
+diagnostics-alarme-dashboard:
+  mode: yaml
+  title: Alarme
+  icon: mdi:shield-home
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/alarme.yaml
+
+diagnostics-climatisation-dashboard:
+  mode: yaml
+  title: Climatisation
+  icon: mdi:snowflake
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/climatisation.yaml
+
+diagnostics-boiler-dashboard:
+  mode: yaml
+  title: Boiler
+  icon: mdi:fire
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/boiler.yaml
+
+diagnostics-chauffage-dashboard:
+  mode: yaml
+  title: Chauffage
+  icon: mdi:fire
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/chauffage.yaml
+
+diagnostics-vannes-dashboard:
+  mode: yaml
+  title: Vannes
+  icon: mdi:radiator
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/vannes_thermo.yaml
+
+diagnostics-thermiques-dashboard:
+  mode: yaml
+  title: Diagnostics Thermiques
+  icon: mdi:fire
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/thermique_chauffage.yaml
+
+diagnostics-ecs-dashboard:
+  mode: yaml
+  title: ECS
+  icon: mdi:water-pump
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/ecs.yaml
+
+diagnostics-aeration-dashboard:
+  mode: yaml
+  title: Aération
+  icon: mdi:window-open-variant
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/aeration.yaml
+
+diagnostics-deshumidificateur-dashboard:
+  mode: yaml
+  title: Déshumidificateur
+  icon: mdi:water-off
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/deshumidificateur.yaml
+
+diagnostics-eclairage-dashboard:
+  mode: yaml
+  title: Simulation de présence
+  icon: mdi:lightbulb
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/eclairage.yaml
+
+diagnostics-ouvertures-dashboard:
+  mode: yaml
+  title: Ouvertures
+  icon: mdi:radar
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/ouvertures.yaml
+
+diagnostics-mouvements-dashboard:
+  mode: yaml
+  title: Mouvements
+  icon: mdi:radar
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/mouvements.yaml
+
+diagnostics-volets-dashboard:
+  mode: yaml
+  title: Volets
+  icon: mdi:weather-pouring
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/volets.yaml
+
+diagnostics-vmc-dashboard:
+  mode: yaml
+  title: VMC
+  icon: mdi:fan
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/vmc.yaml
+
+diagnostics-automatisations-dashboard:
+  mode: yaml
+  title: Automatisations
+  icon: mdi:toggle-switch-off
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/automatisations.yaml
+
+diagnostics-batteries-dashboard:
+  mode: yaml
+  title: Batteries
+  icon: mdi:battery
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/batteries.yaml
+
+diagnostics-zigbee-dashboard:
+  mode: yaml
+  title: Zigbee
+  icon: mdi:zigbee
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/zigbee.yaml
+
+diagnostics-bluetooth-dashboard:
+  mode: yaml
+  title: Bluetooth
+  icon: mdi:bluetooth
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/bluetooth.yaml
+
+diagnostics-netatmo-wifi-dashboard:
+  mode: yaml
+  title: Netatmo Wi-Fi
+  icon: mdi:wifi
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/netatmo_wifi.yaml
+
+diagnostics-netatmo-dashboard:
+  mode: yaml
+  title: Netatmo RF
+  icon: mdi:signal
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/diagnostics/netatmo_rf.yaml

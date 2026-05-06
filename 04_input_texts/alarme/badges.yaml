@@ -17,7 +17,7 @@
 #
 # 🔗 Utilisation :
 #   - Automatisation :
-#       10_automations/alarme/desarmement_badge.yaml
+#       11_automations/alarme/desarmement_badge.yaml
 #     → comparaison du badge lu avec la liste autorisée
 #
 # 🧠 Principe ARSENAL :

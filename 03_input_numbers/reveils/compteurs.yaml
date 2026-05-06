@@ -33,8 +33,8 @@
 #       • lovelace/dashboards/diagnostics/sommeil.yaml
 #       • lovelace/dashboards/meteo/meteo_bruit.yaml
 #   - Automatisations :
-#       • 10_automations/reveils/compteurs/*.yaml
-#       • 10_automations/reveils/reset/*.yaml
+#       • 11_automations/reveils/compteurs/*.yaml
+#       • 11_automations/reveils/reset/*.yaml
 #
 # 📐 Unité :
 #   - Nombre de réveils (compteur entier)
