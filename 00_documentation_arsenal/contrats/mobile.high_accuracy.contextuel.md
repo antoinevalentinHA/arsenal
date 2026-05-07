@@ -1,7 +1,7 @@
-# CONTRAT `mobile.high_accuracy.contextuel` — v2.1
+# CONTRAT `mobile.high_accuracy.contextuel` — v2.2
 
-**Statut :** Draft — à valider avant implémentation  
-**Domaine :** Infrastructure mobile / Perception  
+**Statut :** Normatif
+**Domaine :** Infrastructure mobile / Perception
 **Portée :** Pilotage contextuel de la précision de localisation via Companion App
 
 ---
@@ -59,7 +59,7 @@ Capteurs de présence (GPS / Wi-Fi)
 
 ## 3. Principe fondamental
 
-> Le mode High Accuracy est un amplificateur de perception contextuel.  
+> Le mode High Accuracy est un amplificateur de perception contextuel.
 > Il ne constitue ni une preuve, ni une décision, ni un état métier.
 
 Conséquences :
@@ -82,6 +82,7 @@ Conséquences :
 | I-6 | Le High Accuracy ne constitue jamais un état exploitable métier |
 | I-7 | Le désarmement automatique ne consulte jamais l'état du High Accuracy ni le succès supposé d'une commande Companion |
 | I-8 | Aucune duplication de calcul géographique en template |
+| I-9 | Le mécanisme High Accuracy est réentrant. Toute entrée valide dans `zone.approche_securite` sous `armed_away` ouvre un cycle indépendant, sans considération d'un cycle antérieur. |
 
 ---
 
@@ -103,7 +104,7 @@ Conséquences :
 - Force une remontée immédiate des capteurs
 - Best-effort uniquement
 - Aucun ACK attendu, aucune garantie de résultat
-- N'est pas utilisé dans le mécanisme High Accuracy contextuel v2.1
+- N'est pas utilisé dans le mécanisme High Accuracy contextuel v2.2
 - Peut être mobilisé dans d'autres contextes d'infrastructure si justifié
 
 ---
@@ -143,6 +144,14 @@ Le High Accuracy est activé, **par personne**, si :
 
 L'activation est déclenchée sur un événement d'entrée dans `zone.approche_securite`, et jamais sur un état statique de présence dans cette zone. Une implémentation ne doit pas activer le High Accuracy au démarrage ou au rechargement sur la seule base d'un état déjà égal à `home`.
 
+### Réentrance
+
+Chaque événement d'entrée dans `zone.approche_securite` alors que `alarm_control_panel.alarme_maison` est `armed_away` ouvre un nouveau cycle High Accuracy indépendant.
+
+Un cycle précédent — terminé par désarmement, expiration de `timer.high_accuracy_securite` — ne bloque jamais l'ouverture d'un cycle ultérieur.
+
+L'activation réinitialise `timer.high_accuracy_securite` à chaque entrée valide, indépendamment de son état antérieur.
+
 ---
 
 ## 8. Conditions de désactivation
@@ -163,9 +172,17 @@ extérieur → entrée zone.approche_securite → High Accuracy ON
         → entrée zone.maison_securite → présence détectée → désarmement → High Accuracy OFF
 ```
 
-### Clause fausse approche (hors périmètre v2.1)
+### Portée du timer
 
-La gestion du cas "sortie de zone.approche_securite sans retour domicile" (demi-tour, fausse approche) n'est pas traitée explicitement en v2.1. Le timeout défensif en limite les effets de consommation. Un mécanisme d'état dédié fera l'objet d'un avenant si le besoin est confirmé en production.
+`timer.high_accuracy_securite` est un timer d'infrastructure global.
+
+Il ne représente pas l'état d'une personne particulière mais la fenêtre temporelle maximale pendant laquelle le système autorise une phase de perception mobile renforcée.
+
+Toute entrée valide dans `zone.approche_securite`, quelle que soit la personne concernée, réinitialise ce timer global.
+
+### Clause fausse approche (hors périmètre v2.2)
+
+La gestion du cas "sortie de zone.approche_securite sans retour domicile" (demi-tour, fausse approche) n'est pas traitée explicitement en v2.2. Le timeout défensif en limite les effets de consommation. Un mécanisme d'état dédié fera l'objet d'un avenant si le besoin est confirmé en production.
 
 ---
 
@@ -202,6 +219,8 @@ Le dimensionnement optimal ne peut pas être purement théorique. Il doit être 
 | Configurer une durée maximale excessive | dérive batterie, mauvaise implémentation |
 | Dupliquer la logique géographique en template | violation I-8 |
 | Utiliser `script.mobile_update_sensors` pour influencer le désarmement | inefficace — aucun effet sur la décision |
+| Conditionner l'activation à l'absence d'un cycle High Accuracy en cours | violation I-9 — bloque la réentrance |
+| Implémenter l'automation d'activation en `mode: single` ou `mode: queued` | incompatible avec la réactivité et la réentrance immédiate attendues |
 
 ---
 
@@ -212,12 +231,13 @@ Le dimensionnement optimal ne peut pas être purement théorique. Il doit être 
 - Amélioration du taux de désarmement automatique
 - Impact batterie maîtrisé, borné par durée maximale
 - Zones métier existantes intactes dans leur rôle et leur périmètre
+- Comportement multi-approche déterministe et réentrant
 
 ---
 
 ## 12. Clause de non-garantie
 
-> Le mode High Accuracy est un mécanisme probabiliste d'amélioration de perception.  
+> Le mode High Accuracy est un mécanisme probabiliste d'amélioration de perception.
 > Il ne garantit ni la détection, ni le délai de remontée des capteurs.
 
 En conséquence :
@@ -234,6 +254,7 @@ En conséquence :
 |---------|----------|
 | `presence.security.individual` | Consommateur aval — ce contrat améliore la qualité des signaux exploités |
 | `alarme.decision_centrale` | Non altéré — le désarmement reste gouverné exclusivement par la décision centrale |
+| `CONTRAT_ZONES.md` | Dépendance amont — référentiel des zones géographiques exploitées |
 | Architecture mobile Companion | Dépendance d'exécution — scripts Core Mobile uniquement |
 
 Ce contrat n'altère aucun des contrats listés.
@@ -248,3 +269,25 @@ Ce contrat n'altère aucun des contrats listés.
 | Niveau | Intermédiaire (entre perception et métier) |
 | Stabilité attendue | Élevée |
 | Fréquence d'évolution | Faible |
+| Version | 2.2 |
+
+---
+
+## Annexe — Note d'implémentation
+
+> Cette annexe est descriptive. Elle ne fait pas partie du corps normatif du contrat.
+
+L'automation d'activation doit être configurée en `mode: restart`. Cette configuration garantit qu'une nouvelle entrée valide interrompt toute exécution antérieure et relance le cycle, conformément à I-9.
+
+`timer.start` étant idempotent en Home Assistant, il réinitialise systématiquement la durée résiduelle, ce qui satisfait directement la clause de réentrance et la portée globale du timer.
+
+Aucune condition `not is_active(timer)` ou équivalent ne doit être ajoutée à l'automation d'activation. Une telle condition violerait I-9 en bloquant les cycles successifs au sein d'une même fenêtre temporelle.
+
+---
+
+## Historique des versions
+
+| Version | Date       | Modification |
+|---------|------------|--------------|
+| 2.1     | —          | Définition initiale du High Accuracy contextuel — cycle nominal linéaire |
+| 2.2     | 2026-05-06 | Ajout I-9 (réentrance) — clause de portée globale du timer — interdictions explicites `mode: single` / `mode: queued` / condition « déjà actif » — annexe d'implémentation `mode: restart` |

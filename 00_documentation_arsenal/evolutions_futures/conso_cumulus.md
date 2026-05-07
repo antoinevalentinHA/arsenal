@@ -1,1 +1,0 @@
-sensor.petite_maison_modbuslink_1_2_electric_energy_consumption

@@ -114,26 +114,39 @@ Toute divergence entre forme du fichier et mode d'include constitue une erreur s
 
 ```text
 homeassistant/
+├── 00_documentation_arsenal/
+│   └── architecture / changelog / contrats / evolutions_futures / outils_externes / schemas_ascii / ui
 ├── 01_customize/
 ├── 02_groups/
 ├── 03_input_numbers/
+│   └── <domaines_fonctionnels>/
 ├── 04_input_texts/
+│   └── <domaines_fonctionnels>/
 ├── 05_input_booleans/
+│   └── <domaines_fonctionnels>/
 ├── 06_input_selects/
+│   └── <domaines_fonctionnels>/
 ├── 07_input_datetimes/
+│   └── <domaines_fonctionnels>/
 ├── 08_timers/
+│   └── <domaines_fonctionnels>/
 ├── 09_counters/
+│   └── <domaines_fonctionnels>/
 ├── 10_scripts/
+│   └── <domaines_fonctionnels>/
 ├── 11_automations/
 │   └── <domaines_fonctionnels>/
 ├── 12_template_sensors/
+│   └── <domaines_fonctionnels>/
 ├── 13_sensor_platforms/
+│   └── <types_de_plateformes>/
 ├── 14_mqtt_sensors/
+│   └── <sources_mqtt>/
 ├── 15_mqtt_binary_sensors/
+│   └── <sources_mqtt>/
 ├── 16_template_alarm_panels/
 ├── 17_zones/
-│   ├── maison_securite.yaml
-│   └── approche_securite.yaml
+│   └── <zones_metier>.yaml
 ├── 18_lovelace/
 │   ├── dashboards/
 │   ├── includes/
@@ -141,6 +154,10 @@ homeassistant/
 │   ├── resources.yaml
 │   └── dashboards.yaml
 ├── 19_button_card_templates/
+│   ├── 00_socles/
+│   ├── 10_generiques/
+│   ├── 20_transverses/
+│   └── 40_dashboards/
 ├── utility_meter.yaml
 ├── recorder.yaml
 ├── logbook.yaml

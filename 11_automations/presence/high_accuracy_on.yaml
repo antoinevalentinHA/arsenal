@@ -32,7 +32,7 @@
   alias: "Présence - Activation haute précision"
   description: "Activation High Accuracy à l'entrée dans zone.approche_securite sous alarme armée"
 
-  mode: parallel
+  mode: restart
 
   trigger:
     - platform: zone

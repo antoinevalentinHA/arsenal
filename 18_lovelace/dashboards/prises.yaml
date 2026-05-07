@@ -39,6 +39,10 @@ views:
                     text: Basculer l'état de la prise ?
                   entity: switch.prise_onduleur
 
+          - type: grid
+            columns: 3
+            square: false
+            cards:
               - type: custom:button-card
                 template: prise_template
                 entity: switch.prise_chambre_arnaud
@@ -60,6 +64,17 @@ views:
                   confirmation:
                     text: Basculer l'état de la prise ?
                   entity: switch.prise_chambre_matthieu
+
+              - type: custom:button-card
+                template: prise_template
+                entity: switch.prise_palier
+                name: iDiamant
+                icon: mdi:window-shutter
+                tap_action:
+                  action: toggle
+                  confirmation:
+                    text: Basculer l'état de la prise ?
+                  entity: switch.prise_palier
 
           - !include ../includes/section_headers/lumieres.yaml
 
@@ -187,7 +202,7 @@ views:
             name: 📡 Prises relais
 
           - type: grid
-            columns: 4
+            columns: 3
             square: false
             cards:
               - type: custom:button-card
@@ -211,17 +226,6 @@ views:
                   confirmation:
                     text: Basculer l'état de la prise ?
                   entity: switch.prise_cage_escalier_rdc
-
-              - type: custom:button-card
-                template: prise_template
-                entity: switch.prise_palier
-                name: Palier étage
-                icon: mdi:access-point
-                tap_action:
-                  action: toggle
-                  confirmation:
-                    text: Basculer l'état de la prise ?
-                  entity: switch.prise_palier
 
               - type: custom:button-card
                 template: prise_template

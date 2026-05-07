@@ -341,7 +341,7 @@ views:
                         - color: "#0288D1"
                     tap_action:
                       action: navigate
-                      navigation_path: /hassio/ingress/core_configurator
+                      navigation_path: /app/core_configurator
 
                   - type: custom:button-card
                     template: bouton_navigation

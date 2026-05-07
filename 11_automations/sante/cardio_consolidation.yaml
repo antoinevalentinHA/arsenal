@@ -39,9 +39,6 @@
       entity_id: sensor.withings_average_heart_rate_local
 
     - platform: time
-      at: "06:00:00"
-
-    - platform: time
       at: "09:00:00"
 
   condition:
