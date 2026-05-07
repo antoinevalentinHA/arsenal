@@ -1,35 +1,56 @@
 # ==========================================================
-# 🧠 ARSENAL — MQTT SENSORS (BOILER / COMMAND FEEDBACK)
+# 🧠 ARSENAL — MQTT SENSOR
+#     Boiler / Command Feedback — Retours bus de commande
 # ----------------------------------------------------------
-# 📌 Fichier
-#   14_mqtt_sensors/boiler/boiler_command_feedback.yaml
+# 🎯 RÔLE
+#   Exposer en transport passif les payloads bruts du bus
+#   de commande chaudière : acquittements d'exécution et
+#   dernière erreur publiée par la passerelle.
 #
-# 🎯 ROLE
-#   Exposer les retours bruts du bus de commande chaudiere :
-#   acquittements d'execution et derniere erreur publiee
-#   par la passerelle.
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
 #
-# 🧱 PRINCIPE
-#   - Mapping direct des topics MQTT ack/error vers des
-#     sensors Home Assistant
-#   - Payloads JSON conserves bruts comme etat du sensor
-#   - Aucun value_template ni extraction de champs a ce stade
-#   - Aucune logique metier
+# 🔖 NATURE
+#   transport_json
 #
-# 📥 SOURCE
-#   Namespace contrat :
-#     - boiler/ack/...
-#     - boiler/error/...
-#   References :
-#     - 03_namespace_canonique.md §3.4 et §3.5
-#     - 13_politique_payload.md
-#     - 14_semantique_ack.md
+# 🆔 UNIQUE_ID
+#   boiler_ack_heating_set_temperature_raw
+#   boiler_ack_heating_set_curve_slope_raw
+#   boiler_ack_heating_set_curve_shift_raw
+#   boiler_ack_dhw_set_setpoint_raw
+#   boiler_error_last_raw
 #
-# ⚠️ IMPORTANT
-#   - Couche strictement observation
-#   - accepted n'est PAS un succes metier
-#   - L'interpretation des champs JSON est deleguee aux
-#     couches template / diagnostic
+# 📋 TRANSPORT
+#   state_topic          :
+#     - boiler/ack/heating/set_temperature
+#     - boiler/ack/heating/set_curve_slope
+#     - boiler/ack/heating/set_curve_shift
+#     - boiler/ack/dhw/set_setpoint
+#     - boiler/error/last
+#   namespace            : boiler/ack/... | boiler/error/...
+#   qos                  : 1
+#   json_attributes      : non (payload JSON conservé brut comme état)
+#   structure JSON       : non extraite ici — interprétation
+#                          déléguée aux couches template / diagnostic
+#
+# 🔗 DÉPENDANCES
+#   Lit : bus de commande chaudière via broker MQTT
+#   Réf : 03_namespace_canonique.md §3.4 §3.5,
+#         13_politique_payload.md,
+#         14_semantique_ack.md
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système (accepted ≠ succès métier)
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 
 - name: "Boiler ack heating set temperature raw"

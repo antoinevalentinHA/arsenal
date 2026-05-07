@@ -1,38 +1,25 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : État des batteries (capteurs)
+# 🧠 ARSENAL — CUSTOMIZE
+#     Maintenance / Fiabilité — Capteurs de batterie
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Centraliser l’affichage, le nommage et l’identification
-#    de l’ensemble des capteurs de niveau de batterie
-#    du système Home Assistant Arsenal.
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage des capteurs
+#   de niveau de batterie à destination des consommateurs
+#   UI du domaine maintenance / fiabilité système.
 #
-# 🧠 Lecture métier :
-#    Les capteurs de batterie sont des INDICATEURS DE SANTÉ
-#    du système, pas des capteurs métier.
-#    Ils servent à anticiper les défaillances matérielles
-#    et à garantir la fiabilité des automatisations.
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 🧩 Périmètre :
-#    - Définit les friendly_name et icônes
-#    - Regroupe tous les capteurs battery (Zigbee, Netatmo,
-#      SwitchBot, alarmes, boutons, etc.)
-#    - Fournit une lecture claire par zone et par usage
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🔗 Dépendances :
-#    - Capteurs battery exposés par les intégrations
-#    - Utilisés par :
-#      • dashboards de maintenance
-#      • alertes batterie faible
-#      • audits de fiabilité
-#
-# 🚫 Interdits :
-#    - Prendre une décision métier basée sur ces capteurs
-#    - Modifier des seuils ou déclencher des actions ici
-#    - Introduire de la logique conditionnelle
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - maintenance / fiabilité système
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ############################################################

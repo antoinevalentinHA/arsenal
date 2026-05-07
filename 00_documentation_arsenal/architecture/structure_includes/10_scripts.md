@@ -142,22 +142,41 @@ Exemples courants :
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Exécuter une séquence contrôlée d’actions ou
-#   d’orchestrations dans le système Arsenal.
+#   <Finalité système exacte du script — une phrase>
 #
 # 🧩 PÉRIMÈTRE
-#   Nature du script :
-#   - Action pure
-#   - Orchestration
-#   - Décision centrale
-#   - Qualification post-action
+#   - Couvre : <responsabilité incluse>
+#   - Exclut : <responsabilité explicitement hors périmètre>
 #
-# 📡 SOURCES
-#   - Entités, événements ou appels externes consommés
+# 🔖 NATURE
+#   <Action pure | Orchestration | Décision centrale
+#    | Transaction applicative | Remédiation
+#    | Qualification post-action | Pipeline métier
+#    | Utilitaire réutilisable>
+#
+# ⚙️ MODE
+#   <single | restart | queued | parallel>
+#   Justification : <raison du choix>
+#
+# 🔗 DÉPENDANCES
+#   Lit      : <entités consultées>
+#   Appelle  : <scripts, services ou événements appelés>
+#   Écrit    : <helpers, entités ou états modifiés>
+#
+# 🧠 AUTORITÉ
+#   <Décision | Exécution | Les deux — avec justification explicite>
+#
+# ♻️ IDEMPOTENCE
+#   <Garantie | Non garantie — justification>
 #
 # 🚫 INTERDITS
 #   - Introduire une logique diffuse
-#   - Mélanger décision et exécution sans contrat explicite
 #   - Contourner les autorités métier établies
+#   - Appel circulaire
+#   - Écrire un état sans traçabilité
+#   - <Interdits spécifiques au domaine>
+#
+# 🏷️ STATUT
+#   <Socle | Orchestration | Pipeline | Utilitaire> — Arsenal v14.x
 # ==========================================================
 ```

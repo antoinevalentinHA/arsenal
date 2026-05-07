@@ -1,44 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Durée max cycle simulation présence
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Durée max cycle simulation présence
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir la durée MAXIMALE autorisée pour un cycle
-#    d’éclairage dans le cadre de la simulation de présence.
+# 🎯 RÔLE
+#   Stocker la durée maximale autorisée pour un cycle
+#   d'éclairage de simulation de présence.
 #
-# 🧩 Principe :
-#    - La simulation de présence repose sur des cycles
-#      d’allumage/extinction pseudo-aléatoires.
-#    - Ce paramètre fixe une borne HAUTE stricte
-#      afin d’éviter des durées irréalistes ou suspectes.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Borne haute de cycle simulation uniquement
+#   - Valeur exprimée en minutes
+#   - Paramètre consommé par les binary_sensors décisionnels
+#   - Paramètre utilisé par diagnostics et notifications
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Valeur exprimée en minutes
-#    - Utilisée comme limite supérieure dans les
-#      binary_sensors de décision
-#    - Sert également de référence pour les notifications
-#      de cycles anormalement longs
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Binary sensors :
-#        • eclairage/simulation_chambre_parents.yaml
-#        • eclairage/simulation_garage.yaml
-#    - Automatisation :
-#        • eclairage/simulation_presence/notification_oubli.yaml
-#    - Dashboards :
-#        • réglages éclairage
-#        • diagnostics simulation présence
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme durée minimale
+#   - Utiliser ce helper comme délai d'absence
+#   - Déclencher directement un cycle d'éclairage
+#   - Implémenter localement une logique pseudo-aléatoire
+#   - Modifier automatiquement cette valeur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Ne pas confondre avec :
-#    - Durée MIN d’un cycle
-#    - Délais d’absence
-#    - Durées d’éclairage fixes
-#
-# 📐 Unité :
-#    - minutes (borne haute d’un cycle)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Garde-fou simulation de présence
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 duree_max_cycle_simulation_presence:

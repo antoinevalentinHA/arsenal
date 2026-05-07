@@ -1,10 +1,31 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER :
-#     aeration_delta_t_utilise
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — ΔT utilisé
 # ----------------------------------------------------------
-# 🎯 ROLE
-#   Trace UI : ΔT "utilisé" pour l'épisode d'aération.
-#   Monotone max : peut empirer au fil de l'épisode.
+# 🎯 RÔLE
+#   Stocker la valeur ΔT utilisée pour l'épisode
+#   d'aération en cours.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Trace pipeline et affichage UI uniquement
+#   - Valeur monotone maximale sur épisode
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Registre de pipeline | Valeur intermédiaire | Debug
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser cette valeur comme seuil métier
+#   - Modifier manuellement cette valeur sans traçabilité
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_delta_t_utilise:

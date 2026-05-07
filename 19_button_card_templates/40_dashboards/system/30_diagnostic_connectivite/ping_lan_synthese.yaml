@@ -1,0 +1,80 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Système / Connectivité — Synthèse Ping LAN
+#
+# 🔖 NATURE  : carte_pivot
+# 🖼️ TYPE UI : synthese
+# 🎚️ CONFIANCE : forte
+# ==========================================================
+# 🎯 RÔLE
+#   Fournir une synthèse visuelle transverse de la
+#   joignabilité réseau des équipements surveillés par Ping.
+#
+# 🧩 PÉRIMÈTRE
+#   - Affichage et interprétation visuelle uniquement
+#   - Aucune logique métier exécutive
+#   - Aucune autorité système
+#
+# 🔗 DÉPENDANCES
+#   Lit      : sensor.ping_lan_synthese
+#   Template : socle_status_label_72
+#
+# 🚫 INTERDITS
+#   - Prendre une décision métier
+#   - Remplacer une automatisation
+#   - Produire un effet matériel
+#   - Devenir une source de vérité système
+#
+# 🏷️ STATUT
+#   Carte UI — Arsenal v14.x
+# ==========================================================
+
+ping_lan_synthese:
+  template:
+    - socle_status_label_72
+
+  entity: sensor.ping_lan_synthese
+
+  icon: mdi:lan
+
+  state_display: >
+    [[[
+      const s = entity.state;
+
+      if (s === 'ok')
+        return 'Nominal';
+
+      if (s === 'degraded')
+        return 'Dégradé';
+
+      if (s === 'critical')
+        return 'Critique';
+
+      if (s === 'unknown')
+        return 'Indéterminé';
+
+      return 'Inconnu';
+    ]]]
+
+  label: >
+    [[[
+      return entity.attributes.cause || 'nominal';
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const s = entity.state;
+
+            if (s === 'ok')
+              return 'rgba(76, 175, 80, 0.2)';
+
+            if (s === 'degraded')
+              return 'rgba(255, 152, 0, 0.2)';
+
+            if (s === 'critical')
+              return 'rgba(244, 67, 54, 0.2)';
+
+            return 'rgba(158, 158, 158, 0.1)';
+          ]]]

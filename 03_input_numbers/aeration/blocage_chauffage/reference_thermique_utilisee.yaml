@@ -1,10 +1,31 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER :
-#     aeration_reference_thermique_utilisee
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Référence thermique utilisée
 # ----------------------------------------------------------
-# 🎯 ROLE
-#   Trace UI : référence thermique globale utilisée (T_REF).
-#   Calculée en M1 à partir des snapshots ref_temp_*.
+# 🎯 RÔLE
+#   Stocker la référence thermique globale utilisée par le
+#   pipeline d'aération (T_REF).
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Trace pipeline et affichage UI uniquement
+#   - Valeur calculée en M1 à partir des snapshots ref_temp_*
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Registre de pipeline | Valeur intermédiaire | Debug
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser cette valeur comme seuil métier
+#   - Modifier manuellement cette valeur sans traçabilité
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_reference_thermique_utilisee:

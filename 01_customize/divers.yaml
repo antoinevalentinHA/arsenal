@@ -1,36 +1,27 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : États système & intentions
+# 🧠 ARSENAL — CUSTOMIZE
+#     Pilotage logique — États système & intentions
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Centraliser le nommage lisible des entités représentant
-#    des états LOGIQUES du système et des intentions utilisateur.
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage des entités
+#   représentant des états logiques du système et des
+#   intentions utilisateur, à destination des consommateurs
+#   UI du domaine pilotage.
 #
-# 🧠 Lecture métier :
-#    Ce fichier regroupe des entités qui ne sont pas de simples
-#    capteurs physiques, mais des représentations de :
-#    - l’état réel du système (brûleur, ouvertures, présence)
-#    - des autorisations ou blocages logiques
-#    - des intentions explicites de l’utilisateur
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 🧩 Périmètre :
-#    - Définit uniquement les friendly_name
-#    - Améliore la lisibilité des dashboards et diagnostics
-#    - Ne contient AUCUNE logique de décision
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🔗 Dépendances :
-#    - Automatisations et scripts Arsenal
-#    - Pipelines chauffage / clim / aération / sécurité
-#
-# 🚫 Interdits :
-#    - Modifier la logique métier ici
-#    - Déplacer une décision dans le customize
-#    - Utiliser ces entités comme capteurs physiques
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle logique / pilotage
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
-
 
 ############################################################
 # 🔥 CHAUFFAGE / ECS — ÉTATS RÉELS
@@ -41,7 +32,6 @@ binary_sensor.bruleur_mode_chauffage:
 
 binary_sensor.bruleur_mode_ecs:
   friendly_name: "Brûleur ECS"
-
 
 ############################################################
 # 🚪 OUVERTURES & AÉRATION
@@ -59,14 +49,12 @@ input_boolean.aeration_confirmee:
 input_boolean.aeration_episode_en_cours:
   friendly_name: "Aération en cours"
 
-
 ############################################################
 # 🚶 MOUVEMENTS
 ############################################################
 
 binary_sensor.mouvement_maison:
   friendly_name: "Mouvement"
-
 
 ############################################################
 # 👥 PRÉSENCE — MODÈLES LOGIQUES
@@ -81,7 +69,6 @@ binary_sensor.presence_famille_securite:
 binary_sensor.presence_famille:
   friendly_name: "Présence Confort"
 
-
 ############################################################
 # 💡 ÉCLAIRAGE
 ############################################################
@@ -95,14 +82,12 @@ input_boolean.auto_lumiere_jardin_matin:
 input_boolean.auto_lumiere_jardin_soir:
   friendly_name: "Éclairage auto Jardin (soir)"
 
-
 ############################################################
 # 🌬️ DÉSHUMIDIFICATION
 ############################################################
 
 input_boolean.auto_deshumidification_active:
   friendly_name: "Deshum. active (étage)"
-
 
 ############################################################
 # 👶 CONFORT / ENFANTS
@@ -114,7 +99,6 @@ input_boolean.babyphone_arnaud:
 input_boolean.babyphone_matthieu:
   friendly_name: "Babyphone Matthieu"
 
-
 ############################################################
 # 🔥♨️ CHAUFFAGE / CLIM — AUTORISATIONS & BLOCAGES
 ############################################################
@@ -123,7 +107,7 @@ input_boolean.blocage_chauffage_poele:
   friendly_name: "Blocage chauffage (poêle)"
 
 input_boolean.blocage_chauffage_aeration_active:
-  frienly_name: "Blocage chauffage aération (réglage)"
+  friendly_name: "Blocage chauffage aération (réglage)"
 
 input_boolean.blocage_clim_poele:
   friendly_name: "Blocage clim (poêle)"

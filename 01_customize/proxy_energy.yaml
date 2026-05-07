@@ -1,43 +1,28 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : Proxys énergie (Recorder uniquement)
+# 🧠 ARSENAL — CUSTOMIZE
+#     Énergie — Proxys techniques (Recorder)
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir les métadonnées officielles des capteurs proxy
-#    d’énergie afin d’assurer leur compatibilité stricte
-#    avec le Recorder et les statistiques long terme.
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage et de typage
+#   Recorder des capteurs proxy d'énergie à destination
+#   des consommateurs UI et de la couche statistiques
+#   long terme.
 #
-# 🧠 Lecture métier :
-#    Ces capteurs sont des PROXYS techniques internes.
-#    Ils servent de couche de sécurisation et de normalisation
-#    des données énergétiques issues de calculs Arsenal.
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Attributs de typage Recorder (unit_of_measurement,
+#     device_class, state_class, unit_class)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# ⚠️ RÈGLE ARCHITECTURALE FONDAMENTALE :
-#    Ces capteurs NE DOIVENT PAS être utilisés directement
-#    comme sources du dashboard Énergie.
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🧩 Périmètre :
-#    - Définit uniquement :
-#      • unit_of_measurement
-#      • device_class
-#      • state_class
-#      • unit_class
-#    - Garantit l’enregistrement correct à long terme
-#      via le Recorder
-#
-# 🔗 Dépendances :
-#    - Capteurs source calculés ailleurs (gaz, ECS, clim)
-#    - Utilisés par :
-#      • utility_meter
-#      • statistiques long terme
-#
-# 🚫 Interdits :
-#    - Exposer ces capteurs au dashboard Énergie
-#    - Modifier les calculs de consommation ici
-#    - Utiliser ces capteurs pour une décision métier
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - couche technique interne / intégrité des données
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ############################################################

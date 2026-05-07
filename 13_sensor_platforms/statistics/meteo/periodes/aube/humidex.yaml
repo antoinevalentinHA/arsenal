@@ -1,27 +1,53 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles Humidex (filtré à l’aube)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Confort thermique — Moyenne 30j Humidex filtré à l'aube
 # ----------------------------------------------------------
-#  🧠 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’humidex « filtré à l’aube » pour chaque zone.
-#     Ce type d’humidex est généralement calculé à partir
-#     de mesures prises tôt le matin (moment de stabilité thermique).
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidex
+#   filtré à l'aube par zone (chambres, espaces de vie,
+#   extérieur, zones administratives et industrielles), à
+#   destination des couches de diagnostic et d'analyse de
+#   tendance hygrothermique.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Exploite les entités `sensor.humidex_filtre_aube_*`
-#     - Produit des statistiques de tendance (ici : moyenne)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période d’analyse : 30 jours glissants
-#     - Taille d’échantillon : 5 000 points max
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de l’humidex filtré à l’aube
+# 📋 PARAMÈTRES
+#   state_characteristic : mean (toutes zones)
+#   sampling_size        : 5000
+#                          justification : borne haute couvrant
+#                          la fenêtre de 30 j à fréquence
+#                          d'échantillonnage usuelle, avec
+#                          marge pour pics de publication
+#   max_age              : 30 j
+#                          justification : fenêtre mensuelle
+#                          permettant l'établissement d'une
+#                          référence saisonnière stable, lissant
+#                          les épisodes ponctuels et les cycles
+#                          hebdomadaires d'occupation
+#   precision            : omis (par défaut HA)
 #
-#  🏡 Zones couvertes :
-#     - Pièces domestiques
-#     - Espaces extérieurs
-#     - Bureaux et zones de production
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidex_filtre_aube_*
+#         (chambre_arnaud, chambre_matthieu, chambre_parents,
+#          entree, petite_maison, sejour,
+#          jardin, exterieur,
+#          direction, compta, qualite, devis, commercial,
+#          komori, bobst, media)
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

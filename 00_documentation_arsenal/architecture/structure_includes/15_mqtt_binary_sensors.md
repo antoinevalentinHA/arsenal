@@ -124,42 +124,45 @@ mqtt:
 
 ```yaml
 # ==========================================================
-# 🧠 ARSENAL — MQTT BINARY SENSORS
+# 🧠 ARSENAL — MQTT BINARY_SENSOR
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
-# 📌 Fichier
-#   15_mqtt_binary_sensors/<dossier>/<fichier>.yaml
+# 🎯 RÔLE
+#   <Finalité système exacte — une phrase>
 #
-# 🎯 ROLE
-#   Exposer des états binaires publiés via MQTT,
-#   sans transformation locale ni logique métier.
-#
-# 🧩 PERIMETRE
-#   Type Arsenal :
-#   - projection_transport
-#   - heartbeat_technique
-#   - disponibilite_systeme
-#   - etat_technique_externe
-#
-# 📥 SOURCE
-#   - Topics MQTT externes
-#   - Namespace contractuel documenté
-#
-# 🧱 PRINCIPE
+# 🧩 PÉRIMÈTRE
+#   - Projection booléenne de transport passif uniquement
 #   - Mapping direct topic → état
-#   - Aucune interprétation locale
+#   - Aucune transformation locale
 #   - Aucune logique métier
 #
+# 🔖 NATURE
+#   <projection_transport | heartbeat_technique
+#    | disponibilite_systeme | etat_technique_externe
+#    | signal_transport | telemetrie_booleenne
+#    | connectivite_mqtt | etat_brut_externe>
+#
+# 🆔 UNIQUE_ID
+#   <identifiant stable>
+#
+# 📋 TRANSPORT
+#   state_topic  : <topic>
+#   namespace    : <namespace contractuel>
+#   payload_on   : <valeur>
+#   payload_off  : <valeur>
+#
+# 🔗 DÉPENDANCES
+#   Lit : <système ou broker source>
+#
 # 🚫 INTERDITS
+#   - Introduire un template Jinja
 #   - Introduire une logique métier
-#   - Transformer une donnée métier
-#   - Recalculer un état dérivé
-#   - Produire une décision système
+#   - Recalculer ou dériver un état localement
+#   - Constituer une autorité décisionnelle
+#   - Remplacer un diagnostic Arsenal dédié
+#   - Laisser payload_on / payload_off implicites
 #
-# 🧠 STATUT ARCHITECTURAL
-#   Couche d’observation transport.
-#
-#   Les automatisations et templates consomment
-#   ces états sans leur déléguer d’autorité métier.
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 ```

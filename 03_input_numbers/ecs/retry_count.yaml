@@ -1,18 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : ECS retry count
+# 🧠 ARSENAL — INPUT_NUMBER
+#     ECS — Retry count transactionnel
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Compter le nombre de retries automatiques deja engages
+# 🎯 RÔLE
+#   Stocker le nombre de retries automatiques déjà engagés
 #   pour une commande ECS transactionnelle.
 #
-# 🧱 Nature :
-#   - Helper technique d’orchestration
-#   - 0 = aucun retry effectue
-#   - 1 = un retry deja effectue
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteur retry ECS uniquement
+#   - Valeurs autorisées : 0 ou 1 uniquement
+#   - Paramètre technique d'orchestration uniquement
+#   - Consommé par les pipelines transactionnels ECS
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚠️ Regle :
-#   - maximum contractuel : 1 retry
-#   - ne doit jamais etre incremente par le script executif
+# 🏷️ NATURE
+#   Valeur intermédiaire | Registre de pipeline | Debug
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Dépasser le maximum contractuel de 1 retry
+#   - Incrémenter ce helper depuis le script exécutif
+#   - Déclencher directement une action ECS
+#   - Implémenter localement une logique transactionnelle
+#   - Modifier manuellement hors diagnostic exceptionnel
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ecs_retry_count:

@@ -1,33 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Durée absence entrée
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Entrée — Durée absence
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir le délai d’inactivité requis dans l'entrée
-#    avant extinction automatique de l’éclairage.
+# 🎯 RÔLE
+#   Stocker le délai d'inactivité requis dans l'entrée avant
+#   extinction automatique de l'éclairage.
 #
-# 🧩 Principe :
-#    - Le décompte commence après la DERNIÈRE détection
-#      de présence ou de mouvement dans l'entrée.
-#    - L’éclairage reste allumé tant que l’activité
-#      reprend avant l’expiration du délai.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre temporel éclairage entrée uniquement
+#   - Délai d'inactivité exprimé en secondes
+#   - Paramètre consommé par l'automatisation d'extinction
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Valeur exprimée en secondes
-#    - Utilisée directement par l’automatisation
-#    - Conversion explicite dans la logique OFF
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Automatisation :
-#        • 10070000000027
-#    - Dashboard :
-#        • réglages éclairage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme capteur de présence
+#   - Déclencher directement une extinction
+#   - Confondre durée d'absence et temporisation générique
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 📐 Unité :
-#    - secondes
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Paramètre éclairage entrée
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 duree_absence_entree:

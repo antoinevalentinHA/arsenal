@@ -1,14 +1,31 @@
 # ==========================================================
 # 🧠 ARSENAL — INPUT_NUMBER
-#     Inhibition géofencing — Offset ON
+#     Chauffage — Inhibition géofencing — Offset ON
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Seuil bas d’activation de l’inhibition geofencing.
-#   Déclenchement si ecart_consigne_confort < -offset_on
-#   (écart = température - consigne_confort).
+# 🎯 RÔLE
+#   Stocker le seuil bas utilisé pour l'activation de
+#   l'inhibition géofencing chauffage.
 #
-# 📌 Interprétation :
-#   offset_on = 0.7  → ON si température < consigne - 0.7
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre seuil consommé par le moteur chauffage
+#   - Offset thermique d'entrée en inhibition uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser cette valeur comme température absolue
+#   - Implémenter une logique d'hystérèse dans ce helper
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 inhibition_geofencing_offset_on:

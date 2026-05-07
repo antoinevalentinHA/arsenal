@@ -1,19 +1,30 @@
 # ==========================================================
-# 📡 ARSENAL — GROUPE
-#     Netatmo — Tous les signaux RF
+# 🧠 ARSENAL — GROUP
+#     Infrastructure — Signaux RF Netatmo
 # ----------------------------------------------------------
-# 🧠 Rôle :
-#   Regrouper l’ensemble des capteurs Netatmo de puissance
-#   radio RF utilises pour le diagnostic des modules distants.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs de puissance
+#   radio RF Netatmo sous une référence statique unique.
 #
-# 🎯 Usage :
-#   - Diagnostics liaisons radio Netatmo
-#   - Futures métriques (min / count / worst)
-#   - UI radio dédiée
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Signaux radio RF Netatmo uniquement
+#   - Diagnostic radio et supervision infrastructure uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🔒 Nature :
-#   - Statique
-#   - Infrastructure uniquement
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Déclencher une automatisation depuis ce groupe
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non liées au RF Netatmo
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 netatmo_rf_signal_all:

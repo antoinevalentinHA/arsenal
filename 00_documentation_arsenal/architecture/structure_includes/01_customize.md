@@ -81,20 +81,21 @@ homeassistant:
 #     <Domaine> — <Famille d'entités>
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Centraliser les métadonnées d’affichage des entités.
+#   Centraliser les métadonnées d'affichage des entités
+#   à destination des consommateurs UI du domaine.
 #
 # 🧩 PÉRIMÈTRE
-#   - Définit uniquement des attributs de présentation
+#   - Attributs de présentation uniquement (friendly_name, icon…)
 #   - Ne calcule aucune valeur
 #   - Ne porte aucune logique métier
 #   - Ne déclenche aucune action
-#
-# 📡 SOURCES
-#   - Entités définies ailleurs
 #
 # 🚫 INTERDITS
 #   - Modifier une valeur fonctionnelle
 #   - Introduire une logique conditionnelle
 #   - Documenter ici le modèle métier du domaine
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 ```

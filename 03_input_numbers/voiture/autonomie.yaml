@@ -1,44 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBER : Audi A3 e-tron — Snapshots pleine charge
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Audi A3 e-tron — Snapshots pleine charge
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Mémoriser les valeurs de référence observées
-#   au moment d’une charge complète (≈ 100 %).
+# 🎯 RÔLE
+#   Stocker les valeurs de référence figées observées lors
+#   d'un événement valide de pleine charge véhicule.
 #
-# 🧱 Principe :
-#   - Valeurs FIGÉES par cycle de charge
-#   - Mise à jour UNIQUEMENT lors d’un événement pleine charge
-#   - Snapshot atomique de plusieurs grandeurs cohérentes :
-#       • autonomie électrique réelle
-#       • température extérieure
-#       • autonomie corrigée (20°C)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Snapshots atomiques de pleine charge uniquement
+#   - Valeurs cohérentes capturées au même instant logique
+#   - Autonomie réelle, température et autonomie corrigée
+#   - Paramètres consommés par statistiques et dashboards
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ❌ Ne fait PAS :
-#   - mesure instantanée
-#   - estimation dynamique
-#   - recalcul a posteriori
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
 #
-# 🔗 Utilisation :
-#   - Alimenté par :
-#       • automation : voiture/autonomie.yaml
-#   - Consommé par :
-#       • capteurs statistiques Audi
-#       • dashboards véhicule
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme mesures temps réel
+#   - Modifier manuellement hors recalage exceptionnel
+#   - Réaliser un recalcul a posteriori dans ces helpers
+#   - Écrire ces helpers à des instants différents
+#   - Déclencher directement une automatisation
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 Principe Arsenal :
-#   - Le véhicule mesure
-#   - L’automatisation sélectionne le moment valide
-#   - Les helpers mémorisent
-#   - Les dashboards comparent
-#
-# 📐 Unités :
-#   - autonomie : km
-#   - température : °C
-#
-# ⚠️ Invariant critique :
-#   - Tous les helpers de ce fichier doivent être écrits
-#     dans la MÊME automation et au MÊME instant logique
-#     (snapshot pleine charge).
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 autonomie_audi_etron_full:

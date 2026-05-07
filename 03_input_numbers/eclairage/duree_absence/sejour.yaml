@@ -1,38 +1,34 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Durée absence séjour
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Séjour — Durée absence
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir le délai d’inactivité requis dans le séjour
-#    avant extinction automatique de l’éclairage.
+# 🎯 RÔLE
+#   Stocker le délai d'inactivité requis dans le séjour avant
+#   extinction automatique de l'éclairage.
 #
-# 🧩 Principe :
-#    - Le décompte commence après la DERNIÈRE détection
-#      de présence ou de mouvement dans le séjour.
-#    - L’éclairage reste allumé tant que l’activité
-#      reprend avant l’expiration du délai.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre temporel éclairage séjour uniquement
+#   - Délai d'inactivité exprimé en minutes
+#   - Paramètre consommé par l'automatisation d'extinction
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Valeur exprimée en minutes
-#    - Utilisée directement par l’automatisation
-#    - Conversion explicite dans la logique OFF
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Automatisation :
-#        • eclairage/sejour/off.yaml
-#    - Dashboard :
-#        • réglages éclairage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme scène manuelle
+#   - Confondre éclairage séjour et éclairage décoratif
+#   - Confondre éclairage séjour et éclairage technique
+#   - Déclencher directement une extinction
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Ne pas confondre avec :
-#    - Éclairages décoratifs (guirlande)
-#    - Éclairages techniques (garage)
-#    - Scènes manuelles
-#
-# 📐 Unité :
-#    - minutes
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Paramètre éclairage séjour
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 duree_absence_sejour:

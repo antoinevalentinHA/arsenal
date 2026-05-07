@@ -1,30 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBER
-#     Garage — Seuil luminosite allumage automatique
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Garage — Seuil luminosité allumage automatique
 # ----------------------------------------------------------
-# 🎯 ROLE
-#   Parametre de reglage du seuil de luminosite (lux)
-#   en dessous duquel l’allumage automatique du garage
-#   est autorise.
+# 🎯 RÔLE
+#   Stocker le seuil de luminosité utilisé pour autoriser
+#   l'allumage automatique du garage.
 #
-#   Ce helper permet d’ajuster le comportement
-#   de l’automatisme sans modifier le code.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Seuil luminosité garage uniquement
+#   - Valeur exprimée en lux
+#   - Paramètre consommé par :
+#       binary_sensor.garage_allumage_auto_autorise
+#   - Dépendant de :
+#       sensor.luminosite_garage_illuminance
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📌 UTILISATION
-#   Consomme par :
-#     - binary_sensor.garage_allumage_auto_autorise
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔗 DEPENDANCE
-#   - sensor.luminosite_garage_illuminance
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme mesure réelle de luminosité
+#   - Déclencher directement un allumage
+#   - Implémenter localement une logique de présence
+#   - Modifier automatiquement cette valeur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# ⚠️ NOTE
-#   La valeur doit etre adaptee au contexte reel
-#   du garage (lumiere naturelle / artificielle).
-#
-#   Ordres de grandeur typiques :
-#     - nuit totale         : 0–5 lx
-#     - garage sombre       : 10–40 lx
-#     - garage eclaire      : 80–200 lx
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 garage_seuil_luminosite_allumage_auto:

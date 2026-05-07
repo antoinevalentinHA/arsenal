@@ -1,19 +1,30 @@
 # ==========================================================
-# 📡 ARSENAL — GROUPE
-#     Zigbee — Tous les liens radio (linkquality)
+# 🧠 ARSENAL — GROUP
+#     Infrastructure — Qualité radio Zigbee
 # ----------------------------------------------------------
-# 🧠 Rôle :
-#   Regrouper l’ensemble des capteurs linkquality Zigbee
-#   utilisés pour le diagnostic radio global.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs Zigbee
+#   linkquality sous une référence statique unique.
 #
-# 🎯 Usage :
-#   - Binary sensor qualité dégradée
-#   - Diagnostics réseau
-#   - Futures métriques (min / count / worst)
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Capteurs Zigbee linkquality uniquement
+#   - Diagnostic radio et supervision réseau uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🔒 Nature :
-#   - Statique
-#   - Infrastructure uniquement
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Déclencher une automatisation depuis ce groupe
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non liées au réseau Zigbee
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 zigbee_linkquality_all:

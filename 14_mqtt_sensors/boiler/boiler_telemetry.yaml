@@ -1,29 +1,60 @@
 # ==========================================================
-# 🧠 ARSENAL — MQTT SENSORS (BOILER / TELEMETRY)
+# 🧠 ARSENAL — MQTT SENSOR
+#     Boiler / Telemetry — Télémétrie chaudière
 # ----------------------------------------------------------
-# 📌 Fichier
-#   14_mqtt_sensors/boiler/boiler_telemetry.yaml
+# 🎯 RÔLE
+#   Exposer en transport passif la télémétrie chaudière
+#   publiée par le bridge sur MQTT (températures, consignes,
+#   courbe de chauffe, modulation brûleur), conformément
+#   à la simplification Arsenal Vision A.
 #
-# 🎯 ROLE
-#   Exposer la télémétrie chaudière publiée sur MQTT
-#   après simplification Arsenal Vision A :
-#     - une seule consigne chauffage active
-#     - une référence réduite secondaire de diagnostic
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
 #
-# 🧱 PRINCIPE
-#   - Mapping direct des topics MQTT vers des sensors HA
-#   - Payloads scalaires publiés par le boiler bridge
-#   - Aucune transformation ni logique métier
+# 🔖 NATURE
+#   telemetrie_brute | mesure_externe
 #
-# 📥 SOURCE
-#   Namespace contrat :
-#     - boiler/telemetry/...
+# 🆔 UNIQUE_ID
+#   boiler_supply_temperature
+#   boiler_dhw_temperature
+#   boiler_heating_setpoint
+#   boiler_heating_curve_slope
+#   boiler_heating_curve_shift
+#   boiler_dhw_setpoint
+#   boiler_burner_modulation
 #
-# ⚠️ IMPORTANT
-#   - Couche strictement observation
-#   - Aucun calcul ni interprétation métier
-#   - Le bridge N’expose PAS de programme chauffage métier
-#   - La sémantique Confort / Eco appartient à Arsenal
+# 📋 TRANSPORT
+#   state_topic          :
+#     - boiler/telemetry/temperatures/supply
+#     - boiler/telemetry/temperatures/dhw
+#     - boiler/telemetry/heating/setpoint
+#     - boiler/telemetry/heating/curve/slope
+#     - boiler/telemetry/heating/curve/shift
+#     - boiler/telemetry/dhw/setpoint
+#     - boiler/telemetry/burner/modulation
+#   namespace            : boiler/telemetry/...
+#   json_attributes      : non
+#   structure JSON       : sans objet (payloads scalaires)
+#   transformations      : value_template float(0) sur
+#                          burner/modulation uniquement
+#
+# 🔗 DÉPENDANCES
+#   Lit : boiler bridge via broker MQTT
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#   - Réintroduire une sémantique Confort / Eco
+#     (appartient à Arsenal, pas au bridge)
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 
 - name: "Boiler supply temperature"

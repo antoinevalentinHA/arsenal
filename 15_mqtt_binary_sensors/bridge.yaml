@@ -1,3 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT BINARY_SENSOR
+#     Zigbee2MQTT — Disponibilité du bridge
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer en transport passif l'état de connectivité du
+#   bridge Zigbee2MQTT publié sur MQTT.
+#
+# 🧩 PÉRIMÈTRE
+#   - Projection booléenne de transport passif uniquement
+#   - Mapping direct topic → état
+#   - Aucune transformation locale
+#   - Aucune logique métier
+#
+# 🔖 NATURE
+#   disponibilite_systeme | connectivite_mqtt
+#
+# 🆔 UNIQUE_ID
+#   zigbee2mqtt_online
+#
+# 📋 TRANSPORT
+#   state_topic  : zigbee2mqtt/bridge/state
+#   namespace    : zigbee2mqtt/bridge/...
+#   payload_on   : online
+#   payload_off  : offline
+#   device_class : connectivity
+#
+# 🔗 DÉPENDANCES
+#   Lit : bridge Zigbee2MQTT via broker MQTT
+#
+# 🚫 INTERDITS
+#   - Introduire un template Jinja
+#   - Introduire une logique métier
+#   - Recalculer ou dériver un état localement
+#   - Constituer une autorité décisionnelle
+#   - Remplacer un diagnostic Arsenal dédié
+#   - Laisser payload_on / payload_off implicites
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
+# ==========================================================
+
 - name: "zigbee2mqtt_online"
   unique_id: zigbee2mqtt_online
   state_topic: "zigbee2mqtt/bridge/state"

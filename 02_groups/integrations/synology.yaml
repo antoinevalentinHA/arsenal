@@ -1,41 +1,31 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP : Capteurs Synology
+# 🧠 ARSENAL — GROUP
+#     Infrastructure — Capteurs Synology
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Regrouper l’ensemble des capteurs exposant l’état
-#    matériel et système du NAS Synology hébergeant
-#    des services critiques pour Arsenal.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs issus du
+#   NAS Synology sous une référence statique unique.
 #
-# 🧠 Lecture métier :
-#    Ce groupe représente une SOURCE DE TÉLÉMÉTRIE
-#    d’infrastructure.
-#    Il ne prend aucune décision, mais permet au système
-#    de vérifier la disponibilité et la fraîcheur des
-#    données du NAS.
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Télémétrie infrastructure Synology uniquement
+#   - CPU, mémoire, réseau, stockage et température
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🧩 Périmètre :
-#    - Utilisation CPU (détaillée et totale)
-#    - Mémoire réelle et swap
-#    - Charge système
-#    - Réseau (débits)
-#    - Stockage (volumes, disques, températures)
-#    - Température globale du NAS
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Déclencher une action métier directe
+#   - Utiliser le groupe comme condition fonctionnelle
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non issues de Synology DSM
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
 #
-# 🔗 Dépendances :
-#    - Intégration Synology DSM
-#    - Utilisé par :
-#      • capteurs système de contrôle de fraîcheur des données
-#      • templates d’audit infrastructure
-#      • dashboards de supervision
-#
-# 🚫 Interdits :
-#    - Déclencher une action métier directe
-#    - Mélanger des capteurs non Synology
-#    - Utiliser ce groupe comme condition fonctionnelle
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle infrastructure / fiabilité système
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 synology_capteurs:

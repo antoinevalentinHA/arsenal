@@ -1,23 +1,38 @@
 # ==========================================================
-#  STATISTICS SENSORS — Audi e-tron
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Automobile — Moyenne glissante autonomie Audi e-tron
 # ----------------------------------------------------------
-#  🧠 Rôle :
-#     Ce deux capteurs agrège les données 
-#     d’autonomie sur les 31 derniers jours (≈ 1 mois).
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 31 jours de l'autonomie
+#   observée de l'Audi e-tron.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Fournit des valeurs dérivées : total, moyenne, min, max, etc.
-#     - Idéal pour générer des statistiques temporelles simples
-#       sans recourir à des outils externes.
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  🧩 Entrées surveillées :
-#     - input_number.autonomie_audi_etron_full   → autonomie affichée batterie pleine
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Objectif :
-#     - Calculer la **moyenne d’autonomie observée** sur le mois
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 1000
+#   max_age              : 31 j — fenêtre glissante mensuelle
+#                          destinée à lisser les variations
+#                          d'autonomie observée
+#   precision            : omis
 #
-#  ✅ Période d’analyse : 31 jours
-#  ✅ Échantillons maximum : 1000
+# 🔗 DÉPENDANCES
+#   Lit : input_number.autonomie_audi_etron_full
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 - platform: statistics

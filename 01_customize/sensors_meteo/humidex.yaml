@@ -1,28 +1,26 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : Humidex (capteurs météo)
+# 🧠 ARSENAL — CUSTOMIZE
+#     Confort thermique — Capteurs Humidex
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Centraliser l’affichage et l’iconographie des capteurs
-#    d’humidex utilisés pour le confort thermique et hygrométrique.
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage des capteurs
+#   d'humidex à destination des consommateurs UI du domaine
+#   confort thermique et hygrométrique.
 #
-# 🧩 Périmètre :
-#    - Définit les friendly_name et icônes des capteurs humidex
-#    - Ne calcule AUCUNE valeur
-#    - N’influence AUCUNE décision automatique
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 🔗 Dépendances :
-#    - Capteurs humidex définis ailleurs (template / intégrations)
-#    - Utilisés par dashboards, diagnostics et logiques météo
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🚫 Interdits :
-#    - Modifier les calculs d’humidex
-#    - Ajouter de la logique métier ou conditionnelle
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle / pure présentation
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
-
 
 ############################################################
 # 🏠 ESPACES DE VIE — INTÉRIEUR
@@ -35,7 +33,6 @@ sensor.humidex_entree:
 sensor.humidex_sejour:
   friendly_name: "Humidex Séjour"
   icon: mdi:thermometer-water
-
 
 ############################################################
 # 🛏️ CHAMBRES
@@ -53,7 +50,6 @@ sensor.humidex_chambre_parents:
   friendly_name: "Humidex Chambre Parents"
   icon: mdi:thermometer-water
 
-
 ############################################################
 # 🚿 SALLES DE BAINS
 ############################################################
@@ -65,7 +61,6 @@ sensor.humidex_sdb_parents:
 sensor.humidex_sdb_enfants:
   friendly_name: "Humidex SDB Enfants"
   icon: mdi:thermometer-water
-
 
 ############################################################
 # 🏗️ ANNEXES & ZONES TECHNIQUES
@@ -82,7 +77,6 @@ sensor.humidex_garage:
 sensor.humidex_petite_maison:
   friendly_name: "Humidex Petite Maison"
   icon: mdi:thermometer-water
-
 
 ############################################################
 # 🌿 EXTÉRIEUR

@@ -1,37 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Températures de référence (aération)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Températures de référence figées
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Stocker la température de référence figée au moment
-#    du début d’aération, pièce par pièce.
+# 🎯 RÔLE
+#   Stocker les températures de référence figées utilisées
+#   comme base de calcul des ΔT d'aération.
 #
-# 🧠 Lecture métier :
-#    Ces helpers représentent l’état thermique INITIAL
-#    servant de base au calcul de la chute de température (ΔT).
-#    Ils sont écrits une seule fois par cycle d’aération
-#    et ne sont jamais modifiés manuellement.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Références thermiques figées par pièce
+#   - Valeurs écrites une seule fois par cycle d'aération
+#   - Usage pipeline et diagnostic uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📌 Pièces incluses :
-#    - Entrée
-#    - Séjour
-#    - Chambre Arnaud
-#    - Chambre Matthieu
-#    - Chambre Parents
-#    - Palier
+# 🏷️ NATURE
+#   Registre de pipeline | Mémoire persistante | Valeur intermédiaire
 #
-# 🔗 Dépendances :
-#    - Automatisations aération (capture initiale)
-#    - Templates ΔT par pièce (analyse thermique)
-#    - Dashboards diagnostics
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Modifier manuellement ces valeurs
+#   - Utiliser ces valeurs comme consignes ou seuils
+#   - Confondre ces valeurs avec des températures courantes
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Modifier manuellement ces valeurs
-#    - Les utiliser comme consignes ou seuils
-#    - Les confondre avec des températures courantes
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - référence thermique figée / aération
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ref_temp_entree:

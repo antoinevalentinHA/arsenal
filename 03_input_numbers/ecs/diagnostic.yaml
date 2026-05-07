@@ -1,35 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBERS : ECS — Diagnostic de fin de cycle
+# 🧠 ARSENAL — INPUT_NUMBER
+#     ECS — Diagnostic de fin de cycle
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Figer les caractéristiques clés du DERNIER cycle ECS
-#   terminé, afin de disposer d’un diagnostic stable :
-#     - Durée totale du cycle
-#     - Température maximale réellement atteinte
+# 🎯 RÔLE
+#   Stocker les caractéristiques observées du dernier cycle
+#   ECS terminé afin de fournir un diagnostic stable.
 #
-# 🧱 Principe :
-#   - Ces helpers sont mis à jour UNIQUEMENT
-#     en fin de cycle ECS
-#   - Ils conservent la dernière valeur connue
-#     jusqu’au cycle suivant
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Diagnostic post-cycle ECS uniquement
+#   - Dernière durée de cycle observée uniquement
+#   - Dernière température maximale atteinte uniquement
+#   - Valeurs figées exclusivement en fin de cycle
+#   - Paramètres consommés par diagnostics et analyses ECS
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📌 Important :
-#   - Ces valeurs sont des CONSTATS, pas des objectifs
-#   - Elles ne déclenchent aucune action
-#   - Elles ne modifient jamais le comportement ECS
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
 #
-# 🔗 Utilisation :
-#   - Dashboards diagnostics ECS
-#   - Logs de fin de cycle
-#   - Calculs d’auto-ajustement (post-mortem)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme objectifs thermiques
+#   - Déclencher directement une action ECS
+#   - Modifier automatiquement ces valeurs hors fin de cycle
+#   - Piloter un actionneur depuis ces helpers
+#   - Réaliser une logique de contrôle localement
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 Principe Arsenal :
-#   - Le cycle se termine → la réalité est figée
-#   - Les analyses travaillent sur du stable
-#
-# 📐 Unités :
-#   - Durée : minutes
-#   - Température : °C
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ecs_duree_dernier_cycle_figee:

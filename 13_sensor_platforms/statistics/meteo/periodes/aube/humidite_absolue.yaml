@@ -1,25 +1,48 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles d’humidité absolue (filtrée à l’aube)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Hygrométrie — Moyenne 30j Humidité absolue filtrée à l'aube
 # ----------------------------------------------------------
-#  🧠 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’humidité absolue (en g/m³), dérivée des mesures
-#     “filtrées à l’aube”, c’est-à-dire calculées sur la période
-#     la plus stable thermiquement de la journée.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidité
+#   absolue (g/m³) filtrée à l'aube par zone (chambres,
+#   espaces de vie, locaux techniques, bureaux, ateliers),
+#   à destination des couches de diagnostic et d'analyse
+#   de tendance hygrométrique.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Agrège les valeurs des entités `sensor.humidite_absolue_filtre_aube_*`
-#     - Produit une moyenne glissante (caractéristique `mean`)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période d’analyse : 30 jours glissants
-#     - Taille d’échantillon : 5 000 points max
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne de l’humidité absolue filtrée à l’aube (g/m³)
+# 📋 PARAMÈTRES
+#   state_characteristic : mean (toutes zones)
+#   sampling_size        : 5000
+#                          justification : borne haute couvrant
+#                          la fenêtre de 30 j à fréquence
+#                          d'échantillonnage usuelle, avec
+#                          marge pour pics de publication
+#   max_age              : 30 j
+#                          justification : fenêtre mensuelle
+#                          permettant l'établissement d'une
+#                          référence saisonnière stable, lissant
+#                          les épisodes ponctuels et les cycles
+#                          hebdomadaires d'occupation
+#   precision            : omis (par défaut HA)
 #
-#  🏡 Zones couvertes :
-#     - Chambres, pièces de vie, locaux techniques, bureaux, ateliers
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidite_absolue_filtre_aube_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP
+#     Système / Connectivité — Hôtes Ping secondaires
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Regrouper les entités Ping dont la perte de joignabilité
+#   constitue une dégradation secondaire de la supervision LAN.
+#
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
+#
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+ping_lan_secondaire:
+  name: Ping LAN secondaire
+  icon: mdi:information
+  entities:
+    - binary_sensor.climatiseur
+    - binary_sensor.station_meteo_netatmo_1
+    - binary_sensor.station_meteo_netatmo_2

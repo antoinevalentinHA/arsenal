@@ -1,31 +1,34 @@
 # ==========================================================
 # 🧠 ARSENAL — INPUT_NUMBER
-#     Chauffage : Durée préchauffage retour Vacances
+#     Chauffage — Durée préchauffage retour Vacances
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir la durée fixe d’anticipation thermique avant fin
-#   de régime Vacances pour autoriser le pré-confort retour.
+# 🎯 RÔLE
+#   Stocker la durée d'anticipation thermique utilisée pour
+#   le préchauffage avant retour de régime Vacances.
 #
-# 🧩 Périmètre :
-#   - paramétrage utilisateur uniquement
-#   - anticipation temporelle fixe
-#   - aucune dépendance thermique
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramétrage utilisateur temporel uniquement
+#   - Anticipation fixe non thermique
+#   - Paramètre consommé par le domaine Vacances
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🔗 Dépendances :
-#   - consommé par binary_sensor pré-confort actif
-#   - consommé par automations Vacances
+# 🏷️ NATURE
+#   Paramètre utilisateur
 #
-# 🚫 Interdits :
-#   - aucune décision
-#   - aucun pilotage matériel
-#   - aucune écriture de consigne
-#   - aucun usage hors Vacances
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher directement un préchauffage
+#   - Piloter un équipement depuis ce helper
+#   - Écrire une consigne thermique depuis ce helper
+#   - Utiliser ce helper hors contexte Vacances
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 Statut architectural :
-#   SOCLE DE PARAMÉTRAGE — NON DÉCISIONNEL — NON THERMIQUE
-#
-# 🏷️ Statut :
-#   SOCLE — Actif en production — Remplaçable ultérieurement
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 duree_prechauffage_retour_vacances:

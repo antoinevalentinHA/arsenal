@@ -1,41 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Seuil Humidex (déshumidification)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — DRY — Seuil humidex
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir le seuil d’humidex à partir duquel
-#    la déshumidification (mode DRY) devient
-#    thermiquement et hygrométriquement justifiée.
+# 🎯 RÔLE
+#   Stocker le seuil d'humidex utilisé pour qualifier
+#   l'autorisation de la déshumidification (mode DRY).
 #
-# 🌡️ Principe :
-#    - Le seuil est exprimé en humidex (°C équivalent)
-#    - Il représente le niveau d’inconfort ressenti,
-#      et non une température réelle
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Seuil décisionnel DRY central uniquement
+#   - Humidex de confort ressenti uniquement
+#   - Paramètre consommé par les templates climatisation DRY
+#   - Seuil OFF dérivé hors helper
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Utilisé comme seuil ON explicite
-#      → humidex ≥ seuil → DRY autorisé
-#    - Le seuil OFF est dérivé dynamiquement :
-#      → seuil_humidex - 1 °C
-#    - L’hystérésis est volontairement implicite
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Capteurs template :
-#        • humidex_on.yaml
-#        • humidex_off.yaml
-#        • deshumidification.yaml
-#    - Dashboards (visualisation uniquement)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser cette valeur comme consigne cible
+#   - Modifier automatiquement cette valeur
+#   - Déclencher directement une automatisation
+#   - Implémenter l'hystérèse dans ce helper
+#   - Utiliser cette valeur comme température réelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Utilisation comme consigne cible
-#    - Modification automatique
-#    - Déclenchement direct d’automatisation
-#
-# 📐 Unité :
-#    - °C (indice humidex)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Seuil décisionnel DRY (central)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 seuil_humidex_deshumidification:

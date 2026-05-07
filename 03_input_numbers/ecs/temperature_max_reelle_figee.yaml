@@ -1,41 +1,36 @@
 # ==========================================================
 # 🧠 ARSENAL — INPUT_NUMBER
-#     ECS — Temperature max reelle figee
+#     ECS — Température maximale réelle figée
 # ----------------------------------------------------------
-# 🎯 ROLE
-#   Stocker de maniere persistante la temperature maximale
-#   reellement atteinte par le ballon ECS sur l'ensemble :
-#     - cycle actif
-#     - fenetre d'inertie post-cycle
+# 🎯 RÔLE
+#   Stocker la température maximale réellement atteinte par
+#   le ballon ECS sur le cycle actif et la fenêtre d'inertie.
 #
-#   Cette valeur correspond a :
-#     sensor.ecs_temperature_max_reelle_cycle
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Diagnostic post-cycle ECS uniquement
+#   - Température maximale réelle cycle + inertie uniquement
+#   - Valeur figée en fin de fenêtre d'inertie
+#   - Paramètre consommé par dashboards et analyses ECS
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ----------------------------------------------------------
-# 🧱 PRINCIPE
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
 #
-#   - Ecriture uniquement a la fin de la fenetre d'inertie
-#   - Valeur figee pour exploitation dashboard / analyse
-#   - Aucune logique embarquee
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Remplacer input_number.ecs_temperature_max_figee
+#   - Utiliser ce helper comme objectif thermique
+#   - Déclencher directement une action ECS
+#   - Modifier automatiquement cette valeur hors fin d'inertie
+#   - Implémenter une logique de calcul localement
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# ----------------------------------------------------------
-# ⚠️ IMPORTANT
-#
-#   - Ne remplace pas :
-#       input_number.ecs_temperature_max_figee
-#   - Les deux valeurs coexistent volontairement :
-#       - max cycle pur
-#       - max reel (cycle + inertie)
-#
-# ----------------------------------------------------------
-# 🔗 DEPENDANCES
-#
-#   - sensor.ecs_temperature_max_reelle_cycle
-#
-# ----------------------------------------------------------
-# ✅ COMPATIBILITE
-#
-#   - include: 03_input_numbers/
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ecs_temperature_max_reelle_figee:

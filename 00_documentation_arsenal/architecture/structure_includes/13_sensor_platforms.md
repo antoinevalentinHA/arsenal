@@ -152,23 +152,34 @@ sensor: !include_dir_merge_list 13_sensor_platforms/
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Produire une statistique dérivée à partir
-#   d’une série temporelle existante.
+#   <Finalité système exacte — une phrase>
 #
 # 🧩 PÉRIMÈTRE
-#   Type Arsenal :
-#   - moyenne_glissante
-#   - mediane_glissante
-#   - tendance
-#   - reference_statistique
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-# 📡 SOURCES
-#   - Entité source observée
+# 🔖 NATURE
+#   <moyenne_glissante | mediane_glissante | tendance
+#    | reference_statistique | lissage | agregat_quantitatif>
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : <valeur>
+#   sampling_size        : <valeur | omis>
+#   max_age              : <durée | omis — justification si présent>
+#   precision            : <valeur | omis>
+#
+# 🔗 DÉPENDANCES
+#   Lit : <entité source observée>
 #
 # 🚫 INTERDITS
 #   - Introduire une logique métier
 #   - Piloter directement un équipement
-#   - Confondre statistique et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   <Statistique | Tendance | Référence> — Arsenal v14.x
 # ==========================================================
 ```
 
@@ -180,23 +191,35 @@ sensor: !include_dir_merge_list 13_sensor_platforms/
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Produire une métrique historique calculée
-#   à partir du recorder Home Assistant.
+#   <Finalité système exacte — une phrase>
 #
 # 🧩 PÉRIMÈTRE
-#   Type Arsenal :
-#   - duree_cumulee
-#   - compteur_occurrences
-#   - ratio_temporel
-#   - disponibilite_historique
+#   - Métrique historique via recorder uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-# 📡 SOURCES
-#   - Recorder Home Assistant
-#   - Entité observée
+# 🔖 NATURE
+#   <duree_cumulee | compteur_occurrences | ratio_temporel
+#    | fenetre_historique | mesure_glissante | disponibilite_historique>
+#
+# 📋 PARAMÈTRES
+#   entity_id : <entité observée>
+#   state     : <état mesuré>
+#   type      : <time | count | ratio>
+#   fenêtre   : start <expr> — end <expr> — justification : <raison>
+#
+# 🔗 DÉPENDANCES
+#   Lit      : <entité observée>
+#   Recorder : requis — <rétention minimale nécessaire>
 #
 # 🚫 INTERDITS
 #   - Introduire une logique métier
 #   - Utiliser un historique incomplet sans justification
 #   - Confondre mesure historique et état temps réel
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser la fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   <Durée | Comptage | Ratio | Disponibilité> — Arsenal v14.x
 # ==========================================================
 ```

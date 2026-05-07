@@ -1,42 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Seuil extérieur mini (clim COOL)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — COOL — Seuil extérieur minimal
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir la température extérieure minimale
-#    à partir de laquelle la climatisation
-#    est AUTORISÉE à fonctionner en mode COOL.
+# 🎯 RÔLE
+#   Stocker la température extérieure minimale autorisant
+#   l'utilisation de la climatisation en mode COOL.
 #
-# 🌤️ Problématique traitée :
-#    - Éviter un refroidissement inutile par temps doux
-#    - Prévenir les cycles aberrants (mi-saison)
-#    - Garantir une logique cohérente avec l’ouverture naturelle
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Filtre d'autorisation COOL uniquement
+#   - Température extérieure réelle uniquement
+#   - Paramètre consommé par l'arbitrage global climatisation
+#   - Garde-fou thermique inter-saison
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Sert de FILTRE D’AUTORISATION
-#    - Si T° extérieure < seuil :
-#        → mode COOL interdit
-#    - Si T° extérieure ≥ seuil :
-#        → mode COOL autorisable (pas déclenché)
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Script :
-#        • climatisation/decision_centrale.yaml
-#          (arbitrage global COOL / DRY / HEAT / OFF)
-#    - Dashboards :
-#        • affichage seuil actif
-#        • réglage utilisateur explicite
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser cette valeur comme seuil de déclenchement
+#   - Utiliser cette valeur comme consigne thermique
+#   - Modifier automatiquement cette valeur
+#   - Piloter directement la climatisation depuis ce helper
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Ne PAS utiliser comme seuil de déclenchement
-#    - Ne PAS interpréter comme consigne
-#    - Ne PAS modifier automatiquement
-#
-# 📐 Unité :
-#    - °C (température extérieure réelle)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Garde-fou thermique climatisation COOL
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 clim_seuil_temperature_exterieure_minimum:

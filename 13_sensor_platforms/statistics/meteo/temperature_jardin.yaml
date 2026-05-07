@@ -1,10 +1,38 @@
 # ==========================================================
-# 📊 STATISTICS SENSOR — Température extérieure moyenne (24 h)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Thermique — Moyenne glissante 24 h Température extérieure
 # ----------------------------------------------------------
-# 💡 Objectif :
-#   Calculer la moyenne glissante sur 24 heures de la
-#   température extérieure, pour corrélation avec la
-#   température chaudière moyenne.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 24 heures de la
+#   température extérieure pour analyse thermique et
+#   corrélation énergétique.
+#
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   moyenne_glissante | lissage | reference_statistique
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 300
+#   max_age              : 24 h — lissage des variations
+#                          thermiques journalières
+#   precision            : omis
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.temperature_jardin
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Tendance — Arsenal v14.x
 # ==========================================================
 
 - platform: statistics

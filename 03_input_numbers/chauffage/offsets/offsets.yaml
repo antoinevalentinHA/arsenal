@@ -1,49 +1,32 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Chauffage — Offsets ON / OFF
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Chauffage — Offsets thermiques ON / OFF
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir l’hystérésis thermique appliquée
-#   autour de la consigne de chauffage.
+# 🎯 RÔLE
+#   Stocker les offsets thermiques utilisés pour encadrer
+#   l'hystérèse ON / OFF autour de la consigne chauffage.
 #
-#   Ces offsets permettent de créer deux seuils distincts :
-#     - Seuil ON  : déclenchement autorisé du chauffage
-#     - Seuil OFF : arrêt autorisé du chauffage
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètres seuils consommés par le pipeline chauffage
+#   - Offsets thermiques ON / OFF uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🧱 Principe :
-#   - La consigne est la valeur CENTRALE
-#   - L’offset ON définit la marge basse :
-#       → chauffage autorisé si température
-#         < consigne - offset_on
-#   - L’offset OFF définit la marge haute :
-#       → chauffage coupé si température
-#         > consigne + offset_off
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🧠 Principe Arsenal :
-#   - Les capteurs MESURENT la température réelle
-#   - Les template_sensors QUALIFIENT les seuils ON / OFF
-#   - Les scripts de décision COMBINENT ces états
-#   - Ces helpers ne décident jamais
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher ou arrêter directement le chauffage
+#   - Implémenter l'hystérèse dans ces helpers
+#   - Utiliser ces valeurs comme températures absolues
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# ⚠️ Règles fondamentales :
-#   - Aucun déclenchement direct
-#   - Aucun arrêt direct
-#   - Aucun calcul autonome
-#   - Zéro logique métier embarquée
-#
-# 🔗 Utilisation :
-#   - Consommés par :
-#     - sensor.autorisation_chauffage_selon_temperature
-#     - scripts de décision chauffage (pipeline maître)
-#   - Affichés dans :
-#     - dashboards diagnostics / réglages chauffage
-#
-# 📐 Unité :
-#   - Degrés Celsius (°C)
-#
-# 🧠 Objectif :
-#   - Éviter le pompage thermique
-#   - Stabiliser les cycles ON / OFF
-#   - Rendre l’hystérésis explicite et réglable
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 chauffage_offset_on:

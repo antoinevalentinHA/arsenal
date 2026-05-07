@@ -265,22 +265,29 @@ template: !include_dir_merge_list 12_template_sensors/
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Produire une valeur dérivée utilisée par le système Arsenal.
+#   <Finalité système exacte — une phrase>
 #
 # 🧩 PÉRIMÈTRE
-#   Type Arsenal :
-#   - mesure_derivee
-#   - synthese
-#   - projection_ui
-#   - diagnostic
+#   - Calcul ou dérivation uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
 #
-# 📡 SOURCES
-#   - Entités consommées
+# 🔖 NATURE
+#   <mesure_derivee | synthese | projection_ui | diagnostic>
+#
+# 🆔 UNIQUE_ID
+#   <identifiant stable>
+#
+# 🔗 DÉPENDANCES
+#   Lit : <entités consommées>
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
 #   - Déclencher une action
 #   - Confondre valeur dérivée et décision exécutive
+#
+# 🏷️ STATUT
+#   <Calcul | Diagnostic | Synthèse> — Arsenal v14.x
 # ==========================================================
 ```
 
@@ -292,22 +299,29 @@ template: !include_dir_merge_list 12_template_sensors/
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Produire un état booléen dérivé utilisé par le système Arsenal.
+#   <Finalité système exacte — une phrase>
 #
 # 🧩 PÉRIMÈTRE
-#   Type Arsenal :
-#   - autorisation_logique
-#   - diagnostic
-#   - alerte
-#   - etat_coherence
+#   - Évaluation booléenne uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
 #
-# 📡 SOURCES
-#   - Entités consommées
+# 🔖 NATURE
+#   <autorisation_logique | diagnostic | alerte | etat_coherence>
+#
+# 🆔 UNIQUE_ID
+#   <identifiant stable>
+#
+# 🔗 DÉPENDANCES
+#   Lit : <entités consommées>
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
 #   - Déclencher une action
 #   - Confondre état booléen et action automatique
+#
+# 🏷️ STATUT
+#   <Autorisation | Diagnostic | Alerte | Cohérence> — Arsenal v14.x
 # ==========================================================
 ```
 
@@ -319,23 +333,35 @@ template: !include_dir_merge_list 12_template_sensors/
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Produire ou figer une valeur lors d’un événement défini.
+#   <Finalité système exacte — une phrase>
 #
 # 🧩 PÉRIMÈTRE
-#   Type Arsenal :
-#   - snapshot_evenementiel
-#   - memoire_declenchee
-#   - valeur_consolidee
-#   - projection_differee
+#   - Capture événementielle uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
 #
-# 📡 SOURCES
-#   - Événements déclencheurs
-#   - Entités consommées au moment du déclenchement
+# 🔖 NATURE
+#   <snapshot_evenementiel | memoire_declenchee
+#    | valeur_consolidee | projection_differee>
+#
+# 🆔 UNIQUE_ID
+#   <identifiant stable>
+#
+# 📣 DÉCLENCHEUR
+#   <Événement ou condition qui provoque la capture>
+#
+# 🔗 DÉPENDANCES
+#   Lit : <entités consommées au moment du déclenchement>
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
-#   - Remplacer une automatisation d’action
+#   - Remplacer une automatisation d'action
 #   - Confondre snapshot et état temps réel
+#   - Être consommé comme état instantané sans justification
+#     explicite dans l'en-tête du consommateur
+#
+# 🏷️ STATUT
+#   <Snapshot | Mémoire | Consolidation> — Arsenal v14.x
 # ==========================================================
 ```
 
@@ -347,22 +373,34 @@ template: !include_dir_merge_list 12_template_sensors/
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Produire ou figer un état booléen lors d’un événement défini.
+#   <Finalité système exacte — une phrase>
 #
 # 🧩 PÉRIMÈTRE
-#   Type Arsenal :
-#   - snapshot_booleen
-#   - confirmation_evenementielle
-#   - diagnostic_memorise
-#   - etat_consolide
+#   - Capture booléenne événementielle uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
 #
-# 📡 SOURCES
-#   - Événements déclencheurs
-#   - Entités consommées au moment du déclenchement
+# 🔖 NATURE
+#   <snapshot_booleen | confirmation_evenementielle
+#    | diagnostic_memorise | etat_consolide>
+#
+# 🆔 UNIQUE_ID
+#   <identifiant stable>
+#
+# 📣 DÉCLENCHEUR
+#   <Événement ou condition qui provoque la capture>
+#
+# 🔗 DÉPENDANCES
+#   Lit : <entités consommées au moment du déclenchement>
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
-#   - Remplacer une automatisation d’action
+#   - Remplacer une automatisation d'action
 #   - Confondre état figé et état instantané
+#   - Être consommé comme état temps réel sans justification
+#     explicite dans l'en-tête du consommateur
+#
+# 🏷️ STATUT
+#   <Snapshot | Confirmation | Diagnostic> — Arsenal v14.x
 # ==========================================================
 ```

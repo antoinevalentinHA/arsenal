@@ -1,39 +1,34 @@
 # ==========================================================
-# 🎨 ARSENAL — HELPER UI : Zone verte température
+# 🧠 ARSENAL — INPUT_NUMBER
+#     UI — Température — Zone verte visuelle
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir la demi-largeur de la zone de confort VISUELLE
-#   utilisée pour colorer les capteurs de température
-#   dans les dashboards et vues diagnostics.
+# 🎯 RÔLE
+#   Stocker la demi-largeur de la zone de confort VISUELLE
+#   utilisée pour la coloration des dashboards de température.
 #
-# 🧠 Principe :
-#   - Chaque pièce possède ses seuils métier :
-#       • seuil_bas  (°C)
-#       • seuil_haut (°C)
-#   - Le centre de confort est calculé localement :
-#       centre = (seuil_bas + seuil_haut) / 2
-#   - Ce helper définit la tolérance graphique :
-#       zone verte = centre ± temperature_couleur_zone_verte
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre graphique global uniquement
+#   - Valeur exprimée en °C
+#   - Paramètre consommé par les capteurs de couleur UI
+#   - Aucun calcul métier
+#   - Aucune logique décisionnelle
+#   - Aucun comportement autonome
 #
-# ⚠️ Important :
-#   - Ce helper est STRICTEMENT VISUEL.
-#   - Il n’influence aucun seuil métier.
-#   - Il ne pilote aucune automatisation.
-#   - Il n’intervient dans aucune décision thermique.
+# 🏷️ NATURE
+#   Paramètre UI | Paramètre visuel
 #
-# 🎨 Interprétation visuelle :
-#   - Vert   → température dans la zone idéale
-#   - Jaune  → température acceptable mais décalée
-#   - Rouge  → température hors des seuils définis
+# 🚫 INTERDITS
+#   - Confondre UI et logique métier
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme seuil thermique métier
+#   - Piloter une automatisation à partir de cette valeur
+#   - Déclencher une action système
+#   - Modifier dynamiquement cette valeur selon l'état météo
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 📦 Portée :
-#   - Helper global
-#   - Utilisé exclusivement par les capteurs de COULEUR
-#     dérivés de la température
-#
-# 📐 Unité :
-#   - Degrés Celsius (°C)
-#
+# 🏷️ STATUT
+#   Couche UI — Arsenal v14.x
 # ==========================================================
 
 temperature_couleur_zone_verte:

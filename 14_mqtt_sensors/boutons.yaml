@@ -1,3 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     Zigbee — Boutons (action)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer en transport passif le champ `action` des
+#   boutons Zigbee publiés par Zigbee2MQTT, pour
+#   déclenchement d'automatisations.
+#
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
+#
+# 🔖 NATURE
+#   projection_transport
+#
+# 🆔 UNIQUE_ID
+#   bouton_cuisine_action
+#   bouton_sdb_action
+#   bouton_garage_1_action
+#   bouton_garage_2_action
+#   bouton_entree_action
+#
+# 📋 TRANSPORT
+#   state_topic          :
+#     - zigbee2mqtt/bouton_cuisine
+#     - zigbee2mqtt/bouton_sdb
+#     - zigbee2mqtt/bouton_garage_1
+#     - zigbee2mqtt/bouton_garage_2
+#     - zigbee2mqtt/bouton_entree
+#   namespace            : zigbee2mqtt/...
+#   json_attributes      : non
+#   structure JSON       : { "action": "<event>", ... }
+#                          champ extrait : action
+#                          défaut si absent : "" (chaîne vide)
+#   transformations      : projection scalaire du champ action
+#                          via value_template
+#
+# 🔗 DÉPENDANCES
+#   Lit : Zigbee2MQTT via broker MQTT
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
+# ==========================================================
+
 - name: "bouton_cuisine_action"
   unique_id: bouton_cuisine_action
   state_topic: "zigbee2mqtt/bouton_cuisine"

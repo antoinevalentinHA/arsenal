@@ -1,44 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Modulateurs contextuels d’aération
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Modulateurs contextuels
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Ajuster dynamiquement les seuils d’aération (ΔHA, ΔT)
-#    en fonction de contextes environnementaux spécifiques
-#    : nuit, pluie, brouillard, grand froid, canicule.
+# 🎯 RÔLE
+#   Stocker les modulations contextuelles appliquées aux
+#   seuils d'aération selon les conditions environnementales.
 #
-# 🧠 Lecture métier :
-#    Ces helpers sont lus en temps réel par les capteurs
-#    binaires d’aération (RDC et étage).
-#    Ils ne définissent pas des seuils absolus, mais des
-#    MODULATIONS appliquées aux seuils principaux.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Modulateurs décisionnels contextuels uniquement
+#   - Contextes nuit, pluie, brouillard, grand froid et canicule
+#   - Paramètres lus en temps réel par les capteurs d'aération
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🌙 Nuit :
-#    - Abaisse les exigences ΔHA et ΔT
-#    - Autorise une aération plus souple et silencieuse
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🌧️ Pluie / air saturé :
-#    - Peut bloquer l’aération (pluie)
-#    - Durcit les critères hygrométriques (ΔHA)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces valeurs comme seuils absolus
+#   - Modifier ces valeurs sans compréhension du contexte associé
+#   - Considérer ces valeurs comme des réglages esthétiques
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# ❄️ Grand froid :
-#    - Renforce l’exigence ΔT minimale
-#    - Limite les pertes thermiques
-#
-# ☀️ Canicule :
-#    - Bloque l’aération si l’air extérieur est trop chaud
-#
-# 🔗 Dépendances :
-#    - Binary sensors aération (RDC / étage)
-#    - Dashboards réglages aération
-#
-# 🚫 Interdits :
-#    - Les utiliser comme seuils absolus
-#    - Les modifier sans compréhension du contexte associé
-#    - Les considérer comme des réglages purement esthétiques
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - modulateurs décisionnels actifs (contextuels)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_mod_nuit_delta_ha:

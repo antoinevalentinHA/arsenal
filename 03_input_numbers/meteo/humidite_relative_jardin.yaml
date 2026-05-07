@@ -1,25 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPERS (INPUT_NUMBER)
-#    Humidite relative jardin — Valeur stabilisee
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Humidité relative jardin — Valeur stabilisée
 # ----------------------------------------------------------
-# 🎯 ROLE
+# 🎯 RÔLE
+#   Stocker la dernière valeur stabilisée d'humidité relative
+#   jardin publiée par la chaîne de stabilisation.
 #
-#    Stocker la derniere valeur stabilisee publiee
-#    par l'automation 10160000000013.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Valeur stabilisée aval uniquement
+#   - Humidité relative exprimée en %
+#   - Écriture exclusive par automatisation
+#   - Source de vérité aval pour façade finale
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🧱 CONTRAT
+# 🏷️ NATURE
+#   Registre technique | Valeur consolidée
 #
-#    - Source de verite aval pour la facade finale
-#    - Ecriture EXCLUSIVE par automation (jamais UI)
-#    - Valeur attendue : humidite relative en %
-#    - Plage contractuelle : [-1 ; 101]
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Modifier manuellement cette valeur
+#   - Utiliser ce helper comme seuil métier
+#   - Déclencher une automatisation directement depuis ce helper
+#   - Ajouter localement une logique de validation ou statut
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 INTERDIT
-#
-#    - Aucun calcul
-#    - Aucun statut
-#    - Aucune logique metier
-#
+# 🏷️ STATUT
+#   Couche consolidation — Arsenal v14.x
 # ==========================================================
 
 humidite_relative_jardin_valeur_stabilisee:

@@ -1,21 +1,43 @@
 # ==========================================================
-# ARSENAL — MQTT SENSOR
-# Boiler Guard — Status
+# 🧠 ARSENAL — MQTT SENSOR
+#     Boiler / Guard — Statut
 # ----------------------------------------------------------
-# Role :
-#   Exposer l'etat du guard boiler tel que publie par le Pi.
+# 🎯 RÔLE
+#   Exposer en transport passif l'état du guard chaudière
+#   tel que publié par le Pi.
 #
-# Source :
-#   - Topic : boiler/guard/status
-#   - Valeurs attendues :
-#       - nominal
-#       - recovery
-#       - degraded
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
 #
-# Contrat :
-#   - aucune transformation
-#   - aucune validation cote HA
-#   - lecture brute MQTT uniquement
+# 🔖 NATURE
+#   etat_brut_externe
+#
+# 🆔 UNIQUE_ID
+#   boiler_guard_status
+#
+# 📋 TRANSPORT
+#   state_topic          : boiler/guard/status
+#   namespace            : boiler/guard/...
+#   qos                  : 1
+#   json_attributes      : non
+#   structure JSON       : sans objet (état textuel scalaire)
+#   valeurs attendues    : nominal | recovery | degraded
+#
+# 🔗 DÉPENDANCES
+#   Lit : guard chaudière via broker MQTT
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système (aucune validation côté HA)
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 
 - name: "boiler_guard_status"

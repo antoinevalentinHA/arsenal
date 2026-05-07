@@ -1,39 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Délai extinction jardin (matin)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Jardin — Délai extinction matin
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir le délai appliqué APRÈS le lever du soleil
-#    avant extinction automatique de l’éclairage
-#    extérieur du jardin.
+# 🎯 RÔLE
+#   Stocker le délai appliqué après le lever du soleil avant
+#   extinction automatique de l'éclairage extérieur jardin.
 #
-# 🧩 Principe :
-#    - Le lever du soleil est fourni par Home Assistant
-#    - Ce délai permet d’éviter une extinction trop
-#      brutale (pénombre résiduelle, météo, saison)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre temporel éclairage jardin matin uniquement
+#   - Valeur exprimée en minutes
+#   - Paramètre consommé par l'automatisation de calcul
+#     d'heure d'extinction cible
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Valeur exprimée en minutes
-#    - Utilisée pour calculer une heure d’extinction cible
-#    - La logique d’extinction se base sur cette heure
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Automatisation :
-#        • eclairage/jardin/matin/maj_heure_extinction.yaml
-#    - Dashboards :
-#        • réglages éclairage
-#        • diagnostics éclairage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme horaire fixe
+#   - Confondre ce délai avec une temporisation d'absence
+#   - Confondre extinction matin et gestion crépusculaire soir
+#   - Déclencher directement une extinction
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Ne pas confondre avec :
-#    - Horaires fixes
-#    - Délais d’absence
-#    - Gestion crépusculaire du soir
-#
-# 📐 Unité :
-#    - minutes (post lever du soleil)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Paramètre éclairage jardin (matin)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 delai_extinction_jardin_matin:

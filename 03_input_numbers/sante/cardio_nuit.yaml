@@ -1,6 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPERS
-#     Cardio nuit — Snapshot numérique
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Cardio nuit — Snapshots numériques
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les valeurs numériques consolidées du pipeline
+#   cardio nuit utilisées pour l'analyse et le diagnostic.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Snapshots cardio consolidés uniquement
+#   - Valeurs numériques figées par cycle d'analyse
+#   - Moyenne cardiaque et durée de stabilité uniquement
+#   - Paramètres consommés par dashboards et statistiques
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme mesures temps réel
+#   - Modifier manuellement hors recalage exceptionnel
+#   - Déclencher directement une automatisation
+#   - Implémenter une logique santé dans ces helpers
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 cardio_nuit_moyenne:

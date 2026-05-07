@@ -1,27 +1,38 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles de la Température (filtrée sur la période nocturne)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Thermique — Moyenne 30j Température filtrée la nuit
 # ----------------------------------------------------------
-#  🌡️ Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de la **température mesurée la nuit** (période “filtre nuit”),
-#     afin d’évaluer :
-#       - le confort thermique nocturne 🌙
-#       - la stabilité des températures en période sans ensoleillement ☁️
-#       - l’efficacité de l’isolation et de l’inertie thermique du bâtiment 🧱
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de la température
+#   filtrée la nuit par zone.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Source : capteurs `sensor.temperature_filtre_nuit_*`
-#     - Métrique : `mean` (moyenne)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante : 30 jours
-#     - Taille d’échantillon : 5 000 points
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de la température **nocturne (°C)**
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 5000
+#   max_age              : 30 j — fenêtre mensuelle glissante
+#                          destinée à lisser les variations
+#                          thermiques nocturnes
+#   precision            : omis
 #
-#  🏡 Zones couvertes :
-#     - Chambres, zones de vie, extérieurs, ateliers, stockage, etc.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.temperature_filtre_nuit_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

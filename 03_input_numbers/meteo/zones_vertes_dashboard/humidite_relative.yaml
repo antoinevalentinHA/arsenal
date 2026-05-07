@@ -1,39 +1,35 @@
 # ==========================================================
-# 🎨 ARSENAL — HELPER UI : Zone verte humidité relative
+# 🧠 ARSENAL — INPUT_NUMBER
+#     UI — Humidité relative — Zone verte visuelle
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir la demi-largeur de la zone de confort VISUELLE
-#   utilisée pour colorer les capteurs d’humidité relative
-#   dans les dashboards et vues diagnostics.
+# 🎯 RÔLE
+#   Stocker la demi-largeur de la zone de confort VISUELLE
+#   utilisée pour la coloration des dashboards d'humidité
+#   relative.
 #
-# 🧠 Principe :
-#   - Chaque pièce possède ses seuils métier :
-#       • seuil_bas  (% HR)
-#       • seuil_haut (% HR)
-#   - Le centre de confort est calculé localement :
-#       centre = (seuil_bas + seuil_haut) / 2
-#   - Ce helper définit la tolérance graphique :
-#       zone verte = centre ± humidite_relative_couleur_zone_verte
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre graphique global uniquement
+#   - Valeur exprimée en % HR
+#   - Paramètre consommé par les capteurs de couleur UI
+#   - Aucun calcul métier
+#   - Aucune logique décisionnelle
+#   - Aucun comportement autonome
 #
-# ⚠️ Important :
-#   - Ce helper est STRICTEMENT VISUEL.
-#   - Il n’influence aucun seuil métier.
-#   - Il ne pilote aucune automatisation.
-#   - Il n’intervient dans aucune décision.
+# 🏷️ NATURE
+#   Paramètre UI | Paramètre visuel
 #
-# 🎨 Interprétation visuelle :
-#   - Vert   → HR dans la zone idéale
-#   - Jaune  → HR acceptable mais décalée
-#   - Rouge  → HR hors des seuils définis
+# 🚫 INTERDITS
+#   - Confondre UI et logique métier
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme seuil hygrométrique métier
+#   - Piloter une automatisation à partir de cette valeur
+#   - Déclencher une action système
+#   - Modifier dynamiquement cette valeur selon l'état météo
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 📦 Portée :
-#   - Helper global
-#   - Utilisé par les capteurs de COULEUR
-#     dérivés de l’humidité relative
-#
-# 📐 Unité :
-#   - Pourcentage d’humidité relative (% HR)
-#
+# 🏷️ STATUT
+#   Couche UI — Arsenal v14.x
 # ==========================================================
 
 humidite_relative_couleur_zone_verte:

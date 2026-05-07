@@ -1,38 +1,32 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP : Capteurs SwitchBot
+# 🧠 ARSENAL — GROUP
+#     Environnement — Capteurs SwitchBot
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Regrouper l’ensemble des capteurs environnementaux
-#    issus de l’écosystème SwitchBot afin de fournir
-#    une source cohérente pour l’observation et les
-#    contrôles système de fraîcheur des données.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs issus de
+#   l'intégration SwitchBot sous une référence statique unique.
 #
-# 🧠 Lecture métier :
-#    Ce groupe représente une SOURCE DE MESURE physique.
-#    Il ne prend aucune décision, mais alimente des
-#    capteurs système chargés de vérifier la validité
-#    et la fraîcheur des données SwitchBot.
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Capteurs environnementaux SwitchBot uniquement
+#   - Température et humidité relative uniquement
+#   - Zones résidentielles, techniques et imprimerie
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🧩 Périmètre :
-#    - Capteurs de température
-#    - Capteurs d’humidité relative
-#    - Zones intérieures, techniques et extérieures
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Utiliser le groupe comme condition métier directe
+#   - Déclencher une action directement depuis ce groupe
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non issues de SwitchBot
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
 #
-# 🔗 Dépendances :
-#    - Intégration SwitchBot
-#    - Utilisé par :
-#      • capteurs système de contrôle de fraîcheur des données
-#      • templates d’audit (âge des données SwitchBot)
-#      • dashboards environnement (lecture)
-#
-# 🚫 Interdits :
-#    - Utiliser ce groupe comme condition métier directe
-#    - Mélanger des capteurs non SwitchBot
-#    - Déclencher une action à partir du groupe
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle mesures / fiabilité système
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 switchbot_capteurs:

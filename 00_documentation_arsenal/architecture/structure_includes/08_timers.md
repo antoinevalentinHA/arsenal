@@ -103,18 +103,31 @@ Le type réel doit être explicité dans l’en-tête du fichier.
 #   le système Arsenal.
 #
 # 🧩 PÉRIMÈTRE
-#   Nature de la temporalité :
-#   - Délai de protection
-#   - Fenêtre d’autorisation
-#   - Échéance de pipeline
-#   - Temporisation anti-rebond
+#   - Contexte temporel transitoire uniquement
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune action directe sur un équipement
 #
-# 📡 SOURCES
-#   - Automatisations, scripts ou templates externes
+# 🔖 NATURE
+#   <Fenêtre temporelle | Délai de protection | Échéance de pipeline
+#    | Borne de fonctionnement | Anti-rebond | Orchestration temporelle
+#    | Fenêtre d'autorisation | Contexte transitoire>
+#
+# 📋 PARAMÈTRES
+#   duration : <HH:MM:SS | dynamique : à documenter>
+#   restore  : <true|false> — <justification si true>
+#
+# 📣 EXPIRATION
+#   Consommateur : <automation | script qui réagit à timer.finished>
 #
 # 🚫 INTERDITS
-#   - Introduire une logique métier locale
-#   - Déclencher directement une action
 #   - Confondre temporalité et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Déclencher directement une action à expiration
+#   - Laisser une durée dynamique sans documentation
+#   - Utiliser restore sans justification explicite
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 ```

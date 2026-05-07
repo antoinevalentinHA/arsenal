@@ -110,41 +110,34 @@ zone: !include_dir_merge_list zones/
 # 🧠 ARSENAL — ZONE
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
-# 📌 Fichier
-#   zones/<fichier>.yaml
+# 🎯 RÔLE
+#   <Finalité système exacte — une phrase>
 #
-# 🎯 ROLE
-#   Definir un perimetre geographique utilise
-#   comme contexte spatial dans Arsenal.
+# 🧩 PÉRIMÈTRE
+#   - Contexte géographique brut uniquement
+#   - Aucune logique métier
+#   - Aucune décision de présence
+#   - Aucune action directe
 #
-# 🧩 PERIMETRE
-#   Type Arsenal :
-#   - zone_metier
-#   - perimetre_securite
-#   - approche_geographique
-#   - anticipation_presence
+# 🔖 NATURE
+#   <presence_stricte | presence_elargie | approche_geographique
+#    | zone_metier | zone_technique | perimetre_securite
+#    | zone_transition | contexte_spatial | anticipation_presence>
 #
-# 📍 SEMANTIQUE
-#   - Le rayon definit un contexte geographique
-#   - La zone ne constitue jamais une preuve de presence
-#   - Toute interpretation metier est externe
-#
-# 🔗 UTILISATION
-#   - Geofencing
-#   - Presence
-#   - Anticipation
-#   - Contextes securite
+# 📋 PARAMÈTRES
+#   latitude  : <decimal>
+#   longitude : <decimal>
+#   radius    : <mètres — justification métier obligatoire>
+#   passive   : <true|false — justification si true>
 #
 # 🚫 INTERDITS
-#   - Produire une decision metier
-#   - Servir d’autorite de presence
-#   - Remplacer une fusion de presence
-#   - Declencher directement une action systeme
+#   - Constituer une preuve de présence
+#   - Servir d'autorité décisionnelle
+#   - Remplacer une fusion de présence
+#   - Déclencher directement une action système
+#   - Laisser un rayon non justifié par l'usage métier
 #
-# 🧠 STATUT ARCHITECTURAL
-#   Couche de contexte spatial.
-#
-#   Les automatisations et capteurs derivent
-#   leurs raisonnements a partir de ces zones.
+# 🏷️ STATUT
+#   Contexte spatial — Arsenal v14.x
 # ==========================================================
 ```

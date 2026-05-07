@@ -1,37 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBERS : VMC — Seuils CO₂ métier
+# 🧠 ARSENAL — INPUT_NUMBER
+#     VMC — Seuils CO₂ métier
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir les SEUILS DE DÉCISION CO₂ utilisés pour
-#   déterminer si une ventilation haute vitesse est requise.
+# 🎯 RÔLE
+#   Stocker les seuils CO₂ utilisés pour qualifier
+#   l'autorisation de ventilation haute vitesse.
 #
-# 🧱 Principe :
-#   - Ces input_number ne contiennent aucune logique
-#   - Ils fournissent uniquement :
-#       • un seuil d’entrée (ON)
-#       • un seuil de sortie (OFF)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Seuils CO₂ ON / OFF uniquement
+#   - Valeurs exprimées en ppm
+#   - Paramètres consommés par :
+#       binary_sensor.vmc_haute_vitesse_requise
+#   - Hystérèse appliquée hors helpers
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-#   → L’hystérésis est appliquée ailleurs.
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# ❌ Ne sont PAS :
-#   - des capteurs CO₂
-#   - des déclencheurs
-#   - des commandes VMC
-#   - des automatismes
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme capteurs CO₂
+#   - Déclencher directement une action
+#   - Commander directement la VMC
+#   - Implémenter l'hystérèse dans ces helpers
+#   - Modifier automatiquement ces valeurs
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisation :
-#   - Consommés par :
-#       • binary_sensor.vmc_haute_vitesse_requise
-#   - Affichage / réglage :
-#       • dashboards VMC
-#       • button-card templates
-#
-# 🧠 Principe Arsenal :
-#   - Mesure ≠ Décision ≠ Action
-#   - Les seuils sont explicites, réglables et indépendants
-#
-# 📐 Unité :
-#   - ppm (parties par million)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 vmc_co2_seuil_on:

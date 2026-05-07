@@ -1,49 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPERS : Compteurs de réveils nocturnes enfants
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Réveils nocturnes enfants — Compteurs
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Comptabiliser le nombre de réveils nocturnes
-#   détectés pour chaque enfant au cours de la nuit :
-#     - Arnaud
-#     - Matthieu
+# 🎯 RÔLE
+#   Stocker les compteurs de réveils nocturnes détectés
+#   pour chaque enfant au cours de la nuit.
 #
-# 🧠 Nature :
-#   - Compteurs MANUELS / LOGIQUES
-#   - États de diagnostic et d’observation familiale
-#   - NON médicaux, NON biométriques
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteurs de réveils nocturnes uniquement
+#   - Valeurs entières incrémentales uniquement
+#   - Observation familiale et diagnostic uniquement
+#   - Réinitialisation orchestrée hors helpers
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#   - Incrémentés par automatisations dédiées
-#     lors d’un événement qualifié comme "réveil"
-#   - Valeur plafonnée (ex : max 10)
-#   - Réinitialisés explicitement :
-#       • chaque matin
-#       • ou lors d’une action parentale volontaire
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
 #
-# ❌ Important :
-#   - Ces helpers ne mesurent PAS le sommeil réel
-#   - Ils ne proviennent PAS de capteurs physiologiques
-#   - Ils servent uniquement à :
-#       • observer des tendances
-#       • corréler bruit / environnement / réveils
-#       • alimenter des dashboards de diagnostic
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Considérer ces helpers comme des mesures médicales
+#   - Déduire un état physiologique ou clinique
+#   - Déclencher directement une automatisation
+#   - Implémenter une logique de reset locale
+#   - Modifier manuellement hors correction volontaire
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisés par :
-#   - Dashboards :
-#       • lovelace/dashboards/diagnostics/sommeil.yaml
-#       • lovelace/dashboards/meteo/meteo_bruit.yaml
-#   - Automatisations :
-#       • 11_automations/reveils/compteurs/*.yaml
-#       • 11_automations/reveils/reset/*.yaml
-#
-# 📐 Unité :
-#   - Nombre de réveils (compteur entier)
-#
-# 🧠 Principe Arsenal :
-#   - On n’interprète pas → on OBSERVE
-#   - Le système aide à comprendre, pas à diagnostiquer
-#   - Toute action reste humaine
-#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 reveils_nocturnes_arnaud:

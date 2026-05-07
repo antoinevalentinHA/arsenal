@@ -1,40 +1,38 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER — Imprimerie : historique Stock (Carton / PF)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Imprimerie — Historique environnement stockage
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Stocker l’HISTORIQUE min/max (Température + HR)
-#   MESURÉ dans les zones de stockage de l’imprimerie :
-#     - Stock Carton
-#     - Stock Produits Finis (PF)
+# 🎯 RÔLE
+#   Stocker les valeurs minimales et maximales réellement
+#   observées de température et d'humidité relative dans les
+#   zones de stockage de l'imprimerie.
 #
-# ✅ Important :
-#   - Ces helpers ne sont PAS des seuils.
-#   - Ils représentent des VALEURS RÉELLES enregistrées (min/max),
-#     mises à jour automatiquement à partir des capteurs.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Historique environnement stockage uniquement
+#   - Valeurs min / max réellement observées uniquement
+#   - Température et humidité relative uniquement
+#   - Zones Stock Carton et Stock PF uniquement
+#   - Paramètres alimentés par automatisations d'archivage
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#   - Les capteurs donnent la mesure instantanée.
-#   - Les automatisations comparent et mettent à jour ces helpers :
-#       → si nouvelle valeur plus basse : maj du “min”
-#       → si nouvelle valeur plus haute : maj du “max”
-#   - Une automatisation d’archivage peut figer / historiser périodiquement.
-#   - Un script permet le reset (remise à zéro / relance de l’historique).
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
 #
-# 🔗 Utilisés par :
-#   - Dashboards :
-#       • lovelace/dashboards/imprimerie/imprimerie_stockage.yaml
-#   - Automatisations :
-#       • 11_automations/imprimerie/stock/min_max.yaml
-#       • 11_automations/imprimerie/stock/archivage.yaml
-#   - Scripts :
-#       • 10_scripts/imprimerie/reset_stock_historique.yaml
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme seuils environnementaux
+#   - Piloter un équipement depuis ces helpers
+#   - Modifier manuellement hors correction volontaire
+#   - Réaliser un calcul statistique dans ces helpers
+#   - Déclencher directement une automatisation
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 Principe Arsenal :
-#   - Les capteurs MESURENT.
-#   - Les automatisations ENREGISTRENT (min/max) dans les helpers.
-#   - Les dashboards EXHIBENT.
-#   - Les scripts RÉINITIALISENT.
-#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 stock_carton_temperature_min:

@@ -1,52 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Cibles RH cave (ON / OFF)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Déshumidificateur — Cave — Cibles RH ON / OFF
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir les seuils d’humidité relative servant
-#    à piloter le déshumidificateur de la cave
-#    avec une hystérésis explicite.
+# 🎯 RÔLE
+#   Stocker les seuils d'humidité relative utilisés pour
+#   encadrer la régulation du déshumidificateur de cave.
 #
-# 🧩 Principe :
-#    - cave_rh_cible_on  :
-#        → seuil de DÉCLENCHEMENT
-#    - cave_rh_cible_off :
-#        → seuil d’EXTINCTION
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Hystérèse hygrométrique cave uniquement
+#   - Seuils RH ON / OFF uniquement
+#   - Paramètres consommés par les binary_sensors décisionnels
+#   - Base indirecte de calculs HA équivalents
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-#    Les deux valeurs forment une bande morte
-#    volontaire pour éviter tout pompage.
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# ⚙️ Fonctionnement :
-#    - Comparés à l’humidité relative mesurée en cave
-#    - Utilisés par les binary_sensors décisionnels
-#    - Exploités indirectement pour le calcul
-#      des seuils d’humidité absolue équivalents
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces valeurs comme humidité absolue
+#   - Confondre ces seuils avec des recommandations d'aération
+#   - Déclencher directement une automatisation
+#   - Piloter directement le déshumidificateur depuis ces helpers
+#   - Implémenter une logique d'hystérèse locale
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔁 Effet recherché :
-#    - Régulation stable et lisible
-#    - Cycles longs et maîtrisés
-#    - Protection du matériel
-#
-# 🔍 Utilisation :
-#    - Binary sensors :
-#        • deshumidificateur/logique.yaml
-#        • deshumidificateur/criteres/humidite_relative.yaml
-#    - Template sensors :
-#        • meteo/mesures/humidite_absolue/cave_seuils.yaml
-#    - Dashboards :
-#        • réglages
-#        • diagnostics déshumidificateur
-#
-# 🚫 Ne pas confondre avec :
-#    - Humidité absolue
-#    - Seuils météo extérieurs
-#    - Recommandations d’aération
-#
-# 📐 Unité :
-#    - % (humidité relative)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Régulation déshumidification cave
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 cave_rh_cible_on:

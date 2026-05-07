@@ -1,27 +1,47 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles de température (filtrée au crépuscule)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Thermique — Moyenne 30j Température filtrée au crépuscule
 # ----------------------------------------------------------
-#  🧠 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de la température mesurée au **crépuscule** 🌇.
-#     Cette période correspond au moment de la transition
-#     thermique jour/nuit, utile pour suivre les pertes
-#     énergétiques et l’efficacité du rafraîchissement nocturne.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de la
+#   température filtrée au crépuscule par zone, à
+#   destination des couches de diagnostic et d'analyse de
+#   tendance thermique en fin de journée.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Source : capteurs `sensor.temperature_filtre_crepuscule_*`
-#     - Type de statistique : `mean` (moyenne)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante : 30 jours
-#     - Taille d’échantillon : 5 000 points maximum
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de la température crépusculaire (°C)
+# 📋 PARAMÈTRES
+#   state_characteristic : mean (toutes zones)
+#   sampling_size        : 5000
+#                          justification : borne haute couvrant
+#                          la fenêtre de 30 j à fréquence
+#                          d'échantillonnage usuelle, avec
+#                          marge pour pics de publication
+#   max_age              : 30 j
+#                          justification : fenêtre mensuelle
+#                          permettant l'établissement d'une
+#                          référence saisonnière stable, lissant
+#                          les épisodes ponctuels et les cycles
+#                          hebdomadaires d'occupation
+#   precision            : omis (par défaut HA)
 #
-#  🏡 Zones couvertes :
-#     - Chambres, espaces de vie, ateliers, extérieurs,
-#       zones de stockage et bureaux.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.temperature_filtre_crepuscule_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

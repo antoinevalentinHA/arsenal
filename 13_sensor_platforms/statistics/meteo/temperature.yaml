@@ -1,28 +1,39 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles de température
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Thermique — Moyenne 30j Température brute
 # ----------------------------------------------------------
-#  🧠 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de la température (°C) dans chaque zone suivie :
-#     chambres, pièces de vie, extérieurs, bureaux, ateliers.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de la
+#   température brute par zone.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Calcule des statistiques depuis l’historique des capteurs.
-#     - Ici, seule la **moyenne (mean)** est utilisée.
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante de 30 jours.
-#     - Échantillons conservés : 10 000 max.
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de température (°C)
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 10000
+#   max_age              : 30 j — fenêtre mensuelle glissante
+#                          destinée à lisser les variations
+#                          thermiques
+#   precision            : omis
 #
-#  🏡 Zones couvertes :
-#     - Habitation principale
-#     - Espaces extérieurs
-#     - Locaux professionnels et ateliers
+# 🔗 DÉPENDANCES
+#   Lit : sensor.temperature_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
-
 
 # ----------------------------------------------------------
 # 🏠 Chambres

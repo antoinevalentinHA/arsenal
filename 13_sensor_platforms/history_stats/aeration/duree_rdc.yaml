@@ -1,27 +1,43 @@
 # ==========================================================
-#  HISTORY STATS SENSOR — Temps d’aération RDC
+# 🧠 ARSENAL — HISTORY_STATS SENSOR
+#     Aération — Durée cumulée d'ouverture RDC
 # ----------------------------------------------------------
-#  🧠 Rôle :
-#     Calcule la durée totale pendant laquelle les fenêtres
-#     du rez-de-chaussée sont restées ouvertes
-#     depuis le début de la journée.
+# 🎯 RÔLE
+#   Calculer la durée cumulée pendant laquelle les fenêtres
+#   du rez-de-chaussée sont restées ouvertes depuis minuit,
+#   à destination des consommateurs UI et des couches de
+#   diagnostic aération.
 #
-#  ⚙️ Composant : `platform: history_stats`
-#     - Exploite l’historique de Home Assistant.
-#     - Calcule le **temps cumulé** passé dans un état spécifique.
+# 🧩 PÉRIMÈTRE
+#   - Métrique historique via recorder uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  🧩 Entrée :
-#     - `binary_sensor.fenetre_ouverte_rdc`
-#       → Capteur regroupé des ouvertures au RDC.
+# 🔖 NATURE
+#   duree_cumulee
 #
-#  📅 Fenêtre d’analyse :
-#     - Début : minuit (00:00:00)
-#     - Fin : instant présent
+# 📋 PARAMÈTRES
+#   entity_id : binary_sensor.fenetre_ouverte_rdc
+#   state     : on
+#   type      : time
+#   fenêtre   : start = now().replace(hour=0, minute=0, second=0)
+#               end   = now()
+#               justification : agrégat journalier glissant
+#               aligné sur l'horloge civile locale
 #
-#  📊 Sortie :
-#     - Valeur en **heures** (durée cumulée des ouvertures)
+# 🔗 DÉPENDANCES
+#   Lit      : binary_sensor.fenetre_ouverte_rdc
+#   Recorder : requis — rétention minimale 24 h
 #
-#  ✅ Mise à jour continue à chaque changement d’état
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Utiliser un historique incomplet sans justification
+#   - Confondre mesure historique et état temps réel
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser la fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Durée — Arsenal v14.x
 # ==========================================================
 
 - platform: history_stats

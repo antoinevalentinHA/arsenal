@@ -1,11 +1,26 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER :
+# 🧠 ARSENAL — INPUT_NUMBER
 #     Aération — M3 — Seuil ΔT high
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Seuil ΔT (°C) définissant la limite haute :
-#   si seuil_medium <= ΔT < seuil_high => prolongation medium
-#   si ΔT >= seuil_high => prolongation high
+#   Stocker le seuil ΔT définissant le niveau M3 high.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_m3_seuil_high:

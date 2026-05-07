@@ -1,37 +1,30 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP : Capteurs Homekit
+# 🧠 ARSENAL — GROUP
+#     Environnement — Capteurs HomeKit
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Regrouper l’ensemble des capteurs issus de l’écosystème
-#    Homekit afin de fournir une vue cohérente et centralisée
-#    des mesures environnementales.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs issus de
+#   l'intégration HomeKit sous une référence statique unique.
 #
-# 🧠 Lecture métier :
-#    Ce groupe constitue une SOURCE DE MESURE,
-#    pas une source de décision.
-#    Les capteurs Netatmo alimentent les diagnostics,
-#    les templates et les pipelines, mais ne décident jamais.
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Capteurs environnementaux HomeKit uniquement
+#   - Température, humidité, CO₂, qualité de l'air, bruit
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🧩 Périmètre :
-#    - Capteurs physiques Netatmo uniquement
-#    - Température, humidité, CO₂, pression, bruit, pluie
-#    - Regroupement logique par zones
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non issues de HomeKit
+#   - Ajouter des entités purement techniques ou métadonnées
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
 #
-# 🔗 Dépendances :
-#    - Intégration Homekit
-#    - Utilisé par :
-#      • capteurs système de contrôle de fraîcheur des données
-#      • templates d’audit (âge des données Homekit)
-#      • dashboards environnement (lecture)
-#
-# 🚫 Interdits :
-#    - Ajouter des capteurs non Homekit
-#    - Utiliser ce groupe comme condition directe
-#    - Introduire une logique métier ici
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle mesures / interface
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 homekit_capteurs:

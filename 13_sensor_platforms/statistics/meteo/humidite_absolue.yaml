@@ -1,29 +1,39 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles d’humidité absolue
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Hygrométrie — Moyenne 30j Humidité absolue brute
 # ----------------------------------------------------------
-#  🧠 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’humidité absolue (g/m³) dans chaque zone
-#     domestique et professionnelle.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidité
+#   absolue brute par zone.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Exploite l’historique de chaque capteur pour établir des statistiques.
-#     - Ici, on retient uniquement la **moyenne** via :
-#           state_characteristic: mean
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période : 30 jours glissants
-#     - Échantillons max : 10 000
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de l’humidité absolue (g/m³)
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 10000
+#   max_age              : 30 j — fenêtre mensuelle glissante
+#                          destinée à lisser les variations
+#                          hygrométriques
+#   precision            : omis
 #
-#  🏡 Zones couvertes :
-#     - Pièces de la maison
-#     - Espaces extérieurs
-#     - Locaux professionnels / ateliers
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidite_absolue_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
-
 
 # ----------------------------------------------------------
 # 🏠 Chambres et pièces domestiques

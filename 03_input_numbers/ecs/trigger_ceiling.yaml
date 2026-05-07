@@ -1,32 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBER : ECS — Plafond amorçage Tiny / Medium
+# 🧠 ARSENAL — INPUT_NUMBER
+#     ECS — Plafond amorçage Tiny / Medium
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir le DELTA maximal (en °C) sous la consigne ECS
-#   à partir duquel un cycle ECS de type Tiny / Medium
-#   est autorisé à s’amorcer.
+# 🎯 RÔLE
+#   Stocker le delta thermique maximal autorisant
+#   l'amorçage anticipé des cycles ECS Tiny / Medium.
 #
-# 🧱 Principe métier :
-#   - Le déclenchement ECS n’attend pas la consigne stricte
-#   - Un amorçage anticipé est autorisé si :
-#       température_ballon ≥ (consigne - plafond)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Delta thermique relatif uniquement
+#   - Amorçage cycles Tiny / Medium uniquement
+#   - Paramètre consommé par le pipeline ECS
+#   - Valeur exprimée en degrés Celsius
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📌 Spécificité :
-#   - S’applique UNIQUEMENT aux cycles Tiny / Medium
-#   - N’impacte pas les cycles Heavy / Forcés
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# ⚙️ Utilisation réelle :
-#   - Consommé par :
-#       • script.chauffage_ecs_cycle
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme consigne ECS
+#   - Utiliser ce helper comme seuil absolu
+#   - Appliquer ce helper aux cycles Heavy ou forcés
+#   - Déclencher directement une action ECS
+#   - Implémenter localement une logique d'amorçage
+#   - Modifier automatiquement cette valeur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 Principe Arsenal :
-#   - Helper RELATIF (delta)
-#   - Pas une consigne
-#   - Pas un seuil absolu
-#   - Sert à lisser et anticiper intelligemment l’ECS
-#
-# 📐 Unité :
-#   - Degrés Celsius (°C)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ecs_trigger_ceiling_tiny_medium:

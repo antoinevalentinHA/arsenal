@@ -1,19 +1,34 @@
 # ==========================================================
-#  🧠 ARSENAL — INPUT NUMBER :
-#     Déshumidificateur - Duree mini cycle
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Déshumidificateur — Durée minimale de cycle
 # ----------------------------------------------------------
-#  🎯 ROLE
-#     Porter la durée minimale d'un cycle réel de
-#     déshumidification avant qu'une extinction soit
-#     autorisée.
+# 🎯 RÔLE
+#   Stocker la durée minimale d'un cycle réel de
+#   déshumidification avant extinction autorisée.
 #
-#  🧱 STATUT ARSENAL
-#     parameter
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Durée minimale de cycle uniquement
+#   - Valeur exprimée en minutes
+#   - Paramètre consommé par les automatismes de protection
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-#  ⚠️ CONTRAT
-#     - valeur réglable en minutes
-#     - aucune autorité d'exécution
-#     - aucune logique portée par ce helper
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher directement une action
+#   - Décider d'une extinction ou d'un démarrage
+#   - Implémenter une logique temporelle locale
+#   - Modifier automatiquement cette valeur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 deshumidificateur_duree_mini_cycle:

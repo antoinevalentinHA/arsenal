@@ -1,43 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPER SYSTÈME : Compteur tentatives reload Zigbee2MQTT
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Système — Zigbee2MQTT — Compteur tentatives reload
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Comptabiliser le nombre de tentatives de rechargement
-#   de l’intégration Zigbee2MQTT afin de :
-#     - prévenir les boucles de reload destructrices
-#     - protéger le coordinateur Zigbee
-#     - éviter l’instabilité du réseau maillé
+# 🎯 RÔLE
+#   Stocker le nombre de tentatives de rechargement de
+#   l'intégration Zigbee2MQTT.
 #
-# 🧠 Nature :
-#   - Compteur de SUPERVISION CRITIQUE
-#   - État interne de protection système
-#   - Non destiné à représenter un état fonctionnel Zigbee
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteur technique de protection critique uniquement
+#   - Valeur entière de tentatives
+#   - Paramètre consommé par les automatisations système
+#   - Protection du coordinateur et du réseau maillé
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#   - Incrémenté à chaque tentative de reload Zigbee2MQTT
-#   - Lu par l’automatisation de supervision dédiée
-#   - Comparé à un seuil maximal autorisé
-#   - Réinitialisé explicitement :
-#       • après un reload réussi
-#       • lors d’une intervention contrôlée
+# 🏷️ NATURE
+#   Registre technique | Garde-fou système
 #
-# ⚠️ Important :
-#   - Ce helper NE mesure PAS l’état du réseau Zigbee
-#   - Il NE reflète PAS la qualité LQI, RSSI ou disponibilité
-#   - Il sert UNIQUEMENT de garde-fou logique
+# 🚫 INTERDITS
+#   - Confondre stockage et supervision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme état Zigbee réel
+#   - Utiliser ce helper comme indicateur LQI, RSSI ou disponibilité
+#   - Déclencher directement un reload depuis ce helper
+#   - Implémenter localement une logique de retry
+#   - Réinitialiser implicitement ce compteur
+#   - Modifier manuellement cette valeur hors maintenance
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisé par :
-#   - Automatisations :
-#       • 11_automations/system/reload_integrations/zigbee.yaml
-#
-# 📐 Unité :
-#   - Tentatives (compteur entier)
-#
-# 🧠 Principe Arsenal :
-#   - Zigbee est un système maillé sensible
-#   - Trop de reloads détruisent plus qu’ils ne réparent
-#   - Le système doit savoir s’arrêter
-#
+# 🏷️ STATUT
+#   Couche protection système — Arsenal v14.x
 # ==========================================================
 
 zigbee_reload_tentatives:

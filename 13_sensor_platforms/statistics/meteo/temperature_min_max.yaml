@@ -1,25 +1,38 @@
-###########################################################
-#  🌡️ SENSORS : Températures min / max (24 h glissantes)
-#  ---------------------------------------------------------
-#  Rôle :
-#    Pour chaque capteur de température de type :
-#        sensor.temperature_<zone>
-#    ce fichier génère automatiquement :
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Thermique — Minima et maxima glissants 24 h
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer les températures minimales et maximales glissantes
+#   sur 24 heures par zone.
 #
-#      • sensor.temperature_min_jour_<zone>
-#      • sensor.temperature_max_jour_<zone>
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#    → valeurs min/max des 24 dernières heures
-#    → utilisées dans les dashboards Arsenal
+# 🔖 NATURE
+#   tendance | reference_statistique | agregat_quantitatif
 #
-#  IMPORTANT :
-#    - Fichier intégré par :
-#        sensor: !include_dir_merge_list 13_sensor_platforms/
-#    - Aucune clé `sensor:` globale
-#    - Chaque entrée doit commencer par `- platform: statistics`
-#    - Glissant sur 24h (pas "depuis minuit")
-###########################################################
-
+# 📋 PARAMÈTRES
+#   state_characteristic : value_min / value_max
+#   sampling_size        : 5000
+#   max_age              : 24 h — conservation des extrêmes
+#                          thermiques journaliers
+#   precision            : omis
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.temperature_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Tendance — Arsenal v14.x
+# ==========================================================
 
 # ==========================================================
 #  🌳 Jardin

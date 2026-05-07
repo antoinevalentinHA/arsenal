@@ -1,38 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBERS : ECS — Consignes de température
+# 🧠 ARSENAL — INPUT_NUMBER
+#     ECS — Consignes de température
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir les CONSIGNES CIBLES de température ECS
-#   utilisées selon le type de cycle déclenché.
+# 🎯 RÔLE
+#   Stocker les températures cibles ECS utilisées selon
+#   le type de cycle thermique demandé.
 #
-# 🧱 Principe métier :
-#   - Ces helpers représentent des OBJECTIFS thermiques
-#   - Ils ne déclenchent jamais un cycle
-#   - Ils ne sont jamais comparés directement à un seuil
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Consignes ECS uniquement
+#   - Consignes usage quotidien, vaisselle et désinfection
+#   - Valeurs cibles thermiques uniquement
+#   - Paramètres consommés par les scripts ECS
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📌 Détails des consignes :
-#   - ecs_consigne_temperature :
-#       → Consigne ECS normale (usage quotidien)
-#   - ecs_consigne_vaisselle :
-#       → Consigne ECS réduite / fonctionnelle
-#         (vaisselle, appoint court)
-#   - ecs_temperature_desinfection :
-#       → Consigne ECS haute, cycle sanitaire
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# ⚙️ Utilisation réelle :
-#   - Sélectionnées dynamiquement par :
-#       • script.chauffage_ecs_cycle
-#   - Tracées dans :
-#       • logs ECS
-#       • dashboards diagnostics
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher directement un cycle ECS
+#   - Comparer directement ces helpers à des seuils décisionnels
+#   - Piloter directement un actionneur ECS
+#   - Modifier automatiquement ces valeurs
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 Principe Arsenal :
-#   - Helpers = INTENTION
-#   - Scripts = DÉCISION
-#   - Automatisations = ORCHESTRATION
-#
-# 📐 Unité :
-#   - Degrés Celsius (°C)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ecs_consigne_temperature:

@@ -1,35 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Seuils CO₂ d’aération
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Seuils CO₂ décisionnels
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir les seuils de concentration en CO₂ utilisés
-#    par le moteur d’aération pour qualifier la priorité
-#    d’ouverture (normale ou forte).
+# 🎯 RÔLE
+#   Stocker les seuils de concentration CO₂ utilisés par
+#   le moteur d'aération pour qualifier la priorité
+#   d'ouverture.
 #
-# 🧠 Lecture métier :
-#    Ces seuils sont LUS EN TEMPS RÉEL par les capteurs
-#    binaires d’aération (RDC et étage).
-#    Toute modification impacte immédiatement la logique
-#    de décision et la priorité accordée à l’aération.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Seuils décisionnels lus en temps réel
+#   - Paramètres utilisés par les binary sensors d'aération
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📐 Niveaux définis :
-#    - Seuil CO₂ :
-#        → aération nécessaire / prioritaire
-#    - Seuil CO₂ fort :
-#        → aération urgente (qualité de l’air dégradée)
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔗 Dépendances :
-#    - Binary sensors aération (RDC / étage)
-#    - Dashboards réglages aération
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces valeurs comme simples indicateurs visuels
+#   - Confondre ces valeurs avec des références internes
+#   - Modifier ces seuils sans compréhension de l'impact global
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Les utiliser comme simples indicateurs visuels
-#    - Les confondre avec des valeurs de référence internes
-#    - Les modifier sans compréhension de l’impact global
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - seuils décisionnels actifs (qualité de l’air)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_co2_seuil:

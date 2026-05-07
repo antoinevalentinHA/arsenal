@@ -1,38 +1,26 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : Zigbee Link Quality (diagnostic)
+# 🧠 ARSENAL — CUSTOMIZE
+#     Diagnostic réseau — Capteurs Zigbee (LQI)
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Centraliser l’affichage et l’identification des capteurs
-#    Zigbee de qualité de liaison (LQI).
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage des capteurs
+#   Zigbee de qualité de liaison (LQI) à destination des
+#   consommateurs UI du domaine diagnostic réseau.
 #
-# 🧠 Lecture métier :
-#    Les valeurs de Link Quality représentent l’état de santé
-#    du réseau Zigbee (portée, routage, stabilité radio).
-#    Elles sont STRICTEMENT diagnostiques.
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 🧩 Périmètre :
-#    - Définit les friendly_name et icônes
-#    - Facilite l’audit du maillage Zigbee
-#    - Sert au diagnostic de pertes ou latences
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🔗 Dépendances :
-#    - Zigbee2MQTT
-#    - Capteurs physiques (boutons, prises, détecteurs)
-#    - Utilisés par :
-#      • dashboards Zigbee
-#      • audits réseau
-#
-# 🚫 Interdits :
-#    - Utiliser le LQI comme condition métier
-#    - Déclencher une action automatique
-#    - Dégrader une logique fonctionnelle
-#      en fonction de la qualité radio
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - diagnostic réseau / non décisionnel
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
-
 
 ############################################################
 # 🔘 BOUTONS

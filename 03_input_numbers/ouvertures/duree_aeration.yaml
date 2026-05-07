@@ -1,48 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPERS MÉTIER : Stocks de durée d’aération
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Registres durée cumulée
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Stocker de manière PERSISTANTE (mémoire durable)
-#   les durées cumulées d’aération pour :
-#     - Rez-de-chaussée (RDC)
-#     - Étage
+# 🎯 RÔLE
+#   Stocker de manière persistante les durées cumulées
+#   d'aération par zone.
 #
-# 🧠 Nature de ces helpers :
-#   - Ce sont des REGISTRES MÉTIER.
-#   - Ils ne mesurent rien directement.
-#   - Ils ne calculent rien.
-#   - Ils stockent une valeur DÉJÀ DÉCIDÉE.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Registres métier cumulés uniquement
+#   - Valeurs exprimées en secondes
+#   - Valeurs consommées par dashboards et automatisations
+#   - Aucune mesure locale
+#   - Aucun calcul local
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Principe de fonctionnement :
-#   - Les événements d’aération sont détectés ailleurs.
-#   - Une automatisation incrémente ces stocks.
-#   - La valeur survit aux redémarrages Home Assistant.
-#   - Un reset explicite est possible en fin d’épisode
-#     (manuel ou automatisé).
+# 🏷️ NATURE
+#   Registre métier | Mémoire persistante
 #
-# ⚠️ Important :
-#   - Ces helpers NE SONT PAS des durées instantanées.
-#   - Ils NE doivent PAS être remis à zéro implicitement.
-#   - Toute modification est une ACTION VOLONTAIRE.
+# 🚫 INTERDITS
+#   - Confondre stockage et mesure
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme durées instantanées
+#   - Réinitialiser implicitement ces valeurs
+#   - Déclencher directement une automatisation
+#   - Implémenter localement une logique de cumul
+#   - Modifier manuellement ces valeurs hors action volontaire
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisés par :
-#   - Automatisations :
-#       • 11_automations/aeration/sauvegarde_duree.yaml
-#       • 11_automations/aeration/reset_duree.yaml
-#   - Dashboards :
-#       • lovelace/dashboards/aeration.yaml
-#   - Recorder :
-#       • recorder.yaml (inclusion explicite)
-#
-# 📐 Unité :
-#   - Secondes (s)
-#
-# 🧠 Principe Arsenal :
-#   - Les capteurs DÉTECTENT.
-#   - Les scripts / automations DÉCIDENT.
-#   - Les helpers STOCKENT.
-#   - Les dashboards EXHIBENT.
-#
+# 🏷️ STATUT
+#   Couche stockage métier — Arsenal v14.x
 # ==========================================================
 
 duree_aeration_rdc_stock:

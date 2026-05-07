@@ -1,25 +1,38 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles d’humidité relative
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Hygrométrie — Moyenne 30j Humidité relative brute
 # ----------------------------------------------------------
-#  🧠 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’humidité relative (%) pour chaque pièce
-#     domestique et zone professionnelle.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidité
+#   relative brute par zone.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Analyse l’historique des entités cibles
-#     - Utilise la caractéristique `mean` (moyenne arithmétique)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Durée : 30 jours glissants
-#     - Échantillons maximum : 10 000
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Valeur moyenne d’humidité relative sur 30 jours
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 10000
+#   max_age              : 30 j — fenêtre mensuelle glissante
+#                          destinée à lisser les variations
+#                          hygrométriques
+#   precision            : omis
 #
-#  🏡 Regroupement :
-#     - Zones domestiques : chambres, séjour, SDB, etc.
-#     - Zones professionnelles : bureaux, stock, ateliers
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidite_relative_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

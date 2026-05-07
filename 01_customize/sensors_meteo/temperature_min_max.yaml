@@ -1,39 +1,27 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : Températures Min / Max 24h
+# 🧠 ARSENAL — CUSTOMIZE
+#     Thermique — Capteurs Min / Max 24h
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Centraliser l’affichage des températures minimales
-#    et maximales observées sur les dernières 24 heures,
-#    par zone.
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage des capteurs
+#   de températures minimales et maximales observées sur
+#   24 heures, à destination des consommateurs UI du
+#   domaine thermique.
 #
-# 🧠 Lecture métier :
-#    Ces capteurs fournissent une vision RÉTROSPECTIVE
-#    du comportement thermique de la maison.
-#    Ils sont destinés au diagnostic, à l’analyse
-#    et à la compréhension des inerties thermiques.
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 🧩 Périmètre :
-#    - Définit les friendly_name et icônes
-#    - Regroupe les capteurs Min / Max journaliers
-#    - Fournit une lecture synthétique par zone
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🔗 Dépendances :
-#    - Capteurs de température instantanée
-#    - Agrégations temporelles (24h)
-#    - Utilisés par :
-#      • dashboards de suivi
-#      • analyses thermiques
-#
-# 🚫 Interdits :
-#    - Utiliser ces valeurs comme seuils décisionnels
-#    - Déclencher une action en temps réel
-#    - Corriger ou filtrer les données ici
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - observation / historique
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
-
 
 ############################################################
 # 🌿 EXTÉRIEUR
@@ -46,7 +34,6 @@ sensor.temperature_min_jour_jardin:
 sensor.temperature_max_jour_jardin:
   friendly_name: "Jardin"
   icon: mdi:tree
-
 
 ############################################################
 # 🏠 ESPACES DE VIE — INTÉRIEUR
@@ -76,7 +63,6 @@ sensor.temperature_max_jour_palier:
   friendly_name: "Palier"
   icon: mdi:stairs-up
 
-
 ############################################################
 # 🛏️ CHAMBRES
 ############################################################
@@ -105,7 +91,6 @@ sensor.temperature_max_jour_chambre_parents:
   friendly_name: "Chambre Parents"
   icon: mdi:account-multiple
 
-
 ############################################################
 # 🚿 SALLES DE BAINS
 ############################################################
@@ -125,7 +110,6 @@ sensor.temperature_min_jour_sdb_enfants:
 sensor.temperature_max_jour_sdb_enfants:
   friendly_name: "SDB Enfants"
   icon: mdi:shower
-
 
 ############################################################
 # 🏗️ ANNEXES & ZONES TECHNIQUES

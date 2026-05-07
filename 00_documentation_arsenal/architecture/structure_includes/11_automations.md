@@ -157,26 +157,49 @@ Exemples courants :
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATION
 #     <Domaine> — <Fonction>
-#
-# ID : <identifiant>
 # ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   <id Arsenal — string, guillemets obligatoires>
+#
 # 🎯 RÔLE
-#   Réagir à un contexte observé afin d’exécuter une
-#   orchestration contrôlée dans le système Arsenal.
+#   <Finalité système exacte — une phrase>
 #
 # 🧩 PÉRIMÈTRE
-#   Nature de l’automatisation :
-#   - Application
-#   - Synchronisation
-#   - Réconciliation
-#   - Remédiation
+#   - Couvre : <responsabilité incluse>
+#   - Exclut : <responsabilité explicitement hors périmètre>
 #
-# 📡 SOURCES
-#   - Entités, événements ou signaux consommés
+# 🔖 NATURE
+#   <Application | Synchronisation | Remédiation
+#    | Réconciliation | Événementielle | Protection
+#    | Orchestration | Contexte>
+#
+# ⚙️ MODE
+#   <single | restart | queued | parallel>
+#   Justification : <raison du choix>
+#
+# 📣 DÉCLENCHEURS
+#   <Événements, états ou conditions qui déclenchent l'automation>
+#
+# 🔗 DÉPENDANCES
+#   Lit      : <entités consultées>
+#   Appelle  : <scripts, services ou événements appelés>
+#   Écrit    : <helpers, entités ou états modifiés>
+#
+# 🧠 AUTORITÉ
+#   <Applique une décision externe | Décide et applique
+#    — avec justification si les deux>
+#
+# ♻️ IDEMPOTENCE
+#   <Compatible retrigger | Non garantie — justification>
 #
 # 🚫 INTERDITS
-#   - Introduire une logique diffuse
-#   - Contourner une autorité métier existante
-#   - Confondre réaction et décision centrale
+#   - Devenir une autorité métier diffuse
+#   - Dupliquer une décision centrale existante
+#   - Mélanger plusieurs responsabilités indépendantes
+#   - Contourner les contrats du domaine concerné
+#   - <Interdits spécifiques au domaine>
+#
+# 🏷️ STATUT
+#   <Socle | Réactive | Réconciliation | Protection> — Arsenal v14.x
 # ==========================================================
 ```

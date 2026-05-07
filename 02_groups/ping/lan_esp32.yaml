@@ -1,0 +1,32 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP
+#     Système / Connectivité — Proxies Ping ESP32
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Regrouper les proxies ESP32 surveillés par Ping afin de
+#   permettre l'évaluation de la couverture Bluetooth locale.
+#
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
+#
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+ping_lan_esp32:
+  name: Ping LAN ESP32
+  icon: mdi:bluetooth-connect
+  entities:
+    - binary_sensor.esp32_proxy_2
+    - binary_sensor.esp32_proxy_3
+    - binary_sensor.esp32_proxy_4

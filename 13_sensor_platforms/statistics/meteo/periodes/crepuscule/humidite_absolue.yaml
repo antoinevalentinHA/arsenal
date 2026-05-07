@@ -1,28 +1,47 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles d’humidité absolue (filtrée au crépuscule)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Hygrométrie — Moyenne 30j Humidité absolue filtrée au crépuscule
 # ----------------------------------------------------------
-#  🧠 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’humidité absolue (g/m³) relevée au crépuscule,
-#     moment où la température baisse et la condensation
-#     potentielle augmente. Ces valeurs permettent de
-#     détecter les déséquilibres de ventilation et le confort
-#     hygrométrique du soir.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidité
+#   absolue (g/m³) filtrée au crépuscule par zone, à
+#   destination des couches de diagnostic et d'analyse de
+#   tendance hygrométrique en fin de journée.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Source : capteurs `sensor.humidite_absolue_filtre_crepuscule_*`
-#     - Métrique calculée : `mean` (moyenne)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante : 30 jours
-#     - Échantillons : 5 000 mesures maximum
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de l’humidité absolue crépusculaire
+# 📋 PARAMÈTRES
+#   state_characteristic : mean (toutes zones)
+#   sampling_size        : 5000
+#                          justification : borne haute couvrant
+#                          la fenêtre de 30 j à fréquence
+#                          d'échantillonnage usuelle, avec
+#                          marge pour pics de publication
+#   max_age              : 30 j
+#                          justification : fenêtre mensuelle
+#                          permettant l'établissement d'une
+#                          référence saisonnière stable, lissant
+#                          les épisodes ponctuels et les cycles
+#                          hebdomadaires d'occupation
+#   precision            : omis (par défaut HA)
 #
-#  🏡 Zones couvertes :
-#     - Chambres, pièces à vivre, ateliers, extérieurs,
-#       zones administratives et de stockage.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidite_absolue_filtre_crepuscule_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

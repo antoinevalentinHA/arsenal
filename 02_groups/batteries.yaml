@@ -1,35 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP : Batteries
+# 🧠 ARSENAL — GROUP
+#     Diagnostic — Capteurs de batteries
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Regrouper l’ensemble des capteurs de niveau de batterie
-#    afin de fournir une vue centralisée pour le diagnostic,
-#    la maintenance et la surveillance humaine.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs de niveau
+#   de batterie sous une référence statique unique.
 #
-# 🧠 Lecture métier :
-#    Ce groupe est un outil de DIAGNOSTIC UI.
-#    Il n’est utilisé que pour l’affichage et la supervision
-#    des niveaux de batterie des équipements.
-#    Il ne participe à aucune logique système ni décisionnelle.
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Capteurs de batteries uniquement
+#   - Équipements résidentiels, techniques et imprimerie
+#   - Supervision et maintenance humaine uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🧩 Périmètre :
-#    - Capteurs de batterie (Zigbee, Netatmo, SwitchBot, etc.)
-#    - Équipements maison et atelier
-#    - Tous niveaux confondus
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Utiliser le groupe comme condition métier
+#   - Déclencher une automatisation depuis ce groupe
+#   - Utiliser ce groupe comme source de fiabilité système
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non liées aux batteries
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
 #
-# 🔗 Dépendances :
-#    - Capteurs batterie exposés par les intégrations
-#    - Utilisé par :
-#      • dashboards diagnostics (batteries)
-#
-# 🚫 Interdits :
-#    - Utiliser ce groupe comme condition métier
-#    - Déclencher une automatisation
-#    - Servir de source système (fiabilité, âge des données)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - diagnostic / maintenance
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 batteries:

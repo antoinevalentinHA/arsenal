@@ -1,28 +1,29 @@
 # ==========================================================
-#  INPUT NUMBER : Délai stabilisation capteurs (post-fermeture)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Délai stabilisation capteurs
 # ----------------------------------------------------------
-#  🧠 Rôle :
-#     Temps (en minutes) laissé aux capteurs de température
-#     pour se stabiliser après la fermeture complète de la
-#     maison. L’analyse de la chute thermique n’est exécutée
-#     qu’après ce délai.
+# 🎯 RÔLE
+#   Stocker le délai de stabilisation des capteurs après
+#   fermeture complète de la maison.
 #
-#  🎯 Objectif :
-#     - Éviter les ΔT fausses juste après la fermeture
-#     - Garantir une mesure fiable de la chute thermique
-#     - Séparer clairement "blocage initial" et "blocage long"
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-#  ⚙️ Utilisation :
-#     - Démarre à la fin d’aération
-#     - Pendant ce délai : chauffage bloqué (temporaire)
-#     - À expiration : analyse ΔT → décision blocage long ou non
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-#  🚫 Interdits :
-#     - Utiliser ce délai comme temporisation générique
-#     - Déclencher une action directe sans analyse ΔT
-#     - Le confondre avec une durée de blocage chauffage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce délai comme temporisation générique
+#   - Confondre stabilisation capteurs et blocage chauffage
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-#  ✅ Compatibilité : Système Arsenal V3 (aération / blocage / reprise)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 delai_stabilisation_capteurs:

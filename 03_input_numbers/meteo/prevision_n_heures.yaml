@@ -1,14 +1,34 @@
 # ==========================================================
-# 🧠 ARSENAL — TEMPLATE SENSOR
-#     metno_temperature_prevue_plus_xh
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Horizon prévision
 # ----------------------------------------------------------
-# 🎯 ROLE
-#   Exposer la temperature exterieure prevue a +X heures,
-#   avec X = input_number.meteo_horizon_prevision_heures.
+# 🎯 RÔLE
+#   Stocker l'horizon temporel utilisé pour sélectionner
+#   une température extérieure prévisionnelle future.
 #
-# 🧩 SOURCE
-#   - weather.forecast_maison (Met.no)
-#   - weather.get_forecasts (hourly)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre météo prévisionnel uniquement
+#   - Valeur exprimée en heures
+#   - Paramètre consommé par les template sensors météo
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre métier | Paramètre météo
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et calcul prévisionnel
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme donnée météo réelle
+#   - Déclencher directement une automatisation
+#   - Ajouter localement une logique d'analyse météo
+#   - Modifier automatiquement cette valeur selon la saison
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle météo prévisionnel — Arsenal v14.x
 # ==========================================================
 
 meteo_horizon_prevision_heures:

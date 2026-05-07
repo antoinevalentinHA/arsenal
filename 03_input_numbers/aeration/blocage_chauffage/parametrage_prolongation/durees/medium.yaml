@@ -1,10 +1,27 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER :
+# 🧠 ARSENAL — INPUT_NUMBER
 #     Aération — M3 — Prolongation medium
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Durée (minutes) appliquée lorsque la chute ΔT est qualifiée
-#   comme "medium" (niveau 2 post-seuil).
+#   Stocker la durée de prolongation appliquée lorsque la
+#   chute ΔT est qualifiée en niveau M3 medium.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_m3_prolongation_medium:

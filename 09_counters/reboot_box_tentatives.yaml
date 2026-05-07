@@ -1,17 +1,36 @@
 # ==========================================================
 # 🧠 ARSENAL — COUNTER
-#     Réseau — Cycles physiques campagne
+#     Réseau — Cycles physiques campagne Internet
 # ----------------------------------------------------------
 # 🎯 RÔLE
+#   Comptabiliser les cycles physiques réellement exécutés
+#   pendant une campagne de remédiation Internet.
 #
-#     Comptabiliser les cycles physiques réellement exécutés
-#     pendant une campagne de remédiation Internet.
+# 🧩 PÉRIMÈTRE
+#   - Accumulateur de comptage persistant uniquement
+#   - Incrément uniquement après exécution physique effective
+#   - Source de vérité quantitative des cycles exécutés
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune interprétation causale implicite
 #
-# 🧱 CONTRAT
+# 🔖 NATURE
+#   Compteur de cycles | Mémoire quantitative
 #
-#     - source de vérité physique
-#     - aucun usage cosmétique
-#     - incrément uniquement après exécution effective
+# 📋 PARAMÈTRES
+#   initial : 0
+#   step    : 1
+#   restore : false — comportement par défaut Home Assistant
+#
+# 🚫 INTERDITS
+#   - Confondre comptage et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Incrémenter sans traçabilité vers l'auteur
+#   - Remettre à zéro sans justification explicite
+#   - Déduire une causalité sans analyse externe
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 reboot_box_tentatives:

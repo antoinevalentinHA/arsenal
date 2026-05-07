@@ -104,18 +104,28 @@ Le type réel doit être explicité dans l’en-tête du fichier.
 #   persistant utilisé par le système Arsenal.
 #
 # 🧩 PÉRIMÈTRE
-#   Nature de la sélection :
-#   - Mode global
-#   - Stratégie métier
-#   - Contexte système
-#   - Planification déclarative
+#   - Stockage de sélection persistante uniquement
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune action directe sur un équipement
 #
-# 📡 SOURCES
-#   - Automatisations, scripts, templates ou UI
+# 🔖 NATURE
+#   <Mode global | Stratégie métier | Contexte système
+#    | État de référence | Planification déclarative
+#    | Cadre d'interprétation | Sélection utilisateur>
+#
+# 📋 OPTIONS
+#   - <option_1> : <sémantique>
+#   - <option_2> : <sémantique>
 #
 # 🚫 INTERDITS
-#   - Introduire une logique métier locale
-#   - Déclencher directement une action
 #   - Confondre contexte et état réel
+#   - Déclencher directement une action
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Étendre les options sans revue des consommateurs
+#   - Laisser une option sans sémantique documentée
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 ```

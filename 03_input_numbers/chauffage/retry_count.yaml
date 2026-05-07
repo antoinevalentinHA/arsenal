@@ -1,18 +1,34 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Chauffage retry count
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Chauffage — Retry count transactionnel
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Compter le nombre de retries automatiques deja engages
+# 🎯 RÔLE
+#   Stocker le nombre de retries automatiques déjà engagés
 #   pour une commande chauffage transactionnelle.
 #
-# 🧱 Nature :
-#   - Helper technique d’orchestration
-#   - 0 = aucun retry effectue
-#   - 1 = un retry deja effectue
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteur technique d'orchestration uniquement
+#   - Retry transactionnel chauffage uniquement
+#   - Maximum contractuel : 1 retry
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚠️ Regle :
-#   - maximum contractuel : 1 retry
-#   - ne doit jamais etre incremente par le script executif
+# 🏷️ NATURE
+#   Valeur intermédiaire | Debug
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher une action depuis ce helper
+#   - Dépasser le maximum contractuel défini
+#   - Incrémenter cette valeur depuis le script exécutif
+#   - Utiliser ce helper comme compteur générique
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 chauffage_retry_count:

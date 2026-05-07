@@ -1,19 +1,31 @@
 # ==========================================================
-# 📡 ARSENAL — GROUPE
-#     Bluetooth — Tous les signaux radio (RSSI)
+# 🧠 ARSENAL — GROUP
+#     Infrastructure — Signaux Bluetooth RSSI
 # ----------------------------------------------------------
-# 🧠 Rôle :
-#   Regrouper l’ensemble des capteurs Bluetooth RSSI
-#   utilisés pour le diagnostic radio global (ESP32 / BLE).
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs Bluetooth
+#   RSSI sous une référence statique unique.
 #
-# 🎯 Usage :
-#   - Binary sensor qualité dégradée
-#   - Diagnostics présence BLE
-#   - Futures métriques (min / worst / perte signal)
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Signaux radio Bluetooth RSSI uniquement
+#   - Infrastructure BLE / ESP32 uniquement
+#   - Diagnostic radio et supervision uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🔒 Nature :
-#   - Statique
-#   - Infrastructure uniquement
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Déclencher une automatisation depuis ce groupe
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non liées au RSSI Bluetooth
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 bluetooth_signal_all:

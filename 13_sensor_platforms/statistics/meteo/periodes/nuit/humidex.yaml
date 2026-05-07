@@ -1,26 +1,38 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles de l’Humidex (filtré sur la période nocturne)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Confort thermique — Moyenne 30j Humidex filtré la nuit
 # ----------------------------------------------------------
-#  🌙 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’**Humidex mesuré la nuit** (période “filtre nuit”),
-#     indicateur combinant température et humidité relative
-#     pour évaluer le **confort thermique perçu pendant le sommeil**.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidex
+#   filtré la nuit par zone.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Source : capteurs `sensor.humidex_filtre_nuit_*`
-#     - Métrique : `mean` (moyenne)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante : 30 jours
-#     - Taille d’échantillon : 5 000 valeurs
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de l’humidex **nocturne** (sans influence solaire)
-#       — idéale pour l’évaluation du confort thermique nocturne
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 5000
+#   max_age              : 30 j — fenêtre mensuelle glissante
+#                          destinée à lisser les variations
+#                          nocturnes de confort thermique
+#   precision            : omis
 #
-#  🏡 Zones couvertes :
-#     - Chambres, pièces de vie, bureaux, extérieurs, ateliers.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidex_filtre_nuit_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

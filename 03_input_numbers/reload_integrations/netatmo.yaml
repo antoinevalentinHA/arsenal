@@ -1,43 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPER SYSTÈME : Compteur tentatives reload Netatmo
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Système — Netatmo — Compteur tentatives reload
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Comptabiliser le nombre de tentatives de rechargement
-#   de l’intégration Netatmo afin de prévenir :
-#     - les boucles de reload
-#     - les surcharges API
-#     - les comportements instables persistants
+# 🎯 RÔLE
+#   Stocker le nombre de tentatives de rechargement de
+#   l'intégration Netatmo.
 #
-# 🧠 Nature :
-#   - Compteur de SÉCURITÉ SYSTÈME
-#   - État interne de supervision
-#   - Non exposé comme information utilisateur
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteur technique de protection uniquement
+#   - Valeur entière de tentatives
+#   - Paramètre consommé par les automatisations système
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#   - Incrémenté à chaque tentative de reload
-#   - Lu par l’automatisation de supervision Netatmo
-#   - Comparé à un seuil maximal autorisé
-#   - Réinitialisé explicitement :
-#       • après un reload réussi
-#       • via reset contrôlé
+# 🏷️ NATURE
+#   Registre technique | Garde-fou système
 #
-# ⚠️ Important :
-#   - Ce helper NE représente PAS l’état de Netatmo
-#   - Il NE mesure PAS la qualité des données
-#   - Il sert UNIQUEMENT de garde-fou logique
+# 🚫 INTERDITS
+#   - Confondre stockage et supervision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme état Netatmo réel
+#   - Utiliser ce helper comme indicateur qualité données
+#   - Déclencher directement un reload depuis ce helper
+#   - Implémenter localement une logique de retry
+#   - Réinitialiser implicitement ce compteur
+#   - Modifier manuellement cette valeur hors maintenance
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisé par :
-#   - Automatisations :
-#       • 11_automations/system/reload_integrations/netatmo.yaml
-#
-# 📐 Unité :
-#   - Tentatives (compteur entier)
-#
-# 🧠 Principe Arsenal :
-#   - Les intégrations cloud sont instables par nature.
-#   - Les APIs ont des limites strictes.
-#   - Le système DOIT se protéger.
-#
+# 🏷️ STATUT
+#   Couche protection système — Arsenal v14.x
 # ==========================================================
 
 netatmo_reload_tentatives:

@@ -1,39 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Consignes thermiques chauffage
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Chauffage — Consignes thermiques
 # ----------------------------------------------------------
-# 🎯 RÔLE :
-#   Définir les consignes de température de référence
-#   utilisées par le domaine Chauffage selon les
-#   contextes prévus par l’architecture Arsenal :
-#     - consigne confort
-#     - consigne réduite
-#     - consigne vacances
+# 🎯 RÔLE
+#   Stocker les consignes thermiques de référence utilisées
+#   par le domaine chauffage selon les contextes Arsenal.
 #
-# 🧱 NATURE :
-#   - Helpers de configuration thermique
-#   - Paramètres de consigne, non décisionnels
-#   - Aucune action directe sur le chauffage
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Consignes confort, réduite et vacances
+#   - Valeurs cibles thermiques uniquement
+#   - Paramètres consommés par les pipelines chauffage
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🧠 PRINCIPE ARSENAL :
-#   - Les capteurs mesurent.
-#   - Les consignes expriment une cible thermique.
-#   - Les moteurs décisionnels arbitrent.
-#   - Les scripts et pipelines d’exécution appliquent.
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier | Mémoire persistante
 #
-# 🔗 UTILISATION :
-#   - Qualification thermique des situations
-#   - Calculs d’écarts à la consigne
-#   - Décision centrale chauffage
-#   - Application des programmes chauffage
-#   - Affichage et réglages UI
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Considérer une consigne comme un ordre direct
+#   - Déclencher le chauffage depuis ces helpers
+#   - Implémenter une logique d'arbitrage thermique ici
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# ⚠️ RÈGLE FONDAMENTALE :
-#   - Une consigne n’est jamais un ordre.
-#   - Aucun déclenchement chauffage ne doit dépendre
-#     uniquement de la valeur brute de ces helpers.
-#
-# 📐 UNITÉ :
-#   - Degrés Celsius (°C)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 chauffage_consigne_confort:

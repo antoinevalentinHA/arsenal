@@ -1,34 +1,28 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP : Capteurs Audi
+# 🧠 ARSENAL — GROUP
+#     Automobile — Capteurs Audi
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Regrouper l’ensemble des capteurs issus de l’écosystème
-#    Audi. 
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs issus de
+#   l'intégration Audi sous une référence statique unique.
 #
-# 🧠 Lecture métier :
-#    Ce groupe constitue une SOURCE DE MESURE,
-#    pas une source de décision.
-#    Les capteurs Audi alimentent les diagnostics,
-#    les templates et les pipelines, mais ne décident jamais.
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Capteurs physiques et techniques Audi uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🧩 Périmètre :
-#    - Capteurs physiques Audi uniquement
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non issues de l'intégration Audi
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
 #
-# 🔗 Dépendances :
-#    - Intégration Audi
-#    - Utilisé par :
-#      • capteurs système de contrôle de fraîcheur des données
-#      • templates d’audit (âge des données Audi)
-#      • dashboards environnement (lecture)
-#
-# 🚫 Interdits :
-#    - Ajouter des capteurs non Audi
-#    - Utiliser ce groupe comme condition directe
-#    - Introduire une logique métier ici
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle mesures / interface
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 audi_capteurs:

@@ -1,38 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Temporalité de recommandation d’aération
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Temporalité de recommandation
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir des paramètres temporels encadrant la fréquence
-#    et le déclenchement des recommandations d’aération.
+# 🎯 RÔLE
+#   Stocker les paramètres temporels encadrant les
+#   recommandations d'aération.
 #
-# 🧠 Lecture métier :
-#    - Le délai de stabilisation est ACTIVEMENT utilisé
-#      par les automatisations de notification afin
-#      d’éviter des recommandations trop précoces ou instables.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètres temporels métier uniquement
+#   - Stabilisation notifications et intervalle inter-cycles
+#   - Paramètres partiellement consommés par le système
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-#    - L’intervalle minimal entre aérations est un
-#      PARAMÈTRE DÉCLARATIF à ce stade :
-#      il n’est pas encore consommé par le moteur
-#      décisionnel ou les automatisations.
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 📐 Paramètres définis :
-#    - Stabilisation avant recommandation (minutes) :
-#        → délai après ouverture / fermeture
-#    - Intervalle minimal entre aérations (heures) :
-#        → garde-fou temporel inter-cycles (préparatoire)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Confondre ces valeurs avec des seuils environnementaux
+#   - Supposer que tous les paramètres sont activement appliqués
+#   - Utiliser ces valeurs comme modulateurs thermiques ou hygrométriques
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Dépendances :
-#    - Automatisations notifications aération (RDC / étage)
-#    - Dashboards réglages aération
-#
-# 🚫 Interdits :
-#    - Confondre ces paramètres avec des seuils environnementaux
-#    - Supposer que l’intervalle minimal est déjà appliqué
-#    - Les utiliser comme modulateurs thermiques ou hygrométriques
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - temporalité métier (partiellement active)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_stabilisation_minutes:

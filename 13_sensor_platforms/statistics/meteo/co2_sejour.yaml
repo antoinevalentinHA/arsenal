@@ -1,6 +1,39 @@
-# ================================================================
-# 📊 STATISTICS SENSOR — Séjour : Moyennes glissantes CO₂
-# ================================================================
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Qualité de l’air — Moyennes glissantes CO₂ Séjour
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer des moyennes glissantes du niveau de CO₂ du séjour
+#   afin de fournir une référence stable pour l’analyse de la
+#   qualité de l’air intérieur.
+#
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   moyenne_glissante | lissage | reference_statistique
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 360 / 720
+#   max_age              : 30 min / 60 min — lissage des
+#                          variations courtes du CO₂
+#   precision            : 0
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.co2_sejour
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Tendance — Arsenal v14.x
+# ==========================================================
 
 - platform: statistics
   name: co2_sejour_mean_30min

@@ -1,37 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Puissances climatisation (référence)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — Puissances de référence
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Stocker les puissances électriques de référence
-#    utilisées pour estimer la consommation énergétique
-#    de la climatisation, selon le mode actif :
-#      - COOL (froid)
-#      - DRY  (déshumidification)
-#      - HEAT (chauffage)
+# 🎯 RÔLE
+#   Stocker les puissances électriques de référence utilisées
+#   pour les estimations énergétiques de la climatisation.
 #
-# 🧠 Lecture métier :
-#    Ces valeurs représentent une puissance moyenne
-#    nominale par mode, volontairement simplifiée,
-#    utilisée comme coefficient de calcul :
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Coefficients énergétiques de calcul uniquement
+#   - Modes COOL, DRY et HEAT uniquement
+#   - Valeurs nominales simplifiées en kW
+#   - Paramètres consommés par les automatisations énergie
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-#      Énergie (kWh) = Durée (h) × Puissance (kW)
+# 🏷️ NATURE
+#   Paramètre utilisateur | Valeur intermédiaire
 #
-# ⚙️ Fonctionnement :
-#    - Valeurs fixes, ajustables manuellement
-#    - Lues par les automatisations de cumul énergie
-#    - Aucune modification automatique
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces valeurs comme mesures réelles
+#   - Piloter directement la climatisation depuis ces helpers
+#   - Déclencher une automatisation depuis ces helpers
+#   - Modifier automatiquement ces valeurs
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 📐 Unité :
-#    - kilowatt (kW)
-#
-# 🚫 Interdits :
-#    - Utilisation comme capteur réel
-#    - Pilotage direct de la climatisation
-#    - Déclenchement d’automatisation
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - paramètres énergétiques de calcul
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 puissance_clim_cool:

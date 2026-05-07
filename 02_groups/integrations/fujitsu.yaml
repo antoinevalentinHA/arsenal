@@ -1,13 +1,30 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP : Capteurs Fujitsu (fraîcheur données locales)
+# 🧠 ARSENAL — GROUP
+#     Climatisation — Capteurs Fujitsu locaux
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Regrouper les entités locales Fujitsu servant de source
-#   pour mesurer la fraîcheur des données Airstage.
+# 🎯 RÔLE
+#   Regrouper les entités Fujitsu locales servant de
+#   référence statique pour l'analyse de fraîcheur des
+#   données Airstage.
 #
-# 🚫 Interdits :
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Entités locales Fujitsu uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
+#
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Mélanger des familles fonctionnelles incohérentes
 #   - Ajouter des entités non Fujitsu
-#   - Ajouter des entités "métadonnées" (uptime, rssi, etc.)
+#   - Ajouter des entités de métadonnées système
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 fujitsu_capteurs:

@@ -1,34 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Rayon zone de sécurité
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Alarme — Rayon zone de sécurité
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir le rayon géographique de la zone de sécurité
-#    utilisée pour qualifier la présence ou l’absence
-#    dans le cadre du système d’alarme.
+# 🎯 RÔLE
+#   Stocker le rayon géographique utilisé pour qualifier
+#   la présence sécurité autour du domicile.
 #
-# 🧠 Lecture métier :
-#    Cette valeur est lue par les capteurs de présence
-#    sécurité afin de déterminer si un occupant est
-#    considéré comme présent à proximité du domicile.
-#    Elle influence indirectement l’armement et le
-#    comportement du système d’alarme.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre géofencing sécurité uniquement
+#   - Rayon exprimé en mètres
+#   - Paramètre consommé par les capteurs présence sécurité
+#   - Influence indirecte sur les comportements alarme
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📍 Portée :
-#    - Rayon exprimé en mètres autour du domicile
-#    - Utilisé pour le géofencing de sécurité
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔗 Dépendances :
-#    - Binary sensors présence sécurité
-#    - Dashboards réglages alarme
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme zone de confort
+#   - Déclencher directement une action d'alarme
+#   - Modifier automatiquement cette valeur
+#   - Implémenter une logique de présence locale
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Définir un rayon trop faible sans test réel
-#    - Le confondre avec une zone de confort
-#    - Le modifier sans vérifier l’impact sur l’armement auto
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - paramètre de sécurité actif (géofencing)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 zone_securite_radius:

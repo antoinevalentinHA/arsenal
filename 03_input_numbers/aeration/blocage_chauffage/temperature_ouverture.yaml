@@ -1,32 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPER : Chute de température (référence)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Chute de température référence
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Stocker une valeur de référence intermédiaire
-#    utilisée par le pipeline d’aération pour le calcul
-#    de la chute de température.
+# 🎯 RÔLE
+#   Stocker une valeur de référence intermédiaire utilisée
+#   par le pipeline d'aération pour le calcul de chute
+#   thermique.
 #
-# 🧠 Lecture métier :
-#    Ce helper contient une valeur CALCULÉE et MAINTENUE
-#    par l’automatisation d’aération.
-#    Il ne s’agit ni d’un seuil, ni d’un réglage utilisateur,
-#    mais d’une référence de travail interne au pipeline.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Valeur calculée et maintenue par le pipeline d'aération
+#   - Référence de travail interne uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🧩 Périmètre :
-#    - Valeur exprimée en °C
-#    - Utilisée uniquement dans le pipeline aération
+# 🏷️ NATURE
+#   Registre de pipeline | Valeur intermédiaire | Debug
 #
-# 🔗 Dépendances :
-#    - Automatisation aération / blocage chauffage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Modifier manuellement cette valeur
+#   - Utiliser cette valeur comme seuil ou consigne
+#   - Exposer cette valeur comme réglage utilisateur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Modifier manuellement cette valeur
-#    - L’utiliser comme seuil ou consigne
-#    - L’exposer comme réglage utilisateur
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - référence interne / calcul thermique
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 chute_temp_reference:

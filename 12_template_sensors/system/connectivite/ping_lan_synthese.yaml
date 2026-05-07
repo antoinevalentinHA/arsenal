@@ -1,0 +1,205 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Système / Connectivité — Synthèse Ping LAN
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Fournir une synthèse déterministe et priorisée de la
+#   joignabilité réseau des équipements surveillés par Ping.
+#
+# 🧩 PÉRIMÈTRE
+#   - Calcul et synthèse uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   synthese
+#
+# 🆔 UNIQUE_ID
+#   ping_lan_synthese
+#
+# 🔗 DÉPENDANCES
+#   Lit :
+#     - group.ping_lan_hosts
+#     - group.ping_lan_critique
+#     - group.ping_lan_importante
+#     - group.ping_lan_secondaire
+#     - group.ping_lan_esp32
+#     - group.ping_lan_stations_meteo
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre diagnostic réseau et état métier
+#
+# 🏷️ STATUT
+#   Synthèse — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: Ping LAN synthese
+      unique_id: ping_lan_synthese
+
+      icon: >-
+        {%- if this.state == 'ok' -%}mdi:lan-connect
+        {%- elif this.state == 'degraded' -%}mdi:lan-pending
+        {%- elif this.state == 'critical' -%}mdi:lan-disconnect
+        {%- else -%}mdi:help-network
+        {%- endif -%}
+
+      attributes:
+
+        nb_hosts_total: >-
+          {{- expand('group.ping_lan_hosts') | list | count -}}
+
+        nb_hosts_ok: >-
+          {{-
+            expand('group.ping_lan_hosts')
+            | selectattr('state', 'eq', 'on')
+            | list
+            | count
+          -}}
+
+        nb_hosts_ko: >-
+          {{-
+            expand('group.ping_lan_hosts')
+            | selectattr('state', 'eq', 'off')
+            | list
+            | count
+          -}}
+
+        hosts_ko: >-
+          {{-
+            expand('group.ping_lan_hosts')
+            | selectattr('state', 'eq', 'off')
+            | map(attribute='entity_id')
+            | list
+            | join(', ')
+          -}}
+
+        internet_ok: >-
+          {%- set s = states('binary_sensor.internet_disponible') -%}
+          {%- if s == 'on' -%}ok
+          {%- elif s == 'off' -%}ko
+          {%- else -%}unknown
+          {%- endif -%}
+
+        infrastructure_thermique_ok: >-
+          {%- set s = states('binary_sensor.boiler_bridge') -%}
+          {%- if s == 'on' -%}ok
+          {%- elif s == 'off' -%}ko
+          {%- else -%}unknown
+          {%- endif -%}
+
+        acces_externe_ok: >-
+          {%- set s = states('binary_sensor.acces_externe') -%}
+          {%- if s == 'on' -%}ok
+          {%- elif s == 'off' -%}ko
+          {%- else -%}unknown
+          {%- endif -%}
+
+        rf_volets_ok: >-
+          {%- set s = states('binary_sensor.idiamant') -%}
+          {%- if s == 'on' -%}ok
+          {%- elif s == 'off' -%}ko
+          {%- else -%}unknown
+          {%- endif -%}
+
+        climatisation_ok: >-
+          {%- set s = states('binary_sensor.climatiseur') -%}
+          {%- if s == 'on' -%}ok
+          {%- elif s == 'off' -%}ko
+          {%- else -%}unknown
+          {%- endif -%}
+
+        esp32_proxy_status: >-
+          {%- set esp32_ko = expand('group.ping_lan_esp32')
+            | selectattr('state', 'eq', 'off')
+            | list
+            | count -%}
+          {%- set esp32_unknown = expand('group.ping_lan_esp32')
+            | rejectattr('state', 'eq', 'on')
+            | rejectattr('state', 'eq', 'off')
+            | list
+            | count -%}
+          {%- if esp32_ko == 3 -%}critical
+          {%- elif esp32_ko >= 1 -%}degraded
+          {%- elif esp32_unknown >= 1 -%}unknown
+          {%- else -%}ok
+          {%- endif -%}
+
+        stations_meteo_ok: >-
+          {%- set stations_ko = expand('group.ping_lan_stations_meteo')
+            | selectattr('state', 'eq', 'off')
+            | list
+            | count -%}
+          {%- set stations_unknown = expand('group.ping_lan_stations_meteo')
+            | rejectattr('state', 'eq', 'on')
+            | rejectattr('state', 'eq', 'off')
+            | list
+            | count -%}
+          {%- if stations_ko >= 1 -%}ko
+          {%- elif stations_unknown >= 1 -%}unknown
+          {%- else -%}ok
+          {%- endif -%}
+
+        cause: >-
+          {%- set supervision_unknown = expand('group.ping_lan_critique')
+            | rejectattr('state', 'eq', 'on')
+            | rejectattr('state', 'eq', 'off')
+            | list
+            | count -%}
+          {%- set critique_ko = expand('group.ping_lan_critique')
+            | selectattr('state', 'eq', 'off')
+            | map(attribute='entity_id')
+            | list -%}
+          {%- set importante_ko = expand('group.ping_lan_importante')
+            | selectattr('state', 'eq', 'off')
+            | map(attribute='entity_id')
+            | list -%}
+          {%- set secondaire_ko = expand('group.ping_lan_secondaire')
+            | selectattr('state', 'eq', 'off')
+            | map(attribute='entity_id')
+            | list -%}
+          {%- set esp32_ko = expand('group.ping_lan_esp32')
+            | selectattr('state', 'eq', 'off')
+            | list
+            | count -%}
+          {%- if supervision_unknown > 0 -%}supervision_critique_unknown
+          {%- elif critique_ko | count > 0 -%}critique_ko: {{ critique_ko | join(', ') }}
+          {%- elif esp32_ko == 3 -%}esp32_critical: 3_proxies_ko
+          {%- elif importante_ko | count > 0 -%}importante_ko: {{ importante_ko | join(', ') }}
+          {%- elif secondaire_ko | count > 0 -%}secondaire_ko: {{ secondaire_ko | join(', ') }}
+          {%- elif esp32_ko > 0 -%}esp32_degraded: {{ esp32_ko }}_proxy_ko
+          {%- else -%}nominal
+          {%- endif -%}
+
+      state: >-
+        {%- set supervision_unknown = expand('group.ping_lan_critique')
+          | rejectattr('state', 'eq', 'on')
+          | rejectattr('state', 'eq', 'off')
+          | list
+          | count -%}
+        {%- set critique_ko = expand('group.ping_lan_critique')
+          | selectattr('state', 'eq', 'off')
+          | list
+          | count -%}
+        {%- set importante_ko = expand('group.ping_lan_importante')
+          | selectattr('state', 'eq', 'off')
+          | list
+          | count -%}
+        {%- set secondaire_ko = expand('group.ping_lan_secondaire')
+          | selectattr('state', 'eq', 'off')
+          | list
+          | count -%}
+        {%- set esp32_ko = expand('group.ping_lan_esp32')
+          | selectattr('state', 'eq', 'off')
+          | list
+          | count -%}
+        {%- if supervision_unknown > 0 -%}unknown
+        {%- elif critique_ko > 0 -%}critical
+        {%- elif esp32_ko == 3 -%}critical
+        {%- elif importante_ko > 0 -%}degraded
+        {%- elif secondaire_ko > 0 -%}degraded
+        {%- elif esp32_ko >= 1 -%}degraded
+        {%- else -%}ok
+        {%- endif -%}

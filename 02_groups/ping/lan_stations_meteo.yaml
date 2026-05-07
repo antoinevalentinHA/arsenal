@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP
+#     Système / Connectivité — Stations météo Ping
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Regrouper les stations météo Netatmo surveillées par Ping
+#   pour exposer leur joignabilité réseau locale.
+#
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
+#
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+ping_lan_stations_meteo:
+  name: Ping LAN stations meteo
+  icon: mdi:weather-partly-cloudy
+  entities:
+    - binary_sensor.station_meteo_netatmo_1
+    - binary_sensor.station_meteo_netatmo_2

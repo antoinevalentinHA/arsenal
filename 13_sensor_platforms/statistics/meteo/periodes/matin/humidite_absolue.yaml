@@ -1,26 +1,38 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles de l’Humidité absolue (filtrée sur la période du matin)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Hygrométrie — Moyenne 30j Humidité absolue filtrée le matin
 # ----------------------------------------------------------
-#  💧 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’**humidité absolue mesurée le matin** (🌤️ période “filtre matin”),
-#     indicateur de la **quantité réelle de vapeur d’eau dans l’air**,
-#     indépendamment de la température.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidité
+#   absolue filtrée le matin par zone.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Source : capteurs `sensor.humidite_absolue_filtre_matin_*`
-#     - Métrique : `mean` (moyenne)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante : 30 jours
-#     - Taille d’échantillon : 5 000 valeurs
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de l’humidité absolue **du matin** (g/m³)
-#       — utile pour suivre la teneur réelle en vapeur d’eau ambiante
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 5000
+#   max_age              : 30 j — fenêtre mensuelle glissante
+#                          destinée à lisser les variations
+#                          hygrométriques journalières
+#   precision            : omis
 #
-#  🏡 Zones couvertes :
-#     - Chambres, pièces de vie, zones techniques, bureaux et extérieurs.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidite_absolue_filtre_matin_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

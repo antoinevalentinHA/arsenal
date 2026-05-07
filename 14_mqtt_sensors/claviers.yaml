@@ -1,3 +1,56 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     Zigbee — Claviers alarme (action / badge)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer en transport passif les événements `action`
+#   et les codes badge des claviers alarme Zigbee publiés
+#   par Zigbee2MQTT.
+#
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
+#
+# 🔖 NATURE
+#   projection_transport | etat_brut_externe
+#
+# 🆔 UNIQUE_ID
+#   clavier_alarme_1_action
+#   clavier_alarme_1_badge
+#   clavier_alarme_2_action
+#   clavier_alarme_2_badge
+#
+# 📋 TRANSPORT
+#   state_topic          :
+#     - zigbee2mqtt/clavier_alarme_1/action  (scalaire)
+#     - zigbee2mqtt/clavier_alarme_1         (JSON)
+#     - zigbee2mqtt/clavier_alarme_2/action  (scalaire)
+#     - zigbee2mqtt/clavier_alarme_2         (JSON)
+#   namespace            : zigbee2mqtt/...
+#   json_attributes      : non
+#   structure JSON       : { "action_code": "<code>", ... }
+#                          champ extrait : action_code
+#                          défaut si absent : "" (chaîne vide)
+#   transformations      : projection scalaire du champ
+#                          action_code via value_template
+#                          (sensors *_badge uniquement)
+#
+# 🔗 DÉPENDANCES
+#   Lit : Zigbee2MQTT via broker MQTT
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
+# ==========================================================
+
 - name: "clavier_alarme_1_action"
   unique_id: clavier_alarme_1_action
   state_topic: "zigbee2mqtt/clavier_alarme_1/action"

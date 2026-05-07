@@ -1,39 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP : Capteurs Withings
+# 🧠 ARSENAL — GROUP
+#     Santé — Capteurs Withings
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Regrouper les capteurs Withings locaux utilisés
-#    comme source pour les capteurs système de contrôle
-#    de fraîcheur des données de santé et d’activité.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs issus de
+#   l'écosystème Withings sous une référence statique unique.
 #
-# 🧠 Lecture métier :
-#    Ce groupe représente une SOURCE DE DONNÉES
-#    PERSONNELLES synchronisées.
-#    Il ne prend aucune décision et n’influence aucun
-#    comportement de la maison.
-#    Son rôle est strictement limité à la vérification
-#    de la validité temporelle des données Withings.
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Données personnelles synchronisées Withings uniquement
+#   - Sommeil, activité et signes physiologiques agrégés
+#   - Capteurs locaux synchronisés uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🧩 Périmètre :
-#    - Sommeil (durées, phases, score)
-#    - Signes vitaux agrégés
-#    - Activité quotidienne
-#    - Capteurs locaux uniquement
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Utiliser ces capteurs pour piloter la maison
+#   - Déduire une présence ou une absence
+#   - Déclencher une action automatique
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non issues de Withings
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
 #
-# 🔗 Dépendances :
-#    - Intégration Withings (données locales synchronisées)
-#    - Utilisé par :
-#      • capteurs système de contrôle de fraîcheur des données
-#      • templates d’audit Withings (âge des données)
-#
-# 🚫 Interdits :
-#    - Utiliser ces capteurs pour piloter la maison
-#    - Déduire une présence ou une absence
-#    - Déclencher une action automatique
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle système / données personnelles
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 withings_capteurs:

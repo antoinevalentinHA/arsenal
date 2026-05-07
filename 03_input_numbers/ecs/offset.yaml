@@ -1,52 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBERS : ECS — Offsets de pilotage chaudière
+# 🧠 ARSENAL — INPUT_NUMBER
+#     ECS — Offsets de pilotage chaudière
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Ajuster la CONSIGNE DE CHAUFFE envoyée à la chaudière
-#   afin de maîtriser la dynamique thermique du cycle ECS,
-#   sans modifier l’objectif thermique réel du cycle.
+# 🎯 RÔLE
+#   Stocker les offsets thermiques utilisés pour ajuster
+#   la consigne envoyée à la chaudière lors des cycles ECS.
 #
-# 🧱 Principe :
-#   - La consigne envoyée à la chaudière est volontairement
-#     inférieure à la consigne métier cible.
-#   - Home Assistant valide ensuite le cycle sur la
-#     consigne réelle (± epsilon).
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Offsets de pilotage chaudière ECS uniquement
+#   - Ajustement de consigne transmis à la chaudière uniquement
+#   - Profils tiny, medium, normal et désinfection uniquement
+#   - Paramètres consommés par le script de cycle ECS
+#   - Valeurs exprimées en degrés Celsius
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-#   → Pilotage ≠ Verdict thermique
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 📌 Fonctionnement :
-#   consigne envoyée = target_temp - offset
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme verdict thermique
+#   - Modifier directement la condition de fin de cycle ECS
+#   - Déclencher directement une action chaudière
+#   - Implémenter localement une logique de pilotage ECS
+#   - Modifier automatiquement ces valeurs
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-#   avec :
-#   - offsets différents selon le profil thermique du cycle
-#   - protection via plancher dynamique (trigger ceiling)
-#
-# 📊 Profils :
-#   - ecs_off_tiny :
-#       • petits ΔT, limitation du sur-shoot
-#   - ecs_off_medium :
-#       • cycles intermédiaires
-#   - ecs_off_normal :
-#       • cycles à forte inertie
-#   - ecs_off_desinfection :
-#       • pilotage spécifique cycle critique
-#
-# ⚠️ Important :
-#   - Ces offsets n’affectent PAS la condition de fin de cycle
-#   - La validation thermique repose uniquement sur :
-#       • la consigne cible réelle
-#       • l’epsilon associé
-#
-# 🔗 Utilisation :
-#   - Script :
-#       • chauffage_ecs_cycle (Cycle unifié ECS)
-#
-# 🧠 Principe Arsenal :
-#   - On pilote la chaudière avec prudence
-#   - On juge le résultat avec exigence
-#
-# 📐 Unité :
-#   - degrés Celsius (°C)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ecs_off_tiny:

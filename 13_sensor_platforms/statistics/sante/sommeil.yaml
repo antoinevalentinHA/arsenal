@@ -1,23 +1,40 @@
 # ==========================================================
-# 🧠 ARSENAL — STATISTICS SENSORS
-#     Sommeil — Moyennes glissantes
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Sommeil — Moyennes glissantes sommeil consolidé
 # ----------------------------------------------------------
-# 🎯 Rôle
-#     Calculer les moyennes mobiles des données de sommeil
-#     consolidées par Arsenal.
+# 🎯 RÔLE
+#   Exposer des moyennes glissantes sur 7, 14 et 30 jours
+#   des données de sommeil consolidées par Arsenal.
 #
-# 🧩 Périmètre
-#     - Total sommeil consolidé
-#     - Score sommeil consolidé
-#     - Fenêtres 7 / 14 / 30 jours
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Consommation exclusive des snapshots consolidés
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-# 🚫 Interdits
-#     - Ne consomme aucune entité Withings locale
-#     - Ne consomme aucune donnée non consolidée
-#     - Ne produit aucune décision santé
+# 🔖 NATURE
+#   moyenne_glissante | tendance | reference_statistique
 #
-# 🧠 Statut
-#     Analyse statistique — consommation exclusive du snapshot
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 20 / 30 / 60
+#   max_age              : 7 j / 14 j / 30 j — fenêtres
+#                          glissantes destinées à suivre les
+#                          tendances de sommeil consolidé
+#   precision            : omis
+#
+# 🔗 DÉPENDANCES
+#   Lit : input_number.sommeil_derniere_nuit_total
+#         input_number.sommeil_derniere_nuit_score
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Consommer des données non consolidées
+#
+# 🏷️ STATUT
+#   Tendance — Arsenal v14.x
 # ==========================================================
 
 - platform: statistics

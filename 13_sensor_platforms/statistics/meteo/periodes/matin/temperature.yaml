@@ -1,25 +1,38 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles de la Température (filtrée sur la période du matin)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Thermique — Moyenne 30j Température filtrée le matin
 # ----------------------------------------------------------
-#  🌡️ Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de la **température mesurée le matin** (🌅 période “filtre matin”),
-#     afin de suivre la fraîcheur ambiante avant la montée thermique diurne.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de la température
+#   filtrée le matin par zone.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Source : capteurs `sensor.temperature_filtre_matin_*`
-#     - Métrique : `mean` (moyenne)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante : 30 jours
-#     - Taille d’échantillon : 5 000 valeurs
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de la température **du matin** (°C)
-#       — utile pour le suivi des cycles thermiques et du confort matinal
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 5000
+#   max_age              : 30 j — fenêtre mensuelle glissante
+#                          destinée à lisser les variations
+#                          journalières
+#   precision            : omis
 #
-#  🏡 Zones couvertes :
-#     - Chambres, pièces de vie, zones industrielles, bureaux et extérieurs.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.temperature_filtre_matin_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

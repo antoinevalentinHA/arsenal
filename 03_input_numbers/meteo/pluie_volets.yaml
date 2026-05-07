@@ -1,38 +1,35 @@
 # ==========================================================
-# 🌧️ ARSENAL — HELPER MÉTIER : Seuil pluie fermeture volets
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Volets — Seuil pluie fermeture
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir la quantité de pluie (en mm)
-#   à partir de laquelle les volets sont
-#   automatiquement fermés pour protection.
+# 🎯 RÔLE
+#   Stocker le seuil de pluie autorisant la fermeture
+#   automatique des volets pour protection météo.
 #
-# 🧠 Principe :
-#   - La pluviométrie instantanée ou cumulée
-#     est fournie par les capteurs météo.
-#   - Ce helper fixe le seuil de déclenchement.
-#   - Si pluie ≥ seuil → action de fermeture autorisée.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre métier volets météo uniquement
+#   - Valeur exprimée en millimètres de pluie
+#   - Paramètre consommé par les scripts météo / volets
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚠️ Important :
-#   - Ce helper est un PARAMÈTRE MÉTIER.
-#   - Il influence directement le comportement
-#     des volets.
-#   - Il ne sert à aucun affichage graphique.
+# 🏷️ NATURE
+#   Paramètre métier | Seuil décisionnel
 #
-# 🔗 Utilisé par :
-#   - Scripts :
-#       • 10_scripts/meteo/pluie.yaml
-#   - Dashboards :
-#       • lovelace/dashboards/reglages/volets.yaml
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme mesure météo réelle
+#   - Déclencher directement une fermeture de volets
+#   - Ajouter localement une logique de protection météo
+#   - Utiliser ce helper pour de l'affichage graphique UI
+#   - Modifier automatiquement cette valeur selon la saison
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 📐 Unité :
-#   - Millimètres de pluie (mm)
-#
-# 🧠 Principe Arsenal :
-#   - Les capteurs MESURENT la pluie.
-#   - Le helper FIXE le seuil de décision.
-#   - Le script DÉCIDE.
-#   - Les volets EXÉCUTENT.
-#
+# 🏷️ STATUT
+#   Socle météo / volets — Arsenal v14.x
 # ==========================================================
 
 seuil_pluie_fermeture_volets:

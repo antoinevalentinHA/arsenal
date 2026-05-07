@@ -1,19 +1,30 @@
 # ==========================================================
-# 📡 ARSENAL — GROUPE
-#     Netatmo — Tous les signaux Wi-Fi
+# 🧠 ARSENAL — GROUP
+#     Infrastructure — Signaux Wi-Fi Netatmo
 # ----------------------------------------------------------
-# 🧠 Rôle :
-#   Regrouper l’ensemble des capteurs Netatmo de puissance
-#   Wi-Fi utilisés pour le diagnostic radio.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des capteurs de puissance
+#   Wi-Fi Netatmo sous une référence statique unique.
 #
-# 🎯 Usage :
-#   - Diagnostics connectivite Netatmo
-#   - Futures métriques (min / count / worst)
-#   - UI radio dédiée
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Signaux radio Wi-Fi Netatmo uniquement
+#   - Diagnostic radio et supervision infrastructure uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🔒 Nature :
-#   - Statique
-#   - Infrastructure uniquement
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Déclencher une automatisation depuis ce groupe
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non liées au Wi-Fi Netatmo
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 netatmo_wifi_signal_all:

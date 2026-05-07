@@ -1,34 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Consommation cumulée climatisation
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — Consommation cumulée
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Stocker la consommation électrique cumulée de la
-#    climatisation, utilisée comme registre persistant
-#    pour les calculs énergétiques.
+# 🎯 RÔLE
+#   Stocker la consommation électrique cumulée de la
+#   climatisation utilisée comme registre énergétique persistant.
 #
-# 🧠 Lecture métier :
-#    Cette valeur est mise à jour automatiquement par
-#    les automatisations de suivi énergétique.
-#    Elle sert de source principale pour les capteurs
-#    dérivés (journaliers, mensuels, diagnostics).
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Registre énergétique cumulatif uniquement
+#   - Valeur cumulée en kWh
+#   - Source pour capteurs dérivés énergétiques
+#   - Mise à jour automatisée uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚡ Nature de la donnée :
-#    - Valeur cumulée (kWh)
-#    - Persistée via un helper
-#    - Réinitialisable uniquement par action volontaire
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
 #
-# 🔗 Dépendances :
-#    - Automatisations énergie climatisation
-#    - Capteurs template de consommation cumulée
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Modifier manuellement sans recalcul cohérent associé
+#   - Utiliser cette valeur comme seuil ou limite
+#   - Confondre valeur cumulée et consommation instantanée
+#   - Déclencher une action énergétique depuis ce helper
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Modifier manuellement sans recalcul associé
-#    - L’utiliser comme seuil ou limite
-#    - La confondre avec une consommation instantanée
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - registre énergétique (climatisation)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 clim_consommation_cumulee:

@@ -1,21 +1,43 @@
 # ==========================================================
-# ARSENAL — MQTT SENSOR
-# Boiler Guard — Version
+# 🧠 ARSENAL — MQTT SENSOR
+#     Boiler / Guard — Version
 # ----------------------------------------------------------
-# Role :
-#   Exposer la version du guard boiler.
+# 🎯 RÔLE
+#   Exposer en transport passif la version du guard
+#   chaudière publiée par le Pi (audit de déploiement).
 #
-# Source :
-#   - Topic : boiler/guard/version
-#   - Format : v{MAJOR}.{MINOR}
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
 #
-# Contrat :
-#   - aucune transformation
-#   - lecture brute MQTT uniquement
+# 🔖 NATURE
+#   etat_brut_externe
 #
-# Usage :
-#   - audit de deploiement
-#   - verification coherence version Pi
+# 🆔 UNIQUE_ID
+#   boiler_guard_version
+#
+# 📋 TRANSPORT
+#   state_topic          : boiler/guard/version
+#   namespace            : boiler/guard/...
+#   qos                  : 1
+#   json_attributes      : non
+#   structure JSON       : sans objet (chaîne scalaire)
+#   format               : v{MAJOR}.{MINOR}
+#
+# 🔗 DÉPENDANCES
+#   Lit : guard chaudière via broker MQTT
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 
 - name: "boiler_guard_version"

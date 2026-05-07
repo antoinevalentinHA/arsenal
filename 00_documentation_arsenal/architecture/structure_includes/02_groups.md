@@ -68,21 +68,23 @@ group: !include_dir_merge_named 02_groups/
 #     <Domaine> — <Fonction du groupe>
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Regrouper un ensemble cohérent d’entités sous une
+#   Regrouper un ensemble cohérent d'entités sous une
 #   référence statique unique.
 #
 # 🧩 PÉRIMÈTRE
-#   - Agrégation uniquement
+#   - Agrégation statique uniquement
 #   - Aucune logique métier
-#   - Aucun calcul
+#   - Aucun calcul d'état implicite
 #   - Aucun comportement dynamique
-#
-# 📡 SOURCES
-#   - Entités définies ailleurs
 #
 # 🚫 INTERDITS
 #   - Introduire une logique conditionnelle
-#   - Utiliser le groupe comme décision métier
+#   - Utiliser le groupe comme autorité décisionnelle
 #   - Mélanger des familles fonctionnelles incohérentes
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 ```

@@ -1,40 +1,26 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : Température (capteurs socle)
+# 🧠 ARSENAL — CUSTOMIZE
+#     Thermique — Capteurs de température
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Centraliser l’affichage et l’identification des capteurs
-#    de température utilisés comme référence thermique
-#    dans l’ensemble du système Arsenal.
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage des capteurs
+#   de température à destination des consommateurs UI
+#   du domaine thermique.
 #
-# 🧠 Principe fondamental :
-#    La température est la variable MAÎTRESSE du système.
-#    Toutes les décisions thermiques (chauffage, climatisation,
-#    aération, confort) s’y réfèrent directement ou indirectement.
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 🧩 Périmètre :
-#    - Définit les friendly_name et icônes
-#    - Identifie clairement les capteurs par zone
-#    - Ne calcule aucune logique décisionnelle
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🔗 Dépendances :
-#    - Capteurs physiques (Zigbee, Netatmo, autres)
-#    - Capteurs agrégés (moyennes, extrêmes)
-#    - Utilisés par :
-#      • chauffage (décision centrale)
-#      • climatisation
-#      • aération intelligente
-#      • diagnostics thermiques
-#
-# 🚫 Interdits :
-#    - Modifier des seuils ou consignes ici
-#    - Introduire une logique métier
-#    - Appliquer des corrections ou offsets
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle critique / référence absolue
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
-
 
 ############################################################
 # 🏠 ESPACES DE VIE — INTÉRIEUR
@@ -52,7 +38,6 @@ sensor.temperature_palier:
   friendly_name: "Température Palier"
   icon: mdi:thermometer
 
-
 ############################################################
 # 🛏️ CHAMBRES
 ############################################################
@@ -69,7 +54,6 @@ sensor.temperature_chambre_parents:
   friendly_name: "Température Chambre Parents"
   icon: mdi:thermometer
 
-
 ############################################################
 # 🚿 SALLES DE BAINS
 ############################################################
@@ -81,7 +65,6 @@ sensor.temperature_sdb_parents:
 sensor.temperature_sdb_enfants:
   friendly_name: "Température SDB Enfants"
   icon: mdi:thermometer
-
 
 ############################################################
 # 🏗️ ANNEXES & ZONES TECHNIQUES
@@ -99,7 +82,6 @@ sensor.temperature_petite_maison:
   friendly_name: "Température Petite Maison"
   icon: mdi:thermometer
 
-
 ############################################################
 # 🌿 EXTÉRIEUR
 ############################################################
@@ -107,7 +89,6 @@ sensor.temperature_petite_maison:
 sensor.temperature_jardin:
   friendly_name: "Température Jardin"
   icon: mdi:thermometer
-
 
 ############################################################
 # 📊 CAPTEURS AGRÉGÉS / SYNTHÈSE

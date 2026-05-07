@@ -104,18 +104,26 @@ Le type réel doit être explicité dans l’en-tête du fichier.
 #   le système Arsenal.
 #
 # 🧩 PÉRIMÈTRE
-#   Nature de la valeur stockée :
-#   - Paramètre déclaratif
-#   - Trace événementielle
-#   - Identifiant technique
-#   - Registre transactionnel
+#   - Stockage persistant uniquement
+#   - Aucun parsing
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📡 SOURCES
-#   - Automatisations, scripts ou templates externes
+# 🔖 NATURE
+#   <Paramètre déclaratif | Mémoire persistante | Registre transactionnel
+#    | Trace événementielle | Raison d'exécution | Identifiant technique
+#    | Diagnostic textuel>
+#
+# 📋 FORMAT
+#   <Texte libre | JSON | ISO 8601 | Valeur énumérée | Autre : …>
 #
 # 🚫 INTERDITS
-#   - Introduire une logique métier locale
 #   - Interpréter le contenu dans le helper lui-même
 #   - Confondre stockage et décision
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Laisser implicite toute convention de format
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 ```

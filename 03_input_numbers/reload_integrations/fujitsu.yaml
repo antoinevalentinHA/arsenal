@@ -1,41 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPER SYSTÈME : Compteur tentatives reload Airstage
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Système — Airstage — Compteur tentatives reload
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Comptabiliser le nombre de tentatives de rechargement
-#   de l’intégration Fujitsu Airstage afin d’éviter
-#   toute boucle infinie ou surcharge du système.
+# 🎯 RÔLE
+#   Stocker le nombre de tentatives de rechargement de
+#   l'intégration Fujitsu Airstage.
 #
-# 🧠 Nature :
-#   - Compteur de SÉCURITÉ SYSTÈME
-#   - État interne de protection
-#   - Non destiné à l’utilisateur final
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteur technique de protection uniquement
+#   - Valeur entière de tentatives
+#   - Paramètre consommé par les automatisations système
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#   - Incrémenté à chaque tentative de reload
-#   - Lu par l’automatisation de supervision
-#   - Comparé à un seuil maximal autorisé
-#   - Réinitialisé explicitement :
-#       • en cas de succès
-#       • via reset maîtrisé
+# 🏷️ NATURE
+#   Registre technique | Garde-fou système
 #
-# ⚠️ Important :
-#   - Ce helper NE représente PAS l’état de la clim
-#   - Il NE mesure PAS une performance
-#   - Il sert UNIQUEMENT de garde-fou logique
+# 🚫 INTERDITS
+#   - Confondre stockage et supervision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme état de santé climatisation
+#   - Déclencher directement un reload depuis ce helper
+#   - Implémenter localement une logique de retry
+#   - Réinitialiser implicitement ce compteur
+#   - Modifier manuellement cette valeur hors maintenance
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisé par :
-#   - Automatisations :
-#       • 11_automations/system/reload_integrations/fujitsu.yaml
-#
-# 📐 Unité :
-#   - Tentatives (compteur entier)
-#
-# 🧠 Principe Arsenal :
-#   - Les intégrations réseau sont instables par nature.
-#   - Le système DOIT se protéger.
-#   - Les retries sont LIMITÉS.
-#
+# 🏷️ STATUT
+#   Couche protection système — Arsenal v14.x
 # ==========================================================
 
 airstage_reload_tentatives:

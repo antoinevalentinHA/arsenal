@@ -1,34 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBERS
-#     Bouclage ECS — Parametres thermiques
+# 🧠 ARSENAL — INPUT_NUMBER
+#     ECS — Bouclage — Paramètres thermiques
 # ----------------------------------------------------------
-# 🎯 ROLE
+# 🎯 RÔLE
+#   Stocker les seuils thermiques utilisés pour qualifier
+#   la disponibilité thermique du bouclage ECS automatique.
 #
-#     Definir les seuils thermiques d'activation et
-#     d'extinction du bouclage ECS automatique.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Seuil d'activation thermique (ON)
+#   - Seuil d'extinction thermique (OFF)
+#   - Paramètres consommés par binary_sensor.ecs_disponible
+#   - Hystérèse gérée par le consommateur
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🧩 PERIMETRE
-#
-#     - Seuil d'activation (ON) du bouclage ECS
-#     - Seuil d'extinction (OFF) du bouclage ECS
-#     - Hystérèse garantie par le binary_sensor consommateur
-#
-# 🔗 DEPENDANCES
-#
-#     - Utilises par :
-#         binary_sensor.ecs_disponible
-#
-# ⚠️ CONTRAINTES
-#
-#     - seuil_off doit être strictement inférieur à seuil_on
-#     - Cette contrainte est vérifiée par le consommateur,
-#       pas ici
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
 # 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Effectuer un pilotage direct depuis ces helpers
+#   - Implémenter l'hystérèse dans ces entités
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-#     - Aucun pilotage direct
-#     - Aucune logique metier
-#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 bouclage_ecs_seuil_on:

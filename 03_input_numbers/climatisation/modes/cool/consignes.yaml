@@ -1,38 +1,34 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Consignes climatisation (référence)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — Consignes de référence
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir les températures cibles de référence
-#    utilisées par le système de climatisation
-#    selon le contexte de présence :
-#      - Présence : confort prioritaire
-#      - Absence  : maintien temporaire / économie
+# 🎯 RÔLE
+#   Stocker les températures cibles de référence utilisées
+#   par le système de climatisation selon le contexte.
 #
-# 🧠 Lecture métier :
-#    Ces consignes représentent des valeurs
-#    autorisées et souhaitées par l’utilisateur.
-#    Le système ne les calcule pas :
-#      → il choisit laquelle appliquer,
-#        et à quel moment.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Consignes climatisation présence et absence
+#   - Valeurs cibles utilisateur uniquement
+#   - Paramètres consommés par les scripts climatisation
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Modifiables manuellement via dashboard
-#    - Appliquées automatiquement par les scripts
-#      de gestion de la climatisation
-#    - Peuvent être corrigées / synchronisées
-#      sans modifier l’intention utilisateur
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 📐 Unité :
-#    - degré Celsius (°C)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Calculer automatiquement ces valeurs
+#   - Utiliser ces valeurs comme mesures réelles
+#   - Déclencher directement une automatisation
+#   - Piloter directement la climatisation depuis ces helpers
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Calcul automatique de la valeur
-#    - Utilisation comme mesure réelle
-#    - Déclenchement direct d’automatisation
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Consignes de confort autoritaires
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 clim_consigne_presence:

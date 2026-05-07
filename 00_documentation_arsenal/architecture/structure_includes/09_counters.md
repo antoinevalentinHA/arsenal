@@ -104,18 +104,29 @@ Le type réel doit être explicité dans l’en-tête du fichier.
 #   par le système Arsenal.
 #
 # 🧩 PÉRIMÈTRE
-#   Nature du comptage :
-#   - Échecs techniques
-#   - Retries
-#   - Cycles exécutés
-#   - Transitions validées
+#   - Accumulateur de comptage persistant uniquement
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune interprétation causale implicite
 #
-# 📡 SOURCES
-#   - Automatisations, scripts ou templates externes
+# 🔖 NATURE
+#   <Compteur d'échecs | Compteur de retries | Compteur de cycles
+#    | Compteur de transitions | Métrique incrémentale
+#    | Accumulateur de diagnostic | Mémoire quantitative>
+#
+# 📋 PARAMÈTRES
+#   initial : <valeur>
+#   step    : <valeur> — <justification si ≠ 1>
+#   restore : <true|false> — <justification si true>
 #
 # 🚫 INTERDITS
-#   - Introduire une logique métier locale
 #   - Confondre comptage et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Incrémenter sans traçabilité vers l'auteur
+#   - Remettre à zéro sans justification explicite
 #   - Déduire une causalité sans analyse externe
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 ```

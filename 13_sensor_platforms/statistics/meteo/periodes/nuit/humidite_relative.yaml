@@ -1,26 +1,38 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles de l’Humidité relative (filtrée sur la période nocturne)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Hygrométrie — Moyenne 30j Humidité relative filtrée la nuit
 # ----------------------------------------------------------
-#  💦 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’**humidité relative mesurée la nuit** (période “filtre nuit”),
-#     afin de suivre le **niveau de saturation en vapeur d’eau**
-#     et d’évaluer le **confort hygrothermique nocturne**.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidité
+#   relative filtrée la nuit par zone.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Source : capteurs `sensor.humidite_relative_filtre_nuit_*`
-#     - Métrique : `mean` (moyenne)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante : 30 jours
-#     - Taille d’échantillon : 5 000 valeurs
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de l’humidité relative **nocturne (%)**
-#       — indicateur du confort et du risque de condensation
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 5000
+#   max_age              : 30 j — fenêtre mensuelle glissante
+#                          destinée à lisser les variations
+#                          hygrométriques nocturnes
+#   precision            : omis
 #
-#  🏡 Zones couvertes :
-#     - Chambres, pièces de vie, locaux techniques et zones pro.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidite_relative_filtre_nuit_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

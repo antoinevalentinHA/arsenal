@@ -1,26 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPER : Poele – Duree blocage chauffage (minutes)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Chauffage — Poêle — Durée blocage
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Parametrer la duree du blocage thermique applique
-#   apres une detection de contribution du poele.
+# 🎯 RÔLE
+#   Stocker la durée de blocage chauffage appliquée après
+#   détection d'une contribution thermique du poêle.
 #
-# 🧱 Principe :
-#   - Le poele est EVENEMENTIEL (declencheur uniquement)
-#   - Le timer est l'unique autorite de fin de blocage
-#   - Ce helper ne declenche rien et ne leve jamais un blocage
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre temporel consommé par les automatisations poêle
+#   - Durée de blocage chauffage uniquement
+#   - Conversion éventuelle en secondes hors helper
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚠️ Regle :
-#   - La valeur 0 est INTERDITE
-#   - La duree est toujours strictement positive
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔗 Utilisation :
-#   - Consomme par :
-#     - Poele – Demarrage blocage chauffage (10100000000005)
-#     - Poele – Ajustement duree blocage en cours (10100000000008)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher ou lever directement un blocage chauffage
+#   - Autoriser une valeur nulle
+#   - Implémenter une logique timer dans ce helper
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# ✅ Unites :
-#   - minutes (conversion en secondes dans les automations)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 poele_duree_blocage_chauffage_minutes:

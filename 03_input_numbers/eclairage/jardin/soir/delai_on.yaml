@@ -1,43 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Délai allumage jardin (soir)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Jardin — Délai allumage soir
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir le décalage temporel appliqué autour
-#    du coucher du soleil pour l’allumage automatique
-#    de l’éclairage extérieur du jardin.
+# 🎯 RÔLE
+#   Stocker le décalage temporel appliqué autour du coucher
+#   du soleil pour l'allumage automatique de l'éclairage
+#   extérieur jardin.
 #
-# 🧩 Principe :
-#    - Le coucher du soleil est fourni par Home Assistant
-#    - Ce paramètre permet d’allumer :
-#        • AVANT le coucher (valeur négative)
-#        • EXACTEMENT au coucher (0)
-#        • APRÈS le coucher (valeur positive)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre temporel éclairage jardin soir uniquement
+#   - Offset autour du coucher du soleil
+#   - Valeur exprimée en minutes
+#   - Paramètre consommé par le calcul d'heure d'allumage cible
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Valeur exprimée en minutes (−60 à +60)
-#    - Utilisée pour calculer une heure d’allumage cible
-#    - La logique d’allumage se base sur cette heure
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Template sensor :
-#        • eclairage/horaire_jardin_on.yaml
-#    - Automatisation :
-#        • eclairage/jardin/soir/maj_heure_allumage.yaml
-#    - Dashboards :
-#        • réglages éclairage
-#        • diagnostics éclairage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme horaire fixe
+#   - Confondre ce délai avec une temporisation d'absence
+#   - Confondre allumage soir et extinction matin
+#   - Déclencher directement un allumage
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Ne pas confondre avec :
-#    - Délais d’absence
-#    - Horaires fixes
-#    - Extinction du matin (lever du soleil)
-#
-# 📐 Unité :
-#    - minutes (offset autour du coucher du soleil)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Paramètre éclairage jardin (soir)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 delai_allumage_jardin_soir:

@@ -1,27 +1,47 @@
 # ==========================================================
-# 🧠 ARSENAL — SENSOR PLATFORMS
-#     Historique disponibilité Internet — Fenêtre 7 jours
+# 🧠 ARSENAL — HISTORY_STATS SENSOR
+#     Connectivité — Disponibilité Internet (7j)
 # ----------------------------------------------------------
-# Domaine : Connectivité / Observabilité
-# Couche  : Plateformes natives (history_stats)
-# Statut  : Mesure glissante — Aucun calcul métier
+# 🎯 RÔLE
+#   Exposer la durée cumulée d'indisponibilité Internet
+#   et le nombre de coupures observés sur les 7 derniers
+#   jours, à destination des couches de diagnostic et
+#   d'observabilité réseau.
 #
-# 🎯 Rôle :
-#   Exposer des métriques objectives sur 7 jours glissants :
-#
-#     - Durée cumulée d’indisponibilité (heures)
-#     - Nombre de coupures (transitions vers off)
-#
-# 📌 Source :
-#   binary_sensor.internet_disponible
-#     on  = Internet disponible
-#     off = Internet indisponible
-#
-# ⚠️ Invariants :
+# 🧩 PÉRIMÈTRE
+#   - Métrique historique via recorder uniquement
 #   - Aucune logique métier
-#   - Aucun template custom
-#   - Dépend strictement du recorder
-#   - purge_keep_days >= 7 requis
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   duree_cumulee | compteur_occurrences | mesure_glissante
+#
+# 📋 PARAMÈTRES
+#   entity_id : binary_sensor.internet_disponible
+#               (on = disponible, off = indisponible)
+#   state     : off
+#   type      :
+#     - internet_downtime_heures_7j : time
+#     - internet_coupures_count_7j  : count
+#   fenêtre   : start = now() - timedelta(days=7)
+#               end   = now()
+#               justification : fenêtre glissante de 7 j
+#               pour mesure objective d'observabilité
+#               réseau, indépendante de l'horloge civile
+#
+# 🔗 DÉPENDANCES
+#   Lit      : binary_sensor.internet_disponible
+#   Recorder : requis — purge_keep_days ≥ 7
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Utiliser un historique incomplet sans justification
+#   - Confondre mesure historique et état temps réel
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser la fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Durée + Comptage — Arsenal v14.x
 # ==========================================================
 
 - platform: history_stats

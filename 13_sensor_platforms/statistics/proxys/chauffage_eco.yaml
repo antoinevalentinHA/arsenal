@@ -1,5 +1,38 @@
 # ==========================================================
-#  PROXY STATISTICS — Capteurs métier (chauffage / clim)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Chauffage — Proxy statistiques consigne Eco
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer des proxys statistiques compatibles Recorder
+#   pour les indicateurs métier de pourcentage de consigne
+#   Eco.
+#
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Compatibilité statistique / historique uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   lissage | reference_statistique
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 1
+#   max_age              : omis
+#   precision            : omis
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.pourcentage_consigne_eco_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Utiliser ces proxys comme source métier primaire
+#
+# 🏷️ STATUT
+#   Statistique — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

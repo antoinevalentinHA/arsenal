@@ -101,18 +101,23 @@ Le type réel doit être explicité dans l’en-tête du fichier.
 #   le système Arsenal.
 #
 # 🧩 PÉRIMÈTRE
-#   Nature de l’état représenté :
-#   - Autorisation utilisateur
-#   - Verrou technique
-#   - Mode global
-#   - Marqueur transactionnel
+#   - Stockage d'état binaire uniquement
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune action directe sur un équipement
 #
-# 📡 SOURCES
-#   - Automatisations, scripts ou templates externes
+# 🔖 NATURE
+#   <Autorisation utilisateur | Mode global | Verrou technique
+#    | État d'armement | Marqueur transactionnel
+#    | Commutateur de service | Mémoire binaire | Neutralisation>
 #
 # 🚫 INTERDITS
-#   - Introduire une logique métier locale
-#   - Déclencher directement une action
 #   - Confondre état et décision
+#   - Déclencher directement une action
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Constituer à lui seul une autorité décisionnelle
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 ```

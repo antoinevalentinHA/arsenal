@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — GROUP
+#     Système / Connectivité — Hôtes Ping importants
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Regrouper les entités Ping dont la perte de joignabilité
+#   constitue une dégradation importante mais non critique.
+#
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
+#
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+ping_lan_importante:
+  name: Ping LAN importante
+  icon: mdi:alert
+  entities:
+    - binary_sensor.acces_externe
+    - binary_sensor.idiamant

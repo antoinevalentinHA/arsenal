@@ -1,25 +1,36 @@
 # ==========================================================
-# 📉 ARSENAL — COUNTER
-#     Echecs consecutifs — Bot chambre parents
+# 🧠 ARSENAL — COUNTER
+#     Notification — Échecs TX Bot chambre parents
 # ----------------------------------------------------------
-# 🎯 ROLE
-#   Suivre les echecs techniques d’un Bot F1.
+# 🎯 RÔLE
+#   Comptabiliser les échecs techniques consécutifs du
+#   Bot chambre parents.
 #
-# 🧩 PERIMETRE
-#   - Reset sur sent_unconfirmed (nominal)
-#   - Increment sur execution_error
+# 🧩 PÉRIMÈTRE
+#   - Accumulateur de comptage persistant uniquement
+#   - Incrément sur erreur d'exécution TX
+#   - Remise à zéro sur état nominal confirmé
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune interprétation causale implicite
 #
-# 🔗 DEPENDANCES
-#   - Script souverain
+# 🔖 NATURE
+#   Compteur d'échecs | Accumulateur de diagnostic
 #
-# 🚫 NE FAIT PAS
-#   - Ne mesure pas la reussite reelle
+# 📋 PARAMÈTRES
+#   initial : 0
+#   step    : 1
+#   restore : false — comportement par défaut Home Assistant
 #
-# 🧠 STATUT ARCHITECTURAL
-#   Diagnostic — F1
+# 🚫 INTERDITS
+#   - Confondre comptage et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Incrémenter sans traçabilité vers l'auteur
+#   - Remettre à zéro sans justification explicite
+#   - Déduire une causalité sans analyse externe
 #
 # 🏷️ STATUT
-#   Arsenal V1.1.1
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 bot_tx_failures_bot_chambre_parents:

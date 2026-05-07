@@ -1,56 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Chauffage — Seuils extérieurs ON / OFF
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Chauffage — Seuils extérieurs ON / OFF
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir les seuils de température EXTÉRIEURE
-#   conditionnant l’AUTORISATION GLOBALE du chauffage.
+# 🎯 RÔLE
+#   Stocker les seuils de température extérieure utilisés
+#   pour qualifier l'autorisation globale du chauffage.
 #
-#   Ces seuils déterminent si le chauffage est
-#   structurellement pertinent ou non, indépendamment
-#   des températures intérieures.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Cadre météo d'autorisation chauffage uniquement
+#   - Hystérèse météo ON / OFF explicite
+#   - Température extérieure uniquement
+#   - Paramètres consommés par le pipeline chauffage
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🧱 Principe :
-#   - Basé UNIQUEMENT sur la température extérieure
-#   - Fonctionne avec une hystérésis météo explicite :
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-#     • Seuil ON :
-#         → le chauffage devient AUTORISABLE si
-#           T° extérieure < seuil_ext_on
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher ou couper directement le chauffage
+#   - Implémenter une logique temporelle dans ces helpers
+#   - Interagir directement avec un actionneur
+#   - Utiliser ces valeurs hors contexte météo chauffage
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-#     • Seuil OFF :
-#         → le chauffage devient NON AUTORISABLE si
-#           T° extérieure > seuil_ext_off
-#
-# 🧠 Principe Arsenal :
-#   - Ces helpers ne déclenchent rien
-#   - Ils ne coupent rien
-#   - Ils définissent un CADRE MÉTÉO
-#     dans lequel le chauffage a le droit d’exister
-#
-# 🧱 Hiérarchie décisionnelle :
-#   1. Autorisation extérieure (ces seuils)
-#   2. Autorisation intérieure (consigne / offsets)
-#   3. Décisions contextuelles (présence, poêle, aération…)
-#
-# ⚠️ Règles fondamentales :
-#   - Aucun calcul embarqué
-#   - Aucune logique temporelle
-#   - Aucune interaction directe avec les actionneurs
-#
-# 🔗 Utilisation :
-#   - Consommés par :
-#     - sensor.autorisation_chauffage_selon_temperature
-#   - Affichés dans :
-#     - dashboards diagnostics / réglages chauffage
-#
-# 📐 Unité :
-#   - Degrés Celsius (°C)
-#
-# 🎯 Objectif :
-#   - Éviter toute activation de chauffage
-#     par météo douce ou intersaison
-#   - Stabiliser les décisions globales
-#   - Rendre le cadre météo explicite et ajustable
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 chauffage_seuil_ext_on:

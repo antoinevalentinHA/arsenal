@@ -1,26 +1,49 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles d’humidité relative (filtrée après-midi)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Hygrométrie — Moyenne 30j Humidité relative filtrée après-midi
 # ----------------------------------------------------------
-#  🧠 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’humidité relative mesurée durant l’**après-midi** ☀️,
-#     période correspondant à la phase de température maximale
-#     et d’assèchement de l’air intérieur et extérieur.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidité
+#   relative (%) filtrée sur la plage de l'après-midi par
+#   zone, à destination des couches de diagnostic et
+#   d'analyse de tendance hygrométrique au pic diurne.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Source : capteurs `sensor.humidite_relative_filtre_jour_*`
-#     - Métrique : moyenne (`mean`)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante : 30 jours
-#     - Taille d’échantillon : 5 000 valeurs
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle d’humidité relative (%) durant l’après-midi
+# 📋 PARAMÈTRES
+#   state_characteristic : mean (toutes zones)
+#   sampling_size        : 5000
+#                          justification : borne haute couvrant
+#                          la fenêtre de 30 j à fréquence
+#                          d'échantillonnage usuelle, avec
+#                          marge pour pics de publication
+#   max_age              : 30 j
+#                          justification : fenêtre mensuelle
+#                          permettant l'établissement d'une
+#                          référence saisonnière stable, lissant
+#                          les épisodes ponctuels et les cycles
+#                          hebdomadaires d'occupation
+#   precision            : omis (par défaut HA)
 #
-#  🏡 Zones couvertes :
-#     - Chambres, pièces de vie, extérieurs, zones industrielles,
-#       bureaux et locaux techniques.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidite_relative_filtre_jour_*
+#         (la dénomination « filtre jour » désigne la plage
+#          de l'après-midi par convention Arsenal)
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

@@ -1,33 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPER : Seuil bruit qualification réveil
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Réveils nocturnes — Seuil bruit qualification
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir le niveau sonore (en dB) à partir duquel
-#   un RÉVEIL est considéré comme détecté.
+# 🎯 RÔLE
+#   Stocker le seuil sonore utilisé pour qualifier
+#   un événement de réveil nocturne.
 #
-# ⚙️ Fonctionnement :
-#   - Un capteur mesure le niveau de bruit.
-#   - Si bruit >= seuil_reveil_bruit :
-#       → réveil qualifié
-#       → incrément du compteur de réveils
-#       (ex : input_number.reveils_nocturnes_arnaud / matthieu)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Seuil décisionnel bruit uniquement
+#   - Qualification binaire réveil / non réveil
+#   - Valeur exprimée en décibels
+#   - Paramètre consommé par les automatisations réveils
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ✅ Important :
-#   - Ce helper est un SEUIL DÉCISIONNEL (binaire) :
-#       en dessous → pas de réveil
-#       au-dessus  → réveil
-#   - Il ne mesure rien : il fixe la frontière de qualification.
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔗 Utilisé par :
-#   - Dashboards :
-#       • lovelace/dashboards/diagnostics/sommeil.yaml
-#       • lovelace/dashboards/reglages/sommeil.yaml
-#   - Automatisations :
-#       • 11_automations/reveils/babyphone/*.yaml
-#       • 11_automations/reveils/compteurs/*.yaml
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme mesure réelle de bruit
+#   - Déclencher directement une automatisation
+#   - Implémenter une logique de qualification locale
+#   - Modifier automatiquement cette valeur
+#   - Déduire un état médical ou physiologique
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 📐 Unité :
-#   - Décibels (dB)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 seuil_reveil_bruit:

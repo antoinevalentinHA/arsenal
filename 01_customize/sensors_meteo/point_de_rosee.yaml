@@ -1,40 +1,26 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : Point de rosée (capteurs météo)
+# 🧠 ARSENAL — CUSTOMIZE
+#     Hygrométrie — Capteurs de point de rosée
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Centraliser l’affichage des capteurs de point de rosée,
-#    indicateur physique de condensation et de risque d’humidité.
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage des capteurs
+#   de point de rosée à destination des consommateurs UI
+#   du domaine hygrométrie et diagnostic condensation.
 #
-# 🧠 Lecture métier :
-#    Le point de rosée représente la température à laquelle
-#    l’air devient saturé en vapeur d’eau.
-#    C’est un indicateur DIRECT du risque de condensation
-#    (moisissures, parois froides, inconfort).
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 🧩 Périmètre :
-#    - Définit les friendly_name et icônes
-#    - Fournit un diagnostic hygrométrique robuste
-#    - Sert de référence croisée avec la température ambiante
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🔗 Dépendances :
-#    - Calculé à partir de :
-#      • température
-#      • humidité relative
-#    - Utilisé pour :
-#      • diagnostics humidité
-#      • analyse de parois froides
-#      • compréhension fine du confort
-#
-# 🚫 Interdits :
-#    - Prendre une décision métier isolée
-#      sans confrontation à la température réelle
-#    - Introduire une logique conditionnelle ici
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle / indicateur physique avancé
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
-
 
 ############################################################
 # 🏠 ESPACES DE VIE — INTÉRIEUR
@@ -47,7 +33,6 @@ sensor.point_de_rosee_entree:
 sensor.point_de_rosee_sejour:
   friendly_name: "Point de rosée Séjour"
   icon: mdi:weather-fog
-
 
 ############################################################
 # 🛏️ CHAMBRES
@@ -65,7 +50,6 @@ sensor.point_de_rosee_chambre_parents:
   friendly_name: "Point de rosée Chambre Parents"
   icon: mdi:weather-fog
 
-
 ############################################################
 # 🚿 SALLES DE BAINS
 ############################################################
@@ -77,7 +61,6 @@ sensor.point_de_rosee_sdb_parents:
 sensor.point_de_rosee_sdb_enfants:
   friendly_name: "Point de rosée SDB Enfants"
   icon: mdi:weather-fog
-
 
 ############################################################
 # 🏗️ ANNEXES & ZONES TECHNIQUES
@@ -94,7 +77,6 @@ sensor.point_de_rosee_garage:
 sensor.point_de_rosee_petite_maison:
   friendly_name: "Point de rosée Petite Maison"
   icon: mdi:weather-fog
-
 
 ############################################################
 # 🌿 EXTÉRIEUR

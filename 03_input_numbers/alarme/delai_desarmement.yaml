@@ -1,33 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Délai d’entrée alarme
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Alarme — Délai d'entrée intrusion
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir le délai accordé après l’ouverture d’un accès
-#    protégé avant le déclenchement de l’alarme intrusion.
+# 🎯 RÔLE
+#   Stocker le délai accordé avant déclenchement de
+#   l'alarme intrusion après ouverture d'un accès protégé.
 #
-# 🧠 Lecture métier :
-#    Cette valeur est utilisée DIRECTEMENT par les
-#    automatisations d’alarme.
-#    Elle conditionne le temps laissé à l’utilisateur
-#    pour désarmer le système sans déclenchement.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre sécurité activement utilisé
+#   - Délai d'entrée intrusion uniquement
+#   - Accès entrée et garage uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🚪 Accès concernés :
-#    - Porte d’entrée
-#    - Porte de garage
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔗 Dépendances :
-#    - Automatisations intrusion (délai d’entrée)
-#    - Dashboards réglages alarme
-#    - Dashboards diagnostics alarme
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Réduire excessivement ce délai sans validation réelle
+#   - Confondre délai d'entrée et délai de sortie
+#   - Modifier cette valeur sans vérifier l'ergonomie utilisateur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Réduire excessivement ce délai sans test réel
-#    - Le confondre avec un délai de sortie
-#    - Le modifier sans vérifier l’ergonomie clavier
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - paramètre de sécurité actif (alarme)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 alarme_delai_entree:

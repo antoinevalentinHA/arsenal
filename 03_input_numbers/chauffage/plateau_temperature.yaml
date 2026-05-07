@@ -1,41 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Plateaux thermostatiques mémorisés
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Chauffage — Plateaux thermostatiques mémorisés
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Mémoriser de manière persistante le DERNIER plateau
-#   thermique STRICT valide détecté pour chaque pièce.
+# 🎯 RÔLE
+#   Stocker de manière persistante le dernier plateau
+#   thermique strict valide détecté pour chaque pièce.
 #
-# 📌 Objectif principal :
-#   - Éviter les états `unknown` lorsque
-#     aucun plateau strict n’est détectable
-#   - Fournir une valeur stable et exploitable
-#     pour l’affichage et le diagnostic
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Mémoire thermique de diagnostic uniquement
+#   - Dernier plateau strict valide par pièce
+#   - Valeurs exploitées par templates et dashboards
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#   - Les capteurs détectent un plateau strict (ou non)
-#   - Si un plateau valide est détecté :
-#       → la valeur est stockée dans ce helper
-#   - En absence de plateau :
-#       → la dernière valeur mémorisée est conservée
+# 🏷️ NATURE
+#   Mémoire persistante | Valeur intermédiaire
 #
-# ❗ Important :
-#   - Ces helpers NE DÉTECTENT PAS les plateaux
-#   - Ils ne font QUE MÉMORISER une valeur valide
+# 🚫 INTERDITS
+#   - Confondre stockage et détection
+#   - Détecter un plateau depuis ces helpers
+#   - Utiliser ces valeurs comme consignes thermiques
+#   - Déclencher une décision chauffage depuis ces helpers
+#   - Modifier manuellement ces valeurs hors maintenance contrôlée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisés par :
-#   - Template sensors :
-#       • 12_template_sensors/chauffage/vannes_thermostatiques/plateaux_stricts.yaml
-#       • 12_template_sensors/chauffage/vannes_thermostatiques/affichage_plateau.yaml
-#   - Automatisation :
-#       • 11_automations/chauffage/update_plateaux_thermostatiques.yaml
-#   - Script :
-#       • 10_scripts/chauffage/reset_plateau.yaml
-#
-# 🧠 Principe Arsenal :
-#   - Les capteurs DÉTECTENT
-#   - Les automatisations DÉCIDENT
-#   - Les helpers MÉMORISENT
-#   - Les dashboards AFFICHENT
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 plateau_chambre_arnaud:

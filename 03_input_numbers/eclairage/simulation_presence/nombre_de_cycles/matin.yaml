@@ -1,42 +1,38 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER — Simulation de présence (cycles)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Nombre cycles simulation présence
 # ----------------------------------------------------------
-# 🎯 Objectif :
-#   Définir l’INTENSITÉ de la simulation de présence en
-#   configurant le nombre de cycles lumineux ON/OFF
-#   par créneau horaire (matin / soir) et par zone
-#   (chambre / garage).
+# 🎯 RÔLE
+#   Stocker le nombre de cycles lumineux ON / OFF souhaités
+#   par créneau horaire et par zone pour la simulation de
+#   présence.
 #
-# ⚙️ Fonctionnement :
-#   - Ces helpers sont purement PARAMÉTRIQUES.
-#   - Ils ne pilotent aucun équipement directement.
-#   - Ils sont lus par le script central :
-#       `10_scripts/eclairage/simulation_presence.yaml`
-#     qui génère des séquences réalistes et non déterministes.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètres d'intensité de simulation uniquement
+#   - Nombre de cycles par créneau et zone
+#   - Valeurs consommées par le script central de simulation
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🧩 Logique métier :
-#   - Valeur 0  → aucun cycle (simulation inactive sur le créneau).
-#   - Valeur N  → N cycles ON/OFF répartis dans la plage autorisée.
-#   - Les DURÉES de cycles sont gérées séparément via :
-#       • input_number.duree_min_cycle_simulation_presence
-#       • input_number.duree_max_cycle_simulation_presence
+# 🏷️ NATURE
+#   Paramètre utilisateur
 #
-# 🔗 Utilisé par :
-#   - Script :
-#       • 10_scripts/eclairage/simulation_presence.yaml
-#   - Dashboards :
-#       • lovelace/dashboards/reglages/eclairage.yaml
-#       • lovelace/dashboards/diagnostics/eclairage.yaml
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Piloter directement un équipement
+#   - Générer localement une séquence lumineuse
+#   - Implémenter une logique pseudo-aléatoire locale
+#   - Confondre nombre de cycles et durée de cycles
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 Principe Arsenal :
-#   - Les helpers règlent l’intention.
-#   - Les scripts exécutent.
-#   - Aucune logique métier cachée dans l’UI.
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
-# ==========================================================
-# 🔢 Nombre de cycles matin chambre
-# ==========================================================
+# CHAMBRE PARENTS
 nb_cycles_simulation_presence_matin_chambre_parents:
   name: Nombre cycles matin Chambre Parents
   icon: mdi:counter
@@ -45,9 +41,7 @@ nb_cycles_simulation_presence_matin_chambre_parents:
   step: 1
   unit_of_measurement: "cycles"
 
-# ==========================================================
-# 🔢 Nombre de cycles matin garage
-# ==========================================================
+# GARAGE
 nb_cycles_simulation_presence_matin_garage:
   name: Nb cycles matin Garage
   icon: mdi:counter
@@ -56,9 +50,7 @@ nb_cycles_simulation_presence_matin_garage:
   step: 1
   unit_of_measurement: "cycles"
 
-# ==========================================================
-# 🔢 Nombre de cycles matin entrée
-# ==========================================================
+# ENTREE
 nb_cycles_simulation_presence_matin_entree:
   name: Nb cycles matin Entrée
   icon: mdi:counter

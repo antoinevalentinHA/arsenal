@@ -1,34 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP : ECS Soir – Jours actifs
+# 🧠 ARSENAL — GROUP
+#     ECS — Autorisations jours actifs soir
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Regrouper les paramètres journaliers permettant
-#    d’autoriser ou non les cycles ECS du soir,
-#    afin de simplifier leur évaluation dans les scripts.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des autorisations
+#   journalières ECS du soir sous une référence statique
+#   unique.
 #
-# 🧠 Lecture métier :
-#    Ce groupe agrège des helpers d’autorisation (input_boolean)
-#    représentant les jours où l’ECS du soir est active.
-#    Il ne décide rien par lui-même, mais sert de base
-#    à des scripts ECS qui interprètent ces autorisations.
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - Helpers d'autorisation ECS uniquement
+#   - Un input_boolean par jour de la semaine
+#   - Paramétrage fonctionnel uniquement
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🧩 Périmètre :
-#    - Autorisations journalières ECS (soir)
-#    - Un input_boolean par jour de la semaine
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Introduire une logique horaire
+#   - Utiliser ce groupe directement pour l'affichage UI
+#   - Déclencher une action directement depuis ce groupe
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
 #
-# 🔗 Dépendances :
-#    - Helpers ECS (input_boolean)
-#    - Utilisé par :
-#      • scripts ECS (activation / désactivation)
-#
-# 🚫 Interdits :
-#    - Utiliser ce groupe pour de l’affichage UI
-#    - Introduire une logique horaire ici
-#    - Prendre une décision directe sans script
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - fonctionnel / paramétrique ECS
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ecs_soir_actifs:

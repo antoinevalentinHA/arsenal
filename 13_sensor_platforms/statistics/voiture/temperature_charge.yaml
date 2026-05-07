@@ -1,26 +1,38 @@
 # ==========================================================
-# 🧠 ARSENAL — SENSOR PLATFORM
-#     Voiture — Audi A3 e-tron — Statistiques température charge
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Automobile — Moyenne glissante température charge Audi
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Produire une moyenne glissante de la température extérieure
-#   observée lors des pleines charges Audi.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 31 jours de la température
+#   extérieure observée lors des pleines charges Audi.
 #
-# 🧱 Principe :
-#   - Source : snapshot pleine charge
-#   - Fenêtre : 31 jours
-#   - Usage : co-visualisation avec l’autonomie mensuelle
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-# ❌ Ne fait PAS :
-#   - correction thermique
-#   - décision automatique
-#   - lecture météo continue
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-# 🔗 Source :
-#   - input_number.audi_temperature_charge
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : omis
+#   max_age              : 31 j — fenêtre glissante mensuelle
+#                          destinée à lisser les températures
+#                          observées lors des charges
+#   precision            : omis
 #
-# 📤 Entité exposée :
-#   - sensor.audi_temperature_charge_mensuelle
+# 🔗 DÉPENDANCES
+#   Lit : input_number.audi_temperature_charge
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Produire une correction thermique automatique
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 - platform: statistics

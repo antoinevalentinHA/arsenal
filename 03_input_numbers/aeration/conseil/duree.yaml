@@ -1,34 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Durées cibles d’aération
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Durées cibles déclaratives
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir des durées d’aération cibles à des fins
-#    de réglage utilisateur et d’affichage dans l’interface.
+# 🎯 RÔLE
+#   Stocker des objectifs de durée d'aération utilisés
+#   pour le réglage utilisateur et l'affichage UI.
 #
-# 🧠 Lecture métier :
-#    Ces helpers représentent des OBJECTIFS DE DURÉE,
-#    non des contraintes imposées au moteur d’aération.
-#    À ce stade, ils ne sont pas utilisés par les
-#    automatisations décisionnelles.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Objectifs déclaratifs de durée uniquement
+#   - Usage affichage et réglages UI uniquement
+#   - Aucun impact moteur implicite
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📐 Paramètres définis :
-#    - Durée cible d’aération :
-#        → durée souhaitée à titre indicatif
-#    - Durée max en grand froid :
-#        → limite de confort déclarative (UI uniquement)
+# 🏷️ NATURE
+#   Paramètre utilisateur
 #
-# 🔗 Dépendances :
-#    - Dashboards réglages aération
-#    - UI avancée (button-card templates)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Supposer un effet direct sur la durée réelle
+#   - Considérer ces valeurs comme des règles moteur actives
+#   - Utiliser ces valeurs sans raccordement explicite au pipeline
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Supposer un effet direct sur la durée réelle
-#    - Les considérer comme des règles moteur actives
-#    - Les utiliser sans raccordement explicite au pipeline
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - réglages UI / objectifs déclaratifs
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_duree_cible_minutes:

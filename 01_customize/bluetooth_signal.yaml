@@ -1,38 +1,26 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : Bluetooth Signal (diagnostic)
+# 🧠 ARSENAL — CUSTOMIZE
+#     Diagnostic radio — Capteurs Bluetooth (RSSI)
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Centraliser l’affichage et l’identification des capteurs
-#    Bluetooth de niveau de signal radio (RSSI).
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage des capteurs
+#   Bluetooth de niveau de signal radio (RSSI) à destination
+#   des consommateurs UI du domaine diagnostic réseau.
 #
-# 🧠 Lecture métier :
-#    Les valeurs RSSI représentent la qualité de réception
-#    Bluetooth vue par l’infrastructure locale.
-#    Elles sont STRICTEMENT diagnostiques.
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 🧩 Périmètre :
-#    - Définit les friendly_name et icônes
-#    - Facilite l’audit du maillage Bluetooth / ESPHome
-#    - Sert au diagnostic de pertes ou faiblesse radio
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🔗 Dépendances :
-#    - ESPHome / Bluetooth Proxy / intégration BLE
-#    - Capteurs physiques Bluetooth
-#    - Utilisés par :
-#      • dashboards Bluetooth
-#      • audits radio
-#
-# 🚫 Interdits :
-#    - Utiliser le RSSI comme condition métier directe
-#    - Déclencher une action automatique
-#    - Dégrader une logique fonctionnelle
-#      en fonction du niveau radio
-#
-# 🏷️ Statut :
-#    - Arsenal v11.x
-#    - diagnostic réseau / non décisionnel
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
-
 
 ############################################################
 # 🔘 BOTS / ACTIONNEURS

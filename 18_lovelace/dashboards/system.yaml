@@ -235,6 +235,9 @@ views:
                   action: navigate
                   navigation_path: /diagnostics-netatmo-dashboard/rf
 
+          - type: custom:button-card
+            template: ping_lan_synthese
+
           ####################################################
           # 🌐 INTÉGRATIONS CRITIQUES
           ####################################################

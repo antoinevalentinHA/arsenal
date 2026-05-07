@@ -1,41 +1,29 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : Proxys statistiques (LTS)
+# 🧠 ARSENAL — CUSTOMIZE
+#     Statistiques — Proxys techniques LTS
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir les métadonnées des capteurs proxy destinés
-#    à l’enregistrement des statistiques long terme (LTS)
-#    dans Home Assistant.
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage et de typage
+#   Recorder des capteurs proxy destinés à l'enregistrement
+#   des statistiques long terme (LTS), à destination des
+#   consommateurs UI et de la couche statistiques.
 #
-# 🧠 Lecture métier :
-#    Ces capteurs sont des PROXYS TECHNIQUES.
-#    Ils existent uniquement pour permettre au Recorder
-#    de stocker des valeurs agrégées sur la durée.
-#    Ils ne représentent pas une mesure physique directe.
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Attributs de typage Recorder (unit_of_measurement,
+#     state_class, unit_class)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 🧩 Périmètre :
-#    - Définit les métadonnées statistiques :
-#      • unit_of_measurement
-#      • state_class
-#      • unit_class
-#    - Garantit la persistance des données 24h / 7j
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🔗 Dépendances :
-#    - Capteurs calculés ailleurs (templates, scripts)
-#    - Utilisés par :
-#      • Recorder
-#      • statistiques long terme
-#      • dashboards d’analyse
-#
-# 🚫 Interdits :
-#    - Introduire une logique métier
-#    - Déclencher une action à partir de ces capteurs
-#    - Modifier les calculs sources ici
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle technique / persistance des données
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
-
 
 ############################################################
 # 📊 POURCENTAGE CONSIGNE ÉCO — AGRÉGATS TEMPORELS

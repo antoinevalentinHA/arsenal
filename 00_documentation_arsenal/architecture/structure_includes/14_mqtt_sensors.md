@@ -134,42 +134,44 @@ mqtt:
 
 ```yaml
 # ==========================================================
-# 🧠 ARSENAL — MQTT SENSORS
+# 🧠 ARSENAL — MQTT SENSOR
 #     <Domaine> — <Fonction>
 # ----------------------------------------------------------
-# 📌 Fichier
-#   14_mqtt_sensors/<dossier>/<fichier>.yaml
+# 🎯 RÔLE
+#   <Finalité système exacte — une phrase>
 #
-# 🎯 ROLE
-#   Exposer des données publiées via MQTT,
-#   sans logique métier locale ni interprétation système.
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
 #
-# 🧩 PERIMETRE
-#   Type Arsenal :
-#   - projection_transport
-#   - source_verite_brute
-#   - payload_structure
-#   - observabilite_transport
+# 🔖 NATURE
+#   <projection_transport | etat_brut_externe | telemetrie_brute
+#    | heartbeat_technique | payload_structure | source_verite_brute
+#    | transport_json | observabilite_transport | signal_externe
+#    | mesure_externe>
 #
-# 📥 SOURCE
-#   - Topics MQTT externes
-#   - Namespace contractuel documenté
+# 🆔 UNIQUE_ID
+#   <identifiant stable>
 #
-# 🧱 PRINCIPE
-#   - Transport direct des données MQTT
-#   - Transformation minimale uniquement
-#   - Aucune qualification métier
+# 📋 TRANSPORT
+#   state_topic          : <topic>
+#   namespace            : <namespace contractuel>
+#   json_attributes      : <oui | non>
+#   structure JSON       : <documentée ici si présente>
+#
+# 🔗 DÉPENDANCES
+#   Lit : <système ou broker source>
 #
 # 🚫 INTERDITS
 #   - Introduire une logique métier
 #   - Qualifier un état système
-#   - Produire une décision Arsenal
+#   - Constituer une autorité décisionnelle
 #   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
 #
-# 🧠 STATUT ARCHITECTURAL
-#   Couche de transport et d’observation.
-#
-#   Toute interprétation métier doit être réalisée
-#   dans la couche template ou décisionnelle.
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 ```

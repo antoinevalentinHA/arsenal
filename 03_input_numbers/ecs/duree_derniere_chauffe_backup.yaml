@@ -1,32 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBER : ECS — Backup durée chauffe réelle
+# 🧠 ARSENAL — INPUT_NUMBER
+#     ECS — Backup durée chauffe réelle
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Sauvegarder de manière persistante la DERNIÈRE
-#   durée de chauffe ECS considérée comme valide,
-#   afin de survivre aux redémarrages ou interruptions.
+# 🎯 RÔLE
+#   Stocker une sauvegarde persistante de la dernière durée
+#   de chauffe ECS valide afin d'assurer la continuité
+#   technique après redémarrage ou interruption.
 #
-# 🧱 Principe :
-#   - Mis à jour en fin de cycle ECS
-#   - Peut être utilisé comme valeur de repli
-#     si la durée instantanée devient invalide
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Valeur backup technique uniquement
+#   - Dernière durée de chauffe ECS valide uniquement
+#   - Valeur de continuité post-redémarrage uniquement
+#   - Paramètre consommé par scripts et automatisations ECS
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📌 Important :
-#   - Ce helper n’est PAS un diagnostic officiel
-#   - Ce helper n’est PAS une consigne
-#   - Il sert uniquement de continuité technique
+# 🏷️ NATURE
+#   Mémoire persistante | Valeur intermédiaire
 #
-# 🔗 Utilisation :
-#   - Automatisation de fin de cycle ECS
-#   - Scripts ou calculs nécessitant une valeur sûre
-#     après redémarrage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme diagnostic officiel
+#   - Utiliser ce helper comme consigne thermique
+#   - Déclencher directement une action ECS
+#   - Modifier automatiquement cette valeur hors pipeline ECS
+#   - Réaliser une logique de validation localement
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 Principe Arsenal :
-#   - La réalité est sauvegardée
-#   - L’analyse décide ensuite quoi en faire
-#
-# 📐 Unité :
-#   - minutes
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ecs_duree_chauffe_reel_backup:

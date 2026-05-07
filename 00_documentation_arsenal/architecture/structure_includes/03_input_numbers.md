@@ -103,17 +103,21 @@ Le type réel doit être explicité dans l’en-tête du fichier.
 #   le système Arsenal.
 #
 # 🧩 PÉRIMÈTRE
-#   Nature de la valeur stockée :
-#   - Paramètre utilisateur
-#   - Registre métier
-#   - Valeur technique
-#   - Référence intermédiaire
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📡 SOURCES
-#   - Automatisations, scripts ou templates externes
+# 🏷️ NATURE
+#   <Paramètre utilisateur | Seuil métier | Mémoire persistante
+#    | Valeur intermédiaire | Registre de pipeline | Debug>
 #
 # 🚫 INTERDITS
-#   - Introduire une logique métier locale
 #   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 ```

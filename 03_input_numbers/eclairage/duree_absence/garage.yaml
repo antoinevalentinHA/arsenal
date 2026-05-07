@@ -1,38 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Durée absence garage
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Garage — Durée absence
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir le temps d’inactivité requis dans le garage
-#    avant extinction automatique de l’éclairage.
+# 🎯 RÔLE
+#   Stocker le délai d'inactivité requis dans le garage avant
+#   extinction automatique de l'éclairage.
 #
-# 🧩 Principe :
-#    - Le compteur démarre après la DERNIÈRE détection
-#      de mouvement ou de présence dans le garage.
-#    - L’extinction n’est autorisée qu’après écoulement
-#      complet de cette durée.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre temporel éclairage garage uniquement
+#   - Délai d'inactivité exprimé en minutes
+#   - Paramètre consommé par l'automatisation d'extinction
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Valeur exprimée en minutes
-#    - Convertie en secondes dans l’automatisation
-#    - Sert uniquement de paramètre de temporisation
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Automatisation :
-#        • eclairage/garage/extinction_automatique.yaml
-#    - Dashboard :
-#        • réglages éclairage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme timer Home Assistant
+#   - Confondre ce délai avec une temporisation d'alarme
+#   - Déclencher directement une extinction
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Ne pas confondre avec :
-#    - Délais d’entrée / sortie (alarme)
-#    - Timers Home Assistant
-#    - Durées de présence globale
-#
-# 📐 Unité :
-#    - minutes
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Paramètre éclairage garage
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 duree_absence_garage:

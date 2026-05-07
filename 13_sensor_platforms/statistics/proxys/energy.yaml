@@ -1,40 +1,37 @@
 # ==========================================================
-#  SENSOR PLATFORM : Proxy énergie – Statistiques Recorder
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Énergie — Proxy statistiques Recorder climatisation
 # ----------------------------------------------------------
-#  🧠 Rôle :
-#    Exposer des capteurs proxy "énergie" conformes aux
-#    exigences du Recorder Home Assistant (long-term stats),
-#    en contournant les limitations des template sensors.
+# 🎯 RÔLE
+#   Exposer un proxy statistique compatible Recorder pour
+#   la consommation estimée de la climatisation.
 #
-#  🎯 Objectifs :
-#    - Fournir des capteurs compatibles avec :
-#        • unit_class
-#        • state_class
-#        • statistiques long terme
-#    - Supprimer les warnings Recorder liés à
-#      recorder/import_statistics (HA ≥ 2025.x / 2026.11)
-#    - Garantir la compatibilité future sans modifier
-#      les capteurs métiers existants.
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Compatibilité Recorder / statistiques long terme uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  🧩 Principe :
-#    - Source : capteurs locaux existants (template sensors)
-#    - Mécanisme : sensor.statistics (max sur valeur monotone)
-#    - Enrichissement : métadonnées via customize
+# 🔖 NATURE
+#   reference_statistique
 #
-#  🧱 Architecture Arsenal :
-#    input_number
-#        → template sensor (logique / fallback / stabilité)
-#            → sensor proxy énergie (statistiques Recorder)
-#                → utility_meter / graphes / énergie
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 1
+#   max_age              : omis
+#   precision            : omis
 #
-#  ⚠️ Important :
-#    - Ces capteurs NE DOIVENT PAS être utilisés directement
-#      dans les dashboards ou la logique métier.
-#    - Ils sont réservés au Recorder et aux utility_meter.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.clim_consommation_estimee_energie
 #
-#  ✅ Compatibilité :
-#    Home Assistant 2024.8+
-#    Conforme aux exigences HA Core 2026.11
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Utiliser ce proxy comme source métier primaire
+#
+# 🏷️ STATUT
+#   Statistique — Arsenal v14.x
 # ==========================================================
 
 - platform: statistics

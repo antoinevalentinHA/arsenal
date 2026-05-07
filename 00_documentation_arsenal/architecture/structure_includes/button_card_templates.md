@@ -179,28 +179,30 @@ button_card_templates: !include_dir_merge_named button_card_templates/
 # 🧠 ARSENAL — SOCLE UI
 #     <Domaine> — <Fonction>
 #
-# 🧩 NATURE : socle_ui
-# 🧱 TYPE UI : <type_ui>
+# 🔖 NATURE  : socle_ui
+# 🖼️ TYPE UI : <type_ui>
 # ==========================================================
-#
 # 🎯 RÔLE
 #   Fournir un socle visuel réutilisable
 #   destiné à être dérivé par des cartes métier.
 #
-# ⚙️ COMPORTEMENT
-#   - structure graphique commune
-#   - styles mutualisés
-#   - aucune logique métier
-#   - aucune autorité décisionnelle
+# 🧩 PÉRIMÈTRE
+#   - Structure graphique et styles mutualisés uniquement
+#   - Aucune logique métier
+#   - Aucune autorité décisionnelle
+#   - Non utilisable directement comme carte métier
 #
-# 📐 USAGE
-#   - destiné à être étendu
-#   - ne doit jamais être utilisé directement
+# 🔗 DÉPENDANCES
+#   Néant — socle structurel pur
 #
 # 🚫 INTERDITS
-#   - embarquer une logique métier locale
-#   - produire une décision
-#   - piloter directement un équipement
+#   - Embarquer une logique métier locale
+#   - Produire une décision
+#   - Être utilisé directement sans dérivation
+#   - Piloter directement un équipement
+#
+# 🏷️ STATUT
+#   Socle UI — Arsenal v14.x
 # ==========================================================
 ```
 
@@ -211,33 +213,30 @@ button_card_templates: !include_dir_merge_named button_card_templates/
 # 🧠 ARSENAL — CARTE UI
 #     <Domaine> — <Fonction>
 #
-# 🗂️ COUCHE : <couche_ui>
-# 🧩 NATURE : carte_metier
-# 🧱 TYPE UI : <type_ui>
-# 🔍 NIVEAU DE CONFIANCE : <niveau>
+# 🔖 NATURE  : carte_metier
+# 🖼️ TYPE UI : <type_ui>
+# 🎚️ CONFIANCE : <niveau>
 # ==========================================================
-#
 # 🎯 RÔLE
-#   Exposer une information métier ou un état système
-#   de manière lisible et interprétable.
+#   <Finalité système exacte — une phrase>
 #
-# 📡 SOURCE
-#   - entité principale
-#   - attributs utilisés
+# 🧩 PÉRIMÈTRE
+#   - Affichage et interprétation visuelle uniquement
+#   - Aucune logique métier exécutive
+#   - Aucune autorité système
 #
-# ⚙️ LOGIQUE UI
-#   - logique d’affichage uniquement
-#   - interprétation visuelle locale
-#   - aucune logique métier exécutive
-#
-# 📐 USAGE
-#   - consommation UI uniquement
-#   - ne constitue jamais une autorité système
+# 🔗 DÉPENDANCES
+#   Lit      : <entité principale + attributs utilisés>
+#   Template : <socle parent éventuel>
 #
 # 🚫 INTERDITS
-#   - prendre une décision métier
-#   - remplacer une automatisation
-#   - produire un effet matériel
+#   - Prendre une décision métier
+#   - Remplacer une automatisation
+#   - Produire un effet matériel
+#   - Devenir une source de vérité système
+#
+# 🏷️ STATUT
+#   Carte UI — Arsenal v14.x
 # ==========================================================
 ```
 
@@ -248,29 +247,30 @@ button_card_templates: !include_dir_merge_named button_card_templates/
 # 🧠 ARSENAL — CARTE UI
 #     <Domaine> — <Fonction>
 #
-# 🗂️ COUCHE : <couche_ui>
-# 🧩 NATURE : carte_action
-# 🧱 TYPE UI : action
-# 🔍 NIVEAU DE CONFIANCE : <niveau>
+# 🔖 NATURE  : carte_action
+# 🖼️ TYPE UI : action
+# 🎚️ CONFIANCE : <niveau>
 # ==========================================================
-#
 # 🎯 RÔLE
-#   Déclencher explicitement une action backend
-#   depuis l’interface utilisateur.
+#   <Finalité système exacte — une phrase>
 #
-# 📡 SOURCE
-#   - service appelé
-#   - variables utilisées
+# 🧩 PÉRIMÈTRE
+#   - Déclenchement explicite d'action backend uniquement
+#   - Interaction utilisateur visible
+#   - Aucune décision embarquée
 #
-# ⚙️ LOGIQUE UI
-#   - interaction utilisateur explicite
-#   - confirmation éventuelle
-#   - aucune décision embarquée
+# 🔗 DÉPENDANCES
+#   Appelle  : <service déclenché>
+#   Template : <socle parent éventuel>
 #
 # 🚫 INTERDITS
-#   - déclenchement implicite
-#   - logique métier locale
-#   - automatisme caché
+#   - Déclenchement implicite ou automatique
+#   - Logique métier locale
+#   - Automatisme caché
+#   - Piloter directement un équipement sans service intermédiaire
+#
+# 🏷️ STATUT
+#   Carte UI — Arsenal v14.x
 # ==========================================================
 ```
 
@@ -281,32 +281,28 @@ button_card_templates: !include_dir_merge_named button_card_templates/
 # 🧠 ARSENAL — CARTE UI
 #     <Domaine> — <Fonction>
 #
-# 🗂️ COUCHE : <couche_ui>
-# 🧩 NATURE : carte_pivot
-# 🧱 TYPE UI : synthese
-# 🔍 NIVEAU DE CONFIANCE : <niveau>
+# 🔖 NATURE  : carte_pivot
+# 🖼️ TYPE UI : synthese
+# 🎚️ CONFIANCE : <niveau>
 # ==========================================================
-#
 # 🎯 RÔLE
-#   Centraliser une synthèse transverse
-#   ou un point d’entrée majeur de navigation.
+#   <Finalité système exacte — une phrase>
 #
-# 📡 SOURCE
-#   - agrégations
-#   - entités de synthèse
+# 🧩 PÉRIMÈTRE
+#   - Synthèse visuelle transverse uniquement
+#   - Navigation éventuelle
+#   - Aucune décision système
 #
-# ⚙️ LOGIQUE UI
-#   - synthèse visuelle
-#   - navigation éventuelle
-#   - aucune décision système
-#
-# ----------------------------------------------------------
-# 🔒 STRUCTURE
-#   SATELLITE et PIVOT sont mutuellement exclusifs
-# ----------------------------------------------------------
+# 🔗 DÉPENDANCES
+#   Lit      : <agrégations et entités de synthèse>
+#   Template : <socle parent éventuel>
 #
 # 🚫 INTERDITS
-#   - devenir une autorité métier
-#   - embarquer une logique transverse cachée
+#   - Devenir une autorité métier
+#   - Embarquer une logique transverse cachée
+#   - Être utilisé simultanément comme carte satellite
+#
+# 🏷️ STATUT
+#   Carte UI — Arsenal v14.x
 # ==========================================================
 ```

@@ -1,10 +1,26 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER :
+# 🧠 ARSENAL — INPUT_NUMBER
 #     Aération — M3 — Seuil ΔT tiny
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Seuil ΔT (°C) définissant la limite basse :
-#   si ΔT < seuil_tiny => aucune prolongation.
+#   Stocker le seuil ΔT définissant le niveau M3 tiny.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_m3_seuil_tiny:

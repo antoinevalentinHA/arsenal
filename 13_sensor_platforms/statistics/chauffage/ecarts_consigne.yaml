@@ -1,9 +1,48 @@
 # ==========================================================
-# 📊 STATISTICS SENSOR — Moyennes glissantes sur 24 h (chauffage)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Chauffage — Moyennes glissantes 24h écarts consigne
 # ----------------------------------------------------------
-# 💡 Objectif :
-#   Calculer les moyennes glissantes sur 24 h des écarts
-#   de consigne instantanés (global, froid, doux).
+# 🎯 RÔLE
+#   Exposer les moyennes glissantes sur 24 h des écarts
+#   de consigne instantanés (global, régime froid, régime
+#   doux), à destination des couches de diagnostic et
+#   d'analyse de la performance thermique.
+#
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   moyenne_glissante | agregat_quantitatif
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : mean (les trois sensors)
+#   sampling_size        : 300
+#                          justification : borne haute évitant
+#                          la dérive mémoire tout en couvrant
+#                          la fenêtre de 24 h à fréquence
+#                          d'échantillonnage usuelle
+#   max_age              : 24 h
+#                          justification : cycle journalier
+#                          complet, lisse les transitions
+#                          jour/nuit et les épisodes ponctuels
+#   precision            : omis (par défaut HA)
+#
+# 🔗 DÉPENDANCES
+#   Lit :
+#     - sensor.ecart_consigne_instantane
+#     - sensor.ecart_consigne_instantane_froid
+#     - sensor.ecart_consigne_instantane_doux
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Statistique — Arsenal v14.x
 # ==========================================================
 
 - platform: statistics

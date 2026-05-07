@@ -1,21 +1,37 @@
 # ==========================================================
 # 🧠 ARSENAL — INPUT_NUMBER
-#     Sommeil — Derniere nuit
+#     Sommeil — Dernière nuit consolidée
 # ----------------------------------------------------------
-# 🎯 Rôle
-#     Stocker les valeurs consolidées de la dernière nuit.
+# 🎯 RÔLE
+#   Stocker les valeurs consolidées de la dernière nuit
+#   utilisées par les dashboards et statistiques sommeil.
 #
-# 🧩 Périmètre
-#     - Durée totale
-#     - Phases de sommeil
-#     - Score Withings
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Snapshot sommeil consolidé uniquement
+#   - Durée totale et phases de sommeil uniquement
+#   - Score sommeil consolidé uniquement
+#   - Valeurs issues du pipeline sommeil Arsenal
+#   - Source UI et statistiques exclusivement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🚫 Interdits
-#     - Aucune écriture manuelle
-#     - Aucune consommation directe des capteurs Withings locaux
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
 #
-# 🧠 Statut
-#     Snapshot métier consolidé — source UI/statistiques
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Consommer directement les capteurs Withings locaux
+#   - Modifier manuellement ces valeurs
+#   - Utiliser ces helpers comme mesures temps réel
+#   - Déclencher directement une automatisation
+#   - Implémenter une logique santé dans ces helpers
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 sommeil_derniere_nuit_total:

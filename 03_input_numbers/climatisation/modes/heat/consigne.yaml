@@ -1,39 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Consigne Heat Clim
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — HEAT — Consigne cible
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir la température CIBLE envoyée à la climatisation
-#    lorsqu’un fonctionnement en mode HEAT est autorisé
-#    et décidé par la logique centrale.
+# 🎯 RÔLE
+#   Stocker la température cible transmise à la climatisation
+#   lorsque le mode HEAT est autorisé et appliqué.
 #
-# 🧩 Principe :
-#    - Il s’agit d’une CONSIGNE, pas d’un seuil.
-#    - Elle est appliquée uniquement après validation
-#      des conditions de déclenchement (présence,
-#      température extérieure, seuils ON/OFF, etc.).
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Consigne thermique HEAT uniquement
+#   - Température cible réelle envoyée au climatiseur
+#   - Paramètre consommé par la décision centrale clim
+#   - Aucun offset appliqué dans ce helper
+#   - Aucune hystérèse locale
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Utilisée par le script de décision centrale clim
-#    - Transmise telle quelle au climatiseur
-#    - Ne subit aucun offset ni hystérésis
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Script :
-#        • climatisation/decision_centrale.yaml
-#    - Dashboard :
-#        • réglages climatisation
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser cette valeur comme seuil ON / OFF
+#   - Confondre cette valeur avec un offset thermique
+#   - Modifier automatiquement cette valeur
+#   - Déclencher directement une automatisation
+#   - Piloter directement la climatisation depuis ce helper
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Ne pas confondre avec :
-#    - Seuils de déclenchement / extinction
-#    - Offsets ON / OFF
-#    - Consignes COOL ou DRY
-#
-# 📐 Unité :
-#    - °C (température cible réelle)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Consigne unique clim chauffage
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 consigne_heat_clim:

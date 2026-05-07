@@ -1,29 +1,53 @@
 # ==========================================================
-# 🧠 ARSENAL — MQTT SENSORS (BOILER / BRIDGE)
+# 🧠 ARSENAL — MQTT SENSOR
+#     Boiler / Bridge — Santé passerelle Optolink / vcontrold
 # ----------------------------------------------------------
-# 📌 Fichier
-#   14_mqtt_sensors/boiler/boiler_bridge.yaml
+# 🎯 RÔLE
+#   Exposer en transport passif les états de santé et
+#   informations publiés par la passerelle chaudière
+#   (bridge Optolink / vcontrold).
 #
-# 🎯 ROLE
-#   Exposer l’état de santé et les informations de la
-#   passerelle chaudière (bridge Optolink / vcontrold).
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
 #
-# 🧱 PRINCIPE
-#   - Mapping direct des topics MQTT bridge vers des
-#     sensors Home Assistant
-#   - Etats textuels publiés par la passerelle
-#   - Aucune transformation ni logique métier
+# 🔖 NATURE
+#   etat_brut_externe | heartbeat_technique
 #
-# 📥 SOURCE
-#   Namespace contrat : boiler/bridge/...
-#   Référence :
-#     - 03_namespace_canonique.md §3.1
-#     - 15_sante_passerelle.md
+# 🆔 UNIQUE_ID
+#   boiler_bridge_version
+#   boiler_vcontrold_status
+#   boiler_optolink_status
+#   boiler_bridge_heartbeat_raw
 #
-# ⚠️ IMPORTANT
-#   - Couche strictement observation passerelle
-#   - Aucun calcul ni interprétation métier
-#   - Les automatisations consomment ces états
+# 📋 TRANSPORT
+#   state_topic          :
+#     - boiler/bridge/version
+#     - boiler/bridge/vcontrold_status
+#     - boiler/bridge/optolink_status
+#     - boiler/bridge/heartbeat
+#   namespace            : boiler/bridge/...
+#   json_attributes      : non
+#   structure JSON       : sans objet (états textuels scalaires)
+#   valeurs attendues    :
+#     - vcontrold_status : running | stopped | error
+#     - optolink_status  : connected | disconnected | error
+#
+# 🔗 DÉPENDANCES
+#   Lit : passerelle Optolink / vcontrold via broker MQTT
+#   Réf : 03_namespace_canonique.md §3.1, 15_sante_passerelle.md
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 
 - name: "Boiler bridge version"

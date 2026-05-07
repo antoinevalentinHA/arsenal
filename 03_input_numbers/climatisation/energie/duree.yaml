@@ -1,37 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Durées journalières climatisation
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — Durées journalières par mode
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Stocker les durées cumulées (en heures) de fonctionnement
-#    de la climatisation pour la journée en cours,
-#    séparément par mode :
-#      - COOL (froid)
-#      - DRY  (déshumidification)
-#      - HEAT (chauffage)
+# 🎯 RÔLE
+#   Stocker les durées cumulées journalières de fonctionnement
+#   de la climatisation par mode opérationnel.
 #
-# 🧠 Lecture métier :
-#    Ces valeurs sont incrémentées automatiquement
-#    en fonction du temps réel passé dans chaque mode.
-#    Elles servent de base aux calculs :
-#      - de consommation énergétique journalière
-#      - de diagnostics climatisation
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Registres journaliers temporels uniquement
+#   - Modes COOL, DRY et HEAT uniquement
+#   - Valeurs cumulées en heures décimales
+#   - Mise à jour automatisée continue
+#   - Réinitialisation quotidienne externe au helper
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Mise à jour continue par automatisation
-#    - Réinitialisation quotidienne (début de journée)
-#    - Aucune modification manuelle attendue
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
 #
-# 📐 Unité :
-#    - Heures décimales (h)
-#    - Précision élevée (pas fin pour intégration temps)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces valeurs comme seuils ou conditions directes
+#   - Modifier manuellement hors recalage exceptionnel
+#   - Déclencher une action depuis ces helpers
+#   - Implémenter une logique de reset dans ces helpers
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Utilisation comme seuil ou condition directe
-#    - Modification manuelle hors recalage exceptionnel
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - registre journalier (climatisation)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 clim_duree_cool_aujourdhui:

@@ -1,12 +1,43 @@
 # ==========================================================
-# 🌿 HISTORY STATS — Duree consigne Eco (24h)
+# 🧠 ARSENAL — HISTORY_STATS SENSOR
+#     Chauffage — Durée en consigne Eco (24h)
 # ----------------------------------------------------------
-# 🧠 Rôle :
-#   Mesure le temps total passé en mode Eco sur les 24
-#   dernières heures.
+# 🎯 RÔLE
+#   Calculer la durée cumulée passée en consigne Eco sur
+#   les 24 dernières heures, à destination des couches de
+#   diagnostic et de pilotage du chauffage.
 #
-# 🧩 Dépendances :
-#   - sensor.programme_chauffage
+# 🧩 PÉRIMÈTRE
+#   - Métrique historique via recorder uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   duree_cumulee | mesure_glissante
+#
+# 📋 PARAMÈTRES
+#   entity_id : sensor.programme_chauffage
+#   state     : Eco
+#   type      : time
+#   fenêtre   : duration = 24 h
+#               end      = now()
+#               justification : fenêtre glissante de 24 h
+#               pour suivi journalier indépendant de
+#               l'horloge civile (pas de discontinuité à minuit)
+#
+# 🔗 DÉPENDANCES
+#   Lit      : sensor.programme_chauffage
+#   Recorder : requis — rétention minimale 24 h
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Utiliser un historique incomplet sans justification
+#   - Confondre mesure historique et état temps réel
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser la fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Durée — Arsenal v14.x
 # ==========================================================
 
 - platform: history_stats

@@ -1,44 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPER SYSTÈME : Compteur tentatives reload Synology
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Système — Synology — Compteur tentatives reload
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Comptabiliser le nombre de tentatives de rechargement
-#   de l’intégration Synology
-#   afin d’éviter :
-#     - les boucles de reload incontrôlées
-#     - les appels répétés au cloud Synology
-#     - les instabilités prolongées de l’intégration
+# 🎯 RÔLE
+#   Stocker le nombre de tentatives de rechargement de
+#   l'intégration Synology.
 #
-# 🧠 Nature :
-#   - Compteur de SUPERVISION SYSTÈME
-#   - État interne de protection
-#   - Non destiné à représenter un état utilisateur
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteur technique de protection uniquement
+#   - Valeur entière de tentatives
+#   - Paramètre consommé par les automatisations système
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#   - Incrémenté à chaque tentative de reload Synology
-#   - Lu par l’automatisation de supervision dédiée
-#   - Comparé à un seuil maximal autorisé
-#   - Réinitialisé explicitement :
-#       • après un reload réussi
-#       • via un reset contrôlé
+# 🏷️ NATURE
+#   Registre technique | Garde-fou système
 #
-# ⚠️ Important :
-#   - Ce helper NE mesure PAS l’état des périphériques
-#   - Il NE reflète PAS la disponibilité Bluetooth
-#   - Il sert UNIQUEMENT de garde-fou logique
+# 🚫 INTERDITS
+#   - Confondre stockage et supervision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme état Synology réel
+#   - Utiliser ce helper comme disponibilité NAS réelle
+#   - Déclencher directement un reload depuis ce helper
+#   - Implémenter localement une logique de retry
+#   - Réinitialiser implicitement ce compteur
+#   - Modifier manuellement cette valeur hors maintenance
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisé par :
-#   - Automatisations :
-#       • 11_automations/system/reload_integrations/synology.yaml
-#
-# 📐 Unité :
-#   - Tentatives (compteur entier)
-#
-# 🧠 Principe Arsenal :
-#   - Les intégrations hybrides (BT + cloud) sont fragiles
-#   - Le système doit limiter ses propres réactions
-#   - Une panne ne doit jamais provoquer d’emballement
-#
+# 🏷️ STATUT
+#   Couche protection système — Arsenal v14.x
 # ==========================================================
 
 synology_reload_tentatives:

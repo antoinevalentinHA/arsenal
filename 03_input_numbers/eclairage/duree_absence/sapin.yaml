@@ -1,40 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Durée absence guirlande
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Guirlande — Durée absence
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir la durée d’inactivité maximale autorisée
-#    avant extinction automatique de la guirlande
-#    décorative (sapin / éclairage festif).
+# 🎯 RÔLE
+#   Stocker le délai d'inactivité requis avant extinction
+#   automatique de l'éclairage décoratif.
 #
-# 🧩 Principe :
-#    - Le décompte démarre après la DERNIÈRE présence
-#      détectée dans la zone concernée.
-#    - La guirlande est éteinte uniquement si
-#      aucune activité n’est observée durant
-#      toute la durée définie.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre temporel éclairage décoratif uniquement
+#   - Délai d'inactivité exprimé en minutes
+#   - Paramètre consommé par l'automatisation d'extinction
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Valeur exprimée en minutes
-#    - Utilisée directement par l’automatisation
-#    - Aucun timer Home Assistant dédié
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Automatisation :
-#        • eclairage/sapin/off.yaml
-#    - Dashboard :
-#        • réglages éclairage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme programmation horaire fixe
+#   - Confondre éclairage décoratif et éclairage fonctionnel
+#   - Déclencher directement une extinction
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Ne pas confondre avec :
-#    - Éclairage fonctionnel (garage, extérieur)
-#    - Programmations horaires fixes
-#    - Scènes manuelles
-#
-# 📐 Unité :
-#    - minutes
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Paramètre éclairage décoratif
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 duree_absence_guirlande:

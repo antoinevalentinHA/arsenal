@@ -1,19 +1,32 @@
 # ==========================================================
-#  Arsenal — HELPER : ΔT max décisionnel (aération)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — ΔT max décisionnel
 # ----------------------------------------------------------
-#  Rôle :
-#    Stocker la valeur ΔT_max EXACTE utilisée par le pipeline
-#    (module M3) pour décider d’une prolongation de blocage.
+# 🎯 RÔLE
+#   Stocker la valeur ΔT_max exacte utilisée par le pipeline
+#   d'aération pour la décision de prolongation.
 #
-#  Important :
-#    - Ce helper ne pilote rien.
-#    - Il sert d’affichage / debug cohérent avec le log.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Valeur issue du pipeline décisionnel
+#   - Usage affichage et diagnostic uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-#  🚫 Interdits :
-#    - Modifier manuellement cette valeur
-#    - L’utiliser comme seuil ou paramètre d’entrée
-#    - La confondre avec un réglage utilisateur
+# 🏷️ NATURE
+#   Registre de pipeline | Valeur intermédiaire | Debug
 #
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Modifier manuellement cette valeur
+#   - Utiliser cette valeur comme seuil métier
+#   - Confondre cette valeur avec un paramètre utilisateur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 delta_t_max_decisionnel_aeration:

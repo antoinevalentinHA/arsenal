@@ -1,38 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Seuils ON / OFF climatisation (COOL)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — Seuils COOL ON / OFF
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir les seuils thermiques explicites
-#    de déclenchement et d’extinction de la
-#    climatisation en mode COOL.
+# 🎯 RÔLE
+#   Stocker les seuils thermiques utilisés pour qualifier
+#   les autorisations ON / OFF de la climatisation en mode COOL.
 #
-# 🧠 Principe clé :
-#    Ces seuils matérialisent une hystérésis
-#    volontaire et lisible :
-#      - ON  : température haute de déclenchement
-#      - OFF : température basse d’extinction
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Hystérèse thermique COOL explicite
+#   - Contextes présence et absence uniquement
+#   - Seuils ON / OFF uniquement
+#   - Paramètres consommés par les template sensors clim
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🏠 Contextes distincts :
-#    - Présence  : confort prioritaire
-#    - Absence   : tolérance thermique élargie
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# ⚙️ Fonctionnement :
-#    - Lus par des capteurs template dédiés
-#      (seuils_on_off/cool/on|off.yaml)
-#    - Jamais utilisés comme déclencheurs directs
-#    - Jamais modifiés automatiquement
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Calculer dynamiquement ces valeurs
+#   - Utiliser ces valeurs comme consignes cibles
+#   - Déclencher directement une automatisation
+#   - Piloter directement la climatisation depuis ces helpers
+#   - Implémenter une logique d'hystérèse locale
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Calcul dynamique de ces valeurs
-#    - Utilisation comme consigne cible
-#    - Déclenchement direct d’automatisation
-#
-# 📐 Unité :
-#    - degré Celsius (°C)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Seuils décisionnels explicites
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 clim_seuil_declenchement_presence:

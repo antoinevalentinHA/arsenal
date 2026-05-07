@@ -1,49 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Offsets seuils ON / OFF (clim HEAT)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — HEAT — Offsets ON / OFF
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Ajuster dynamiquement les seuils de déclenchement
-#    (ON) et d’extinction (OFF) du mode chauffage
-#    de la climatisation, afin d’introduire une
-#    hystérésis thermique contrôlée.
+# 🎯 RÔLE
+#   Stocker les offsets appliqués aux seuils ON / OFF du
+#   mode chauffage climatisation afin de contrôler l'hystérèse.
 #
-# 🧩 Principe :
-#    Les offsets sont appliqués AUX SEUILS,
-#    jamais aux températures mesurées.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Correcteurs d'hystérèse HEAT uniquement
+#   - Offsets appliqués aux seuils uniquement
+#   - Paramètres consommés par les templates climatisation HEAT
+#   - Stabilisation des cycles thermiques
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - clim_offset_on :
-#        → SOUSTRAIT au seuil ON
-#        → rend le déclenchement plus exigeant
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-#    - clim_offset_off :
-#        → AJOUTÉ au seuil OFF
-#        → évite les extinctions trop précoces
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces valeurs comme seuils bruts
+#   - Confondre ces valeurs avec des consignes thermiques
+#   - Modifier automatiquement ces valeurs
+#   - Appliquer ces offsets directement aux températures mesurées
+#   - Piloter directement la climatisation depuis ces helpers
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔁 Effet recherché :
-#    - Réduction du pompage thermique
-#    - Cycles plus longs et plus stables
-#    - Comportement lisible et maîtrisé
-#
-# 🔍 Utilisation :
-#    - Template sensors :
-#        • climatisation/seuils_on_off/heat/on.yaml
-#        • climatisation/seuils_on_off/heat/off.yaml
-#    - Dashboards :
-#        • réglages utilisateur
-#        • visualisation des seuils corrigés
-#
-# 🚫 Interdits :
-#    - Ne PAS utiliser comme seuil brut
-#    - Ne PAS confondre avec une consigne
-#    - Ne PAS modifier automatiquement
-#
-# 📐 Unité :
-#    - °C (écart appliqué aux seuils)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Correcteurs d’hystérésis clim chauffage
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 clim_offset_on:

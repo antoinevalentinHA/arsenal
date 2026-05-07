@@ -1,44 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER — Imprimerie : historique Ateliers
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Imprimerie — Historique thermique ateliers
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Stocker l’HISTORIQUE min / max de TEMPÉRATURE
-#   réellement OBSERVÉE dans les ateliers de l’imprimerie :
-#     - Atelier Komori
-#     - Atelier Bobst
-#     - Atelier Media
+# 🎯 RÔLE
+#   Stocker les valeurs minimales et maximales de température
+#   réellement observées dans les ateliers de l'imprimerie.
 #
-# ✅ Important :
-#   - Ces helpers ne sont PAS des seuils.
-#   - Ils ne pilotent aucun équipement.
-#   - Ils représentent des VALEURS RÉELLES enregistrées (min / max).
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Historique thermique ateliers uniquement
+#   - Valeurs min / max réellement observées uniquement
+#   - Ateliers Komori, Bobst et Media uniquement
+#   - Paramètres alimentés par automatisations d'archivage
+#   - Valeurs exprimées en degrés Celsius
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#   - Les capteurs fournissent la température instantanée.
-#   - Les automatisations comparent la mesure courante
-#     aux valeurs stockées :
-#       → si plus basse : mise à jour du “min”
-#       → si plus haute : mise à jour du “max”
-#   - Une automatisation d’archivage peut figer ces valeurs
-#     à intervalle défini (journalier, mensuel, etc.).
-#   - Un script permet la réinitialisation de l’historique.
+# 🏷️ NATURE
+#   Mémoire persistante | Registre de pipeline
 #
-# 🔗 Utilisés par :
-#   - Dashboards :
-#       • lovelace/dashboards/imprimerie/imprimerie_atelier.yaml
-#   - Automatisations :
-#       • 11_automations/imprimerie/atelier/min_max.yaml
-#       • 11_automations/imprimerie/atelier/archivage.yaml
-#   - Scripts :
-#       • 10_scripts/imprimerie/reset_atelier_historique.yaml
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme seuils thermiques
+#   - Piloter un équipement depuis ces helpers
+#   - Modifier manuellement hors correction volontaire
+#   - Réaliser un calcul statistique dans ces helpers
+#   - Déclencher directement une automatisation
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 Principe Arsenal :
-#   - Les capteurs MESURENT.
-#   - Les automatisations ENREGISTRENT (min / max).
-#   - Les helpers STOCKENT.
-#   - Les dashboards EXPOSENT.
-#   - Les scripts RÉINITIALISENT.
-#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 atelier_komori_temperature_min:

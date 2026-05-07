@@ -1,6 +1,40 @@
-# ================================================================
-# 📊 STATISTICS SENSOR — Séjour : Moyennes glissantes 10, 30 et 60 min
-# ================================================================
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Thermique — Moyennes glissantes Température Séjour
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer des moyennes glissantes de la température du
+#   séjour afin de fournir une référence thermique stable
+#   à court terme.
+#
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   moyenne_glissante | lissage | reference_statistique
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 120 / 360 / 720
+#   max_age              : 10 min / 30 min / 60 min —
+#                          lissage des variations thermiques
+#                          de court terme
+#   precision            : 2
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.temperature_sejour
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Tendance — Arsenal v14.x
+# ==========================================================
 
 - platform: statistics
   name: temperature_sejour_mean_10min

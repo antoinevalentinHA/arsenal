@@ -1,41 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Seuil extérieur mini (clim HEAT)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Climatisation — HEAT — Seuil extérieur minimal
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir la température extérieure minimale
-#    en dessous de laquelle la climatisation
-#    n’est PLUS autorisée à fonctionner en mode HEAT.
+# 🎯 RÔLE
+#   Stocker la température extérieure minimale autorisant
+#   l'utilisation de la climatisation en mode HEAT.
 #
-# ❄️ Problématique traitée :
-#    - Rendement dégradé de la PAC air/air par grand froid
-#    - Sollicitations excessives et inefficaces
-#    - Risque d’inconfort thermique ou énergétique
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Garde-fou thermique PAC air/air uniquement
+#   - Température extérieure réelle uniquement
+#   - Paramètre consommé par l'arbitrage chauffage/clim
+#   - Protection rendement et confort thermique
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Utilisé comme seuil de PROTECTION
-#    - Si T° extérieure < seuil :
-#        → mode HEAT clim interdit
-#        → retour exclusif au chauffage principal
-#    - Aucun déclenchement direct
-#    - Aucune consigne modifiée
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Script :
-#        • decision_centrale.yaml (arbitrage global)
-#    - Dashboards :
-#        • affichage état / diagnostic uniquement
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser cette valeur comme seuil de déclenchement
+#   - Utiliser cette valeur comme consigne thermique
+#   - Modifier automatiquement cette valeur
+#   - Piloter directement la climatisation depuis ce helper
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Ne PAS utiliser comme seuil de déclenchement
-#    - Ne PAS interpréter comme consigne
-#    - Ne PAS modifier automatiquement
-#
-# 📐 Unité :
-#    - °C (température extérieure réelle)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Garde-fou thermique clim HEAT
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 clim_hiver_seuil_temperature_exterieure:

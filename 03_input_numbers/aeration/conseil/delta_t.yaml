@@ -1,37 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Seuils thermiques d’aération
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Seuils thermiques décisionnels
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir les conditions thermiques minimales requises
-#    pour autoriser une aération, selon la saison.
+# 🎯 RÔLE
+#   Stocker les seuils thermiques utilisés pour autoriser
+#   une aération selon les conditions saisonnières.
 #
-# 🧠 Lecture métier :
-#    Ces seuils sont lus en temps réel par les capteurs
-#    binaires d’aération (RDC et étage).
-#    Ils conditionnent l’autorisation d’aérer sur des
-#    critères purement thermiques.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Seuils décisionnels thermiques
+#   - Paramètres lus en temps réel par les capteurs d'aération
+#   - Garde-fous thermiques et différentiels saisonniers
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🌡️ Niveaux définis :
-#    - Écart T° ext < int :
-#        → garde-fou global (aération utile uniquement)
-#    - ΔT minimal hiver :
-#        → exigence renforcée (préservation chauffage)
-#    - ΔT minimal inter-saison :
-#        → compromis confort / efficacité
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔗 Dépendances :
-#    - Binary sensors aération (RDC / étage)
-#    - Dashboards réglages aération
-#    - UI avancée (button-card templates)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces valeurs comme indicateurs visuels simples
+#   - Confondre ces valeurs avec des références internes
+#   - Modifier ces seuils sans compréhension de l'impact global
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Les utiliser comme indicateurs visuels simples
-#    - Les confondre avec des valeurs de référence internes
-#    - Les modifier sans compréhension de l’impact global
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - seuils décisionnels actifs (thermique)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_seuil_ecart_temperature_min:

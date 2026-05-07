@@ -1,36 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBER : VMC — Durée minimale haute vitesse
+# 🧠 ARSENAL — INPUT_NUMBER
+#     VMC — Durée minimale haute vitesse
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir la durée MINIMALE pendant laquelle la VMC
-#   doit rester en haute vitesse une fois activée.
+# 🎯 RÔLE
+#   Stocker la durée minimale pendant laquelle la VMC
+#   doit rester en haute vitesse après activation.
 #
-# 🧱 Principe :
-#   - Ce helper ne déclenche rien
-#   - Il ne commande pas la VMC
-#   - Il ne contient aucune logique
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Durée plancher VMC haute vitesse uniquement
+#   - Valeur exprimée en minutes
+#   - Paramètre consommé par la logique VMC
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-#   → Il fournit uniquement une valeur de durée plancher
-#     utilisée par la logique VMC.
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# ❌ Ne fait PAS :
-#   - minuterie autonome
-#   - anti-rebond direct
-#   - priorité de ventilation
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher directement une action
+#   - Commander directement la VMC
+#   - Implémenter une minuterie autonome
+#   - Implémenter un anti-rebond local
+#   - Définir une priorité de ventilation
+#   - Modifier automatiquement cette valeur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisation :
-#   - Consommé par :
-#       • automation : vmc/gestion_auto.yaml
-#   - Affiché dans :
-#       • dashboards diagnostics VMC
-#       • dashboards réglages VMC
-#
-# 🧠 Principe Arsenal :
-#   - Décision ≠ Paramétrage ≠ Action
-#   - Les durées sont explicites, réglables, traçables
-#
-# 📐 Unité :
-#   - Minutes
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 vmc_duree_min_haute:

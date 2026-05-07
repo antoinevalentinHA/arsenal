@@ -1,24 +1,40 @@
 # ==========================================================
-#  STATISTICS SENSORS — Withings : Fréquences cardiaque et respiratoire
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Santé — Moyennes glissantes fréquences physiologiques Withings
 # ----------------------------------------------------------
-#  🧠 Rôle :
-#     Calculer les moyennes mobiles des fréquences physiologiques
-#     mesurées par les capteurs Withings fiabilisés localement.
+# 🎯 RÔLE
+#   Exposer des moyennes glissantes sur 7, 14 et 30 jours
+#   des fréquences cardiaque et respiratoire Withings
+#   fiabilisées localement.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Calcule les moyennes sur des fenêtres de 7, 14 et 30 jours.
-#     - Permet d’analyser les tendances de récupération et de stress.
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  🧩 Entrées surveillées :
-#     - sensor.withings_average_heart_rate_local
-#     - sensor.withings_average_respiratory_rate_local
+# 🔖 NATURE
+#   moyenne_glissante | tendance | reference_statistique
 #
-#  📊 Objectif :
-#     - Suivre l’évolution du rythme cardiaque et respiratoire
-#     - Détecter les dérives physiologiques sur la durée
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   sampling_size        : 1000 / 2000 / 4000
+#   max_age              : 7 j / 14 j / 30 j — fenêtres
+#                          glissantes destinées à suivre les
+#                          tendances physiologiques
+#   precision            : omis
 #
-#  ✅ Périodes : 7 j / 14 j / 30 j
-#  ✅ Échantillons : 1000 / 2000 / 4000
+# 🔗 DÉPENDANCES
+#   Lit : sensor.withings_average_heart_rate_local
+#         sensor.withings_average_respiratory_rate_local
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Tendance — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

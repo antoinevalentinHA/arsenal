@@ -1,18 +1,41 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPERS
-#     Temperature jardin — Stabilisation
-# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Température jardin — Stabilisation
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les paramètres et états persistants nécessaires
+#   au pipeline de stabilisation de température jardin.
 #
-# STRUCTURE
-#   A. Parametres
-#   B. Memoire filtre
-#   C. Qualification (hors fichier)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètres EWMA et mémoire filtre uniquement
+#   - Valeurs exprimées en °C ou coefficients normalisés
+#   - Paramètres consommés par la chaîne de stabilisation
+#   - États persistants de continuité filtre
+#   - Aucun calcul local
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚠️ CRITIQUE
+# 🏷️ NATURE
+#   Paramètres techniques | Mémoire filtre | Registres persistants
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et calcul
+#   - Implémenter localement une logique EWMA
+#   - Modifier manuellement les états persistants filtre
+#   - Utiliser ces helpers comme mesures météo réelles
+#   - Déclencher directement une automatisation
+#   - Ajouter localement une logique de qualification
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# ⚠️ ENTITÉ CRITIQUE
 #   temperature_jardin_etat_publie :
-#     - S(t-1) EWMA
-#     - memoire continuite
-#     - verite facade
+#   - mémoire S(t-1)
+#   - continuité filtre EWMA
+#   - vérité façade aval
+#
+# 🏷️ STATUT
+#   Couche stabilisation météo — Arsenal v14.x
 # ==========================================================
 
 
@@ -64,10 +87,3 @@ temperature_jardin_cible_brute_derniere:
   mode: box
   icon: mdi:thermometer-lines
   initial: -20
-
-
-# ==========================================================
-# C. QUALIFICATION (hors fichier)
-# ==========================================================
-# - input_boolean.temperature_jardin_initialise
-# - input_datetime.temperature_jardin_etat_publie_ts

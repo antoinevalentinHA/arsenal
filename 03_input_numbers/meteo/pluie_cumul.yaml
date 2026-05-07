@@ -1,25 +1,34 @@
 # ==========================================================
 # 🧠 ARSENAL — INPUT_NUMBER
-#     Meteo — Pluie — Stores cumulatif & delta journalier
+#     Météo — Pluie — Registres persistants
 # ----------------------------------------------------------
-# 🎯 ROLE
-#     Fournir les helpers persistants necessaires a la
-#     construction d'un totalisateur cumulatif de pluie (mm).
+# 🎯 RÔLE
+#   Stocker les valeurs persistantes nécessaires au suivi
+#   cumulatif des précipitations locales.
 #
-# 🧩 PERIMETRE
-#     - Stockage persistant du total cumulatif (mm)
-#     - Memorisation de la derniere valeur "aujourd'hui" traitee
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Valeurs cumulatives et snapshots techniques uniquement
+#   - Valeurs exprimées en millimètres
+#   - Paramètres consommés par la chaîne de totalisation pluie
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🔗 DEPENDANCES
-#     - Consomme par : automation "Pluie – Totalisateur cumulatif"
-#     - Expose par : sensor.pluie_total_local
+# 🏷️ NATURE
+#   Registre technique | Mémoire persistante
 #
-# 🚫 NE FAIT PAS
-#     - Ne calcule aucune pluie
-#     - Ne derive aucun indicateur temporel (semaine/mois)
+# 🚫 INTERDITS
+#   - Confondre stockage et calcul
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme capteurs météo réels
+#   - Calculer localement des statistiques temporelles
+#   - Déclencher directement une automatisation
+#   - Modifier manuellement ces valeurs hors maintenance
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🧠 STATUT ARCHITECTURAL
-#     - Stockage (memoire persistante), sans logique metier
+# 🏷️ STATUT
+#   Couche stockage météo — Arsenal v14.x
 # ==========================================================
 
 pluie_total_local_store:

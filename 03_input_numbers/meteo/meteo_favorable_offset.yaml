@@ -1,17 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPER
-#     meteo_favorable_offset
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Offset favorable
 # ----------------------------------------------------------
-# 🎯 ROLE
-#   Definir la marge (en °C) utilisee pour qualifier
-#   une meteo favorable a court terme par rapport a la
-#   consigne confort chauffage.
+# 🎯 RÔLE
+#   Stocker la marge thermique utilisée pour qualifier une
+#   météo favorable à court terme par rapport à la consigne
+#   confort chauffage.
 #
-# 🧱 NATURE
-#   Helper input_number
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre météo transversal uniquement
+#   - Valeur exprimée en °C
+#   - Paramètre consommé par les capteurs et logiques météo
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📌 STATUT
-#   Socle transversal meteo
+# 🏷️ NATURE
+#   Paramètre métier | Paramètre transversal
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme consigne chauffage
+#   - Déclencher directement une action chauffage
+#   - Ajouter localement une logique de prévision météo
+#   - Modifier automatiquement cette valeur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle transversal météo — Arsenal v14.x
 # ==========================================================
 
 meteo_favorable_offset:

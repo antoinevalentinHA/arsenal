@@ -1,15 +1,35 @@
 # ==========================================================
 # 🧠 ARSENAL — COUNTER
-#     Clim — Compteur de retry exécution
+#     Climatisation — Retries d'exécution
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Compter les échecs consécutifs de l'exécution clim.
+#   Comptabiliser les échecs consécutifs d'exécution de la
+#   climatisation afin de piloter la stratégie de reprise.
 #
-# 🧱 PRINCIPE
-#   - 0 = aucun échec en cours
-#   - 1 = premier échec constaté (reprise à +30 s)
-#   - 2 = deuxième échec constaté (reprise à +90 s)
-#   - 3 = échec persistant, notification et arrêt
+# 🧩 PÉRIMÈTRE
+#   - Accumulateur de comptage persistant uniquement
+#   - Comptage des retries techniques d'exécution
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune interprétation causale implicite
+#
+# 🔖 NATURE
+#   Compteur de retries | Accumulateur de diagnostic
+#
+# 📋 PARAMÈTRES
+#   initial : 0
+#   step    : 1
+#   restore : false — comportement par défaut Home Assistant
+#
+# 🚫 INTERDITS
+#   - Confondre comptage et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Incrémenter sans traçabilité vers l'auteur
+#   - Remettre à zéro sans justification explicite
+#   - Déduire une causalité sans analyse externe
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 clim_execution_retry_count:

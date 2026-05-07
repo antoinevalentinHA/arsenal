@@ -1,40 +1,35 @@
 # ==========================================================
-# 🎨 ARSENAL — HELPER UI : Zone verte humidité absolue
+# 🧠 ARSENAL — INPUT_NUMBER
+#     UI — Humidité absolue — Zone verte visuelle
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir la demi-largeur de la zone de confort VISUELLE
-#   utilisée pour colorer les capteurs d’humidité absolue
-#   dans les dashboards et vues diagnostics.
+# 🎯 RÔLE
+#   Stocker la demi-largeur de la zone de confort VISUELLE
+#   utilisée pour la coloration des dashboards d'humidité
+#   absolue.
 #
-# 🧠 Principe :
-#   - Chaque zone possède ses seuils métier :
-#       • seuil_bas  (g/m³)
-#       • seuil_haut (g/m³)
-#   - Le centre de confort est calculé localement :
-#       centre = (seuil_bas + seuil_haut) / 2
-#   - Ce helper définit la tolérance graphique :
-#       zone verte = centre ± humidite_absolue_couleur_zone_verte
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre graphique global uniquement
+#   - Valeur exprimée en g/m³
+#   - Paramètre consommé par les capteurs de couleur UI
+#   - Aucun calcul métier
+#   - Aucune logique décisionnelle
+#   - Aucun comportement autonome
 #
-# ⚠️ Important :
-#   - Ce helper est STRICTEMENT VISUEL.
-#   - Il n’influence aucun seuil métier.
-#   - Il ne pilote aucune automatisation.
-#   - Il n’intervient dans aucune décision.
+# 🏷️ NATURE
+#   Paramètre UI | Paramètre visuel
 #
-# 🎨 Interprétation visuelle :
-#   - Bleu / light_blue  → air trop sec
-#   - Vert               → zone idéale
-#   - Jaune              → air chargé
-#   - Rouge              → excès d’humidité
+# 🚫 INTERDITS
+#   - Confondre UI et logique métier
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme seuil hygrométrique métier
+#   - Piloter une automatisation à partir de cette valeur
+#   - Déclencher une action système
+#   - Modifier dynamiquement cette valeur selon l'état météo
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 📦 Portée :
-#   - Helper global
-#   - Utilisé par les capteurs de COULEUR
-#     dérivés de l’humidité absolue
-#
-# 📐 Unité :
-#   - grammes par mètre cube (g/m³)
-#
+# 🏷️ STATUT
+#   Couche UI — Arsenal v14.x
 # ==========================================================
 
 humidite_absolue_couleur_zone_verte:

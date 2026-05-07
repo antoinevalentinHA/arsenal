@@ -1,26 +1,26 @@
 # ==========================================================
-# 🧠 ARSENAL — CUSTOMIZE : Netatmo (diagnostic UI)
+# 🧠 ARSENAL — CUSTOMIZE
+#     Diagnostic réseau — Netatmo (WiFi / RF / reachability)
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Simplifier les libellés UI des entités Netatmo utilisées
-#    pour le diagnostic, l’observabilité et les dashboards.
+# 🎯 RÔLE
+#   Centraliser les métadonnées d'affichage des entités
+#   Netatmo de diagnostic et d'observabilité à destination
+#   des consommateurs UI du domaine diagnostic.
 #
-# 🧩 Périmètre :
-#    - scores UI WiFi
-#    - scores UI RF
-#    - reachability
-#    - binary sensors diagnostiques Netatmo
+# 🧩 PÉRIMÈTRE
+#   - Attributs de présentation uniquement (friendly_name, icon…)
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
 #
-# 📐 Principe :
-#    - friendly_name volontairement courts et lisibles
-#    - duplications assumées entre familles si cela améliore
-#      la lecture UI
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
 #
-# 🚫 Interdits :
-#    - aucune logique métier
-#    - aucune sémantique décisionnelle
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
-
 
 ############################################################
 # 📶 WIFI SCORE
@@ -40,7 +40,6 @@ sensor.wifi_score_komori:
 
 sensor.wifi_score_media:
   friendly_name: "Média"
-
 
 ############################################################
 # 📡 RF (RADIO) SCORE
@@ -72,7 +71,6 @@ sensor.netatmo_rf_score_petite_maison:
 
 sensor.rf_score_sejour:
   friendly_name: "Séjour"
-
 
 ############################################################
 # 🚨 DIAGNOSTICS SYNTHETIQUES

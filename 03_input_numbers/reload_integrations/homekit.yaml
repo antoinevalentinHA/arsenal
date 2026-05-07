@@ -1,38 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPER SYSTÈME : Compteur tentatives reload Homekit
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Système — Homekit — Compteur tentatives reload
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Comptabiliser le nombre de tentatives de rechargement
-#   de l’intégration Homekit
-#   afin de prévenir :
-#     - les boucles de reload
-#     - les comportements instables prolongés
+# 🎯 RÔLE
+#   Stocker le nombre de tentatives de rechargement de
+#   l'intégration Homekit.
 #
-# 🧠 Nature :
-#   - Compteur de SÉCURITÉ SYSTÈME
-#   - État interne de supervision
-#   - Non exposé comme information utilisateur
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Compteur technique de protection uniquement
+#   - Valeur entière de tentatives
+#   - Paramètre consommé par les automatisations système
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#   - Incrémenté à chaque tentative de reload Overkiz
-#   - Lu par l’automatisation de supervision dédiée
-#   - Comparé à un seuil maximal autorisé
-#   - Réinitialisé explicitement :
-#       • après un reload réussi
-#       • via un reset contrôlé
+# 🏷️ NATURE
+#   Registre technique | Garde-fou système
 #
-# ⚠️ Important :
-#   - Ce helper NE représente PAS l’état des volets
-#   - Il NE mesure PAS la disponibilité du cloud
-#   - Il sert UNIQUEMENT de garde-fou logique
+# 🚫 INTERDITS
+#   - Confondre stockage et supervision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme état des volets
+#   - Utiliser ce helper comme état du cloud Homekit
+#   - Déclencher directement un reload depuis ce helper
+#   - Implémenter localement une logique de retry
+#   - Réinitialiser implicitement ce compteur
+#   - Modifier manuellement cette valeur hors maintenance
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisé par :
-#   - Automatisations :
-#       • 11_automations/system/reload_integrations/homekit.yaml
-#
-# 📐 Unité :
-#   - Tentatives (compteur entier)
-#
+# 🏷️ STATUT
+#   Couche protection système — Arsenal v14.x
 # ==========================================================
 
 homekit_reload_tentatives:

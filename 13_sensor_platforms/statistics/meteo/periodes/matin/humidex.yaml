@@ -1,26 +1,47 @@
 # ==========================================================
-#  STATISTICS SENSORS — Moyennes mensuelles de l’Humidex (filtré sur la période du matin)
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Confort thermique — Moyenne 30j Humidex filtré matin
 # ----------------------------------------------------------
-#  🧠 Objectif :
-#     Calculer la **moyenne glissante sur 30 jours**
-#     de l’**Humidex mesuré le matin** (🌤️ période “filtre matin”),
-#     indicateur combinant **température** et **humidité relative**
-#     pour évaluer le **confort thermique perçu** au moment le plus frais de la journée.
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 30 jours de l'humidex
+#   filtré sur la plage matinale par zone, à destination
+#   des couches de diagnostic et d'analyse du confort
+#   thermique perçu en début de journée.
 #
-#  ⚙️ Composant : `platform: statistics`
-#     - Source : capteurs `sensor.humidex_filtre_matin_*`
-#     - Métrique : `mean` (moyenne)
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  📅 Fenêtre d’analyse :
-#     - Période glissante : 30 jours
-#     - Taille d’échantillon : 5 000 valeurs
+# 🔖 NATURE
+#   moyenne_glissante | reference_statistique | agregat_quantitatif
 #
-#  📊 Sortie :
-#     - Moyenne mensuelle de l’Humidex **du matin**
-#       (valeur indicative du confort thermique en début de journée)
+# 📋 PARAMÈTRES
+#   state_characteristic : mean (toutes zones)
+#   sampling_size        : 5000
+#                          justification : borne haute couvrant
+#                          la fenêtre de 30 j à fréquence
+#                          d'échantillonnage usuelle, avec
+#                          marge pour pics de publication
+#   max_age              : 30 j
+#                          justification : fenêtre mensuelle
+#                          permettant l'établissement d'une
+#                          référence saisonnière stable, lissant
+#                          les épisodes ponctuels et les cycles
+#                          hebdomadaires d'occupation
+#   precision            : omis (par défaut HA)
 #
-#  🏡 Zones couvertes :
-#     - Chambres, espaces de vie, bureaux, zones industrielles et extérieurs.
+# 🔗 DÉPENDANCES
+#   Lit : sensor.humidex_filtre_matin_*
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # ----------------------------------------------------------

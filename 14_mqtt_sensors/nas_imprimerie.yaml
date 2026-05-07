@@ -1,18 +1,49 @@
 # ==========================================================
-# ARSENAL — MQTT SENSOR
-# Domaine : monitoring_imprimerie
-# Entité  : NAS Imprimerie Raw
+# 🧠 ARSENAL — MQTT SENSOR
+#     Monitoring Imprimerie — NAS (source de vérité brute)
 # ----------------------------------------------------------
-# Role :
-#   Source de vérité brute issue du NAS imprimerie.
-#   Transporte le payload MQTT sans interprétation.
+# 🎯 RÔLE
+#   Exposer en transport passif le payload publié par le
+#   NAS imprimerie : projection scalaire du timestamp
+#   d'émission et exposition complète du JSON en attributs.
 #
-# Contrat :
-#   Topic : monitoring/imprimerie/nas/status
-#   Payload : JSON
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
 #
-# Invariant :
-#   state = last_emit_ts (epoch)
+# 🔖 NATURE
+#   source_verite_brute | transport_json
+#
+# 🆔 UNIQUE_ID
+#   nas_imprimerie_raw
+#
+# 📋 TRANSPORT
+#   state_topic          : monitoring/imprimerie/nas/status
+#   namespace            : monitoring/imprimerie/nas/...
+#   json_attributes      : oui
+#   json_attributes_topic: monitoring/imprimerie/nas/status
+#   structure JSON       : { "last_emit_ts": <epoch>, ... }
+#                          champ extrait pour state : last_emit_ts
+#                          autres champs : exposés en attributs
+#   transformations      : projection scalaire de last_emit_ts
+#                          via value_template
+#   force_update         : true
+#   invariant            : state = last_emit_ts (epoch)
+#
+# 🔗 DÉPENDANCES
+#   Lit : NAS imprimerie via broker MQTT
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système (stale, dégradé, etc.)
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 
 - name: NAS Imprimerie Raw

@@ -1,39 +1,37 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT NUMBERS : ECS — Epsilon thermiques
+# 🧠 ARSENAL — INPUT_NUMBER
+#     ECS — Epsilons thermiques
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir les marges de tolérance thermiques (ε)
-#   utilisées lors de la prise de décision de FIN
-#   de cycle ECS.
+# 🎯 RÔLE
+#   Stocker les marges de tolérance thermiques utilisées
+#   par la logique de fin de cycle ECS.
 #
-# 🧱 Principe :
-#   - L’epsilon représente une zone morte décisionnelle
-#   - Il permet d’absorber les fluctuations physiques
-#     (inertie, oscillations, bruit capteur)
-#   - Il évite les micro-cycles et relances inutiles
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Marges epsilon thermiques uniquement
+#   - Tolérances de décision ECS uniquement
+#   - Contextes ponctuel et désinfection uniquement
+#   - Paramètres consommés par la logique de cycle ECS
+#   - Valeurs exprimées en degrés Celsius
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📌 Contextes distincts :
-#   - ecs_eps_ponctuel :
-#       • cycles ECS normaux / ponctuels
-#   - ecs_eps_desinfection :
-#       • cycles de désinfection
-#       • tolérance plus stricte et contrôlée
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# ⚠️ Important :
-#   - Ce ne sont PAS des consignes
-#   - Ce ne sont PAS des offsets permanents
-#   - Ces valeurs ne vivent QUE dans la logique de cycle ECS
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces helpers comme consignes thermiques
+#   - Utiliser ces helpers comme offsets permanents
+#   - Déclencher directement une action ECS
+#   - Modifier automatiquement ces valeurs
+#   - Implémenter localement une logique de fin de cycle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🔗 Utilisation :
-#   - Script :
-#       • chauffage_ecs_cycle
-#
-# 🧠 Principe Arsenal :
-#   - La physique fluctue
-#   - La décision s’adapte
-#
-# 📐 Unité :
-#   - degrés Celsius (°C)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 ecs_eps_ponctuel:

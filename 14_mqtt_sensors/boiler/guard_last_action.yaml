@@ -1,21 +1,44 @@
 # ==========================================================
-# ARSENAL — MQTT SENSOR
-# Boiler Guard — Last Action
+# 🧠 ARSENAL — MQTT SENSOR
+#     Boiler / Guard — Dernière action corrective
 # ----------------------------------------------------------
-# Role :
-#   Exposer la derniere action corrective du guard.
+# 🎯 RÔLE
+#   Exposer en transport passif la dernière action corrective
+#   publiée par le guard chaudière.
 #
-# Source :
-#   - Topic : boiler/guard/last_action
-#   - Valeurs attendues :
-#       - none
-#       - restart_service
-#       - restart_network
-#       - reboot
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
 #
-# Contrat :
-#   - aucune transformation
-#   - lecture brute MQTT uniquement
+# 🔖 NATURE
+#   etat_brut_externe
+#
+# 🆔 UNIQUE_ID
+#   boiler_guard_last_action
+#
+# 📋 TRANSPORT
+#   state_topic          : boiler/guard/last_action
+#   namespace            : boiler/guard/...
+#   qos                  : 1
+#   json_attributes      : non
+#   structure JSON       : sans objet (état textuel scalaire)
+#   valeurs attendues    : none | restart_service |
+#                          restart_network | reboot
+#
+# 🔗 DÉPENDANCES
+#   Lit : guard chaudière via broker MQTT
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 
 - name: "boiler_guard_last_action"

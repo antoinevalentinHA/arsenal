@@ -1,43 +1,36 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Durée min cycle simulation présence
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Durée min cycle simulation présence
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir la durée MINIMALE autorisée pour un cycle
-#    d’éclairage dans le cadre de la simulation de présence.
+# 🎯 RÔLE
+#   Stocker la durée minimale autorisée pour un cycle
+#   d'éclairage de simulation de présence.
 #
-# 🧩 Principe :
-#    - La simulation de présence repose sur des cycles
-#      pseudo-aléatoires pour imiter une activité humaine.
-#    - Ce paramètre fixe une borne BASSE stricte afin
-#      d’éviter des cycles trop courts, irréalistes ou
-#      mécaniquement suspects.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Borne basse de cycle simulation uniquement
+#   - Valeur exprimée en minutes
+#   - Paramètre consommé par les binary_sensors décisionnels
+#   - Paramètre de réalisme comportemental uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Valeur exprimée en minutes
-#    - Utilisée comme limite inférieure dans les
-#      binary_sensors de décision de cycle
-#    - Combinée avec la durée MAX pour former
-#      l’intervalle autorisé [MIN ; MAX]
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Binary sensors :
-#        • eclairage/simulation_chambre_parents.yaml
-#        • eclairage/simulation_garage.yaml
-#    - Dashboards :
-#        • réglages éclairage
-#        • diagnostics simulation présence
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme durée maximale
+#   - Utiliser ce helper comme délai d'absence
+#   - Déclencher directement un cycle d'éclairage
+#   - Implémenter localement une logique pseudo-aléatoire
+#   - Modifier automatiquement cette valeur
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Ne pas confondre avec :
-#    - Durée MAX d’un cycle
-#    - Délais d’absence
-#    - Durées fixes d’éclairage
-#
-# 📐 Unité :
-#    - minutes (borne basse d’un cycle)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Paramètre de réalisme comportemental
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 duree_min_cycle_simulation_presence:

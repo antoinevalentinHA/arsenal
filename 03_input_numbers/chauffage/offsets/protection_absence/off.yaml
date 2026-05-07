@@ -1,17 +1,31 @@
 # ==========================================================
 # 🧠 ARSENAL — INPUT_NUMBER
-#     Inhibition géofencing — Offset OFF
+#     Chauffage — Inhibition géofencing — Offset OFF
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Seuil haut de levée de l’inhibition geofencing.
-#   Levée si ecart_consigne_confort > -offset_off
-#   (écart = température - consigne_confort).
+# 🎯 RÔLE
+#   Stocker le seuil haut utilisé pour la levée de
+#   l'inhibition géofencing chauffage.
 #
-# 📌 Interprétation :
-#   offset_off = 0.3 → OFF si température > consigne - 0.3
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre seuil consommé par le moteur chauffage
+#   - Offset thermique de sortie d'inhibition uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🔒 Invariant :
-#   offset_on STRICTEMENT > offset_off
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Implémenter l'invariant offset_on > offset_off ici
+#   - Utiliser cette valeur comme température absolue
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 inhibition_geofencing_offset_off:

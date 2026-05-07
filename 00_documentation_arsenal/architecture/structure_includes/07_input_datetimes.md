@@ -105,18 +105,27 @@ Le type réel doit être explicité dans l’en-tête du fichier.
 #   par le système Arsenal.
 #
 # 🧩 PÉRIMÈTRE
-#   Nature de la référence temporelle :
-#   - Horodatage de référence
-#   - Repère de pipeline
-#   - Fenêtre horaire
-#   - Timestamp transactionnel
+#   - Mémoire temporelle persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📡 SOURCES
-#   - Automatisations, scripts ou templates externes
+# 🔖 NATURE
+#   <Horodatage de référence | Mémoire événementielle
+#    | Repère de pipeline | Borne de planification
+#    | Fenêtre horaire | Référence transactionnelle
+#    | Mémoire de fraîcheur | Timestamp de diagnostic>
+#
+# 📋 MODE
+#   has_date: <true|false> — has_time: <true|false>
 #
 # 🚫 INTERDITS
-#   - Introduire une logique métier locale
-#   - Déclencher directement une action
 #   - Confondre mémoire temporelle et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Utiliser comme déclencheur direct sans justification explicite
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 ```

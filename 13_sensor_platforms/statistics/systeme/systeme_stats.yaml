@@ -1,18 +1,41 @@
 # ==========================================================
-# 🧠 ARSENAL — CAPTEURS SYSTEME (STATISTICS)
-#     CPU & Mémoire — Référence 7 j / Lissage 10 min
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Système — Références CPU et mémoire Home Assistant
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Générer les signaux statistiques servant de base à la "météo système".
+#   Exposer les références statistiques CPU et mémoire servant
+#   de base à l'analyse de la météo système.
 #
-# 🧱 EMPLACEMENT
-#   13_sensor_platforms/
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-# 🔗 SOURCES
-#   - sensor.home_assistant_supervisor_memory_percent
-#   - sensor.home_assistant_supervisor_cpu_percent
-#   - sensor.home_assistant_core_memory_percent
-#   - sensor.home_assistant_core_cpu_percent
+# 🔖 NATURE
+#   mediane_glissante | moyenne_glissante | reference_statistique | lissage
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : median / mean
+#   sampling_size        : 10000
+#   max_age              : 7 j / 10 min — référence médiane
+#                          hebdomadaire et lissage court terme
+#                          des variations système
+#   precision            : omis
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.home_assistant_supervisor_memory_percent
+#         sensor.home_assistant_supervisor_cpu_percent
+#         sensor.home_assistant_core_memory_percent
+#         sensor.home_assistant_core_cpu_percent
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 # -----------------------------

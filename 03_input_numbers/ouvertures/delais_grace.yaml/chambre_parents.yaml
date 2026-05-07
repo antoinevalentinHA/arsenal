@@ -1,52 +1,36 @@
 # ==========================================================
-# 🪟 ARSENAL — HELPER MÉTIER : Délai d’ouverture fenêtre
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Ouvertures — Chambre parents — Délai qualification
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir un délai de grâce avant qualification
-#   d’une ouverture de fenêtre dans une pièce
-#   à inertie / grâce thermique.
+# 🎯 RÔLE
+#   Stocker le délai de grâce appliqué avant qualification
+#   d'une ouverture fenêtre persistante dans la chambre
+#   parents.
 #
-# 🧠 Contexte métier :
-#   - Certaines pièces (ex : chambre parents)
-#     ne doivent pas déclencher immédiatement
-#     une réaction thermique (chauffage / aération).
-#   - Ce délai permet d’absorber les ouvertures
-#     brèves (aération rapide, manipulation).
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre temporel métier uniquement
+#   - Valeur exprimée en secondes
+#   - Paramètre consommé par les scripts de qualification
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Principe :
-#   - Le capteur détecte l’ouverture.
-#   - Le script applique un délai configurable.
-#   - Si l’ouverture persiste au-delà :
-#       → elle est qualifiée comme réelle.
+# 🏷️ NATURE
+#   Paramètre métier | Paramètre temporel
 #
-# 🎯 Objectifs :
-#   - Supprimer toute constante temporelle en dur.
-#   - Permettre un réglage fin par pièce.
-#   - Différencier les logiques :
-#       • parents : délai
-#       • enfants : immédiat
+# 🚫 INTERDITS
+#   - Confondre stockage et qualification
+#   - Interpréter implicitement la valeur stockée
+#   - Déclencher directement une action chauffage
+#   - Déclencher directement une action aération
+#   - Utiliser ce helper comme temporisation générique
+#   - Implémenter localement une logique d'ouverture persistante
+#   - Modifier automatiquement cette valeur selon le contexte
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# ⚠️ Important :
-#   - Ce helper est un PARAMÈTRE MÉTIER.
-#   - Il impacte directement les décisions
-#     chauffage / aération.
-#   - Il ne sert pas à l’affichage.
-#
-# 🔗 Utilisé par :
-#   - Scripts :
-#       • 10_scripts/ouvertures/chambre_parents.yaml
-#   - Dashboards :
-#       • lovelace/dashboards/reglages/ouvertures.yaml
-#
-# 📐 Unité :
-#   - Secondes (s)
-#
-# 🧠 Principe Arsenal :
-#   - Les capteurs DÉTECTENT.
-#   - Le helper PARAMÈTRE le délai.
-#   - Le script QUALIFIE l’ouverture.
-#   - Le système DÉCIDE.
-#
+# 🏷️ STATUT
+#   Socle ouvertures / inertie thermique — Arsenal v14.x
 # ==========================================================
 
 delai_ouverture_chambre_parents:

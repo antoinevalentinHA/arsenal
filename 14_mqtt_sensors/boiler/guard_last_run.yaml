@@ -1,20 +1,47 @@
 # ==========================================================
-# ARSENAL — MQTT SENSOR
-# Boiler Guard — Last Run
+# 🧠 ARSENAL — MQTT SENSOR
+#     Boiler / Guard — Dernier cycle (timestamp)
 # ----------------------------------------------------------
-# Role :
-#   Exposer le timestamp du dernier cycle du guard.
+# 🎯 RÔLE
+#   Exposer en transport passif le timestamp du dernier
+#   cycle du guard chaudière, référence pour le calcul
+#   de fraîcheur (stale) dans les couches supérieures.
 #
-# Source :
-#   - Topic : boiler/guard/last_run
-#   - Format : ISO8601 UTC (ex: 2026-04-08T10:39:20Z)
+# 🧩 PÉRIMÈTRE
+#   - Transport passif de données MQTT uniquement
+#   - Transformation locale minimale uniquement
+#   - Aucune logique métier
+#   - Aucune qualification d'état système
 #
-# Contrat :
-#   - aucune transformation
-#   - utilise directement le timestamp publie par le guard
+# 🔖 NATURE
+#   heartbeat_technique
 #
-# Remarque :
-#   Ce capteur est la reference pour le calcul de stale.
+# 🆔 UNIQUE_ID
+#   boiler_guard_last_run
+#
+# 📋 TRANSPORT
+#   state_topic          : boiler/guard/last_run
+#   namespace            : boiler/guard/...
+#   qos                  : 1
+#   json_attributes      : non
+#   structure JSON       : sans objet
+#   format               : ISO8601 UTC
+#                          (ex. 2026-04-08T10:39:20Z)
+#   device_class         : timestamp
+#
+# 🔗 DÉPENDANCES
+#   Lit : guard chaudière via broker MQTT
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Qualifier un état système (la qualification stale
+#     appartient à la couche template)
+#   - Constituer une autorité décisionnelle
+#   - Remplacer une couche template dédiée
+#   - Laisser une structure JSON non documentée
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 
 - name: "boiler_guard_last_run"

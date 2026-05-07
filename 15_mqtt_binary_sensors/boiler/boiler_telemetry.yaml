@@ -1,27 +1,44 @@
 # ==========================================================
-# 🧠 ARSENAL — MQTT BINARY SENSORS (BOILER / TELEMETRY)
+# 🧠 ARSENAL — MQTT BINARY_SENSOR
+#     Boiler / Telemetry — Activité brûleur
 # ----------------------------------------------------------
-# 📌 Fichier
-#   15_mqtt_binary_sensors/boiler/boiler_telemetry.yaml
+# 🎯 RÔLE
+#   Exposer en transport passif l'état booléen d'activité
+#   du brûleur publié par le bridge chaudière.
 #
-# 🎯 ROLE
-#   Exposer les états binaires de la télémétrie chaudière
-#   (ex. activité brûleur).
+# 🧩 PÉRIMÈTRE
+#   - Projection booléenne de transport passif uniquement
+#   - Mapping direct topic → état
+#   - Aucune transformation locale
+#   - Aucune logique métier
 #
-# 🧱 PRINCIPE
-#   - Mapping direct des topics MQTT télémétrie vers des
-#     binary_sensors Home Assistant
-#   - Payloads booléens publiés par le bridge chaudière
-#   - Aucune transformation ni logique métier
+# 🔖 NATURE
+#   telemetrie_booleenne | etat_technique_externe
 #
-# 📥 SOURCE
-#   Namespace contrat : boiler/telemetry/...
-#   Référence : 03_namespace_canonique.md §3.2
+# 🆔 UNIQUE_ID
+#   boiler_burner_on
 #
-# ⚠️ IMPORTANT
-#   - Couche strictement observation
-#   - Aucun calcul ni interprétation métier
-#   - Les automatisations consomment ces états
+# 📋 TRANSPORT
+#   state_topic  : boiler/telemetry/burner/state
+#   namespace    : boiler/telemetry/...
+#   payload_on   : on
+#   payload_off  : off
+#   device_class : running
+#
+# 🔗 DÉPENDANCES
+#   Lit : bridge chaudière via broker MQTT
+#   Réf : 03_namespace_canonique.md §3.2
+#
+# 🚫 INTERDITS
+#   - Introduire un template Jinja
+#   - Introduire une logique métier
+#   - Recalculer ou dériver un état localement
+#   - Constituer une autorité décisionnelle
+#   - Remplacer un diagnostic Arsenal dédié
+#   - Laisser payload_on / payload_off implicites
+#
+# 🏷️ STATUT
+#   Transport — Arsenal v14.x
 # ==========================================================
 
 - name: "Boiler burner on"

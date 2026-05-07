@@ -1,40 +1,34 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Durée éclairage jardin (soir)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Éclairage — Jardin — Durée éclairage soir
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir la durée maximale pendant laquelle
-#    l’éclairage extérieur du jardin reste allumé
-#    le soir, après son allumage automatique.
+# 🎯 RÔLE
+#   Stocker la durée maximale d'éclairage extérieur jardin
+#   le soir après allumage automatique effectif.
 #
-# 🧩 Principe :
-#    - Le chronomètre démarre à l’ALLUMAGE effectif
-#      de l’éclairage du jardin
-#    - L’extinction est autorisée uniquement après
-#      écoulement complet de cette durée
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètre temporel éclairage jardin soir uniquement
+#   - Durée post-allumage exprimée en minutes
+#   - Paramètre consommé par le binary_sensor d'extinction
+#     automatique autorisée
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# ⚙️ Fonctionnement :
-#    - Valeur exprimée en minutes
-#    - Convertie en secondes dans les capteurs décisionnels
-#    - Sert de référence pour l’extinction automatique
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔍 Utilisation :
-#    - Binary sensor :
-#        • eclairage/jardin_extinction_soir_autorisee.yaml
-#    - Dashboards :
-#        • réglages éclairage
-#        • diagnostics éclairage
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ce helper comme horaire astronomique
+#   - Confondre cette durée avec un délai d'absence
+#   - Déclencher directement une extinction
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Ne pas confondre avec :
-#    - Délais d’absence
-#    - Horaires astronomiques
-#    - Scènes manuelles d’éclairage
-#
-# 📐 Unité :
-#    - minutes (durée post-allumage)
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - Paramètre éclairage jardin (soir)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 duree_lumiere_jardin_soir:

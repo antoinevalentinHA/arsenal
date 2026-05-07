@@ -1,3 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Thermique — Stabilité 12h chambre Matthieu
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la moyenne et la variance glissantes sur 12 h
+#   de la température de la chambre Matthieu, à destination
+#   des couches de diagnostic et d'analyse de stabilité
+#   thermique.
+#
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   moyenne_glissante | agregat_quantitatif
+#
+# 📋 PARAMÈTRES
+#   state_characteristic :
+#     - mean     (temperature_stats_12h_mean_chambre_matthieu)
+#     - variance (temperature_stats_12h_variance_chambre_matthieu)
+#   sampling_size        : omis (par défaut HA)
+#   max_age              : 12 h
+#                          justification : fenêtre représentative
+#                          d'un demi-cycle jour/nuit pour
+#                          caractériser la stabilité thermique
+#                          sans lissage excessif
+#   precision            : omis (par défaut HA)
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.temperature_chambre_matthieu
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Statistique — Arsenal v14.x
+# ==========================================================
+
 - platform: statistics
   name: temperature_stats_12h_mean_chambre_matthieu
   entity_id: sensor.temperature_chambre_matthieu

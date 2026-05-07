@@ -1,16 +1,38 @@
 # ==========================================================
-#  Arsenal — STATISTICS : Uptime — Référence 7 j
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Système — Référence uptime médiane 7 j
 # ----------------------------------------------------------
-#  Rôle :
-#    Fournir la référence statistique backend utilisée par la
-#    météo uptime Arsenal.
+# 🎯 RÔLE
+#   Exposer la référence statistique utilisée par la météo
+#   uptime Arsenal.
 #
-#  Principe :
-#    - source : sensor.uptime_jours
-#    - référence : médiane glissante 7 jours
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  Sortie attendue :
-#    - sensor.uptime_mediane_7_j
+# 🔖 NATURE
+#   mediane_glissante | reference_statistique
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : median
+#   sampling_size        : 10000
+#   max_age              : 7 j — référence glissante destinée
+#                          à lisser les variations de durée
+#                          de fonctionnement
+#   precision            : omis
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.uptime_jours
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser une fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Référence — Arsenal v14.x
 # ==========================================================
 
 - platform: statistics

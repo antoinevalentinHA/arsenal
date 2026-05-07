@@ -1,42 +1,35 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBER : Courbe de chauffe (consignes)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Chauffage — Courbe de chauffe — Consignes
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Définir les VALEURS DE CONSIGNE de la courbe de chauffe
-#   utilisées par le système chauffage :
-#     - Pente de la courbe
-#     - Parallèle (décalage vertical)
+# 🎯 RÔLE
+#   Stocker les valeurs de consigne de la courbe de chauffe
+#   utilisées par le domaine chauffage.
 #
-# 🧱 Nature :
-#   - Paramètres structurels de la courbe
-#   - Aucune action directe sur le chauffage
-#   - Aucune logique décisionnelle
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètres structurels de courbe de chauffe
+#   - Pente et parallèle uniquement
+#   - Valeurs compatibles contraintes chaudière Viessmann
+#   - Paramètres consommés par les couches décisionnelles
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🧠 Principe Arsenal :
-#   - Les capteurs analysent
-#   - Les capteurs suggèrent
-#   - Les input_number figent la consigne retenue
-#   - Les automatisations décident de l'application
-#   - Les scripts exécutifs appliquent via le bridge
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# ⚙️ Contraintes physiques chaudière (Viessmann) :
-#   - Pente :
-#       min  = 0.2
-#       max  = 3.5
-#       step = 0.1
-#   - Parallèle :
-#       min  = -13
-#       max  = 40
-#       step = 1
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Considérer une modification comme une application directe
+#   - Piloter directement la chaudière depuis ces helpers
+#   - Dépasser les contraintes physiques Viessmann
+#   - Implémenter une logique décisionnelle locale
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# ⚠️ Règles fondamentales :
-#   - Modifier une consigne ≠ appliquer
-#   - Toute application passe par une couche d'exécution
-#   - Les valeurs doivent respecter bornes et granularité
-#
-# 📐 Unités :
-#   - Pente       : sans unité
-#   - Parallèle   : °C
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 chauffage_pente_consigne:

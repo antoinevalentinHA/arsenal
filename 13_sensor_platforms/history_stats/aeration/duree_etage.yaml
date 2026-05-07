@@ -1,29 +1,43 @@
 # ==========================================================
-#  HISTORY STATS SENSOR — Temps d’aération à l’étage
+# 🧠 ARSENAL — HISTORY_STATS SENSOR
+#     Aération — Durée cumulée d'ouverture étage
 # ----------------------------------------------------------
-#  🧠 Rôle :
-#     Calcule la durée totale pendant laquelle
-#     la fenêtre de l’étage est restée ouverte 
-#     depuis minuit (sur la journée en cours).
+# 🎯 RÔLE
+#   Calculer la durée cumulée pendant laquelle la fenêtre
+#   de l'étage est restée ouverte depuis minuit, à
+#   destination des consommateurs UI et des couches de
+#   diagnostic aération.
 #
-#  ⚙️ Composant : `platform: history_stats`
-#     - Analyse les historiques de Home Assistant.
-#     - Permet de calculer :
-#         • le temps passé dans un état donné (type: time)
-#         • le nombre de changements d’état (type: count)
-#         • ou la dernière durée depuis le dernier changement (type: ratio)
+# 🧩 PÉRIMÈTRE
+#   - Métrique historique via recorder uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
 #
-#  🧩 Entrée :
-#     - `binary_sensor.fenetre_ouverte_etage`
-#       → Capteur d’ouverture de fenêtre pour tout l’étage.
+# 🔖 NATURE
+#   duree_cumulee
 #
-#  📅 Fenêtre d’analyse :
-#     - Du début de la journée (00:00:00) jusqu’à l’instant présent.
+# 📋 PARAMÈTRES
+#   entity_id : binary_sensor.fenetre_ouverte_etage
+#   state     : on
+#   type      : time
+#   fenêtre   : start = now().replace(hour=0, minute=0, second=0)
+#               end   = now()
+#               justification : agrégat journalier glissant
+#               aligné sur l'horloge civile locale
 #
-#  📊 Sortie :
-#     - Valeur en heures (durée totale d’ouverture cumulée)
+# 🔗 DÉPENDANCES
+#   Lit      : binary_sensor.fenetre_ouverte_etage
+#   Recorder : requis — rétention minimale 24 h
 #
-#  ✅ Mise à jour automatique à chaque changement d’état
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Utiliser un historique incomplet sans justification
+#   - Confondre mesure historique et état temps réel
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Laisser la fenêtre temporelle sans justification
+#
+# 🏷️ STATUT
+#   Durée — Arsenal v14.x
 # ==========================================================
 
 - platform: history_stats

@@ -1,39 +1,31 @@
 # ==========================================================
-# 🧠 ARSENAL — GROUP : Cumulus Petite Maison
+# 🧠 ARSENAL — GROUP
+#     ECS — Cumulus Petite Maison
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Regrouper l’ensemble des entités liées au chauffe-eau
-#    (cumulus) de la petite maison afin de fournir une source
-#    cohérente et centralisée pour l’observation, le diagnostic
-#    et les contrôles système.
+# 🎯 RÔLE
+#   Regrouper l'ensemble cohérent des entités liées au
+#   cumulus de la Petite Maison sous une référence statique
+#   unique.
 #
-# 🧠 Lecture métier :
-#    Ce groupe représente un SOUS-SYSTÈME ECS complet :
-#    états, paramètres, mesures et actionneur.
-#    Il ne décide rien par lui-même, mais sert de base
-#    à des capteurs système de fiabilité.
+# 🧩 PÉRIMÈTRE
+#   - Agrégation statique uniquement
+#   - États, paramètres, mesures et actionneur ECS uniquement
+#   - Sous-système ECS secondaire complet
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
-# 🧩 Périmètre :
-#    - États de fonctionnement (binary_sensor)
-#    - Paramètres et consignes (number)
-#    - Mesures physiques et énergétiques (sensor)
-#    - Actionneur ECS (water_heater)
+# 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Déclencher une action directement depuis ce groupe
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Ajouter des entités non liées au cumulus
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
 #
-# 🔗 Dépendances :
-#    - Intégration du cumulus petite maison
-#    - Utilisé par :
-#      • capteurs système de contrôle de fraîcheur des données
-#      • templates d’audit ECS (âge des données)
-#      • dashboards ECS (lecture et supervision)
-#
-# 🚫 Interdits :
-#    - Prendre une décision métier directement via ce groupe
-#    - Déclencher une action à partir du groupe lui-même
-#    - Mélanger des entités non liées au cumulus
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - socle système / ECS secondaire
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 petite_maison_cumulus:

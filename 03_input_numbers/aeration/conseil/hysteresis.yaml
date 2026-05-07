@@ -1,34 +1,33 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Hystérésis aération (UI)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Hystérésis déclaratives UI
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Déclarer des valeurs d’hystérésis destinées à encadrer
-#    l’arrêt de la recommandation d’aération, à des fins
-#    de réglage et de conception.
+# 🎯 RÔLE
+#   Stocker des valeurs d'hystérésis déclaratives destinées
+#   aux réglages et à l'affichage UI du domaine aération.
 #
-# 🧠 Lecture métier :
-#    Ces helpers ne sont actuellement PAS utilisés par
-#    le moteur d’aération.
-#    Aucune hystérésis fonctionnelle n’est implémentée
-#    à ce stade dans le pipeline.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètres déclaratifs non utilisés par le moteur
+#   - Hystérésis thermique et hygrométrique uniquement
+#   - Usage conception et UI uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 📐 Paramètres déclarés :
-#    - Hystérésis ΔHA :
-#        → marge hygrométrique (arrêt reco)
-#    - Hystérésis ΔT :
-#        → marge thermique (arrêt reco)
+# 🏷️ NATURE
+#   Paramètre utilisateur
 #
-# 🔗 Dépendances :
-#    - Dashboards réglages aération
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Supposer une hystérésis active
+#   - Considérer ces valeurs comme des paramètres moteur
+#   - Utiliser ces valeurs sans implémentation explicite
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Supposer une hystérésis active
-#    - Les considérer comme des paramètres moteur
-#    - Les utiliser sans implémentation explicite
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - réglages UI / non utilisés
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_hysteresis_ha:

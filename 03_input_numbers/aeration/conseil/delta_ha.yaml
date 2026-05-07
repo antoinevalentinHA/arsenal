@@ -1,38 +1,34 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_NUMBERS : Seuils ΔHA d’aération (saisonnier)
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Aération — Seuils ΔHA saisonniers
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#    Définir le différentiel minimal d’humidité absolue (ΔHA)
-#    requis pour considérer qu’une aération est bénéfique,
-#    selon la saison.
+# 🎯 RÔLE
+#   Stocker les différentiels minimaux d'humidité absolue
+#   requis pour qualifier une aération bénéfique selon
+#   la saison.
 #
-# 🧠 Lecture métier :
-#    Ces seuils sont lus en temps réel par les capteurs
-#    binaires d’aération (RDC et étage).
-#    Ils conditionnent l’autorisation et la priorité
-#    d’aération sur des critères hygrométriques.
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Seuils décisionnels hygrométriques saisonniers
+#   - Paramètres lus en temps réel par les capteurs d'aération
+#   - Été, hiver et inter-saison uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
 #
-# 🌦️ Seuils saisonniers :
-#    - Été :
-#        → éviter l’entrée d’air plus humide
-#    - Hiver :
-#        → privilégier le séchage de l’air intérieur
-#    - Inter-saison :
-#        → compromis hygro-thermique
+# 🏷️ NATURE
+#   Paramètre utilisateur | Seuil métier
 #
-# 🔗 Dépendances :
-#    - Binary sensors aération (RDC / étage)
-#    - Dashboards réglages aération
-#    - UI avancée (button-card templates)
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Utiliser ces valeurs comme indicateurs visuels simples
+#   - Confondre ces valeurs avec des références internes
+#   - Modifier ces seuils sans compréhension de l'impact global
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
 #
-# 🚫 Interdits :
-#    - Les utiliser comme indicateurs visuels simples
-#    - Les confondre avec des valeurs de référence internes
-#    - Les modifier sans compréhension de l’impact global
-#
-# 🏷️ Statut :
-#    - Arsenal v6.x
-#    - seuils décisionnels actifs (hygrométrie)
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 aeration_delta_ha_min_ete:

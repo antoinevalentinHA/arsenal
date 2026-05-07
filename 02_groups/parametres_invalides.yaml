@@ -1,44 +1,31 @@
 # ==========================================================
 # 🧠 ARSENAL — GROUP
-#     Paramètres invalides — Domaines
+#     Intégrité système — Paramètres invalides domaines
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#
-#     Agréger l’ensemble des capteurs
-#     `binary_sensor.parametres_invalides_<domaine>`
-#     afin d’exposer une vision centralisée
-#     des incohérences de paramètres par domaine.
+#   Regrouper l'ensemble cohérent des capteurs
+#   binary_sensor.parametres_invalides_<domaine> sous une
+#   référence statique unique.
 #
 # 🧩 PÉRIMÈTRE
-#
-#     - Regroupement exclusif de capteurs de type :
-#         binary_sensor.parametres_invalides_<domaine>
-#     - Couverture multi-domaines :
-#         chauffage, VMC, déshumidificateur, éclairage,
-#         alarme, ECS (et extensions futures)
-#
-# 🔗 DÉPENDANCES
-#
-#     - binary_sensor.parametres_invalides_chauffage
-#     - binary_sensor.parametres_invalides_vmc
-#     - binary_sensor.parametres_invalides_bouclage_ecs
-#     - binary_sensor.parametres_invalides_deshumidificateur
-#     - binary_sensor.parametres_invalides_eclairage
-#     - binary_sensor.parametres_invalides_modes_maison
-#     - binary_sensor.parametres_invalides_vacances
+#   - Agrégation statique uniquement
+#   - Capteurs d'intégrité paramètres par domaine uniquement
+#   - Couverture transversale multi-domaines Arsenal
+#   - Aucune logique métier
+#   - Aucun calcul d'état implicite
+#   - Aucun comportement dynamique
 #
 # 🚫 INTERDITS
+#   - Introduire une logique conditionnelle
+#   - Utiliser le groupe comme autorité décisionnelle
+#   - Détecter directement un invariant système
+#   - Masquer ou filtrer un domaine
+#   - Mélanger des familles fonctionnelles incohérentes
+#   - Référencer un group.* comme entité membre
+#   - Utiliser la clé all:
 #
-#     - Aucune logique métier
-#     - Aucune décision
-#     - Aucune action
-#     - Aucune détection d’invariant
-#     - Aucun masquage ou filtrage d’un domaine
-#
-# 🧠 STATUT
-#
-#     Agrégat diagnostique — Transversal
-#     Source unique pour l’intégrité globale des paramètres
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 parametres_invalides_domaines:
