@@ -1,38 +1,50 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_TEXT : Alarme – État cible
+# 🧠 ARSENAL — INPUT_TEXT
+#     Alarme — Etat cible
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Stocker l’ÉTAT CIBLE de l’alarme tel que décidé
-#   par la décision centrale (intention système).
+# 🎯 RÔLE
+#   Stocker l’état cible de l’alarme tel que décidé
+#   par la décision centrale Arsenal.
 #
-# 🧱 Nature :
-#   - Consigne abstraite
-#   - Mémoire décisionnelle persistante
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucune modification de l’état réel
+#   - Aucun pilotage de dispositif
+#   - Aucun déclenchement d’action
+#   - Aucun mécanisme d’application autonome
 #
-# 🚫 Ne fait PAS :
-#   - Ne modifie pas l’état réel de l’alarme
-#   - Ne pilote aucun dispositif
-#   - Ne déclenche aucune action
-#   - Ne reflète pas l’état courant réel
+# 🔖 NATURE
+#   Consigne abstraite
+#   Mémoire décisionnelle persistante
+#   Référence de cohérence système
 #
-# 🔗 Écrit par :
-#   - Script :
-#       10_scripts/alarme/decision_centrale.yaml
+# 📋 FORMAT
+#   Valeur textuelle énumérée représentant
+#   l’état cible attendu du système d’alarme.
 #
-# 🔗 Utilisé par :
+# 🚫 INTERDITS
+#   - Confondre état cible et état réel
+#   - Utiliser ce helper comme preuve d’exécution
+#   - Déduire l’état physique de l’alarme depuis cette valeur
+#   - Écrire sans source décisionnelle identifiable
+#   - Modifier les valeurs attendues sans audit des consommateurs
+#
+# 🔗 ÉCRIT PAR
+#   10_scripts/alarme/decision_centrale.yaml
+#
+# 🔗 CONSOMMATEURS
 #   - Automatisations d’application de décision
 #   - Automatisations de contrôle de cohérence
 #   - Dashboards Lovelace (alarme / diagnostics)
-#   - Templates button-card (affichage cible)
+#   - Templates button-card d’affichage cible
 #
-# 🧠 Principe ARSENAL :
-#   - Séparation stricte :
-#       décision → consigne → application → état réel
-#   - La consigne n’est pas l’exécution
-#
-# ⚠️ Sémantique :
+# ⚠️ SÉMANTIQUE
 #   - "État cible" ≠ "état réel"
-#   - Toute divergence est intentionnellement détectable
+#   - Toute divergence doit rester observable
+#   et explicitement détectable par Arsenal.
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 alarme_etat_cible:

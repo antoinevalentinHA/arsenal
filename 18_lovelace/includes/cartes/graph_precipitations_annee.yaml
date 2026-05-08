@@ -1,21 +1,26 @@
 type: custom:apexcharts-card
 graph_span: 364d
+
 header:
   show: true
   title: Cumul hebdo (52 semaines)
   show_states: false
   floating: false
+
 apex_config:
   chart:
     height: 240
     animations:
       enabled: true
+
   grid:
     borderColor: rgba(0,0,0,0.08)
+
   tooltip:
     shared: false
     x:
       show: true
+
   xaxis:
     labels:
       datetimeUTC: false
@@ -23,18 +28,23 @@ apex_config:
       rotate: -45
       hideOverlappingLabels: true
     tickAmount: 12
+
   yaxis:
     min: 0
     decimalsInFloat: 1
+
   legend:
     show: false
+
 series:
   - entity: sensor.pluie_hebdomadaire
     name: Pluie (mm)
     type: column
+    color: "rgba(144, 202, 249, 0.9)"
     stroke_width: 0
     group_by:
       duration: 1w
       func: max
+
 show:
   loading: false

@@ -69,7 +69,7 @@ views:
                 template: prise_template
                 entity: switch.prise_palier
                 name: iDiamant
-                icon: mdi:window-shutter
+                icon: mdi:remote
                 tap_action:
                   action: toggle
                   confirmation:

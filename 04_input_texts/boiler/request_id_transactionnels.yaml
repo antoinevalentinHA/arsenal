@@ -1,20 +1,47 @@
 # ==========================================================
-# 🧠 ARSENAL — HELPERS
-#     Boiler request_id transactionnels
+# 🧠 ARSENAL — INPUT_TEXT
+#     Boiler — Request_id transactionnels
 # ----------------------------------------------------------
-# 🎯 ROLE
-#   Conserver le request_id de la transaction en cours
-#   pour les commandes boiler publiees via MQTT.
+# 🎯 RÔLE
+#   Conserver les request_id des transactions boiler
+#   MQTT en cours pour les commandes exécutives Arsenal.
 #
-# 🧱 PRINCIPE
-#   - Un helper par famille de commande
-#   - Ecrit exclusivement par les scripts executifs
-#   - Lu par les capteurs transactionnels ACK
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucune logique transactionnelle locale
+#   - Aucune décision métier
+#   - Aucun stockage de valeur chaudière
+#   - Aucun mécanisme ACK autonome
 #
-# ⚠️ IMPORTANT
-#   - Aucun usage metier direct
-#   - Aucun stockage de valeur chaudiere
-#   - Role strictement transactionnel
+# 🔖 NATURE
+#   Registre transactionnel
+#   Identifiant technique
+#   Mémoire persistante
+#
+# 📋 FORMAT
+#   Identifiants transactionnels textuels uniques
+#   utilisés pour corréler requêtes et ACK MQTT.
+#
+# 🚫 INTERDITS
+#   - Utiliser ces helpers comme état métier chaudière
+#   - Déduire le succès d’une commande depuis la seule présence d’un request_id
+#   - Écrire sans source exécutive identifiable
+#   - Réutiliser un request_id sans garantie d’unicité
+#   - Modifier le format transactionnel sans audit des consommateurs
+#
+# 🔗 ÉCRIT PAR
+#   Scripts exécutifs boiler publiant des commandes MQTT.
+#
+# 🔗 CONSOMMATEURS
+#   Capteurs transactionnels ACK boiler.
+#
+# ⚠️ SÉMANTIQUE
+#   - Un helper correspond à une famille de commande
+#   - Le request_id représente une corrélation transactionnelle,
+#     jamais un état métier chaudière.
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 boiler_req_heating_set_temperature:

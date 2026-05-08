@@ -1,38 +1,49 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_TEXT : Alarme – Raison de la décision
+# 🧠 ARSENAL — INPUT_TEXT
+#     Alarme — Raison decision
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Stocker la RAISON EXPLICITE ayant conduit
-#   à la décision d’alarme (justification lisible).
+# 🎯 RÔLE
+#   Stocker la raison explicite ayant conduit
+#   à la décision d’alarme Arsenal.
 #
-# 🧱 Nature :
-#   - Mémoire explicative
-#   - Trace de diagnostic décisionnel
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucune participation à la décision
+#   - Aucun déclenchement d’action
+#   - Aucune modification d’état d’alarme
+#   - Aucun rôle causal dans le système
 #
-# 🚫 Ne fait PAS :
-#   - Ne participe à aucune décision
-#   - Ne déclenche aucune action
-#   - Ne modifie aucun état d’alarme
-#   - Ne sert pas de condition logique
+# 🔖 NATURE
+#   Mémoire explicative
+#   Trace décisionnelle
+#   Diagnostic textuel
 #
-# 🔗 Écrit par :
+# 📋 FORMAT
+#   Texte descriptif libre destiné à expliquer
+#   le contexte ou la justification de la décision.
+#
+# 🚫 INTERDITS
+#   - Utiliser ce helper comme condition logique
+#   - Déduire une décision active depuis ce texte
+#   - Confondre justification et moteur décisionnel
+#   - Écrire sans source décisionnelle identifiable
+#   - Modifier les conventions textuelles sans audit UI
+#
+# 🔗 ÉCRIT PAR
 #   - Scripts d’armement / désarmement
-#   - Script :
-#       10_scripts/alarme/decision_centrale.yaml
+#   - 10_scripts/alarme/decision_centrale.yaml
 #
-# 🔗 Utilisé par :
-#   - Dashboards diagnostics (lecture humaine)
-#   - Templates button-card (affichage explicatif)
-#   - Automatisations de cohérence (journalisation)
+# 🔗 CONSOMMATEURS
+#   - Dashboards diagnostics
+#   - Templates button-card d’affichage explicatif
+#   - Automatisations de journalisation et cohérence
 #
-# 🧠 Principe ARSENAL :
-#   - Toute décision doit être explicable
-#   - Séparation stricte :
-#       décision ≠ justification ≠ exécution
+# ⚠️ SÉMANTIQUE
+#   - Ce champ décrit exclusivement le POURQUOI
+#   - Il ne possède aucun pouvoir causal.
 #
-# ⚠️ Sémantique :
-#   - Ce champ décrit le POURQUOI
-#   - Il n’a AUCUN pouvoir causal
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 alarme_raison:

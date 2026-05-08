@@ -1,33 +1,39 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_TEXT : Badges autorisés
+# 🧠 ARSENAL — INPUT_TEXT
+#     Alarme — Badges autorises
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Stocker la liste DECLARATIVE des identifiants de badges
+# 🎯 RÔLE
+#   Stocker la liste déclarative des identifiants de badges
 #   RFID autorisés à désarmer l’alarme.
 #
-# 🧱 Nature :
-#   - Référentiel statique / paramètre métier
-#   - Mémoire persistante (texte)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucune lecture de badge
+#   - Aucune validation d’authentification
+#   - Aucune décision de sécurité
+#   - Aucune action déclenchée
 #
-# 🚫 Ne fait PAS :
-#   - Ne lit aucun badge
-#   - Ne valide aucune authentification
-#   - Ne prend aucune décision de sécurité
-#   - Ne déclenche aucune action
+# 🔖 NATURE
+#   Paramètre déclaratif métier
+#   Mémoire persistante
 #
-# 🔗 Utilisation :
-#   - Automatisation :
-#       11_automations/alarme/desarmement_badge.yaml
-#     → comparaison du badge lu avec la liste autorisée
+# 📋 FORMAT
+#   Liste CSV stricte :
+#   - identifiants séparés par des virgules
+#   - aucun espace
+#   - format consommé par split(',')
 #
-# 🧠 Principe ARSENAL :
-#   - Séparation stricte données / décision
-#   - Les helpers stockent, les automatisations décident
+# 🚫 INTERDITS
+#   - Interpréter le contenu dans le helper lui-même
+#   - Confondre liste autorisée et authentification validée
+#   - Écrire sans source décisionnelle identifiable
+#   - Modifier le format CSV sans audit des consommateurs
 #
-# ⚠️ Convention :
-#   - Liste séparée par des virgules
-#   - Aucun espace
-#   - Format attendu par split(',')
+# 🔗 CONSOMMATEUR
+#   11_automations/alarme/desarmement_badge.yaml
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 badges_autorises:

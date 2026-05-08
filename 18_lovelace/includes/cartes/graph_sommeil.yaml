@@ -29,6 +29,7 @@ series:
   - entity: input_number.sommeil_derniere_nuit_total
     name: Durée
     type: column
+    color: "rgba(76, 175, 80, 0.85)"
     stroke_width: 0
     group_by:
       duration: 1d
@@ -37,7 +38,8 @@ series:
   - entity: sensor.sommeil_total_moyenne_7j
     name: Moyenne 7j
     type: line
-    stroke_width: 2
+    color: "rgba(144, 202, 249, 0.9)"
+    stroke_width: 3
     group_by:
       duration: 1d
       func: last

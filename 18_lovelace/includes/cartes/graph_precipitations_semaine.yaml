@@ -1,37 +1,47 @@
 type: custom:apexcharts-card
 graph_span: 7d
+
 header:
   show: true
   title: Intensité (7 jours)
   show_states: false
   floating: false
+
 apex_config:
   chart:
     height: 220
     animations:
       enabled: true
+
   grid:
     borderColor: rgba(0,0,0,0.08)
+
   tooltip:
     shared: false
     x:
       show: true
+
   xaxis:
     labels:
       datetimeUTC: false
+
   yaxis:
     min: 0
     decimalsInFloat: 1
+
   legend:
     show: false
+
 series:
   - entity: sensor.pluviometre_precipitation
     name: Pluie (mm/h)
     type: column
+    color: "rgba(144, 202, 249, 0.9)"
     curve: smooth
     stroke_width: 0
     group_by:
       duration: 1h
       func: max
+
 show:
   loading: false

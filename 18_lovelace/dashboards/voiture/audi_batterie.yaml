@@ -62,11 +62,31 @@ views:
           # 📊 Co-visualisation autonomie / température snapshot
           # ------------------------------------------------------
           - type: custom:apexcharts-card
+
             header:
               show: true
               title: Corrélation autonomie / température
 
             graph_span: 365d
+
+            apex_config:
+              chart:
+                height: 260
+                animations:
+                  enabled: true
+
+              grid:
+                borderColor: rgba(0,0,0,0.08)
+
+              tooltip:
+                shared: true
+
+              xaxis:
+                labels:
+                  datetimeUTC: false
+
+              legend:
+                show: true
 
             yaxis:
               - id: autonomie
@@ -83,11 +103,15 @@ views:
                 name: Autonomie moyenne
                 yaxis_id: autonomie
                 type: line
+                color: "rgba(76, 175, 80, 0.9)"
+                stroke_width: 3
 
               - entity: sensor.audi_temperature_charge_mensuelle
                 name: Température moyenne charge
                 yaxis_id: temperature
                 type: line
+                color: "rgba(144, 202, 249, 0.9)"
+                stroke_width: 3
 
           # ------------------------------------------------------
           # 🧮 Analyse textuelle complète (bilan mensuel)

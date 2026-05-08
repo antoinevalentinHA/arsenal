@@ -1,39 +1,49 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_TEXT : Alarme – Décision centrale
+# 🧠 ARSENAL — INPUT_TEXT
+#     Alarme — Decision centrale
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Stocker le RÉSULTAT TEXTUEL de la décision centrale
-#   de l’alarme, à des fins de lisibilité et de diagnostic.
+# 🎯 RÔLE
+#   Stocker le résultat textuel de la décision centrale
+#   de l’alarme à des fins de lisibilité et de diagnostic.
 #
-# 🧱 Nature :
-#   - Mémoire descriptive
-#   - Trace décisionnelle lisible (état exposé)
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucune logique décisionnelle locale
+#   - Aucun pilotage d’état d’alarme
+#   - Aucun déclenchement d’action
+#   - Aucune interprétation métier autonome
 #
-# 🚫 Ne fait PAS :
-#   - Ne prend aucune décision
-#   - Ne contient aucune logique métier
-#   - Ne pilote aucun état d’alarme
-#   - Ne déclenche aucune action
+# 🔖 NATURE
+#   Trace décisionnelle
+#   Diagnostic textuel
+#   Mémoire descriptive
 #
-# 🔗 Écrit par :
-#   - Script :
-#       10_scripts/alarme/decision_centrale.yaml
-#     → formalisation explicite de la décision prise
+# 📋 FORMAT
+#   Texte court descriptif représentant le résultat
+#   explicite de la décision centrale Arsenal.
 #
-# 🔗 Utilisé par :
+# 🚫 INTERDITS
+#   - Confondre résultat décisionnel et moteur de décision
+#   - Utiliser ce helper comme source d’autorité métier
+#   - Déduire un état système uniquement depuis ce texte
+#   - Écrire sans source décisionnelle identifiable
+#   - Modifier les conventions textuelles sans audit UI
+#
+# 🔗 ÉCRIT PAR
+#   10_scripts/alarme/decision_centrale.yaml
+#
+# 🔗 CONSOMMATEURS
 #   - Dashboards Lovelace (alarme / diagnostics)
-#   - Templates button-card (affichage décision)
+#   - Templates button-card d’affichage décisionnel
 #
-# 🧠 Principe ARSENAL :
-#   - La décision vit dans les scripts
-#   - Les helpers exposent l’état résultant
-#   - Lisibilité > implicite
+# ⚠️ SÉMANTIQUE
+#   Le terme "decision" désigne exclusivement
+#   le résultat exposé, jamais le processus de décision.
 #
-# ⚠️ Sémantique :
-#   - Le terme "decision" désigne le RÉSULTAT,
-#     pas le processus de décision
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
 # ==========================================================
 
 alarme_decision:
-  name: "Alarme – Decision centrale"
+  name: "Alarme – Décision centrale"
   max: 50
