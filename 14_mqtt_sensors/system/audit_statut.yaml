@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     arsenal_self — Audit NAS — Statut (verdict patrimonial)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer le verdict patrimonial de l'audit Arsenal NAS,
+#   tel que publié par le NAS sur arsenal/nas/audit/state.
+#
+# 🧩 PÉRIMÈTRE
+#   - Projection MQTT du verdict ; aucune décision locale
+#   - Valeurs possibles : ok | alert | error
+#
+# 🔖 NATURE
+#   diagnostic (sub-rôle palette : diagnostic)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_statut
+#
+# 🔗 DÉPENDANCES
+#   Source MQTT : arsenal/nas/audit/state
+#   Producteur  : publish_audit_mqtt.py (NAS)
+#   Contrat     : CONTRAT_AUDIT_MQTT.md v1.0.0 §7.1
+#
+# 🚫 INTERDITS
+#   - Modifier le payload
+#   - Décider d'une action ici (utiliser binary_sensor.arsenal_self_audit_alerte)
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x — Domaine arsenal_self
+# ==========================================================
+
+- name: "Arsenal Self Audit Statut"
+  unique_id: arsenal_self_audit_statut
+  state_topic: arsenal/nas/audit/state
+  value_template: "{{ value_json.verdict }}"
+  json_attributes_topic: arsenal/nas/audit/state
+  qos: 1

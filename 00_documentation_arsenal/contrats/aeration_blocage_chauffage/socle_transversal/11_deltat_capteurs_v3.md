@@ -39,12 +39,12 @@ Conséquences :
 
 Capteurs ΔT (V3) :
 
-- `sensor.deltaT_entree`
-- `sensor.deltaT_sejour`
-- `sensor.deltaT_chambre_arnaud`
-- `sensor.deltaT_chambre_matthieu`
-- `sensor.deltaT_chambre_parents`
-- `sensor.deltaT_palier`
+- `sensor.deltat_entree`
+- `sensor.deltat_sejour`
+- `sensor.deltat_chambre_arnaud`
+- `sensor.deltat_chambre_matthieu`
+- `sensor.deltat_chambre_parents`
+- `sensor.deltat_palier`
 
 Ces capteurs sont consommés par :
 
@@ -64,7 +64,7 @@ Chaque capteur ΔT dépend de :
 
 Le suffixe est déduit du nom du capteur ΔT :
 
-- `sensor.deltaT_sejour` → suffixe `sejour`
+- `sensor.deltat_sejour` → suffixe `sejour`
 - donc :
   - `input_number.ref_temp_sejour`
   - `sensor.temperature_sejour`

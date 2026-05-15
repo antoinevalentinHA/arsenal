@@ -1,0 +1,80 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Pluie — Palmarès journalier — Snapshot
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   10160000000020
+#
+# 🎯 RÔLE
+#   Capturer le cumul journalier de pluie juste avant le reset
+#   quotidien du utility_meter.
+#
+# 🧩 PÉRIMÈTRE
+#   - Capture pré-minuit uniquement
+#   - Écriture du snapshot veille
+#   - Aucune évaluation de record
+#   - Aucun classement
+#
+# 🔖 NATURE
+#   Synchronisation
+#
+# ⚙️ MODE
+#   single
+#   Justification : déclencheur horaire unique, refus strict de tout retrigger concurrent.
+#
+# 📣 DÉCLENCHEURS
+#   Tous les jours à 23:59:55.
+#
+# 🔗 DÉPENDANCES
+#   Lit :
+#     - sensor.pluie_journaliere
+#   Écrit :
+#     - input_number.palmares_pluie_journalier_snapshot_veille
+#
+# 🧠 AUTORITÉ
+#   Applique le contrat de clôture pré-minuit.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger : réécriture de la même valeur source.
+#
+# 🚫 INTERDITS
+#   - Évaluer un record
+#   - Classer les valeurs
+#   - Modifier les rangs du palmarès
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x — V1.0 STRICT
+# ==========================================================
+
+- id: "10160000000020"
+  alias: "Météo - Pluie - Palmarès journalier - Snapshot"
+  description: "Capture le cumul journalier de pluie avant le reset quotidien."
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "23:59:55"
+
+  condition: []
+
+  action:
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states('sensor.pluie_journaliere') not in ['unknown', 'unavailable', 'none', 'None', ''] }}
+          sequence:
+            - service: input_number.set_value
+              target:
+                entity_id: input_number.palmares_pluie_journalier_snapshot_veille
+              data:
+                value: >
+                  {{ states('sensor.pluie_journaliere') | float(0) | round(1) }}
+      default:
+        - service: system_log.write
+          data:
+            level: warning
+            logger: arsenal.meteo.palmares_pluie_journalier
+            message: >
+              Snapshot pluie journalière ignoré : sensor.pluie_journaliere indisponible
+              ou invalide (état={{ states('sensor.pluie_journaliere') }}).

@@ -1,0 +1,83 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT
+#     Météo — Palmarès historique pluie journalière
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les dates persistantes du palmarès historique
+#   de la pluie journalière : 10 dates de rangs (top 10).
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun parsing
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Mémoire persistante — registre métier de pipeline
+#
+# 📋 FORMAT
+#   ISO 8601 — chaîne YYYY-MM-DD (10 caractères)
+#   Convention de rang vide : chaîne vide ""
+#   (cf. CONTRAT_PALMARES_HISTORIQUE.md V1.0 §4.4)
+#
+#   Aucun pattern de validation natif :
+#   la validation métier est portée par
+#   binary_sensor.palmares_pluie_journalier_anomalie (B2).
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_HISTORIQUE.md V1.0 STRICT
+#   Instance : pluie_journalier
+#   Sections : 3.3 (format date), 4.3 (entités),
+#              4.4 (convention de rang vide), 5.3 (insertion)
+#
+# 🚫 INTERDITS
+#   - Interpréter le contenu dans le helper lui-même
+#   - Confondre stockage et décision
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Laisser implicite toute convention de format
+#   - Saisie manuelle hors procédure de réinitialisation
+#     (cf. contrat 8.4)
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x — V1.0 STRICT
+# ==========================================================
+
+palmares_pluie_journalier_rang_01_date:
+  name: "Palmarès pluie journalière — rang 01 date"
+  max: 10
+
+palmares_pluie_journalier_rang_02_date:
+  name: "Palmarès pluie journalière — rang 02 date"
+  max: 10
+
+palmares_pluie_journalier_rang_03_date:
+  name: "Palmarès pluie journalière — rang 03 date"
+  max: 10
+
+palmares_pluie_journalier_rang_04_date:
+  name: "Palmarès pluie journalière — rang 04 date"
+  max: 10
+
+palmares_pluie_journalier_rang_05_date:
+  name: "Palmarès pluie journalière — rang 05 date"
+  max: 10
+
+palmares_pluie_journalier_rang_06_date:
+  name: "Palmarès pluie journalière — rang 06 date"
+  max: 10
+
+palmares_pluie_journalier_rang_07_date:
+  name: "Palmarès pluie journalière — rang 07 date"
+  max: 10
+
+palmares_pluie_journalier_rang_08_date:
+  name: "Palmarès pluie journalière — rang 08 date"
+  max: 10
+
+palmares_pluie_journalier_rang_09_date:
+  name: "Palmarès pluie journalière — rang 09 date"
+  max: 10
+
+palmares_pluie_journalier_rang_10_date:
+  name: "Palmarès pluie journalière — rang 10 date"
+  max: 10

@@ -102,6 +102,10 @@ views:
                   action: more-info
                   entity: sensor.home_assistant_core_memory_percent
 
+          # 🧠 Arsenal Self Audit — Statut synthétique
+          - type: custom:button-card
+            template: arsenal_self_audit_status_card
+
           ####################################################
           # 🩺 SYSTÈMES CRITIQUES
           ####################################################

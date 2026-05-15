@@ -1,0 +1,145 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Palmarès historique pluie journalière
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les valeurs numériques persistantes du palmarès
+#   historique de la pluie journalière : 10 valeurs de rangs
+#   (top 10) + 1 snapshot pré-minuit.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Mémoire persistante — registre métier de pipeline
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_HISTORIQUE.md V1.0 STRICT
+#   Instance : pluie_journalier
+#   Sections : 4.3 (entités), 4.4 (convention de rang vide),
+#              5.1 (snapshot), 5.3 (insertion)
+#
+# 📋 CONVENTIONS
+#   - Valeur de rang vide : 0
+#   - Couplage strict avec input_text de date correspondant
+#     (cf. invariant INV-8 du contrat)
+#   - Écriture exclusivement par :
+#       automation.palmares_pluie_journalier_snapshot
+#       automation.palmares_pluie_journalier_evaluation
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Saisie manuelle hors procédure de réinitialisation
+#     (cf. contrat 8.4)
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x — V1.0 STRICT
+# ==========================================================
+
+# --- Rangs du palmarès (top 10) ---------------------------
+
+palmares_pluie_journalier_rang_01_valeur:
+  name: "Palmarès pluie journalière — rang 01 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:trophy
+
+palmares_pluie_journalier_rang_02_valeur:
+  name: "Palmarès pluie journalière — rang 02 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:trophy-variant
+
+palmares_pluie_journalier_rang_03_valeur:
+  name: "Palmarès pluie journalière — rang 03 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:trophy-variant
+
+palmares_pluie_journalier_rang_04_valeur:
+  name: "Palmarès pluie journalière — rang 04 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:medal
+
+palmares_pluie_journalier_rang_05_valeur:
+  name: "Palmarès pluie journalière — rang 05 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:medal
+
+palmares_pluie_journalier_rang_06_valeur:
+  name: "Palmarès pluie journalière — rang 06 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:medal
+
+palmares_pluie_journalier_rang_07_valeur:
+  name: "Palmarès pluie journalière — rang 07 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:medal-outline
+
+palmares_pluie_journalier_rang_08_valeur:
+  name: "Palmarès pluie journalière — rang 08 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:medal-outline
+
+palmares_pluie_journalier_rang_09_valeur:
+  name: "Palmarès pluie journalière — rang 09 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:medal-outline
+
+palmares_pluie_journalier_rang_10_valeur:
+  name: "Palmarès pluie journalière — rang 10 valeur"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:medal-outline
+
+# --- Mécanique : snapshot pré-minuit ----------------------
+
+palmares_pluie_journalier_snapshot_veille:
+  name: "Palmarès pluie journalière — snapshot veille"
+  min: 0
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "mm"
+  mode: box
+  icon: mdi:camera-timer

@@ -93,6 +93,31 @@ include:
     - sensor.pluie_aujourdhui_local
     - sensor.pluie_total_local
     - sensor.pluie_hebdomadaire
+    - sensor.pluie_journaliere
+    - input_number.palmares_pluie_journalier_rang_01_valeur
+    - input_text.palmares_pluie_journalier_rang_01_date
+    - input_number.palmares_pluie_journalier_rang_02_valeur
+    - input_text.palmares_pluie_journalier_rang_02_date
+    - input_number.palmares_pluie_journalier_rang_03_valeur
+    - input_text.palmares_pluie_journalier_rang_03_date
+    - input_number.palmares_pluie_journalier_rang_04_valeur
+    - input_text.palmares_pluie_journalier_rang_04_date
+    - input_number.palmares_pluie_journalier_rang_05_valeur
+    - input_text.palmares_pluie_journalier_rang_05_date
+    - input_number.palmares_pluie_journalier_rang_06_valeur
+    - input_text.palmares_pluie_journalier_rang_06_date
+    - input_number.palmares_pluie_journalier_rang_07_valeur
+    - input_text.palmares_pluie_journalier_rang_07_date
+    - input_number.palmares_pluie_journalier_rang_08_valeur
+    - input_text.palmares_pluie_journalier_rang_08_date
+    - input_number.palmares_pluie_journalier_rang_09_valeur
+    - input_text.palmares_pluie_journalier_rang_09_date
+    - input_number.palmares_pluie_journalier_rang_10_valeur
+    - input_text.palmares_pluie_journalier_rang_10_date
+    - input_number.palmares_pluie_journalier_snapshot_veille
+    - input_datetime.palmares_pluie_journalier_derniere_evaluation
+    - sensor.palmares_pluie_journalier
+    - binary_sensor.palmares_pluie_journalier_anomalie
     - sensor.pression_chambre_arnaud
 
     # =====================================================

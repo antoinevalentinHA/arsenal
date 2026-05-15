@@ -36,7 +36,6 @@
 #
 #     - Actions appliquées :
 #         • réactivation des planifications ECS
-#         • réactivation du bouclage visiteur
 #
 #     - Aucune notification
 #     - Aucune persistance UI
@@ -102,12 +101,6 @@
       target:
         entity_id:
           - input_boolean.ecs_desinfection_active
-
-    # 🔁 Réactivation bouclage visiteur
-    - action: input_boolean.turn_on
-      target:
-        entity_id:
-          - input_boolean.bouclage_visiteur
 
     # 🧹 Disqualification notification Vacances
     - action: persistent_notification.dismiss

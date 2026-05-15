@@ -16,12 +16,12 @@ T_REF figés en M1.
 
 `delta_max` est le maximum de :
 
-- sensor.deltaT_entree
-- sensor.deltaT_sejour
-- sensor.deltaT_chambre_arnaud
-- sensor.deltaT_chambre_matthieu
-- sensor.deltaT_chambre_parents
-- sensor.deltaT_palier
+- sensor.deltat_entree
+- sensor.deltat_sejour
+- sensor.deltat_chambre_arnaud
+- sensor.deltat_chambre_matthieu
+- sensor.deltat_chambre_parents
+- sensor.deltat_palier
 
 Chaque valeur est convertie via `| float(0)`.
 

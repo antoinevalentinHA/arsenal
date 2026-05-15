@@ -94,7 +94,7 @@ Toute autre lecture est interdite par ce contrat.
 ### 4.4 UPS
 
 - `sensor.nas_imprimerie_ups_status`
-- `binary_sensor.nas_imprimerie_ups_on_battery`
+- `binary_sensor.nas_imprimerie_ups_sur_batterie`
 
 ### 4.5 Décisions métier locales
 
@@ -195,7 +195,7 @@ Pas de palier `degraded` : le VPN est binaire par nature côté Arsenal.
 
 ### 7.4 Axe `ups`
 
-Dérivé de `sensor.nas_imprimerie_ups_status` et `binary_sensor.nas_imprimerie_ups_on_battery`.
+Dérivé de `sensor.nas_imprimerie_ups_status` et `binary_sensor.nas_imprimerie_ups_sur_batterie`.
 
 **Enum réellement produite par le pipeline actuel** :
 

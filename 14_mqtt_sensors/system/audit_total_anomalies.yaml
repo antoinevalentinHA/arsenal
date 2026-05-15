@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     arsenal_self — Audit NAS — Total anomalies actionnables
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer le compteur d'anomalies actionnables détectées
+#   par le moteur d'audit (P0/P1/P2/P3 confondus, hors
+#   observations patrimoniales).
+#
+# 🧩 PÉRIMÈTRE
+#   - Compteur entier ≥ 0 issu du payload MQTT
+#   - Cohérent avec statut : 0 si ok, ≥1 si alert
+#   - Vide ou inexploitable en cas de verdict=error
+#
+# 🔖 NATURE
+#   diagnostic (sub-rôle palette : diagnostic)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_total_anomalies
+#
+# 🔗 DÉPENDANCES
+#   Source MQTT : arsenal/nas/audit/state
+#   Champ JSON  : total_anomalies
+#   Contrat     : CONTRAT_AUDIT_MQTT.md v1.0.0 §7.1
+#
+# 🚫 INTERDITS
+#   - Confondre avec total_observations_patrimoniales
+#   - Décider d'une action ici
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x — Domaine arsenal_self
+# ==========================================================
+
+- name: "Arsenal Self Audit Total Anomalies"
+  unique_id: arsenal_self_audit_total_anomalies
+  state_topic: arsenal/nas/audit/state
+  value_template: >
+    {% set v = value_json.total_anomalies %}
+    {{ v if v is not none else 'unknown' }}
+  state_class: measurement
+  qos: 1

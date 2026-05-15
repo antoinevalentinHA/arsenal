@@ -1,0 +1,50 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     arsenal_self — Audit NAS — Âge minutes
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Calculer l'âge en minutes du dernier message MQTT
+#   d'audit reçu, à partir de published_at.
+#
+# 🧩 PÉRIMÈTRE
+#   - Calcul Jinja pur, recalculé en continu
+#   - Pas de pilotage
+#   - Unit : min, state_class : measurement
+#
+# 🔖 NATURE
+#   mesure_derivee (sub-rôle palette : derived)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_age_minutes
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.arsenal_self_audit_published_at
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre valeur dérivée et décision exécutive
+#
+# 🏷️ STATUT
+#   Calcul — Arsenal v14.x — Domaine arsenal_self
+# ==========================================================
+
+- sensor:
+    - name: "Arsenal Self Audit Age Minutes"
+      unique_id: arsenal_self_audit_age_minutes
+
+      unit_of_measurement: "min"
+      state_class: measurement
+
+      availability: >
+        {{ states('sensor.arsenal_self_audit_published_at') not in
+           ['unknown', 'unavailable', 'none', ''] }}
+
+      state: >
+        {% set published = states('sensor.arsenal_self_audit_published_at') %}
+        {% if published in ['unknown', 'unavailable', 'none', ''] %}
+          unknown
+        {% else %}
+          {% set delta = (now() - as_datetime(published)).total_seconds() %}
+          {{ (delta / 60) | round(0, 'floor') | int }}
+        {% endif %}

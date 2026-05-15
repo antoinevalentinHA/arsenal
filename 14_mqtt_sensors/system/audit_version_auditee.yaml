@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     arsenal_self — Audit NAS — Version auditée
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer l'identifiant de la version HA effectivement
+#   auditée (nom de dossier versions/ côté NAS).
+#
+# 🧩 PÉRIMÈTRE
+#   - String contextuelle, pas un compteur
+#   - Vide en cas de verdict=error sans contexte
+#   - Attribut version_courte calculé pour affichage UI
+#
+# 🔖 NATURE
+#   context (sub-rôle palette : context)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_version_auditee
+#
+# 🔗 DÉPENDANCES
+#   Source MQTT : arsenal/nas/audit/state
+#   Champ JSON  : version_auditee
+#   Contrat     : CONTRAT_AUDIT_MQTT.md v1.0.0 §7.1
+#
+# 🚫 INTERDITS
+#   - Décider d'une action sur la base de cette string
+#   - Parser autre chose que le préfixe daté
+#
+# 🏷️ STATUT
+#   Context — Arsenal v14.x — Domaine arsenal_self
+# ==========================================================
+
+- name: "Arsenal Self Audit Version Auditee"
+  unique_id: arsenal_self_audit_version_auditee
+  state_topic: arsenal/nas/audit/state
+  value_template: >
+    {{ value_json.version_auditee if value_json.version_auditee is not none else 'unknown' }}
+  json_attributes_topic: arsenal/nas/audit/state
+  json_attributes_template: >
+    {
+      "version_courte":
+        {% if value_json.version_auditee is not none %}
+          "{{ value_json.version_auditee.split('_')[0:2] | join('_') }}"
+        {% else %}
+          null
+        {% endif %}
+    }
+  qos: 1

@@ -1,0 +1,158 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Météo — Pluie — Palmarès journalier — Anomalie
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "Palmarès pluie journalier — anomalie"
+      unique_id: palmares_pluie_journalier_anomalie
+      device_class: problem
+      icon: >
+        {% if is_state(this.entity_id, 'on') %}
+          mdi:alert-circle-outline
+        {% else %}
+          mdi:check-circle-outline
+        {% endif %}
+
+      state: >
+        {% set ns = namespace(motif=none, previous_value=none, hole_seen=false) %}
+
+        {% for i in range(1, 11) %}
+          {% set id = '%02d' | format(i) %}
+          {% set d = states('input_text.palmares_pluie_journalier_rang_' ~ id ~ '_date') %}
+          {% set v = states('input_number.palmares_pluie_journalier_rang_' ~ id ~ '_valeur') | float(0) %}
+
+          {% set date_empty = d == '' %}
+          {% set value_empty = v == 0 %}
+          {% set occupied = (not date_empty) and v > 0 %}
+          {% set valid_date = d | regex_match('^\\d{4}-\\d{2}-\\d{2}$') %}
+
+          {% if ns.motif is none and not ((date_empty and value_empty) or ((not date_empty) and v > 0 and valid_date)) %}
+            {% set ns.motif = 'couplage_invalide' %}
+          {% endif %}
+
+          {% if ns.motif is none and occupied and ns.hole_seen %}
+            {% set ns.motif = 'compacite_invalide' %}
+          {% endif %}
+
+          {% if date_empty and value_empty %}
+            {% set ns.hole_seen = true %}
+          {% endif %}
+
+          {% if ns.motif is none and occupied %}
+            {% if ns.previous_value is not none and v > ns.previous_value %}
+              {% set ns.motif = 'ordre_invalide' %}
+            {% endif %}
+            {% set ns.previous_value = v %}
+          {% endif %}
+        {% endfor %}
+
+        {% set last = states('input_datetime.palmares_pluie_journalier_derniere_evaluation') %}
+        {% set dt = as_datetime(last) %}
+        {% set is_initial = dt is not none and dt.year == 1970 and dt.month == 1 and dt.day == 1 %}
+        {% set ts = as_timestamp(last, none) %}
+        {% if ns.motif is none and not is_initial %}
+          {% if ts is none or (as_timestamp(now()) - ts) > 36 * 3600 %}
+            {% set ns.motif = 'evaluation_obsolete' %}
+          {% endif %}
+        {% endif %}
+
+        {{ ns.motif is not none }}
+
+      attributes:
+        motif: >
+          {% set ns = namespace(motif=none, previous_value=none, hole_seen=false) %}
+
+          {% for i in range(1, 11) %}
+            {% set id = '%02d' | format(i) %}
+            {% set d = states('input_text.palmares_pluie_journalier_rang_' ~ id ~ '_date') %}
+            {% set v = states('input_number.palmares_pluie_journalier_rang_' ~ id ~ '_valeur') | float(0) %}
+
+            {% set date_empty = d == '' %}
+            {% set value_empty = v == 0 %}
+            {% set occupied = (not date_empty) and v > 0 %}
+            {% set valid_date = d | regex_match('^\\d{4}-\\d{2}-\\d{2}$') %}
+
+            {% if ns.motif is none and not ((date_empty and value_empty) or ((not date_empty) and v > 0 and valid_date)) %}
+              {% set ns.motif = 'couplage_invalide' %}
+            {% endif %}
+
+            {% if ns.motif is none and occupied and ns.hole_seen %}
+              {% set ns.motif = 'compacite_invalide' %}
+            {% endif %}
+
+            {% if date_empty and value_empty %}
+              {% set ns.hole_seen = true %}
+            {% endif %}
+
+            {% if ns.motif is none and occupied %}
+              {% if ns.previous_value is not none and v > ns.previous_value %}
+                {% set ns.motif = 'ordre_invalide' %}
+              {% endif %}
+              {% set ns.previous_value = v %}
+            {% endif %}
+          {% endfor %}
+
+          {% set last = states('input_datetime.palmares_pluie_journalier_derniere_evaluation') %}
+          {% set dt = as_datetime(last) %}
+          {% set is_initial = dt is not none and dt.year == 1970 and dt.month == 1 and dt.day == 1 %}
+          {% set ts = as_timestamp(last, none) %}
+          {% if ns.motif is none and not is_initial %}
+            {% if ts is none or (as_timestamp(now()) - ts) > 36 * 3600 %}
+              {% set ns.motif = 'evaluation_obsolete' %}
+            {% endif %}
+          {% endif %}
+
+          {{ ns.motif if ns.motif is not none else none }}
+
+        detail: >
+          {% set ns = namespace(detail=none, previous_value=none, previous_rank=none, hole_rank=none) %}
+
+          {% for i in range(1, 11) %}
+            {% set id = '%02d' | format(i) %}
+            {% set d = states('input_text.palmares_pluie_journalier_rang_' ~ id ~ '_date') %}
+            {% set v = states('input_number.palmares_pluie_journalier_rang_' ~ id ~ '_valeur') | float(0) %}
+
+            {% set date_empty = d == '' %}
+            {% set value_empty = v == 0 %}
+            {% set occupied = (not date_empty) and v > 0 %}
+            {% set valid_date = d | regex_match('^\\d{4}-\\d{2}-\\d{2}$') %}
+
+            {% if ns.detail is none and not ((date_empty and value_empty) or ((not date_empty) and v > 0 and valid_date)) %}
+              {% set ns.detail = 'rang ' ~ id ~ ' incohérent : date="' ~ d ~ '", valeur=' ~ v %}
+            {% endif %}
+
+            {% if date_empty and value_empty and ns.hole_rank is none %}
+              {% set ns.hole_rank = id %}
+            {% endif %}
+
+            {% if ns.detail is none and occupied and ns.hole_rank is not none %}
+              {% set ns.detail = 'rang ' ~ ns.hole_rank ~ ' vide alors que rang ' ~ id ~ ' occupé' %}
+            {% endif %}
+
+            {% if ns.detail is none and occupied %}
+              {% if ns.previous_value is not none and v > ns.previous_value %}
+                {% set ns.detail = 'valeur rang ' ~ id ~ ' (' ~ v ~ ') > valeur rang ' ~ ns.previous_rank ~ ' (' ~ ns.previous_value ~ ')' %}
+              {% endif %}
+              {% set ns.previous_value = v %}
+              {% set ns.previous_rank = id %}
+            {% endif %}
+          {% endfor %}
+
+          {% set last = states('input_datetime.palmares_pluie_journalier_derniere_evaluation') %}
+          {% set dt = as_datetime(last) %}
+          {% set is_initial = dt is not none and dt.year == 1970 and dt.month == 1 and dt.day == 1 %}
+          {% set ts = as_timestamp(last, none) %}
+          {% if ns.detail is none and not is_initial %}
+            {% if ts is none %}
+              {% set ns.detail = 'derniere_evaluation invalide : ' ~ last %}
+            {% elif (as_timestamp(now()) - ts) > 36 * 3600 %}
+              {% set ns.detail = 'derniere_evaluation obsolete : ' ~ last %}
+            {% endif %}
+          {% endif %}
+
+          {{ ns.detail if ns.detail is not none else none }}
+
+        derniere_evaluation: >
+          {{ states('input_datetime.palmares_pluie_journalier_derniere_evaluation') }}

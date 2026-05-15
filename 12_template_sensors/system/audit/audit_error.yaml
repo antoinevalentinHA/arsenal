@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     arsenal_self — Audit NAS — Error
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer une entrée de décision binaire : ON si la chaîne
+#   d'audit n'a pas pu produire de verdict patrimonial
+#   exploitable (crash moteur, verdict.json manquant ou
+#   malformé, etc.).
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement, dérivée du statut
+#   - Aucune action
+#   - Consommable par les automatisations de notification
+#     opérationnelle (distinct de alerte qui est métier)
+#
+# 🔖 NATURE
+#   alerte (sub-rôle palette : decision_input)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_error
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.arsenal_self_audit_statut
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre error (échec chaîne) avec alerte (anomalie
+#     patrimoniale)
+#
+# 🏷️ STATUT
+#   Alerte — Arsenal v14.x — Domaine arsenal_self
+# ==========================================================
+
+- binary_sensor:
+    - name: "Arsenal Self Audit Error"
+      unique_id: arsenal_self_audit_error
+
+      device_class: problem
+
+      state: >
+        {{ states('sensor.arsenal_self_audit_statut') == 'error' }}

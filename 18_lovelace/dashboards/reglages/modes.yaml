@@ -17,28 +17,11 @@ views:
     cards:
       - type: vertical-stack
         cards:
-          # === Mode maison ===
-          - type: custom:button-card
-            template: section_header
-            name: ✈️ Vacances
-
-          - type: tile
-            entity: input_select.mode_maison
-            name: Mode actuel
-            features_position: bottom
-            features:
-              - type: select-options
 
           # === Babysitting ===
           - type: custom:button-card
             template: section_header
             name: 👀 Babysitting
-
-          - type: custom:button-card
-            template: carte_mode_toggle
-            entity: input_boolean.mode_babysitting
-            name: Activer Babysitting
-            icon: mdi:account-child
 
           - type: tile
             entity: input_boolean.reset_mode_babysitting_auto

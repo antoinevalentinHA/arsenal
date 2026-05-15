@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     arsenal_self — Audit NAS — Published at
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer l'horodatage ISO 8601 UTC de la dernière
+#   publication MQTT, pour permettre le calcul de fraîcheur
+#   côté HA (sensor age + binary_sensor stale).
+#
+# 🧩 PÉRIMÈTRE
+#   - Timestamp parsable HA (suffixe Z obligatoire)
+#   - Source de vérité pour audit_age_minutes
+#   - Mis à jour à chaque publication, même error
+#
+# 🔖 NATURE
+#   context (sub-rôle palette : context)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_published_at
+#
+# 🔗 DÉPENDANCES
+#   Source MQTT : arsenal/nas/audit/state
+#   Champ JSON  : published_at
+#   Contrat     : CONTRAT_AUDIT_MQTT.md v1.0.0 §4.3, §6
+#
+# 🚫 INTERDITS
+#   - Confondre avec l'horodatage de l'audit lui-même
+#     (le verdict patrimonial peut être plus ancien que la
+#      publication MQTT en cas de re-publication)
+#
+# 🏷️ STATUT
+#   Context — Arsenal v14.x — Domaine arsenal_self
+# ==========================================================
+
+- name: "Arsenal Self Audit Published At"
+  unique_id: arsenal_self_audit_published_at
+  state_topic: arsenal/nas/audit/state
+  value_template: "{{ value_json.published_at }}"
+  device_class: timestamp
+  qos: 1

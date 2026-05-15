@@ -1,0 +1,231 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Pluie — Palmarès journalier — Évaluation
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   10160000000021
+#
+# 🎯 RÔLE
+#   Évaluer le snapshot de pluie journalière clôturée et mettre
+#   à jour le top 10 historique si nécessaire.
+#
+# 🧩 PÉRIMÈTRE
+#   - Lecture du snapshot veille
+#   - Évaluation de l'insertion selon le contrat
+#   - Décalage des rangs si record
+#   - Horodatage de l'évaluation effective
+#
+# 🔖 NATURE
+#   Application
+#
+# ⚙️ MODE
+#   single
+#   Justification : exclusivité stricte pendant le décalage des rangs.
+#
+# 📣 DÉCLENCHEURS
+#   Tous les jours à 00:00:30.
+#
+# 🔗 DÉPENDANCES
+#   Lit :
+#     - input_number.palmares_pluie_journalier_snapshot_veille
+#     - input_text.palmares_pluie_journalier_rang_XX_date
+#     - input_number.palmares_pluie_journalier_rang_XX_valeur
+#     - binary_sensor.palmares_pluie_journalier_anomalie
+#   Écrit :
+#     - input_text.palmares_pluie_journalier_rang_XX_date
+#     - input_number.palmares_pluie_journalier_rang_XX_valeur
+#     - input_datetime.palmares_pluie_journalier_derniere_evaluation
+#
+# 🧠 AUTORITÉ
+#   Applique la décision contractuelle d'insertion FIFO.
+#
+# ♻️ IDEMPOTENCE
+#   Garde d'unicité par date veille.
+#
+# 🚫 INTERDITS
+#   - Corriger une anomalie structurelle
+#   - Évaluer une période non clôturée
+#   - Lire le Recorder comme source métier
+#
+# 🏷️ STATUT
+#   Application — Arsenal v14.x — V1.0 STRICT
+# ==========================================================
+
+- id: "10160000000021"
+  alias: "Météo - Pluie - Palmarès journalier - Évaluation"
+  description: "Évalue le cumul journalier clôturé et met à jour le palmarès pluie."
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "00:00:30"
+
+  condition: []
+
+  action:
+    - variables:
+        valeur_snapshot: >
+          {{ states('input_number.palmares_pluie_journalier_snapshot_veille') | float(0) }}
+
+        date_veille: >
+          {{ (as_timestamp(now()) - 86400) | timestamp_custom('%Y-%m-%d', true) }}
+
+        snapshot_age_ok: >
+          {% set ts = as_timestamp(states.input_number.palmares_pluie_journalier_snapshot_veille.last_updated, 0) %}
+          {{ ts > 0 and (as_timestamp(now()) - ts) <= 23 * 3600 }}
+
+        anomalie_structurelle: >
+          {{ is_state('binary_sensor.palmares_pluie_journalier_anomalie', 'on')
+             and state_attr('binary_sensor.palmares_pluie_journalier_anomalie', 'motif')
+             in ['ordre_invalide', 'couplage_invalide', 'compacite_invalide'] }}
+
+        date_deja_presente: >
+          {% set d = (as_timestamp(now()) - 86400) | timestamp_custom('%Y-%m-%d', true) %}
+          {% set ns = namespace(found=false) %}
+          {% for i in range(1, 11) %}
+            {% set id = '%02d' | format(i) %}
+            {% if states('input_text.palmares_pluie_journalier_rang_' ~ id ~ '_date') == d %}
+              {% set ns.found = true %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.found }}
+
+        rang_insertion: >
+          {% set V = states('input_number.palmares_pluie_journalier_snapshot_veille') | float(0) %}
+          {% set ns = namespace(r=11, found=false, k=0) %}
+          {% for i in range(1, 11) %}
+            {% set id = '%02d' | format(i) %}
+            {% set d = states('input_text.palmares_pluie_journalier_rang_' ~ id ~ '_date') %}
+            {% set v = states('input_number.palmares_pluie_journalier_rang_' ~ id ~ '_valeur') | float(0) %}
+            {% if d not in ['', 'unknown', 'unavailable', 'none', 'None'] and v > 0 %}
+              {% set ns.k = i %}
+              {% if not ns.found and v < V %}
+                {% set ns.r = i %}
+                {% set ns.found = true %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {% if ns.found %}
+            {{ ns.r }}
+          {% elif ns.k < 10 %}
+            {{ ns.k + 1 }}
+          {% else %}
+            11
+          {% endif %}
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ not snapshot_age_ok | bool }}
+          sequence:
+            - stop: "Snapshot pluie obsolète : évaluation abandonnée."
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ anomalie_structurelle | bool }}
+          sequence:
+            - stop: "Palmarès en anomalie structurelle : évaluation abandonnée."
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ date_deja_presente | bool }}
+          sequence:
+            - service: input_datetime.set_datetime
+              target:
+                entity_id: input_datetime.palmares_pluie_journalier_derniere_evaluation
+              data:
+                datetime: >
+                  {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            - stop: "Date déjà présente dans le palmarès : évaluation horodatée puis abandonnée."
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ valeur_snapshot | float(0) <= 0 }}
+          sequence:
+            - service: input_datetime.set_datetime
+              target:
+                entity_id: input_datetime.palmares_pluie_journalier_derniere_evaluation
+              data:
+                datetime: >
+                  {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            - stop: "Valeur nulle : aucune insertion, évaluation horodatée."
+
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ rang_insertion | int > 10 }}
+          sequence:
+            - service: input_datetime.set_datetime
+              target:
+                entity_id: input_datetime.palmares_pluie_journalier_derniere_evaluation
+              data:
+                datetime: >
+                  {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+            - stop: "Valeur hors top 10 : aucune insertion, évaluation horodatée."
+
+    - repeat:
+        for_each:
+          - 10
+          - 9
+          - 8
+          - 7
+          - 6
+          - 5
+          - 4
+          - 3
+          - 2
+        sequence:
+          - variables:
+              rang_destination: >
+                {{ '%02d' | format(repeat.item | int) }}
+              rang_source: >
+                {{ '%02d' | format((repeat.item | int) - 1) }}
+
+          - choose:
+              - conditions:
+                  - condition: template
+                    value_template: >
+                      {{ repeat.item | int > rang_insertion | int }}
+                sequence:
+                  - service: input_text.set_value
+                    target:
+                      entity_id: >
+                        input_text.palmares_pluie_journalier_rang_{{ rang_destination }}_date
+                    data:
+                      value: >
+                        {{ states('input_text.palmares_pluie_journalier_rang_' ~ rang_source ~ '_date') }}
+
+                  - service: input_number.set_value
+                    target:
+                      entity_id: >
+                        input_number.palmares_pluie_journalier_rang_{{ rang_destination }}_valeur
+                    data:
+                      value: >
+                        {{ states('input_number.palmares_pluie_journalier_rang_' ~ rang_source ~ '_valeur') | float(0) }}
+
+    - service: input_text.set_value
+      target:
+        entity_id: >
+          input_text.palmares_pluie_journalier_rang_{{ '%02d' | format(rang_insertion | int) }}_date
+      data:
+        value: >
+          {{ date_veille }}
+
+    - service: input_number.set_value
+      target:
+        entity_id: >
+          input_number.palmares_pluie_journalier_rang_{{ '%02d' | format(rang_insertion | int) }}_valeur
+      data:
+        value: >
+          {{ valeur_snapshot | float(0) | round(1) }}
+
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.palmares_pluie_journalier_derniere_evaluation
+      data:
+        datetime: >
+          {{ now().strftime('%Y-%m-%d %H:%M:%S') }}

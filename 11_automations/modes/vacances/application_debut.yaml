@@ -96,7 +96,6 @@
         entity_id:
           - input_boolean.mode_vaisselle
           - input_boolean.ecs_desinfection_active
-          - input_boolean.bouclage_visiteur
 
     - action: persistent_notification.create
       data:

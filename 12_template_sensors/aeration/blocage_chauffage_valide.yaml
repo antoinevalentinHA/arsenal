@@ -112,11 +112,11 @@
 #     - binary_sensor.* ouvrants avec délai
 #
 #   Observabilité thermique :
-#     - sensor.deltaT_entree
-#     - sensor.deltaT_sejour
-#     - sensor.deltaT_chambre_parents
-#     - sensor.deltaT_chambre_arnaud
-#     - sensor.deltaT_chambre_matthieu
+#     - sensor.deltat_entree
+#     - sensor.deltat_sejour
+#     - sensor.deltat_chambre_parents
+#     - sensor.deltat_chambre_arnaud
+#     - sensor.deltat_chambre_matthieu
 #
 # ----------------------------------------------------------
 # 🛑 STATUT D’INTÉGRATION ACTUEL
@@ -149,7 +149,6 @@
 # ==========================================================
 
 - binary_sensor:
-
     - name: "Aération bloquante valide"
       unique_id: aeration_bloquante_valide
       default_entity_id: binary_sensor.aeration_bloquante_valide
@@ -195,15 +194,15 @@
 
               {% for z in zones %}
                 {% if z == 'entree' %}
-                  {% set dtz = states('sensor.deltaT_entree') | float(0) %}
+                  {% set dtz = states('sensor.deltat_entree') | float(0) %}
                 {% elif z == 'sejour' %}
-                  {% set dtz = states('sensor.deltaT_sejour') | float(0) %}
+                  {% set dtz = states('sensor.deltat_sejour') | float(0) %}
                 {% elif z == 'chambre_parents' %}
-                  {% set dtz = states('sensor.deltaT_chambre_parents') | float(0) %}
+                  {% set dtz = states('sensor.deltat_chambre_parents') | float(0) %}
                 {% elif z == 'chambre_arnaud' %}
-                  {% set dtz = states('sensor.deltaT_chambre_arnaud') | float(0) %}
+                  {% set dtz = states('sensor.deltat_chambre_arnaud') | float(0) %}
                 {% elif z == 'chambre_matthieu' %}
-                  {% set dtz = states('sensor.deltaT_chambre_matthieu') | float(0) %}
+                  {% set dtz = states('sensor.deltat_chambre_matthieu') | float(0) %}
                 {% else %}
                   {% set dtz = 0 %}
                 {% endif %}

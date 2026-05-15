@@ -1,0 +1,146 @@
+# ==========================================================
+# 🧠 ARSENAL — CARTE UI
+#     Arsenal Self Audit — Statut synthétique
+#
+# 🔖 NATURE  : carte_metier
+# 🖼️ TYPE UI : statut
+# 🎚️ CONFIANCE : elevee
+# ==========================================================
+# 🎯 RÔLE
+#   Visualiser le verdict synthétique du moteur
+#   d’audit Arsenal NAS.
+#
+# 🧩 PÉRIMÈTRE
+#   - Affichage et interprétation visuelle uniquement
+#   - Aucune logique métier exécutive
+#   - Aucune autorité système
+#
+# 🔗 DÉPENDANCES
+#   Lit      :
+#     - sensor.arsenal_self_audit_statut
+#     - sensor.arsenal_self_audit_total_anomalies
+#     - sensor.arsenal_self_audit_total_observations
+#     - binary_sensor.arsenal_self_audit_error
+#     - binary_sensor.arsenal_self_audit_stale
+#
+#   Template :
+#     - socle_status_label
+#
+# 🚫 INTERDITS
+#   - Prendre une décision métier
+#   - Remplacer une automatisation
+#   - Produire un effet matériel
+#   - Devenir une source de vérité système
+#
+# 🏷️ STATUT
+#   Carte UI — Arsenal v14.x
+# ==========================================================
+
+arsenal_self_audit_status_card:
+
+  template:
+    - socle_status_label
+
+  entity: sensor.arsenal_self_audit_statut
+
+  name: Audit Arsenal
+
+  show_state: true
+  show_label: true
+
+  state_display: >
+    [[[
+      const error =
+        states['binary_sensor.arsenal_self_audit_error']?.state;
+
+      const stale =
+        states['binary_sensor.arsenal_self_audit_stale']?.state;
+
+      if (
+        entity.state === 'unknown' ||
+        entity.state === 'unavailable'
+      ) {
+        return 'Indisponible';
+      }
+
+      if (error === 'on') {
+        return 'Erreur';
+      }
+
+      if (stale === 'on') {
+        return 'Perime';
+      }
+
+      if (entity.state === 'alert') {
+        return 'Anomalies';
+      }
+
+      if (entity.state === 'ok') {
+        return 'Nominal';
+      }
+
+      return entity.state;
+    ]]]
+
+  label: >
+    [[[
+      const anomalies =
+        states['sensor.arsenal_self_audit_total_anomalies']?.state;
+
+      const observations =
+        states['sensor.arsenal_self_audit_total_observations']?.state;
+
+      const stale =
+        states['binary_sensor.arsenal_self_audit_stale']?.state;
+
+      if (
+        entity.state === 'unknown' ||
+        entity.state === 'unavailable'
+      ) {
+        return 'Verdict indisponible';
+      }
+
+      if (stale === 'on') {
+        return anomalies + ' anomalie(s) • audit perime';
+      }
+
+      return anomalies + ' anomalie(s) • '
+        + observations + ' observations';
+    ]]]
+
+  styles:
+
+    card:
+      - background-color: >
+          [[[
+            const error =
+              states['binary_sensor.arsenal_self_audit_error']?.state;
+
+            const stale =
+              states['binary_sensor.arsenal_self_audit_stale']?.state;
+
+            if (
+              entity.state === 'unknown' ||
+              entity.state === 'unavailable'
+            ) {
+              return 'rgba(224, 224, 224, 0.2)';
+            }
+
+            if (error === 'on') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            if (stale === 'on') {
+              return 'rgba(255, 152, 0, 0.25)';
+            }
+
+            if (entity.state === 'alert') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            if (entity.state === 'ok') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            return 'rgba(224, 224, 224, 0.2)';
+          ]]]

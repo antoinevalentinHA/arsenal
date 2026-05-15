@@ -12,5 +12,4 @@ cardio_nuit_raison_invalidite:
 cardio_nuit_historique_7j:
   name: Cardio nuit historique 7j
   max: 255
-  initial: "[]"
   icon: mdi:chart-line

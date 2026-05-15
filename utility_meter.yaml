@@ -274,6 +274,13 @@ audi_e_tron_distance_an:
 # 🌧️ MÉTÉO — PRÉCIPITATIONS
 ############################################################
 
+# Pluie cumulée journalière
+
+pluie_journaliere:
+  source: sensor.pluie_total_local
+  cycle: daily
+  name: "Pluie (journalière)"
+
 # Pluie cumulée hebdomadaire
 
 pluie_semaine:

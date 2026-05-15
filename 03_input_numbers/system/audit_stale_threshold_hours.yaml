@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT NUMBER
+#     arsenal_self — Audit NAS — Seuil de fraîcheur (heures)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Paramètre humain : nombre d'heures au-delà duquel la
+#   projection MQTT d'audit est considérée comme obsolète.
+#
+# 🧩 PÉRIMÈTRE
+#   - Helper HA modifiable depuis l'UI
+#   - Lu uniquement par binary_sensor.arsenal_self_audit_stale
+#   - N'a aucun effet sur le pipeline NAS (cf. contrat §6.3)
+#
+# 🔖 NATURE
+#   parameter (sub-rôle palette : parameter)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_stale_threshold_hours
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Représenter une autre grandeur que des heures
+#
+# 🏷️ STATUT
+#   Paramètre — Arsenal v14.x — Domaine arsenal_self
+#
+# 📐 VALEURS
+#   min : 1   (1h, valeur de garde pour test)
+#   max : 168 (1 semaine, marge maximale raisonnable)
+#   step : 1
+#   initial : 25 (24h + 1h marge, conforme §11.a du contrat)
+# ==========================================================
+
+arsenal_self_audit_stale_threshold_hours:
+  name: "Arsenal Self Audit Stale Threshold Hours"
+  min: 1
+  max: 168
+  step: 1
+  initial: 25
+  unit_of_measurement: "h"
+  mode: box
+  icon: mdi:timer-sand

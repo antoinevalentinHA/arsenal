@@ -1,0 +1,13 @@
+type: markdown
+content: |
+  {% set r = state_attr('sensor.palmares_pluie_journalier', 'records') or [] %}
+
+  **🌧️ Palmarès pluie journalière**
+
+  {% if r | count == 0 %}
+  _Aucun record enregistré._
+  {% else %}
+  {% for item in r %}
+  {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}️⃣{% endif %} {{ item.date }} — **{{ item.valeur }} mm**
+  {% endfor %}
+  {% endif %}

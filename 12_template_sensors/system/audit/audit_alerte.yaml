@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     arsenal_self — Audit NAS — Alerte
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer une entrée de décision binaire : ON si le moteur
+#   d'audit a détecté au moins une anomalie actionnable.
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement, dérivée du statut
+#   - Aucune action
+#   - Consommable par les automatisations de notification
+#
+# 🔖 NATURE
+#   alerte (sub-rôle palette : decision_input)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_alerte
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.arsenal_self_audit_statut
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre état booléen et action automatique
+#   - Confondre alerte (anomalie patrimoniale) avec error
+#     (échec de la chaîne d'audit)
+#
+# 🏷️ STATUT
+#   Alerte — Arsenal v14.x — Domaine arsenal_self
+# ==========================================================
+
+- binary_sensor:
+    - name: "Arsenal Self Audit Alerte"
+      unique_id: arsenal_self_audit_alerte
+
+      device_class: problem
+
+      state: >
+        {{ states('sensor.arsenal_self_audit_statut') == 'alert' }}

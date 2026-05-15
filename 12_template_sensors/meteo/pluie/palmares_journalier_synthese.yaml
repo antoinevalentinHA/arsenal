@@ -1,0 +1,57 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Météo — Pluie — Palmarès journalier — Synthèse
+# ==========================================================
+
+- sensor:
+
+    - name: "Palmarès pluie journalier"
+      unique_id: palmares_pluie_journalier
+      unit_of_measurement: "mm"
+      device_class: precipitation
+      icon: mdi:trophy-outline
+
+      availability: >
+        {{ states('input_text.palmares_pluie_journalier_rang_01_date') not in ['unknown', 'unavailable', 'none', 'None'] }}
+
+      state: >
+        {% set d = states('input_text.palmares_pluie_journalier_rang_01_date') %}
+        {% set v = states('input_number.palmares_pluie_journalier_rang_01_valeur') | float(0) %}
+        {% if d not in ['', 'unknown', 'unavailable', 'none', 'None'] and v > 0 %}
+          {{ v | round(1) }}
+        {% else %}
+          {{ none }}
+        {% endif %}
+
+      attributes:
+        instance_id: pluie_journalier
+        cycle: daily
+        top_n: 10
+        unite: mm
+
+        derniere_evaluation: >
+          {{ states('input_datetime.palmares_pluie_journalier_derniere_evaluation') }}
+
+        nombre_records: >
+          {% set ns = namespace(count=0) %}
+          {% for i in range(1, 11) %}
+            {% set id = '%02d' | format(i) %}
+            {% set d = states('input_text.palmares_pluie_journalier_rang_' ~ id ~ '_date') %}
+            {% set v = states('input_number.palmares_pluie_journalier_rang_' ~ id ~ '_valeur') | float(0) %}
+            {% if d not in ['', 'unknown', 'unavailable', 'none', 'None'] and v > 0 %}
+              {% set ns.count = ns.count + 1 %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.count }}
+
+        records: >
+          {% set ns = namespace(records=[]) %}
+          {% for i in range(1, 11) %}
+            {% set id = '%02d' | format(i) %}
+            {% set d = states('input_text.palmares_pluie_journalier_rang_' ~ id ~ '_date') %}
+            {% set v = states('input_number.palmares_pluie_journalier_rang_' ~ id ~ '_valeur') | float(0) %}
+            {% if d not in ['', 'unknown', 'unavailable', 'none', 'None'] and v > 0 %}
+              {% set ns.records = ns.records + [dict(rang=i, date=d, valeur=v | round(1))] %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.records }}

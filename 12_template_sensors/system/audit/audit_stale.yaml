@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     arsenal_self — Audit NAS — Stale
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer une entrée de décision binaire : ON si la
+#   dernière projection MQTT d'audit reçue par HA est plus
+#   ancienne que le seuil configuré (default 25h).
+#
+# 🧩 PÉRIMÈTRE
+#   - Cohérence temporelle de la projection, pas du verdict
+#   - Stale peut coexister avec statut=ok (audit réussi
+#     mais pas re-publié récemment)
+#   - Aucune action
+#
+# 🔖 NATURE
+#   etat_coherence (sub-rôle palette : decision_input)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_stale
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.arsenal_self_audit_age_minutes
+#   Lit : input_number.arsenal_self_audit_stale_threshold_hours
+#   Contrat : CONTRAT_AUDIT_MQTT.md v1.0.0 §6 (fraîcheur)
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre stale (transport en retard) avec error
+#     (chaîne en échec)
+#   - Inscrire stale comme valeur du sensor statut
+#     (cf. CONTRAT_AUDIT_MQTT.md §6.4)
+#
+# 🏷️ STATUT
+#   Cohérence — Arsenal v14.x — Domaine arsenal_self
+# ==========================================================
+
+- binary_sensor:
+    - name: "Arsenal Self Audit Stale"
+      unique_id: arsenal_self_audit_stale
+
+      device_class: problem
+
+      availability: >
+        {{ states('sensor.arsenal_self_audit_age_minutes') not in
+           ['unknown', 'unavailable', 'none', ''] }}
+
+      state: >
+        {% set age_min = states('sensor.arsenal_self_audit_age_minutes') | float(0) %}
+        {% set threshold_h = states('input_number.arsenal_self_audit_stale_threshold_hours') | float(25) %}
+        {{ (age_min / 60) > threshold_h }}

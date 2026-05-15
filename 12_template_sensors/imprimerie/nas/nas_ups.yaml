@@ -42,7 +42,7 @@
       unique_id: nas_imprimerie_ups_on_battery
       device_class: power
       icon: >
-        {% if is_state('binary_sensor.nas_imprimerie_ups_on_battery', 'on') %}
+        {% if is_state('binary_sensor.nas_imprimerie_ups_sur_batterie', 'on') %}
           mdi:battery-alert
         {% else %}
           mdi:battery-check

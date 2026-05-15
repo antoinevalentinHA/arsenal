@@ -8,17 +8,16 @@ aeration_m3_analyse_deltat:
   mode: single
 
   sequence:
-
     - variables:
         delta_max: >
           {{
             [
-              states('sensor.deltaT_entree') | float(0),
-              states('sensor.deltaT_sejour') | float(0),
-              states('sensor.deltaT_chambre_arnaud') | float(0),
-              states('sensor.deltaT_chambre_matthieu') | float(0),
-              states('sensor.deltaT_chambre_parents') | float(0),
-              states('sensor.deltaT_palier') | float(0)
+              states('sensor.deltat_entree') | float(0),
+              states('sensor.deltat_sejour') | float(0),
+              states('sensor.deltat_chambre_arnaud') | float(0),
+              states('sensor.deltat_chambre_matthieu') | float(0),
+              states('sensor.deltat_chambre_parents') | float(0),
+              states('sensor.deltat_palier') | float(0)
             ] | max
           }}
 
@@ -65,19 +64,16 @@ aeration_m3_analyse_deltat:
           }}
 
     - choose:
-
         - conditions:
             - condition: template
               value_template: "{{ prolongation_heures | float(0) > 0 }}"
           sequence:
-
             - action: script.aeration_m3_prolonger_blocage
               data:
                 delta_max: "{{ delta_max }}"
                 prolongation_heures: "{{ prolongation_heures }}"
 
       default:
-
         - action: script.aeration_m3_maintenir_blocage
           data:
             delta_max: "{{ delta_max }}"

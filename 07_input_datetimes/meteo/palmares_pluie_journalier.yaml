@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Météo — Palmarès historique pluie journalière
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la référence temporelle de la dernière évaluation
+#   du palmarès historique de la pluie journalière.
+#   Sert de base au calcul de fraîcheur (condition B4).
+#
+# 🧩 PÉRIMÈTRE
+#   - Mémoire temporelle persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Mémoire de fraîcheur — référence transactionnelle
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_HISTORIQUE.md V1.0 STRICT
+#   Instance : pluie_journalier
+#   Sections : 4.3 (entités), 5.2 (évaluation post-minuit,
+#              étape 6 : horodatage systématique), 7.3 (B4 —
+#              fraîcheur d'évaluation, seuil 36h).
+#
+# 📋 CONVENTIONS
+#   - Écriture exclusive par
+#     automation.palmares_pluie_journalier_evaluation
+#   - Mise à jour à chaque évaluation, qu'elle aboutisse
+#     à une insertion ou à un rejet (cf. contrat 5.2 étape 6)
+#   - Exemption B4 tant que le helper n'a jamais été écrit
+#     (cf. contrat 7.3 — exception état initial)
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire temporelle et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Utiliser comme déclencheur direct sans justification
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x — V1.0 STRICT
+# ==========================================================
+
+palmares_pluie_journalier_derniere_evaluation:
+  name: "Palmarès pluie journalière — dernière évaluation"
+  has_date: true
+  has_time: true
+  initial: "1970-01-01 00:00:00"
+  icon: mdi:clock-check-outline

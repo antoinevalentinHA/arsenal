@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     arsenal_self — Audit NAS — Total observations patrimoniales
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer le compteur d'observations patrimoniales (entités
+#   déclarées par plateformes runtime_yaml_authority, hors
+#   registry HA). Ce compteur ne déclenche jamais d'alerte.
+#
+# 🧩 PÉRIMÈTRE
+#   - Compteur entier ≥ 0 issu du payload MQTT
+#   - Indépendant du verdict patrimonial
+#   - Inexploitable en cas de verdict=error
+#
+# 🔖 NATURE
+#   diagnostic (sub-rôle palette : diagnostic)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_self_audit_total_observations
+#
+# 🔗 DÉPENDANCES
+#   Source MQTT : arsenal/nas/audit/state
+#   Champ JSON  : total_observations_patrimoniales
+#   Contrat     : CONTRAT_AUDIT_MQTT.md v1.0.0 §7.1
+#   Doctrine    : CONTRAT_AUDIT.md v1.1.1 §7.2 (observations)
+#
+# 🚫 INTERDITS
+#   - Considérer une observation comme une anomalie
+#   - Sommer avec total_anomalies
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x — Domaine arsenal_self
+# ==========================================================
+
+- name: "Arsenal Self Audit Total Observations"
+  unique_id: arsenal_self_audit_total_observations
+  state_topic: arsenal/nas/audit/state
+  value_template: >
+    {% set v = value_json.total_observations_patrimoniales %}
+    {{ v if v is not none else 'unknown' }}
+  state_class: measurement
+  qos: 1
