@@ -247,6 +247,7 @@ include:
     - input_number.cardio_nuit_moyenne
     - sensor.cardio_nuit_etat
     - binary_sensor.cardio_anomalie
+    - sensor.cardio_baseline_7j
 
     # =====================================================
     # ==== 🏭🌫️ IMPRIMERIE – HUMIDEX ====

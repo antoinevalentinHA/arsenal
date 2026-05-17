@@ -6,21 +6,38 @@
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
-#     Garantir l’extinction de l’éclairage du jardin
-#     lorsque le cycle logique d’éclairage matinal
+#     Garantir l'extinction de l'éclairage du jardin
+#     lorsque le cycle logique d'éclairage matinal
 #     devient INACTIF.
 #
 #     ⚠️ Aucune notification persistante :
 #     - La fin de cycle est un événement passé
-#     - L’extinction matérielle suffit comme signal utilisateur
+#     - L'extinction matérielle suffit comme signal utilisateur
 #
 # ----------------------------------------------------------
-# 🧠 SOURCE DÉCISION
+#  🔧 CORRECTION v1.1
+#
+#     Trigger : ajout de from: 'on'
+#
+#     Motif : sans from: 'on', la transition unavailable → off
+#     (rechargement de templates HA) déclenchait une extinction
+#     parasite, y compris pendant le cycle soir.
+#     La transition significative est exclusivement on → off.
+#
+#     Condition : ajout de la garde arbitrage soir
+#
+#     Motif : conforme au contrat §4 (règle d'arbitrage unique).
+#     La politique SOIR est prioritaire sur la politique MATIN.
+#     L'extinction matin ne doit jamais éteindre si le cycle
+#     soir est actif, quelle qu'en soit la cause technique.
+#
+# ----------------------------------------------------------
+#  🧠 SOURCE DÉCISION
 #
 #     binary_sensor.jardin_cycle_matin_actif
 #
 # ----------------------------------------------------------
-# 🧠 MÉMOIRE MÉTIER
+#  🧠 MÉMOIRE MÉTIER
 #
 #     input_boolean.jardin_eclairage_matin_actif
 #
@@ -29,8 +46,8 @@
 - id: '1007000000002'
   alias: "Éclairage - Jardin - Désactivation matin"
   description: >
-    Éteint systématiquement l’éclairage du jardin à la fin
-    du cycle matin. Aucun message persistant n’est émis,
+    Éteint systématiquement l'éclairage du jardin à la fin
+    du cycle matin. Aucun message persistant n'est émis,
     conformément au contrat Notifications Arsenal.
 
   mode: single
@@ -41,7 +58,19 @@
   trigger:
     - platform: state
       entity_id: binary_sensor.jardin_cycle_matin_actif
+      from: 'on'
       to: 'off'
+
+  # ======================================================
+  # 🔒 Conditions
+  # ======================================================
+  condition:
+    # Arbitrage contrat §4 : la politique SOIR est prioritaire.
+    # L'extinction matin ne doit jamais s'exécuter
+    # si le cycle soir est actif.
+    - condition: state
+      entity_id: binary_sensor.jardin_cycle_eclairage_soir_actif
+      state: 'off'
 
   # ======================================================
   # 🔄 Actions

@@ -1,16 +1,16 @@
 # ==========================================================
 # 🧠 ARSENAL — BINARY SENSOR :
-#     Jardin – Fenêtre d’éclairage matin valide
+#     Jardin – Fenêtre d'éclairage matin valide
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
 #     Capteur binaire de DÉCISION MÉTIER.
 #
-#     Il indique si l’on se situe actuellement
+#     Il indique si l'on se situe actuellement
 #     dans une fenêtre de pertinence lumineuse
-#     pour l’éclairage du jardin le matin.
+#     pour l'éclairage du jardin le matin.
 #
-#     Ce capteur n’exprime PAS un confort,
+#     Ce capteur n'exprime PAS un confort,
 #     mais une utilité lumineuse.
 #
 # ----------------------------------------------------------
@@ -18,17 +18,40 @@
 #
 #     La fenêtre MATIN est considérée comme VALIDE si :
 #
-#       • l’automatisme matin est autorisé
+#       • l'automatisme matin est autorisé
 #       • la lumière naturelle est insuffisante
-#         (soleil sous l’horizon)
-#       • l’instant courant est compris entre
+#         (now() < heure astronomique du lever du soleil)
+#       • l'instant courant est compris entre
 #         les bornes journalières définies
+#       • la fenêtre est structurellement non vide
+#         (h_fin > h_debut)
+#
+# ----------------------------------------------------------
+# 🔧 CORRECTION v1.2
+#
+#     Remplace : is_state('sun.sun', 'below_horizon')
+#     Par      : now() < lever_astronomique
+#
+#     Motif : sun.sun peut rester 'below_horizon' plusieurs
+#     minutes après le lever réel (état HA en retard).
+#     Le timestamp astronomique est déterministe et fiable.
+#
+#     Logique de sélection du lever du jour courant :
+#       1. next_rising si sa date == aujourd'hui
+#          (avant le lever : c'est bien le lever du jour)
+#       2. last_rising si sa date == aujourd'hui
+#          (après le lever : c'est le lever de ce matin)
+#       3. fallback none (fenêtre inactive par sécurité)
+#
+#     Ajoute : garde h_fin > h_debut
+#     Motif : en mai à Bordeaux, lever < heure_allumage →
+#     fenêtre structurellement vide → aucun allumage.
 #
 # ----------------------------------------------------------
 # 🧠 SOURCES UTILISÉES
 #
 #     - input_boolean.auto_lumiere_jardin_matin
-#     - sun.sun
+#     - sun.sun (next_rising / last_rising)
 #     - input_datetime.heure_allumage_jardin_matin
 #     - input_datetime.heure_extinction_jardin_matin
 #
@@ -48,21 +71,50 @@
       default_entity_id: binary_sensor.jardin_cycle_matin_actif
       state: >
         {% set auto = is_state('input_boolean.auto_lumiere_jardin_matin', 'on') %}
-        {% set nuit = is_state('sun.sun', 'below_horizon') %}
-        {% set debut = states('input_datetime.heure_allumage_jardin_matin') %}
-        {% set fin = states('input_datetime.heure_extinction_jardin_matin') %}
 
-        {% if debut not in ['unknown','unavailable']
-              and fin not in ['unknown','unavailable'] %}
+        {# Lever astronomique du jour civil courant
+           — indépendant de l'état sun.sun
+           Priorité :
+             1. next_rising si sa date == aujourd'hui
+                (on est avant le lever de ce matin)
+             2. last_rising si sa date == aujourd'hui
+                (on est après le lever de ce matin)
+             3. none → fenêtre inactive par sécurité #}
+        {% set nr = state_attr('sun.sun', 'next_rising') %}
+        {% set lr = state_attr('sun.sun', 'last_rising') %}
+
+        {% set nr_local = as_local(as_datetime(nr)) if nr is not none else none %}
+        {% set lr_local = as_local(as_datetime(lr)) if lr is not none else none %}
+
+        {% if nr_local is not none and nr_local.date() == now().date() %}
+          {% set lever = nr_local %}
+        {% elif lr_local is not none and lr_local.date() == now().date() %}
+          {% set lever = lr_local %}
+        {% else %}
+          {% set lever = none %}
+        {% endif %}
+
+        {# Lumière naturelle insuffisante = on est avant le lever #}
+        {% set lumiere_insuffisante = lever is not none and now() < lever %}
+
+        {# Bornes journalières #}
+        {% set debut = states('input_datetime.heure_allumage_jardin_matin') %}
+        {% set fin   = states('input_datetime.heure_extinction_jardin_matin') %}
+
+        {% if debut not in ['unknown', 'unavailable']
+              and fin   not in ['unknown', 'unavailable'] %}
           {% set h_debut = today_at(debut[0:5]) %}
-          {% set h_fin = today_at(fin[0:5]) %}
+          {% set h_fin   = today_at(fin[0:5]) %}
+          {% set fenetre_valide = h_fin > h_debut %}
           {% set time_ok = now() >= h_debut and now() < h_fin %}
         {% else %}
+          {% set fenetre_valide = false %}
           {% set time_ok = false %}
         {% endif %}
 
         {{
           auto
-          and nuit
+          and lumiere_insuffisante
+          and fenetre_valide
           and time_ok
         }}

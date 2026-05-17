@@ -1,32 +1,47 @@
 # ==========================================================
 #  🧠 ARSENAL — AUTOMATION :
-#     Alarme – Délai d’entrée (fin)
+#     Alarme – Délai d'entrée (fin)
 #
 #  ID : 10020000000032
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
-#     Automation chargée de déclencher l’alarme
-#     lorsque le délai d’entrée expire sans
+#     Automation chargée de déclencher l'alarme
+#     lorsque le délai d'entrée expire sans
 #     désarmement préalable.
 #
 #  🧩 PRINCIPE
 #
-#     - Le timer du délai d’entrée arrive à échéance
-#     - L’alarme est toujours armée
+#     - Le timer du délai d'entrée arrive à échéance
+#     - Le système est stable (post-reboot safe)
+#     - L'alarme est toujours armée
+#     - Une intrusion est toujours active
 #     - Le déclenchement est exécuté
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
 #     - Ne gère pas le démarrage du délai
-#     - Ne décide pas de l’armement
+#     - Ne décide pas de l'armement
 #     - Ne modifie aucun état de présence
 #
 #  🛡️ ROBUSTESSE
 #
 #     - Zéro wait
 #     - Réaction événementielle
-#     - Post-reboot safe
+#     - Garde systeme_stable (post-reboot)
+#     - Garde ouverture_qualifiee_maison (intrusion toujours active)
+#
+#  ⚠️  DETTE ARCHITECTURALE DOCUMENTÉE
+#
+#     Cette automation court-circuite le pipeline canonique
+#     Arsenal (Décision → Helpers → Application).
+#     Elle appelle alarm_control_panel.alarm_trigger et
+#     script.sirene_brutale directement, sans passer par
+#     script.alarme_decision_centrale ni input_text.alarme_etat_cible.
+#
+#     Refonte cible : matérialiser "intrusion confirmée" comme
+#     état contractuel persisté, puis déclencher panneau et
+#     sirène depuis cet état via le pipeline canonique.
 #
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
@@ -42,12 +57,23 @@
         entity_id: timer.delai_entree
 
   condition:
+    # Garde post-reboot : système stabilisé
+    - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+    # Alarme toujours armée
     - condition: state
       entity_id: alarm_control_panel.alarme_maison
       state: "armed_away"
 
+    # Intrusion toujours active au moment du déclenchement
+    - condition: state
+      entity_id: binary_sensor.ouverture_qualifiee_maison
+      state: "on"
+
   action:
-    # 🚨 Déclenchement de l’alarme
+    # 🚨 Déclenchement de l'alarme
     - action: alarm_control_panel.alarm_trigger
       target:
         entity_id: alarm_control_panel.alarme_maison
@@ -59,7 +85,7 @@
         titre: "🚨 Alarme déclenchée"
         message: >
           Aucun désarmement détecté après expiration
-          du délai d’entrée.
+          du délai d'entrée.
         extra:
           priority: high
           importance: high

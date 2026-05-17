@@ -8,25 +8,52 @@
 #
 #     Automation de calcul horaire dérivé.
 #
-#     Elle calcule et met à jour l’heure d’extinction
-#     de l’éclairage du jardin le matin, en fonction :
+#     Elle calcule et met à jour l'heure d'extinction
+#     de l'éclairage du jardin le matin, en fonction :
 #       • du lever réel du soleil
-#       • d’un délai solaire configurable
-#       • d’une heure fixe de secours
+#       • d'un délai solaire configurable
+#       • d'une heure fixe de secours
 #
-#     Cette automation n’a AUCUN effet direct
-#     sur l’éclairage.
+#     Cette automation n'a AUCUN effet direct
+#     sur l'éclairage.
 #
 #  🧩 PRINCIPE
 #
-#     - Recalcul déclenché sur :
-#         • lever du soleil
-#         • modification des paramètres utilisateurs
+#     - Recalcul déclenché en début de jour civil (00:01)
+#       et sur modification des paramètres utilisateurs.
 #     - Calcul de deux candidats :
 #         • extinction solaire (lever + délai)
 #         • extinction fixe de secours
-#     - Sélection de l’heure la plus proche (la plus tôt)
-#     - Publication de l’heure cible dans un helper
+#     - Sélection de l'heure la plus proche (la plus tôt)
+#     - Publication de l'heure cible dans un helper
+#
+#  🔧 CORRECTION v1.2
+#
+#     Remplace : déclencheur platform: sun / event: sunrise
+#     Par      : déclencheur platform: time / at: "00:01:00"
+#
+#     Motif : déclencher au lever du soleil crée une race
+#     condition (dt ≈ now_ts à quelques ms près) rendant
+#     la garde "dt < now_ts" non déterministe.
+#     Le recalcul à 00:01 utilise next_rising du jour,
+#     qui est connu et futur à cette heure.
+#
+#     Supprime : le bloc de correction + timedelta(days=1)
+#
+#     Motif : input_datetime ne stocke que l'heure (%H:%M:%S),
+#     la correction "lendemain" était sans effet et dangereuse
+#     (logique conditionnelle cassée, violations contractuelles).
+#
+#     Aligne : sélection du lever sur la même logique que
+#     binary_sensor.jardin_cycle_matin_actif :
+#       next_rising si aujourd'hui → avant le lever
+#       last_rising si aujourd'hui → après le lever
+#       fallback → heure fixe seule
+#
+#     Motif : si un helper est modifié après le lever du soleil,
+#     next_rising pointe déjà sur demain. Sans cette garde,
+#     le calcul serait ancré sur le lever de demain,
+#     produisant une heure d'extinction contractuellement fausse.
 #
 #  🧠 PARAMÈTRES UTILISATEUR
 #
@@ -43,15 +70,15 @@
 #
 #     input_datetime.heure_extinction_jardin_matin
 #
-#     → heure cible consommée par les automatisations
-#       de clôture du cycle d’éclairage matin
+#     → heure cible consommée par le binary sensor
+#       binary_sensor.jardin_cycle_matin_actif
 #
 #  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
 #
-#     - N’allume PAS l’éclairage
-#     - N’éteint PAS l’éclairage
+#     - N'allume PAS l'éclairage
+#     - N'éteint PAS l'éclairage
 #     - Ne déclenche AUCUNE action terrain
-#     - Ne décide PAS du cycle d’éclairage
+#     - Ne décide PAS du cycle d'éclairage
 #
 #  🧠 ARCHITECTURE ARSENAL
 #
@@ -66,9 +93,10 @@
 - id: '10070000000020'
   alias: "Éclairage - Jardin - Mise à jour heure matin"
   description: >
-    Met à jour automatiquement l’heure d’extinction du jardin
-    le matin selon le lever du soleil, l’heure d’allumage du matin
-    et une heure fixe de secours configurable.
+    Met à jour automatiquement l'heure d'extinction du jardin
+    le matin selon le lever du soleil, le délai configurable
+    et une heure fixe de secours. Recalcul en début de jour civil
+    et sur modification des paramètres utilisateurs.
 
   mode: single
 
@@ -76,9 +104,12 @@
   # 🔔 Déclencheurs
   # ======================================================
   trigger:
-    - platform: sun
-      event: sunrise
+    # Recalcul en début de jour civil
+    # next_rising est connu et futur à 00:01 → pas de race condition
+    - platform: time
+      at: "00:01:00"
 
+    # Recalcul immédiat sur changement de paramètre utilisateur
     - platform: state
       entity_id:
         - input_number.delai_extinction_jardin_matin
@@ -94,22 +125,35 @@
         entity_id: input_datetime.heure_extinction_jardin_matin
       data:
         time: >
-          {% set now_ts = now() %}
-          
-          {% set sunrise_next = as_local(as_datetime(state_attr('sun.sun', 'next_rising'))) %}
-          {% set sunrise = sunrise_next if sunrise_next.date() == now_ts.date()
-              else sunrise_next - timedelta(days=1) %}
-          
+          {% set nr = state_attr('sun.sun', 'next_rising') %}
+          {% set lr = state_attr('sun.sun', 'last_rising') %}
           {% set delay = states('input_number.delai_extinction_jardin_matin') | float(0) %}
-          
-          {% set dt_solaire = sunrise + timedelta(minutes=delay) %}
-          {% set dt_fixe = today_at(states('input_datetime.heure_extinction_jardin_matin_fixe')) %}
-          
-          {# On prend l'heure la PLUS PROCHE (la plus tôt) #}
-          {% set dt = [dt_solaire, dt_fixe] | min %}
-          
-          {% if dt < now_ts %}
-            {{ (dt + timedelta(days=1)).strftime('%H:%M:%S') }}
+
+          {# Lever du jour civil courant :
+             - next_rising si sa date == aujourd'hui (avant le lever)
+             - last_rising si sa date == aujourd'hui (après le lever)
+             Garantit que le calcul reste ancré au jour courant
+             même si un helper est modifié après le lever. #}
+          {% set nr_local = as_local(as_datetime(nr)) if nr is not none else none %}
+          {% set lr_local = as_local(as_datetime(lr)) if lr is not none else none %}
+
+          {% if nr_local is not none and nr_local.date() == now().date() %}
+            {% set lever = nr_local %}
+          {% elif lr_local is not none and lr_local.date() == now().date() %}
+            {% set lever = lr_local %}
           {% else %}
+            {% set lever = none %}
+          {% endif %}
+
+          {% if lever is none %}
+            {# Fallback sécurité : heure fixe seule #}
+            {{ states('input_datetime.heure_extinction_jardin_matin_fixe') }}
+          {% else %}
+            {% set dt_solaire = lever + timedelta(minutes=delay) %}
+            {% set dt_fixe = today_at(states('input_datetime.heure_extinction_jardin_matin_fixe')) %}
+
+            {# On prend l'heure la PLUS PROCHE (la plus tôt) #}
+            {% set dt = [dt_solaire, dt_fixe] | min %}
+
             {{ dt.strftime('%H:%M:%S') }}
           {% endif %}
