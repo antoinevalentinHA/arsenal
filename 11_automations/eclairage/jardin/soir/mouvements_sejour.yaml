@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Éclairage jardin — Séjour enregistrement activité
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   '10070000000029'
+#
+# 🎯 RÔLE
+#   Enregistrer chaque détection de mouvement dans le séjour
+#   sous forme de deux timestamps persistants utilisés par
+#   la chaîne d'extinction soir du jardin.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : écriture de jardin_sejour_derniere_activite,
+#              calcul et écriture de jardin_sejour_inactivite_deadline
+#   - Exclut : décision d'extinction (portée par 1007000000004),
+#              pilotage matériel,
+#              toute logique propre au cycle soir jardin
+#
+# 🔖 NATURE
+#   Synchronisation
+#
+# ⚙️ MODE
+#   single
+#   Justification : les deux écritures doivent rester atomiques
+#   pour un même événement mouvement. Un retrigger concurrent
+#   pendant l'écriture produirait des timestamps incohérents.
+#   Le mode single garantit la sérialisation.
+#
+# 📣 DÉCLENCHEURS
+#   - binary_sensor.mouvement_sejour → on
+#     Enregistre l'instant exact du mouvement et repousse
+#     la deadline d'inactivité de 1 heure.
+#
+# 🔗 DÉPENDANCES
+#   Lit     : binary_sensor.mouvement_sejour (état déclencheur)
+#   Appelle : input_datetime.set_datetime (x2)
+#   Écrit   : input_datetime.jardin_sejour_derniere_activite
+#             input_datetime.jardin_sejour_inactivite_deadline
+#
+# 🧠 AUTORITÉ
+#   Décide et applique.
+#   Cette automation est l'unique auteur des deux helpers
+#   séjour. Aucune autre automation ne doit les écrire.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger.
+#   Chaque front montant produit une mise à jour cohérente
+#   des deux helpers. Les écritures sont sans effet de bord.
+#
+# 🚫 INTERDITS
+#   - Piloter le matériel jardin
+#   - Décider de l'extinction
+#   - Écrire d'autres helpers que les deux désignés
+#   - Greffer une logique propre au cycle soir
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v14.x
+# ==========================================================
+
+- id: '10070000000029'
+  alias: "Éclairage - Jardin - Séjour enregistrement activité"
+  description: >
+    Enregistre chaque détection de mouvement dans le séjour
+    sous forme de timestamps persistants. Écrit la dernière
+    activité et repousse la deadline d'inactivité de 1 heure.
+    Ces helpers sont la source de vérité robuste aux redémarrages
+    pour la chaîne d'extinction soir du jardin.
+
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.mouvement_sejour
+      to: 'on'
+
+  action:
+    # 1. Horodatage de la dernière activité séjour
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.jardin_sejour_derniere_activite
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+    # 2. Deadline inactivité = maintenant + 1 heure
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.jardin_sejour_inactivite_deadline
+      data:
+        datetime: >
+          {{ (now() + timedelta(hours=1)).strftime('%Y-%m-%d %H:%M:%S') }}

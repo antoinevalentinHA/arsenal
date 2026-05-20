@@ -1,58 +1,62 @@
 # ==========================================================
-# 💡 ARSENAL — BINARY SENSOR
-#     Jardin (soir) – Extinction autorisee
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Éclairage jardin — Extinction soir autorisée
 # ----------------------------------------------------------
 # 🎯 RÔLE
+#   Exposer une lecture métier observable indiquant si,
+#   à l'instant courant, les conditions d'extinction du
+#   jardin le soir sont réunies : durée du cycle dépassée
+#   et inactivité séjour confirmée.
 #
-#     Capteur binaire de DÉCISION MÉTIER DE CONFORT.
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne déclarative uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#   - Aucun rôle causal dans la chaîne d'extinction
 #
-#     Il indique si, à l’instant courant, l’extinction
-#     automatique de l’éclairage du jardin le soir
-#     peut être effectuée SANS rupture brutale
-#     de confort pour les occupants.
+# 🔖 NATURE
+#   autorisation_logique
 #
-# ----------------------------------------------------------
-# 🧠 PRINCIPE
+# 🆔 UNIQUE_ID
+#   lumiere_jardin_soir_extinction_autorisee
 #
-#     L’extinction du jardin le soir est considérée
-#     comme AUTORISÉE si :
+# 🔗 DÉPENDANCES
+#   Lit : input_datetime.jardin_soir_extinction_deadline
+#         input_datetime.jardin_sejour_inactivite_deadline
+#         input_boolean.auto_lumiere_jardin_soir
 #
-#       • une durée suffisante s’est écoulée
-#         depuis l’allumage effectif du jardin
+# 🧠 STATUT ARCHITECTURAL
+#   Ce sensor est une PROJECTION DÉCLARATIVE.
+#   Il reflète un état calculable depuis des helpers persistants.
+#   Il est consommé par :
+#     - l'UI (dashboard, cartes d'état)
+#     - les sensors d'intention
+#     - les attributs de diagnostic
+#     - la cohérence documentaire
+#   Il n'est PAS consommé par les automations d'extinction.
+#   L'autorité causale appartient à l'automation 1007000000004
+#   qui lit les helpers directement.
 #
-#       • aucune activité n’a été détectée
-#         dans le séjour depuis un délai donné
+# ⚠️ RÉÉVALUATION TEMPORELLE IMPLICITE
+#   Ce sensor est déclaratif à réévaluation temporelle implicite
+#   via now(). HA le réévalue périodiquement de façon autonome
+#   en raison de la présence de now() dans le template — il ne
+#   se limite pas aux seuls changements d'état des entités
+#   référencées. Son affichage est donc approximativement à jour
+#   sans trigger explicite ni time_pattern.
+#   Cette caractéristique est ACCEPTABLE ici car ce sensor n'a
+#   aucun rôle causal. L'extinction est garantie par 1007000000004,
+#   indépendamment de l'état affiché. La réévaluation périodique
+#   implicite ne doit pas être confondue avec une autorité système.
 #
-#     Cette décision exprime une règle de confort humain.
+# 🚫 INTERDITS
+#   - Déclencher ou conditionner une action d'extinction
+#   - Être consommé comme autorité dans une automation
+#   - Introduire un time_pattern pour compenser la limite de fraîcheur
+#   - Utiliser for: ou last_changed
 #
-# ----------------------------------------------------------
-# 🧱 STATUT ARCHITECTURAL
-#
-#     - Capteur de vérité métier
-#     - Déterministe
-#     - Stateless
-#     - Tolérant aux redémarrages Home Assistant
-#
-#     Ce capteur :
-#       - ne déclenche aucune action
-#       - ne dépend pas de l’état matériel ON/OFF
-#       - est irréversible pour le cycle du soir en cours
-#
-# ----------------------------------------------------------
-# 🧠 PORTÉE
-#
-#     Ce capteur :
-#       - ne décide PAS de l’existence du cycle soir
-#       - ne gère PAS l’arbitrage matin / soir
-#       - ne définit AUCUNE priorité globale
-#
-#     Il exprime uniquement une autorisation
-#     locale d’extinction liée au confort.
-#
-# ----------------------------------------------------------
-# 📍 ENTITÉ
-#
-#     binary_sensor.lumiere_jardin_soir_extinction_autorisee
+# 🏷️ STATUT
+#   Observabilité — Arsenal v14.x
 # ==========================================================
 
 - binary_sensor:
@@ -70,38 +74,14 @@
       state: >
         {% if not is_state('input_boolean.auto_lumiere_jardin_soir', 'on') %}
           false
-
         {% else %}
-          {# Référence temporelle fiable : ouverture du cycle soir #}
-          {% set offset = states('input_number.delai_allumage_jardin_soir') | int(0) %}
-          {% set nuit = is_state('sun.sun', 'below_horizon') %}
-          {% set ls = state_attr('sun.sun', 'last_setting') %}
-          {% set ns = state_attr('sun.sun', 'next_setting') %}
-
-          {% if nuit and ls is not none %}
-            {% set coucher = as_local(as_datetime(ls)) %}
-          {% elif ns is not none %}
-            {% set coucher = as_local(as_datetime(ns)) %}
-          {% else %}
-            {% set coucher = none %}
-          {% endif %}
-
-          {% if coucher is none %}
+          {% set d_soir = states('input_datetime.jardin_soir_extinction_deadline') %}
+          {% set d_inac = states('input_datetime.jardin_sejour_inactivite_deadline') %}
+          {% if d_soir in ('unknown', 'unavailable', '')
+             or d_inac in ('unknown', 'unavailable', '') %}
             false
           {% else %}
-            {% set debut_cycle = coucher + timedelta(minutes=offset) %}
-            {% set duree = states('input_number.duree_lumiere_jardin_soir') | float(0) * 60 %}
-
-            {# Activité séjour (zone agrégée) #}
-            {% set last_motion = states.binary_sensor.mouvement_sejour.last_changed %}
-
-            {% set inactivity_ok =
-                 last_motion is not none
-                 and (now() - as_local(last_motion)).total_seconds() > 3600 %}
-
-            {{
-              now() >= (debut_cycle + timedelta(seconds=duree))
-              and inactivity_ok
-            }}
+            {{ now() >= as_local(as_datetime(d_soir))
+               and now() >= as_local(as_datetime(d_inac)) }}
           {% endif %}
         {% endif %}

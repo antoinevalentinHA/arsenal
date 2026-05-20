@@ -1,0 +1,52 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Éclairage jardin (soir) — Deadline extinction
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la borne temporelle cible d'extinction du jardin
+#   pour le cycle soir courant, consommée comme déclencheur
+#   exact par platform: time.
+#
+# 🧩 PÉRIMÈTRE
+#   - Borne de planification persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Borne de planification
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# ✍️ AUTEUR DES ÉCRITURES
+#   Automation 1007000000003 — Éclairage - Jardin - Activation soir
+#   Écrit immédiatement après l'écriture de jardin_soir_allumage_effectif.
+#   Valeur : allumage_effectif + input_number.duree_lumiere_jardin_soir (minutes).
+#
+# 📖 CONSOMMATEURS
+#   Automation 1007000000004 — Éclairage - Jardin - Extinction soir
+#   → trigger: platform: time at: input_datetime.jardin_soir_extinction_deadline
+#   → condition: template now() >= as_local(as_datetime(...))
+#
+# 🚨 NOTE D'USAGE CONTRACTUELLE
+#   Cet helper est utilisé comme déclencheur direct (platform: time).
+#   Justification : c'est le seul mécanisme événementiel pur
+#   permettant de déclencher une automation à une heure calculée
+#   dynamiquement, sans polling ni time_pattern.
+#   La valeur est écrite une seule fois par cycle, à l'allumage effectif.
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire temporelle et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Modifier manuellement en cours de cycle
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+jardin_soir_extinction_deadline:
+  name: "Jardin soir – Deadline extinction"
+  has_date: true
+  has_time: true

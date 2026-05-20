@@ -110,7 +110,7 @@ dont l’activation effective dépend de la présence.
 
 Les décisions métier sont :
 - déterministes
-- stateless
+- dérivables d’états persistants explicites
 - observables
 - recalculables à tout instant
 
@@ -156,11 +156,26 @@ Elle ne dépend pas :
 > sans rupture brutale de confort ?
 
 Cette décision dépend explicitement :
-- de la durée écoulée depuis l’allumage
-- de l’absence d’activité dans le séjour
+- de la durée minimale du cycle soir atteinte depuis la commande d’allumage
+- de l’inactivité séjour consolidée
 
-Elle représente une **règle de confort humain**
-et est irréversible pour le cycle du soir en cours.
+Elle représente une **règle de confort humain**.
+
+La deadline soir ouvre la possibilité d’extinction.
+La deadline d’inactivité séjour autorise humainement son exécution.
+L’extinction n’est causée que par la conjonction des deux.
+
+Un mouvement séjour ultérieur repousse la condition de confort
+et peut différer l’extinction tant que l’occupation persiste.
+
+Cette décision est matérialisée par deux deadlines persistantes :
+- `input_datetime.jardin_soir_extinction_deadline`
+- `input_datetime.jardin_sejour_inactivite_deadline`
+
+Le capteur `binary_sensor.lumiere_jardin_soir_extinction_autorisee`
+en est la **projection d’observabilité** — il reflète l’état de ces
+deux deadlines à des fins d’UI et de diagnostic.
+Il n’a aucun rôle causal dans la chaîne d’extinction.
 
 ---
 
@@ -190,7 +205,12 @@ Les actions matérielles sont purement réactives :
 
 - si une politique est active → éclairage ON
 - si aucune politique n’est active → éclairage OFF
-- si politique SOIR active et extinction autorisée → éclairage OFF
+- si politique SOIR active et les deux deadlines d’extinction dépassées
+  (deadline soir ET deadline inactivité séjour) → éclairage OFF
+
+L’extinction est déclenchée de façon événementielle
+par des triggers temporels explicites sur deadlines persistantes.
+Elle n’est pas une règle instantanée.
 
 Les scripts pilotent le matériel.
 Les automatisations réagissent aux décisions métier.
@@ -296,9 +316,11 @@ Conséquence fonctionnelle :
 > de confort humain.
 
 Cette autorisation :
-- est irréversible pour le cycle en cours
+- n’est acquise que lorsque les deux conditions sont simultanément vraies :
+  durée minimale du cycle soir atteinte ET inactivité séjour consolidée
 - garantit l’absence de coupure brutale
-- rend inutile toute mémoire d’engagement supplémentaire
+- peut être différée par un mouvement séjour ultérieur,
+  qui repousse la deadline d’inactivité tant que l’occupation persiste
 
 ---
 
@@ -318,7 +340,7 @@ reposant sur le cycle jour / nuit.
 
 ## 📌 STATUT
 
-- Version : **Arsenal v6.x**
+- Version : **Arsenal v14.x** *(contrat amendé — architecture deadlines persistantes)*
 - Nature : **Contrat fonctionnel**
 - Domaine : **Éclairage jardin**
 - Rôle : **Document de référence**

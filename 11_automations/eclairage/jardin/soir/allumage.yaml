@@ -1,83 +1,144 @@
 # ==========================================================
-#  🧠 ARSENAL — AUTOMATION :
-#     Jardin – Activation éclairage (cycle soir)
-#
-#  ID : 1007000000003
+# 🧠 ARSENAL — AUTOMATION
+#     Éclairage jardin — Activation soir
 # ----------------------------------------------------------
-#  🎯 RÔLE
+# 🆔 IDENTIFIANT
+#   '1007000000003'
 #
-#     Automation réactive d’activation EFFECTIVE de l’éclairage
-#     du jardin le soir.
+# 🎯 RÔLE
+#   Allumer l'éclairage du jardin le soir dès que le cycle
+#   soir existe et qu'une présence est détectée, et écrire
+#   les timestamps de traçabilité du cycle effectif.
 #
-#     L’éclairage est allumé uniquement si :
-#       • le cycle soir existe (capteur temporel)
-#       • une présence est détectée dans la maison
+# 🧩 PÉRIMÈTRE
+#   - Couvre : activation matérielle, écriture commande
+#              d'allumage validée, calcul et écriture
+#              deadline extinction, rattrapage post-redémarrage
+#   - Exclut : décision d'existence du cycle soir (portée par
+#              binary_sensor.jardin_cycle_eclairage_soir_actif),
+#              extinction (portée par 1007000000004)
 #
-#     ⚠️ Aucune notification persistante :
-#     - La notification persistante est réservée
-#       à la projection directe d’un état matériel vécu,
-#       gérée ailleurs si nécessaire.
+# 🔖 NATURE
+#   Application
 #
-#     Cette automation est robuste aux redémarrages :
-#       - elle ne dépend pas d’un événement présence "rejoué"
-#       - elle effectue un rattrapage à la remise en stabilité
+# ⚙️ MODE
+#   single
+#   Justification : l'allumage est idempotent par condition
+#   (switch.prise_jardin state: off). Un retrigger concurrent
+#   ne doit pas produire un double allumage ni écraser les
+#   timestamps déjà posés pour le cycle en cours.
 #
-# ----------------------------------------------------------
-#  🧠 SOURCES
+# 📣 DÉCLENCHEURS
+#   - Ouverture du cycle soir (jardin_cycle_eclairage_soir_actif → on)
+#   - Arrivée de présence (presence_famille_securite → on)
+#   - Remise en stabilité système (systeme_stable → on)
 #
-#     - binary_sensor.jardin_cycle_eclairage_soir_actif
-#     - binary_sensor.presence_famille_unifiee
-#     - input_boolean.systeme_stable
-#     - switch.prise_jardin
+# 🔗 DÉPENDANCES
+#   Lit     : binary_sensor.jardin_cycle_eclairage_soir_actif
+#             binary_sensor.presence_famille_securite
+#             input_boolean.systeme_stable
+#             input_number.duree_lumiere_jardin_soir
+#             switch.prise_jardin
+#   Appelle : script.jardin_on
+#   Écrit   : input_datetime.jardin_soir_allumage_effectif
+#             input_datetime.jardin_soir_extinction_deadline
 #
+# 🧠 AUTORITÉ
+#   Applique une décision externe.
+#   La décision d'existence du cycle soir est portée par
+#   binary_sensor.jardin_cycle_eclairage_soir_actif.
+#   Cette automation en est l'exécuteur, pas l'autorité.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger.
+#   La condition (switch.prise_jardin state: off) garantit
+#   qu'un retrigger ne produit aucun effet si le jardin
+#   est déjà allumé. Les timestamps ne sont donc écrits
+#   qu'une seule fois par cycle effectif.
+#
+# 🧠 NOTE SÉMANTIQUE — TIMESTAMPS
+#   input_datetime.jardin_soir_allumage_effectif est nommé
+#   "commande d'allumage validée" dans les helpers.
+#   Il est écrit après script.jardin_on sans attendre la
+#   confirmation matérielle de switch.prise_jardin.
+#   Il représente l'instant auquel la commande a été émise
+#   avec succès, pas la confirmation de l'état physique.
+#   La condition (switch.prise_jardin state: off) en amont
+#   garantit que la commande n'est émise que si le jardin
+#   est éteint, ce qui constitue une garantie suffisante
+#   pour le calcul de la deadline d'extinction.
+#
+# 🚫 INTERDITS
+#   - Décider de l'existence du cycle soir
+#   - Écrire les timestamps sans commande d'allumage préalable
+#   - Piloter l'extinction
+#   - Émettre une notification persistante
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v14.x
 # ==========================================================
 
 - id: '1007000000003'
   alias: "Éclairage - Jardin - Activation soir"
   description: >
-    Allume l’éclairage du jardin lorsque le cycle soir existe
-    ET qu’une présence est détectée. Inclut un rattrapage à la
-    remise en stabilité après redémarrage.
-    Aucune notification persistante n’est émise.
+    Allume l'éclairage du jardin lorsque le cycle soir existe
+    ET qu'une présence est détectée. Écrit les timestamps de
+    commande d'allumage validée et de deadline d'extinction au
+    moment de l'émission de la commande. Inclut un rattrapage
+    à la remise en stabilité après redémarrage.
+    Aucune notification persistante n'est émise.
 
   mode: single
 
   trigger:
-    # Ouverture du cycle soir
     - platform: state
       entity_id: binary_sensor.jardin_cycle_eclairage_soir_actif
       to: 'on'
 
-    # Arrivée réelle de présence (hors redémarrage, gérée par le rattrapage)
     - platform: state
       entity_id: binary_sensor.presence_famille_securite
       to: 'on'
 
-    # Rattrapage après redémarrage / remise en route
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: 'on'
 
   condition:
-    # Système stable uniquement
     - condition: state
       entity_id: input_boolean.systeme_stable
       state: 'on'
 
-    # Cycle soir existant
     - condition: state
       entity_id: binary_sensor.jardin_cycle_eclairage_soir_actif
       state: 'on'
 
-    # Présence détectée
     - condition: state
       entity_id: binary_sensor.presence_famille_securite
       state: 'on'
 
-    # Idempotence : n’allumer que si c’est réellement éteint
+    # Idempotence : n'allumer que si réellement éteint.
+    # Garantit également que les timestamps ne sont écrits
+    # qu'une seule fois par cycle effectif.
     - condition: state
       entity_id: switch.prise_jardin
       state: 'off'
 
   action:
+    # 1. Commande d'allumage matériel
     - action: script.jardin_on
+
+    # 2. Timestamp commande d'allumage validée
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.jardin_soir_allumage_effectif
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"
+
+    # 3. Deadline extinction = now() + durée paramétrée
+    - action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.jardin_soir_extinction_deadline
+      data:
+        datetime: >
+          {% set duree = states('input_number.duree_lumiere_jardin_soir') | float(0) %}
+          {{ (now() + timedelta(minutes=duree)).strftime('%Y-%m-%d %H:%M:%S') }}

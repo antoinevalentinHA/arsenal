@@ -1,0 +1,44 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Éclairage jardin (soir) — Allumage effectif
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker l'horodatage exact de l'allumage matériel
+#   effectif du jardin lors du cycle soir courant.
+#
+# 🧩 PÉRIMÈTRE
+#   - Mémoire événementielle persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Mémoire événementielle
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# ✍️ AUTEUR DES ÉCRITURES
+#   Automation 1007000000003 — Éclairage - Jardin - Activation soir
+#   Écrit immédiatement après script.jardin_on, si et seulement si
+#   l'allumage effectif a eu lieu (condition idempotence validée).
+#
+# 📖 CONSOMMATEURS
+#   Automation 1007000000004 — Éclairage - Jardin - Extinction soir
+#   → utilisé pour calculer input_datetime.jardin_soir_extinction_deadline
+#     (non consommé directement comme déclencheur)
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire temporelle et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Utiliser comme déclencheur direct sans justification explicite
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+jardin_soir_allumage_effectif:
+  name: "Jardin soir – Allumage effectif"
+  has_date: true
+  has_time: true

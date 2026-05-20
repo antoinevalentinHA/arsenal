@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Éclairage jardin — Séjour deadline inactivité
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la borne temporelle persistante au-delà de laquelle
+#   le séjour est considéré comme inactif pour le cycle soir
+#   jardin, consommée comme déclencheur exact par platform: time.
+#
+# 🧩 PÉRIMÈTRE
+#   - Borne de planification persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Domaine jardin uniquement
+#     (non partagé avec d'autres domaines à ce stade)
+#
+# 🔖 NATURE
+#   Borne de planification
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# ✍️ AUTEUR DES ÉCRITURES
+#   Automation dédiée — Jardin - Séjour - Enregistrement activité
+#   Écrit à chaque front montant de binary_sensor.mouvement_sejour.
+#   Valeur : derniere_activite + 1 heure.
+#
+# 📖 CONSOMMATEURS
+#   Automation 1007000000004 — Éclairage - Jardin - Extinction soir
+#   → trigger: platform: time at: input_datetime.jardin_sejour_inactivite_deadline
+#   → condition: template now() >= as_local(as_datetime(...))
+#
+# 🚨 NOTE D'USAGE CONTRACTUELLE
+#   Cet helper est utilisé comme déclencheur direct (platform: time).
+#   Justification : c'est le seul mécanisme événementiel pur
+#   permettant de déclencher une automation à une heure calculée
+#   dynamiquement, sans polling ni time_pattern.
+#   La valeur est mise à jour à chaque mouvement séjour détecté,
+#   ce qui repousse la deadline et garantit la cohérence du cycle.
+#   Robustesse au redémarrage : la valeur étant persistante,
+#   elle est disponible immédiatement après rechargement pour
+#   évaluation par template dans les automations de rattrapage.
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire temporelle et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Modifier manuellement en cours de cycle
+#   - Promouvoir en helper partagé sans décision architecturale explicite
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+jardin_sejour_inactivite_deadline:
+  name: "Jardin séjour – Deadline inactivité"
+  has_date: true
+  has_time: true

@@ -1,42 +1,155 @@
 # ==========================================================
-# 🧠 AUTOMATION — Jardin : extinction automatique (soir)
+# 🧠 ARSENAL — AUTOMATION
+#     Éclairage jardin — Extinction soir
 # ----------------------------------------------------------
-# 🎯 Rôle :
-#   Éteindre automatiquement l’éclairage du jardin le soir
-#   dès que l’extinction est AUTORISÉE par la logique métier.
+# 🆔 IDENTIFIANT
+#   '1007000000004'
 #
-# 🧱 Principe Arsenal (ECS-like) :
-#   - Aucune vérification périodique
-#   - Déclenchement événementiel unique
-#   - Basé exclusivement sur un capteur de vérité métier
+# 🎯 RÔLE
+#   Éteindre automatiquement l'éclairage du jardin le soir,
+#   dès que les deux deadlines sont simultanément dépassées :
+#   durée du cycle soir et inactivité séjour confirmée.
+#   Robuste aux redémarrages complets et aux rechargements
+#   d'automations.
 #
-# ⚠️ Aucune notification persistante :
-#   - L’extinction est un événement passé
-#   - L’état matériel OFF suffit comme information utilisateur
+# 🧩 PÉRIMÈTRE
+#   - Couvre : extinction matérielle, rattrapage post-redémarrage,
+#              rattrapage post-rechargement automations
+#   - Exclut : calcul des deadlines (porté par 1007000000003 et
+#              10070000000029), notification persistante
 #
+# 🔖 NATURE
+#   Application
+#
+# ⚙️ MODE
+#   single
+#   Justification : une seule extinction par cycle. Les trois
+#   triggers convergent vers la même action ; le mode single
+#   garantit qu'un seul chemin s'exécute. L'idempotence par
+#   condition (switch.prise_jardin state: on) absorbe les
+#   déclenchements redondants.
+#
+# 📣 DÉCLENCHEURS
+#   - deadline : platform: time at: jardin_soir_extinction_deadline
+#     Déclenche à l'instant exact de la fin du cycle soir.
+#   - inactivite : platform: time at: jardin_sejour_inactivite_deadline
+#     Déclenche à l'instant exact de confirmation d'inactivité séjour.
+#   - start : platform: homeassistant event: start
+#     Rattrapage post-redémarrage complet HA.
+#     input_boolean.systeme_stable n'est pas utilisé comme trigger :
+#     il n'est remis à on qu'après redémarrage complet, cas déjà
+#     couvert par start. Il ne cycle pas lors d'un reload.
+#   - reload : platform: event event_type: automation_reloaded
+#     Rattrapage post-rechargement des automations.
+#     Si les deadlines sont dépassées et le jardin allumé au
+#     moment du reload, l'extinction est exécutée immédiatement.
+#
+#   Condition unique vérifiée sur tous les chemins :
+#     now() >= jardin_soir_extinction_deadline
+#     AND now() >= jardin_sejour_inactivite_deadline
+#     AND switch.prise_jardin == on
+#
+# 🔗 DÉPENDANCES
+#   Lit     : input_datetime.jardin_soir_extinction_deadline
+#             input_datetime.jardin_sejour_inactivite_deadline
+#             switch.prise_jardin
+#   Appelle : script.jardin_off
+#   Écrit   : rien
+#
+# 🧠 AUTORITÉ
+#   Applique une décision externe.
+#   Les deux deadlines sont des faits persistants écrits par
+#   d'autres automations. Cette automation est l'exécuteur
+#   final, pas l'autorité sur les seuils.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger.
+#   La condition (switch.prise_jardin state: on) garantit
+#   qu'un déclenchement redondant n'a aucun effet.
+#
+# 🧠 ROBUSTESSE — REDÉMARRAGE COMPLET
+#   Garantie totale via trigger start.
+#   Les helpers input_datetime sont persistants : leurs valeurs
+#   sont disponibles immédiatement après redémarrage.
+#   Si les deux deadlines sont dépassées et le jardin allumé,
+#   l'extinction est exécutée sans attendre aucun front.
+#
+# 🧠 ROBUSTESSE — RELOAD AUTOMATIONS
+#   Garantie via trigger event_type: automation_reloaded.
+#   input_boolean.systeme_stable n'est pas utilisé ici :
+#   confirmé comme ne cyclant pas lors d'un reload,
+#   uniquement lors d'un redémarrage complet (déjà couvert
+#   par start). Le trigger reload est indépendant et direct.
+#
+# 🚫 INTERDITS
+#   - Calculer les deadlines
+#   - Utiliser un time_pattern
+#   - Utiliser for: ou last_changed
+#   - Utiliser input_boolean.systeme_stable comme substitut reload
+#   - Émettre une notification persistante
+#   - Inventer un ID d'automation
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v14.x
 # ==========================================================
 
 - id: '1007000000004'
   alias: "Éclairage - Jardin - Extinction soir"
   description: >
-    Éteint automatiquement l’éclairage du jardin le soir
-    lorsque toutes les conditions métier sont réunies
-    (durée dépassée et absence d’activité au séjour).
-    Aucun message persistant n’est émis, conformément
-    au contrat Notifications Arsenal.
+    Éteint l'éclairage du jardin le soir dès que la durée
+    du cycle et l'inactivité séjour sont toutes deux confirmées.
+    Trois déclencheurs couvrent les cas nominaux, le rattrapage
+    post-redémarrage et le rattrapage post-rechargement.
+    Aucune notification persistante n'est émise.
 
   mode: single
 
-  # ======================================================
-  # 🔔 Déclencheur — Vérité métier
-  # ======================================================
   trigger:
-    - platform: state
-      entity_id: binary_sensor.lumiere_jardin_soir_extinction_autorisee
-      to: 'on'
+    # Deadline fin de cycle soir
+    - platform: time
+      at: input_datetime.jardin_soir_extinction_deadline
+      id: deadline
 
-  # ======================================================
-  # 🔄 Action — Extinction matérielle
-  # ======================================================
+    # Deadline inactivité séjour
+    - platform: time
+      at: input_datetime.jardin_sejour_inactivite_deadline
+      id: inactivite
+
+    # Rattrapage post-redémarrage complet
+    - platform: homeassistant
+      event: start
+      id: start
+
+    # Rattrapage post-rechargement automations
+    - platform: event
+      event_type: automation_reloaded
+      id: reload
+
+  condition:
+    # Idempotence : jardin effectivement allumé
+    - condition: state
+      entity_id: switch.prise_jardin
+      state: 'on'
+
+    # Deadline soir dépassée
+    - condition: template
+      value_template: >
+        {% set d = states('input_datetime.jardin_soir_extinction_deadline') %}
+        {% if d in ('unknown', 'unavailable', '') %}
+          false
+        {% else %}
+          {{ now() >= as_local(as_datetime(d)) }}
+        {% endif %}
+
+    # Deadline inactivité séjour dépassée
+    - condition: template
+      value_template: >
+        {% set d = states('input_datetime.jardin_sejour_inactivite_deadline') %}
+        {% if d in ('unknown', 'unavailable', '') %}
+          false
+        {% else %}
+          {{ now() >= as_local(as_datetime(d)) }}
+        {% endif %}
+
   action:
     - action: script.jardin_off

@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Éclairage jardin — Séjour dernière activité
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker l'horodatage persistant du dernier mouvement
+#   détecté dans le séjour, utilisé pour calculer la
+#   deadline d'inactivité du cycle soir jardin.
+#
+# 🧩 PÉRIMÈTRE
+#   - Mémoire événementielle persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Domaine jardin uniquement
+#     (non partagé avec d'autres domaines à ce stade)
+#
+# 🔖 NATURE
+#   Mémoire événementielle
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# ✍️ AUTEUR DES ÉCRITURES
+#   Automation dédiée — Jardin - Séjour - Enregistrement activité
+#   Écrit à chaque front montant de binary_sensor.mouvement_sejour.
+#
+# 📖 CONSOMMATEURS
+#   Automation dédiée — Jardin - Séjour - Enregistrement activité
+#   → utilisé pour calculer jardin_sejour_inactivite_deadline
+#     (non consommé directement comme déclencheur)
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire temporelle et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Utiliser comme déclencheur direct sans justification explicite
+#   - Promouvoir en helper partagé sans décision architecturale explicite
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+jardin_sejour_derniere_activite:
+  name: "Jardin séjour – Dernière activité"
+  has_date: true
+  has_time: true
