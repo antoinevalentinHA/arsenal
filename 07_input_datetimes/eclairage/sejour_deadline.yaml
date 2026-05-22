@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Éclairage — Séjour — Deadline extinction
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la deadline persistante d'extinction automatique
+#   de la lampe du séjour après absence de mouvement.
+#
+# 🧩 PÉRIMÈTRE
+#   - Mémoire temporelle persistante uniquement
+#   - Deadline d'extinction séjour uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Repère de pipeline | Référence transactionnelle
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# 🚫 INTERDITS
+#   - Confondre deadline et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Dupliquer l'état fiable de switch.prise_lampe_sejour
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v15.5
+# ==========================================================
+
+sejour_extinction_deadline:
+  name: Séjour - Deadline extinction
+  icon: mdi:timer-off-outline
+  has_date: true
+  has_time: true

@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Éclairage séjour — Écriture deadline extinction
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   '10070000000031'
+#
+# 🎯 RÔLE
+#   Écrire une deadline persistante d'extinction lorsque
+#   l'absence de mouvement séjour commence.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : matérialisation temporelle de l'extinction future
+#   - Exclut : extinction matérielle, allumage, état logique dupliqué
+#
+# 🔖 NATURE
+#   Synchronisation
+#
+# ⚙️ MODE
+#   restart
+#   Justification : une nouvelle transition d'absence remplace
+#   explicitement la deadline précédente.
+#
+# 📣 DÉCLENCHEURS
+#   - Transition mouvement séjour : on → off
+#
+# 🔗 DÉPENDANCES
+#   Lit    : binary_sensor.mouvement_sejour
+#            input_number.duree_absence_sejour
+#   Écrit  : input_datetime.sejour_extinction_deadline
+#
+# 🧠 AUTORITÉ
+#   Décide et persiste la deadline d'extinction.
+#   N'exécute aucune action matérielle.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger.
+#   Chaque absence confirmée remplace la deadline précédente.
+#
+# 🚫 INTERDITS
+#   - Éteindre la lampe
+#   - Allumer la lampe
+#   - Utiliser for: comme causalité métier
+#   - Dépendre de last_changed
+#   - Dupliquer l'état de switch.prise_lampe_sejour
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v15.5
+# ==========================================================
+
+- id: "10070000000031"
+  alias: "Éclairage - Séjour - Écriture deadline extinction"
+  description: >
+    Écrit la deadline persistante d'extinction automatique du séjour
+    lorsque le mouvement consolidé de la zone passe à off.
+  mode: restart
+
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.mouvement_sejour
+      from: "on"
+      to: "off"
+
+  action:
+    - alias: "Écrire la deadline persistante d'extinction séjour"
+      action: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.sejour_extinction_deadline
+      data:
+        datetime: >
+          {{ (now() + timedelta(minutes=states('input_number.duree_absence_sejour') | int(20)))
+             .strftime('%Y-%m-%d %H:%M:%S') }}

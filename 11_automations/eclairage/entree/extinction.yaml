@@ -1,48 +1,166 @@
 # ==========================================================
-# 🧠 ARSENAL — AUTOMATISATION
-#     Éclairage – Entrée – Extinction après absence
+# 🧠 ARSENAL — AUTOMATION
+#     Éclairage entrée — Extinction sur deadline persistante
 # ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   '10070000000027'
+#
 # 🎯 RÔLE
-#   Éteindre la lumière de l’entrée après une durée
-#   configurée d’absence de mouvement.
+#   Éteindre automatiquement l'éclairage de l'entrée lorsque
+#   la deadline persistante d'absence est atteinte.
 #
-# ----------------------------------------------------------
-# 🧱 LOGIQUE
+# 🧩 PÉRIMÈTRE
+#   - Couvre : extinction matérielle directe,
+#              rattrapage post-redémarrage,
+#              rattrapage post-rechargement automations
+#   - Exclut : calcul de la deadline, allumage,
+#              état logique dupliqué
 #
-#   Déclencheur :
-#     - Absence continue de mouvement pendant la durée
-#       définie par `input_number.duree_absence_entree`
+# 🔖 NATURE
+#   Application
 #
-#   Action :
-#     - Extinction lumière entrée
+# ⚙️ MODE
+#   single
+#   Justification : une seule extinction à la fois. Les retriggers
+#   sont absorbés par les conditions d'idempotence.
 #
-# ----------------------------------------------------------
-# 🛡️ GARANTIES
+# 📣 DÉCLENCHEURS
+#   - deadline atteinte
+#   - redémarrage Home Assistant
+#   - rechargement des automations
 #
-#   - Extinction uniquement après absence réelle
-#   - Durée d’attente pilotée par helper
-#   - Pas de dépendance aux conditions de luminosité
-#   - Comportement déterministe et lisible
+# 🔗 DÉPENDANCES
+#   Lit    : input_datetime.entree_extinction_deadline
+#            binary_sensor.mouvement_entree
+#            input_boolean.entree_auto_light
+#            switch.lumiere_entree
+#   Action : switch.turn_off → switch.lumiere_entree
 #
+# 🧠 AUTORITÉ
+#   Applique une décision temporelle persistée.
+#   La deadline est écrite par l'automation 10070000000032.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger.
+#   L'extinction n'est appelée que si la lumière est on,
+#   le mouvement toujours off et la deadline dépassée.
+#
+# 🚫 INTERDITS
+#   - Calculer la deadline
+#   - Utiliser for:
+#   - Utiliser last_changed
+#   - Créer un état logique parallèle
+#   - Consommer N0 ou N1 mouvement
+#   - Allumer la lumière
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v15.5
 # ==========================================================
 
-- id: '10070000000027'
-  alias: "Éclairage – Entrée – Extinction"
-  mode: restart
+- id: "10070000000027"
+  alias: "Éclairage - Entrée - Extinction automatique"
+  description: >
+    Éteint l'éclairage de l'entrée lorsque la deadline persistante
+    d'absence est atteinte. Robuste aux redémarrages et aux
+    rechargements d'automations.
+  mode: single
 
   trigger:
-    - platform: state
-      entity_id: binary_sensor.capteur_mouvements_entree_occupancy
-      to: 'off'
-      for:
-        seconds: "{{ states('input_number.duree_absence_entree') | int }}"
+    - platform: time
+      at: input_datetime.entree_extinction_deadline
+      id: deadline
 
-  condition:
-    - condition: state
-      entity_id: input_boolean.entree_auto_light
-      state: 'on'
+    - platform: homeassistant
+      event: start
+      id: start
+
+    - platform: event
+      event_type: automation_reloaded
+      id: reload
 
   action:
-    - action: switch.turn_off
-      target:
-        entity_id: switch.lumiere_entree
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: deadline
+          sequence:
+            - condition: state
+              entity_id: binary_sensor.mouvement_entree
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.entree_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: switch.lumiere_entree
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {% set dl = states('input_datetime.entree_extinction_deadline') %}
+                {{ dl not in ('unknown', 'unavailable', 'none', '')
+                   and now() >= dl | as_datetime }}
+
+            - alias: "Éteindre la lumière de l'entrée"
+              action: switch.turn_off
+              target:
+                entity_id: switch.lumiere_entree
+
+        - conditions:
+            - condition: trigger
+              id: start
+          sequence:
+            - delay: "00:01:30"
+
+            - condition: state
+              entity_id: binary_sensor.mouvement_entree
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.entree_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: switch.lumiere_entree
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {% set dl = states('input_datetime.entree_extinction_deadline') %}
+                {{ dl not in ('unknown', 'unavailable', 'none', '')
+                   and now() >= dl | as_datetime }}
+
+            - alias: "Éteindre la lumière de l'entrée"
+              action: switch.turn_off
+              target:
+                entity_id: switch.lumiere_entree
+
+        - conditions:
+            - condition: trigger
+              id: reload
+          sequence:
+            - delay: "00:00:10"
+
+            - condition: state
+              entity_id: binary_sensor.mouvement_entree
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.entree_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: switch.lumiere_entree
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {% set dl = states('input_datetime.entree_extinction_deadline') %}
+                {{ dl not in ('unknown', 'unavailable', 'none', '')
+                   and now() >= dl | as_datetime }}
+
+            - alias: "Éteindre la lumière de l'entrée"
+              action: switch.turn_off
+              target:
+                entity_id: switch.lumiere_entree

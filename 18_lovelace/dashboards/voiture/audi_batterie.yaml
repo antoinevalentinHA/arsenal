@@ -65,7 +65,7 @@ views:
 
             header:
               show: true
-              title: Corrélation autonomie / température
+              title: Tendance autonomie / température
 
             graph_span: 365d
 
@@ -74,6 +74,9 @@ views:
                 height: 260
                 animations:
                   enabled: true
+
+              stroke:
+                curve: smooth
 
               grid:
                 borderColor: rgba(0,0,0,0.08)
@@ -105,6 +108,9 @@ views:
                 type: line
                 color: "rgba(76, 175, 80, 0.9)"
                 stroke_width: 3
+                group_by:
+                  duration: 1w
+                  func: avg
 
               - entity: sensor.audi_temperature_charge_mensuelle
                 name: Température moyenne charge
@@ -112,6 +118,9 @@ views:
                 type: line
                 color: "rgba(144, 202, 249, 0.9)"
                 stroke_width: 3
+                group_by:
+                  duration: 1w
+                  func: avg
 
           # ------------------------------------------------------
           # 🧮 Analyse textuelle complète (bilan mensuel)

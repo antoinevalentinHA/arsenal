@@ -1,0 +1,35 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Éclairage — Garage — Deadline extinction
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la deadline persistante d'extinction automatique
+#   de l'éclairage du garage après absence de mouvement.
+#
+# 🧩 PÉRIMÈTRE
+#   - Mémoire temporelle persistante uniquement
+#   - Deadline d'extinction garage uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Repère de pipeline | Référence transactionnelle
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# 🚫 INTERDITS
+#   - Confondre deadline et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Déclencher directement une action matérielle hors automation dédiée
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v15.5
+# ==========================================================
+
+garage_extinction_deadline:
+  name: Garage - Deadline extinction
+  icon: mdi:timer-off-outline
+  has_date: true
+  has_time: true

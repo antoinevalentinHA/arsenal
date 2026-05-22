@@ -1,78 +1,102 @@
 # ==========================================================
-# 🧠 ARSENAL — AUTOMATISATION
-#     Éclairage – Entrée – Allumage sur mouvement si obscurité
+# 🧠 ARSENAL — AUTOMATION
+#     Éclairage entrée — Allumage sur mouvement si obscurité
 # ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   '10070000000026'
+#
 # 🎯 RÔLE
-#   Allumer la lumière de l’entrée lorsqu’un mouvement est
-#   détecté, uniquement si l’automatisme d’éclairage est
-#   autorisé et si les conditions de luminosité
-#   (temporelles ou réelles) le justifient.
+#   Allumer la lumière de l'entrée lorsqu'un mouvement est
+#   détecté dans la zone, uniquement si l'automatisme est
+#   autorisé et si les conditions de luminosité le justifient.
 #
-# ----------------------------------------------------------
-# 🧱 LOGIQUE
+# 🧩 PÉRIMÈTRE
+#   - Couvre : allumage automatique de l'entrée sur mouvement
+#   - Exclut : extinction, temporisation, deadline,
+#              état logique parallèle
 #
-#   Déclencheur :
-#     - Détection de mouvement entrée
+# 🔖 NATURE
+#   Application
 #
-#   Conditions :
-#     - `input_boolean.entree_auto_light` = on
-#     - Soit période météo ∈ {aube, crépuscule, nuit}
-#     - Soit luminosité garage < 25 ET lumière garage éteinte
+# ⚙️ MODE
+#   restart
+#   Justification : un nouveau mouvement remplace explicitement
+#   toute tentative d'allumage en cours.
 #
-#   Action :
-#     - Allumage lumière entrée
+# 📣 DÉCLENCHEURS
+#   - Transition mouvement entrée N2 : off → on
 #
-# ----------------------------------------------------------
-# 🛡️ GARANTIES
+# 🔗 DÉPENDANCES
+#   Lit    : binary_sensor.mouvement_entree
+#            input_boolean.entree_auto_light
+#            sensor.periode_meteo
+#            sensor.luminosite_garage_illuminance
+#            switch.lumiere_garage
+#   Action : switch.turn_on → switch.lumiere_entree
 #
-#   - Aucun allumage si l’automatisme est désactivé
-#   - Aucun allumage en pleine journée lumineuse
-#   - Double sécurité : logique temporelle + mesure réelle
-#   - Pas de dépendance à l’état actuel de la lumière entrée
+# 🧠 AUTORITÉ
+#   Applique une décision locale d'allumage automatique
+#   conditionnée par le mouvement et l'obscurité.
 #
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger.
+#   switch.turn_on est idempotent.
+#
+# 🚫 INTERDITS
+#   - Éteindre la lumière
+#   - Modifier input_datetime.entree_extinction_deadline
+#   - Utiliser for:
+#   - Consommer N0 ou N1 mouvement
+#   - Créer un état logique parallèle
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v15.5
 # ==========================================================
 
-- id: '10070000000026'
+- id: "10070000000026"
   alias: "Éclairage – Entrée - Allumage"
+  description: >
+    Allume la lumière de l'entrée lorsqu'un mouvement est détecté
+    dans la zone et que les conditions d'obscurité sont réunies.
   mode: restart
 
   trigger:
     - platform: state
-      entity_id: binary_sensor.capteur_mouvements_entree_occupancy
-      to: 'on'
+      entity_id: binary_sensor.mouvement_entree
+      from: "off"
+      to: "on"
 
   condition:
     - condition: state
       entity_id: input_boolean.entree_auto_light
-      state: 'on'
+      state: "on"
 
     - condition: or
       conditions:
+        - condition: state
+          entity_id: sensor.periode_meteo
+          state: "aube"
 
         - condition: state
           entity_id: sensor.periode_meteo
-          state: aube
+          state: "nuit"
 
         - condition: state
           entity_id: sensor.periode_meteo
-          state: nuit
-
-        - condition: state
-          entity_id: sensor.periode_meteo
-          state: crepuscule
+          state: "crepuscule"
 
         - condition: and
           conditions:
-
             - condition: numeric_state
               entity_id: sensor.luminosite_garage_illuminance
               below: 25
 
             - condition: state
               entity_id: switch.lumiere_garage
-              state: 'off'
+              state: "off"
 
   action:
-    - action: switch.turn_on
+    - alias: "Allumer la lumière de l'entrée"
+      action: switch.turn_on
       target:
         entity_id: switch.lumiere_entree

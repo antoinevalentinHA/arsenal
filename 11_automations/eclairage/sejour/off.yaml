@@ -1,86 +1,166 @@
 # ==========================================================
-#  🧠 ARSENAL — AUTOMATION :
-#     Séjour – Extinction temporisée par absence
-#
-#  ID : 10070000000015
+# 🧠 ARSENAL — AUTOMATION
+#     Éclairage séjour — Extinction sur deadline persistante
 # ----------------------------------------------------------
-#  🎯 RÔLE
+# 🆔 IDENTIFIANT
+#   '10070000000015'
 #
-#     Automation d’extinction conditionnelle par absence.
+# 🎯 RÔLE
+#   Éteindre automatiquement la lampe du séjour lorsque
+#   la deadline persistante d'absence est atteinte.
 #
-#     Elle coupe l’alimentation de la lampe du séjour
-#     après une absence de mouvement prolongée dans la zone,
-#     uniquement si l’automatisme est autorisé
-#     et si la lampe est actuellement allumée.
+# 🧩 PÉRIMÈTRE
+#   - Couvre : extinction matérielle directe,
+#              rattrapage post-redémarrage,
+#              rattrapage post-rechargement automations
+#   - Exclut : calcul de la deadline, allumage,
+#              état logique dupliqué
 #
-#     Cette automation agit directement sur le matériel.
+# 🔖 NATURE
+#   Application
 #
-#  🧩 PRINCIPE
+# ⚙️ MODE
+#   single
+#   Justification : une seule extinction à la fois. Les retriggers
+#   sont absorbés par les conditions d'idempotence.
 #
-#     - Déclenchement après absence de mouvement confirmée
-#       sur la zone sejour
-#     - Temporisation paramétrable par l’utilisateur
-#     - Vérification d’une autorisation explicite
-#     - Extinction directe de la prise concernée
+# 📣 DÉCLENCHEURS
+#   - deadline atteinte
+#   - redémarrage Home Assistant
+#   - rechargement des automations
 #
-#  🧠 PARAMÈTRE UTILISATEUR
+# 🔗 DÉPENDANCES
+#   Lit     : input_datetime.sejour_extinction_deadline
+#             binary_sensor.mouvement_sejour
+#             input_boolean.sejour_auto_light
+#             switch.prise_lampe_sejour
+#   Action  : switch.turn_off → switch.prise_lampe_sejour
+#   Écrit   : switch.prise_lampe_sejour
 #
-#     input_number.duree_absence_sejour
+# 🧠 AUTORITÉ
+#   Applique une décision temporelle persistée.
+#   La deadline est écrite par l'automation 10070000000031.
 #
-#     → durée d’absence (en minutes) avant extinction
-#       automatique de la lampe du séjour
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger.
+#   L'extinction n'est appelée que si la lampe est on,
+#   le mouvement toujours off et la deadline dépassée.
 #
-#  🧠 AUTORISATION
+# 🚫 INTERDITS
+#   - Calculer la deadline
+#   - Utiliser for:
+#   - Utiliser last_changed
+#   - Créer un état logique parallèle
+#   - Allumer la lampe
 #
-#     input_boolean.sejour_auto_light
-#
-#     → autorisation globale de l’extinction automatique
-#
-#  🧠 ACTION DIRECTE
-#
-#     switch.prise_lampe_sejour
-#
-#     → coupure physique de l’alimentation
-#
-#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
-#
-#     - N’allume JAMAIS la lampe
-#     - Ne gère AUCUN cycle d’éclairage
-#     - Ne maintient AUCUN état logique
-#     - Ne corrige PAS un état incohérent
-#
-#  🧠 ARCHITECTURE ARSENAL
-#
-#     Automation de sortie simple :
-#     absence prolongée ≠ scénario ≠ ambiance.
-#
-#     Elle applique une règle d’extinction
-#     claire, paramétrable et strictement locale.
+# 🏷️ STATUT
+#   Réactive — Arsenal v15.5
 # ==========================================================
 
 - id: "10070000000015"
   alias: "Éclairage - Séjour - Extinction automatique"
+  description: >
+    Éteint la lampe du séjour lorsque la deadline persistante
+    d'absence est atteinte. Robuste aux redémarrages et aux
+    rechargements d'automations.
   mode: single
 
   trigger:
-    - platform: state
-      entity_id: binary_sensor.mouvement_sejour
-      to: "off"
-      for:
-        minutes: >
-          {{ states('input_number.duree_absence_sejour') | int(20) }}
+    - platform: time
+      at: input_datetime.sejour_extinction_deadline
+      id: deadline
 
-  condition:
-    - condition: state
-      entity_id: input_boolean.sejour_auto_light
-      state: "on"
+    - platform: homeassistant
+      event: start
+      id: start
 
-    - condition: state
-      entity_id: switch.prise_lampe_sejour
-      state: "on"
+    - platform: event
+      event_type: automation_reloaded
+      id: reload
 
   action:
-    - alias: "Éteindre la lumière du séjour"
-      action: switch.turn_off
-      target:
-        entity_id: switch.prise_lampe_sejour
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: deadline
+          sequence:
+            - condition: state
+              entity_id: binary_sensor.mouvement_sejour
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.sejour_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: switch.prise_lampe_sejour
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {% set dl = states('input_datetime.sejour_extinction_deadline') %}
+                {{ dl not in ('unknown', 'unavailable', 'none', '')
+                   and now() >= dl | as_datetime }}
+
+            - alias: "Éteindre la lumière du séjour"
+              action: switch.turn_off
+              target:
+                entity_id: switch.prise_lampe_sejour
+
+        - conditions:
+            - condition: trigger
+              id: start
+          sequence:
+            - delay: "00:01:30"
+
+            - condition: state
+              entity_id: binary_sensor.mouvement_sejour
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.sejour_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: switch.prise_lampe_sejour
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {% set dl = states('input_datetime.sejour_extinction_deadline') %}
+                {{ dl not in ('unknown', 'unavailable', 'none', '')
+                   and now() >= dl | as_datetime }}
+
+            - alias: "Éteindre la lumière du séjour"
+              action: switch.turn_off
+              target:
+                entity_id: switch.prise_lampe_sejour
+
+        - conditions:
+            - condition: trigger
+              id: reload
+          sequence:
+            - delay: "00:00:10"
+
+            - condition: state
+              entity_id: binary_sensor.mouvement_sejour
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.sejour_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: switch.prise_lampe_sejour
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {% set dl = states('input_datetime.sejour_extinction_deadline') %}
+                {{ dl not in ('unknown', 'unavailable', 'none', '')
+                   and now() >= dl | as_datetime }}
+
+            - alias: "Éteindre la lumière du séjour"
+              action: switch.turn_off
+              target:
+                entity_id: switch.prise_lampe_sejour

@@ -1,89 +1,159 @@
 # ==========================================================
-#  🧠 ARSENAL — AUTOMATION :
-#     Garage – Extinction conditionnelle temporisée
-#
-#  ID : 10070000000013
+# 🧠 ARSENAL — AUTOMATION
+#     Éclairage garage — Extinction sur deadline persistante
 # ----------------------------------------------------------
-#  🎯 RÔLE
+# 🆔 IDENTIFIANT
+#   '10070000000013'
 #
-#     Automation d’extinction conditionnelle.
+# 🎯 RÔLE
+#   Éteindre automatiquement l'éclairage du garage lorsque
+#   la deadline persistante d'absence est atteinte.
 #
-#     Elle demande l’extinction de l’éclairage du garage
-#     lorsqu’aucun mouvement n’est détecté dans la zone
-#     pendant une durée configurable, uniquement si l’éclairage
-#     automatique est autorisé et actuellement actif.
+# 🧩 PÉRIMÈTRE
+#   - Couvre : extinction matérielle via script souverain,
+#              rattrapage post-redémarrage,
+#              rattrapage post-rechargement automations
+#   - Exclut : calcul de la deadline, allumage, pilotage direct
 #
-#     Cette automation ne pilote PAS directement la lumière.
+# 🔖 NATURE
+#   Application
 #
-#  🧩 PRINCIPE
+# ⚙️ MODE
+#   single
+#   Justification : une seule extinction à la fois. Les retriggers
+#   sont absorbés par les conditions d'idempotence.
 #
-#     - Déclenchement après absence de mouvement prolongée
-#       sur la zone garage
-#     - Vérification des autorisations :
-#         • mode automatique activé
-#         • éclairage logique actuellement allumé
-#     - Délégation de l’action au script dédié
+# 📣 DÉCLENCHEURS
+#   - deadline atteinte
+#   - redémarrage Home Assistant
+#   - rechargement des automations
 #
-#  🧠 PARAMÈTRE UTILISATEUR
+# 🔗 DÉPENDANCES
+#   Lit     : input_datetime.garage_extinction_deadline
+#             binary_sensor.mouvement_garage
+#             input_boolean.garage_auto_light
+#             input_boolean.garage_light_state
+#   Appelle : script.garage_toggle
+#   Écrit   : via script uniquement
 #
-#     input_number.duree_absence_garage
+# 🧠 AUTORITÉ
+#   Applique une décision temporelle persistée.
+#   La deadline est écrite par l'automation 10070000000030.
 #
-#     → durée d’absence (en minutes) avant extinction
-#       automatique de l’éclairage
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger.
+#   L'extinction n'est appelée que si l'état logique garage est on,
+#   le mouvement toujours off et la deadline dépassée.
 #
-#  🧠 AUTORISATIONS & ÉTAT
+# 🚫 INTERDITS
+#   - Calculer la deadline
+#   - Utiliser for:
+#   - Utiliser last_changed
+#   - Piloter directement le matériel
+#   - Allumer la lumière
 #
-#     - input_boolean.garage_auto_light
-#         → autorisation globale de l’éclairage automatique
-#
-#     - input_boolean.garage_light_state
-#         → état logique interne de l’éclairage garage
-#
-#  🧠 AUTORITÉ D’ACTION
-#
-#     script.garage_toggle
-#
-#     → script unique responsable du pilotage réel
-#       de l’éclairage et de la cohérence d’état.
-#
-#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
-#
-#     - N’allume JAMAIS la lumière
-#     - Ne décide PAS de la durée d’éclairage
-#     - Ne pilote PAS directement le matériel
-#     - Ne gère PAS d’allumage ou de réactivation
-#
-#  🧠 ARCHITECTURE ARSENAL
-#
-#     Automation de sortie temporisée :
-#     temporisation ≠ autorisation ≠ pilotage.
-#
-#     Elle complète l’allumage automatique
-#     en assurant une extinction propre,
-#     paramétrable et cohérente.
+# 🏷️ STATUT
+#   Réactive — Arsenal v15.5
 # ==========================================================
 
 - id: "10070000000013"
   alias: "Éclairage - Garage - Extinction automatique"
+  description: >
+    Éteint l'éclairage du garage lorsque la deadline persistante
+    d'absence est atteinte. Robuste aux redémarrages et aux
+    rechargements d'automations.
   mode: single
 
   trigger:
-    - platform: state
-      entity_id: binary_sensor.mouvement_garage
-      to: "off"
-      for:
-        seconds: >
-          {{ (states('input_number.duree_absence_garage') | int(1)) * 60 }}
+    - platform: time
+      at: input_datetime.garage_extinction_deadline
+      id: deadline
 
-  condition:
-    - condition: state
-      entity_id: input_boolean.garage_auto_light
-      state: "on"
+    - platform: homeassistant
+      event: start
+      id: start
 
-    - condition: state
-      entity_id: input_boolean.garage_light_state
-      state: "on"
+    - platform: event
+      event_type: automation_reloaded
+      id: reload
 
   action:
-    - alias: "Basculer la lumière via script"
-      action: script.garage_toggle
+    - choose:
+        - conditions:
+            - condition: trigger
+              id: deadline
+          sequence:
+            - condition: state
+              entity_id: binary_sensor.mouvement_garage
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.garage_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {% set dl = states('input_datetime.garage_extinction_deadline') %}
+                {{ dl not in ('unknown', 'unavailable', 'none', '')
+                   and now() >= dl | as_datetime }}
+
+            - alias: "Basculer la lumière via script"
+              action: script.garage_toggle
+
+        - conditions:
+            - condition: trigger
+              id: start
+          sequence:
+            - delay: "00:01:30"
+
+            - condition: state
+              entity_id: binary_sensor.mouvement_garage
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.garage_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {% set dl = states('input_datetime.garage_extinction_deadline') %}
+                {{ dl not in ('unknown', 'unavailable', 'none', '')
+                   and now() >= dl | as_datetime }}
+
+            - alias: "Basculer la lumière via script"
+              action: script.garage_toggle
+
+        - conditions:
+            - condition: trigger
+              id: reload
+          sequence:
+            - delay: "00:00:10"
+
+            - condition: state
+              entity_id: binary_sensor.mouvement_garage
+              state: "off"
+
+            - condition: state
+              entity_id: input_boolean.garage_auto_light
+              state: "on"
+
+            - condition: state
+              entity_id: input_boolean.garage_light_state
+              state: "on"
+
+            - condition: template
+              value_template: >
+                {% set dl = states('input_datetime.garage_extinction_deadline') %}
+                {{ dl not in ('unknown', 'unavailable', 'none', '')
+                   and now() >= dl | as_datetime }}
+
+            - alias: "Basculer la lumière via script"
+              action: script.garage_toggle

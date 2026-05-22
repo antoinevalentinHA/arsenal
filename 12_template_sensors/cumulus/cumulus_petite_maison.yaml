@@ -27,12 +27,12 @@
       state: >
         {% set v = state_attr('water_heater.petite_maison', 'current_temperature') %}
         {% set current = states('sensor.ecs_petite_maison_temperature_eau_locale') %}
-        {% if v is not none and (v | float(0)) >= 20 and (v | float(0)) <= 80 %}
-          {{ (v | float(0)) | round(1) }}
-        {% elif current not in ['unknown', 'unavailable', '', 'none'] %}
-          {{ current }}
+        {% if v is number and v >= 20 and v <= 80 %}
+          {{ v | round(1) }}
+        {% elif current is number %}
+          {{ current | float | round(1) }}
         {% else %}
-          unknown
+          {{ none }}
         {% endif %}
 
     - name: "ecs_petite_maison_consigne_locale"
