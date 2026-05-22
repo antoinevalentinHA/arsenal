@@ -69,13 +69,20 @@ Contrats durs. Toute évolution doit les préserver.
 Une **ancre de release** est un répertoire de `versions/` dont le nom contient un tag de version Arsenal correspondant exactement à l'expression :
 
 ```text
-Arsenal_v(\d+)(?:\.(\d+))?
+Arsenal_v(\d+)(?:\.(\d+))?(?:\.(\d+))?(?=_|$)
 ```
 
 Captures :
 
 - groupe 1 : version majeure (entier, obligatoire),
-- groupe 2 : version mineure (entier, optionnel).
+- groupe 2 : version mineure (entier, optionnel),
+- groupe 3 : version patch (entier, optionnel).
+
+L'ancre lookahead `(?=_|$)` borne le match et garantit qu'aucun composant numérique additionnel n'est silencieusement avalé. Les formes à quatre composantes ou plus (`Arsenal_v15.5.1.2`) ne matchent jamais. Les formes contenant un tiret (`Arsenal_v15-test`) ne matchent jamais.
+
+En revanche, tout suffixe commençant par un underscore est **absorbé comme suffixe libre**, indépendamment de sa nature. `Arsenal_v15_rc1_ef98ab23` parse vers le triplet `(15, 0, 0)` et produit l'ancre `v15`, exactement comme `Arsenal_v15_77358a2b`. La brique ne maintient aucune liste de suffixes interdits (`_rc`, `_beta`, `_alpha`, etc.) : la robustesse repose sur la chaîne `parse → normalisation → collision → rejet`. Si un répertoire `Arsenal_v15_rc1_...` coexiste avec un répertoire `Arsenal_v15_...` légitime, les deux parsent vers le même triplet et le mécanisme de doublon d'ancre les rejette tous deux. Ce comportement est conforme à REJECT-not-clamp et préserve l'auditabilité sans imposer de catalogue de suffixes à maintenir.
+
+La conséquence pratique pour l'opérateur : un répertoire de version arsenalisée porte toujours un tag stable. Tout suffixe `_xxx` qui n'est pas le hash de capture est une source potentielle de collision et doit être évité dans `versions/`. Les répertoires expérimentaux ou de pré-release qui ne doivent pas être interprétés comme des ancres restent en dehors de `versions/`.
 
 ### Exemples
 
@@ -84,29 +91,35 @@ Captures :
 | `2026-05-06_17-40_Arsenal_v14_77358a2b` | oui | `v14` |
 | `2026-05-08_09-12_Arsenal_v14.1_abc12345` | oui | `v14.1` |
 | `2026-05-11_18-30_Arsenal_v15_d4464cb6` | oui | `v15` |
-| `2026-05-10_22-00_Arsenal_v15_rc1_ef98ab23` | non | — |
+| `2026-05-12_10-15_Arsenal_v15.5.1_f1caab65` | oui | `v15.5.1` |
+| `2026-05-10_22-00_Arsenal_v15_rc1_ef98ab23` | oui | `v15` (suffixe absorbé, source potentielle de collision) |
 | `2026-05-10_22-00_Arsenal_v15-test_xyz` | non | — |
+| `2026-05-10_22-00_Arsenal_v15.5.1.2_abc` | non | — |
 | `2026-05-09_11-30_backup_auto_3f7c1a2b` | non | — |
 
 ### Ordre canonique
 
-Les ancres sont triées par tuple `(majeur, mineur)` avec `mineur = 0` si absent.
+Les ancres sont triées par tuple `(majeur, mineur, patch)` avec `mineur = 0` et `patch = 0` si absents.
 
 ```text
-v14 < v14.1 < v14.2 < v15 < v15.1
+v14 < v14.1 < v14.2 < v15 < v15.1 < v15.5 < v15.5.1 < v15.6 < v16
 ```
+
+L'ancre lisible est rendue sous sa forme minimale : `v15` pour `(15, 0, 0)`, `v15.5` pour `(15, 5, 0)`, `v15.5.1` pour `(15, 5, 1)`. La forme lisible ne révèle jamais une composante absente ou nulle finale.
 
 L'ordre du couple est strictement `(ancre_N, ancre_N+1)` selon cet ordre canonique. La date du backup source n'intervient pas dans le tri ; elle n'est qu'un horodatage de capture.
 
 ### Doublon d'ancre
 
-Si deux répertoires de `versions/` portent le même tag (par exemple deux fois `Arsenal_v15`), l'ancre est marquée **ambiguë** et tous les couples impliquant cette ancre sont rejetés.
+Si deux répertoires de `versions/` parsent vers le **même triplet `(majeur, mineur, patch)`** — qu'ils portent ou non le même tag textuel — l'ancre est marquée **ambiguë** et tous les couples impliquant cette ancre sont rejetés.
 
-La levée d'ambiguïté est une action humaine : renommer ou supprimer un des deux répertoires. La brique ne tranche jamais d'elle-même.
+Conséquence directe : `Arsenal_v15`, `Arsenal_v15.0` et `Arsenal_v15.0.0` produisent tous le triplet `(15, 0, 0)`. La présence simultanée d'au moins deux de ces formes dans `versions/` constitue un doublon d'ancre, indépendamment de la différence orthographique du tag.
+
+La levée d'ambiguïté est une action humaine : renommer ou supprimer les répertoires en conflit. La brique ne tranche jamais d'elle-même.
 
 ### Cohérence temporelle observable
 
-Le tri canonique repose strictement sur `(majeur, mineur)`. La date de capture n'intervient pas dans le tri.
+Le tri canonique repose strictement sur `(majeur, mineur, patch)`. La date de capture n'intervient pas dans le tri.
 
 En revanche, la brique observe la cohérence temporelle du graphe et signale les ancres rétroactives.
 

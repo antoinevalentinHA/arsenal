@@ -32,7 +32,7 @@ Indiquer si le mode COOL est autorisé indépendamment du besoin thermique.
 | `sensor.temperature_jardin` | Température extérieure lue |
 | `input_number.clim_seuil_temperature_exterieure_minimum` | Seuil minimal extérieur pour autoriser COOL |
 | `binary_sensor.aeration_preferable_etage` | Interdit COOL si `on` |
-| `binary_sensor.fenetre_ouverte_maison` | Interdit COOL si `on` |
+| `binary_sensor.fenetre_ouverte_maison_avec_delai` | Interdit COOL si `on` |
 | `binary_sensor.clim_blocage_horaire_reel` | Interdit COOL si `on` |
 | `binary_sensor.clim_extinction_absence_prolongee_autorisee` | Interdit COOL si `on` |
 
@@ -42,13 +42,16 @@ Indiquer si le mode COOL est autorisé indépendamment du besoin thermique.
 AUTORISATION = true si et seulement si :
   temperature_jardin  >=  clim_seuil_temperature_exterieure_minimum
   ET  aeration_preferable_etage                    == off
-  ET  fenetre_ouverte_maison                       == off
+  ET  fenetre_ouverte_maison_avec_delai            == off
   ET  clim_blocage_horaire_reel                    == off
   ET  clim_extinction_absence_prolongee_autorisee  == off
 ```
 
 L'entité est `on` uniquement si toutes les conditions sont simultanément vraies.
 Toute condition fausse fait passer l'entité à `off`.
+
+La condition fenêtres repose sur la version temporisée/métier des ouvertures afin d'éviter
+les coupures de climatisation lors d'ouvertures transitoires non assimilables à une aération effective.
 
 ### Fallback
 
@@ -118,7 +121,7 @@ Indiquer si le mode HEAT est autorisé indépendamment du besoin thermique.
 | `input_boolean.chauffage_clim_active_en_hiver` | Autorisation explicite du chauffage par clim — requis `on` |
 | `input_boolean.chauffage_blocage_aeration` | Interdit HEAT si `on` |
 | `binary_sensor.presence_famille_unifiee` | Présence réelle requise — requis `on` |
-| `binary_sensor.fenetre_ouverte_maison` | Interdit HEAT si `on` |
+| `binary_sensor.fenetre_ouverte_maison_avec_delai` | Interdit HEAT si `on` |
 | `binary_sensor.clim_blocage_horaire_reel` | Interdit HEAT si `on` |
 | `input_boolean.blocage_clim_poele` | Interdit HEAT si `on` |
 
@@ -127,15 +130,18 @@ Indiquer si le mode HEAT est autorisé indépendamment du besoin thermique.
 ```text
 AUTORISATION = true si et seulement si :
   temperature_jardin  >  clim_hiver_seuil_temperature_exterieure
-  ET  chauffage_clim_active_en_hiver   == on
-  ET  chauffage_blocage_aeration       == off
-  ET  presence_famille_unifiee         == on
-  ET  fenetre_ouverte_maison           == off
-  ET  clim_blocage_horaire_reel        == off
-  ET  blocage_clim_poele               == off
+  ET  chauffage_clim_active_en_hiver       == on
+  ET  chauffage_blocage_aeration           == off
+  ET  presence_famille_unifiee             == on
+  ET  fenetre_ouverte_maison_avec_delai    == off
+  ET  clim_blocage_horaire_reel            == off
+  ET  blocage_clim_poele                   == off
 ```
 
 L'entité est `on` uniquement si toutes les conditions sont simultanément vraies.
+
+La condition fenêtres repose sur la version temporisée/métier des ouvertures afin d'éviter
+les coupures de climatisation lors d'ouvertures transitoires non assimilables à une aération effective.
 
 ### Fallback
 
@@ -203,7 +209,7 @@ Indiquer si le mode DRY est autorisé indépendamment du besoin hygrométrique.
 |---|---|
 | `binary_sensor.presence_famille_unifiee` | Source de présence réelle |
 | `input_boolean.mode_babysitting` | Source alternative d'autorisation de présence |
-| `binary_sensor.fenetre_ouverte_maison` | Interdit DRY si `on` |
+| `binary_sensor.fenetre_ouverte_maison_avec_delai` | Interdit DRY si `on` |
 | `binary_sensor.aeration_preferable_etage` | Interdit DRY si `on` |
 | `binary_sensor.clim_blocage_horaire_reel` | Interdit DRY si `on` |
 
@@ -212,12 +218,15 @@ Indiquer si le mode DRY est autorisé indépendamment du besoin hygrométrique.
 ```text
 AUTORISATION = true si et seulement si :
   ( presence_famille_unifiee == on  OU  mode_babysitting == on )
-  ET  fenetre_ouverte_maison       == off
-  ET  aeration_preferable_etage    == off
-  ET  clim_blocage_horaire_reel    == off
+  ET  fenetre_ouverte_maison_avec_delai    == off
+  ET  aeration_preferable_etage            == off
+  ET  clim_blocage_horaire_reel            == off
 ```
 
 L'entité est `on` uniquement si le bloc de présence est vrai et si toutes les contraintes d'interdiction sont à `off`.
+
+La condition fenêtres repose sur la version temporisée/métier des ouvertures afin d'éviter
+les coupures de climatisation lors d'ouvertures transitoires non assimilables à une aération effective.
 
 ### Fallback
 
@@ -251,7 +260,7 @@ Non déterminables depuis le YAML fourni.
 | Présence requise | Non | Oui (stricte) | Oui ou babysitting |
 | Température extérieure | Oui (`>=`) | Oui (`>`) | Non |
 | Aération | `aeration_preferable_etage` | `chauffage_blocage_aeration` | `aeration_preferable_etage` |
-| Fenêtres | Oui | Oui | Oui |
+| Fenêtres | `fenetre_ouverte_maison_avec_delai` | `fenetre_ouverte_maison_avec_delai` | `fenetre_ouverte_maison_avec_delai` |
 | Blocage horaire | Oui | Oui | Oui |
 | Blocage spécifique | Absence prolongée | Poêle + activation explicite | Aucun |
 | Fallback numérique | `float(0)` / `float(99)` | `float(0)` / `float(99)` | N/A |

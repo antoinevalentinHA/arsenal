@@ -14,10 +14,10 @@
 #   - Aucune action
 #
 # 🔌 Dérivé STRICTEMENT de :
-#   - presence / babysitting
-#   - windows_ok
-#   - aer_ok
-#   - blocage_horaire
+#   - présence réelle ou babysitting
+#   - fenêtres (version temporisée — délais métier)
+#   - aération préférable étage
+#   - blocage horaire
 # ==========================================================
 
 - binary_sensor:
@@ -25,10 +25,15 @@
       unique_id: autorisation_clim_dry
       default_entity_id: binary_sensor.autorisation_clim_dry
       state: >
-        {{
-          ( is_state('binary_sensor.presence_famille_unifiee', 'on')
-            or is_state('input_boolean.mode_babysitting', 'on') )
-          and is_state('binary_sensor.fenetre_ouverte_maison', 'off')
-          and is_state('binary_sensor.aeration_preferable_etage', 'off')
-          and is_state('binary_sensor.clim_blocage_horaire_reel', 'off')
-        }}
+        {% set presence    = is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+        {% set babysitting = is_state('input_boolean.mode_babysitting', 'on') %}
+        {% set fenetres    = is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
+        {% set aeration    = is_state('binary_sensor.aeration_preferable_etage', 'on') %}
+        {% set blocage     = is_state('binary_sensor.clim_blocage_horaire_reel', 'on') %}
+        {% set ok =
+          (presence or babysitting)
+          and not fenetres
+          and not aeration
+          and not blocage
+        %}
+        {{ 'on' if ok else 'off' }}

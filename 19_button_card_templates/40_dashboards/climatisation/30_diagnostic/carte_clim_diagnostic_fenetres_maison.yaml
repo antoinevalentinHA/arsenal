@@ -7,9 +7,9 @@
 #     TEMPLATE UI METIER
 #
 # 🎯 ROLE
-#     Indique si au moins une fenêtre de la maison est ouverte,
-#     ce qui conditionne l'autorisation clim. Diagnostic pur,
-#     aucune interaction.
+#     Indique si au moins une ouverture maison est considérée
+#     bloquante pour l'autorisation climatisation.
+#     Diagnostic pur, aucune interaction.
 #
 # 🧱 NATURE
 #     - Template button-card
@@ -17,29 +17,31 @@
 #     - UI uniquement (aucune décision)
 #
 # 🎨 SEMANTIQUE
-#     - state = off -> 🟢 vert "Fermées"              (clim autorisée)
-#     - state = on  -> ⚪ gris "Au moins une ouverte" (blocage clim possible)
+#     - state = off -> 🟢 vert "Aucune ouverture bloquante" (clim autorisée)
+#     - state = on  -> ⚪ gris "Ouverture bloquante"       (blocage clim possible)
 #
 # 🔗 DEPENDANCES
-#     - entity : binary_sensor.fenetre_ouverte_maison (groupe ou réconcilié)
+#     - entity : binary_sensor.fenetre_ouverte_maison_avec_delai
 #
 # ⚠️ CONTRAINTES
 #     - Sémantique inversée : ON = état dégradé (gris), OFF = nominal (vert)
-#     - Pas de rouge — une fenêtre ouverte est une contrainte de confort,
-#       pas une alerte critique (même pattern que carte_clim_diagnostic_aeration_etage)
+#     - La carte consomme la primitive métier temporisée utilisée par les
+#       autorisations climatisation, et non l'ouverture physique instantanée.
+#     - Pas de rouge — une ouverture bloquante est une contrainte de confort,
+#       pas une alerte critique.
 #     - Aucune action définie
 #
 # 🧩 USAGE
 #     type: custom:button-card
 #     template: carte_clim_diagnostic_fenetres_maison
-#     entity: binary_sensor.fenetre_ouverte_maison
+#     entity: binary_sensor.fenetre_ouverte_maison_avec_delai
 #
 # ==========================================================
 
 carte_clim_diagnostic_fenetres_maison:
   template: socle_status_label_72
 
-  entity: binary_sensor.fenetre_ouverte_maison
+  entity: binary_sensor.fenetre_ouverte_maison_avec_delai
 
   show_state: false
   show_name: true
@@ -49,8 +51,8 @@ carte_clim_diagnostic_fenetres_maison:
   label: |
     [[[
       return entity.state === "off"
-        ? "Fermées"
-        : "Au moins une ouverte";
+        ? "Aucune ouverture bloquante"
+        : "Ouverture bloquante";
     ]]]
 
   styles:

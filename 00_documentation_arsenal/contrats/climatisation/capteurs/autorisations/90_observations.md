@@ -142,3 +142,49 @@ Aucune des trois entités ne déclare d'attribut personnalisé, d'`icon` ou de `
 
 Les entités portent uniquement une information d'autorisation binaire.
 La sémantique d'affichage ou de diagnostic complémentaire n'est pas embarquée dans le YAML transmis.
+
+---
+
+## 9. Condition fenêtres : version temporisée/métier uniforme sur les trois modes
+
+### Observation
+
+Les trois modes référençaient initialement `binary_sensor.fenetre_ouverte_maison` (ouverture physique instantanée).
+Suite à une régression observée en production (arrêt intempestif du mode DRY lors d'une ouverture transitoire de fenêtre n'atteignant pas la durée minimale d'aération), les trois chaînes ont été migrées vers `binary_sensor.fenetre_ouverte_maison_avec_delai`.
+
+### Sémantique de fenetre_ouverte_maison_avec_delai
+
+Ce sensor agrège les ouvertures de la maison avec une logique de délai différenciée par zone :
+
+| Zone | Comportement |
+|---|---|
+| Entrée | Immédiat (pas de délai) |
+| Séjour | Après délai (`fenetre_sejour_ouverte_avec_delai`) |
+| Étage (chambre parentale) | Mixte — grâce active via `timer.fenetre_chambre_parents_grace` |
+
+Une ouverture brève sur les zones temporisées (séjour, étage) ne fait pas basculer ce sensor.
+Seule une ouverture maintenue suffisamment longtemps pour épuiser le délai de grâce active le bloquant.
+
+### Effet sur les trois modes
+
+```text
+Ouverture brève (transitoire)
+→ fenetre_ouverte_maison_avec_delai reste off
+→ COOL / HEAT / DRY continuent
+
+Ouverture maintenue (aération effective)
+→ fenetre_ouverte_maison_avec_delai passe on
+→ COOL / HEAT / DRY bloqués
+```
+
+### Note sur la zone entrée
+
+La fenêtre d'entrée reste à réaction immédiate dans `fenetre_ouverte_maison_avec_delai`.
+Une ouverture de la fenêtre d'entrée bloque donc instantanément les trois modes.
+Ce comportement est intentionnel et cohérent avec la politique du sensor d'agrégat.
+
+### Signification architecturale
+
+La migration de `fenetre_ouverte_maison` vers `fenetre_ouverte_maison_avec_delai` est uniforme sur les trois modes.
+Elle n'introduit aucun nouveau helper, aucun couplage inter-domaines, et préserve le modèle combinatoire pur de la couche autorisation.
+Le sensor `fenetre_ouverte_maison_avec_delai` était déjà présent dans les contrats M0 du domaine Aération→Blocage Chauffage comme référence normative des ouvertures maison.

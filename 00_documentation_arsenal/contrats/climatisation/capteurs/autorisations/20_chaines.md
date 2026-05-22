@@ -23,12 +23,12 @@
 ### Vue linéaire
 
 ```text
-[sensor.temperature_jardin] ─────────────────────────────────────────┐
-[input_number.clim_seuil_temperature_exterieure_minimum] ────────────┤
-[binary_sensor.aeration_preferable_etage] ───────────────────────────┤
-[binary_sensor.fenetre_ouverte_maison] ──────────────────────────────┤──► binary_sensor.autorisation_clim_cool
-[binary_sensor.clim_blocage_horaire_reel] ───────────────────────────┤
-[binary_sensor.clim_extinction_absence_prolongee_autorisee] ─────────┘
+[sensor.temperature_jardin] ─────────────────────────────────────────────┐
+[input_number.clim_seuil_temperature_exterieure_minimum] ────────────────┤
+[binary_sensor.aeration_preferable_etage] ───────────────────────────────┤
+[binary_sensor.fenetre_ouverte_maison_avec_delai] ───────────────────────┤──► binary_sensor.autorisation_clim_cool
+[binary_sensor.clim_blocage_horaire_reel] ───────────────────────────────┤
+[binary_sensor.clim_extinction_absence_prolongee_autorisee] ─────────────┘
 ```
 
 ### Description
@@ -38,7 +38,7 @@
 | `sensor.temperature_jardin` | Observation | `>= seuil_temperature_exterieure_minimum` |
 | `input_number.clim_seuil_temperature_exterieure_minimum` | Paramétrage | valeur de référence |
 | `binary_sensor.aeration_preferable_etage` | Autorisation amont | doit être `off` |
-| `binary_sensor.fenetre_ouverte_maison` | Autorisation amont | doit être `off` |
+| `binary_sensor.fenetre_ouverte_maison_avec_delai` | Autorisation amont | doit être `off` |
 | `binary_sensor.clim_blocage_horaire_reel` | Autorisation amont | doit être `off` |
 | `binary_sensor.clim_extinction_absence_prolongee_autorisee` | Autorisation amont | doit être `off` |
 | **`binary_sensor.autorisation_clim_cool`** | **Autorisation** | **résultat** |
@@ -46,7 +46,7 @@
 ### Comportement de la chaîne
 
 L'autorisation COOL est active uniquement si la température extérieure est supérieure ou égale au seuil minimal configuré, et si toutes les contraintes bloquantes sont à `off`.
-Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
+La condition fenêtres est évaluée sur la version temporisée/métier des ouvertures : une ouverture brève ne bloque pas COOL.
 
 ---
 
@@ -55,11 +55,11 @@ Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
 ### Vue linéaire
 
 ```text
-[binary_sensor.presence_famille_unifiee] ─┐
-[input_boolean.mode_babysitting] ──────────┤ (OR)
-[binary_sensor.fenetre_ouverte_maison] ────┤──► binary_sensor.autorisation_clim_dry
-[binary_sensor.aeration_preferable_etage] ─┤
-[binary_sensor.clim_blocage_horaire_reel] ─┘
+[binary_sensor.presence_famille_unifiee] ──┐
+[input_boolean.mode_babysitting] ───────────┤ (OR)
+[binary_sensor.fenetre_ouverte_maison_avec_delai] ──┤──► binary_sensor.autorisation_clim_dry
+[binary_sensor.aeration_preferable_etage] ──┤
+[binary_sensor.clim_blocage_horaire_reel] ──┘
 ```
 
 ### Description
@@ -68,7 +68,7 @@ Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
 |---|---|---|
 | `binary_sensor.presence_famille_unifiee` | Observation / contexte | doit être `on` (OU babysitting) |
 | `input_boolean.mode_babysitting` | Contexte | doit être `on` (OU présence famille) |
-| `binary_sensor.fenetre_ouverte_maison` | Autorisation amont | doit être `off` |
+| `binary_sensor.fenetre_ouverte_maison_avec_delai` | Autorisation amont | doit être `off` |
 | `binary_sensor.aeration_preferable_etage` | Autorisation amont | doit être `off` |
 | `binary_sensor.clim_blocage_horaire_reel` | Autorisation amont | doit être `off` |
 | **`binary_sensor.autorisation_clim_dry`** | **Autorisation** | **résultat** |
@@ -77,6 +77,7 @@ Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
 
 L'autorisation DRY est active uniquement si la présence réelle est `on` ou le mode babysitting est `on`, et si toutes les contraintes bloquantes sont à `off`.
 La chaîne contient une seule disjonction explicite : le bloc `(présence OR babysitting)`.
+La condition fenêtres est évaluée sur la version temporisée/métier des ouvertures : une ouverture brève ne bloque pas DRY.
 Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
 
 ---
@@ -86,14 +87,14 @@ Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
 ### Vue linéaire
 
 ```text
-[sensor.temperature_jardin] ────────────────────────────────────┐
-[input_number.clim_hiver_seuil_temperature_exterieure] ─────────┤
-[input_boolean.chauffage_clim_active_en_hiver] ─────────────────┤
-[input_boolean.chauffage_blocage_aeration] ─────────────────────┤
-[binary_sensor.presence_famille_unifiee] ───────────────────────┤──► binary_sensor.autorisation_clim_heat
-[binary_sensor.fenetre_ouverte_maison] ─────────────────────────┤
-[binary_sensor.clim_blocage_horaire_reel] ──────────────────────┤
-[input_boolean.blocage_clim_poele] ─────────────────────────────┘
+[sensor.temperature_jardin] ───────────────────────────────────────┐
+[input_number.clim_hiver_seuil_temperature_exterieure] ────────────┤
+[input_boolean.chauffage_clim_active_en_hiver] ────────────────────┤
+[input_boolean.chauffage_blocage_aeration] ────────────────────────┤
+[binary_sensor.presence_famille_unifiee] ──────────────────────────┤──► binary_sensor.autorisation_clim_heat
+[binary_sensor.fenetre_ouverte_maison_avec_delai] ─────────────────┤
+[binary_sensor.clim_blocage_horaire_reel] ─────────────────────────┤
+[input_boolean.blocage_clim_poele] ────────────────────────────────┘
 ```
 
 ### Description
@@ -105,7 +106,7 @@ Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
 | `input_boolean.chauffage_clim_active_en_hiver` | Paramétrage / contexte | doit être `on` |
 | `input_boolean.chauffage_blocage_aeration` | Autorisation amont | doit être `off` |
 | `binary_sensor.presence_famille_unifiee` | Observation / contexte | doit être `on` |
-| `binary_sensor.fenetre_ouverte_maison` | Autorisation amont | doit être `off` |
+| `binary_sensor.fenetre_ouverte_maison_avec_delai` | Autorisation amont | doit être `off` |
 | `binary_sensor.clim_blocage_horaire_reel` | Autorisation amont | doit être `off` |
 | `input_boolean.blocage_clim_poele` | Autorisation amont | doit être `off` |
 | **`binary_sensor.autorisation_clim_heat`** | **Autorisation** | **résultat** |
@@ -113,6 +114,7 @@ Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
 ### Comportement de la chaîne
 
 L'autorisation HEAT est active uniquement si la température extérieure est strictement supérieure au seuil hiver configuré, l'activation explicite du chauffage par clim est à `on`, la présence réelle est à `on`, et toutes les contraintes bloquantes sont à `off`.
+La condition fenêtres est évaluée sur la version temporisée/métier des ouvertures : une ouverture brève ne bloque pas HEAT.
 Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
 
 ---
@@ -121,15 +123,15 @@ Il n'existe ni mémoire, ni hystérésis, ni temporisation dans cette chaîne.
 
 ```text
 COOL
-[température ext.] + [seuil ext. min] + [aération étage off] + [fenêtres off] + [blocage horaire off] + [absence prolongée off]
+[température ext.] + [seuil ext. min] + [aération étage off] + [fenêtres avec délai off] + [blocage horaire off] + [absence prolongée off]
     └──► autorisation_clim_cool
 
 DRY
-[(présence famille on) OU (babysitting on)] + [fenêtres off] + [aération étage off] + [blocage horaire off]
+[(présence famille on) OU (babysitting on)] + [fenêtres avec délai off] + [aération étage off] + [blocage horaire off]
     └──► autorisation_clim_dry
 
 HEAT
-[température ext.] + [seuil hiver] + [chauffage clim hiver on] + [blocage aération chauffage off] + [présence on] + [fenêtres off] + [blocage horaire off] + [blocage poêle off]
+[température ext.] + [seuil hiver] + [chauffage clim hiver on] + [blocage aération chauffage off] + [présence on] + [fenêtres avec délai off] + [blocage horaire off] + [blocage poêle off]
     └──► autorisation_clim_heat
 ```
 
@@ -139,8 +141,15 @@ HEAT
 
 | Condition | COOL | HEAT | DRY |
 |---|:---:|:---:|:---:|
-| `fenetre_ouverte_maison == off` | ✅ | ✅ | ✅ |
+| `fenetre_ouverte_maison_avec_delai == off` | ✅ | ✅ | ✅ |
 | `clim_blocage_horaire_reel == off` | ✅ | ✅ | ✅ |
 | `aeration_preferable_etage == off` | ✅ | — | ✅ |
 | `presence_famille_unifiee == on` | — | ✅ | ✅ |
 | `sensor.temperature_jardin` | ✅ | ✅ | — |
+
+---
+
+## Invariant commun aux 3 modes
+
+Il n'existe ni mémoire, ni hystérésis, ni temporisation propre dans cette chaîne d'autorisation.
+La temporisation éventuelle est portée en amont par le capteur d'ouverture métier.
