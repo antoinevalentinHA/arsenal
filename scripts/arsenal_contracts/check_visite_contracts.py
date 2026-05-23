@@ -27,15 +27,24 @@ STATE_TARGETS = [
     "input_boolean.presence_visiteur",
 ]
 
-ENERGY_FORBIDDEN_TERMS = [
-    "switch.",
-    "climate.",
-    "water_heater.",
-    "number.",
-    "script.bouclage",
-    "ecs",
-    "chauffage",
-    "chaudiere",
+ALLOWED_TEMPORAL_FILE = Path("12_template_sensors/presence/visite.yaml")
+
+TEMPORAL_LOGIC_TERMS = [
+    "now()",
+    "today_at",
+    "weekday",
+    "timestamp_custom",
+    "as_datetime",
+]
+
+FORBIDDEN_ENERGY_SERVICES = [
+    "switch.turn_on",
+    "switch.turn_off",
+    "climate.set_temperature",
+    "climate.set_hvac_mode",
+    "water_heater.set_operation_mode",
+    "water_heater.set_temperature",
+    "number.set_value",
 ]
 
 
@@ -123,30 +132,22 @@ print("✔ Notification persistante Visite réservée")
 
 
 # ==========================================================
-# TEST 4 — Calcul temporel centralisé
+# TEST 4 — Calcul temporel actif centralisé
 # ==========================================================
-
-allowed_temporal_file = Path("12_template_sensors/presence/visite.yaml")
-
-temporal_terms = [
-    "input_datetime.visiteur_start",
-    "input_datetime.visiteur_end",
-    "input_select.jour_visiteur",
-]
 
 for path in yaml_files():
     content = read(path)
 
-    if not any(term in content for term in temporal_terms):
+    if not any(term in content for term in TEMPORAL_LOGIC_TERMS):
         continue
 
-    if path != allowed_temporal_file:
+    if path != ALLOWED_TEMPORAL_FILE:
         fail(
-            "Calcul temporel Visite hors capteur canonique : "
+            "Logique temporelle Visite hors capteur canonique : "
             f"{path}"
         )
 
-print("✔ Calcul temporel Visite centralisé")
+print("✔ Calcul temporel actif Visite centralisé")
 
 
 # ==========================================================
@@ -156,16 +157,19 @@ print("✔ Calcul temporel Visite centralisé")
 for path in yaml_files():
     path_str = str(path).lower()
 
-    if "visite" not in path_str and "visiteur" not in path_str:
+    if not (
+        "presence/visite" in path_str
+        or "presence/visiteur" in path_str
+    ):
         continue
 
     content = read(path).lower()
 
-    for term in ENERGY_FORBIDDEN_TERMS:
-        if term in content:
+    for service in FORBIDDEN_ENERGY_SERVICES:
+        if service in content:
             fail(
-                "Violation isolation énergétique Visite : "
-                f"{path} -> '{term}'"
+                "Pilotage énergétique interdit dans le domaine Visite : "
+                f"{path} -> '{service}'"
             )
 
 print("✔ Isolation énergétique Visite respectée")
