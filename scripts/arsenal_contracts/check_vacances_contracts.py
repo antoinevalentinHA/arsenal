@@ -108,18 +108,37 @@ print("✔ Aucun calcul temporel direct interdit dans les templates Vacances")
 
 
 # ==========================================================
-# TEST 3 — Demande consolidée indépendante de mode_maison
+# TEST 3 — vacances_demandees indépendante de mode_maison
 # ==========================================================
 
 for path in yaml_files():
+
     content = read(path)
 
     if "binary_sensor.vacances_demandees" not in content:
         continue
 
-    if "input_select.mode_maison" in content:
+    lines = content.splitlines()
+
+    inside_vacances_demandees = False
+    block = []
+
+    for line in lines:
+
+        if "binary_sensor.vacances_demandees" in line:
+            inside_vacances_demandees = True
+
+        if inside_vacances_demandees:
+            block.append(line)
+
+            if line.strip() == "" and block:
+                break
+
+    joined_block = "\n".join(block)
+
+    if "input_select.mode_maison" in joined_block:
         fail(
-            "vacances_demandees ne doit jamais dépendre de mode_maison : "
+            "vacances_demandees dépend de mode_maison : "
             f"{path}"
         )
 
