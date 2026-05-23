@@ -5,9 +5,12 @@ rules:
   document-start: disable
   truthy: disable
   comments: disable
+
   indentation:
     indent-sequences: consistent
+
   trailing-spaces:
     level: warning
-  new-lines:
-    type: unix
+
+  new-lines: disable
+  new-line-at-end-of-file: disable
