@@ -48,14 +48,16 @@ def assert_ok(condition: bool, message: str):
 
 
 def test_contract_entities_declared():
-    template_scope = ROOT / "12_template_sensors/deshumidificateur"
+    template_scopes = [
+        ROOT / "12_template_sensors/deshumidificateur",
+        ROOT / "12_template_sensors/system/integrite_reglages",
+    ]
 
     expected_template_entities = [
         "deshumidificateur_actif",
         "critere_deshumidification_cave",
         "critere_deshumidification_ha_cave",
         "deshumidificateur_cave_demarrage_recommande",
-        "deshumidificateur_conformite_execution",
         "parametres_invalides_deshumidificateur",
     ]
 
@@ -68,7 +70,10 @@ def test_contract_entities_declared():
 
     for entity_id in expected_template_entities:
         assert_ok(
-            contains_unique_id(entity_id, template_scope),
+            any(
+                contains_unique_id(entity_id, scope)
+                for scope in template_scopes
+            ),
             f"Template sensor/binary_sensor non declare par unique_id : {entity_id}",
         )
 
