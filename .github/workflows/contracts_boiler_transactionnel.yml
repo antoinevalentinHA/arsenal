@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Boiler Transactionnel
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Vérification contractuelle — Socle Transactionnel Boiler Bridge
+        run: python3 scripts/arsenal_contracts/check_boiler_transactionnel_contracts.py
