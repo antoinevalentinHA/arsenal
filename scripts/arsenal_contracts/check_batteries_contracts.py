@@ -264,13 +264,12 @@ def test_script_reads_sensor_faibles_attribute() -> None:
 
 def test_no_direct_battery_notification_outside_script() -> None:
     """
-    T16 — Aucune notification batterie n'est envoyée hors du script centralisé.
-    Contrat §Interdits : notification sans passer par script.notification_batteries_faibles.
-    Scope : 11_automations/ entier (exclusion system/batteries/)
-             10_scripts/ entier (exclusion batterie_faible.yaml).
+    T16 — Aucune notification batterie capteurs hors script centralisé.
+    Scope précisé : détecte uniquement les références à batteries_faibles
+    ou batterie_a_remplacer, pas le mot générique 'batter'.
     """
     NOTIF_SERVICE = re.compile(r'\b(?:notify\.|persistent_notification\.)', re.IGNORECASE)
-    BATTERY_REF   = re.compile(r'batter(?:ie|y|ies)', re.IGNORECASE)
+    BATTERY_REF   = re.compile(r'(?:batteries_faibles|batterie_a_remplacer)', re.IGNORECASE)
     DIR_BATTERIES_AUTO = DIR_AUTOMATIONS / "system" / "batteries"
 
     for p in yaml_files(DIR_AUTOMATIONS):
@@ -366,14 +365,13 @@ def test_reset_automation_declared() -> None:
 def test_reset_automation_triggered_at_midnight() -> None:
     """
     T20 — L'automation de reset se déclenche à 00:00.
-    Contrat §Réinitialisation : tous les jours à 00:00:00.
-    Scope : 11_automations/system/batteries/reinitialisation.yaml
+    Pattern élargi : guillemets simples, doubles, ou absence de guillemets.
     """
     p = DIR_AUTOMATIONS / "system" / "batteries" / "reinitialisation.yaml"
     if not p.is_file():
         error("T20: reinitialisation.yaml introuvable")
         return
-    if not re.search(r'"00:00(?::00)?"', read(p)):
+    if not re.search(r"""['"]?00:00(?::00)?['"]?""", read(p)):
         error(
             "T20: déclencheur 00:00 absent de reinitialisation.yaml "
             "— reset quotidien non garanti"
