@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Babysitting
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Vérification contractuelle — Mode Babysitting
+        run: python3 scripts/arsenal_contracts/check_babysitting_contracts.py
