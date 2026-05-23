@@ -246,21 +246,23 @@ def test_script_chauffage_writes_helper_before_publish() -> None:
 
 def test_retry_automations_declared() -> None:
     """
-    T09 — Les trois automations de retry déclarées pour ECS et chauffage.
-    Contrat retry §7.1 : orchestrateur = armement + etat + declenchement.
+    T09 — Les quatre automations de retry déclarées pour ECS et chauffage.
+    Contrat retry §7.1 : orchestrateur = armement + etat + declenchement + reprise.
     """
     REQUIRED = [
         ROOT / "11_automations" / "ecs" / "retry_transactionnel" / "armement.yaml",
         ROOT / "11_automations" / "ecs" / "retry_transactionnel" / "etat.yaml",
         ROOT / "11_automations" / "ecs" / "retry_transactionnel" / "declenchement.yaml",
+        ROOT / "11_automations" / "ecs" / "retry_transactionnel" / "reprise.yaml",
         ROOT / "11_automations" / "chauffage" / "retry_transactionnel" / "armement.yaml",
         ROOT / "11_automations" / "chauffage" / "retry_transactionnel" / "etat.yaml",
         ROOT / "11_automations" / "chauffage" / "retry_transactionnel" / "declenchement.yaml",
+        ROOT / "11_automations" / "chauffage" / "retry_transactionnel" / "reprise.yaml",
     ]
     for p in REQUIRED:
         if not p.is_file():
             error(f"T09: {p.relative_to(ROOT)} introuvable — orchestrateur retry manquant")
-    ok("T09 — automations retry transactionnel déclarées")
+    ok("T09 — automations retry transactionnel déclarées (4 par domaine)")
 
 
 def test_retry_not_in_executive_scripts() -> None:
@@ -408,12 +410,16 @@ def test_retry_helpers_declared() -> None:
     DIR_TI = ROOT / "08_timers"
 
     HELPERS = [
-        ("ecs_retry_pending",             DIR_IB / "ecs",       "input_boolean"),
-        ("chauffage_retry_pending",       DIR_IB / "chauffage", "input_boolean"),
-        ("chauffage_retry_count",         DIR_IN,               "input_number"),
-        ("chauffage_retry_attempt1_id",   DIR_IT,               "input_text"),
-        ("chauffage_retry_attempt2_id",   DIR_IT,               "input_text"),
-        ("chauffage_retry",               DIR_TI,               "timer"),
+        # ECS
+        ("ecs_retry_pending",           DIR_IB / "ecs",         "input_boolean"),
+        ("ecs_retry_attempt1_id",       DIR_IT / "ecs" / "retry", "input_text"),
+        ("ecs_retry_attempt2_id",       DIR_IT / "ecs" / "retry", "input_text"),
+        # Chauffage
+        ("chauffage_retry_pending",     DIR_IB / "chauffage",   "input_boolean"),
+        ("chauffage_retry_attempt1_id", DIR_IT / "chauffage",   "input_text"),
+        ("chauffage_retry_attempt2_id", DIR_IT / "chauffage",   "input_text"),
+        ("chauffage_retry_count",       DIR_IN,                 "input_number"),
+        ("chauffage_retry",             DIR_TI,                 "timer"),
     ]
     for entity_id, folder, prefix in HELPERS:
         if not is_declared_as_mapping_key(entity_id, folder):
