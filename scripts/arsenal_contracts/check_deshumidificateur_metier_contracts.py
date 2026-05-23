@@ -58,6 +58,7 @@ def test_contract_entities_declared():
         "critere_deshumidification_cave",
         "critere_deshumidification_ha_cave",
         "deshumidificateur_cave_demarrage_recommande",
+        "deshumidificateur_conformite_execution",
         "parametres_invalides_deshumidificateur",
     ]
 
