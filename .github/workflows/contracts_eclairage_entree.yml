@@ -1,0 +1,16 @@
+name: Arsenal Contracts — Eclairage Entree
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-eclairage-entree:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate contract — Éclairage / Entrée
+        run: python scripts/arsenal_contracts/check_eclairage_entree_contracts.py
