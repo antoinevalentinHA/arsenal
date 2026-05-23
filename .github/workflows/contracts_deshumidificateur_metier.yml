@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Deshumidificateur Metier
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run deshumidificateur metier contract checks
+        run: python scripts/arsenal_contracts/check_deshumidificateur_metier_contracts.py
