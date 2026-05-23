@@ -1,0 +1,13 @@
+extends: default
+
+rules:
+  line-length: disable
+  document-start: disable
+  truthy: disable
+  comments: disable
+  indentation:
+    indent-sequences: consistent
+  trailing-spaces:
+    level: warning
+  new-lines:
+    type: unix
