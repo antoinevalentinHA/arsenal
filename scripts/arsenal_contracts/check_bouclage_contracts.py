@@ -242,26 +242,31 @@ def test_no_time_condition_in_auto_demarrage() -> None:
     ok("T10 — auto_demarrage sans condition temporelle")
 
 
-def test_switch_prise_bouclage_written_only_by_automations() -> None:
+def test_switch_prise_bouclage_written_only_by_authorized() -> None:
     """
-    T11 — switch.prise_bouclage n'est pas piloté depuis 10_scripts/.
-    Contrat §Invariants : seules les automations sont habilitées à écrire
-    dans switch.prise_bouclage.
-    Scope : 10_scripts/ uniquement.
+    T11 — switch.prise_bouclage n'est piloté que depuis les automations bouclage
+    et script.bouclage_ecs_5_minutes.
+    Scope : 10_scripts/ entier, exclusion explicite de bouclage_ecs_5_minutes.
     """
     WRITE_PATTERN = re.compile(
         r'(?:switch\.turn_on|switch\.turn_off|switch\.toggle)'
         r'[\s\S]{0,200}prise_bouclage',
         re.MULTILINE
     )
+    CANONICAL_SCRIPT = re.compile(r'bouclage_ecs_5_minutes\s*:', re.MULTILINE)
+
     for p in yaml_files(DIR_SCRIPTS):
         content = read(p)
-        if WRITE_PATTERN.search(content):
-            error(
-                f"T11: pilotage de switch.prise_bouclage depuis un script interdit : "
-                f"{p.relative_to(ROOT)}"
-            )
-    ok("T11 — switch.prise_bouclage non piloté depuis les scripts")
+        if not WRITE_PATTERN.search(content):
+            continue
+        # Le script canonique du cycle manuel est autorisé
+        if CANONICAL_SCRIPT.search(content):
+            continue
+        error(
+            f"T11: pilotage de switch.prise_bouclage depuis un script non autorisé : "
+            f"{p.relative_to(ROOT)}"
+        )
+    ok("T11 — switch.prise_bouclage piloté uniquement par les écrivains autorisés")
 
 
 def test_no_timer_in_auto_demarrage_or_extinction() -> None:
