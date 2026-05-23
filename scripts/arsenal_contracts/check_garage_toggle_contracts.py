@@ -101,6 +101,20 @@ def test_switch_exclusivity():
 
     Écrivains légitimes hors script canonique : aucun identifié dans le runtime.
     """
+    # Une écriture réelle sur switch.lumiere_garage requiert :
+    #   service: switch.turn_on/off
+    #   target:
+    #     entity_id: switch.lumiere_garage
+    #
+    # On détecte le pattern en cherchant `lumiere_garage` uniquement
+    # dans les lignes qui suivent un `target:` lui-même consécutif
+    # au service — ce qui exclut les lectures passives en condition:
+    # (ex. entree/automatique.yaml lit lumiere_garage en condition,
+    # puis appelle switch.turn_on sur switch.lumiere_entree plus bas).
+    write_service = re.compile(r"switch\.turn_(?:on|off)")
+    target_kw     = re.compile(r"^\s+target\s*:")
+    target_entity = re.compile(r"lumiere_garage")
+
     scan_roots = [ROOT / "10_scripts", ROOT / "11_automations"]
     for scan_root in scan_roots:
         for yaml_file in scan_root.rglob("*.yaml"):
@@ -108,18 +122,25 @@ def test_switch_exclusivity():
                 continue
             if yaml_file.resolve() == SCRIPT_FILE.resolve():
                 continue
-            cleaned = strip_comments(read(yaml_file))
-            pattern = re.compile(
-                r"switch\.turn_(?:on|off).{0,300}lumiere_garage"
-                r"|lumiere_garage.{0,300}switch\.turn_(?:on|off)",
-                re.DOTALL,
-            )
-            if pattern.search(cleaned):
-                check(
-                    False,
-                    f"T03 — pilotage de switch.lumiere_garage détecté dans "
-                    f"{yaml_file.relative_to(ROOT)} (violation I1)",
-                )
+            lines = [
+                line for line in read(yaml_file).splitlines()
+                if not line.lstrip().startswith("#")
+            ]
+            for i, line in enumerate(lines):
+                if not write_service.search(line):
+                    continue
+                # Cherche un bloc target: dans les 2 lignes qui suivent
+                for j in range(i + 1, min(i + 3, len(lines))):
+                    if target_kw.search(lines[j]):
+                        # Cherche lumiere_garage dans les 3 lignes du bloc target:
+                        for k in range(j + 1, min(j + 4, len(lines))):
+                            if target_entity.search(lines[k]):
+                                check(
+                                    False,
+                                    f"T03 — pilotage de switch.lumiere_garage détecté dans "
+                                    f"{yaml_file.relative_to(ROOT)} ligne {k+1} (violation I1)",
+                                )
+                        break
     ok("T03 — switch.lumiere_garage exclusif au script canonique (I1)")
 
 
