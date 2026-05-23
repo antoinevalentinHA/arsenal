@@ -39,6 +39,10 @@ def read(path: Path) -> str:
 matches = []
 
 for path in ROOT.rglob("*.yaml"):
+
+    if not path.is_file():
+        continue
+
     content = read(path)
 
     if "binary_sensor.vmc_haute_vitesse_requise" in content:
@@ -58,6 +62,9 @@ print("✔ Capteur décisionnel présent")
 # ==========================================================
 
 for path in ROOT.rglob("*.yaml"):
+
+    if not path.is_file():
+        continue
 
     path_str = str(path).lower()
 
@@ -92,6 +99,9 @@ print("✔ Scripts VMC sans logique métier")
 # ==========================================================
 
 for path in ROOT.rglob("*.yaml"):
+
+    if not path.is_file():
+        continue
 
     path_str = str(path).lower()
 
