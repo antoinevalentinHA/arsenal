@@ -351,6 +351,54 @@ def test_no_functional_decision_on_battery() -> None:
     ok("T18 — aucune décision fonctionnelle basée sur batterie")
 
 
+def test_reset_automation_declared() -> None:
+    """
+    T19 — Automation de réinitialisation quotidienne déclarée
+    dans 11_automations/system/batteries/reinitialisation.yaml
+    Contrat §Réinitialisation quotidienne.
+    """
+    p = DIR_AUTOMATIONS / "system" / "batteries" / "reinitialisation.yaml"
+    if not p.is_file():
+        error(f"T19: {p.relative_to(ROOT)} introuvable — automation reset manquante")
+    ok("T19 — automation réinitialisation batteries déclarée")
+
+
+def test_reset_automation_triggered_at_midnight() -> None:
+    """
+    T20 — L'automation de reset se déclenche à 00:00.
+    Contrat §Réinitialisation : tous les jours à 00:00:00.
+    Scope : 11_automations/system/batteries/reinitialisation.yaml
+    """
+    p = DIR_AUTOMATIONS / "system" / "batteries" / "reinitialisation.yaml"
+    if not p.is_file():
+        error("T20: reinitialisation.yaml introuvable")
+        return
+    if not re.search(r'"00:00(?::00)?"', read(p)):
+        error(
+            "T20: déclencheur 00:00 absent de reinitialisation.yaml "
+            "— reset quotidien non garanti"
+        )
+    ok("T20 — automation reset déclenchée à 00:00")
+
+
+def test_reset_automation_no_notification() -> None:
+    """
+    T21 — L'automation de reset ne notifie pas.
+    Contrat §Réinitialisation : ne notifie pas, ne décide rien.
+    Scope : 11_automations/system/batteries/reinitialisation.yaml
+    """
+    p = DIR_AUTOMATIONS / "system" / "batteries" / "reinitialisation.yaml"
+    if not p.is_file():
+        error("T21: reinitialisation.yaml introuvable")
+        return
+    if re.search(r'\bnotify\.', read(p), re.IGNORECASE):
+        error(
+            "T21: notification détectée dans reinitialisation.yaml "
+            "— interdit par contrat §Réinitialisation"
+        )
+    ok("T21 — automation reset sans notification")
+
+
 # ──────────────────────────────────────────────────────────────
 # Exécution
 # ──────────────────────────────────────────────────────────────
@@ -374,6 +422,9 @@ TESTS = [
     test_no_direct_battery_notification_outside_script,
     test_batteries_notifiees_written_only_by_authorized,
     test_no_functional_decision_on_battery,
+    test_reset_automation_declared,
+    test_reset_automation_triggered_at_midnight,
+    test_reset_automation_no_notification,
 ]
 
 if __name__ == "__main__":
