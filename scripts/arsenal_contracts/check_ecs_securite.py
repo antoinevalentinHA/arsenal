@@ -95,16 +95,22 @@ def test_gardien_inhibe_panne_secteur():
 
 def test_gardien_inhibe_pendant_cycle():
     """
-    Vérifie que le gardien hors cycle consomme ecs_cycle_en_cours
-    comme condition d'inhibition — il doit rester neutre pendant un cycle.
-    Invariant §07 §3.2 : neutralité pendant cycle.
+    Vérifie que le gardien hors cycle est neutre pendant un cycle.
+
+    Architecture constatée : la neutralité pendant cycle est portée par
+    binary_sensor.ecs_consigne_hors_cycle_incoherente (sensor déclaratif
+    qui encapsule la condition ecs_cycle_en_cours = off).
+    Le gardien déclenche et conditionne sur ce sensor — pas sur
+    ecs_cycle_en_cours directement.
+
+    Test : présence de ecs_consigne_hors_cycle_incoherente dans le gardien.
     """
     content = read(GARDIEN_HORS_CYCLE)
     check(
-        "ecs_cycle_en_cours" in content,
-        "T03 — gardien hors cycle ne consomme pas ecs_cycle_en_cours (§07 §3.2)",
+        "ecs_consigne_hors_cycle_incoherente" in strip_comments(content),
+        "T03 — gardien hors cycle ne consomme pas ecs_consigne_hors_cycle_incoherente (§07 §3.2)",
     )
-    ok("T03 — gardien inhibé pendant cycle (§07 §3.2)")
+    ok("T03 — gardien neutre pendant cycle via sensor consigne_incoherente (§07 §3.2)")
 
 
 # ---------------------------------------------------------------------------
