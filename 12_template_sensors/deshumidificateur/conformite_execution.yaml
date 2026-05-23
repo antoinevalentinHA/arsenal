@@ -38,7 +38,7 @@
 
 - binary_sensor:
     - name: "Déshumidificateur — Conformité exécution"
-      unique_id: deshum_conformite_execution
+      unique_id: deshumidificateur_conformite_execution
       icon: >
         {% set verdict = states('input_text.deshum_guard_last_verdict') %}
         {% set source = states('input_text.deshum_guard_last_request_source') %}
