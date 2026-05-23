@@ -151,6 +151,10 @@ def test_history_stats_sources_recorded():
     de l'historique recorder de son entité source. L'absence
     d'enregistrement provoque un retour à 0 ou N/A sans signal explicite.
 
+    La bruyance logbook d'une source n'est pas une raison suffisante
+    pour omettre l'enregistrement — c'est un coût accepté documenté
+    dans le contrat §Population A §Exception assumée.
+
     Pattern : `entity:` ou `entity_id:` dans les fichiers
     13_sensor_platforms/history_stats/**/*.yaml
     """
