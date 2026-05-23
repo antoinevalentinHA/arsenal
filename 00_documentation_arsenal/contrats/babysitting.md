@@ -1,60 +1,56 @@
 # ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER  
+# 🧠 ARSENAL — CONTRAT MÉTIER
 #     Mode Babysitting
 # ==========================================================
 
-## 📌 Statut
-
-- **Contrat normatif et opposable**  
-- Domaine : **Contexte global / Présences contextuelles spécifiques**  
-- Chemin : `homeassistant/00_documentation_arsenal/contrats/babysitting.md`
+**Version** : v1.0.0
+**Date** : 2026-05-23
+**Statut** : actif
+**Chemin** : `homeassistant/00_documentation_arsenal/contrats/babysitting.md`
 
 ---
 
-## 🎯 Objet du contrat
+## 🎯 Objet
 
-Ce contrat définit **le mode métier “Babysitting” dans Arsenal**.
+Ce contrat définit le mode métier **Babysitting** dans Arsenal.
 
 Il formalise :
 
-- sa **nature canonique**,
-- son **autorité décisionnelle**,
-- ses **conditions de validité**,
-- sa **portée inter-domaines**,
-- ses **effets contractuels sur la présence, le chauffage et la sécurité**,
-- les **invariants et interdictions associés**.
+- sa nature canonique,
+- son autorité décisionnelle,
+- ses conditions de validité,
+- ses entités constitutives,
+- sa portée inter-domaines,
+- ses invariants et interdictions.
 
-Ce contrat est **indépendant de toute implémentation YAML**  
+Ce contrat est **indépendant de toute implémentation YAML**
 et prime sur toute logique métier consommatrice.
 
 ---
 
 ## 🧱 Périmètre
 
-Ce contrat couvre exclusivement :
+Ce contrat couvre :
 
-- la définition normative du **mode Babysitting**,
-- son rôle de **contexte global temporaire**,
+- la définition normative du mode Babysitting,
+- son rôle de contexte global temporaire,
 - son articulation avec :
-  - la présence enfants,
+  - `binary_sensor.presence_enfants`,
   - la présence confort,
   - la présence sécurité,
 - ses effets contractuels sur :
   - chauffage / confort,
   - sécurité / alarme,
-  - notifications d’état.
+  - notifications d'état.
 
 Il ne couvre pas :
 
-- les timers,
-- les helpers,
-- les automatisations,
-- les mécanismes UI,
-- les stratégies de supervision ou de diagnostic.
+- les stratégies de supervision ou de diagnostic,
+- les contrats des domaines consommateurs (chauffage, alarme, présence).
 
 ---
 
-## 🧠 Nature canonique du mode Babysitting
+## 🧠 Nature canonique
 
 Le mode Babysitting est :
 
@@ -63,36 +59,69 @@ Le mode Babysitting est :
 - **non décisionnel**,
 - **non autonome**.
 
-Il constitue :
+Il constitue un **contexte métier inhibiteur et correcteur**,
+destiné à adapter temporairement l'interprétation de la présence enfants
+et les décisions des domaines consommateurs.
 
-- un **contexte métier inhibiteur et correcteur**,
-- destiné à **adapter temporairement l’interprétation des présences enfants**  
-  et les décisions des domaines consommateurs.
-
-Il n’est :
+Il n'est :
 
 - ni un mode de sécurité,
 - ni un mode de confort,
-- ni un mode d’absence,
+- ni un mode d'absence,
 - ni un mode de présence canonique.
 
-Il est un **contexte transversal de garde d’enfants**.
+Il est un **contexte transversal de garde d'enfants**.
+
+---
+
+## 🧩 Entités constitutives
+
+### Helpers
+
+| Entité | Dossier | Rôle |
+|---|---|---|
+| `input_boolean.mode_babysitting` | `05_input_booleans/modes/babysitting/on_off.yaml` | Interrupteur principal du mode |
+| `input_boolean.reset_mode_babysitting_auto` | `05_input_booleans/modes/babysitting/auto.yaml` | Autorisation de désactivation automatique à l'expiration du timer |
+
+### Timer
+
+| Entité | Dossier | Rôle |
+|---|---|---|
+| `timer.babysitting` | `08_timers/modes/babysitting.yaml` | Fenêtre temporelle du mode |
+
+### Entité de présence
+
+| Entité | Dossier | Rôle |
+|---|---|---|
+| `binary_sensor.presence_enfants` | `12_template_sensors/presence/enfants.yaml` | Unique levier contractuel du mode sur le reste du système |
+
+### Automations
+
+Toutes les automations du mode sont centralisées dans :
+
+```
+11_automations/modes/babysitting/
+```
+
+Aucune automation hors de ce dossier n'est autorisée à écrire
+sur `input_boolean.mode_babysitting`.
 
 ---
 
 ## 🧭 Autorité décisionnelle
 
-L’entrée et la sortie du mode Babysitting sont :
+L'entrée et la sortie du mode Babysitting sont :
 
-- **décidées exclusivement par l’utilisateur**,
+- **décidées exclusivement par l'utilisateur**,
 - via action manuelle ou orchestration explicite.
 
 Le mode Babysitting :
 
-- ne s’active jamais automatiquement,
+- ne s'active jamais automatiquement,
 - ne se désactive jamais sans :
   - une action utilisateur,
-  - ou une autorisation explicite de retour automatique.
+  - ou une autorisation explicite de retour automatique
+    (`input_boolean.reset_mode_babysitting_auto == on`).
 
 Aucun domaine métier :
 
@@ -100,56 +129,45 @@ Aucun domaine métier :
 - ne peut forcer sa désactivation,
 - ne peut modifier sa durée.
 
----
-
-## 🧩 Conditions de validité du mode
-
-Le mode Babysitting est considéré **valide** si et seulement si :
-
-1. `mode_babysitting == on`  
-2. et la **fenêtre temporelle associée est ouverte**  
-   (`timer.babysitting` actif ou garde-fou horaire non encore déclenché)
-
-Il existe deux invalidations possibles :
-
-- invalidation **logique** :
-  - `mode_babysitting` repasse à `off`
-
-- invalidation **temporelle autorisée** :
-  - expiration du timer **si et seulement si**
-    le retour automatique est explicitement autorisé.
-
-Aucune invalidation implicite n’est autorisée.
+**Consommation passive autorisée** : un domaine peut lire
+`input_boolean.mode_babysitting` dans un trigger ou une condition
+pour adapter son comportement. C'est une lecture passive, non
+une écriture. Exemple contractuellement légitime :
+`11_automations/climatisation/modes.yaml`.
 
 ---
 
-## 🔀 Articulation avec la notion de présence
+## 🔀 Conditions de validité
 
-Conformément à :
+Le mode est **valide** si et seulement si :
 
-- `/architecture/presence.md`
-- `/contrats/presence.md`
+1. `input_boolean.mode_babysitting == on`
+2. et la fenêtre temporelle est ouverte (`timer.babysitting` actif
+   ou désactivation automatique non encore déclenchée)
 
-le mode Babysitting est une **présence contextuelle spécifique**.
+Deux invalidations possibles :
 
-Il agit exclusivement sur :
+- **logique** : `input_boolean.mode_babysitting` repasse à `off`
+- **temporelle autorisée** : expiration de `timer.babysitting`
+  si et seulement si `input_boolean.reset_mode_babysitting_auto == on`
 
-- la **présence enfants**,
-- et son intégration dans :
-  - la présence confort,
-  - la présence sécurité.
+Aucune invalidation implicite n'est autorisée.
 
-Le mode Babysitting :
+---
 
-- **ne redéfinit jamais** la présence confort,
-- **ne redéfinit jamais** la présence sécurité,
-- **ne crée aucune nouvelle présence canonique**.
+## 🔀 Articulation avec la présence
 
-Il agit uniquement par :
+Le mode Babysitting agit exclusivement sur `binary_sensor.presence_enfants`.
 
-- **forçage temporaire de la présence enfants**,
-- afin d’exposer un état contextuel cohérent  
-  aux deux présences canoniques.
+Il agit uniquement par **forçage temporaire de la présence enfants**,
+afin d'exposer un état contextuel cohérent aux présences canoniques.
+
+Il ne redéfinit jamais :
+
+- la présence confort,
+- la présence sécurité.
+
+Il ne crée aucune nouvelle présence canonique.
 
 ---
 
@@ -157,99 +175,60 @@ Il agit uniquement par :
 
 ### 🌡️ Chauffage / confort
 
-- Le chauffage consomme :
-  - la **présence confort** uniquement.
+Le chauffage consomme la présence confort uniquement.
 
-Le mode Babysitting :
+Le mode Babysitting agit indirectement en forçant
+`binary_sensor.presence_enfants`, ce qui peut maintenir
+la présence confort à `présent`.
 
-- agit indirectement en forçant la **présence enfants**,
-- ce qui peut maintenir la présence confort à `présent`.
-
-Il est donc :
-
-- un **mode correcteur de confort**,
-- sans autorité directe sur le chauffage.
+Il est donc un **mode correcteur de confort**,
+sans autorité directe sur le chauffage.
 
 Le mode Babysitting :
 
 - ne décide aucune consigne,
 - ne force aucun mode thermique,
-- n’appelle aucun script de chauffage.
-
----
+- n'appelle aucun script de chauffage.
 
 ### 🔐 Sécurité / alarme
 
-- L’alarme consomme :
-  - la **présence sécurité** uniquement.
+L'alarme consomme la présence sécurité uniquement.
+
+Le mode Babysitting agit indirectement via
+`binary_sensor.presence_enfants`, afin d'éviter toute
+interprétation d'absence pendant la garde.
+
+Il est donc un **mode inhibiteur de sécurité**,
+sans autorité directe sur l'armement.
 
 Le mode Babysitting :
 
-- agit indirectement via la présence enfants,
-- afin d’éviter toute interprétation d’absence  
-  pendant la garde.
-
-Il est donc :
-
-- un **mode inhibiteur de sécurité**,
-- sans autorité directe sur l’armement.
-
-Le mode Babysitting :
-
-- n’arme jamais,
+- n'arme jamais,
 - ne désarme jamais,
 - ne court-circuite aucune règle de sécurité.
 
----
-
-### 🧸 Présence enfants
-
-La présence enfants est :
-
-- une **présence contextuelle spécifique**,
-- **forcée temporairement** à l’entrée en mode,
-- **réinitialisée explicitement** à la sortie.
-
-Elle constitue :
-
-- l’unique levier contractuel du mode Babysitting  
-  sur le reste du système.
-
----
-
 ### 🧾 Notifications
 
-Le mode Babysitting :
+Le mode Babysitting est projeté par une **notification persistante d'état**.
 
-- est projeté par une **notification persistante d’état**,
-- représentant exclusivement :
-
-> « Mode Babysitting actif »
-
-Cette notification :
-
-- est une **projection d’état**,  
-- jamais une trace d’événement,  
-- jamais un historique,  
-- jamais une alerte.
+Cette notification est une projection d'état — jamais une trace
+d'événement, jamais un historique, jamais une alerte.
 
 ---
 
 ## 🔒 Invariants absolus
 
-Les invariants suivants sont **non négociables** :
-
-- le mode Babysitting ne décide **aucune action matérielle directe**,
-- le mode Babysitting ne redéfinit **aucune présence canonique**,
-- le mode Babysitting n’outrepasse **aucun moteur décisionnel**,
-- le mode Babysitting n’est jamais utilisé :
-  - comme présence sécurité,
-  - comme présence confort,
-  - comme substitut d’absence.
-
-- toute action déclenchée est :
-  - médiée par un domaine métier,
-  - sous son propre contrat.
+- Le mode ne décide **aucune action matérielle directe**.
+- Le mode ne redéfinit **aucune présence canonique**.
+- Le mode n'outrepasse **aucun moteur décisionnel**.
+- `binary_sensor.presence_enfants` est l'**unique levier** du mode
+  sur le reste du système.
+- `input_boolean.mode_babysitting` n'est écrit que depuis
+  `11_automations/modes/babysitting/`.
+- La désactivation automatique n'est autorisée que si
+  `input_boolean.reset_mode_babysitting_auto == on`.
+- Toute action déclenchée est médiée par un domaine métier,
+  sous son propre contrat.
 
 ---
 
@@ -257,39 +236,37 @@ Les invariants suivants sont **non négociables** :
 
 Il est strictement interdit :
 
-- d’utiliser le mode Babysitting comme présence canonique,
-- de déclencher une action directe depuis ce mode,
+- d'utiliser le mode Babysitting comme présence canonique,
+- de déclencher une action matérielle directe depuis ce mode,
 - de modifier localement une présence sécurité ou confort,
 - de créer une logique métier autonome dans le mode,
-- de prolonger le mode sans autorisation explicite.
-
-Tout comportement qui viole ces interdictions est **non conforme**.
+- de prolonger le mode sans autorisation explicite,
+- d'écrire sur `input_boolean.mode_babysitting` depuis un domaine
+  métier ou un script externe.
 
 ---
 
 ## 🔁 Évolution du contrat
 
-Toute évolution de ce contrat :
+Toute évolution :
 
-- est **explicite**,
-- est **documentée**,
-- fait l’objet :
-  - d’une modification contractuelle,
-  - d’une entrée de changelog Arsenal,
-  - d’une validation humaine consciente.
+- est explicite et documentée,
+- fait l'objet d'une modification contractuelle versionnée,
+- fait l'objet d'une entrée de changelog Arsenal,
+- requiert une validation humaine consciente.
 
-Aucune évolution implicite n’est autorisée.
+Aucune évolution implicite n'est autorisée.
 
 ---
 
 ## 📌 Clause finale
 
-Ce contrat :
+Ce contrat définit la vérité normative du mode Babysitting.
+Il prime sur toute implémentation existante, toute logique métier,
+toute intuition raisonnable.
 
-- définit la **vérité normative** du mode Babysitting,
-- prime sur toute implémentation existante,
-- prime sur toute logique métier,
-- prime sur toute intuition “raisonnable”.
+Toute production qui ne s'y conforme pas est **INVALIDE**.
 
-Toute production qui ne s’y conforme pas  
-est **INVALIDE**.
+---
+
+*Fin du contrat — Mode Babysitting v1.0.0 — Arsenal 2026.5*

@@ -426,7 +426,10 @@ Interdits :
 - l'automation AUTO de démarrage ne teste jamais le flag de cycle manuel.
 
 `binary_sensor.bouclage_autorise` ne pilote jamais directement l'actionneur.
-Seules les automatisations sont habilitées à écrire dans `switch.prise_bouclage`.
+Les écrivains habilités sur `switch.prise_bouclage` sont exclusivement :
+- les automations du domaine bouclage (`11_automations/bouclage/`),
+- `script.bouclage_ecs_5_minutes` (point d'entrée unique du cycle manuel).
+Aucun autre script, helper ou binary_sensor ne peut écrire sur `switch.prise_bouclage`.
 
 Le bouclage ECS ne doit jamais être utilisé pour influencer ou maintenir la température du ballon.
 Toute interaction thermique est considérée comme un effet secondaire non exploité.
@@ -450,7 +453,8 @@ Sont strictement interdits :
 - laisser subsister un flag `on` après expiration ou idle du timer,
 - réintroduire `binary_sensor.presence_famille_unifiee` comme composante de `bouclage_autorise` — sa sémantique de périmètre Confort (incluant l'approche) est inappropriée pour qualifier un usage ECS,
 - soumettre le cycle manuel à `input_boolean.bouclage_auto_active` — l'interrupteur ne gouverne que le mode AUTO,
-- utiliser `input_boolean.bouclage_auto_active` pour piloter directement `switch.prise_bouclage` — sa propagation passe exclusivement par `bouclage_autorise` et l'automation 10260000000002.
+- utiliser `input_boolean.bouclage_auto_active` pour piloter directement `switch.prise_bouclage` — sa propagation passe exclusivement par `bouclage_autorise` et l'automation 10260000000002,
+- piloter `switch.prise_bouclage` depuis tout script autre que `script.bouclage_ecs_5_minutes`.
 
 ---
 

@@ -71,13 +71,24 @@ l’interprétation Home Assistant de ce transport.
 
 ### 5.1 Sensors
 
+#### Sensors MQTT
+
+Sources directes du topic `arsenal/nas/audit/state` :
+
 | Entité | Rôle |
 |---|---|
 | `sensor.arsenal_self_audit_statut` | Verdict exposé : `ok`, `alert`, `error` |
-| `sensor.arsenal_self_audit_total_anomalies` | Nombre d’anomalies patrimoniales actionnables |
-| `sensor.arsenal_self_audit_total_observations` | Nombre d’observations patrimoniales non actionnables |
+| `sensor.arsenal_self_audit_total_anomalies` | Nombre d'anomalies patrimoniales actionnables |
+| `sensor.arsenal_self_audit_total_observations` | Nombre d'observations patrimoniales non actionnables |
 | `sensor.arsenal_self_audit_version_auditee` | Version Home Assistant auditée |
 | `sensor.arsenal_self_audit_published_at` | Horodatage de publication du dernier état |
+
+#### Sensors calculés
+
+Dérivés des sensors MQTT par template :
+
+| Entité | Rôle |
+|---|---|
 | `sensor.arsenal_self_audit_age_minutes` | Âge calculé du dernier état publié |
 
 ### 5.2 Binary sensors
