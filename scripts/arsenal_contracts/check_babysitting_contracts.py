@@ -210,25 +210,23 @@ def test_no_babysitting_write_from_other_automations() -> None:
     """
     T09 — input_boolean.mode_babysitting n'est pas écrit depuis des automations
     hors du dossier modes/babysitting/.
-    Contrat §Autorité décisionnelle : aucun domaine métier ne peut activer
-    ni forcer la désactivation du mode.
+    Distingue lecture passive (trigger/condition) et écriture réelle (service + target).
     Scope : 11_automations/ entier, exclusion explicite de modes/babysitting/.
     """
-    WRITE_SERVICE = re.compile(
+    # Détecte un service turn_on/off/toggle SUIVI d'une cible mode_babysitting
+    # dans un rayon de 5 lignes — couvre le pattern target: entity_id: ...
+    WRITE_PATTERN = re.compile(
         r'(?:input_boolean\.turn_on|input_boolean\.turn_off|input_boolean\.toggle)'
-        r'[\s\S]{0,150}mode_babysitting',
+        r'[\s\S]{0,300}'
+        r'entity_id\s*:\s*input_boolean\.mode_babysitting',
         re.MULTILINE
-    )
-    MODE_BABYSITTING_WRITE = re.compile(
-        r'entity_id\s*:\s*input_boolean\.mode_babysitting'
     )
 
     for p in yaml_files(DIR_AUTOMATIONS):
-        # Exclure le dossier canonique du mode
         if DIR_BABYSITTING_AUTO in p.parents:
             continue
         content = read(p)
-        if WRITE_SERVICE.search(content) or MODE_BABYSITTING_WRITE.search(content):
+        if WRITE_PATTERN.search(content):
             error(
                 f"T09: écriture sur input_boolean.mode_babysitting hors dossier "
                 f"modes/babysitting/ : {p.relative_to(ROOT)}"
