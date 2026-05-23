@@ -33,7 +33,42 @@ def yaml_files(folder: Path) -> list[Path]:
 
 
 # ──────────────────────────────────────────────────────────────
-# Helpers canoniques attendus
+# Dossiers canoniques Arsenal
+# ──────────────────────────────────────────────────────────────
+
+DIR_INPUT_NUMBERS   = ROOT / "03_input_numbers"
+DIR_INPUT_TEXTS     = ROOT / "04_input_texts"
+DIR_INPUT_BOOLEANS  = ROOT / "05_input_booleans"
+DIR_INPUT_DATETIMES = ROOT / "07_input_datetimes"
+DIR_SCRIPTS         = ROOT / "10_scripts"
+DIR_AUTOMATIONS     = ROOT / "11_automations"
+DIR_TEMPLATE_SENSORS = ROOT / "12_template_sensors"
+
+
+# ──────────────────────────────────────────────────────────────
+# Détection de déclaration
+# ──────────────────────────────────────────────────────────────
+
+def is_declared_in(entity_id: str, folder: Path) -> bool:
+    """
+    Vérifie qu'entity_id est déclaré comme clé de mapping YAML dans folder.
+    Convention Arsenal !include_dir_merge_named :
+        <entity_id>:
+          name: ...
+    Le pattern cherche entity_id en début de ligne (indentation optionnelle)
+    suivi immédiatement de ':'.
+    """
+    pattern = re.compile(
+        rf'^\s*{re.escape(entity_id)}\s*:', re.MULTILINE
+    )
+    for p in yaml_files(folder):
+        if pattern.search(read(p)):
+            return True
+    return False
+
+
+# ──────────────────────────────────────────────────────────────
+# Entités canoniques du contrat
 # ──────────────────────────────────────────────────────────────
 
 REQUIRED_INPUT_NUMBERS = [
@@ -52,238 +87,142 @@ REQUIRED_INPUT_TEXTS = [
     "horaires_simulation_presence_garage_soir",
 ]
 
-REQUIRED_BINARY_SENSORS = [
-    "simulation_presence_plage_allumage_parents",
-    "simulation_presence_plage_allumage_garage",
-]
-
 REQUIRED_INPUT_BOOLEANS = [
     "test_simulation_presence",
     "activation_simulation_presence_vacances",
 ]
 
+REQUIRED_BINARY_SENSORS = [
+    "simulation_presence_plage_allumage_parents",
+    "simulation_presence_plage_allumage_garage",
+]
 
-def _entity_declared_in_folder(entity_id: str, folder: Path) -> bool:
-    """
-    Vérifie qu'un entity_id est déclaré (pas seulement mentionné) dans un dossier YAML.
-    Cherche la forme 'id: <entity_id>' ou '- <entity_id>' en début de bloc,
-    ou '<entity_id>:' comme clé de mapping, dans un fichier du dossier cible.
-    """
-    patterns = [
-        re.compile(rf'^\s*-\s+{re.escape(entity_id)}\s*$', re.MULTILINE),
-        re.compile(rf'^\s*{re.escape(entity_id)}\s*:', re.MULTILINE),
-    ]
-    for p in yaml_files(folder):
-        content = read(p)
-        for pat in patterns:
-            if pat.search(content):
-                return True
-    return False
 
+# ──────────────────────────────────────────────────────────────
+# Tests
+# ──────────────────────────────────────────────────────────────
 
 def test_input_numbers_declared() -> None:
-    """T01 — input_number métier déclarés dans packages/ ou config/"""
-    candidates = [
-        ROOT / "packages",
-        ROOT / "config" / "helpers",
-        ROOT / "helpers",
-    ]
+    """T01 — input_number métier déclarés dans 03_input_numbers/"""
     for entity_id in REQUIRED_INPUT_NUMBERS:
-        found = any(
-            _entity_declared_in_folder(entity_id, d) for d in candidates if d.exists()
-        )
-        if not found:
-            error(f"T01: input_number.{entity_id} introuvable dans les dossiers helpers/packages")
+        if not is_declared_in(entity_id, DIR_INPUT_NUMBERS):
+            error(f"T01: input_number.{entity_id} introuvable dans {DIR_INPUT_NUMBERS.name}/")
     ok("T01 — input_number métier")
 
 
 def test_input_texts_declared() -> None:
-    """T02 — input_text (sorties du générateur d'horaires) déclarés"""
-    candidates = [
-        ROOT / "packages",
-        ROOT / "config" / "helpers",
-        ROOT / "helpers",
-    ]
+    """T02 — input_text horaires déclarés dans 04_input_texts/"""
     for entity_id in REQUIRED_INPUT_TEXTS:
-        found = any(
-            _entity_declared_in_folder(entity_id, d) for d in candidates if d.exists()
-        )
-        if not found:
-            error(f"T02: input_text.{entity_id} introuvable dans les dossiers helpers/packages")
+        if not is_declared_in(entity_id, DIR_INPUT_TEXTS):
+            error(f"T02: input_text.{entity_id} introuvable dans {DIR_INPUT_TEXTS.name}/")
     ok("T02 — input_text horaires")
 
 
 def test_input_booleans_declared() -> None:
-    """T03 — input_boolean d'autorisation déclarés"""
-    candidates = [
-        ROOT / "packages",
-        ROOT / "config" / "helpers",
-        ROOT / "helpers",
-    ]
+    """T03 — input_boolean autorisation déclarés dans 05_input_booleans/"""
     for entity_id in REQUIRED_INPUT_BOOLEANS:
-        found = any(
-            _entity_declared_in_folder(entity_id, d) for d in candidates if d.exists()
-        )
-        if not found:
-            error(f"T03: input_boolean.{entity_id} introuvable dans les dossiers helpers/packages")
+        if not is_declared_in(entity_id, DIR_INPUT_BOOLEANS):
+            error(f"T03: input_boolean.{entity_id} introuvable dans {DIR_INPUT_BOOLEANS.name}/")
     ok("T03 — input_boolean autorisation")
 
 
 def test_binary_sensors_declared() -> None:
-    """T04 — binary_sensor vérité métier déclarés"""
-    candidates = [
-        ROOT / "packages",
-        ROOT / "config" / "binary_sensors",
-        ROOT / "binary_sensors",
-        ROOT / "sensors",
-    ]
+    """T04 — binary_sensor vérité métier déclarés dans 12_template_sensors/"""
     for entity_id in REQUIRED_BINARY_SENSORS:
-        found = any(
-            _entity_declared_in_folder(entity_id, d) for d in candidates if d.exists()
-        )
-        if not found:
-            error(f"T04: binary_sensor.{entity_id} introuvable")
+        if not is_declared_in(entity_id, DIR_TEMPLATE_SENSORS):
+            error(f"T04: binary_sensor.{entity_id} introuvable dans {DIR_TEMPLATE_SENSORS.name}/")
     ok("T04 — binary_sensor vérité métier")
 
 
 def test_script_generateur_declared() -> None:
-    """T05 — script.generer_horaires_simulation_presence déclaré dans scripts/"""
-    candidates = [
-        ROOT / "scripts",
-        ROOT / "packages",
-        ROOT / "config" / "scripts",
-    ]
-    entity_id = "generer_horaires_simulation_presence"
-    found = any(
-        _entity_declared_in_folder(entity_id, d) for d in candidates if d.exists()
-    )
-    if not found:
-        error("T05: script.generer_horaires_simulation_presence introuvable")
+    """T05 — script.generer_horaires_simulation_presence déclaré dans 10_scripts/"""
+    if not is_declared_in("generer_horaires_simulation_presence", DIR_SCRIPTS):
+        error("T05: script.generer_horaires_simulation_presence introuvable dans 10_scripts/")
     ok("T05 — script générateur horaires")
 
 
 def test_script_generateur_no_material_action() -> None:
     """
     T06 — Le script générateur d'horaires ne pilote pas d'équipement matériel.
-    Interdit : service light.turn_on/off, switch.turn_on/off, cover.*, climate.*
-    dans le fichier canonique du script.
-    Le pilotage matériel appartient aux automations réactives (§5), pas au générateur.
+    Scope : fichier(s) de 10_scripts/ contenant 'generer_horaires'.
+    Interdit : services light.*, switch.turn_*, cover.*, climate.*
     """
-    FORBIDDEN_SERVICES = [
-        "light.turn_on", "light.turn_off",
-        "switch.turn_on", "switch.turn_off",
-        "cover.open_cover", "cover.close_cover",
-        "climate.set_temperature",
-        "media_player.play_media",
-    ]
+    FORBIDDEN = re.compile(
+        r'\b(?:light\.turn_on|light\.turn_off'
+        r'|switch\.turn_on|switch\.turn_off'
+        r'|cover\.open_cover|cover\.close_cover'
+        r'|climate\.set_temperature'
+        r'|media_player\.play_media)\b'
+    )
+    GENERER = re.compile(r'generer_horaires', re.IGNORECASE)
 
-    script_file: Path | None = None
-    candidates = [ROOT / "scripts", ROOT / "packages", ROOT / "config" / "scripts"]
-    for folder in candidates:
-        if not folder.exists():
+    found_script = False
+    for p in yaml_files(DIR_SCRIPTS):
+        content = read(p)
+        if not GENERER.search(content):
             continue
-        for p in yaml_files(folder):
-            if "generer_horaires" in p.name:
-                script_file = p
-                break
-
-    if script_file is None:
-        # Déjà détecté T05 — on ne double pas
-        ok("T06 — script générateur sans action matérielle (fichier non localisé, test partiel)")
-        return
-
-    content = read(script_file)
-    for svc in FORBIDDEN_SERVICES:
-        if svc in content:
+        found_script = True
+        if FORBIDDEN.search(content):
             error(
-                f"T06: service matériel '{svc}' détecté dans {script_file.relative_to(ROOT)} "
-                f"— le générateur d'horaires ne doit pas piloter d'équipement"
+                f"T06: service matériel interdit dans le script générateur : "
+                f"{p.relative_to(ROOT)}"
             )
+
+    if not found_script:
+        # T05 aura déjà signalé l'absence — on ne double pas
+        pass
+
     ok("T06 — script générateur sans action matérielle")
 
 
 def test_input_text_written_only_by_authorized_script() -> None:
     """
     T07 — Les input_text horaires ne sont écrits que par le script générateur.
-    Interdit : input_text.set ciblant un horaire_simulation_presence_*
-    dans une automation dont le nom ne contient pas 'generer_horaires'.
-
-    Scope : dossier automations/ uniquement.
+    Scope : 11_automations/ uniquement.
+    Vérifie qu'aucune automation n'appelle input_text.set sur une cible horaire
+    sans référencer generer_horaires (ce qui serait une écriture parasite).
     """
-    automations_dirs = [
-        ROOT / "automations",
-        ROOT / "config" / "automations",
-        ROOT / "packages",
-    ]
-
-    # Service d'écriture
-    SET_SERVICE = re.compile(r'input_text\.set', re.IGNORECASE)
+    SET_SERVICE   = re.compile(r'input_text\.set', re.IGNORECASE)
     HORAIRE_TARGET = re.compile(
         r'horaires_simulation_presence_(?:matin|soir|garage_matin|garage_soir)'
     )
-    GENERER_BLOC = re.compile(r'generer_horaires', re.IGNORECASE)
+    GENERER_REF   = re.compile(r'generer_horaires', re.IGNORECASE)
 
-    violations = []
-    for folder in automations_dirs:
-        if not folder.exists():
+    for p in yaml_files(DIR_AUTOMATIONS):
+        content = read(p)
+        if not (SET_SERVICE.search(content) and HORAIRE_TARGET.search(content)):
             continue
-        for p in yaml_files(folder):
-            content = read(p)
-            # On s'intéresse aux fichiers qui contiennent un input_text.set sur une cible horaire
-            if not (SET_SERVICE.search(content) and HORAIRE_TARGET.search(content)):
-                continue
-            # Si le fichier contient également la référence au script générateur,
-            # c'est une consommation légitime (l'automation déclenche le script)
-            if GENERER_BLOC.search(content):
-                continue
-            violations.append(str(p.relative_to(ROOT)))
+        if GENERER_REF.search(content):
+            continue
+        error(
+            f"T07: input_text.set sur horaire simulation_presence hors script générateur : "
+            f"{p.relative_to(ROOT)}"
+        )
 
-    if violations:
-        for v in violations:
-            error(
-                f"T07: input_text.set sur un horaire simulation détecté hors script générateur : {v}"
-            )
     ok("T07 — input_text horaires écrits uniquement par le générateur")
 
 
 def test_no_temporal_logic_in_action_automations() -> None:
     """
     T08 — Les automations de matérialisation (§5) ne contiennent pas de calcul horaire.
-    Scope : fichiers automation dont le nom contient 'simulation_presence'
-    ET dont le contenu cible 'switch.prise_lampe_parents' ou 'script.garage_toggle'.
-    Interdit : usage de 'now()', 'today_at(', 'strptime', 'as_timestamp'
-    dans ces fichiers d'action.
+    Scope : fichiers de 11_automations/ ciblant prise_lampe_parents ou garage_toggle.
+    Interdit : now(), today_at(, strptime, as_timestamp, timedelta.
     """
     TIME_FUNCS = re.compile(
         r'\b(?:now\(\)|today_at\(|strptime\b|as_timestamp\b|timedelta\b)',
         re.IGNORECASE
     )
-    ACTION_MARKERS = re.compile(
-        r'(?:prise_lampe_parents|garage_toggle)'
-    )
-    SIM_NAME = re.compile(r'simulation_presence', re.IGNORECASE)
+    ACTION_MARKERS = re.compile(r'(?:prise_lampe_parents|garage_toggle)')
 
-    automations_dirs = [
-        ROOT / "automations",
-        ROOT / "config" / "automations",
-        ROOT / "packages",
-    ]
-
-    for folder in automations_dirs:
-        if not folder.exists():
+    for p in yaml_files(DIR_AUTOMATIONS):
+        content = read(p)
+        if not ACTION_MARKERS.search(content):
             continue
-        for p in yaml_files(folder):
-            if not SIM_NAME.search(p.name) and not SIM_NAME.search(read(p)[:500]):
-                continue
-            content = read(p)
-            if not ACTION_MARKERS.search(content):
-                continue
-            # Ce fichier est une automation de matérialisation
-            if TIME_FUNCS.search(content):
-                error(
-                    f"T08: calcul temporel détecté dans automation de matérialisation : "
-                    f"{p.relative_to(ROOT)}"
-                )
+        if TIME_FUNCS.search(content):
+            error(
+                f"T08: calcul temporel dans automation de matérialisation : "
+                f"{p.relative_to(ROOT)}"
+            )
 
     ok("T08 — automations de matérialisation sans logique temporelle")
 
@@ -291,61 +230,45 @@ def test_no_temporal_logic_in_action_automations() -> None:
 def test_vigilance_automation_no_correction() -> None:
     """
     T09 — L'automation de vigilance (§6) ne contient pas d'action corrective matérielle.
-    Scope : fichier automation contenant 'vigilance' ET 'simulation_presence'.
-    Interdit : switch.turn_*, light.turn_*, script.turn_on ciblant les équipements.
+    Scope : fichiers de 11_automations/ contenant 'vigilance' ET 'simulation_presence'.
+    Interdit : switch.turn_*, light.turn_*.
     """
-    CORRECTION_SERVICES = re.compile(
-        r'(?:switch\.turn_off|switch\.turn_on|light\.turn_off|light\.turn_on)\b'
+    CORRECTION = re.compile(
+        r'\b(?:switch\.turn_off|switch\.turn_on|light\.turn_off|light\.turn_on)\b'
     )
-    VIGILANCE_MARKER = re.compile(r'vigilance', re.IGNORECASE)
-    SIM_MARKER = re.compile(r'simulation_presence', re.IGNORECASE)
+    VIGILANCE   = re.compile(r'vigilance', re.IGNORECASE)
+    SIM         = re.compile(r'simulation_presence', re.IGNORECASE)
 
-    automations_dirs = [
-        ROOT / "automations",
-        ROOT / "config" / "automations",
-        ROOT / "packages",
-    ]
-
-    for folder in automations_dirs:
-        if not folder.exists():
+    for p in yaml_files(DIR_AUTOMATIONS):
+        content = read(p)
+        if not (VIGILANCE.search(content) and SIM.search(content)):
             continue
-        for p in yaml_files(folder):
-            content = read(p)
-            if not (VIGILANCE_MARKER.search(content) and SIM_MARKER.search(content)):
-                continue
-            if CORRECTION_SERVICES.search(content):
-                error(
-                    f"T09: action corrective matérielle détectée dans automation de vigilance : "
-                    f"{p.relative_to(ROOT)}"
-                )
+        if CORRECTION.search(content):
+            error(
+                f"T09: action corrective matérielle dans automation vigilance : "
+                f"{p.relative_to(ROOT)}"
+            )
 
     ok("T09 — automation vigilance sans correction matérielle")
 
 
-def test_no_direct_switch_outside_action_automations() -> None:
+def test_no_switch_written_from_scripts() -> None:
     """
-    T10 — switch.prise_lampe_parents n'est piloté que depuis les automations
-    de matérialisation simulation_presence (§5).
-    Scope : dossier scripts/ uniquement (les scripts ne doivent pas toucher cet switch).
-    Distingue lecture passive (entity_id mentionné dans un trigger/condition)
-    et écriture (service switch.turn_on/off avec entity_id cible).
+    T10 — switch.prise_lampe_parents n'est pas piloté depuis 10_scripts/.
+    Distingue lecture passive et écriture effective (switch.turn_on/off + cible).
     """
     WRITE_PATTERN = re.compile(
-        r'(?:switch\.turn_on|switch\.turn_off)[\s\S]{0,120}prise_lampe_parents',
+        r'(?:switch\.turn_on|switch\.turn_off)[\s\S]{0,200}prise_lampe_parents',
         re.MULTILINE
     )
 
-    scripts_dirs = [ROOT / "scripts", ROOT / "config" / "scripts"]
-    for folder in scripts_dirs:
-        if not folder.exists():
-            continue
-        for p in yaml_files(folder):
-            content = read(p)
-            if WRITE_PATTERN.search(content):
-                error(
-                    f"T10: pilotage de switch.prise_lampe_parents détecté dans un script "
-                    f"(interdit hors automation de matérialisation) : {p.relative_to(ROOT)}"
-                )
+    for p in yaml_files(DIR_SCRIPTS):
+        content = read(p)
+        if WRITE_PATTERN.search(content):
+            error(
+                f"T10: pilotage de switch.prise_lampe_parents depuis un script interdit : "
+                f"{p.relative_to(ROOT)}"
+            )
 
     ok("T10 — switch.prise_lampe_parents non piloté depuis les scripts")
 
@@ -364,7 +287,7 @@ TESTS = [
     test_input_text_written_only_by_authorized_script,
     test_no_temporal_logic_in_action_automations,
     test_vigilance_automation_no_correction,
-    test_no_direct_switch_outside_action_automations,
+    test_no_switch_written_from_scripts,
 ]
 
 if __name__ == "__main__":
