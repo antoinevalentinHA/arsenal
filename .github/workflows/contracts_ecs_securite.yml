@@ -1,0 +1,13 @@
+name: Arsenal Contracts — ECS Securite
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-ecs-securite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate contract — ECS Sécurité & Gardiens
+        run: python scripts/arsenal_contracts/check_ecs_securite.py
