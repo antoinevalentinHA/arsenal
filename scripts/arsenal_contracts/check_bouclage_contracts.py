@@ -306,7 +306,7 @@ TESTS = [
     test_bouclage_autorise_consumes_occupation_stricte,
     test_auto_demarrage_no_flag_check,
     test_no_time_condition_in_auto_demarrage,
-    test_switch_prise_bouclage_written_only_by_automations,
+    test_switch_prise_bouclage_written_only_by_authorized,
     test_no_timer_in_auto_demarrage_or_extinction,
 ]
 
