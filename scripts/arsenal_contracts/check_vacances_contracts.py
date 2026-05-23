@@ -111,36 +111,27 @@ print("✔ Aucun calcul temporel direct interdit dans les templates Vacances")
 # TEST 3 — vacances_demandees indépendante de mode_maison
 # ==========================================================
 
+definition_found = False
+
 for path in yaml_files():
 
     content = read(path)
 
-    if "binary_sensor.vacances_demandees" not in content:
+    if "name: Vacances demandées" not in content:
         continue
 
-    lines = content.splitlines()
+    definition_found = True
 
-    inside_vacances_demandees = False
-    block = []
-
-    for line in lines:
-
-        if "binary_sensor.vacances_demandees" in line:
-            inside_vacances_demandees = True
-
-        if inside_vacances_demandees:
-            block.append(line)
-
-            if line.strip() == "" and block:
-                break
-
-    joined_block = "\n".join(block)
-
-    if "input_select.mode_maison" in joined_block:
+    if "input_select.mode_maison" in content:
         fail(
             "vacances_demandees dépend de mode_maison : "
             f"{path}"
         )
+
+if not definition_found:
+    fail(
+        "Définition de Vacances demandées introuvable"
+    )
 
 print("✔ Demande Vacances indépendante de mode_maison")
 
