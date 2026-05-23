@@ -1,0 +1,17 @@
+name: Arsenal Contracts — VMC
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  vmc-contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run VMC contract checks
+        run: |
+          python3 scripts/arsenal_contracts/check_vmc_contracts.py
