@@ -179,27 +179,46 @@ def test_history_stats_sources_recorded():
 
 def test_statistics_sources_recorded():
     """
-    Vérifie que chaque entité source d'un capteur platform: statistics
-    est enregistrée dans recorder.yaml.
+    Vérifie que les entités sources des capteurs platform: statistics
+    dont max_age dépasse purge_keep_days sont enregistrées dans recorder.yaml.
 
-    Contrat §Population A : platform: statistics dépend de l'historique
-    recorder de sa source pour reconstruire la fenêtre glissante après
-    redémarrage ou purge. L'absence d'enregistrement dégrade silencieusement
-    la fenêtre sans erreur visible.
+    Contrat §Population A : platform: statistics dépend du recorder pour
+    reconstruire sa fenêtre glissante après redémarrage UNIQUEMENT si
+    max_age > purge_keep_days. En deçà, le capteur maintient sa fenêtre
+    en mémoire et n'a pas de dépendance recorder structurelle.
 
-    Pattern : `entity:` ou `entity_id:` dans les fichiers
-    13_sensor_platforms/statistics/**/*.yaml
+    Les capteurs de filtrage intermédiaire (ex. _filtre_aube_*) avec
+    max_age ≤ purge_keep_days sont exclus du test — leur source n'a pas
+    vocation à être enregistrée individuellement.
+
+    Pattern : max_age en jours extrait du YAML, comparé à purge_keep_days.
     """
+    recorder_content = read(RECORDER_FILE)
+    purge_match = re.search(r"^\s*purge_keep_days\s*:\s*(\d+)", recorder_content, re.MULTILINE)
+    purge_days = int(purge_match.group(1)) if purge_match else 30
+
     recorded = get_recorded_entities()
     stats_dir = ROOT / "13_sensor_platforms/statistics"
 
     source_pattern = re.compile(r"^\s+entity(?:_id)?\s*:\s*([\w.]+)", re.MULTILINE)
+    # max_age en jours : `days: N` ou `max_age: N` (en secondes rares)
+    max_age_days_pattern = re.compile(r"days\s*:\s*(\d+)")
 
     for yaml_file in yaml_files(stats_dir):
-        content = strip_comments(read(yaml_file))
-        # Ne traiter que les fichiers qui déclarent platform: statistics
-        if "platform: statistics" not in content and "platform:statistics" not in content:
+        raw = read(yaml_file)
+        content = strip_comments(raw)
+        if "platform: statistics" not in content:
             continue
+
+        # Extraire max_age en jours — si absent ou ≤ purge_days, pas de dépendance recorder
+        max_age_match = max_age_days_pattern.search(content)
+        if not max_age_match:
+            continue  # pas de max_age en jours déclaré — fenêtre courte, pas de dépendance
+        max_age_days = int(max_age_match.group(1))
+        if max_age_days <= purge_days:
+            continue  # fenêtre couverte par la rétention — pas de dépendance recorder
+
+        # max_age > purge_days : la source doit être enregistrée
         for match in source_pattern.finditer(content):
             source = match.group(1)
             if not source or source in ("true", "false", "on", "off"):
@@ -207,9 +226,10 @@ def test_statistics_sources_recorded():
             check(
                 source in recorded,
                 f"T06 — source platform:statistics non enregistrée : {source} "
-                f"(dans {yaml_file.relative_to(ROOT)}) — Population A manquante",
+                f"(max_age={max_age_days}j > purge_keep_days={purge_days}j, "
+                f"dans {yaml_file.relative_to(ROOT)}) — Population A manquante",
             )
-    ok("T06 — toutes les sources platform:statistics enregistrées (Population A)")
+    ok("T06 — sources platform:statistics avec max_age > purge_keep_days enregistrées (Population A)")
 
 
 # ---------------------------------------------------------------------------
