@@ -1,0 +1,15 @@
+name: Arsenal Contracts — arsenal_self
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Vérification contractuelle — arsenal_self
+        run: python3 scripts/arsenal_contracts/check_arsenal_self_contracts.py
