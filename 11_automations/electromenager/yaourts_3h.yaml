@@ -53,6 +53,7 @@
   alias: "Électroménager - Prise placard - Extinction auto"
   description: >
     Coupe la prise 3h après détection de consommation.
+  mode: single
   trigger:
     - platform: numeric_state
       entity_id: sensor.prise_sejour_placard_power

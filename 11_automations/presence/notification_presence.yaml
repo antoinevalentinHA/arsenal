@@ -57,6 +57,7 @@
 
 - id: "10210000000001"
   alias: Présence - Notification
+  mode: single
 
   trigger:
     # Valentin : absent explicite

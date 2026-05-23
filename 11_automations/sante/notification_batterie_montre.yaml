@@ -19,6 +19,7 @@
 
 - id: '10200000000001'
   alias: "Santé - Batterie ScanWatch"
+  mode: single
 
   trigger:
     - platform: state

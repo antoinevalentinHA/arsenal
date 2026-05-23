@@ -30,6 +30,7 @@
 
 - id: "10120000000015"
   alias: "Système - Synchronisation IDs"
+  mode: single
 
   trigger:
     - platform: state

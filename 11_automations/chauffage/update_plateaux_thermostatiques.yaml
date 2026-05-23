@@ -20,6 +20,7 @@
 
 - id: "10240000000007"
   alias: Chauffage – Mémorisation plateaux
+  mode: single
 
   trigger:
     - platform: state
