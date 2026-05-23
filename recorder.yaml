@@ -152,6 +152,8 @@ include:
     - input_boolean.chauffage_blocage_aeration
     - input_boolean.aeration_confirmee
     - binary_sensor.ouverture_qualifiee_maison
+    - binary_sensor.fenetre_ouverte_etage
+    - binary_sensor.fenetre_ouverte_rdc
 
     # =====================================================
     # ==== 🍓 SANTÉ PLATEFORME — CORE / SUPERVISOR ====
