@@ -115,9 +115,14 @@ definition_found = False
 
 for path in yaml_files():
 
+    path_str = str(path)
+
+    if "12_template_sensors/vacances" not in path_str:
+        continue
+
     content = read(path)
 
-    if "name: Vacances demandées" not in content:
+    if "binary_sensor.vacances_demandees" not in content:
         continue
 
     definition_found = True
@@ -130,7 +135,7 @@ for path in yaml_files():
 
 if not definition_found:
     fail(
-        "Définition de Vacances demandées introuvable"
+        "Définition de binary_sensor.vacances_demandees introuvable"
     )
 
 print("✔ Demande Vacances indépendante de mode_maison")
