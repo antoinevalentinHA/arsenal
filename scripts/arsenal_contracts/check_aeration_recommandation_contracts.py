@@ -95,8 +95,8 @@ def test_global_sensor_declared() -> None:
         error(f"T02: {FILE_GLOBAL.relative_to(ROOT)} introuvable")
     else:
         content = read(FILE_GLOBAL)
-        if not re.search(r'unique_id\s*:\s*aeration_conseillee\b', content):
-            error("T02: unique_id 'aeration_conseillee' absent de global.yaml")
+        if not re.search(r'unique_id\s*:\s*aeration_conseillee_global\b', content):
+            error("T02: unique_id 'aeration_conseillee_global' absent de global.yaml")
     ok("T02 — binary_sensor.aeration_conseillee déclaré")
 
 
