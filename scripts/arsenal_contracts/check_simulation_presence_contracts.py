@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Simulation de présence
-Contrat Arsenal v7.x — aligné runtime 2026.5
+Contrat Arsenal v12.x — aligné runtime 2026.5
 """
 
 import sys
@@ -81,8 +81,7 @@ def is_declared_as_unique_id(entity_id: str, folder: Path) -> bool:
 # Entités canoniques — alignées runtime
 # ──────────────────────────────────────────────────────────────
 
-# Zones actives
-ZONES = ["chambre_parents", "garage", "entree"]
+ZONES   = ["chambre_parents", "garage", "entree"]
 PERIODES = ["matin", "soir"]
 
 REQUIRED_INPUT_NUMBERS = (
@@ -99,11 +98,13 @@ REQUIRED_INPUT_BOOLEANS = [
     "activation_simulation_presence_vacances",
 ]
 
+# unique_id des binary_sensor vérité (convention template sensor — pas clé de mapping)
 REQUIRED_BINARY_SENSORS = [
-    f"simulation_presence_plage_allumage_{z}" for z in ZONES
+    "simulation_presence_plage_allumage_parents",
+    "simulation_presence_plage_allumage_garage",
+    "simulation_presence_plage_allumage_entree",
 ]
 
-# binary_sensor agrégat d'autorisation (absent du contrat v7 — surveillance passive)
 BINARY_SENSOR_AUTORISEE = "simulation_presence_autorisee"
 
 
@@ -191,7 +192,7 @@ def test_input_text_written_only_by_authorized_script() -> None:
     """
     T08 — Les input_text horaires ne sont écrits que par le script générateur.
     Scope : 11_automations/ uniquement.
-    Interdit : input_text.set sur une cible horaire_simulation_presence_*
+    Interdit : input_text.set sur une cible horaires_simulation_presence_*
     dans une automation ne référençant pas generer_horaires_simulation_presence.
     """
     SET_SERVICE    = re.compile(r'input_text\.set', re.IGNORECASE)
@@ -214,7 +215,7 @@ def test_input_text_written_only_by_authorized_script() -> None:
 def test_no_temporal_logic_in_action_automations() -> None:
     """
     T09 — Les automations de matérialisation ne contiennent pas de calcul horaire.
-    Scope : fichiers de 11_automations/eclairage/simulation_presence/ uniquement.
+    Scope : 11_automations/eclairage/simulation_presence/ uniquement.
     Interdit : now(), today_at(, strptime, as_timestamp, timedelta.
     """
     TIME_FUNCS = re.compile(
@@ -261,7 +262,6 @@ def test_no_switch_written_from_scripts() -> None:
     """
     T11 — switch.prise_lampe_parents n'est pas piloté depuis 10_scripts/.
     Scope : 10_scripts/ uniquement.
-    Distingue lecture passive et écriture (switch.turn_* + cible dans le même bloc).
     """
     WRITE_PATTERN = re.compile(
         r'(?:switch\.turn_on|switch\.turn_off)[\s\S]{0,200}prise_lampe_parents',
