@@ -107,21 +107,21 @@ def test_automations_declared() -> None:
 
 def test_template_sensors_local_declared() -> None:
     """
-    T03 — Les capteurs locaux stabilisés (template triggered) sont déclarés
-    dans 12_template_sensors/.
+    T03 — Les capteurs locaux stabilisés déclarés dans 12_template_sensors/voiture/
     Contrat §Couche 1 : seules sources autorisées pour les couches supérieures.
+    Les unique_id suivent la convention Audi native (anglais) avec suffixe _local.
     """
+    folder = DIR_TEMPLATE_SENSORS / "voiture"
     LOCAL_SENSORS = [
-        "audi_e_tron_pourcentage_moteur_principal_local",
-        "audi_e_tron_kilometrage_local",
-        "audi_e_tron_autonomie_local",
-        "audi_e_tron_etat_de_charge_local",
+        "audi_a3_sportback_e_tron_primary_engine_percent_local",
+        "audi_a3_sportback_e_tron_range_local",
+        "audi_a3_sportback_e_tron_charging_state_local",
     ]
     for entity_id in LOCAL_SENSORS:
-        if not is_declared_as_unique_id(entity_id, DIR_TEMPLATE_SENSORS):
+        if not is_declared_as_unique_id(entity_id, folder):
             error(
-                f"T03: sensor.{entity_id} introuvable dans "
-                f"{DIR_TEMPLATE_SENSORS.name}/ — capteur local stabilisé manquant"
+                f"T03: sensor unique_id '{entity_id}' introuvable dans "
+                f"{folder.relative_to(ROOT)}/ — capteur local stabilisé manquant"
             )
     ok("T03 — capteurs locaux stabilisés déclarés")
 
