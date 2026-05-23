@@ -115,6 +115,11 @@ definition_found = False
 
 for path in yaml_files():
 
+    path_str = str(path)
+
+    if not path_str.startswith("12_template_sensors/"):
+        continue
+
     content = read(path)
 
     if "binary_sensor.vacances_demandees" not in content:
