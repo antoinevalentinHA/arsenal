@@ -130,17 +130,24 @@ def test_automation_ids():
             continue  # déjà couvert par T03
         content = read(path)
 
-        # ID attendu présent
+        # ID attendu présent (contenu brut — l'ID propre doit y figurer)
         check(
             bool(re.search(rf"\b{re.escape(expected_id)}\b", content)),
             f"T04 — ID {expected_id} absent de {filename}",
         )
 
-        # Aucun autre ID du domaine dans le même fichier (séparation I4)
+        # Aucun autre ID du domaine dans les lignes non-commentaires (séparation I4).
+        # Les headers Arsenal mentionnent légitimement les IDs amont/aval en commentaire ;
+        # seule une occurrence hors commentaire constitue une violation.
+        cleaned = "\n".join(
+            line for line in content.splitlines()
+            if not line.lstrip().startswith("#")
+        )
         for other_id in all_ids - {expected_id}:
             check(
-                not bool(re.search(rf"\b{re.escape(other_id)}\b", content)),
-                f"T04 — ID {other_id} trouvé dans {filename} (violation I4 : séparation allumage/extinction)",
+                not bool(re.search(rf"\b{re.escape(other_id)}\b", cleaned)),
+                f"T04 — ID {other_id} trouvé (hors commentaires) dans {filename} "
+                f"(violation I4 : séparation allumage/extinction)",
             )
 
     ok("T04 — IDs d'automations et séparation allumage/extinction (I4)")
