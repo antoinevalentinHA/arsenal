@@ -135,18 +135,8 @@ print("✔ Notification persistante Visite réservée")
 # TEST 4 — Calcul temporel actif centralisé
 # ==========================================================
 
-VISITE_TEMPORAL_ENTITIES = [
-    "input_datetime.visiteur_start",
-    "input_datetime.visiteur_end",
-    "input_select.jour_visiteur",
-    "binary_sensor.creneau_visiteur_actif",
-]
-
 for path in yaml_files():
     content = read(path)
-
-    if not any(entity in content for entity in VISITE_TEMPORAL_ENTITIES):
-        continue
 
     if not any(term in content for term in TEMPORAL_LOGIC_TERMS):
         continue
