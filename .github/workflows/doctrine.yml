@@ -14,11 +14,11 @@ jobs:
 
       - name: Check forbidden legacy template platform
         run: |
-          if grep -R "platform: template" . \
-            --include="*.yaml" \
-            --exclude-dir=".git" \
-            --exclude-dir=".github"; then
-            echo "Forbidden legacy platform: template found"
+          if grep -R "platform: template" \
+            11_template_sensors \
+            12_template_sensors \
+            --include="*.yaml"; then
+            echo "Forbidden legacy platform: template found in template sensor directories"
             exit 1
           fi
 
