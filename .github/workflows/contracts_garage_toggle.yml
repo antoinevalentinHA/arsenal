@@ -1,0 +1,16 @@
+name: Arsenal Contracts — Garage Toggle
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-garage-toggle:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate contract — script.garage_toggle
+        run: python scripts/arsenal_contracts/check_garage_toggle_contracts.py
