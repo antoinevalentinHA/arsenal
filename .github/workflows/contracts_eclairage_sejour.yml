@@ -1,0 +1,16 @@
+name: Arsenal Contracts — Eclairage Sejour
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-eclairage-sejour:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate contract — Éclairage / Séjour
+        run: python scripts/arsenal_contracts/check_eclairage_sejour_contracts.py
