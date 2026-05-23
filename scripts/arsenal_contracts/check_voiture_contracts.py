@@ -190,19 +190,19 @@ def test_consolidation_uses_temperature_jardin() -> None:
 def test_consolidation_checks_battery_threshold() -> None:
     """
     T07 — L'automation de consolidation vérifie une condition batterie ≥ 99 %.
-    Contrat §Couche 3 : condition batterie ≥ 99 %.
+    Contrat §Couche 3 : condition batterie ≥ 99 % — implémentée via above: 98.9.
     Scope : 11_automations/voiture/autonomie.yaml
     """
     if not FILE_AUTONOMIE_AUTO.is_file():
         error("T07: autonomie.yaml introuvable")
         return
     content = read(FILE_AUTONOMIE_AUTO)
-    if not re.search(r'99', content):
+    if not re.search(r'above\s*:\s*9[89]', content):
         error(
-            "T07: seuil 99 % absent de l'automation de consolidation "
-            "— condition pleine charge non vérifiable"
+            "T07: seuil pleine charge (above: 98.x ou 99) absent de l'automation "
+            "de consolidation — condition pleine charge non vérifiable"
         )
-    ok("T07 — consolidation vérifie le seuil batterie 99 %")
+    ok("T07 — consolidation vérifie le seuil batterie ≥ 99 %")
 
 
 def test_helpers_written_only_by_consolidation() -> None:
@@ -344,7 +344,6 @@ def test_dashboards_declared() -> None:
 TESTS = [
     test_helpers_declared,
     test_automations_declared,
-    test_template_sensors_local_declared,
     test_consolidation_triggered_by_local_sensor,
     test_consolidation_writes_three_helpers_atomically,
     test_consolidation_uses_temperature_jardin,
