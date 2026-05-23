@@ -84,50 +84,64 @@ def test_presence_boolean():
 
 
 # ---------------------------------------------------------------------------
-# T03 — I1 : button.garage_1 et button.garage_2 uniquement dans le script canonique
+# T03 — I1 : switch.lumiere_garage uniquement dans le script canonique
 # ---------------------------------------------------------------------------
 
-def test_button_exclusivity():
+def test_switch_exclusivity():
     """
-    Vérifie que button.garage_1 et button.garage_2 ne sont appelés
-    (hors commentaires) nulle part ailleurs que dans bascule_lumiere.yaml.
+    Vérifie que switch.lumiere_garage n'est pas piloté (hors commentaires)
+    depuis un fichier autre que bascule_lumiere.yaml.
 
-    Scope : arborescence entière hors bascule_lumiere.yaml.
-    Justification : I1 pose que le script est l'unique point d'exécution physique.
-    Tout appel direct à button.garage_X depuis un autre fichier violerait I1.
+    Runtime : l'actionneur physique est switch.lumiere_garage (module Zigbee).
+    Le contrat d'implémentation documentait une architecture button.garage_X
+    désormais obsolète.
+
+    Scope : 10_scripts/ et 11_automations/ — les domaines susceptibles
+    d'écrire un switch. Lovelace et template sensors sont exclus (lecture seule).
+
+    Écrivains légitimes hors script canonique : aucun identifié dans le runtime.
     """
-    for yaml_file in ROOT.rglob("*.yaml"):
-        if not yaml_file.is_file():
-            continue
-        if yaml_file.resolve() == SCRIPT_FILE.resolve():
-            continue
-        cleaned = strip_comments(read(yaml_file))
-        for btn in ("button.garage_1", "button.garage_2"):
-            if btn in cleaned:
+    scan_roots = [ROOT / "10_scripts", ROOT / "11_automations"]
+    for scan_root in scan_roots:
+        for yaml_file in scan_root.rglob("*.yaml"):
+            if not yaml_file.is_file():
+                continue
+            if yaml_file.resolve() == SCRIPT_FILE.resolve():
+                continue
+            cleaned = strip_comments(read(yaml_file))
+            pattern = re.compile(
+                r"switch\.turn_(?:on|off).{0,300}lumiere_garage"
+                r"|lumiere_garage.{0,300}switch\.turn_(?:on|off)",
+                re.DOTALL,
+            )
+            if pattern.search(cleaned):
                 check(
                     False,
-                    f"T03 — {btn} référencé (hors commentaires) dans "
+                    f"T03 — pilotage de switch.lumiere_garage détecté dans "
                     f"{yaml_file.relative_to(ROOT)} (violation I1)",
                 )
-    ok("T03 — button.garage_1/2 exclusifs au script canonique (I1)")
+    ok("T03 — switch.lumiere_garage exclusif au script canonique (I1)")
 
 
 # ---------------------------------------------------------------------------
-# T04 — I3 : les deux actionneurs sont référencés dans le script
+# T04 — I3 : les deux branches de bascule sont présentes dans le script
 # ---------------------------------------------------------------------------
 
-def test_both_buttons_present():
+def test_both_branches_present():
     """
-    Vérifie que bascule_lumiere.yaml référence bien button.garage_1
-    et button.garage_2 (les deux branches de la table I3 doivent exister).
+    Vérifie que bascule_lumiere.yaml implémente bien les deux branches
+    de la table I3 (OFF→ON et ON→OFF) via switch.turn_on et switch.turn_off
+    sur switch.lumiere_garage.
+
+    Runtime : actionneur = switch.lumiere_garage (Zigbee).
     """
     content = read(SCRIPT_FILE)
-    for btn in ("button.garage_1", "button.garage_2"):
+    for service in ("switch.turn_on", "switch.turn_off"):
         check(
-            btn in content,
-            f"T04 — {btn} absent de bascule_lumiere.yaml (table I3 incomplète)",
+            service in content,
+            f"T04 — {service} absent de bascule_lumiere.yaml (branche I3 manquante)",
         )
-    ok("T04 — présence des deux actionneurs dans le script (I3)")
+    ok("T04 — présence des deux branches switch dans le script (I3)")
 
 
 # ---------------------------------------------------------------------------
@@ -218,8 +232,8 @@ def test_no_retry():
 TESTS = [
     test_presence_script,
     test_presence_boolean,
-    test_button_exclusivity,
-    test_both_buttons_present,
+    test_switch_exclusivity,
+    test_both_branches_present,
     test_script_writes_boolean,
     test_no_post_action_read,
     test_mode_single,
