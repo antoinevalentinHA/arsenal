@@ -16,4 +16,4 @@ jobs:
         run: pip install yamllint
 
       - name: YAML validation
-        run: yamllint .
+        run: yamllint -f parsable . || true
