@@ -8,14 +8,23 @@
 #   Piloter le verrou d'admissibilité du besoin DRY
 #   selon la doctrine physique Arsenal.
 #
-# 🧱 Principe Arsenal :
-#   - Activation sur naissance du besoin sous autorisation
-#   - Extinction sur retombée du besoin
-#   - Extinction de sécurité sur révocation d'autorisation
-#   - Réconciliation sûre au démarrage
+# 🧱 Principe Arsenal — Doctrine v2 (deux portes causales) :
+#   - Porte 1 : activation sur front montant du besoin
+#               sous autorisation active
+#   - Porte 2 : requalification sur front montant de
+#               l'autorisation stable 5 min, sous besoin actif
+#   - Extinction immédiate sur retombée du besoin
+#   - Extinction immédiate sur révocation d'autorisation
+#   - Réconciliation explicite au démarrage :
+#       extinction conservatrice si signaux KO,
+#       activation gardée 5 min si besoin et autorisation
+#       déjà actifs au boot.
 #
 # 🔌 Entité support pilotée :
 #   - input_boolean.besoin_clim_dry_admissible
+#
+# 📘 Contrat associé :
+#   - 05_decision_candidats.md (v1.4)
 #
 # 📍 Portée :
 #   - DRY uniquement
@@ -25,13 +34,20 @@
   alias: "Clim - Dry - Admissibilité"
   description: >
     Pilotage complet de l'admissibilité DRY :
-    activation, extinctions et réconciliation au démarrage.
+    activation porte 1, requalification porte 2,
+    extinctions, et réconciliation au démarrage.
   mode: single
   trigger:
     - platform: state
       entity_id: binary_sensor.besoin_clim_dry
       to: 'on'
-      id: activation
+      id: activation_besoin
+    - platform: state
+      entity_id: binary_sensor.autorisation_clim_dry
+      to: 'on'
+      for:
+        minutes: 5
+      id: requalification_autorisation
     - platform: state
       entity_id: binary_sensor.besoin_clim_dry
       to: 'off'
@@ -43,12 +59,16 @@
     - platform: homeassistant
       event: start
       id: boot
+
   condition: []
+
   action:
     - choose:
+
+        # --- ACTIVATION (porte 1 : front du besoin) ---
         - conditions:
             - condition: trigger
-              id: activation
+              id: activation_besoin
             - condition: state
               entity_id: binary_sensor.autorisation_clim_dry
               state: 'on'
@@ -57,6 +77,19 @@
               target:
                 entity_id: input_boolean.besoin_clim_dry_admissible
 
+        # --- REQUALIFICATION (porte 2 : front stable de l'autorisation) ---
+        - conditions:
+            - condition: trigger
+              id: requalification_autorisation
+            - condition: state
+              entity_id: binary_sensor.besoin_clim_dry
+              state: 'on'
+          sequence:
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.besoin_clim_dry_admissible
+
+        # --- EXTINCTION BESOIN ---
         - conditions:
             - condition: trigger
               id: extinction_besoin
@@ -65,6 +98,7 @@
               target:
                 entity_id: input_boolean.besoin_clim_dry_admissible
 
+        # --- EXTINCTION AUTORISATION ---
         - conditions:
             - condition: trigger
               id: extinction_autorisation
@@ -73,6 +107,7 @@
               target:
                 entity_id: input_boolean.besoin_clim_dry_admissible
 
+        # --- RECONCILIATION BOOT ---
         - conditions:
             - condition: trigger
               id: boot
@@ -83,6 +118,8 @@
               timeout: '00:01:00'
               continue_on_timeout: true
             - choose:
+
+                # Sous-branche : extinction conservatrice si signaux KO
                 - conditions:
                     - condition: template
                       value_template: >
@@ -91,5 +128,25 @@
                            or is_state('binary_sensor.autorisation_clim_dry', 'off') }}
                   sequence:
                     - action: input_boolean.turn_off
+                      target:
+                        entity_id: input_boolean.besoin_clim_dry_admissible
+
+                # Sous-branche : activation gardée 5 min si signaux stables
+                - conditions:
+                    - condition: state
+                      entity_id: binary_sensor.besoin_clim_dry
+                      state: 'on'
+                    - condition: state
+                      entity_id: binary_sensor.autorisation_clim_dry
+                      state: 'on'
+                  sequence:
+                    - delay: '00:05:00'
+                    - condition: state
+                      entity_id: binary_sensor.besoin_clim_dry
+                      state: 'on'
+                    - condition: state
+                      entity_id: binary_sensor.autorisation_clim_dry
+                      state: 'on'
+                    - action: input_boolean.turn_on
                       target:
                         entity_id: input_boolean.besoin_clim_dry_admissible

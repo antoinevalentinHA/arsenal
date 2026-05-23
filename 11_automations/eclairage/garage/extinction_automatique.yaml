@@ -22,6 +22,8 @@
 #   single
 #   Justification : une seule extinction à la fois. Les retriggers
 #   sont absorbés par les conditions d'idempotence.
+#   max_exceeded: silent — le warning "Already running" est
+#   attendu et non bloquant ; supprimé pour ne pas polluer les logs.
 #
 # 📣 DÉCLENCHEURS
 #   - deadline atteinte
@@ -63,6 +65,7 @@
     d'absence est atteinte. Robuste aux redémarrages et aux
     rechargements d'automations.
   mode: single
+  max_exceeded: silent
 
   trigger:
     - platform: time
@@ -99,7 +102,7 @@
               value_template: >
                 {% set dl = states('input_datetime.garage_extinction_deadline') %}
                 {{ dl not in ('unknown', 'unavailable', 'none', '')
-                   and now() >= dl | as_datetime }}
+                   and now() >= dl | as_datetime | as_local }}
 
             - alias: "Basculer la lumière via script"
               action: script.garage_toggle
@@ -126,7 +129,7 @@
               value_template: >
                 {% set dl = states('input_datetime.garage_extinction_deadline') %}
                 {{ dl not in ('unknown', 'unavailable', 'none', '')
-                   and now() >= dl | as_datetime }}
+                   and now() >= dl | as_datetime | as_local }}
 
             - alias: "Basculer la lumière via script"
               action: script.garage_toggle
@@ -153,7 +156,7 @@
               value_template: >
                 {% set dl = states('input_datetime.garage_extinction_deadline') %}
                 {{ dl not in ('unknown', 'unavailable', 'none', '')
-                   and now() >= dl | as_datetime }}
+                   and now() >= dl | as_datetime | as_local }}
 
             - alias: "Basculer la lumière via script"
               action: script.garage_toggle
