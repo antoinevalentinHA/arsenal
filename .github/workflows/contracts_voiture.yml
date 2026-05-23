@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Voiture
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Vérification contractuelle — Voiture Audi A3 e-tron
+        run: python3 scripts/arsenal_contracts/check_voiture_contracts.py
