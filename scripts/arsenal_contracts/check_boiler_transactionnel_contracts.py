@@ -246,14 +246,16 @@ def test_script_chauffage_writes_helper_before_publish() -> None:
 
 def test_retry_automations_declared() -> None:
     """
-    T09 — Les automations de retry transactionnel déclarées pour ECS et chauffage.
-    Contrat retry §7.1 : orchestrateur distinct des scripts exécutifs.
+    T09 — Les trois automations de retry déclarées pour ECS et chauffage.
+    Contrat retry §7.1 : orchestrateur = armement + etat + declenchement.
     """
     REQUIRED = [
         ROOT / "11_automations" / "ecs" / "retry_transactionnel" / "armement.yaml",
         ROOT / "11_automations" / "ecs" / "retry_transactionnel" / "etat.yaml",
+        ROOT / "11_automations" / "ecs" / "retry_transactionnel" / "declenchement.yaml",
         ROOT / "11_automations" / "chauffage" / "retry_transactionnel" / "armement.yaml",
         ROOT / "11_automations" / "chauffage" / "retry_transactionnel" / "etat.yaml",
+        ROOT / "11_automations" / "chauffage" / "retry_transactionnel" / "declenchement.yaml",
     ]
     for p in REQUIRED:
         if not p.is_file():
@@ -395,6 +397,33 @@ def test_no_guard_data_in_boiler_logic() -> None:
     ok("T15 — données guard absentes des scripts métier boiler")
 
 
+def test_retry_helpers_declared() -> None:
+    """
+    T16 — Les helpers retry transactionnels déclarés dans leurs dossiers canoniques.
+    Contrat retry §8.
+    """
+    DIR_IB = ROOT / "05_input_booleans"
+    DIR_IN = ROOT / "03_input_numbers"
+    DIR_IT = ROOT / "04_input_texts"
+    DIR_TI = ROOT / "08_timers"
+
+    HELPERS = [
+        ("ecs_retry_pending",             DIR_IB / "ecs",       "input_boolean"),
+        ("chauffage_retry_pending",       DIR_IB / "chauffage", "input_boolean"),
+        ("chauffage_retry_count",         DIR_IN,               "input_number"),
+        ("chauffage_retry_attempt1_id",   DIR_IT,               "input_text"),
+        ("chauffage_retry_attempt2_id",   DIR_IT,               "input_text"),
+        ("chauffage_retry",               DIR_TI,               "timer"),
+    ]
+    for entity_id, folder, prefix in HELPERS:
+        if not is_declared_as_mapping_key(entity_id, folder):
+            error(
+                f"T16: {prefix}.{entity_id} introuvable dans "
+                f"{folder.relative_to(ROOT)}/"
+            )
+    ok("T16 — helpers retry transactionnels déclarés")
+
+
 # ──────────────────────────────────────────────────────────────
 # Exécution
 # ──────────────────────────────────────────────────────────────
@@ -415,6 +444,7 @@ TESTS = [
     test_guard_stale_declared,
     test_guard_stale_based_on_last_run,
     test_no_guard_data_in_boiler_logic,
+    test_retry_helpers_declared,
 ]
 
 if __name__ == "__main__":
