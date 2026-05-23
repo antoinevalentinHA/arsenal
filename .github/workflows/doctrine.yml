@@ -1,0 +1,55 @@
+name: Arsenal Doctrine
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  doctrine:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check forbidden legacy template platform
+        run: |
+          if grep -R "platform: template" . \
+            --include="*.yaml" \
+            --exclude-dir=".git" \
+            --exclude-dir=".github"; then
+            echo "Forbidden legacy platform: template found"
+            exit 1
+          fi
+
+      - name: Check forbidden default_entity_id
+        run: |
+          if grep -R "default_entity_id:" . \
+            --include="*.yaml" \
+            --exclude-dir=".git" \
+            --exclude-dir=".github"; then
+            echo "Forbidden default_entity_id found"
+            exit 1
+          fi
+
+      - name: Check automations without mode
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import sys
+
+          errors = []
+
+          for path in pathlib.Path("11_automations").rglob("*.yaml"):
+              text = path.read_text(encoding="utf-8", errors="ignore")
+              if "- id:" in text and "mode:" not in text:
+                  errors.append(str(path))
+
+          if errors:
+              print("Automations without mode:")
+              for item in errors:
+                  print(f"- {item}")
+              sys.exit(1)
+
+          print("OK")
+          PY
