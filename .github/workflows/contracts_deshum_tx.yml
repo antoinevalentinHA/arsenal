@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Deshum TX
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run deshum TX contract checks
+        run: python scripts/arsenal_contracts/check_deshum_tx_contracts.py
