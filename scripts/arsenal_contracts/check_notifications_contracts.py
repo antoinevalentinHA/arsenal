@@ -38,7 +38,6 @@ MOTS_INTERDITS_TITRE = [
     "déblocage", "deblocage",
     "correction",
     "redémarrage", "redemarrage",
-    "simulation",          # sauf si état, mais conservateur
 ]
 
 # Patterns de référence temporelle interdits dans les blocs create (§ Interdiction du passé)
