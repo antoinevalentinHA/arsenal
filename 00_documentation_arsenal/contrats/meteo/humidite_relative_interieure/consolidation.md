@@ -1,6 +1,6 @@
 # CONTRAT — `sensor.humidite_relative_brute_consolidee_<zone>`
 
-**Version** : 1.0
+**Version** : 1.1
 **Domaine** : Humidité relative — couche consolidation brute
 **Statut** : Normatif
 
@@ -10,6 +10,7 @@
 
 | Version | Modifications |
 |---|---|
+| 1.1 | §7 : doctrine d'abstention alignée sur le runtime — `{{ none }}` dans le bloc `state` (divergence assumée avec la consolidation température qui utilise `{{ 'unknown' }}`). §10 : mise à jour de la contrainte d'implémentation correspondante. |
 | 1.0 | Version initiale |
 
 ---
@@ -96,14 +97,16 @@ L'arrondi à l'entier (`round(0)`) s'applique **uniquement sur la valeur publié
 
 ### Publication de l'abstention
 
-Les branches d'abstention dans le bloc `state` publient explicitement `{{ 'unknown' }}`. L'absence de sortie et `{{ none }}` sont interdits dans ce bloc.
+Les branches d'abstention dans le bloc `state` publient `{{ none }}`. L'absence de sortie explicite est interdite dans ce bloc.
+
+> **Note de divergence assumée** : la couche de consolidation température utilise `{{ 'unknown' }}` dans les mêmes branches. Le choix de `{{ none }}` pour cet axe est aligné sur le runtime existant et documenté ici comme divergence intentionnelle. Les deux formes produisent un état `unknown` en rendu Home Assistant ; la différence est de forme, pas de comportement observable.
 
 ### Cas couverts (ordre d'évaluation strict)
 
 #### Cas 1 — Aucune source valide
 
 1. Si `this.state` est exploitable (cf. §6) → republier `this.state` arrondi à l'entier
-2. Sinon → publier `{{ 'unknown' }}`
+2. Sinon → publier `{{ none }}`
 
 #### Cas 2 — Une seule source valide
 
@@ -117,14 +120,14 @@ Fusion par **moyenne simple**, arrondie à l'entier.
 
 Arbitrage par **proximité de continuité** :
 
-1. Si `this.state` n'est pas exploitable → publier `{{ 'unknown' }}`
+1. Si `this.state` n'est pas exploitable → publier `{{ none }}`
 2. Si `this.state` est exploitable :
    - calculer `d1 = abs(h1 - this.state)` et `d2 = abs(h2 - this.state)`
    - si `d1 < d2` → retenir `h1`, arrondi à l'entier
    - si `d2 < d1` → retenir `h2`, arrondi à l'entier
-   - si égalité stricte (`d1 == d2`) → publier `{{ 'unknown' }}`
+   - si égalité stricte (`d1 == d2`) → publier `{{ none }}`
 
-> **Doctrine** : l'égalité parfaite des distances et l'absence de continuité exploitable produisent toutes deux `unknown`. Ce contrat refuse de fabriquer une vérité sans fondement. L'abstention est préférable à un tie-break implicite.
+> **Doctrine** : l'égalité parfaite des distances et l'absence de continuité exploitable produisent toutes deux un état `unknown`. Ce contrat refuse de fabriquer une vérité sans fondement. L'abstention est préférable à un tie-break implicite.
 
 ---
 
@@ -141,7 +144,7 @@ Ces attributs sont passifs et non décisionnels. Ils décrivent le cycle courant
 **Notes d'implémentation** :
 
 - `ecart_sources` : conditionné à `h1_valide AND h2_valide`. Une source numériquement castable mais hors plage produit `none`, pas un écart calculé.
-- `mode_resolution` : le sous-cas `d1 == d2` en CAS 4 produit `abstention`, pas `continuite`. Les deux situations productrices d'`unknown` en CAS 4 (absence de continuité et égalité stricte) sont toutes deux signalées par `mode_resolution = abstention`.
+- `mode_resolution` : le sous-cas `d1 == d2` en CAS 4 produit `abstention`, pas `continuite`. Les deux situations productrices d'abstention en CAS 4 (absence de continuité et égalité stricte) sont toutes deux signalées par `mode_resolution = abstention`.
 
 **Exemple de lecture** :
 - `source_active = 1` + `mode_resolution = continuite` → la source 1 a gagné par arbitrage de proximité, pas parce qu'elle était seule valide
@@ -170,7 +173,7 @@ Le déclenchement sur `state` capture tout changement d'état des sources, y com
 
 - Arrondi uniquement en sortie, jamais dans les calculs internes
 - Référence temporelle TTL : `this.last_changed` exclusivement
-- `{{ 'unknown' }}` explicite dans les branches d'abstention du bloc `state`
+- `{{ none }}` dans les branches d'abstention du bloc `state` (cf. §7)
 - Aucune hiérarchie implicite entre `_1` et `_2` dans le code
 - Tout tie-break introduit doit être explicitement nommé et documenté
 - Les attributs diagnostics sont mis à jour à chaque cycle, y compris en cas d'abstention
