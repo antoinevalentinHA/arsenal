@@ -45,7 +45,9 @@ ENTITES_SWITCHBOT = [
 COOLDOWN_DESHU   = "30"
 COOLDOWN_CHAMBRE = "10"
 
-# Verdicts normatifs (§7)
+# Verdicts normatifs vérifiables en V1 (§7)
+# execution_error est défini contractuellement mais non émis en YAML natif V1
+# (limite §9 Phase 2 — non implémentable en YAML). Non vérifié ici.
 VERDICTS = [
     "rejected_precondition",
     "rejected_cooldown",
@@ -53,10 +55,11 @@ VERDICTS = [
     "sent_unconfirmed",
     "command_confirmed",
     "command_not_confirmed",
-    "execution_error",
 ]
 
-# Champs diagnostic minimaux (§10)
+# Champs diagnostic minimaux vérifiés (§10)
+# consecutive_failures retiré du périmètre normatif v2.0.1 —
+# le contrat allait trop loin sur ce point. Extension candidate v2.1.
 CHAMPS_DIAGNOSTIC = [
     "last_target",
     "last_action",
@@ -67,7 +70,6 @@ CHAMPS_DIAGNOSTIC = [
     "last_reason",
     "lock_active",
     "cooldown_active",
-    "consecutive_failures",
 ]
 
 ERRORS: list[str] = []
