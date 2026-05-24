@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Aération M0 Recover
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-aeration-m0-recover-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate aération M0 recover contracts
+        run: python scripts/arsenal_contracts/check_aeration_m0_recover_contracts.py
