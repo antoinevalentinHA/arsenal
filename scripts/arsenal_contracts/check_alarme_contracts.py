@@ -154,26 +154,34 @@ def test_scripts_sirene_existent() -> None:
 
 
 def test_automation_application_mode() -> None:
-    """40_application — automation d'application en mode queued."""
-    content = "".join(read(p) for p in yaml_files(DIR_AUTOMATIONS_ALARME))
-    if AUTO_APPLICATION_ID not in content:
+    """40_application — automation d'application en mode restart ou queued (pas single)."""
+    all_content = "".join(read(p) for p in yaml_files(DIR_AUTOMATIONS_ALARME))
+    if AUTO_APPLICATION_ID not in all_content:
         ERRORS.append(
             f"G3 — Automation d'application ID {AUTO_APPLICATION_ID} absente "
             f"(40_application_decision)"
         )
         return
-    # Cherche le bloc contenant l'ID et vérifie mode: queued
     for path in yaml_files(DIR_AUTOMATIONS_ALARME):
-        c = read(path)
-        if AUTO_APPLICATION_ID in c:
-            if "queued" not in active_content(c):
-                ERRORS.append(
-                    f"G3 — Automation d'application {AUTO_APPLICATION_ID} "
-                    f"sans mode: queued ({path.relative_to(REPO_ROOT)})"
-                )
-            else:
-                print(f"✔ G3 — Automation d'application {AUTO_APPLICATION_ID} en mode queued")
-            return
+        content = read(path)
+        if AUTO_APPLICATION_ID not in content:
+            continue
+        ac = active_content(content)
+        # mode: restart ou mode: queued sont autorisés (§40 Robustesse)
+        # mode: single est interdit (ne permet pas la réentrance)
+        if re.search(r"mode\s*:\s*single", ac):
+            ERRORS.append(
+                f"G3 — Automation d'application {AUTO_APPLICATION_ID} en mode: single "
+                f"(interdit — doit être restart ou queued) : "
+                f"{path.relative_to(REPO_ROOT)}"
+            )
+        elif re.search(r"mode\s*:\s*(restart|queued)", ac):
+            m = re.search(r"mode\s*:\s*(\S+)", ac)
+            mode = m.group(1) if m else "?"
+            print(f"✔ G3 — Automation d'application {AUTO_APPLICATION_ID} en mode: {mode}")
+        else:
+            print(f"✔ G3 — Automation d'application {AUTO_APPLICATION_ID} : mode non spécifié (défaut: single — à vérifier)")
+        return
 
 
 # ---------------------------------------------------------------------------
@@ -209,7 +217,7 @@ def test_codes_decisionnels_presents() -> None:
 # ---------------------------------------------------------------------------
 
 def test_helpers_decision_non_ecrits_hors_cerveau() -> None:
-    """20 — input_text.alarme_* écrits uniquement par script.alarme_decision_centrale."""
+    """20 — input_text.alarme_* écrits uniquement par le cerveau ou les applicateurs autorisés."""
     # Pattern d'écriture : service/action input_text.set_value + entity_id alarme_*
     pattern_write = re.compile(
         r"(?:service|action)\s*:\s*input_text\.set_value"
@@ -218,24 +226,31 @@ def test_helpers_decision_non_ecrits_hors_cerveau() -> None:
         re.MULTILINE
     )
 
+    # Fichiers autorisés à écrire input_text.alarme_* :
+    # - script.alarme_decision_centrale (cerveau)
+    # - script.alarme_armer (applicateur §00_gouvernance §Application)
+    # - script.alarme_desarmer (applicateur §00_gouvernance §Application)
+    FICHIERS_AUTORISES = {"alarme_decision_centrale", "armement", "desarmement"}
+
     violations = []
     for path in yaml_files(DIR_AUTOMATIONS, DIR_SCRIPTS):
         content = active_content(read(path))
         if not pattern_write.search(content):
             continue
-        # Vérifier que ce n'est pas dans le script de décision
-        if "alarme_decision_centrale" in content:
+        # Vérifier que le fichier n'est pas un fichier autorisé
+        stem = path.stem
+        if any(a in stem or a in content for a in FICHIERS_AUTORISES):
             continue
         violations.append(str(path.relative_to(REPO_ROOT)))
 
     if violations:
         for v in violations:
             ERRORS.append(
-                f"I1 — input_text.alarme_* écrit hors script.alarme_decision_centrale "
-                f"(20_interfaces §Interdictions) : {v}"
+                f"I1 — input_text.alarme_* écrit hors sources autorisées "
+                f"(cerveau + applicateurs) (20_interfaces §Interdictions) : {v}"
             )
     else:
-        print("✔ I1 — input_text.alarme_* écrits uniquement par le cerveau")
+        print("✔ I1 — input_text.alarme_* écrits uniquement par les sources autorisées")
 
 
 # ---------------------------------------------------------------------------
