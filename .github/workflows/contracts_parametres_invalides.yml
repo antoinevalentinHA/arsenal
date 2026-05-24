@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Paramètres invalides
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-parametres-invalides-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate paramètres invalides contracts
+        run: python scripts/arsenal_contracts/check_parametres_invalides_contracts.py
