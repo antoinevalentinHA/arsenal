@@ -339,21 +339,27 @@ _TTL_PATTERNS = [
 ]
 
 def test_ttl_mechanism_present() -> None:
-    content = read(F_AUTOMATION)
-    if not content:
+    # Le mécanisme TTL peut être dans l'automation OU dans les template sensors
+    # du pipeline (ex. age_memoire.yaml embarque un time_pattern interne).
+    # Scope : automation + sous-dossier jardin complet.
+    files_to_scan = [F_AUTOMATION] + [
+        p for p in DIR_JARDIN.rglob("*.yaml") if p.is_file()
+    ]
+    found_in = None
+    for path in files_to_scan:
+        content = read(path)
+        if any(p.search(content) for p in _TTL_PATTERNS):
+            found_in = path.relative_to(REPO_ROOT)
+            break
+
+    if found_in is None:
         ERRORS.append(
-            f"T9 — Fichier automation inaccessible : {F_AUTOMATION.relative_to(REPO_ROOT)}"
-        )
-        return
-    found = any(p.search(content) for p in _TTL_PATTERNS)
-    if not found:
-        ERRORS.append(
-            f"T9 — Aucun mécanisme temporel TTL détecté dans "
-            f"{F_AUTOMATION.relative_to(REPO_ROOT)} "
+            f"T9 — Aucun mécanisme temporel TTL détecté dans l'automation "
+            f"ni dans le sous-dossier jardin "
             f"(time_pattern ou timer requis — §9.1)"
         )
     else:
-        print("✔ T9 — Mécanisme temporel TTL présent dans l'automation")
+        print(f"✔ T9 — Mécanisme temporel TTL présent ({found_in})")
 
 
 # ---------------------------------------------------------------------------

@@ -282,14 +282,14 @@ def test_delta_max_in_range() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T7 — Présence d'un mécanisme temporel TTL dans l'automation (§9.1)
+# T7 — Présence d'un mécanisme temporel TTL dans le pipeline (§9.1)
 #
-# Invariant (§9.1) : l'automation doit embarquer un mécanisme de
+# Invariant (§9.1) : le pipeline doit embarquer un mécanisme de
 # réévaluation temporelle (time_pattern, timer, ou équivalent)
 # pour permettre l'expiration effective du TTL.
-# Son absence rend l'implémentation non conforme indépendamment
-# de la correction des autres règles.
-# Scope : F_AUTOMATION uniquement.
+# Le mécanisme peut être dans l'automation ou dans un template sensor
+# du sous-dossier jardin (ex. un sensor age_memoire avec time_pattern interne).
+# Scope : automation + sous-dossier jardin complet.
 # ---------------------------------------------------------------------------
 
 _TTL_PATTERNS = [
@@ -300,21 +300,24 @@ _TTL_PATTERNS = [
 ]
 
 def test_ttl_mechanism_present() -> None:
-    content = read(F_AUTOMATION)
-    if not content:
+    files_to_scan = [F_AUTOMATION] + [
+        p for p in DIR_JARDIN.rglob("*.yaml") if p.is_file()
+    ]
+    found_in = None
+    for path in files_to_scan:
+        content = read(path)
+        if any(p.search(content) for p in _TTL_PATTERNS):
+            found_in = path.relative_to(REPO_ROOT)
+            break
+
+    if found_in is None:
         ERRORS.append(
-            f"T7 — Fichier automation inaccessible : {F_AUTOMATION.relative_to(REPO_ROOT)}"
-        )
-        return
-    found = any(p.search(content) for p in _TTL_PATTERNS)
-    if not found:
-        ERRORS.append(
-            f"T7 — Aucun mécanisme temporel TTL détecté dans "
-            f"{F_AUTOMATION.relative_to(REPO_ROOT)} "
-            f"(time_pattern, timer requis — §9.1)"
+            f"T7 — Aucun mécanisme temporel TTL détecté dans l'automation "
+            f"ni dans le sous-dossier jardin "
+            f"(time_pattern ou timer requis — §9.1)"
         )
     else:
-        print("✔ T7 — Mécanisme temporel TTL présent dans l'automation")
+        print(f"✔ T7 — Mécanisme temporel TTL présent ({found_in})")
 
 
 # ---------------------------------------------------------------------------
