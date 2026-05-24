@@ -236,14 +236,23 @@ def test_no_direct_switchbot_calls() -> None:
         r"|".join(re.escape(e) for e in ENTITES_SWITCHBOT)
     )
 
+    # Exceptions documentées : scripts d'autorité d'exécution unique par domaine.
+    # Ces scripts sont les seuls points d'entrée légitimes hors script souverain.
+    # Leur autorité est définie dans le contrat de domaine correspondant.
+    EXCEPTIONS = {
+        # script.set_deshumidificateur_state — autorité d'exécution unique déshumidificateur
+        # (contrat deshumidificateur.md — section "Autorité d'exécution unique")
+        REPO_ROOT / "10_scripts/deshumidificateur/forcer_etat.yaml",
+    }
+
     violations = []
 
     for path in yaml_files(DIR_SCRIPTS, DIR_AUTOMATIONS):
         # Exclure le script souverain lui-même
         if path == F_EXECUTEUR:
             continue
-        # Exclure les fichiers de verrous (déclaratifs)
-        if DIR_LOCKS in path.parents:
+        # Exclure les autorités d'exécution unique documentées par domaine
+        if path in EXCEPTIONS:
             continue
 
         content = read(path)
@@ -252,7 +261,6 @@ def test_no_direct_switchbot_calls() -> None:
         # Cherche un appel service sur une entité SwitchBot dans une fenêtre de 5 lignes
         for i, line in enumerate(lines):
             if pattern_service.search(line):
-                # Vérifier si une des entités SwitchBot est dans les 5 lignes suivantes
                 window = "\n".join(lines[i:i + 5])
                 if pattern_entity.search(window):
                     violations.append(

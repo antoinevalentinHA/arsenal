@@ -116,13 +116,20 @@ set_deshumidificateur_state:
             - stop: "Etat deja conforme"
 
       default:
-        - action: script.transactions_bots
-          data:
-            target_bot: deshumidificateur
-            action: "{{ 'turn_on' if target_state_normalized == 'on' else 'turn_off' }}"
-            request_id: "{{ request_id | default('', true) }}"
-            request_source: >
-              {{ request_source | default('script.set_deshumidificateur_state', true) }}
+        - choose:
+            - conditions:
+                - condition: template
+                  value_template: >
+                    {{ target_state_normalized == 'on' }}
+              sequence:
+                - action: switch.turn_on
+                  target:
+                    entity_id: switch.deshumidificateur
+
+          default:
+            - action: switch.turn_off
+              target:
+                entity_id: switch.deshumidificateur
 
         - action: script.guard_deshumidificateur
           data:
