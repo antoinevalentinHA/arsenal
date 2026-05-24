@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Volets Pluie
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-volets-pluie-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate volets pluie contracts
+        run: python scripts/arsenal_contracts/check_volets_pluie_contracts.py
