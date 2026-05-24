@@ -90,7 +90,7 @@ mode_panne_coupure_secteur:
         notification_id: mode_panne_secteur
         title: "⚠️ Coupure secteur – Mode panne actif"
         message: >
-          Coupure d’alimentation détectée à {{ now().strftime('%H:%M') }}.
+          Coupure d’alimentation secteur en cours.
 
           **État système actif :**
           • `input_boolean.panne_secteur_active` = ON

@@ -72,13 +72,6 @@ redemarrer_box:
   sequence:
     - action: script.cycle_alimentation_box
 
-    - action: persistent_notification.create
-      data:
-        title: "🔄 Redémarrage box"
-        message: >
-          {{ now().strftime('%d/%m %H:%M') }}
-          La box Internet a été redémarrée manuellement.
-
     - action: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
