@@ -29,14 +29,12 @@ SEPARATEUR_INTERDIT = "\u2014"   # —
 
 # Verbes et formulations interdits dans les titres (§ Format normatif)
 MOTS_INTERDITS_TITRE = [
-    "démarrage", "demarrage",
-    "relance", "relancé", "relance",
+    "relance", "relancé",
     "arrêt", "arret",
     "tentative",
     "échoué", "echoue",
     "mise à jour", "mise a jour",
     "déblocage", "deblocage",
-    "correction",
     "redémarrage", "redemarrage",
 ]
 

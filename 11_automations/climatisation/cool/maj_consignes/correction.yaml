@@ -145,7 +145,7 @@
     # 📢 Notification explicative
     - service: persistent_notification.create
       data:
-        title: "🌀 Climatisation – Correction manuelle"
+        title: "🌀 Climatisation – Correction consigne active"
         message: >
           La consigne de climatisation a été modifiée alors que la climatisation était éteinte.  
           Le système l’a brièvement allumée pour appliquer la nouvelle consigne (**{{ states('sensor.consigne_clim_appliquee') }} °C**),  

@@ -57,9 +57,8 @@
 
     - service: persistent_notification.create
       data:
-        title: "🔄 ECS – Déblocage au démarrage"
+        title: "🔄 ECS – Verrou cycle levé"
         message: >
-          À {{ now().strftime('%H:%M') }}, un verrou ECS était encore actif  
           alors que la consigne était déjà à 10 °C.  
           
           Le verrou a été remis à *OFF* automatiquement pour permettre un nouveau cycle.

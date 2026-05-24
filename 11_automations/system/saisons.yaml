@@ -73,7 +73,6 @@
     # Message utilisateur
     - service: persistent_notification.create
       data:
-        title: "🌦️ Saison mise a jour"
+        title: "🌦️ Saison – Contexte actif"
         message: >
-          A {{ now().strftime('%H:%M') }}, la saison est passee de  
           **{{ states('input_select.saison') }}** a **{{ saison_calculee }}**.

@@ -76,7 +76,6 @@
                 notification_id: panne_internet
                 title: "🌐 Coupure Internet en cours"
                 message: >
-                  Accès Internet indisponible depuis {{ now().strftime('%H:%M') }}.
                   Remédiation automatique active.
 
             - action: script.cycle_alimentation_box

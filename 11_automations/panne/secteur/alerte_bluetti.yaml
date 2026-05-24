@@ -44,7 +44,7 @@
             - service: persistent_notification.create
               data:
                 notification_id: energie_chaudiere_bluetti
-                title: "Energie chaudiere"
+                title: "⚡ Énergie chaudière – Bluetti actif"
                 message: >
                   Alerte Bluetti active.
 
@@ -56,7 +56,7 @@
 
             - service: notify.mobile_app_pixel_7a
               data:
-                title: "Energie chaudiere"
+                title: "⚡ Énergie chaudière – Bluetti actif"
                 message: >
                   Alerte Bluetti : {{ states('sensor.bluetti_sante_synthese') }}.
                 data:
