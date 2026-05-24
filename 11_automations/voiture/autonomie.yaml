@@ -90,9 +90,10 @@
         value: >
           {{ autonomie_corrigee_temperature | round(1) }}
 
-    - service: notify.mobile_app_pixel_7a
+    - service: script.notification_envoyer
       data:
-        title: "Audi A3 e-tron"
+        cible: input_text.telephone_antoine_notify
+        titre: "Audi A3 e-tron"
         message: >
           Pleine charge consolidée : {{ autonomie_full | round(0) }} km,
           {{ temperature_charge | round(1) }} °C,

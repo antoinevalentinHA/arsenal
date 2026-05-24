@@ -54,9 +54,10 @@
 
                   Tension sortie : {{ states('sensor.bluetti_ac_output_voltage') }} V
 
-            - service: notify.mobile_app_pixel_7a
+            - service: script.notification_envoyer
               data:
-                title: "⚡ Énergie chaudière – Bluetti actif"
+                cible: input_text.telephone_antoine_notify
+                titre: "⚡ Énergie chaudière – Bluetti actif"
                 message: >
                   Alerte Bluetti : {{ states('sensor.bluetti_sante_synthese') }}.
                 data:

@@ -53,9 +53,10 @@
         raison: "{{ state_attr('sensor.nas_imprimerie_sante_synthese', 'raison') | default('raison inconnue', true) }}"
         priorite: "{{ state_attr('sensor.nas_imprimerie_sante_synthese', 'priorite_active') | default('?', true) }}"
 
-    - service: notify.mobile_app_pixel_7a
+    - service: script.notification_envoyer
       data:
-        title: "🖥️ NAS Imprimerie – Incident détecté"
+        cible: input_text.telephone_antoine_notify
+        titre: "🖥️ NAS Imprimerie – Incident détecté"
         message: >-
           Santé : {{ sante }}.
           Raison : {{ raison }}.

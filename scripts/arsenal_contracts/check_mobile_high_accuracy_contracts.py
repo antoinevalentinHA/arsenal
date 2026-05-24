@@ -283,7 +283,9 @@ def test_no_static_trigger() -> None:
 # ---------------------------------------------------------------------------
 
 def test_no_direct_mobile_notify() -> None:
-    pattern = re.compile(r"notify\.mobile_app_")
+    # Cible uniquement les appels de service réels : "service: notify.mobile_app_"
+    # Exclut les constructions de variables (ex. notify_entity: "notify.mobile_app_{{ tel }}")
+    pattern = re.compile(r"(?:service|action)\s*:\s*notify\.mobile_app_")
     violations = []
 
     for path in yaml_files(DIR_AUTOMATIONS, DIR_SCRIPTS):
