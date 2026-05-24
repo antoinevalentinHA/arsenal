@@ -1,0 +1,15 @@
+name: Arsenal Contracts — UPS Arrêt HA
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-ups-arret-ha-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate UPS arrêt HA contracts
+        run: python scripts/arsenal_contracts/check_ups_arret_ha_contracts.py
