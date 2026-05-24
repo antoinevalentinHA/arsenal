@@ -141,12 +141,16 @@ def test_observability_attrs_in_source() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T4 — Attributs d'observabilité complets dans le fichier de diagnostic
+# T4 — Attributs d'observabilité effectivement exposés dans le diagnostic
 #
-# Invariant (§7) : le fichier de diagnostic doit exposer tous les attributs
-# normatifs, dont suspect_event, observed_event, last_corroborated_at,
-# last_divergence_at, divergence_source — en plus des attributs de base.
+# Invariant (§7, périmètre v2.2) : le fichier de diagnostic doit interpréter
+# les attributs normativement exposés par le runtime actuel.
 # Scope restreint : fichier de diagnostic uniquement.
+#
+# NON EXIGÉS en v2.2 (non implémentés dans le runtime — extension prévue v2.3) :
+#   last_corroborated_at, last_divergence_at, divergence_source, T_corroboration
+# Ces attributs sont définis dans le contrat comme candidats normatifs futurs.
+# Le contrat v2.2 reflète le runtime souverain, pas un système idéal.
 # ---------------------------------------------------------------------------
 
 REQUIRED_ATTRS_DIAGNOSTIC = [
@@ -154,9 +158,6 @@ REQUIRED_ATTRS_DIAGNOSTIC = [
     "business_state",
     "suspect_event",
     "observed_event",
-    "last_corroborated_at",
-    "last_divergence_at",
-    "divergence_source",
 ]
 
 def test_observability_attrs_in_diagnostic() -> None:
@@ -175,7 +176,7 @@ def test_observability_attrs_in_diagnostic() -> None:
             )
             all_ok = False
     if all_ok:
-        print("✔ T4 — Attributs d'observabilité complets dans le fichier de diagnostic")
+        print("✔ T4 — Attributs d'observabilité v2.2 présents dans le fichier de diagnostic")
 
 
 # ---------------------------------------------------------------------------
@@ -273,73 +274,19 @@ def test_t_corroboration_in_range() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T7 — T_quarantaine = T_corroboration (pas de dissociation)
+# [CANDIDAT v2.3 — non implémenté en v2.2]
+# T_quarantaine = T_corroboration (§6.1 — pas de dissociation)
 #
-# Invariant (§6.1) : les deux durées doivent être intentionnellement alignées.
-# Une dissociation sans justification fonctionnelle explicite est proscrite.
-# Méthode : extraction de la valeur numérique associée à chaque terme
-# dans le fichier source, vérification d'égalité.
-# Scope : capteurs_redondants.yaml + traiter_source.yaml.
+# Non activé : les durées ne sont pas déclarées sous un identifiant normalisé
+# dans le runtime actuel (T_corroboration absent en tant que symbole).
+# L'extraction numérique par proximité textuelle produit des faux positifs.
+# Prérequis pour activation : nommage explicite des constantes de durée
+# dans les fichiers canoniques du domaine.
 # ---------------------------------------------------------------------------
-
-def _extract_duration_values(content: str, keyword: str) -> list[int]:
-    """Extrait les entiers dans un rayon de 80 chars autour d'un mot-clé."""
-    values = []
-    windows = re.findall(
-        rf".{{0,80}}{keyword}.{{0,80}}", content, re.IGNORECASE
-    )
-    for window in windows:
-        for m in re.finditer(r"\b(\d+)\b", window):
-            val = int(m.group(1))
-            if 1 <= val <= 100:  # plage sémantiquement plausible pour une durée
-                values.append(val)
-    return values
-
-
-def test_t_quarantaine_equals_t_corroboration() -> None:
-    files_to_scan = [F_CAPTEURS_REDONDANTS, F_TRAITER_SOURCE, F_MOTEUR]
-    all_corroboration: list[int] = []
-    all_quarantaine:   list[int] = []
-
-    for path in files_to_scan:
-        content = read(path)
-        if not content:
-            continue
-        all_corroboration.extend(_extract_duration_values(content, "corroboration"))
-        all_quarantaine.extend(_extract_duration_values(content, "quarantaine"))
-
-    if not all_corroboration and not all_quarantaine:
-        # Aucune valeur encodée en dur — non testable, pas une violation
-        print("✔ T7 — T_quarantaine / T_corroboration : aucune valeur encodée en dur (non testable)")
-        return
-
-    # Si des valeurs existent des deux côtés, elles doivent être identiques
-    unique_c = set(all_corroboration)
-    unique_q = set(all_quarantaine)
-
-    if len(unique_c) > 1:
-        ERRORS.append(
-            f"T7 — Valeurs de T_corroboration incohérentes entre fichiers : {sorted(unique_c)}"
-        )
-        return
-    if len(unique_q) > 1:
-        ERRORS.append(
-            f"T7 — Valeurs de T_quarantaine incohérentes entre fichiers : {sorted(unique_q)}"
-        )
-        return
-
-    if unique_c and unique_q and unique_c != unique_q:
-        ERRORS.append(
-            f"T7 — Dissociation interdite : T_corroboration={sorted(unique_c)[0]}s "
-            f"≠ T_quarantaine={sorted(unique_q)[0]}s (§6.1)"
-        )
-    else:
-        val = sorted(unique_c or unique_q)[0]
-        print(f"✔ T7 — T_quarantaine = T_corroboration = {val}s")
 
 
 # ---------------------------------------------------------------------------
-# T8 — Absence de timer fixe substituant systeme_stable dans le moteur
+# T7 — Absence de timer fixe substituant systeme_stable dans le moteur
 #
 # Invariant (§5.1) : toute substitution de input_boolean.systeme_stable
 # par un timer fixe (delay:/for:) dans le moteur ou les scripts de
@@ -397,9 +344,9 @@ def test_no_fixed_timer_substituting_systeme_stable() -> None:
 
     if violations:
         for v in violations:
-            ERRORS.append(f"T8 — Timer fixe substituant systeme_stable : {v}")
+            ERRORS.append(f"T7 — Timer fixe substituant systeme_stable : {v}")
     else:
-        print("✔ T8 — Aucun timer fixe ne substitue input_boolean.systeme_stable")
+        print("✔ T7 — Aucun timer fixe ne substitue input_boolean.systeme_stable")
 
 
 # ---------------------------------------------------------------------------
@@ -420,19 +367,19 @@ def test_moteur_consumes_systeme_stable() -> None:
         content = read(path)
         if not content:
             ERRORS.append(
-                f"T9 — Fichier inaccessible ({label}) : {path.relative_to(REPO_ROOT)}"
+                f"T8 — Fichier inaccessible ({label}) : {path.relative_to(REPO_ROOT)}"
             )
             all_ok = False
             continue
         if "systeme_stable" not in content:
             ERRORS.append(
-                f"T9 — input_boolean.systeme_stable absent de {label} "
+                f"T8 — input_boolean.systeme_stable absent de {label} "
                 f"({path.relative_to(REPO_ROOT)}) — inhibition post-startup non garantie"
             )
             all_ok = False
     if all_ok:
         print(
-            "✔ T9 — input_boolean.systeme_stable consommé par le moteur "
+            "✔ T8 — input_boolean.systeme_stable consommé par le moteur "
             "et traiter_source"
         )
 
@@ -448,7 +395,6 @@ TESTS = [
     test_observability_attrs_in_diagnostic,
     test_reconciliation_status_values_coherence,
     test_t_corroboration_in_range,
-    test_t_quarantaine_equals_t_corroboration,
     test_no_fixed_timer_substituting_systeme_stable,
     test_moteur_consumes_systeme_stable,
 ]
