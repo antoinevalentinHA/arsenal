@@ -257,14 +257,22 @@ def test_approche_absent_from_securite() -> None:
 # ---------------------------------------------------------------------------
 
 def test_maison_securite_absent_from_infra() -> None:
+    # I8 : zone.maison_securite interdite dans les logiques d'infrastructure.
+    # I9 autorise explicitement la lecture d'attributs pour des calculs dérivés.
+    # On exclut donc les lignes ne contenant que state_attr(zone.maison_securite, ...)
+    # sans en faire un trigger ou une condition booléenne.
     violations = []
     for path in yaml_files(*DIRS_INFRASTRUCTURE):
         content = read(path)
         for line in active_lines(content):
-            if "zone.maison_securite" in line:
-                violations.append(f"{path.relative_to(REPO_ROOT)} : "
-                                  f"«{line.strip()[:80]}»")
-                break
+            if "zone.maison_securite" not in line:
+                continue
+            # Lecture d'attribut pour calcul dérivé → autorisé (I9)
+            if re.search(r"state_attr\s*\(\s*['\"]zone\.maison_securite['\"]", line):
+                continue
+            violations.append(f"{path.relative_to(REPO_ROOT)} : "
+                              f"«{line.strip()[:80]}»")
+            break
     if violations:
         for v in violations:
             ERRORS.append(
