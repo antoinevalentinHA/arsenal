@@ -1,97 +1,126 @@
 # ==========================================================
 # 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Modèle d’états & vocabulaire
+#     Alarme — Interfaces contexte & helpers
 # ==========================================================
 
 ## 📌 Statut
 
 - **Contrat normatif et opposable**
 - Domaine : **Sécurité / Alarme**
-- Chemin : `homeassistant/00_documentation_arsenal/contrats/alarme/10_modele_etats_et_vocabulaire.md`
+- Chemin : `homeassistant/00_documentation_arsenal/contrats/alarme/20_interfaces_contexte_et_helpers.md`
 
 ---
 
 ## 🎯 Objet
 
-Définir le vocabulaire canonique de l’alarme :
-
-- états réels (panneau),
-- états logiques (cible),
-- codes décisionnels internes,
-- sémantique NOOP.
+Définir les **entrées contextuelles** consommées par l’alarme et les **sorties**
+publiées par le cerveau alarme via helpers.
 
 ---
 
-## 🧱 États réels (source : `alarm_control_panel.alarme_maison`)
+## 🔌 Entrées contractuelles (lecture)
 
-États consommés comme “réels” :
+### Stratégie alarme
 
-- `disarmed`
-- `armed_away`
-- `pending`
-- `triggered`
+- `input_select.mode_alarme`
+  - Valeurs attendues :
+    - `Manuel`
+    - `Automatique`
+    - `Désactivé`
 
-Tout autre état est accepté comme “brut”, mais ne doit pas être inventé
-par Arsenal.
+### Présence sécurité (autorité contractuelle : présence)
 
----
+- `binary_sensor.presence_famille_securite`
 
-## 🧠 États logiques cibles (source : `input_text.alarme_etat_cible`)
+### Absence stabilisée (projection temporelle)
 
-Valeurs autorisées :
+- `binary_sensor.presence_famille_securite_absent_depuis_5_min`
+  - Doit être un état “prêt à consommer” par l’alarme.
+  - Son mode de calcul est hors périmètre alarme (mais opposable).
 
-- `DISARMED`
-- `ARMED_AWAY`
-- `NOOP`
+### Blocage armement auto (verrou logique)
 
-Règles :
+- `input_boolean.blocage_armement_auto`
 
-- `NOOP` signifie : **aucune action** ne doit être tentée.
-- L’état cible n’est pas un état réel : c’est une **intention publiée**.
+### Délai d’entrée (projection temporelle)
 
----
+- `binary_sensor.delai_desarmement_en_cours`
+  - Contractuellement : ON si `timer.delai_entree` est `active`.
 
-## 🧾 Codes décisionnels (source : `input_text.alarme_decision`)
+### Contexte visite (signal externe au noyau alarme)
 
-Ces codes sont des identifiants “machine” (diagnostic + audit) :
+- `input_boolean.presence_visiteur`
+- `input_boolean.visite_en_cours`
+- `binary_sensor.creneau_visiteur_actif`
+- `input_boolean.mode_visiteur`
+- `input_select.jour_visiteur`
+- `input_datetime.visiteur_start`
+- `input_datetime.visiteur_end`
 
-- `VISITEUR_PRESENT`
-- `PRESENCE`
-- `MODE_NON_AUTOMATIQUE`
-- `ABSENCE_NON_STABLE`
-- `BLOCAGE_AUTO`
-- `DELAI_ENTREE`
-- `ARMEMENT_AUTORISE`
-
-Règle :
-
-- Toute extension d’un code décisionnel implique :
-  - mise à jour du cerveau,
-  - mise à jour des diagnostics,
-  - entrée de changelog.
+Remarque :
+- La visite est un **contexte humain explicite**, pas une présence.
+- Le noyau alarme peut la consommer comme **inhibition / neutralisation**.
 
 ---
 
-## 🧠 Raison (source : `input_text.alarme_raison`)
+## 📤 Sorties contractuelles (écriture)
 
-`input_text.alarme_raison` contient une justification humaine, lisible,
-alignée sur le code décisionnel.
+Les helpers suivants sont **exclusivement écrits** par :
 
-Elle est :
+- `script.alarme_decision_centrale`
 
-- informative,
-- non exécutoire,
-- jamais utilisée comme trigger canonique.
+### Décision
+
+- `input_text.alarme_decision`
+
+### État cible
+
+- `input_text.alarme_etat_cible`
+
+### Raison humaine
+
+- `input_text.alarme_raison`
 
 ---
 
-## 🧪 Sémantique NOOP
+## 🔒 Interdictions formelles
 
-NOOP est un état **intentionnel** :
+Il est interdit :
 
-- il évite les actions inutiles,
-- il stabilise les retriggers,
-- il permet une UI / diag explicite.
+- d’écrire `input_text.alarme_*` depuis une automation, un capteur, ou l’UI,
+- de recalculer une “décision alarme” ailleurs que dans le cerveau,
+- de remplacer présence sécurité par une autre présence.
 
-NOOP ne signifie pas “on ne sait pas” :
-- “on ne sait pas” = `unknown/unavailable`.
+---
+
+## ⚠️ Avertissement Home Assistant — `Maximum number of runs exceeded` (acceptation contractuelle)
+
+Le warning suivant peut apparaître ponctuellement dans les logs Home Assistant lors des **rafales légitimes** (entrée / sortie du domicile) :
+
+- `Maximum number of runs exceeded`
+
+### Interprétation contractuelle
+
+Ce warning signifie qu’un nombre de déclenchements supérieur à la capacité du buffer d’exécution (`mode` / `max`) est survenu sur l’automation d’application.  
+Il s’agit d’un **signal de backpressure / shedding** du scheduler Home Assistant, **pas** d’un défaut métier.
+
+### Acceptation Arsenal (Position A)
+
+Ce warning est **accepté** dans Arsenal **tant que** les invariants suivants sont respectés :
+
+- Le cerveau `script.alarme_decision_centrale` ne consomme **que des états persistants** (states), jamais des événements éphémères non persistés.
+- La décision est **reconstructible** à tout instant à partir des entrées contractuelles.
+- Les scripts d’application (`script.alarme_armer`, `script.alarme_desarmer`) restent **idempotents** vis-à-vis de l’état réel (`alarm_control_panel.alarme_maison`).
+
+### Lignes rouges (non acceptables)
+
+Le warning devient **non acceptable** si l’une des conditions suivantes apparaît :
+
+- introduction d’une entrée décisionnelle **non persistante** (event clavier, MQTT event, webhook, etc.) sans persistance préalable en helper,
+- dépendance à un **événement unique** pour atteindre l’état final (non reconstructible par state),
+- apparition d’une boucle de rétroaction conduisant à une saturation permanente.
+
+### Conséquence opérationnelle
+
+- Le warning peut être considéré comme **bruit maîtrisé** dans les rafales.
+- Toute augmentation de fréquence ou apparition hors rafales doit déclencher une **revue de déclencheurs** et de la **durée des actions applicatives**.
