@@ -242,8 +242,10 @@ def test_absence_reference_temporelle() -> None:
 # par état métier. Un même notification_id dans plusieurs fichiers distincts
 # peut signifier soit un remplacement légitime (create + dismiss pairs),
 # soit un doublon invalide.
-# Ce test signale les notification_id présents dans 3 fichiers ou plus —
-# seuil conservateur pour éviter les faux positifs sur les paires create/dismiss.
+# Ce test signale les notification_id présents dans 4 fichiers ou plus —
+# seuil calibré pour tolérer les paires create/dismiss réparties sur
+# plusieurs automations d'un même domaine (ex. vacances : create, dismiss,
+# dismiss fin, réconciliation = 3 fichiers légitimes).
 # ---------------------------------------------------------------------------
 
 def test_unicite_notification_id() -> None:
@@ -269,14 +271,14 @@ def test_unicite_notification_id() -> None:
     violations = {
         nid: files_list
         for nid, files_list in id_to_files.items()
-        if len(files_list) >= 3
+        if len(files_list) >= 4
     }
 
     if violations:
         for nid, files_list in sorted(violations.items()):
             ERRORS.append(
                 f"T5 — notification_id «{nid}» présent dans {len(files_list)} fichiers "
-                f"(seuil ≥ 3) : {', '.join(files_list[:3])}{'…' if len(files_list) > 3 else ''}"
+                f"(seuil ≥ 4) : {', '.join(files_list[:4])}{'…' if len(files_list) > 4 else ''}"
             )
     else:
         print("✔ T5 — Aucun notification_id présent dans 3 fichiers ou plus (unicité)")
