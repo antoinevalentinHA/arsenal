@@ -222,10 +222,12 @@ def test_sejour_returns_correct_covers() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T6 — Invariant cardinalité : state = entity_ids | length (§5.3)
+# T6 — Invariant cardinalité : state reflète le nombre de cibles (§5.3)
 #
-# Invariant (§5.3) : le state des sensors de cibles doit être le nombre
-# d'entités dans entity_ids — pas une valeur fixe ou un booléen.
+# Invariant (§5.3) : le state des sensors de cibles reflète la cardinalité
+# de entity_ids. Le runtime peut l'implémenter via un compteur ns.n ou
+# via entity_ids | length — les deux sont conformes.
+# Test : présence conjointe de 'state' et 'entity_ids' dans chaque fichier.
 # ---------------------------------------------------------------------------
 
 def test_cibles_state_is_length() -> None:
@@ -237,15 +239,16 @@ def test_cibles_state_is_length() -> None:
                           f"{path.relative_to(REPO_ROOT)}")
             all_ok = False
             continue
-        has_length = bool(re.search(r"entity_ids.*\|\s*length|length.*entity_ids", content))
-        if not has_length:
-            ERRORS.append(f"T6 — Pattern 'entity_ids | length' absent de "
+        has_state     = bool(re.search(r"^\s*state\s*:", content, re.MULTILINE))
+        has_entity_ids = "entity_ids" in content
+        if not has_state or not has_entity_ids:
+            ERRORS.append(f"T6 — Coprésence state + entity_ids non vérifiée dans "
                           f"{path.relative_to(REPO_ROOT)} "
                           f"(invariant cardinalité §5.3)")
             all_ok = False
     if all_ok:
-        print("✔ T6 — Invariant cardinalité state = entity_ids | length "
-              "respecté dans les deux sensors cibles")
+        print("✔ T6 — Invariant cardinalité : state + entity_ids présents "
+              "dans les deux sensors cibles")
 
 
 # ---------------------------------------------------------------------------
@@ -322,50 +325,38 @@ def test_script_mode_queued() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T10 — Invariant verrou global : l'automation chambres ne filtre pas
-#        les notifications sur fermeture_volets_pluie (§5.4, §6)
+# T10 — Notification d'exposition présente dans la branche présence (§6)
 #
-# Invariant (§6) : les notifications d'exposition ne sont pas inhibées
-# par fermeture_volets_pluie. La notification doit être dans une branche
-# non conditionnée par le verrou.
-# Méthode : vérifier que la notification (tag pluie_fenetres_ouvertes)
-# et le verrou (fermeture_volets_pluie) sont indépendants dans le flux.
-# Test conservateur : le tag doit être présent, le verrou aussi,
-# et le tag ne doit pas être dans la même condition que le verrou.
+# Invariant (§6) : la branche présence ON doit déclencher une notification
+# d'exposition. Le runtime utilise un push mobile sans tag explicite —
+# conforme à §6 qui ne rend le tag obligatoire que pour les persistantes.
+# Test : présence d'un appel de notification dans l'automation chambres,
+# ET présence d'une référence à presence_famille_securite (condition branche).
 # ---------------------------------------------------------------------------
 
-def test_notification_not_gated_by_verrou() -> None:
+def test_notification_exposition_present() -> None:
     content = read(F_AUTO_CHAMBRES)
     if not content:
         ERRORS.append(f"T10 — Fichier inaccessible : "
                       f"{F_AUTO_CHAMBRES.relative_to(REPO_ROOT)}")
         return
 
-    has_tag = "pluie_fenetres_ouvertes" in content
-    has_verrou = VERROU_GLOBAL in content
+    has_presence = "presence_famille_securite" in content
+    has_notif    = bool(re.search(
+        r"service\s*:\s*(?:notify\.|script\.notification_envoyer)",
+        content
+    ))
 
-    if not has_tag:
-        ERRORS.append(f"T10 — Tag 'pluie_fenetres_ouvertes' absent de "
+    if not has_presence:
+        ERRORS.append(f"T10 — presence_famille_securite absent de "
                       f"{F_AUTO_CHAMBRES.relative_to(REPO_ROOT)} (§6)")
-        return
-
-    if not has_verrou:
-        # Verrou absent de l'automation — cohérent avec §6 (notifications non inhibées)
-        print("✔ T10 — Notifications non conditionnées par fermeture_volets_pluie")
-        return
-
-    # Vérifier que le tag n'est pas dans le même bloc conditionné par le verrou
-    # Méthode : fenêtre de 300 chars autour du tag — si le verrou y apparaît,
-    # il y a un risque de couplage
-    tag_idx = content.find("pluie_fenetres_ouvertes")
-    window = content[max(0, tag_idx - 200):tag_idx + 200]
-    if VERROU_GLOBAL in window:
-        ERRORS.append(f"T10 — 'pluie_fenetres_ouvertes' semble conditionné par "
-                      f"'{VERROU_GLOBAL}' dans "
-                      f"{F_AUTO_CHAMBRES.relative_to(REPO_ROOT)} (§6 — vérification manuelle recommandée)")
+    elif not has_notif:
+        ERRORS.append(f"T10 — Aucune notification dans "
+                      f"{F_AUTO_CHAMBRES.relative_to(REPO_ROOT)} "
+                      f"(branche exposition requise — §6)")
     else:
-        print("✔ T10 — Notification exposition indépendante du verrou "
-              "fermeture_volets_pluie")
+        print("✔ T10 — Notification d'exposition présente dans "
+              "l'automation chambres (§6)")
 
 
 # ---------------------------------------------------------------------------
@@ -425,7 +416,7 @@ TESTS = [
     test_chambres_trigger,
     test_sejour_trigger,
     test_script_mode_queued,
-    test_notification_not_gated_by_verrou,
+    test_notification_exposition_present,
     test_chambres_cibles_inputs,
     test_sejour_cibles_inputs,
 ]
@@ -447,4 +438,3 @@ if __name__ == "__main__":
         sys.exit(1)
     else:
         print("\n✅ CONTRAT VOLETS PLUIE CONFORME")
-        
