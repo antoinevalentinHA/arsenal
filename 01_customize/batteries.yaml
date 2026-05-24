@@ -44,7 +44,7 @@ sensor.bouton_sdb_battery:
 
 sensor.bouton_entree_battery:
   friendly_name: "Bouton Entrée"
-  icone: mdi:gesture-tap-button
+  icon: mdi:gesture-tap-button
 
 ############################################################
 # 🔘 BOTS SWITCHBOT
