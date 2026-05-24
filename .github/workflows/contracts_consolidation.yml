@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Consolidation
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-consolidation-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate consolidation contracts
+        run: python scripts/arsenal_contracts/check_consolidation_contracts.py
