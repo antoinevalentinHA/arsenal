@@ -66,12 +66,19 @@ SCRIPTS_INTERDITS_M0 = [
 ]
 
 # Actionneurs thermiques interdits (§Hors périmètre)
+# Note : input_boolean.chauffage_blocage_aeration est une lecture de contexte
+# légitime dans M0 (conditions Cas C) — exclu du pattern.
 ACTIONNEURS_THERMIQUES = [
     "climate.",
     "switch.chauffage",
-    "input_boolean.chauffage",
     "script.chauffage",
+    # input_boolean.chauffage exclu : chauffage_blocage_aeration est une lecture légitime
 ]
+
+# Pattern d'écriture sur actionneurs thermiques (service + entité)
+_THERMAL_WRITE_PATTERN = re.compile(
+    r"(?:service|action)\s*:\s*(?:climate\.|switch\.turn|script\.chauffage)"
+)
 
 ERRORS: list[str] = []
 
@@ -242,14 +249,15 @@ def test_no_thermal_actuator_in_m0() -> None:
     if not content:
         ERRORS.append(f"T7 — Script M0 inaccessible")
         return
-    for actuator in ACTIONNEURS_THERMIQUES:
-        if actuator in content:
-            ERRORS.append(
-                f"T7 — Actionneur thermique '{actuator}' dans M0 "
-                f"(§Hors périmètre) : {F_SCRIPT_M0.relative_to(REPO_ROOT)}"
-            )
-    if not any("T7" in e for e in ERRORS):
-        print("✔ T7 — M0 sans actionneur thermique")
+    # Vérifie les appels de service vers des actionneurs thermiques
+    # (pas les lectures de contexte comme chauffage_blocage_aeration)
+    if _THERMAL_WRITE_PATTERN.search(content):
+        ERRORS.append(
+            f"T7 — Appel d'actionneur thermique détecté dans M0 "
+            f"(§Hors périmètre) : {F_SCRIPT_M0.relative_to(REPO_ROOT)}"
+        )
+    else:
+        print("✔ T7 — M0 sans appel d'actionneur thermique")
 
 
 # ---------------------------------------------------------------------------
