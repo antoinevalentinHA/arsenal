@@ -59,6 +59,9 @@ def yaml_files(directory: Path) -> list[Path]:
 REQUIRED_BINARY_SENSORS = [
     "critere_ups_sur_batterie",
     "critere_ups_batterie_faible",
+    # Agrégat souverain — encapsule la règle CD AND (AHC OR SBF)
+    # Runtime v1.1 : la décision est déléguée à ce sensor, pas répartie dans l'automation
+    "ups_arret_ha_recommande",
 ]
 
 def test_binary_sensors_declared() -> None:
@@ -130,40 +133,41 @@ def test_cd_delay_present() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T4 — Seuil AHC = 600 s présent dans l'automation (§3.2)
+# T4 — Seuil AHC = 600 s présent dans le template sensor UPS (§3.2)
 #
 # Invariant (§3.2) : le seuil d'autonomie critique HA est de 600 s.
-# Il doit être encodé dans l'automation canonique.
-# Méthode : présence de la valeur 600 dans un contexte autonomie
-# (rayon de 150 chars autour de 'autonomie').
-# Scope : fichier canonique uniquement.
+# Runtime v1.1 : la logique AHC est encapsulée dans ups_arret_ha_recommande
+# (12_template_sensors/system/ups.yaml), pas dans l'automation.
+# Le seuil doit être encodé dans le fichier template sensors UPS.
+# Méthode : présence de la valeur 600 dans le fichier template.
+# Scope : F_TEMPLATE_UPS uniquement.
 # ---------------------------------------------------------------------------
 
 def test_ahc_seuil_present() -> None:
-    content = read(F_AUTOMATION)
+    content = read(F_TEMPLATE_UPS)
     if not content:
         ERRORS.append(
-            f"T4 — Fichier inaccessible : {F_AUTOMATION.relative_to(REPO_ROOT)}"
+            f"T4 — Fichier inaccessible : {F_TEMPLATE_UPS.relative_to(REPO_ROOT)}"
         )
         return
-    windows = re.findall(r".{0,150}autonomie.{0,150}", content, re.IGNORECASE)
-    found = any(str(AHC_SEUIL) in w for w in windows)
-    if not found:
+    if str(AHC_SEUIL) not in content:
         ERRORS.append(
-            f"T4 — Seuil AHC ({AHC_SEUIL} s) absent dans un contexte 'autonomie' de "
-            f"{F_AUTOMATION.relative_to(REPO_ROOT)} (§3.2)"
+            f"T4 — Seuil AHC ({AHC_SEUIL} s) absent de "
+            f"{F_TEMPLATE_UPS.relative_to(REPO_ROOT)} (§3.2)"
         )
     else:
-        print(f"✔ T4 — Seuil AHC {AHC_SEUIL} s présent dans l'automation")
+        print(f"✔ T4 — Seuil AHC {AHC_SEUIL} s présent dans le template sensor UPS")
 
 
 # ---------------------------------------------------------------------------
-# T5 — critere_ups_sur_batterie est le trigger de l'automation (I-1)
+# T5 — Triggers de l'automation : CD + agrégat souverain (I-1)
 #
 # Invariant (I-1) : aucun arrêt immédiat au passage sur batterie.
-# Le trigger doit porter critere_ups_sur_batterie avec un for: — pas en
-# condition seule. Vérification que l'entité apparaît dans un bloc trigger
-# de l'automation canonique.
+# Runtime v1.1 : deux triggers coexistent —
+#   - critere_ups_sur_batterie avec for: "00:01:00" (CD)
+#   - ups_arret_ha_recommande (agrégat souverain AHC/SBF)
+# La condition redondante sur critere_ups_sur_batterie + for: dans la
+# section condition: garantit que CD est toujours requis.
 # Scope : fichier canonique uniquement.
 # ---------------------------------------------------------------------------
 
@@ -175,14 +179,13 @@ def test_cd_trigger_is_binary_sensor() -> None:
         )
         return
 
-    # Vérifie que critere_ups_sur_batterie apparaît ET que for: 00:01:00 est
-    # dans le même fichier (coprésence — scope déjà restreint au fichier canonique)
-    has_trigger_entity = "critere_ups_sur_batterie" in content
-    has_for_delay = bool(re.search(
+    has_cd_entity  = "critere_ups_sur_batterie" in content
+    has_for_delay  = bool(re.search(
         rf'for\s*:\s*["\']?{re.escape(CD_DELAI)}["\']?', content
     ))
+    has_recommande = "ups_arret_ha_recommande" in content
 
-    if not has_trigger_entity:
+    if not has_cd_entity:
         ERRORS.append(
             f"T5 — binary_sensor.critere_ups_sur_batterie absent de "
             f"{F_AUTOMATION.relative_to(REPO_ROOT)}"
@@ -192,10 +195,16 @@ def test_cd_trigger_is_binary_sensor() -> None:
             f"T5 — critere_ups_sur_batterie présent mais délai for: absent — "
             f"arrêt immédiat possible (violation I-1)"
         )
+    elif not has_recommande:
+        ERRORS.append(
+            f"T5 — binary_sensor.ups_arret_ha_recommande absent de "
+            f"{F_AUTOMATION.relative_to(REPO_ROOT)} "
+            f"(agrégat souverain AHC/SBF non consommé)"
+        )
     else:
         print(
-            "✔ T5 — critere_ups_sur_batterie présent avec délai for: "
-            "(pas d'arrêt immédiat)"
+            "✔ T5 — Triggers CD (with for:) + agrégat ups_arret_ha_recommande "
+            "présents (pas d'arrêt immédiat)"
         )
 
 
