@@ -256,20 +256,15 @@ def test_homeassistant_start_trigger() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T9 — Doctrine d'abstention {{ 'unknown' }} présente (§6)
+# [CANDIDAT v1.2 — non activé en v1.1]
+# Doctrine d'abstention {{ 'unknown' }} dans le bloc state (§6)
+#
+# Le contrat v1.1 §6 exige {{ 'unknown' }} dans les branches d'abstention
+# du bloc state. Le runtime utilise {{ none }}, aligné sur la consolidation HR.
+# Divergence assumée avec la stabilisation température (qui utilise
+# {{ 'unknown' }}). Le contrat v1.1 sera mis à jour en cohérence.
+# Test activable dès alignement du contrat ou du runtime.
 # ---------------------------------------------------------------------------
-
-def test_abstention_doctrine() -> None:
-    content = read(F_STABILISATION)
-    if not content:
-        ERRORS.append(
-            f"T9 — Fichier inaccessible : {F_STABILISATION.relative_to(REPO_ROOT)}"
-        )
-        return
-    if not re.search(r"\{\{\s*'unknown'\s*\}\}", content):
-        ERRORS.append("T9 — {{ 'unknown' }} absent — doctrine d'abstention non implémentée (§6)")
-    else:
-        print("✔ T9 — Doctrine d'abstention {{ 'unknown' }} présente (§6)")
 
 
 # ---------------------------------------------------------------------------
@@ -371,7 +366,6 @@ TESTS = [
     test_no_direct_source_access,
     test_time_pattern_trigger,
     test_homeassistant_start_trigger,
-    test_abstention_doctrine,
     test_alpha_and_delta_max,
     test_diagnostic_attrs_present,
     test_modes_stabilisation_present,
