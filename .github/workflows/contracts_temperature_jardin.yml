@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Température Jardin
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-temperature-jardin-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate température jardin contracts
+        run: python scripts/arsenal_contracts/check_temperature_jardin_contracts.py
