@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Mobile High Accuracy
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-mobile-high-accuracy-contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate mobile high accuracy contracts
+        run: python scripts/arsenal_contracts/check_mobile_high_accuracy_contracts.py
