@@ -48,4 +48,5 @@
 # ==========================================================
 
 poele_blocage_chauffage:
+  name: "Poêle — Blocage chauffage"
   duration: "01:00:00"
