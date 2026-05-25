@@ -162,6 +162,8 @@ def test_allowed_top_level_counter_keys_only():
         "step",
         "icon",
         "restore",
+        "minimum",
+        "maximum",
     }
 
     counter_pattern = re.compile(
