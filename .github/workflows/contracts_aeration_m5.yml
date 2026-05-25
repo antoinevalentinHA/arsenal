@@ -1,0 +1,13 @@
+name: Arsenal Contracts — Aération M5
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate M5 contract (Réouverture pendant blocage)
+        run: python scripts/arsenal_contracts/check_aeration_m5_contracts.py
