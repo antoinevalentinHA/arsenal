@@ -29,15 +29,15 @@ lovelace: !include 18_lovelace/lovelace_main.yaml
 http:
   use_x_forwarded_for: true
   trusted_proxies:
-    - 192.168.1.0/24
-    - 10.9.0.0/24
+    - !secret trusted_proxy_lan
+    - !secret trusted_proxy_vpn
     - 127.0.0.1
     - ::1
 
 # URLs d'accès à home assistant (externe et interne)
 homeassistant:
-  external_url: "https://maisonarsenal.synology.me:9443"
-  internal_url: "http://192.168.1.117:8123"
+  external_url: !secret ha_external_url
+  internal_url: !secret ha_internal_url
   customize: !include_dir_merge_named 01_customize/
 
 # Configuration du recorder (base de données)
