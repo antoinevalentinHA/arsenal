@@ -1,0 +1,16 @@
+name: Arsenal Contracts — Input Texts
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts-input-texts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run input_texts contract validation
+        run: python scripts/arsenal_contracts/check_input_texts_contracts.py
