@@ -5,7 +5,7 @@ import sys
 
 DOMAIN = "COUNTERS"
 ROOT = Path(__file__).resolve().parents[2]
-COUNTERS_DIR = ROOT / "08b_counters"
+COUNTERS_DIR = ROOT / "09_counters"
 
 ERRORS = []
 
@@ -37,9 +37,9 @@ def add_error(message: str):
 
 def test_counters_directory_exists():
     if not COUNTERS_DIR.exists():
-        add_error("Dossier 08b_counters/ absent.")
+        add_error("Dossier 09_counters/ absent.")
     elif not COUNTERS_DIR.is_dir():
-        add_error("08b_counters existe mais n'est pas un dossier.")
+        add_error("09_counters existe mais n'est pas un dossier.")
     else:
         print("✔ test_counters_directory_exists")
 
@@ -48,7 +48,7 @@ def test_counter_files_are_not_empty():
     files = yaml_files(COUNTERS_DIR)
 
     if not files:
-        add_error("Aucun fichier YAML trouvé dans 08b_counters/.")
+        add_error("Aucun fichier YAML trouvé dans 09_counters/.")
         return
 
     for path in files:
