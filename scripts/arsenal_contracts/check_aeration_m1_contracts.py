@@ -8,7 +8,7 @@ DOMAIN = "AERATION_M1"
 ROOT = Path(__file__).resolve().parents[2]
 
 AERATION_SCRIPTS_DIR = ROOT / "10_scripts" / "aeration"
-AERATION_AUTOMATIONS_DIR = ROOT / "11_automations" / "chauffage" / "aeration"
+AERATION_AUTOMATIONS_DIR = ROOT / "11_automations" / "aeration" / "blocage_chauffage"
 
 M1_SCRIPT_KEY = "aeration_m1_debut_episode"
 M1_SCRIPT_ENTITY = "script.aeration_m1_debut_episode"
@@ -151,10 +151,14 @@ def first_entity_position(text: str, entity_id: str) -> int:
 
 def test_aeration_runtime_directories_exist():
     if not AERATION_SCRIPTS_DIR.exists():
-        add_error("Dossier 10_scripts/aeration/ absent.")
+        add_error(
+            f"Dossier {AERATION_SCRIPTS_DIR.relative_to(ROOT)}/ absent."
+        )
 
     if not AERATION_AUTOMATIONS_DIR.exists():
-        add_error("Dossier 11_automations/chauffage/aeration/ absent.")
+        add_error(
+            f"Dossier {AERATION_AUTOMATIONS_DIR.relative_to(ROOT)}/ absent."
+        )
 
     print("✔ test_aeration_runtime_directories_exist")
 
@@ -177,11 +181,13 @@ def test_master_pipeline_declared_once():
     if len(matches) == 0:
         add_error(
             f"Automatisation maître ID {MASTER_AUTOMATION_ID} introuvable "
-            "dans 11_automations/chauffage/aeration/."
+            f"dans {AERATION_AUTOMATIONS_DIR.relative_to(ROOT)}/."
         )
     elif len(matches) > 1:
         files = ", ".join(str(path.relative_to(ROOT)) for path in matches)
-        add_error(f"Automatisation maître ID {MASTER_AUTOMATION_ID} déclarée plusieurs fois : {files}")
+        add_error(
+            f"Automatisation maître ID {MASTER_AUTOMATION_ID} déclarée plusieurs fois : {files}"
+        )
 
     print("✔ test_master_pipeline_declared_once")
 
