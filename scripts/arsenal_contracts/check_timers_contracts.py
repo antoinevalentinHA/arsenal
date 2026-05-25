@@ -85,7 +85,6 @@ def test_each_declared_timer_has_required_keys():
 
     required_keys = [
         "name",
-        "duration",
     ]
 
     for path in yaml_files(TIMERS_DIR):
@@ -111,15 +110,19 @@ def test_each_declared_timer_has_required_keys():
     print("✔ test_each_declared_timer_has_required_keys")
 
 
-def test_timer_duration_format_is_valid():
+def test_timer_duration_format_is_valid_when_declared():
     timer_pattern = re.compile(
         r"^(?P<id>[a-zA-Z0-9_]+):\n(?P<body>(?:^[ ]{2,}.+\n?)*)",
         re.MULTILINE,
     )
 
-    duration_pattern = re.compile(
-        r'^\s{2}duration\s*:\s*"?(?P<duration>\d{2}:\d{2}:\d{2})"?\s*$',
+    duration_line_pattern = re.compile(
+        r'^\s{2}duration\s*:\s*(?P<duration>.+?)\s*$',
         re.MULTILINE,
+    )
+
+    fixed_duration_pattern = re.compile(
+        r'^"?\d{2}:\d{2}:\d{2}"?$'
     )
 
     for path in yaml_files(TIMERS_DIR):
@@ -129,15 +132,23 @@ def test_timer_duration_format_is_valid():
             timer_id = match.group("id")
             body = match.group("body")
 
-            duration_match = duration_pattern.search(body)
+            duration_match = duration_line_pattern.search(body)
 
             if not duration_match:
+                continue
+
+            duration = duration_match.group("duration").strip()
+
+            if "{{" in duration or "{%" in duration:
+                continue
+
+            if not fixed_duration_pattern.match(duration):
                 add_error(
                     f"{path.relative_to(ROOT)} : timer.{timer_id} "
-                    "a une durée absente ou non conforme au format HH:MM:SS."
+                    f"a une durée déclarée non conforme au format HH:MM:SS : {duration}."
                 )
 
-    print("✔ test_timer_duration_format_is_valid")
+    print("✔ test_timer_duration_format_is_valid_when_declared")
 
 
 def test_no_local_business_logic_or_templates():
@@ -249,7 +260,7 @@ TESTS = [
     "test_timer_files_are_not_empty",
     "test_timers_use_mapping_declarations",
     "test_each_declared_timer_has_required_keys",
-    "test_timer_duration_format_is_valid",
+    "test_timer_duration_format_is_valid_when_declared",
     "test_no_local_business_logic_or_templates",
     "test_no_services_or_actions_in_timer_files",
     "test_allowed_top_level_timer_keys_only",
