@@ -94,6 +94,34 @@ def contains_action_call_to_entity(text: str, action_name: str, entity_id: str) 
     return False
 
 
+def action_blocks(text: str):
+    pattern = re.compile(
+        r"(?ms)^(\s*)-\s*(action|service)\s*:\s*(?P<action>[^\n]+)\n"
+        r"(?P<body>(?:^\1\s{2,}.+\n?)*)"
+    )
+
+    for match in pattern.finditer(text):
+        yield (
+            match.group("action").strip().strip('"').strip("'"),
+            match.group(0),
+        )
+
+
+def action_block_targets_entity(text: str, action_name: str, entity_id: str) -> bool:
+    for action, block in action_blocks(text):
+        if action != action_name:
+            continue
+
+        if re.search(
+            rf"^\s*entity_id\s*:\s*[\"']?{re.escape(entity_id)}[\"']?\s*$",
+            block,
+            re.MULTILINE,
+        ):
+            return True
+
+    return False
+
+
 def first_action_position(text: str, action_name: str, entity_id: str) -> int:
     action_pattern = (
         rf"^\s*-\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
@@ -447,14 +475,6 @@ def test_m2_normative_order_is_preserved():
             "reset confirmation",
             reset_confirmation_pos,
         ),
-        (
-            "logbook final",
-            first_text_position_after(
-                text,
-                "logbook.log",
-                reset_confirmation_pos,
-            ),
-        ),
     ]
 
     for label, position in positions:
@@ -604,7 +624,7 @@ def test_m2_forbidden_actions_absent():
                 f"{script_file.relative_to(ROOT)} : interdit M2 détecté : {label}."
             )
 
-    if contains_action_call_to_entity(
+    if action_block_targets_entity(
         text,
         "input_boolean.turn_off",
         "input_boolean.chauffage_blocage_aeration",

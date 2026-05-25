@@ -23,20 +23,17 @@ dans un épisode, non un indicateur persistant d’état.
 
 ## 📝 JOURNALISATION
 
-M2 écrit un logbook :
+M2 peut écrire un logbook informatif.
 
-Nom :
-  "Chauffage - Fin aeration"
+Cette journalisation :
 
-Message :
-  - blocage activé,
-  - durée initiale calculée,
-  - délai analyse.
+- peut documenter un refus d’exécution,
+- peut documenter une entrée effective en phase de blocage,
+- ne conditionne aucun comportement futur.
 
-Cette trace atteste :
+Aucun logbook final n’est requis après le reset de confirmation.
 
-- l’entrée effective en phase de blocage,
-- la clôture formelle de l’épisode.
+Le reset de confirmation constitue la clôture structurelle minimale de M2.
 
 ---
 

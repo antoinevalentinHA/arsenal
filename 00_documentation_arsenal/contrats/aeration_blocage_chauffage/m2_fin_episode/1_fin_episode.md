@@ -48,7 +48,7 @@ une violation contractuelle.
 4. Mise à jour des `input_datetime` de diagnostic  
 5. Démarrage / extension monotone des timers  
 6. `aeration_confirmee` → OFF  
-7. Logbook  
+7. Journalisation éventuelle 
 
 ---
 
