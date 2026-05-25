@@ -1,3 +1,5 @@
+<!-- audit:scope=doc -->
+
 # Workflow Git — boiler-bridge
 ## PC → GitHub → Pi
 

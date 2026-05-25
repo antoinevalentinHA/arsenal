@@ -1,3 +1,5 @@
+<!-- audit:scope=doc -->
+
 # ARSENAL — Boiler Guard · Contrat normatif
 
 **Composant :** `arsenal-boiler-guard`
