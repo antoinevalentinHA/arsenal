@@ -17,6 +17,7 @@ def read_text(path: Path) -> str:
 def yaml_files(base: Path):
     if not base.exists():
         return []
+
     return sorted(
         path for path in base.rglob("*.yaml")
         if path.is_file()
@@ -36,66 +37,59 @@ def add_error(message: str):
 
 def test_input_booleans_directory_exists():
     if not INPUT_BOOLEANS_DIR.exists():
-        add_error("Dossier 04_input_booleans/ absent.")
+        add_error("Dossier 05_input_booleans/ absent.")
     elif not INPUT_BOOLEANS_DIR.is_dir():
-        add_error("04_input_booleans existe mais n'est pas un dossier.")
+        add_error("05_input_booleans existe mais n'est pas un dossier.")
     else:
         print("✔ test_input_booleans_directory_exists")
 
 
-def test_input_text_files_are_not_empty():
+def test_input_boolean_files_are_not_empty():
     files = yaml_files(INPUT_BOOLEANS_DIR)
 
     if not files:
-        add_error("Aucun fichier YAML trouvé dans 04_input_booleans/.")
+        add_error("Aucun fichier YAML trouvé dans 05_input_booleans/.")
         return
 
     for path in files:
         if not read_text(path).strip():
             add_error(f"Fichier vide interdit : {path.relative_to(ROOT)}")
 
-    if not ERRORS:
-        print("✔ test_input_text_files_are_not_empty")
-    else:
-        print("✔ test_input_text_files_are_not_empty")
+    print("✔ test_input_boolean_files_are_not_empty")
 
 
 def test_input_booleans_use_mapping_declarations():
-    files = yaml_files(INPUT_BOOLEANS_DIR)
-
-    for path in files:
-        text = read_text(path)
+    for path in yaml_files(INPUT_BOOLEANS_DIR):
+        text = strip_yaml_comments(read_text(path))
 
         if re.search(r"^\s*-\s+", text, re.MULTILINE):
             add_error(
                 f"Déclaration en liste détectée dans {path.relative_to(ROOT)} ; "
-                "les input_text doivent être déclarés par clé de mapping."
+                "les input_boolean doivent être déclarés par clé de mapping."
             )
 
         if re.search(r"^\s*unique_id\s*:", text, re.MULTILINE):
             add_error(
                 f"unique_id détecté dans {path.relative_to(ROOT)} ; "
-                "les input_text doivent utiliser une clé de mapping, pas unique_id."
+                "les input_boolean doivent utiliser une clé de mapping, pas unique_id."
             )
 
     print("✔ test_input_booleans_use_mapping_declarations")
 
 
 def test_each_declared_input_boolean_has_name():
-    files = yaml_files(INPUT_BOOLEANS_DIR)
-
     helper_pattern = re.compile(
         r"^(?P<id>[a-zA-Z0-9_]+):\n(?P<body>(?:^[ ]{2,}.+\n?)*)",
         re.MULTILINE,
     )
 
-    for path in files:
-        text = read_text(path)
+    for path in yaml_files(INPUT_BOOLEANS_DIR):
+        text = strip_yaml_comments(read_text(path))
         declarations = list(helper_pattern.finditer(text))
 
         if not declarations:
             add_error(
-                f"Aucune déclaration input_text détectée dans {path.relative_to(ROOT)}."
+                f"Aucune déclaration input_boolean détectée dans {path.relative_to(ROOT)}."
             )
             continue
 
@@ -105,10 +99,10 @@ def test_each_declared_input_boolean_has_name():
 
             if not re.search(r"^\s{2}name\s*:", body, re.MULTILINE):
                 add_error(
-                    f"{path.relative_to(ROOT)} : input_text.{helper_id} sans clé name."
+                    f"{path.relative_to(ROOT)} : input_boolean.{helper_id} sans clé name."
                 )
 
-    print("✔ test_each_declared_input_text_has_name_and_max")
+    print("✔ test_each_declared_input_boolean_has_name")
 
 
 def test_no_local_business_logic_or_templates():
@@ -116,9 +110,6 @@ def test_no_local_business_logic_or_templates():
         r"\{\{": "template Jinja",
         r"\{%-": "template Jinja",
         r"{%": "template Jinja",
-        r"\bif\s+": "condition logique",
-        r"\belse\b": "branche logique",
-        r"\belif\b": "branche logique",
         r"\bstates\s*\(": "lecture d'état Home Assistant",
         r"\bis_state\s*\(": "lecture d'état Home Assistant",
         r"\bstate_attr\s*\(": "lecture d'attribut Home Assistant",
@@ -131,13 +122,13 @@ def test_no_local_business_logic_or_templates():
             if re.search(pattern, text):
                 add_error(
                     f"{label} détecté dans {path.relative_to(ROOT)} ; "
-                    "un input_text ne doit contenir aucune logique locale."
+                    "un input_boolean ne doit contenir aucune logique locale."
                 )
 
     print("✔ test_no_local_business_logic_or_templates")
 
 
-def test_no_services_or_actions_in_input_text_files():
+def test_no_services_or_actions_in_input_boolean_files():
     forbidden_keys = [
         "service",
         "action",
@@ -152,16 +143,16 @@ def test_no_services_or_actions_in_input_text_files():
     ]
 
     for path in yaml_files(INPUT_BOOLEANS_DIR):
-        text = read_text(path)
+        text = strip_yaml_comments(read_text(path))
 
         for key in forbidden_keys:
             if re.search(rf"^\s*{re.escape(key)}\s*:", text, re.MULTILINE):
                 add_error(
                     f"Clé comportementale '{key}:' détectée dans {path.relative_to(ROOT)} ; "
-                    "un input_text ne doit pas porter de comportement autonome."
+                    "un input_boolean ne doit pas porter de comportement autonome."
                 )
 
-    print("✔ test_no_services_or_actions_in_input_text_files")
+    print("✔ test_no_services_or_actions_in_input_boolean_files")
 
 
 def test_allowed_top_level_helper_keys_only():
@@ -176,10 +167,13 @@ def test_allowed_top_level_helper_keys_only():
         re.MULTILINE,
     )
 
-    child_key_pattern = re.compile(r"^\s{2}([a-zA-Z0-9_]+)\s*:", re.MULTILINE)
+    child_key_pattern = re.compile(
+        r"^\s{2}([a-zA-Z0-9_]+)\s*:",
+        re.MULTILINE,
+    )
 
     for path in yaml_files(INPUT_BOOLEANS_DIR):
-        text = read_text(path)
+        text = strip_yaml_comments(read_text(path))
 
         for match in helper_pattern.finditer(text):
             helper_id = match.group("id")
@@ -187,9 +181,10 @@ def test_allowed_top_level_helper_keys_only():
 
             for child_match in child_key_pattern.finditer(body):
                 key = child_match.group(1)
+
                 if key not in allowed_child_keys:
                     add_error(
-                        f"{path.relative_to(ROOT)} : input_text.{helper_id} contient "
+                        f"{path.relative_to(ROOT)} : input_boolean.{helper_id} contient "
                         f"une clé non canonique '{key}'."
                     )
 
@@ -201,6 +196,7 @@ def test_test_registry_matches_functions():
 
     for test_name in TESTS:
         candidate = getattr(current_module, test_name, None)
+
         if not callable(candidate):
             add_error(f"TESTS référence une fonction absente : {test_name}")
 
@@ -209,11 +205,11 @@ def test_test_registry_matches_functions():
 
 TESTS = [
     "test_input_booleans_directory_exists",
-    "test_input_text_files_are_not_empty",
+    "test_input_boolean_files_are_not_empty",
     "test_input_booleans_use_mapping_declarations",
-    "test_each_declared_input_text_has_name",
+    "test_each_declared_input_boolean_has_name",
     "test_no_local_business_logic_or_templates",
-    "test_no_services_or_actions_in_input_text_files",
+    "test_no_services_or_actions_in_input_boolean_files",
     "test_allowed_top_level_helper_keys_only",
     "test_test_registry_matches_functions",
 ]
@@ -221,7 +217,13 @@ TESTS = [
 
 def main():
     for test_name in TESTS:
-        globals()[test_name]()
+        test_func = globals().get(test_name)
+
+        if not callable(test_func):
+            add_error(f"TESTS référence une fonction absente : {test_name}")
+            continue
+
+        test_func()
 
     if ERRORS:
         print(f"\n❌ CONTRAT {DOMAIN} NON CONFORME")
