@@ -1,0 +1,16 @@
+name: Arsenal Contracts — Aération M4
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts-aeration-m4:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Aération M4 contract checks
+        run: python3 scripts/arsenal_contracts/check_aeration_m4_contracts.py
