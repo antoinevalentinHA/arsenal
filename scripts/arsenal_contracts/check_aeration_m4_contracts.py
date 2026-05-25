@@ -223,28 +223,17 @@ def test_m4_disarms_pipeline_and_suspension() -> None:
     print("✔ M4 : désarmement pipeline et suspension conformes")
 
 
-def test_m4_logbook_present() -> None:
+def test_m4_logbook_absent() -> None:
     if SCRIPT_PATH is None:
         return
 
-    require_contains(SCRIPT_TEXT, "logbook.log", f"{SCRIPT_PATH} : logbook obligatoire")
-    require_contains(
+    forbid_contains(
         SCRIPT_TEXT,
-        "Chauffage - Fin blocage horaire",
-        f"{SCRIPT_PATH} : nom logbook",
-    )
-    require_contains(
-        SCRIPT_TEXT,
-        "Blocage chauffage levé",
-        f"{SCRIPT_PATH} : message logbook",
-    )
-    require_contains(
-        SCRIPT_TEXT,
-        "input_boolean.chauffage_blocage_aeration",
-        f"{SCRIPT_PATH} : entity_id logbook",
+        "logbook.log",
+        f"{SCRIPT_PATH} : logbook volontairement absent",
     )
 
-    print("✔ M4 : journalisation terminale présente")
+    print("✔ M4 : absence volontaire de logbook respectée")
 
 
 def test_m4_forbidden_actions_absent() -> None:
@@ -291,7 +280,6 @@ def test_m4_transactional_closure_complete() -> None:
         "input_number.aeration_delta_t_utilise",
         "input_boolean.aeration_pipeline_arme",
         "input_boolean.aeration_suspension_active",
-        "logbook.log",
     ]
 
     for marker in required_closure_markers:
@@ -308,7 +296,7 @@ TESTS = [
     "test_m4_neutralizes_datetime_traces",
     "test_m4_resets_cycle_artifacts",
     "test_m4_disarms_pipeline_and_suspension",
-    "test_m4_logbook_present",
+    "test_m4_logbook_absent",
     "test_m4_forbidden_actions_absent",
     "test_m4_does_not_modify_snapshots",
     "test_m4_transactional_closure_complete",

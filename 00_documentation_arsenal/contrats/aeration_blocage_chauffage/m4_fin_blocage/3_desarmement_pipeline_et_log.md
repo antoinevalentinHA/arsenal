@@ -40,19 +40,23 @@ aeration_suspension_active → OFF
 
 ---
 
-## 📝 JOURNALISATION
+## 📝 TRACE RUNTIME
 
-M4 écrit un logbook :
+M4 ne requiert aucune journalisation `logbook.log`.
 
-- name : "Chauffage - Fin blocage horaire"
-- message : "Blocage chauffage levé (fin blocage horaire)."
-- entity_id : `input_boolean.chauffage_blocage_aeration`
+La traçabilité normative est assurée par les écritures terminales :
 
-Cette trace atteste :
+- `input_boolean.chauffage_blocage_aeration` → OFF
+- `timer.aeration_blocage` → cancel
+- `timer.aeration_analyse_delta_t` → cancel
+- `input_datetime.chauffage_fin_blocage_aeration` → `YYYY-MM-DD 00:00:00`
+- `input_datetime.analyse_deltat_disponible` → `YYYY-MM-DD 00:00:00`
+- `input_number.aeration_delta_t_utilise` → `0`
+- `input_boolean.aeration_pipeline_arme` → OFF
+- `input_boolean.aeration_suspension_active` → OFF
 
-- la levée effective du blocage,
-- la clôture du cycle,
-- la restauration de l’état nominal thermique.
+Le script reste volontairement silencieux côté logbook afin d’éviter
+une pollution événementielle pour une clôture interne de pipeline.
 
 ---
 

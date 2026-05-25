@@ -11,7 +11,7 @@ Définir le comportement normatif de M4 :
 - annuler explicitement les timers liés à l’épisode,
 - neutraliser les traces temporelles résiduelles,
 - désarmer le pipeline (clôture totale),
-- journaliser.
+- assurer une trace runtime par écritures terminales.
 
 M4 constitue l’unique mécanisme normatif de levée du blocage thermique.
 
@@ -54,7 +54,10 @@ M4 ne peut jamais s’exécuter si une fenêtre est ouverte.
 4. Désarmement pipeline :
    `aeration_pipeline_arme` → OFF
 
-5. Logbook
+5. Trace runtime terminale :
+   - neutralisation complète des artefacts du cycle,
+   - absence de résidu temporel actif,
+   - état canon de clôture restauré.
 
 ---
 
