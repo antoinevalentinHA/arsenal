@@ -67,19 +67,18 @@ Cette neutralisation :
 
 ---
 
-### 2️⃣ Journalisation
+### 2️⃣ Trace runtime
 
-Logbook :
+Aucune journalisation `logbook.log` n’est requise dans ce script.
 
-- name : "Chauffage - Analyse DeltaT"
-- message :
-  - ΔT arrondi
-  - mention "Blocage maintenu (pire épisode prioritaire)"
+La traçabilité normative est assurée par :
 
-Cette trace confirme :
+- la neutralisation de `input_datetime.analyse_deltat_disponible`
+- l’absence de modification de l’échéance de blocage
+- l’absence de relance de timer
 
-- la prise de décision ΔT,
-- l’absence de prolongation.
+Le script reste volontairement silencieux côté logbook afin d’éviter
+une pollution événementielle pour un maintien sans action corrective.
 
 ---
 

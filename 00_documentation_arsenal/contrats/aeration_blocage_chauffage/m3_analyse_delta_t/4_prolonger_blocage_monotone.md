@@ -113,10 +113,17 @@ par le pipeline (enveloppe fermée).
 
 - `timer.start(timer.aeration_blocage, duration=blocage_duration)`
 
-3. Logbook :
+3. Trace runtime
 
-- name : "Chauffage - Blocage prolonge"
-- message : ΔT arrondi + prolongation h
+Aucune journalisation `logbook.log` n’est requise dans ce script.
+
+La traçabilité normative est assurée par :
+
+- `input_datetime.chauffage_fin_blocage_aeration`
+- l’état du `timer.aeration_blocage`
+
+Le script reste volontairement silencieux côté logbook afin d’éviter
+une pollution événementielle pour un mécanisme interne de pipeline.
 
 ---
 
