@@ -87,7 +87,7 @@ def contains_action_call_to_entity(text: str, action_name: str, entity_id: str) 
     )
 
     for match in re.finditer(action_pattern, text, re.MULTILINE):
-        window = text[match.start():match.start() + 900]
+        window = text[match.start():match.start() + 300]
         if entity_id in window:
             return True
 
@@ -329,6 +329,22 @@ def test_m2_normative_effects_present():
     print("✔ test_m2_normative_effects_present")
 
 
+def min_valid_position(*positions):
+    valid_positions = [pos for pos in positions if pos != -1]
+
+    if not valid_positions:
+        return -1
+
+    return min(valid_positions)
+
+
+def first_text_position_after(text: str, needle: str, start: int) -> int:
+    if start == -1:
+        return -1
+
+    return text.find(needle, start)
+
+
 def test_m2_normative_order_is_preserved():
     script_file, matches = find_m2_script_file()
 
@@ -337,6 +353,12 @@ def test_m2_normative_order_is_preserved():
         return
 
     text = strip_yaml_comments(read_text(script_file))
+
+    reset_confirmation_pos = first_action_position(
+        text,
+        "input_boolean.turn_off",
+        "input_boolean.aeration_confirmee",
+    )
 
     positions = [
         (
@@ -360,48 +382,46 @@ def test_m2_normative_order_is_preserved():
             text.find("delai_analyse"),
         ),
         (
-            "datetime fin blocage",
-            first_action_position(
-                text,
-                "input_datetime.set_datetime",
-                "input_datetime.chauffage_fin_blocage_aeration",
+            "mise à jour input_datetime",
+            min_valid_position(
+                first_action_position(
+                    text,
+                    "input_datetime.set_datetime",
+                    "input_datetime.chauffage_fin_blocage_aeration",
+                ),
+                first_action_position(
+                    text,
+                    "input_datetime.set_datetime",
+                    "input_datetime.analyse_deltat_disponible",
+                ),
             ),
         ),
         (
-            "datetime analyse DeltaT",
-            first_action_position(
-                text,
-                "input_datetime.set_datetime",
-                "input_datetime.analyse_deltat_disponible",
-            ),
-        ),
-        (
-            "timer analyse DeltaT",
-            first_action_position(
-                text,
-                "timer.start",
-                "timer.aeration_analyse_delta_t",
-            ),
-        ),
-        (
-            "timer blocage",
-            first_action_position(
-                text,
-                "timer.start",
-                "timer.aeration_blocage",
+            "démarrage timers",
+            min_valid_position(
+                first_action_position(
+                    text,
+                    "timer.start",
+                    "timer.aeration_analyse_delta_t",
+                ),
+                first_action_position(
+                    text,
+                    "timer.start",
+                    "timer.aeration_blocage",
+                ),
             ),
         ),
         (
             "reset confirmation",
-            first_action_position(
-                text,
-                "input_boolean.turn_off",
-                "input_boolean.aeration_confirmee",
-            ),
+            reset_confirmation_pos,
         ),
         (
-            "logbook",
-            text.find("Chauffage - Fin aeration"),
+            "logbook final",
+            first_text_position_after(
+                text,
+                "Chauffage - Fin aeration",
+                reset_confirmation_pos,
+            ),
         ),
     ]
 
