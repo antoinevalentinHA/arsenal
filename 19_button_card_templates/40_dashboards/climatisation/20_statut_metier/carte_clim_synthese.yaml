@@ -26,7 +26,7 @@
 #     - entity: sensor.clim_mode_local
 #     - attributes: aucune
 #     - helpers externes:
-#         - sensor.consigne_clim_appliquee_locale
+#         - sensor.consigne_clim_appliquee
 #
 # ⚠️ CONTRAINTES
 #     - Ce template ne calcule pas le mode cible
@@ -67,7 +67,7 @@ carte_clim_synthese:
 
   label: |
     [[[
-      const consigne = states['sensor.consigne_clim_appliquee_locale']?.state;
+      const consigne = states['sensor.consigne_clim_appliquee']?.state;
       const mode = (entity.state || '').toLowerCase();
 
       if (mode === 'off') return '';

@@ -13,7 +13,7 @@
 #
 # 📡 SOURCE
 #   - entity.state (climate.clim)
-#   - sensor.consigne_clim_appliquee_locale
+#   - sensor.consigne_clim_appliquee
 #
 # ⚙️ LOGIQUE UI
 #   - Lit l’état réel de la climatisation
@@ -55,7 +55,7 @@ carte_clim_etat:
   label: |
     [[[
       const mode = (entity.state || '').toLowerCase();
-      const consigne = states['sensor.consigne_clim_appliquee_locale']?.state;
+      const consigne = states['sensor.consigne_clim_appliquee']?.state;
 
       if (mode === 'cool')
         return 'Consigne : ' +
