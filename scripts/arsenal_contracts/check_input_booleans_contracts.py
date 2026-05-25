@@ -34,20 +34,20 @@ def add_error(message: str):
     ERRORS.append(message)
 
 
-def test_input_texts_directory_exists():
-    if not INPUT_TEXTS_DIR.exists():
-        add_error("Dossier 04_input_texts/ absent.")
-    elif not INPUT_TEXTS_DIR.is_dir():
-        add_error("04_input_texts existe mais n'est pas un dossier.")
+def test_input_booleans_directory_exists():
+    if not INPUT_BOOLEANS_DIR.exists():
+        add_error("Dossier 04_input_booleans/ absent.")
+    elif not INPUT_BOOLEANS_DIR.is_dir():
+        add_error("04_input_booleans existe mais n'est pas un dossier.")
     else:
-        print("✔ test_input_texts_directory_exists")
+        print("✔ test_input_booleans_directory_exists")
 
 
 def test_input_text_files_are_not_empty():
-    files = yaml_files(INPUT_TEXTS_DIR)
+    files = yaml_files(INPUT_BOOLEANS_DIR)
 
     if not files:
-        add_error("Aucun fichier YAML trouvé dans 04_input_texts/.")
+        add_error("Aucun fichier YAML trouvé dans 04_input_booleans/.")
         return
 
     for path in files:
@@ -60,8 +60,8 @@ def test_input_text_files_are_not_empty():
         print("✔ test_input_text_files_are_not_empty")
 
 
-def test_input_texts_use_mapping_declarations():
-    files = yaml_files(INPUT_TEXTS_DIR)
+def test_input_booleans_use_mapping_declarations():
+    files = yaml_files(INPUT_BOOLEANS_DIR)
 
     for path in files:
         text = read_text(path)
@@ -78,11 +78,11 @@ def test_input_texts_use_mapping_declarations():
                 "les input_text doivent utiliser une clé de mapping, pas unique_id."
             )
 
-    print("✔ test_input_texts_use_mapping_declarations")
+    print("✔ test_input_booleans_use_mapping_declarations")
 
 
 def test_each_declared_input_boolean_has_name():
-    files = yaml_files(INPUT_TEXTS_DIR)
+    files = yaml_files(INPUT_BOOLEANS_DIR)
 
     helper_pattern = re.compile(
         r"^(?P<id>[a-zA-Z0-9_]+):\n(?P<body>(?:^[ ]{2,}.+\n?)*)",
@@ -124,7 +124,7 @@ def test_no_local_business_logic_or_templates():
         r"\bstate_attr\s*\(": "lecture d'attribut Home Assistant",
     }
 
-    for path in yaml_files(INPUT_TEXTS_DIR):
+    for path in yaml_files(INPUT_BOOLEANS_DIR):
         text = strip_yaml_comments(read_text(path))
 
         for pattern, label in forbidden_patterns.items():
@@ -151,7 +151,7 @@ def test_no_services_or_actions_in_input_text_files():
         "wait_for_trigger",
     ]
 
-    for path in yaml_files(INPUT_TEXTS_DIR):
+    for path in yaml_files(INPUT_BOOLEANS_DIR):
         text = read_text(path)
 
         for key in forbidden_keys:
@@ -178,7 +178,7 @@ def test_allowed_top_level_helper_keys_only():
 
     child_key_pattern = re.compile(r"^\s{2}([a-zA-Z0-9_]+)\s*:", re.MULTILINE)
 
-    for path in yaml_files(INPUT_TEXTS_DIR):
+    for path in yaml_files(INPUT_BOOLEANS_DIR):
         text = read_text(path)
 
         for match in helper_pattern.finditer(text):
@@ -208,9 +208,9 @@ def test_test_registry_matches_functions():
 
 
 TESTS = [
-    "test_input_texts_directory_exists",
+    "test_input_booleans_directory_exists",
     "test_input_text_files_are_not_empty",
-    "test_input_texts_use_mapping_declarations",
+    "test_input_booleans_use_mapping_declarations",
     "test_each_declared_input_text_has_name",
     "test_no_local_business_logic_or_templates",
     "test_no_services_or_actions_in_input_text_files",
