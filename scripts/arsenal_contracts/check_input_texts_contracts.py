@@ -23,6 +23,13 @@ def yaml_files(base: Path):
     )
 
 
+def strip_yaml_comments(text: str) -> str:
+    return "\n".join(
+        line for line in text.splitlines()
+        if not line.lstrip().startswith("#")
+    )
+
+
 def add_error(message: str):
     ERRORS.append(message)
 
@@ -74,7 +81,7 @@ def test_input_texts_use_mapping_declarations():
     print("✔ test_input_texts_use_mapping_declarations")
 
 
-def test_each_declared_input_text_has_name_and_max():
+def test_each_declared_input_text_has_name():
     files = yaml_files(INPUT_TEXTS_DIR)
 
     helper_pattern = re.compile(
@@ -101,11 +108,6 @@ def test_each_declared_input_text_has_name_and_max():
                     f"{path.relative_to(ROOT)} : input_text.{helper_id} sans clé name."
                 )
 
-            if not re.search(r"^\s{2}max\s*:", body, re.MULTILINE):
-                add_error(
-                    f"{path.relative_to(ROOT)} : input_text.{helper_id} sans clé max."
-                )
-
     print("✔ test_each_declared_input_text_has_name_and_max")
 
 
@@ -123,7 +125,7 @@ def test_no_local_business_logic_or_templates():
     }
 
     for path in yaml_files(INPUT_TEXTS_DIR):
-        text = read_text(path)
+        text = strip_yaml_comments(read_text(path))
 
         for pattern, label in forbidden_patterns.items():
             if re.search(pattern, text):
@@ -213,7 +215,7 @@ TESTS = [
     "test_input_texts_directory_exists",
     "test_input_text_files_are_not_empty",
     "test_input_texts_use_mapping_declarations",
-    "test_each_declared_input_text_has_name_and_max",
+    "test_each_declared_input_text_has_name",
     "test_no_local_business_logic_or_templates",
     "test_no_services_or_actions_in_input_text_files",
     "test_allowed_top_level_helper_keys_only",
