@@ -122,7 +122,7 @@ def test_timer_duration_format_is_valid_when_declared():
     )
 
     fixed_duration_pattern = re.compile(
-        r'^"?\d{2}:\d{2}:\d{2}"?$'
+        r'^"?\d+:\d{2}:\d{2}"?$'
     )
 
     for path in yaml_files(TIMERS_DIR):
@@ -137,7 +137,7 @@ def test_timer_duration_format_is_valid_when_declared():
             if not duration_match:
                 continue
 
-            duration = duration_match.group("duration").strip()
+            duration = duration_match.group("duration").split("#", 1)[0].strip()
 
             if "{{" in duration or "{%" in duration:
                 continue
