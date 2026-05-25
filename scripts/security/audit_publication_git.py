@@ -29,7 +29,7 @@ REPORT_FILE = ROOT / "security_audit_report.md"
 
 EXCLUDED_PATHS: set[str] = {
     "security_audit_report.md",
-    "documentation_arsenal/contrats/publication/securite_publication_git.md",
+    "00_documentation_arsenal/contrats/publication/securite_publication_git.md",
     "scripts/security/audit_publication_git.py",
 }
 
