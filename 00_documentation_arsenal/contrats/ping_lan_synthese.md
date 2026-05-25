@@ -1,3 +1,5 @@
+<!-- audit:scope=doc -->
+
 # CONTRAT_PING_LAN_SYNTHESE — v1.0
 
 **Domaine** : Système / Connectivité
