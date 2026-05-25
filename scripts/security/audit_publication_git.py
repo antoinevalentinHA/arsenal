@@ -4,8 +4,8 @@
 # ----------------------------------------------------------
 # Contrat :
 #   documentation_arsenal/contrats/publication/securite_publication_git.md
-# Version contrat : v1.0.0
-# Version script  : v1.0.1
+# Version contrat : v1.1.0
+# Version script  : v1.1.0
 # ==========================================================
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ FORBIDDEN_FILES = [
 # Répertoires ignorés par le walker (contenu non scanné).
 # Ne pas y mettre .storage / backups : ils doivent rester visibles pour S5.
 # www / custom_components / zigbee2mqtt : tiers, hors périmètre Arsenal.
-# Note contractuelle : ces exclusions de performance seront formalisées en v1.1.
+# Formalisées en contrat v1.1.0 § 3.4.
 EXCLUDED_DIRS = {
     ".git",
     "__pycache__",
@@ -75,7 +75,9 @@ _PLACEHOLDER_PATTERN = re.compile(
     r"|''"                        # vide single-quote
     r"|null|~|none"               # YAML null
     r"|YOUR_.*|CHANGEME|REDACTED|PLACEHOLDER"
+    r"|example|dummy|test|sample|demo"  # termes documentaires
     r"|!secret\s+\w+"             # référence HA secrets.yaml
+    r"|1234|0000|9999|12345|000000"  # codes numériques placeholder
     r")",
     re.I,
 )
@@ -147,6 +149,7 @@ class Finding:
     line:       int | None
     pattern:    str
     historical: bool = False
+    annotation: str = ""     # 'scope=doc' | 'ignore' | ''
 
 
 # ---------------------------------------------------------------------------
@@ -173,6 +176,31 @@ def is_text_file(path: Path) -> bool:
 
 def is_placeholder(line: str) -> bool:
     return bool(_PLACEHOLDER_PATTERN.search(line))
+
+
+# Annotation audit:ignore — présente sur la ligne active (hors partie commentaire retirée)
+_IGNORE_PATTERN   = re.compile(r"#\s*audit:ignore(?:\s*[-—]\s*(?P<reason>.+))?", re.I)
+_IGNORE_NO_REASON = re.compile(r"#\s*audit:ignore\s*$", re.I)
+
+# Annotation audit:scope=doc — présente dans les 5 premières lignes
+_SCOPE_DOC_PATTERN = re.compile(r"audit:scope=doc", re.I)
+
+
+def has_ignore(raw_line: str) -> tuple[bool, str]:
+    """Retourne (présent, justification). Justification vide = annotation invalide."""
+    m = _IGNORE_PATTERN.search(raw_line)
+    if not m:
+        return False, ""
+    reason = (m.group("reason") or "").strip()
+    return True, reason
+
+
+def is_scope_doc(lines: list[str]) -> bool:
+    """True si l'une des 5 premières lignes contient audit:scope=doc."""
+    for line in lines[:5]:
+        if _SCOPE_DOC_PATTERN.search(line):
+            return True
+    return False
 
 
 def iter_repo_files() -> list[Path]:
@@ -225,20 +253,56 @@ def run_git(*args: str) -> str:
 # Scan S5 — Fichiers et répertoires interdits
 # ---------------------------------------------------------------------------
 
+# Extensions signalant un contenu de backup système dans un répertoire backups/
+_BACKUP_CONTENT_EXTENSIONS = {'.db', '.log', '.tar', '.gz', '.zip', '.bak', '.sql'}
+
+
+def _backups_dir_is_forbidden(path: Path) -> bool:
+    """Règle S5 v1.1 pour backups/ : interdit si racine/premier niveau,
+    ou si contient des extensions de backup système.
+    Un sous-répertoire métier Arsenal (YAML fonctionnel uniquement) est autorisé.
+    """
+    # Profondeur relative depuis ROOT (0 = racine)
+    try:
+        rel_parts = path.relative_to(ROOT).parts
+    except ValueError:
+        return True
+    depth = len(rel_parts) - 1  # nombre de répertoires parents
+    if depth <= 1:
+        return True  # racine ou premier niveau = toujours interdit
+    # Profondeur > 1 : interdit seulement si contenu système détecté
+    try:
+        for child in path.iterdir():
+            if child.suffix.lower() in _BACKUP_CONTENT_EXTENSIONS:
+                return True
+    except OSError:
+        pass
+    return False
+
+
 def scan_forbidden_dirs(findings: list[Finding]) -> None:
     """Détecte la présence de répertoires interdits (S5).
     Parcourt ROOT indépendamment du walker pour ne pas dépendre de EXCLUDED_DIRS.
+    Applique la règle contextuelle v1.1 pour backups/.
     """
     for base, dirs, _ in os.walk(ROOT):
         base_path = Path(base)
         if ".git" in base_path.parts:
             dirs[:] = []
             continue
+        to_remove: list[str] = []
         for d in dirs:
-            if d in FORBIDDEN_DIRS:
-                label = rel(base_path / d)
-                add(findings, "CRITICAL", "S5", label, None, f"répertoire interdit ({d}/)")
-                dirs.remove(d)  # ne pas descendre dedans
+            dir_path = base_path / d
+            if d == ".storage":
+                add(findings, "CRITICAL", "S5", rel(dir_path), None, "répertoire interdit (.storage/)")
+                to_remove.append(d)
+            elif d == "backups":
+                if _backups_dir_is_forbidden(dir_path):
+                    add(findings, "CRITICAL", "S5", rel(dir_path), None, "répertoire interdit (backups/)")
+                    to_remove.append(d)
+                # sinon : répertoire métier Arsenal — pas de finding, on descend
+        for d in to_remove:
+            dirs.remove(d)
 
 
 def scan_forbidden_files(files: list[Path], findings: list[Finding]) -> None:
@@ -260,22 +324,47 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
     except OSError:
         return
 
-    label     = rel(path)
-    full_text = "\n".join(lines)
-    in_mqtt_block = False  # détection de bloc MQTT pour les topics sensibles
+    label      = rel(path)
+    full_text  = "\n".join(lines)
+    scope_doc  = is_scope_doc(lines)  # fichier entièrement documentaire
+    in_mqtt_block = False
     _seen: set[tuple[str, int | None, str, str]] = set()  # (control, line, pattern, severity)
 
-    def add_once(severity: str, control: str, line_no: int | None, pattern: str) -> None:
-        key = (control, line_no, pattern, severity)
+    def add_once(
+        severity: str, control: str, line_no: int | None, pattern: str,
+        annotation: str = "",
+    ) -> None:
+        # scope=doc : dégrader CRITICAL → WARNING
+        effective_severity = severity
+        effective_annotation = annotation
+        if scope_doc and severity == "CRITICAL":
+            effective_severity = "WARNING"
+            effective_annotation = "scope=doc"
+        key = (control, line_no, pattern, effective_severity)
         if key not in _seen:
             _seen.add(key)
-            add(findings, severity, control, label, line_no, pattern)
+            f = Finding(effective_severity, control, label, line_no, pattern,
+                        annotation=effective_annotation)
+            findings.append(f)
 
     for idx, line in enumerate(lines, start=1):
         stripped = line.strip()
 
-        # Ignorer lignes vides et commentaires purs
-        if not stripped or stripped.startswith("#"):
+        # Ignorer lignes vides et commentaires purs (sauf si audit:ignore présent)
+        if not stripped:
+            continue
+
+        # Détecter audit:ignore AVANT de retirer le commentaire
+        ignored, reason = has_ignore(line)
+        if ignored:
+            if not reason:
+                # Annotation sans justification : WARNING de forme
+                add_once("WARNING", "S1", idx, "audit:ignore sans justification",
+                         annotation="ignore-malformed")
+            continue  # ligne ignorée dans tous les cas
+
+        # Ignorer commentaires purs (après test audit:ignore)
+        if stripped.startswith("#"):
             continue
 
         # Retirer la partie commentaire en fin de ligne avant analyse
@@ -434,11 +523,12 @@ def print_console(findings: list[Finding]) -> None:
         print("✅ [PASS]  S1-S6 — aucun signal détecté")
         return
 
-    for f in sorted(findings, key=lambda x: (x.severity, x.control, x.path)):
-        icon = SEVERITY_ICON.get(f.severity, "  ")
-        line = f":{f.line}" if f.line else ""
+    for f in sorted(findings, key=lambda x: (x.control, x.severity, x.path, x.line or 0)):
+        icon   = SEVERITY_ICON.get(f.severity, "  ")
+        line   = f":{f.line}" if f.line else ""
         suffix = "  (historique Git)" if f.historical else ""
-        print(f"{icon} [{f.severity:<8}] {f.control} — {f.path}{line} — {f.pattern}{suffix}")
+        ann    = f"  [{f.annotation}]" if f.annotation else ""
+        print(f"{icon} [{f.severity:<8}] {f.control} — {f.path}{line} — {f.pattern}{suffix}{ann}")
 
 
 # ---------------------------------------------------------------------------
@@ -499,10 +589,11 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
             continue
 
         for f in sorted(cf, key=lambda x: (x.path, x.line or 0)):
-            line   = f":{f.line}" if f.line else ""
-            suffix = " — *(historique)*" if f.historical else ""
-            icon_f = SEVERITY_ICON.get(f.severity, "")
-            out.append(f"- {icon_f} `{f.severity}` — `{f.path}{line}` — `{f.pattern}`{suffix}")
+            line       = f":{f.line}" if f.line else ""
+            suffix     = " — *(historique)*" if f.historical else ""
+            ann        = f"  `[{f.annotation}]`" if f.annotation else ""
+            icon_f     = SEVERITY_ICON.get(f.severity, "")
+            out.append(f"- {icon_f} `{f.severity}` — `{f.path}{line}` — `{f.pattern}`{suffix}{ann}")
 
         out.append("")
 
@@ -522,13 +613,13 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
     elif verdict == "WARNING":
         out.append("⚠️  **Revue manuelle obligatoire** avant toute publication. Chaque `WARNING` doit être explicitement accepté ou corrigé.")
     else:
-        out.append("✅ Publication techniquement autorisée selon le contrat `securite_publication_git.md` v1.0.0.")
+        out.append("✅ Publication techniquement autorisée selon le contrat `securite_publication_git.md` v1.1.0.")
 
     out += [
         "",
         "---",
         "",
-        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.0.1_",
+        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.1.0_",
         "",
     ]
 
