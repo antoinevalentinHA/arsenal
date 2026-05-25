@@ -12,9 +12,9 @@ ROOT = Path(__file__).resolve().parents[2]
 
 DOMAIN = "AERATION_M6"
 
-SCRIPT_PATH = ROOT / "10_scripts" / "aeration" / "m6_refermeture.yaml"
+SCRIPT_PATH = ROOT / "10_scripts" / "aeration" / "m6_fermeture_post_reouverture.yaml"
 
-SCRIPT_KEY = "aeration_m6_refermeture"
+SCRIPT_KEY = "aeration_m6_fermeture_post_reouverture"
 
 INPUT_DATETIME_FIN_BLOCAGE = "input_datetime.chauffage_fin_blocage_aeration"
 INPUT_DATETIME_ANALYSE_DELTAT = "input_datetime.analyse_deltat_disponible"
