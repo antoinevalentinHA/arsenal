@@ -1,418 +1,249 @@
-#!/usr/bin/env python3
 """
-Arsenal — Validation contractuelle : Réconciliation des capteurs de contact critiques
+Arsenal — Vérification contractuelle : Réconciliation des capteurs de contact (redondance)
 Contrat : ARSENAL v2.2 — Réconciliation des capteurs de contact — Capteurs critiques
-Script  : scripts/arsenal_contracts/check_redondance_contracts.py
 """
 
-import re
 import sys
 from pathlib import Path
 
-# ---------------------------------------------------------------------------
-# Racine du repo Arsenal (chemin relatif depuis la racine du repo)
-# ---------------------------------------------------------------------------
-REPO_ROOT = Path(__file__).resolve().parents[2]
+ROOT = Path(__file__).resolve().parents[2] / "homeassistant"
+ERRORS = []
 
-# ---------------------------------------------------------------------------
-# Fichiers canoniques du domaine redondance
-# ---------------------------------------------------------------------------
-F_CAPTEURS_REDONDANTS = REPO_ROOT / "12_template_sensors/ouvertures/capteurs_redondants.yaml"
-F_DIAGNOSTIC          = REPO_ROOT / "12_template_sensors/ouvertures/diagnostic/redondance_contacts.yaml"
-F_RECONCILIATION_CTX  = REPO_ROOT / "04_input_texts/ouvertures/contact_reconciliation_contexts.yaml"
-F_MOTEUR              = REPO_ROOT / "11_automations/ouvertures/moteur_capteurs_redondants.yaml"
-F_TRAITER_SOURCE      = REPO_ROOT / "10_scripts/ouvertures/reconciliation_redondance/traiter_source.yaml"
-F_LEVER_INHIBITION    = REPO_ROOT / "10_scripts/ouvertures/reconciliation_redondance/lever_inhibition.yaml"
-F_INHIBER_TOUS        = REPO_ROOT / "10_scripts/ouvertures/reconciliation_redondance/inhiber_tous.yaml"
-F_SYSTEME_STABLE      = REPO_ROOT / "05_input_booleans/system/systeme_fiable.yaml"
 
-# Sous-dossier fonctionnel restreint pour les tests comportementaux
-DIR_AUTOMATIONS_OUVERTURES = REPO_ROOT / "11_automations/ouvertures"
-DIR_SCRIPTS_REDONDANCE     = REPO_ROOT / "10_scripts/ouvertures/reconciliation_redondance"
-
-# Valeurs normatives de reconciliation_status (§7 du contrat)
-RECONCILIATION_STATUS_VALUES = ["stable", "quarantine", "divergent", "inhibited"]
-
-# Plage admissible de T_corroboration en secondes (§4.2)
-T_CORROBORATION_MIN = 2
-T_CORROBORATION_MAX = 10
-
-ERRORS: list[str] = []
+def check(label: str, condition: bool, detail: str = "") -> None:
+    if condition:
+        print(f"  ✔ {label}")
+    else:
+        ERRORS.append(f"{label}{': ' + detail if detail else ''}")
 
 
 # ---------------------------------------------------------------------------
-# Helpers
+# T1 — Input text de contexte déclaré dans 04_input_texts/ouvertures/
 # ---------------------------------------------------------------------------
-
-def read(path: Path) -> str:
-    if not path.is_file():
-        return ""
-    return path.read_text(encoding="utf-8", errors="ignore")
-
-
-def check(condition: bool, error_msg: str) -> None:
-    if not condition:
-        ERRORS.append(error_msg)
-
-
-# ---------------------------------------------------------------------------
-# T1 — Déclaration de input_boolean.systeme_stable
-#
-# Invariant (§5.1) : le signal de stabilité système est la référence normative
-# pour l'inhibition. Il doit être déclaré dans 05_input_booleans/.
-# Pattern : clé de mapping YAML (!include_dir_merge_named).
-# ---------------------------------------------------------------------------
-
-def test_systeme_stable_declared() -> None:
-    content = read(F_SYSTEME_STABLE)
-    if not content:
-        ERRORS.append(
-            f"T1 — Fichier manquant ou vide : {F_SYSTEME_STABLE.relative_to(REPO_ROOT)}"
-        )
-        return
-    found = bool(re.search(r"^\s*systeme_stable\s*:", content, re.MULTILINE))
+def test_t1_input_text_present():
+    target = ROOT / "04_input_texts" / "ouvertures" / "contact_reconciliation_contexts.yaml"
     check(
-        found,
-        f"T1 — input_boolean.systeme_stable non déclaré dans "
-        f"{F_SYSTEME_STABLE.relative_to(REPO_ROOT)} "
-        f"(clé de mapping attendue : 'systeme_stable:')",
+        "T1 — input_text contexte réconciliation présent",
+        target.is_file(),
+        str(target),
     )
-    if found:
-        print("✔ T1 — input_boolean.systeme_stable déclaré")
 
 
 # ---------------------------------------------------------------------------
-# T2 — Présence des fichiers canoniques du domaine
-#
-# Invariant structurel : les fichiers identifiés comme canonical runtime
-# doivent exister. Leur absence est une régression contractuelle immédiate.
+# T2 — Les 5 scripts canoniques présents dans reconciliation_redondance/
 # ---------------------------------------------------------------------------
-
-CANONICAL_FILES = {
-    "T2a": F_CAPTEURS_REDONDANTS,
-    "T2b": F_DIAGNOSTIC,
-    "T2c": F_RECONCILIATION_CTX,
-    "T2d": F_MOTEUR,
-    "T2e": F_TRAITER_SOURCE,
-    "T2f": F_LEVER_INHIBITION,
-    "T2g": F_INHIBER_TOUS,
-}
-
-def test_canonical_files_present() -> None:
-    all_ok = True
-    for label, path in CANONICAL_FILES.items():
-        if not path.is_file():
-            ERRORS.append(
-                f"{label} — Fichier canonique manquant : {path.relative_to(REPO_ROOT)}"
-            )
-            all_ok = False
-    if all_ok:
-        print("✔ T2 — Tous les fichiers canoniques du domaine redondance sont présents")
-
-
-# ---------------------------------------------------------------------------
-# T3 — Attributs d'observabilité présents dans le template sensor source
-#
-# Invariant (§7) : capteurs_redondants.yaml doit exposer les attributs
-# reconciliation_status et business_state. Ce sont les couches d'état
-# normatives produites par le moteur de réconciliation.
-# Scope restreint : fichier source uniquement.
-# ---------------------------------------------------------------------------
-
-REQUIRED_ATTRS_SOURCE = ["reconciliation_status", "business_state"]
-
-def test_observability_attrs_in_source() -> None:
-    content = read(F_CAPTEURS_REDONDANTS)
-    if not content:
-        ERRORS.append(
-            f"T3 — Fichier source inaccessible : {F_CAPTEURS_REDONDANTS.relative_to(REPO_ROOT)}"
-        )
-        return
-    all_ok = True
-    for attr in REQUIRED_ATTRS_SOURCE:
-        if attr not in content:
-            ERRORS.append(
-                f"T3 — Attribut '{attr}' absent de "
-                f"{F_CAPTEURS_REDONDANTS.relative_to(REPO_ROOT)}"
-            )
-            all_ok = False
-    if all_ok:
-        print("✔ T3 — Attributs d'observabilité présents dans le template sensor source")
-
-
-# ---------------------------------------------------------------------------
-# T4 — Attributs d'observabilité effectivement exposés dans le diagnostic
-#
-# Invariant (§7, périmètre v2.2) : le fichier de diagnostic doit interpréter
-# les attributs normativement exposés par le runtime actuel.
-# Scope restreint : fichier de diagnostic uniquement.
-#
-# NON EXIGÉS en v2.2 (non implémentés dans le runtime — extension prévue v2.3) :
-#   last_corroborated_at, last_divergence_at, divergence_source, T_corroboration
-# Ces attributs sont définis dans le contrat comme candidats normatifs futurs.
-# Le contrat v2.2 reflète le runtime souverain, pas un système idéal.
-# ---------------------------------------------------------------------------
-
-REQUIRED_ATTRS_DIAGNOSTIC = [
-    "reconciliation_status",
-    "business_state",
-    "suspect_event",
-    "observed_event",
-]
-
-def test_observability_attrs_in_diagnostic() -> None:
-    content = read(F_DIAGNOSTIC)
-    if not content:
-        ERRORS.append(
-            f"T4 — Fichier de diagnostic inaccessible : {F_DIAGNOSTIC.relative_to(REPO_ROOT)}"
-        )
-        return
-    all_ok = True
-    for attr in REQUIRED_ATTRS_DIAGNOSTIC:
-        if attr not in content:
-            ERRORS.append(
-                f"T4 — Attribut normatif '{attr}' absent de "
-                f"{F_DIAGNOSTIC.relative_to(REPO_ROOT)}"
-            )
-            all_ok = False
-    if all_ok:
-        print("✔ T4 — Attributs d'observabilité v2.2 présents dans le fichier de diagnostic")
-
-
-# ---------------------------------------------------------------------------
-# T5 — Cohérence source + diagnostic sur les 4 valeurs de reconciliation_status
-#
-# Invariant (§7, instruction Antoine) :
-#   - capteurs_redondants.yaml produit les 4 valeurs normatives
-#     (définition source — contrat runtime produit ici)
-#   - diagnostic/redondance_contacts.yaml interprète les 4 valeurs
-#     (consommation diagnostic — garantit que l'UI sait les lire)
-# Les deux vérifications sont requises.
-# ---------------------------------------------------------------------------
-
-def test_reconciliation_status_values_coherence() -> None:
-    src_content  = read(F_CAPTEURS_REDONDANTS)
-    diag_content = read(F_DIAGNOSTIC)
-
-    missing_src  = []
-    missing_diag = []
-
-    for val in RECONCILIATION_STATUS_VALUES:
-        if val not in src_content:
-            missing_src.append(val)
-        if val not in diag_content:
-            missing_diag.append(val)
-
-    if missing_src:
-        ERRORS.append(
-            f"T5 — Valeurs de reconciliation_status absentes du fichier source "
-            f"({F_CAPTEURS_REDONDANTS.relative_to(REPO_ROOT)}) : {missing_src}"
-        )
-    if missing_diag:
-        ERRORS.append(
-            f"T5 — Valeurs de reconciliation_status absentes du fichier de diagnostic "
-            f"({F_DIAGNOSTIC.relative_to(REPO_ROOT)}) : {missing_diag}"
-        )
-    if not missing_src and not missing_diag:
-        print(
-            "✔ T5 — Les 4 valeurs normatives de reconciliation_status sont cohérentes "
-            "(source + diagnostic)"
-        )
-
-
-# ---------------------------------------------------------------------------
-# T6 — T_corroboration dans la plage admissible [2, 10] secondes
-#
-# Invariant (§4.2) : toute valeur encodée en dur pour T_corroboration
-# doit être comprise entre 2 et 10 secondes inclus.
-# Scope restreint : fichiers canoniques du domaine redondance uniquement.
-# Méthode : extraction de tous les littéraux numériques adjacents à
-# 'corroboration' dans un rayon de 80 caractères.
-# ---------------------------------------------------------------------------
-
-def test_t_corroboration_in_range() -> None:
-    files_to_scan = [
-        F_CAPTEURS_REDONDANTS,
-        F_MOTEUR,
-        F_TRAITER_SOURCE,
-        F_LEVER_INHIBITION,
-        F_INHIBER_TOUS,
+def test_t2_scripts_canoniques():
+    base = ROOT / "10_scripts" / "ouvertures" / "reconciliation_redondance"
+    scripts = [
+        "traiter_source.yaml",
+        "traiter_expiration.yaml",
+        "appliquer_transition.yaml",
+        "inhiber_tous.yaml",
+        "lever_inhibition.yaml",
     ]
+    for s in scripts:
+        p = base / s
+        check(f"T2 — script canonique présent : {s}", p.is_file(), str(p))
+
+
+# ---------------------------------------------------------------------------
+# T3 — Timer déclaré dans 08_timers/ouvertures/
+# ---------------------------------------------------------------------------
+def test_t3_timer_present():
+    target = ROOT / "08_timers" / "ouvertures" / "contact_reconciliation.yaml"
+    check(
+        "T3 — timer réconciliation présent",
+        target.is_file(),
+        str(target),
+    )
+
+
+# ---------------------------------------------------------------------------
+# T4 — Template sensor porteur déclaré dans 12_template_sensors/ouvertures/
+# ---------------------------------------------------------------------------
+def test_t4_template_sensor_present():
+    target = ROOT / "12_template_sensors" / "ouvertures" / "capteurs_redondants.yaml"
+    check(
+        "T4 — template sensor capteurs_redondants présent",
+        target.is_file(),
+        str(target),
+    )
+
+
+# ---------------------------------------------------------------------------
+# T5 — Attributs §7 tous exposés dans capteurs_redondants.yaml
+# ---------------------------------------------------------------------------
+def test_t5_attributs_observabilite():
+    target = ROOT / "12_template_sensors" / "ouvertures" / "capteurs_redondants.yaml"
+    if not target.is_file():
+        ERRORS.append("T5 — fichier capteurs_redondants.yaml absent, test ignoré")
+        return
+    content = target.read_text(encoding="utf-8", errors="ignore")
+    attributs = [
+        "observed_event",
+        "business_state",
+        "reconciliation_status",
+        "suspect_event",
+        "last_corroborated_at",
+        "last_divergence_at",
+        "divergence_source",
+    ]
+    for attr in attributs:
+        check(
+            f"T5 — attribut §7 présent dans capteurs_redondants.yaml : {attr}",
+            attr in content,
+        )
+
+
+# ---------------------------------------------------------------------------
+# T6 — Format pipe-séparé 5 champs présent dans capteurs_redondants.yaml
+# ---------------------------------------------------------------------------
+def test_t6_format_contexte():
+    target = ROOT / "12_template_sensors" / "ouvertures" / "capteurs_redondants.yaml"
+    if not target.is_file():
+        ERRORS.append("T6 — fichier capteurs_redondants.yaml absent, test ignoré")
+        return
+    content = target.read_text(encoding="utf-8", errors="ignore")
+    # La signature runtime confirmée (L24) : les 5 champs nommés dans l'ordre
+    signature = "reconciliation_status | business_state | pending_source | suspect_event | observed_event"
+    check(
+        "T6 — format contexte 5 champs pipe-séparé documenté dans capteurs_redondants.yaml",
+        signature in content,
+    )
+
+
+# ---------------------------------------------------------------------------
+# T7 — traiter_expiration.yaml encode divergent et on_non_corroborated (§6.2)
+# ---------------------------------------------------------------------------
+def test_t7_divergent_encode():
+    target = ROOT / "10_scripts" / "ouvertures" / "reconciliation_redondance" / "traiter_expiration.yaml"
+    if not target.is_file():
+        ERRORS.append("T7 — traiter_expiration.yaml absent, test ignoré")
+        return
+    content = target.read_text(encoding="utf-8", errors="ignore")
+    check(
+        "T7 — traiter_expiration.yaml encode 'divergent'",
+        "divergent" in content,
+    )
+    check(
+        "T7 — traiter_expiration.yaml encode 'on_non_corroborated'",
+        "on_non_corroborated" in content,
+    )
+
+
+# ---------------------------------------------------------------------------
+# T8 — inhiber_tous.yaml encode inhibited et préserve business_state (§5.2)
+# ---------------------------------------------------------------------------
+def test_t8_inhibited_encode():
+    target = ROOT / "10_scripts" / "ouvertures" / "reconciliation_redondance" / "inhiber_tous.yaml"
+    if not target.is_file():
+        ERRORS.append("T8 — inhiber_tous.yaml absent, test ignoré")
+        return
+    content = target.read_text(encoding="utf-8", errors="ignore")
+    check(
+        "T8 — inhiber_tous.yaml encode 'inhibited'",
+        "inhibited" in content,
+    )
+    # Signature runtime confirmée (L64) : 'inhibited|' ~ current_business_state
+    check(
+        "T8 — inhiber_tous.yaml préserve current_business_state dans le contexte",
+        "current_business_state" in content,
+    )
+
+
+# ---------------------------------------------------------------------------
+# T9 — lever_inhibition.yaml encode stable, n'encode pas business_state = on (§5.3)
+# ---------------------------------------------------------------------------
+def test_t9_lever_inhibition():
+    target = ROOT / "10_scripts" / "ouvertures" / "reconciliation_redondance" / "lever_inhibition.yaml"
+    if not target.is_file():
+        ERRORS.append("T9 — lever_inhibition.yaml absent, test ignoré")
+        return
+    content = target.read_text(encoding="utf-8", errors="ignore")
+    check(
+        "T9 — lever_inhibition.yaml encode 'stable'",
+        "stable" in content,
+    )
+    # §5.3 : à la levée, les événements on reçus pendant inhibition sont abandonnés.
+    # Le script NE DOIT PAS écrire 'stable|on' comme nouveau business_state.
+    # Signature runtime confirmée (L76) : 'stable|' ~ current_business_state
+    check(
+        "T9 — lever_inhibition.yaml préserve current_business_state (pas de promotion on arbitraire)",
+        "current_business_state" in content,
+    )
+
+
+# ---------------------------------------------------------------------------
+# T10 — Aucun script hors reconciliation_redondance/ n'écrit l'input_text de contexte
+# Scope : 10_scripts/ouvertures/ entier, hors reconciliation_redondance/
+# ---------------------------------------------------------------------------
+def test_t10_ecriture_input_text_hors_perimetre():
+    scripts_root = ROOT / "10_scripts" / "ouvertures"
+    autorise = ROOT / "10_scripts" / "ouvertures" / "reconciliation_redondance"
+
+    if not scripts_root.is_dir():
+        ERRORS.append("T10 — dossier 10_scripts/ouvertures/ absent")
+        return
+
+    # Patterns d'écriture réelle sur un input_text (service + cible dans rayon borné)
+    # On cherche la coprésence de "input_text.set_value" et "contact_reconciliation"
+    # dans un rayon de 300 chars — hors dossier autorisé.
     violations = []
-    for path in files_to_scan:
-        content = read(path)
-        if not content:
+    for p in scripts_root.rglob("*.yaml"):
+        if not p.is_file():
             continue
-        # Cherche des entiers isolés dans un contexte 'corroboration'
-        # Pattern : nombre entier dans un rayon de 80 chars autour du mot
-        windows = re.findall(
-            r".{0,80}corroboration.{0,80}", content, re.IGNORECASE
-        )
-        for window in windows:
-            for match in re.finditer(r"\b(\d+)\b", window):
-                val = int(match.group(1))
-                # Exclure les numéros de version (ex. v2, 2026…) > 100
-                if val > 100:
-                    continue
-                # Exclure 0 (valeur neutre / désactivation)
-                if val == 0:
-                    continue
-                if not (T_CORROBORATION_MIN <= val <= T_CORROBORATION_MAX):
-                    violations.append(
-                        f"{path.relative_to(REPO_ROOT)} : "
-                        f"valeur {val}s hors plage [{T_CORROBORATION_MIN}, {T_CORROBORATION_MAX}]"
-                        f" — contexte : «{window.strip()[:120]}»"
-                    )
-    if violations:
-        for v in violations:
-            ERRORS.append(f"T6 — T_corroboration hors plage : {v}")
-    else:
-        print(
-            f"✔ T6 — T_corroboration dans la plage admissible "
-            f"[{T_CORROBORATION_MIN}, {T_CORROBORATION_MAX}]s"
-        )
-
-
-# ---------------------------------------------------------------------------
-# [CANDIDAT v2.3 — non implémenté en v2.2]
-# T_quarantaine = T_corroboration (§6.1 — pas de dissociation)
-#
-# Non activé : les durées ne sont pas déclarées sous un identifiant normalisé
-# dans le runtime actuel (T_corroboration absent en tant que symbole).
-# L'extraction numérique par proximité textuelle produit des faux positifs.
-# Prérequis pour activation : nommage explicite des constantes de durée
-# dans les fichiers canoniques du domaine.
-# ---------------------------------------------------------------------------
-
-
-# ---------------------------------------------------------------------------
-# T7 — Absence de timer fixe substituant systeme_stable dans le moteur
-#
-# Invariant (§5.1) : toute substitution de input_boolean.systeme_stable
-# par un timer fixe (delay:/for:) dans le moteur ou les scripts de
-# réconciliation est une déviation contractuelle.
-# Scope restreint : fichiers canoniques du domaine redondance uniquement.
-# Exclusion explicite : les timers de corroboration/quarantaine sont légitimes.
-# ---------------------------------------------------------------------------
-
-# Pattern d'un timer fixe d'inhibition post-startup : delay/for avec une durée
-# en dehors d'un contexte de corroboration ou quarantaine.
-_TIMER_FIXED_PATTERN = re.compile(
-    r"(delay|for)\s*:\s*\n?\s*(seconds|minutes|hours)\s*:\s*\d+",
-    re.IGNORECASE,
-)
-_CORROBORATION_CONTEXT = re.compile(
-    r"corroboration|quarantaine|T_corr|T_quar",
-    re.IGNORECASE,
-)
-
-def test_no_fixed_timer_substituting_systeme_stable() -> None:
-    """
-    Vérifie qu'aucun timer fixe ne remplace systeme_stable comme garde
-    d'inhibition post-startup dans les fichiers du domaine redondance.
-    Un delay/for légitime doit apparaître dans un contexte de corroboration
-    ou quarantaine. Un delay/for sans ce contexte dans un fichier qui
-    consomme aussi systeme_stable est suspect.
-    """
-    files_to_scan = [F_MOTEUR, F_TRAITER_SOURCE, F_LEVER_INHIBITION, F_INHIBER_TOUS]
-    violations = []
-
-    for path in files_to_scan:
-        content = read(path)
-        if not content:
+        # Exclure le périmètre autorisé
+        try:
+            p.relative_to(autorise)
             continue
+        except ValueError:
+            pass
+        content = p.read_text(encoding="utf-8", errors="ignore")
+        # Recherche de la coprésence dans une fenêtre de 300 chars
+        keyword = "contact_reconciliation"
+        service = "input_text.set_value"
+        idx = 0
+        while True:
+            pos = content.find(service, idx)
+            if pos == -1:
+                break
+            window = content[max(0, pos - 150):pos + 150]
+            if keyword in window:
+                violations.append(str(p.relative_to(ROOT)))
+            idx = pos + 1
 
-        # Le fichier consomme-t-il systeme_stable ?
-        uses_systeme_stable = "systeme_stable" in content
-
-        for m in _TIMER_FIXED_PATTERN.finditer(content):
-            start = max(0, m.start() - 200)
-            end   = min(len(content), m.end() + 200)
-            window = content[start:end]
-
-            # Timer dans un contexte corroboration/quarantaine → légitime
-            if _CORROBORATION_CONTEXT.search(window):
-                continue
-
-            # Timer fixe hors contexte de corroboration dans un fichier
-            # qui utilise systeme_stable → substitution suspecte
-            if uses_systeme_stable:
-                violations.append(
-                    f"{path.relative_to(REPO_ROOT)} : timer fixe hors contexte "
-                    f"corroboration/quarantaine — «{m.group(0).strip()}»"
-                )
-
-    if violations:
-        for v in violations:
-            ERRORS.append(f"T7 — Timer fixe substituant systeme_stable : {v}")
-    else:
-        print("✔ T7 — Aucun timer fixe ne substitue input_boolean.systeme_stable")
-
-
-# ---------------------------------------------------------------------------
-# T9 — Le moteur de réconciliation consomme systeme_stable
-#
-# Invariant (§5.2) : le moteur et/ou les scripts souverains doivent
-# référencer input_boolean.systeme_stable comme condition d'inhibition.
-# Scope : moteur + traiter_source (seuls fichiers où l'inhibition est active).
-# ---------------------------------------------------------------------------
-
-def test_moteur_consumes_systeme_stable() -> None:
-    files_to_check = {
-        "moteur": F_MOTEUR,
-        "traiter_source": F_TRAITER_SOURCE,
-    }
-    all_ok = True
-    for label, path in files_to_check.items():
-        content = read(path)
-        if not content:
-            ERRORS.append(
-                f"T8 — Fichier inaccessible ({label}) : {path.relative_to(REPO_ROOT)}"
-            )
-            all_ok = False
-            continue
-        if "systeme_stable" not in content:
-            ERRORS.append(
-                f"T8 — input_boolean.systeme_stable absent de {label} "
-                f"({path.relative_to(REPO_ROOT)}) — inhibition post-startup non garantie"
-            )
-            all_ok = False
-    if all_ok:
-        print(
-            "✔ T8 — input_boolean.systeme_stable consommé par le moteur "
-            "et traiter_source"
-        )
+    check(
+        "T10 — aucune écriture sur input_text contact_reconciliation hors reconciliation_redondance/",
+        len(violations) == 0,
+        "fichiers en violation : " + ", ".join(violations) if violations else "",
+    )
 
 
 # ---------------------------------------------------------------------------
 # Registre des tests
 # ---------------------------------------------------------------------------
-
 TESTS = [
-    test_systeme_stable_declared,
-    test_canonical_files_present,
-    test_observability_attrs_in_source,
-    test_observability_attrs_in_diagnostic,
-    test_reconciliation_status_values_coherence,
-    test_t_corroboration_in_range,
-    test_no_fixed_timer_substituting_systeme_stable,
-    test_moteur_consumes_systeme_stable,
+    test_t1_input_text_present,
+    test_t2_scripts_canoniques,
+    test_t3_timer_present,
+    test_t4_template_sensor_present,
+    test_t5_attributs_observabilite,
+    test_t6_format_contexte,
+    test_t7_divergent_encode,
+    test_t8_inhibited_encode,
+    test_t9_lever_inhibition,
+    test_t10_ecriture_input_text_hors_perimetre,
 ]
 
-# ---------------------------------------------------------------------------
-# Point d'entrée
-# ---------------------------------------------------------------------------
-
 if __name__ == "__main__":
-    print("Arsenal — Validation contractuelle : redondance (capteurs critiques)\n")
-
-    for test_fn in TESTS:
-        test_fn()
+    print("Arsenal — Vérification contractuelle : Réconciliation capteurs de contact\n")
+    for test in TESTS:
+        test()
 
     if ERRORS:
-        print("\n❌ CONTRAT REDONDANCE NON CONFORME\n")
-        for err in ERRORS:
-            print(f"  • {err}")
+        print("\n❌ CONTRAT REDONDANCE NON CONFORME")
+        for e in ERRORS:
+            print(f"  • {e}")
         sys.exit(1)
     else:
         print("\n✅ CONTRAT REDONDANCE CONFORME")
