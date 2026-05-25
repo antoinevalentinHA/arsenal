@@ -4,21 +4,29 @@ import re
 import sys
 
 DOMAIN = "AERATION_M1"
+
 ROOT = Path(__file__).resolve().parents[2]
 
-SCRIPTS_DIR = ROOT / "10_scripts"
-AUTOMATIONS_DIR = ROOT / "11_automations"
+AERATION_SCRIPTS_DIR = ROOT / "10_scripts" / "aeration"
+AERATION_AUTOMATIONS_DIR = ROOT / "11_automations" / "chauffage" / "aeration"
 
 M1_SCRIPT_KEY = "aeration_m1_debut_episode"
 M1_SCRIPT_ENTITY = "script.aeration_m1_debut_episode"
+
 MASTER_AUTOMATION_ID = "10010000000023"
-MASTER_AUTOMATION_ALIAS = "Chauffage – Aération – Pipeline maître"
 
 ERRORS = []
 
 
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def strip_yaml_comments(text: str) -> str:
+    return "\n".join(
+        line for line in text.splitlines()
+        if not line.lstrip().startswith("#")
+    )
 
 
 def yaml_files(base: Path):
@@ -31,21 +39,14 @@ def yaml_files(base: Path):
     )
 
 
-def strip_yaml_comments(text: str) -> str:
-    return "\n".join(
-        line for line in text.splitlines()
-        if not line.lstrip().startswith("#")
-    )
-
-
 def add_error(message: str):
     ERRORS.append(message)
 
 
-def all_runtime_yaml_files():
+def aeration_runtime_files():
     files = []
-    files.extend(yaml_files(SCRIPTS_DIR))
-    files.extend(yaml_files(AUTOMATIONS_DIR))
+    files.extend(yaml_files(AERATION_SCRIPTS_DIR))
+    files.extend(yaml_files(AERATION_AUTOMATIONS_DIR))
     return files
 
 
@@ -62,7 +63,7 @@ def find_files_containing(base: Path, pattern: str):
 
 def find_m1_script_file():
     pattern = rf"^\s*{re.escape(M1_SCRIPT_KEY)}\s*:"
-    matches = find_files_containing(SCRIPTS_DIR, pattern)
+    matches = find_files_containing(AERATION_SCRIPTS_DIR, pattern)
 
     if len(matches) != 1:
         return None, matches
@@ -70,51 +71,99 @@ def find_m1_script_file():
     return matches[0], matches
 
 
-def find_master_automation_files():
-    id_pattern = rf"^\s*-\s*id\s*:\s*[\"']?{re.escape(MASTER_AUTOMATION_ID)}[\"']?\s*$"
-    return find_files_containing(AUTOMATIONS_DIR, id_pattern)
+def find_master_automation_file():
+    pattern = rf"^\s*-\s*id\s*:\s*[\"']?{re.escape(MASTER_AUTOMATION_ID)}[\"']?\s*$"
+    matches = find_files_containing(AERATION_AUTOMATIONS_DIR, pattern)
+
+    if len(matches) != 1:
+        return None, matches
+
+    return matches[0], matches
 
 
-def contains_service_call_to_entity(text: str, service_pattern: str, entity_id: str) -> bool:
-    service_matches = list(re.finditer(service_pattern, text))
+def contains_action_call_to_entity(text: str, action_name: str, entity_id: str) -> bool:
+    """
+    Détecte une écriture réelle :
+    - action/service explicite
+    - cible entity_id correspondante
+    - dans une fenêtre bornée.
 
-    for match in service_matches:
-        window = text[match.start():match.start() + 500]
+    Compatible syntaxe Home Assistant moderne :
+      - action: input_boolean.turn_on
+
+    et syntaxe historique :
+      - service: input_boolean.turn_on
+    """
+    action_pattern = (
+        rf"^\s*-\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
+        rf"|^\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
+    )
+
+    for match in re.finditer(action_pattern, text, re.MULTILINE):
+        window = text[match.start():match.start() + 900]
         if entity_id in window:
             return True
 
     return False
 
 
-def first_position(text: str, patterns):
-    positions = []
+def entity_state_guard_present(text: str, entity_id: str, expected_state: str) -> bool:
+    """
+    Détecte une condition state structurée :
+      - condition: state
+        entity_id: ...
+        state: "..."
+    dans une fenêtre locale.
+    """
+    entity_pos = text.find(entity_id)
 
-    for pattern in patterns:
-        match = re.search(pattern, text, re.MULTILINE)
-        if match:
-            positions.append(match.start())
+    while entity_pos != -1:
+        window = text[max(0, entity_pos - 220):entity_pos + 220]
 
-    if not positions:
-        return -1
+        if "condition: state" in window and re.search(
+            rf"state\s*:\s*[\"']?{re.escape(expected_state)}[\"']?",
+            window,
+        ):
+            return True
 
-    return min(positions)
+        entity_pos = text.find(entity_id, entity_pos + 1)
+
+    return False
 
 
-def test_runtime_directories_exist():
-    if not SCRIPTS_DIR.exists():
-        add_error("Dossier 10_scripts/ absent.")
+def first_action_position(text: str, action_name: str, entity_id: str) -> int:
+    action_pattern = (
+        rf"^\s*-\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
+        rf"|^\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
+    )
 
-    if not AUTOMATIONS_DIR.exists():
-        add_error("Dossier 11_automations/ absent.")
+    for match in re.finditer(action_pattern, text, re.MULTILINE):
+        window = text[match.start():match.start() + 900]
+        if entity_id in window:
+            return match.start()
 
-    print("✔ test_runtime_directories_exist")
+    return -1
+
+
+def first_entity_position(text: str, entity_id: str) -> int:
+    return text.find(entity_id)
+
+
+def test_aeration_runtime_directories_exist():
+    if not AERATION_SCRIPTS_DIR.exists():
+        add_error("Dossier 10_scripts/aeration/ absent.")
+
+    if not AERATION_AUTOMATIONS_DIR.exists():
+        add_error("Dossier 11_automations/chauffage/aeration/ absent.")
+
+    print("✔ test_aeration_runtime_directories_exist")
 
 
 def test_m1_script_declared_once():
     script_file, matches = find_m1_script_file()
 
     if len(matches) == 0:
-        add_error(f"Script canonique {M1_SCRIPT_ENTITY} introuvable dans 10_scripts/.")
+        add_error(f"Script canonique {M1_SCRIPT_ENTITY} introuvable dans 10_scripts/aeration/.")
     elif len(matches) > 1:
         files = ", ".join(str(path.relative_to(ROOT)) for path in matches)
         add_error(f"Script canonique {M1_SCRIPT_ENTITY} déclaré plusieurs fois : {files}")
@@ -122,100 +171,96 @@ def test_m1_script_declared_once():
     print("✔ test_m1_script_declared_once")
 
 
-def test_master_automation_declared_once():
-    matches = find_master_automation_files()
+def test_master_pipeline_declared_once():
+    master_file, matches = find_master_automation_file()
 
     if len(matches) == 0:
         add_error(
-            f"Automatisation maître ID {MASTER_AUTOMATION_ID} introuvable dans 11_automations/."
+            f"Automatisation maître ID {MASTER_AUTOMATION_ID} introuvable "
+            "dans 11_automations/chauffage/aeration/."
         )
     elif len(matches) > 1:
         files = ", ".join(str(path.relative_to(ROOT)) for path in matches)
+        add_error(f"Automatisation maître ID {MASTER_AUTOMATION_ID} déclarée plusieurs fois : {files}")
+
+    print("✔ test_master_pipeline_declared_once")
+
+
+def test_master_pipeline_calls_m1_script():
+    master_file, matches = find_master_automation_file()
+
+    if not master_file:
+        print("✔ test_master_pipeline_calls_m1_script")
+        return
+
+    text = strip_yaml_comments(read_text(master_file))
+
+    if not re.search(
+        rf"^\s*-\s*action\s*:\s*{re.escape(M1_SCRIPT_ENTITY)}\s*$"
+        rf"|^\s*action\s*:\s*{re.escape(M1_SCRIPT_ENTITY)}\s*$",
+        text,
+        re.MULTILINE,
+    ):
         add_error(
-            f"Automatisation maître ID {MASTER_AUTOMATION_ID} déclarée plusieurs fois : {files}"
+            f"{master_file.relative_to(ROOT)} : l'automatisation maître "
+            f"n'appelle pas {M1_SCRIPT_ENTITY}."
         )
 
-    print("✔ test_master_automation_declared_once")
+    print("✔ test_master_pipeline_calls_m1_script")
 
 
-def test_m1_called_only_by_master_automation():
-    for path in all_runtime_yaml_files():
+def test_m1_script_called_only_by_master_pipeline():
+    for path in aeration_runtime_files():
         text = strip_yaml_comments(read_text(path))
 
         if M1_SCRIPT_ENTITY not in text:
             continue
 
         is_script_definition = (
-            path.is_relative_to(SCRIPTS_DIR)
+            path.is_relative_to(AERATION_SCRIPTS_DIR)
             and re.search(rf"^\s*{re.escape(M1_SCRIPT_KEY)}\s*:", text, re.MULTILINE)
         )
-
-        has_master_id = MASTER_AUTOMATION_ID in text
 
         if is_script_definition:
             continue
 
-        if not has_master_id:
+        if MASTER_AUTOMATION_ID not in text:
             add_error(
-                f"Appel direct non autorisé à {M1_SCRIPT_ENTITY} dans {path.relative_to(ROOT)}."
+                f"{path.relative_to(ROOT)} : appel non autorisé à {M1_SCRIPT_ENTITY}."
             )
 
-    print("✔ test_m1_called_only_by_master_automation")
+    print("✔ test_m1_script_called_only_by_master_pipeline")
 
 
-def test_master_automation_calls_m1_script():
-    matches = find_master_automation_files()
+def test_master_pipeline_contains_m1_structural_guards():
+    master_file, matches = find_master_automation_file()
 
-    if not matches:
-        print("✔ test_master_automation_calls_m1_script")
+    if not master_file:
+        print("✔ test_master_pipeline_contains_m1_structural_guards")
         return
 
-    for path in matches:
-        text = strip_yaml_comments(read_text(path))
+    text = strip_yaml_comments(read_text(master_file))
 
-        if M1_SCRIPT_ENTITY not in text:
-            add_error(
-                f"{path.relative_to(ROOT)} : l'automatisation maître "
-                f"{MASTER_AUTOMATION_ID} n'appelle pas {M1_SCRIPT_ENTITY}."
-            )
-
-    print("✔ test_master_automation_calls_m1_script")
-
-
-def test_m1_structural_entry_conditions_present():
-    script_file, matches = find_m1_script_file()
-
-    if not script_file:
-        print("✔ test_m1_structural_entry_conditions_present")
-        return
-
-    text = strip_yaml_comments(read_text(script_file))
-
-    required_states = {
-        "input_boolean.chauffage_blocage_aeration": "off",
-        "input_boolean.aeration_episode_en_cours": "off",
-        "binary_sensor.contact_fenetres_maison": "on",
+    required_guards = {
         "input_boolean.systeme_stable": "on",
+        "input_boolean.aeration_episode_en_cours": "off",
+        "input_boolean.chauffage_blocage_aeration": "off",
+        "binary_sensor.contact_fenetres_maison": "on",
     }
 
-    for entity_id, expected_state in required_states.items():
-        entity_pos = text.find(entity_id)
-
-        if entity_pos == -1:
+    for entity_id, expected_state in required_guards.items():
+        if not entity_state_guard_present(text, entity_id, expected_state):
             add_error(
-                f"{script_file.relative_to(ROOT)} : condition d'entrée absente pour {entity_id}."
-            )
-            continue
-
-        window = text[max(0, entity_pos - 300):entity_pos + 300]
-
-        if expected_state not in window:
-            add_error(
-                f"{script_file.relative_to(ROOT)} : {entity_id} présent mais état attendu "
-                f"'{expected_state}' non détecté à proximité."
+                f"{master_file.relative_to(ROOT)} : garde M1 absente ou non conforme "
+                f"pour {entity_id} = {expected_state}."
             )
 
-    print("✔ test_m1_structural_entry_conditions_present")
+    if "trigger.id == 'aeration_confirmee_on'" not in text:
+        add_error(
+            f"{master_file.relative_to(ROOT)} : garde M1 absente sur trigger.id == 'aeration_confirmee_on'."
+        )
+
+    print("✔ test_master_pipeline_contains_m1_structural_guards")
 
 
 def test_m1_normative_effects_present():
@@ -243,12 +288,12 @@ def test_m1_normative_effects_present():
     for entity_id in required_entities:
         if entity_id not in text:
             add_error(
-                f"{script_file.relative_to(ROOT)} : effet normatif absent pour {entity_id}."
+                f"{script_file.relative_to(ROOT)} : effet normatif M1 absent pour {entity_id}."
             )
 
-    if not contains_service_call_to_entity(
+    if not contains_action_call_to_entity(
         text,
-        r"^\s*(service|action)\s*:\s*input_boolean\.turn_on\s*$",
+        "input_boolean.turn_on",
         "input_boolean.aeration_episode_en_cours",
     ):
         add_error(
@@ -256,24 +301,24 @@ def test_m1_normative_effects_present():
             "non détectée via input_boolean.turn_on."
         )
 
-    if not contains_service_call_to_entity(
+    if not contains_action_call_to_entity(
         text,
-        r"^\s*(service|action)\s*:\s*input_boolean\.turn_on\s*$",
-        "input_boolean.aeration_pipeline_arme",
-    ):
-        add_error(
-            f"{script_file.relative_to(ROOT)} : armement de aeration_pipeline_arme "
-            "non détecté via input_boolean.turn_on."
-        )
-
-    if not contains_service_call_to_entity(
-        text,
-        r"^\s*(service|action)\s*:\s*input_datetime\.set_datetime\s*$",
+        "input_datetime.set_datetime",
         "input_datetime.aeration_debut",
     ):
         add_error(
             f"{script_file.relative_to(ROOT)} : horodatage de aeration_debut "
             "non détecté via input_datetime.set_datetime."
+        )
+
+    if not contains_action_call_to_entity(
+        text,
+        "input_boolean.turn_on",
+        "input_boolean.aeration_pipeline_arme",
+    ):
+        add_error(
+            f"{script_file.relative_to(ROOT)} : armement de aeration_pipeline_arme "
+            "non détecté via input_boolean.turn_on."
         )
 
     print("✔ test_m1_normative_effects_present")
@@ -288,41 +333,52 @@ def test_m1_normative_order_is_preserved():
 
     text = strip_yaml_comments(read_text(script_file))
 
-    ordered_steps = [
+    positions = [
         (
             "activation épisode",
-            [r"input_boolean\.aeration_episode_en_cours"],
+            first_action_position(
+                text,
+                "input_boolean.turn_on",
+                "input_boolean.aeration_episode_en_cours",
+            ),
         ),
         (
             "horodatage début",
-            [r"input_datetime\.aeration_debut"],
+            first_action_position(
+                text,
+                "input_datetime.set_datetime",
+                "input_datetime.aeration_debut",
+            ),
         ),
         (
-            "snapshots températures",
-            [r"input_number\.ref_temp_entree"],
+            "snapshots T_REF individuels",
+            first_entity_position(text, "input_number.ref_temp_entree"),
         ),
         (
-            "snapshot global delta T",
-            [r"input_number\.chute_temp_reference"],
+            "snapshot global DeltaT",
+            first_action_position(
+                text,
+                "input_number.set_value",
+                "input_number.chute_temp_reference",
+            ),
         ),
         (
             "armement pipeline",
-            [r"input_boolean\.aeration_pipeline_arme"],
+            first_action_position(
+                text,
+                "input_boolean.turn_on",
+                "input_boolean.aeration_pipeline_arme",
+            ),
         ),
     ]
 
-    positions = []
-
-    for label, patterns in ordered_steps:
-        pos = first_position(text, patterns)
-
-        if pos == -1:
+    for label, position in positions:
+        if position == -1:
             add_error(
                 f"{script_file.relative_to(ROOT)} : étape absente pour l'ordre normatif M1 : {label}."
             )
+            print("✔ test_m1_normative_order_is_preserved")
             return
-
-        positions.append((label, pos))
 
     for index in range(1, len(positions)):
         previous_label, previous_pos = positions[index - 1]
@@ -365,6 +421,72 @@ def test_m1_snapshot_sources_present():
     print("✔ test_m1_snapshot_sources_present")
 
 
+def test_m1_snapshot_targets_present():
+    script_file, matches = find_m1_script_file()
+
+    if not script_file:
+        print("✔ test_m1_snapshot_targets_present")
+        return
+
+    text = strip_yaml_comments(read_text(script_file))
+
+    required_targets = [
+        "input_number.ref_temp_entree",
+        "input_number.ref_temp_sejour",
+        "input_number.ref_temp_chambre_arnaud",
+        "input_number.ref_temp_chambre_matthieu",
+        "input_number.ref_temp_chambre_parents",
+        "input_number.ref_temp_palier",
+        "input_number.chute_temp_reference",
+    ]
+
+    for entity_id in required_targets:
+        if entity_id not in text:
+            add_error(
+                f"{script_file.relative_to(ROOT)} : cible de snapshot absente : {entity_id}."
+            )
+
+    print("✔ test_m1_snapshot_targets_present")
+
+
+def test_m1_snapshot_conservative_guards_present():
+    script_file, matches = find_m1_script_file()
+
+    if not script_file:
+        print("✔ test_m1_snapshot_conservative_guards_present")
+        return
+
+    text = strip_yaml_comments(read_text(script_file))
+
+    required_invalid_values = [
+        "unknown",
+        "unavailable",
+        "none",
+        "None",
+        "''",
+    ]
+
+    for value in required_invalid_values:
+        if value not in text:
+            add_error(
+                f"{script_file.relative_to(ROOT)} : garde snapshot conservateur absente pour {value}."
+            )
+
+    if "states(repeat.item.input)" not in text:
+        add_error(
+            f"{script_file.relative_to(ROOT)} : conservation de la valeur existante "
+            "des snapshots individuels non détectée."
+        )
+
+    if "states('input_number.chute_temp_reference')" not in text:
+        add_error(
+            f"{script_file.relative_to(ROOT)} : conservation de la valeur existante "
+            "du snapshot global DeltaT non détectée."
+        )
+
+    print("✔ test_m1_snapshot_conservative_guards_present")
+
+
 def test_m1_forbidden_actions_absent():
     script_file, matches = find_m1_script_file()
 
@@ -374,104 +496,162 @@ def test_m1_forbidden_actions_absent():
 
     text = strip_yaml_comments(read_text(script_file))
 
-    forbidden_patterns = {
-        r"^\s*(service|action)\s*:\s*timer\.start\s*$": "démarrage de timer",
-        r"^\s*(service|action)\s*:\s*timer\.restart\s*$": "redémarrage de timer",
-        r"^\s*(service|action)\s*:\s*timer\.cancel\s*$": "annulation de timer",
-        r"^\s*(service|action)\s*:\s*climate\.": "pilotage chauffage/climatisation",
-        r"^\s*(service|action)\s*:\s*switch\.": "pilotage matériel switch",
-        r"^\s*(service|action)\s*:\s*script\.(?!turn_on)": "appel direct d'un autre script",
-        r"script\.chauffage": "appel script thermique chauffage",
-        r"input_boolean\.chauffage_blocage_aeration": "modification potentielle du blocage aération",
+    forbidden_action_patterns = {
+        r"^\s*-\s*(action|service)\s*:\s*timer\.start\s*$": "démarrage de timer",
+        r"^\s*-\s*(action|service)\s*:\s*timer\.restart\s*$": "redémarrage de timer",
+        r"^\s*-\s*(action|service)\s*:\s*timer\.cancel\s*$": "annulation de timer",
+        r"^\s*-\s*(action|service)\s*:\s*climate\.": "pilotage climatique",
+        r"^\s*-\s*(action|service)\s*:\s*switch\.": "pilotage matériel switch",
+        r"^\s*-\s*(action|service)\s*:\s*script\.aeration_m2_": "appel M2",
+        r"^\s*-\s*(action|service)\s*:\s*script\.aeration_m3_": "appel M3",
+        r"^\s*-\s*(action|service)\s*:\s*script\.aeration_m4_": "appel M4",
+        r"^\s*-\s*(action|service)\s*:\s*script\.chauffage": "appel script thermique chauffage",
     }
 
-    for pattern, label in forbidden_patterns.items():
+    for pattern, label in forbidden_action_patterns.items():
         if re.search(pattern, text, re.MULTILINE):
             add_error(
                 f"{script_file.relative_to(ROOT)} : interdit M1 détecté : {label}."
             )
 
+    if contains_action_call_to_entity(
+        text,
+        "input_boolean.turn_on",
+        "input_boolean.chauffage_blocage_aeration",
+    ):
+        add_error(
+            f"{script_file.relative_to(ROOT)} : M1 ne doit jamais activer "
+            "input_boolean.chauffage_blocage_aeration."
+        )
+
     print("✔ test_m1_forbidden_actions_absent")
 
 
 def test_aeration_episode_activation_is_exclusive_to_m1():
-    allowed_path, matches = find_m1_script_file()
+    m1_file, matches = find_m1_script_file()
 
-    for path in all_runtime_yaml_files():
+    for path in aeration_runtime_files():
+        if m1_file and path == m1_file:
+            continue
+
         text = strip_yaml_comments(read_text(path))
 
-        if "input_boolean.aeration_episode_en_cours" not in text:
-            continue
-
-        if allowed_path and path == allowed_path:
-            continue
-
-        if contains_service_call_to_entity(
+        if contains_action_call_to_entity(
             text,
-            r"^\s*(service|action)\s*:\s*input_boolean\.turn_on\s*$",
+            "input_boolean.turn_on",
             "input_boolean.aeration_episode_en_cours",
         ):
             add_error(
                 f"{path.relative_to(ROOT)} : activation non autorisée de "
-                "input_boolean.aeration_episode_en_cours."
+                "input_boolean.aeration_episode_en_cours hors M1."
             )
 
     print("✔ test_aeration_episode_activation_is_exclusive_to_m1")
 
 
 def test_pipeline_arm_activation_is_exclusive_to_m1():
-    allowed_path, matches = find_m1_script_file()
+    m1_file, matches = find_m1_script_file()
 
-    for path in all_runtime_yaml_files():
+    for path in aeration_runtime_files():
+        if m1_file and path == m1_file:
+            continue
+
         text = strip_yaml_comments(read_text(path))
 
-        if "input_boolean.aeration_pipeline_arme" not in text:
-            continue
-
-        if allowed_path and path == allowed_path:
-            continue
-
-        if contains_service_call_to_entity(
+        if contains_action_call_to_entity(
             text,
-            r"^\s*(service|action)\s*:\s*input_boolean\.turn_on\s*$",
+            "input_boolean.turn_on",
             "input_boolean.aeration_pipeline_arme",
         ):
             add_error(
                 f"{path.relative_to(ROOT)} : armement non autorisé de "
-                "input_boolean.aeration_pipeline_arme."
+                "input_boolean.aeration_pipeline_arme hors M1."
             )
 
     print("✔ test_pipeline_arm_activation_is_exclusive_to_m1")
 
 
-def test_aeration_debut_write_is_exclusive_to_m1_or_m0_recovery():
-    allowed_path, matches = find_m1_script_file()
+def test_pipeline_arm_not_modified_by_m5_or_m6():
+    for path in aeration_runtime_files():
+        path_text = str(path).lower()
 
-    for path in all_runtime_yaml_files():
+        if "m5" not in path_text and "m6" not in path_text:
+            continue
+
         text = strip_yaml_comments(read_text(path))
 
-        if "input_datetime.aeration_debut" not in text:
+        if contains_action_call_to_entity(
+            text,
+            "input_boolean.turn_on",
+            "input_boolean.aeration_pipeline_arme",
+        ) or contains_action_call_to_entity(
+            text,
+            "input_boolean.turn_off",
+            "input_boolean.aeration_pipeline_arme",
+        ):
+            add_error(
+                f"{path.relative_to(ROOT)} : M5/M6 ne doivent jamais modifier "
+                "input_boolean.aeration_pipeline_arme."
+            )
+
+    print("✔ test_pipeline_arm_not_modified_by_m5_or_m6")
+
+
+def test_aeration_debut_write_is_exclusive_to_m1_or_m0_recovery():
+    m1_file, matches = find_m1_script_file()
+
+    for path in aeration_runtime_files():
+        if m1_file and path == m1_file:
             continue
 
-        if allowed_path and path == allowed_path:
-            continue
-
-        is_m0_recovery = re.search(r"\bm0\b|recovery|recuperation|récupération", str(path), re.IGNORECASE)
+        path_text = str(path).lower()
+        is_m0_recovery = "m0" in path_text or "recover" in path_text
 
         if is_m0_recovery:
             continue
 
-        if contains_service_call_to_entity(
+        text = strip_yaml_comments(read_text(path))
+
+        if contains_action_call_to_entity(
             text,
-            r"^\s*(service|action)\s*:\s*input_datetime\.set_datetime\s*$",
+            "input_datetime.set_datetime",
             "input_datetime.aeration_debut",
         ):
             add_error(
-                f"{path.relative_to(ROOT)} : écriture non autorisée de input_datetime.aeration_debut "
-                "hors M1 ou M0 recovery."
+                f"{path.relative_to(ROOT)} : écriture non autorisée de "
+                "input_datetime.aeration_debut hors M1 ou M0 recovery."
             )
 
     print("✔ test_aeration_debut_write_is_exclusive_to_m1_or_m0_recovery")
+
+
+def test_t_ref_targets_not_written_by_m3_m4_m5_m6():
+    protected_targets = [
+        "input_number.ref_temp_entree",
+        "input_number.ref_temp_sejour",
+        "input_number.ref_temp_chambre_arnaud",
+        "input_number.ref_temp_chambre_matthieu",
+        "input_number.ref_temp_chambre_parents",
+        "input_number.ref_temp_palier",
+        "input_number.chute_temp_reference",
+    ]
+
+    for path in aeration_runtime_files():
+        path_text = str(path).lower()
+
+        if not any(marker in path_text for marker in ["m3", "m4", "m5", "m6"]):
+            continue
+
+        text = strip_yaml_comments(read_text(path))
+
+        for entity_id in protected_targets:
+            if contains_action_call_to_entity(text, "input_number.set_value", entity_id):
+                add_error(
+                    f"{path.relative_to(ROOT)} : écriture interdite de {entity_id} "
+                    "hors M1 pendant le cycle."
+                )
+
+    print("✔ test_t_ref_targets_not_written_by_m3_m4_m5_m6")
 
 
 def test_test_registry_matches_functions():
@@ -487,19 +667,23 @@ def test_test_registry_matches_functions():
 
 
 TESTS = [
-    "test_runtime_directories_exist",
+    "test_aeration_runtime_directories_exist",
     "test_m1_script_declared_once",
-    "test_master_automation_declared_once",
-    "test_m1_called_only_by_master_automation",
-    "test_master_automation_calls_m1_script",
-    "test_m1_structural_entry_conditions_present",
+    "test_master_pipeline_declared_once",
+    "test_master_pipeline_calls_m1_script",
+    "test_m1_script_called_only_by_master_pipeline",
+    "test_master_pipeline_contains_m1_structural_guards",
     "test_m1_normative_effects_present",
     "test_m1_normative_order_is_preserved",
     "test_m1_snapshot_sources_present",
+    "test_m1_snapshot_targets_present",
+    "test_m1_snapshot_conservative_guards_present",
     "test_m1_forbidden_actions_absent",
     "test_aeration_episode_activation_is_exclusive_to_m1",
     "test_pipeline_arm_activation_is_exclusive_to_m1",
+    "test_pipeline_arm_not_modified_by_m5_or_m6",
     "test_aeration_debut_write_is_exclusive_to_m1_or_m0_recovery",
+    "test_t_ref_targets_not_written_by_m3_m4_m5_m6",
     "test_test_registry_matches_functions",
 ]
 
