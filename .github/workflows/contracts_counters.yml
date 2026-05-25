@@ -1,0 +1,16 @@
+name: Arsenal Contracts — Counters
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts-counters:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run counters contract validation
+        run: python scripts/arsenal_contracts/check_counters_contracts.py
