@@ -5,7 +5,7 @@
 # Contrat :
 #   documentation_arsenal/contrats/publication/securite_publication_git.md
 # Version contrat : v1.0.0
-# Version script  : v1.0.0
+# Version script  : v1.0.1
 # ==========================================================
 
 from __future__ import annotations
@@ -16,8 +16,7 @@ import fnmatch
 import os
 import re
 import subprocess
-import sys
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 
 
@@ -43,6 +42,25 @@ FORBIDDEN_FILES = [
     "*.db",
     "*.log",
 ]
+
+# Répertoires ignorés par le walker (contenu non scanné).
+# Ne pas y mettre .storage / backups : ils doivent rester visibles pour S5.
+# www / custom_components / zigbee2mqtt : tiers, hors périmètre Arsenal.
+# Note contractuelle : ces exclusions de performance seront formalisées en v1.1.
+EXCLUDED_DIRS = {
+    ".git",
+    "__pycache__",
+    ".venv",
+    "venv",
+    "node_modules",
+    ".mypy_cache",
+    ".pytest_cache",
+    "www",
+    "custom_components",
+    "zigbee2mqtt",
+}
+
+MAX_FILE_SIZE = 2 * 1024 * 1024
 
 FORBIDDEN_DIRS = {
     ".storage",
@@ -159,12 +177,29 @@ def is_placeholder(line: str) -> bool:
 
 def iter_repo_files() -> list[Path]:
     files: list[Path] = []
+
     for base, dirs, filenames in os.walk(ROOT):
-        dirs[:] = [d for d in dirs if d != ".git"]
+        base_path = Path(base)
+
+        dirs[:] = [
+            d for d in dirs
+            if d not in EXCLUDED_DIRS
+        ]
+
         for filename in filenames:
-            path = Path(base) / filename
-            if not is_excluded(path):
-                files.append(path)
+            path = base_path / filename
+
+            if is_excluded(path):
+                continue
+
+            try:
+                if path.stat().st_size > MAX_FILE_SIZE:
+                    continue
+            except OSError:
+                continue
+
+            files.append(path)
+
     return files
 
 
@@ -187,17 +222,29 @@ def run_git(*args: str) -> str:
 
 
 # ---------------------------------------------------------------------------
-# Scan S5 — Fichiers interdits
+# Scan S5 — Fichiers et répertoires interdits
 # ---------------------------------------------------------------------------
 
+def scan_forbidden_dirs(findings: list[Finding]) -> None:
+    """Détecte la présence de répertoires interdits (S5).
+    Parcourt ROOT indépendamment du walker pour ne pas dépendre de EXCLUDED_DIRS.
+    """
+    for base, dirs, _ in os.walk(ROOT):
+        base_path = Path(base)
+        if ".git" in base_path.parts:
+            dirs[:] = []
+            continue
+        for d in dirs:
+            if d in FORBIDDEN_DIRS:
+                label = rel(base_path / d)
+                add(findings, "CRITICAL", "S5", label, None, f"répertoire interdit ({d}/)")
+                dirs.remove(d)  # ne pas descendre dedans
+
+
 def scan_forbidden_files(files: list[Path], findings: list[Finding]) -> None:
+    """Détecte la présence de fichiers interdits par nom/extension (S5)."""
     for path in files:
         label = rel(path)
-
-        if any(part in FORBIDDEN_DIRS for part in path.parts):
-            add(findings, "CRITICAL", "S5", label, None, f"répertoire interdit ({path.parts})")
-            continue
-
         for pattern in FORBIDDEN_FILES:
             if fnmatch.fnmatch(path.name, pattern):
                 add(findings, "CRITICAL", "S5", label, None, f"fichier interdit ({pattern})")
@@ -216,6 +263,13 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
     label     = rel(path)
     full_text = "\n".join(lines)
     in_mqtt_block = False  # détection de bloc MQTT pour les topics sensibles
+    _seen: set[tuple[str, int | None, str, str]] = set()  # (control, line, pattern, severity)
+
+    def add_once(severity: str, control: str, line_no: int | None, pattern: str) -> None:
+        key = (control, line_no, pattern, severity)
+        if key not in _seen:
+            _seen.add(key)
+            add(findings, severity, control, label, line_no, pattern)
 
     for idx, line in enumerate(lines, start=1):
         stripped = line.strip()
@@ -230,12 +284,12 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
         # ── S1 — Secrets évidents ──────────────────────────────────────────
         for pattern, label_pattern in SECRET_PATTERNS:
             if pattern.search(active) and not is_placeholder(active):
-                add(findings, "CRITICAL", "S1", label, idx, label_pattern)
+                add_once("CRITICAL", "S1", idx, label_pattern)
 
         # ── S2 — Réseau / Exposition ───────────────────────────────────────
         for pattern, label_pattern in NETWORK_CRITICAL_PATTERNS:
             if pattern.search(active):
-                add(findings, "CRITICAL", "S2", label, idx, label_pattern)
+                add_once("CRITICAL", "S2", idx, label_pattern)
 
         if URL_WARNING_PATTERN.search(active):
             # Seulement si l'URL ne correspond déjà pas à un CRITICAL S2
@@ -243,26 +297,29 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
                 p.search(active) for p, _ in NETWORK_CRITICAL_PATTERNS
             )
             if not already_critical:
-                add(findings, "WARNING", "S2", label, idx, "URL externe")
+                add_once("WARNING", "S2", idx, "URL externe")
 
         # ── S3 — MQTT / NAS / SSH ──────────────────────────────────────────
         if MQTT_BROKER_PATTERN.search(active) and not is_placeholder(active):
-            add(findings, "CRITICAL", "S3", label, idx, "broker MQTT")
+            add_once("CRITICAL", "S3", idx, "broker MQTT")
 
         # Détection de bloc MQTT (platform: mqtt ou type: mqtt)
-        if re.search(r"^\s*(platform|type)\s*:\s*mqtt\b", line, re.I):
+        # Fermeture testée EN PREMIER : une ligne non-indentée ferme le bloc,
+        # sauf si c'est elle-même la déclaration "platform: mqtt".
+        is_mqtt_decl = bool(re.search(r"^\s*(platform|type)\s*:\s*mqtt\b", line, re.I))
+        if re.match(r"^\S", line) and in_mqtt_block and not is_mqtt_decl:
+            in_mqtt_block = False
+        if is_mqtt_decl:
             in_mqtt_block = True
-        if re.match(r"^\S", line) and in_mqtt_block:
-            in_mqtt_block = False  # fin de bloc indenté
 
         if in_mqtt_block and MQTT_TOPIC_SEN_PATTERN.search(active):
-            add(findings, "WARNING", "S3", label, idx, "topic MQTT sensible")
+            add_once("WARNING", "S3", idx, "topic MQTT sensible")
 
         if REMOTE_ACCESS_PATTERN.search(active):
-            add(findings, "CRITICAL", "S3", label, idx, "accès distant (rsync/ssh/synology)")
+            add_once("CRITICAL", "S3", idx, "accès distant (rsync/ssh/synology)")
 
         if NAS_VALUE_PATTERN.search(active) and not is_placeholder(active):
-            add(findings, "WARNING", "S3", label, idx, "référence NAS en valeur")
+            add_once("WARNING", "S3", idx, "référence NAS en valeur")
 
         # ── S4 — Sécurité domestique ───────────────────────────────────────
         for pattern, label_pattern in [
@@ -271,19 +328,22 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
             (ARM_DISARM_CODE_PATTERN, "code arm/disarm"),
         ]:
             if pattern.search(active):
-                add(findings, "CRITICAL", "S4", label, idx, label_pattern)
+                add_once("CRITICAL", "S4", idx, label_pattern)
 
         if DOMESTIC_WARN_PATTERN.search(active):
-            add(findings, "WARNING", "S4", label, idx, "terme sécurité domestique")
+            add_once("WARNING", "S4", idx, "terme sécurité domestique")
 
         if NOMINATIVE_PATTERN.search(active):
-            add(findings, "WARNING", "S4", label, idx, "présence nominative")
+            add_once("WARNING", "S4", idx, "présence nominative")
 
     # S3 — username + password dans le même fichier (CRITICAL)
-    if USERNAME_PATTERN.search(full_text) and PASSWORD_PATTERN.search(full_text):
-        if not is_placeholder(full_text):
-            add(findings, "CRITICAL", "S3", label, None,
-                "username + password dans le même fichier")
+    # is_placeholder vérifié ligne par ligne : un seul "password: null" ailleurs
+    # ne doit pas masquer un vrai mot de passe sur une autre ligne.
+    username_lines = [l for l in lines if USERNAME_PATTERN.search(l) and not is_placeholder(l)]
+    password_lines = [l for l in lines if PASSWORD_PATTERN.search(l) and not is_placeholder(l)]
+    if username_lines and password_lines:
+        add(findings, "CRITICAL", "S3", label, None,
+            "username + password dans le même fichier")
 
 
 # ---------------------------------------------------------------------------
@@ -303,35 +363,51 @@ _HISTORY_PATTERNS: list[tuple[str, str, re.Pattern[str]]] = [
 
 def scan_history(findings: list[Finding]) -> None:
     """
-    Utilise `git grep` sur tous les objets : O(patterns × commits)
-    au lieu de O(commits × fichiers × patterns).
+    Scan de l'historique Git complet via `git grep` sur chaque commit.
+    rev-list --all fournit la liste exhaustive des commits accessibles.
+    Déduplication par (file_path, lineno, pattern) : un secret dans N commits
+    génère un seul finding.
     """
+    commits = run_git("rev-list", "--all").splitlines()
+    if not commits:
+        return
+
+    _seen: set[tuple[str, str, str]] = set()  # (file_path, lineno, pattern)
+
     for control, severity, pattern in _HISTORY_PATTERNS:
-        raw = run_git(
-            "grep", "--all-match", "-I", "-n", "-e", pattern.pattern,
-            "--all",          # tous les commits/branches
-        )
-        # Format : <hash>:<file>:<lineno>:<content>
-        for line in raw.splitlines():
-            parts = line.split(":", 3)
-            if len(parts) < 4:
-                continue
-            commit_hash, file_path, lineno, content = parts
-
-            if file_path in EXCLUDED_PATHS:
-                continue
-            if is_placeholder(content):
-                continue
-
-            add(
-                findings,
-                severity,
-                control,
-                f"{file_path}@{commit_hash[:8]}",
-                int(lineno) if lineno.isdigit() else None,
-                pattern.pattern,
-                historical=True,
+        for commit in commits:
+            raw = run_git(
+                "grep", "-I", "-n", "-e", pattern.pattern,
+                commit, "--",
             )
+            if not raw:
+                continue
+            # Format : <file>:<lineno>:<content>
+            for line in raw.splitlines():
+                parts = line.split(":", 2)
+                if len(parts) < 3:
+                    continue
+                file_path, lineno, content = parts
+
+                if file_path in EXCLUDED_PATHS:
+                    continue
+                if is_placeholder(content):
+                    continue
+
+                dedup_key = (file_path, lineno, pattern.pattern)
+                if dedup_key in _seen:
+                    continue
+                _seen.add(dedup_key)
+
+                add(
+                    findings,
+                    severity,
+                    control,
+                    f"{file_path}@{commit[:8]}",
+                    int(lineno) if lineno.isdigit() else None,
+                    pattern.pattern,
+                    historical=True,
+                )
 
 
 # ---------------------------------------------------------------------------
@@ -452,7 +528,7 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
         "",
         "---",
         "",
-        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.0.0_",
+        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.0.1_",
         "",
     ]
 
@@ -485,6 +561,7 @@ def main() -> int:
     findings: list[Finding] = []
     files = iter_repo_files()
 
+    scan_forbidden_dirs(findings)
     scan_forbidden_files(files, findings)
 
     for path in files:
