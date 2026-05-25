@@ -4,8 +4,8 @@
 # ----------------------------------------------------------
 # Contrat :
 #   documentation_arsenal/contrats/publication/securite_publication_git.md
-# Version contrat : v1.1.0
-# Version script  : v1.1.0
+# Version contrat : v1.1.0  (script patch v1.1.1)
+# Version script  : v1.1.1
 # ==========================================================
 
 from __future__ import annotations
@@ -78,6 +78,8 @@ _PLACEHOLDER_PATTERN = re.compile(
     r"|example|dummy|test|sample|demo"  # termes documentaires
     r"|!secret\s+\w+"             # référence HA secrets.yaml
     r"|1234|0000|9999|12345|000000"  # codes numériques placeholder
+    r"|\.\.\.|'\.\.\.|\"\.\.\.\""
+    r"|<[a-z_]+>|x{3,}|\*{3,}"      # <password> <secret> xxxx ****
     r")",
     re.I,
 )
@@ -619,7 +621,7 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
         "",
         "---",
         "",
-        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.1.0_",
+        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.1.1_",
         "",
     ]
 
