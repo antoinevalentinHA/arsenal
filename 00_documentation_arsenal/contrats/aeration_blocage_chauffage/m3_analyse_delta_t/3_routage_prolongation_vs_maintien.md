@@ -44,20 +44,34 @@ Aucune autre logique décisionnelle n’est autorisée.
 
 ## 📏 PARAMÈTRES (GOUVERNÉS)
 
-Les seuils et durées sont :
+Les seuils et durées sont gouvernés par les helpers suivants :
 
-- configurables via le dashboard Réglages Chauffage,
-- bornés par leurs `min` / `max`,
-- sans valeur codée en dur dans le script M3.
+- input_number.aeration_m3_seuil_tiny
+- input_number.aeration_m3_seuil_medium
+- input_number.aeration_m3_seuil_high
+- input_number.aeration_m3_prolongation_tiny
+- input_number.aeration_m3_prolongation_medium
+- input_number.aeration_m3_prolongation_high
 
-Invariant logique attendu :
+En régime nominal, M3 utilise exclusivement ces helpers.
 
-    seuil_tiny < seuil_medium < seuil_high
+En cas d’indisponibilité ou de valeur non convertible, M3 applique des
+fallbacks explicites et conservatoires :
 
-La détection d’une incohérence relève du contrat
-"Intégrité paramètres — Chauffage".
+- seuil_tiny : 0.4
+- seuil_medium : 0.8
+- seuil_high : 1.2
+- prolongation_tiny : 60 min
+- prolongation_medium : 120 min
+- prolongation_high : 180 min
 
-M3 ne corrige jamais une incohérence paramétrique.
+Ces fallbacks ne constituent pas une gouvernance alternative.
+Ils sont une sécurité runtime locale destinée à éviter une levée ou une
+réduction prématurée du blocage sur paramètre indisponible.
+
+M3 ne corrige jamais les helpers.
+La détection d’incohérence ou d’indisponibilité paramétrique relève du
+contrat "Intégrité paramètres — Chauffage".
 
 ---
 
@@ -111,7 +125,7 @@ Il est interdit :
 - d’implémenter une levée du blocage dans M3,
 - de démarrer/arrêter M4 depuis M3,
 - de réduire une échéance en cours,
-- d’introduire des seuils codés en dur,
+- d’introduire des seuils ou durées codés en dur hors fallbacks contractuels explicitement listés
 - de contourner la séparation décision / exécution.
 
 # ==========================================================
