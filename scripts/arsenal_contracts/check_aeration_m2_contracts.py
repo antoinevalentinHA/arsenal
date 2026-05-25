@@ -1,238 +1,302 @@
 #!/usr/bin/env python3
+# ==========================================================
+# 🧠 ARSENAL — CONTRAT LINTER : AERATION_M2
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Vérifier que le runtime Home Assistant respecte les
+#   invariants normatifs du contrat M2 (fin d'épisode aération).
+#
+#   Le contrat est défini dans :
+#     00_documentation_arsenal/contrats/aeration/M2/
+#       1_fin_episode.md
+#       2_activation_blocage_et_cloture_episode.md
+#       3_armement_blocage_et_programmation_timers.md
+#       4_reset_confirmation_et_log.md
+#
+# 🧩 PRINCIPE
+#   - Tests structurels par regex + scope explicite.
+#   - Python 3 standard uniquement.
+#   - Pas de parser YAML (conforme cadre Arsenal).
+#   - Coprésence service + cible bornée par action suivante,
+#     jamais par fenêtre fixe (élimine les faux positifs
+#     d'aspiration d'actions voisines).
+#
+# 🛡️ ROBUSTESSE
+#   - Chaque test tolère l'absence du fichier cible
+#     (renvoie silencieusement ✔ au lieu de crasher).
+#   - Détection des cibles entity_id en 3 formes :
+#       scalaire / liste-bloc / liste-inline.
+#   - Détection des gardes condition: state en pattern
+#     structurel (condition → entity_id → state contigus),
+#     pas par fenêtre flottante.
+# ==========================================================
+
 from pathlib import Path
 import re
 import sys
+
+# ==========================================================
+# 🎯 CONFIGURATION DU DOMAINE
+# ==========================================================
 
 DOMAIN = "AERATION_M2"
 
 ROOT = Path(__file__).resolve().parents[2]
 
+# Périmètre des fichiers runtime à analyser
 AERATION_SCRIPTS_DIR = ROOT / "10_scripts" / "aeration"
 AERATION_AUTOMATIONS_DIR = ROOT / "11_automations" / "aeration" / "blocage_chauffage"
 
+# Entités canoniques du contrat M2
 M2_SCRIPT_KEY = "aeration_m2_fin_episode"
 M2_SCRIPT_ENTITY = "script.aeration_m2_fin_episode"
 MASTER_AUTOMATION_ID = "10010000000023"
 
+# Écrivains autorisés sur input_boolean.chauffage_blocage_aeration (turn_on uniquement).
+# Le contrat M2 autorise explicitement :
+#   - M2 lui-même (activation initiale)
+#   - M0 / recover (réconciliation post-reboot)
+#   - M3 (prolongation — défensif : runtime actuel n'écrit pas,
+#     mais le contrat l'autorise structurellement).
+# La détection se fait par token dans le chemin du fichier.
+ALLOWED_ACTIVATION_MARKERS = ["m0", "recover", "recovery", "m3"]
+
+# Snapshots T_REF protégés (M2 ne doit pas les écrire)
+T_REF_SNAPSHOTS = [
+    "input_number.ref_temp_entree",
+    "input_number.ref_temp_sejour",
+    "input_number.ref_temp_chambre_arnaud",
+    "input_number.ref_temp_chambre_matthieu",
+    "input_number.ref_temp_chambre_parents",
+    "input_number.ref_temp_palier",
+    "input_number.chute_temp_reference",
+]
+
+# Cibles temporelles protégées (M5/M6 ne doivent pas les écrire)
+PROTECTED_DATETIMES = [
+    "input_datetime.chauffage_fin_blocage_aeration",
+    "input_datetime.analyse_deltat_disponible",
+]
+
+# ==========================================================
+# 🧰 INFRASTRUCTURE
+# ==========================================================
+
 ERRORS = []
 
 
-def read_text(path: Path) -> str:
+def add_error(message):
+    ERRORS.append(message)
+
+
+def read_text(path):
     return path.read_text(encoding="utf-8", errors="ignore")
 
 
-def strip_yaml_comments(text: str) -> str:
+def strip_yaml_comments(text):
+    """Strip whole-line comments. Inline trailing comments are conservés
+    (ils n'interfèrent pas avec les regex structurelles utilisées)."""
     return "\n".join(
         line for line in text.splitlines()
         if not line.lstrip().startswith("#")
     )
 
 
-def yaml_files(base: Path):
+def yaml_files(base):
     if not base.exists():
         return []
-
-    return sorted(
-        path for path in base.rglob("*.yaml")
-        if path.is_file()
-    )
-
-
-def add_error(message: str):
-    ERRORS.append(message)
+    return sorted(p for p in base.rglob("*.yaml") if p.is_file())
 
 
 def aeration_runtime_files():
-    files = []
-    files.extend(yaml_files(AERATION_SCRIPTS_DIR))
-    files.extend(yaml_files(AERATION_AUTOMATIONS_DIR))
-    return files
+    return yaml_files(AERATION_SCRIPTS_DIR) + yaml_files(AERATION_AUTOMATIONS_DIR)
 
 
-def find_files_containing(base: Path, pattern: str):
+def find_files_containing(base, pattern):
     matches = []
-
     for path in yaml_files(base):
         text = strip_yaml_comments(read_text(path))
         if re.search(pattern, text, re.MULTILINE):
             matches.append(path)
-
     return matches
 
 
 def find_m2_script_file():
     pattern = rf"^\s*{re.escape(M2_SCRIPT_KEY)}\s*:"
     matches = find_files_containing(AERATION_SCRIPTS_DIR, pattern)
-
-    if len(matches) != 1:
-        return None, matches
-
-    return matches[0], matches
+    return (matches[0] if len(matches) == 1 else None), matches
 
 
 def find_master_automation_file():
     pattern = rf"^\s*-\s*id\s*:\s*[\"']?{re.escape(MASTER_AUTOMATION_ID)}[\"']?\s*$"
     matches = find_files_containing(AERATION_AUTOMATIONS_DIR, pattern)
-
-    if len(matches) != 1:
-        return None, matches
-
-    return matches[0], matches
+    return (matches[0] if len(matches) == 1 else None), matches
 
 
-def contains_action_call_to_entity(text: str, action_name: str, entity_id: str) -> bool:
-    action_pattern = (
-        rf"^\s*-\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
-        rf"|^\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
-    )
+# ==========================================================
+# 🔎 DÉTECTION D'ACTIONS YAML
+#
+# Toutes les détections d'écriture exigent la coprésence du
+# service ET de la cible dans une fenêtre BORNÉE par la
+# prochaine action (`- action:` ou `- service:`). Cela élimine
+# les faux positifs liés à l'aspiration d'une action voisine.
+# ==========================================================
 
-    for match in re.finditer(action_pattern, text, re.MULTILINE):
-        window = text[match.start():match.start() + 300]
-        if entity_id in window:
-            return True
+# Match une ligne "- action: X" ou "- service: X" (les deux formes
+# HA, l'ancienne `service:` étant dépréciée mais encore tolérée).
+ACTION_LINE_PATTERN = re.compile(
+    r"^\s*-\s*(?:action|service)\s*:\s*(?P<action>[^\n#]+?)\s*$",
+    re.MULTILINE,
+)
+
+
+def iter_action_blocks(text):
+    """Itère sur les blocs d'action en bornant chaque bloc par la
+    prochaine action. Yield (action_name, block_text)."""
+    starts = [(m.start(), m.group("action").strip().strip("\"'"))
+              for m in ACTION_LINE_PATTERN.finditer(text)]
+    for i, (start, action_name) in enumerate(starts):
+        end = starts[i + 1][0] if i + 1 < len(starts) else len(text)
+        yield action_name, text[start:end]
+
+
+def entity_id_in_block(block, entity_id):
+    """Détecte si entity_id est ciblé dans un bloc d'action.
+    Supporte 3 formes :
+      - scalaire :  entity_id: foo.bar
+      - liste-bloc :  entity_id:\n  - foo.bar
+      - liste-inline :  entity_id: [foo.bar, baz.qux]
+    """
+    esc = re.escape(entity_id)
+
+    # Forme scalaire
+    if re.search(
+        rf"^\s*entity_id\s*:\s*[\"']?{esc}[\"']?\s*(?:#.*)?$",
+        block,
+        re.MULTILINE,
+    ):
+        return True
+
+    # Forme liste-bloc : une ligne "- foo.bar" qui suit "entity_id:"
+    if re.search(
+        rf"^\s*-\s*[\"']?{esc}[\"']?\s*(?:#.*)?$",
+        block,
+        re.MULTILINE,
+    ):
+        return True
+
+    # Forme liste-inline : entity_id: [..., foo.bar, ...]
+    if re.search(
+        rf"entity_id\s*:\s*\[[^\]]*\b{esc}\b[^\]]*\]",
+        block,
+    ):
+        return True
 
     return False
 
 
-def action_blocks(text: str):
-    pattern = re.compile(
-        r"(?ms)^(\s*)-\s*(action|service)\s*:\s*(?P<action>[^\n]+)\n"
-        r"(?P<body>(?:^\1\s{2,}.+\n?)*)"
-    )
-
-    for match in pattern.finditer(text):
-        yield (
-            match.group("action").strip().strip('"').strip("'"),
-            match.group(0),
-        )
+def action_targets_entity(text, action_name, entity_id):
+    """Vérifie qu'un bloc `- action: action_name` cible entity_id."""
+    for action, block in iter_action_blocks(text):
+        if action == action_name and entity_id_in_block(block, entity_id):
+            return True
+    return False
 
 
-def action_block_targets_entity(text: str, action_name: str, entity_id: str) -> bool:
-    for action, block in action_blocks(text):
-        if action != action_name:
+def first_action_position(text, action_name, entity_id):
+    """Position de la première occurrence d'un bloc action_name ciblant entity_id."""
+    for m in ACTION_LINE_PATTERN.finditer(text):
+        if m.group("action").strip().strip("\"'") != action_name:
             continue
-
-        if re.search(
-            rf"^\s*entity_id\s*:\s*[\"']?{re.escape(entity_id)}[\"']?\s*$",
-            block,
-            re.MULTILINE,
-        ):
-            return True
-
-    return False
-
-
-def first_action_position(text: str, action_name: str, entity_id: str) -> int:
-    action_pattern = (
-        rf"^\s*-\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
-        rf"|^\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
-    )
-
-    for match in re.finditer(action_pattern, text, re.MULTILINE):
-        window = text[match.start():match.start() + 300]
-        if entity_id in window:
-            return match.start()
-
+        # Délimiter la fin du bloc
+        next_match = ACTION_LINE_PATTERN.search(text, m.end())
+        block_end = next_match.start() if next_match else len(text)
+        block = text[m.start():block_end]
+        if entity_id_in_block(block, entity_id):
+            return m.start()
     return -1
 
 
-def first_action_position_after(text: str, action_name: str, start: int) -> int:
-    if start == -1:
-        return -1
+# ==========================================================
+# 🔎 DÉTECTION DE GARDES condition: state
+#
+# Pattern structurel : on exige la séquence
+#   condition: state
+#   entity_id: <X>
+#   state: <Y>
+# avec les trois éléments sur des lignes consécutives.
+# Cela évite les faux positifs de fenêtre flottante.
+# ==========================================================
 
-    action_pattern = (
-        rf"^\s*-\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
-        rf"|^\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
+def entity_state_guard_present(text, entity_id, expected_state):
+    """Détecte une garde `condition: state` structurée pour entity_id = expected_state."""
+    esc_entity = re.escape(entity_id)
+    esc_state = re.escape(expected_state)
+
+    pattern = re.compile(
+        rf"condition\s*:\s*state\s*\n"
+        rf"\s*entity_id\s*:\s*[\"']?{esc_entity}[\"']?\s*\n"
+        rf"\s*state\s*:\s*[\"']?{esc_state}[\"']?\s*$",
+        re.MULTILINE,
     )
 
-    for match in re.finditer(action_pattern, text, re.MULTILINE):
-        if match.start() > start:
-            return match.start()
-
-    return -1
+    return bool(pattern.search(text))
 
 
-def entity_state_guard_present(text: str, entity_id: str, expected_state: str) -> bool:
-    entity_pos = text.find(entity_id)
-
-    while entity_pos != -1:
-        window = text[max(0, entity_pos - 260):entity_pos + 260]
-
-        if "condition: state" in window and re.search(
-            rf"state\s*:\s*[\"']?{re.escape(expected_state)}[\"']?",
-            window,
-        ):
-            return True
-
-        entity_pos = text.find(entity_id, entity_pos + 1)
-
-    return False
-
-
-def text_contains_all(text: str, required_tokens):
-    missing = []
-
-    for token in required_tokens:
-        if token not in text:
-            missing.append(token)
-
-    return missing
-
+# ==========================================================
+# 🧪 TESTS
+# ==========================================================
 
 def test_aeration_runtime_directories_exist():
+    """Présence des dossiers canoniques scripts + automations."""
     if not AERATION_SCRIPTS_DIR.exists():
         add_error(f"Dossier {AERATION_SCRIPTS_DIR.relative_to(ROOT)}/ absent.")
-
     if not AERATION_AUTOMATIONS_DIR.exists():
         add_error(f"Dossier {AERATION_AUTOMATIONS_DIR.relative_to(ROOT)}/ absent.")
-
     print("✔ test_aeration_runtime_directories_exist")
 
 
 def test_m2_script_declared_once():
-    script_file, matches = find_m2_script_file()
-
+    """Le script canonique aeration_m2_fin_episode doit être déclaré exactement une fois."""
+    _, matches = find_m2_script_file()
     if len(matches) == 0:
         add_error(
             f"Script canonique {M2_SCRIPT_ENTITY} introuvable "
             f"dans {AERATION_SCRIPTS_DIR.relative_to(ROOT)}/."
         )
     elif len(matches) > 1:
-        files = ", ".join(str(path.relative_to(ROOT)) for path in matches)
+        files = ", ".join(str(p.relative_to(ROOT)) for p in matches)
         add_error(f"Script canonique {M2_SCRIPT_ENTITY} déclaré plusieurs fois : {files}")
-
     print("✔ test_m2_script_declared_once")
 
 
 def test_master_pipeline_declared_once():
-    master_file, matches = find_master_automation_file()
-
+    """L'automation maître ID 10010000000023 doit être déclarée exactement une fois."""
+    _, matches = find_master_automation_file()
     if len(matches) == 0:
         add_error(
             f"Automatisation maître ID {MASTER_AUTOMATION_ID} introuvable "
             f"dans {AERATION_AUTOMATIONS_DIR.relative_to(ROOT)}/."
         )
     elif len(matches) > 1:
-        files = ", ".join(str(path.relative_to(ROOT)) for path in matches)
+        files = ", ".join(str(p.relative_to(ROOT)) for p in matches)
         add_error(
-            f"Automatisation maître ID {MASTER_AUTOMATION_ID} déclarée plusieurs fois : {files}"
+            f"Automatisation maître ID {MASTER_AUTOMATION_ID} "
+            f"déclarée plusieurs fois : {files}"
         )
-
     print("✔ test_master_pipeline_declared_once")
 
 
 def test_master_pipeline_calls_m2_script():
-    master_file, matches = find_master_automation_file()
-
+    """L'automation maître doit appeler script.aeration_m2_fin_episode."""
+    master_file, _ = find_master_automation_file()
     if not master_file:
         print("✔ test_master_pipeline_calls_m2_script")
         return
 
     text = strip_yaml_comments(read_text(master_file))
-
     if not re.search(
-        rf"^\s*-\s*action\s*:\s*{re.escape(M2_SCRIPT_ENTITY)}\s*$"
-        rf"|^\s*action\s*:\s*{re.escape(M2_SCRIPT_ENTITY)}\s*$",
+        rf"^\s*-?\s*(?:action|service)\s*:\s*{re.escape(M2_SCRIPT_ENTITY)}\s*$",
         text,
         re.MULTILINE,
     ):
@@ -240,25 +304,28 @@ def test_master_pipeline_calls_m2_script():
             f"{master_file.relative_to(ROOT)} : l'automatisation maître "
             f"n'appelle pas {M2_SCRIPT_ENTITY}."
         )
-
     print("✔ test_master_pipeline_calls_m2_script")
 
 
 def test_m2_script_called_only_by_master_pipeline():
+    """Seule l'automation maître peut appeler M2.
+
+    Référence : contrat 1_fin_episode.md § AUTORITÉ.
+    """
     for path in aeration_runtime_files():
         text = strip_yaml_comments(read_text(path))
-
         if M2_SCRIPT_ENTITY not in text:
             continue
 
-        is_script_definition = (
+        # Exclusion : le fichier de définition du script lui-même
+        is_definition = (
             path.is_relative_to(AERATION_SCRIPTS_DIR)
             and re.search(rf"^\s*{re.escape(M2_SCRIPT_KEY)}\s*:", text, re.MULTILINE)
         )
-
-        if is_script_definition:
+        if is_definition:
             continue
 
+        # Le fichier doit déclarer l'ID maître pour être autorisé
         if MASTER_AUTOMATION_ID not in text:
             add_error(
                 f"{path.relative_to(ROOT)} : appel non autorisé à {M2_SCRIPT_ENTITY}."
@@ -268,8 +335,11 @@ def test_m2_script_called_only_by_master_pipeline():
 
 
 def test_master_pipeline_contains_m2_structural_guards():
-    master_file, matches = find_master_automation_file()
+    """L'automation maître doit porter les gardes structurelles d'entrée en M2.
 
+    Référence : contrat 1_fin_episode.md § CONDITIONS STRUCTURELLES.
+    """
+    master_file, _ = find_master_automation_file()
     if not master_file:
         print("✔ test_master_pipeline_contains_m2_structural_guards")
         return
@@ -290,11 +360,11 @@ def test_master_pipeline_contains_m2_structural_guards():
                 f"pour {entity_id} = {expected_state}."
             )
 
+    # Gardes templates non structurelles (chaîne brute)
     required_templates = [
         "trigger.id == 'fermeture_stable'",
         "states('input_datetime.aeration_debut') not in",
     ]
-
     for token in required_templates:
         if token not in text:
             add_error(
@@ -305,15 +375,20 @@ def test_master_pipeline_contains_m2_structural_guards():
 
 
 def test_m2_local_assertion_on_stable_closed_present():
-    script_file, matches = find_m2_script_file()
+    """M2 doit porter son assertion locale de fermeture stable + son stop de refus.
 
+    Référence : contrat 1_fin_episode.md § CONDITIONS STRUCTURELLES.
+    """
+    script_file, _ = find_m2_script_file()
     if not script_file:
         print("✔ test_m2_local_assertion_on_stable_closed_present")
         return
 
     text = strip_yaml_comments(read_text(script_file))
 
-    if not entity_state_guard_present(text, "binary_sensor.fenetres_maison_fermees_stable", "on"):
+    if not entity_state_guard_present(
+        text, "binary_sensor.fenetres_maison_fermees_stable", "on",
+    ):
         add_error(
             f"{script_file.relative_to(ROOT)} : assertion locale M2 absente "
             "sur binary_sensor.fenetres_maison_fermees_stable = on."
@@ -328,14 +403,18 @@ def test_m2_local_assertion_on_stable_closed_present():
 
 
 def test_m2_normative_effects_present():
-    script_file, matches = find_m2_script_file()
+    """M2 doit produire toutes les écritures normatives prescrites par le contrat.
 
+    Référence : contrat 1_fin_episode.md § SÉQUENCE STRUCTURELLE.
+    """
+    script_file, _ = find_m2_script_file()
     if not script_file:
         print("✔ test_m2_normative_effects_present")
         return
 
     text = strip_yaml_comments(read_text(script_file))
 
+    # Présence de chaque entité (au moins comme chaîne)
     required_entities = [
         "input_boolean.aeration_episode_en_cours",
         "input_boolean.chauffage_blocage_aeration",
@@ -346,13 +425,14 @@ def test_m2_normative_effects_present():
         "timer.aeration_blocage",
         "input_boolean.aeration_confirmee",
     ]
-
     for entity_id in required_entities:
         if entity_id not in text:
             add_error(
-                f"{script_file.relative_to(ROOT)} : effet ou dépendance M2 absent : {entity_id}."
+                f"{script_file.relative_to(ROOT)} : effet ou dépendance M2 "
+                f"absent : {entity_id}."
             )
 
+    # Écritures effectives (service + cible coprésents dans un bloc d'action)
     expected_writes = [
         ("input_boolean.turn_off", "input_boolean.aeration_episode_en_cours"),
         ("input_boolean.turn_on", "input_boolean.chauffage_blocage_aeration"),
@@ -362,9 +442,8 @@ def test_m2_normative_effects_present():
         ("timer.start", "timer.aeration_blocage"),
         ("input_boolean.turn_off", "input_boolean.aeration_confirmee"),
     ]
-
     for action_name, entity_id in expected_writes:
-        if not contains_action_call_to_entity(text, action_name, entity_id):
+        if not action_targets_entity(text, action_name, entity_id):
             add_error(
                 f"{script_file.relative_to(ROOT)} : écriture normative absente : "
                 f"{action_name} -> {entity_id}."
@@ -373,134 +452,117 @@ def test_m2_normative_effects_present():
     print("✔ test_m2_normative_effects_present")
 
 
-def min_valid_position(*positions):
-    valid_positions = [pos for pos in positions if pos != -1]
-
-    if not valid_positions:
-        return -1
-
-    return min(valid_positions)
-
-
-def first_text_position_after(text: str, needle: str, start: int) -> int:
-    if start == -1:
-        return -1
-
-    return text.find(needle, start)
-
-
-def first_action_position_after(text: str, action_name: str, start: int) -> int:
-    if start == -1:
-        return -1
-
-    action_pattern = (
-        rf"^\s*-\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
-        rf"|^\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
-    )
-
-    for match in re.finditer(action_pattern, text, re.MULTILINE):
-        if match.start() > start:
-            return match.start()
-
-    return -1
-
-
 def test_m2_normative_order_is_preserved():
-    script_file, matches = find_m2_script_file()
+    """L'ordre des étapes normatives de M2 doit être strictement respecté.
 
+    Référence : contrat 1_fin_episode.md § SÉQUENCE STRUCTURELLE (ordre strict).
+
+    Chaque étape composite (datetime, timers) est vérifiée via deux bornes :
+      - max(positions de l'étape) doit suivre l'étape précédente
+      - min(positions de l'étape) doit précéder l'étape suivante
+    """
+    script_file, _ = find_m2_script_file()
     if not script_file:
         print("✔ test_m2_normative_order_is_preserved")
         return
 
     text = strip_yaml_comments(read_text(script_file))
 
-    reset_confirmation_pos = first_action_position(
-        text,
-        "input_boolean.turn_off",
-        "input_boolean.aeration_confirmee",
-    )
+    # Position du bloc `- variables:` contenant le calcul des échéances.
+    # On cible une déclaration variables: qui mentionne delai_analyse dans
+    # ses 1500 caractères suivants (heuristique solide : pas de faux ami
+    # via un commentaire ou un message logbook).
+    calcul_pos = -1
+    for m in re.finditer(r"^\s*-\s*variables\s*:\s*$", text, re.MULTILINE):
+        window = text[m.start():m.start() + 1500]
+        if "delai_analyse" in window:
+            calcul_pos = m.start()
+            break
 
-    positions = [
+    steps = [
         (
             "clôture épisode",
-            first_action_position(
-                text,
-                "input_boolean.turn_off",
+            [first_action_position(
+                text, "input_boolean.turn_off",
                 "input_boolean.aeration_episode_en_cours",
-            ),
+            )],
         ),
         (
             "activation blocage",
-            first_action_position(
-                text,
-                "input_boolean.turn_on",
+            [first_action_position(
+                text, "input_boolean.turn_on",
                 "input_boolean.chauffage_blocage_aeration",
-            ),
+            )],
         ),
-        (
-            "calcul échéances",
-            text.find("delai_analyse"),
-        ),
+        ("calcul échéances", [calcul_pos]),
         (
             "mise à jour input_datetime",
-            min_valid_position(
+            [
                 first_action_position(
-                    text,
-                    "input_datetime.set_datetime",
+                    text, "input_datetime.set_datetime",
                     "input_datetime.chauffage_fin_blocage_aeration",
                 ),
                 first_action_position(
-                    text,
-                    "input_datetime.set_datetime",
+                    text, "input_datetime.set_datetime",
                     "input_datetime.analyse_deltat_disponible",
                 ),
-            ),
+            ],
         ),
         (
             "démarrage timers",
-            min_valid_position(
+            [
                 first_action_position(
-                    text,
-                    "timer.start",
-                    "timer.aeration_analyse_delta_t",
+                    text, "timer.start", "timer.aeration_analyse_delta_t",
                 ),
                 first_action_position(
-                    text,
-                    "timer.start",
-                    "timer.aeration_blocage",
+                    text, "timer.start", "timer.aeration_blocage",
                 ),
-            ),
+            ],
         ),
         (
             "reset confirmation",
-            reset_confirmation_pos,
+            [first_action_position(
+                text, "input_boolean.turn_off",
+                "input_boolean.aeration_confirmee",
+            )],
         ),
     ]
 
-    for label, position in positions:
-        if position == -1:
+    # Étape 1 : signaler toutes les étapes absentes (sans sortir)
+    has_missing = False
+    for label, positions in steps:
+        if any(p == -1 for p in positions):
             add_error(
-                f"{script_file.relative_to(ROOT)} : étape absente pour l'ordre normatif M2 : {label}."
+                f"{script_file.relative_to(ROOT)} : étape absente pour "
+                f"l'ordre normatif M2 : {label}."
             )
-            print("✔ test_m2_normative_order_is_preserved")
-            return
+            has_missing = True
 
-    for index in range(1, len(positions)):
-        previous_label, previous_pos = positions[index - 1]
-        current_label, current_pos = positions[index]
+    if has_missing:
+        print("✔ test_m2_normative_order_is_preserved")
+        return
 
-        if current_pos <= previous_pos:
+    # Étape 2 : vérifier l'ordre strict.
+    # Pour l'étape i, max(positions[i]) doit être < min(positions[i+1]).
+    for i in range(len(steps) - 1):
+        prev_label, prev_positions = steps[i]
+        next_label, next_positions = steps[i + 1]
+        if max(prev_positions) >= min(next_positions):
             add_error(
                 f"{script_file.relative_to(ROOT)} : ordre normatif M2 non respecté ; "
-                f"'{current_label}' apparaît avant ou au même niveau que '{previous_label}'."
+                f"'{next_label}' apparaît avant ou au même niveau que '{prev_label}'."
             )
 
     print("✔ test_m2_normative_order_is_preserved")
 
 
 def test_m2_monotone_datetime_logic_present():
-    script_file, matches = find_m2_script_file()
+    """M2 doit implémenter la logique monotone des input_datetime.
 
+    Référence : contrat 3_armement_blocage_et_programmation_timers.md
+                § MONOTONICITÉ DES INPUT_DATETIME.
+    """
+    script_file, _ = find_m2_script_file()
     if not script_file:
         print("✔ test_m2_monotone_datetime_logic_present")
         return
@@ -520,19 +582,23 @@ def test_m2_monotone_datetime_logic_present():
         "analyse_actuelle > analyse_proposee",
     ]
 
-    missing = text_contains_all(text, required_tokens)
-
-    for token in missing:
-        add_error(
-            f"{script_file.relative_to(ROOT)} : logique monotone input_datetime absente : {token}."
-        )
+    for token in required_tokens:
+        if token not in text:
+            add_error(
+                f"{script_file.relative_to(ROOT)} : logique monotone "
+                f"input_datetime absente : {token}."
+            )
 
     print("✔ test_m2_monotone_datetime_logic_present")
 
 
 def test_m2_monotone_timer_logic_present():
-    script_file, matches = find_m2_script_file()
+    """M2 doit implémenter la logique monotone des timers.
 
+    Référence : contrat 3_armement_blocage_et_programmation_timers.md
+                § MONOTONICITÉ DES TIMERS.
+    """
+    script_file, _ = find_m2_script_file()
     if not script_file:
         print("✔ test_m2_monotone_timer_logic_present")
         return
@@ -556,26 +622,34 @@ def test_m2_monotone_timer_logic_present():
         "blocage_duration",
     ]
 
-    missing = text_contains_all(text, required_tokens)
-
-    for token in missing:
-        add_error(
-            f"{script_file.relative_to(ROOT)} : logique monotone timer absente : {token}."
-        )
+    for token in required_tokens:
+        if token not in text:
+            add_error(
+                f"{script_file.relative_to(ROOT)} : logique monotone "
+                f"timer absente : {token}."
+            )
 
     print("✔ test_m2_monotone_timer_logic_present")
 
 
 def test_m2_logbook_present():
-    script_file, matches = find_m2_script_file()
+    """M2 doit comporter au moins une action logbook.log informative.
 
+    Référence : contrat 4_reset_confirmation_et_log.md § JOURNALISATION.
+    La journalisation est informative ; sa position n'est PAS normée.
+    """
+    script_file, _ = find_m2_script_file()
     if not script_file:
         print("✔ test_m2_logbook_present")
         return
 
     text = strip_yaml_comments(read_text(script_file))
 
-    if not re.search(r"^\s*-\s*(action|service)\s*:\s*logbook\.log\s*$", text, re.MULTILINE):
+    if not re.search(
+        r"^\s*-\s*(?:action|service)\s*:\s*logbook\.log\s*$",
+        text,
+        re.MULTILINE,
+    ):
         add_error(f"{script_file.relative_to(ROOT)} : action logbook.log absente.")
 
     required_tokens = [
@@ -584,47 +658,48 @@ def test_m2_logbook_present():
         "delai_analyse",
         "blocage_initial",
     ]
-
-    missing = text_contains_all(text, required_tokens)
-
-    for token in missing:
-        add_error(
-            f"{script_file.relative_to(ROOT)} : contenu logbook M2 attendu absent : {token}."
-        )
+    for token in required_tokens:
+        if token not in text:
+            add_error(
+                f"{script_file.relative_to(ROOT)} : contenu logbook M2 "
+                f"attendu absent : {token}."
+            )
 
     print("✔ test_m2_logbook_present")
 
 
 def test_m2_forbidden_actions_absent():
-    script_file, matches = find_m2_script_file()
+    """M2 ne doit pas exécuter d'actions interdites par le contrat.
 
+    Référence : contrat 1_fin_episode.md § INTERDITS.
+    """
+    script_file, _ = find_m2_script_file()
     if not script_file:
         print("✔ test_m2_forbidden_actions_absent")
         return
 
     text = strip_yaml_comments(read_text(script_file))
 
-    forbidden_action_patterns = {
-        r"^\s*-\s*(action|service)\s*:\s*input_boolean\.turn_off\s*$": "vérifié par cible ci-dessous",
-        r"^\s*-\s*(action|service)\s*:\s*climate\.": "pilotage climatique",
-        r"^\s*-\s*(action|service)\s*:\s*switch\.": "pilotage matériel switch",
-        r"^\s*-\s*(action|service)\s*:\s*script\.aeration_m3_": "appel M3",
-        r"^\s*-\s*(action|service)\s*:\s*script\.aeration_m4_": "appel M4",
-        r"^\s*-\s*(action|service)\s*:\s*script\.chauffage": "appel script thermique chauffage",
-        r"^\s*-\s*(action|service)\s*:\s*timer\.cancel\s*$": "annulation de timer",
-        r"^\s*-\s*(action|service)\s*:\s*timer\.finish\s*$": "forçage de timer terminé",
+    # Actions strictement interdites en M2 (peu importe la cible)
+    forbidden_actions = {
+        r"^\s*-\s*(?:action|service)\s*:\s*climate\.": "pilotage climatique",
+        r"^\s*-\s*(?:action|service)\s*:\s*switch\.": "pilotage matériel switch",
+        r"^\s*-\s*(?:action|service)\s*:\s*script\.aeration_m3_": "appel M3",
+        r"^\s*-\s*(?:action|service)\s*:\s*script\.aeration_m4_": "appel M4",
+        r"^\s*-\s*(?:action|service)\s*:\s*script\.chauffage": "appel script thermique chauffage",
+        r"^\s*-\s*(?:action|service)\s*:\s*timer\.cancel\s*$": "annulation de timer",
+        r"^\s*-\s*(?:action|service)\s*:\s*timer\.finish\s*$": "forçage de timer terminé",
     }
-
-    for pattern, label in forbidden_action_patterns.items():
-        if label == "vérifié par cible ci-dessous":
-            continue
-
+    for pattern, label in forbidden_actions.items():
         if re.search(pattern, text, re.MULTILINE):
             add_error(
                 f"{script_file.relative_to(ROOT)} : interdit M2 détecté : {label}."
             )
 
-    if action_block_targets_entity(
+    # M2 ne doit JAMAIS lever le blocage (turn_off sur chauffage_blocage_aeration)
+    # Référence : contrat 2_activation_blocage_et_cloture_episode.md
+    #             "reste sous contrôle exclusif de M4 pour sa levée"
+    if action_targets_entity(
         text,
         "input_boolean.turn_off",
         "input_boolean.chauffage_blocage_aeration",
@@ -634,76 +709,68 @@ def test_m2_forbidden_actions_absent():
             "input_boolean.chauffage_blocage_aeration."
         )
 
-    if contains_action_call_to_entity(
-        text,
-        "input_boolean.turn_on",
-        "input_boolean.chauffage_blocage_aeration",
-    ):
-        turn_on_count = len(
-            re.findall(
-                r"^\s*-\s*(action|service)\s*:\s*input_boolean\.turn_on\s*$",
-                text,
-                re.MULTILINE,
-            )
+    # Détection d'activations multiples du blocage (turn_on idempotents
+    # multiples = signe d'incohérence structurelle)
+    activation_count = 0
+    for action, block in iter_action_blocks(text):
+        if action == "input_boolean.turn_on" and entity_id_in_block(
+            block, "input_boolean.chauffage_blocage_aeration",
+        ):
+            activation_count += 1
+    if activation_count > 1:
+        add_error(
+            f"{script_file.relative_to(ROOT)} : activations multiples du blocage "
+            f"chauffage dans M2 ({activation_count} occurrences)."
         )
-        if turn_on_count > 1:
-            add_error(
-                f"{script_file.relative_to(ROOT)} : activations multiples potentielles "
-                "du blocage chauffage dans M2."
-            )
 
     print("✔ test_m2_forbidden_actions_absent")
 
 
 def test_m2_does_not_modify_t_ref_snapshots():
-    script_file, matches = find_m2_script_file()
+    """M2 ne doit pas écrire sur les snapshots T_REF.
 
+    Référence : contrat 1_fin_episode.md § INTERDITS.
+    """
+    script_file, _ = find_m2_script_file()
     if not script_file:
         print("✔ test_m2_does_not_modify_t_ref_snapshots")
         return
 
     text = strip_yaml_comments(read_text(script_file))
 
-    protected_targets = [
-        "input_number.ref_temp_entree",
-        "input_number.ref_temp_sejour",
-        "input_number.ref_temp_chambre_arnaud",
-        "input_number.ref_temp_chambre_matthieu",
-        "input_number.ref_temp_chambre_parents",
-        "input_number.ref_temp_palier",
-        "input_number.chute_temp_reference",
-    ]
-
-    for entity_id in protected_targets:
-        if contains_action_call_to_entity(text, "input_number.set_value", entity_id):
+    for entity_id in T_REF_SNAPSHOTS:
+        if action_targets_entity(text, "input_number.set_value", entity_id):
             add_error(
-                f"{script_file.relative_to(ROOT)} : M2 ne doit pas modifier {entity_id}."
+                f"{script_file.relative_to(ROOT)} : M2 ne doit pas modifier "
+                f"{entity_id}."
             )
 
     print("✔ test_m2_does_not_modify_t_ref_snapshots")
 
 
 def test_blocage_activation_is_exclusive_to_m2_with_allowed_exceptions():
-    m2_file, matches = find_m2_script_file()
+    """Seuls M2 et les écrivains explicitement autorisés peuvent activer le blocage.
 
-    allowed_markers = [
-        "m0",
-        "recover",
-        "recovery",
-        "m3",
-    ]
+    Référence : contrat 2_activation_blocage_et_cloture_episode.md
+                "M2 est le seul point légitime d'activation initiale du blocage".
+
+    Exceptions autorisées (détectées par token dans le chemin) :
+        m0, recover, recovery : réconciliation post-reboot
+        m3                    : prolongation (défensif, contrat le permet)
+    """
+    m2_file, _ = find_m2_script_file()
 
     for path in aeration_runtime_files():
         if m2_file and path == m2_file:
             continue
 
         path_text = str(path).lower()
-        if any(marker in path_text for marker in allowed_markers):
+        if any(marker in path_text for marker in ALLOWED_ACTIVATION_MARKERS):
             continue
 
         text = strip_yaml_comments(read_text(path))
 
-        if contains_action_call_to_entity(
+        if action_targets_entity(
             text,
             "input_boolean.turn_on",
             "input_boolean.chauffage_blocage_aeration",
@@ -717,21 +784,23 @@ def test_blocage_activation_is_exclusive_to_m2_with_allowed_exceptions():
 
 
 def test_m5_m6_do_not_modify_blocage_state():
+    """M5 et M6 ne doivent jamais écrire sur l'état du blocage.
+
+    Référence : contrat 2_activation_blocage_et_cloture_episode.md
+                "M5 et M6 ne modifient jamais l'état du blocage."
+    """
     for path in aeration_runtime_files():
         path_text = str(path).lower()
-
         if "m5" not in path_text and "m6" not in path_text:
             continue
 
         text = strip_yaml_comments(read_text(path))
 
-        if contains_action_call_to_entity(
-            text,
-            "input_boolean.turn_on",
+        if action_targets_entity(
+            text, "input_boolean.turn_on",
             "input_boolean.chauffage_blocage_aeration",
-        ) or contains_action_call_to_entity(
-            text,
-            "input_boolean.turn_off",
+        ) or action_targets_entity(
+            text, "input_boolean.turn_off",
             "input_boolean.chauffage_blocage_aeration",
         ):
             add_error(
@@ -743,21 +812,20 @@ def test_m5_m6_do_not_modify_blocage_state():
 
 
 def test_m5_m6_do_not_modify_datetime_targets():
-    protected_datetimes = [
-        "input_datetime.chauffage_fin_blocage_aeration",
-        "input_datetime.analyse_deltat_disponible",
-    ]
+    """M5 et M6 ne doivent jamais écrire sur les cibles temporelles.
 
+    Référence : contrat 3_armement_blocage_et_programmation_timers.md
+                "M5 et M6 n'altèrent pas les dates cibles".
+    """
     for path in aeration_runtime_files():
         path_text = str(path).lower()
-
         if "m5" not in path_text and "m6" not in path_text:
             continue
 
         text = strip_yaml_comments(read_text(path))
 
-        for entity_id in protected_datetimes:
-            if contains_action_call_to_entity(text, "input_datetime.set_datetime", entity_id):
+        for entity_id in PROTECTED_DATETIMES:
+            if action_targets_entity(text, "input_datetime.set_datetime", entity_id):
                 add_error(
                     f"{path.relative_to(ROOT)} : M5/M6 ne doivent pas modifier "
                     f"la cible temporelle {entity_id}."
@@ -767,16 +835,19 @@ def test_m5_m6_do_not_modify_datetime_targets():
 
 
 def test_test_registry_matches_functions():
-    current_module = sys.modules[__name__]
+    """La liste TESTS doit pointer vers des fonctions effectivement définies.
 
+    Garantit l'absence de noms morts dans TESTS après un renommage.
+    """
     for test_name in TESTS:
-        candidate = getattr(current_module, test_name, None)
-
-        if not callable(candidate):
+        if not callable(globals().get(test_name)):
             add_error(f"TESTS référence une fonction absente : {test_name}")
-
     print("✔ test_test_registry_matches_functions")
 
+
+# ==========================================================
+# 📋 REGISTRE DES TESTS
+# ==========================================================
 
 TESTS = [
     "test_aeration_runtime_directories_exist",
@@ -800,14 +871,16 @@ TESTS = [
 ]
 
 
+# ==========================================================
+# 🚀 ENTRYPOINT
+# ==========================================================
+
 def main():
     for test_name in TESTS:
         test_func = globals().get(test_name)
-
         if not callable(test_func):
             add_error(f"TESTS référence une fonction absente : {test_name}")
             continue
-
         test_func()
 
     if ERRORS:
