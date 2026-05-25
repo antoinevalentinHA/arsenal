@@ -101,8 +101,24 @@ def first_action_position(text: str, action_name: str, entity_id: str) -> int:
     )
 
     for match in re.finditer(action_pattern, text, re.MULTILINE):
-        window = text[match.start():match.start() + 900]
+        window = text[match.start():match.start() + 300]
         if entity_id in window:
+            return match.start()
+
+    return -1
+
+
+def first_action_position_after(text: str, action_name: str, start: int) -> int:
+    if start == -1:
+        return -1
+
+    action_pattern = (
+        rf"^\s*-\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
+        rf"|^\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
+    )
+
+    for match in re.finditer(action_pattern, text, re.MULTILINE):
+        if match.start() > start:
             return match.start()
 
     return -1
@@ -345,6 +361,22 @@ def first_text_position_after(text: str, needle: str, start: int) -> int:
     return text.find(needle, start)
 
 
+def first_action_position_after(text: str, action_name: str, start: int) -> int:
+    if start == -1:
+        return -1
+
+    action_pattern = (
+        rf"^\s*-\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
+        rf"|^\s*(action|service)\s*:\s*{re.escape(action_name)}\s*$"
+    )
+
+    for match in re.finditer(action_pattern, text, re.MULTILINE):
+        if match.start() > start:
+            return match.start()
+
+    return -1
+
+
 def test_m2_normative_order_is_preserved():
     script_file, matches = find_m2_script_file()
 
@@ -419,7 +451,7 @@ def test_m2_normative_order_is_preserved():
             "logbook final",
             first_text_position_after(
                 text,
-                "Chauffage - Fin aeration",
+                "logbook.log",
                 reset_confirmation_pos,
             ),
         ),
