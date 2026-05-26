@@ -55,6 +55,30 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
+            name: Seuils de déclenchement
+
+          - type: grid
+            square: false
+            columns: 2
+            cards:
+              - type: tile
+                entity: input_number.clim_seuil_declenchement_presence
+                name: Présence
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+              - type: tile
+                entity: input_number.clim_seuil_declenchement_absence
+                name: Absence
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
+          - type: custom:button-card
+            template: sub_section_header
             name: Offsets
 
           - type: grid
@@ -82,18 +106,18 @@ views:
               {% set presence = is_state('binary_sensor.presence_famille_unifiee', 'on') %}
 
               {% if presence %}
-                {% set consigne = states('input_number.clim_consigne_presence') | float %}
+                {% set seuil = states('input_number.clim_seuil_declenchement_presence') | float %}
               {% else %}
-                {% set consigne = states('input_number.clim_consigne_absence') | float %}
+                {% set seuil = states('input_number.clim_seuil_declenchement_absence') | float %}
               {% endif %}
 
               {% set offset_on = states('input_number.clim_offset_on') | float %}
               {% set offset_off = states('input_number.clim_offset_off') | float %}
 
-              {% set seuil_on = consigne + offset_on %}
-              {% set seuil_off = consigne - offset_off %}
+              {% set seuil_on = seuil + offset_on %}
+              {% set seuil_off = seuil - offset_off %}
 
-              🔎 Seuils d’autorisation froid
+              🔎 Seuils d'autorisation froid
 
               - Autorisation froid : ≥ {{ seuil_on | round(1) }} °C  
               - Interdiction froid : ≤ {{ seuil_off | round(1) }} °C
