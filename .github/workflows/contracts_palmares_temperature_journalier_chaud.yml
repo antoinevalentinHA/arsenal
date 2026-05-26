@@ -1,0 +1,50 @@
+name: Arsenal Contracts — Palmarès température journalier chaud
+
+on:
+  push:
+    paths:
+      - "03_input_numbers/meteo/palmares_temperature_journalier_chaud.yaml"
+      - "03_input_numbers/meteo/temperature_max_jardin.yaml"
+      - "04_input_texts/meteo/palmares_temperature_journalier_chaud.yaml"
+      - "07_input_datetimes/meteo/palmares_temperature_journalier_chaud.yaml"
+      - "11_automations/meteo/palmares_temperature_journalier_chaud_snapshot.yaml"
+      - "11_automations/meteo/palmares_temperature_journalier_chaud_evaluation.yaml"
+      - "11_automations/meteo/cloture_temperature_max.yaml"
+      - "11_automations/meteo/reset_temperature_max.yaml"
+      - "11_automations/meteo/update_temperature_max.yaml"
+      - "12_template_sensors/meteo/palmares_temperature_journalier_chaud.yaml"
+      - "12_template_sensors/meteo/palmares_temperature_journalier_chaud_anomalie.yaml"
+      - "12_template_sensors/meteo/temperature_max_jardin.yaml"
+      - "recorder.yaml"
+      - "scripts/arsenal_contracts/check_palmares_temperature_journalier_chaud_contracts.py"
+      - "00_documentation_arsenal/contrats/meteo/CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_CHAUD.md"
+  pull_request:
+    paths:
+      - "03_input_numbers/meteo/**"
+      - "04_input_texts/meteo/**"
+      - "07_input_datetimes/meteo/**"
+      - "11_automations/meteo/**"
+      - "12_template_sensors/meteo/**"
+      - "recorder.yaml"
+      - "scripts/arsenal_contracts/**"
+
+jobs:
+  contracts:
+    name: Vérification contractuelle palmarès température
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer dépendances
+        run: pip install pyyaml
+
+      - name: Arsenal Contracts — Palmarès température journalier chaud
+        run: |
+          python scripts/arsenal_contracts/check_palmares_temperature_journalier_chaud_contracts.py
