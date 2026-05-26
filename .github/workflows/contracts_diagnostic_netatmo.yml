@@ -1,0 +1,15 @@
+name: Arsenal Contracts — Diagnostic Netatmo
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contracts-diagnostic-netatmo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run Diagnostic Netatmo contract validation
+        run: python3 scripts/arsenal_contracts/check_diagnostic_netatmo_contracts.py
