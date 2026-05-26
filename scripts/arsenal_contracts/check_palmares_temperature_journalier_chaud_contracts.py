@@ -478,35 +478,53 @@ def test_abstention_float_sentinel():
     INV-CH-6 / doctrine abstention — Les sources métier thermiques
     ne doivent pas utiliser | float(0) comme fallback.
 
-    Scope strict :
+    Scope contractuel :
       - palmares_temperature_journalier_chaud
-      - temperature_max_journalier_jardin
+      - temperature_max_journaliere_jardin
+      - temperature_max_jour_courant_jardin
 
-    Exemption :
+    Détection par contenu métier (et non par nom de fichier).
+
+    Exemptions :
       - float(0) légitime sur helpers de rang
         (rang_NN_valeur / rang_NN_date)
       - exposition publique temperature_max_journaliere
     """
 
-    targets = [
-        ROOT / "11_automations" / "meteo" / "palmares_temperature_journalier_chaud.yaml",
-        ROOT / "11_automations" / "meteo" / "temperature_max_journalier_jardin.yaml",
-        ROOT / "12_template_sensors" / "meteo" / "palmares_temperature_journalier_chaud_synthese.yaml",
-        ROOT / "12_template_sensors" / "meteo" / "palmares_temperature_journalier_chaud_anomalie.yaml",
-        ROOT / "12_template_sensors" / "meteo" / "temperature_max_journaliere_jardin.yaml",
+    folders = [
+        ROOT / "11_automations" / "meteo",
+        ROOT / "12_template_sensors" / "meteo",
     ]
+
+    markers = [
+        "palmares_temperature_journalier_chaud",
+        "temperature_max_journaliere_jardin",
+        "temperature_max_jour_courant_jardin",
+    ]
+
+    targets = []
+
+    for folder in folders:
+
+        if not folder.is_dir():
+            fail(f"Dossier attendu absent : {folder.relative_to(ROOT)}")
+            continue
+
+        for f in yaml_files(folder):
+
+            content = read(f)
+
+            if any(marker in content for marker in markers):
+                targets.append(f)
+
+    if not targets:
+        fail("Aucun fichier cible trouvé pour contrôle float(0)")
+        return
 
     pattern_legitime = re.compile(r"rang_\d{2}_(valeur|date)")
     pattern_float0 = re.compile(r"\|\s*float\s*\(\s*0\s*\)")
 
     for f in targets:
-
-        if not f.is_file():
-            fail(
-                f"Fichier attendu absent pour contrôle float(0) : "
-                f"{f.relative_to(ROOT)}"
-            )
-            continue
 
         content = read(f)
 
