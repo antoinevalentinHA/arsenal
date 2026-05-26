@@ -105,13 +105,13 @@ thermo_stabilite_12h_status:
           [[[
             const piece = states['input_select.adjustment_piece']?.state;
             if (!piece || ['unknown','unavailable'].includes(piece))
-              return 'rgba(224, 224, 224, 0.2)';
+              return 'rgba(158, 158, 158, 0.1)';
 
             const id = `sensor.temperature_stats_12h_variance_${piece}`;
             const raw = states[id]?.state;
             const v = Number.parseFloat(raw);
             if (!Number.isFinite(v))
-              return 'rgba(224, 224, 224, 0.2)';
+              return 'rgba(158, 158, 158, 0.1)';
 
             if (v < 0.02)
               return 'rgba(76, 175, 80, 0.2)';
