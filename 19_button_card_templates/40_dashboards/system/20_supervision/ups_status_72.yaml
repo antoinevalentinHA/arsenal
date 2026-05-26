@@ -48,5 +48,5 @@ ups_status_72:
           [[[
             if (entity.state === 'on') return 'rgba(255, 152, 0, 0.25)';
             if (entity.state === 'off') return 'rgba(76, 175, 80, 0.2)';
-            return 'rgba(224, 224, 224, 0.2)';
+            return 'rgba(158, 158, 158, 0.1)';
           ]]]
