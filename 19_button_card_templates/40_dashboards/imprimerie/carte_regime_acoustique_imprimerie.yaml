@@ -72,5 +72,5 @@ carte_regime_acoustique_imprimerie:
             if (s === 'haut_extreme')
               return 'rgba(244, 67, 54, 0.2)';
 
-            return 'rgba(224, 224, 224, 0.2)';
+            return 'rgba(158, 158, 158, 0.1)';
           ]]]
