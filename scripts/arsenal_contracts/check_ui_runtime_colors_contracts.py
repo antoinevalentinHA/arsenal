@@ -19,10 +19,15 @@ EXCLUDED_PARTS = [
 ]
 
 # ==========================================================
-# Palette métier contractuelle
+# Palette métier canonique
 # ==========================================================
 
-ALLOWED_RGBA = {
+BASE_RGBA = {
+
+    # ======================================================
+    # Palette sémantique Arsenal
+    # ======================================================
+
     "rgba(76,175,80,0.2)",
     "rgba(244,67,54,0.2)",
     "rgba(255,152,0,0.2)",
@@ -30,8 +35,73 @@ ALLOWED_RGBA = {
     "rgba(33,150,243,0.2)",
     "rgba(158,158,158,0.2)",
     "rgba(158,158,158,0.1)",
+}
+
+# ==========================================================
+# Exceptions documentées Arsenal
+# 00_documentation_arsenal/ui/couleurs/03_exceptions.md
+# ==========================================================
+
+EXCEPTION_RGBA = {
+
+    # ======================================================
+    # Exception 2 — Palette thermique
+    # ======================================================
+
     "rgba(144,202,249,0.25)",
+
+    # ======================================================
+    # Exception 4 — NAV / HUB structure
+    # ======================================================
+
     "rgba(90,110,130,0.08)",
+
+    # ======================================================
+    # Exception 6 — KPI / vigilance / transitions
+    # ======================================================
+
+    "rgba(255,193,7,0.25)",
+    "rgba(255,152,0,0.25)",
+    "rgba(255,152,0,0.30)",
+
+    # ======================================================
+    # Exception 7 — Palette hydrique
+    # ======================================================
+
+    "rgba(187,222,251,0.3)",
+    "rgba(100,181,246,0.3)",
+    "rgba(30,136,229,0.35)",
+}
+
+# ==========================================================
+# RGB Arsenal autorisés pour graphes
+# Exception 5 — Visualisations quantitatives
+# ==========================================================
+
+GRAPH_BASE_RGBA = {
+
+    # palette Arsenal canonique
+
+    (76, 175, 80),
+    (244, 67, 54),
+    (255, 152, 0),
+    (255, 235, 59),
+    (33, 150, 243),
+    (158, 158, 158),
+
+    # thermique
+
+    (144, 202, 249),
+
+    # KPI / vigilance
+
+    (255, 193, 7),
+
+    # hydrique
+
+    (187, 222, 251),
+    (100, 181, 246),
+    (30, 136, 229),
 }
 
 # ==========================================================
@@ -47,6 +117,7 @@ ALLOWED_GRAPHICS_RGBA = {
 
 # ==========================================================
 # RGB opaques NAV/HUB
+# Exception 3
 # ==========================================================
 
 ALLOWED_RGB = {
@@ -129,6 +200,27 @@ def is_graph_file(path: Path):
     return False
 
 
+def is_allowed_graph_rgba(value: str):
+
+    normalized = normalize_color(value)
+
+    match = re.match(
+        r"rgba\((\d+),(\d+),(\d+),([0-9.]+)\)",
+        normalized,
+    )
+
+    if not match:
+        return False
+
+    rgb = (
+        int(match.group(1)),
+        int(match.group(2)),
+        int(match.group(3)),
+    )
+
+    return rgb in GRAPH_BASE_RGBA
+
+
 def iter_yaml_files():
 
     for base in SCAN_DIRS:
@@ -172,10 +264,17 @@ def test_only_allowed_rgba_are_used():
             normalized = normalize_color(match)
 
             # --------------------------------------------------
-            # palette métier
+            # palette métier canonique
             # --------------------------------------------------
 
-            if normalized in ALLOWED_RGBA:
+            if normalized in BASE_RGBA:
+                continue
+
+            # --------------------------------------------------
+            # exceptions documentées
+            # --------------------------------------------------
+
+            if normalized in EXCEPTION_RGBA:
                 continue
 
             # --------------------------------------------------
@@ -186,11 +285,14 @@ def test_only_allowed_rgba_are_used():
                 continue
 
             # --------------------------------------------------
-            # graphes : alpha libres temporairement
+            # graphes quantitatifs
+            # Exception 5
             # --------------------------------------------------
 
             if graph_file:
-                continue
+
+                if is_allowed_graph_rgba(normalized):
+                    continue
 
             fail(
                 f"{path} : couleur rgba interdite : {match}"
