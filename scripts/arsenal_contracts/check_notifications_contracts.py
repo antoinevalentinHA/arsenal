@@ -27,6 +27,27 @@ DIR_SCRIPTS     = REPO_ROOT / "10_scripts"
 SEPARATEUR_NORMATIF = "\u2013"   # –
 SEPARATEUR_INTERDIT = "\u2014"   # —
 
+# ---------------------------------------------------------------------------
+# Emoji normatif de tête
+#
+# Le test ne se contente pas de vérifier un caractère non-ASCII :
+#   - "Énergie – Batterie faible" est non-ASCII mais n'est pas conforme.
+#   - "🔋 Énergie – Batterie faible" est conforme.
+#
+# Le pattern couvre les blocs Unicode utilisés par les emojis courants,
+# avec prise en charge des sélecteurs de variation et séquences ZWJ.
+# ---------------------------------------------------------------------------
+EMOJI_AT_START = re.compile(
+    r"^("
+    r"[\U0001F1E6-\U0001F1FF]{2}"                  # drapeaux régionaux
+    r"|[\U0001F300-\U0001FAFF]"                    # emojis principaux
+    r"|[\u2600-\u27BF]"                            # symboles emoji BMP
+    r")"
+    r"(?:\ufe0f)?"
+    r"(?:\u200d(?:[\U0001F300-\U0001FAFF]|[\u2600-\u27BF])(?:\ufe0f)?)*"
+    r"\s+"
+)
+
 # Verbes et formulations interdits dans les titres (§ Format normatif)
 MOTS_INTERDITS_TITRE = [
     "relance", "relancé",
@@ -115,19 +136,17 @@ def test_titre_commence_par_emoji() -> None:
             # Ignorer les titres dynamiques (templates Jinja)
             if title.startswith("{{"):
                 continue
-            # Le premier char doit être un caractère emoji (hors ASCII)
-            first_char = title[0] if title else ""
-            if ord(first_char) < 127:
+            if not EMOJI_AT_START.match(title):
                 violations.append(
                     f"{path.relative_to(REPO_ROOT)} : "
-                    f"titre sans emoji en tête : «{title}»"
+                    f"titre sans emoji normatif en tête : «{title}»"
                 )
 
     if violations:
         for v in violations:
-            ERRORS.append(f"T1 — Emoji manquant : {v}")
+            ERRORS.append(f"T1 — Emoji de tête obligatoire : {v}")
     else:
-        print("✔ T1 — Tous les titres de notifications persistantes commencent par un emoji")
+        print("✔ T1 — Tous les titres de notifications persistantes commencent par un emoji normatif")
 
 
 # ---------------------------------------------------------------------------
@@ -278,7 +297,7 @@ def test_unicite_notification_id() -> None:
                 f"(seuil ≥ 4) : {', '.join(files_list[:4])}{'…' if len(files_list) > 4 else ''}"
             )
     else:
-        print("✔ T5 — Aucun notification_id présent dans 3 fichiers ou plus (unicité)")
+        print("✔ T5 — Aucun notification_id présent dans 4 fichiers ou plus (unicité)")
 
 
 # ---------------------------------------------------------------------------

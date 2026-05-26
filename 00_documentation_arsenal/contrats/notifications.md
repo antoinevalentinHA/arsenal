@@ -101,6 +101,34 @@ Elle sert à exposer :
 
 👉 Une notification persistante **n’est jamais un historique**.
 
+#### 🏷️ Titre persistant — Emoji obligatoire
+
+Toute notification créée via `persistent_notification.create`
+doit posséder un titre commençant par un **emoji de domaine**.
+
+Cette règle est obligatoire car la notification persistante est une
+projection UI durable de l’état métier courant : son domaine doit être
+identifiable immédiatement, sans dépendre du texte long ni du contexte
+d’appel.
+
+Format minimal obligatoire :
+
+> **<emoji> <Titre lisible>**
+
+Sont non conformes :
+
+- un titre sans emoji initial,
+- un titre commençant par une lettre, même accentuée,
+- un titre commençant par un symbole non fonctionnel,
+- un titre dynamique dont la conformité ne peut pas être vérifiée
+  explicitement.
+
+Exemples conformes :
+
+- `💨 Aération conseillée – RDC`
+- `🔥 Chauffage – Mode Confort`
+- `🚿 ECS – Bouclage actif`
+
 ---
 
 ----------------------------------------------------------
@@ -440,13 +468,18 @@ Elle vise à garantir :
 
 ### 🏷️ Titre — Format imposé
 
-Toute notification **doit** posséder un titre conforme au format suivant :
+Toute notification Arsenal **doit** posséder un titre conforme au format suivant :
 
 > **<emoji> <Domaine> – <État ou situation>**
 
+Pour les notifications persistantes, cette règle s’applique
+obligatoirement à chaque appel `persistent_notification.create`.
+
 Règles obligatoires :
 
-- le titre commence **toujours par un emoji**,
+- le titre commence **toujours par un emoji de domaine**,
+- l’emoji est placé en tout début de titre,
+- l’emoji est suivi d’un espace,
 - l’emoji identifie le **domaine fonctionnel principal**,
 - le titre décrit un **état** ou une **situation**, jamais une action,
 - le séparateur canonique est : `–` (tiret demi-cadratin).
