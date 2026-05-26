@@ -123,7 +123,7 @@ arsenal_self_audit_status_card:
               entity.state === 'unknown' ||
               entity.state === 'unavailable'
             ) {
-              return 'rgba(224, 224, 224, 0.2)';
+              return 'rgba(158, 158, 158, 0.1)';
             }
 
             if (error === 'on') {
@@ -142,5 +142,5 @@ arsenal_self_audit_status_card:
               return 'rgba(76, 175, 80, 0.2)';
             }
 
-            return 'rgba(224, 224, 224, 0.2)';
+            return 'rgba(158, 158, 158, 0.2)';
           ]]]
