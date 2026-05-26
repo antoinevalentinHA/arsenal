@@ -240,3 +240,140 @@ Les règles suivantes restent absolues :
 - Utiliser ces opacités pour encoder une sévérité autonome
 - Utiliser des couleurs opaques pleines hors contexte documenté
 - Utiliser cette exception comme justification d'une dérive UI générale
+
+---
+
+## Exception 6 — Accentuation visuelle des états intermédiaires
+
+### Objet
+
+Autoriser une accentuation perceptive modérée des états
+intermédiaires dans certaines cartes :
+- interprétatives,
+- KPI,
+- supervision,
+- seuils progressifs,
+- transitions non critiques.
+
+Cette exception permet d'améliorer :
+- lisibilité,
+- hiérarchie perceptive,
+- distinction visuelle des niveaux intermédiaires.
+
+Elle ne modifie pas la sémantique métier de la palette Arsenal.
+
+### Scope autorisé
+
+Cette exception est limitée :
+- aux cartes KPI,
+- aux cartes interprétatives,
+- aux seuils progressifs,
+- aux états transitoires,
+- aux niveaux de vigilance non critiques.
+
+Exemples typiques :
+- bruit / acoustique,
+- pluie récente,
+- supervision UPS,
+- états `transition`,
+- états `stale`,
+- seuils batterie/autonomie.
+
+### Variantes autorisées
+
+| Couleur | Valeur | Usage |
+|---------|--------|------|
+| 🟡 Jaune renforcé | `rgba(255, 193, 7, 0.25)` | Vigilance intermédiaire |
+| 🟠 Orange renforcé | `rgba(255, 152, 0, 0.25)` | Warning modéré |
+| 🟠 Orange transition | `rgba(255, 152, 0, 0.20)` | Transition faible |
+| 🟠 Orange accentué | `rgba(255, 152, 0, 0.30)` | Transition forte |
+
+### Principes
+
+Ces variantes :
+- restent dérivées de la palette Arsenal,
+- ne constituent pas de nouvelles couleurs sémantiques,
+- ne modifient pas la hiérarchie globale,
+- ne remplacent jamais le rouge critique,
+- ne remplacent jamais le gris indisponibilité.
+
+### 🚫 Interdits
+
+- Étendre ces opacités à toute l'UI Arsenal
+- Utiliser ces variantes dans des cartes décisionnelles
+- Introduire d'autres opacités intermédiaires non documentées
+- Utiliser ces variantes pour encoder une nouvelle sévérité
+- Transformer cette exception locale en palette parallèle
+
+---
+
+## Exception 7 — Palette hydrique / précipitations
+
+### Objet
+
+Autoriser une palette bleue dédiée à la représentation
+des phénomènes hydriques :
+- pluie,
+- précipitations,
+- intensité hydrique,
+- cumul d'eau,
+- phénomènes météorologiques liés à l'eau.
+
+Cette exception est :
+- catégorielle,
+- quantitative,
+- non décisionnelle.
+
+Elle ne constitue pas une sémantique métier Arsenal.
+
+### Scope autorisé
+
+Cette exception est strictement limitée :
+- aux cartes de précipitations,
+- aux intensités de pluie,
+- aux cumuls hydriques,
+- aux graphes hydriques,
+- aux indicateurs météo liés à l'eau.
+
+Elle ne s'applique pas :
+- aux cartes métier générales,
+- aux statuts système,
+- aux dashboards de supervision,
+- aux KPI non hydriques,
+- aux états décisionnels Arsenal.
+
+### Palette autorisée
+
+| Niveau | Valeur | Signification |
+|--------|--------|---------------|
+| 🔵 Bleu clair | `rgba(187, 222, 251, 0.3)` | Pluie faible |
+| 🔵 Bleu moyen | `rgba(100, 181, 246, 0.3)` | Pluie modérée |
+| 🔵 Bleu soutenu | `rgba(30, 136, 229, 0.35)` | Forte pluie |
+
+### Principes
+
+Cette palette :
+- représente une intensité hydrique,
+- ne représente jamais un statut métier,
+- ne remplace jamais la palette Arsenal,
+- reste limitée au domaine météorologique hydrique.
+
+### Priorité
+
+Les règles suivantes restent absolues :
+- le gris indisponibilité prime toujours,
+- la hiérarchie sémantique Arsenal reste inchangée,
+- cette palette ne peut jamais encoder :
+  - OK,
+  - WARN,
+  - CRITIQUE,
+  - OFF,
+  - indisponibilité.
+
+### 🚫 Interdits
+
+- Étendre cette palette à toute la météo Arsenal
+- Utiliser ces bleus hors contexte hydrique
+- Utiliser cette palette dans des cartes métier
+- Utiliser cette palette pour représenter une sévérité système
+- Introduire d'autres nuances hydriques non documentées
