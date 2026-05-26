@@ -7,9 +7,10 @@
 #     TEMPLATE UI METIER
 #
 # 🎯 ROLE
-#     Affiche l'état de l'intégration Netatmo HomeKit avec
-#     icône et couleur sémantiques par état. Distingue panne
-#     réseau et panne HomeKit. Lecture seule.
+#     Affiche l'état observable d'une station Netatmo avec
+#     icône et couleur sémantiques par état. Lecture seule.
+#     Désignation strictement observationnelle (contrat v1.1 §10) :
+#     les états ne nomment ni HomeKit ni réseau comme cause.
 #
 # 🧱 NATURE
 #     - Template button-card
@@ -17,23 +18,23 @@
 #     - UI uniquement (aucune décision)
 #
 # 🎨 SEMANTIQUE
-#     - ok          -> 🟢 vert      mdi:check-circle    (nominal)
-#     - ko_reseau   -> ⚪ gris      mdi:lan-disconnect  (panne réseau / connectivité)
-#     - ko_homekit  -> 🔴 rouge     mdi:apple           (erreur bridge HomeKit)
-#     - unknown     -> ⚪ gris      mdi:help-circle     (état inconnu)
-#     - unavailable -> ⚪ gris      mdi:help-circle     (indisponible)
+#     - ok            -> 🟢 vert      mdi:check-circle    (nominal)
+#     - muet_ping_ok  -> 🟠 orange    mdi:volume-off      (sans mesures, ping répond — abstention)
+#     - muet_ping_ko  -> 🔴 rouge     mdi:lan-disconnect  (sans mesures, ping muet — actionnable)
+#     - unknown       -> ⚪ gris      mdi:help-circle     (état inconnu)
+#     - unavailable   -> ⚪ gris      mdi:help-circle     (indisponible)
 #
 # 🔗 DEPENDANCES
 #     - entity : sensor diagnostic Netatmo synthétique
-#       (state attendu : ok | ko_reseau | ko_homekit)
+#       (state attendu : ok | muet_ping_ok | muet_ping_ko)
 #
 # ⚠️ CONTRAINTES
 #     - Icône par défaut mdi:weather-cloudy si état hors mapping
-#     - ko_reseau et unavailable/unknown partagent la même couleur grise —
+#     - unavailable et unknown partagent la même couleur grise —
 #       distinction uniquement via l'icône et le state affiché
 #     - Lecture seule — aucune action définie
 #     - Distinct de carte_integration_critique : états textuels normalisés
-#       Arsenal (ok/ko_*) vs binaire/numérique générique
+#       Arsenal (ok/muet_ping_*) vs binaire/numérique générique
 #
 # 🧩 USAGE
 #     type: custom:button-card
@@ -63,14 +64,14 @@ netatmo_diagnostic:
         card:
           - background-color: "rgba(76, 175, 80, 0.2)"
 
-    - value: "ko_reseau"
-      icon: mdi:lan-disconnect
+    - value: "muet_ping_ok"
+      icon: mdi:volume-off
       styles:
         card:
-          - background-color: "rgba(158, 158, 158, 0.1)"
+          - background-color: "rgba(255, 152, 0, 0.2)"
 
-    - value: "ko_homekit"
-      icon: mdi:apple
+    - value: "muet_ping_ko"
+      icon: mdi:lan-disconnect
       styles:
         card:
           - background-color: "rgba(244, 67, 54, 0.2)"

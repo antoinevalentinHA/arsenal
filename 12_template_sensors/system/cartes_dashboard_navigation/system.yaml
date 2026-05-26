@@ -134,14 +134,14 @@
             Boiler bridge indisponible
           {% elif boiler_bridge == 'degraded' %}
             Boiler bridge degrade
-          {% elif netatmo_arnaud == 'ko_homekit' %}
-            Diagnostic Netatmo Arnaud en echec HomeKit
-          {% elif netatmo_arnaud == 'ko_reseau' %}
-            Diagnostic Netatmo Arnaud en echec reseau
-          {% elif netatmo_matthieu == 'ko_homekit' %}
-            Diagnostic Netatmo Matthieu en echec HomeKit
-          {% elif netatmo_matthieu == 'ko_reseau' %}
-            Diagnostic Netatmo Matthieu en echec reseau
+          {% elif netatmo_arnaud == 'muet_ping_ok' %}
+            Station Netatmo Arnaud sans mesures, ping repond
+          {% elif netatmo_arnaud == 'muet_ping_ko' %}
+            Station Netatmo Arnaud sans mesures, ping muet
+          {% elif netatmo_matthieu == 'muet_ping_ok' %}
+            Station Netatmo Matthieu sans mesures, ping repond
+          {% elif netatmo_matthieu == 'muet_ping_ko' %}
+            Station Netatmo Matthieu sans mesures, ping muet
           {% elif couleurs_critiques | count > 0 %}
             Derive ressources significative
           {% else %}
