@@ -6,8 +6,8 @@
 # YAML Home Assistant
 # ---------------------------------------------------------
 
-*.yaml linguist-language=YAML
-*.yml linguist-language=YAML
+*.yaml linguist-language=YAML linguist-detectable=true
+*.yml linguist-language=YAML linguist-detectable=true
 
 # ---------------------------------------------------------
 # Documentation
