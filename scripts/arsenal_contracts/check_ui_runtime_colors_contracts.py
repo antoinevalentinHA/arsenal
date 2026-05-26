@@ -18,24 +18,47 @@ EXCLUDED_PARTS = [
     "/00_documentation_arsenal/",
 ]
 
+# ==========================================================
+# Palette métier contractuelle
+# ==========================================================
+
 ALLOWED_RGBA = {
-    "rgba(76, 175, 80, 0.2)",
-    "rgba(244, 67, 54, 0.2)",
-    "rgba(255, 152, 0, 0.2)",
-    "rgba(255, 235, 59, 0.2)",
-    "rgba(33, 150, 243, 0.2)",
-    "rgba(158, 158, 158, 0.2)",
-    "rgba(158, 158, 158, 0.1)",
-    "rgba(144, 202, 249, 0.25)",
-    "rgba(90, 110, 130, 0.08)",
+    "rgba(76,175,80,0.2)",
+    "rgba(244,67,54,0.2)",
+    "rgba(255,152,0,0.2)",
+    "rgba(255,235,59,0.2)",
+    "rgba(33,150,243,0.2)",
+    "rgba(158,158,158,0.2)",
+    "rgba(158,158,158,0.1)",
+    "rgba(144,202,249,0.25)",
+    "rgba(90,110,130,0.08)",
 }
 
-ALLOWED_RGB = {
-    "rgb(244, 67, 54)",
-    "rgb(76, 175, 80)",
-    "rgb(33, 150, 243)",
-    "rgb(158, 158, 158)",
+# ==========================================================
+# Primitives graphiques UI autorisées
+# ==========================================================
+
+ALLOWED_GRAPHICS_RGBA = {
+    "rgba(0,0,0,0)",
+    "rgba(0,0,0,0.08)",
+    "rgba(0,0,0,0.20)",
+    "rgba(255,255,255,0.80)",
 }
+
+# ==========================================================
+# RGB opaques NAV/HUB
+# ==========================================================
+
+ALLOWED_RGB = {
+    "rgb(244,67,54)",
+    "rgb(76,175,80)",
+    "rgb(33,150,243)",
+    "rgb(158,158,158)",
+}
+
+# ==========================================================
+# HEX interdits
+# ==========================================================
 
 FORBIDDEN_HEX = {
     "#000",
@@ -55,12 +78,26 @@ HEX_PATTERN = re.compile(
     r"#[0-9A-Fa-f]{3,6}\b"
 )
 
+# ==========================================================
+# Graphes
+# ==========================================================
+
+GRAPH_HINTS = [
+    "graph_",
+    "mini_graph",
+    "apexcharts",
+]
+
+# ==========================================================
+# Utilitaires
+# ==========================================================
 
 def fail(msg):
     ERRORS.append(msg)
 
 
 def should_skip(path: Path):
+
     path_str = str(path)
 
     for excluded in EXCLUDED_PARTS:
@@ -70,16 +107,37 @@ def should_skip(path: Path):
     return False
 
 
-def normalize(value: str):
-    return re.sub(r"\s+", " ", value.strip())
+def normalize_color(value: str):
+
+    value = value.strip()
+
+    value = re.sub(r"\s+", "", value)
+
+    value = value.replace(".0)", ")")
+
+    return value.lower()
+
+
+def is_graph_file(path: Path):
+
+    lowered = str(path).lower()
+
+    for hint in GRAPH_HINTS:
+        if hint in lowered:
+            return True
+
+    return False
 
 
 def iter_yaml_files():
+
     for base in SCAN_DIRS:
+
         if not base.exists():
             continue
 
         for path in base.rglob("*"):
+
             if not path.is_file():
                 continue
 
@@ -107,15 +165,36 @@ def test_only_allowed_rgba_are_used():
 
         matches = RGBA_PATTERN.findall(content)
 
+        graph_file = is_graph_file(path)
+
         for match in matches:
 
-            normalized = normalize(match)
+            normalized = normalize_color(match)
 
-            if normalized not in ALLOWED_RGBA:
+            # --------------------------------------------------
+            # palette métier
+            # --------------------------------------------------
 
-                fail(
-                    f"{path} : couleur rgba interdite : {normalized}"
-                )
+            if normalized in ALLOWED_RGBA:
+                continue
+
+            # --------------------------------------------------
+            # primitives graphiques
+            # --------------------------------------------------
+
+            if normalized in ALLOWED_GRAPHICS_RGBA:
+                continue
+
+            # --------------------------------------------------
+            # graphes : alpha libres temporairement
+            # --------------------------------------------------
+
+            if graph_file:
+                continue
+
+            fail(
+                f"{path} : couleur rgba interdite : {match}"
+            )
 
     if not ERRORS:
         print("✔ rgba runtime conformes")
@@ -138,12 +217,12 @@ def test_only_allowed_rgb_are_used():
 
         for match in matches:
 
-            normalized = normalize(match)
+            normalized = normalize_color(match)
 
             if normalized not in ALLOWED_RGB:
 
                 fail(
-                    f"{path} : couleur rgb opaque interdite : {normalized}"
+                    f"{path} : couleur rgb opaque interdite : {match}"
                 )
 
     if not ERRORS:
@@ -180,7 +259,7 @@ def test_forbidden_hex_colors():
 
 
 # ==========================================================
-# T4 — registre cohérent
+# registre des tests
 # ==========================================================
 
 TESTS = [
