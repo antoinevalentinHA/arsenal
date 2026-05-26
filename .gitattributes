@@ -28,11 +28,18 @@
 *.db-wal linguist-generated=true
 
 # ---------------------------------------------------------
-# Vendor / frontend dependencies
+# HACS / vendor Python code
 # ---------------------------------------------------------
 
-www/community/** linguist-generated=true
-custom_components/hacs/** linguist-generated=true
+custom_components/hacs/** linguist-vendored=true
+
+# ---------------------------------------------------------
+# Vendored frontend resources
+# ---------------------------------------------------------
+
+www/community/** linguist-vendored=true
+www/bar-card/** linguist-vendored=true
+www/lovelace-layout-card/** linguist-vendored=true
 
 # ---------------------------------------------------------
 # Generated frontend bundles
