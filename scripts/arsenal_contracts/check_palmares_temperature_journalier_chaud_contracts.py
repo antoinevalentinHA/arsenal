@@ -34,7 +34,7 @@ from pathlib import Path
 # ROOT — homeassistant/
 # ---------------------------------------------------------------------------
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 
 # ---------------------------------------------------------------------------
 # Constantes contractuelles
