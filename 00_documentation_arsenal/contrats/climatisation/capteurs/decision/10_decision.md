@@ -249,21 +249,18 @@ Produire le mode cible central de la climatisation à partir des besoins et auto
 
 | Dépendance | Type | Condition requise |
 |---|---|---|
-| `binary_sensor.besoin_clim_cool` | `binary_sensor` | `on` |
-| `binary_sensor.autorisation_clim_cool` | `binary_sensor` | `on` |
-| `binary_sensor.besoin_clim_dry` | `binary_sensor` | `on` |
-| `binary_sensor.autorisation_clim_dry` | `binary_sensor` | `on` |
-| `binary_sensor.besoin_clim_heat` | `binary_sensor` | `on` |
-| `binary_sensor.autorisation_clim_heat` | `binary_sensor` | `on` |
+| `binary_sensor.besoin_clim_cool_admissible` | `binary_sensor` | `on` |
+| `binary_sensor.besoin_clim_dry_admissible` | `binary_sensor` | `on` |
+| `binary_sensor.besoin_clim_heat_admissible` | `binary_sensor` | `on` |
 
 ### Logique
 
 ```text
-SI besoin_clim_cool == on ET autorisation_clim_cool == on
+SI besoin_clim_cool_admissible == on
   → cool
-SINON SI besoin_clim_dry == on ET autorisation_clim_dry == on
+SINON SI besoin_clim_dry_admissible == on
   → dry
-SINON SI besoin_clim_heat == on ET autorisation_clim_heat == on
+SINON SI besoin_clim_heat_admissible == on
   → heat
 SINON
   → off
@@ -287,9 +284,9 @@ L'absence de tout couple valide produit `off`.
 ### Position dans l'architecture
 
 ```text
-besoin_clim_cool + autorisation_clim_cool ─┐
-besoin_clim_dry  + autorisation_clim_dry  ─┼──► clim_target_mode ──► automation.clim_application_automatique
-besoin_clim_heat + autorisation_clim_heat ─┘                      ──► automation.clim_surveillance_fonctionnement
+besoin_clim_cool_admissible  ─┐
+besoin_clim_dry_admissible   ─┼──► clim_target_mode ──► automation.clim_application_automatique
+besoin_clim_heat_admissible  ─┘                      ──► automation.clim_surveillance_fonctionnement
 ```
 
 ### Consommateurs connus
@@ -377,7 +374,7 @@ Non déterminables depuis le YAML fourni.
 | Retour textuel | Oui | Non (float) | Oui | Oui | Oui |
 | Fallback mémoire | Non | Oui (`this.entity_id`) | Oui (`this.state`) | Non | Non |
 | Référence à `climate.clim` | Oui | Non | Oui | Non | Non |
-| Dépend de besoin + autorisation | Non | Non | Non | Oui | Non |
+| Dépend de besoins admissibles | Non | Non | Non | Oui | Non |
 | Référence à `this.*` | Non | Oui | Oui | Non | Non |
 | Arbitrage par ordre | Oui | Non | Oui | Oui | Oui |
 | Attributs exposés | Non | Oui | Non | Non | Non |
