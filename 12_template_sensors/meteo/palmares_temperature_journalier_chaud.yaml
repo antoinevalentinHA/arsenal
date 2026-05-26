@@ -1,41 +1,101 @@
 # ==========================================================
-# 🧠 ARSENAL — INPUT_DATETIME
+# 🧠 ARSENAL — TEMPLATE SENSOR
 #     Météo — Palmarès historique journées les plus chaudes
+#             Synthèse publique
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Stocker l'horodatage de la dernière évaluation réussie
-#   du palmarès des journées les plus chaudes.
+#   Exposer une synthèse lisible du palmarès des journées
+#   les plus chaudes : record absolu (rang 1), date du record,
+#   nombre de rangs remplis, et l'ensemble des rangs en attributs.
+#   Retourne unavailable si le rang 1 est vide (palmarès vierge).
 #
 # 🧩 PÉRIMÈTRE
-#   - Mémoire temporelle persistante uniquement
-#   - Aucun calcul temporel autonome
-#   - Aucune logique métier locale
-#   - Aucun comportement autonome
+#   - Calcul et dérivation uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
 #
 # 🔖 NATURE
-#   Mémoire de fraîcheur — repère de pipeline
+#   synthese
 #
-# 📋 MODE
-#   has_date: true — has_time: true
+# 🆔 UNIQUE_ID
+#   palmares_temperature_journalier_chaud
 #
-# 📋 USAGE
-#   Consommé par le binary_sensor d'anomalie pour détecter
-#   une évaluation manquante (fraîcheur > seuil_fraicheur_h=36h).
-#   Écrit exclusivement par :
-#       automation.palmares_temperature_journalier_chaud_evaluation
+# 🔗 DÉPENDANCES
+#   Lit :
+#     input_number.palmares_temperature_journalier_chaud_rang_01_valeur … rang_10_valeur
+#     input_text.palmares_temperature_journalier_chaud_rang_01_date … rang_10_date
 #
 # 🚫 INTERDITS
-#   - Confondre mémoire temporelle et décision
-#   - Constituer à lui seul une autorité décisionnelle
-#   - Écrire sans traçabilité vers l'auteur de l'écriture
-#   - Utiliser comme déclencheur direct sans justification explicite
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre valeur dérivée et décision exécutive
+#   - Exposer 0 si le rang 1 est vide
 #
 # 🏷️ STATUT
-#   Socle — Arsenal v14.x
+#   Calcul — Arsenal v14.x
 # ==========================================================
 
-palmares_temperature_journalier_chaud_derniere_evaluation:
-  name: Palmarès température chaud — Dernière évaluation
-  has_date: true
-  has_time: true
-  icon: mdi:clock-check-outline
+- sensor:
+    - name: "Palmarès température journalier chaud"
+      unique_id: palmares_temperature_journalier_chaud
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-chevron-up
+      availability: >
+        {{ states('input_text.palmares_temperature_journalier_chaud_rang_01_date') != '' }}
+      state: >
+        {{ states('input_number.palmares_temperature_journalier_chaud_rang_01_valeur') | float }}
+      attributes:
+        rang_01_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_01_valeur') | float(0) }}
+        rang_01_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_01_date') }}
+        rang_02_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_02_valeur') | float(0) }}
+        rang_02_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_02_date') }}
+        rang_03_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_03_valeur') | float(0) }}
+        rang_03_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_03_date') }}
+        rang_04_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_04_valeur') | float(0) }}
+        rang_04_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_04_date') }}
+        rang_05_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_05_valeur') | float(0) }}
+        rang_05_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_05_date') }}
+        rang_06_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_06_valeur') | float(0) }}
+        rang_06_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_06_date') }}
+        rang_07_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_07_valeur') | float(0) }}
+        rang_07_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_07_date') }}
+        rang_08_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_08_valeur') | float(0) }}
+        rang_08_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_08_date') }}
+        rang_09_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_09_valeur') | float(0) }}
+        rang_09_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_09_date') }}
+        rang_10_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_chaud_rang_10_valeur') | float(0) }}
+        rang_10_date: >
+          {{ states('input_text.palmares_temperature_journalier_chaud_rang_10_date') }}
+        rangs_remplis: >
+          {% set dates = [
+            states('input_text.palmares_temperature_journalier_chaud_rang_01_date'),
+            states('input_text.palmares_temperature_journalier_chaud_rang_02_date'),
+            states('input_text.palmares_temperature_journalier_chaud_rang_03_date'),
+            states('input_text.palmares_temperature_journalier_chaud_rang_04_date'),
+            states('input_text.palmares_temperature_journalier_chaud_rang_05_date'),
+            states('input_text.palmares_temperature_journalier_chaud_rang_06_date'),
+            states('input_text.palmares_temperature_journalier_chaud_rang_07_date'),
+            states('input_text.palmares_temperature_journalier_chaud_rang_08_date'),
+            states('input_text.palmares_temperature_journalier_chaud_rang_09_date'),
+            states('input_text.palmares_temperature_journalier_chaud_rang_10_date')
+          ] %}
+          {{ dates | select('ne', '') | list | count }}
