@@ -1,0 +1,231 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Climatisation — Intégrité paramètres
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Détecter toute incohérence de configuration des
+#   paramètres pilotant le système de climatisation
+#   (modes COOL, HEAT, température extérieure, blocage
+#   horaire).
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   diagnostic
+#
+# 🆔 UNIQUE_ID
+#   parametres_invalides_climatisation
+#
+# 🚨 INVARIANTS SURVEILLÉS
+#
+#   MODE COOL
+#   1) clim_seuil_declenchement_presence >
+#      clim_seuil_extinction_presence
+#      (hystérésis COOL présence)
+#
+#   2) clim_seuil_declenchement_absence >
+#      clim_seuil_extinction_absence
+#      (hystérésis COOL absence)
+#
+#   3) clim_seuil_declenchement_absence >=
+#      clim_seuil_declenchement_presence
+#      (on tolère plus de chaleur en absence)
+#
+#   4) clim_seuil_temperature_exterieure_minimum
+#      ∈ [15, 35] °C
+#
+#   MODE HEAT
+#   5) clim_offset_on > 0
+#      (hystérésis HEAT — offset nul ou négatif
+#      supprime ou inverse l'hystérésis)
+#
+#   6) clim_offset_off > 0
+#      (idem)
+#
+#   7) clim_hiver_seuil_temperature_exterieure
+#      ∈ [-20, 15] °C
+#
+#   COHÉRENCE COOL / HEAT
+#   8) clim_hiver_seuil_temperature_exterieure <
+#      clim_seuil_temperature_exterieure_minimum
+#      (plages HEAT et COOL non chevauchantes)
+#
+#   BLOCAGE HORAIRE
+#   9) Si clim_blocage_horaire_actif == on :
+#      clim_heure_blocage_autom_on ≠
+#      clim_heure_blocage_autom_off
+#      (heures identiques = blocage permanent 24h)
+#
+# 🔗 DÉPENDANCES
+#   Lit :
+#   - input_number.clim_seuil_declenchement_presence
+#   - input_number.clim_seuil_extinction_presence
+#   - input_number.clim_seuil_declenchement_absence
+#   - input_number.clim_seuil_extinction_absence
+#   - input_number.clim_seuil_temperature_exterieure_minimum
+#   - input_number.clim_offset_on
+#   - input_number.clim_offset_off
+#   - input_number.clim_hiver_seuil_temperature_exterieure
+#   - input_boolean.clim_blocage_horaire_actif
+#   - input_datetime.clim_heure_blocage_autom_on
+#   - input_datetime.clim_heure_blocage_autom_off
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre état booléen et action automatique
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x
+# ==========================================================
+
+- binary_sensor:
+    - name: "Climatisation — Paramètres invalides"
+      unique_id: parametres_invalides_climatisation
+      default_entity_id: binary_sensor.parametres_invalides_climatisation
+      icon: mdi:alert-circle-outline
+      state: >
+        {% set d_p      = states('input_number.clim_seuil_declenchement_presence')           | float(none) %}
+        {% set e_p      = states('input_number.clim_seuil_extinction_presence')              | float(none) %}
+        {% set d_a      = states('input_number.clim_seuil_declenchement_absence')            | float(none) %}
+        {% set e_a      = states('input_number.clim_seuil_extinction_absence')               | float(none) %}
+        {% set ext_cool = states('input_number.clim_seuil_temperature_exterieure_minimum')   | float(none) %}
+        {% set off_on   = states('input_number.clim_offset_on')                              | float(none) %}
+        {% set off_off  = states('input_number.clim_offset_off')                             | float(none) %}
+        {% set ext_heat = states('input_number.clim_hiver_seuil_temperature_exterieure')     | float(none) %}
+        {% set blocage  = is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
+        {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on')  | string %}
+        {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') | string %}
+        {% set h_on  = h_on_raw[:5]  if h_on_raw  | length >= 5 else '' %}
+        {% set h_off = h_off_raw[:5] if h_off_raw | length >= 5 else '' %}
+        {% set indispo = d_p is none or e_p is none or d_a is none or e_a is none
+             or ext_cool is none or off_on is none or off_off is none or ext_heat is none %}
+        {% set inv1 = indispo or not (d_p > e_p) %}
+        {% set inv2 = indispo or not (d_a > e_a) %}
+        {% set inv3 = indispo or not (d_a >= d_p) %}
+        {% set inv4 = ext_cool is none or not (15 <= ext_cool <= 35) %}
+        {% set inv5 = off_on  is none or not (off_on  > 0) %}
+        {% set inv6 = off_off is none or not (off_off > 0) %}
+        {% set inv7 = ext_heat is none or not (-20 <= ext_heat <= 15) %}
+        {% set inv8 = ext_cool is none or ext_heat is none or not (ext_heat < ext_cool) %}
+        {% set inv9 = blocage and h_on != '' and h_off != '' and h_on == h_off %}
+        {{ inv1 or inv2 or inv3 or inv4 or inv5 or inv6 or inv7 or inv8 or inv9 }}
+
+      attributes:
+        "cool_hysteresis_presence_invalide": >
+          {% set d_p = states('input_number.clim_seuil_declenchement_presence') | float(none) %}
+          {% set e_p = states('input_number.clim_seuil_extinction_presence')    | float(none) %}
+          {{ d_p is none or e_p is none or not (d_p > e_p) }}
+
+        "cool_hysteresis_absence_invalide": >
+          {% set d_a = states('input_number.clim_seuil_declenchement_absence') | float(none) %}
+          {% set e_a = states('input_number.clim_seuil_extinction_absence')    | float(none) %}
+          {{ d_a is none or e_a is none or not (d_a > e_a) }}
+
+        "cool_absence_inf_presence": >
+          {% set d_p = states('input_number.clim_seuil_declenchement_presence') | float(none) %}
+          {% set d_a = states('input_number.clim_seuil_declenchement_absence')  | float(none) %}
+          {{ d_p is none or d_a is none or not (d_a >= d_p) }}
+
+        "cool_seuil_ext_hors_plage": >
+          {% set ext_cool = states('input_number.clim_seuil_temperature_exterieure_minimum') | float(none) %}
+          {{ ext_cool is none or not (15 <= ext_cool <= 35) }}
+
+        "heat_offset_on_invalide": >
+          {% set off_on = states('input_number.clim_offset_on') | float(none) %}
+          {{ off_on is none or not (off_on > 0) }}
+
+        "heat_offset_off_invalide": >
+          {% set off_off = states('input_number.clim_offset_off') | float(none) %}
+          {{ off_off is none or not (off_off > 0) }}
+
+        "heat_seuil_ext_hors_plage": >
+          {% set ext_heat = states('input_number.clim_hiver_seuil_temperature_exterieure') | float(none) %}
+          {{ ext_heat is none or not (-20 <= ext_heat <= 15) }}
+
+        "cool_heat_seuils_ext_incoherents": >
+          {% set ext_cool = states('input_number.clim_seuil_temperature_exterieure_minimum')       | float(none) %}
+          {% set ext_heat = states('input_number.clim_hiver_seuil_temperature_exterieure') | float(none) %}
+          {{ ext_cool is none or ext_heat is none or not (ext_heat < ext_cool) }}
+
+        "blocage_horaire_permanent": >
+          {% set blocage  = is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
+          {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on')  | string %}
+          {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') | string %}
+          {% set h_on  = h_on_raw[:5]  if h_on_raw  | length >= 5 else '' %}
+          {% set h_off = h_off_raw[:5] if h_off_raw | length >= 5 else '' %}
+          {{ blocage and h_on != '' and h_off != '' and h_on == h_off }}
+
+        "seuil_declenchement_presence_indisponible": >
+          {{ states('input_number.clim_seuil_declenchement_presence')
+             in ['unknown', 'unavailable', 'none', ''] }}
+
+        "seuil_extinction_presence_indisponible": >
+          {{ states('input_number.clim_seuil_extinction_presence')
+             in ['unknown', 'unavailable', 'none', ''] }}
+
+        "seuil_declenchement_absence_indisponible": >
+          {{ states('input_number.clim_seuil_declenchement_absence')
+             in ['unknown', 'unavailable', 'none', ''] }}
+
+        "seuil_extinction_absence_indisponible": >
+          {{ states('input_number.clim_seuil_extinction_absence')
+             in ['unknown', 'unavailable', 'none', ''] }}
+
+        "seuil_ext_min_cool_indisponible": >
+          {{ states('input_number.clim_seuil_temperature_exterieure_minimum')
+             in ['unknown', 'unavailable', 'none', ''] }}
+
+        "offset_on_indisponible": >
+          {{ states('input_number.clim_offset_on')
+             in ['unknown', 'unavailable', 'none', ''] }}
+
+        "offset_off_indisponible": >
+          {{ states('input_number.clim_offset_off')
+             in ['unknown', 'unavailable', 'none', ''] }}
+
+        "seuil_ext_heat_indisponible": >
+          {{ states('input_number.clim_hiver_seuil_temperature_exterieure')
+             in ['unknown', 'unavailable', 'none', ''] }}
+
+        "cause": >
+          {% set d_p      = states('input_number.clim_seuil_declenchement_presence')           | float(none) %}
+          {% set e_p      = states('input_number.clim_seuil_extinction_presence')              | float(none) %}
+          {% set d_a      = states('input_number.clim_seuil_declenchement_absence')            | float(none) %}
+          {% set e_a      = states('input_number.clim_seuil_extinction_absence')               | float(none) %}
+          {% set ext_cool = states('input_number.clim_seuil_temperature_exterieure_minimum')   | float(none) %}
+          {% set off_on   = states('input_number.clim_offset_on')                              | float(none) %}
+          {% set off_off  = states('input_number.clim_offset_off')                             | float(none) %}
+          {% set ext_heat = states('input_number.clim_hiver_seuil_temperature_exterieure')     | float(none) %}
+          {% set blocage  = is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
+          {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on')  | string %}
+          {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') | string %}
+          {% set h_on  = h_on_raw[:5]  if h_on_raw  | length >= 5 else '' %}
+          {% set h_off = h_off_raw[:5] if h_off_raw | length >= 5 else '' %}
+          {% if d_p is none or e_p is none or d_a is none or e_a is none
+             or ext_cool is none or off_on is none or off_off is none or ext_heat is none %}
+            helpers_indisponibles
+          {% elif not (d_p > e_p) %}
+            cool_hysteresis_presence_invalide
+          {% elif not (d_a > e_a) %}
+            cool_hysteresis_absence_invalide
+          {% elif not (d_a >= d_p) %}
+            cool_absence_inf_presence
+          {% elif not (15 <= ext_cool <= 35) %}
+            cool_seuil_ext_hors_plage
+          {% elif not (off_on > 0) %}
+            heat_offset_on_invalide
+          {% elif not (off_off > 0) %}
+            heat_offset_off_invalide
+          {% elif not (-20 <= ext_heat <= 15) %}
+            heat_seuil_ext_hors_plage
+          {% elif not (ext_heat < ext_cool) %}
+            cool_heat_seuils_ext_incoherents
+          {% elif blocage and h_on != '' and h_off != '' and h_on == h_off %}
+            blocage_horaire_permanent
+          {% else %}
+            none
+          {% endif %}
