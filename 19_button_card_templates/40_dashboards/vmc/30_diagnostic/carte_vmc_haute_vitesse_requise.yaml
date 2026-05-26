@@ -54,7 +54,7 @@ carte_vmc_haute_vitesse_requise:
         const bg = (() => {
           if (category === 'active') return 'rgba(76, 175, 80, 0.2)';
           if (category === 'idle') return 'rgba(158, 158, 158, 0.2)';
-          return 'rgba(224, 224, 224, 0.2)';
+          return 'rgba(158, 158, 158, 0.1)';
         })();
 
         const stateText = (() => {
