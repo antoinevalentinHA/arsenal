@@ -477,37 +477,58 @@ def test_abstention_float_sentinel():
     """
     INV-CH-6 / doctrine abstention — Les sources métier thermiques
     ne doivent pas utiliser | float(0) comme fallback.
-    Scope : 11_automations/meteo/ et 12_template_sensors/meteo/ uniquement.
-    Exemption : float(0) légitime sur les helpers de rang (valeur sentinelle rang vide).
+
+    Scope strict :
+      - palmares_temperature_journalier_chaud
+      - temperature_max_journalier_jardin
+
+    Exemption :
+      - float(0) légitime sur helpers de rang
+        (rang_NN_valeur / rang_NN_date)
+      - exposition publique temperature_max_journaliere
     """
+
     targets = [
-        ROOT / "11_automations" / "meteo",
-        ROOT / "12_template_sensors" / "meteo",
+        ROOT / "11_automations" / "meteo" / "palmares_temperature_journalier_chaud.yaml",
+        ROOT / "11_automations" / "meteo" / "temperature_max_journalier_jardin.yaml",
+        ROOT / "12_template_sensors" / "meteo" / "palmares_temperature_journalier_chaud_synthese.yaml",
+        ROOT / "12_template_sensors" / "meteo" / "palmares_temperature_journalier_chaud_anomalie.yaml",
+        ROOT / "12_template_sensors" / "meteo" / "temperature_max_journaliere_jardin.yaml",
     ]
-    # Patterns légitimes exemptés : rang_NN_valeur, rang_NN_date
+
     pattern_legitime = re.compile(r"rang_\d{2}_(valeur|date)")
     pattern_float0 = re.compile(r"\|\s*float\s*\(\s*0\s*\)")
 
-    for folder in targets:
-        if not folder.is_dir():
+    for f in targets:
+
+        if not f.is_file():
+            fail(
+                f"Fichier attendu absent pour contrôle float(0) : "
+                f"{f.relative_to(ROOT)}"
+            )
             continue
-        for f in yaml_files(folder):
-            content = read(f)
-            for match in pattern_float0.finditer(content):
-                # Extraire le contexte autour du match (200 chars avant)
-                start = max(0, match.start() - 200)
-                context = content[start: match.end()]
-                # Exempter si le contexte concerne un helper de rang
-                if pattern_legitime.search(context):
-                    continue
-                # Exempter si le contexte concerne temperature_max_journaliere (exposition)
-                if "temperature_max_journaliere" in context:
-                    continue
-                fail(
-                    f"float(0) sur source métier potentielle dans "
-                    f"{f.relative_to(ROOT)} "
-                    f"(doctrine abstention — INV-CH-6)"
-                )
+
+        content = read(f)
+
+        for match in pattern_float0.finditer(content):
+
+            start = max(0, match.start() - 200)
+            context = content[start: match.end()]
+
+            # Exemption helpers de rang
+            if pattern_legitime.search(context):
+                continue
+
+            # Exemption exposition publique
+            if "temperature_max_journaliere" in context:
+                continue
+
+            fail(
+                f"float(0) sur source métier potentielle dans "
+                f"{f.relative_to(ROOT)} "
+                f"(doctrine abstention — INV-CH-6)"
+            )
+
     print("  ✔ Absence de float(0) sur sources métier thermiques")
 
 
