@@ -32,9 +32,10 @@
 # ---------------------------------------------------------
 
 www/community/** linguist-generated=true
+custom_components/hacs/** linguist-generated=true
 
 # ---------------------------------------------------------
-# HACS / generated frontend bundles
+# Generated frontend bundles
 # ---------------------------------------------------------
 
 *.min.js linguist-generated=true
