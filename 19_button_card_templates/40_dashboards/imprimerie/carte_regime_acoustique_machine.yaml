@@ -85,8 +85,8 @@ carte_regime_acoustique_machine:
             }
 
             if (s === 'indisponible') {
-              return 'rgba(224, 224, 224, 0.2)';
+              return 'rgba(158, 158, 158, 0.1)';
             }
 
-            return 'rgba(224, 224, 224, 0.2)';
+            return 'rgba(158, 158, 158, 0.1)';
           ]]]
