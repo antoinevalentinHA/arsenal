@@ -30,5 +30,5 @@
     - service: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
-        titre: "ScanWatch — Batterie faible"
+        titre: "🔋 ScanWatch — Batterie faible"
         message: "La batterie de la ScanWatch est faible."
