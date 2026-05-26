@@ -115,43 +115,43 @@
         {{ inv1 or inv2 or inv3 or inv4 or inv5 or inv6 or inv7 or inv8 or inv9 }}
 
       attributes:
-        "cool_hysteresis_presence_invalide": >
+        cool_hysteresis_presence_invalide: >
           {% set d_p = states('input_number.clim_seuil_declenchement_presence') | float(none) %}
           {% set e_p = states('input_number.clim_seuil_extinction_presence')    | float(none) %}
           {{ d_p is none or e_p is none or not (d_p > e_p) }}
 
-        "cool_hysteresis_absence_invalide": >
+        cool_hysteresis_absence_invalide: >
           {% set d_a = states('input_number.clim_seuil_declenchement_absence') | float(none) %}
           {% set e_a = states('input_number.clim_seuil_extinction_absence')    | float(none) %}
           {{ d_a is none or e_a is none or not (d_a > e_a) }}
 
-        "cool_absence_inf_presence": >
+        cool_absence_inf_presence: >
           {% set d_p = states('input_number.clim_seuil_declenchement_presence') | float(none) %}
           {% set d_a = states('input_number.clim_seuil_declenchement_absence')  | float(none) %}
           {{ d_p is none or d_a is none or not (d_a >= d_p) }}
 
-        "cool_seuil_ext_hors_plage": >
+        cool_seuil_ext_hors_plage: >
           {% set ext_cool = states('input_number.clim_seuil_temperature_exterieure_minimum') | float(none) %}
           {{ ext_cool is none or not (15 <= ext_cool <= 35) }}
 
-        "heat_offset_on_invalide": >
+        heat_offset_on_invalide: >
           {% set off_on = states('input_number.clim_offset_on') | float(none) %}
           {{ off_on is none or not (off_on > 0) }}
 
-        "heat_offset_off_invalide": >
+        heat_offset_off_invalide: >
           {% set off_off = states('input_number.clim_offset_off') | float(none) %}
           {{ off_off is none or not (off_off > 0) }}
 
-        "heat_seuil_ext_hors_plage": >
+        heat_seuil_ext_hors_plage: >
           {% set ext_heat = states('input_number.clim_hiver_seuil_temperature_exterieure') | float(none) %}
           {{ ext_heat is none or not (-20 <= ext_heat <= 15) }}
 
-        "cool_heat_seuils_ext_incoherents": >
+        cool_heat_seuils_ext_incoherents: >
           {% set ext_cool = states('input_number.clim_seuil_temperature_exterieure_minimum')       | float(none) %}
           {% set ext_heat = states('input_number.clim_hiver_seuil_temperature_exterieure') | float(none) %}
           {{ ext_cool is none or ext_heat is none or not (ext_heat < ext_cool) }}
 
-        "blocage_horaire_permanent": >
+        blocage_horaire_permanent: >
           {% set blocage  = is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
           {% set h_on_raw  = states('input_datetime.clim_heure_blocage_autom_on')  | string %}
           {% set h_off_raw = states('input_datetime.clim_heure_blocage_autom_off') | string %}
@@ -159,39 +159,39 @@
           {% set h_off = h_off_raw[:5] if h_off_raw | length >= 5 else '' %}
           {{ blocage and h_on != '' and h_off != '' and h_on == h_off }}
 
-        "seuil_declenchement_presence_indisponible": >
+        seuil_declenchement_presence_indisponible: >
           {{ states('input_number.clim_seuil_declenchement_presence')
              in ['unknown', 'unavailable', 'none', ''] }}
 
-        "seuil_extinction_presence_indisponible": >
+        seuil_extinction_presence_indisponible: >
           {{ states('input_number.clim_seuil_extinction_presence')
              in ['unknown', 'unavailable', 'none', ''] }}
 
-        "seuil_declenchement_absence_indisponible": >
+        seuil_declenchement_absence_indisponible: >
           {{ states('input_number.clim_seuil_declenchement_absence')
              in ['unknown', 'unavailable', 'none', ''] }}
 
-        "seuil_extinction_absence_indisponible": >
+        seuil_extinction_absence_indisponible: >
           {{ states('input_number.clim_seuil_extinction_absence')
              in ['unknown', 'unavailable', 'none', ''] }}
 
-        "seuil_ext_min_cool_indisponible": >
+        seuil_ext_min_cool_indisponible: >
           {{ states('input_number.clim_seuil_temperature_exterieure_minimum')
              in ['unknown', 'unavailable', 'none', ''] }}
 
-        "offset_on_indisponible": >
+        offset_on_indisponible: >
           {{ states('input_number.clim_offset_on')
              in ['unknown', 'unavailable', 'none', ''] }}
 
-        "offset_off_indisponible": >
+        offset_off_indisponible: >
           {{ states('input_number.clim_offset_off')
              in ['unknown', 'unavailable', 'none', ''] }}
 
-        "seuil_ext_heat_indisponible": >
+        seuil_ext_heat_indisponible: >
           {{ states('input_number.clim_hiver_seuil_temperature_exterieure')
              in ['unknown', 'unavailable', 'none', ''] }}
 
-        "cause": >
+        cause: >
           {% set d_p      = states('input_number.clim_seuil_declenchement_presence')           | float(none) %}
           {% set e_p      = states('input_number.clim_seuil_extinction_presence')              | float(none) %}
           {% set d_a      = states('input_number.clim_seuil_declenchement_absence')            | float(none) %}
