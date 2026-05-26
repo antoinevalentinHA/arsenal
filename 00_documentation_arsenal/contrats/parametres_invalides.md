@@ -1,6 +1,6 @@
 # 📜 CONTRAT — PARAMÈTRES INVALIDES
 
-**Version** : 1.0
+**Version** : 1.1
 **Statut** : normatif
 **Domaine** : observabilité système — intégrité des paramètres
 **Portée** : transverse (tous sous-systèmes Arsenal)
@@ -369,6 +369,7 @@ parametres_invalides_domaines:
     - binary_sensor.parametres_invalides_eclairage
     - binary_sensor.parametres_invalides_vacances
     - binary_sensor.parametres_invalides_vmc
+    - binary_sensor.parametres_invalides_climatisation
     # ... tout nouveau domaine doit être ajouté ici
 ```
 
@@ -407,6 +408,7 @@ suivant. Sections imposées dans cet ordre.
 #     - binary_sensor.parametres_invalides_eclairage
 #     - binary_sensor.parametres_invalides_vacances
 #     - binary_sensor.parametres_invalides_vmc
+#     - binary_sensor.parametres_invalides_climatisation
 #
 # ----------------------------------------------------------
 # 🚫 INTERDITS
@@ -592,3 +594,4 @@ Procédure normative à suivre pour ajouter un sous-système :
 | Version | Date       | Notes                                          |
 |---------|------------|------------------------------------------------|
 | 1.0     | 2026-04-30 | Version initiale. Couches 1–4 normatives.      |
+| 1.1     | 2026-05-26 | Ajout du domaine climatisation.                |
