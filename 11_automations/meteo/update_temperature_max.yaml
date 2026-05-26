@@ -1,0 +1,82 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Température max jour courant jardin — Update
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10160000000024"
+#
+# 🎯 RÔLE
+#   Mettre à jour le maximum courant du jour civil si la
+#   température jardin dépasse la valeur mémorisée.
+#   Abstention si source invalide ou valeur inférieure/égale.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : comparaison et mise à jour du max courant
+#   - Exclut : clôture journalière, reset, exposition publique
+#
+# 🔖 NATURE
+#   Application événementielle
+#
+# ⚙️ MODE
+#   single
+#   Justification : traitement séquentiel, pas de concurrence
+#                  utile sur une mise à jour de max
+#
+# 📣 DÉCLENCHEURS
+#   - state_change : sensor.temperature_jardin
+#
+# 🔗 DÉPENDANCES
+#   Lit     : sensor.temperature_jardin
+#             input_number.temperature_max_jour_courant_jardin
+#   Écrit   : input_number.temperature_max_jour_courant_jardin
+#
+# 🧠 AUTORITÉ
+#   Décide et applique — comparaison max, abstention si inférieur
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger — écriture uniquement si valeur strictement
+#   supérieure au max courant
+#
+# 🚫 INTERDITS
+#   - Écrire si source invalide (unavailable, unknown, non numérique)
+#   - Écrire si valeur inférieure ou égale au max courant
+#   - Confondre max courant et max journalier clôturé
+#   - Interagir avec le pipeline palmarès directement
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+- id: "10160000000024"
+  alias: "Température max jour courant jardin — Update"
+  description: >
+    Met à jour le maximum courant si la température jardin dépasse
+    la valeur mémorisée. Abstention si source invalide ou inférieure.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.temperature_jardin
+
+  variables:
+    source_state: >
+      {{ states('sensor.temperature_jardin') }}
+    source_valide: >
+      {{ source_state not in ['unknown', 'unavailable', 'none', '']
+         and source_state | float(-999) != -999 }}
+    source_valeur: >
+      {{ source_state | float(-999) }}
+    max_courant: >
+      {{ states('input_number.temperature_max_jour_courant_jardin') | float(-999) }}
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ source_valide and source_valeur > max_courant }}
+
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.temperature_max_jour_courant_jardin
+      data:
+        value: "{{ source_valeur }}"

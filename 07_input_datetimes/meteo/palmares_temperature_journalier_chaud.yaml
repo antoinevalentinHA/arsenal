@@ -1,0 +1,41 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Météo — Palmarès historique journées les plus chaudes
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker l'horodatage de la dernière évaluation réussie
+#   du palmarès des journées les plus chaudes.
+#
+# 🧩 PÉRIMÈTRE
+#   - Mémoire temporelle persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Mémoire de fraîcheur — repère de pipeline
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# 📋 USAGE
+#   Consommé par le binary_sensor d'anomalie pour détecter
+#   une évaluation manquante (fraîcheur > seuil_fraicheur_h=36h).
+#   Écrit exclusivement par :
+#       automation.palmares_temperature_journalier_chaud_evaluation
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire temporelle et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Utiliser comme déclencheur direct sans justification explicite
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+palmares_temperature_journalier_chaud_derniere_evaluation:
+  name: Palmarès température chaud — Dernière évaluation
+  has_date: true
+  has_time: true
+  icon: mdi:clock-check-outline

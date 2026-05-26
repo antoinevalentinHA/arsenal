@@ -1,0 +1,74 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Température max journalière jardin — Clôture
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10160000000025"
+#
+# 🎯 RÔLE
+#   Clôturer la journée civile à 00:00:05 en copiant le max
+#   courant vers la mémoire journalière stable.
+#   Abstention si max courant est à la sentinelle -999.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : publication de la valeur clôturée
+#   - Exclut : reset du max courant (automation dédiée)
+#              évaluation palmarès (automation dédiée)
+#
+# 🔖 NATURE
+#   Application
+#
+# ⚙️ MODE
+#   single
+#   Justification : déclenchement horaire unique
+#
+# 📣 DÉCLENCHEURS
+#   - time : 00:00:05 (quotidien)
+#
+# 🔗 DÉPENDANCES
+#   Lit     : input_number.temperature_max_jour_courant_jardin
+#   Écrit   : input_number.temperature_max_journaliere_jardin
+#
+# 🧠 AUTORITÉ
+#   Décide et applique — clôture civile explicite
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger — écrasement de la valeur clôturée
+#   par la valeur courante si valide
+#
+# 🚫 INTERDITS
+#   - Écrire -999 dans la mémoire journalière
+#   - Lire sensor.temperature_jardin directement
+#   - Confondre clôture et reset
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+- id: "10160000000025"
+  alias: "Température max journalière jardin — Clôture"
+  description: >
+    Copie le max courant vers la mémoire journalière clôturée à 00:00:05.
+    Abstention si max courant est à la sentinelle -999.
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "00:00:05"
+
+  variables:
+    max_courant: >
+      {{ states('input_number.temperature_max_jour_courant_jardin') | float(-999) }}
+    max_valide: >
+      {{ max_courant != -999 }}
+
+  condition:
+    - condition: template
+      value_template: "{{ max_valide }}"
+
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.temperature_max_journaliere_jardin
+      data:
+        value: "{{ max_courant }}"

@@ -1,0 +1,142 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Palmarès historique journées les plus chaudes
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les valeurs numériques persistantes du palmarès
+#   historique des journées les plus chaudes : 10 valeurs de
+#   rangs (top 10) + 1 snapshot pré-minuit.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Registre de pipeline
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_JOURNEES_PLUS_CHAUDES.md V1.0
+#   Instance : temperature_journalier_chaud
+#   Paramètres : min=-10°C, max=50°C, step=0.1
+#
+# 📋 CONVENTIONS
+#   - Valeur de rang vide : 0
+#   - Couplage strict avec input_text de date correspondant
+#   - Écriture exclusivement par :
+#       automation.palmares_temperature_journalier_chaud_snapshot
+#       automation.palmares_temperature_journalier_chaud_evaluation
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Saisie manuelle hors procédure de réinitialisation
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+# --- Rangs ---
+
+palmares_temperature_journalier_chaud_rang_01_valeur:
+  name: Palmarès température chaud — Rang 01 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+palmares_temperature_journalier_chaud_rang_02_valeur:
+  name: Palmarès température chaud — Rang 02 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+palmares_temperature_journalier_chaud_rang_03_valeur:
+  name: Palmarès température chaud — Rang 03 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+palmares_temperature_journalier_chaud_rang_04_valeur:
+  name: Palmarès température chaud — Rang 04 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+palmares_temperature_journalier_chaud_rang_05_valeur:
+  name: Palmarès température chaud — Rang 05 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+palmares_temperature_journalier_chaud_rang_06_valeur:
+  name: Palmarès température chaud — Rang 06 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+palmares_temperature_journalier_chaud_rang_07_valeur:
+  name: Palmarès température chaud — Rang 07 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+palmares_temperature_journalier_chaud_rang_08_valeur:
+  name: Palmarès température chaud — Rang 08 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+palmares_temperature_journalier_chaud_rang_09_valeur:
+  name: Palmarès température chaud — Rang 09 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+palmares_temperature_journalier_chaud_rang_10_valeur:
+  name: Palmarès température chaud — Rang 10 valeur
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+# --- Helper mécanique ---
+
+palmares_temperature_journalier_chaud_snapshot_veille:
+  name: Palmarès température chaud — Snapshot veille
+  min: -10
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-clock

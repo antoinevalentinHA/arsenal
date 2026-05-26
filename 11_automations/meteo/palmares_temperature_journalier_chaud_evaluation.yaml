@@ -1,0 +1,290 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Palmarès journées chaudes — Évaluation
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10160000000023"
+#
+# 🎯 RÔLE
+#   Évaluer le snapshot de la veille et mettre à jour le
+#   palmarès des journées les plus chaudes si la valeur
+#   mérite un rang dans le top 10.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : validation du snapshot, tri descendant avec FIFO,
+#              insertion, décalage des rangs, horodatage de
+#              dernière évaluation
+#   - Exclut : capture du maximum (responsabilité du snapshot)
+#
+# 🔖 NATURE
+#   Application
+#
+# ⚙️ MODE
+#   single
+#   Justification : évaluation journalière unique, concurrence
+#                  impossible par construction
+#
+# 📣 DÉCLENCHEURS
+#   - time : 00:00:30 (quotidien)
+#
+# 🔗 DÉPENDANCES
+#   Lit     : input_number.palmares_temperature_journalier_chaud_snapshot_veille
+#             input_number.palmares_temperature_journalier_chaud_rang_01_valeur … rang_10_valeur
+#             input_text.palmares_temperature_journalier_chaud_rang_01_date … rang_10_date
+#   Écrit   : input_number.palmares_temperature_journalier_chaud_rang_01_valeur … rang_10_valeur
+#             input_text.palmares_temperature_journalier_chaud_rang_01_date … rang_10_date
+#             input_datetime.palmares_temperature_journalier_chaud_derniere_evaluation
+#
+# 🧠 AUTORITÉ
+#   Décide et applique — algorithme de tri et d'insertion
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger le même jour :
+#   la garde date_deja_presente empêche une double insertion
+#   de la même journée civile.
+#
+# 📋 DOCTRINE D'INSERTION
+#   - Abstention si snapshot invalide (float(-999))
+#   - Abstention si date_veille déjà présente dans les rangs
+#   - FIFO sur égalité : tuple (valeur, index_anteriorite, date)
+#     tri sur valeur décroissant, index croissant
+#     → l'ancien rang conserve sa position à valeur égale
+#   - Rangs vides exclus de la liste avant tri (date == "")
+#   - Palmarès partiellement rempli : tout snapshot valide entre
+#   - Palmarès plein : snapshot doit être strictement supérieur
+#     au rang 10
+#
+# 🚫 INTERDITS
+#   - Lire sensor.temperature_max_journaliere_jardin directement
+#   - Utiliser le Recorder comme source métier
+#   - Insérer une date déjà présente dans les rangs
+#   - Écrire si snapshot invalide
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+- id: "10160000000023"
+  alias: "Palmarès température chaud — Évaluation"
+  description: >
+    Évalue le snapshot de la veille et met à jour le palmarès
+    des journées les plus chaudes si la valeur mérite un rang.
+    Abstention si snapshot invalide, date déjà présente, ou
+    valeur insuffisante (FIFO strict).
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "00:00:30"
+
+  variables:
+    snapshot_state: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_snapshot_veille') }}
+    snapshot: >
+      {{ snapshot_state | float(-999) }}
+    snapshot_valide: >
+      {{ snapshot != -999
+         and snapshot_state not in ['unknown', 'unavailable', 'none', ''] }}
+
+    date_veille: >
+      {{ (now() - timedelta(days=1)).strftime('%Y-%m-%d') }}
+
+    rang_01_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_01_valeur') | float(0) }}
+    rang_02_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_02_valeur') | float(0) }}
+    rang_03_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_03_valeur') | float(0) }}
+    rang_04_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_04_valeur') | float(0) }}
+    rang_05_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_05_valeur') | float(0) }}
+    rang_06_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_06_valeur') | float(0) }}
+    rang_07_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_07_valeur') | float(0) }}
+    rang_08_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_08_valeur') | float(0) }}
+    rang_09_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_09_valeur') | float(0) }}
+    rang_10_val: >
+      {{ states('input_number.palmares_temperature_journalier_chaud_rang_10_valeur') | float(0) }}
+    rang_01_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_01_date') }}
+    rang_02_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_02_date') }}
+    rang_03_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_03_date') }}
+    rang_04_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_04_date') }}
+    rang_05_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_05_date') }}
+    rang_06_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_06_date') }}
+    rang_07_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_07_date') }}
+    rang_08_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_08_date') }}
+    rang_09_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_09_date') }}
+    rang_10_date: >
+      {{ states('input_text.palmares_temperature_journalier_chaud_rang_10_date') }}
+
+    valeurs: >
+      {{ [rang_01_val, rang_02_val, rang_03_val, rang_04_val, rang_05_val,
+          rang_06_val, rang_07_val, rang_08_val, rang_09_val, rang_10_val] }}
+    dates: >
+      {{ [rang_01_date, rang_02_date, rang_03_date, rang_04_date, rang_05_date,
+          rang_06_date, rang_07_date, rang_08_date, rang_09_date, rang_10_date] }}
+
+    date_deja_presente: >
+      {{ date_veille in dates }}
+    palmares_plein: >
+      {{ dates | select('ne', '') | list | count == 10 }}
+    merite_rang: >
+      {{ snapshot != -999
+         and snapshot_state not in ['unknown', 'unavailable', 'none', '']
+         and not date_deja_presente
+         and (not palmares_plein or snapshot > rang_10_val) }}
+
+  condition:
+    - condition: template
+      value_template: "{{ merite_rang }}"
+
+  action:
+    - variables:
+        nouveau_palmares: >
+          {% set paires = [] %}
+          {% for i in range(10) %}
+            {% if dates[i] != '' %}
+              {% set paires = paires + [(valeurs[i], i, dates[i])] %}
+            {% endif %}
+          {% endfor %}
+          {% set paires = paires + [(snapshot, 10, date_veille)] %}
+          {% set sorted_paires = paires | sort(attribute='1') | sort(attribute='0', reverse=true) %}
+          {% set result = namespace(vals=[], dts=[]) %}
+          {% for p in sorted_paires[:10] %}
+            {% set result.vals = result.vals + [p[0]] %}
+            {% set result.dts = result.dts + [p[2]] %}
+          {% endfor %}
+          {% for i in range(result.vals | count, 10) %}
+            {% set result.vals = result.vals + [0] %}
+            {% set result.dts = result.dts + [''] %}
+          {% endfor %}
+          {{ {'vals': result.vals, 'dts': result.dts} }}
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_01_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[0] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_01_date
+      data:
+        value: "{{ nouveau_palmares.dts[0] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_02_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[1] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_02_date
+      data:
+        value: "{{ nouveau_palmares.dts[1] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_03_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[2] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_03_date
+      data:
+        value: "{{ nouveau_palmares.dts[2] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_04_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[3] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_04_date
+      data:
+        value: "{{ nouveau_palmares.dts[3] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_05_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[4] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_05_date
+      data:
+        value: "{{ nouveau_palmares.dts[4] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_06_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[5] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_06_date
+      data:
+        value: "{{ nouveau_palmares.dts[5] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_07_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[6] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_07_date
+      data:
+        value: "{{ nouveau_palmares.dts[6] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_08_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[7] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_08_date
+      data:
+        value: "{{ nouveau_palmares.dts[7] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_09_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[8] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_09_date
+      data:
+        value: "{{ nouveau_palmares.dts[8] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_chaud_rang_10_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[9] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_chaud_rang_10_date
+      data:
+        value: "{{ nouveau_palmares.dts[9] }}"
+
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.palmares_temperature_journalier_chaud_derniere_evaluation
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

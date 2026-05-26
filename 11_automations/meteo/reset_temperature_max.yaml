@@ -1,0 +1,61 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Température max jour courant jardin — Reset
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10160000000026"
+#
+# 🎯 RÔLE
+#   Réinitialiser le max courant à la sentinelle -999 à 00:00:10,
+#   après la clôture journalière, pour démarrer la nouvelle
+#   journée civile sans pollution de la veille.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : reset du max courant uniquement
+#   - Exclut : clôture journalière (automation dédiée)
+#
+# 🔖 NATURE
+#   Remédiation
+#
+# ⚙️ MODE
+#   single
+#   Justification : déclenchement horaire unique
+#
+# 📣 DÉCLENCHEURS
+#   - time : 00:00:10 (quotidien)
+#
+# 🔗 DÉPENDANCES
+#   Écrit   : input_number.temperature_max_jour_courant_jardin
+#
+# 🧠 AUTORITÉ
+#   Applique — reset inconditionnel
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger — écriture idempotente de la sentinelle
+#
+# 🚫 INTERDITS
+#   - Écrire 0 ou -10 comme sentinelle (valeurs métier plausibles)
+#   - Confondre reset et clôture
+#   - Interagir avec la mémoire journalière clôturée
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+- id: "10160000000026"
+  alias: "Température max jour courant jardin — Reset"
+  description: >
+    Réinitialise le max courant à -999 à 00:00:10, après clôture.
+    Démarre la nouvelle journée civile sans pollution de la veille.
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "00:00:10"
+
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.temperature_max_jour_courant_jardin
+      data:
+        value: -999

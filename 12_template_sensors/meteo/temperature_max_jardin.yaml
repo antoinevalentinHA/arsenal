@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Météo — Température maximale journalière jardin
+#             Exposition canonique
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la température maximale de la journée civile
+#   clôturée sous forme de capteur public consommable.
+#   Source canonique pour le palmarès des journées chaudes.
+#   Retourne unavailable si la mémoire clôturée est à la
+#   sentinelle -999 (aucune clôture valide disponible).
+#
+# 🧩 PÉRIMÈTRE
+#   - Exposition uniquement
+#   - Aucun calcul
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   synthese
+#
+# 🆔 UNIQUE_ID
+#   temperature_max_journaliere_jardin
+#
+# 🔗 DÉPENDANCES
+#   Lit : input_number.temperature_max_journaliere_jardin
+#
+# 🚫 INTERDITS
+#   - Exposer -999 comme valeur métier
+#   - Confondre max courant et max clôturé
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#
+# 🏷️ STATUT
+#   Calcul — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: "Température max journalière jardin"
+      unique_id: temperature_max_journaliere_jardin
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-check
+      availability: >
+        {{ states('input_number.temperature_max_journaliere_jardin') | float(-999) != -999 }}
+      state: >
+        {{ states('input_number.temperature_max_journaliere_jardin') | float }}
+      attributes:
+        date_journee_cloturee: >
+          {{ (now() - timedelta(days=1)).strftime('%Y-%m-%d') }}

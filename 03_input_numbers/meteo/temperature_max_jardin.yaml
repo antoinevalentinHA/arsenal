@@ -1,0 +1,59 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Température maximale jardin
+#             Mémoire journalière
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker deux valeurs numériques persistantes :
+#   - max courant du jour civil en cours (réinitialisé à minuit)
+#   - max journalier clôturé de la veille (stable toute la journée)
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Registre de pipeline
+#
+# 📋 CONVENTIONS
+#   Sentinelle "aucune mesure ce jour" : -999
+#   (hors plage physique, jamais confondue avec une valeur réelle)
+#   -999 ≠ absence de donnée météo ≠ journée froide
+#
+# 📋 ÉCRITURE
+#   input_number.temperature_max_jour_courant_jardin :
+#     automation.temperature_max_jour_courant_jardin_update  (sur changement source)
+#     automation.temperature_max_jour_courant_jardin_reset   (00:00:10 — sentinelle)
+#
+#   input_number.temperature_max_journaliere_jardin :
+#     automation.temperature_max_journaliere_jardin_cloture  (00:00:05 — clôture civile)
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Confondre sentinelle -999 et valeur métier
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+temperature_max_jour_courant_jardin:
+  name: Température max jour courant jardin
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+temperature_max_journaliere_jardin:
+  name: Température max journalière jardin
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-check
