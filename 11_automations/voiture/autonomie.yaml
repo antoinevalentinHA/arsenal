@@ -93,7 +93,7 @@
     - service: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
-        titre: "Audi A3 e-tron"
+        titre: "🔋 Audi A3 e-tron"
         message: >
           Pleine charge consolidée : {{ autonomie_full | round(0) }} km,
           {{ temperature_charge | round(1) }} °C,
