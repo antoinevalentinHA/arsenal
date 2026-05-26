@@ -11,7 +11,7 @@ C'est une **référence d'architecture** pour qui veut traiter HA sérieusement.
 
 ## Le problème
 
-Home Assistant est remarquablement puissant. Il est aussi remarquablement facile à transformer en désastre.
+Home Assistant est remarquablement puissant. Il est aussi très facile à laisser dériver vers un système difficilement maintenable.
 
 La trajectoire naturelle d'une installation HA non gouvernée :
 
@@ -20,7 +20,7 @@ La trajectoire naturelle d'une installation HA non gouvernée :
 - Des dashboards qui *font des choses* au lieu de les rendre visibles
 - Des entités dont personne ne sait plus si elles sont encore utilisées
 - Un `configuration.yaml` qui a grandi organiquement depuis 2019
-- Une dette système invisible jusqu'au moment où tout casse
+- Une dette système invisible jusqu'à la rupture opérationnelle
 
 Arsenal existe pour répondre à une question simple :
 
@@ -32,7 +32,7 @@ Arsenal existe pour répondre à une question simple :
 
 Arsenal repose sur trois principes qui ne se négocient pas.
 
-**1. Le backend décide. L'UI rend. Jamais l'inverse.**
+**1. Le backend décide. L'UI observe. Jamais l'inverse.**
 
 Aucune logique dans les dashboards. Les cartes affichent des états — elles ne les calculent pas. Les décisions sont prises en amont, dans des entités dédiées. L'UI est un miroir, pas un moteur.
 
@@ -75,7 +75,7 @@ L'UI n'apparaît pas dans ce schéma. Elle observe — elle ne participe pas au 
 
 **Decision** — Ce que le système conclut. Template sensors, helpers d'état, scripts souverains. C'est ici que vivent les règles métier : admissibilité, besoin brut, contraintes, verrouillages. Le résultat est toujours un état lisible, pas une action directe.
 
-**Execution** — Ce que le système fait. Automatisations déclenchées par des états de décision, scripts d'action, commandes physiques. Cette couche ne contient pas de logique — elle réagit à des états.
+**Execution** — Ce que le système applique. Automatisations déclenchées par des états de décision, scripts d'action, commandes physiques. Cette couche ne contient pas de logique — elle réagit à des états.
 
 Cette séparation n'est pas théorique. Elle est visible dans l'arborescence et vérifiable par les scripts d'audit.
 
@@ -136,7 +136,7 @@ Un domaine Arsenal complet, de la perception à l'exécution.
 `sensor.vmc_coherence` — détecte les incohérences entre décision et état réel.  
 Un watchdog se déclenche si l'état réel diverge de la décision pendant plus de 30 secondes.
 
-Le même pattern se retrouve dans chaque domaine : alarme, ECS, déhumidificateur, chauffage.
+Le même modèle architectural se retrouve dans chaque domaine : alarme, ECS, déhumidificateur, chauffage.
 
 ---
 
@@ -166,11 +166,11 @@ Les scripts de validation de contrats vérifient la cohérence des entités déc
 
 ## Ce qu'Arsenal n'est pas
 
-**Pas une installation à copier.** Les entités, les IPs, les topics MQTT, les noms de devices — tout ça est spécifique à une maison. Ce qui est réutilisable, ce sont les patterns et la doctrine.
+**Pas une installation à copier.** Les entités, les IPs, les topics MQTT et les noms de devices sont spécifiques à une installation. Ce qui est réutilisable, ce sont les patterns, les invariants et la doctrine.
 
-**Pas une vitrine.** Arsenal n'est pas optimisé pour être impressionnant en screenshot. Il est optimisé pour être maintenable dans trois ans par quelqu'un qui n'était pas là au début.
+**Pas une vitrine.** Arsenal n'est pas optimisé pour être impressionnant en screenshot. Il est optimisé pour rester maintenable, observable et gouvernable plusieurs années après sa construction.
 
-**Pas une documentation exhaustive de HA.** Si tu cherches comment configurer une intégration, la documentation officielle est meilleure. Arsenal suppose que tu sais utiliser HA — il propose une façon de l'architecturer.
+**Pas une documentation Home Assistant.** La documentation officielle reste la référence pour les intégrations, Lovelace et les comportements natifs. Arsenal se concentre sur l'architecture du système : séparation décision/exécution, gouvernance documentaire, robustesse runtime et contractualisation.
 
 ---
 
