@@ -79,23 +79,23 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
-            name: Offsets
+            name: Seuils d'extinction
 
           - type: grid
             square: false
             columns: 2
             cards:
               - type: tile
-                entity: input_number.clim_offset_on
-                name: "ON"
+                entity: input_number.clim_seuil_extinction_presence
+                name: Présence
                 features_position: inline
                 features:
                   - type: numeric-input
                     style: buttons
 
               - type: tile
-                entity: input_number.clim_offset_off
-                name: "OFF"
+                entity: input_number.clim_seuil_extinction_absence
+                name: Absence
                 features_position: inline
                 features:
                   - type: numeric-input
@@ -106,21 +106,17 @@ views:
               {% set presence = is_state('binary_sensor.presence_famille_unifiee', 'on') %}
 
               {% if presence %}
-                {% set seuil = states('input_number.clim_seuil_declenchement_presence') | float %}
+                {% set seuil_on = states('input_number.clim_seuil_declenchement_presence') | float %}
+                {% set seuil_off = states('input_number.clim_seuil_extinction_presence') | float %}
               {% else %}
-                {% set seuil = states('input_number.clim_seuil_declenchement_absence') | float %}
+                {% set seuil_on = states('input_number.clim_seuil_declenchement_absence') | float %}
+                {% set seuil_off = states('input_number.clim_seuil_extinction_absence') | float %}
               {% endif %}
 
-              {% set offset_on = states('input_number.clim_offset_on') | float %}
-              {% set offset_off = states('input_number.clim_offset_off') | float %}
+              🔎 Seuils actifs (mode {{ 'présence' if presence else 'absence' }})
 
-              {% set seuil_on = seuil + offset_on %}
-              {% set seuil_off = seuil - offset_off %}
-
-              🔎 Seuils d'autorisation froid
-
-              - Autorisation froid : ≥ {{ seuil_on | round(1) }} °C  
-              - Interdiction froid : ≤ {{ seuil_off | round(1) }} °C
+              - Allumage  : ≥ {{ seuil_on | round(1) }} °C  
+              - Extinction : ≤ {{ seuil_off | round(1) }} °C
 
           - type: custom:button-card
             template: section_header
