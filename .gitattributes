@@ -1,0 +1,40 @@
+# =========================================================
+# Arsenal — GitHub Linguist Configuration
+# =========================================================
+
+# ---------------------------------------------------------
+# YAML Home Assistant
+# ---------------------------------------------------------
+
+*.yaml linguist-language=YAML
+*.yml linguist-language=YAML
+
+# ---------------------------------------------------------
+# Documentation
+# ---------------------------------------------------------
+
+*.md linguist-documentation=true
+
+# ---------------------------------------------------------
+# Home Assistant runtime
+# ---------------------------------------------------------
+
+.storage/** linguist-generated=true
+.cloud/** linguist-generated=true
+
+*.log linguist-generated=true
+*.db linguist-generated=true
+*.db-shm linguist-generated=true
+*.db-wal linguist-generated=true
+
+# ---------------------------------------------------------
+# Vendor / frontend dependencies
+# ---------------------------------------------------------
+
+www/community/** linguist-generated=true
+
+# ---------------------------------------------------------
+# HACS / generated frontend bundles
+# ---------------------------------------------------------
+
+*.min.js linguist-generated=true
