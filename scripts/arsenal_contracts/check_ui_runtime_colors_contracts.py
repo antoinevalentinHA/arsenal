@@ -62,7 +62,7 @@ EXCEPTION_RGBA = {
 
     "rgba(255,193,7,0.25)",
     "rgba(255,152,0,0.25)",
-    "rgba(255,152,0,0.30)",
+    "rgba(255,152,0,0.3)",
 
     # ======================================================
     # Exception 7 — Palette hydrique
@@ -80,7 +80,9 @@ EXCEPTION_RGBA = {
 
 GRAPH_BASE_RGBA = {
 
-    # palette Arsenal canonique
+    # ======================================================
+    # Palette Arsenal canonique
+    # ======================================================
 
     (76, 175, 80),
     (244, 67, 54),
@@ -89,15 +91,21 @@ GRAPH_BASE_RGBA = {
     (33, 150, 243),
     (158, 158, 158),
 
-    # thermique
+    # ======================================================
+    # Palette thermique
+    # ======================================================
 
     (144, 202, 249),
 
+    # ======================================================
     # KPI / vigilance
+    # ======================================================
 
     (255, 193, 7),
 
-    # hydrique
+    # ======================================================
+    # Palette hydrique
+    # ======================================================
 
     (187, 222, 251),
     (100, 181, 246),
@@ -150,13 +158,14 @@ HEX_PATTERN = re.compile(
 )
 
 # ==========================================================
-# Graphes
+# Détection composants graphiques
 # ==========================================================
 
-GRAPH_HINTS = [
-    "graph_",
-    "mini_graph",
-    "apexcharts",
+GRAPH_COMPONENT_HINTS = [
+    "custom:apexcharts-card",
+    "statistics-graph",
+    "custom:bar-card",
+    "mini-graph-card",
 ]
 
 # ==========================================================
@@ -172,6 +181,7 @@ def should_skip(path: Path):
     path_str = str(path)
 
     for excluded in EXCLUDED_PARTS:
+
         if excluded in path_str:
             return True
 
@@ -184,16 +194,23 @@ def normalize_color(value: str):
 
     value = re.sub(r"\s+", "", value)
 
+    value = re.sub(
+        r"(\d+\.\d*?[1-9])0+\)",
+        r"\1)",
+        value,
+    )
+
     value = value.replace(".0)", ")")
 
     return value.lower()
 
 
-def is_graph_file(path: Path):
+def is_graph_context(content: str):
 
-    lowered = str(path).lower()
+    lowered = content.lower()
 
-    for hint in GRAPH_HINTS:
+    for hint in GRAPH_COMPONENT_HINTS:
+
         if hint in lowered:
             return True
 
@@ -257,39 +274,38 @@ def test_only_allowed_rgba_are_used():
 
         matches = RGBA_PATTERN.findall(content)
 
-        graph_file = is_graph_file(path)
+        graph_context = is_graph_context(content)
 
         for match in matches:
 
             normalized = normalize_color(match)
 
             # --------------------------------------------------
-            # palette métier canonique
+            # Palette métier canonique
             # --------------------------------------------------
 
             if normalized in BASE_RGBA:
                 continue
 
             # --------------------------------------------------
-            # exceptions documentées
+            # Exceptions documentées
             # --------------------------------------------------
 
             if normalized in EXCEPTION_RGBA:
                 continue
 
             # --------------------------------------------------
-            # primitives graphiques
+            # Primitives graphiques
             # --------------------------------------------------
 
             if normalized in ALLOWED_GRAPHICS_RGBA:
                 continue
 
             # --------------------------------------------------
-            # graphes quantitatifs
-            # Exception 5
+            # Exception 5 — Visualisations quantitatives
             # --------------------------------------------------
 
-            if graph_file:
+            if graph_context:
 
                 if is_allowed_graph_rgba(normalized):
                     continue
