@@ -1,0 +1,17 @@
+name: Arsenal Contracts — UI Couleurs
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  validate-ui-couleurs:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run UI couleurs contract validation
+        run: |
+          python3 scripts/arsenal_contracts/check_ui_couleurs_contracts.py
