@@ -135,23 +135,108 @@ La hiérarchie sémantique globale reste inchangée :
 
 ---
 
-## Couleur de structure UI — NAV/HUB (fond)
+## Exception 4 — Couleur structurelle NAV/HUB
 
 ### Objet
 
 Couleur de fond réservée aux tuiles de navigation et aux hubs.
 Structure UI pure, non sémantique.
 
-**Couleur officielle :** `rgba(90, 110, 130, 0.08)`
+Cette exception ne porte :
+- aucun état métier,
+- aucune sévérité,
+- aucune décision.
+
+Elle constitue uniquement une primitive structurelle UI.
+
+### Couleur officielle
+
+| Usage | Valeur |
+|-------|--------|
+| Fond NAV/HUB | `rgba(90, 110, 130, 0.08)` |
 
 ### Règles d'usage
 
 - Réservé aux tuiles de navigation (menu / hub)
 - Ne doit jamais encoder un état (OK / KO / WARN / OFF / unknown)
-- Compatible avec icônes colorées dynamiques (l'icône reste
-  porteuse d'état si applicable)
+- Compatible avec icônes colorées dynamiques
+- Stable et non dynamique
 
 ### 🚫 Interdits
 
 - Utiliser cette couleur hors contexte NAV/HUB
 - Utiliser cette couleur pour signaler un statut métier
+- Faire varier son opacité
+- Utiliser cette couleur comme fond de carte métier
+
+---
+
+## Exception 5 — Visualisations quantitatives
+
+### Objet
+
+Autoriser des variations d'opacité renforcées dans les composants
+de visualisation quantitative :
+- `bar-card`
+- `mini-graph-card`
+- `apexcharts-card`
+- séries graphiques
+- graphes temporels
+- répartitions quantitatives
+
+Cette exception concerne exclusivement :
+- la lisibilité graphique,
+- la distinction visuelle des séries,
+- l'intensité de représentation quantitative.
+
+Elle ne constitue pas une sémantique métier autonome.
+
+### Principes
+
+Les couleurs utilisées restent dérivées de la palette Arsenal,
+mais peuvent utiliser des opacités renforcées pour améliorer :
+- contraste,
+- lisibilité,
+- hiérarchie visuelle des séries,
+- perception quantitative.
+
+### Variations autorisées
+
+Exemples autorisés :
+
+| Couleur dérivée | Usage |
+|----------------|------|
+| `rgba(..., 0.6)` | Série secondaire |
+| `rgba(..., 0.8)` | Série principale |
+| `rgba(..., 0.85)` | Répartition dominante |
+| `rgba(..., 0.9)` | Mise en évidence quantitative |
+
+### Scope strict
+
+Cette exception est limitée :
+- aux composants graphiques,
+- aux graphes,
+- aux séries quantitatives,
+- aux répartitions visuelles.
+
+Elle ne s'applique jamais :
+- aux cartes décisionnelles,
+- aux cartes de synthèse métier,
+- aux fonds de cartes métier,
+- aux badges de statut,
+- aux indicateurs d'alerte.
+
+### Priorité
+
+Les règles suivantes restent absolues :
+- le gris indisponibilité prime toujours,
+- les couleurs ne décident jamais,
+- la hiérarchie sémantique globale reste inchangée.
+
+### 🚫 Interdits
+
+- Introduire des couleurs hors palette Arsenal
+- Utiliser ces opacités renforcées sur des cartes métier classiques
+- Utiliser ces opacités pour encoder une sévérité autonome
+- Utiliser des couleurs opaques pleines hors contexte documenté
+- Utiliser cette exception comme justification d'une dérive UI générale
