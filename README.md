@@ -176,17 +176,23 @@ Les scripts de validation de contrats vérifient la cohérence des entités déc
 
 ## Versions
 
-Arsenal suit un versionnage sémantique appliqué à l'architecture, pas aux features.
+Arsenal n'a pas évolué comme une simple configuration Home Assistant.
+Chaque période correspond à une mutation d'architecture, de gouvernance ou de modèle d'exécution.
 
-| Version | Jalon |
-|---|---|
-| v1–v8 | Phases d'émergence — outillage progressif |
-| v9 | Introduction des contrats formels |
-| v12 | Migration headers, labels contractuels, architecture couches |
-| v13+ | Consolidation — contrats alarme, ECS, VMC, NAS |
-| v15 | Publication publique — pipeline de gouvernance, 0 CRITICAL |
+| Ère       | Période                | Inflexion dominante                                                                                                                                                                          |
+|-----------|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Émergence | 2025-08 → 2025-10      | Atomisation progressive de l'arborescence, normalisation des includes, premières conventions UI et gouvernance des entités.                                                                  |
+| v1 → v5   | 2025-10 → 2026-01      | Construction des premiers moteurs décisionnels : chauffage centralisé, ouvertures temporisées, doctrine `systeme_stable`, pipelines reboot-safe.                                             |
+| v6 → v8   | 2026-01                | Fondation du modèle Arsenal moderne : applicateurs idempotents, séparation décision/exécution, observabilité thermique structurée, gouvernance UI et temporelle.                             |
+| v9        | 2026-02                | Industrialisation massive : architecture UI à trois niveaux, templates factorisés, corpus contractuel versionné, réconciliation Zigbee et pipelines diagnostiques.                           |
+| v10       | 2026-03                | Canonisation des temporalités et des ouvertures : qualification métier, anti-zombie, orchestration déterministe, moteurs de réconciliation robustes.                                         |
+| v11       | 2026-03 → 2026-04      | Passage transactionnel local : Boiler Bridge, ACK corrélés, souveraineté Viessmann locale, pipelines ECS/chauffage transactionnels et retry externe.                                         |
+| v12       | 2026-04                | Durcissement architectural : admissibility locks, invariants système, pipelines météo structurés, VMC dual-relais, transactionnel SwitchBot/guard.                                           |
+| v13       | 2026-04 → 2026-05      | Extension satellite : supervision NAS Imprimerie, Bluetti, UPS, snapshots santé/sommeil, taxonomie intégrité paramètres, observabilité multi-domaines.                                       |
+| v14       | 2026-05                | Formalisation totale de la gouvernance : arborescence numérique canonique `00_* → 19_*`, contrats opposables par domaine, doctrine “documentation avant implémentation”.                     |
+| v15       | 2026-05 → aujourd'hui  | Consolidation runtime et gouvernance documentaire : deadlines persistantes, robustesse post-restart, diagnostics UI structurés, outillage NAS Arsenal, validation contractuelle automatisée. |
 
-Le changelog complet est dans `00_documentation_arsenal/changelog/`.
+Le détail complet est disponible dans [`00_documentation_arsenal/changelog/`](00_documentation_arsenal/changelog/).
 
 ---
 
