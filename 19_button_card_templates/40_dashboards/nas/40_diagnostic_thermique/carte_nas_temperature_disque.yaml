@@ -57,7 +57,7 @@ carte_nas_temperature_disque:
 
             // Indisponible / invalide
             if (isNaN(t))
-              return "rgba(224, 224, 224, 0.2)";
+              return "rgba(158, 158, 158, 0.1)";
 
             // 🔴 Critique
             if (t >= 55)
