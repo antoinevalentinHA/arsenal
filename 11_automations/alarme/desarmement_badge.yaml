@@ -92,7 +92,7 @@
         - action: script.notification_envoyer
           data:
             cible: input_text.telephone_antoine_notify
-            titre: "Badge inconnu"
+            titre: "🚨 Badge inconnu"
             message: >
               Tentative de désarmement via badge inconnu :
               {{ badge_utilise }}
