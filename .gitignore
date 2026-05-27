@@ -41,7 +41,7 @@ known_devices.yaml
 
 state.json
 .state
-.ha-run.lock
+.ha_run.lock
 
 tts/
 deps/
