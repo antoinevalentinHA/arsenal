@@ -21,15 +21,21 @@
 ```text
 Observation
         ↓
-Besoin
-        ↓
-Autorisation  ◄──────────────────── CE DOCUMENT
-        ↓
-Exécution
+Besoin                       Autorisation  ◄──────────────────── CE DOCUMENT
+        ↓                           │
+        └────────► Admissibilité ◄──┘  (verrou de requalification)
+                          ↓
+                    Décision  (sensor.clim_target_mode)
+                          ↓
+                     Exécution
 ```
 
-Les trois entités documentées ici occupent exclusivement la couche **autorisation**.
-Elles ne portent ni besoin, ni décision, ni action d'exécution.
+Les trois entités documentées ici occupent exclusivement la couche
+**autorisation**. Elles ne portent ni besoin, ni admissibilité, ni
+décision, ni action d'exécution.
+
+Les autorisations sont consommées **uniquement** par la couche
+Admissibilité (jamais directement par la Décision).
 
 ---
 

@@ -18,10 +18,16 @@
 | Entité | Rôle |
 |---|---|
 | `sensor.clim_target_mode` | Mode cible — autorité décisionnelle unique |
-| `sensor.consigne_clim_appliquee` | Consigne température appliquée selon présence *(non intégré en v1.3)* |
-| `binary_sensor.clim_silencieux_autorise` | Mode silencieux — plage horaire et présence *(non intégré en v1.3)* |
+| `sensor.consigne_clim_appliquee` | Consigne dérivée selon présence (COOL) |
+| `input_number.consigne_heat_clim` | Consigne HEAT envoyée à `climate.clim` |
+| `binary_sensor.clim_silencieux_autorise` | Mode silencieux — plage horaire et présence |
 
 Ces entrées sont lues, jamais produites par la couche Exécution.
+
+L'application de la consigne HEAT est portée par une automation dédiée
+(`automation.clim_application_consigne_heat`) qui réagit à un changement
+du slider ou à l'entrée effective en mode HEAT, sans jamais forcer le
+mode ni l'allumage.
 
 ---
 

@@ -104,26 +104,31 @@ Sinon, il conserve son état précédent via `this.state`.
 ### Vue linéaire
 
 ```text
-[besoin_clim_cool + autorisation_clim_cool] ─┐
-[besoin_clim_dry  + autorisation_clim_dry ] ─┼──► sensor.clim_target_mode
-[besoin_clim_heat + autorisation_clim_heat] ─┘          │
-                                                        ├──► automation.clim_application_automatique
-                                                        └──► automation.clim_surveillance_fonctionnement
+[besoin_clim_cool_admissible] ─┐
+[besoin_clim_dry_admissible ] ─┼──► sensor.clim_target_mode
+[besoin_clim_heat_admissible] ─┘          │
+                                          ├──► automation.clim_application_automatique
+                                          └──► automation.clim_surveillance_fonctionnement
 ```
 
 ### Description
 
-| Couple | Condition | Résultat possible |
+| Entrée | Condition | Résultat possible |
 |---|---|---|
-| `besoin_clim_cool` + `autorisation_clim_cool` | les deux `on` | `cool` |
-| `besoin_clim_dry` + `autorisation_clim_dry` | les deux `on` | `dry` |
-| `besoin_clim_heat` + `autorisation_clim_heat` | les deux `on` | `heat` |
-| aucun couple valide | — | `off` |
+| `besoin_clim_cool_admissible` | `on` | `cool` |
+| `besoin_clim_dry_admissible` | `on` | `dry` |
+| `besoin_clim_heat_admissible` | `on` | `heat` |
+| aucun admissible actif | — | `off` |
 
 ### Comportement de la chaîne
 
-Le capteur arbitre les trois modes par ordre fixe : `cool` → `dry` → `heat` → `off`.
-Si plusieurs couples sont simultanément valides, le premier dans cet ordre est retenu.
+La Décision consomme **exclusivement les besoins admissibles** produits
+par la couche Admissibilité. Elle ne consomme jamais directement un besoin
+brut ni une autorisation.
+
+Le capteur arbitre les trois modes par ordre fixe : `cool` → `dry` → `heat` → `off`
+(politique d'arbitrage `ThermalPriorityPolicy v1`). Si plusieurs admissibles
+sont simultanément `on`, le premier dans cet ordre est retenu.
 
 ---
 
@@ -132,13 +137,13 @@ Si plusieurs couples sont simultanément valides, le premier dans cet ordre est 
 ### Vue linéaire
 
 ```text
-[blocage_clim_poele]                              ─ priorité 1 ─┐
-[chauffage_blocage_aeration]                      ─ priorité 2 ─┤
-[clim_blocage_horaire_reel]                       ─ priorité 3 ─┤
-[fenetre_ouverte_maison]                          ─ priorité 4 ─┼──► sensor.clim_raison_decision
-[chambre_max_humidex_au_dessus_seuil]             ─ priorité 5 ─┤
-[clim_seuil_allumage_cool_atteint]                ─ priorité 6 ─┤
-[clim_seuil_allumage_heat_atteint + présence]     ─ priorité 7 ─┘
+[blocage_clim_poele]              ─ priorité 1 ─┐
+[chauffage_blocage_aeration]      ─ priorité 2 ─┤
+[clim_blocage_horaire_reel]       ─ priorité 3 ─┤
+[fenetre_ouverte_maison]          ─ priorité 4 ─┼──► sensor.clim_raison_decision
+[besoin_clim_cool_admissible]     ─ priorité 5 ─┤
+[besoin_clim_dry_admissible]      ─ priorité 6 ─┤
+[besoin_clim_heat_admissible]     ─ priorité 7 ─┘
 ```
 
 ### Description
@@ -149,16 +154,17 @@ Si plusieurs couples sont simultanément valides, le premier dans cet ordre est 
 | `input_boolean.chauffage_blocage_aeration` | Blocage | `blocage_aeration` |
 | `binary_sensor.clim_blocage_horaire_reel` | Blocage | `blocage_horaire` |
 | `binary_sensor.fenetre_ouverte_maison` | Ouvertures | `fenetre_ouverte` |
-| `binary_sensor.chambre_max_humidex_au_dessus_seuil` | Observation hygrométrique | `humidite_elevee` |
-| `binary_sensor.clim_seuil_allumage_cool_atteint` | Observation thermique | `temperature_elevee` |
-| `binary_sensor.clim_seuil_allumage_heat_atteint` + `binary_sensor.presence_famille_unifiee` | Observation + contexte | `soutien_chauffage` |
-| (aucune condition active) | — | `aucune_demande` |
+| `binary_sensor.besoin_clim_cool_admissible` | Admissibilité | `refroidissement` |
+| `binary_sensor.besoin_clim_dry_admissible` | Admissibilité | `deshumidification` |
+| `binary_sensor.besoin_clim_heat_admissible` | Admissibilité | `soutien_chauffage` |
+| (aucune condition active) | — | `aucune_demande_admissible` |
 | **`sensor.clim_raison_decision`** | **Explicatif / diagnostic** | **résultat** |
 
 ### Comportement de la chaîne
 
 Le capteur retourne une seule raison selon une hiérarchie décroissante fixe.
-Il ne tente pas de lister toutes les causes simultanées.
+Pour les modes climatiques, il consomme les besoins admissibles (et non les
+primitives brutes), ce qui assure l'alignement avec la décision réelle.
 
 ---
 
@@ -178,14 +184,14 @@ LECTURE LOCALE
     └──► clim_mode_local
 
 DÉCISION CENTRALE
-[besoin cool + autorisation cool]
-[besoin dry  + autorisation dry ]
-[besoin heat + autorisation heat]
+[besoin_clim_cool_admissible]
+[besoin_clim_dry_admissible]
+[besoin_clim_heat_admissible]
     └──► clim_target_mode
             ├──► automation.clim_application_automatique
             └──► automation.clim_surveillance_fonctionnement
 
 EXPLICATION
-[blocages] → [ouverture] → [humidité] → [seuil cool] → [seuil heat + présence]
+[blocages structurels] → [besoins admissibles]
     └──► clim_raison_decision
 ```

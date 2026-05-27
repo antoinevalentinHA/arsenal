@@ -317,7 +317,8 @@ Elle ne liste pas toutes les causes simultanées.
 
 ### Rôle
 
-Expliquer la raison principale qui motive l'état actuel ou la non-activation de la climatisation.
+Expliquer la raison principale qui motive l'état actuel ou la non-activation
+de la climatisation, en cohérence avec la décision réelle.
 
 ### Dépendances strictes
 
@@ -327,41 +328,50 @@ Expliquer la raison principale qui motive l'état actuel ou la non-activation de
 | `input_boolean.chauffage_blocage_aeration` | `input_boolean` | 2 | `blocage_aeration` |
 | `binary_sensor.clim_blocage_horaire_reel` | `binary_sensor` | 3 | `blocage_horaire` |
 | `binary_sensor.fenetre_ouverte_maison` | `binary_sensor` | 4 | `fenetre_ouverte` |
-| `binary_sensor.chambre_max_humidex_au_dessus_seuil` | `binary_sensor` | 5 | `humidite_elevee` |
-| `binary_sensor.clim_seuil_allumage_cool_atteint` | `binary_sensor` | 6 | `temperature_elevee` |
-| `binary_sensor.clim_seuil_allumage_heat_atteint` + `binary_sensor.presence_famille_unifiee` | `binary_sensor` × 2 | 7 | `soutien_chauffage` |
-| (aucune condition) | — | 8 | `aucune_demande` |
+| `binary_sensor.besoin_clim_cool_admissible` | `binary_sensor` | 5 | `refroidissement` |
+| `binary_sensor.besoin_clim_dry_admissible` | `binary_sensor` | 6 | `deshumidification` |
+| `binary_sensor.besoin_clim_heat_admissible` | `binary_sensor` | 7 | `soutien_chauffage` |
+| (aucune condition) | — | 8 | `aucune_demande_admissible` |
 
 ### Logique
 
 ```text
-SI blocage_clim_poele == on                                              → blocage_poele
-SINON SI chauffage_blocage_aeration == on                                → blocage_aeration
-SINON SI clim_blocage_horaire_reel == on                                 → blocage_horaire
-SINON SI fenetre_ouverte_maison == on                                    → fenetre_ouverte
-SINON SI chambre_max_humidex_au_dessus_seuil == on                       → humidite_elevee
-SINON SI clim_seuil_allumage_cool_atteint == on                          → temperature_elevee
-SINON SI clim_seuil_allumage_heat_atteint == on ET presence_famille == on → soutien_chauffage
-SINON                                                                    → aucune_demande
+SI blocage_clim_poele == on                       → blocage_poele
+SINON SI chauffage_blocage_aeration == on         → blocage_aeration
+SINON SI clim_blocage_horaire_reel == on          → blocage_horaire
+SINON SI fenetre_ouverte_maison == on             → fenetre_ouverte
+SINON SI besoin_clim_cool_admissible == on        → refroidissement
+SINON SI besoin_clim_dry_admissible == on         → deshumidification
+SINON SI besoin_clim_heat_admissible == on        → soutien_chauffage
+SINON                                             → aucune_demande_admissible
 ```
+
+### Alignement avec la décision
+
+La hiérarchie reflète d'abord les blocages structurels (priorités 1-4),
+puis les besoins admissibles dans le même ordre que la politique
+d'arbitrage active (`ThermalPriorityPolicy v1` : cool > dry > heat).
+Le capteur consomme exclusivement des **vérités métier** : aucune
+primitive brute (franchissement de seuil, humidex) n'est lue.
 
 ### Fallback
 
 Aucun fallback mémoire ni fallback numérique.
-Toute absence de cause reconnue aboutit à `aucune_demande`.
+Toute absence de cause reconnue aboutit à `aucune_demande_admissible`.
 
 ### Position dans l'architecture
 
 ```text
-[blocages / ouvertures / humidité / seuil cool / seuil heat + présence]
-                                   │
-                                   ▼
-                        clim_raison_decision  (explicatif / diagnostic)
+[blocages structurels] + [besoins admissibles]
+                       │
+                       ▼
+              clim_raison_decision  (explicatif / diagnostic)
 ```
 
 ### Consommateurs connus
 
 Non déterminables depuis le YAML fourni.
+
 
 ---
 

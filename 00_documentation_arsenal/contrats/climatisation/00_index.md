@@ -2,8 +2,8 @@
 ## Index du dossier
 
 **Domaine :** Climatisation résidentielle  
-**Version contrat :** v1.3  
-**Statut :** Stable — aligné implémentation Arsenal  
+**Version contrat :** v1.4  
+**Statut :** Stable — aligné runtime Arsenal v15.x
 
 ---
 

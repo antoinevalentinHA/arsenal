@@ -34,6 +34,10 @@ Elle est prioritaire sur toute autre couche et limitée strictement à l'imposit
 
 Un Guard court-circuite temporairement l'exécution pour imposer une contrainte de sécurité non négociable, sans modifier la décision canonique.
 
+**Implémentation :** `automation.clim_guard` (id `10030000000101`).
+L'automation déclenche `script.clim_exec_apply_off` lorsqu'un des
+invariants déclarés est violé.
+
 ---
 
 ## Watchdog
@@ -46,6 +50,11 @@ Un Guard court-circuite temporairement l'exécution pour imposer une contrainte 
 - N'introduit aucune logique métier
 - N'intervient que si la divergence persiste
 - **Ré-applique exclusivement la décision canonique courante** (ré-assertion)
+
+**Implémentation :** `automation.clim_surveillance_fonctionnement`
+(id `10030000000106`). L'automation est déclenchée par le passage à `on`
+de `binary_sensor.clim_incoherence_decision_reel` (incohérence persistante
+≥ 60 s) et relance `script.clim_execution` sans modifier `clim_target_mode`.
 
 ---
 
@@ -90,8 +99,6 @@ Le Watchdog constitue un mécanisme de ré-assertion de second niveau, distinct 
 - Il n'intervient qu'en cas de divergence persistante non résolue par les reprises différées de l'Exécution
 - Il ne duplique pas le retry court (→ +30 s / +90 s) géré par `script.clim_execution`
 
-> **Note d'implémentation :** Le Watchdog est contractualisé mais pas encore implémenté en v1.3. Un seul mécanisme de résilience est actif en production : celui de la couche Exécution.
-
 La hiérarchie de résilience cible est la suivante :
 
 ```
@@ -101,3 +108,26 @@ Résilience longue (Watchdog) — divergence persistante, ré-assertion
     ↑
 Résilience courte (Exécution) — retry différé borné (+30 s / +90 s)
 ```
+
+---
+
+## Garde de convergence au boot de l'admissibilité
+
+Les automations de réconciliation au démarrage de la couche Admissibilité
+(`automation.clim_<mode>_admissibilite_boot`) appliquent une garde de
+convergence sur `input_boolean.systeme_stable` avant toute évaluation.
+
+**Mécanisme** :
+- L'événement de démarrage est unique (`homeassistant.start`).
+- À l'intérieur de l'action, un `wait_template` attend
+  `is_state('input_boolean.systeme_stable', 'on')` avec timeout 5 min.
+- Si la convergence n'a pas eu lieu dans ce délai, l'automation
+  abandonne silencieusement ; l'admissibilité reste dans l'état restauré
+  par HA depuis le recorder.
+
+**Justification** : `systeme_stable` n'est jamais utilisé comme trigger
+afin de ne pas générer de retrigger runtime non désiré. C'est une garde
+de convergence interne, postérieure au déclenchement.
+
+Voir `capteurs/admissibilite/00_admissibilite.md` pour les détails du
+pattern de réconciliation.

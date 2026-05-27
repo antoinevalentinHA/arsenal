@@ -91,32 +91,43 @@ Il représente un cas prioritaire explicitement limité à `blocage_clim_poele`.
 
 ---
 
-## 7. `clim_raison_decision` construit son explication indépendamment de `clim_target_mode`
+## 7. `clim_raison_decision` consomme les vérités métier admissibles
 
 ### Observation
 
-`clim_raison_decision` ne lit ni `sensor.clim_target_mode`, ni les capteurs d'autorisation, ni les capteurs de besoin.
-Il lit directement un mélange de blocages, d'ouvertures et de franchissements amont.
+`clim_raison_decision` consomme exclusivement :
+- les blocages structurels du domaine (poêle, aération chauffage,
+  blocage horaire, ouvertures),
+- les besoins admissibles (`binary_sensor.besoin_clim_*_admissible`).
+
+Aucune primitive brute (franchissement de seuil, humidex, présence)
+n'est lue.
 
 ### Signification structurelle
 
-L'explication est construite indépendamment de la décision centrale.
-Le capteur ne retrace pas "pourquoi `clim_target_mode` vaut X" au sens strict ; il retourne la première cause reconnue dans sa propre hiérarchie.
+L'explication est alignée sur la décision : la même couche d'admissibilité
+alimente `clim_target_mode` et `clim_raison_decision`. La hiérarchie
+décroissante reflète d'abord les blocages, puis les modes dans l'ordre de
+la politique d'arbitrage active.
 
 ---
 
-## 8. Asymétrie dans `clim_raison_decision` sur la condition de chauffage
+## 8. Hiérarchie des modes alignée sur la politique d'arbitrage
 
 ### Observation
 
-Pour les causes liées au refroidissement et à la déshumidification, le capteur lit des primitives d'observation directes (`clim_seuil_allumage_cool_atteint`, `chambre_max_humidex_au_dessus_seuil`).
-Pour la cause liée au chauffage, il exige deux conditions simultanées : `clim_seuil_allumage_heat_atteint` et `presence_famille_unifiee`.
+Les trois causes climatiques (`refroidissement`, `deshumidification`,
+`soutien_chauffage`) sont produites à partir des admissibles
+correspondants, dans l'ordre `cool` → `dry` → `heat`.
 
 ### Signification structurelle
 
-La cause `soutien_chauffage` est la seule à combiner un franchissement de seuil et une condition de contexte.
-Les causes `temperature_elevee` et `humidite_elevee` n'exigent pas de condition de présence.
-Cette asymétrie est directement portée par le YAML.
+Cet ordre est identique à celui de `clim_target_mode` (politique
+`ThermalPriorityPolicy v1`). Aucune asymétrie de condition n'est
+introduite entre les modes : la cohérence avec la décision repose sur
+l'amont (la couche Admissibilité applique déjà les contraintes spécifiques
+à chaque mode, dont la présence pour HEAT).
+
 
 ---
 

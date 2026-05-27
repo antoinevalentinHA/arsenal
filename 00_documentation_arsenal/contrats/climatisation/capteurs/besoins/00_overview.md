@@ -27,13 +27,19 @@ Observation (franchissements)  ←── couche documentée séparément
         ↓
 Besoin  ◄─────────────────────────── CE DOCUMENT
         ↓
-Autorisation
+Admissibilité  (verrou de requalification — voir capteurs/admissibilite/)
+        ↓
+Décision  (sensor.clim_target_mode)
         ↓
 Exécution
 ```
 
 Les trois entités documentées ici occupent **exclusivement** la couche besoin.
-Elles ne contiennent aucune logique d'autorisation ni d'exécution.
+Elles ne contiennent aucune logique d'autorisation, d'admissibilité ni d'exécution.
+
+Un besoin brut n'est **jamais** consommé directement par la Décision. Il
+alimente la couche Admissibilité, qui produit les besoins admissibles
+effectivement consommés par `sensor.clim_target_mode`.
 
 ---
 
