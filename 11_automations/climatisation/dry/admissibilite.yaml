@@ -1,11 +1,11 @@
 # ==========================================================
-# 🧠 ARSENAL — AUTOMATISATION (CLIM / HEAT)
+# 🧠 ARSENAL — AUTOMATISATION (CLIM / DRY)
 # ----------------------------------------------------------
 # 📛 Domaine :
-#   Admissibilité décisionnelle du besoin HEAT
+#   Admissibilité décisionnelle du besoin DRY
 #
 # 🎯 Rôle :
-#   Piloter le verrou d'admissibilité du besoin HEAT
+#   Piloter le verrou d'admissibilité du besoin DRY
 #   selon la doctrine physique Arsenal.
 #
 # 🧱 Principe Arsenal — Doctrine v2 (deux portes causales) :
@@ -19,48 +19,40 @@
 #       portée par une automation dédiée afin de ne jamais
 #       bloquer les fronts runtime.
 #
-# 📌 Note d'appoint :
-#   HEAT reste un appoint, pas une source primaire.
-#   Ce caractère est porté par les conditions d'autorisation HEAT
-#   (présence stricte, autorisation explicite hivernale, blocage
-#   poêle, blocage post-aération) et par la priorité d'arbitrage
-#   cool > dry > heat. Le verrou d'admissibilité ne modifie aucun
-#   de ces leviers.
-#
 # 🔌 Entité support pilotée :
-#   - input_boolean.besoin_clim_heat_admissible
+#   - input_boolean.besoin_clim_dry_admissible
 #
 # 📘 Contrat associé :
 #   - 05_decision_candidats.md (v1.4)
 #
 # 📍 Portée :
-#   - HEAT uniquement
+#   - DRY uniquement
 # ==========================================================
 
-- id: '10030000000110'
-  alias: "Clim - Heat - Admissibilité"
+- id: '10030000000115'
+  alias: "Clim - Dry - Admissibilité"
   description: >
-    Pilotage runtime de l'admissibilité HEAT :
+    Pilotage runtime de l'admissibilité DRY :
     activation porte 1, requalification porte 2,
     et extinctions.
   mode: single
   trigger:
     - platform: state
-      entity_id: binary_sensor.besoin_clim_heat
+      entity_id: binary_sensor.besoin_clim_dry
       to: 'on'
       id: activation_besoin
     - platform: state
-      entity_id: binary_sensor.autorisation_clim_heat
+      entity_id: binary_sensor.autorisation_clim_dry
       to: 'on'
       for:
         minutes: 5
       id: requalification_autorisation
     - platform: state
-      entity_id: binary_sensor.besoin_clim_heat
+      entity_id: binary_sensor.besoin_clim_dry
       to: 'off'
       id: extinction_besoin
     - platform: state
-      entity_id: binary_sensor.autorisation_clim_heat
+      entity_id: binary_sensor.autorisation_clim_dry
       to: 'off'
       id: extinction_autorisation
 
@@ -74,24 +66,24 @@
             - condition: trigger
               id: activation_besoin
             - condition: state
-              entity_id: binary_sensor.autorisation_clim_heat
+              entity_id: binary_sensor.autorisation_clim_dry
               state: 'on'
           sequence:
             - action: input_boolean.turn_on
               target:
-                entity_id: input_boolean.besoin_clim_heat_admissible
+                entity_id: input_boolean.besoin_clim_dry_admissible
 
         # --- REQUALIFICATION (porte 2 : front stable de l'autorisation) ---
         - conditions:
             - condition: trigger
               id: requalification_autorisation
             - condition: state
-              entity_id: binary_sensor.besoin_clim_heat
+              entity_id: binary_sensor.besoin_clim_dry
               state: 'on'
           sequence:
             - action: input_boolean.turn_on
               target:
-                entity_id: input_boolean.besoin_clim_heat_admissible
+                entity_id: input_boolean.besoin_clim_dry_admissible
 
         # --- EXTINCTION BESOIN ---
         - conditions:
@@ -100,7 +92,7 @@
           sequence:
             - action: input_boolean.turn_off
               target:
-                entity_id: input_boolean.besoin_clim_heat_admissible
+                entity_id: input_boolean.besoin_clim_dry_admissible
 
         # --- EXTINCTION AUTORISATION ---
         - conditions:
@@ -109,4 +101,4 @@
           sequence:
             - action: input_boolean.turn_off
               target:
-                entity_id: input_boolean.besoin_clim_heat_admissible
+                entity_id: input_boolean.besoin_clim_dry_admissible
