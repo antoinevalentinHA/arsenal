@@ -31,7 +31,7 @@
 # HACS / vendor Python code
 # ---------------------------------------------------------
 
-custom_components/hacs/** linguist-vendored=true
+custom_components/** linguist-vendored=true
 
 # ---------------------------------------------------------
 # Vendored frontend resources
