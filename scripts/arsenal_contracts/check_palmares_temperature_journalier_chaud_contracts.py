@@ -215,7 +215,7 @@ def test_input_numbers_plages():
 
     expected = {
         **{k: {"min": -10, "max": 50} for k in RANG_VALEURS},
-        SNAPSHOT: {"min": -10, "max": 50},
+        SNAPSHOT: {"min": -999, "max": 50},
         MAX_COURANT: {"min": -999, "max": 50},
         MAX_JOURNALIER: {"min": -999, "max": 50},
     }
@@ -395,9 +395,17 @@ def test_pipeline_temporel():
 
 def test_snapshot_source_pas_directe():
     """
-    INV-CH-3 — Le palmarès ne consomme jamais une température instantanée directe.
-    L'automation snapshot doit lire sensor.temperature_max_journaliere_jardin,
-    PAS sensor.temperature_jardin.
+    INV-CH-3 / contrat v1.2 — Le snapshot palmarès doit lire
+    la mémoire courante du jour qui se termine.
+
+    L'automation snapshot doit lire :
+      input_number.temperature_max_jour_courant_jardin
+
+    Elle ne doit pas lire :
+      - sensor.temperature_max_journaliere_jardin
+        (mémoire clôturée antérieure, risque de décalage temporel)
+      - sensor.temperature_jardin
+        (source instantanée directe interdite)
     Scope : automation snapshot uniquement (ID 10160000000022).
     """
     folder = ROOT / "11_automations" / "meteo"
@@ -416,16 +424,24 @@ def test_snapshot_source_pas_directe():
         fail("Automation snapshot (ID 10160000000022) non trouvée")
         return
 
-    # Vérifie que la source utilisée est bien temperature_max_journaliere_jardin
-    if "temperature_max_journaliere_jardin" not in snapshot_content:
+    # Vérifie que la source utilisée est bien la mémoire courante
+    if "input_number.temperature_max_jour_courant_jardin" not in snapshot_content:
         fail(
-            "Automation snapshot : sensor.temperature_max_journaliere_jardin "
-            "absent (INV-CH-3)"
+            "Automation snapshot : input_number.temperature_max_jour_courant_jardin "
+            "absent (v1.2 — snapshot sur mémoire courante obligatoire)"
         )
     else:
-        print("  ✔ Snapshot : source canonique temperature_max_journaliere_jardin")
+        print("  ✔ Snapshot : source mémoire courante temperature_max_jour_courant_jardin")
 
-    # Vérifie que la source directe jardin n'est pas utilisée comme cible de set_value
+    if re.search(r"states\s*\(\s*['\"]sensor\.temperature_max_journaliere_jardin['\"]", snapshot_content):
+        fail(
+            "Automation snapshot : lecture de sensor.temperature_max_journaliere_jardin "
+            "interdite (v1.2 — risque décalage temporel)"
+        )
+    else:
+        print("  ✔ Snapshot : sensor.temperature_max_journaliere_jardin non lu")
+
+    # Vérifie que la source instantanée jardin n'est pas utilisée
     pattern_ecriture_directe = pattern_service_write(
         "input_number.set_value", "temperature_jardin"
     )
