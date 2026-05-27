@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Température minimale journalière jardin
+#             Mémoire courante (jour en cours)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la valeur minimale observée depuis le début de la
+#   journée civile en cours. Mise à jour à chaque baisse de
+#   sensor.temperature_jardin sous la valeur mémorisée.
+#   Réinitialisée à la sentinelle 999 à 00:00:10 après clôture.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement (jour en cours)
+#   - Aucun calcul autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement déclenché
+#
+# 🏷️ NATURE
+#   Mémoire courante — registre de pipeline
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md V1.0.2
+#   Pipeline 3 couches (§3.2) — couche 1/3
+#
+# 📐 BORNES TECHNIQUES
+#   min: -50    max: 1000    step: 0.1
+#
+#   Trois plages distinctes (cf. contrat §5 et §5.1) :
+#     - plage_metier_source     : [-30,   30]°C  valeurs réelles attendues
+#     - plage_helpers_metier    : [-50,   50]°C  marge métier robuste
+#     - plage_helpers_technique : [-50, 1000]°C  bornes effectives ici
+#
+#   La sentinelle 999 doit être stockable :
+#     - elle est active en permanence entre 00:00:10 et le premier
+#       update du jour suivant ;
+#     - elle est doctrinalement « absence métier », jamais une mesure.
+#
+# 📋 CONVENTIONS
+#   - Valeur initiale au déploiement : 999 (sentinelle)
+#   - Reset quotidien à 00:00:10 → 999
+#   - Update sur baisse stricte uniquement (valeur < courante)
+#   - Écriture exclusivement par :
+#       automation.temperature_min_jour_courant_jardin_update
+#       automation.temperature_min_jour_courant_jardin_reset
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire courante et mémoire clôturée
+#   - Confondre stockage et décision
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Saisie manuelle hors procédure de réinitialisation
+#   - Ajouter une clé `initial:` (réécrirait au redémarrage HA)
+#   - Écrire une valeur métier > 50 ou < -50 : interdit par doctrine,
+#     bien que techniquement possible (bornes étendues pour la sentinelle).
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+temperature_min_jour_courant_jardin:
+  name: Température min jour courant jardin
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low

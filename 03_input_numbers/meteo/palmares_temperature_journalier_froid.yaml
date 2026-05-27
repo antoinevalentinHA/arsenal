@@ -1,0 +1,168 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Palmarès historique journées les plus froides
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les valeurs numériques persistantes du palmarès
+#   historique des journées les plus froides : 10 valeurs de
+#   rangs (top 10) + 1 snapshot pré-minuit.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Registre de pipeline
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md V1.0.2
+#   Instance : temperature_journalier_froid
+#
+# 📐 BORNES TECHNIQUES
+#   min: -50    max: 1000    step: 0.1
+#
+#   Trois plages distinctes (cf. contrat §5 et §5.1) :
+#     - plage_metier_source     : [-30,   30]°C  valeurs réelles attendues
+#     - plage_helpers_metier    : [-50,   50]°C  marge métier robuste
+#     - plage_helpers_technique : [-50, 1000]°C  bornes effectives ici
+#
+#   Justification de max=1000 : Home Assistant refuse d'écrire toute
+#   valeur hors des bornes min/max d'un input_number. La sentinelle
+#   technique `999` doit être stockable. La plage technique étendue
+#   autorise ce stockage sans contredire la grammaire métier.
+#
+#   La sentinelle reste reconnaissable :
+#     999 > 30   → hors plage métier source (jamais une vraie mesure)
+#     999 > 50   → hors plage helpers métier (jamais un extrême plausible)
+#     999 ≤ 1000 → dans plage helpers technique (stockable)
+#
+# 📋 CONVENTIONS
+#   - Valeur de rang vide : 999 (sentinelle technique)
+#     ⚠️  Rupture délibérée de symétrie avec le chaud (où rang vide = 0)
+#     Justification : une valeur métier froide peut légitimement être 0,
+#     ce qui rendrait ambigu tout test « rang rempli ↔ valeur != 0 ».
+#     Cf. contrat §5.2 et invariant INV-FR-9.
+#   - Couplage strict avec input_text de date correspondant
+#   - Écriture exclusivement par :
+#       automation.palmares_temperature_journalier_froid_snapshot
+#       automation.palmares_temperature_journalier_froid_evaluation
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Saisie manuelle hors procédure de réinitialisation
+#   - Ajouter une clé `initial:` (réécrirait au redémarrage HA,
+#     écraserait tout palmarès en cours). L'initialisation à 999
+#     se fait au déploiement via service input_number.set_value.
+#   - Écrire une valeur métier > 50 ou < -50 : interdit par doctrine,
+#     bien que techniquement possible (bornes étendues pour la sentinelle).
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+# --- Rangs ---
+
+palmares_temperature_journalier_froid_rang_01_valeur:
+  name: Palmarès température froid — Rang 01 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+palmares_temperature_journalier_froid_rang_02_valeur:
+  name: Palmarès température froid — Rang 02 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+palmares_temperature_journalier_froid_rang_03_valeur:
+  name: Palmarès température froid — Rang 03 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+palmares_temperature_journalier_froid_rang_04_valeur:
+  name: Palmarès température froid — Rang 04 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+palmares_temperature_journalier_froid_rang_05_valeur:
+  name: Palmarès température froid — Rang 05 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+palmares_temperature_journalier_froid_rang_06_valeur:
+  name: Palmarès température froid — Rang 06 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+palmares_temperature_journalier_froid_rang_07_valeur:
+  name: Palmarès température froid — Rang 07 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+palmares_temperature_journalier_froid_rang_08_valeur:
+  name: Palmarès température froid — Rang 08 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+palmares_temperature_journalier_froid_rang_09_valeur:
+  name: Palmarès température froid — Rang 09 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+palmares_temperature_journalier_froid_rang_10_valeur:
+  name: Palmarès température froid — Rang 10 valeur
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-down
+
+# --- Helper mécanique ---
+
+palmares_temperature_journalier_froid_snapshot_veille:
+  name: Palmarès température froid — Snapshot veille
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-clock

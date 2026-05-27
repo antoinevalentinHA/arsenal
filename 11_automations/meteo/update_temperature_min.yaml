@@ -1,0 +1,114 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Température min jour courant jardin — Update
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10160000000027"
+#
+# 🎯 RÔLE
+#   Mettre à jour le minimum courant du jour civil si la
+#   température jardin descend sous la valeur mémorisée
+#   ET si la valeur source est dans la plage métier [-50, 50].
+#   Abstention si source invalide, hors plage métier, ou
+#   valeur supérieure/égale au min courant.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : comparaison et mise à jour du min courant
+#   - Exclut : clôture journalière, reset, exposition publique
+#
+# 🔖 NATURE
+#   Application événementielle
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md V1.0.2
+#   Pipeline 3 couches (§3.2) — couche 1/3 (mémoire courante)
+#
+# ⚙️ MODE
+#   single
+#   Justification : traitement séquentiel, pas de concurrence
+#                  utile sur une mise à jour de min
+#
+# 📣 DÉCLENCHEURS
+#   - state_change : sensor.temperature_jardin
+#
+# 🔗 DÉPENDANCES
+#   Lit     : sensor.temperature_jardin
+#             input_number.temperature_min_jour_courant_jardin
+#   Écrit   : input_number.temperature_min_jour_courant_jardin
+#
+# 🧠 AUTORITÉ
+#   Décide et applique — garde métier stricte, comparaison min
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger — écriture uniquement si valeur strictement
+#   inférieure au min courant ET dans la plage métier [-50, 50]
+#
+# 🛡️ GARDE MÉTIER STRICTE
+#   Seules les valeurs dans la plage métier sont acceptées comme
+#   sources d'update :
+#     -50 <= source_valeur <= 50
+#
+#   Une valeur hors plage métier (par exemple 80, -100, ou la
+#   sentinelle 999 elle-même) est rejetée silencieusement même
+#   si elle est techniquement représentable et même si elle
+#   satisferait la comparaison numérique source_valeur < min_courant.
+#
+#   Cette garde protège contre :
+#     - une mesure aberrante du capteur source
+#     - une valeur résiduelle si la source devient un input_number
+#     - une dérive de configuration future
+#
+# 🛡️ DOCTRINE SENTINELLE
+#   Au début de chaque jour, min_courant = 999. La première mesure
+#   valide V dans la plage métier satisfait :
+#     -50 <= V <= 50  ET  V < 999
+#   La sentinelle est donc remplacée par construction, sans cas
+#   particulier dans le code.
+#
+# 🚫 INTERDITS
+#   - Écrire si source invalide (unavailable, unknown, non numérique)
+#   - Écrire si valeur hors plage métier [-50, 50]
+#   - Écrire si valeur supérieure ou égale au min courant
+#   - Confondre min courant et min journalier clôturé
+#   - Interagir avec le pipeline palmarès directement
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+- id: "10160000000027"
+  alias: "update_temperature_min"
+  description: >
+    Met à jour le minimum courant si la température jardin descend
+    sous la valeur mémorisée ET si elle est dans la plage métier
+    [-50, 50]. Abstention sinon.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: sensor.temperature_jardin
+
+  variables:
+    source_state: >
+      {{ states('sensor.temperature_jardin') }}
+    source_numerique: >
+      {{ source_state not in ['unknown', 'unavailable', 'none', '']
+         and source_state | float(999) != 999 }}
+    source_valeur: >
+      {{ source_state | float(999) }}
+    source_dans_plage_metier: >
+      {{ source_numerique and source_valeur >= -50 and source_valeur <= 50 }}
+    min_courant: >
+      {{ states('input_number.temperature_min_jour_courant_jardin') | float(999) }}
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ source_dans_plage_metier and source_valeur < min_courant }}
+
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.temperature_min_jour_courant_jardin
+      data:
+        value: "{{ source_valeur }}"

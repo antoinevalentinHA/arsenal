@@ -1,0 +1,137 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Météo — Palmarès historique journées les plus froides
+#             Synthèse publique
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer une synthèse lisible du palmarès des journées
+#   les plus froides : record absolu (rang 1, la journée la
+#   plus froide), date du record, nombre de rangs remplis,
+#   et l'ensemble des rangs en attributs.
+#   Retourne unavailable si le rang 1 est vide OU à la
+#   sentinelle 999 (palmarès vierge ou incohérent).
+#
+# 🧩 PÉRIMÈTRE
+#   - Calcul et dérivation uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   synthese
+#
+# 🆔 UNIQUE_ID
+#   palmares_temperature_journalier_froid
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md V1.0.2
+#
+# 🔗 DÉPENDANCES
+#   Lit :
+#     input_number.palmares_temperature_journalier_froid_rang_01_valeur … rang_10_valeur
+#     input_text.palmares_temperature_journalier_froid_rang_01_date … rang_10_date
+#
+# 🛡️ DOCTRINE D'AVAILABILITY — GARDE DOUBLE
+#   Le sensor expose une valeur SI ET SEULEMENT SI :
+#     - rang_01_date != ''
+#     - ET rang_01_valeur != 999
+#
+#   Justification : sur le froid, 999 est une sentinelle technique
+#   explicite. Un sensor public ne doit JAMAIS exposer 999, même
+#   en cas d'incohérence de couplage signalée par ailleurs par B2.
+#
+#   Séparation des rôles :
+#     - le binary_sensor d'anomalie DIAGNOSTIQUE (B1, B2, B3, B4) ;
+#     - ce sensor synthèse EXPOSE.
+#   Un diagnostic actif ne dispense pas l'exposition de rester propre.
+#
+#   ASYMÉTRIE ASSUMÉE AVEC LE CHAUD :
+#   Le sensor chaud n'a qu'une garde sur la date :
+#     `states('...rang_01_date') != ''`
+#   Côté chaud, la sentinelle métier (0) coïncide avec une valeur
+#   plausible — il n'y a pas d'enjeu d'exposer 0. Côté froid, exposer
+#   999 serait une fuite technique. La garde double est donc une
+#   spécialisation froide, pas un miroir possible.
+#
+# 🛡️ SPÉCIFICITÉS FROIDES (vs chaud)
+#   - Availability : garde double (date AND valeur != 999)
+#                    vs garde simple (date) côté chaud
+#   - Icône : mdi:thermometer-chevron-down (vs chevron-up côté chaud)
+#   - Sémantique : rang 1 = record absolu de FROID
+#   - Cf. contrat §14 — différences notables avec le contrat chaud
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre valeur dérivée et décision exécutive
+#   - Exposer 999 comme valeur métier (cf. doctrine availability)
+#   - Exposer un état si le rang 1 est vide
+#
+# 🏷️ STATUT
+#   Calcul — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: "Palmarès température journalier froid"
+      unique_id: palmares_temperature_journalier_froid
+      unit_of_measurement: "°C"
+      icon: mdi:thermometer-chevron-down
+      availability: >
+        {{ states('input_text.palmares_temperature_journalier_froid_rang_01_date') != ''
+           and states('input_number.palmares_temperature_journalier_froid_rang_01_valeur') | float(999) != 999 }}
+      state: >
+        {{ states('input_number.palmares_temperature_journalier_froid_rang_01_valeur') | float }}
+      attributes:
+        rang_01_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_01_valeur') | float(999) }}
+        rang_01_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_01_date') }}
+        rang_02_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_02_valeur') | float(999) }}
+        rang_02_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_02_date') }}
+        rang_03_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_03_valeur') | float(999) }}
+        rang_03_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_03_date') }}
+        rang_04_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_04_valeur') | float(999) }}
+        rang_04_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_04_date') }}
+        rang_05_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_05_valeur') | float(999) }}
+        rang_05_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_05_date') }}
+        rang_06_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_06_valeur') | float(999) }}
+        rang_06_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_06_date') }}
+        rang_07_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_07_valeur') | float(999) }}
+        rang_07_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_07_date') }}
+        rang_08_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_08_valeur') | float(999) }}
+        rang_08_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_08_date') }}
+        rang_09_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_09_valeur') | float(999) }}
+        rang_09_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_09_date') }}
+        rang_10_valeur: >
+          {{ states('input_number.palmares_temperature_journalier_froid_rang_10_valeur') | float(999) }}
+        rang_10_date: >
+          {{ states('input_text.palmares_temperature_journalier_froid_rang_10_date') }}
+        rangs_remplis: >
+          {% set dates = [
+            states('input_text.palmares_temperature_journalier_froid_rang_01_date'),
+            states('input_text.palmares_temperature_journalier_froid_rang_02_date'),
+            states('input_text.palmares_temperature_journalier_froid_rang_03_date'),
+            states('input_text.palmares_temperature_journalier_froid_rang_04_date'),
+            states('input_text.palmares_temperature_journalier_froid_rang_05_date'),
+            states('input_text.palmares_temperature_journalier_froid_rang_06_date'),
+            states('input_text.palmares_temperature_journalier_froid_rang_07_date'),
+            states('input_text.palmares_temperature_journalier_froid_rang_08_date'),
+            states('input_text.palmares_temperature_journalier_froid_rang_09_date'),
+            states('input_text.palmares_temperature_journalier_froid_rang_10_date')
+          ] %}
+          {{ dates | select('ne', '') | list | count }}

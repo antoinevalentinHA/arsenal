@@ -1,0 +1,84 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Météo — Température minimale journalière jardin
+#             Exposition canonique
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la température minimale de la journée civile
+#   clôturée sous forme de capteur public consommable.
+#   Source canonique pour le palmarès des journées froides.
+#   Retourne unavailable si la mémoire clôturée est à la
+#   sentinelle 999 (aucune clôture valide actuellement
+#   représentée).
+#
+# 🧩 PÉRIMÈTRE
+#   - Exposition uniquement
+#   - Aucun calcul
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   synthese
+#
+# 🆔 UNIQUE_ID
+#   temperature_min_journaliere_jardin
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md V1.0.2
+#   Pipeline 3 couches (§3.2) — couche 3/3
+#
+# 🔗 DÉPENDANCES
+#   Lit : input_number.temperature_min_journaliere_jardin
+#
+# 🛡️ FILTRAGE SENTINELLE
+#   La sentinelle 999 portée par la mémoire clôturée NE DOIT JAMAIS
+#   fuiter vers le palmarès consommateur. Le filtre availability
+#   garantit cette frontière : si la mémoire est à 999, le sensor
+#   est unavailable, et le palmarès s'abstient (cf. contrat §10
+#   précondition bloquante).
+#
+# 📋 PAS D'ATTRIBUT date_journee_cloturee
+#   Asymétrie ASSUMÉE avec le sensor chaud équivalent.
+#
+#   Le sensor chaud expose un attribut `date_journee_cloturee`
+#   calculé via `(now() - timedelta(days=1)).strftime('%Y-%m-%d')`.
+#   Cet attribut est structurellement faux : il assume que la
+#   clôture a eu lieu à 00:00:05 aujourd'hui, ce qui est
+#   invérifiable depuis le template. En cas de stale data, il
+#   annonce « hier » alors que la valeur date d'un autre jour.
+#
+#   Côté froid, l'attribut est délibérément supprimé :
+#     - le palmarès calcule lui-même date_veille au moment de
+#       l'évaluation (00:00:30) ;
+#     - aucun consommateur connu n'utilise cet attribut ;
+#     - mieux vaut pas d'attribut qu'un attribut mensonger.
+#
+#   La correction symétrique côté chaud est différée pour ne pas
+#   ouvrir un second chantier au milieu du pipeline froid.
+#
+# 🚫 INTERDITS
+#   - Exposer 999 comme valeur métier
+#   - Confondre min courant et min clôturé
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Ajouter un attribut `date_journee_cloturee` calculé par
+#     `now() - 1j` sans mémoire de date réelle (cf. doctrine
+#     ci-dessus). Si un consommateur futur requiert cet attribut,
+#     ajouter d'abord un input_text.temperature_min_journaliere_jardin_date
+#     alimenté par l'automation de clôture.
+#
+# 🏷️ STATUT
+#   Calcul — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: "Température min journalière jardin"
+      unique_id: temperature_min_journaliere_jardin
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: >
+        {{ states('input_number.temperature_min_journaliere_jardin') | float(999) != 999 }}
+      state: >
+        {{ states('input_number.temperature_min_journaliere_jardin') | float }}

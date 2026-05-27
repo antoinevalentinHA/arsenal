@@ -148,3 +148,4 @@ views:
             name: 🏆 Palmarès historique
 
           - !include ../../includes/cartes/palmares_temperature_chaude.yaml
+          - !include ../../includes/cartes/palmares_temperature_froide.yaml

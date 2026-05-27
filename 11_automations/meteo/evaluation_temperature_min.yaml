@@ -1,0 +1,342 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Palmarès journées froides — Évaluation
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10160000000031"
+#
+# 🎯 RÔLE
+#   Évaluer le snapshot de la veille et mettre à jour le
+#   palmarès des journées les plus froides si la valeur
+#   mérite un rang dans le top 10.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : validation du snapshot, tri ascendant avec FIFO,
+#              insertion, décalage des rangs, horodatage de
+#              dernière évaluation
+#   - Exclut : capture du minimum (responsabilité du snapshot)
+#
+# 🔖 NATURE
+#   Application
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md V1.0.2
+#
+# ⚙️ MODE
+#   single
+#   Justification : évaluation journalière unique, concurrence
+#                  impossible par construction
+#
+# 📣 DÉCLENCHEURS
+#   - time : 00:00:30 (quotidien)
+#
+# 🔗 DÉPENDANCES
+#   Lit     : input_number.palmares_temperature_journalier_froid_snapshot_veille
+#             input_number.palmares_temperature_journalier_froid_rang_01_valeur … rang_10_valeur
+#             input_text.palmares_temperature_journalier_froid_rang_01_date … rang_10_date
+#   Écrit   : input_number.palmares_temperature_journalier_froid_rang_01_valeur … rang_10_valeur
+#             input_text.palmares_temperature_journalier_froid_rang_01_date … rang_10_date
+#             input_datetime.palmares_temperature_journalier_froid_derniere_evaluation
+#
+# 🧠 AUTORITÉ
+#   Décide et applique — algorithme de tri ascendant et d'insertion
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger le même jour :
+#   la garde date_deja_presente empêche une double insertion
+#   de la même journée civile.
+#
+# 🛡️ GARDE MÉTIER STRICTE
+#   Le snapshot doit être dans la plage métier [-50, 50] pour être
+#   évalué. La sentinelle 999, une valeur aberrante (par exemple
+#   80, -100), ou un état non numérique provoquent une ABSTENTION
+#   silencieuse — le palmarès et l'horodatage de dernière évaluation
+#   ne sont pas modifiés.
+#
+# 📋 DOCTRINE D'INSERTION (FROID)
+#   - Abstention si snapshot hors plage métier [-50, 50]
+#   - Abstention si date_veille déjà présente dans les rangs
+#   - Tri ASCENDANT : (valeur asc, index_anteriorite asc)
+#     → la plus FROIDE gagne le rang 1
+#     → FIFO sur égalité : l'ancien rang conserve sa position
+#   - Filtrage des rangs vides : `dates[i] != ''`
+#     (marqueur primaire, cf. INV-FR-9 — valeur 999 est le couplage technique)
+#   - Palmarès partiellement rempli : tout snapshot valide entre
+#   - Palmarès plein : snapshot doit être STRICTEMENT INFÉRIEUR
+#     au rang 10 (le moins froid du palmarès)
+#   - Rangs résiduels après tri : initialisés à (999, '')
+#     conformément à INV-FR-9 et à la convention de rang vide froid
+#
+# 🛡️ SPÉCIFICITÉS FROIDES (vs chaud)
+#   - Tri : `sort(attribute='0')` sans reverse (vs `reverse=true` côté chaud)
+#   - Seuil mérite : `snapshot < rang_10_val` (vs `>` côté chaud)
+#   - Rangs résiduels : `(999, '')` (vs `(0, '')` côté chaud)
+#   - Accumulation via `namespace` (cf. doctrine Jinja ci-dessous)
+#   - Cf. contrat §14 — différences notables avec le contrat chaud
+#
+# 🛡️ DOCTRINE JINJA — ACCUMULATION PAR NAMESPACE
+#   L'accumulation des paires (valeur, index, date) dans une boucle
+#   `{% for %}` DOIT utiliser un `namespace`, JAMAIS un `{% set %}`
+#   simple sur une variable locale.
+#
+#   En Jinja, la portée d'un `{% set var = ... %}` à l'intérieur
+#   d'une boucle est LIMITÉE à l'itération. La valeur ne persiste
+#   pas hors de la boucle. Conséquence d'un mauvais code :
+#     - les rangs existants non vides ne sont jamais accumulés
+#     - seul le snapshot du jour entre dans le tri
+#     - le palmarès est silencieusement détruit à chaque évaluation
+#
+#   La forme correcte (utilisée ici) :
+#     {% set ns = namespace(paires=[]) %}
+#     {% for i in range(10) %}
+#       {% if dates[i] != '' %}
+#         {% set ns.paires = ns.paires + [(...)] %}
+#       {% endif %}
+#     {% endfor %}
+#     {% set sorted_paires = ns.paires | sort(...) %}
+#
+#   Le chaud porte vraisemblablement le même bug et nécessitera
+#   une correction symétrique (différée).
+#
+# 🚫 INTERDITS
+#   - Lire sensor.temperature_min_journaliere_jardin directement
+#   - Utiliser le Recorder comme source métier
+#   - Insérer une date déjà présente dans les rangs
+#   - Écrire si snapshot hors plage métier [-50, 50]
+#   - Initialiser un rang résiduel à 0 (valeur métier plausible côté froid)
+#   - Accumuler les paires dans la boucle par `{% set var = var + ... %}`
+#     simple : la portée locale du set en Jinja détruirait silencieusement
+#     le palmarès. Utiliser un `namespace` (cf. doctrine Jinja ci-dessus).
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+- id: "10160000000031"
+  alias: "evaluation_temperature_min"
+  description: >
+    Évalue le snapshot de la veille et met à jour le palmarès
+    des journées les plus froides si la valeur mérite un rang.
+    Abstention si snapshot hors plage métier, date déjà présente,
+    ou valeur insuffisante (FIFO strict, tri ascendant).
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "00:00:30"
+
+  variables:
+    snapshot_state: >
+      {{ states('input_number.palmares_temperature_journalier_froid_snapshot_veille') }}
+    snapshot_numerique: >
+      {{ snapshot_state not in ['unknown', 'unavailable', 'none', '']
+         and snapshot_state | float(999) != 999 }}
+    snapshot: >
+      {{ snapshot_state | float(999) }}
+    snapshot_dans_plage_metier: >
+      {{ snapshot_numerique and snapshot >= -50 and snapshot <= 50 }}
+
+    date_veille: >
+      {{ (now() - timedelta(days=1)).strftime('%Y-%m-%d') }}
+
+    rang_01_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_01_valeur') | float(999) }}
+    rang_02_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_02_valeur') | float(999) }}
+    rang_03_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_03_valeur') | float(999) }}
+    rang_04_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_04_valeur') | float(999) }}
+    rang_05_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_05_valeur') | float(999) }}
+    rang_06_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_06_valeur') | float(999) }}
+    rang_07_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_07_valeur') | float(999) }}
+    rang_08_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_08_valeur') | float(999) }}
+    rang_09_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_09_valeur') | float(999) }}
+    rang_10_val: >
+      {{ states('input_number.palmares_temperature_journalier_froid_rang_10_valeur') | float(999) }}
+    rang_01_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_01_date') }}
+    rang_02_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_02_date') }}
+    rang_03_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_03_date') }}
+    rang_04_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_04_date') }}
+    rang_05_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_05_date') }}
+    rang_06_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_06_date') }}
+    rang_07_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_07_date') }}
+    rang_08_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_08_date') }}
+    rang_09_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_09_date') }}
+    rang_10_date: >
+      {{ states('input_text.palmares_temperature_journalier_froid_rang_10_date') }}
+
+    valeurs: >
+      {{ [rang_01_val, rang_02_val, rang_03_val, rang_04_val, rang_05_val,
+          rang_06_val, rang_07_val, rang_08_val, rang_09_val, rang_10_val] }}
+    dates: >
+      {{ [rang_01_date, rang_02_date, rang_03_date, rang_04_date, rang_05_date,
+          rang_06_date, rang_07_date, rang_08_date, rang_09_date, rang_10_date] }}
+
+    date_deja_presente: >
+      {{ date_veille in dates }}
+    palmares_plein: >
+      {{ dates | select('ne', '') | list | count == 10 }}
+    merite_rang: >
+      {{ snapshot_dans_plage_metier
+         and not date_deja_presente
+         and (not palmares_plein or snapshot < rang_10_val) }}
+
+  condition:
+    - condition: template
+      value_template: "{{ merite_rang }}"
+
+  action:
+    - variables:
+        nouveau_palmares: >
+          {# Accumulation des rangs existants non vides via namespace.       #}
+          {# Le `set` simple ne persiste pas hors boucle for en Jinja —      #}
+          {# le namespace est obligatoire pour accumuler correctement.       #}
+          {% set ns = namespace(paires=[]) %}
+          {% for i in range(10) %}
+            {% if dates[i] != '' %}
+              {% set ns.paires = ns.paires + [(valeurs[i], i, dates[i])] %}
+            {% endif %}
+          {% endfor %}
+          {% set ns.paires = ns.paires + [(snapshot, 10, date_veille)] %}
+          {% set sorted_paires = ns.paires | sort(attribute='1') | sort(attribute='0') %}
+          {% set result = namespace(vals=[], dts=[]) %}
+          {% for p in sorted_paires[:10] %}
+            {% set result.vals = result.vals + [p[0]] %}
+            {% set result.dts = result.dts + [p[2]] %}
+          {% endfor %}
+          {% for i in range(result.vals | count, 10) %}
+            {% set result.vals = result.vals + [999] %}
+            {% set result.dts = result.dts + [''] %}
+          {% endfor %}
+          {{ {'vals': result.vals, 'dts': result.dts} }}
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_01_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[0] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_01_date
+      data:
+        value: "{{ nouveau_palmares.dts[0] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_02_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[1] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_02_date
+      data:
+        value: "{{ nouveau_palmares.dts[1] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_03_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[2] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_03_date
+      data:
+        value: "{{ nouveau_palmares.dts[2] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_04_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[3] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_04_date
+      data:
+        value: "{{ nouveau_palmares.dts[3] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_05_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[4] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_05_date
+      data:
+        value: "{{ nouveau_palmares.dts[4] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_06_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[5] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_06_date
+      data:
+        value: "{{ nouveau_palmares.dts[5] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_07_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[6] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_07_date
+      data:
+        value: "{{ nouveau_palmares.dts[6] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_08_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[7] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_08_date
+      data:
+        value: "{{ nouveau_palmares.dts[7] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_09_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[8] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_09_date
+      data:
+        value: "{{ nouveau_palmares.dts[8] }}"
+
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.palmares_temperature_journalier_froid_rang_10_valeur
+      data:
+        value: "{{ nouveau_palmares.vals[9] }}"
+    - service: input_text.set_value
+      target:
+        entity_id: input_text.palmares_temperature_journalier_froid_rang_10_date
+      data:
+        value: "{{ nouveau_palmares.dts[9] }}"
+
+    - service: input_datetime.set_datetime
+      target:
+        entity_id: input_datetime.palmares_temperature_journalier_froid_derniere_evaluation
+      data:
+        datetime: "{{ now().strftime('%Y-%m-%d %H:%M:%S') }}"

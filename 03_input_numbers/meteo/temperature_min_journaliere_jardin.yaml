@@ -1,0 +1,91 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Température minimale journalière jardin
+#             Mémoire clôturée (dernière journée civile)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la valeur minimale stable de la dernière journée
+#   civile clôturée, OU la sentinelle 999 si aucune clôture
+#   valide n'est actuellement représentée. Mise à jour une
+#   fois par jour à 00:00:05 par l'automation de clôture.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement (dernière clôture valide
+#     ou sentinelle d'abstention)
+#   - Aucun calcul autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement déclenché
+#
+# 🏷️ NATURE
+#   Mémoire clôturée — registre de pipeline
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md V1.0.2
+#   Pipeline 3 couches (§3.2) — couche 2/3
+#
+# 📐 BORNES TECHNIQUES
+#   min: -50    max: 1000    step: 0.1
+#
+#   Cohérence avec la mémoire courante : même grammaire,
+#   même sentinelle 999 = absence métier.
+#
+# 🛡️ DOCTRINE DE LA SENTINELLE 999
+#   La sentinelle 999 sur cette mémoire a UNE seule signification :
+#     « aucune clôture valide actuellement représentée »
+#
+#   Deux origines légitimes :
+#     1. État initial      — premier déploiement, aucune clôture
+#                            jamais observée.
+#     2. Clôture invalide  — à 00:00:05, la mémoire courante était
+#                            elle-même à 999 (journée sans mesure
+#                            valide). La clôture écrit alors 999
+#                            pour effacer toute valeur précédente.
+#
+#   POURQUOI la clôture invalide doit écrire 999 explicitement :
+#     Si la clôture s'abstenait silencieusement, la mémoire
+#     conserverait la valeur de la clôture précédente. Le sensor
+#     resterait disponible et le palmarès consommerait cette
+#     vieille valeur comme s'il s'agissait de la journée d'hier.
+#     C'est précisément le cas de « palmarès plausible mais faux »
+#     que la doctrine Arsenal combat (cf. contrat §3.5).
+#
+#   Dans tous les cas où la valeur est 999, le sensor exposé
+#   (sensor.temperature_min_journaliere_jardin) est unavailable
+#   et le palmarès s'abstient. La sentinelle protège contre la
+#   stale data.
+#
+# 📋 CONVENTIONS
+#   - Valeur initiale au déploiement : 999 (sentinelle)
+#   - Mise à jour exclusive à 00:00:05 par l'automation de clôture :
+#       * courant valide   → copier courant vers cette mémoire
+#       * courant invalide → écrire 999 dans cette mémoire
+#   - Aucun reset automatique : la valeur (qu'elle soit métier
+#     ou sentinelle) persiste jusqu'à la prochaine clôture
+#   - Écriture exclusivement par :
+#       automation.temperature_min_journaliere_jardin_cloture
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire courante et mémoire clôturée
+#   - Confondre stockage et décision
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Saisie manuelle hors procédure de réinitialisation
+#   - Ajouter une clé `initial:` (réécrirait au redémarrage HA,
+#     ferait perdre la dernière clôture stable)
+#   - S'abstenir d'écrire à 00:00:05 quand la mémoire courante est
+#     invalide : laisser la valeur précédente est un mensonge
+#     historique (cf. doctrine ci-dessus)
+#   - Écrire une valeur métier > 50 ou < -50 : interdit par doctrine,
+#     bien que techniquement possible (bornes étendues pour la sentinelle)
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+temperature_min_journaliere_jardin:
+  name: Température min journalière jardin
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-check

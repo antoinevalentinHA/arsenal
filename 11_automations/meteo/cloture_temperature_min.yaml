@@ -1,0 +1,114 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Température min journalière jardin — Clôture
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10160000000028"
+#
+# 🎯 RÔLE
+#   Clôturer la journée civile à 00:00:05 :
+#     - si le min courant est dans la plage métier [-50, 50] →
+#       copier vers la mémoire clôturée (temperature_min_journaliere_jardin)
+#     - sinon (sentinelle 999, hors plage métier, valeur aberrante,
+#       état invalide) → écrire 999 dans la mémoire clôturée pour
+#       effacer toute valeur précédente et forcer l'unavailable
+#       du sensor exposé
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : clôture journalière de la mémoire min
+#   - Exclut : mise à jour du courant, reset, exposition publique
+#
+# 🔖 NATURE
+#   Application temporelle
+#
+# 🔗 RÉFÉRENCE
+#   CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md V1.0.2
+#   Pipeline 3 couches (§3.2) — couche 2/3 (mémoire clôturée)
+#
+# ⚙️ MODE
+#   single
+#   Justification : déclenchement horaire unique, pas de concurrence
+#
+# 📣 DÉCLENCHEURS
+#   - time : 00:00:05 (quotidien)
+#
+# 🔗 DÉPENDANCES
+#   Lit     : input_number.temperature_min_jour_courant_jardin
+#   Écrit   : input_number.temperature_min_journaliere_jardin
+#
+# 🧠 AUTORITÉ
+#   Décide et applique — clôture inconditionnelle, garde métier stricte
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger — écriture idempotente quelle que soit la branche.
+#   Une re-clôture du même jour produira la même valeur cible.
+#
+# 🛡️ GARDE MÉTIER STRICTE
+#   Une valeur n'est copiée comme clôture valide QUE si elle est
+#   dans la plage métier :
+#     -50 <= courant_valeur <= 50
+#
+#   Toute autre situation aboutit à l'écriture de 999 :
+#     - sentinelle 999 héritée d'un reset précédent
+#     - valeur aberrante (par exemple 500 par manipulation manuelle)
+#     - état non numérique (unknown, unavailable)
+#
+#   Cette garde protège contre la propagation de valeurs corrompues
+#   dans le palmarès.
+#
+# 🛡️ DOCTRINE — PAS D'ABSTENTION SILENCIEUSE
+#   Cette automation N'A PAS de bloc `condition`. C'est délibéré.
+#
+#   Si la mémoire courante est hors plage métier, l'automation
+#   N'EST PAS autorisée à s'abstenir. Elle DOIT écrire 999 dans
+#   la mémoire clôturée pour :
+#     1. effacer la valeur de la clôture précédente (sinon stale data)
+#     2. forcer le sensor exposé à passer unavailable
+#     3. faire que le palmarès s'abstienne le lendemain
+#
+#   L'abstention silencieuse est explicitement interdite par la
+#   brique input_number.temperature_min_journaliere_jardin (§ Interdits)
+#   et par la doctrine du contrat §3.5 (palmarès plausible mais faux).
+#
+# 🚫 INTERDITS
+#   - S'abstenir si courant hors plage métier (doit écrire 999 explicitement)
+#   - Bloc `condition:` qui pourrait court-circuiter l'écriture
+#   - Copier une valeur courante hors de [-50, 50] comme métier
+#   - Confondre clôture et reset
+#   - Confondre clôture et update
+#   - Écrire une valeur lue ailleurs que dans temperature_min_jour_courant_jardin
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+- id: "10160000000028"
+  alias: "cloture_temperature_min"
+  description: >
+    Clôture à 00:00:05. Courant dans [-50, 50] → copie vers journaliere.
+    Sinon → écrit 999. Aucune abstention silencieuse.
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "00:00:05"
+
+  variables:
+    courant_state: >
+      {{ states('input_number.temperature_min_jour_courant_jardin') }}
+    courant_numerique: >
+      {{ courant_state not in ['unknown', 'unavailable', 'none', '']
+         and courant_state | float(999) != 999 }}
+    courant_valeur: >
+      {{ courant_state | float(999) }}
+    courant_dans_plage_metier: >
+      {{ courant_numerique and courant_valeur >= -50 and courant_valeur <= 50 }}
+    valeur_cloture: >
+      {{ courant_valeur if courant_dans_plage_metier else 999 }}
+
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: input_number.temperature_min_journaliere_jardin
+      data:
+        value: "{{ valeur_cloture }}"
