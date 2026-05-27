@@ -83,13 +83,6 @@ input_boolean.auto_lumiere_jardin_soir:
   friendly_name: "Éclairage auto Jardin (soir)"
 
 ############################################################
-# 🌬️ DÉSHUMIDIFICATION
-############################################################
-
-input_boolean.auto_deshumidification_active:
-  friendly_name: "Deshum. active (étage)"
-
-############################################################
 # 👶 CONFORT / ENFANTS
 ############################################################
 

@@ -193,21 +193,13 @@ views:
             template: section_header
             name: 💦️ Déshumidification
 
-          - type: grid
-            square: false
-            columns: 2
-            cards:
-              - type: tile
-                entity: input_boolean.auto_deshumidification_active
-                name: Activer déshumidification auto
-
-              - type: tile
-                entity: input_number.seuil_humidex_deshumidification
-                name: Seuil On (Humidex)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
+          - type: tile
+            entity: input_number.seuil_humidex_deshumidification
+            name: Seuil On (Humidex)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
 
           - type: custom:button-card
             template: section_header
