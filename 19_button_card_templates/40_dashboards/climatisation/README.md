@@ -117,7 +117,6 @@ Cartes exposant l’intention ou le mode décidé.
 
 Exemples :
 
-- `carte_clim_intention`
 - `clim_decision_synthetique_72`
 - `carte_clim_synthese`
 - `clim_synthese_status_72`
@@ -238,7 +237,6 @@ Rôle :
 40_dashboards/clim/
 
   20_statut_metier/
-    carte_clim_intention.yaml
     clim_decision_synthetique_72.yaml
     carte_clim_synthese.yaml
     clim_synthese_status_72.yaml

@@ -25,8 +25,8 @@
 #     - unavailable            -> ⚪ gris clair
 #
 # 🔗 DEPENDANCES
-#     - sensor.clim_mode_local        : mode décidé (cool | heat | dry | off)
-#     - input_text.climatisation_raison : raison principale exposée en label
+#     - sensor.clim_mode_local       : mode décidé (cool | heat | dry | off)
+#     - sensor.clim_raison_decision  : raison principale exposée en label
 #
 # ⚠️ CONTRAINTES
 #     - Aucune entity directe — tout lu via states[]
@@ -71,7 +71,7 @@ clim_decision_synthetique_72:
   label: |
     [[[
       const mode = states['sensor.clim_mode_local']?.state;
-      const raison = states['input_text.climatisation_raison']?.state;
+      const raison = states['sensor.clim_raison_decision']?.state;
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
 
       const badgeMode = (m) => {
@@ -83,7 +83,22 @@ clim_decision_synthetique_72:
         return '⛔ ' + String(m).toUpperCase();
       };
 
-      const r = (UNAV.includes(raison) || raison === '') ? '—' : raison;
+      const libelleRaison = (r) => {
+        if (UNAV.includes(r) || r === '') return '—';
+        const map = {
+          'refroidissement':         'Refroidissement',
+          'deshumidification':       'Déshumidification',
+          'soutien_chauffage':       'Soutien chauffage',
+          'blocage_poele':           'Bloqué (poêle)',
+          'blocage_aeration':        'Bloqué (aération)',
+          'blocage_horaire':         'Bloqué (horaire)',
+          'fenetre_ouverte':         'Fenêtre ouverte',
+          'aucune_demande_admissible': 'Aucune demande admissible'
+        };
+        return map[r] || r;
+      };
+
+      const r = libelleRaison(raison);
 
       if (UNAV.includes(mode)) {
         return "État décisionnel non interprétable<br>Mode brut : —";

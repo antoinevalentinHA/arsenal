@@ -18,8 +18,9 @@
 #
 # 🎨 SEMANTIQUE
 #     - action cohérente avec raison              -> 🟢 vert   (nominal)
-#       (aucune_demande→arrêt, blocage→bloquée,
-#        humidite_elevee→dry, temperature_elevee→cool,
+#       (aucune_demande_admissible→arrêt,
+#        blocage_*→bloquée, fenetre_ouverte→bloquée,
+#        refroidissement→cool, deshumidification→dry,
 #        soutien_chauffage→heat)
 #     - clim bloquée + binary_sensor confirmé     -> 🟠 orange (blocage explicite)
 #     - toute autre combinaison (incohérence)     -> 🔴 rouge  (divergence à investiguer)
@@ -71,21 +72,22 @@ carte_clim_decision:
       value: |
         [[[
           const action = entity.state;
-          const raison = states['sensor.clim_raison_decision']?.state || '';
+          const raison = (states['sensor.clim_raison_decision']?.state || '').trim();
 
-          if (raison === 'aucune_demande' && (action === 'arret' || action === 'bloquee')) {
+          if (raison === 'aucune_demande_admissible' && (action === 'arret' || action === 'bloquee')) {
             return true;
           }
 
-          if (raison.startsWith('blocage') && (action === 'bloquee' || action === 'arret')) {
+          if ((raison.startsWith('blocage') || raison === 'fenetre_ouverte')
+              && (action === 'bloquee' || action === 'arret')) {
             return true;
           }
 
-          if (raison === 'humidite_elevee' && action === 'dry_actif') {
+          if (raison === 'refroidissement' && action === 'cool_actif') {
             return true;
           }
 
-          if (raison === 'temperature_elevee' && action === 'cool_actif') {
+          if (raison === 'deshumidification' && action === 'dry_actif') {
             return true;
           }
 
