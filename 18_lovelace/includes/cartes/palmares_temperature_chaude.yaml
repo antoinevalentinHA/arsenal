@@ -1,0 +1,23 @@
+type: markdown
+content: |
+  **🌡️ Palmarès journées les plus chaudes**
+
+  {% set ns = namespace(records=[]) %}
+
+  {% for i in range(1, 11) %}
+    {% set p = '%02d' | format(i) %}
+    {% set valeur = state_attr('sensor.palmares_temperature_journalier_chaud', 'rang_' ~ p ~ '_valeur') %}
+    {% set date = state_attr('sensor.palmares_temperature_journalier_chaud', 'rang_' ~ p ~ '_date') %}
+
+    {% if valeur is not none and date not in [none, '', 'unknown', 'unavailable'] %}
+      {% set ns.records = ns.records + [dict(rang=i, date=date, valeur=valeur)] %}
+    {% endif %}
+  {% endfor %}
+
+  {% if ns.records | count == 0 %}
+  _Aucun record enregistré._
+  {% else %}
+  {% for item in ns.records %}
+  {% if item.rang == 1 %}🥇{% elif item.rang == 2 %}🥈{% elif item.rang == 3 %}🥉{% else %}{{ item.rang }}️⃣{% endif %} {{ item.date }} — **{{ item.valeur }} °C**
+  {% endfor %}
+  {% endif %}

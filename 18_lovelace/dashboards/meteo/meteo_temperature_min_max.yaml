@@ -139,3 +139,12 @@ views:
                 entity: sensor.temperature_minmax_jour_cave
                 name: Cave
                 icon: mdi:thermometer
+
+          # ======================================================
+          # 🏆 PALMARÈS HISTORIQUE
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🏆 Palmarès historique
+
+          - !include ../../includes/cartes/palmares_temperature_chaude.yaml
