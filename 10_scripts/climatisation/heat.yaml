@@ -26,7 +26,6 @@ clim_exec_apply_heat:
 
   sequence:
     - variables:
-        hvac: "{{ states('climate.clim') }}"
         power: "{{ states('switch.clim_power') }}"
 
     - choose:
@@ -35,10 +34,13 @@ clim_exec_apply_heat:
             - service: switch.turn_on
               target:
                 entity_id: switch.clim_power
-            - delay: "00:00:02"
+            - delay: "00:00:10"
+
+    - condition: template
+      value_template: "{{ states('climate.clim') not in ['unknown', 'unavailable'] }}"
 
     - choose:
-        - conditions: "{{ hvac != 'heat' }}"
+        - conditions: "{{ states('climate.clim') != 'heat' }}"
           sequence:
             - service: climate.set_hvac_mode
               target:

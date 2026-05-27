@@ -108,7 +108,7 @@ clim_execution:
             - condition: template
               value_template: "{{ execution_possible }}"
           sequence:
-            - delay: "00:00:05"
+            - delay: "00:00:15"
 
     # ======================================================
     # 5. QUALIFICATION DU RÉSULTAT

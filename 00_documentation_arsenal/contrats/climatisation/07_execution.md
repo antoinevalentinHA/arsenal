@@ -46,6 +46,11 @@ Ces helpers portent la mémoire de résilience. Ils ne prennent aucune décision
 - Ne corrige jamais une décision
 - N'effectue aucun retry immédiat ni boucle interne — toute ré-émission est strictement différée, bornée et pilotée par des mécanismes externes (timer + compteur)
 - Ne conserve aucune mémoire locale interne au script — la mémoire de résilience est externalisée via des helpers dédiés
+- Les scripts physiques (`clim_exec_apply_cool`, `clim_exec_apply_dry`,
+  `clim_exec_apply_heat`) appliquent une garde de stabilisation après
+  allumage physique avant émission d'une commande HVAC.
+- Toute vérification d'état HVAC après allumage doit reposer sur une
+  lecture fraîche de `climate.clim`, postérieure à la stabilisation.
 
 ---
 
@@ -80,6 +85,11 @@ La ré-émission en cas d'échec :
 - s'arrête en cas d'échec persistant avec émission d'une notification persistante
 
 La couche Exécution reste pure : elle applique, constate et délègue la reprise. Elle ne décide pas de la stratégie thermique.
+
+Les post-conditions ne sont pas évaluées immédiatement après émission
+des commandes physiques. Une garde de stabilisation explicite est
+appliquée avant qualification du résultat afin de tenir compte des
+latences de propagation des intégrations climatisation.
 
 ---
 

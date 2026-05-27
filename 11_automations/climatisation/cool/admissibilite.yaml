@@ -15,10 +15,9 @@
 #               l'autorisation stable 5 min, sous besoin actif
 #   - Extinction immédiate sur retombée du besoin
 #   - Extinction immédiate sur révocation d'autorisation
-#   - Réconciliation explicite au démarrage :
-#       extinction conservatrice si signaux KO,
-#       activation gardée 5 min si besoin et autorisation
-#       déjà actifs au boot.
+#   - Réconciliation au démarrage exclue :
+#       portée par une automation dédiée afin de ne jamais
+#       bloquer les fronts runtime.
 #
 # 🔌 Entité support pilotée :
 #   - input_boolean.besoin_clim_cool_admissible
@@ -33,9 +32,9 @@
 - id: '10030000000114'
   alias: "Clim - Cool - Admissibilité"
   description: >
-    Pilotage complet de l'admissibilité COOL :
+    Pilotage runtime de l'admissibilité COOL :
     activation porte 1, requalification porte 2,
-    extinctions, et réconciliation au démarrage.
+    et extinctions.
   mode: single
   trigger:
     - platform: state
@@ -56,9 +55,6 @@
       entity_id: binary_sensor.autorisation_clim_cool
       to: 'off'
       id: extinction_autorisation
-    - platform: homeassistant
-      event: start
-      id: boot
 
   condition: []
 
@@ -106,47 +102,3 @@
             - action: input_boolean.turn_off
               target:
                 entity_id: input_boolean.besoin_clim_cool_admissible
-
-        # --- RECONCILIATION BOOT ---
-        - conditions:
-            - condition: trigger
-              id: boot
-          sequence:
-            - wait_template: >
-                {{ states('binary_sensor.besoin_clim_cool') not in ['unknown', 'unavailable']
-                   and states('binary_sensor.autorisation_clim_cool') not in ['unknown', 'unavailable'] }}
-              timeout: '00:01:00'
-              continue_on_timeout: true
-            - choose:
-
-                # Sous-branche : extinction conservatrice si signaux KO
-                - conditions:
-                    - condition: template
-                      value_template: >
-                        {{ wait.completed == false
-                           or is_state('binary_sensor.besoin_clim_cool', 'off')
-                           or is_state('binary_sensor.autorisation_clim_cool', 'off') }}
-                  sequence:
-                    - action: input_boolean.turn_off
-                      target:
-                        entity_id: input_boolean.besoin_clim_cool_admissible
-
-                # Sous-branche : activation gardée 5 min si signaux stables
-                - conditions:
-                    - condition: state
-                      entity_id: binary_sensor.besoin_clim_cool
-                      state: 'on'
-                    - condition: state
-                      entity_id: binary_sensor.autorisation_clim_cool
-                      state: 'on'
-                  sequence:
-                    - delay: '00:05:00'
-                    - condition: state
-                      entity_id: binary_sensor.besoin_clim_cool
-                      state: 'on'
-                    - condition: state
-                      entity_id: binary_sensor.autorisation_clim_cool
-                      state: 'on'
-                    - action: input_boolean.turn_on
-                      target:
-                        entity_id: input_boolean.besoin_clim_cool_admissible

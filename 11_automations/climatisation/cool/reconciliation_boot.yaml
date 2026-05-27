@@ -1,0 +1,99 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Climatisation — COOL — Réconciliation admissibilité au démarrage
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   10030000000116
+#
+# 🎯 RÔLE
+#   Réconcilier au démarrage le verrou d'admissibilité COOL.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : état initial de input_boolean.besoin_clim_cool_admissible au boot
+#   - Exclut : fronts runtime besoin / autorisation
+#
+# 🔖 NATURE
+#   Réconciliation
+#
+# ⚙️ MODE
+#   single
+#   Justification : une seule réconciliation de boot doit être active.
+#
+# 📣 DÉCLENCHEURS
+#   Démarrage Home Assistant.
+#
+# 🔗 DÉPENDANCES
+#   Lit      : binary_sensor.besoin_clim_cool, binary_sensor.autorisation_clim_cool
+#   Appelle  : input_boolean.turn_on, input_boolean.turn_off
+#   Écrit    : input_boolean.besoin_clim_cool_admissible
+#
+# 🧠 AUTORITÉ
+#   Réconcilie un verrou technique sans produire de décision climatique.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger : les actions sont idempotentes.
+#
+# 🚫 INTERDITS
+#   - Modifier sensor.clim_target_mode
+#   - Produire une décision climatique
+#   - Piloter climate.clim ou switch.clim_power
+#   - Bloquer les fronts runtime d'admissibilité COOL
+#
+# 🏷️ STATUT
+#   Réconciliation — Arsenal v14.x
+# ==========================================================
+
+- id: "10030000000116"
+  alias: "Clim - Cool - Admissibilité - Boot"
+  description: >
+    Réconciliation au démarrage du verrou d'admissibilité COOL,
+    séparée de l'automation runtime afin de ne jamais bloquer
+    les fronts besoin / autorisation.
+  mode: single
+
+  trigger:
+    - platform: homeassistant
+      event: start
+
+  condition: []
+
+  action:
+    - wait_template: >
+        {{ states('binary_sensor.besoin_clim_cool') not in ['unknown', 'unavailable']
+           and states('binary_sensor.autorisation_clim_cool') not in ['unknown', 'unavailable'] }}
+      timeout: "00:01:00"
+      continue_on_timeout: true
+
+    - choose:
+
+        # Sous-branche : extinction conservatrice si signaux KO
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ wait.completed == false
+                   or is_state('binary_sensor.besoin_clim_cool', 'off')
+                   or is_state('binary_sensor.autorisation_clim_cool', 'off') }}
+          sequence:
+            - action: input_boolean.turn_off
+              target:
+                entity_id: input_boolean.besoin_clim_cool_admissible
+
+        # Sous-branche : activation gardée 5 min si signaux stables
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.besoin_clim_cool
+              state: "on"
+            - condition: state
+              entity_id: binary_sensor.autorisation_clim_cool
+              state: "on"
+          sequence:
+            - delay: "00:05:00"
+            - condition: state
+              entity_id: binary_sensor.besoin_clim_cool
+              state: "on"
+            - condition: state
+              entity_id: binary_sensor.autorisation_clim_cool
+              state: "on"
+            - action: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.besoin_clim_cool_admissible
