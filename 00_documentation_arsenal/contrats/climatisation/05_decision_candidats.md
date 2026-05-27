@@ -93,6 +93,10 @@ porte 2. Le système ne dépend d'aucun effet secondaire implicite du
 moteur d'automation (`last_changed`, `restore_state`, ordre de
 chargement des intégrations).
 
+La réconciliation au démarrage est portée par des automatisations
+dédiées, distinctes des automatisations runtime d'admissibilité,
+afin d'éviter tout blocage concurrent des fronts causaux runtime.
+
 ### Garanties
 
 - Aucune réanimation implicite : toute activation est tracée par un
