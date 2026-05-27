@@ -132,10 +132,15 @@ def test_sensor_min_journalier():
     if "availability" not in content or "999" not in content:
         fail("availability contre 999 absente")
 
-    if "date_journee_cloturee" in content:
+    active_content = "\n".join(
+        line for line in content.splitlines()
+        if not line.lstrip().startswith("#")
+    )
+    
+    if re.search(r"^\s*date_journee_cloturee\s*:", active_content, re.MULTILINE):
         fail(
             "sensor.temperature_min_journaliere_jardin : "
-            "date_journee_cloturee interdit"
+            "attribut date_journee_cloturee interdit"
         )
 
     print("  ✔ sensor.temperature_min_journaliere_jardin")
