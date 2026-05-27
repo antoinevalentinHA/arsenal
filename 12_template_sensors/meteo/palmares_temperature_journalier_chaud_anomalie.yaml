@@ -114,7 +114,7 @@
             {% set a.found = true %}
           {% elif derniere == '1970-01-01 00:00:00' %}
             {# état initial légitime — pas d'anomalie B4 #}
-          {% elif (now() - as_datetime(derniere)).total_seconds() / 3600 > 36 %}
+          {% elif (as_timestamp(now()) - as_timestamp(as_datetime(derniere))) / 3600 > 36 %}
             {% set a.found = true %}
           {% endif %}
         {% endif %}
@@ -190,7 +190,7 @@
               {% set a.raison = 'evaluation_indisponible' %}
             {% elif derniere == '1970-01-01 00:00:00' %}
               {# état initial légitime — pas d'anomalie B4 #}
-            {% elif (now() - as_datetime(derniere)).total_seconds() / 3600 > 36 %}
+            {% elif (as_timestamp(now()) - as_timestamp(as_datetime(derniere))) / 3600 > 36 %}
               {% set a.raison = 'evaluation_manquante' %}
             {% endif %}
           {% endif %}

@@ -134,7 +134,7 @@ palmares_temperature_journalier_chaud_rang_10_valeur:
 
 palmares_temperature_journalier_chaud_snapshot_veille:
   name: Palmarès température chaud — Snapshot veille
-  min: -10
+  min: -999
   max: 50
   step: 0.1
   unit_of_measurement: "°C"

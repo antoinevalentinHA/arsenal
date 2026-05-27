@@ -26,7 +26,7 @@
 #   - time : 23:59:55 (quotidien)
 #
 # 🔗 DÉPENDANCES
-#   Lit     : sensor.temperature_max_journaliere_jardin
+#   Lit     : input_number.temperature_max_jour_courant_jardin
 #   Écrit   : input_number.palmares_temperature_journalier_chaud_snapshot_veille
 #
 # 🧠 AUTORITÉ
@@ -34,14 +34,14 @@
 #
 # ♻️ IDEMPOTENCE
 #   Compatible retrigger — écrasement du snapshot par la valeur courante
-#   si valide ; abstention si source invalide (snapshot conservé)
+#   si valide ; source invalide → snapshot forcé à -999
 #
 # 🚫 INTERDITS
 #   - Évaluer ou modifier les rangs du palmarès
 #   - Lire ou écrire les helpers de rang
 #   - Utiliser une fenêtre glissante comme source
 #   - Confondre snapshot et évaluation
-#   - Écrire une valeur de substitution si la source est invalide
+#   - Conserver l'ancien snapshot si la source du jour est invalide
 #
 # 🏷️ STATUT
 #   Socle — Arsenal v14.x
@@ -50,9 +50,9 @@
 - id: "10160000000022"
   alias: "Palmarès température chaud — Snapshot"
   description: >
-    Capture la température maximale journalière civile à 23:59:55
-    dans le helper snapshot si la source est valide.
-    Abstention si source unavailable, unknown ou non numérique.
+    Capture la température maximale du jour civil en cours à 23:59:55
+    depuis la mémoire courante. Écrit la valeur métier si elle est valide,
+    sinon force le snapshot à -999 pour éviter toute stale data.
   mode: single
 
   trigger:
@@ -61,20 +61,18 @@
 
   variables:
     source_state: >
-      {{ states('sensor.temperature_max_journaliere_jardin') }}
-    source_valide: >
-      {{ source_state not in ['unknown', 'unavailable', 'none', '']
-         and source_state | float(-999) != -999 }}
+      {{ states('input_number.temperature_max_jour_courant_jardin') }}
     source_valeur: >
       {{ source_state | float(-999) }}
-
-  condition:
-    - condition: template
-      value_template: "{{ source_valide }}"
+    source_dans_plage_metier: >
+      {{ source_state not in ['unknown', 'unavailable', 'none', '']
+         and -10 <= source_valeur <= 50 }}
+    valeur_snapshot: >
+      {{ source_valeur if source_dans_plage_metier else -999 }}
 
   action:
     - service: input_number.set_value
       target:
         entity_id: input_number.palmares_temperature_journalier_chaud_snapshot_veille
       data:
-        value: "{{ source_valeur }}"
+        value: "{{ valeur_snapshot }}"

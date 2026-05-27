@@ -1,6 +1,6 @@
 # Arsenal — Contrat métier
 # Palmarès historique — Journées les plus chaudes
-# Version : 1.1
+# Version : 1.2
 # Statut : normatif
 # Chemin : 00_documentation_arsenal/contrats/meteo/CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_CHAUD.md
 
@@ -71,10 +71,33 @@ La source canonique repose sur un pipeline dédié à trois couches :
 sensor.temperature_jardin change
   → automation update → input_number.temperature_max_jour_courant_jardin
 
-00:00:05 → clôture → input_number.temperature_max_journaliere_jardin
-00:00:10 → reset   → input_number.temperature_max_jour_courant_jardin = -999
+23:59:55 → snapshot palmarès
+         → input_number.temperature_max_jour_courant_jardin
+         → input_number.palmares_temperature_journalier_chaud_snapshot_veille
+
+00:00:05 → clôture
+         → input_number.temperature_max_jour_courant_jardin
+         → input_number.temperature_max_journaliere_jardin
+
+00:00:10 → reset
+         → input_number.temperature_max_jour_courant_jardin = -999
+
 00:00:30 → évaluation palmarès
+         → input_number.palmares_temperature_journalier_chaud_snapshot_veille
 ```
+
+### 3.3.1 Doctrine anti-décalage temporel
+
+Le snapshot palmarès doit capturer la mémoire courante du jour qui
+se termine, avant la clôture et avant le reset.
+
+Il ne doit pas lire `sensor.temperature_max_journaliere_jardin`, car
+ce capteur expose une valeur déjà clôturée antérieure. Le lire à
+23:59:55 créerait un risque d'association entre une valeur d'un jour
+et la date civile du jour suivant.
+
+Le snapshot existe pour figer la valeur du jour civil en cours avant
+les opérations de minuit.
 
 ### 3.4 Interdiction des maxima glissants
 
@@ -124,7 +147,8 @@ Un maximum glissant peut encore contenir une valeur appartenant
 | unite | `°C` |
 | seuil_fraicheur_h | `36` |
 | sentinelle_vide | `-999` |
-| plage_physique | `[-10, 50]°C` |
+| plage_metier | `[-10, 50]°C` |
+| plage_technique_helpers | `[-999, 1000]` |
 
 ---
 
@@ -186,13 +210,21 @@ Le suffixe `_chaud` est réservé afin de permettre une future instance
 ## 8. Doctrine d'insertion
 
 ```text
-1. Snapshot invalide (-999, unknown, unavailable) → abstention
+1. Snapshot invalide (-999, unknown, unavailable) → absence d'insertion
 2. date_veille déjà présente dans les rangs      → abstention
 3. Palmarès plein ET snapshot ≤ rang_10          → abstention (FIFO)
 4. Sinon                                          → insertion, tri descendant
 ```
 
 Tri : `(valeur desc, index_anteriorite asc)` — garantit FIFO sur égalité.
+
+Une mémoire intermédiaire consommée ultérieurement par le palmarès ne
+doit jamais conserver une ancienne valeur si la source du jour est
+invalide. Elle doit être explicitement replacée à la sentinelle `-999`.
+
+Cette règle s'applique notamment au snapshot palmarès : une journée
+sans valeur maximale valide ne doit pas laisser subsister le snapshot
+d'une journée précédente.
 
 ---
 
@@ -212,14 +244,47 @@ Exemptions B4 :
 - sentinelle `1970-01-01 00:00:00` → état initial légitime, pas d'anomalie
 - `unknown` / `unavailable` → `evaluation_indisponible`
 
+La comparaison de fraîcheur doit être robuste aux différences de
+représentation temporelle entre datetime naïf et datetime avec fuseau.
+L'implémentation doit comparer des timestamps, et non soustraire
+directement deux objets datetime potentiellement hétérogènes.
+
+---
+
+### 9.1 Doctrine d'implémentation Jinja
+
+Toute accumulation construite dans une boucle Jinja doit utiliser un
+`namespace`.
+
+La forme suivante est interdite pour construire une liste persistante
+hors boucle :
+
+```jinja
+{% set paires = paires + [...] %}
+```
+
+La forme attendue est : 
+
+```jinja
+{% set ns = namespace(paires=[]) %}
+{% set ns.paires = ns.paires + [...] %}
+```
+
+Cette règle évite la perte silencieuse des rangs existants lors de
+l'évaluation du palmarès.
+
 ---
 
 ## 10. Précondition bloquante
 
 Le système ne doit pas être considéré opérationnel tant que
 `sensor.temperature_max_journaliere_jardin` n'est pas disponible
-(non `unavailable`) avec une date clôturée valide dans son attribut
-`date_journee_cloturee`.
+(non `unavailable`).
+
+En l'absence d'une mémoire explicite de date de clôture, le capteur
+d'exposition ne doit pas publier d'attribut `date_journee_cloturee`
+calculé implicitement. Une telle date serait une déduction temporelle,
+non une donnée clôturée mémorisée.
 
 ---
 
@@ -229,7 +294,7 @@ Le système ne doit pas être considéré opérationnel tant que
 
 | Entité | Contrainte |
 |---|---|
-| `sensor.temperature_max_journaliere_jardin` | Source d'un capteur `platform: statistics` — sans historique, fenêtre tronquée silencieusement |
+| `sensor.temperature_max_journaliere_jardin` | Source métier canonique historisée pour audit, relecture temporelle et cohérence des maxima clôturés |
 
 ### Population B
 
@@ -259,7 +324,7 @@ Fréquence : ≤ 1 écriture/jour par entité. Cardinalité finie. Logbook accep
 - badges records historiques ;
 - alertes record absolu.
 
-Aucune de ces extensions n'a de valeur normative en v1.1.
+Aucune de ces extensions n'a de valeur normative en v1.2.
 
 ---
 
@@ -269,3 +334,4 @@ Aucune de ces extensions n'a de valeur normative en v1.1.
 |---|---|---|
 | 1.0 | 2026-05-26 | Brouillon normatif initial |
 | 1.1 | 2026-05-26 | Architecture source formalisée (pipeline 3 couches), sentinelle -999, FIFO documenté, invariants B1-B4 avec exemption sentinelle 1970 |
+| 1.2 | 2026-05-27 | Durcissement anti-stale data : snapshot palmarès fondé sur la mémoire courante, interdiction des dates de clôture implicites sans mémoire dédiée, clarification de l'invalidation par sentinelle, robustesse B4 par comparaison timestamp, et doctrine Jinja `namespace` pour l'accumulation des rangs. |

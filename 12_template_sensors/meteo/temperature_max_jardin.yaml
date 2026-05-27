@@ -46,6 +46,3 @@
         {{ states('input_number.temperature_max_journaliere_jardin') | float(-999) != -999 }}
       state: >
         {{ states('input_number.temperature_max_journaliere_jardin') | float }}
-      attributes:
-        date_journee_cloturee: >
-          {{ (now() - timedelta(days=1)).strftime('%Y-%m-%d') }}

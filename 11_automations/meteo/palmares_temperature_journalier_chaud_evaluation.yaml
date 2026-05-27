@@ -44,7 +44,7 @@
 #   de la même journée civile.
 #
 # 📋 DOCTRINE D'INSERTION
-#   - Abstention si snapshot invalide (float(-999))
+#   - Absence d'insertion si snapshot invalide (-999, unknown, unavailable)
 #   - Abstention si date_veille déjà présente dans les rangs
 #   - FIFO sur égalité : tuple (valeur, index_anteriorite, date)
 #     tri sur valeur décroissant, index croissant
@@ -59,6 +59,7 @@
 #   - Utiliser le Recorder comme source métier
 #   - Insérer une date déjà présente dans les rangs
 #   - Écrire si snapshot invalide
+#   - Accumuler une liste Jinja sans namespace
 #
 # 🏷️ STATUT
 #   Socle — Arsenal v14.x
@@ -154,14 +155,14 @@
   action:
     - variables:
         nouveau_palmares: >
-          {% set paires = [] %}
+          {% set ns = namespace(paires=[]) %}
           {% for i in range(10) %}
             {% if dates[i] != '' %}
-              {% set paires = paires + [(valeurs[i], i, dates[i])] %}
+              {% set ns.paires = ns.paires + [(valeurs[i], i, dates[i])] %}
             {% endif %}
           {% endfor %}
-          {% set paires = paires + [(snapshot, 10, date_veille)] %}
-          {% set sorted_paires = paires | sort(attribute='1') | sort(attribute='0', reverse=true) %}
+          {% set ns.paires = ns.paires + [(snapshot, 10, date_veille)] %}
+          {% set sorted_paires = ns.paires | sort(attribute='1') | sort(attribute='0', reverse=true) %}
           {% set result = namespace(vals=[], dts=[]) %}
           {% for p in sorted_paires[:10] %}
             {% set result.vals = result.vals + [p[0]] %}
