@@ -81,6 +81,60 @@ include:
     # Fréquence : ≤ 1/jour
     - input_datetime.palmares_temperature_journalier_chaud_derniere_evaluation
 
+    # ----------------------------------------------------------
+    # 🥶 TEMPÉRATURE / PALMARÈS JOURNÉES FROIDES
+    # ----------------------------------------------------------
+
+    # RECORDER — Population B
+    # Rôle      : Source métier canonique du palmarès journées froides
+    # Utilité   : Relire les minima journaliers clôturés exposés au palmarès
+    # Logbook   : acceptable — écriture quotidienne, faible fréquence
+    # Cardinalité : continue bornée [-50–50°C] ou unavailable via sentinelle filtrée
+    # Fréquence : ≤ 1/jour
+    - sensor.temperature_min_journaliere_jardin
+
+    # RECORDER — Population B
+    # Rôle      : Registre persistant des rangs du palmarès journées froides
+    # Utilité   : Relire et auditer l'historique des insertions et corrections
+    # Logbook   : acceptable — écriture quotidienne, faible fréquence
+    # Cardinalité : continue bornée [-50–50°C] + sentinelle technique 999
+    # Fréquence : ≤ 1/jour par rang
+    - input_number.palmares_temperature_journalier_froid_rang_01_valeur
+    - input_number.palmares_temperature_journalier_froid_rang_02_valeur
+    - input_number.palmares_temperature_journalier_froid_rang_03_valeur
+    - input_number.palmares_temperature_journalier_froid_rang_04_valeur
+    - input_number.palmares_temperature_journalier_froid_rang_05_valeur
+    - input_number.palmares_temperature_journalier_froid_rang_06_valeur
+    - input_number.palmares_temperature_journalier_froid_rang_07_valeur
+    - input_number.palmares_temperature_journalier_froid_rang_08_valeur
+    - input_number.palmares_temperature_journalier_froid_rang_09_valeur
+    - input_number.palmares_temperature_journalier_froid_rang_10_valeur
+
+    # RECORDER — Population B
+    # Rôle      : Registre persistant des dates des rangs du palmarès
+    # Utilité   : Relire et auditer la chronologie des records froids
+    # Logbook   : acceptable — écriture quotidienne, faible fréquence
+    # Cardinalité : finie — dates ISO 8601 YYYY-MM-DD ou chaîne vide
+    # Fréquence : ≤ 1/jour par rang
+    - input_text.palmares_temperature_journalier_froid_rang_01_date
+    - input_text.palmares_temperature_journalier_froid_rang_02_date
+    - input_text.palmares_temperature_journalier_froid_rang_03_date
+    - input_text.palmares_temperature_journalier_froid_rang_04_date
+    - input_text.palmares_temperature_journalier_froid_rang_05_date
+    - input_text.palmares_temperature_journalier_froid_rang_06_date
+    - input_text.palmares_temperature_journalier_froid_rang_07_date
+    - input_text.palmares_temperature_journalier_froid_rang_08_date
+    - input_text.palmares_temperature_journalier_froid_rang_09_date
+    - input_text.palmares_temperature_journalier_froid_rang_10_date
+
+    # RECORDER — Population B
+    # Rôle      : Horodatage de la dernière évaluation réussie
+    # Utilité   : Audit de la fraîcheur du palmarès froid dans le temps
+    # Logbook   : acceptable — écriture quotidienne
+    # Cardinalité : finie — datetime ISO 8601
+    # Fréquence : ≤ 1/jour
+    - input_datetime.palmares_temperature_journalier_froid_derniere_evaluation
+
     # =====================================================
     # ==== 💧 HUMIDITÉ RELATIVE ====
     # =====================================================
