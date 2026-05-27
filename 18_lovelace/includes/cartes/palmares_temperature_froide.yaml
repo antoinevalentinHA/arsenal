@@ -1,6 +1,6 @@
 type: markdown
 content: |
-  **🥶 Palmarès journées les plus froides**
+  **❄️ Palmarès journées les plus froides**
 
   {% set ns = namespace(records=[]) %}
 
