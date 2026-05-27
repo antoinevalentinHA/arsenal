@@ -23,7 +23,7 @@
 #   Démarrage Home Assistant.
 #
 # 🔗 DÉPENDANCES
-#   Lit      : binary_sensor.besoin_clim_dry, binary_sensor.autorisation_clim_dry
+#   Lit      : input_boolean.systeme_stable, binary_sensor.besoin_clim_dry, binary_sensor.autorisation_clim_dry
 #   Appelle  : input_boolean.turn_on, input_boolean.turn_off
 #   Écrit    : input_boolean.besoin_clim_dry_admissible
 #
@@ -58,6 +58,14 @@
   condition: []
 
   action:
+    - wait_template: >
+        {{ is_state('input_boolean.systeme_stable', 'on') }}
+      timeout: "00:05:00"
+      continue_on_timeout: true
+
+    - condition: template
+      value_template: "{{ wait.completed }}"
+
     - wait_template: >
         {{ states('binary_sensor.besoin_clim_dry') not in ['unknown', 'unavailable']
            and states('binary_sensor.autorisation_clim_dry') not in ['unknown', 'unavailable'] }}
