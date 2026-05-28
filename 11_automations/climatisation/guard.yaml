@@ -1,39 +1,41 @@
 # ==========================================================
 #  🧠 ARSENAL — GUARD :
-#     CLIM – Invariants logiques non négociables
+#     CLIM – Invariants de cohérence système
 #
 #  ID : 10030000000101
 # ----------------------------------------------------------
 #  🎯 RÔLE
 #
-#     Garde-fou logique fondamental du système climatique.
+#     Garde-fou de cohérence système de la climatisation.
 #
-#     Ce GUARD impose des invariants stricts destinés
-#     à empêcher toute situation incohérente, absurde
-#     ou énergétiquement injustifiable de la climatisation,
-#     indépendamment de la décision centrale.
+#     Ce GUARD impose des invariants stricts portant
+#     EXCLUSIVEMENT sur la cohérence interne entre :
+#
+#         décision centrale  (sensor.clim_target_mode)
+#         exécution réelle   (climate.clim)
+#         alimentation        (switch.clim_power)
+#
+#     Il ne raisonne JAMAIS sur le monde.
+#     Il raisonne sur la cohérence du système.
 #
 # ----------------------------------------------------------
 #  🛡️ PRINCIPE
 #
-#     - Déclenchement sur événements causaux et exécutifs :
-#         • présence
-#         • ouvertures
+#     - Déclenchement sur la relation surveillée uniquement :
 #         • état réel de la clim
+#         • alimentation physique
+#         • décision centrale
 #         • démarrage Home Assistant
 #
-#     - Évaluation des états critiques au moment de l'exécution :
-#         • présence
-#         • ouvertures
-#         • état réel de la clim
-#         • alimentation électrique
+#     - Détection de combinaisons INTERDITES entre
+#       décision et exécution
 #
-#     - Détection de combinaisons INTERDITES
-#     - Correction immédiate et UNILATÉRALE
+#     - Correction immédiate et UNILATÉRALE (état sûr)
 #
 #     Ce GUARD :
 #       • NE DÉCIDE PAS d'un mode
 #       • NE REMPLACE PAS la décision centrale
+#       • NE LIT AUCUNE grandeur du monde
 #       • N'INTERPRÈTE AUCUNE logique de confort
 #
 #     Il s'applique APRÈS la décision,
@@ -44,30 +46,31 @@
 #
 #     - Ne produit AUCUNE décision métier
 #     - Ne modifie PAS `sensor.clim_target_mode`
-#     - Ne déclenche PAS de scénario
+#     - Ne lit NI présence, NI fenêtres, NI météo, NI horaire
+#       (ces grandeurs sont absorbées en amont par
+#        la couche Admissibilité)
 #     - Ne recherche PAS le confort
 #
 # ----------------------------------------------------------
 #  ✅ CE QUE CE GUARD FAIT EXCLUSIVEMENT
 #
-#     - Impose des INVARIANTS PHYSIQUES
-#     - Corrige des états RÉELS interdits
-#     - Garantit la cohérence :
-#
-#         décision centrale
-#         ≠
-#         exécution incohérente
+#     - Impose des INVARIANTS DE COHÉRENCE SYSTÈME
+#     - Corrige les divergences décision ↔ exécution
+#     - Garantit que l'exécution réelle ne contredit
+#       jamais la décision centrale
 #
 # ----------------------------------------------------------
-#  📦 INVARIANTS APPLIQUÉS
+#  📦 INVARIANTS APPLIQUÉS  (contrat 08_securite.md v1.4)
 #
-#     - Clim active sans présence        → INTERDIT
-#     - Clim active avec ouvertures      → INTERDIT
-#     - Clim logique active sans power   → INTERDIT
-#     - Power actif sans légitimité      → INTERDIT
+#     Tous conformes au test d'universalité (deux volets) :
+#     vrais pour tout mode légal, sans seuil ni délai.
 #
-#     (la légitimité est définie par la
-#      décision centrale et ses autorisations)
+#     INV-1  clim active   ET target_mode == off  → INTERDIT
+#     INV-2  power actif    ET target_mode == off  → INTERDIT
+#     INV-3  clim active    ET power == off          → INTERDIT
+#
+#     Légitimité (référentielle, source unique) :
+#         power actif légitime ⟺ target_mode ≠ off
 #
 # ----------------------------------------------------------
 #  ⚙️ MODE D'EXÉCUTION
@@ -81,12 +84,18 @@
 #
 #     Niveau : GUARD fondamental (post-décision)
 #
-#     Invariants physiques
+#     Admissibilité (absorbe le monde)
 #         → Décision centrale (sensor.clim_target_mode)
-#             → Exécution idempotente
+#             → Exécution → État réel
+#                 ↑
+#             GUARD : cohérence décision ↔ exécution
 #
 #     Le GUARD corrige l'EXÉCUTION,
 #     jamais la DÉCISION.
+#
+#     Recouvrement assumé avec le Watchdog (INV-1) :
+#       Guard    = filet immédiat (état sûr)
+#       Watchdog = filet persistant ≥ 60 s (ré-assertion)
 # ==========================================================
 
 - id: "10030000000101"
@@ -96,17 +105,18 @@
   trigger:
     - platform: state
       entity_id:
-        - binary_sensor.presence_famille_unifiee
-        - binary_sensor.fenetre_ouverte_maison
         - climate.clim
+        - switch.clim_power
+        - sensor.clim_target_mode
     - platform: homeassistant
       event: start
 
   variables:
-    presence: "{{ is_state('binary_sensor.presence_famille_unifiee', 'on') }}"
-    windows_ok: "{{ is_state('binary_sensor.fenetre_ouverte_maison', 'off') }}"
+    target_mode: "{{ states('sensor.clim_target_mode') }}"
     clim_power: "{{ states('switch.clim_power') }}"
     clim_state: "{{ states('climate.clim') }}"
+
+    target_off: "{{ target_mode == 'off' }}"
 
     clim_active: >
       {{ clim_state not in ['off', 'unavailable', 'unknown'] }}
@@ -119,13 +129,11 @@
     - condition: template
       value_template: >
         {{
-          (clim_active and not presence)
+          (clim_active and target_off)
           or
-          (clim_active and not windows_ok)
+          (clim_power == 'on' and target_off)
           or
           (clim_active and clim_power == 'off')
-          or
-          (clim_power == 'on' and (not presence or not windows_ok))
         }}
 
   action:
