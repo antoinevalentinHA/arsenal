@@ -1,0 +1,146 @@
+name: Arsenal CI — Chauffage (etage 1)
+
+# Validateur CI structurel Arsenal, domaine Chauffage.
+# Deux jobs aux roles non interchangeables :
+#   - self-test : le validateur est-il sain ? (pytest)
+#   - lint      : la config enfreint-elle la doctrine ? (python -m ...cli)
+# Le lint ne tourne que si le self-test est vert (on ne juge pas avec un
+# juge defectueux).
+
+on:
+  push:
+    paths:
+      # Code de l'outil : tout changement re-declenche le self-test + lint.
+      - "tools/arsenal_ci/**"
+      # Registre souverain : sa modification change le verdict.
+      - "00_documentation_arsenal/contrats/chauffage/ci/registres_entites.yaml"
+      # Config chauffage validee (a ajuster a l'arborescence reelle).
+      - "12_template_sensors/chauffage/**.yaml"
+      - ".github/workflows/arsenal-ci-chauffage.yml"
+  pull_request:
+    paths:
+      - "tools/arsenal_ci/**"
+      - "00_documentation_arsenal/contrats/chauffage/ci/registres_entites.yaml"
+      - "12_template_sensors/chauffage/**.yaml"
+      - ".github/workflows/arsenal-ci-chauffage.yml"
+
+# -----------------------------------------------------------------------------
+# Bascule doctrinale de la transition warn-only -> bloquant.
+#   "false" : phase A (warn-only). Une violation (exit 1) N'ECHOUE PAS le job.
+#   "true"  : phase B (bloquant). Une violation (exit 1) echoue le job.
+# Dans les DEUX phases : une erreur d'execution (exit 2) echoue le job —
+# un outil ou un registre casse doit etre vu immediatement.
+# La bascule est un diff unique, traçable en PR (decision doctrinale explicite).
+# -----------------------------------------------------------------------------
+env:
+  ARSENAL_CI_ENFORCE: "false"
+
+permissions:
+  contents: read
+
+jobs:
+  # ---------------------------------------------------------------- self-test
+  self-test:
+    name: Self-test du validateur
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dependances
+        run: pip install pyyaml pytest
+
+      - name: Executer la suite de tests (1.1 / 1.2 / 1.3)
+        run: PYTHONPATH=tools python -m pytest tools/arsenal_ci/tests/ -q
+
+  # ----------------------------------------------------------------- lint
+  lint:
+    name: Lint structurel Chauffage
+    runs-on: ubuntu-latest
+    needs: self-test            # ne juge pas la config avec un juge defectueux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dependances
+        run: pip install pyyaml
+
+      - name: Lint structurel (warn-only / enforce selon ARSENAL_CI_ENFORCE)
+        id: lint
+        shell: bash
+        run: |
+          set -uo pipefail
+
+          REGISTRY="00_documentation_arsenal/contrats/chauffage/ci/registres_entites.yaml"
+
+          # Liste explicite des fichiers a valider (cadrage lot 1.4).
+          # A etendre fichier par fichier, jamais par glob implicite.
+          CONFIGS=(
+            "12_template_sensors/chauffage/autorisation.yaml"
+          )
+
+          mkdir -p ci_reports
+          overall_exit=0
+          had_violation=0
+          had_exec_error=0
+
+          for cfg in "${CONFIGS[@]}"; do
+            base="$(basename "$cfg" .yaml)"
+            json="ci_reports/${base}.json"
+
+            echo "::group::Lint ${cfg}"
+            PYTHONPATH=tools python -m arsenal_ci.cli \
+              --registry "$REGISTRY" \
+              --config "$cfg" \
+              --json "$json"
+            code=$?
+            echo "exit=${code} (${cfg})"
+            echo "::endgroup::"
+
+            case "$code" in
+              0) ;;
+              1) had_violation=1 ;;
+              2) had_exec_error=1 ;;
+              *) had_exec_error=1 ;;  # tout code inattendu = anomalie d'integration
+            esac
+          done
+
+          # --- Resolution de l'echec du job -----------------------------------
+          # Erreur d'execution (2) : bloquant dans TOUTES les phases.
+          if [ "$had_exec_error" -eq 1 ]; then
+            echo "::error::Erreur d'execution du validateur (exit 2) — outil ou registre casse, ce n'est PAS une violation de config."
+            exit 2
+          fi
+
+          # Violation doctrinale (1) : bloquant uniquement en phase enforce.
+          if [ "$had_violation" -eq 1 ]; then
+            if [ "${ARSENAL_CI_ENFORCE}" = "true" ]; then
+              echo "::error::Violation doctrinale detectee (exit 1) — phase bloquante (ARSENAL_CI_ENFORCE=true)."
+              exit 1
+            else
+              echo "::warning::Violation doctrinale detectee (exit 1) — phase warn-only, le job ne bloque pas. Voir l'artifact JSON."
+              exit 0
+            fi
+          fi
+
+          echo "Conforme : aucune violation, aucune erreur d'execution."
+          exit 0
+
+      - name: Publier le rapport JSON (artifact)
+        if: always()           # publie meme en cas d'echec (preuve post-mortem)
+        uses: actions/upload-artifact@v4
+        with:
+          name: arsenal-ci-chauffage-report
+          path: ci_reports/
+          retention-days: 14
+          if-no-files-found: warn

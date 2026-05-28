@@ -1,0 +1,22 @@
+# Registre de classification — fixture etage 1 (minimal, autonome)
+securite: []
+
+stabilisation: []
+
+override:
+  - input_boolean.standby_force
+
+autorisation:
+  - binary_sensor.chauffage_autorisation_etage_1
+
+perception:
+  - sensor.chauffage_perception_etage_1
+
+diagnostic: []
+
+application: []
+
+externe: []
+
+parametres:
+  exclus_invariants_registre: true
