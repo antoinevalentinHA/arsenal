@@ -1193,6 +1193,30 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Netatmo : refonte des états diagnostics → remplacement de `ko_homekit` / `ko_reseau` par `muet_ping_ok` / `muet_ping_ko`, avec mise à jour cohérente des textes, icônes et couleurs UI.
 - Documentation : ajout des changelogs `v15_7.md`, `v15_7_1.md` et remplacement de `prompt_contrat_github.md` par `prompt_contrat_github_v2.md`.
 
+---
+
+## 🧠 ARSENAL HA — v15.7.3 — STABLE — 2026-05-27
+**Tags :** climatisation, admissibilite, reconciliation_boot, dry, meteo, palmares_temperature, recorder, contrats  
+**Signal net :**
+- Climatisation admissibilité : ajout du contrat `capteurs/admissibilite/00_admissibilite.md`, de la chaîne DRY (`dry/admissibilite.yaml`) et des automatisations `reconciliation_boot.yaml` pour COOL, HEAT et DRY → recalculs post-redémarrage Home Assistant et post-rechargement des automatisations, harmonisation des trois chaînes. Mise à jour des contrats décision `10_decision.md`, `20_chaines.md`, `90_observations.md`, `08_securite.md`.
+- UI climatisation : `clim_decision_synthetique_72.yaml` lit `sensor.clim_raison_decision` en remplacement de `input_text.climatisation_raison` (helper supprimé), ajout du cas `fenetre_ouverte` dans les blocages UI. Suppressions : `carte_clim_intention.yaml`, helper `climatisation/modes/deshumidificateur.yaml`, automatisation `dry_admissibilite.yaml` (déplacée vers `dry/`).
+- Météo palmarès : ajout des sous-systèmes palmarès chaud et froid → contrats `palmares_chaleur.md` / `palmares_froid.md`, helpers `input_number` / `input_text` / `input_datetime`, capteurs template (palmarès chaud, froid, anomalies) et cartes Lovelace dédiées.
+- Météo température jardin : ajout de `temperature_max_jardin.yaml` / `temperature_min_jardin.yaml` et des automatisations de clôture, reset, update, snapshot et évaluation min/max.
+- Recorder : extension aux nouveaux helpers et capteurs météo, historisation des palmarès température chaud/froid.
+- Historisation : intégration du changelog `v15_7_2.md`.
+
+---
+
+## 🧠 ARSENAL HA — v15.8 — STABLE — 2026-05-28
+**Tags :** chauffage, geofencing, climatisation, guard, securite, doctrine_registres, hysteresis, contrats  
+**Signal net :**
+- Inhibition géofencing chauffage : réécriture du contrat `60_absence_inhibition_geofencing.md` et passage à une architecture deux couches → capteur de qualification `binary_sensor.chauffage_inhibition_geofencing_requise` (lecture pure, sans mémoire) et helper d'état `input_boolean.chauffage_inhibition_geofencing` (mémoire d'hystérésis). Abrogation de la règle « une seule activation par cycle d'absence » : le mécanisme devient réactivable. Suppression de la borne de durée maximale au profit d'une sortie gouvernée par hystérésis (offsets ON/OFF). Gating absence délégué à la Décision Centrale (présence évaluée avant inhibition), verrouillé par l'invariant CI `INV-GEO-3`. Suppression du helper `inhibition_geofencing_mode.yaml` et de la tuile `input_boolean.blocage_geofencing` du dashboard réglages.
+- Autorisation système chauffage : `binary_sensor.chauffage_autorise_systeme` recentré sur la sécurité système → retrait de `input_boolean.chauffage_standby_force` de la condition d'état, désormais conditionné par le seul `chauffage_blocage_aeration`. Le `standby_force` reste exposé en attribut informatif.
+- Doctrine chauffage : ajout de `01_doctrine_registres.md` et d'une série d'amendements aux contrats existants (`00`, `20`, `30`, `40`, `50`, `70`, `90`), réécriture partielle de la table de décision canonique (`80`) et ajout du fichier CI `registres_entites.yaml`.
+- Climatisation Guard : retrait des triggers et variables présence/ouvertures → le Guard ne surveille plus que la cohérence interne `target_mode ↔ climate.clim ↔ switch.clim_power`. Remplacement des anciens invariants par INV-1/2/3. Contrat `08_securite.md` v1.3 → v1.4 : introduction du test d'universalité (volets modes/paramètres) comme critère de démarcation Sécurité/Métier, et documentation du recouvrement assumé Guard/Watchdog sur INV-1.
+- Raison de décision clim : `sensor.clim_raison_decision` contextualise les blocages chauffage (`blocage_poele`, `blocage_aeration`) au seul contexte HEAT via le calcul `heat_contexte`, `blocage_horaire` et `fenetre_ouverte` restant transversaux.
+- Historisation : intégration du changelog `v15_7_3.md`.
+
 ==================================================
 FIN INDEX
 ==================================================
