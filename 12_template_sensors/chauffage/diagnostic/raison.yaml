@@ -34,7 +34,7 @@
 #      - Sinon mode vacances
 #   6. Poêle actif
 #   7. Présence / autorisation cible
-#   8. Absence avec protection thermique
+#   8. Stabilisation thermique d'absence
 #   9. Absence nominale
 #
 # ----------------------------------------------------------
@@ -119,10 +119,10 @@
           {% endif %}
 
         {# ======================================================
-           🟠 NIVEAU 4 — ABSENCE / PROTECTION THERMIQUE
+           🟠 NIVEAU 4 — STABILISATION THERMIQUE D'ABSENCE
            ====================================================== #}
         {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
-          absence_protection_thermique
+          stabilisation_absence
 
         {# ======================================================
            ⚪ FALLBACK — ABSENCE NOMINALE

@@ -4,12 +4,12 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE FONDAMENTAL
 #
-#   Représenter l’ÉTAT MÉTIER de protection thermique
+#   Représenter l’ÉTAT MÉTIER de stabilisation thermique
 #   en situation d’absence.
 #
-#   Ce booléen indique si la réduction de chauffage
-#   liée au geofencing est TEMPORAIREMENT INHIBÉE
-#   pour des raisons thermiques.
+#   Ce booléen matérialise la mémoire d'hystérésis de
+#   la stabilisation thermique d'absence : l'inhibition
+#   de la réduction géofencing quand la zone froide le requiert.
 #
 # ----------------------------------------------------------
 # 🧱 NATURE
@@ -23,7 +23,7 @@
 # 🧠 PRINCIPE ARSENAL
 #
 #   - Le geofencing propose une réduction (absence)
-#   - La protection thermique peut l’inhiber
+#   - La stabilisation thermique d'absence l'inhibe
 #   - Ce booléen matérialise cette inhibition
 #
 #   ⚠️ IMPORTANT :
@@ -55,4 +55,4 @@
 
 chauffage_inhibition_geofencing:
   name: Chauffage – Inhibition absence active
-  icon: mdi:shield-check
+  icon: mdi:home-thermometer

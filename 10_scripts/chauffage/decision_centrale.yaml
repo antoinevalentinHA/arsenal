@@ -50,7 +50,7 @@
 #   🌡️ NIVEAU 3 — CONFORT D'OPPORTUNITÉ (RÉGIME AUTOMATIQUE)
 #     (sous réserve des niveaux supérieurs)
 #     1. Présence réelle → délégué à sensor.chauffage_autorisation_cible
-#     2. Inhibition géofencing → confort (protection thermique en absence)
+#     2. Inhibition géofencing → confort (stabilisation thermique d'absence)
 #     3. Défaut → réduit
 #
 # ----------------------------------------------------------
@@ -125,7 +125,7 @@
 #     besoin_thermique             — présence + cible = comfort
 #     presence_on                  — présence + cible = neutre
 #     confort_suffisant            — présence + cible = reduced
-#     absence_protection_thermique — inhibition géofencing
+#     stabilisation_absence        — stabilisation thermique d'absence
 #     absence                      — défaut (absence non inhibée)
 #
 # ----------------------------------------------------------
@@ -279,7 +279,7 @@ chauffage_decision_centrale:
             {% endif %}
 
           {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
-            absence_protection_thermique
+            stabilisation_absence
 
           {% else %}
             absence
