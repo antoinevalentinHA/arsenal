@@ -37,6 +37,14 @@ from .classification import (
 from .registry import Registry
 
 _PARAMETRES_KEY = "parametres"
+_META_KEYS = frozenset(
+    {
+        "version",
+        "date",
+        "perimetre_statut",
+        "meta2_mode",
+    }
+)
 _VALID_LAYER_VALUES = frozenset(layer.value for layer in Layer)
 _ENTITY_ID_RE = re.compile(r"^[a-z_]+\.[a-z0-9_]+$")
 
@@ -101,7 +109,7 @@ class RegistryLoader:
         seen: Dict[str, str] = {}  # entity_id -> layer (duplicate detection)
 
         for key, value in doc.items():
-            if key in (_PARAMETRES_KEY, CALIBRATION_KEY):
+            if key in (_PARAMETRES_KEY, CALIBRATION_KEY) or key in _META_KEYS:
                 continue
             if key not in _VALID_LAYER_VALUES:
                 raise RegistryError(
