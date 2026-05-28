@@ -2,19 +2,46 @@
 #  🔒 TEMPLATE BINARY SENSOR — Chauffage autorisé (système)
 #  ----------------------------------------------------------
 #  🧠 Rôle :
-#     Indiquer si le chauffage est globalement autorisé à fonctionner,
-#     en tenant compte des verrous de standby et de blocage post-aération.
+#     Indiquer si le chauffage est globalement autorisé à fonctionner
+#     du point de vue de la SÉCURITÉ SYSTÈME.
 #
-#  💡 Avantages :
-#     - Centralise la logique d’autorisation
-#     - Évite les relances intempestives pendant un blocage
-#     - Fournit les détails des verrous actifs
-#     - Simplifie les conditions dans les automations
-#     - Affichable directement sur le dashboard "Chauffage"
+#     Ce capteur est une AUTORITÉ STRICTEMENT SÉCURITÉ SYSTÈME
+#     (Niveau 1 de la hiérarchie décisionnelle). Sa valeur OFF
+#     signifie une et une seule chose : le chauffage est sous
+#     interdiction de sécurité. Cette valeur doit être
+#     interprétable sans glose : OFF = interdit.
+#
+#  🧱 Doctrine (registres) :
+#     - Niveau 1 = sécurité système uniquement.
+#     - Aucune cause de STABILISATION (standby, géofencing, poêle,
+#       météo) ne compose ce capteur.
+#     - En particulier, input_boolean.chauffage_standby_force
+#       (verrou de stabilisation, conséquence de l'autorisation
+#       thermique) N'ENTRE PAS dans la condition d'état.
+#       Le faire constituerait une remontée d'une conséquence en
+#       cause amont (violation D3) et un déguisement d'une
+#       stabilisation en interdiction (violation D0/D1).
+#
+#     L'effet thermique de l'autorisation `reduced` (sobriété /
+#     confort suffisant) est porté au NIVEAU 3 de la Décision
+#     Centrale (raison `confort_suffisant`), jamais par une
+#     extinction de ce capteur.
 #
 #  ⚙️ Fonctionnement :
-#     ON  → chauffage_standby_force = off  ET  chauffage_blocage_aeration = off
-#     OFF → l’un des deux verrous est actif
+#     ON  → chauffage_blocage_aeration = off
+#           (aucune cause de sécurité active)
+#     OFF → une cause de sécurité est active
+#           (blocage post-aération)
+#
+#  🔎 Observabilité :
+#     L'attribut `standby_force` reste exposé À TITRE INFORMATIF
+#     pour le diagnostic. Il NE conditionne PAS l'autorisation et
+#     ne doit jamais être lu comme une cause d'interdiction.
+#
+#  📚 Contrats de référence :
+#     - 01_doctrine_registres.md (D0, D1, D3)
+#     - 30_decision_centrale__amendement.md (R-30.1, R-30.2)
+#     - 50_standby_hysteresis__amendement.md (A1, A3)
 #
 #  📊 Type : Template Binary Sensor
 #  📍 Entité : binary_sensor.chauffage_autorise_systeme
@@ -27,12 +54,10 @@
       default_entity_id: binary_sensor.chauffage_autorise_systeme
 
       state: >
-        {{ is_state('input_boolean.chauffage_standby_force', 'off')
-           and is_state('input_boolean.chauffage_blocage_aeration', 'off') }}
+        {{ is_state('input_boolean.chauffage_blocage_aeration', 'off') }}
 
       icon: >
-        {% set ok = is_state('input_boolean.chauffage_standby_force', 'off')
-                     and is_state('input_boolean.chauffage_blocage_aeration', 'off') %}
+        {% set ok = is_state('input_boolean.chauffage_blocage_aeration', 'off') %}
         {% if ok %}
           mdi:radiator
         {% else %}
@@ -41,20 +66,22 @@
 
       attributes:
 
-        standby_force: >
-          {{ states('input_boolean.chauffage_standby_force') }}
-
+        # Cause de sécurité système (seule cause d'autorisation).
         blocage_aeration: >
           {{ states('input_boolean.chauffage_blocage_aeration') }}
 
+        # Exposé à titre informatif uniquement — NE conditionne PAS
+        # l'autorisation système. Verrou de stabilisation post-décision,
+        # observable pour le diagnostic, jamais cause d'interdiction.
+        standby_force: >
+          {{ states('input_boolean.chauffage_standby_force') }}
+
+        # Lecture de la cause de sécurité active (registre sécurité).
+        # Le standby n'apparaît pas ici : il n'est pas une cause
+        # d'autorisation système.
         resume: >
-          {% if is_state('input_boolean.chauffage_standby_force', 'on')
-                and is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
-            Standby forcé + Blocage post-aération actifs
-          {% elif is_state('input_boolean.chauffage_standby_force', 'on') %}
-            Standby forcé actif
-          {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+          {% if is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
             Blocage post-aération actif
           {% else %}
-            Aucun verrou actif
+            Aucune cause de sécurité active
           {% endif %}
