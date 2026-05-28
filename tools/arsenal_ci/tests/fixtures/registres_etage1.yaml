@@ -1,0 +1,61 @@
+# Registre de classification — fixture etage 1, FORMAT SOUVERAIN (riche).
+# Reproduit en miniature la structure reelle : metadonnees, sections par
+# registre avec entrees completes, section deprecie (groupee par statut),
+# calibration (overlay), parametres (META-2), couverture (meta de suivi).
+
+version: "12.3"
+date: "2026-05-28"
+perimetre_statut: complet
+meta2_mode: bloquant
+
+override:
+  - entity_id: input_boolean.standby_force
+    registre: override
+    couche: decision
+    niveau: systeme
+    statut: actif
+    contrat: CONTRAT_OVERRIDE_STANDBY.md
+    note: "Forçage standby manuel"
+
+autorisation:
+  - entity_id: binary_sensor.chauffage_autorisation_etage_1
+    registre: autorisation
+    couche: autorisation
+    niveau: etage
+    statut: actif
+    contrat: CONTRAT_AUTORISATION_ETAGE.md
+    note: "Autorisation chauffage etage 1"
+
+perception:
+  - entity_id: sensor.chauffage_perception_etage_1
+    registre: perception
+    couche: perception
+    niveau: etage
+    statut: actif
+    contrat: CONTRAT_PERCEPTION_ETAGE.md
+
+deprecie:
+  - entity_id: input_boolean.blocage_geofencing
+    registre: securite
+    couche: securite
+    niveau: systeme
+    statut: deprecie
+    contrat: CONTRAT_GEOFENCING_LEGACY.md
+    note: "Remplace par High Accuracy GPS contextuel ; conserve pour D-REG-4 / INV-GEO-7"
+
+externe:
+  - entity_id: sensor.meteo_exterieure_cloud
+    registre: externe
+    couche: externe
+    statut: actif
+    note: "Capteur tiers, hors gouvernance Arsenal"
+
+calibration:
+  - sensor.chauffage_perception_etage_1
+
+parametres:
+  exclus_invariants_registre: true
+
+couverture:
+  registres_couverts: 8
+  perimetre: etage_1

@@ -1,0 +1,515 @@
+# ==========================================================
+# 🧠 ARSENAL — ARTEFACT DOCTRINAL EXÉCUTABLE
+#     CHAUFFAGE — CLASSIFICATION DES ENTITÉS PAR REGISTRE
+#     registres_entites.yaml
+# ==========================================================
+#
+# 📌 STATUT :
+#   CONTRAT EXÉCUTABLE — projection opposable de la doctrine des
+#   registres (01 D4) sur la population réelle des entités.
+#
+# 🔒 SOUVERAINETÉ :
+#   Ce fichier NE CRÉE AUCUNE DOCTRINE. Il traduit en données
+#   exploitables les classifications établies par les contrats
+#   markdown. En cas de divergence entre ce fichier et un contrat
+#   markdown, LE CONTRAT MARKDOWN FAIT FOI (règle D-REG-7).
+#
+#   Consommé par : CI étage 1 (lint structurel).
+#
+# 📐 SCHÉMA D'UNE ENTRÉE :
+#   - entity_id : identifiant HA complet (clé du nœud)
+#   - registre  : securite | stabilisation | autorisation |
+#                 application | perception | diagnostic | externe
+#   - couche    : perception | autorisation | decision |
+#                 application | calibration | materiel | externe
+#   - niveau    : 1 | 2 | 3 | blocage | contexte_majeur | n/a
+#   - statut    : actif | deprecie | externe
+#   - contrat   : référence(s) opposable(s) justifiant la classification
+#   - note      : précision optionnelle
+#
+# 🧱 RÈGLES DISCIPLINAIRES (résumé — voir contrat de conception) :
+#   D-REG-1 : toute entité décisionnelle doit avoir une entrée (META-2).
+#   D-REG-2 : toute entrée cite un contrat.
+#   D-REG-3 : registre ET couche obligatoires.
+#   D-REG-4 : une entité 'deprecie' n'a aucune arête décisionnelle.
+#   D-REG-5 : 'externe' exempte de la production, pas de la consommation.
+#   D-REG-6 : aucune entité 'stabilisation' ne porte niveau=1.
+#   D-REG-7 : le contrat markdown prime en cas de divergence.
+#
+# ⚠️ VERSION : PARTIELLE — CERCLE 1 (cœur décisionnel) + externes
+#   essentiels. Les cercles 2 (couches internes complètes) et 3
+#   (externes complets) seront ajoutés par lots ultérieurs.
+#   Tant que la couverture n'est pas complète, META-2 doit être
+#   exécuté en mode WARNING, non bloquant (voir §couverture).
+#
+# ==========================================================
+
+version: "1.0-complet"
+date: "2026-05-28"
+perimetre_statut: "complet"          # partiel | quasi-complet | complet
+meta2_mode: "bloquant"                # perimetre complet -> META-2 bloquant
+
+# ----------------------------------------------------------
+# 🔒 REGISTRE : SÉCURITÉ SYSTÈME
+#   Causes d'interdiction de sécurité. Peuvent composer un
+#   capteur de Niveau 1. Interprétables sans glose (OFF = interdit).
+# ----------------------------------------------------------
+securite:
+
+  - entity_id: binary_sensor.chauffage_autorise_systeme
+    registre: securite
+    couche: decision
+    niveau: 1
+    statut: actif
+    contrat: "30_decision_centrale__amendement.md R-30.1 ; 01_doctrine_registres.md D1"
+    note: >
+      Autorité de Niveau 1 strictement sécurité (post-phase 3).
+      Composé uniquement de causes de sécurité. OFF = interdiction.
+
+  - entity_id: input_boolean.chauffage_blocage_aeration
+    registre: securite
+    couche: decision
+    niveau: 1
+    statut: actif
+    contrat: "40_blocages.md ; 30_decision_centrale__amendement.md R-30.1"
+    note: >
+      Blocage post-aération. Seule cause de sécurité composant
+      actuellement chauffage_autorise_systeme.
+
+# ----------------------------------------------------------
+# 🧑‍✈️ REGISTRE : OVERRIDE (souveraineté opérateur)
+#   Volonté humaine de contournement. N'est ni sécurité, ni
+#   stabilisation, ni autorisation, ni décision, ni perception.
+#   Prime sur la stabilisation, contourne l'anti-rebond, mais ne
+#   contourne jamais les sécurités matérielles hors périmètre.
+# ----------------------------------------------------------
+override:
+
+  - entity_id: input_boolean.mode_confort_chauffage
+    registre: override
+    couche: decision
+    niveau: contexte_majeur
+    statut: actif
+    contrat: "20_triggers_decisionnels__amendement.md 2.2 ; 80_...reecriture_partielle 4 (exception souveraine)"
+    note: >
+      Override opérateur. Souveraineté humaine : impose comfort,
+      contourne l'anti-rebond geoloc, prime sur la stabilisation.
+      NE contourne jamais les sécurités matérielles hors périmètre
+      Arsenal. Distinct de la sécurité système (s'impose) : l'override
+      contourne PAR VOLONTÉ.
+
+# ----------------------------------------------------------
+# 🌡️ REGISTRE : AUTORISATION (intention thermique)
+#   Produit un ternaire comfort/neutre/reduced. Jamais une décision.
+# ----------------------------------------------------------
+autorisation:
+
+  - entity_id: sensor.chauffage_autorisation_cible
+    registre: autorisation
+    couche: autorisation
+    niveau: 3
+    statut: actif
+    contrat: "70_autorisation_thermostat.md (+ amendement) ; 90_semantique_thermique.md"
+    note: >
+      Thermostat logique ternaire. Pivot du Niveau 3a. Porte la
+      modulation suspension_relance_meteo (comfort -> neutre) en
+      sortie. Pilote standby_force via l'automation d'application.
+
+  - entity_id: input_boolean.pre_confort_actif_calcule
+    registre: autorisation
+    couche: autorisation
+    niveau: 3
+    statut: actif
+    contrat: "20_triggers_decisionnels.md (autorisations contextuelles) ; 80_...reecriture_partielle 4.2"
+    note: >
+      Autorisation contextuelle de pré-confort retour Vacances.
+      Modifie l'espace d'autorisation, jamais une cause hiérarchique
+      autonome. Exception bornée au contexte Vacances.
+
+# ----------------------------------------------------------
+# ⏳ REGISTRE : STABILISATION THERMIQUE
+#   Optimisation / sobriété / hystérésis. NE PEUT JAMAIS composer
+#   un Niveau 1 sécurité (D1). Peut être décisionnelle (blocage de
+#   stabilisation) sans être sécuritaire.
+# ----------------------------------------------------------
+stabilisation:
+
+  - entity_id: input_boolean.chauffage_standby_force
+    registre: stabilisation
+    couche: application
+    niveau: n/a
+    statut: actif
+    contrat: "50_standby_hysteresis__amendement.md A1/A3 ; 01 D3"
+    note: >
+      Verrou de stabilisation persisté et observable. Conséquence
+      de l'autorisation cible, jamais cause. Writer unique
+      (automation d'application). Ne compose aucun Niveau 1.
+      Exposé en attribut informatif de autorise_systeme (reads),
+      jamais en composition (composes).
+
+  - entity_id: input_boolean.blocage_chauffage_poele
+    registre: stabilisation
+    couche: decision
+    niveau: blocage
+    statut: actif
+    contrat: "40_blocages__amendement.md A1/A4 ; 80_...reecriture_partielle 4.3 ; 01 D2/D4"
+    note: >
+      Blocage de stabilisation (anti-empilement). Décisionnel et
+      fort, mais NON sécuritaire. Armé uniquement par poele_en_fonction
+      (corroboré). Terme doctrinal : "blocage de stabilisation".
+
+  - entity_id: input_boolean.chauffage_inhibition_geofencing
+    registre: stabilisation
+    couche: decision
+    niveau: 3
+    statut: actif
+    contrat: "60_absence_inhibition_geofencing.md 4.2/5 ; 01 D4"
+    note: >
+      État mémorisé de l'inhibition géofencing (Niveau 3b).
+      Régulation de stabilisation d'absence, hystérésée, réactivable,
+      subordonnée. Gating absence garanti par la Décision Centrale.
+
+  - entity_id: input_boolean.poele_recent
+    registre: stabilisation
+    couche: calibration
+    niveau: n/a
+    statut: actif
+    contrat: "40_blocages__amendement.md A5 (D-POELE-CALIB)"
+    note: >
+      Mémoire de calibration poêle (24h). Registre stabilisation,
+      couche CALIBRATION. Peut s'armer sur signature mono-source
+      (D-POELE-CALIB) car effet STRICTEMENT CONSERVATEUR : ne relâche
+      aucune protection, n'autorise aucune chauffe, ne fait que figer
+      l'auto-ajustement de courbe. JAMAIS autorité décisionnelle directe.
+
+  - entity_id: binary_sensor.poele_en_fonction_stable
+    registre: stabilisation
+    couche: calibration
+    niveau: n/a
+    statut: actif
+    contrat: "40_blocages__amendement.md A5 (D-POELE-CALIB)"
+    note: >
+      Capteur poêle stabilisé pour la calibration de courbe. Couche
+      calibration. Effet conservateur (gel d'auto-ajustement), jamais
+      décisionnel. Composé notamment de poele_recent.
+
+# ----------------------------------------------------------
+# 👁️ REGISTRE : PERCEPTION (faits observés / qualification pure)
+#   Observent. Ne décident jamais. La qualification destinée à une
+#   décision doit exposer son niveau de corroboration.
+# ----------------------------------------------------------
+perception:
+
+  - entity_id: binary_sensor.chauffage_inhibition_geofencing_requise
+    registre: perception
+    couche: perception
+    niveau: n/a
+    statut: actif
+    contrat: "60_absence_inhibition_geofencing.md 4.1 ; INV-GEO-5"
+    note: >
+      Qualification thermique PURE. Lecture seule, sans mémoire,
+      sans présence ni régime. Ne doit jamais être durcie pour
+      intégrer une condition de régime.
+
+  - entity_id: sensor.ecart_consigne_confort
+    registre: perception
+    couche: perception
+    niveau: n/a
+    statut: actif
+    contrat: "60_absence_inhibition_geofencing.md 4.1 ; 70_autorisation_thermostat.md"
+    note: >
+      Écart à la consigne confort. Fait thermique observé, alimentant
+      la qualification _requise et le calcul d'autorisation. Perception
+      pure.
+
+  - entity_id: binary_sensor.poele_en_fonction
+    registre: perception
+    couche: perception
+    niveau: n/a
+    statut: actif
+    contrat: "40_blocages__amendement.md A3 (D-POELE-1) ; INV-POELE-2"
+    note: >
+      Qualification poêle CORROBORÉE = signature_thermique_poele ET
+      presence_humaine_sejour (CO2) ET chaudière hors cause. Seul
+      signal armant blocage_chauffage_poele. Jamais satisfiable par
+      signature seule.
+
+  - entity_id: binary_sensor.signature_thermique_poele
+    registre: perception
+    couche: perception
+    niveau: n/a
+    statut: actif
+    contrat: "40_blocages__amendement.md A3/A5 ; INV-POELE-2"
+    note: >
+      Signature thermique MONO-SOURCE. Couche 1 de la détection poêle.
+      Ne doit JAMAIS armer seule une qualification décisionnelle ou un
+      blocage (D-POELE-2). Tolérée mono-source uniquement pour la
+      calibration conservatrice (poele_recent) — voir D-POELE-CALIB.
+
+  - entity_id: binary_sensor.presence_humaine_sejour
+    registre: perception
+    couche: perception
+    niveau: n/a
+    statut: actif
+    contrat: "40_blocages__amendement.md A3 (signal non thermique) ; INV-POELE-2"
+    note: >
+      Signal de corroboration NON THERMIQUE (CO2) pour la détection
+      poêle. C'est l'entrée qui distingue un vrai poêle d'une chauffe
+      qui se prend pour un poêle.
+
+# ----------------------------------------------------------
+# 🧾 REGISTRE : DIAGNOSTIC (projections interprétées)
+#   Sorties d'observabilité sans autorité causale. Ne remontent
+#   jamais en cause (D3). Ne sont jamais des triggers (INV-TRIG-6).
+# ----------------------------------------------------------
+diagnostic:
+
+  - entity_id: sensor.chauffage_raison_calculee
+    registre: diagnostic
+    couche: decision
+    niveau: n/a
+    statut: actif
+    contrat: "30_decision_centrale__amendement.md R-30.3/R-30.5 ; 01 D3 ; INV-TRIG-6"
+    note: >
+      Raison dominante interprétée. Sortie d'observabilité, sans
+      autorité causale. Ne doit JAMAIS être un trigger (remontée
+      conséquence -> cause interdite). Réplique la cascade décision.
+
+  - entity_id: sensor.chauffage_mode_calcule
+    registre: diagnostic
+    couche: decision
+    niveau: n/a
+    statut: actif
+    contrat: "30_decision_centrale__amendement.md R-30.6 ; INV-30-6"
+    note: >
+      Mode interprété (miroir diagnostic). Projection sans autorité
+      causale. Doit rester cohérent avec la décision (INV-30-6).
+
+# ----------------------------------------------------------
+# ⚙️ REGISTRE : APPLICATION (exécution / verrous post-décision)
+#   Traduit une décision. Subordonné. Ne remonte jamais en amont.
+# ----------------------------------------------------------
+application:
+
+  - entity_id: input_boolean.chauffage_application_en_cours
+    registre: application
+    couche: application
+    niveau: n/a
+    statut: actif
+    contrat: "20_triggers_decisionnels.md (ordonnancement) ; 10_souverainete_execution.md"
+    note: >
+      Verrou transactionnel d'application. Sa retombée (ON->OFF)
+      est un trigger de convergence, jamais une cause métier.
+
+  - entity_id: timer.chauffage_geoloc_antirebond
+    registre: application
+    couche: application
+    niveau: n/a
+    statut: actif
+    contrat: "20_triggers_decisionnels.md (ordonnancement) ; 30_decision_centrale.md (anti-rebond)"
+    note: >
+      Anti-rebond géoloc. Sa fin (finished) est un trigger de
+      convergence. Mécanisme de stabilisation d'exécution, non causal.
+
+  - entity_id: input_number.chauffage_retry_count
+    registre: application
+    couche: application
+    niveau: n/a
+    statut: actif
+    contrat: "10_souverainete_execution.md (retry transactionnel) ; INV-COH-2"
+    note: >
+      Compteur de retry transactionnel (borné min 0 / max 1). Le retry
+      ne décide jamais : il rejoue. Paramètre d'exécution.
+
+# ----------------------------------------------------------
+# 🛑 REGISTRE : DÉPRÉCIÉ (sans autorité — vérifié inerte)
+#   Conservé mais sans autorité décisionnelle. L'étage 1 vérifie
+#   l'ABSENCE de toute arête décisionnelle (D-REG-4 / INV-GEO-7).
+# ----------------------------------------------------------
+deprecie:
+
+  - entity_id: input_boolean.blocage_geofencing
+    registre: stabilisation
+    couche: n/a
+    niveau: n/a
+    statut: deprecie
+    contrat: "60_absence_inhibition_geofencing.md 8.2 ; INV-GEO-7"
+    note: >
+      Helper orphelin. Aucune autorité décisionnelle. NE doit être
+      lu par aucune logique décisionnelle. Sort futur (suppression
+      ou interrupteur maître) renvoyé à un chantier séparé.
+
+# ----------------------------------------------------------
+# 🌍 REGISTRE : EXTERNE (produit hors domaine chauffage)
+#   Inclus pour neutraliser META-1 (sinon traités en fantômes).
+#   Exemptés des invariants de COMPOSITION interne, soumis aux
+#   invariants de CONSOMMATION (D-REG-5).
+# ----------------------------------------------------------
+externe:
+
+  - entity_id: binary_sensor.boiler_bridge_online
+    registre: externe
+    couche: externe
+    niveau: n/a
+    statut: externe
+    contrat: "30_decision_centrale.md (garde G2) ; domaine boiler"
+    note: "Capacité d'exécution. Domaine boiler. Garde G2 pré-exécution."
+
+  - entity_id: binary_sensor.presence_famille_unifiee
+    registre: externe
+    couche: externe
+    niveau: 2
+    statut: externe
+    contrat: "20_triggers_decisionnels.md (Niveau 2 régime) ; domaine presence"
+    note: "Régime présence/absence. Domaine présence."
+
+  - entity_id: input_select.mode_maison
+    registre: externe
+    couche: externe
+    niveau: contexte_majeur
+    statut: externe
+    contrat: "80_...reecriture_partielle 4.2 ; 20_triggers_decisionnels.md"
+    note: >
+      Contexte majeur (Vacances restructure la décision) ET signal
+      de reconfiguration d'autorisation. NIVEAU distinct du Niveau 1
+      sécurité : Vacances n'est pas une interdiction de sécurité.
+
+  - entity_id: binary_sensor.meteo_favorable_chauffage
+    registre: externe
+    couche: externe
+    niveau: n/a
+    statut: externe
+    contrat: "70_autorisation_thermostat__amendement.md R-70.4 ; INV-METEO-2"
+    note: >
+      Fait contextuel météo. Domaine météo. Consommé UNIQUEMENT par
+      la modulation suspension_relance_meteo dans autorisation_cible.
+
+  - entity_id: input_boolean.chauffage_anticipation_meteo
+    registre: externe
+    couche: externe
+    niveau: n/a
+    statut: externe
+    contrat: "70_autorisation_thermostat__amendement.md R-70.4 ; INV-METEO-2"
+    note: >
+      Activation de la modulation météo (réglage opérateur).
+      Consommé uniquement par suspension_relance_meteo.
+
+  - entity_id: input_boolean.aeration_episode_en_cours
+    registre: externe
+    couche: externe
+    niveau: 1
+    statut: externe
+    contrat: "40_blocages.md ; 20_triggers_decisionnels.md (Niveau 1)"
+    note: >
+      Référencé mais non défini dans le périmètre runtime fourni
+      (domaine aération). Registre sécurité (cause de blocage Niveau 1).
+      Consommé par le chauffage ; produit ailleurs.
+
+  - entity_id: input_boolean.aeration_confirmee
+    registre: externe
+    couche: externe
+    niveau: 1
+    statut: externe
+    contrat: "40_blocages.md ; 20_triggers_decisionnels.md (Niveau 1)"
+    note: >
+      Référencé, non défini dans le périmètre (domaine aération).
+      Qualification de l'aération en blocage effectif. Sécurité.
+
+  - entity_id: binary_sensor.fenetre_ouverte_maison_avec_delai
+    registre: externe
+    couche: externe
+    niveau: 1
+    statut: externe
+    contrat: "40_blocages.md ; 80_...reecriture_partielle 4.1 ; 20_triggers_decisionnels.md"
+    note: >
+      Référencé, non défini dans le périmètre (domaine fenêtres).
+      Blocage fenêtre qualifié avec délai. Sécurité (chauffe vers
+      l'extérieur interdite).
+
+  - entity_id: input_boolean.systeme_stable
+    registre: externe
+    couche: externe
+    niveau: n/a
+    statut: externe
+    contrat: "20_triggers_decisionnels.md (ordonnancement/convergence)"
+    note: >
+      Référencé (lu) par le chauffage mais relevant de l'orchestration
+      globale post-reboot. Signal de convergence initiale. Produit
+      hors domaine chauffage strict.
+
+# ----------------------------------------------------------
+# 🎛️ SECTION : PARAMÈTRES (réglages — HORS invariants de registre)
+#   input_number de seuils/offsets/consignes. Lus par capteurs et
+#   templates, mais NE PORTENT AUCUNE causalité métier autonome.
+#   EXCLUS des invariants de registre (D1/D3) et de niveau.
+#   Déclarés UNIQUEMENT pour que META-1 ne les traite pas en fantômes.
+#   N'ont ni 'registre' décisionnel ni 'niveau'.
+# ----------------------------------------------------------
+parametres:
+  exclus_invariants_registre: true       # NE PAS soumettre aux motifs D1/D3/niveau
+
+  entites:
+    - entity_id: input_number.chauffage_offset_on
+      role: parametre
+      contrat: "70_autorisation_thermostat.md (hystérésis confort)"
+      note: "Offset d'entrée hystérésis confort. Réglage, non causal."
+
+    - entity_id: input_number.chauffage_offset_off
+      role: parametre
+      contrat: "70_autorisation_thermostat.md (hystérésis confort)"
+      note: "Offset de sortie hystérésis confort. Réglage, non causal."
+
+    - entity_id: input_number.inhibition_geofencing_offset_on
+      role: parametre
+      contrat: "60_absence_inhibition_geofencing.md 6 (INV-GEO-1)"
+      note: "Seuil d'entrée hystérésis géofencing. Réglage, non causal."
+
+    - entity_id: input_number.inhibition_geofencing_offset_off
+      role: parametre
+      contrat: "60_absence_inhibition_geofencing.md 6 (INV-GEO-1)"
+      note: "Seuil de sortie hystérésis géofencing. Réglage, non causal."
+
+    - entity_id: input_number.chauffage_consigne_confort
+      role: parametre
+      contrat: "90_semantique_thermique.md (regime comfort)"
+      note: "Consigne confort. Réglage, non causal."
+
+    - entity_id: input_number.chauffage_consigne_reduite
+      role: parametre
+      contrat: "90_semantique_thermique.md (regime reduced)"
+      note: "Consigne réduite. Réglage, non causal."
+
+    - entity_id: input_number.chauffage_consigne_vacances
+      role: parametre
+      contrat: "80_...reecriture_partielle 4.2 (Vacances)"
+      note: "Consigne Vacances. Réglage, non causal."
+
+    - entity_id: input_number.chauffage_seuil_ext_on
+      role: parametre
+      contrat: "70_autorisation_thermostat.md (seuil extérieur)"
+      note: "Seuil température extérieure ON. Réglage, non causal."
+
+    - entity_id: input_number.chauffage_seuil_ext_off
+      role: parametre
+      contrat: "70_autorisation_thermostat.md (seuil extérieur)"
+      note: "Seuil température extérieure OFF. Réglage, non causal."
+
+# ----------------------------------------------------------
+# 📊 COUVERTURE (auto-déclarée — vérifiée par VAL-6)
+# ----------------------------------------------------------
+couverture:
+  cercle_1_coeur: "inclus"
+  cercle_2_couches_internes: "inclus"
+  cercle_3_externes: "inclus (principaux)"
+  calibration_poele: "inclus (couche calibration)"
+  parametres: "inclus (section dédiée, hors invariants de registre)"
+  note_couverture: >
+    Périmètre décisionnel COMPLET : cercles 1 et 2, calibration poêle,
+    paramètres déclarés. Toute entité décisionnelle est classée. META-2
+    passe en mode bloquant. Les input_number sont en section 'parametres'
+    (non causaux, exclus des invariants de registre). Les dépendances
+    externes principales sont déclarées ; toute nouvelle entité externe
+    référencée devra être ajoutée pour éviter un faux fantôme META-1.
+
+
+# ==========================================================

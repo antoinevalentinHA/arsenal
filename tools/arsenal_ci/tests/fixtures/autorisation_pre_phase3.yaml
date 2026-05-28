@@ -1,0 +1,11 @@
+# FIXTURE FAUTIVE — standby_force compose l'etat (presence dans state:)
+template:
+  - binary_sensor:
+      - name: "Chauffage Autorisation Etage 1"
+        unique_id: chauffage_autorisation_etage_1
+        state: >
+          {{ is_state('input_boolean.standby_force', 'off')
+             and states('sensor.chauffage_perception_etage_1') == 'ok' }}
+        attributes:
+          raison: >
+            {{ 'standby actif' if is_state('input_boolean.standby_force','on') else 'nominal' }}
