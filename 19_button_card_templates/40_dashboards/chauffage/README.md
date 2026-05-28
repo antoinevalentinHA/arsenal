@@ -50,7 +50,7 @@ Le chauffage est un système contraint :
 - poêle
 - géofencing
 - météo
-- protections thermiques
+- stabilisation thermique
 
 Ces contraintes sont **visibles en UI**, jamais implicites.
 

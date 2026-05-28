@@ -19,7 +19,7 @@
 # 🎨 SEMANTIQUE
 #     - intention = Confort                              -> 🟢 vert  "Confort requis"
 #     - intention = Neutre                               -> ⚪ gris  "Confort autorisé"
-#     - intention = Eco + raison absence_protection      -> ⚪ gris  "Sobriété • protection thermique"
+#     - intention = Eco + raison stabilisation_absence   -> ⚪ gris  "Sobriété • stabilisation absence"
 #     - intention = Eco + raison absence                 -> ⚪ gris  "Sobriété • absence"
 #     - intention = Eco (autre raison)                   -> ⚪ gris  "Sobriété thermique"
 #     - autre                                            -> état brut
@@ -52,8 +52,8 @@ carte_chauffage_intention:
   icon: mdi:brain
   name: Intention chauffage
 
-  state_display: |
-    [[[ 
+state_display: |
+    [[[
       const intention = entity.state;
       const raison = states['sensor.chauffage_raison_calculee']?.state;
 
@@ -66,8 +66,8 @@ carte_chauffage_intention:
       }
 
       if (intention === 'Eco') {
-        if (raison === 'absence_protection_thermique') {
-          return 'Sobriété • protection thermique';
+        if (raison === 'stabilisation_absence') {
+          return 'Sobriété • stabilisation absence';
         }
         if (raison === 'absence') {
           return 'Sobriété • absence';

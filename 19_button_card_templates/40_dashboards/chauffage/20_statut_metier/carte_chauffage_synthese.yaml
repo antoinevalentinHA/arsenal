@@ -17,15 +17,19 @@
 #     - Spécialisation de socle_status_label_xl
 #     - UI uniquement (aucune décision)
 #
-# 🎨 SEMANTIQUE
-#     - Brûleur ON                              -> 🔴 rouge   (chauffe réelle)
+# 🎨 SEMANTIQUE (palette contractuelle Arsenal — cf. 02_palette.md)
+#     - Brûleur ON                              -> 🔵 bleu    (information thermique, Q3.b)
 #     - raison = confort_force                  -> 🔵 bleu    (override opérateur)
-#     - raison = poele_actif / aeration /
-#       fenetre_ouverte / vacances / non_autorisé -> 🟠 orange (blocage thermique)
-#     - raison = pre_confort_vacances
-#       / presence_on / absence                 -> 🔵 bleu    (attente thermique)
+#     - raison = chauffage_non_autorise         -> 🔴 rouge   (sécurité système)
+#     - raison = aeration / blocage_aeration /
+#       fenetre_ouverte                         -> 🟠 orange  (sécurité situation limite)
+#     - raison = mode_vacances / pre_confort    -> 🔵 bleu    (contexte majeur)
+#     - raison = poele_actif /
+#       stabilisation_absence                   -> 🔵 bleu    (stabilisation)
+#     - raison = besoin_thermique /
+#       confort_suffisant                       -> 🟢 vert    (autorisation nominale)
 #     - prog = confort + brûleur OFF            -> 🟢 vert    (confort satisfait)
-#     - défaut                                  -> ⚪ gris    (état non classifié)
+#     - défaut (présence_on, absence)           -> ⚪ gris    (neutre)
 #
 # 🔗 DEPENDANCES
 #     - entity                                        : sensor.programme_chauffage
@@ -34,7 +38,7 @@
 #     - sensor.temperature_consigne_appliquee_locale  : consigne affichée en label
 #
 # ⚠️ CONTRAINTES
-#     - Priorité stricte : brûleur > override > blocage > attente > confort > défaut
+#     - Priorité stricte : brûleur > override > sécurité > contexte > stabilisation > nominal > défaut
 #     - Les variantes "éco" avec accent sont gérées (prog === 'eco' || 'éco')
 #     - La consigne est omise du label si unavailable / unknown / '0'
 #     - Aucune action définie — carte de lecture pure
@@ -69,7 +73,7 @@ carte_chauffage_synthese:
   #################################################################
   # 🧠 ÉTAT PRINCIPAL
   #################################################################
-  state_display: |
+state_display: |
     [[[
       const prog = (entity.state || '').toLowerCase();
       const raison = states['sensor.chauffage_raison_calculee']?.state;
@@ -83,19 +87,42 @@ carte_chauffage_synthese:
         return 'Override • confort';
       }
 
+      // Registre sécurité système
+      if (raison === 'chauffage_non_autorise') {
+        return 'Interdit (sécurité)';
+      }
+
+      // Registre sécurité (situation limite)
       if ([
-        'poele_actif',
         'aeration_en_cours',
         'blocage_aeration_en_cours',
-        'fenetre_ouverte_maison',
-        'mode_maison_vacances',
-        'chauffage_non_autorise'
+        'fenetre_ouverte_maison'
       ].includes(raison)) {
         return 'Bloqué';
       }
 
+      // Registre contexte majeur
+      if (raison === 'mode_maison_vacances') {
+        return 'Mode Vacances';
+      }
       if (raison === 'pre_confort_vacances') {
         return 'Pré-confort';
+      }
+
+      // Registre stabilisation
+      if (raison === 'poele_actif') {
+        return 'Poêle actif';
+      }
+      if (raison === 'stabilisation_absence') {
+        return 'Stabilisation absence';
+      }
+
+      // Registre autorisation
+      if (raison === 'confort_suffisant') {
+        return 'Confort suffisant';
+      }
+      if (raison === 'besoin_thermique') {
+        return 'Besoin thermique';
       }
 
       if (prog === 'confort') {
@@ -104,10 +131,6 @@ carte_chauffage_synthese:
 
       if (raison === 'presence_on' && prog !== 'confort') {
         return 'Attente • confort';
-      }
-
-      if (raison === 'absence_protection_thermique') {
-        return 'Protection • absence';
       }
 
       if ((prog === 'eco' || prog === 'éco') && raison === 'absence') {
@@ -123,42 +146,65 @@ carte_chauffage_synthese:
   #################################################################
   # 🧾 LIBELLÉ EXPLICATIF
   #################################################################
-  label: |
+label: |
     [[[
       const prog = (entity.state || '').toLowerCase();
       const raison = states['sensor.chauffage_raison_calculee']?.state;
       const c = states['sensor.temperature_consigne_appliquee_locale']?.state;
       const bruleur = states['binary_sensor.bruleur_mode_chauffage']?.state === 'on';
 
-      const blocages = {
-        poele_actif: 'poêle actif',
-        aeration_en_cours: 'aération en cours',
-        blocage_aeration_en_cours: 'post-aération',
-        fenetre_ouverte_maison: 'fenêtre ouverte',
-        mode_maison_vacances: 'mode vacances',
-        chauffage_non_autorise: 'chauffage non autorisé'
+      const fmt_consigne = (v) => {
+        if (v && !['unknown','unavailable','0'].includes(v)) {
+          return ` • consigne ${parseFloat(v).toFixed(1)} °C`;
+        }
+        return '';
       };
 
       if (bruleur) {
-        if (c && !['unknown','unavailable','0'].includes(c)) {
-          return `Chauffage actif • consigne ${parseFloat(c).toFixed(1)} °C`;
-        }
-        return 'Chauffage actif';
+        return `Chauffage actif${fmt_consigne(c)}`;
       }
 
       if (raison === 'confort_force') {
-        if (c && !['unknown','unavailable','0'].includes(c)) {
-          return `Override opérateur • consigne ${parseFloat(c).toFixed(1)} °C`;
-        }
-        return 'Override opérateur • confort forcé';
+        return `Override opérateur${fmt_consigne(c)}`;
       }
 
-      if (blocages[raison]) {
-        return `Chauffage bloqué • ${blocages[raison]}`;
+      // Sécurité système
+      if (raison === 'chauffage_non_autorise') {
+        return 'Interdit — sécurité système';
       }
 
+      // Sécurité (situation limite)
+      const securite_labels = {
+        aeration_en_cours: 'aération en cours',
+        blocage_aeration_en_cours: 'post-aération',
+        fenetre_ouverte_maison: 'fenêtre ouverte'
+      };
+      if (securite_labels[raison]) {
+        return `Chauffage bloqué • ${securite_labels[raison]}`;
+      }
+
+      // Contexte majeur
+      if (raison === 'mode_maison_vacances') {
+        return 'Mode Vacances • consigne réduite';
+      }
       if (raison === 'pre_confort_vacances') {
         return 'Pré-confort Vacances • autorisation transitoire';
+      }
+
+      // Stabilisation
+      if (raison === 'poele_actif') {
+        return 'Poêle actif • chauffage en retrait';
+      }
+      if (raison === 'stabilisation_absence') {
+        return 'Stabilisation thermique d\\'absence';
+      }
+
+      // Autorisation
+      if (raison === 'confort_suffisant') {
+        return 'Confort suffisant • sobriété nominale';
+      }
+      if (raison === 'besoin_thermique') {
+        return 'Besoin thermique • appel en cours';
       }
 
       if (prog === 'confort') {
@@ -167,10 +213,6 @@ carte_chauffage_synthese:
 
       if (raison === 'presence_on' && prog !== 'confort') {
         return 'Confort autorisé • seuil non atteint';
-      }
-
-      if (raison === 'absence_protection_thermique') {
-        return 'Protection thermique • absence';
       }
 
       if ((prog === 'eco' || prog === 'éco') && raison === 'absence') {
@@ -183,8 +225,8 @@ carte_chauffage_synthese:
   #################################################################
   # 🎨 COULEURS — CHARTE ARSENAL STRICTE
   #################################################################
-  state:
-    # 🔥 Chauffage actif → ROUGE
+state:
+    # 🔵 Brûleur actif (Q3.b — information thermique, non décisionnel)
     - operator: template
       value: |
         [[[
@@ -192,9 +234,9 @@ carte_chauffage_synthese:
         ]]]
       styles:
         card:
-          - background-color: rgba(244, 67, 54, 0.2)
+          - background-color: rgba(33, 150, 243, 0.2)
 
-    # 🔵 Override opérateur → BLEU
+    # 🔵 Override opérateur
     - operator: template
       value: |
         [[[
@@ -204,41 +246,64 @@ carte_chauffage_synthese:
         card:
           - background-color: rgba(33, 150, 243, 0.2)
 
-    # ⛔ Blocages → ORANGE
+    # 🔴 Sécurité système (interdiction réelle)
+    - operator: template
+      value: |
+        [[[
+          return states['sensor.chauffage_raison_calculee']?.state === 'chauffage_non_autorise';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244, 67, 54, 0.2)
+
+    # 🟠 Sécurité (situation limite)
     - operator: template
       value: |
         [[[
           return [
-            'poele_actif',
             'aeration_en_cours',
             'blocage_aeration_en_cours',
-            'fenetre_ouverte_maison',
-            'mode_maison_vacances',
-            'chauffage_non_autorise'
+            'fenetre_ouverte_maison'
           ].includes(states['sensor.chauffage_raison_calculee']?.state);
         ]]]
       styles:
         card:
           - background-color: rgba(255, 152, 0, 0.2)
 
-    # 🔵 Attentes / pré-confort / absence → BLEU
+    # 🔵 Contexte majeur (Vacances)
     - operator: template
       value: |
         [[[
-          const prog = (entity.state || '').toLowerCase();
-          const raison = states['sensor.chauffage_raison_calculee']?.state;
-          return (
-            raison === 'pre_confort_vacances' ||
-            (raison === 'presence_on' && prog !== 'confort') ||
-            raison === 'absence_protection_thermique' ||
-            ((prog === 'eco' || prog === 'éco') && raison === 'absence')
-          );
+          const r = states['sensor.chauffage_raison_calculee']?.state;
+          return r === 'mode_maison_vacances' || r === 'pre_confort_vacances';
         ]]]
       styles:
         card:
           - background-color: rgba(33, 150, 243, 0.2)
 
-    # 🟢 Confort satisfait → VERT
+    # 🔵 Stabilisation (poêle + stabilisation_absence — Q1 et Q2)
+    - operator: template
+      value: |
+        [[[
+          const r = states['sensor.chauffage_raison_calculee']?.state;
+          return r === 'poele_actif' || r === 'stabilisation_absence';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(33, 150, 243, 0.2)
+
+    # 🟢 Autorisation nominale (besoin thermique / confort suffisant)
+    - operator: template
+      value: |
+        [[[
+          const r = states['sensor.chauffage_raison_calculee']?.state;
+          return r === 'besoin_thermique' || r === 'confort_suffisant';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    # 🟢 Confort satisfait (programme confort + bruleur off)
     - operator: template
       value: |
         [[[
@@ -250,7 +315,7 @@ carte_chauffage_synthese:
         card:
           - background-color: rgba(76, 175, 80, 0.2)
 
-    # ⚪ Défaut neutre
+    # ⚪ Présence neutre / absence (autorisation par défaut)
     - operator: default
       styles:
         card:

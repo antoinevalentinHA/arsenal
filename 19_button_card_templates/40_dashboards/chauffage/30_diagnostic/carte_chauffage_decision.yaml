@@ -17,11 +17,13 @@
 #     - Spécialisation de socle_decision_72
 #     - UI uniquement (aucune décision)
 #
-# 🎨 SEMANTIQUE
-#     - Cohérent + pas de blocage            -> 🟢 vert    (nominal)
-#     - Blocage actif / protection thermique -> 🟠 orange  (warn — contrainte externe)
-#     - Pré-confort                          -> 🔵 bleu    (info — état transitoire)
-#     - Incohérence état réel ≠ intention    -> 🔴 rouge   (ko — divergence à investiguer)
+# 🎨 SEMANTIQUE (palette contractuelle Arsenal — cf. 02_palette.md)
+#     - Incohérence intention ≠ réel        -> 🔴 rouge   (ko)
+#     - Sécurité système (interdit)         -> 🔴 rouge   (ko)
+#     - Sécurité situation limite           -> 🟠 orange  (warn)
+#     - Override / Contexte / Stabilisation -> 🔵 bleu    (info)
+#     - Besoin thermique / Confort suffisant-> 🟢 vert    (ok)
+#     - Présence neutre / Absence           -> ⚪ gris    (neutre)
 #
 # 🔗 DEPENDANCES
 #     - entity                            : sensor état réel chauffage (Confort | Eco | Inconnu)
@@ -46,7 +48,7 @@ carte_chauffage_decision:
 
   name: Chauffage – État réel
 
-  variables:
+variables:
     diag: |
       [[[
         const reel = entity?.state;
@@ -55,7 +57,7 @@ carte_chauffage_decision:
 
         const labels = {
           confort_force: 'override opérateur',
-          chauffage_non_autorise: 'chauffage non autorisé',
+          chauffage_non_autorise: 'interdit (sécurité)',
           aeration_en_cours: 'aération en cours',
           blocage_aeration_en_cours: 'post-aération',
           fenetre_ouverte_maison: 'fenêtre ouverte',
@@ -65,24 +67,26 @@ carte_chauffage_decision:
           besoin_thermique: 'besoin thermique',
           presence_on: 'présence',
           confort_suffisant: 'confort suffisant',
-          absence_protection_thermique: 'protection thermique',
+          stabilisation_absence: 'stabilisation absence',
           absence: 'absence'
         };
 
-        const blocages = [
-          'chauffage_non_autorise',
-          'aeration_en_cours',
-          'blocage_aeration_en_cours',
-          'fenetre_ouverte_maison',
-          'mode_maison_vacances',
-          'poele_actif'
-        ];
-
         const r = raison;
-        const is_inconnu = (reel === 'Inconnu');
-        const is_blocage = blocages.includes(r);
-        const is_absence_protection = (r === 'absence_protection_thermique');
-        const is_info = (r === 'pre_confort_vacances');
+
+        // Classification par registre
+        const securite_systeme = ['chauffage_non_autorise'];
+        const securite_limite  = ['aeration_en_cours', 'blocage_aeration_en_cours', 'fenetre_ouverte_maison'];
+        const contexte_majeur  = ['mode_maison_vacances', 'pre_confort_vacances'];
+        const stabilisation    = ['poele_actif', 'stabilisation_absence'];
+        const nominal          = ['besoin_thermique', 'confort_suffisant'];
+
+        const is_inconnu              = (reel === 'Inconnu');
+        const is_override             = (r === 'confort_force');
+        const is_securite_systeme     = securite_systeme.includes(r);
+        const is_securite_limite      = securite_limite.includes(r);
+        const is_contexte_majeur      = contexte_majeur.includes(r);
+        const is_stabilisation        = stabilisation.includes(r);
+        const is_nominal              = nominal.includes(r);
 
         const coherent = (() => {
           if (is_inconnu) return false;
@@ -91,18 +95,25 @@ carte_chauffage_decision:
           return false;
         })();
 
+        // Catégorie visuelle (palette contractuelle Arsenal)
+        // Priorité : KO (incohérence) > sécurité système > sécurité limite > info > nominal > neutre
         const category = (() => {
-          if (!coherent) return 'ko';
-          if (is_blocage || is_absence_protection) return 'warn';
-          if (is_info) return 'info';
-          return 'ok';
+          if (!coherent) return 'ko';                     // 🔴 rouge — incohérence intention/réel
+          if (is_securite_systeme) return 'ko';            // 🔴 rouge — interdiction réelle
+          if (is_securite_limite) return 'warn';           // 🟠 orange — situation limite
+          if (is_override) return 'info';                  // 🔵 bleu — override
+          if (is_contexte_majeur) return 'info';           // 🔵 bleu — Vacances
+          if (is_stabilisation) return 'info';             // 🔵 bleu — Q1, Q2
+          if (is_nominal) return 'ok';                     // 🟢 vert — besoin / confort suffisant
+          return 'neutre';                                 // ⚪ gris — présence_on, absence
         })();
 
         const bg = (() => {
-          if (category === 'warn') return "rgba(255, 152, 0, 0.2)";
-          if (category === 'info') return "rgba(33, 150, 243, 0.2)";
-          if (category === 'ok')   return "rgba(76, 175, 80, 0.2)";
-          return "rgba(244, 67, 54, 0.2)";
+          if (category === 'ko')     return "rgba(244, 67, 54, 0.2)";
+          if (category === 'warn')   return "rgba(255, 152, 0, 0.2)";
+          if (category === 'info')   return "rgba(33, 150, 243, 0.2)";
+          if (category === 'ok')     return "rgba(76, 175, 80, 0.2)";
+          return "rgba(158, 158, 158, 0.2)";
         })();
 
         const reason_txt = r ? (labels[r] || r) : '';
