@@ -219,10 +219,6 @@ views:
             template: section_header
             name: 🛡️ Protection thermique (offsets)
 
-          - type: tile
-            entity: input_boolean.blocage_geofencing
-            name: Protection thermique en absence
-
           - type: grid
             square: false
             columns: 2
