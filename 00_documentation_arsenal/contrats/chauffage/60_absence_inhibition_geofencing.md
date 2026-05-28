@@ -1,348 +1,344 @@
 # ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE
-#     CHAUFFAGE — ABSENCE & INHIBITION GÉOFENCING (V3 PRO)
+# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE (RÉÉCRITURE V3 PRO)
+#     CHAUFFAGE — ABSENCE & INHIBITION GÉOFENCING
+#     Régulation de stabilisation thermique en absence
 # ==========================================================
 #
 # 📌 STATUT :
-#   CONTRAT NORMATIF DE DOMAINE — STRATÉGIE THERMIQUE D’ABSENCE
+#   CONTRAT NORMATIF DE DOMAINE — STRATÉGIE THERMIQUE D'ABSENCE
+#   NATURE : réécriture intégrale (remplace la version antérieure)
 #
 # 🔒 AUTORITÉ :
 #   Ce document définit le comportement normatif du mécanisme
-#   d’**inhibition du géofencing** du sous-système Chauffage Arsenal.
+#   d'inhibition du géofencing du sous-système Chauffage Arsenal.
 #
-#   Il formalise la stratégie officielle de confort différé en absence,
-#   destinée à préserver la qualité de la reprise thermique tout en
-#   maintenant un haut niveau de sobriété énergétique.
-#
-#   Il est OPPOSABLE à toute implémentation :
-#     • helpers,
-#     • capteurs seuils,
-#     • scripts de contrôle,
-#     • lectures par la Décision Centrale.
+#   Il est OPPOSABLE à toute implémentation : helpers, capteurs de
+#   qualification, automatismes de mémoire, lectures par la
+#   Décision Centrale.
 #
 #   Subordonné à :
-#     /00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
+#     • 00_gouvernance_chauffage.md
+#     • 00_gouvernance_chauffage__amendement.md
+#     • 01_doctrine_registres.md
 #
 #   Utilisé directement par :
-#     /00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md
+#     • 30_decision_centrale.md (+ amendement)
+#
+#   Complémentaire de :
+#     • 70_autorisation_thermostat.md
+#     • 80_table_decision_canonique (+ réécriture partielle)
 #
 # ==========================================================
 
+---
 
-# ----------------------------------------------------------
-# 🎯 1. OBJET DU CONTRAT
-# ----------------------------------------------------------
+## 0. Note de révision (opposable)
 
-Ce contrat définit le comportement normatif du mécanisme
-d’**inhibition du géofencing en régime d’absence**.
+Cette version **remplace intégralement** la version antérieure de `60`. Elle
+corrige des invariants devenus faux à la lumière de la doctrine des registres
+(`01`) et de l'objectif métier réel du mécanisme.
 
-Il formalise :
+**Clauses abrogées de la version antérieure :**
 
-- l’objectif thermique réel de ce mécanisme,
-- les conditions d’activation légitimes,
-- les règles d’autorisation en absence,
-- les garde-fous de sobriété,
-- les limites strictes de ce dispositif.
+- « une seule activation par cycle d'absence » — **ABROGÉE**. C'était un
+  anti-invariant : il empêchait la réactivation légitime lors d'une longue
+  absence où la zone froide redescend après une première inhibition. La
+  régulation d'absence doit être réactivable.
+- « aucune mémoire inter-cycle » au sens absolu — **REFORMULÉE**. Le *capteur
+  de qualification* n'a aucune mémoire ; le *helper d'état* matérialise
+  l'hystérésis. La distinction de couche est désormais explicite (§4, §6).
 
-Ce mécanisme constitue une **stratégie de confort différé**,
-et non un mécanisme de sûreté bâtiment.
+**Clauses confirmées et renforcées :**
+
+- finalité = optimisation de la dynamique de reprise + sobriété ;
+- exclusion explicite de toute sémantique de sécurité (protection du bâti,
+  hors-gel) ;
+- subordination stricte à toute priorité supérieure.
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 2. FINALITÉ RÉELLE DU MÉCANISME
-# ----------------------------------------------------------
+## 1. Objet du contrat
 
-L’inhibition du géofencing ne vise PAS :
+Ce contrat définit le comportement normatif du mécanisme d'inhibition du
+géofencing en régime d'absence.
 
-- la protection du bâti,
-- la prévention du gel,
-- la sécurité matérielle,
-- la continuité de confort en absence.
+Il formalise : l'objectif thermique réel du mécanisme, son registre
+doctrinal, les rôles respectifs de la qualification thermique et de l'état
+mémorisé, la responsabilité du gating absence, les garde-fous de sobriété, et
+le statut des helpers associés.
 
-Elle vise exclusivement :
+---
 
-- empêcher qu’une zone froide ne descende trop bas,
-- préserver une inertie thermique exploitable,
-- garantir une reprise en confort **douce et suffisamment rapide**,
-- limiter les appels de puissance violents,
+## 2. Registre doctrinal et finalité
+
+> **Registre — STABILISATION THERMIQUE** (cf. `01` D4).
+> L'inhibition du géofencing est un mécanisme de **stabilisation thermique**.
+> Elle n'appartient PAS au registre sécurité système. Elle est subordonnée,
+> écrasable, et se résout par hystérésis — jamais par dominance hiérarchique.
+
+**Finalité réelle (confirmée) :**
+
+L'inhibition du géofencing vise exclusivement :
+
+- empêcher qu'une zone froide ne descende trop bas en absence ;
+- préserver une inertie thermique exploitable ;
+- garantir une reprise en confort **douce et suffisamment rapide** au retour ;
+- limiter les appels de puissance violents ;
 - éviter le pompage thermique au retour en présence.
 
-Objectif fondamental :
-
-> 🧠 **Optimiser la dynamique de reprise thermique**,  
-> tout en maximisant la sobriété pendant l’absence.
+> **Exclusion normative explicite (sécurité).**
+> L'inhibition du géofencing NE vise PAS, et ne doit JAMAIS viser :
+> la protection du bâti, la prévention du gel (hors-gel), la sécurité
+> matérielle, la continuité de confort en absence.
+>
+> Aucune sémantique de sécurité ne peut être introduite dans ce mécanisme.
+> Si un hors-gel ou une protection du bâti devenaient souhaités, ils
+> constitueraient un **mécanisme séparé, de registre sécurité système**,
+> susceptible de composer `binary_sensor.chauffage_autorise_systeme` — et en
+> aucun cas une extension de l'inhibition du géofencing. Mélanger les deux
+> registres dans le présent mécanisme constituerait une violation de D0/D1.
 
 ---
 
-# ----------------------------------------------------------
-# 🧱 3. POSITIONNEMENT ARCHITECTURAL
-# ----------------------------------------------------------
+## 3. Positionnement architectural
 
-Ce mécanisme :
+Le mécanisme :
 
-- s’applique uniquement en régime **absence**,
-- ne modifie PAS le régime de référence,
-- ne modifie PAS la hiérarchie métier,
-- ne court-circuite PAS la Décision Centrale,
+- s'applique en régime **absence** (gating garanti en aval — voir §5) ;
+- ne modifie PAS le régime de référence ;
+- ne modifie PAS la hiérarchie métier ;
+- ne court-circuite PAS la Décision Centrale ;
 - ne pilote JAMAIS directement le matériel.
 
-Il agit exclusivement sur :
+Il agit exclusivement sur l'**autorisation simulée de confort en absence**,
+via la couche d'autorisation définie dans `70`.
 
-> 🧠 **L’autorisation simulée de confort en absence**
+### Séparation avec les mécanismes d'anticipation
 
-via la couche définie dans :
-
-- `70_autorisation_thermostat.md`
-
----
-
-### Séparation avec les mécanismes d’anticipation
-
-L’inhibition du géofencing est STRICTEMENT distincte :
-
-- des mécanismes d’anticipation de retour,
-- du pré-confort retour vacances,
-- de toute stratégie temporelle prédictive.
-
-Règles cardinales :
-
-- l’inhibition du géofencing ne connaît JAMAIS les dates de retour,
-- elle ne déclenche JAMAIS une anticipation,
-- elle ne prépare JAMAIS un retour utilisateur,
-- elle ne s’active QUE par risque thermique immédiat.
-
-Le pré-confort retour vacances :
-
-- n’appartient PAS à la stratégie d’absence,
-- n’interagit PAS avec l’inhibition du géofencing,
-- ne peut jamais activer ni prolonger une inhibition.
-
-Ces deux mécanismes sont ARCHITECTURALEMENT ORTHOGONAUX
-et ne doivent produire aucun effet combiné.
+L'inhibition du géofencing est strictement distincte du pré-confort retour
+vacances et de toute stratégie temporelle prédictive. Elle ne connaît jamais
+les dates de retour, ne prépare jamais un retour utilisateur, et ne s'active
+que par risque thermique immédiat (zone froide). Ces mécanismes sont
+architecturalement orthogonaux et ne produisent aucun effet combiné (cf. §7,
+et `80` interdiction du double confort absence).
 
 ---
 
-# ----------------------------------------------------------
-# 🌡️ 4. PRINCIPE DE FONCTIONNEMENT
-# ----------------------------------------------------------
+## 4. Architecture en deux couches (qualification / état)
 
-En régime absence :
+Le mécanisme repose sur une séparation stricte de deux couches, conforme à la
+doctrine (le capteur qualifie, le helper mémorise).
 
-- le régime thermique reste `absence`,
-- la décision de référence reste `reduced`,
-- aucune recherche permanente de confort n’est autorisée.
+### 4.1 Couche de qualification thermique — `_requise`
 
-Lorsque certaines conditions thermiques sont réunies :
+`binary_sensor.chauffage_inhibition_geofencing_requise` est une
+**qualification thermique pure** :
 
-- une **autorisation simulée de présence** est produite,
-- l’autorisation cible devient temporairement `comfort`,
-- la Décision Centrale peut décider un passage contrôlé en confort.
+- il calcule, par hystérésis, si une inhibition est REQUISE physiquement,
+  selon l'écart à la consigne confort et les offsets configurés ;
+- il est en **lecture pure** : il ne mémorise rien, n'écrit aucun helper, ne
+  décide aucun mode ;
+- il ne connaît NI la présence, NI le régime, NI les blocages, NI le matériel.
 
-Ce mécanisme permet :
+> **Invariant de pureté.** Le capteur `_requise` ne lit jamais la présence ni
+> le régime. Il ne doit jamais être durci pour intégrer une condition de
+> régime : le gating absence n'est pas de sa responsabilité (§5).
 
-- une chauffe minimale préventive,
-- strictement limitée dans le temps,
-- strictement limitée en amplitude.
+### 4.2 Couche d'état mémorisé — `chauffage_inhibition_geofencing`
 
----
+`input_boolean.chauffage_inhibition_geofencing` matérialise l'**état métier**
+de l'inhibition :
 
-# ----------------------------------------------------------
-# 🧠 5. CONDITIONS D’ACTIVATION
-# ----------------------------------------------------------
+- il est piloté EXCLUSIVEMENT par l'automation de mémoire d'hystérésis, qui
+  reflète fidèlement `_requise` ;
+- il constitue la **mémoire d'hystérésis** du mécanisme ;
+- il est lu par la Décision Centrale comme un fait, jamais comme une décision.
 
-L’inhibition du géofencing peut être autorisée uniquement si :
-
-- le régime courant est **absence**,
-- aucune interdiction hiérarchique n’est active,
-- aucune aération n’est en cours ou bloquée,
-- aucune fenêtre n’est ouverte,
-- aucun poêle n’est actif,
-- le mode maison n’est PAS `Vacances`.
-
-Et surtout :
-
-- la température de la **zone la plus froide** est inférieure
-  à un seuil de confort différé configuré.
-
-Règle cardinale :
-
-> ⚠️ L’inhibition est déclenchée uniquement par un RISQUE  
-> de dégradation de la dynamique de reprise, jamais par confort.
+> **Distinction de mémoire (reformulation de l'ancienne clause).**
+> Le *capteur de qualification* n'a aucune mémoire propre. Le *helper d'état*
+> est, par nature, une mémoire d'hystérésis. « Aucune mémoire inter-cycle »
+> ne s'applique donc qu'à la qualification, jamais à l'état — qui doit
+> mémoriser pour porter l'hystérésis.
 
 ---
 
-# ----------------------------------------------------------
-# 🔁 6. EFFETS NORMATIFS
-# ----------------------------------------------------------
+## 5. Gating absence — responsabilité de la Décision Centrale
 
-Lorsque l’inhibition est active :
+> **Règle de responsabilité (opposable).**
+> Le gating « actif uniquement en absence » n'est PAS porté par le mécanisme
+> d'inhibition lui-même. Il est garanti **en aval, par la Décision Centrale**,
+> dont l'ordre d'évaluation place la présence réelle avant l'inhibition
+> géofencing.
+>
+> Conséquence : en présence réelle, l'inhibition géofencing est sans effet
+> décisionnel, car la branche présence (Niveau 3a) est évaluée et résolue
+> avant la branche inhibition (Niveau 3b). L'inhibition n'a d'effet que dans
+> le sous-espace « absence réelle, aucune priorité supérieure active ».
 
-- l’autorisation thermique simulée devient `comfort`,
-- la Décision Centrale peut décider un passage en confort,
-- le régime reste officiellement **absence**,
-- toute hiérarchie supérieure continue de s’appliquer.
+Cette délégation est **intentionnelle et opposable** :
 
-Effets interdits :
+- elle préserve la pureté du capteur `_requise` (pas de condition de régime
+  dans une qualification thermique) ;
+- elle concentre l'arbitrage de contexte dans l'unique autorité décisionnelle.
 
-- aucune continuité de confort prolongée,
-- aucune élévation durable de consigne,
-- aucune annulation du régime d’absence.
+> **Couplage explicite à surveiller.** Cette propriété dépend de l'ordre des
+> branches de la Décision Centrale. Tout futur refactor de cet ordre doit
+> préserver l'antériorité de la présence sur l'inhibition, sous peine de
+> casser silencieusement la sobriété. Un invariant CI (INV-GEO-3) verrouille
+> cette propriété.
 
 ---
 
-# ----------------------------------------------------------
-# 🛑 7. GARDE-FOUS DE SOBRIÉTÉ
-# ----------------------------------------------------------
+## 6. Hystérésis & réactivabilité
 
-Garde-fous absolus :
+Le mécanisme est **hystérésé et réactivable**.
 
-- durée strictement bornée,
-- hystérésis thermique obligatoire,
-- anti-rebond obligatoire,
-- impossibilité de cycles rapprochés.
+- l'entrée en inhibition et la sortie sont gouvernées par deux seuils
+  distincts (offsets ON / OFF), garantissant une zone morte anti-battement ;
+- le mécanisme peut se **réactiver** autant de fois que nécessaire durant une
+  même absence : si la zone froide redescend après une première inhibition et
+  sa levée, une nouvelle inhibition est légitime ;
+- aucun comptage d'activations, aucun latch par cycle d'absence.
 
-Règles :
+> **Invariant d'hystérésis.** La zone de sortie (OFF) doit être strictement
+> plus permissive que la zone d'entrée (ON) : les offsets ne se chevauchent
+> pas. Cette non-superposition est la garantie structurelle anti-battement.
 
-- une seule activation par cycle d’absence,
-- aucune oscillation autorisée,
-- retour automatique à `reduced` après stabilisation,
+---
+
+## 7. Garde-fous de sobriété
+
+- **maintien conditionnel par hystérésis thermique, sans temporisation
+  maximale implicite** : l'inhibition ne se maintient que tant que la
+  condition thermique reste vraie. La borne effective de l'inhibition est le
+  **franchissement de la zone de sortie (OFF)**, pas une durée ;
+- hystérésis thermique obligatoire (§6) ;
+- anti-rebond obligatoire (porté par la Décision Centrale) ;
+- **sortie automatique garantie par l'hystérésis** : dès que la zone froide
+  remonte dans la zone OFF (écart au-dessus du seuil de sortie), l'état revient
+  automatiquement à l'absence d'inhibition. Aucun maintien ne survit à la
+  disparition de la condition thermique ;
 - interdiction de maintien prolongé en confort.
 
-Objectifs :
+> **Note normative — absence de borne temporelle.**
+> Le mécanisme ne comporte AUCUNE durée d'inhibition maximale. Cette absence
+> est intentionnelle et conforme au runtime : la sortie est garantie par la
+> physique (remontée thermique au-dessus du seuil OFF), non par un compteur de
+> temps. Aucune promesse de « durée bornée » ne doit être lue dans ce contrat.
+>
+> Si une borne temporelle explicite devait être souhaitée un jour (p. ex.
+> durée maximale d'inhibition indépendante de la température), elle
+> constituerait un **mécanisme séparé à contractualiser**, distinct de
+> l'hystérésis thermique — et non une réinterprétation du présent mécanisme.
 
-- préserver l’inertie,
-- éviter les cycles courts,
-- maximiser la sobriété réelle.
+### Interdiction de cumul avec le pré-confort
 
----
-
-### Interdiction de cumul avec les mécanismes d’anticipation
-
-Lorsqu’une inhibition du géofencing est active ou vient de se terminer :
-
-- aucun mécanisme d’anticipation ne peut être activé,
-- aucun pré-confort ne peut être déclenché,
-- aucune autorisation automatique ne peut être cumulée.
-
-Règles cardinales :
-
-- une inhibition termine toujours par un retour strict à `reduced`,
-- aucun pré-confort ne peut être restauré après une inhibition,
-- toute anticipation ultérieure doit repasser
-  par une fenêtre temporelle légitime indépendante.
-
-Le pré-confort retour vacances ne peut :
-
-- ni prolonger une inhibition,
-- ni la renforcer,
-- ni être déclenché par sa sortie.
-
-Toute interaction constitue :
-
-- une rupture de sobriété,
-- un risque de confort implicite,
-- une dérive critique de stratégie thermique.
+L'inhibition du géofencing et le pré-confort retour vacances ne peuvent jamais
+produire un effet combiné. Aucun pré-confort ne peut prolonger, renforcer ou
+être déclenché par une inhibition (et réciproquement). Le double confort
+d'absence est interdit (cf. `80` cas interdits formellement).
 
 ---
 
-# ----------------------------------------------------------
-# 🧩 8. INDÉPENDANCE & NEUTRALITÉ
-# ----------------------------------------------------------
+## 8. Statut des helpers associés
 
-Ce mécanisme :
+### 8.1 `chauffage_inhibition_geofencing` — état normatif
 
-- ne connaît PAS la présence réelle,
-- ne déclenche PAS de retour de présence,
-- ne modifie PAS les états de géolocalisation,
-- ne produit AUCUNE décision autonome.
+État métier matérialisé, piloté exclusivement par l'automation de mémoire
+d'hystérésis (source : `_requise`). Lu par la Décision Centrale. Observable en
+diagnostic. **Normatif et opposable.**
 
-Il agit uniquement comme :
+### 8.2 `input_boolean.blocage_geofencing` — helper DÉPRÉCIÉ, non normatif
 
-> 🧠 **UN CORRECTEUR DE DYNAMIQUE THERMIQUE EN ABSENCE**
-
----
-
-# ----------------------------------------------------------
-# 🔒 9. INTERDICTIONS FORMELLES
-# ----------------------------------------------------------
-
-L’inhibition du géofencing ne doit JAMAIS :
-
-- forcer un régime présence,
-- maintenir un confort permanent en absence,
-- court-circuiter un blocage hiérarchique,
-- ignorer une interdiction système,
-- déclencher une décision directe,
-- écrire une consigne,
-- appeler directement la couche matérielle.
-
-Toute dérive constitue :
-
-- une rupture de sobriété,
-- un risque de pompage,
-- une régression architecturale majeure.
+> **Statut : DÉPRÉCIÉ — sans autorité décisionnelle.**
+>
+> `input_boolean.blocage_geofencing` est un helper **orphelin** : défini et
+> exposé en UI de réglages, mais **lu par aucune logique décisionnelle** du
+> domaine Chauffage.
+>
+> Règles cardinales :
+> - il ne porte AUCUNE autorité décisionnelle ;
+> - il ne doit JAMAIS être considéré comme preuve d'activation ou
+>   d'inhibition du géofencing ;
+> - il ne doit JAMAIS être lu par la Décision Centrale, un capteur de
+>   qualification, ou une automation de mémoire ;
+> - aucune nouvelle dépendance ne doit être créée vers ce helper.
+>
+> Son sort (suppression propre, ou réintégration comme interrupteur maître
+> d'activation de l'inhibition) relève d'un **chantier séparé** et n'est pas
+> tranché par le présent contrat. Jusqu'à ce chantier, il demeure inerte et
+> non normatif.
+>
+> Ne pas confondre avec `input_boolean.chauffage_inhibition_geofencing`
+> (§8.1, état normatif réel) ni avec tout autre helper au vocabulaire proche.
 
 ---
 
-# ----------------------------------------------------------
-# 🧱 10. INVARIANTS DU MÉCANISME
-# ----------------------------------------------------------
+## 9. Interdictions formelles
 
-Invariants absolus :
+L'inhibition du géofencing ne doit JAMAIS :
 
-- mécanisme actif uniquement en absence,
-- activation uniquement par seuil thermique froid,
-- durée bornée impérativement,
-- amplitude thermique limitée,
-- aucun impact sur la hiérarchie,
-- aucune mémoire inter-cycle.
-
-Toute violation constitue :
-
-- une perte de maîtrise thermique,
-- une dérive de confort implicite,
-- une rupture de gouvernance.
+- forcer un régime présence ;
+- maintenir un confort permanent en absence ;
+- court-circuiter une priorité supérieure (sécurité, poêle corroboré,
+  Vacances) ;
+- introduire une sémantique de sécurité (hors-gel, protection du bâti) ;
+- composer un capteur de sécurité système (violation D1) ;
+- écrire une consigne ou piloter directement le matériel ;
+- intégrer une condition de régime dans le capteur de qualification `_requise`.
 
 ---
 
-# ----------------------------------------------------------
-# 🧠 11. DÉPENDANCES CONTRACTUELLES
-# ----------------------------------------------------------
+## 10. Invariants du mécanisme (exposés CI)
 
-Ce contrat est :
-
-- subordonné à :
-  - `00_gouvernance_chauffage.md`
-
-- utilisé par :
-  - `30_decision_centrale.md`
-
-- complémentaire de :
-  - `70_autorisation_thermostat.md`
-  - `80_table_decision_canonique.md`
-
-Il gouverne directement :
-
-- `input_boolean.chauffage_inhibition_geofencing`,
-- les capteurs seuils de zone froide,
-- toute logique de confort différé en absence.
+- **INV-GEO-1** — Hystérésis cohérente : zone OFF strictement plus permissive
+  que zone ON (offsets non chevauchants).
+- **INV-GEO-2** — Subordination : l'inhibition est sans effet en présence
+  d'une priorité supérieure active (sécurité, poêle corroboré, Vacances).
+- **INV-GEO-3** — Gating absence délégué : dans la Décision Centrale, la
+  branche inhibition n'est atteignable qu'après résolution de la présence
+  réelle (présence évaluée avant inhibition).
+- **INV-GEO-4** — Réactivabilité : aucun latch « une seule activation par
+  cycle » ; aucune limitation du nombre d'inhibitions par absence.
+- **INV-GEO-5** — Pureté de qualification : `_requise` ne lit ni présence ni
+  régime ; il ne mémorise rien.
+- **INV-GEO-6** — Pas de cumul avec le pré-confort (double confort absence
+  interdit).
+- **INV-GEO-7** — `blocage_geofencing` n'est lu par aucune logique
+  décisionnelle ; aucune dépendance ne pointe vers lui.
+- **INV-GEO-8** — Sortie par hystérésis pure : la chaîne d'inhibition ne
+  comporte aucun timer, delay ou durée maximale ; la sortie OFF dépend
+  exclusivement du franchissement du seuil thermique de sortie.
 
 ---
 
-# ----------------------------------------------------------
-# 📌 12. PORTÉE & STABILITÉ
-# ----------------------------------------------------------
+## 11. Dépendances contractuelles
 
-Ce contrat est :
+**Subordonné à :** `00_gouvernance_chauffage.md` ·
+`00_gouvernance_chauffage__amendement.md` · `01_doctrine_registres.md`
 
-- stratégique dans l’architecture Chauffage,
-- stable long terme,
-- modifié uniquement lors d’évolutions majeures,
-- versionné explicitement,
-- opposable à toute implémentation.
+**Utilisé par :** `30_decision_centrale.md` (+ amendement)
 
-Il constitue la **stratégie officielle anti-pompage et confort différé  
-du Chauffage Arsenal V3 PRO**.
+**Complémentaire de :** `70_autorisation_thermostat.md` ·
+`80_table_decision_canonique` (+ réécriture partielle)
+
+**Gouverne directement :**
+- `binary_sensor.chauffage_inhibition_geofencing_requise` (qualification) ;
+- `input_boolean.chauffage_inhibition_geofencing` (état) ;
+- l'automation de mémoire d'hystérésis associée ;
+- les capteurs de seuils de zone froide.
+
+**Déclare déprécié (non normatif) :** `input_boolean.blocage_geofencing`.
+
+---
+
+## 12. Portée et stabilité
+
+Ce contrat est stratégique dans l'architecture Chauffage, stable long terme,
+modifié uniquement lors d'évolutions majeures, versionné explicitement, et
+opposable à toute implémentation.
+
+Il constitue la **stratégie officielle anti-pompage et de confort différé en
+absence du Chauffage Arsenal V3 PRO**, de registre **stabilisation thermique**.
 
 # ==========================================================
