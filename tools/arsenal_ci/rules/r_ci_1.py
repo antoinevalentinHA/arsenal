@@ -18,16 +18,16 @@ from typing import List
 
 from ..graph.edge import EdgeKind
 from ..graph.graph import Graph
-from ..registers.classification import Layer
+from ..registers.classification import Couche, Registre
 from ..registers.registry import Registry
 from ..report.violation import Violation
 from .policy import Policy, Severity
 
 RULE_ID = "R-CI-1"
 
-# Layers whose controls must never compose an authorisation state.
-_GUARDING_LAYERS = frozenset(
-    {Layer.SECURITE, Layer.OVERRIDE, Layer.STABILISATION}
+# Couches whose controls must never compose an authorisation state.
+_GUARDING_REGISTRES = frozenset(
+    {Registre.SECURITE, Registre.OVERRIDE, Registre.STABILISATION}
 )
 
 
@@ -35,17 +35,17 @@ def check(graph: Graph, registry: Registry, policy: Policy) -> List[Violation]:
     violations: List[Violation] = []
     for edge in graph.edges_of_kind(EdgeKind.COMPOSES):
         # Source must be an authorisation entity for R-CI-1 to apply.
-        if registry.layer_of(edge.source) is not Layer.AUTORISATION:
+        if registry.couche_of(edge.source) is not Couche.AUTORISATION:
             continue
 
-        target_layer = registry.layer_of(edge.target)
+        target_registre = registry.registre_of(edge.target)
 
-        if target_layer in _GUARDING_LAYERS:
+        if target_registre in _GUARDING_REGISTRES:
             violations.append(
                 Violation(
                     rule=RULE_ID,
                     message=(
-                        f"'{edge.target}' ({target_layer.value}) compose l'etat "
+                        f"'{edge.target}' ({target_registre.value}) compose l'etat "
                         f"de l'autorisation '{edge.source}' (interdit : doit etre "
                         f"uniquement observe)."
                     ),
@@ -56,7 +56,7 @@ def check(graph: Graph, registry: Registry, policy: Policy) -> List[Violation]:
                     severity=Severity.BLOCKING,
                 )
             )
-        elif target_layer is None and not registry.is_known(edge.target):
+        elif target_registre is None and not registry.is_known(edge.target):
             # Target unknown to registry: configurable severity (not META-2).
             sev = policy.unknown_entity_severity
             if sev is not Severity.IGNORE:
