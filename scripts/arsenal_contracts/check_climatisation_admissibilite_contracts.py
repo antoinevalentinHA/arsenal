@@ -701,6 +701,96 @@ def test_raison_decision_consomme_admissibles():
             print(f"  ✔ clim_raison_decision : '{ancien}' (obsolète) absent")
 
 
+def test_raison_decision_blocages_contextualises_heat():
+    """
+    Règle métier (contextualisation par le mode) :
+    Les blocages chauffage-only (blocage_clim_poele,
+    chauffage_blocage_aeration) ne doivent PAS être transversaux dans
+    clim_raison_decision. Ils doivent être gardés par un contexte HEAT
+    (variable heat_contexte = target == 'heat' OR aucun cool/dry admissible).
+
+    Vérification structurelle :
+      - présence de la lecture de sensor.clim_target_mode
+      - présence d'une garde liant blocage_clim_poele à un contexte HEAT
+      - présence d'une garde liant chauffage_blocage_aeration à un contexte HEAT
+      - les deux blocages chauffage ne doivent pas apparaître AVANT
+        la garde de contexte (détection d'un usage transversal résiduel)
+    """
+    # Racine template sensors — convention 12_template_sensors (scan global)
+    folder = ROOT / "12_template_sensors"
+    if not folder.is_dir():
+        fail(f"Dossier absent : {folder.relative_to(ROOT)}")
+        return
+
+    f = find_template_sensor_file("clim_raison_decision", folder)
+    if f is None:
+        fail("Template sensor 'clim_raison_decision' non trouvé")
+        return
+
+    content = read(f)
+
+    # 1. Doit lire clim_target_mode (contextualisation)
+    if "sensor.clim_target_mode" not in content and "clim_target_mode" not in content:
+        fail(
+            "clim_raison_decision : ne lit pas sensor.clim_target_mode "
+            "(contextualisation par le mode absente — règle métier). "
+            f"Fichier : {f.relative_to(ROOT)}"
+        )
+    else:
+        print("  ✔ clim_raison_decision lit clim_target_mode (contexte)")
+
+    # 2. blocage_clim_poele doit être gardé par un contexte HEAT.
+    #    On exige que la ligne / le bloc contenant blocage_clim_poele
+    #    contienne aussi une référence au contexte (heat_contexte ou
+    #    target == 'heat').
+    pat_poele_garde = re.compile(
+        r"blocage_clim_poele.{0,200}(heat_contexte|target\s*==\s*'heat'|target\s*==\s*\"heat\")",
+        re.DOTALL,
+    )
+    if not pat_poele_garde.search(content):
+        fail(
+            "clim_raison_decision : 'blocage_clim_poele' n'est pas gardé "
+            "par un contexte HEAT (heat_contexte / target == 'heat'). "
+            "Risque de blocage transversal — règle métier violée. "
+            f"Fichier : {f.relative_to(ROOT)}"
+        )
+    else:
+        print("  ✔ clim_raison_decision : blocage_poele gardé par contexte HEAT")
+
+    # 3. chauffage_blocage_aeration doit être gardé par un contexte HEAT.
+    pat_aeration_garde = re.compile(
+        r"chauffage_blocage_aeration.{0,200}(heat_contexte|target\s*==\s*'heat'|target\s*==\s*\"heat\")",
+        re.DOTALL,
+    )
+    if not pat_aeration_garde.search(content):
+        fail(
+            "clim_raison_decision : 'chauffage_blocage_aeration' n'est pas "
+            "gardé par un contexte HEAT (heat_contexte / target == 'heat'). "
+            "Risque de blocage transversal — règle métier violée. "
+            f"Fichier : {f.relative_to(ROOT)}"
+        )
+    else:
+        print("  ✔ clim_raison_decision : blocage_aeration gardé par contexte HEAT")
+
+    # 4. Cohérence du contexte : si heat_contexte est utilisé, il doit
+    #    être défini en fonction des admissibles cool/dry (sinon la garde
+    #    est cosmétique).
+    if "heat_contexte" in content:
+        pat_def = re.compile(
+            r"heat_contexte\s*=.*?(cool_adm|besoin_clim_cool_admissible).*?"
+            r"(dry_adm|besoin_clim_dry_admissible)",
+            re.DOTALL,
+        )
+        if not pat_def.search(content):
+            fail(
+                "clim_raison_decision : 'heat_contexte' défini sans référence "
+                "aux admissibles cool/dry (garde potentiellement incomplète). "
+                f"Fichier : {f.relative_to(ROOT)}"
+            )
+        else:
+            print("  ✔ clim_raison_decision : heat_contexte défini sur cool/dry admissibles")
+
+
 # ---------------------------------------------------------------------------
 # Tests — UI (scope strict : cartes touchées par le chantier)
 # ---------------------------------------------------------------------------
@@ -818,6 +908,7 @@ TESTS = [
     # Consommation runtime
     test_target_mode_consomme_admissibles,
     test_raison_decision_consomme_admissibles,
+    test_raison_decision_blocages_contextualises_heat,
     # UI (chantier)
     test_ui_decision_synthetique_lit_raison_decision,
     test_ui_carte_clim_decision_nouvelles_valeurs,
@@ -892,8 +983,9 @@ if __name__ == "__main__":
 #      explicite. Feront chacun l'objet d'un script dédié quand
 #      les contrats correspondants seront stabilisés.
 #
-# T5 — Vérification que sensor.clim_target_mode et
-#      sensor.clim_raison_decision sont bien écoutés par les
-#      automations d'exécution (script.clim_execution).
+# T5 — Vérification que sensor.clim_target_mode est bien consommé
+#      par la couche Exécution (script.clim_execution).
 #      Exclu : touche à la couche Exécution, hors périmètre
-#      admissibilité.
+#      admissibilité. Note : clim_raison_decision est désormais
+#      confirmé comme capteur explicatif/UI uniquement (aucun
+#      consommateur runtime), il sort donc de cette piste.

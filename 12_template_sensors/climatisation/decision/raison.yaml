@@ -5,8 +5,9 @@
 #   Clim raison decision
 #
 # 🎯 Rôle :
-#   Expliquer clairement la raison principale qui motive
-#   l'état actuel ou la non-activation de la climatisation.
+#   Expliquer la raison principale qui motive la DÉCISION COURANTE
+#   de la climatisation. Répond à : « pourquoi la décision vaut-elle
+#   ce qu'elle vaut ? » — pas à « quel est l'état système brut ? ».
 #
 # 🧱 Principe Arsenal :
 #   - Capteur STRICTEMENT explicatif
@@ -15,14 +16,34 @@
 #   - Aucune modification d'état
 #
 # 🎯 Hiérarchie des causes (priorité décroissante) :
-#   1. Blocages transversaux
-#   2. Blocages fonctionnels clim
-#   3. Mode admissible retenu
+#   1. Blocages chauffage-only, UNIQUEMENT en contexte HEAT
+#      (blocage_poele, blocage_aeration)
+#   2. Blocages transversaux (blocage_horaire, fenetre_ouverte)
+#   3. Mode admissible retenu (refroidissement, deshumidification,
+#      soutien_chauffage)
 #   4. Absence de demande admissible
+#
+# 🧭 Contextualisation par le mode :
+#   Les blocages spécifiques au chauffage (poele, aeration) ne peuvent
+#   expliquer la décision QUE lorsque le contexte est HEAT :
+#     - soit target_mode == 'heat'
+#     - soit aucune demande COOL/DRY n'est prioritaire
+#   Ainsi, un blocage chauffage ne masque jamais un refroidissement
+#   ou une déshumidification légitimes.
+#
+#   blocage_poele     : le poêle chauffe → appoint HEAT inutile
+#   blocage_aeration  : anti-redémarrage post-aération (delta T°),
+#                       partagé chauffage + clim mode heat
+#
+# 🔗 Dépendance :
+#   - sensor.clim_target_mode (consomme les admissibles ;
+#     aucune boucle car clim_target_mode ne lit pas cette raison)
 #
 # ⚠️ IMPORTANT :
 #   - Ce capteur consomme UNIQUEMENT des vérités métier
 #   - Il reflète la décision réelle, pas les seuils bruts
+#   - blocage_horaire et fenetre_ouverte sont transversaux
+#     (toute la climatisation, pas seulement HEAT)
 # ==========================================================
 
 - sensor:
@@ -30,19 +51,25 @@
       unique_id: clim_raison_decision
       icon: mdi:comment-text-outline
       state: >
-        {% if is_state('input_boolean.blocage_clim_poele', 'on') %}
+        {% set target   = states('sensor.clim_target_mode') %}
+        {% set cool_adm  = is_state('binary_sensor.besoin_clim_cool_admissible', 'on') %}
+        {% set dry_adm   = is_state('binary_sensor.besoin_clim_dry_admissible', 'on') %}
+        {% set heat_adm  = is_state('binary_sensor.besoin_clim_heat_admissible', 'on') %}
+        {% set heat_contexte = (target == 'heat') or (not cool_adm and not dry_adm) %}
+
+        {% if is_state('input_boolean.blocage_clim_poele', 'on') and heat_contexte %}
           blocage_poele
-        {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+        {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') and heat_contexte %}
           blocage_aeration
         {% elif is_state('binary_sensor.clim_blocage_horaire_reel', 'on') %}
           blocage_horaire
         {% elif is_state('binary_sensor.fenetre_ouverte_maison', 'on') %}
           fenetre_ouverte
-        {% elif is_state('binary_sensor.besoin_clim_cool_admissible', 'on') %}
+        {% elif cool_adm %}
           refroidissement
-        {% elif is_state('binary_sensor.besoin_clim_dry_admissible', 'on') %}
+        {% elif dry_adm %}
           deshumidification
-        {% elif is_state('binary_sensor.besoin_clim_heat_admissible', 'on') %}
+        {% elif heat_adm %}
           soutien_chauffage
         {% else %}
           aucune_demande_admissible
