@@ -7,7 +7,7 @@
 #     TEMPLATE UI METIER
 #
 # 🎯 ROLE
-#     Indique si le verrou chauffage post-aération est actif.
+#     Indique si le blocage chauffage post-aération est actif.
 #     Tuile de diagnostic simple — lecture directe du booléen,
 #     sans contexte timer ni raison.
 #
@@ -18,7 +18,7 @@
 #
 # 🎨 SEMANTIQUE
 #     - state = on  -> 🔴 rouge "Actif"   (blocage chauffage en cours)
-#     - state = off -> 🟢 vert  "Inactif" (aucun verrou)
+#     - state = off -> 🟢 vert  "Inactif" (aucun blocage)
 #
 # 🔗 DEPENDANCES
 #     - entity : input_boolean.chauffage_blocage_aeration

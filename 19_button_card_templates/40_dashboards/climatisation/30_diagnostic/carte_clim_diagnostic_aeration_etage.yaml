@@ -1,62 +1,67 @@
 # ==========================================================
 # 🧠 ARSENAL — TEMPLATE UI METIER
-#     Climatisation — Diagnostic aération étage
+#     Climatisation — Diagnostic blocage aération étage
 # ==========================================================
 #
 # 📌 STATUT
 #     TEMPLATE UI METIER
 #
 # 🎯 ROLE
-#     Indique si une aération naturelle est préférable à l'étage,
-#     ce qui implique un blocage du mode Dry climatisation.
+#     Indique si le blocage climatisation lié à l'aération
+#     préférable de l'étage est réellement actif.
 #     Diagnostic pur — aucune interaction.
 #
 # 🧱 NATURE
 #     - Template button-card
-#     - Spécialisation de socle_action_label_compact
+#     - Spécialisation de socle_status_label_72
 #     - UI uniquement (aucune décision)
 #
 # 🎨 SEMANTIQUE
-#     - state = off -> 🟢 vert  "Pas d'aération recommandée" (clim Dry autorisée)
-#     - state = on  -> ⚪ gris  "Aération préférable (Dry bloqué)"
+#     - state = on  -> 🔴 rouge "Blocage actif"
+#     - state = off -> 🟢 vert  "Aucun blocage"
 #
 # 🔗 DEPENDANCES
-#     - entity : binary_sensor.aeration_preferable_etage
+#     - entity : binary_sensor.clim_blocage_aeration_etage_reel
 #
 # ⚠️ CONTRAINTES
-#     - Sémantique inversée : ON = état dégradé (gris), OFF = nominal (vert)
-#     - Pas de rouge — le blocage Dry est une contrainte de confort, pas une alerte
-#     - Aucune action définie malgré l'héritage de socle_action_label_compact
+#     - Lit le blocage réel, pas la recommandation brute d'aération
+#     - Le blocage n'est actif que si la garde opérateur est armée
+#       ET si l'aération étage est préférable
+#     - Impacte COOL et DRY
+#     - Aucune action définie
 #
 # 🧩 USAGE
 #     type: custom:button-card
 #     template: carte_clim_diagnostic_aeration_etage
-#     entity: binary_sensor.aeration_preferable_etage
+#     entity: binary_sensor.clim_blocage_aeration_etage_reel
 #
 # ==========================================================
 
 carte_clim_diagnostic_aeration_etage:
-  template: socle_action_label_compact
+  template: socle_status_label_72
 
-  entity: binary_sensor.aeration_preferable_etage
+  entity: binary_sensor.clim_blocage_aeration_etage_reel
 
   show_state: false
   show_name: true
   show_label: true
+  show_icon: true
   color_type: card
+
+  icon: mdi:window-open-variant
 
   label: |
     [[[
-      return entity.state === "off"
-        ? "Pas d’aération recommandée"
-        : "Aération préférable (Dry bloqué)";
+      return entity.state === "on"
+        ? "Blocage actif"
+        : "Aucun blocage";
     ]]]
 
   styles:
     card:
       - background-color: |
           [[[
-            return entity.state === "off"
-              ? "rgba(76, 175, 80, 0.2)"
-              : "rgba(158, 158, 158, 0.2)";
+            return entity.state === "on"
+              ? "rgba(244, 67, 54, 0.2)"
+              : "rgba(76, 175, 80, 0.2)";
           ]]]
