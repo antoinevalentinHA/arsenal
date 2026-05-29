@@ -83,6 +83,7 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
+          set +e   # GitHub lance 'shell: bash' avec -e ; on gere les exit codes a la main.
 
           REGISTRY="00_documentation_arsenal/contrats/chauffage/ci/registres_entites.yaml"
 
@@ -170,6 +171,7 @@ jobs:
         shell: bash
         run: |
           set -uo pipefail
+          set +e   # GitHub lance 'shell: bash' avec -e ; on gere les exit codes a la main.
 
           mkdir -p ci_reports
 
