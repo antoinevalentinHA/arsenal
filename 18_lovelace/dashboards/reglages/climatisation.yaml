@@ -243,4 +243,4 @@ views:
 
           - type: tile
             entity: input_boolean.clim_blocage_aeration_etage_actif
-            name: Aération étage
+            name: Interdire si aération préférable
