@@ -1217,6 +1217,20 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Raison de décision clim : `sensor.clim_raison_decision` contextualise les blocages chauffage (`blocage_poele`, `blocage_aeration`) au seul contexte HEAT via le calcul `heat_contexte`, `blocage_horaire` et `fenetre_ouverte` restant transversaux.
 - Historisation : intégration du changelog `v15_7_3.md`.
 
+---
+
+## 🧠 ARSENAL HA — v15.8.1 — STABLE — 2026-05-29
+**Tags :** climatisation, blocages, aeration, cool, dry, diagnostics, ui, contrats, normalisation
+
+**Signal net :**
+- Climatisation : ajout du helper `input_boolean.clim_blocage_aeration_etage_actif` et du capteur `binary_sensor.clim_blocage_aeration_etage_reel` afin de dissocier la recommandation d’aération de l’application effective du blocage climatisation.
+- Autorisations COOL / DRY : remplacement de la dépendance directe à `binary_sensor.aeration_preferable_etage` par `binary_sensor.clim_blocage_aeration_etage_reel`.
+- Réglages climatisation : ajout d’un paramètre utilisateur permettant d’activer ou désactiver le blocage automatique lié à l’aération de l’étage.
+- Diagnostics UI : réécriture de la carte d’aération étage pour afficher l’état réel du blocage climatisation et non plus la simple recommandation d’aération.
+- Contrats climatisation : ajout de `06_doctrine_blocages.md`, renumérotation des documents suivants et mise à jour de l’index documentaire.
+- Chauffage UI : corrections de structure YAML et d’indentation sur plusieurs templates `button-card` sans changement fonctionnel.
+- Dépôt : normalisation des fins de ligne et harmonisation éditoriale sur plus de 1000 fichiers du patrimoine sans modification de logique métier.
+
 ==================================================
 FIN INDEX
 ==================================================
