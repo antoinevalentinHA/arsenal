@@ -29,16 +29,18 @@ class Axiome:
 
 
 # Axiome D2 : blocage_aeration='on'  =>  autorise_systeme!='on'.
-# Un blocage d'aeration retire systematiquement l'autorisation systeme.
-# Source : autorisation.yaml (composition de autorise_systeme). RE-DECLARE ici,
-# non lu depuis le runtime.
+# Cette implication etait la composition de autorise_systeme AVANT CH-2.
+# Depuis CH-2 (Option A, autorise constant 'on'), elle n'est PLUS vraie du
+# runtime : elle ne subsiste que comme PREMISSE de la fixture gelee
+# d2_reason_pre_correction.yaml (controle positif test_lot_2_3). RE-DECLARE
+# ici, non lu depuis le runtime.
 _BLOCAGE = AtomeEtat("input_boolean.chauffage_blocage_aeration", "on")
 _AUTORISE = AtomeEtat("binary_sensor.chauffage_autorise_systeme", "on")
 
 AX_D2 = Axiome(
     identifiant="AX-D2-BLOCAGE-AUTORISE",
     formule=Ou((Non(_BLOCAGE), Non(_AUTORISE))),
-    provenance="autorisation.yaml : composition de autorise_systeme",
+    provenance="prémisse de la fixture gelée d2_reason_pre_correction.yaml (ex-composition de autorise_systeme, antérieure à CH-2)",
 )
 
 # Jeu d'axiomes de l'instance D2 du moteur general.

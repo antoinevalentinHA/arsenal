@@ -4,7 +4,8 @@ Instance CH-1 du verdict etage-2 : applique au RUNTIME les deux regles de la
 region decision, agrege en un report.result.Result, et renvoie un exit code
 0/1/2 identique a la CLI etage-1.
 
-  - R-COV-1 (couverture) : runtime decision_centrale.yaml:reason + AXIOMES_D2 ;
+  - R-COV-1 (couverture) : runtime decision_centrale.yaml:reason, SANS axiome
+    (A=()) depuis CH-2 — couverture purement structurelle ;
   - R-MIRROR-1 (synchronie) : runtime cerveau <-> miroir.
 
 Source unique de localisation cerveau/miroir : r_mirror_1 (CERVEAU_FICHIER,
@@ -26,7 +27,6 @@ from ..report.result import ExecutionError, Result, summarise
 from ..report.violation import Violation
 from ..rules.policy import Severity
 from . import r_cov_1, r_mirror_1
-from .axiomes import AXIOMES_D2
 from .r_mirror_1 import CERVEAU_CLE, CERVEAU_FICHIER
 
 # Ordre deterministe, aligne sur l'orchestrateur etage-1.
@@ -51,7 +51,7 @@ def agreger(violations: List[Violation]) -> Result:
 def _collecter() -> List[Violation]:
     """Applique les deux regles etage-2 au runtime. Peut lever ExecutionError."""
     violations: List[Violation] = list(
-        r_cov_1.analyser_fichier(CERVEAU_FICHIER, CERVEAU_CLE, AXIOMES_D2)
+        r_cov_1.analyser_fichier(CERVEAU_FICHIER, CERVEAU_CLE, ())
     )
     violations += r_mirror_1.comparer_runtime()
     return violations

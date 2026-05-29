@@ -4,7 +4,7 @@ Ce lot ne re-teste pas les comportements (deja couverts par 1.x et 2.0-2.6).
 Il pose les invariants GLOBAUX de cloture qu'aucun lot isole n'affirme :
 
   G1 — isolation etage-1 / etage-2 (orchestrator.RULES intact) ;
-  G2 — snapshot de cloture de l'etat-final live (TRANSITOIRE, voir ci-dessous) ;
+  G2 — non-regression post-CH-2 : zero R-COV-1 sur le runtime (voir ci-dessous) ;
   G3 — surface etage-2 complete et importable ;
   G4 — verrou de source unique de localisation (invariant T5) ;
   G5 — bornage des fichiers (etage-2 confine sous decision/).
@@ -37,21 +37,22 @@ def test_g1_isolation_etages():
 
 # ------------------------------------------------- G2 : snapshot de cloture
 #
-# G2 EST VOLONTAIREMENT TRANSITOIRE. Ce n'est PAS un invariant durable du
-# systeme : c'est un snapshot de cloture CH-1, destine a etre remplace lorsque
-# CH-2 corrigera D2.
+# CH-1 laissait D2 presente : G2 affirmait alors 1 violation R-COV-1. CH-2 a
+# corrige D2 (retrait N1 dans les cascades + verdict runtime en A=()). G2 est
+# re-fige ici en controle NEGATIF strict : ZERO violation R-COV-1 sur le
+# runtime corrige.
 #
-# Son echec futur peut etre le signe ATTENDU du franchissement CH-1 -> CH-2.
-# Triage : echec => soit regression de la config, soit CH-2 a corrige D2
-# (mettre a jour ce snapshot / clore CH-1 -> CH-2). PAS un defaut d'outil.
+# Triage : un retour de R-COV-1 > 0 => regression REELLE du domaine (la
+# consequence redevenue dominante), JAMAIS un defaut d'outil ; ne pas
+# "re-snapshoter" pour le faire taire. Le controle POSITIF (la pathologie D2
+# doit rester detectable) demeure test_lot_2_3 sur la fixture gelee.
 
 def test_g2_snapshot_cloture_ch1():
     r = cli_decision.executer_ch1()
     assert r.execution_error is None
-    # R-COV-1 : D2 encore presente (non corrigee en CH-1).
+    # R-COV-1 : D2 corrigee en CH-2 -> absence stricte sur le runtime.
     cov = [v for v in r.violations if v.rule == "R-COV-1"]
-    assert len(cov) == 1
-    assert cov[0].source == "blocage_aeration_en_cours"
+    assert len(cov) == 0
     # R-MIRROR-1 : cerveau <-> miroir synchrones.
     assert [v for v in r.violations if v.rule == "R-MIRROR-1"] == []
 

@@ -79,7 +79,7 @@ Impose `comfort`. Écrase toute logique métier inférieure, sans contourner les
 
 `binary_sensor.chauffage_autorise_systeme`
 
-Impose `reduced`. Stop hiérarchique — aucune autre cause évaluée.
+**Catégorie réservée sans cause active depuis CH-2 (désintrication D2, Option A).** Le capteur est un hook réservé, constant `on` : aucune interdiction de sécurité système n'est actuellement composée, donc cette branche n'est pas évaluable et la raison `chauffage_non_autorise` n'est plus émise. La sémantique reste posée pour une future cause Niveau 1 : si elle existe, elle imposera `reduced` en stop hiérarchique (aucune autre cause évaluée). Le blocage post-aération relève du Niveau 2 (`blocage_aeration_en_cours`), jamais de ce niveau.
 
 ### Niveau 2 — Contextes majeurs
 
@@ -97,7 +97,7 @@ Valeurs possibles : `comfort`, `neutre`, `reduced`.
 
 La présence n'est jamais une décision — elle délègue. L'autorisation `neutre` produit une abstention stricte.
 
-**3b — Inhibition géofencing :** en absence de présence réelle, `input_boolean.chauffage_inhibition_geofencing` peut imposer `comfort` comme protection thermique. Toute interdiction de niveau 1 ou 2 l'écrase immédiatement.
+**3b — Inhibition géofencing :** en absence de présence réelle, `input_boolean.chauffage_inhibition_geofencing` peut imposer `comfort` comme protection thermique (raison `stabilisation_absence`). Toute interdiction de niveau 1 ou 2 l'écrase immédiatement.
 
 **3c — Défaut :** `reduced`.
 
@@ -190,7 +190,7 @@ La raison est calculée localement et transmise à `chauffage_appliquer_consigne
 | Contexte | Raison |
 |----------|--------|
 | Override opérateur | `confort_force` |
-| Système non autorisé | `chauffage_non_autorise` |
+| Système non autorisé (catégorie réservée — non émise depuis CH-2) | `chauffage_non_autorise` |
 | Aération en cours confirmée | `aeration_en_cours` |
 | Blocage aération actif | `blocage_aeration_en_cours` |
 | Fenêtre ouverte (avec délai) | `fenetre_ouverte_maison` |
@@ -200,7 +200,7 @@ La raison est calculée localement et transmise à `chauffage_appliquer_consigne
 | Présence + cible = comfort | `besoin_thermique` |
 | Présence + cible = neutre | `presence_on` |
 | Présence + cible = reduced | `confort_suffisant` |
-| Inhibition géofencing | `absence_protection_thermique` |
+| Inhibition géofencing | `stabilisation_absence` |
 | Absence (défaut) | `absence` |
 
 ---

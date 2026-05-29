@@ -198,9 +198,6 @@ chauffage_decision_centrale:
           {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
             comfort
 
-          {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
-            reduced
-
           {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
                  and is_state('input_boolean.aeration_confirmee', 'on') %}
             reduced
@@ -242,9 +239,6 @@ chauffage_decision_centrale:
         reason: >
           {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
             confort_force
-
-          {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
-            chauffage_non_autorise
 
           {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
                  and is_state('input_boolean.aeration_confirmee', 'on') %}

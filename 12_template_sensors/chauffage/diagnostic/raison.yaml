@@ -75,12 +75,6 @@
           confort_force
 
         {# ======================================================
-           🛑 NIVEAU 1 — INTERDICTIONS SYSTÈME
-           ====================================================== #}
-        {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
-          chauffage_non_autorise
-
-        {# ======================================================
            🧠 NIVEAU 2 — CONTEXTES MAJEURS
            ====================================================== #}
         {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')

@@ -9,9 +9,9 @@ Ce lot ne teste NI R-COV-1 NI R-MIRROR-1. Les cas fail-closed s'appuient sur des
 cascades SYNTHETIQUES autonomes ; les tests de capture lisent le runtime en
 SEULE LECTURE (mission meme du normaliseur), sans le modifier.
 
-Note : les assertions de structure decrivent le runtime ACTUEL (pre-CH-2) ;
-elles seront revisitees quand CH-2 corrigera la cascade. La fixture canonique
-D2 (T2) figera, elle, l'etat pre-correction de facon permanente.
+Note : les assertions de structure decrivent le runtime corrige (post-CH-2,
+branche N1 retiree). La fixture canonique D2 (T2) fige, elle, l'etat
+pre-correction de facon permanente (controle positif test_lot_2_3).
 """
 from pathlib import Path
 
@@ -91,59 +91,67 @@ def test_provenance_renseignee():
 def test_capture_fidele_cerveau():
     c = normaliser_fichier(CERVEAU, "reason")
     b = c.branches
-    assert len(b) == 10
+    assert len(b) == 9
 
     assert b[0].garde == AtomeEtat("input_boolean.mode_confort_chauffage", "on")
     assert b[0].issue == Emission("confort_force")
 
-    # Niveau 1 : negation, garde trop large (origine de D2)
-    assert b[1].garde == Non(
-        AtomeEtat("binary_sensor.chauffage_autorise_systeme", "on")
-    )
-    assert b[1].issue == Emission("chauffage_non_autorise")
+    # 2a : conjonction (le Niveau 1 / N1 a ete retire en CH-2)
+    assert isinstance(b[1].garde, Et)
+    assert b[1].issue == Emission("aeration_en_cours")
 
-    # 2a : conjonction
-    assert isinstance(b[2].garde, Et)
-    assert b[2].issue == Emission("aeration_en_cours")
+    # 2b : blocage post-aeration, desormais atteignable (D2 corrigee)
+    assert b[2].garde == AtomeEtat("input_boolean.chauffage_blocage_aeration", "on")
+    assert b[2].issue == Emission("blocage_aeration_en_cours")
 
-    # 2b : la branche morte de D2
-    assert b[3].garde == AtomeEtat("input_boolean.chauffage_blocage_aeration", "on")
-    assert b[3].issue == Emission("blocage_aeration_en_cours")
-
-    assert b[4].issue == Emission("fenetre_ouverte_maison")
+    assert b[3].issue == Emission("fenetre_ouverte_maison")
 
     # Vacances : sous-cascade
-    assert isinstance(b[5].issue, SousCascade)
+    assert isinstance(b[4].issue, SousCascade)
 
-    assert b[6].issue == Emission("poele_actif")
+    assert b[5].issue == Emission("poele_actif")
 
     # Presence : liaison cible + sous-cascade
-    assert isinstance(b[7].issue, SousCascade)
-    assert len(b[7].liaisons) == 1
-    assert b[7].liaisons[0].variable == "cible"
-    assert b[7].liaisons[0].source_entite == "sensor.chauffage_autorisation_cible"
+    assert isinstance(b[6].issue, SousCascade)
+    assert len(b[6].liaisons) == 1
+    assert b[6].liaisons[0].variable == "cible"
+    assert b[6].liaisons[0].source_entite == "sensor.chauffage_autorisation_cible"
 
-    assert b[8].issue == Emission("stabilisation_absence")
+    assert b[7].issue == Emission("stabilisation_absence")
 
     # fallback
-    assert isinstance(b[9].garde, Else)
-    assert b[9].issue == Emission("absence")
+    assert isinstance(b[8].garde, Else)
+    assert b[8].issue == Emission("absence")
 
 
 def test_negation_non_repliee_en_off():
-    # La negation reste explicite : pas de connaissance de domaine injectee.
-    c = normaliser_fichier(CERVEAU, "reason")
-    g = c.branches[1].garde
+    # La negation reste explicite (pas repliee en 'off') : propriete du
+    # NORMALISEUR, verifiee sur une cascade synthetique depuis que CH-2 a
+    # retire la branche N1 du cerveau vivant.
+    y = _yaml_reason("{% if not is_state('x.a','on') %}\nr\n{% endif %}")
+    c = normaliser_texte(y, "reason", "t")
+    g = c.branches[0].garde
     assert isinstance(g, Non)
-    assert g.operande == AtomeEtat("binary_sensor.chauffage_autorise_systeme", "on")
+    assert g.operande == AtomeEtat("x.a", "on")
 
 
 # --------------------------------------- invariant verrouille : atomes distincts
 
 def test_atomes_autorise_et_blocage_distincts():
-    c = normaliser_fichier(CERVEAU, "reason")
-    cle_autorise = c.branches[1].garde.cle()   # Non(etat(autorise_systeme=on))
-    cle_blocage = c.branches[3].garde.cle()     # etat(blocage_aeration=on)
+    # Invariant verrouille du NORMALISEUR : deux atomes distincts ne fusionnent
+    # jamais. Verifie sur cascade synthetique — autorise_systeme n'apparait plus
+    # dans le cerveau vivant depuis CH-2 ; la pathologie historique reste figee
+    # dans la fixture (controle positif test_lot_2_3).
+    y = _yaml_reason(
+        "{% if not is_state('binary_sensor.chauffage_autorise_systeme','on') %}\n"
+        "r1\n"
+        "{% elif is_state('input_boolean.chauffage_blocage_aeration','on') %}\n"
+        "r2\n"
+        "{% endif %}"
+    )
+    c = normaliser_texte(y, "reason", "t")
+    cle_autorise = c.branches[0].garde.cle()   # Non(etat(autorise_systeme=on))
+    cle_blocage = c.branches[1].garde.cle()     # etat(blocage_aeration=on)
     assert cle_autorise != cle_blocage
     # Aucune fusion : ni l'un n'apparait dans la cle de l'autre.
     assert "chauffage_autorise_systeme" not in cle_blocage

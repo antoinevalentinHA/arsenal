@@ -1,0 +1,243 @@
+diff --git a/00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md b/00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md
+index f8dc68c..3c117f6 100644
+--- a/00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md
++++ b/00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md
+@@ -79,7 +79,7 @@ Impose `comfort`. Écrase toute logique métier inférieure, sans contourner les
+ 
+ `binary_sensor.chauffage_autorise_systeme`
+ 
+-Impose `reduced`. Stop hiérarchique — aucune autre cause évaluée.
++**Catégorie réservée sans cause active depuis CH-2 (désintrication D2, Option A).** Le capteur est un hook réservé, constant `on` : aucune interdiction de sécurité système n'est actuellement composée, donc cette branche n'est pas évaluable et la raison `chauffage_non_autorise` n'est plus émise. La sémantique reste posée pour une future cause Niveau 1 : si elle existe, elle imposera `reduced` en stop hiérarchique (aucune autre cause évaluée). Le blocage post-aération relève du Niveau 2 (`blocage_aeration_en_cours`), jamais de ce niveau.
+ 
+ ### Niveau 2 — Contextes majeurs
+ 
+@@ -97,7 +97,7 @@ Valeurs possibles : `comfort`, `neutre`, `reduced`.
+ 
+ La présence n'est jamais une décision — elle délègue. L'autorisation `neutre` produit une abstention stricte.
+ 
+-**3b — Inhibition géofencing :** en absence de présence réelle, `input_boolean.chauffage_inhibition_geofencing` peut imposer `comfort` comme protection thermique. Toute interdiction de niveau 1 ou 2 l'écrase immédiatement.
++**3b — Inhibition géofencing :** en absence de présence réelle, `input_boolean.chauffage_inhibition_geofencing` peut imposer `comfort` comme protection thermique (raison `stabilisation_absence`). Toute interdiction de niveau 1 ou 2 l'écrase immédiatement.
+ 
+ **3c — Défaut :** `reduced`.
+ 
+@@ -190,7 +190,7 @@ La raison est calculée localement et transmise à `chauffage_appliquer_consigne
+ | Contexte | Raison |
+ |----------|--------|
+ | Override opérateur | `confort_force` |
+-| Système non autorisé | `chauffage_non_autorise` |
++| Système non autorisé (catégorie réservée — non émise depuis CH-2) | `chauffage_non_autorise` |
+ | Aération en cours confirmée | `aeration_en_cours` |
+ | Blocage aération actif | `blocage_aeration_en_cours` |
+ | Fenêtre ouverte (avec délai) | `fenetre_ouverte_maison` |
+@@ -200,7 +200,7 @@ La raison est calculée localement et transmise à `chauffage_appliquer_consigne
+ | Présence + cible = comfort | `besoin_thermique` |
+ | Présence + cible = neutre | `presence_on` |
+ | Présence + cible = reduced | `confort_suffisant` |
+-| Inhibition géofencing | `absence_protection_thermique` |
++| Inhibition géofencing | `stabilisation_absence` |
+ | Absence (défaut) | `absence` |
+ 
+ ---
+diff --git a/10_scripts/chauffage/decision_centrale.yaml b/10_scripts/chauffage/decision_centrale.yaml
+index aefaadc..8d07c91 100644
+--- a/10_scripts/chauffage/decision_centrale.yaml
++++ b/10_scripts/chauffage/decision_centrale.yaml
+@@ -198,9 +198,6 @@ chauffage_decision_centrale:
+           {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
+             comfort
+ 
+-          {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
+-            reduced
+-
+           {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
+                  and is_state('input_boolean.aeration_confirmee', 'on') %}
+             reduced
+@@ -243,9 +240,6 @@ chauffage_decision_centrale:
+           {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
+             confort_force
+ 
+-          {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
+-            chauffage_non_autorise
+-
+           {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
+                  and is_state('input_boolean.aeration_confirmee', 'on') %}
+             aeration_en_cours
+diff --git a/12_template_sensors/chauffage/autorisation.yaml b/12_template_sensors/chauffage/autorisation.yaml
+index a166cc9..af62b70 100644
+--- a/12_template_sensors/chauffage/autorisation.yaml
++++ b/12_template_sensors/chauffage/autorisation.yaml
+@@ -6,10 +6,12 @@
+ #     du point de vue de la SÉCURITÉ SYSTÈME.
+ #
+ #     Ce capteur est une AUTORITÉ STRICTEMENT SÉCURITÉ SYSTÈME
+-#     (Niveau 1 de la hiérarchie décisionnelle). Sa valeur OFF
+-#     signifie une et une seule chose : le chauffage est sous
+-#     interdiction de sécurité. Cette valeur doit être
+-#     interprétable sans glose : OFF = interdit.
++#     (Niveau 1 de la hiérarchie décisionnelle). Depuis CH-2
++#     (désintrication D2, Option A), il est un HOOK RÉSERVÉ :
++#     constant ON, car aucune cause de sécurité système n'est
++#     active. Son OFF reste réservé à une véritable interdiction
++#     de sécurité Niveau 1, à composer explicitement le jour où
++#     une telle cause existera. OFF = interdit, sans glose.
+ #
+ #  🧱 Doctrine (registres) :
+ #     - Niveau 1 = sécurité système uniquement.
+@@ -28,10 +30,11 @@
+ #     extinction de ce capteur.
+ #
+ #  ⚙️ Fonctionnement :
+-#     ON  → chauffage_blocage_aeration = off
+-#           (aucune cause de sécurité active)
+-#     OFF → une cause de sécurité est active
+-#           (blocage post-aération)
++#     ON (constant) → aucune cause de sécurité système active.
++#     Le blocage post-aération n'est PAS une cause Niveau 1 : il
++#     est porté au NIVEAU 2 de la Décision Centrale (raison
++#     `blocage_aeration_en_cours`), jamais par ce capteur.
++#     OFF → réservé à une interdiction de sécurité future.
+ #
+ #  🔎 Observabilité :
+ #     L'attribut `standby_force` reste exposé À TITRE INFORMATIF
+@@ -54,7 +57,7 @@
+       default_entity_id: binary_sensor.chauffage_autorise_systeme
+ 
+       state: >
+-        {{ is_state('input_boolean.chauffage_blocage_aeration', 'off') }}
++        {{ true }}
+ 
+       icon: >
+         {% set ok = is_state('input_boolean.chauffage_blocage_aeration', 'off') %}
+diff --git a/12_template_sensors/chauffage/diagnostic/mode.yaml b/12_template_sensors/chauffage/diagnostic/mode.yaml
+index a3c621e..36e6048 100644
+--- a/12_template_sensors/chauffage/diagnostic/mode.yaml
++++ b/12_template_sensors/chauffage/diagnostic/mode.yaml
+@@ -75,8 +75,6 @@
+         {# ==================================================
+            2. BLOCAGES HIÉRARCHIQUES (HORS OVERRIDE)
+            ================================================== #}
+-        {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
+-          Eco
+         {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
+                  and is_state('input_boolean.aeration_confirmee', 'on') %}
+           Eco
+diff --git a/12_template_sensors/chauffage/diagnostic/raison.yaml b/12_template_sensors/chauffage/diagnostic/raison.yaml
+index 5a41cf6..95f6b1b 100644
+--- a/12_template_sensors/chauffage/diagnostic/raison.yaml
++++ b/12_template_sensors/chauffage/diagnostic/raison.yaml
+@@ -74,12 +74,6 @@
+         {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
+           confort_force
+ 
+-        {# ======================================================
+-           🛑 NIVEAU 1 — INTERDICTIONS SYSTÈME
+-           ====================================================== #}
+-        {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
+-          chauffage_non_autorise
+-
+         {# ======================================================
+            🧠 NIVEAU 2 — CONTEXTES MAJEURS
+            ====================================================== #}
+diff --git a/tools/arsenal_ci/decision/axiomes.py b/tools/arsenal_ci/decision/axiomes.py
+index 8650cb6..4457251 100644
+--- a/tools/arsenal_ci/decision/axiomes.py
++++ b/tools/arsenal_ci/decision/axiomes.py
+@@ -29,16 +29,18 @@ class Axiome:
+ 
+ 
+ # Axiome D2 : blocage_aeration='on'  =>  autorise_systeme!='on'.
+-# Un blocage d'aeration retire systematiquement l'autorisation systeme.
+-# Source : autorisation.yaml (composition de autorise_systeme). RE-DECLARE ici,
+-# non lu depuis le runtime.
++# Cette implication etait la composition de autorise_systeme AVANT CH-2.
++# Depuis CH-2 (Option A, autorise constant 'on'), elle n'est PLUS vraie du
++# runtime : elle ne subsiste que comme PREMISSE de la fixture gelee
++# d2_reason_pre_correction.yaml (controle positif test_lot_2_3). RE-DECLARE
++# ici, non lu depuis le runtime.
+ _BLOCAGE = AtomeEtat("input_boolean.chauffage_blocage_aeration", "on")
+ _AUTORISE = AtomeEtat("binary_sensor.chauffage_autorise_systeme", "on")
+ 
+ AX_D2 = Axiome(
+     identifiant="AX-D2-BLOCAGE-AUTORISE",
+     formule=Ou((Non(_BLOCAGE), Non(_AUTORISE))),
+-    provenance="autorisation.yaml : composition de autorise_systeme",
++    provenance="prémisse de la fixture gelée d2_reason_pre_correction.yaml (ex-composition de autorise_systeme, antérieure à CH-2)",
+ )
+ 
+ # Jeu d'axiomes de l'instance D2 du moteur general.
+diff --git a/tools/arsenal_ci/decision/cli_decision.py b/tools/arsenal_ci/decision/cli_decision.py
+index 8f0ebe4..c913c78 100644
+--- a/tools/arsenal_ci/decision/cli_decision.py
++++ b/tools/arsenal_ci/decision/cli_decision.py
+@@ -4,7 +4,8 @@ Instance CH-1 du verdict etage-2 : applique au RUNTIME les deux regles de la
+ region decision, agrege en un report.result.Result, et renvoie un exit code
+ 0/1/2 identique a la CLI etage-1.
+ 
+-  - R-COV-1 (couverture) : runtime decision_centrale.yaml:reason + AXIOMES_D2 ;
++  - R-COV-1 (couverture) : runtime decision_centrale.yaml:reason, SANS axiome
++    (A=()) depuis CH-2 — couverture purement structurelle ;
+   - R-MIRROR-1 (synchronie) : runtime cerveau <-> miroir.
+ 
+ Source unique de localisation cerveau/miroir : r_mirror_1 (CERVEAU_FICHIER,
+@@ -26,7 +27,6 @@ from ..report.result import ExecutionError, Result, summarise
+ from ..report.violation import Violation
+ from ..rules.policy import Severity
+ from . import r_cov_1, r_mirror_1
+-from .axiomes import AXIOMES_D2
+ from .r_mirror_1 import CERVEAU_CLE, CERVEAU_FICHIER
+ 
+ # Ordre deterministe, aligne sur l'orchestrateur etage-1.
+@@ -51,7 +51,7 @@ def agreger(violations: List[Violation]) -> Result:
+ def _collecter() -> List[Violation]:
+     """Applique les deux regles etage-2 au runtime. Peut lever ExecutionError."""
+     violations: List[Violation] = list(
+-        r_cov_1.analyser_fichier(CERVEAU_FICHIER, CERVEAU_CLE, AXIOMES_D2)
++        r_cov_1.analyser_fichier(CERVEAU_FICHIER, CERVEAU_CLE, ())
+     )
+     violations += r_mirror_1.comparer_runtime()
+     return violations
+diff --git a/tools/arsenal_ci/tests/test_lot_2_7.py b/tools/arsenal_ci/tests/test_lot_2_7.py
+index 9ee3c5a..1d47664 100644
+--- a/tools/arsenal_ci/tests/test_lot_2_7.py
++++ b/tools/arsenal_ci/tests/test_lot_2_7.py
+@@ -4,7 +4,7 @@ Ce lot ne re-teste pas les comportements (deja couverts par 1.x et 2.0-2.6).
+ Il pose les invariants GLOBAUX de cloture qu'aucun lot isole n'affirme :
+ 
+   G1 — isolation etage-1 / etage-2 (orchestrator.RULES intact) ;
+-  G2 — snapshot de cloture de l'etat-final live (TRANSITOIRE, voir ci-dessous) ;
++  G2 — non-regression post-CH-2 : zero R-COV-1 sur le runtime (voir ci-dessous) ;
+   G3 — surface etage-2 complete et importable ;
+   G4 — verrou de source unique de localisation (invariant T5) ;
+   G5 — bornage des fichiers (etage-2 confine sous decision/).
+@@ -37,21 +37,22 @@ def test_g1_isolation_etages():
+ 
+ # ------------------------------------------------- G2 : snapshot de cloture
+ #
+-# G2 EST VOLONTAIREMENT TRANSITOIRE. Ce n'est PAS un invariant durable du
+-# systeme : c'est un snapshot de cloture CH-1, destine a etre remplace lorsque
+-# CH-2 corrigera D2.
++# CH-1 laissait D2 presente : G2 affirmait alors 1 violation R-COV-1. CH-2 a
++# corrige D2 (retrait N1 dans les cascades + verdict runtime en A=()). G2 est
++# re-fige ici en controle NEGATIF strict : ZERO violation R-COV-1 sur le
++# runtime corrige.
+ #
+-# Son echec futur peut etre le signe ATTENDU du franchissement CH-1 -> CH-2.
+-# Triage : echec => soit regression de la config, soit CH-2 a corrige D2
+-# (mettre a jour ce snapshot / clore CH-1 -> CH-2). PAS un defaut d'outil.
++# Triage : un retour de R-COV-1 > 0 => regression REELLE du domaine (la
++# consequence redevenue dominante), JAMAIS un defaut d'outil ; ne pas
++# "re-snapshoter" pour le faire taire. Le controle POSITIF (la pathologie D2
++# doit rester detectable) demeure test_lot_2_3 sur la fixture gelee.
+ 
+ def test_g2_snapshot_cloture_ch1():
+     r = cli_decision.executer_ch1()
+     assert r.execution_error is None
+-    # R-COV-1 : D2 encore presente (non corrigee en CH-1).
++    # R-COV-1 : D2 corrigee en CH-2 -> absence stricte sur le runtime.
+     cov = [v for v in r.violations if v.rule == "R-COV-1"]
+-    assert len(cov) == 1
+-    assert cov[0].source == "blocage_aeration_en_cours"
++    assert len(cov) == 0
+     # R-MIRROR-1 : cerveau <-> miroir synchrones.
+     assert [v for v in r.violations if v.rule == "R-MIRROR-1"] == []
+ 

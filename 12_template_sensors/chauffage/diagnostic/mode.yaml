@@ -75,8 +75,6 @@
         {# ==================================================
            2. BLOCAGES HIÉRARCHIQUES (HORS OVERRIDE)
            ================================================== #}
-        {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
-          Eco
         {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
                  and is_state('input_boolean.aeration_confirmee', 'on') %}
           Eco

@@ -6,10 +6,12 @@
 #     du point de vue de la SÉCURITÉ SYSTÈME.
 #
 #     Ce capteur est une AUTORITÉ STRICTEMENT SÉCURITÉ SYSTÈME
-#     (Niveau 1 de la hiérarchie décisionnelle). Sa valeur OFF
-#     signifie une et une seule chose : le chauffage est sous
-#     interdiction de sécurité. Cette valeur doit être
-#     interprétable sans glose : OFF = interdit.
+#     (Niveau 1 de la hiérarchie décisionnelle). Depuis CH-2
+#     (désintrication D2, Option A), il est un HOOK RÉSERVÉ :
+#     constant ON, car aucune cause de sécurité système n'est
+#     active. Son OFF reste réservé à une véritable interdiction
+#     de sécurité Niveau 1, à composer explicitement le jour où
+#     une telle cause existera. OFF = interdit, sans glose.
 #
 #  🧱 Doctrine (registres) :
 #     - Niveau 1 = sécurité système uniquement.
@@ -28,10 +30,11 @@
 #     extinction de ce capteur.
 #
 #  ⚙️ Fonctionnement :
-#     ON  → chauffage_blocage_aeration = off
-#           (aucune cause de sécurité active)
-#     OFF → une cause de sécurité est active
-#           (blocage post-aération)
+#     ON (constant) → aucune cause de sécurité système active.
+#     Le blocage post-aération n'est PAS une cause Niveau 1 : il
+#     est porté au NIVEAU 2 de la Décision Centrale (raison
+#     `blocage_aeration_en_cours`), jamais par ce capteur.
+#     OFF → réservé à une interdiction de sécurité future.
 #
 #  🔎 Observabilité :
 #     L'attribut `standby_force` reste exposé À TITRE INFORMATIF
@@ -54,7 +57,7 @@
       default_entity_id: binary_sensor.chauffage_autorise_systeme
 
       state: >
-        {{ is_state('input_boolean.chauffage_blocage_aeration', 'off') }}
+        {{ true }}
 
       icon: >
         {% set ok = is_state('input_boolean.chauffage_blocage_aeration', 'off') %}
