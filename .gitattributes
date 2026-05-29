@@ -46,3 +46,20 @@ www/lovelace-layout-card/** linguist-vendored=true
 # ---------------------------------------------------------
 
 *.min.js linguist-generated=true
+
+# ---------------------------------------------------------
+# End-of-line normalization
+# ---------------------------------------------------------
+
+* text=auto
+
+*.yaml text eol=lf
+*.yml  text eol=lf
+*.md   text eol=lf
+*.py   text eol=lf
+*.json text eol=lf
+*.sh   text eol=lf
+
+*.ps1  text eol=crlf
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
