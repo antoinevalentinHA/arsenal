@@ -4,7 +4,7 @@
 
 Arsenal est une configuration Home Assistant construite comme un **logiciel long terme** — avec une architecture en couches, des contrats explicites, et une séparation stricte entre ce qui décide et ce qui agit.
 
-Ce n'est pas un dump de configuration. Ce n'est pas un smart home setup à copier.  
+Ce n'est pas un dump de configuration. Ce n'est pas un smart home setup à copier.
 C'est une **référence d'architecture** pour qui veut traiter HA sérieusement.
 
 ---
@@ -86,15 +86,29 @@ Cette séparation n'est pas théorique. Elle est visible dans l'arborescence et 
 ```
 00_documentation_arsenal/   Contrats, changelogs, architecture, doctrine
 01_customize/               Personnalisation des entités
+02_groups/                  Groupes Home Assistant
+03_input_numbers/           Helpers numériques — seuils et paramètres métier
 04_input_texts/             Helpers texte — mémoire des décisions
+05_input_booleans/          Helpers booléens — activation, modes, verrous
+06_input_selects/           Helpers sélection — modes et états énumérés
+07_input_datetimes/         Helpers date/heure — planification métier
+08_timers/                  Timers — temporisations explicites
+09_counters/                Compteurs — mémoires incrémentales
 10_scripts/                 Scripts souverains — actions atomiques
 11_automations/             Réactions à des états — jamais de logique
 12_template_sensors/        Capteurs de décision — cerveau du système
+13_sensor_platforms/        Capteurs par plateformes Home Assistant
 14_mqtt_sensors/            Surface MQTT — perception externe
+15_mqtt_binary_sensors/     Capteurs binaires MQTT — perception externe
 16_template_alarm_panels/   Panneau alarme contractualisé
+17_zones/                   Zones métier
 18_lovelace/                UI — rendu uniquement
 19_button_card_templates/   Palette de composants UI
 scripts/                    Outillage — audit, validation, CI
+utility_meter.yaml          Compteurs d’énergie
+recorder.yaml               Politique de persistance
+logbook.yaml                Politique du journal
+logger.yaml                 Politique de logs
 ```
 
 Les numéros de préfixe ne sont pas décoratifs. Ils expriment l'ordre de chargement et la couche architecturale.
@@ -120,20 +134,20 @@ Les numéros de préfixe ne sont pas décoratifs. Ils expriment l'ordre de charg
 Un domaine Arsenal complet, de la perception à l'exécution.
 
 **Perception**
-`sensor.vmc_etat_reel` — état retourné par le relais Sonoff Dual R3 via MQTT.  
+`sensor.vmc_etat_reel` — état retourné par le relais Sonoff Dual R3 via MQTT.
 `sensor.co2_salon`, `sensor.humidite_sdb` — mesures environnementales.
 
 **Decision**
-`sensor.vmc_besoin_brut` — template sensor : y a-t-il un besoin de ventilation ?  
-`sensor.vmc_admissibilite` — le contexte permet-il d'agir ? (heure, présence, contraintes)  
+`sensor.vmc_besoin_brut` — template sensor : y a-t-il un besoin de ventilation ?
+`sensor.vmc_admissibilite` — le contexte permet-il d'agir ? (heure, présence, contraintes)
 `input_text.vmc_decision` — état de décision final : `on_demande` / `off_demande` / `verrouille`
 
 **Execution**
-`automation.vmc_application_decision` — se déclenche sur changement de `vmc_decision`.  
+`automation.vmc_application_decision` — se déclenche sur changement de `vmc_decision`.
 `script.vmc_allumage` / `script.vmc_extinction` — scripts souverains avec ACK MQTT.
 
 **Diagnostic**
-`sensor.vmc_coherence` — détecte les incohérences entre décision et état réel.  
+`sensor.vmc_coherence` — détecte les incohérences entre décision et état réel.
 Un watchdog se déclenche si l'état réel diverge de la décision pendant plus de 30 secondes.
 
 Le même modèle architectural se retrouve dans chaque domaine : alarme, ECS, déhumidificateur, chauffage.
@@ -200,5 +214,5 @@ Le détail complet est disponible dans [`00_documentation_arsenal/changelog/`](0
 
 MIT — les patterns sont libres de réutilisation.
 
-Arsenal est publié pour partager une façon d'architecturer Home Assistant, pas une maison.  
+Arsenal est publié pour partager une façon d'architecturer Home Assistant, pas une maison.
 Le but n'est pas d'être reproduit. Le but est d'être étudié.
