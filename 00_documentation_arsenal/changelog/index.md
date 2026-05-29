@@ -1231,6 +1231,18 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Chauffage UI : corrections de structure YAML et d’indentation sur plusieurs templates `button-card` sans changement fonctionnel.
 - Dépôt : normalisation des fins de ligne et harmonisation éditoriale sur plus de 1000 fichiers du patrimoine sans modification de logique métier.
 
+---
+
+## 🧠 ARSENAL HA — v15.8.2 — STABLE — 2026-05-29
+**Tags :** chauffage, decision_centrale, autorisation, cascades, diagnostics, ci, contrats
+
+**Signal net :**
+- Décision Centrale chauffage : retrait de la branche Niveau 1 `not chauffage_autorise_systeme` de `desired_mode` et `reason` → la raison `chauffage_non_autorise` n'est plus émise ; le cas blocage post-aération émet `blocage_aeration_en_cours`, `desired_mode` restant `reduced`.
+- Autorisation système : `binary_sensor.chauffage_autorise_systeme` passe à l'état constant `on`, réservé à la sécurité système sans cause active ; `input_boolean.chauffage_blocage_aeration` reclassé en cause Niveau 2 portée par la Décision Centrale.
+- Diagnostics : même retrait de branche Niveau 1 dans `sensor.chauffage_raison_calculee` et `sensor.chauffage_mode_calcule`, cascades réalignées sur la décision.
+- CI région décision : `cli_decision` applique R-COV-1 au runtime sans l'axiome `AX-D2` (`A=()`), import `AXIOMES_D2` retiré ; `AX-D2` conservé pour la fixture `d2_reason_pre_correction.yaml` (inchangée) ; snapshot G2 re-figé à `R-COV-1 == 0` ; assertions de `test_lot_2_1` mises à jour (9 branches).
+- Contrat `30_decision_centrale.md` : Niveau 1 marqué réservé sans cause active, `chauffage_non_autorise` réservée, renommage de la raison `absence_protection_thermique` en `stabilisation_absence`.
+
 ==================================================
 FIN INDEX
 ==================================================
