@@ -10,7 +10,7 @@
 
 Sélectionner un mode cible unique à partir des besoins admissibles produits par la couche Admissibilité.
 
-L'arbitre est structurellement stable.  
+L'arbitre est structurellement stable.
 **Seule la politique d'arbitrage peut évoluer.**
 
 ---
@@ -38,7 +38,7 @@ Un mode est sélectionnable uniquement si son besoin admissible est actif.
 
 ## Statut de OFF
 
-OFF ne correspond à aucun besoin admissible.  
+OFF ne correspond à aucun besoin admissible.
 Il est exclusivement un résultat de repli de la politique d'arbitrage, lorsqu'aucun besoin admissible n'est actif.
 
 ---

@@ -29,7 +29,7 @@
         {{
           states('sensor.temperature_jardin') | float(0)
             >= states('input_number.clim_seuil_temperature_exterieure_minimum') | float(99)
-          and is_state('binary_sensor.aeration_preferable_etage', 'off')
+          and is_state('binary_sensor.clim_blocage_aeration_etage_reel', 'off')
           and is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'off')
           and is_state('binary_sensor.clim_blocage_horaire_reel', 'off')
           and is_state('binary_sensor.clim_extinction_absence_prolongee_autorisee', 'off')

@@ -116,7 +116,7 @@ views:
               {% if seuil_on is not none and seuil_off is not none %}
               🔎 Seuils actifs (mode {{ 'présence' if presence else 'absence' }})
 
-              - Allumage  : ≥ {{ seuil_on  | round(1) }} °C  
+              - Allumage  : ≥ {{ seuil_on  | round(1) }} °C
               - Extinction : ≤ {{ seuil_off | round(1) }} °C
               {% else %}
               ⚠️ Seuils indisponibles
@@ -184,7 +184,7 @@ views:
 
               🔎 Seuils d’autorisation chauffage
 
-              - Autorisation chauffage : < {{ seuil_on | round(1) }} °C  
+              - Autorisation chauffage : < {{ seuil_on | round(1) }} °C
               - Interdiction chauffage : ≥ {{ seuil_off | round(1) }} °C
 
               {% endif %}
@@ -236,3 +236,11 @@ views:
               - type: tile
                 entity: input_datetime.clim_heure_blocage_autom_off
                 name: à
+
+          - type: custom:button-card
+            template: section_header
+            name: 🚫 Blocages
+
+          - type: tile
+            entity: input_boolean.clim_blocage_aeration_etage_actif
+            name: Aération étage

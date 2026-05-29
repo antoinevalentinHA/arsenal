@@ -1,8 +1,8 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## Index du dossier
 
-**Domaine :** Climatisation résidentielle  
-**Version contrat :** v1.4  
+**Domaine :** Climatisation résidentielle
+**Version contrat :** v1.4
 **Statut :** Stable — aligné runtime Arsenal v15.x
 
 ---
@@ -16,11 +16,12 @@
 | `03_decision_canonique.md` | Objet `sensor.clim_target_mode`, pureté, déterminisme, consommation exclusive des besoins admissibles |
 | `04_entrees_metier.md` | Températures, humidex, présence, contraintes physiques |
 | `05_decision_candidats.md` | Production des besoins admissibles par mode (verrou de requalification) |
-| `06_arbitrage_politique.md` | Politique d'arbitrage active, hiérarchie des modes |
-| `07_execution.md` | Application idempotente du mode cible |
-| `08_securite.md` | Guards et Watchdog |
-| `09_observabilite.md` | États explicatifs, robustesse, déterminisme post-redémarrage |
-| `10_perimetre_exclu.md` | Ce que le système ne fait pas |
+| `06_doctrine_blocages.md` | Doctrine opérateur des blocages, classification, gardes et invariants |
+| `07_arbitrage_politique.md` | Politique d'arbitrage active, hiérarchie des modes |
+| `08_execution.md` | Application idempotente du mode cible |
+| `09_securite.md` | Guards et Watchdog |
+| `10_observabilite.md` | États explicatifs, robustesse, déterminisme post-redémarrage |
+| `11_perimetre_exclu.md` | Ce que le système ne fait pas |
 | `capteurs/` | Documentation détaillée des capteurs implémentant les couches du système |
 
 ---
@@ -69,11 +70,11 @@ Finalité
 | Admissibilité | `binary_sensor.besoin_clim_*_admissible` | Verrou de requalification — naît sur front montant du besoin sous autorisation active |
 | Décision | `sensor.clim_target_mode` | Consomme exclusivement les besoins admissibles |
 
-Un besoin brut ne peut jamais être consommé directement par la Décision.  
+Un besoin brut ne peut jamais être consommé directement par la Décision.
 Un besoin préexistant à une interdiction ne devient jamais admissible par simple retour de l'autorisation.
 
 ---
 
-⚠️ Principe Arsenal fondamental  
-La couche Exécution ne modifie jamais la décision.  
+⚠️ Principe Arsenal fondamental
+La couche Exécution ne modifie jamais la décision.
 Elle applique uniquement `sensor.clim_target_mode`.

@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Climatisation — Blocage aération étage réel
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la vérité de blocage réelle liée à l'aération
+#   préférable de l'étage, conditionnée par une garde opérateur.
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   autorisation_logique
+#
+# 🆔 UNIQUE_ID
+#   clim_blocage_aeration_etage_reel
+#
+# 🔗 DÉPENDANCES
+#   Lit : input_boolean.clim_blocage_aeration_etage_actif
+#   Lit : binary_sensor.aeration_preferable_etage
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre état booléen et action automatique
+#
+# 🏷️ STATUT
+#   Blocage — Arsenal v15.8
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim blocage aération étage réel"
+      unique_id: clim_blocage_aeration_etage_reel
+      icon: mdi:window-open-variant
+      state: >
+        {{ is_state('input_boolean.clim_blocage_aeration_etage_actif', 'on')
+           and is_state('binary_sensor.aeration_preferable_etage', 'on') }}

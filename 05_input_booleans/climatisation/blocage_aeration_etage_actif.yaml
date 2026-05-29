@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     Climatisation — Blocage aération étage actif
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Représenter l'armement opérateur du blocage lié à
+#   l'aération préférable de l'étage.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage d'état binaire uniquement
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune action directe sur un équipement
+#
+# 🔖 NATURE
+#   État d'armement
+#
+# 🚫 INTERDITS
+#   - Définir initial
+#   - Confondre état et décision
+#   - Déclencher directement une action
+#   - Constituer à lui seul une autorité décisionnelle
+#
+# 🏷️ STATUT
+#   Réglage opérateur — Arsenal v15.8
+# ==========================================================
+
+clim_blocage_aeration_etage_actif:
+  name: Clim blocage aeration etage actif
+  icon: mdi:window-open-variant
