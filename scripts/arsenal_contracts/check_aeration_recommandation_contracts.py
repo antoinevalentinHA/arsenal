@@ -51,6 +51,7 @@ FILE_GLOBAL = DIR_AERATION_SENSORS / "global.yaml"
 LEGITIMATE_CONSUMERS = {
     DIR_TEMPLATE_SENSORS / "climatisation" / "autorisation" / "cool.yaml",
     DIR_TEMPLATE_SENSORS / "climatisation" / "autorisation" / "dry.yaml",
+    DIR_TEMPLATE_SENSORS / "climatisation" / "blocages" / "blocage_aeration_etage_reel.yaml",
     DIR_TEMPLATE_SENSORS / "vmc" / "intention.yaml",
     DIR_TEMPLATE_SENSORS / "vmc" / "haute_vitesse_requise.yaml",
     DIR_TEMPLATE_SENSORS / "vmc" / "delta_humidite_absolue_favorable.yaml",
@@ -248,7 +249,7 @@ def test_etage_consumed_only_by_legitimate_consumers() -> None:
     """
     T10 — binary_sensor.aeration_preferable_etage n'est consommé que par
     les domaines autorisés par le contrat §NATURE ARCHITECTURALE.
-    Consommateurs légitimes : climatisation (cool, dry), vmc, global.
+    Consommateurs légitimes : climatisation blocage gardé, vmc, global.
     Scope : 12_template_sensors/ entier, exclusion des consommateurs légitimes.
     """
     ETAGE_REF = re.compile(r'aeration_preferable_etage', re.IGNORECASE)
