@@ -1,0 +1,53 @@
+# =====================================================================
+# Fixture canonique D2 — snapshot structurel PRE-CORRECTION du bloc reason.
+#
+# Gelee et immuable. NE PAS synchroniser avec le runtime.
+# Photographie de la cascade de decision telle qu'elle existe AVANT CH-2 :
+# la branche [3] (chauffage_blocage_aeration -> blocage_aeration_en_cours)
+# y est STRUCTURELLEMENT presente mais LOGIQUEMENT morte. L'inatteignabilite
+# n'est PAS affirmee ici : elle releve de R-COV-1 (T3).
+#
+#   Branche cible (morte) : [3] is_state(input_boolean.chauffage_blocage_aeration,'on')
+#   Dominateur            : [1] not is_state(binary_sensor.chauffage_autorise_systeme,'on')
+#   Axiome associe (externe, NON encode ici) :
+#       blocage_aeration='on'  =>  autorise_systeme!='on'   (source: autorisation.yaml)
+#
+# Immuabilite : verrou primaire = empreinte SHA256 du scalaire extrait
+# (cf. test_lot_2_2) ; verrou secondaire = assertions structurelles saillantes.
+# =====================================================================
+reason: |
+  {% if is_state('input_boolean.mode_confort_chauffage', 'on') %}
+    confort_force
+  {% elif not is_state('binary_sensor.chauffage_autorise_systeme', 'on') %}
+    chauffage_non_autorise
+  {% elif is_state('input_boolean.aeration_episode_en_cours', 'on')
+         and is_state('input_boolean.aeration_confirmee', 'on') %}
+    aeration_en_cours
+  {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+    blocage_aeration_en_cours
+  {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
+    fenetre_ouverte_maison
+  {% elif is_state('input_select.mode_maison', 'Vacances') %}
+    {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
+      pre_confort_vacances
+    {% else %}
+      mode_maison_vacances
+    {% endif %}
+  {% elif is_state('input_boolean.blocage_chauffage_poele', 'on') %}
+    poele_actif
+  {% elif is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+    {% set cible = states('sensor.chauffage_autorisation_cible') %}
+    {% if cible == 'comfort' %}
+      besoin_thermique
+    {% elif cible == 'neutre' %}
+      presence_on
+    {% elif cible == 'reduced' %}
+      confort_suffisant
+    {% else %}
+      presence_on
+    {% endif %}
+  {% elif is_state('input_boolean.chauffage_inhibition_geofencing', 'on') %}
+    stabilisation_absence
+  {% else %}
+    absence
+  {% endif %}
