@@ -5,6 +5,7 @@
 **Périmètre :** dettes actives D2 → D9 (D1 soldé, hors périmètre)
 **Principe d'arbitrage :** un chantier qui répare la **cohérence causale**, la **doctrine** ou la **maintenabilité** prime sur un chantier cosmétique. Une dette dont le coût excède le bénéfice reste ouverte ou est acceptée explicitement.
 **Date :** 29/05/2026
+**Révision :** intègre (i) la règle doctrinale *Niveau 1 = option retirée / Niveau 2 = option déclinée* ; (ii) la promotion de la table de vérité D2 en **fixture canonique** (contrôle positif permanent de `R-COV-1`) ; (iii) le déplacement de la disposition Niveau 1 dans la pause post-CH-1.
 
 ---
 
@@ -23,7 +24,7 @@
 
 \* *Urgence élevée au sens « à traiter en premier parmi les dettes ouvertes », **pas** au sens hotfix : D2 n'a aucun impact thermique (`reduced` des deux côtés). Le défaut est diagnostique, donc planifiable sans précipitation.*
 
-**Lecture architecte.** La seule dette runtime active (D2) est une **causalité menteuse recréée** — la pathologie même que D1 avait corrigée. Sa valeur de réparation est doctrinale, pas thermique. Son correctif touche un point sensible (cascade décision + miroir + composition d'autorisation) : il faut donc l'entourer de garde-fous **avant** de l'appliquer, d'où l'inversion d'ordre assumée ci-dessous (CI d'abord, correctif ensuite).
+**Lecture architecte.** La seule dette runtime active (D2) est une **causalité menteuse recréée** — la pathologie même que D1 avait corrigée. Sa valeur de réparation est doctrinale, pas thermique. Son correctif touche un point sensible (cascade décision + miroir + composition d'autorisation) : il faut donc l'entourer de garde-fous **avant** de l'appliquer, d'où l'inversion d'ordre assumée ci-dessous (CI d'abord, correctif ensuite). Deux sorties de ce chantier dépassent le cas D2 et constituent son vrai rendement : (i) la **règle de classification des raisons** — *option retirée* (Niveau 1) vs *option déclinée* (Niveau 2) — qui remplace la triade instable sécurité/limite/stratégie par un prédicat unique (« le système pourrait-il chauffer s'il le voulait ? ») ; (ii) la **promotion de la table de vérité D2 en fixture canonique** — D2 cesse d'être une dette pour devenir le contrôle positif permanent de `R-COV-1`, première occurrence caractérisée de la famille « conséquence remontée en cause ».
 
 ---
 
@@ -31,38 +32,46 @@
 
 ### P0 — À traiter immédiatement
 
-#### Chantier 1 — Verrouillage CI étage 2 (amorce) : `R-COV-1` + `R-MIRROR-1`
-*Couvre D5 intégralement et amorce D6.*
+#### Chantier 1 — Verrouillage CI étage 2 (amorce) : fixture canonique D2 + `R-COV-1` + `R-MIRROR-1`
+*Couvre D5 intégralement et amorce D6. Construit le contrôle positif de `R-COV-1`.*
 
-- **Objectif.** Construire le socle minimal de l'étage 2 comportemental, puis poser deux invariants : `R-COV-1` (atteignabilité de toutes les branches de raison) et `R-MIRROR-1` (synchronisation des deux cascades). `R-COV-1` doit virer **rouge sur D2** (preuve que la branche 2b est morte) ; il deviendra vert au Chantier 2.
-- **Fichiers impactés.** Harnais de test selon l'arborescence de l'étage 1 existant (taxonomie `registres_entites.yaml` réutilisée) ; nouveaux modules d'invariants `R-COV-1`, `R-MIRROR-1` ; workflow GitHub Actions (`antoinevalentinHA/arsenal`) étendu d'un job étage 2. **Aucun fichier runtime touché.**
-- **Risques.** Faux négatifs si le parseur d'atteignabilité ne modélise pas correctement la chaîne `elif` (le court-circuit Niveau 1 doit être visible). `R-MIRROR-1` doit comparer **ordre + conditions**, pas seulement l'ensemble des raisons.
-- **Tests à exécuter.** `R-COV-1` (attendu : **rouge**, signale 2b inatteignable) ; `R-MIRROR-1` (attendu : **vert** sur l'état courant, les cascades étant aujourd'hui synchrones dans leur défaut) ; non-régression étage 1 (`R-CI-1`, double fixture, `META-2`).
-- **Critères d'acceptation.** `R-COV-1` rouge et pointant nommément `blocage_aeration_en_cours` ; `R-MIRROR-1` opérationnel ; étage 1 toujours vert ; job étage 2 intégré au pipeline.
-- **Estimation d'effort.** Moyen (`R-MIRROR-1` faible ; scaffold + `R-COV-1` moyen).
-- **Dépendances.** Aucune en amont. Prérequis du Chantier 2 (garde-fous posés avant le correctif).
+- **Objectif.** Construire le socle minimal de l'étage 2 comportemental, **figer le spécimen type D2** comme fixture canonique, puis poser deux invariants : `R-COV-1` (atteignabilité de toutes les branches de raison) et `R-MIRROR-1` (synchronisation des deux cascades). `R-COV-1` doit virer **rouge sur la fixture D2** (preuve que la branche 2b y est morte) ; ce rouge est **permanent par construction** — la fixture étant figée, il ne deviendra jamais vert.
+- **Fixture canonique D2.** Capture figée de l'état pathologique pré-correction (branche `blocage_aeration_en_cours` morte ; raison `chauffage_non_autorise` mensongère sur le cas blocage post-aération), **versionnée indépendamment du runtime**. Ce n'est pas un artefact de validation jetable : c'est le **contrôle positif permanent** de `R-COV-1`. Promotion conforme à la règle de gouvernance Arsenal sur les fixtures canoniques (cf. doc de gouvernance transverse — référencée, non dupliquée ici).
+- **Fichiers impactés.** Harnais de test selon l'arborescence de l'étage 1 existant (taxonomie `registres_entites.yaml` réutilisée) ; **fixture figée D2** (nouvel artefact conservé) ; nouveaux modules d'invariants `R-COV-1`, `R-MIRROR-1` ; workflow GitHub Actions (`antoinevalentinHA/arsenal`) étendu d'un job étage 2. **Aucun fichier runtime touché.**
+- **Risques.** Faux négatifs si le parseur d'atteignabilité ne modélise pas correctement la chaîne `elif` (le court-circuit Niveau 1 doit être visible) — le modèle CI est lui-même susceptible de dériver, d'où le besoin d'un oracle figé. `R-MIRROR-1` doit comparer **ordre + conditions**, pas seulement l'ensemble des raisons. La fixture doit capturer l'état pathologique de façon autonome (ne jamais pointer vers le runtime vivant, qui sera corrigé en CH-2).
+- **Tests à exécuter.** `R-COV-1` sur la fixture figée (attendu : **rouge**, signale 2b inatteignable) ; `R-MIRROR-1` (attendu : **vert** sur l'état courant, les cascades étant aujourd'hui synchrones dans leur défaut) ; non-régression étage 1 (`R-CI-1`, double fixture, `META-2`).
+- **Critères d'acceptation.** Fixture D2 figée et versionnée hors runtime ; `R-COV-1` **rouge sur la fixture**, pointant nommément `blocage_aeration_en_cours` — rouge attendu **à perpétuité** (s'il vire au vert un jour, c'est le vérificateur qui a régressé, pas le chauffage) ; `R-MIRROR-1` opérationnel ; étage 1 toujours vert ; job étage 2 intégré au pipeline.
+- **Estimation d'effort.** Moyen (`R-MIRROR-1` faible ; scaffold + fixture + `R-COV-1` moyen).
+- **Dépendances.** Aucune en amont. Prérequis du Chantier 2 (garde-fous + contrôle positif posés avant le correctif).
 
 #### Chantier 2 — Correctif D2 + alignement contrat (absorbe D3)
 *Couvre D2 et D3.*
 
-- **Prérequis doctrinal (gate, sans code).** Trancher la nature de `blocage_aeration` : **Niveau 2 (limite)**, par cohérence avec le traitement de `standby_force`. Décision induite sur la couche Niveau 1 : faute de cause d'interdiction système réelle subsistante, **retirer** `chauffage_non_autorise` de la cascade et documenter Niveau 1 comme **point d'extension réservé** (à réintroduire uniquement avec sa première vraie cause). *Variante :* si une cause système légitime existe et doit être affichée (p. ex. pont durablement hors-ligne au-delà du transitoire G2), la câbler dans `autorise_systeme` plutôt que retirer la couche — à arbitrer, mais ne pas conserver une catégorie vide (lie-in-waiting).
-- **Objectif.** Sortir `blocage_aeration` de la composition d'état de `autorise_systeme`, ranimer la branche 2b (`blocage_aeration_en_cours`), aligner le miroir, et traiter la couche Niveau 1 selon la décision ci-dessus. **Iso-comportement thermique garanti** : seul le nom de la raison change pour le cas blocage post-aération.
+- **Prérequis doctrinal (gate, sans code).** Acter la **règle de classification des raisons** : **Niveau 1 = option retirée** (le système ne *peut pas* chauffer, l'option lui est ôtée) ; **Niveau 2 = option déclinée** (le système *pourrait* chauffer mais s'en abstient). Prédicat d'arbitrage unique : « le système pourrait-il chauffer maintenant s'il le voulait ? ». Par application directe, `blocage_aeration` = **Niveau 2** (option déclinée, comme `standby_force`). *La disposition de la couche Niveau 1 n'est PAS tranchée ici* — elle est arrêtée dans la pause post-CH-1, `R-COV-1` rouge en main (voir feuille de route §3).
+- **Disposition Niveau 1 (décidée en pause, exécutée ici).** Faute de cause « option retirée » réelle subsistante dans la cascade, deux issues admissibles, tranchées avec le rouge de `R-COV-1` comme donnée :
+  - **(a) Suppression** — retirer `chauffage_non_autorise` de la cascade et documenter Niveau 1 comme **absence réservée** (réintroduite uniquement à l'apparition d'une vraie cause « option retirée »). La branche disparaît du runtime ; Niveau 1 ne survit que comme slot doctrinal nommé.
+  - **(b) Câblage d'une cause réelle** — si une cause « option retirée » légitime doit être affichée. Candidat naturel : **pont durablement hors-ligne au-delà du transitoire G2**, seul état où chauffage ne *peut pas* commander la chaudière. La câbler dans `autorise_systeme`.
+  - **Interdit dans les deux cas :** conserver une branche runtime vide et inatteignable (*lie-in-waiting*) — c'est la pathologie D2 même. Une catégorie doctrinale vide peut exister ; une branche runtime vide, non.
+- **Objectif.** Sortir `blocage_aeration` de la composition d'état de `autorise_systeme`, ranimer la branche 2b (`blocage_aeration_en_cours`), aligner le miroir, et traiter la couche Niveau 1 selon la disposition retenue. **Iso-comportement thermique garanti** : seul le nom de la raison change pour le cas blocage post-aération.
 - **Fichiers impactés.**
-  - `12_template_sensors/chauffage/autorisation.yaml` (state l.56-57 ; attributs l.76-77 inchangés)
+  - `12_template_sensors/chauffage/autorisation.yaml` (state l.56-57 ; attributs l.76-77 inchangés ; édition Niveau 1 selon disposition (a) ou (b))
   - `10_scripts/chauffage/decision_centrale.yaml` (cascade `reason` l.245-254 ; `desired_mode` l.201-209 **inchangés**)
   - `12_template_sensors/chauffage/diagnostic/raison.yaml` (miroir l.80-91)
-  - `00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md` (table des raisons + statut Niveau 1 ; **et** remplacement `absence_protection_thermique` → `stabilisation_absence` ⇒ **D3 soldée dans le même commit**, le fichier n'étant touché qu'une fois)
+  - `00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md` (table des raisons + statut Niveau 1 selon disposition ; **et** remplacement `absence_protection_thermique` → `stabilisation_absence` ⇒ **D3 soldée dans le même commit**, le fichier n'étant touché qu'une fois)
 - **Risques.** Désync transitoire au reload (R-DIV-1, qualifié « correction, pas régression ») ; oubli de propagation au miroir (couvert par `R-MIRROR-1` posé au Chantier 1) ; régression d'ordre dans la chaîne `elif`. Cross-domaine **déjà dégagé** (R-DIV-3/4 : la clim ne lit pas `autorise_systeme=off` comme proxy).
-- **Tests à exécuter.** **Table de vérité avant/après** (artefact de preuve hors-ligne, obligatoire avant application) ; `R-COV-1` (attendu : **passe au vert**) ; `R-MIRROR-1` (reste vert) ; étage 1 (reste vert) ; revue des 4 briques pivots.
+- **Tests à exécuter.** **Table de vérité avant/après** (preuve iso-comportement, obligatoire avant application ; son volet « avant » coïncide avec la fixture canonique figée en CH-1) ; `R-COV-1` **sur le runtime corrigé** (attendu : **vert**) ; `R-COV-1` **sur la fixture figée** (attendu : **reste rouge** — le correctif ne doit pas « réparer » le spécimen type) ; `R-MIRROR-1` (reste vert) ; étage 1 (reste vert) ; revue des 4 briques pivots.
 - **Critères d'acceptation.**
   - `desired_mode` **identique avant/après** sur toutes les lignes de la table (preuve iso-comportement thermique).
   - Cas blocage post-aération : raison passe de `chauffage_non_autorise` → `blocage_aeration_en_cours` ; `desired_mode == reduced` inchangé.
   - Cas aération en cours (2a) : inchangé (`aeration_en_cours`, `reduced`).
-  - `R-COV-1` vert (zéro branche morte) ; `R-MIRROR-1` vert ; étage 1 vert.
-  - Contrat `30` aligné sur le runtime (raison Niveau 2 vivante, Niveau 1 documenté selon décision, plus aucune occurrence de `absence_protection_thermique`).
+  - **Deux cibles permanentes pour `R-COV-1`**, jamais un seul artefact qui change de couleur :
+    - runtime corrigé → **vert** (contrôle négatif ; un rouge ultérieur = régression du domaine) ;
+    - fixture figée D2 → **toujours rouge** (contrôle positif ; un vert = régression du vérificateur).
+  - `R-MIRROR-1` vert ; étage 1 vert.
+  - Contrat `30` aligné sur le runtime (raison Niveau 2 vivante, Niveau 1 documenté selon disposition, plus aucune occurrence de `absence_protection_thermique`).
   - Changelogs `v11_1_3.md` / `v12_1.md` **non modifiés** (historique figé).
 - **Estimation d'effort.** Moyen (le diff runtime est petit ; le coût est dans l'arbitrage doctrinal, la table de vérité et la synchro du miroir).
-- **Dépendances.** Gate doctrinal + Chantier 1 (garde-fous). **Prérequis du Chantier 6 (D4).**
+- **Dépendances.** Règle doctrinale (gate) + Chantier 1 (garde-fous + fixture) + décision de disposition Niveau 1 (pause). **Prérequis du Chantier 6 (D4).**
 
 ---
 
@@ -74,7 +83,7 @@
 - **Objectif.** Compléter l'étage 2 avec les invariants à fort rendement : `INV-30-5` (iso-comportement), `INV-D1/D3` (non-remontée conséquence→cause — généralise la pathologie D1/D2 en garde permanent), et les `INV-30-x` structurants de la décision centrale.
 - **Fichiers impactés.** Modules d'invariants de l'étage 2 (suite du Chantier 1) ; workflow CI. Aucun fichier runtime.
 - **Risques.** Sur-spécification d'invariants fragiles aux refactors légitimes ; tenir la frontière « doctrine » et non « implémentation ».
-- **Tests à exécuter.** Les nouveaux invariants verts sur `main` post-D2 ; double fixture étage 1 inchangée.
+- **Tests à exécuter.** Les nouveaux invariants verts sur `main` post-D2 ; double fixture étage 1 inchangée ; fixture canonique D2 toujours rouge sous `R-COV-1`.
 - **Critères d'acceptation.** `INV-30-5` et `INV-D1/D3` opérationnels et verts ; aucune catégorie de raison ne peut afficher une conséquence à la place de sa cause sans faire rougir la CI.
 - **Estimation d'effort.** Moyen.
 - **Dépendances.** Chantier 1 (scaffold étage 2). Postérieur à D2 pour valider l'iso-comportement sur l'état corrigé.
@@ -129,14 +138,20 @@
 
 ## 3. Feuille de route recommandée
 
-Séquence exacte. L'ordre privilégie la cohérence causale et la maintenabilité : on **pose les garde-fous avant de toucher le cœur de décision**, ce qui rend le correctif D2 vérifiable par la CI (rouge → vert) au lieu de reposer sur une seule table de vérité manuelle.
+Séquence exacte. L'ordre privilégie la cohérence causale et la maintenabilité : on **pose les garde-fous et le contrôle positif avant de toucher le cœur de décision**, ce qui rend le correctif D2 vérifiable par la CI au lieu de reposer sur une seule table de vérité manuelle. La disposition Niveau 1 est volontairement **différée à la pause** : le rouge de `R-COV-1` est une *mesure* (degré d'isolement de la branche morte), pas seulement un gate — elle doit éclairer la décision, non la précéder.
 
 ```
-GATE        Décision doctrinale D2  (Niveau 2 ; sort de la couche Niveau 1)
+GATE        Règle doctrinale : Niveau 1 = option retirée / Niveau 2 = option déclinée
+            → blocage_aeration = Niveau 2   (disposition Niveau 1 différée à la pause)
               │
-P0 ─ CH-1   Étage 2 : R-COV-1 (→ ROUGE sur D2) + R-MIRROR-1 (vert)      [D5 + amorce D6]
-              │   (garde-fous en place : le miroir et l'atteignabilité protègent le refactor)
-P0 ─ CH-2   Correctif D2 + alignement contrat 30  → R-COV-1 VERT        [D2 + D3]
+P0 ─ CH-1   Étage 2 : fixture canonique D2 figée + R-COV-1 (→ ROUGE perpétuel sur fixture)
+            + R-MIRROR-1 (vert)                                          [D5 + amorce D6]
+              │   (garde-fous + contrôle positif en place avant tout correctif)
+   ─ PAUSE   Relecture à froid du rouge R-COV-1 → décision de disposition Niveau 1
+              │   (suppression réservée OU câblage pont offline ; jamais de branche vide)
+P0 ─ CH-2   Correctif D2 + alignement contrat 30                          [D2 + D3]
+              │   → runtime : R-COV-1 VERT (contrôle négatif)
+              │   → fixture : R-COV-1 reste ROUGE (contrôle positif)
               │   (table de vérité iso-comportement prouvée hors-ligne avant commit)
               ├───────────────┐
 P1 ─ CH-3   Étage 2 pivot     │  P1 ─ CH-4  Contractualisation retry     [reste D6] [D7]
@@ -149,8 +164,8 @@ P2 ─ CH-5   Doc dépendances inter-domaines      (parallélisable)        [D8]
 P3 ─ CH-7   D9 acceptée figée + suite d'invariants résiduels différée   [D9 + reste D6]
 ```
 
-**Chemin critique :** GATE → CH-1 → CH-2 → CH-6. Tout le reste (CH-3, CH-4, CH-5) est parallélisable hors de ce chemin.
+**Chemin critique :** GATE → CH-1 → PAUSE (décision Niveau 1) → CH-2 → CH-6. Tout le reste (CH-3, CH-4, CH-5) est parallélisable hors de ce chemin.
 
-**Variante pragmatique (si priorité au « défaut éteint au plus vite »).** Permuter CH-1 et CH-2 : corriger D2 d'abord, puis poser `R-COV-1`/`R-MIRROR-1` en verrou rétroactif. Acceptable car D2 n'a aucun impact thermique, **mais** on perd la preuve rouge → vert et le miroir n'est plus gardé pendant l'édition à double cascade. L'ordre recommandé reste garde-fous d'abord.
+**Variante pragmatique (si priorité au « défaut éteint au plus vite »).** Permuter CH-1 et CH-2 : corriger D2 d'abord, puis poser `R-COV-1`/`R-MIRROR-1` en verrou rétroactif. Acceptable car D2 n'a aucun impact thermique, **mais** on perd la preuve rouge → vert sur le runtime, le miroir n'est plus gardé pendant l'édition à double cascade, et le contrôle positif (`R-COV-1` rouge sur fixture) n'est plus en place avant le correctif. La fixture canonique reste à figer dans tous les cas. L'ordre recommandé reste garde-fous d'abord.
 
-**Discipline transverse (toutes phases).** Commit atomique et réversible ; iso-comportement prouvé hors-ligne avant application ; aucune modification d'ordre, de seuil ou de garde hors périmètre du chantier ; changelogs historiques jamais réécrits.
+**Discipline transverse (toutes phases).** Commit atomique et réversible ; iso-comportement prouvé hors-ligne avant application ; aucune modification d'ordre, de seuil ou de garde hors périmètre du chantier ; **fixture canonique conservée, jamais réécrite** (au même rang que les changelogs historiques) ; changelogs historiques jamais réécrits.
