@@ -52,7 +52,7 @@ carte_chauffage_intention:
   icon: mdi:brain
   name: Intention chauffage
 
-state_display: |
+  state_display: |
     [[[
       const intention = entity.state;
       const raison = states['sensor.chauffage_raison_calculee']?.state;

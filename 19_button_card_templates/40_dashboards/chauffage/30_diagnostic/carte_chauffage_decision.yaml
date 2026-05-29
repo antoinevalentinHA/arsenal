@@ -48,7 +48,7 @@ carte_chauffage_decision:
 
   name: Chauffage – État réel
 
-variables:
+  variables:
     diag: |
       [[[
         const reel = entity?.state;

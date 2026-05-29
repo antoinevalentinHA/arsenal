@@ -73,7 +73,7 @@ carte_chauffage_synthese:
   #################################################################
   # 🧠 ÉTAT PRINCIPAL
   #################################################################
-state_display: |
+  state_display: |
     [[[
       const prog = (entity.state || '').toLowerCase();
       const raison = states['sensor.chauffage_raison_calculee']?.state;
@@ -146,7 +146,7 @@ state_display: |
   #################################################################
   # 🧾 LIBELLÉ EXPLICATIF
   #################################################################
-label: |
+  label: |
     [[[
       const prog = (entity.state || '').toLowerCase();
       const raison = states['sensor.chauffage_raison_calculee']?.state;
@@ -196,7 +196,7 @@ label: |
         return 'Poêle actif • chauffage en retrait';
       }
       if (raison === 'stabilisation_absence') {
-        return 'Stabilisation thermique d\\'absence';
+        return 'Stabilisation thermique d\'absence';
       }
 
       // Autorisation
@@ -225,7 +225,7 @@ label: |
   #################################################################
   # 🎨 COULEURS — CHARTE ARSENAL STRICTE
   #################################################################
-state:
+  state:
     # 🔵 Brûleur actif (Q3.b — information thermique, non décisionnel)
     - operator: template
       value: |

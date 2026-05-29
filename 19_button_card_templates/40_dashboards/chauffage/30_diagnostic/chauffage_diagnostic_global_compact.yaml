@@ -67,7 +67,7 @@ chauffage_diagnostic_global_compact:
     - sensor.chauffage_mode_calcule
     - sensor.chauffage_raison_calculee
 
-variables:
+  variables:
     diagnostic: |
       [[[
         const st = (id) => states[id]?.state;
@@ -122,7 +122,7 @@ variables:
         return { type: 'stable', raison: r };
       ]]]
 
-icon: |
+  icon: |
     [[[
       const d = variables.diagnostic;
 
@@ -139,7 +139,7 @@ icon: |
       return 'mdi:check-circle-outline';
     ]]]
 
-state_display: |
+  state_display: |
     [[[
       const d = variables.diagnostic;
 
@@ -158,7 +158,7 @@ state_display: |
       }
     ]]]
 
-label: |
+  label: |
     [[[
       const d = variables.diagnostic;
 
@@ -195,7 +195,7 @@ label: |
       return "Cohérent contrat • Aucune action requise";
     ]]]
 
-styles:
+  styles:
     card:
       - background-color: |
           [[[
