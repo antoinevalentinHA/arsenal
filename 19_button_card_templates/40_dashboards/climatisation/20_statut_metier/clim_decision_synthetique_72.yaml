@@ -93,6 +93,9 @@ clim_decision_synthetique_72:
           'blocage_aeration':        'Bloqué (aération)',
           'blocage_horaire':         'Bloqué (horaire)',
           'fenetre_ouverte':         'Fenêtre ouverte',
+          'blocage_aeration_etage':  'Bloqué (aération étage)',
+          'absence_prolongee':       'Absence prolongée',
+          'exterieur_trop_froid':    'Extérieur trop froid',
           'aucune_demande_admissible': 'Aucune demande admissible'
         };
         return map[r] || r;
@@ -110,7 +113,10 @@ clim_decision_synthetique_72:
       }
 
       if (mode === 'off') {
-        return "Le système est au repos.<br>Aucune condition ne justifie une action.";
+        if (UNAV.includes(raison) || raison === 'aucune_demande_admissible') {
+          return "Le système est au repos.<br>Aucune condition ne justifie une action.";
+        }
+        return "Le système est au repos.<br>Cause : " + r;
       }
 
       return "État décisionnel non interprétable<br>Mode brut : `" + mode + "`";

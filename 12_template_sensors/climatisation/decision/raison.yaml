@@ -56,6 +56,7 @@
         {% set dry_adm   = is_state('binary_sensor.besoin_clim_dry_admissible', 'on') %}
         {% set heat_adm  = is_state('binary_sensor.besoin_clim_heat_admissible', 'on') %}
         {% set heat_contexte = (target == 'heat') or (not cool_adm and not dry_adm) %}
+        {% set cool_besoin = is_state('binary_sensor.besoin_clim_cool', 'on') %}
 
         {% if is_state('input_boolean.blocage_clim_poele', 'on') and heat_contexte %}
           blocage_poele
@@ -63,7 +64,9 @@
           blocage_aeration
         {% elif is_state('binary_sensor.clim_blocage_horaire_reel', 'on') %}
           blocage_horaire
-        {% elif is_state('binary_sensor.fenetre_ouverte_maison', 'on') %}
+        {% elif is_state('binary_sensor.clim_blocage_aeration_etage_reel', 'on') %}
+          blocage_aeration_etage
+        {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
           fenetre_ouverte
         {% elif cool_adm %}
           refroidissement
@@ -71,6 +74,10 @@
           deshumidification
         {% elif heat_adm %}
           soutien_chauffage
+        {% elif cool_besoin and is_state('binary_sensor.clim_extinction_absence_prolongee_autorisee', 'on') %}
+          absence_prolongee
+        {% elif cool_besoin and (states('sensor.temperature_jardin') | float(0) < states('input_number.clim_seuil_temperature_exterieure_minimum') | float(99)) %}
+          exterieur_trop_froid
         {% else %}
           aucune_demande_admissible
         {% endif %}
