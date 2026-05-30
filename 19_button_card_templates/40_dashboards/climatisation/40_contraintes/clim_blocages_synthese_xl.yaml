@@ -65,11 +65,12 @@ clim_blocages_synthese_xl:
       const st = (id) => states[id]?.state;
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
 
-      const blocageAuto = st('input_boolean.clim_blocage_horaire_actif');
+      const horaire = st('binary_sensor.clim_blocage_horaire_reel');
+      const aeration = st('binary_sensor.clim_blocage_aeration_etage_reel');
       const postAeration = st('input_boolean.chauffage_blocage_aeration');
+
       const hOnRaw = st('input_datetime.clim_heure_blocage_autom_on');
       const hOffRaw = st('input_datetime.clim_heure_blocage_autom_off');
-
       const finBlocage = st('input_datetime.chauffage_fin_blocage_aeration');
 
       const fmt = (v) => {
@@ -85,26 +86,16 @@ clim_blocages_synthese_xl:
         }).replace(',', '');
       };
 
-      if ([blocageAuto, postAeration, hOnRaw, hOffRaw].some(v => UNAV.includes(v))) {
+      if ([horaire, aeration, postAeration].some(v => UNAV.includes(v))) {
         return "<b>Blocages indéterminés</b><br>" +
                "Données manquantes (unknown/unavailable)";
       }
 
-      const hOn = String(hOnRaw).slice(0,5);
-      const hOff = String(hOffRaw).slice(0,5);
-
-      const d = new Date();
-      const nowH = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-
-      const inRange = (start, end, t) => {
-        if (start < end) return (t >= start && t < end);
-        return (t >= start || t < end);
-      };
-
-      const blocageHoraire = (blocageAuto === 'on') && inRange(hOn, hOff, nowH);
+      const blocageHoraire = (horaire === 'on');
+      const blocageAeration = (aeration === 'on');
       const post = (postAeration === 'on');
 
-      if (!blocageHoraire && !post) {
+      if (!blocageHoraire && !blocageAeration && !post) {
         return "<b>Aucun blocage en cours</b><br>" +
                "Le système est pleinement autorisé à agir.";
       }
@@ -113,11 +104,16 @@ clim_blocages_synthese_xl:
 
       if (blocageHoraire) {
         out += "⏰ Blocage horaire actif<br>";
-        out += "Plage : " + hOn + " → " + hOff;
+        if (!UNAV.includes(hOnRaw) && !UNAV.includes(hOffRaw)) {
+          out += "Plage : " + String(hOnRaw).slice(0,5) + " → " + String(hOffRaw).slice(0,5) + "<br>";
+        }
+      }
+
+      if (blocageAeration) {
+        out += "🪟 Blocage aération étage actif<br>";
       }
 
       if (post) {
-        if (blocageHoraire) out += "<br>";
         out += "Blocage post-aération actif<br>";
         out += "Fin prévue : " + fmt(finBlocage);
       }
@@ -132,30 +128,15 @@ clim_blocages_synthese_xl:
             const st = (id) => states[id]?.state;
             const UNAV = ['unknown','unavailable',undefined,null,'none',''];
 
-            const blocageAuto = st('input_boolean.clim_blocage_horaire_actif');
+            const horaire = st('binary_sensor.clim_blocage_horaire_reel');
+            const aeration = st('binary_sensor.clim_blocage_aeration_etage_reel');
             const postAeration = st('input_boolean.chauffage_blocage_aeration');
-            const hOnRaw = st('input_datetime.clim_heure_blocage_autom_on');
-            const hOffRaw = st('input_datetime.clim_heure_blocage_autom_off');
 
-            if ([blocageAuto, postAeration, hOnRaw, hOffRaw].some(v => UNAV.includes(v)))
+            if ([horaire, aeration, postAeration].some(v => UNAV.includes(v)))
               return 'rgba(158, 158, 158, 0.1)';
 
-            const hOn = String(hOnRaw).slice(0,5);
-            const hOff = String(hOffRaw).slice(0,5);
-
-            const d = new Date();
-            const nowH = String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
-
-            const inRange = (start, end, t) => {
-              if (start < end) return (t >= start && t < end);
-              return (t >= start || t < end);
-            };
-
-            const blocageHoraire = (blocageAuto === 'on') && inRange(hOn, hOff, nowH);
-            const post = (postAeration === 'on');
-
-            if (!blocageHoraire && !post) return 'rgba(76, 175, 80, 0.2)';
-            return 'rgba(244, 67, 54, 0.2)';
+            const actif = (horaire === 'on') || (aeration === 'on') || (postAeration === 'on');
+            return actif ? 'rgba(244, 67, 54, 0.2)' : 'rgba(76, 175, 80, 0.2)';
           ]]]
 
     label:
