@@ -20,8 +20,8 @@
           is_state('input_boolean.blocage_clim_poele', 'on')
           or is_state('input_boolean.chauffage_blocage_aeration', 'on')
           or is_state('binary_sensor.clim_blocage_horaire_reel', 'on')
-          or is_state('binary_sensor.fenetre_ouverte_maison', 'on')
-          or is_state('binary_sensor.fenetre_ouverte_etage', 'on')
+          or is_state('binary_sensor.clim_blocage_aeration_etage_reel', 'on')
+          or is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on')
         }}
       icon: >
         {% if is_state(this.entity_id, 'on') %}
