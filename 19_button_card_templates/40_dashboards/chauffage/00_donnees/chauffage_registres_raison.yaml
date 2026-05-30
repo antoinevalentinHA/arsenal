@@ -1,0 +1,151 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE DE DONNÉES UI (CH-6)
+#     Chauffage — Table canonique des raisons
+#     raison -> { registre, libellé court, libellé long, icône, couleur }
+# ==========================================================
+#
+# 📌 STATUT
+#     SOCLE DE DONNÉES — source unique de correspondance UI.
+#     Inerte : ne calcule rien, ne décide rien, n'agit pas.
+#     Consommé par héritage button-card (template: [...]).
+#
+# 🎯 RÔLE
+#     Définir UNE SEULE FOIS, côté UI, la correspondance entre
+#     la raison canonique (sensor.chauffage_raison_calculee) et
+#     son rendu : registre doctrinal, libellés, icône, couleur.
+#     Les briques consommatrices lisent variables.registre_chauffage
+#     dans leurs champs d'affichage ; elles ne reclassent rien.
+#
+# 🎨 INVARIANT COULEUR (référence d'interprétation de cette table)
+#     La couleur traduit la nature métier observable du chauffage
+#     pour l'utilisateur. Elle ne traduit ni le registre, ni le
+#     contexte, ni le desired_mode.
+#
+#     Conséquences directes, déjà portées par la table :
+#       - mode_maison_vacances et pre_confort_vacances partagent le
+#         registre « Contexte majeur » mais diffèrent en couleur
+#         (Bleu vs Vert) — la couleur suit l'état observable.
+#       - stabilisation_absence et besoin_thermique produisent tous
+#         deux desired_mode = comfort mais diffèrent en couleur
+#         (Bleu vs Vert) — la couleur ne suit pas le desired_mode.
+#
+# 🎨 PALETTE — couleurs strictement issues de la charte
+#     00_documentation_arsenal/ui/couleurs/02_palette.md :
+#       - Bleu   rgba(33, 150, 243, 0.2)  — information / supervision
+#       - Orange rgba(255, 152, 0, 0.2)   — situation limite / dégradé
+#       - Vert   rgba(76, 175, 80, 0.2)   — condition remplie / favorable
+#       - Gris   rgba(158, 158, 158, 0.2) — aucune demande / passif
+#     Les surcouches d'indisponibilité (gris 0.1, prioritaire) et
+#     d'incohérence (rouge, prioritaire) sont portées PAR LES BRIQUES,
+#     pas par cette table (cf. 05_regles.md).
+#
+# 🧱 NATURE
+#     - Template button-card sans rendu propre (pas de carte).
+#     - variables.registre_chauffage : objet statique, aucun [[[ ]]].
+#
+# 🔒 NON FAIT
+#     - Ne lit aucune entité.
+#     - Ne porte aucune surcouche indispo / incohérence.
+#     - Ne classe pas presence_on ni absence par couleur autre que gris.
+#
+# 🔗 CONSOMMÉ PAR (CH-6)
+#     - chauffage_diagnostic_global_compact   (migré en C2)
+#     - carte_chauffage_decision              (à venir)
+#     - carte_chauffage_synthese              (à venir)
+#
+# ==========================================================
+
+chauffage_registres_raison:
+  variables:
+    registre_chauffage:
+
+      # --- Override opérateur ------------------------------------
+      confort_force:
+        registre: "Override"
+        libelle_court: "Override"
+        libelle_long: "Confort forcé • priorité opérateur"
+        icone: "mdi:account-cog"
+        couleur: "rgba(33, 150, 243, 0.2)"
+
+      # --- Sécurité (retrait protecteur temporaire) --------------
+      aeration_en_cours:
+        registre: "Sécurité"
+        libelle_court: "Aération"
+        libelle_long: "Aération en cours • chauffage en retrait"
+        icone: "mdi:lock-alert"
+        couleur: "rgba(255, 152, 0, 0.2)"
+
+      blocage_aeration_en_cours:
+        registre: "Sécurité"
+        libelle_court: "Post-aération"
+        libelle_long: "Post-aération • temporisation en cours"
+        icone: "mdi:lock-alert"
+        couleur: "rgba(255, 152, 0, 0.2)"
+
+      fenetre_ouverte_maison:
+        registre: "Sécurité"
+        libelle_court: "Fenêtre ouverte"
+        libelle_long: "Fenêtre ouverte • chauffage en retrait"
+        icone: "mdi:lock-alert"
+        couleur: "rgba(255, 152, 0, 0.2)"
+
+      # --- Contexte majeur (régimes vacances) --------------------
+      mode_maison_vacances:
+        registre: "Contexte majeur"
+        libelle_court: "Vacances"
+        libelle_long: "Mode vacances • consigne réduite"
+        icone: "mdi:beach"
+        couleur: "rgba(33, 150, 243, 0.2)"
+
+      # Vert : remontée de confort favorable engagée (desired_mode=comfort)
+      pre_confort_vacances:
+        registre: "Contexte majeur"
+        libelle_court: "Pré-confort"
+        libelle_long: "Pré-confort vacances • remontée anticipée"
+        icone: "mdi:home-clock"
+        couleur: "rgba(76, 175, 80, 0.2)"
+
+      # --- Stabilisation (préférence subordonnée observable) -----
+      poele_actif:
+        registre: "Stabilisation"
+        libelle_court: "Poêle actif"
+        libelle_long: "Poêle actif • chauffage en retrait"
+        icone: "mdi:fireplace"
+        couleur: "rgba(33, 150, 243, 0.2)"
+
+      stabilisation_absence:
+        registre: "Stabilisation"
+        libelle_court: "Stabilisation"
+        libelle_long: "Stabilisation thermique d'absence"
+        icone: "mdi:home-thermometer"
+        couleur: "rgba(33, 150, 243, 0.2)"
+
+      # --- Nominal (confort légitime servi) ----------------------
+      besoin_thermique:
+        registre: "Nominal"
+        libelle_court: "Besoin"
+        libelle_long: "Besoin thermique • appel confort"
+        icone: "mdi:radiator"
+        couleur: "rgba(76, 175, 80, 0.2)"
+
+      confort_suffisant:
+        registre: "Nominal"
+        libelle_court: "Confort OK"
+        libelle_long: "Confort suffisant • sobriété nominale"
+        icone: "mdi:check-circle-outline"
+        couleur: "rgba(76, 175, 80, 0.2)"
+
+      # --- Nominal (attente) / Absence : aucune demande active ---
+      presence_on:
+        registre: "Nominal"
+        libelle_court: "Attente"
+        libelle_long: "Confort autorisé • seuil non atteint"
+        icone: "mdi:timer-sand"
+        couleur: "rgba(158, 158, 158, 0.2)"
+
+      absence:
+        registre: "Absence"
+        libelle_court: "Absence"
+        libelle_long: "Absence • surveillance"
+        icone: "mdi:home-export-outline"
+        couleur: "rgba(158, 158, 158, 0.2)"
