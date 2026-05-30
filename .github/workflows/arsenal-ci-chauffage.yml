@@ -18,6 +18,10 @@ on:
       - "12_template_sensors/chauffage/**.yaml"
       # Cerveau de decision : sa modification change le verdict etage-2.
       - "10_scripts/chauffage/decision_centrale.yaml"
+      # CH-4 : topologie d'appel (frontiere d'execution, R-CALL-1).
+      - "10_scripts/chauffage/**"
+      - "11_automations/chauffage/**"
+      - "00_documentation_arsenal/contrats/chauffage/10_souverainete_execution__amendement.md"
       - ".github/workflows/arsenal-ci-chauffage.yml"
   pull_request:
     paths:
@@ -25,6 +29,9 @@ on:
       - "00_documentation_arsenal/contrats/chauffage/ci/registres_entites.yaml"
       - "12_template_sensors/chauffage/**.yaml"
       - "10_scripts/chauffage/decision_centrale.yaml"
+      - "10_scripts/chauffage/**"
+      - "11_automations/chauffage/**"
+      - "00_documentation_arsenal/contrats/chauffage/10_souverainete_execution__amendement.md"
       - ".github/workflows/arsenal-ci-chauffage.yml"
 
 # -----------------------------------------------------------------------------
@@ -213,6 +220,76 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: arsenal-ci-chauffage-decision-report
+          path: ci_reports/
+          retention-days: 14
+          if-no-files-found: warn
+
+  # ---------------------------------------------------------------- execution
+  # CH-4 : topologie d'appel de la couche d'Application (R-CALL-1).
+  # Troisieme analyseur, parallele a l'etage-1 (lint) et l'etage-2 (decision).
+  execution:
+    name: Verdict topologie d'appel Chauffage (frontiere d'execution)
+    runs-on: ubuntu-latest
+    needs: self-test            # meme garde : on ne juge pas avec un juge defectueux
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Installer les dependances
+        run: pip install pyyaml
+
+      - name: Verdict topologie (warn-only / enforce selon ARSENAL_CI_ENFORCE)
+        id: execution
+        shell: bash
+        run: |
+          set -uo pipefail
+          set +e   # GitHub lance 'shell: bash' avec -e ; on gere les exit codes a la main.
+
+          mkdir -p ci_reports
+
+          echo "::group::Execution (R-CALL-1 : appelants de chauffage_appliquer_consigne)"
+          PYTHONPATH=tools python -m arsenal_ci.execution.cli_execution \
+            --json ci_reports/execution.json
+          code=$?
+          echo "exit=${code}"
+          echo "::endgroup::"
+
+          # --- Resolution de l'echec du job (identique aux autres jobs) -------
+          # Erreur d'execution (2) : bloquant dans TOUTES les phases.
+          if [ "$code" -eq 2 ]; then
+            echo "::error::Erreur d'execution du validateur R-CALL-1 (exit 2) — entree illisible, ce n'est PAS une violation de config."
+            exit 2
+          fi
+
+          # Violation doctrinale (1) : bloquant uniquement en phase enforce.
+          if [ "$code" -eq 1 ]; then
+            if [ "${ARSENAL_CI_ENFORCE}" = "true" ]; then
+              echo "::error::Appelant non contractualise detecte (exit 1) — phase bloquante (ARSENAL_CI_ENFORCE=true)."
+              exit 1
+            else
+              echo "::warning::Appelant non contractualise detecte (exit 1) — phase warn-only, le job ne bloque pas. Voir l'artifact JSON."
+              exit 0
+            fi
+          fi
+
+          if [ "$code" -ne 0 ]; then
+            echo "::error::Code de sortie inattendu (${code}) — anomalie d'integration."
+            exit 2
+          fi
+
+          echo "Conforme : topologie d'appel intacte (R-CALL-1)."
+          exit 0
+
+      - name: Publier le rapport JSON execution (artifact)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arsenal-ci-chauffage-execution-report
           path: ci_reports/
           retention-days: 14
           if-no-files-found: warn
