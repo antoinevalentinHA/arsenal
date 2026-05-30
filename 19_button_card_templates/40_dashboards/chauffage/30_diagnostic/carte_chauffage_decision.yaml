@@ -15,25 +15,35 @@
 # 🧱 NATURE
 #     - Template button-card
 #     - Spécialisation de socle_decision_72
+#     - Consomme le socle de données chauffage_registres_raison (CH-6)
 #     - UI uniquement (aucune décision)
 #
-# 🎨 SEMANTIQUE (palette contractuelle Arsenal — cf. 02_palette.md)
-#     - Incohérence intention ≠ réel        -> 🔴 rouge   (ko)
-#     - Sécurité système (interdit)         -> 🔴 rouge   (ko)
-#     - Sécurité situation limite           -> 🟠 orange  (warn)
-#     - Override / Contexte / Stabilisation -> 🔵 bleu    (info)
-#     - Besoin thermique / Confort suffisant-> 🟢 vert    (ok)
-#     - Présence neutre / Absence           -> ⚪ gris    (neutre)
+# 🎨 SEMANTIQUE
+#     Le libellé et la couleur de la raison proviennent de la table
+#     canonique unique : chauffage_registres_raison
+#     (00_donnees/chauffage_registres_raison.yaml). Cette brique ne
+#     reclasse rien : elle lit la table et applique sa surcouche propre.
+#
+#     INVARIANT COULEUR (cf. socle de données) :
+#       La couleur traduit la nature métier observable du chauffage
+#       pour l'utilisateur. Elle ne traduit ni le registre, ni le
+#       contexte, ni le desired_mode.
+#
+#     Surcouche portée PAR CETTE BRIQUE (priorité, cf. 05_regles.md) :
+#       - incohérence intention ≠ réel -> 🔴 rouge — prioritaire
+#         (prime sur la couleur de la table)
 #
 # 🔗 DEPENDANCES
 #     - entity                            : sensor état réel chauffage (Confort | Eco | Inconnu)
 #     - sensor.chauffage_mode_calcule     : intention du moteur de décision
 #     - sensor.chauffage_raison_calculee  : raison active (clé normalisée Arsenal)
+#     - variables.registre_chauffage      : table canonique (héritée du socle de données)
 #
 # ⚠️ CONTRAINTES
 #     - La cohérence admet 'Neutre' comme intention valide pour Eco ou Confort
-#     - Les clés de raison sont normalisées — toute clé inconnue est affichée brute
-#     - La variable `diag` est un objet calculé inline — ne pas la surcharger à l'instance
+#     - Toute clé de raison inconnue est affichée brute (repli)
+#     - La variable `diag` lit la table canonique ; aucune map de
+#       libellés/couleurs n'est définie inline ici
 #     - Aucune action définie — héritée de socle_decision_72
 #
 # 🧩 USAGE
@@ -44,7 +54,9 @@
 # ==========================================================
 
 carte_chauffage_decision:
-  template: socle_decision_72
+  template:
+    - socle_decision_72
+    - chauffage_registres_raison
 
   name: Chauffage – État réel
 
@@ -55,39 +67,12 @@ carte_chauffage_decision:
         const intention = states['sensor.chauffage_mode_calcule']?.state;
         const raison = states['sensor.chauffage_raison_calculee']?.state || '';
 
-        const labels = {
-          confort_force: 'override opérateur',
-          chauffage_non_autorise: 'interdit (sécurité)',
-          aeration_en_cours: 'aération en cours',
-          blocage_aeration_en_cours: 'post-aération',
-          fenetre_ouverte_maison: 'fenêtre ouverte',
-          pre_confort_vacances: 'pré-confort',
-          mode_maison_vacances: 'mode vacances',
-          poele_actif: 'poêle actif',
-          besoin_thermique: 'besoin thermique',
-          presence_on: 'présence',
-          confort_suffisant: 'confort suffisant',
-          stabilisation_absence: 'stabilisation absence',
-          absence: 'absence'
-        };
+        // Correspondance unique (socle de données CH-6) — aucune map inline.
+        const reg = variables.registre_chauffage || {};
+        const m = reg[raison];
 
-        const r = raison;
-
-        // Classification par registre
-        const securite_systeme = ['chauffage_non_autorise'];
-        const securite_limite  = ['aeration_en_cours', 'blocage_aeration_en_cours', 'fenetre_ouverte_maison'];
-        const contexte_majeur  = ['mode_maison_vacances', 'pre_confort_vacances'];
-        const stabilisation    = ['poele_actif', 'stabilisation_absence'];
-        const nominal          = ['besoin_thermique', 'confort_suffisant'];
-
-        const is_inconnu              = (reel === 'Inconnu');
-        const is_override             = (r === 'confort_force');
-        const is_securite_systeme     = securite_systeme.includes(r);
-        const is_securite_limite      = securite_limite.includes(r);
-        const is_contexte_majeur      = contexte_majeur.includes(r);
-        const is_stabilisation        = stabilisation.includes(r);
-        const is_nominal              = nominal.includes(r);
-
+        // Cohérence intention/réel : surcouche propre à la brique decision.
+        const is_inconnu = (reel === 'Inconnu');
         const coherent = (() => {
           if (is_inconnu) return false;
           if (intention === reel) return true;
@@ -95,36 +80,20 @@ carte_chauffage_decision:
           return false;
         })();
 
-        // Catégorie visuelle (palette contractuelle Arsenal)
-        // Priorité : KO (incohérence) > sécurité système > sécurité limite > info > nominal > neutre
-        const category = (() => {
-          if (!coherent) return 'ko';                     // 🔴 rouge — incohérence intention/réel
-          if (is_securite_systeme) return 'ko';            // 🔴 rouge — interdiction réelle
-          if (is_securite_limite) return 'warn';           // 🟠 orange — situation limite
-          if (is_override) return 'info';                  // 🔵 bleu — override
-          if (is_contexte_majeur) return 'info';           // 🔵 bleu — Vacances
-          if (is_stabilisation) return 'info';             // 🔵 bleu — Q1, Q2
-          if (is_nominal) return 'ok';                     // 🟢 vert — besoin / confort suffisant
-          return 'neutre';                                 // ⚪ gris — présence_on, absence
-        })();
+        const reason_txt = raison ? (m ? m.libelle_court : raison) : '';
 
-        const bg = (() => {
-          if (category === 'ko')     return "rgba(244, 67, 54, 0.2)";
-          if (category === 'warn')   return "rgba(255, 152, 0, 0.2)";
-          if (category === 'info')   return "rgba(33, 150, 243, 0.2)";
-          if (category === 'ok')     return "rgba(76, 175, 80, 0.2)";
-          return "rgba(158, 158, 158, 0.2)";
-        })();
-
-        const reason_txt = r ? (labels[r] || r) : '';
+        // Couleur : incohérence -> rouge (surcouche prioritaire, cf. 05_regles.md) ;
+        // sinon couleur de la table canonique (repli gris neutre).
+        const bg = (!coherent)
+          ? "rgba(244, 67, 54, 0.2)"
+          : (m ? m.couleur : "rgba(158, 158, 158, 0.2)");
 
         return {
-          reel,
+          reel: reel,
           intention: intention || '—',
-          raison: r,
-          reason_txt,
-          category,
-          bg
+          raison: raison,
+          reason_txt: reason_txt,
+          bg: bg
         };
       ]]]
 
