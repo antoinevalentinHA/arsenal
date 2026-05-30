@@ -7,9 +7,11 @@
 #     TEMPLATE UI METIER
 #
 # 🎯 ROLE
-#     Affiche l'état réel de la climatisation et évalue la
-#     cohérence entre l'action en cours et la raison décisionnelle.
-#     Colore selon la cohérence ou la nature du blocage.
+#     Affiche l'état réel de la climatisation et reflète la cohérence
+#     décision/exécution lue depuis le backend
+#     (binary_sensor.clim_incoherence_decision_reel).
+#     Colore selon cette cohérence ; l'orange nuance un état cohérent
+#     mais explicitement bloqué.
 #
 # 🧱 NATURE
 #     - Template button-card
@@ -17,24 +19,24 @@
 #     - UI uniquement (aucune décision)
 #
 # 🎨 SEMANTIQUE
-#     - action cohérente avec raison              -> 🟢 vert   (nominal)
-#       (aucune_demande_admissible→arrêt,
-#        blocage_*→bloquée, fenetre_ouverte→bloquée,
-#        refroidissement→cool, deshumidification→dry,
-#        soutien_chauffage→heat)
-#     - clim bloquée + binary_sensor confirmé     -> 🟠 orange (blocage explicite)
-#     - toute autre combinaison (incohérence)     -> 🔴 rouge  (divergence à investiguer)
+#     - clim_incoherence_decision_reel == on            -> 🔴 rouge  (incohérence, prioritaire)
+#     - == off + clim_bloquee on + action arrêt/bloquée -> 🟠 orange (blocage explicite, état cohérent)
+#     - == off sans blocage explicite                   -> 🟢 vert   (cohérent nominal)
+#     - == unknown / unavailable                        -> ⚪ gris   (indisponibilité)
 #
 # 🔗 DEPENDANCES
-#     - entity                          : sensor état réel clim
+#     - entity                                       : sensor état réel clim
 #       (cool_actif | dry_actif | heat_actif | arret | bloquee)
-#     - sensor.clim_raison_decision     : raison active normalisée
-#     - binary_sensor.clim_bloquee      : confirmation de blocage matériel / logique
+#     - binary_sensor.clim_incoherence_decision_reel : verdict de cohérence (autorité)
+#     - binary_sensor.clim_bloquee                   : nuance orange (blocage explicite)
+#     - sensor.clim_raison_decision                  : affiché en label uniquement
 #
 # ⚠️ CONTRAINTES
-#     - Priorité : cohérence > blocage confirmé > défaut rouge
-#     - Le blocage orange n'est atteint que si la cohérence verte ne matche pas d'abord
-#     - Les raisons non listées dans le mapping vert tombent en rouge par défaut
+#     - La frontière cohérent/incohérent est tranchée UNIQUEMENT par
+#       binary_sensor.clim_incoherence_decision_reel
+#     - L'orange est une nuance interne à l'état cohérent ; il ne masque
+#       jamais un rouge (rouge évalué en premier)
+#     - Aucun recalcul de cohérence raison/action côté UI
 #     - Symétrique de carte_chauffage_decision — même pattern, domaine clim
 #
 # 🧩 USAGE

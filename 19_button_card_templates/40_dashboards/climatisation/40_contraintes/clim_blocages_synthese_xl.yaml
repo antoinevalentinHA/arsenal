@@ -8,7 +8,7 @@
 #
 # 🎯 ROLE
 #     Afficher une synthese XL des blocages actifs de la
-#     climatisation, avec detail du blocage horaire et du
+#     climatisation : blocage horaire, blocage aeration etage et
 #     blocage post-aeration.
 #
 # 🧱 NATURE
@@ -24,19 +24,20 @@
 # 🔗 DEPENDANCES
 #     - entity: aucune entite principale portee par la carte
 #     - attributes: aucune
-#     - helpers externes:
-#         - input_boolean.clim_blocage_horaire_actif
+#     - capteurs backend (etat actif):
+#         - binary_sensor.clim_blocage_horaire_reel
+#         - binary_sensor.clim_blocage_aeration_etage_reel
 #         - input_boolean.chauffage_blocage_aeration
+#     - input_datetime (informatif uniquement, ne decide rien):
 #         - input_datetime.clim_heure_blocage_autom_on
 #         - input_datetime.clim_heure_blocage_autom_off
 #         - input_datetime.chauffage_fin_blocage_aeration
 #
 # ⚠️ CONTRAINTES
 #     - Ce template ne calcule pas la politique de blocage
-#     - Il produit une synthese UI locale a partir des etats
-#       et horaires exposes par le backend
-#     - La logique horaire reste limitee a la presentation
-#       de l'etat courant
+#     - L'etat actif de chaque blocage est lu depuis les capteurs
+#       backend ; aucun recalcul horaire cote navigateur
+#     - La plage horaire n'est affichee qu'a titre informatif
 #
 # 🧩 USAGE
 #     Exemple minimal :

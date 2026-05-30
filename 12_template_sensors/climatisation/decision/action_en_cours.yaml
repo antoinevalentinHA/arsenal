@@ -8,7 +8,8 @@
 # 🧱 Principe Arsenal :
 #   - Capteur STRICTEMENT explicatif
 #   - Basé sur l’état réel (HVAC + alimentation)
-#   - Priorité à l’état "bloquée" si un verrou est actif
+#   - Priorité à l’état réel HVAC ; "bloquée" uniquement si le poêle
+#     bloque alors que la clim est à l’arrêt
 #   - Aucune logique de décision
 #
 # ✅ Usage :
