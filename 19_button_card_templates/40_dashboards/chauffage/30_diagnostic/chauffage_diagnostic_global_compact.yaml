@@ -14,32 +14,38 @@
 # 🧱 NATURE
 #     - Template button-card
 #     - Spécialisation de socle_diagnostic_compact
+#     - Consomme le socle de données chauffage_registres_raison (CH-6)
 #     - UI uniquement (aucune décision)
 #
-# 🎨 SEMANTIQUE (palette contractuelle Arsenal — cf. 02_palette.md)
-#     - indisponible          -> ⚪ gris indispo (0.1)  (données absentes)
-#     - securite_systeme      -> 🔴 rouge   (interdiction réelle)
-#     - securite_limite       -> 🟠 orange  (situation limite)
-#     - override              -> 🔵 bleu    (confort forcé opérateur)
-#     - contexte_majeur       -> 🔵 bleu    (Vacances / pré-confort)
-#     - stabilisation         -> 🔵 bleu    (poêle / stabilisation_absence — Q1 Q2)
-#     - confort_suffisant     -> 🟢 vert    (sobriété nominale)
-#     - besoin_thermique      -> 🟢 vert    (appel confort)
-#     - attente / absence     -> ⚪ gris    (neutre)
+# 🎨 SEMANTIQUE
+#     Icône, libellé et couleur de chaque raison proviennent de la
+#     table canonique unique : chauffage_registres_raison
+#     (00_donnees/chauffage_registres_raison.yaml). Cette brique ne
+#     reclasse rien : elle lit la table et applique les surcouches
+#     qui lui sont propres.
+#
+#     INVARIANT COULEUR (cf. socle de données) :
+#       La couleur traduit la nature métier observable du chauffage
+#       pour l'utilisateur. Elle ne traduit ni le registre, ni le
+#       contexte, ni le desired_mode.
+#
+#     Surcouches portées PAR CETTE BRIQUE (priorité, cf. 05_regles.md) :
+#       - indisponibilité (une source unknown/unavailable)
+#         -> ⚪ gris indispo rgba(158,158,158,0.1) — prioritaire
 #
 # 🔗 DEPENDANCES
 #     - sensor.programme_chauffage
 #     - sensor.chauffage_mode_calcule
 #     - sensor.chauffage_raison_calculee
+#     - variables.registre_chauffage (héritée du socle de données)
 #
 # ⚠️ CONTRAINTES
-#     - Les 3 sensors principaux sont requis — un seul unavailable bascule en gris
-#     - Priorité de classification : override > securite_systeme > securite_limite
-#       > contexte_majeur > stabilisation > confort_suffisant > besoin_thermique
-#       > attente > absence > stable
+#     - Les 3 sensors principaux sont requis — un seul unavailable
+#       bascule en gris indisponibilité (prioritaire)
 #     - triggers_update déclaré explicitement sur les 3 entités sources
 #     - Aucune action (tap, hold désactivés)
-#     - La variable `diagnostic` est un objet calculé inline — ne pas la surcharger
+#     - La table de correspondance n'est définie qu'une fois (socle) :
+#       cette brique ne contient aucune map de libellés/couleurs inline
 #
 # 🧩 USAGE
 #     type: custom:button-card
@@ -49,7 +55,9 @@
 # ==========================================================
 
 chauffage_diagnostic_global_compact:
-  template: socle_diagnostic_compact
+  template:
+    - socle_diagnostic_compact
+    - chauffage_registres_raison
 
   show_icon: true
   show_name: false
@@ -77,122 +85,53 @@ chauffage_diagnostic_global_compact:
         const intention = st('sensor.chauffage_mode_calcule');
         const raison = st('sensor.chauffage_raison_calculee');
 
+        // Indisponibilité : surcouche prioritaire (cf. 05_regles.md).
         if ([programme, intention, raison].some(v => UNAV.includes(v))) {
-          return { type: 'indisponible' };
+          return { indisponible: true };
         }
 
-        const r = raison;
+        // ── Code mort préexistant conservé hors périmètre CH-6 ──────
+        // `coherent` n'est lu par aucun champ. Dette UI distincte,
+        // signalée et NON traitée dans CH-6 (cf. arbitrage). Conservé
+        // verbatim pour ne pas étendre le périmètre du chantier.
         const prog_l = (programme || '').toLowerCase();
         const intention_l = (intention || '').toLowerCase();
-
-        // Classification par registre (palette contractuelle Arsenal)
-        const securite_systeme = ['chauffage_non_autorise'];
-        const securite_limite  = ['aeration_en_cours', 'blocage_aeration_en_cours', 'fenetre_ouverte_maison'];
-        const contexte_majeur  = ['mode_maison_vacances', 'pre_confort_vacances'];
-        const stabilisation    = ['poele_actif', 'stabilisation_absence'];
-
-        const is_override         = (r === 'confort_force');
-        const is_securite_systeme = securite_systeme.includes(r);
-        const is_securite_limite  = securite_limite.includes(r);
-        const is_contexte_majeur  = contexte_majeur.includes(r);
-        const is_stabilisation    = stabilisation.includes(r);
-        const is_confort_suffisant = (r === 'confort_suffisant');
-        const is_besoin_thermique  = (r === 'besoin_thermique');
-        const is_presence_on       = (r === 'presence_on');
-        const is_absence           = (r === 'absence');
-
         const coherent = (() => {
           if (intention === 'Neutre' && (programme === 'Eco' || programme === 'Confort')) return true;
           if (intention_l === 'confort' && prog_l.includes('comfort')) return true;
           if (intention_l === 'eco' && prog_l.includes('eco')) return true;
           return false;
         })();
+        // ───────────────────────────────────────────────────────────
 
-        // Priorité de classification
-        if (is_override)          return { type: 'override',          raison: r };
-        if (is_securite_systeme)  return { type: 'securite_systeme',  raison: r };
-        if (is_securite_limite)   return { type: 'securite_limite',   raison: r };
-        if (is_contexte_majeur)   return { type: 'contexte_majeur',   raison: r };
-        if (is_stabilisation)     return { type: 'stabilisation',     raison: r };
-        if (is_confort_suffisant) return { type: 'confort_suffisant', raison: r };
-        if (is_besoin_thermique)  return { type: 'besoin_thermique',  raison: r };
-        if (is_presence_on)       return { type: 'attente',           raison: r };
-        if (is_absence)           return { type: 'absence',           raison: r };
-
-        return { type: 'stable', raison: r };
+        return { indisponible: false, raison: raison };
       ]]]
 
   icon: |
     [[[
       const d = variables.diagnostic;
-
-      if (d.type === 'override')          return 'mdi:account-cog';
-      if (d.type === 'securite_systeme')  return 'mdi:shield-alert';
-      if (d.type === 'securite_limite')   return 'mdi:lock-alert';
-      if (d.type === 'contexte_majeur')   return 'mdi:beach';
-      if (d.type === 'stabilisation')     return 'mdi:home-thermometer';
-      if (d.type === 'confort_suffisant') return 'mdi:check-circle-outline';
-      if (d.type === 'besoin_thermique')  return 'mdi:radiator';
-      if (d.type === 'attente')           return 'mdi:timer-sand';
-      if (d.type === 'absence')           return 'mdi:home-export-outline';
-      if (d.type === 'indisponible')      return 'mdi:shield-off';
-      return 'mdi:check-circle-outline';
+      if (d.indisponible) return 'mdi:shield-off';
+      const reg = variables.registre_chauffage || {};
+      const m = reg[d.raison];
+      return m ? m.icone : 'mdi:check-circle-outline';
     ]]]
 
   state_display: |
     [[[
       const d = variables.diagnostic;
-
-      switch (d.type) {
-        case 'indisponible':      return "Chauffage";
-        case 'override':          return "Override";
-        case 'securite_systeme':  return "Interdit";
-        case 'securite_limite':   return "Bloqué";
-        case 'contexte_majeur':   return "Contexte";
-        case 'stabilisation':     return "Stabilisation";
-        case 'confort_suffisant': return "Confort OK";
-        case 'besoin_thermique':  return "Besoin";
-        case 'attente':           return "Attente";
-        case 'absence':           return "Absence";
-        default:                  return "Stable";
-      }
+      if (d.indisponible) return 'Chauffage';
+      const reg = variables.registre_chauffage || {};
+      const m = reg[d.raison];
+      return m ? m.libelle_court : d.raison;
     ]]]
 
   label: |
     [[[
       const d = variables.diagnostic;
-
-      if (d.type === 'indisponible')
-        return "Données indisponibles";
-
-      if (d.type === 'override')
-        return "Confort forcé • Priorité opérateur";
-
-      if (d.type === 'securite_systeme')
-        return "Interdiction système • Sécurité";
-
-      if (d.type === 'securite_limite')
-        return "Situation limite • " + (d.raison || "cause active");
-
-      if (d.type === 'contexte_majeur')
-        return "Contexte majeur • " + (d.raison || "");
-
-      if (d.type === 'stabilisation')
-        return "Stabilisation • " + (d.raison || "");
-
-      if (d.type === 'confort_suffisant')
-        return "Confort suffisant • Sobriété nominale";
-
-      if (d.type === 'besoin_thermique')
-        return "Besoin thermique • Appel confort";
-
-      if (d.type === 'attente')
-        return "Attente • Autorisation sans action";
-
-      if (d.type === 'absence')
-        return "Absence • Surveillance";
-
-      return "Cohérent contrat • Aucune action requise";
+      if (d.indisponible) return 'Données indisponibles';
+      const reg = variables.registre_chauffage || {};
+      const m = reg[d.raison];
+      return m ? m.libelle_long : d.raison;
     ]]]
 
   styles:
@@ -200,28 +139,8 @@ chauffage_diagnostic_global_compact:
       - background-color: |
           [[[
             const d = variables.diagnostic;
-
-            if (d.type === 'indisponible')
-              return "rgba(158, 158, 158, 0.1)";
-
-            // 🔴 Rouge — sécurité système (interdiction réelle)
-            if (d.type === 'securite_systeme')
-              return "rgba(244, 67, 54, 0.2)";
-
-            // 🟠 Orange — sécurité situation limite
-            if (d.type === 'securite_limite')
-              return "rgba(255, 152, 0, 0.2)";
-
-            // 🔵 Bleu — information / supervision (Q1, Q2, override, contexte)
-            if (d.type === 'override'
-                || d.type === 'contexte_majeur'
-                || d.type === 'stabilisation')
-              return "rgba(33, 150, 243, 0.2)";
-
-            // 🟢 Vert — autorisation nominale
-            if (d.type === 'confort_suffisant' || d.type === 'besoin_thermique')
-              return "rgba(76, 175, 80, 0.2)";
-
-            // ⚪ Gris neutre — présence neutre / absence / stable
-            return "rgba(158, 158, 158, 0.2)";
+            if (d.indisponible) return 'rgba(158, 158, 158, 0.1)';
+            const reg = variables.registre_chauffage || {};
+            const m = reg[d.raison];
+            return m ? m.couleur : 'rgba(158, 158, 158, 0.2)';
           ]]]
