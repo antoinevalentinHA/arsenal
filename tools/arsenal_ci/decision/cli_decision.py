@@ -1,12 +1,16 @@
 """Surface CI etage-2 — verdict decision sur la config vivante (plan 2).
 
-Instance CH-1 du verdict etage-2 : applique au RUNTIME les deux regles de la
-region decision, agrege en un report.result.Result, et renvoie un exit code
-0/1/2 identique a la CLI etage-1.
+Instance CH-1 du verdict etage-2 : applique au RUNTIME les regles de la region
+decision, agrege en un report.result.Result, et renvoie un exit code 0/1/2
+identique a la CLI etage-1.
 
   - R-COV-1 (couverture) : runtime decision_centrale.yaml:reason, SANS axiome
     (A=()) depuis CH-2 — couverture purement structurelle ;
-  - R-MIRROR-1 (synchronie) : runtime cerveau <-> miroir.
+  - R-MIRROR-1 (synchronie) : runtime cerveau <-> miroir ;
+  - R-CAUSE-1 (non-remontee consequence->cause, CH-3) : aucune raison emise
+    n'est une consequence (etat d'autorisation compose) ;
+  - R-ISO-1 (iso-comportement, CH-3) : reason et desired_mode partagent le meme
+    squelette de decision de tete.
 
 Source unique de localisation cerveau/miroir : r_mirror_1 (CERVEAU_FICHIER,
 CERVEAU_CLE, MIROIR_FICHIER, MIROIR_CLE). Aucun chemin runtime n'est code en
@@ -26,7 +30,7 @@ from ..report import formatters
 from ..report.result import ExecutionError, Result, summarise
 from ..report.violation import Violation
 from ..rules.policy import Severity
-from . import r_cov_1, r_mirror_1
+from . import r_cause_1, r_cov_1, r_iso_1, r_mirror_1
 from .r_mirror_1 import CERVEAU_CLE, CERVEAU_FICHIER
 
 # Ordre deterministe, aligne sur l'orchestrateur etage-1.
@@ -49,11 +53,13 @@ def agreger(violations: List[Violation]) -> Result:
 
 
 def _collecter() -> List[Violation]:
-    """Applique les deux regles etage-2 au runtime. Peut lever ExecutionError."""
+    """Applique les regles etage-2 au runtime. Peut lever ExecutionError."""
     violations: List[Violation] = list(
         r_cov_1.analyser_fichier(CERVEAU_FICHIER, CERVEAU_CLE, ())
     )
     violations += r_mirror_1.comparer_runtime()
+    violations += r_cause_1.analyser_fichier(CERVEAU_FICHIER, CERVEAU_CLE)
+    violations += r_iso_1.comparer_runtime()
     return violations
 
 

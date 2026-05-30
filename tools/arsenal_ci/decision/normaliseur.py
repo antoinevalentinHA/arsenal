@@ -30,6 +30,7 @@ from .model import (
     Branche,
     CascadeNormalisee,
     Emission,
+    EmissionDynamique,
     Et,
     Garde,
     Liaison,
@@ -82,6 +83,11 @@ def _collecter_cle(obj, cle: str, out: List[str]) -> None:
 _SPLIT_RE = re.compile(r"(\{%.*?%\}|\{#.*?#\}|\{\{.*?\}\})", re.DOTALL)
 _KINDS = {"if", "elif", "else", "endif", "set"}
 
+# Sortie {{ }} bornee : UNE variable simple uniquement (extension minimale
+# pour modeliser desired_mode : {{ cible }}). Toute expression plus riche
+# reste fail-closed.
+_VAR_SIMPLE_RE = re.compile(r"^[A-Za-z_]\w*$")
+
 
 class _Tok:
     pass
@@ -98,6 +104,13 @@ class _Text(_Tok):
         self.texte = texte
 
 
+class _Out(_Tok):
+    """Sortie {{ <variable> }} simple (emission dynamique)."""
+
+    def __init__(self, variable: str) -> None:
+        self.variable = variable
+
+
 def _tokeniser(scalaire: str) -> List[_Tok]:
     toks: List[_Tok] = []
     for i, m in enumerate(_SPLIT_RE.split(scalaire)):
@@ -109,7 +122,18 @@ def _tokeniser(scalaire: str) -> List[_Tok]:
         if m.startswith("{#"):
             continue  # commentaire : neutralise
         if m.startswith("{{"):
-            raise NormaliseurError("expression de sortie {{ }} non supportee.")
+            sortie = m[2:-2].strip()
+            if sortie.startswith("-"):
+                sortie = sortie[1:].strip()
+            if sortie.endswith("-"):
+                sortie = sortie[:-1].strip()
+            if not _VAR_SIMPLE_RE.match(sortie):
+                raise NormaliseurError(
+                    f"expression de sortie {{{{ }}}} non bornee : '{sortie}' "
+                    f"(seule une variable simple est modelisee)."
+                )
+            toks.append(_Out(sortie))
+            continue
         inner = m[2:-2].strip()
         if inner.startswith("-"):
             inner = inner[1:].strip()
@@ -188,6 +212,9 @@ def _parser_corps(cur: _Curseur) -> Tuple[Tuple[Liaison, ...], object]:
         if not jeton:
             raise NormaliseurError("feuille de branche vide.")
         return tuple(liaisons), Emission(jeton)
+    if isinstance(tok, _Out):
+        cur.avancer()
+        return tuple(liaisons), EmissionDynamique(tok.variable)
     raise NormaliseurError("corps de branche : feuille ou sous-cascade attendue.")
 
 

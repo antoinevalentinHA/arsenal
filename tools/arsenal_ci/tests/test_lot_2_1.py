@@ -22,6 +22,7 @@ from arsenal_ci.decision.model import (
     AtomeVar,
     Else,
     Emission,
+    EmissionDynamique,
     Et,
     Non,
     Ou,
@@ -206,10 +207,23 @@ def test_fail_closed_balise_inconnue():
         normaliser_texte(y, "reason", "t")
 
 
-def test_fail_closed_sortie_jinja():
-    y = _yaml_reason("{% if is_state('x.a','on') %}\n{{ x }}\n{% endif %}")
+def test_fail_closed_sortie_jinja_non_bornee():
+    # Extension CH-3 : seule {{ var }} simple est modelisee. Une sortie {{ }}
+    # plus riche (appel, operateur) reste fail-closed.
+    y = _yaml_reason("{% if is_state('x.a','on') %}\n{{ states('x.b') }}\n{% endif %}")
     with pytest.raises(NormaliseurError):
         normaliser_texte(y, "reason", "t")
+
+
+def test_emission_dynamique_variable_simple():
+    # Substrat de R-ISO-1 sur desired_mode : {{ cible }} -> EmissionDynamique.
+    y = _yaml_reason(
+        "{% if is_state('x.a','on') %}\n{{ cible }}\n{% else %}\nr2\n{% endif %}"
+    )
+    c = normaliser_texte(y, "reason", "t")
+    assert isinstance(c.branches[0].issue, EmissionDynamique)
+    assert c.branches[0].issue.variable == "cible"
+    assert isinstance(c.branches[1].issue, Emission)
 
 
 def test_fail_closed_fonction_inconnue_dans_garde():

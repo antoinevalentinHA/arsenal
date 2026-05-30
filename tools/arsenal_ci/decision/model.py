@@ -109,9 +109,22 @@ class Liaison:
 
 @dataclass(frozen=True)
 class Emission:
-    """Feuille : jeton de raison emis."""
+    """Feuille : jeton de raison emis (litteral statique)."""
 
     jeton: str
+
+
+@dataclass(frozen=True)
+class EmissionDynamique:
+    """Feuille dynamique : sortie {{ <variable> }} simple, valeur transmise
+
+    telle quelle au runtime. Introduite pour modeliser fidelement la cascade
+    `desired_mode` (branche presence : {{ cible }}). Strictement bornee a une
+    variable simple ; toute expression {{ }} plus riche reste fail-closed (cf.
+    normaliseur). Aucun jeton statique : non classable par R-CAUSE-1.
+    """
+
+    variable: str
 
 
 @dataclass(frozen=True)
@@ -121,7 +134,7 @@ class SousCascade:
     branches: Tuple["Branche", ...]
 
 
-Issue = Union[Emission, SousCascade]
+Issue = Union[Emission, EmissionDynamique, SousCascade]
 
 
 @dataclass(frozen=True)
@@ -165,6 +178,8 @@ def _signature_branche(b: Branche):
     liaisons = tuple(sorted((l.variable, l.source_entite) for l in b.liaisons))
     if isinstance(b.issue, Emission):
         issue = ("emit", b.issue.jeton)
+    elif isinstance(b.issue, EmissionDynamique):
+        issue = ("emit_dyn", b.issue.variable)
     else:
         issue = ("sub", tuple(_signature_branche(x) for x in b.issue.branches))
     return (b.garde.cle(), liaisons, issue)
