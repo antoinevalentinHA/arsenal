@@ -6,7 +6,7 @@
 #
 # 🎯 Rôle :
 #   Indiquer si la température minimale intérieure
-#   a atteint ou dépassé le seuil d’extinction COOL
+#   a atteint ou est descendue sous le seuil d’extinction COOL
 #   appliqué par le système.
 #
 # 🧱 Principe Arsenal :
@@ -21,7 +21,7 @@
 #
 # ⚠️ IMPORTANT :
 #   - Strictement équivalent à la condition :
-#       temperature_min_chambres >= seuil_extinction_clim_applique
+#       temperature_min_chambres <= seuil_extinction_clim_applique
 # ==========================================================
 
 - binary_sensor:
@@ -34,5 +34,5 @@
               seuil_off in ['unknown', 'unavailable', ''] %}
           false
         {% else %}
-          {{ temp_min | float >= seuil_off | float }}
+          {{ temp_min | float <= seuil_off | float }}
         {% endif %}
