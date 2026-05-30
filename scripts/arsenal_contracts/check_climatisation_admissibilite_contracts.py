@@ -826,39 +826,72 @@ def test_ui_decision_synthetique_lit_raison_decision():
         print("  ✔ clim_decision_synthetique_72 sans input_text.climatisation_raison")
 
 
-def test_ui_carte_clim_decision_nouvelles_valeurs():
+def test_ui_carte_clim_decision_delegue_coherence():
     """
-    La carte carte_clim_decision doit utiliser la nouvelle nomenclature
-    (refroidissement, deshumidification, aucune_demande_admissible)
-    et NE PAS référencer l'ancienne (temperature_elevee, humidite_elevee,
-    aucune_demande seul sans suffixe).
+    Contrat F6 — carte_clim_decision délègue la cohérence au backend.
+
+    La carte NE DOIT PLUS recalculer la cohérence raison <-> action en JS.
+    Le verdict de couleur (bloc `state:`) DOIT s'appuyer sur
+    binary_sensor.clim_incoherence_decision_reel et NE DOIT PAS consulter
+    sensor.clim_raison_decision (la raison reste autorisée hors verdict,
+    par exemple pour l'affichage dans le label).
+
+    Garde historique : la nomenclature obsolète (temperature_elevee,
+    humidite_elevee) reste interdite dans toute la carte.
     """
     if not UI_CARTE_CLIM_DECISION.is_file():
         fail(f"Carte UI absente : {UI_CARTE_CLIM_DECISION.relative_to(ROOT)}")
         return
     content = read(UI_CARTE_CLIM_DECISION)
+    rel = UI_CARTE_CLIM_DECISION.relative_to(ROOT)
 
-    # Nouvelles valeurs attendues
-    attendues = ["refroidissement", "deshumidification", "aucune_demande_admissible"]
-    for v in attendues:
-        if f"'{v}'" not in content and f'"{v}"' not in content:
-            fail(
-                f"carte_clim_decision : valeur '{v}' attendue dans le JS "
-                f"de cohérence, absente (Bug B non corrigé ?). "
-                f"Fichier : {UI_CARTE_CLIM_DECISION.relative_to(ROOT)}"
-            )
-        else:
-            print(f"  ✔ carte_clim_decision référence '{v}'")
+    # 1) Délégation backend : le capteur d'incohérence doit être référencé
+    if "clim_incoherence_decision_reel" not in content:
+        fail(
+            f"carte_clim_decision : ne délègue pas la cohérence à "
+            f"binary_sensor.clim_incoherence_decision_reel (contrat F6). "
+            f"Fichier : {rel}"
+        )
+    else:
+        print("  ✔ carte_clim_decision délègue à clim_incoherence_decision_reel")
 
-    # Anciennes valeurs interdites
-    interdites = ["temperature_elevee", "humidite_elevee"]
-    for v in interdites:
-        # Match valeur littérale dans une chaîne JS
+    # 2) Isoler le bloc `state:` (verdict de couleur), borné à la prochaine
+    #    clé de même niveau (indentation 2 espaces).
+    m = re.search(r"\n  state:\s*\n", content)
+    if not m:
+        fail(f"carte_clim_decision : bloc `state:` introuvable. Fichier : {rel}")
+        return
+    reste = content[m.end():]
+    m2 = re.search(r"\n  [A-Za-z_]", reste)
+    bloc_state = reste[: m2.start()] if m2 else reste
+
+    # 3) Le verdict DOIT lire le capteur backend
+    if "clim_incoherence_decision_reel" not in bloc_state:
+        fail(
+            f"carte_clim_decision : le bloc `state:` ne lit pas "
+            f"clim_incoherence_decision_reel (verdict non délégué). "
+            f"Fichier : {rel}"
+        )
+    else:
+        print("  ✔ carte_clim_decision : verdict basé sur le capteur backend")
+
+    # 4) Le verdict NE DOIT PAS recalculer raison <-> action en JS
+    #    (un recalcul lirait forcément sensor.clim_raison_decision).
+    if "clim_raison_decision" in bloc_state:
+        fail(
+            f"carte_clim_decision : le bloc `state:` consulte "
+            f"clim_raison_decision — recalcul raison<->action interdit "
+            f"(contrat F6). Fichier : {rel}"
+        )
+    else:
+        print("  ✔ carte_clim_decision : verdict sans recalcul raison<->action")
+
+    # 5) Garde historique : nomenclature obsolète interdite (toute la carte)
+    for v in ["temperature_elevee", "humidite_elevee"]:
         if f"'{v}'" in content or f'"{v}"' in content:
             fail(
                 f"carte_clim_decision : ancienne valeur '{v}' encore "
-                f"présente (devrait avoir été remplacée au Bug B). "
-                f"Fichier : {UI_CARTE_CLIM_DECISION.relative_to(ROOT)}"
+                f"présente (nomenclature obsolète). Fichier : {rel}"
             )
         else:
             print(f"  ✔ carte_clim_decision sans '{v}' (obsolète)")
@@ -911,7 +944,7 @@ TESTS = [
     test_raison_decision_blocages_contextualises_heat,
     # UI (chantier)
     test_ui_decision_synthetique_lit_raison_decision,
-    test_ui_carte_clim_decision_nouvelles_valeurs,
+    test_ui_carte_clim_decision_delegue_coherence,
     # Documentation
     test_doc_admissibilite_presente,
 ]
