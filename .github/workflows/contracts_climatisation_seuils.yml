@@ -1,0 +1,32 @@
+name: Arsenal — Vérification contractuelle climatisation seuils COOL
+
+on:
+  push:
+    paths:
+      - '12_template_sensors/climatisation/seuils_on_off/cool/**'
+      - '00_documentation_arsenal/contrats/climatisation/capteurs/seuils_et_franchissements/**'
+      - 'scripts/arsenal_contracts/check_climatisation_seuils_cool_contracts.py'
+      - '.github/workflows/contracts_climatisation_seuils.yml'
+  pull_request:
+    paths:
+      - '12_template_sensors/climatisation/seuils_on_off/cool/**'
+      - '00_documentation_arsenal/contrats/climatisation/capteurs/seuils_et_franchissements/**'
+      - 'scripts/arsenal_contracts/check_climatisation_seuils_cool_contracts.py'
+      - '.github/workflows/contracts_climatisation_seuils.yml'
+  workflow_dispatch:
+
+jobs:
+  verify:
+    name: Vérifier le sens du franchissement d'extinction COOL
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run contract check
+        run: python scripts/arsenal_contracts/check_climatisation_seuils_cool_contracts.py
