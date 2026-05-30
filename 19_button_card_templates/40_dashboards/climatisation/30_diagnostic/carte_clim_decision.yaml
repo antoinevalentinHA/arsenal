@@ -68,57 +68,42 @@ carte_clim_decision:
     ]]]
 
   state:
+    # Backend indisponible → gris indisponibilité
     - operator: template
       value: |
         [[[
-          const action = entity.state;
-          const raison = (states['sensor.clim_raison_decision']?.state || '').trim();
-
-          if (raison === 'aucune_demande_admissible' && (action === 'arret' || action === 'bloquee')) {
-            return true;
-          }
-
-          if ((raison.startsWith('blocage') || raison === 'fenetre_ouverte')
-              && (action === 'bloquee' || action === 'arret')) {
-            return true;
-          }
-
-          if (raison === 'refroidissement' && action === 'cool_actif') {
-            return true;
-          }
-
-          if (raison === 'deshumidification' && action === 'dry_actif') {
-            return true;
-          }
-
-          if (raison === 'soutien_chauffage' && action === 'heat_actif') {
-            return true;
-          }
-
-          return false;
+          const inc = states['binary_sensor.clim_incoherence_decision_reel']?.state;
+          return inc !== 'on' && inc !== 'off';
         ]]]
       styles:
         card:
-          - background-color: rgba(76,175,80,0.2)
+          - background-color: rgba(158, 158, 158, 0.1)
 
+    # Incohérence backend → rouge (prioritaire, jamais masqué)
     - operator: template
       value: |
         [[[
+          return states['binary_sensor.clim_incoherence_decision_reel']?.state === 'on';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(244,67,54,0.2)
+
+    # Cohérent + blocage explicite → orange (nuance dans un état déjà cohérent)
+    - operator: template
+      value: |
+        [[[
+          const inc = states['binary_sensor.clim_incoherence_decision_reel']?.state;
           const action = entity.state;
-          const raison = states['sensor.clim_raison_decision']?.state || '';
           const bloquee = states['binary_sensor.clim_bloquee']?.state === 'on';
-
-          if (bloquee && (action === 'bloquee' || action === 'arret')) {
-            return true;
-          }
-
-          return false;
+          return inc === 'off' && bloquee && (action === 'bloquee' || action === 'arret');
         ]]]
       styles:
         card:
           - background-color: rgba(255, 152, 0, 0.2)
 
+    # Cohérent sans blocage → vert
     - operator: default
       styles:
         card:
-          - background-color: rgba(244,67,54,0.2)
+          - background-color: rgba(76,175,80,0.2)
