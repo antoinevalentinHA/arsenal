@@ -129,17 +129,32 @@ Deux critères à hystérésis, agrégés par OU.
 - Bande morte B : maintien via `this.state`. ✅
 - Égalités : ON inclusif (`>=`), OFF exclusif (`>`) → bornes nettes, pas de double-vrai. ✅
 
-## ⚠️ Risque réel : défauts de seuils inversés
-- `cave_rh_cible_on` ∈ [60–85] **sans `initial`** ; `cave_rh_cible_off` ∈ [65–80] **sans `initial`**.
-- En l'absence d'`initial`, Home Assistant initialise au **minimum** : ON = 60, OFF = 65
-  → **seuil_OFF > seuil_ON** = hystérésis **inversée** au premier démarrage.
-- Conséquence à rh = 63 : état off → `63 ≥ 60` → on ; puis état on → `63 > 65` faux → off
-  → **oscillation à chaque évaluation** (contradiction logique).
-- Les bornes des helpers **n'empêchent pas** cette inversion (les plages se chevauchent).
-- L'`integrite_reglages` la **signale** (diagnostic), mais ne la **prévient pas**.
+## ⚠️ Risque théorique : défauts de seuils inversés
 
-**Verdict : boucle correcte une fois configurée, mais défauts d'usine inversés →
-oscillation/contradiction tant que l'utilisateur n'a pas réglé `ON > OFF`.** ⚠️
+- `cave_rh_cible_on` ∈ [60–85] sans `initial`.
+- `cave_rh_cible_off` ∈ [65–80] sans `initial`.
+- Les plages se chevauchent et n'empêchent donc pas une configuration incohérente (`OFF ≥ ON`).
+
+Selon le mode de création ou de restauration des helpers, les valeurs minimales
+pourraient être utilisées :
+
+- ON = 60
+- OFF = 65
+
+ce qui inverserait l'hystérésis et pourrait provoquer une oscillation logique du critère.
+
+Cependant, la confrontation runtime du système réel montre :
+
+- `cave_rh_cible_on = 78`
+- `cave_rh_cible_off = 73`
+- `binary_sensor.parametres_invalides_deshumidificateur = off`
+
+Le risque n'est donc pas actif sur l'installation auditée.
+
+L'intégrité des paramètres détecte déjà toute configuration incohérente (`ON ≤ OFF`).
+
+**Verdict :**
+Aucun problème fonctionnel observé. Dette de robustesse potentielle lors d'une création ou réinitialisation des helpers, mais pas incident runtime.
 
 ---
 
