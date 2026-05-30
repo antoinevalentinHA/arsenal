@@ -25,9 +25,9 @@ Tous retournent `false` si une entrée est `unavailable` ou `unknown`, sauf `cli
 | Champ | Valeur |
 |-------|--------|
 | Nature | seuil franchi (comparaison directe) |
-| Rôle | Température minimale des chambres ≥ seuil OFF COOL |
+| Rôle | Température minimale des chambres ≤ seuil OFF COOL |
 | Dépendances | `sensor.temperature_min_chambres` · `sensor.seuil_extinction_clim_applique` |
-| Logique | `temperature_min_chambres ≥ seuil_extinction_clim_applique` |
+| Logique | `temperature_min_chambres ≤ seuil_extinction_clim_applique` |
 | Fallback | unavailable / unknown → false |
 | Consommé par | couche décision clim · UI diagnostic |
 | Position | Couche observation — franchissement COOL OFF |
