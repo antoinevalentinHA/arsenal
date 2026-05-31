@@ -81,6 +81,23 @@
     - action: script.vacances_retirer_consigne_reduite
 
     # ----------------------------------------------------------
+    # Levée du blocage ECS planifiée posé par le contexte
+    # Vacances, sur la transition réelle d'effectivité
+    # (vacances_actives -> off). Gardée hors redémarrage
+    # (trigger 'state' uniquement) afin de préserver un blocage
+    # manuel hors vacances. La réconciliation au boot/sortie
+    # reste assurée par normal.yaml (mode_maison -> Normal).
+    # ----------------------------------------------------------
+    - if:
+        - condition: template
+          value_template: "{{ trigger.platform == 'state' }}"
+      then:
+        - action: input_boolean.turn_off
+          target:
+            entity_id:
+              - input_boolean.ecs_blocage_planifiee
+
+    # ----------------------------------------------------------
     # Restauration de la préférence mode_vaisselle :
     # uniquement si une sauvegarde valide (on/off) existe,
     # puis remise de la sauvegarde à la sentinelle vide.

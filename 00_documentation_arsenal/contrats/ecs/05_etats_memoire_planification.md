@@ -56,6 +56,38 @@ sans jamais déclencher :
 
 Ils ne constituent pas des ordres.
 
+### 3.1 Cycle de vie de `ecs_blocage_planifiee` (double nature)
+
+`input_boolean.ecs_blocage_planifiee` a une double nature :
+
+- blocage manuel temporaire de l’utilisateur (toggle UI)
+- blocage posé par le contexte Vacances
+
+Sémantique : `on` = chauffe planifiée bloquée, `off` = normale.
+Seul lecteur-condition : l’automation `veille_chauffe_ponctuelle`
+(exige `off` pour autoriser la chauffe ponctuelle).
+
+Cycle de vie côté contexte Vacances (couche effectivité) :
+
+- pose : `binary_sensor.vacances_actives` → `on` (application Vacances)
+- levée : transition réelle `binary_sensor.vacances_actives` → `off`
+  (fin d’application Vacances), hors redémarrage
+
+Préservation du blocage manuel :
+
+- au redémarrage (`homeassistant: start`), le blocage n’est jamais forcé à
+  `off` : un blocage manuel posé hors vacances survit au reboot
+- la réconciliation d’un blocage-vacances résiduel (cycle terminé pendant
+  un arrêt de Home Assistant) est assurée par la sortie de contexte
+  `input_select.mode_maison` → `Normal`, qui lève alors le blocage
+
+Invariants :
+
+- la levée nominale est portée par l’effectivité (`vacances_actives`)
+- la levée sur `mode_maison` → `Normal` est conservée comme filet de
+  réconciliation de sortie/boot, jamais déclenchée par un toggle manuel
+- aucune écriture ne force le blocage à `off` sur `homeassistant: start`
+
 ---
 
 ## 4. Modes utilisateur

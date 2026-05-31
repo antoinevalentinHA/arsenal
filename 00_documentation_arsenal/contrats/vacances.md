@@ -399,6 +399,18 @@ Toute automation de projection ou d'application critique du domaine Vacances doi
 | Logique d'absence effective : ECS, chauffage, présence | `binary_sensor.vacances_actives` **uniquement** |
 | Diagnostic UI réglages | `binary_sensor.parametres_invalides_vacances` + ses attributs |
 
+> **Note — `ecs_blocage_planifiee` (double nature).** Ce blocage est à la fois
+> un contrôle manuel temporaire de l'utilisateur (toggle UI) et une conséquence
+> du contexte Vacances. Son cycle de vie côté Vacances consomme
+> `binary_sensor.vacances_actives` (pose sur `→ on`, levée sur la transition
+> réelle `→ off`), conformément à la ligne « absence effective » ci-dessus.
+> La levée portée par `input_select.mode_maison → Normal` est **conservée à
+> titre de réconciliation de sortie/boot** (cf. §9) afin de lever un blocage
+> résiduel d'un cycle Vacances terminé pendant un arrêt de Home Assistant ;
+> elle n'est jamais déclenchée par un toggle manuel et aucune écriture ne force
+> le blocage à `off` sur `homeassistant: start`. Un blocage manuel posé hors
+> vacances survit donc au redémarrage.
+
 ---
 
 ## 11. Robustesse et états dégradés
