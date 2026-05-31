@@ -22,11 +22,13 @@
 #
 # 🔗 DEPENDANCES
 #     - entity : sensor.vacances_raison
-#       Valeurs connues :
-#       • mode_maison_normal  -> "Mode maison ≠ Vacances"
-#       • presence_famille    -> "Présence famille détectée"
-#       • visite_en_cours     -> "Visite en cours"
-#       • vacances_actives    -> "Vacances effectivement actives"
+#       Valeurs connues (cf. §4.4 contrat vacances) :
+#       • aucune_demande        -> "Aucune demande active"
+#       • presence_indisponible -> "Présence famille indisponible"
+#       • visite_indisponible   -> "Visite indisponible"
+#       • presence_famille      -> "Présence famille détectée"
+#       • visite_en_cours       -> "Visite en cours"
+#       • vacances_actives      -> "Vacances effectivement actives"
 #
 # ⚠️ CONTRAINTES
 #     - Couleur non sémantique (bleu fixe) — pas de distinction
@@ -51,7 +53,9 @@ carte_vacances_justification:
   state_display: |
     [[[ 
       const map = {
-        'mode_maison_normal': 'Mode maison ≠ Vacances',
+        'aucune_demande': 'Aucune demande active',
+        'presence_indisponible': 'Présence famille indisponible',
+        'visite_indisponible': 'Visite indisponible',
         'presence_famille': 'Présence famille détectée',
         'visite_en_cours': 'Visite en cours',
         'vacances_actives': 'Vacances effectivement actives'

@@ -23,11 +23,13 @@
 # 🔗 DEPENDANCES
 #     - entity                  : binary_sensor.vacances_actives
 #     - sensor.vacances_raison  : raison active normalisée (clé Arsenal)
-#       Valeurs connues :
-#       • mode_maison_normal    -> mode maison non positionné sur Vacances
-#       • presence_famille      -> présence famille détectée
-#       • visite_en_cours       -> visite en cours
-#       • vacances_actives      -> toutes conditions réunies
+#       Valeurs connues (cf. §4.4 contrat vacances) :
+#       • aucune_demande         -> aucune demande active (manuelle ni planifiée)
+#       • presence_indisponible  -> présence famille indisponible (garde terrain)
+#       • visite_indisponible    -> visite indisponible (garde terrain)
+#       • presence_famille       -> présence famille détectée
+#       • visite_en_cours        -> visite en cours
+#       • vacances_actives       -> toutes conditions réunies
 #
 # ⚠️ CONTRAINTES
 #     - Toute raison hors mapping affiche "—" (pas d'état brut)
@@ -57,7 +59,9 @@ carte_vacances_decision:
     [[[ 
       const raison = states['sensor.vacances_raison']?.state || '';
       const map = {
-        'mode_maison_normal': 'Mode maison non positionné sur Vacances',
+        'aucune_demande': 'Aucune demande de vacances',
+        'presence_indisponible': 'Présence famille indisponible',
+        'visite_indisponible': 'Visite indisponible',
         'presence_famille': 'Présence famille détectée',
         'visite_en_cours': 'Visite en cours',
         'vacances_actives': 'Toutes les conditions sont réunies'
