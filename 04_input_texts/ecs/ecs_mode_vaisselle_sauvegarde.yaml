@@ -1,0 +1,51 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT : ECS (Sauvegarde mode vaisselle)
+# ----------------------------------------------------------
+# 🎯 ROLE
+#   Mémoriser l'état antérieur de `input_boolean.mode_vaisselle`
+#   avant son extinction par l'entrée du contexte Vacances,
+#   afin de permettre sa restauration en sortie.
+#
+# ----------------------------------------------------------
+# 🧱 PERIMETRE
+#
+#   - mémoire de dernier état connu (helper:memory)
+#   - écrite par l'application puis la fin du contexte Vacances
+#   - sentinelle vide = aucune sauvegarde en cours
+#
+# ----------------------------------------------------------
+# 🔁 PERSISTANCE
+#
+#   - aucune clé `initial` n'est définie volontairement
+#   - Home Assistant restaure donc la dernière valeur au
+#     redémarrage : une sauvegarde valide (on/off) survit à
+#     un redémarrage survenant pendant des vacances longues
+#   - la sentinelle vide n'est établie qu'à l'initialisation
+#     manuelle et après une restauration réussie
+#
+# ----------------------------------------------------------
+# 📥 VALEURS ATTENDUES
+#
+#   - ""  (sentinelle : aucune sauvegarde)
+#   - on
+#   - off
+#
+# ----------------------------------------------------------
+# 🚫 NE FAIT PAS
+#
+#   - ne décide rien
+#   - ne porte aucune logique métier vaisselle
+#   - ne pilote aucun équipement
+#   - n'est pas la préférence utilisateur elle-même
+#     (celle-ci reste `input_boolean.mode_vaisselle`)
+#
+# ----------------------------------------------------------
+# 🔗 CONSOMMATEURS
+#
+#   - automation "Modes - Vacances - Application" (sauvegarde)
+#   - automation "Modes - Vacances - Fin application" (restauration)
+# ==========================================================
+
+ecs_mode_vaisselle_sauvegarde:
+  name: "ECS - Sauvegarde mode vaisselle"
+  max: 3

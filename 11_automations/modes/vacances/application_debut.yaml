@@ -91,6 +91,23 @@
         entity_id:
           - input_boolean.ecs_blocage_planifiee
 
+    # ----------------------------------------------------------
+    # Sauvegarde idempotente de la préférence mode_vaisselle
+    # avant extinction : seulement si aucune sauvegarde valide
+    # n'est déjà en cours (sentinelle vide). Robuste au boot :
+    # une sauvegarde valide restaurée par HA n'est pas écrasée.
+    # ----------------------------------------------------------
+    - if:
+        - condition: state
+          entity_id: input_text.ecs_mode_vaisselle_sauvegarde
+          state: ""
+      then:
+        - action: input_text.set_value
+          target:
+            entity_id: input_text.ecs_mode_vaisselle_sauvegarde
+          data:
+            value: "{{ states('input_boolean.mode_vaisselle') }}"
+
     - action: input_boolean.turn_off
       target:
         entity_id:

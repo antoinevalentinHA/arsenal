@@ -71,6 +71,52 @@ Les modes :
 - reconfigurent un planning
 - ne déclenchent jamais directement
 
+### 4.1 Cycle de vie de la sauvegarde de `mode_vaisselle` (contexte Vacances)
+
+`input_boolean.mode_vaisselle` est une préférence utilisateur persistante.
+Son écriture nominale relève de l’utilisateur (UI) et du wrapper transitoire
+`script.ecs_vaisselle_lancer_via_bouton`, qui restaure toujours l’état initial.
+
+Le contexte Vacances éteint cette préférence à l’entrée effective et doit donc
+en mémoriser l’état antérieur pour le restaurer à la sortie effective.
+
+Mémoire dédiée :
+
+ input_text.ecs_mode_vaisselle_sauvegarde
+
+- nature : `helper:memory` (dernier état connu, non décisionnel)
+- valeurs : `on`, `off`, ou `""` (sentinelle : aucune sauvegarde en cours)
+
+Persistance :
+
+- ce helper ne définit **pas** de clé `initial`
+- Home Assistant restaure donc sa dernière valeur au redémarrage
+- une sauvegarde valide (`on`/`off`) survit ainsi à un redémarrage survenant
+  pendant des vacances longues
+- la sentinelle vide n’est établie qu’à l’initialisation manuelle et après
+  une restauration réussie
+
+Entrée effective (`binary_sensor.vacances_actives` → `on`) :
+
+- si la sauvegarde est vide : sauvegarder l’état courant (`on`/`off`) de
+  `input_boolean.mode_vaisselle`
+- éteindre `input_boolean.mode_vaisselle`
+
+Sortie effective (`binary_sensor.vacances_actives` → `off`) :
+
+- si la sauvegarde vaut `on` ou `off` : restaurer `input_boolean.mode_vaisselle`
+  à cette valeur, puis remettre la sauvegarde à la sentinelle vide
+- si la sauvegarde est vide ou invalide : abstention de restauration
+
+Invariants :
+
+- toute extinction Vacances dispose d’un chemin de restauration explicite
+- aucune re-sauvegarde par-dessus une sauvegarde déjà valide (idempotence,
+  y compris au redémarrage : la valeur restaurée n’est pas écrasée)
+- aucune restauration n’invente une valeur
+- la couche est l’effectivité (`vacances_actives`), comme les autres
+  conséquences d’absence effective
+
 ---
 
 ## 5. Planification
