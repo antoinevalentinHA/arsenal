@@ -7,6 +7,7 @@
 # ==========================================================
 
 from pathlib import Path
+import re
 import sys
 
 
@@ -37,9 +38,10 @@ REQUIRED_RAISON_STATES = [
 ]
 
 REQUIRED_INVALID_PARAMS_ATTRIBUTES = [
+    "fenetre_invalide",
     "debut_indisponible",
     "fin_indisponible",
-    "fenetre_inversee",
+    "cause",
 ]
 
 FORBIDDEN_TEMPLATE_TIME_TERMS = [
@@ -47,10 +49,23 @@ FORBIDDEN_TEMPLATE_TIME_TERMS = [
     "today_at",
 ]
 
+# Fichier d'intégrité paramétrique (capteur de diagnostic).
+INTEGRITE_VACANCES_PATH = Path(
+    "12_template_sensors/system/integrite_reglages/vacances.yaml"
+)
+
+# Portée des templates du domaine : les 4 capteurs métier réels
+# (sous 12_template_sensors/modes/) + le capteur d'intégrité.
 VACANCES_TEMPLATE_PATHS = [
-    Path("12_template_sensors/vacances"),
-    Path("12_template_sensors/system/integrite_reglages/vacances.yaml"),
+    Path("12_template_sensors/modes/vacances_planifiees_actives.yaml"),
+    Path("12_template_sensors/modes/vacances_demandees.yaml"),
+    Path("12_template_sensors/modes/vacances_actives.yaml"),
+    Path("12_template_sensors/modes/vacances_raison.yaml"),
+    INTEGRITE_VACANCES_PATH,
 ]
+
+# Identité structurelle de l'écrivain souverain de vacances_fenetre_active.
+ORCHESTRATEUR_FENETRE_ID = "10090000000012"
 
 
 def fail(message: str):
@@ -65,6 +80,12 @@ def yaml_files():
 
 def read(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="ignore")
+
+
+def strip_yaml_comments(content: str) -> str:
+    # Retire tout commentaire YAML (du premier '#' à la fin de ligne)
+    # afin de n'analyser que la logique effective, pas la documentation.
+    return "\n".join(line.split("#", 1)[0] for line in content.splitlines())
 
 
 def is_in_vacances_template_scope(path: Path) -> bool:
@@ -95,7 +116,7 @@ for path in yaml_files():
     if not is_in_vacances_template_scope(path):
         continue
 
-    content = read(path)
+    content = strip_yaml_comments(read(path))
 
     for term in FORBIDDEN_TEMPLATE_TIME_TERMS:
         if term in content:
@@ -146,7 +167,7 @@ print("✔ Demande Vacances indépendante de mode_maison")
 # ==========================================================
 
 for path in yaml_files():
-    content = read(path)
+    content = strip_yaml_comments(read(path))
 
     if "input_boolean.vacances_fenetre_active" not in content:
         continue
@@ -154,14 +175,18 @@ for path in yaml_files():
     writes_window = (
         "input_boolean.turn_on" in content
         or "input_boolean.turn_off" in content
-        or "service: input_boolean.turn_on" in content
-        or "service: input_boolean.turn_off" in content
     )
 
     if not writes_window:
         continue
 
-    if "Orchestrateur fenêtre planifiée" not in content:
+    declares_orchestrateur = re.search(
+        r'^\s*-?\s*id\s*:\s*["\']?' + re.escape(ORCHESTRATEUR_FENETRE_ID) + r'["\']?',
+        content,
+        re.MULTILINE,
+    )
+
+    if not declares_orchestrateur:
         fail(
             "Écriture de vacances_fenetre_active hors orchestrateur : "
             f"{path}"
@@ -185,8 +210,14 @@ print("✔ États vacances_raison présents")
 # TEST 6 — parametres_invalides_vacances complet
 # ==========================================================
 
+integrite_content = (
+    read(INTEGRITE_VACANCES_PATH)
+    if INTEGRITE_VACANCES_PATH.is_file()
+    else ""
+)
+
 for attr in REQUIRED_INVALID_PARAMS_ATTRIBUTES:
-    if attr not in all_yaml:
+    if not re.search(rf"^\s*{re.escape(attr)}\s*:", integrite_content, re.MULTILINE):
         fail(f"Attribut parametres_invalides_vacances manquant : {attr}")
 
 print("✔ Attributs parametres_invalides_vacances présents")

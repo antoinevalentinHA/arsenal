@@ -291,9 +291,10 @@ Le détail de la cause d'invalidité est porté par les attributs du capteur —
 
 | Attribut | Type | Signification |
 |----------|------|--------------|
+| `fenetre_invalide` | `bool` | invariant violé : sources indisponibles **ou** `fin_vacances ≤ debut_vacances` |
 | `debut_indisponible` | `bool` | `debut_vacances` absent ou indisponible |
 | `fin_indisponible` | `bool` | `fin_vacances` absent ou indisponible |
-| `fenetre_inversee` | `bool` | `fin_vacances ≤ debut_vacances` avec les deux dates disponibles |
+| `cause` | `enum` | énumération priorisée : `helpers_indisponibles`, `fenetre_inversee`, `none` |
 
 ### 5.4 Intégration dans l'agrégat global
 
@@ -412,7 +413,7 @@ En cas de données invalides, le système échoue de manière **prudente et expl
 |-----------|------------------------------|------------------------|
 | `debut_vacances` absent ou indisponible | `vacances_planifiees_actives = off` | `binary_sensor.parametres_invalides_vacances` → attribut `debut_indisponible` |
 | `fin_vacances` absent ou indisponible | `vacances_planifiees_actives = off` | `binary_sensor.parametres_invalides_vacances` → attribut `fin_indisponible` |
-| `fin_vacances ≤ debut_vacances` | `vacances_planifiees_actives = off` | `binary_sensor.parametres_invalides_vacances` → attribut `fenetre_inversee` |
+| `fin_vacances ≤ debut_vacances` | `vacances_planifiees_actives = off` | `binary_sensor.parametres_invalides_vacances` → attribut `fenetre_invalide` (`cause = fenetre_inversee`) |
 | `presence_famille_unifiee` indisponible | `vacances_actives = off` | `sensor.vacances_raison` → `"presence_indisponible"` |
 | `visite_en_cours` indisponible | `vacances_actives = off` | `sensor.vacances_raison` → `"visite_indisponible"` |
 
@@ -462,7 +463,7 @@ Le domaine est considéré **propre et clos** si :
 - [ ] la demande est consolidée dans `binary_sensor.vacances_demandees` sans dépendance à `input_select.mode_maison`
 - [ ] l'effectivité est indépendante des actions dans `binary_sensor.vacances_actives`
 - [ ] `sensor.vacances_raison` couvre les 6 états définis en §4.4 (dont `presence_indisponible` et `visite_indisponible`)
-- [ ] `binary_sensor.parametres_invalides_vacances` existe dans `system/integrite_reglages/vacances.yaml` avec ses 3 attributs diagnostiques
+- [ ] `binary_sensor.parametres_invalides_vacances` existe dans `system/integrite_reglages/vacances.yaml` avec ses attributs diagnostiques `fenetre_invalide`, `debut_indisponible`, `fin_indisponible` et `cause`
 - [ ] `binary_sensor.parametres_invalides_vacances` est ajouté à `group.parametres_invalides_domaines`
 - [ ] les écrits sur `input_select.mode_maison` sont exclusivement des projections autorisées
 - [ ] les automations projettent et appliquent sans fabriquer de vérité

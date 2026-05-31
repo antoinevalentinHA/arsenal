@@ -191,7 +191,9 @@ violés** — pas d'optimisme silencieux.
 
 Nommage : `<groupe_de_règles>_invalide` ou `<groupe_de_règles>_invalides`
 selon le nombre — le suffixe doit refléter la sémantique (ex :
-`seuils_hr_invalides`, `fenetre_inversee`).
+`seuils_hr_invalides`, `fenetre_invalide`). La valeur explicative
+détaillée (ex. `fenetre_inversee`) relève de l'attribut `cause` ci-dessous,
+pas du nom du booléen.
 
 L'attribut **n'est jamais** une simple recopie de l'expression `state` :
 il isole **un seul invariant**.
