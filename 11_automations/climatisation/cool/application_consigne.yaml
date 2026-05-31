@@ -1,0 +1,89 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Clim – Application consigne COOL (quand pertinent)
+#
+#  ID : 10030000000119
+# ----------------------------------------------------------
+#  🎯 ROLE
+#     Appliquer sensor.consigne_clim_appliquee à climate.clim
+#     uniquement lorsque la climatisation est en mode COOL.
+#     Symétrique de heat/application_consigne.yaml.
+#
+#  🧱 PRINCIPE
+#     - Orchestration pure : la valeur est décidée en amont
+#       par sensor.consigne_clim_appliquee (présence incluse)
+#     - Si on entre en COOL              -> appliquer la consigne
+#     - Si la consigne attendue change   -> appliquer (couvre
+#       sliders ET transition présence/absence)
+#     - Au démarrage une fois stabilisé  -> réconcilier si COOL
+#
+#  🔌 DEPENDANCES
+#     - sensor.clim_mode_local
+#     - sensor.consigne_clim_appliquee
+#     - input_boolean.systeme_stable
+#     - climate.clim
+#
+#  🚫 INTERDIT
+#     - Ne force pas le mode COOL
+#     - Ne force pas l'allumage si OFF
+#     - Ne décide d'aucune stratégie thermique
+#     - Aucune condition de présence : déléguée au capteur
+#       de consigne, qui encode déjà la présence
+#     - N'interfère pas avec correction.yaml / D4 :
+#       gardée strictement sur le mode COOL
+# ==========================================================
+
+- id: "10030000000119"
+  alias: "Clim - Application consigne Cool"
+  mode: single
+
+  trigger:
+    # Entrée en mode COOL (mode local réel)
+    - platform: state
+      entity_id: sensor.clim_mode_local
+      to: "cool"
+      id: "enter_cool"
+
+    # Mise à jour de la consigne attendue
+    # (couvre l'édition des sliders ET la transition présence/absence,
+    #  le capteur recalculant sa valeur selon la présence)
+    - platform: state
+      entity_id: sensor.consigne_clim_appliquee
+      id: "consigne"
+
+    # Réconciliation au démarrage, une fois le système stabilisé
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+      id: "boot"
+
+  condition:
+    # N'agir que si la climatisation est réellement en mode COOL
+    - condition: state
+      entity_id: sensor.clim_mode_local
+      state: "cool"
+
+    # Entité climate disponible
+    - condition: template
+      alias: "climate.clim disponible"
+      value_template: >
+        {{ states('climate.clim') not in ['unknown', 'unavailable'] }}
+
+    # Consigne valide + anti-redondance robuste
+    # (applique si la cible est valide et que l'actuelle est inconnue
+    #  ou différente ; ne s'abstient que si l'actuelle est connue et égale)
+    - condition: template
+      alias: "Consigne valide et (actuelle inconnue ou différente)"
+      value_template: >
+        {% set cible = states('sensor.consigne_clim_appliquee') | float(99) %}
+        {% set brut = state_attr('climate.clim', 'temperature') %}
+        {% set actuelle_connue = brut is not none and brut not in ['unknown', 'unavailable'] %}
+        {{ cible not in [0, 99] and (not actuelle_connue or (brut | float(0)) != cible) }}
+
+  action:
+    # Application de la consigne COOL attendue
+    - service: climate.set_temperature
+      target:
+        entity_id: climate.clim
+      data:
+        temperature: "{{ states('sensor.consigne_clim_appliquee') | float }}"
