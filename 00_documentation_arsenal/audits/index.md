@@ -56,8 +56,8 @@ _(emplacement réservé — aucun document à ce jour)_
 - transverses/hysteresis_5_domaines.md
 
 ### Vacances
-- vacances/chantier_vac_imp_5_desinfection_retour.md  _(VAC-IMP-5 — ouvert, observation runtime)_
-- vacances/synthese_traitement_constats_vacances.md  _(synthèse de traitement — archive)_
+- vacances/chantier_vac_imp_5_desinfection_retour.md  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
+- vacances/rapport_observation_vac_imp_5.md  _(observation runtime — cause requalifiée)_
 
 ## Clôtures
 
@@ -68,4 +68,4 @@ _(emplacement réservé — aucun document à ce jour)_
 ---
 
 ### État du domaine Vacances
-Lots 1 à 5 soldés ; constat **VAC-IMP-5 ouvert** (chantier d'observation runtime) ; **domaine non clôturé**.
+Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.

@@ -1,11 +1,11 @@
 # Chantier VAC-IMP-5 — Désinfection au retour de vacances : ordonnancement non garanti
 
-> **Statut :** chantier d'investigation — **observation requise avant toute correction**
+> **Statut :** chantier traité au runtime — **observation, conception, réconciliation contractuelle et patch runtime réalisés ; validation runtime en attente**
 > **Constat traité :** `VAC-IMP-5` (🟠) — VALIDÉ AVEC RÉSERVE · confiance Moyen
 > **Domaine :** `ecs` / `vacances` (chaîne de désinfection au retour)
 > **Destination d'archivage :** `00_documentation_arsenal/audits/04_chantiers/vacances/chantier_vac_imp_5_desinfection_retour.md`
-> **État du dépôt à la rédaction :** `origin/main` = `b2bcbaa`
-> **Nature :** document de cadrage et protocole d'observation. **Aucune correction n'est proposée à ce stade** ; les pistes de §6 sont des hypothèses conditionnées au résultat de l'observation.
+> **État du dépôt :** cadrage initial à `origin/main` = `b2bcbaa` ; **mise à jour de statut à `c4faf68`**
+> **Nature :** document de cadrage et protocole d'observation (historique conservé aux §3–§6). **Mise à jour :** l'observation a été réalisée (cf. `rapport_observation_vac_imp_5.md`) et a **requalifié** la cause en faux négatif **structurel** (l'ordonnancement n'étant que secondaire) ; la conception, la **réconciliation contractuelle** (`2ab3526`) et le **patch runtime** (`c4faf68`) sont désormais **réalisés** ; seule la **validation runtime** reste à faire. Les pistes de §6 sont conservées comme trace d'investigation.
 
 ---
 
@@ -146,11 +146,15 @@ Chaque piste devra, le cas échéant, respecter les invariants Arsenal (écrivai
 
 ## 7. Verdict
 
-- **Prêt à observer : OUI.** Les fichiers, entités, événements et scénarios sont identifiés et le protocole §5 est exécutable sans modification du dépôt.
-- **Prêt à patcher : NON.** Le mode d'échec dépend de comportements runtime (ordre d'exécution, sémantique de `timer.cancel`/`remaining`, instant de recalcul) **non tranchables depuis le dépôt**. Aucune correction ne doit être conçue ni appliquée avant que l'observation §5 n'ait confirmé le risque et caractérisé sa cause (C1 vs C2, ordre des automations).
+> **Mise à jour (`c4faf68`).** Le verdict initial (« prêt à observer / non prêt à patcher », état `b2bcbaa`) est **dépassé** : l'observation a été réalisée et la correction est appliquée au runtime.
 
-Tant que `VAC-IMP-5` n'est pas tranché par cette observation, le **domaine Vacances reste ouvert** (cf. bilan de clôture partielle).
+- **Observation : FAITE.** Cf. `rapport_observation_vac_imp_5.md` — hypothèses C1/C2 **infirmées** (`remaining = None` à l'état `idle`), cause **requalifiée** en faux négatif **structurel** de détection de complétion ; l'ordonnancement est secondaire.
+- **Conception + réconciliation contractuelle : FAITES.** Architecture retenue : `timer.finished` = unique source de légitimité ; `input_boolean.ecs_desinfection_retour_due` (`helper:decision`, persistant) ; capteur conservé en projection d'observabilité ; contrats ECS réconciliés (`2ab3526`).
+- **Runtime : COMMITÉ (`c4faf68`).** Pose ON sur `timer.finished` ; réinitialisation OFF après consommation par « ECS - Désinfection fin vacances » ; aucune lecture de `remaining` ni `finishes_at`.
+- **Validation runtime : EN ATTENTE.** Scénarios S-COMPLETION-NATURELLE, S-RETOUR-ANTICIPE, S-BOOT-APRES-COMPLETION, S-IDEMPOTENCE non encore exécutés/documentés. Risque résiduel « `timer.finished` manqué pendant un arrêt HA » documenté au contrat `10_resilience` §4.1 (hors périmètre de ce correctif).
+
+Tant que la **validation runtime** n'est pas réalisée, `VAC-IMP-5` reste **ouvert** et le **domaine Vacances n'est pas clôturé** (cf. bilans de clôture, instantanés historiques).
 
 ---
 
-*Document de chantier — investigation `VAC-IMP-5`. Établi en lecture seule du dépôt, sans patch, sans YAML, sans modification runtime ni commit. Les pistes de correction sont des hypothèses conditionnées au résultat de l'observation.*
+*Document de chantier — investigation `VAC-IMP-5`. Cadrage et protocole établis en lecture seule (§3–§6, historique conservé). Mise à jour de statut (`c4faf68`) : observation, conception, réconciliation contractuelle et runtime réalisés ; validation runtime en attente.*
