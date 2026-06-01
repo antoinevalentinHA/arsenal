@@ -5,6 +5,7 @@
 > **Destination d'archivage :** `00_documentation_arsenal/audits/05_clotures/vacances/cloture_partielle_vacances.md`
 > **Document de référence :** `00_documentation_arsenal/audits/03_plans_action/vacances/plan_action_vacances_couches_consommation.md`
 > **État du dépôt à la rédaction :** `origin/main` = `b2bcbaa` (Lots 1 à 5 intégrés)
+> **Mise à jour de statut :** `c4faf68` — VAC-IMP-5 traité au runtime, validation runtime partielle (cf. §5 et §8). Le corps de ce bilan demeure l'instantané daté d'origine.
 > **Principe directeur du chantier :** *le runtime est la référence, le contrat documente le runtime* ; consommation des couches conforme à `vacances.md` §10 (l'absence effective se lit sur `binary_sensor.vacances_actives`)
 
 ---
@@ -69,7 +70,7 @@ Neuf constats sont considérés comme soldés. Pour chacun, le motif de solde es
 
 ## 5. Constat ouvert — VAC-IMP-5
 
-> **Statut : OUVERT — non traité — risque résiduel documenté.**
+> **Statut : OUVERT — traité au runtime (`c4faf68`), validation runtime partielle — clôture conditionnée à la validation complète.**
 
 **Constat.** *Désinfection au retour : dépendance d'ordonnancement non garantie.* Les automations `desinfection_retour_vacances.yaml` (trigger `mode_maison : Vacances → Normal`, condition d'autorisation issue du timer) et `start_timer_ecs_desinfection.yaml` (trigger sur tout changement de `mode_maison`, `timer.cancel`) réagissent à la **même transition** ; l'une lit l'autorisation issue du timer, l'autre annule ce timer, sans `for:` ni séquencement explicite.
 
@@ -78,6 +79,16 @@ Neuf constats sont considérés comme soldés. Pour chacun, le motif de solde es
 **Pourquoi il reste ouvert.** Le plan d'action le classe explicitement **hors périmètre** (§7) : l'aléa est triple et non tranchable par lecture statique — ordre d'exécution des automations sur le même événement, instant de recalcul du template d'autorisation, et sémantique de l'attribut `remaining` après `timer.cancel`. Sa résolution nécessite une **observation runtime dédiée**. Il est identifié comme **candidat à un chantier `04_chantiers/`** et signalé comme risque résiduel des validations du Lot 4.
 
 **Conséquence pour la clôture.** Tant que ce constat 🟠 n'est pas tranché par investigation runtime, le domaine Vacances **ne peut être déclaré clôturé**.
+
+**Mise à jour (`c4faf68`) — supersède la formulation prospective ci-dessus.** Le constat a depuis été instruit jusqu'au runtime. L'observation runtime dédiée a été réalisée (`rapport_observation_vac_imp_5.md`) et a **requalifié** la cause : non plus un simple aléa d'ordonnancement, mais un **faux négatif structurel** de détection de complétion (l'ancien capteur lisait `remaining == '0:00:00'`, jamais vrai à l'état `idle` où `remaining = None`). La réconciliation contractuelle (`2ab3526`) puis le **patch runtime** (`c4faf68`) ont été appliqués : la légitimité est désormais portée par `input_boolean.ecs_desinfection_retour_due` (`helper:decision`), posée sur `timer.finished`, réinitialisée après consommation, sans aucune lecture de `remaining`/`finishes_at`.
+
+**Validé en runtime :**
+- **S-RETOUR-ANTICIPE** : `timer.cancel` sur timer actif → `timer = idle`, helper `off`, projection `off` → `timer.cancel` **ne pose pas** la légitimité. ✅
+- **S-COMPLETION-NATURELLE** : expiration naturelle (timer court) → `timer = idle`, helper `on`, projection `on` → `timer.finished` **pose correctement** la légitimité. ✅
+
+**Reste à valider :** consommation réelle du cycle ECS au retour ; idempotence complète (réinitialisation effective après consommation, absence de double déclenchement) ; scénario boot après complétion. Risque résiduel « `timer.finished` manqué pendant un arrêt HA » documenté au contrat `10_resilience` §4.1 (hors périmètre du correctif).
+
+En conséquence, `VAC-IMP-5` reste **ouvert** (validation runtime **partielle**) et le **domaine Vacances n'est pas clôturé**.
 
 ---
 
@@ -105,9 +116,9 @@ En conséquence, et conformément à la contrainte de ne pas surdéclarer l'éta
 **Clôture partielle prononcée — domaine Vacances NON clôturé.**
 
 - **Soldé et validé :** Lots 1 à 5 intégrés au dépôt (`origin/main` = `b2bcbaa`) ; constats `VAC-IMP-1`, `VAC-IMP-2`, `VAC-IMP-3`, `VAC-IMP-4`, `VAC-MIN-1`, `VAC-MIN-2`, `VAC-MIN-3`, `VAC-AME-1`, `VAC-AME-3` soldés, avec validations CI et fonctionnelles documentées. La doctrine d'effectivité (`binary_sensor.vacances_actives`) est rétablie sur le chauffage (deux chemins) et l'ECS.
-- **Ouvert :** `VAC-IMP-5` (désinfection-retour : ordonnancement) — risque résiduel assumé, candidat à un chantier runtime dédié `04_chantiers/`.
+- **Ouvert :** `VAC-IMP-5` (désinfection-retour) — **traité au runtime** (`c4faf68`) après observation (cause **requalifiée** : faux négatif structurel) et réconciliation contractuelle (`2ab3526`) ; **validation runtime partielle** (S-RETOUR-ANTICIPE et S-COMPLETION-NATURELLE ✅). Reste à valider : consommation réelle ECS, idempotence complète, boot après complétion.
 - **Reporté (hors périmètre) :** `VAC-MIN-4`, `VAC-AME-2`.
-- **Condition de clôture pleine du domaine :** traitement de `VAC-IMP-5` par investigation runtime dédiée, puis bilan de clôture définitif.
+- **Condition de clôture pleine du domaine :** achèvement de la validation runtime de `VAC-IMP-5` (consommation réelle ECS, idempotence complète, boot après complétion), puis bilan de clôture définitif.
 
 Conformément au principe directeur du chantier, le runtime demeure la référence et les contrats en documentent fidèlement l'état réconcilié.
 
