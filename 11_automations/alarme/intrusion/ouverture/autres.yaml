@@ -57,8 +57,6 @@
         - binary_sensor.contact_chambre_parents
         - binary_sensor.contact_sejour
         - binary_sensor.contact_entree_fenetre
-        - binary_sensor.contact_entree_porte
-        - binary_sensor.contact_garage
       to: 'on'
 
   condition:
