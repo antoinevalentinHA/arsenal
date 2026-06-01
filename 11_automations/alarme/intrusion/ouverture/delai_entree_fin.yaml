@@ -67,11 +67,6 @@
       entity_id: alarm_control_panel.alarme_maison
       state: "armed_away"
 
-    # Intrusion toujours active au moment du déclenchement
-    - condition: state
-      entity_id: binary_sensor.ouverture_qualifiee_maison
-      state: "on"
-
   action:
     # 🚨 Déclenchement de l'alarme
     - action: alarm_control_panel.alarm_trigger
