@@ -50,6 +50,7 @@
   # ▶️ Action — Appel du script unifié
   # ======================================================
   action:
-    - action: script.turn_on
-      target:
-        entity_id: script.traitement_code_clavier
+    - action: script.traitement_code_clavier
+      data:
+        code_in: "{{ trigger.to_state.state }}"
+        source_in: "{{ trigger.entity_id }}"

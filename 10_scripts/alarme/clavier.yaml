@@ -55,25 +55,16 @@ traitement_code_clavier:
 
   sequence:
     - variables:
-        code_saisi: >-
-          {% if trigger is defined %}
-            {{ (states(trigger.entity_id) | default('', true) | string).strip() }}
-          {% else %}
-            ''
-          {% endif %}
+        code_saisi: "{{ (code_in | default('', true) | string).strip() }}"
         code_attendu: >-
           {{ (states('input_text.alarm_code') | default('', true) | string).strip() }}
         alarme: alarm_control_panel.alarme_maison
         blocage_auto: "{{ is_state('input_boolean.blocage_armement_auto', 'on') }}"
         nom_clavier: >-
-          {% if trigger is defined %}
-            {% set e = trigger.entity_id | string %}
-            {% if e.endswith('_1_action_code') %}Clavier Entree
-            {% elif e.endswith('_2_action_code') %}Clavier Garage
-            {% else %}Clavier inconnu{% endif %}
-          {% else %}
-            Clavier inconnu
-          {% endif %}
+          {% set e = source_in | default('') | string %}
+          {% if e.endswith('_1_action_code') %}Clavier Entree
+          {% elif e.endswith('_2_action_code') %}Clavier Garage
+          {% else %}Clavier inconnu{% endif %}
 
     # 1) Si code vide / inconnu, on sort sans rien faire
     - condition: template
