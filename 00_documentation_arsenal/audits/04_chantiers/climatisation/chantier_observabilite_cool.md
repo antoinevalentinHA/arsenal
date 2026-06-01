@@ -1,8 +1,10 @@
-# CHANTIER OBSERVABILITÉ COOL — PLAN DE CONCEPTION
+# CHANTIER OBSERVABILITÉ COOL — PLAN DE CONCEPTION _(LIVRÉ v15.8.4)_
 
+> **STATUT (réconciliation documentaire) : LIVRÉ — v15.8.4.** Les six artefacts F1–F6 décrits plus bas ont été implémentés et livrés : `2ff8969` (F2/D3), `860e7f2` (F3/D7), `c67bde7` (F1·F5/D1·D2), `e22c8a6` (F6/D6), `205b83f` (F4/D3·D6), `53698df` (en-têtes), test CI `980a8c8` (changelog v15.8.4). Ce document est **conservé comme dossier de conception et trace as-built** : les sections §4 (plan de modification), §6 (ordre d'implémentation) et §7 (diagnostic) décrivent ce qui **a été réalisé**, non un travail restant. **Ce n'est pas un chantier ouvert.**
+>
 > Périmètre : D1, D2, D3, D6, D7. Interdit : D4, D9, H1, H2, H3, HEAT, DRY, chauffage.
 > Objectif unique : supprimer toute situation « runtime vrai / UI faux » sur le COOL.
-> Aucun patch ici. Aucune modification de décision, automatisme ou script.
+> Aucun patch dans ce document (dossier de conception) ; les patchs ont été livrés par les commits cités ci-dessus.
 
 ---
 

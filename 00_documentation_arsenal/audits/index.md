@@ -49,11 +49,13 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ## Chantiers
 
+> **Un seul chantier est réellement ouvert : VAC-IMP-5.** Les entrées Climatisation et Transverses ci-dessous sont conservées pour la traçabilité, avec leur statut réel (livré / analyse) ; elles ne correspondent pas à du travail restant.
+
 ### Climatisation
-- climatisation/chantier_observabilite_cool.md
+- climatisation/chantier_observabilite_cool.md  _(LIVRÉ — v15.8.4 ; conservé comme dossier de conception / as-built)_
 
 ### Transverses
-- transverses/hysteresis_5_domaines.md
+- transverses/hysteresis_5_domaines.md  _(analyse transverse — alimente le backlog ; aucun chantier ouvert)_
 
 ### Vacances
 - vacances/chantier_vac_imp_5_desinfection_retour.md  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
