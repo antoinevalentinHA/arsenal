@@ -84,12 +84,3 @@
         extra:
           priority: high
           importance: high
-
-    # 🔊 Sirène (hors mode test)
-    - choose:
-        - conditions:
-            - condition: state
-              entity_id: input_boolean.mode_test_alarme
-              state: "off"
-          sequence:
-            - action: script.sirene_brutale
