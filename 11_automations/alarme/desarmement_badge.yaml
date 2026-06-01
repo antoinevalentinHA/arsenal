@@ -69,9 +69,15 @@
       {% endif %}
 
   # --------------------------------------------------------
-  # Aucune condition globale (gestion dans choose)
+  # Condition globale :
+  #  - Ne traiter que des UID de badge (valeurs non numeriques)
+  #  - Ignorer les codes PIN (chiffres) traites par le flux clavier
   # --------------------------------------------------------
-  condition: []
+  condition:
+    - condition: template
+      value_template: >
+        {{ badge_utilise not in ['', 'unknown', 'unavailable']
+           and not (badge_utilise | regex_match('^[0-9]+$')) }}
 
   action:
 
