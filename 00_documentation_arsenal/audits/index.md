@@ -37,6 +37,9 @@ _(emplacement réservé — aucun document à ce jour)_
 ### Vacances
 - vacances/contre_expertise_audit_vacances.md
 
+### Alarme
+- alarme/contre_expertise_CH6_alarme.md  _(CH-6 requalifié — cause initiale « trigger perdu » infirmée)_
+
 ## Plans d'action
 
 ### Météo
@@ -90,4 +93,4 @@ _(emplacement réservé — aucun document à ce jour)_
 Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.
 
 ### État du domaine Alarme
-Chantier **CH-2 soldé** (`ALM-IMP-2`, `ALM-MIN-4`) — runtime commité (`dc8667e`, `99cbc0b`), rechargé sans erreur ; `input_text.alarme_raison` écrit **exclusivement** par le cerveau. Chantier **CH-1 implémenté au runtime** (`ALM-CRIT-1`, `ALM-CRIT-2`, `ALM-MIN-5`) — commits `812f2cf` / `5dda40b` / `fe57c73`, arbitrage **A1+B2+C1**, **validé statiquement, validation terrain en attente**. **Domaine non clôturé** : clôture définitive de CH-1 conditionnée à la validation terrain ; chantiers restants **CH-3** (`ALM-IMP-1`), **CH-4** (`ALM-IMP-3`), **CH-5** (documentaire), **CH-6** (`ALM-CRIT-3`).
+Chantier **CH-2 soldé** (`ALM-IMP-2`, `ALM-MIN-4`) — runtime commité (`dc8667e`, `99cbc0b`), rechargé sans erreur ; `input_text.alarme_raison` écrit **exclusivement** par le cerveau. Chantier **CH-1 implémenté au runtime** (`ALM-CRIT-1`, `ALM-CRIT-2`, `ALM-MIN-5`) — commits `812f2cf` / `5dda40b` / `fe57c73`, arbitrage **A1+B2+C1**, **validé statiquement, validation terrain en attente**. **Domaine non clôturé** : clôture définitive de CH-1 conditionnée à la validation terrain ; chantiers restants **CH-3** (`ALM-IMP-1`), **CH-4** (`ALM-IMP-3`), **CH-5** (documentaire), **CH-6** (`ALM-CRIT-3`) — **requalifié** par contre-expertise : constat critique maintenu, cause initiale « trigger perdu via `script.turn_on` » **infirmée** (échec de validation du code + parasitage par l'automatisation badge ; cf. § Contre-expertises).
