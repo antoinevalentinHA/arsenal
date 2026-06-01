@@ -15,8 +15,6 @@
 #   - Desarmement reel uniquement si l'alarme est dans
 #     un etat armed_away / arming / pending / triggered
 #   - Si le guard de desarmement passe :
-#       - ecriture d'un marqueur minimal dans
-#         `input_text.alarme_raison`
 #       - bip de confirmation hors mode test
 #       - notification utilisateur avec origine reelle
 #
@@ -43,7 +41,6 @@
 #   - script.arret_sirene
 #   - script.sirene_bip_bip
 #   - script.notification_envoyer
-#   - input_text.alarme_raison
 #   - input_boolean.mode_test_alarme
 #
 # 📊 TYPE
@@ -103,16 +100,7 @@ alarme_desarmer:
         entity_id: alarm_control_panel.alarme_maison
 
     # ------------------------------------------------------
-    # 3) Memoire metier minimale
-    # ------------------------------------------------------
-    - action: input_text.set_value
-      target:
-        entity_id: input_text.alarme_raison
-      data:
-        value: "desarmement"
-
-    # ------------------------------------------------------
-    # 4) Bip de confirmation hors mode test
+    # 3) Bip de confirmation hors mode test
     # ------------------------------------------------------
     - choose:
         - conditions:
@@ -123,7 +111,7 @@ alarme_desarmer:
             - action: script.sirene_bip_bip
 
     # ------------------------------------------------------
-    # 5) Notification utilisateur
+    # 4) Notification utilisateur
     # ------------------------------------------------------
     - action: script.notification_envoyer
       data:

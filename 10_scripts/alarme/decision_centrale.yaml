@@ -143,3 +143,9 @@ alarme_decision_centrale:
         entity_id: input_text.alarme_etat_cible
       data:
         value: "{{ etat_cible }}"
+
+    - action: input_text.set_value
+      target:
+        entity_id: input_text.alarme_raison
+      data:
+        value: "{{ raison }}"

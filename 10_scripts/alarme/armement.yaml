@@ -13,8 +13,6 @@
 # ✅ GARANTIES
 #   - Validation / normalisation de `origine`
 #   - Armement reel uniquement si l'alarme est desarmee
-#   - Ecriture d'un marqueur minimal dans
-#     `input_text.alarme_raison`
 #   - Bip de confirmation hors mode test
 #   - Notification utilisateur avec origine reelle
 #
@@ -40,7 +38,6 @@
 #   - alarm_control_panel.alarme_maison
 #   - script.sirene_bip
 #   - script.notification_envoyer
-#   - input_text.alarme_raison
 #   - input_boolean.mode_test_alarme
 #
 # 📊 TYPE
@@ -92,16 +89,7 @@ alarme_armer:
         entity_id: alarm_control_panel.alarme_maison
 
     # ------------------------------------------------------
-    # 2) Memoire metier minimale
-    # ------------------------------------------------------
-    - action: input_text.set_value
-      target:
-        entity_id: input_text.alarme_raison
-      data:
-        value: "armement"
-
-    # ------------------------------------------------------
-    # 3) Bip de confirmation hors mode test
+    # 2) Bip de confirmation hors mode test
     # ------------------------------------------------------
     - choose:
         - conditions:
@@ -112,7 +100,7 @@ alarme_armer:
             - action: script.sirene_bip
 
     # ------------------------------------------------------
-    # 4) Notification utilisateur
+    # 3) Notification utilisateur
     # ------------------------------------------------------
     - action: script.notification_envoyer
       data:
