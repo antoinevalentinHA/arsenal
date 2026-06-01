@@ -94,6 +94,16 @@ AUTO_DELAI_FIN_ID   = "10020000000032"
 AUTO_MOUVEMENT_ID   = "1002000000009"
 AUTO_AUTRES_ID      = "1002000000007"
 
+# Automation IDs clavier PIN & badge (CH-6)
+AUTO_ARMEMENT_CLAVIER_ID = "1002000000005"
+AUTO_DESARM_BADGE_ID     = "10020000000026"
+
+# Script unifié de traitement du code clavier (CH-6)
+SCRIPT_TRAITEMENT_CLAVIER = "traitement_code_clavier"
+
+# Qualificatif d'ouverture retiré du garde de fin de délai (CH-1 / B2)
+QUALIFICATIF_OUVERTURE = "ouverture_qualifiee_maison"
+
 ERRORS: list[str] = []
 
 
@@ -121,6 +131,31 @@ def active_lines(content: str) -> list[str]:
 
 def active_content(content: str) -> str:
     return "\n".join(active_lines(content))
+
+
+def file_with_id(auto_id: str, *directories: Path):
+    """Retourne (chemin, contenu) du premier fichier YAML contenant auto_id.
+
+    Localisation par ID via rglob (robuste au déplacement de fichiers), à la
+    manière des tests N1/G3/W1 — contrairement aux constantes de chemin F_AUTO_*.
+    """
+    dirs = directories or (DIR_AUTOMATIONS_ALARME,)
+    for p in yaml_files(*dirs):
+        c = read(p)
+        if auto_id in c:
+            return p, c
+    return None, ""
+
+
+def trigger_entities(content: str) -> set[str]:
+    """Entités binary_sensor.* présentes dans le bloc `trigger:` (commentaires ignorés)."""
+    ac = active_content(content)
+    m = re.search(
+        r"\btrigger\s*:(.*?)(?=\n\s*condition\s*:|\n\s*action\s*:|\Z)",
+        ac, re.DOTALL
+    )
+    block = m.group(1) if m else ""
+    return set(re.findall(r"binary_sensor\.[a-z0-9_]+", block))
 
 
 # ---------------------------------------------------------------------------
@@ -670,6 +705,176 @@ def test_sensor_blocage_attributs() -> None:
 
 
 # ---------------------------------------------------------------------------
+# §50 — Détection intrusion : invariants CH-1 (voie d'entrée / délai / sirène)
+# ---------------------------------------------------------------------------
+
+def test_ouvrants_entree_hors_chemin_immediat() -> None:
+    """50 / CH-1 A1 — Les ouvrants qui démarrent le délai d'entrée
+    (delai_entree_start) ne doivent pas figurer dans le chemin immédiat (autres)."""
+    _, start_c = file_with_id(AUTO_DELAI_START_ID)
+    autres_path, autres_c = file_with_id(AUTO_AUTRES_ID)
+    if not start_c or not autres_c:
+        print("✔ N5 — (delai_entree_start ou autres introuvable par ID — contrôle ignoré)")
+        return
+    ouvrants_delai = trigger_entities(start_c)
+    immediat = trigger_entities(autres_c)
+    if not ouvrants_delai:
+        print("✔ N5 — (aucun ouvrant de délai détecté — contrôle ignoré)")
+        return
+    fuite = sorted(ouvrants_delai & immediat)
+    if fuite:
+        for e in fuite:
+            ERRORS.append(
+                f"N5 — Ouvrant d'entrée '{e}' présent dans le chemin immédiat "
+                f"(autres, ID {AUTO_AUTRES_ID}) alors qu'il démarre le délai d'entrée "
+                f"(50_intrusion / CH-1 A1 — faux positif d'intrusion) : "
+                f"{autres_path.relative_to(REPO_ROOT)}"
+            )
+    else:
+        print("✔ N5 — Ouvrants d'entrée hors du chemin immédiat (CH-1 A1)")
+
+
+def test_delai_fin_sans_qualificatif_ouverture() -> None:
+    """50 / CH-1 B2 — Le garde de fin de délai s'appuie sur timer.finished seul ;
+    il ne réintroduit pas le qualificatif ouverture_qualifiee_maison."""
+    path, content = file_with_id(AUTO_DELAI_FIN_ID)
+    if not content:
+        ERRORS.append(
+            f"N6 — Automation délai entrée fin (ID {AUTO_DELAI_FIN_ID}) introuvable "
+            f"(50_intrusion / CH-1 B2)"
+        )
+        return
+    ac = active_content(content)
+    ok = True
+    if QUALIFICATIF_OUVERTURE in ac:
+        ok = False
+        ERRORS.append(
+            f"N6 — '{QUALIFICATIF_OUVERTURE}' réintroduit dans le garde de fin de délai "
+            f"(ID {AUTO_DELAI_FIN_ID}) — réexclut structurellement porte/garage "
+            f"(50_intrusion / CH-1 B2 — faux négatif) : {path.relative_to(REPO_ROOT)}"
+        )
+    if "timer.finished" not in ac:
+        ok = False
+        ERRORS.append(
+            f"N6 — Le garde de fin de délai (ID {AUTO_DELAI_FIN_ID}) ne se déclenche plus "
+            f"sur timer.finished (50_intrusion / CH-1 B2) : {path.relative_to(REPO_ROOT)}"
+        )
+    if ok:
+        print("✔ N6 — Fin de délai sur timer.finished, sans ouverture_qualifiee_maison (CH-1 B2)")
+
+
+def test_delai_fin_chemin_sonore_unique() -> None:
+    """50 / 70 / CH-1 C1 — Le garde de fin de délai n'appelle pas script.sirene_brutale
+    directement (chemin sonore unique : déclenchement panneau → sirène)."""
+    path, content = file_with_id(AUTO_DELAI_FIN_ID)
+    if not content:
+        ERRORS.append(
+            f"N7 — Automation délai entrée fin (ID {AUTO_DELAI_FIN_ID}) introuvable "
+            f"(50_intrusion / CH-1 C1)"
+        )
+        return
+    if "sirene_brutale" in active_content(content):
+        ERRORS.append(
+            f"N7 — script.sirene_brutale appelé directement par le garde de fin de délai "
+            f"(ID {AUTO_DELAI_FIN_ID}) — double invocation sonore "
+            f"(50_intrusion / 70_sirene / CH-1 C1 / MIN-5) : {path.relative_to(REPO_ROOT)}"
+        )
+    else:
+        print("✔ N7 — Fin de délai sans appel direct à sirene_brutale (CH-1 C1)")
+
+
+# ---------------------------------------------------------------------------
+# Clavier PIN & flux badge — invariants CH-6
+# ---------------------------------------------------------------------------
+
+def test_clavier_armement_appel_explicite() -> None:
+    """CH-6 — L'automation d'armement clavier appelle le script avec code/source
+    explicites (pas via script.turn_on, qui ne propage pas le contexte)."""
+    path, content = file_with_id(AUTO_ARMEMENT_CLAVIER_ID)
+    if not content:
+        ERRORS.append(
+            f"K1 — Automation armement clavier (ID {AUTO_ARMEMENT_CLAVIER_ID}) introuvable (CH-6)"
+        )
+        return
+    ac = active_content(content)
+    problems = []
+    if "script.turn_on" in ac:
+        problems.append("utilise script.turn_on (contexte non propagé au script)")
+    if SCRIPT_TRAITEMENT_CLAVIER not in ac:
+        problems.append(f"n'appelle pas script.{SCRIPT_TRAITEMENT_CLAVIER}")
+    if "code_in" not in ac or "source_in" not in ac:
+        problems.append("ne transmet pas code_in / source_in en données")
+    if problems:
+        ERRORS.append(
+            f"K1 — Flux PIN clavier (ID {AUTO_ARMEMENT_CLAVIER_ID}) : "
+            + " ; ".join(problems)
+            + f" (CH-6) : {path.relative_to(REPO_ROOT)}"
+        )
+    else:
+        print("✔ K1 — Armement clavier : appel explicite du script avec code_in/source_in (CH-6)")
+
+
+def test_script_clavier_sans_dependance_trigger() -> None:
+    """CH-6 — script.traitement_code_clavier ne dépend pas de trigger.* (contexte non
+    propagé lors d'un appel de script) ; il lit code_in / source_in."""
+    for p in yaml_files(DIR_SCRIPTS):
+        content = read(p)
+        if SCRIPT_TRAITEMENT_CLAVIER not in content:
+            continue
+        m = re.search(
+            rf"{SCRIPT_TRAITEMENT_CLAVIER}\s*:(.+?)(?=^\S|\Z)",
+            content, re.DOTALL | re.MULTILINE
+        )
+        bloc = active_content(m.group(1)) if m else active_content(content)
+        problems = []
+        if re.search(r"\btrigger\.", bloc) or "trigger is defined" in bloc:
+            problems.append("dépend de trigger.* (fragile sous appel de script)")
+        if "code_in" not in bloc or "source_in" not in bloc:
+            problems.append("ne lit pas code_in / source_in")
+        if problems:
+            ERRORS.append(
+                f"K2 — script.{SCRIPT_TRAITEMENT_CLAVIER} : "
+                + " ; ".join(problems)
+                + f" (CH-6) : {p.relative_to(REPO_ROOT)}"
+            )
+        else:
+            print(
+                f"✔ K2 — script.{SCRIPT_TRAITEMENT_CLAVIER} sans dépendance trigger, "
+                f"lit code_in/source_in (CH-6)"
+            )
+        return
+    print(f"✔ K2 — (script.{SCRIPT_TRAITEMENT_CLAVIER} non trouvé — contrôle ignoré)")
+
+
+def test_badge_ignore_codes_pin() -> None:
+    """CH-6 — Le flux badge ne traite pas les codes PIN : garde globale non vide
+    excluant les valeurs numériques (sinon un PIN est traité comme badge inconnu)."""
+    path, content = file_with_id(AUTO_DESARM_BADGE_ID)
+    if not content:
+        ERRORS.append(
+            f"K3 — Automation désarmement badge (ID {AUTO_DESARM_BADGE_ID}) introuvable (CH-6)"
+        )
+        return
+    ac = active_content(content)
+    problems = []
+    if re.search(r"condition\s*:\s*\[\s*\]", ac):
+        problems.append("condition globale vide (condition: [])")
+    has_numeric_guard = bool(
+        re.search(r"regex_match\(\s*['\"]\^?\[0-9\]", ac)
+    ) or "is_number" in ac
+    if not has_numeric_guard:
+        problems.append("aucune exclusion des valeurs numériques (PIN)")
+    if problems:
+        ERRORS.append(
+            f"K3 — Flux badge (ID {AUTO_DESARM_BADGE_ID}) : "
+            + " ; ".join(problems)
+            + f" — un code PIN serait traité comme badge (CH-6) : {path.relative_to(REPO_ROOT)}"
+        )
+    else:
+        print("✔ K3 — Flux badge : codes PIN exclus de la voie badge (CH-6)")
+
+
+# ---------------------------------------------------------------------------
 # Registre des tests
 # ---------------------------------------------------------------------------
 
@@ -694,6 +899,10 @@ TESTS = [
     test_intrusion_mode_test_bifurcation,
     test_intrusion_condition_armed_away,
     test_sirene_brutale_pas_en_mode_test,
+    # §50 Intrusion — CH-1 (voie d'entrée / délai / sirène)
+    test_ouvrants_entree_hors_chemin_immediat,
+    test_delai_fin_sans_qualificatif_ouverture,
+    test_delai_fin_chemin_sonore_unique,
     # §60 Blocage
     test_blocage_sans_delay,
     # §61 Watchdog
@@ -711,6 +920,10 @@ TESTS = [
     test_sensor_blocage_incoherent_declare,
     test_sensor_blocage_independant_metier,
     test_sensor_blocage_attributs,
+    # Clavier PIN & flux badge — CH-6
+    test_clavier_armement_appel_explicite,
+    test_script_clavier_sans_dependance_trigger,
+    test_badge_ignore_codes_pin,
 ]
 
 # ---------------------------------------------------------------------------
