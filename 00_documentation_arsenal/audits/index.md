@@ -20,6 +20,9 @@
 ### Voiture
 - voiture/audit_domaine_audi.md
 
+### Alarme
+- alarme/audit_alarme_rapport_officiel.md
+
 ## Arbitrages
 
 ### Température intérieure
@@ -47,9 +50,12 @@ _(emplacement réservé — aucun document à ce jour)_
 - vacances/plan_action_vacances_chauffage_effectivite.md
 - vacances/etape_A_reecriture_contractuelle_vacances_chauffage.md
 
+### Alarme
+- alarme/plan_action_alarme.md
+
 ## Chantiers
 
-> **Un seul chantier est réellement ouvert : VAC-IMP-5.** Les entrées Climatisation et Transverses ci-dessous sont conservées pour la traçabilité, avec leur statut réel (livré / analyse) ; elles ne correspondent pas à du travail restant.
+> **Chantiers documentés réellement ouverts : VAC-IMP-5.** Les entrées Climatisation et Transverses ci-dessous sont conservées pour la traçabilité, avec leur statut réel (livré / analyse) ; elles ne correspondent pas à du travail restant. Le domaine **Alarme** comporte des constats critiques ouverts (dont **CH-1**) identifiés par l'audit mais **non encore portés en chantier dédié** (cf. § Clôtures / État du domaine Alarme).
 
 ### Climatisation
 - climatisation/chantier_observabilite_cool.md  _(LIVRÉ — v15.8.4 ; conservé comme dossier de conception / as-built)_
@@ -61,13 +67,24 @@ _(emplacement réservé — aucun document à ce jour)_
 - vacances/chantier_vac_imp_5_desinfection_retour.md  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
 - vacances/rapport_observation_vac_imp_5.md  _(observation runtime — cause requalifiée)_
 
+### Alarme
+- alarme/backlog_alarme.md  _(backlog priorisé — alimente les chantiers ; CH-2 soldé, CH-1 critique ouvert)_
+- alarme/dossier_conception_CH2_alarme.md  _(CH-2 — SOLDÉ ; dossier de conception)_
+- alarme/plan_implementation_CH2_alarme.md  _(CH-2 — SOLDÉ ; plan d'implémentation, runtime `dc8667e` / `99cbc0b`)_
+
 ## Clôtures
 
 ### Vacances
 - vacances/cloture_partielle_vacances.md  _(clôture partielle — domaine NON clôturé)_
 - vacances/cloture_phase_traitement_vacances.md  _(clôture de phase — Lots 1 à 5)_
 
+### Alarme
+- alarme/cloture_ch2_alarme.md  _(clôture de chantier CH-2 — domaine NON clôturé)_
+
 ---
 
 ### État du domaine Vacances
 Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.
+
+### État du domaine Alarme
+Chantier **CH-2 soldé** (`ALM-IMP-2`, `ALM-MIN-4`) — runtime commité (`dc8667e`, `99cbc0b`), rechargé sans erreur ; `input_text.alarme_raison` désormais écrit **exclusivement** par le cerveau. **Domaine non clôturé** : constats critiques restants (dont **CH-1** — voie d'entrée) identifiés par l'audit, **non encore portés en chantier dédié**.
