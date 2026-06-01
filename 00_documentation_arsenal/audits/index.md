@@ -69,7 +69,8 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ### Alarme
 - alarme/backlog_alarme.md  _(backlog priorisé — alimente les chantiers ; CH-2 soldé, CH-1 critique ouvert)_
-- alarme/dossier_conception_CH1_alarme.md  _(CH-1 — OUVERT ; dossier de conception, arbitrage en cours)_
+- alarme/dossier_conception_CH1_alarme.md  _(CH-1 — OUVERT ; dossier de conception, arbitrage A1+B2+C1 retenu)_
+- alarme/plan_implementation_CH1_alarme.md  _(CH-1 — OUVERT ; plan d'implémentation, patch non encore appliqué)_
 - alarme/dossier_conception_CH2_alarme.md  _(CH-2 — SOLDÉ ; dossier de conception)_
 - alarme/plan_implementation_CH2_alarme.md  _(CH-2 — SOLDÉ ; plan d'implémentation, runtime `dc8667e` / `99cbc0b`)_
 
@@ -88,4 +89,4 @@ _(emplacement réservé — aucun document à ce jour)_
 Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.
 
 ### État du domaine Alarme
-Chantier **CH-2 soldé** (`ALM-IMP-2`, `ALM-MIN-4`) — runtime commité (`dc8667e`, `99cbc0b`), rechargé sans erreur ; `input_text.alarme_raison` désormais écrit **exclusivement** par le cerveau. **Domaine non clôturé** : constats critiques restants, dont **CH-1** — voie d'entrée, désormais porté par un dossier de conception dédié.
+Chantier **CH-2 soldé** (`ALM-IMP-2`, `ALM-MIN-4`) — runtime commité (`dc8667e`, `99cbc0b`), rechargé sans erreur ; `input_text.alarme_raison` désormais écrit **exclusivement** par le cerveau. **Domaine non clôturé** : constats critiques restants, dont **CH-1** — voie d'entrée, désormais porté par un dossier de conception et un plan d'implémentation dédiés ; arbitrage **A1+B2+C1** retenu, patch runtime non encore appliqué.
