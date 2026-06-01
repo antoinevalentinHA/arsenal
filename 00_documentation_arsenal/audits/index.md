@@ -58,7 +58,7 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ## Chantiers
 
-> **Chantiers documentés réellement ouverts : VAC-IMP-5.** Les entrées Climatisation et Transverses ci-dessous sont conservées pour la traçabilité, avec leur statut réel (livré / analyse) ; elles ne correspondent pas à du travail restant. Domaine **Alarme** : CH-2 soldé, **CH-1 implémenté au runtime** (validation terrain en attente) ; chantiers restants CH-3/CH-4/CH-5/CH-6 (cf. § Clôtures / État du domaine Alarme).
+> **Chantiers documentés réellement ouverts : VAC-IMP-5.** Les entrées Climatisation et Transverses ci-dessous sont conservées pour la traçabilité, avec leur statut réel (livré / analyse) ; elles ne correspondent pas à du travail restant. Domaine **Alarme** : CH-2 et CH-6 soldés, **CH-1 implémenté au runtime** (validation terrain en attente) ; chantiers restants CH-3/CH-4/CH-5 (cf. § Clôtures / État du domaine Alarme).
 
 ### Climatisation
 - climatisation/chantier_observabilite_cool.md  _(LIVRÉ — v15.8.4 ; conservé comme dossier de conception / as-built)_
@@ -71,7 +71,7 @@ _(emplacement réservé — aucun document à ce jour)_
 - vacances/rapport_observation_vac_imp_5.md  _(observation runtime — cause requalifiée)_
 
 ### Alarme
-- alarme/backlog_alarme.md  _(backlog priorisé — alimente les chantiers ; CH-2 soldé, CH-1 implémenté — validation terrain en attente)_
+- alarme/backlog_alarme.md  _(backlog priorisé — alimente les chantiers ; CH-2 et CH-6 soldés, CH-1 implémenté — validation terrain en attente)_
 - alarme/dossier_conception_CH1_alarme.md  _(CH-1 — IMPLÉMENTÉ ; dossier de conception, arbitrage A1+B2+C1)_
 - alarme/plan_implementation_CH1_alarme.md  _(CH-1 — IMPLÉMENTÉ ; plan d'implémentation, runtime `812f2cf` / `5dda40b` / `fe57c73`, validation terrain en attente)_
 - alarme/dossier_conception_CH2_alarme.md  _(CH-2 — SOLDÉ ; dossier de conception)_
@@ -86,6 +86,7 @@ _(emplacement réservé — aucun document à ce jour)_
 ### Alarme
 - alarme/cloture_ch2_alarme.md  _(clôture de chantier CH-2 — domaine NON clôturé)_
 - alarme/cloture_ch1_alarme.md  _(clôture de chantier CH-1 — runtime implémenté, validation terrain en attente — domaine NON clôturé)_
+- alarme/cloture_ch6_alarme.md  _(clôture de chantier CH-6 — ALM-CRIT-3 résolu et validé terrain — domaine NON clôturé)_
 
 ---
 
@@ -93,4 +94,4 @@ _(emplacement réservé — aucun document à ce jour)_
 Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.
 
 ### État du domaine Alarme
-Chantier **CH-2 soldé** (`ALM-IMP-2`, `ALM-MIN-4`) — runtime commité (`dc8667e`, `99cbc0b`), rechargé sans erreur ; `input_text.alarme_raison` écrit **exclusivement** par le cerveau. Chantier **CH-1 implémenté au runtime** (`ALM-CRIT-1`, `ALM-CRIT-2`, `ALM-MIN-5`) — commits `812f2cf` / `5dda40b` / `fe57c73`, arbitrage **A1+B2+C1**, **validé statiquement, validation terrain en attente**. **Domaine non clôturé** : clôture définitive de CH-1 conditionnée à la validation terrain ; chantiers restants **CH-3** (`ALM-IMP-1`), **CH-4** (`ALM-IMP-3`), **CH-5** (documentaire), **CH-6** (`ALM-CRIT-3`) — **requalifié** par contre-expertise : constat critique maintenu, cause initiale « trigger perdu via `script.turn_on` » **infirmée** (échec de validation du code + parasitage par l'automatisation badge ; cf. § Contre-expertises).
+Chantier **CH-2 soldé** (`ALM-IMP-2`, `ALM-MIN-4`) — runtime commité (`dc8667e`, `99cbc0b`), rechargé sans erreur ; `input_text.alarme_raison` écrit **exclusivement** par le cerveau. Chantier **CH-1 implémenté au runtime** (`ALM-CRIT-1`, `ALM-CRIT-2`, `ALM-MIN-5`) — commits `812f2cf` / `5dda40b` / `fe57c73`, arbitrage **A1+B2+C1**, **validé statiquement, validation terrain en attente**. Chantier **CH-6 soldé** (`ALM-CRIT-3`) — correctifs runtime `139640b` / `5f56ee7`, **validé terrain** (armement et désarmement PIN OK, plus de notification « badge inconnu ») ; constat **résolu**. Résidus documentés non bloquants : valeur PIN exposée dans le champ historiquement « badge » (cosmétique) ; **flux badge RFID sans évènement observable** — observation distincte d'`ALM-CRIT-3`, à investiguer séparément (cf. clôture CH-6). **Domaine non clôturé** : clôture définitive de CH-1 conditionnée à la validation terrain ; chantiers restants **CH-3** (`ALM-IMP-1`), **CH-4** (`ALM-IMP-3`), **CH-5** (documentaire).
