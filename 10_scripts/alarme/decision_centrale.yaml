@@ -68,7 +68,6 @@ alarme_decision_centrale:
         # Entrées normalisées
         # =============================
         mode_alarme: "{{ states('input_select.mode_alarme') | default('Inconnu') }}"
-        alarme_etat: "{{ states('alarm_control_panel.alarme_maison') | default('unknown') }}"
 
         presence_securite: "{{ is_state('binary_sensor.presence_famille_securite', 'on') }}"
         presence_visiteur: "{{ is_state('input_boolean.presence_visiteur', 'on') }}"
@@ -91,7 +90,7 @@ alarme_decision_centrale:
             ABSENCE_NON_STABLE
           {% elif blocage_armement_auto %}
             BLOCAGE_AUTO
-          {% elif delai_en_cours and not presence_securite %}
+          {% elif delai_en_cours %}
             DELAI_ENTREE
           {% else %}
             ARMEMENT_AUTORISE
