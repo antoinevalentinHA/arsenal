@@ -171,7 +171,35 @@ pour la fin exploitable d'un cycle ECS.
 
 ---
 
-## 7. Hiérarchie temporelle
+## 7. Timer de désinfection vacances longues
+
+### 7.1 Rôle
+
+`timer.vacances_longues_ecs` (`duration: 144:00:00`, `restore: true`) mesure la
+durée d'une absence Vacances. Il est démarré à l'entrée Vacances et annulé au
+retour, par « Modes - Vacances - Gestion ECS désinfection »
+(`11_automations/modes/vacances/start_timer_ecs_desinfection.yaml`), écrivain
+unique du timer.
+
+### 7.2 Sémantique observée (runtime)
+
+À l'état `idle`, l'attribut `remaining` vaut `None` — après annulation comme
+après expiration naturelle. L'état `idle` ne distingue pas une complétion
+naturelle d'une annulation.
+
+### 7.3 Source de vérité de la complétion
+
+Le seul signal fiable de complétion naturelle est l'événement `timer.finished`.
+Il n'est pas émis sur `timer.cancel`. Toute logique de complétion s'appuie sur
+cet événement.
+
+### 7.4 Règle
+
+Aucune décision ECS ne doit dépendre de l'attribut `remaining` de ce timer.
+
+---
+
+## 8. Hiérarchie temporelle
 
 En cas de conflit :
 
@@ -183,7 +211,7 @@ La hiérarchie est absolue.
 
 ---
 
-## 8. Anti-patterns
+## 9. Anti-patterns
 
 Sont interdits :
 
@@ -192,5 +220,6 @@ Sont interdits :
 - dépendance directe à `now()`
 - délais arbitraires
 - horodatage implicite
+- fonder une autorisation ou une décision sur l'attribut `remaining` d'un timer à l'état `idle` (notamment `remaining == '0:00:00'`)
 
 Toute dérive est critique.

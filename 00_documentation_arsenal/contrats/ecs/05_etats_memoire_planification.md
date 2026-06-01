@@ -90,6 +90,40 @@ Invariants :
 
 ---
 
+### 3.2 Cycle de vie de `ecs_desinfection_retour_due`
+
+`input_boolean.ecs_desinfection_retour_due` est un état souverain de
+planification mémorisant qu'une désinfection ECS au retour de vacances est due.
+
+Sémantique : `on` = une désinfection-retour est due (légitimité établie par une
+absence longue menée à terme) ; `off` = aucune désinfection-retour due.
+
+Persistance : l'état est persistant. Il ne définit pas de valeur `initial`,
+afin de survivre au redémarrage de Home Assistant. Côté registre HA, il porte
+une catégorie mémoire (label `helper:memory` ou équivalent).
+
+Écrivain souverain (unique) :
+
+- pose (`→ on`) : exclusivement l'automation déclenchée par l'événement
+  `timer.finished` de `timer.vacances_longues_ecs` (complétion naturelle).
+  L'identifiant de cette automation sera attribué lors du patch runtime.
+- réinitialisation (`→ off`) : exclusivement après consommation, dans
+  l'automation « ECS - Désinfection fin vacances »
+  (`11_automations/ecs/desinfection_retour_vacances.yaml`).
+- interdictions : `timer.cancel` (retour anticipé) ne pose jamais cet état ;
+  aucune écriture manuelle ; aucun autre écrivain.
+
+Idempotence : la consommation exécute la désinfection au plus une fois puis
+repositionne l'état à `off`. Un état `on` présent au démarrage est consommé une
+seule fois (pas de double exécution).
+
+Projection d'observabilité : `binary_sensor.ecs_desinfection_retour_vacances_autorisee`
+est conservé comme projection 1:1 de `input_boolean.ecs_desinfection_retour_due`.
+Il n'a plus de rôle décisionnel et ne lit plus `timer.vacances_longues_ecs` ni
+son attribut `remaining`.
+
+---
+
 ## 4. Modes utilisateur
 
 Modes disponibles :

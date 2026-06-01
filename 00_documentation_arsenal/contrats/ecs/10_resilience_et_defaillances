@@ -58,6 +58,21 @@ En cas de reboot :
 
 Tout état ambigu est neutralisé.
 
+### 4.1 Persistance de `ecs_desinfection_retour_due` (désinfection-retour)
+
+`input_boolean.ecs_desinfection_retour_due` est persistant et ne définit pas de
+valeur `initial`. En cas de reboot :
+
+- s'il vaut `on`, il reste `on` jusqu'à consommation (aucune réinitialisation au
+  démarrage) ;
+- aucune écriture ne le force à `off` sur `homeassistant: start`.
+
+Risque résiduel reconnu (non traité dans ce correctif) : un événement
+`timer.finished` de `timer.vacances_longues_ecs` survenant pendant un arrêt de
+Home Assistant peut ne pas être rejoué au redémarrage ; une légitimité pourrait
+alors ne pas être posée. Ce cas est documenté comme risque résiduel et
+explicitement hors périmètre du présent correctif.
+
 ---
 
 ## 5. Indisponibilité de la couche d'exécution

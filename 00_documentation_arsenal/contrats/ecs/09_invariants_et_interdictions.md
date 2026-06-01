@@ -34,6 +34,14 @@ Les règles suivantes sont intangibles :
 - ✅ Toute action ECS est traçable
 - ✅ Toute dérive est corrigée ou signalée
 
+Désinfection au retour de vacances :
+
+- ❌ La légitimité d'une désinfection-retour n'est jamais établie par `timer.cancel` ; complétion et annulation doivent rester discernables
+- ✅ La légitimité d'une désinfection-retour est établie exclusivement par `timer.finished` de `timer.vacances_longues_ecs` (complétion naturelle)
+- ✅ `input_boolean.ecs_desinfection_retour_due` a un écrivain souverain unique par transition (pose sur `timer.finished` ; réinitialisation à la consommation)
+- ✅ La désinfection-retour est idempotente : au plus une exécution par légitimité établie
+- ✅ L'état souverain est persistant (pas d'`initial`) ; valeur par défaut au tout premier démarrage = `off`
+
 Aucune dérogation n'est admise.
 
 ---
@@ -47,6 +55,7 @@ Il est formellement interdit :
 - de libérer un verrou sans rabaissement
 - d'utiliser une donnée dynamique comme vérité finale
 - d'implémenter une logique thermique en dehors des scripts dédiés
+- de fonder la décision de désinfection-retour sur l'attribut `remaining` du timer (non fiable à l'état `idle`)
 
 Toute infraction est critique.
 
