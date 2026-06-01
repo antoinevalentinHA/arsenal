@@ -86,7 +86,7 @@
         {# ==================================================
            3. VACANCES — EXCEPTION NORMATIVE PRE-CONFORT
            ================================================== #}
-        {% elif is_state('input_select.mode_maison', 'Vacances') %}
+        {% elif is_state('binary_sensor.vacances_actives', 'on') %}
           {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
             Confort
           {% else %}

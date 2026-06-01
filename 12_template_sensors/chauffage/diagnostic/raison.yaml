@@ -87,7 +87,7 @@
         {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
           fenetre_ouverte_maison
 
-        {% elif is_state('input_select.mode_maison', 'Vacances') %}
+        {% elif is_state('binary_sensor.vacances_actives', 'on') %}
           {% if is_state('input_boolean.pre_confort_actif_calcule', 'on') %}
             pre_confort_vacances
           {% else %}

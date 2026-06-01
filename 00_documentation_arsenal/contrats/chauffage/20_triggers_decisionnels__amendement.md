@@ -166,14 +166,14 @@ réaligné sur `60` (réécriture) :
 
 Source : `11_automations/chauffage/decision_centrale_trigger.yaml`.
 
-**Triggers réels (15 entités) :** `chauffage_autorise_systeme`,
+**Triggers réels (16 entités) :** `chauffage_autorise_systeme`,
 `mode_confort_chauffage`, `pre_confort_actif_calcule`, `mode_maison`,
-`aeration_episode_en_cours`, `aeration_confirmee`, `chauffage_blocage_aeration`,
-`fenetre_ouverte_maison_avec_delai`, `blocage_chauffage_poele`,
-`presence_famille_unifiee`, `chauffage_inhibition_geofencing`,
-`chauffage_autorisation_cible`, `boiler_bridge_online`,
-`chauffage_application_en_cours`, `systeme_stable` (+ timer anti-rebond géoloc,
-+ reload script).
+`vacances_actives`, `aeration_episode_en_cours`, `aeration_confirmee`,
+`chauffage_blocage_aeration`, `fenetre_ouverte_maison_avec_delai`,
+`blocage_chauffage_poele`, `presence_famille_unifiee`,
+`chauffage_inhibition_geofencing`, `chauffage_autorisation_cible`,
+`boiler_bridge_online`, `chauffage_application_en_cours`, `systeme_stable`
+(+ timer anti-rebond géoloc, + reload script).
 
 **Absences confirmées (lignes fantômes) :**
 - aucune entité `protection_*` → lignes « protection annulée par X » fantômes ;
@@ -184,15 +184,14 @@ Source : `11_automations/chauffage/decision_centrale_trigger.yaml`.
 **Absence confirmée de couplage standby :** `standby_force` absent de la
 surface de trigger.
 
-> **Évolution planifiée (VAC-IMP-1, non encore réalisée) :** le chantier
-> « Vacances sur l'effectivité » prévoit l'ajout d'un **16ᵉ** trigger,
-> `binary_sensor.vacances_actives`, à `decision_centrale_trigger.yaml`
-> (Étape C runtime), pour rendre déterministe le recalcul du régime sur
-> l'effectivité. La cible normative est déjà inscrite dans la table de `20`.
-> Ce constat « Triggers réels (15 entités) » reste exact **tant que le patch
-> runtime n'est pas appliqué** ; il sera porté à **16 entités** en même temps
-> que le trigger runtime, préservant **INV-TRIG-5** (aucune ligne fantôme,
-> aucun trigger non documenté).
+> **Évolution réalisée (VAC-IMP-1) :** le chantier « Vacances sur l'effectivité »
+> a ajouté le **16ᵉ** trigger, `binary_sensor.vacances_actives`, à
+> `decision_centrale_trigger.yaml` (Étape C runtime), pour rendre déterministe le
+> recalcul du régime sur l'effectivité. Le constat « Triggers réels » ci-dessus
+> est porté à **16 entités** en cohérence avec le runtime, préservant
+> **INV-TRIG-5** (aucune ligne fantôme, aucun trigger non documenté). Le trigger
+> `mode_maison` est conservé comme signal de reconfiguration de l'espace
+> d'autorisation (projection), non comme garde de régime.
 
 ---
 

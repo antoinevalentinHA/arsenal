@@ -127,6 +127,10 @@
       entity_id: binary_sensor.presence_famille_unifiee
       id: "presence_famille_unifiee"
 
+    - platform: state
+      entity_id: binary_sensor.vacances_actives
+      id: "vacances_actives"
+
     # ======================================================
     # 🔁 ABSENCE — PROTECTION THERMIQUE
     # ======================================================
