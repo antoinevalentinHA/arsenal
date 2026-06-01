@@ -71,6 +71,7 @@ _(emplacement réservé — aucun document à ce jour)_
 - vacances/rapport_observation_vac_imp_5.md  _(observation runtime — cause requalifiée)_
 
 ### Alarme
+- alarme/etat_post_CH6.md  _(note d'état — synthèse post-CH-6 : soldé / reste / ordre recommandé)_
 - alarme/backlog_alarme.md  _(backlog priorisé — alimente les chantiers ; CH-2 et CH-6 soldés, CH-1 implémenté — validation terrain en attente)_
 - alarme/dossier_conception_CH1_alarme.md  _(CH-1 — IMPLÉMENTÉ ; dossier de conception, arbitrage A1+B2+C1)_
 - alarme/plan_implementation_CH1_alarme.md  _(CH-1 — IMPLÉMENTÉ ; plan d'implémentation, runtime `812f2cf` / `5dda40b` / `fe57c73`, validation terrain en attente)_
