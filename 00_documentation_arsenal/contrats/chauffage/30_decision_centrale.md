@@ -83,11 +83,13 @@ Impose `comfort`. Écrase toute logique métier inférieure, sans contourner les
 
 ### Niveau 2 — Contextes majeurs
 
-Aération en cours confirmée, blocage aération, fenêtres ouvertes (avec délai), mode maison = Vacances, poêle actif.
+Aération en cours confirmée, blocage aération, fenêtres ouvertes (avec délai), absence effective Vacances (`binary_sensor.vacances_actives = on`), poêle actif.
 
 Effets :
 - aération confirmée / blocage aération / fenêtres ouvertes / poêle actif → `reduced`
-- mode maison = Vacances → `reduced`, **sauf exception normative explicite** : pré-confort retour vacances actif (`input_boolean.pre_confort_actif_calcule`) → `comfort`
+- absence effective Vacances (`vacances_actives = on`) → `reduced`, **sauf exception normative explicite** : pré-confort retour vacances actif (`input_boolean.pre_confort_actif_calcule`) → `comfort`
+
+La Décision Centrale est l'**unique arbitre** du contexte Vacances : elle consomme l'effectivité `binary_sensor.vacances_actives`, et non la projection `input_select.mode_maison`. Aucune autre couche (capteur d'autorisation thermique, miroir de diagnostic) ne porte de logique Vacances.
 
 ### Niveau 3 — Confort d'opportunité
 
@@ -194,14 +196,16 @@ La raison est calculée localement et transmise à `chauffage_appliquer_consigne
 | Aération en cours confirmée | `aeration_en_cours` |
 | Blocage aération actif | `blocage_aeration_en_cours` |
 | Fenêtre ouverte (avec délai) | `fenetre_ouverte_maison` |
-| Mode vacances + pré-confort actif | `pre_confort_vacances` |
-| Mode vacances (sans pré-confort) | `mode_maison_vacances` |
+| Absence effective Vacances + pré-confort actif | `pre_confort_vacances` |
+| Absence effective Vacances (sans pré-confort) | `mode_maison_vacances` |
 | Poêle actif | `poele_actif` |
 | Présence + cible = comfort | `besoin_thermique` |
 | Présence + cible = neutre | `presence_on` |
 | Présence + cible = reduced | `confort_suffisant` |
 | Inhibition géofencing | `stabilisation_absence` |
 | Absence (défaut) | `absence` |
+
+Le token `mode_maison_vacances` est conservé tel quel comme **clé technique de raison** (stabilité runtime, miroir de diagnostic, assertions CI). Sa **sémantique** est désormais « absence effective Vacances sans pré-confort ». Aucun renommage n'est effectué.
 
 ---
 

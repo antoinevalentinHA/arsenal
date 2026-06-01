@@ -119,7 +119,9 @@ ou dérive de hiérarchie décisionnelle.
 🔗 Dépendances :
 Contexte utilisateur :
 - input_boolean.mode_confort_chauffage
-- input_select.mode_maison
+
+Contexte d'effectivité Vacances :
+- binary_sensor.vacances_actives
 
 Blocages et interdictions :
 - binary_sensor.chauffage_autorise_systeme
@@ -192,7 +194,7 @@ Blocages et contextes :
 - input_boolean.chauffage_blocage_aeration  
 - input_boolean.aeration_episode_en_cours  
 - binary_sensor.fenetre_ouverte_maison_avec_delai  
-- input_select.mode_maison  
+- binary_sensor.vacances_actives  
 
 Autorisation / hystérésis :
 - binary_sensor.chauffage_autorise_systeme  
@@ -205,6 +207,8 @@ Confort / opportunités :
 
 Absence :
 - input_boolean.chauffage_inhibition_geofencing  
+
+> Garde Vacances (VAC-IMP-1) : pour `sensor.chauffage_mode_calcule` comme pour `sensor.chauffage_raison_calculee`, la garde du contexte Vacances est alignée sur l'effectivité `binary_sensor.vacances_actives`, en stricte cohérence avec la Décision Centrale (`30` §4) et sa raison `30` §10. `input_select.mode_maison` est retiré des dépendances de la garde Vacances et n'est pas réintroduit par une autre voie. La délégation présence à `sensor.chauffage_autorisation_cible` est conservée.
 
 ⚠️ Risques :
 - Divergence avec la hiérarchie réelle de la décision centrale

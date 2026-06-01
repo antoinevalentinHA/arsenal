@@ -184,6 +184,16 @@ Source : `11_automations/chauffage/decision_centrale_trigger.yaml`.
 **Absence confirmée de couplage standby :** `standby_force` absent de la
 surface de trigger.
 
+> **Évolution planifiée (VAC-IMP-1, non encore réalisée) :** le chantier
+> « Vacances sur l'effectivité » prévoit l'ajout d'un **16ᵉ** trigger,
+> `binary_sensor.vacances_actives`, à `decision_centrale_trigger.yaml`
+> (Étape C runtime), pour rendre déterministe le recalcul du régime sur
+> l'effectivité. La cible normative est déjà inscrite dans la table de `20`.
+> Ce constat « Triggers réels (15 entités) » reste exact **tant que le patch
+> runtime n'est pas appliqué** ; il sera porté à **16 entités** en même temps
+> que le trigger runtime, préservant **INV-TRIG-5** (aucune ligne fantôme,
+> aucun trigger non documenté).
+
 ---
 
 ## 7. Invariants exposés (CI)

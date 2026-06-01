@@ -101,11 +101,13 @@ maintenue.
 
 | Contexte                                          | Décision finale | Justification                  |
 |---------------------------------------------------|-----------------|--------------------------------|
-| Mode maison = Vacances, pré-confort inactif       | `reduced`       | Sobriété maximale imposée      |
-| Mode maison = Vacances, pré-confort actif         | `comfort` *(exception normative)* | Exception bornée au contexte Vacances |
+| Absence effective Vacances (`vacances_actives = on`), pré-confort inactif | `reduced`       | Sobriété maximale imposée      |
+| Absence effective Vacances (`vacances_actives = on`), pré-confort actif   | `comfort` *(exception normative)* | Exception bornée au contexte d'effectivité Vacances |
 
-L'exception pré-confort demeure interne au contexte Vacances et soumise à la
-validation complète de la Décision Centrale (cf. `40 §6.1`).
+L'exception pré-confort demeure interne à l'absence effective Vacances et soumise à la
+validation complète de la Décision Centrale (cf. `40 §6.1`). La projection
+`input_select.mode_maison` ne porte plus, à elle seule, l'effet de régime
+(cf. `vacances.md` §10).
 
 ### 4.3 Poêle — règle de comportement par corroboration (registre stabilisation, D2)
 

@@ -184,7 +184,8 @@ Note :
 - la présence de `mode_maison` dans cette table et dans la table des contextes contraignants est volontaire,
 - la redondance est assumée :
   - ici, `mode_maison` agit comme signal de reconfiguration de l’espace d’autorisation,
-  - ailleurs, il agit comme contexte hiérarchique contraignant.
+  - ailleurs, il agit comme contexte hiérarchique contraignant ;
+- depuis VAC-IMP-1, l’**effet de régime** d’absence Vacances est porté exclusivement par `binary_sensor.vacances_actives` ; `mode_maison` est conservé comme déclencheur défensif de reconfiguration d’autorisation, jamais comme garde de régime.
 
 Règles cardinales :
 
@@ -213,8 +214,12 @@ Règles cardinales :
 | fenetre_ouverte_maison_avec_delai  | ON → OFF           | OUI     | MAJEUR    | Fin blocage fenêtre qualifié |
 | blocage_chauffage_poele            | OFF → ON           | OUI     | CRITIQUE  | Blocage poêle temporisé |
 | blocage_chauffage_poele            | ON → OFF           | OUI     | MAJEUR    | Fin blocage poêle |
-| mode_maison                        | autre → Vacances   | OUI     | CRITIQUE  | Entrée contexte majeur Vacances |
-| mode_maison                        | Vacances → autre   | OUI     | MAJEUR    | Sortie contexte Vacances / revalidation régime |
+| binary_sensor.vacances_actives     | OFF → ON           | OUI     | CRITIQUE  | Entrée absence effective Vacances — (re)calcul du régime |
+| binary_sensor.vacances_actives     | ON → OFF           | OUI     | CRITIQUE  | Sortie absence effective Vacances — revalidation du régime |
+| mode_maison                        | autre → Vacances   | OUI     | CRITIQUE  | Reconfiguration de l’espace d’autorisation (projection) — l’effet de régime est porté par `vacances_actives` |
+| mode_maison                        | Vacances → autre   | OUI     | MAJEUR    | Reconfiguration de l’espace d’autorisation (projection) — l’effet de régime est porté par `vacances_actives` |
+
+> **Transition contract-first (VAC-IMP-1) :** les deux lignes `binary_sensor.vacances_actives` ci-dessus expriment la cible normative. Le déclencheur runtime correspondant est posé à l'Étape C (patch de `11_automations/chauffage/decision_centrale_trigger.yaml`). Jusqu'à l'Étape C, la surface de trigger runtime reste à 15 entités (cf. `20…__amendement` §6) ; la correspondance stricte exigée par **INV-TRIG-5** est rétablie dès l'ajout du trigger runtime, en cohérence simultanée contrat ↔ runtime.
 
 ---
 

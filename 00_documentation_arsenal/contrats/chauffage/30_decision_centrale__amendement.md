@@ -218,7 +218,10 @@ patch :
 
 - **Composition de `chauffage_autorise_systeme`** : retrait de la composante
   `standby_force` ; le capteur ne reflète plus que les causes de sécurité.
-- **`desired_mode`** : inchangé dans tous les contextes (R-30.6).
+- **`desired_mode`** : inchangé dans tous les contextes **par le seul refactor de
+  désintrication CH-2** (R-30.6). Cette invariance est relative à CH-2 ; elle
+  n'interdit pas une évolution thermique ultérieure décidée par un chantier
+  métier distinct et explicitement documenté (cf. §10).
 - **`reason` (décision + miroirs)** : le cas « confort suffisant » cesse de
   produire `chauffage_non_autorise` et produit `confort_suffisant` (Niveau 3).
   Correction propagée simultanément aux quatre cascades par lecture commune du
@@ -238,5 +241,31 @@ Cet amendement est structurant, stable long terme, opposable, et versionné
 avec `30`. Sa publication clôt le chemin critique documentaire et déverrouille
 formellement la phase 3 (désintrication runtime), sous réserve de la garde de
 re-vérification R-30.7.
+
+---
+
+## 10. Articulation avec le chantier « Vacances sur l'effectivité » (VAC-IMP-1)
+
+Le chantier VAC-IMP-1 fait consommer au régime d'absence chauffage l'effectivité
+`binary_sensor.vacances_actives` au lieu de la projection
+`input_select.mode_maison`. Il s'agit d'un **changement de `desired_mode`
+intentionnel, postérieur et distinct** du refactor de désintrication CH-2.
+
+- R-30.6, §6 et INV-30-5 conservent toute leur valeur **pour le périmètre CH-2** :
+  la désintrication de `standby_force` n'a pas modifié `desired_mode`.
+- VAC-IMP-1 modifie délibérément `desired_mode` dans le seul contexte
+  « projection Vacances ∧ présence réelle » (correction de S-CHAUFFAGE-PRESENCE),
+  conformément à `vacances.md` §10. Ce changement est **hors du champ
+  d'invariance de CH-2** et n'en constitue pas une violation.
+- **Invariant structurel maintenu (permanent, indépendant de CH-2) :**
+  l'isomorphisme des gardes de tête entre les axes `desired_mode` et `reason` de
+  la Décision Centrale (R-ISO-1 ; INV-30-5 au sens « équivalence de squelette »)
+  reste **obligatoire** après VAC-IMP-1. Le changement de la garde Vacances doit
+  donc être appliqué **identiquement** aux deux axes.
+- **Garde de re-vérification (R-30.7) applicable :** avant tout patch runtime,
+  le graphe de dépendances de `decision_centrale.yaml` est re-vérifié sur le
+  runtime courant.
+
+---
 
 # ==========================================================

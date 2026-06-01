@@ -39,7 +39,7 @@ Règles cardinales : tout cas non listé est interdit, toute ambiguïté est une
 - fenêtres ouvertes
 - aération en cours / bloquée
 - poêle actif / mémoire poêle
-- mode maison Vacances (contexte majeur à effet conditionnel — voir §4)
+- absence effective Vacances (`binary_sensor.vacances_actives = on`) — contexte majeur à effet conditionnel (voir §4)
 
 ### 3.2 Régime global
 
@@ -69,7 +69,7 @@ Valeurs possibles : `comfort`, `neutre`, `reduced`.
 **Pré-confort retour vacances** (`input_boolean.pre_confort_actif_calcule`) :
 
 - ne constitue pas un override,
-- est une exception normative interne au contexte `mode_maison = Vacances`,
+- est une exception normative interne au contexte d'absence effective Vacances (`binary_sensor.vacances_actives = on`),
 - elle est évaluée exclusivement dans ce contexte, pas comme autorisation amont générique,
 - elle reste soumise à l'absence de tout blocage pur actif et à la validation complète de la Décision Centrale.
 
@@ -94,10 +94,10 @@ Hors override opérateur, les règles ci-dessous s'appliquent strictement.
 | 3 | Aération en cours | `reduced` | Respect inertie et purge thermique |
 | 4 | Blocage post-aération | `reduced` | Interdiction reprise prématurée |
 | 5 | Blocage poêle événementiel actif (timer) | `reduced` | Verrou de sûreté temporisé poêle |
-| 6 | Mode maison = Vacances, pré-confort inactif | `reduced` | Sobriété maximale imposée |
-| 6* | Mode maison = Vacances, pré-confort actif *(exception)* | `comfort` | Exception normative explicite |
+| 6 | Absence effective Vacances (`vacances_actives = on`), pré-confort inactif | `reduced` | Sobriété maximale imposée |
+| 6* | Absence effective Vacances (`vacances_actives = on`), pré-confort actif *(exception)* | `comfort` | Exception normative explicite |
 
-**Exception normative Vacances (ligne 6\*) :** lorsque `input_boolean.pre_confort_actif_calcule` est actif en contexte Vacances, et en absence de tout blocage pur actif (lignes 1 à 5), la Décision Centrale peut produire `comfort`. Cette exception est interne au contexte Vacances. Elle ne constitue pas un contournement de blocage.
+**Exception normative Vacances (ligne 6\*) :** lorsque `input_boolean.pre_confort_actif_calcule` est actif en absence effective Vacances (`binary_sensor.vacances_actives = on`), et en absence de tout blocage pur actif (lignes 1 à 5), la Décision Centrale peut produire `comfort`. Cette exception est interne au contexte d'absence effective Vacances. Elle ne constitue pas un contournement de blocage.
 
 Règles générales (hors override) : toute autorisation ordinaire est ignorée en présence d'un blocage pur actif. Toute inhibition géofencing est sans effet. Les blocages purs (lignes 1 à 5) sont souverains en régime automatique.
 
@@ -135,7 +135,7 @@ Règles cardinales : `neutre` produit toujours une abstention. Aucune oscillatio
 
 > En régime automatique d'absence, toute recherche de confort est interdite hors inhibition géofencing.
 
-**Note sur le pré-confort retour vacances :** cette source d'autorisation n'est pas évaluée en régime absence standard. Elle est traitée exclusivement dans le contexte `mode_maison = Vacances` (§4, ligne 6\*). Elle ne bénéficie d'aucun effet en dehors de ce contexte, quelle que soit l'activité de `binary_sensor.vacances_actives`.
+**Note sur le pré-confort retour vacances :** cette source d'autorisation n'est pas évaluée en régime absence standard. Elle est traitée exclusivement lorsque l'absence Vacances est effective (`binary_sensor.vacances_actives = on`) (§4, ligne 6\*). Hors de ce contexte d'effectivité, elle ne produit aucun effet. La projection `input_select.mode_maison = Vacances` ne suffit pas à elle seule : c'est l'effectivité qui gouverne le régime, conformément à `vacances.md` §10.
 
 ---
 
@@ -180,7 +180,7 @@ Les cas suivants sont strictement interdits en régime automatique, hors overrid
 
 | Cas | Interdiction | Justification |
 |-----|--------------|---------------|
-| Confort en Vacances hors pré-confort autorisé | ❌ | Sobriété maximale |
+| Confort en absence effective Vacances hors pré-confort autorisé | ❌ | Sobriété maximale |
 | Confort avec fenêtre ouverte | ❌ | Chauffe absurde |
 | Confort pendant aération | ❌ | Violation inertie |
 | Confort pendant blocage poêle actif | ❌ | Double source & fenêtre sécurité |
@@ -188,7 +188,7 @@ Les cas suivants sont strictement interdits en régime automatique, hors overrid
 | Reprise automatique post-blocage | ❌ | Risque oscillation |
 | Maintien confort prolongé en absence | ❌ | Dérive énergétique |
 | Confort produit par pré-confort en régime absence | ❌ | Exception hors contexte Vacances |
-| Confort produit par pré-confort hors contexte Vacances | ❌ | Exception bornée à Vacances |
+| Confort produit par pré-confort hors absence effective Vacances | ❌ | Exception bornée au contexte d'effectivité Vacances |
 | Pré-confort cumulé avec inhibition géofencing | ❌ | Double confort absence interdit |
 | Restauration pré-confort après blocage | ❌ | Reprise automatique interdite |
 

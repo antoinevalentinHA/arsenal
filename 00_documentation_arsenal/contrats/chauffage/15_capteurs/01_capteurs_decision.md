@@ -164,8 +164,10 @@ Calculer l'**intention thermique canonique ternaire** (`comfort` / `neutre` / `r
 indépendamment de tout mécanisme de blocage N1 ou de décision d'exécution.
 
 Ce capteur constitue le **pivot d'évaluation thermique de fond** du système Arsenal.
-Il répond exclusivement à : fait-il froid dehors, fait-il froid dedans,
-et dans quel mode est la maison — sans tenir compte des mécanismes de blocage ou d'exécution.
+Il répond exclusivement à : fait-il froid dehors, fait-il froid dedans
+— sans tenir compte du contexte Vacances, des mécanismes de blocage ou d'exécution.
+Le contexte Vacances est arbitré exclusivement en amont par la Décision Centrale
+(cf. `30` §4) ; ce capteur **ne le connaît pas**.
 
 Il est une **entrée** de la décision centrale — pas sa sortie.
 Il est également consommé directement par le mécanisme de standby,
@@ -222,9 +224,10 @@ Paramètres décisionnels :
 
 Contextes :
 - `input_boolean.blocage_chauffage_poele` ⚠️ dette architecturale — ce capteur devrait ignorer les blocages N1 ; cette dépendance doit être migrée vers la décision centrale
-- `input_select.mode_maison`
 - `input_boolean.chauffage_anticipation_meteo`
 - `binary_sensor.meteo_favorable_chauffage`
+
+> Le retrait de `input_select.mode_maison` (VAC-IMP-1, option B) applique au contexte Vacances la même réduction de dette de couche que celle documentée ci-dessus pour `input_boolean.blocage_chauffage_poele` : ce capteur ne porte que le thermique pur. Le contexte Vacances est arbitré exclusivement par la Décision Centrale.
 
 Consommateurs contractuels :
 - `decision_centrale.yaml` — régime présence (entrée, pas sortie)
