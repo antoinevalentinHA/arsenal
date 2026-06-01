@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     ECS — Désinfection retour vacances due (pose)
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10250000000032" (string, guillemets obligatoires — fourni par Arsenal)
+#
+# 🎯 RÔLE
+#   Poser la légitimité de la désinfection-retour lorsque le
+#   timer de vacances longues arrive à terme (complétion naturelle).
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : pose ON de input_boolean.ecs_desinfection_retour_due
+#              à la complétion naturelle du timer
+#   - Exclut : toute exécution de cycle, tout pilotage ECS,
+#              toute décision au retour (assurée par le consommateur)
+#
+# 🔖 NATURE
+#   Événementielle
+#
+# ⚙️ MODE
+#   single
+#   Justification : pose idempotente d'un état booléen ; aucune
+#   exécution concurrente utile sur le même événement.
+#
+# 📣 DÉCLENCHEURS
+#   Événement timer.finished de timer.vacances_longues_ecs
+#   (complétion naturelle ; timer.cancel NE déclenche PAS).
+#
+# 🔗 DÉPENDANCES
+#   Lit      : événement timer.finished (aucune lecture d'attribut)
+#   Appelle  : aucun script / service métier
+#   Écrit    : input_boolean.ecs_desinfection_retour_due (ON)
+#
+# 🧠 AUTORITÉ
+#   Écrivain ON UNIQUE de input_boolean.ecs_desinfection_retour_due.
+#   N'applique aucune décision de cycle ; pose une légitimité.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger : turn_on répété est sans effet de bord ;
+#   mode single.
+#
+# 🚫 INTERDITS
+#   - Lire `remaining` ou `finishes_at`
+#   - Être déclenchée par timer.cancel
+#   - Dupliquer la décision de désinfection (consommateur dédié)
+#   - Devenir une autorité métier diffuse
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v14.x
+# ==========================================================
+
+- id: "10250000000032"
+  alias: "ECS - Désinfection retour vacances due"
+  description: >
+    Pose l'état souverain ecs_desinfection_retour_due à la
+    complétion naturelle (timer.finished) du timer de vacances
+    longues. Unique source de légitimité de la désinfection-retour.
+
+  mode: single
+
+  trigger:
+    - platform: event
+      event_type: timer.finished
+      event_data:
+        entity_id: timer.vacances_longues_ecs
+
+  action:
+    - action: input_boolean.turn_on
+      target:
+        entity_id: input_boolean.ecs_desinfection_retour_due

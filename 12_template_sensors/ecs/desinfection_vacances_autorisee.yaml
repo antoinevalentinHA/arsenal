@@ -4,56 +4,46 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #
-#   Exposer une vérité métier UNIQUE :
+#   Exposer, en lecture seule, une vérité métier UNIQUE :
 #
-#     → Une désinfection ECS est-elle AUTORISÉE
-#       lors de la sortie du mode Vacances ?
-#
-# ----------------------------------------------------------
-# 🧱 PRINCIPE
-#
-#   Ce capteur est ON lorsque :
-#     - le timer mesurant la durée continue
-#       des vacances est ARRIVÉ À TERME
-#
-#   Il est OFF dans tous les autres cas.
+#     → Une désinfection ECS au retour de vacances est-elle
+#       DUE (légitimité établie) ?
 #
 # ----------------------------------------------------------
-# ⏱️ SOURCE TEMPORELLE
+# 🧩 PÉRIMÈTRE
 #
-#   - timer.vacances_longues_ecs
+#   Projection d'observabilité (1:1) de l'état souverain :
 #
-#   Ce timer est :
-#     - démarré à l’entrée en mode Vacances
-#     - annulé à la sortie du mode Vacances
-#     - restauré après redémarrage Home Assistant
+#     - input_boolean.ecs_desinfection_retour_due
+#
+#   ON  → une désinfection-retour est due
+#   OFF → aucune désinfection-retour due
 #
 # ----------------------------------------------------------
 # 🧩 NATURE
 #
-#   - Capteur de vérité métier
+#   - Projection d'observabilité (AUCUN rôle décisionnel)
 #   - Stateless (aucune mémoire propre)
-#   - 100 % déterministe
-#   - Robuste aux redémarrages
+#   - Ne lit NI `remaining` NI `finishes_at` d'aucun timer
 #
 # ----------------------------------------------------------
 # 🚫 NE FAIT PAS
 #
 #   - Ne déclenche aucune action
 #   - Ne pilote aucun équipement
-#   - Ne dépend d’aucun capteur de présence
-#   - Ne dépend pas de l’état "Vacances actives"
+#   - N'est pas consommé comme autorisation décisionnelle
+#     (la décision lit directement l'état souverain)
 #
 # ----------------------------------------------------------
-# 🔗 UTILISATION
+# 🔗 SOURCE
 #
-#   - Consommé par :
-#       ECS – Désinfection au retour de Vacances
+#   - input_boolean.ecs_desinfection_retour_due
 #
 # ----------------------------------------------------------
-# ✅ COMPATIBILITÉ
+# 🏷️ STATUT
 #
-#   Home Assistant 2024.8+
+#   Diagnostic / observabilité — Arsenal v14.x
+#   Compatibilité : Home Assistant 2024.8+
 # ==========================================================
 
 - binary_sensor:
@@ -61,5 +51,4 @@
       unique_id: ecs_desinfection_retour_vacances_autorisee
       default_entity_id: binary_sensor.ecs_desinfection_retour_vacances_autorisee
       state: >
-        {{ is_state('timer.vacances_longues_ecs', 'idle')
-           and state_attr('timer.vacances_longues_ecs', 'remaining') == '0:00:00' }}
+        {{ is_state('input_boolean.ecs_desinfection_retour_due', 'on') }}

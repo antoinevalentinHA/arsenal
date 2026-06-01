@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     ECS — Désinfection retour vacances due
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Porter, de façon persistante, la vérité d'autorité métier :
+#   une désinfection ECS au retour de vacances est-elle DUE ?
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage d'état binaire uniquement
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune action directe sur un équipement
+#
+# 🔖 NATURE
+#   helper:decision — vérité d'autorité (légitimité de la
+#   désinfection-retour), consommée en condition par
+#   « ECS - Désinfection fin vacances ».
+#
+# ⚙️ ÉTAT
+#   - on  → une désinfection-retour est due
+#   - off → aucune désinfection-retour due
+#   - Persistant : aucun `initial` (survit au redémarrage)
+#
+# 🔗 ÉCRITURE (souveraine — unique par transition)
+#   - ON  : automation « ECS - Désinfection retour vacances due »
+#           (timer.finished de timer.vacances_longues_ecs)
+#   - OFF : automation « ECS - Désinfection fin vacances »
+#           (après consommation)
+#
+# 🚫 INTERDITS / NE FAIT PAS
+#   - Confondre état et décision applicative
+#   - Déclencher directement une action
+#   - Être écrit par un composant autre que les deux écrivains ci-dessus
+#   - Être posé par timer.cancel
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+ecs_desinfection_retour_due:
+  name: "Désinfection retour vacances due"
+  icon: mdi:water-sync

@@ -9,8 +9,19 @@
 #
 #  🧱 PRINCIPE :
 #     - Déclenchement sur sortie explicite du mode Vacances
-#     - Autorisation portée par un capteur métier dédié
+#     - Autorisation portée par l'état souverain
+#       input_boolean.ecs_desinfection_retour_due (helper:decision)
+#     - Réinitialise (OFF) cet état souverain après consommation
 #     - Aucun raisonnement temporel interne
+#
+#  🔗 DÉPENDANCES :
+#     Lit     : input_boolean.ecs_desinfection_retour_due
+#     Appelle : script.chauffage_ecs_cycle (mode désinfection)
+#     Écrit   : input_boolean.ecs_desinfection_retour_due (OFF, consommation)
+#
+#  🧠 NOTE :
+#     binary_sensor.ecs_desinfection_retour_vacances_autorisee
+#     est une projection d'observabilité NON décisionnelle.
 #
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================
@@ -30,9 +41,9 @@
       to: "Normal"
 
   condition:
-    # 🧠 Autorisation métier (vacances longues validées)
+    # 🧠 Autorisation métier : état souverain (vacances longues menées à terme)
     - condition: state
-      entity_id: binary_sensor.ecs_desinfection_retour_vacances_autorisee
+      entity_id: input_boolean.ecs_desinfection_retour_due
       state: "on"
 
   action:
@@ -50,3 +61,8 @@
         name: "ECS Désinfection"
         message: "💧 Cycle de désinfection lancé automatiquement au retour de vacances."
         entity_id: script.chauffage_ecs_cycle
+
+    # ♻️ Consommation : réinitialisation de l'état souverain (idempotence)
+    - service: input_boolean.turn_off
+      target:
+        entity_id: input_boolean.ecs_desinfection_retour_due
