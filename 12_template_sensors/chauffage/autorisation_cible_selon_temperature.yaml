@@ -101,7 +101,6 @@
 #     - de la température extérieure
 #     - de la température intérieure la plus froide
 #     - des consignes et offsets utilisateur
-#     - du mode maison
 #     - du blocage poêle
 #
 # 🧱 Principe Arsenal :
@@ -126,12 +125,9 @@
     - name: "Chauffage – Autorisation cible"
       unique_id: chauffage_autorisation_cible
       state: >
-        {% set UNAV = ['unknown','unavailable','none',''] %}
-
         {% set ext = states('sensor.temperature_jardin') | float(99) %}
         {% set cold = states('sensor.temperature_min_chambres') | float(99) %}
 
-        {% set mode_maison = states('input_select.mode_maison') %}
         {% set poele = is_state('input_boolean.blocage_chauffage_poele', 'on') %}
 
         {% set consigne = states('input_number.chauffage_consigne_confort') | float(19) %}
@@ -149,10 +145,8 @@
 
         {% set cible = 'unknown' %}
 
-        {% if ext == 99 or cold == 99 or mode_maison in UNAV %}
+        {% if ext == 99 or cold == 99 %}
           {% set cible = 'unknown' %}
-        {% elif mode_maison == 'Vacances' %}
-          {% set cible = 'reduced' %}
         {% elif poele %}
           {% set cible = 'reduced' %}
         {% elif ext >= seuil_ext_off %}
