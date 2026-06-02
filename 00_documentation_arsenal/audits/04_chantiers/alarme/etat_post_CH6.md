@@ -37,14 +37,14 @@
 - `ALM-MIN-1` — désync déclencheurs/entrées (contexte visite) *(ex-CH-3 → CH-5)*
 - `ALM-IMP-1` — *requalifié Important → Mineur (contre-expertise runtime)* : facette armement **invalidée** ; résidus = diagnostic dépendant du mode (contrat 96) + inhibition implicite (contrat 99) *(ex-CH-3 → CH-5)*
 - `ALM-MIN-2` — double bip désarmement + garde mode test absente *(CH-4-A : résolu et **validé terrain** `5892d35` — un seul bip, aucun double bip)*
-- `ALM-MIN-3` — durée de blocage incohérente (5 min / 3 min) *(CH-5)*
+- `ALM-MIN-3` — durée de blocage : **3 min retenu, doc alignée** — ✅ **soldé (5-DEC)** *(CH-5)*
 - `ALM-MIN-6` — mismatch nom de fichier ↔ identifiant d'entité *(CH-5)*
 - `ALM-MIN-5` — *corrigé au runtime (CH-1)*, à confirmer en terrain
 - `ALM-IMP-3` — *requalifié Important → Mineur (post-V4)* : auto-extinction réelle côté device, **reboot-safe** ; **résidu runtime supprimé en CH-4-B** (`476116e`) ; reste une dette de représentation (doc mécanisme canonique → CH-5) *(CH-4)*
 
 **Documentaires :**
 - `ALM-DOC-1` — décalage en-têtes/chemins contrats 20/30/40 *(CH-5)*
-- `ALM-DOC-2` — notification visiteur documentée mais inexistante *(CH-5)*
+- `ALM-DOC-2` — notification visiteur : **existe réellement** (contrat 80 réaligné) — ✅ **soldé (5-DEC)** *(CH-5)*
 
 **Observation nouvelle (hors catalogue initial) :**
 - **R2** — flux badge RFID inerte (aucun évènement observable) ; distinct d'`ALM-CRIT-3`, à trier.
@@ -54,14 +54,14 @@
 - **CH-1** — **clôture conditionnelle acquise** ; réserve unique : test positif `S3` (amont CH-2 satisfait).
 - **CH-3** — **dissous, fusionné dans CH-5** (contre-expertise runtime). `ALM-IMP-1` requalifié Mineur (facette armement invalidée ; résidus contrats 96/99) et `ALM-MIN-1` (câblage visite, atténué) reversés à CH-5. **V3 répondue** par le code (présence forcée en babysitting). Plus de chantier sécurité distinct.
 - **CH-4** — **SOLDÉ** (clôture définitive, réserve levée). **Lot CH-4-A (`ALM-MIN-2`)** : implémenté, déployé et **validé terrain** (`5892d35` — un seul bip, aucun double bip). **Lot CH-4-B (`ALM-IMP-3`)** : implémenté + déployé (`476116e`) — automatisation morte supprimée, résidu runtime résolu. Dette résiduelle (doc coupe-circuit canonique) **portée par CH-5**, hors périmètre CH-4.
-- **CH-5** — non démarré ; documentaire ; lots indépendants (DOC-2, MIN-6, MIN-3) + lots de réalignement contractuel en aval.
+- **CH-5** — **en cours** ; documentaire. **5-DOC** et **5-DEC** soldés (DOC-2, MIN-3). Restent : DOC-1, MIN-6 (renommage), MIN-1 + résidus `ALM-IMP-1` (contrats 96/99) [runtime/arbitrage], `50`/`51` (post-`S3`).
 
 ### Dettes documentaires restantes
 
-- `ALM-DOC-1`, `ALM-DOC-2`, `ALM-MIN-6`, `ALM-MIN-3` *(périmètre CH-5)*.
+- `ALM-DOC-1`, `ALM-MIN-6` *(périmètre CH-5 ; `ALM-DOC-2` et `ALM-MIN-3` soldés en 5-DEC)*.
 - **Issues des chantiers livrés, à porter par CH-5 :**
   - en-tête de `delai_entree_fin.yaml` — **réaligné (5-DOC-c)** : ROBUSTESSE (gardes `systeme_stable` + `armed_away`) et DETTE (`sirene_brutale` retiré par C1 ; court-circuit `alarm_trigger` §9 toujours documenté) ;
-  - alignement des contrats : **`70` documenté (5-DOC-a : coupe-circuit canonique)** ; restent `50`/`51` (détection, **post-`S3`**) et `60` (lié à `ALM-MIN-3`) ;
+  - alignement des contrats : **`70` (5-DOC-a)** et **`60`/`80` (5-DEC)** documentés ; restent `50`/`51` (détection, **post-`S3`**) ;
   - dette §9 résiduelle : court-circuit `alarm_trigger` direct (`…007` / `…009` / `…032`), hors arbitrage, documentée et inchangée ;
   - **R1** : champ « badge » porteur de la valeur PIN (dette sémantique de nommage).
 
@@ -71,8 +71,8 @@
 
 1. 🔴 **Critique** — **test positif `S3` de CH-1** : seule garantie (positive, `ALM-CRIT-2`) non confirmée ; garanties négatives déjà acquises (statique + CI + terrain observé).
 2. 🟠 **Important** — *(aucun chantier ouvert ; `ALM-IMP-1` requalifié Mineur, CH-3 dissous)*.
-3. 🟡 **Mineur** — MIN-1 (ex-CH-3 → CH-5), MIN-2 (CH-4-A résolu/validé terrain), MIN-3 / MIN-6 (CH-5), MIN-5 (CH-1, terrain) ; **`ALM-IMP-3` requalifié post-V4 (CH-4-B)** ; **`ALM-IMP-1` requalifié (contre-expertise runtime, ex-CH-3 → CH-5)**.
-4. ⚪ **Documentaire** — DOC-1, DOC-2 + dettes nouvelles → CH-5.
+3. 🟡 **Mineur** — MIN-1 (ex-CH-3 → CH-5), MIN-2 (CH-4-A résolu/validé terrain), MIN-3 **(soldé 5-DEC)** / MIN-6 (CH-5), MIN-5 (CH-1, terrain) ; **`ALM-IMP-3` requalifié post-V4 (CH-4-B)** ; **`ALM-IMP-1` requalifié (contre-expertise runtime, ex-CH-3 → CH-5)**.
+4. ⚪ **Documentaire** — DOC-1 (+ dettes nouvelles) → CH-5 ; **DOC-2 soldé (5-DEC)**.
 5. ❓ **Observation à trier** — **R2** (RFID inerte) : criticité fonction de l'usage RFID attendu.
 
 ---
@@ -82,7 +82,7 @@
 1. **Préalable — test positif `S3` de CH-1** (expiration volontaire du délai → `triggered` + sirène unique en mode test). Seul élément restant pour la clôture définitive ; les garanties négatives sont déjà acquises (statique + CI + terrain observé). Coût faible, gain de criticité maximal.
 2. **CH-4 — Sirène & feedback sonore** *(MIN-2 ; `ALM-IMP-3` requalifié Mineur post-V4)*. **V4 réalisée** : auto-extinction device reboot-safe confirmée → IMP-3 sans enjeu sécurité (dette technique : retrait du code mort `stop.yaml` / entité fantôme + documentation du mécanisme device). MIN-2 **traité en lot CH-4-A** : implémenté, déployé et **validé terrain** (`5892d35` — un seul bip, aucun double bip). **Lot CH-4-B** (IMP-3) implémenté + déployé (`476116e`) : automatisation morte supprimée, résidu runtime résolu (reste doc canonique → CH-5). Chantier **SOLDÉ**.
 3. **CH-3 — dissous** (contre-expertise runtime) : `ALM-IMP-1` requalifié Mineur (facette armement invalidée), `ALM-MIN-1` reversé à **CH-5**. Plus d'étape distincte.
-4. **CH-5 — Cohérence documentaire** *(DOC-1, DOC-2, MIN-3, MIN-6)*. Traiter tôt les **quick wins indépendants** (DOC-2, MIN-6, MIN-3) ; y rattacher les dettes nouvelles (en-tête `delai_entree_fin`, alignement contrats 50/51/60/70, dette §9, R1). Lots de réalignement contractuel **en aval** des chantiers runtime.
+4. **CH-5 — Cohérence documentaire** *(DOC-1, DOC-2, MIN-3, MIN-6)*. Traiter tôt les **quick wins indépendants** (MIN-6 ; DOC-2 et MIN-3 **soldés en 5-DEC**) ; y rattacher les dettes nouvelles (en-tête `delai_entree_fin`, alignement contrats 50/51/60/70, dette §9, R1). Lots de réalignement contractuel **en aval** des chantiers runtime.
 5. **En parallèle — trancher R2** (RFID) : décider si l'usage RFID est attendu ; si oui, ouvrir une investigation dédiée (appairage / exposition Zigbee2MQTT), distincte d'`ALM-CRIT-3`.
 
 ---

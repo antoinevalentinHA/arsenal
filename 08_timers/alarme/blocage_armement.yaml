@@ -19,7 +19,8 @@
 #   - Ne remplace PAS la logique centrale d’alarme
 #
 # 🔍 Spécificité technique :
-#   - Durée fixe (5 minutes)
+#   - Durée appliquée : 3 minutes (surcharge `blocage_start`)
+#     — le défaut helper (5 min) est systématiquement overridé (non canonique)
 #   - Timer restaurable (`restore: true`)
 #   - État exploitable : active / idle
 #

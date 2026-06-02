@@ -113,7 +113,7 @@ Les 14 constats retenus se ramènent à **6 racines**, chacune devenant un chant
 
 - **Lots** : ALM-DOC-1 (décalage des en-têtes/chemins des contrats 20/30/40 ; contrat « application_decision » de fait absent), ALM-DOC-2 (notification persistante visiteur documentée mais inexistante), ALM-MIN-3 (durée de blocage déclarée 5 min / appliquée 3 min), ALM-MIN-6 (nom de fichier ↔ identifiant d'entité).
 - **Objet (état cible visé)** : une **documentation reflétant fidèlement le runtime** (en-têtes et chemins alignés, contrat d'application restauré) ; une **cohérence déclaration ↔ application** pour la durée de blocage ; une **clause visiteur cohérente** avec la réalité ; une **hygiène de nommage** des fichiers du domaine.
-- **Arbitrages à trancher** : la durée de blocage de référence est-elle 3 ou 5 minutes ? la notification visiteur doit-elle exister ou la clause être retirée ?
+- **Arbitrages — TRANCHÉS (5-DEC)** : durée de blocage = **3 min** (valeur appliquée) ; notification visiteur **existe** (contrat 80 réaligné, aucune clause à retirer).
 - **Difficulté** : faible — essentiellement documentaire et hygiène ; ALM-MIN-3 comporte une décision de valeur, ALM-MIN-6 un renommage de fichier (sans renommage d'entité).
 - **Risque** : faible — pas d'impact sur l'actionnement de sécurité.
 - **Prérequis documentaires** : contrats `20/30/40`, `60_delais_et_blocages.md`, `80_notifications_et_feedback.md`.

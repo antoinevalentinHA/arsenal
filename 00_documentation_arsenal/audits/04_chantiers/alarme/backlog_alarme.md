@@ -71,11 +71,11 @@
 - **Bénéfice attendu** : **moyen** — fidélité documentaire et opposabilité (contrat d'application restauré), cohérence déclaration↔application (durée de blocage), hygiène de nommage.
 - **Risque de régression** : **faible** — aucun impact sur l'actionnement de sécurité.
 - **Effort relatif** : **faible**.
-- **Prérequis** : contrats `20/30/40`, `60`, `80` ; arbitrage durée de blocage (3 ou 5 min) ; arbitrage notification visiteur (créer ou retirer la clause).
+- **Prérequis** : contrats `20/30/40` (DOC-1) ; arbitrages **tranchés** — durée de blocage = **3 min**, notification visiteur **existe** (contrats `60`/`80` réalignés en 5-DEC).
 - **Dépendances** : lots de réalignement contractuel **en aval de CH-1/CH-2/CH-3/CH-4** ; lots **DOC-2** et **MIN-6** indépendants.
 - **ROI** : **mixte** — lots indépendants à ROI élevé (quick wins) ; lots de réalignement à ROI différé (doivent refléter le runtime final).
 >
-> **Statut (lot 5-DOC réalisé)** — sous-lot documentaire autonome traité : **contrat `70`** complété (chemin d'arrêt canonique : `arret_sirene` = coupe immédiate ; durée device = auto-extinction reboot-safe ; mention explicite que `stop.yaml` / `switch.sirene_alarm` ne participent plus) ; **en-tête `delai_entree_fin.yaml`** réaligné post-CH-1. Restent : DOC-1, MIN-6, **5-DEC** (MIN-3, DOC-2 — décision métier), **5-S3** (contrats 50/51, post-`S3`).
+> **Statut (lot 5-DOC réalisé)** — sous-lot documentaire autonome traité : **contrat `70`** complété (chemin d'arrêt canonique : `arret_sirene` = coupe immédiate ; durée device = auto-extinction reboot-safe ; mention explicite que `stop.yaml` / `switch.sirene_alarm` ne participent plus) ; **en-tête `delai_entree_fin.yaml`** réaligné post-CH-1. **5-DEC réalisé** (MIN-3 → 3 min, contrat 60 + en-tête timer ; DOC-2 → contrat 80 réaligné). Restent : DOC-1, MIN-6, résidus `ALM-IMP-1` (96/99) + `ALM-MIN-1`, **5-S3** (contrats 50/51, post-`S3`).
 
 ### CH-6 — Intégrité du flux clavier (PIN) *(CRIT-3)*
 
@@ -144,9 +144,9 @@
 
 ## 2️⃣ Quick wins (lot-level, faible effort / faible risque, valeur immédiate)
 
-- **ALM-DOC-2** (CH-5) — clause notification visiteur : créer ou retirer. Indépendant, documentaire.
+- **ALM-DOC-2** (CH-5) — ✅ **soldé (5-DEC)** : notification réelle ; contrat 80 réaligné (`presence/visite/notification.yaml`).
 - **ALM-MIN-6** (CH-5) — hygiène nom de fichier ↔ entité (sans renommage d'entité). Indépendant.
-- **ALM-MIN-3** (CH-5) — trancher la durée de blocage (3 ou 5 min) et aligner la documentation. Décision simple.
+- **ALM-MIN-3** (CH-5) — ✅ **soldé (5-DEC)** : 3 min retenu ; contrat 60 + en-tête timer alignés.
 - **ALM-MIN-4** (CH-2) — suppression du code mort dans le cerveau (variable inutilisée, condition redondante). Extractible sans attendre l'arbitrage sur la raison.
 
 > Ces quick wins sont des **lots** extraits de leurs chantiers ; ils n'attendent aucune validation runtime et n'ont aucune dépendance amont.

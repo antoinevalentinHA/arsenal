@@ -42,7 +42,7 @@ Définir les notifications comme **projections UX** :
 
 - `notification_id: visiteur_etat`
 - gérée uniquement par :
-  - `/homeassistant/11_automations/alarme/visite/notification_persistante.yaml`
+  - `/homeassistant/11_automations/presence/visite/notification.yaml`
 
 ---
 

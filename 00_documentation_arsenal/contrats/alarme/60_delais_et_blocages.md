@@ -45,6 +45,8 @@ Le blocage **doit** être levé par **un seul mécanisme** parmi :
 | *(canonique)* Expiration d'un `timer` dédié | `timer.blocage_armement_auto` |
 | *(conditionnel)* Disparition de la condition causale | si blocage conditionnel contracté |
 
+> **Durée appliquée (canonique) : 3 minutes.** La temporisation du blocage est fixée **à l'armement du timer** par `11_automations/alarme/armement/blocage/blocage_start.yaml` (`timer.start … duration: "00:03:00"`). La durée **par défaut** du helper timer (`08_timers/alarme/blocage_armement.yaml`, `00:05:00`) est **systématiquement surchargée** et **n'est pas canonique** : la source unique de la durée est la surcharge `blocage_start`.
+
 ---
 
 ## 🔒 Invariants contractuels

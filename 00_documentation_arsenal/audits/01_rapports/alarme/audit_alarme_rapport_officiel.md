@@ -108,11 +108,11 @@ Le point structurant : **plusieurs angles morts de sécurité ne sont pas visibl
 
 ### ALM-MIN-3 — Durée de blocage incohérente (5 min déclarés / 3 min appliqués) *(réf. initiale : C9)*
 
-- **État** : Confirmé
-- **Contrat** : `60_delais_et_blocages.md` (timer dédié = mécanisme de levée canonique) ; en-tête de `08_timers/alarme/blocage_armement.yaml` (« Durée fixe (5 minutes) »).
-- **Runtime** : `08_timers/alarme/blocage_armement.yaml` (`duration: "00:05:00"`) vs `11_automations/alarme/armement/blocage/blocage_start.yaml` (`timer.start … duration: "00:03:00"`).
-- **Impact / risque** : qualification « durée fixe » fausse ; observabilité du temps restant trompeuse ; durée effective de blocage = 3 min.
-- **Orientation** : source unique de la durée (timer ou surcharge documentée).
+- **État** : ✅ **SOLDÉ (CH-5 / 5-DEC)** — décision métier : durée retenue = **3 minutes** (valeur appliquée) ; documentation alignée. Runtime **inchangé** (déjà à 3 min).
+- **Contrat** : `60_delais_et_blocages.md` (clause **« Durée appliquée (canonique) : 3 minutes »** ajoutée) ; en-tête de `08_timers/alarme/blocage_armement.yaml` (commentaire corrigé).
+- **Runtime** : défaut helper `08_timers/alarme/blocage_armement.yaml` (`duration: "00:05:00"`, **overridé**) vs `11_automations/alarme/armement/blocage/blocage_start.yaml` (`timer.start … duration: "00:03:00"` = **valeur appliquée**).
+- **Impact / risque** : *(résolu)* la qualification « durée fixe 5 min » était fausse ; durée effective = 3 min.
+- **Résolution (5-DEC)** : route « surcharge documentée » — contrat `60` déclare la durée appliquée canonique = **3 min** (surcharge `blocage_start`) ; en-tête du timer corrigé ; défaut fonctionnel `00:05:00` conservé (overridé, non canonique). **Aucune référence documentaire « 5 min » restante.**
 
 ### ALM-MIN-4 — Code et conditions morts dans le cerveau *(réf. initiale : C13)*
 
@@ -177,11 +177,11 @@ Le point structurant : **plusieurs angles morts de sécurité ne sont pas visibl
 
 ### ALM-DOC-2 — Notification persistante visiteur documentée mais inexistante *(réf. initiale : C12)*
 
-- **État** : Confirmé
-- **Contrat** : `80_notifications_et_feedback.md` (« `notification_id: visiteur_etat` gérée uniquement par `11_automations/alarme/visite/notification_persistante.yaml` »).
-- **Runtime** : absence du dossier/fichier `11_automations/alarme/visite/` (vérifiée par l'arborescence du domaine).
-- **Impact / risque** : gestionnaire unique pointant un fichier absent ; le `notification_id visiteur_etat` n'est produit nulle part.
-- **Orientation** : créer la notification ou retirer la clause du contrat 80.
+- **État** : ✅ **SOLDÉ (CH-5 / 5-DEC)** — **requalifié** : la notification **existe** ; le constat « inexistante » était **erroné** (mauvais chemin dans le contrat 80).
+- **Contrat** : `80_notifications_et_feedback.md` — chemin **corrigé** vers `11_automations/presence/visite/notification.yaml` (réel).
+- **Runtime** : l'automatisation `10210000000006` (« Présence - Mode visiteur notification ») **existe** sous `11_automations/presence/visite/notification.yaml` et **produit** `visiteur_etat` (création/disqualification sur `input_boolean.visite_en_cours`). Le chemin annoncé (`…/alarme/visite/notification_persistante.yaml`) **n'existait pas**.
+- **Nature réelle** : dérive de **chemin/nommage** dans le contrat 80, non « notification inexistante ».
+- **Résolution (5-DEC)** : référence du contrat 80 alignée sur le runtime. *(Nuance signalée : la notif relève du domaine `presence` ; rattachement non modifié ici.)*
 
 ---
 
