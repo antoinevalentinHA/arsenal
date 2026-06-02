@@ -47,14 +47,16 @@
 - **Dépendances** : amont = **CH-2**.
 - **ROI** : **moyen** — bon bénéfice sécurité, mais gated (V3) et dépendant.
 
-### CH-4 — Sirène & feedback sonore *(IMP-3, MIN-2)*
+### CH-4 — Sirène & feedback sonore *(MIN-2 ; `ALM-IMP-3` requalifié Mineur post-V4)*
 
-- **Bénéfice attendu** : **moyen** — garantit un coupe-circuit sirène unique et résilient (conformité gouvernance) et un feedback de désarmement propre (neutralisé en test).
-- **Risque de régression** : **moyen** — actionneur terminal ; ne jamais laisser la sirène sans coupe-circuit.
-- **Effort relatif** : **faible à moyen** — périmètre localisé.
-- **Prérequis** : contrats `70`, `00` (interdiction `delay`), doc Zigbee2MQTT sirène.
-- **Dépendances** : latérale = **CH-1** (chaîne d'actionnement commune).
-- **ROI** : **moyen** — bénéfice partiellement déjà couvert par la durée MQTT ; gain de conformité et de résilience réel.
+> **Post-V4 (dépôt `e3d1349`) — traçabilité.** Auto-extinction device confirmée **reboot-safe** → **`ALM-IMP-3` requalifié Important → Mineur**. CH-4 devient un chantier de **dette technique / gouvernance + hygiène feedback**, **sans enjeu sécurité**. **Gate V4 : résolu.** Les classements ci-dessous, antérieurs à V4, sont à lire à la lumière de cette requalification.
+
+- **Bénéfice attendu** : **faible à moyen** — retrait du code mort (`stop.yaml`, entité fantôme `switch.sirene_alarm`), documentation de la durée device comme coupe-circuit canonique, feedback de désarmement propre (unique, neutralisé en test, hors auto-désarmement).
+- **Risque de régression** : **faible** — aucun filet retiré (durée device + `arret_sirene` conservés) ; MIN-2 = feedback.
+- **Effort relatif** : **faible** — périmètre localisé.
+- **Prérequis** : **V4 réalisée** ; contrats `70`, `00`.
+- **Dépendances** : latérale = **CH-1** (satisfaite). **Gate V4 : résolu.**
+- **ROI** : **moyen** — petit effort, ferme une dette de gouvernance et nettoie le feedback ; sans urgence.
 
 ### CH-5 — Cohérence documentaire & nommage *(DOC-1, DOC-2, MIN-3, MIN-6)*
 
@@ -81,7 +83,7 @@
 1. **CH-2** — levier de déblocage + observabilité, effort modéré → ROI élevé.
 2. **CH-6** — restauration d'accès à faible coût (conditionnel V5) → ROI élevé.
 3. **CH-5 (lots indépendants)** — DOC-2 / MIN-6 / MIN-3 : cheap, immédiats → ROI élevé.
-4. **CH-4** — conformité + résilience sirène → ROI moyen.
+4. **CH-4** — dette/gouvernance + hygiène feedback (post-V4) → ROI moyen, sans urgence.
 5. **CH-3** — bénéfice sécurité, mais gated + dépendant → ROI moyen.
 6. **CH-1** — bénéfice maximal mais effort/risque maximaux → ROI moyen (efficience faible, incontournable).
 7. **CH-5 (lots de réalignement)** — valeur réelle mais différée (aval) → ROI différé.
@@ -92,7 +94,7 @@
 
 1. **CH-1** — élevé (détection vivante).
 2. **CH-3** — moyen (sécurité adjacente, occupants vulnérables).
-3. **CH-4** — moyen (actionneur terminal).
+3. **CH-4** — **faible** (post-V4 : aucun filet retiré ; durée device + `arret_sirene` conservés).
 4. **CH-2** — moyen (observabilité, pas d'action directe).
 5. **CH-6** — faible à moyen (chemin clavier isolé).
 6. **CH-5** — faible (documentaire / hygiène).
@@ -123,7 +125,7 @@
 3. **CH-6 en parallèle** : dès V5 connue ; restauration d'accès indépendante, faible risque.
 4. **CH-3** : après CH-2 ; gated V3.
 5. **CH-1** : après CH-2 ; le chantier critique structurant ; gated V1 ; à coordonner avec CH-4.
-6. **CH-4** : en coordination avec la chaîne d'actionnement issue de CH-1 ; gated V4.
+6. **CH-4** : **V4 réalisée** → dette/gouvernance + hygiène feedback (plus de gate).
 7. **CH-5 (lots de réalignement)** : en clôture, pour aligner les contrats sur le runtime final.
 
 > Tension assumée : CH-1 porte l'urgence sécurité maximale mais dépend de CH-2. Résolution : CH-2 est court et débloquant ; on le traite vite pour enchaîner immédiatement sur CH-1. CH-6 (autre critique, indépendant) avance en parallèle.
@@ -149,7 +151,7 @@
 |----------|------|------------------------------|
 | **CH-1** | V1 (course détection) | Détermine l'ampleur de la refonte de frontière |
 | **CH-3** | V3 (présence en babysitting) | Conditionne l'escalade d'ALM-IMP-1 et le choix d'inhibition |
-| **CH-4** | V4 (entité sirène / durée / reboot) | Détermine si le coupe-circuit est inerte ou à refondre |
+| **CH-4** | V4 (entité sirène / durée / reboot) — **réalisée** | Coupe-circuit assuré **reboot-safe** côté device ; `ALM-IMP-3` requalifié Mineur ; CH-4 = dette/gouvernance |
 | **CH-6** | V5 (test PIN réel) | Engage ou annule le chantier (si PIN fonctionnel → sans objet) |
 
 > **CH-2** n'est **pas bloqué** : V2 est confirmatoire (le constat est déjà *Confirmé* statiquement). **CH-5** n'est pas bloqué par une validation runtime ; ses lots de réalignement sont seulement en aval des chantiers amont (revue finale).
@@ -173,7 +175,7 @@
 | CH-2 | élevé | moyen | moyen | **élevé** | — | V2 (confirmatoire) | ✅ intégral |
 | CH-6 | élevé (cond.) | faible-moyen | faible-moyen | **élevé (cond.)** | — | **V5 (bloquant)** | ✅ préparation |
 | CH-5 (indép.) | moyen | faible | faible | **élevé** | — | — | ✅ exécutable |
-| CH-4 | moyen | moyen | faible-moyen | moyen | ⟂ CH-1 | **V4 (bloquant)** | ✅ préparation |
+| CH-4 | faible-moyen | **faible** | faible | moyen | ⟂ CH-1 | **V4 résolu** | ✅ exécutable |
 | CH-3 | élevé | moyen | moyen | moyen | CH-2 | **V3 (bloquant)** | ✅ préparation |
 | CH-1 | maximal | **élevé** | **élevé** | moyen | CH-2 + ouvertures | **V1 (bloquant)** | ✅ préparation |
 | CH-5 (réalign.) | moyen | faible | faible | différé | CH-1/2/3/4 | revue finale | ⏳ aval |

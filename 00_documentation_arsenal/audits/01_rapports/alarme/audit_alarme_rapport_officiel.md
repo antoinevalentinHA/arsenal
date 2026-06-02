@@ -30,8 +30,8 @@ Le point structurant : **plusieurs angles morts de sécurité ne sont pas visibl
 | Classe | Nombre | Constats |
 |--------|:------:|----------|
 | Critique | 3 | ALM-CRIT-1, ALM-CRIT-2, ALM-CRIT-3 |
-| Important | 3 | ALM-IMP-1, ALM-IMP-2, ALM-IMP-3 |
-| Mineur | 6 | ALM-MIN-1 → ALM-MIN-6 |
+| Important | 2 | ALM-IMP-1, ALM-IMP-2 |
+| Mineur | 7 | ALM-MIN-1 → ALM-MIN-6, ALM-IMP-3 *(requalifié post-V4 — voir § Constats mineurs)* |
 | Dette documentaire | 2 | ALM-DOC-1, ALM-DOC-2 |
 
 ---
@@ -87,14 +87,9 @@ Le point structurant : **plusieurs angles morts de sécurité ne sont pas visibl
 - **Risque** : diagnostic d'incident dégradé sur un système de sécurité ; doctrine contradictoire.
 - **Orientation** : arbitrer une autorité unique sur `alarme_raison` (cerveau, ou séparation raison décisionnelle / dernier événement) puis aligner contrat 30, helper `raison.yaml` et `alerte_incoherence`.
 
-### ALM-IMP-3 — Auto-extinction sirène : entité non définie + `delay` long *(réf. initiale : C8)*
+### ALM-IMP-3 — Auto-extinction sirène *(réf. initiale : C8)* — ⤵ **requalifié en Mineur (post-V4)**
 
-- **État** : Confirmé (usage `delay`) ; existence de `switch.sirene_alarm` *à confirmer en runtime*
-- **Contrat** : `00_gouvernance_alarme.md` — interdiction : « Utiliser des `delay` longs comme mécanisme canonique de sûreté (préférer timers) ».
-- **Runtime** : `11_automations/alarme/sirene/stop.yaml` (déclencheur + cible `switch.sirene_alarm` ; `delay: {{ number.sirene_max_duration }}`) ; pile sirène intégralement MQTT (`10_scripts/alarme/sirene/*.yaml`, topic `zigbee2mqtt/sirene/set`) ; `zigbee2mqtt/configuration.yaml` (seul device exposé : `sirene`).
-- **Impact** : coupe-circuit de sûreté reposant sur un `delay` (non reboot-safe) et sur une entité `switch.sirene_alarm` absente du dépôt. Si l'entité n'existe pas, l'automatisation est morte et l'extinction repose uniquement sur le champ `duration` MQTT et `trigger_time: 180`.
-- **Risque** : mécanisme de sûreté redondant et possiblement inerte, contraire à la gouvernance ; perte du coupe-circuit en cas de redémarrage pendant la sirène.
-- **Orientation** : confirmer l'existence de `switch.sirene_alarm` ; statuer sur le coupe-circuit (timer reboot-safe vs `duration` MQTT comme mécanisme unique documenté).
+> Ce constat a été **requalifié de Important 🟠 vers Mineur 🟡** après la validation terrain **V4** (énoncé complet : § Constats mineurs › ALM-IMP-3). Repère conservé ici pour la **traçabilité** : le code `ALM-IMP-3` reste l'identifiant stable du constat ; seule sa gravité change.
 
 ---
 
@@ -147,6 +142,18 @@ Le point structurant : **plusieurs angles morts de sécurité ne sont pas visibl
 - **Runtime** : `06_input_selects/alarme/mode_armement.yaml` (entité `mode_alarme`) ; `03_input_numbers/alarme/delai_desarmement.yaml` (entité `alarme_delai_entree`).
 - **Impact / risque** : recherche par nom de fichier trompeuse ; friction d'indexation / Code Search. Aucun effet fonctionnel.
 - **Orientation** : harmoniser nom de fichier et entité (sans renommer l'entité).
+
+---
+
+### ALM-IMP-3 — Auto-extinction sirène : mécanisme réel côté device *(réf. initiale : C8 ; requalifié Important → Mineur, post-V4)*
+
+> **Requalification (post-V4, dépôt `e3d1349`) — traçabilité.** Gravité **Important 🟠 → Mineur 🟡**. Le code `ALM-IMP-3` est conservé comme identifiant stable ; la section a été déplacée ici depuis « Constats importants » (où subsiste un repère) pour refléter la nouvelle gravité, sans réécrire l'historique.
+
+- **État** : **Requalifié** après validation terrain **V4**. `switch.sirene_alarm` **confirmé inexistant** (déclaré nulle part) → automatisation `11_automations/alarme/sirene/stop.yaml` **morte** ; `delay` long **non conforme mais latent** (jamais exécuté).
+- **Mécanisme réel (établi par V4)** : l'auto-extinction est portée par le **device**. `script.sirene_brutale` publie `warning/burglar` avec `"duration": number.sirene_max_duration` (helper **réel**) ; la sirène **s'arrête seule** à l'échéance, et un **redémarrage Home Assistant pendant le hurlement ne modifie pas ce comportement** → coupe-circuit **reboot-safe côté device**. Coupe explicite au désarmement via `script.arret_sirene` (`warning/stop`).
+- **Contrat** : `00_gouvernance_alarme.md` (interdiction des `delay` longs comme mécanisme de sûreté) — non-conformité **latente** (code mort) ; `70_sirene_actions_terminales.md` (actions terminales).
+- **Impact résiduel** : **aucun risque de sécurité** (coupe-circuit assuré et reboot-safe). Résidu = **code mort** (`stop.yaml`, entité fantôme `switch.sirene_alarm`) + **non-conformité `delay` latente** + **dette de représentation** (l'en-tête promet une auto-extinction HA inopérante ; le mécanisme réel — durée device — n'est documenté nulle part comme canonique).
+- **Orientation (dette technique / gouvernance)** : retirer l'automatisation morte et la référence fantôme ; **documenter la durée device comme coupe-circuit canonique** (et `arret_sirene` comme coupe immédiate). Traitement au titre de **CH-4** (lot CH-4-B), **sans urgence de sécurité**.
 
 ---
 
