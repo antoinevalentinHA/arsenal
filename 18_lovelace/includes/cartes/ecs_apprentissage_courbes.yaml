@@ -1,0 +1,71 @@
+type: vertical-stack
+cards:
+
+  # ----------------------------------------------------------
+  # Trajectoire des offsets appris (par bucket)
+  # Couleurs = distinction de séries (exception graphes, charte
+  # 03_exceptions §graphes) — non décisionnelles.
+  # ----------------------------------------------------------
+  - type: custom:mini-graph-card
+    name: 🧠 Trajectoire des offsets
+    icon: mdi:tune-variant
+    entities:
+      - entity: input_number.ecs_off_normal
+        name: Normal
+        color: rgba(33, 150, 243, 0.8)
+      - entity: input_number.ecs_off_medium
+        name: Medium
+        color: rgba(255, 152, 0, 0.8)
+      - entity: input_number.ecs_off_tiny
+        name: Tiny
+        color: rgba(255, 235, 59, 0.8)
+      - entity: input_number.ecs_off_desinfection
+        name: Désinfection
+        color: rgba(158, 158, 158, 0.8)
+    hours_to_show: 336
+    points_per_hour: 1
+    aggregate_func: last
+    line_width: 3
+    smoothing: false
+    decimals: 1
+    height: 170
+    show:
+      labels: true
+      legend: true
+      extrema: true
+      fill: false
+      icon: false
+    tap_action:
+      action: more-info
+
+  # ----------------------------------------------------------
+  # Erreur thermique dans le temps : consigne vs tmax réel figé
+  # L'écart entre les deux lignes = erreur d'apprentissage.
+  # consigne = ligne de référence (gris) ; tmax = série principale (bleu).
+  # ----------------------------------------------------------
+  - type: custom:mini-graph-card
+    name: 🌡️ Consigne vs Tmax réel (erreur)
+    icon: mdi:thermometer-alert
+    entities:
+      - entity: sensor.ecs_consigne_dernier_cycle
+        name: Consigne
+        color: rgba(158, 158, 158, 0.4)
+        show_fill: false
+      - entity: input_number.ecs_temperature_max_reelle_figee
+        name: Tmax réel
+        color: rgba(33, 150, 243, 0.8)
+    hours_to_show: 336
+    points_per_hour: 1
+    aggregate_func: last
+    line_width: 3
+    smoothing: false
+    decimals: 1
+    height: 170
+    show:
+      labels: true
+      legend: true
+      extrema: true
+      fill: false
+      icon: false
+    tap_action:
+      action: more-info

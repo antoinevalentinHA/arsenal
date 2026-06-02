@@ -319,6 +319,22 @@ include:
     - sensor.ecs_petite_maison_chauffe_en_cours_locale
     - sensor.ecs_petite_maison_temperature_eau_locale
 
+    # ----------------------------------------------------------
+    # 🧠 ECS — Apprentissage des offsets (observabilité ECS-OFF-1)
+    # Historisation lecture seule : trajectoire des offsets,
+    # contexte d'apprentissage par cycle, journal des ajustements.
+    # Aucun changement de comportement runtime.
+    # ----------------------------------------------------------
+    - input_number.ecs_off_tiny
+    - input_number.ecs_off_medium
+    - input_number.ecs_off_normal
+    - input_number.ecs_off_desinfection
+    - input_number.ecs_temperature_max_reelle_figee
+    - input_number.ecs_duree_dernier_cycle_figee
+    - input_boolean.ecs_autocorrect_active
+    - input_text.ecs_dernier_ajustement
+    - input_text.ecs_resume_dernier_cycle_fige
+
     # =====================================================
     # ==== 💨 DÉSHUMIDIFICATEUR ====
     # =====================================================

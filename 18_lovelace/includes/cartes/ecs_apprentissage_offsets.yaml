@@ -1,0 +1,34 @@
+type: markdown
+title: null
+content: |
+  ### 🧠 Apprentissage des offsets — état
+
+  {% set auto = states('input_boolean.ecs_autocorrect_active') %}
+  {% if auto == 'on' %}
+  🟢 **Auto-ajustement : ACTIF**
+  {% elif auto == 'off' %}
+  ⚪ **Auto-ajustement : INACTIF**
+  {% else %}
+  ⚪ **Auto-ajustement : —**
+  {% endif %}
+
+  | Bucket | Offset courant | Bornes |
+  |---|---|---|
+  | Tiny | {{ states('input_number.ecs_off_tiny') }} °C | 0.5 – 4.0 |
+  | Medium | {{ states('input_number.ecs_off_medium') }} °C | 0.5 – 4.0 |
+  | Normal | {{ states('input_number.ecs_off_normal') }} °C | 1.0 – 6.0 |
+  | Désinfection | {{ states('input_number.ecs_off_desinfection') }} °C | 0.0 – 3.0 |
+
+  {% set ajust = states('input_text.ecs_dernier_ajustement') %}
+  {% if ajust not in ['unknown','unavailable','none','', None] %}
+  {% set a = ajust.split('•') %}
+  {% if a | length >= 4 %}
+  **Dernier ajustement** — bucket **{{ a[1] | trim }}**, {{ a[2] | trim }}, {{ a[3] | trim }} _( {{ a[0] | trim }} )_
+  {% else %}
+  **Dernier ajustement** — {{ ajust }}
+  {% endif %}
+  {% else %}
+  _Aucun ajustement enregistré._
+  {% endif %}
+
+  > Lecture seule. Modification des offsets : dashboard Réglages ECS.
