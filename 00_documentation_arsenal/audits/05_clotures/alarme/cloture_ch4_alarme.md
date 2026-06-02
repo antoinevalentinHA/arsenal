@@ -1,6 +1,6 @@
 # Clôture de chantier — CH-4 Alarme (sirène & feedback sonore)
 
-> **Statut :** clôture de **chantier** — CH-4 en **clôture conditionnelle acquise** ; deux lots **implémentés + déployés** ; **réserve unique** pour clôture définitive = **validation terrain de `ALM-MIN-2`** (feedback bip de désarmement) ; domaine **Alarme NON clôturé**.
+> **Statut :** clôture de **chantier** — CH-4 **SOLDÉ** (clôture définitive) ; deux lots **implémentés + déployés** ; **réserve levée** après validation terrain de `ALM-MIN-2` (un seul bip, aucun double bip) ; domaine **Alarme NON clôturé**. *Voir l'**avenant §10**, qui prévaut (levée de réserve). Les §1–§9 documentent l'état **conditionnel antérieur**, conservés pour traçabilité.*
 > **Domaine :** `alarme` — pile sirène (déclenchement, arrêt, feedback)
 > **Destination d'archivage :** `00_documentation_arsenal/audits/05_clotures/alarme/cloture_ch4_alarme.md`
 > **Documents de référence (en dépôt) :**
@@ -91,6 +91,23 @@ L'ancienne automatisation `stop.yaml` (commutateur fantôme) n'a jamais particip
 ## 9. Verdict
 
 **CH-4 en clôture conditionnelle acquise — deux lots implémentés et déployés — domaine Alarme non clôturé.** Réserve unique : validation terrain de `ALM-MIN-2`. Résidu documentaire (coupe-circuit canonique) renvoyé à CH-5. Conformément au principe directeur, le runtime est la référence ; l'alignement des contrats/en-têtes suivra.
+
+---
+
+## 10. Avenant — levée de réserve (validation terrain `ALM-MIN-2`)
+
+> **Cet avenant prévaut sur §1, §4, §6, §7 et §9 quant au statut de CH-4.** Établi après la validation terrain de `ALM-MIN-2`. Dépôt : `c985db7`. Les sections antérieures sont conservées comme **record de l'état conditionnel** (traçabilité).
+
+**Validation terrain observée.** Désarmement par **clavier** testé avec succès : **un seul bip**, **aucun double bip**, comportement conforme au correctif CH-4-A.
+
+**Couverture de la réserve.** La réserve portait sur le **comportement audible** du correctif (élimination du double bip) — seul point **non vérifiable statiquement** (deux émetteurs : la suppression de l'un produit-elle exactement un bip ?). L'observation le **confirme directement**. Les autres facettes de `ALM-MIN-2` sont des **garanties statiques** établies par la structure du correctif et n'exigent **pas** d'observation séparée :
+- **silence en mode test** : l'unique émetteur restant (`script.alarme_desarmer`) est gardé `mode_test off` ; l'automatisation non gardée (`bip_desactivation.yaml`) a été supprimée ;
+- **aucun bip sur désarmement automatique** : l'origine `automatisme` est exclue de la condition de bip, et l'émetteur redondant est supprimé ;
+- **bips d'armement et de début de délai inchangés** : scripts non touchés par CH-4-A.
+
+**Conclusion.** La **réserve unique est levée**. `ALM-MIN-2` est **résolu et validé terrain**. **CH-4 est SOLDÉ** (clôture définitive). `ALM-IMP-3` était déjà résolu au runtime (lot B, `476116e`) ; sa seule suite — documenter la durée device comme coupe-circuit canonique — relève de **CH-5** et **ne conditionne pas** la clôture de CH-4.
+
+**Impact domaine.** Domaine Alarme **toujours NON clôturé** : **CH-1** en clôture conditionnelle (réserve `S3`), **CH-3** (gated V3) et **CH-5** (documentaire) restent.
 
 ---
 

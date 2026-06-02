@@ -54,6 +54,8 @@
 > **Statut (dépôt `5892d35`) — lot CH-4-A implémenté.** `ALM-MIN-2` : bip de désarmement émis uniquement par `script.alarme_desarmer`, restreint aux origines explicites (`dashboard`/`clavier`/`badge`) ; `bip_desactivation.yaml` supprimée. **Implémenté runtime + déployé HA** (commit `5892d35`, pull + reload effectués) ; **validation terrain opportuniste en attente**. **Lot CH-4-B (`ALM-IMP-3`, dette/gouvernance) : à traiter.** CH-4 **non clôturé**.
 >
 > **Statut (dépôt `476116e`) — lot CH-4-B implémenté.** Automatisation morte `11_automations/alarme/sirene/stop.yaml` (ID `1002000000012`) **supprimée** (entité fantôme `switch.sirene_alarm` + `delay` latent + notification morte éliminés ; commit `476116e`). Chemin d'arrêt réel **inchangé** (`script.arret_sirene` = coupe immédiate ; durée device = auto-extinction reboot-safe). `ALM-IMP-3` : **résidu runtime résolu** ; reste la documentation du mécanisme canonique (→ CH-5). **CH-4 : clôture conditionnelle acquise** — réserve unique : **validation terrain de `ALM-MIN-2`**.
+>
+> **Statut (validation terrain réalisée) — CH-4 SOLDÉ.** Désarmement clavier validé : **un seul bip, aucun double bip** → `ALM-MIN-2` **résolu et validé terrain** ; **réserve levée**. `ALM-IMP-3` résidu runtime déjà résolu (`476116e`). **CH-4 clôturé** (clôture définitive ; cf. clôture CH-4 §10). Dette doc du coupe-circuit canonique → CH-5.
 
 - **Bénéfice attendu** : **faible à moyen** — retrait du code mort (`stop.yaml`, entité fantôme `switch.sirene_alarm`), documentation de la durée device comme coupe-circuit canonique, feedback de désarmement propre (unique, neutralisé en test, hors auto-désarmement).
 - **Risque de régression** : **faible** — aucun filet retiré (durée device + `arret_sirene` conservés) ; MIN-2 = feedback.
