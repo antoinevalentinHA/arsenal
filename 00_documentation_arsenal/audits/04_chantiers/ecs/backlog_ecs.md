@@ -5,7 +5,7 @@
 
 ## 📌 Cadre
 
-- **Sources** : `audit_ecs_domaine.md` + `contre_expertise_watchdog_ecs.md` (HEAD `f6efd6a`).
+- **Sources** : `audit_ecs_domaine.md` + `contre_expertise_watchdog_ecs.md` (HEAD `f6efd6a`) ; `arbitrage_watchdog_ecs.md` ; `audit_ecs_offsets.md` (HEAD `372b8d7`).
 - **Nature** : backlog priorisé des constats résiduels et confirmés de l'audit ECS. **Aucun chantier ouvert.** Pas de calendrier, pas de charge en jours.
 - **Interdits respectés** : aucun patch, aucun YAML, aucune correction. Les arbitrages restent ouverts.
 
@@ -61,10 +61,30 @@
 - **ECS-CI-1** : aligner `check_ecs_cycle.py` T04 sur les 7 entités du contrat `§026` + corriger la docstring.
 - **ECS-CI-2** : supprimer la continuation antislash de `check_ecs_securite.py` (`yaml_files()`).
 - **ECS-CI-3** : uniformiser les workflows (`python3` + `setup-python` épinglé).
-- **Bénéfice attendu** : **moyen** — robustesse et lisibilité de la chaîne de validation.
+- **ECS-OFF-5** *(audit Offsets)* : verrouiller en CI les paramètres contractuels `11` §10 (alpha, zone morte, buckets, plage durée) et le format du résumé figé — aujourd'hui déclarés « rupture de contrat » mais non testés.
+- **Bénéfice attendu** : **moyen** — robustesse et lisibilité de la chaîne de validation ; protection des invariants d'apprentissage.
 - **Risque de régression** : **faible**.
 - **Effort relatif** : **faible**.
 - **ROI** : **moyen à élevé**.
+
+### ECS-OFF-1 — Observabilité de la trajectoire d'apprentissage *(audit Offsets)*
+
+- **Constat** : les offsets `ecs_off_*`, la trace `ecs_dernier_ajustement` et les données figées ne sont **pas historisés** (`recorder.yaml` en liste blanche, sans glob). Valeur courante visible, **trajectoire invisible** → dérive lente / biais d'apprentissage indétectables depuis le système.
+- **Bénéfice attendu** : **élevé** — rend l'apprentissage auditable ; condition de détection des dérives lentes.
+- **Risque de régression** : **nul** — purement additif (historisation), aucun changement de comportement.
+- **Effort relatif** : **faible** — ajout d'entrées au `recorder`.
+- **Nature** : famille **observabilité** (distincte du chantier CI).
+- **ROI** : **élevé**.
+
+### Risques assumés *(hors backlog actionnable — réf. contrat `11` §11)*
+
+- **ECS-OFF-3** : absence de rejet d'aberration sur `tmax` ; dérive cumulative **bornée par le clamp**, transitoire d'un cycle possible. Mitigation = runtime → **gated preuve forte**, non ouverte.
+- **ECS-OFF-7** : convergence par bucket inégale (`desinfection` rare). Comportement de gain-scheduling assumé.
+- *Jonction* : un cycle de désinfection tronqué par le watchdog (`ECS-WD-2`, assumé) est le cas-type de cycle « valide mais non représentatif » d'OFF-3.
+
+### Dettes documentaires *(résorbées par la consolidation Offsets — réf. contrat `11`)*
+
+- **ECS-OFF-2** (§3.3, portée réelle de `valide`), **ECS-OFF-4** (§6.1, asymétrie de zone morte), **ECS-OFF-6** (§11, amorçage depuis `unknown`), **ECS-OFF-8** (§11, correcteur sans mémoire d'erreur) — **traités** par alignement du contrat `11`.
 
 ---
 
@@ -73,9 +93,13 @@
 1. **ECS-DOC** — ✅ traité (lot de clôture doctrinale).
 2. **ECS-WD** — ✅ résolu par arbitrage (doctrine (a)) ; `ECS-WD-2` clos (comportement assumé), `ECS-WD-2b` caduc.
 3. **ECS-DESINF-1** (fort levier de protection, faible risque) — reste à traiter via le chantier CI.
-4. **ECS-CI** (hygiène de chaîne) — reste à traiter via le chantier CI.
+4. **ECS-CI** + **ECS-OFF-5** (hygiène de chaîne + verrouillage des paramètres d'apprentissage `11` §10) — chantier CI.
 5. **ECS-DESINF-2** *(variante garde CI uniquement)* — préventif, dans le chantier CI.
+6. **ECS-OFF-1** (observabilité de l'apprentissage) — famille distincte, additive, sans risque runtime.
 
-> Reliquat actionnable = un seul **chantier « Durcissement CI ECS »** (`ECS-DESINF-1`, `ECS-DESINF-2` garde, `ECS-CI-1/2/3`), distinct et ultérieur. Aucun item runtime ouvert.
+> Reliquats actionnables = **deux familles**, distinctes et ultérieures, sans item runtime ouvert :
+> - **Chantier « Durcissement CI ECS »** : `ECS-DESINF-1`, `ECS-DESINF-2` (garde), `ECS-CI-1/2/3`, **+ `ECS-OFF-5`**.
+> - **Observabilité apprentissage ECS** : `ECS-OFF-1` (historisation `recorder`).
+> Risques assumés (`ECS-OFF-3`, `ECS-OFF-7`, `ECS-WD-2`) et dettes documentaires (`ECS-OFF-2/4/6/8`) : voir ci-dessus et contrat `11` §11.
 
 *Backlog ECS. Acte documentaire — aucun patch, aucune correction. Domaine ECS non clôturé.*

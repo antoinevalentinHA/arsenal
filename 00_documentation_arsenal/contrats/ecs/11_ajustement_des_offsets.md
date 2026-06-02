@@ -87,7 +87,16 @@ Les données utilisées par le service sont réputées valides car :
 
 Cette validation est assurée par l'orchestration amont.
 
-Le champ `valide` du résumé constitue la validation métier finale du cycle, issue de la phase de consolidation post-inertie.
+Le champ `valide` du résumé est posé lors de la consolidation post-inertie (`gel`). Il certifie qu'un **cycle de chauffe réel a eu lieu et a produit une hausse mesurable** — concrètement :
+
+```
+valide = oui  ⟺  duree > 0
+              ∧ temp_max_reelle > 0
+              ∧ t0 présent
+              ∧ (temp_max_reelle − t0) >= 0.5
+```
+
+> Portée exacte de `valide` (réf. audit Offsets, `ECS-OFF-2`) : ce drapeau atteste qu'un chauffage mesurable s'est produit ; il **ne garantit pas** que le cycle soit thermiquement représentatif, non perturbé, ni exempt de valeur aberrante. Le service consomme `valide` comme filtre d'existence de cycle, non comme certificat de représentativité (voir §11).
 
 Le service ne vérifie pas ces conditions — il en est uniquement le consommateur aval.
 
@@ -153,6 +162,8 @@ deadband_max = +0.5
 
 Si `-0.3 <= erreur <= +0.5` → aucune correction.
 
+> Asymétrie de la zone morte (réf. audit Offsets, `ECS-OFF-4`) : la borne haute (`+0.5`) tolère un dépassement plus large que la borne basse (`-0.3`) ne tolère de sous-atteinte. L'équilibre appris penche donc volontairement vers un léger dépassement, jugé préférable à une sous-atteinte pour la disponibilité d'eau chaude. Caractéristique assumée (voir §11).
+
 ### 6.2 Bucket (sélection offset)
 
 ```
@@ -215,6 +226,8 @@ Doivent être lisibles :
 | Offset ciblé | `input_number.ecs_off_<bucket>` |
 | Trace dernier ajustement | `input_text.ecs_dernier_ajustement` |
 
+> Portée de l'observabilité (réf. audit Offsets, `ECS-OFF-1`) : ces observables ne sont lisibles qu'en **valeur courante**. Ils ne sont **pas historisés** (`recorder.yaml` en liste blanche, sans glob ni domaine ; aucune de ces entités n'y figure) et la trace `ecs_dernier_ajustement` ne conserve que le **dernier** ajustement. La trajectoire d'apprentissage n'est donc pas auditable depuis le système. Angle mort ouvert (backlog observabilité).
+
 ---
 
 ## 10. Notes de gouvernance
@@ -227,3 +240,22 @@ Les paramètres suivants sont des paramètres contractuels — toute modificatio
 - plage durée `[0 ; 120[`
 
 Toute modification du format du résumé figé (`date|mode|consigne|t0|boost|valide`) constitue une rupture de contrat.
+
+---
+
+## 11. Caractéristiques assumées et limites connues
+
+Issues de l'audit ciblé Offsets (`audits/01_rapports/ecs/audit_ecs_offsets.md`). Ces points documentent le comportement réel du runtime (référence). Aucun ne constitue un défaut bloquant ; aucun correctif runtime n'est entrepris sans preuve forte.
+
+### 11.1 Risques assumés
+
+- **`ECS-OFF-3` — absence de rejet d'aberration.** Aucune borne de plausibilité sur `tmax_reference` en amont, ni borne sur `|erreur|` dans le service (seul l'offset est clampé). Un pic capteur sur un cycle `valide=oui` déplace l'offset de `alpha·|erreur|`, **borné par le clamp `[min ; max]`** et récupéré par les cycles suivants. La dérive cumulative reste donc bornée ; le risque est un transitoire d'apprentissage d'un seul cycle. Jonction documentée : un cycle de désinfection tronqué par le watchdog (comportement assumé, `ECS-WD-2`) est un cas typique de cycle « valide mais non représentatif ».
+- **`ECS-OFF-7` — convergence par bucket inégale.** L'offset est appris par bucket (`tiny/medium/normal/desinfection`). Le bucket `desinfection`, rarement exercé, converge lentement et peut stationner sur une valeur ancienne. Comportement de gain-scheduling assumé.
+
+### 11.2 Caractéristiques de conception
+
+- **`ECS-OFF-8` — correcteur sans mémoire d'erreur.** Le service réagit au dernier cycle uniquement ; la seule mémoire est l'offset (intégrateur discret). La robustesse au bruit per-cycle repose entièrement sur `alpha`, la zone morte et le clamp. Choix de conception (pas de lissage d'historique).
+
+### 11.3 Limites d'amorçage
+
+- **`ECS-OFF-6` — pas d'amorçage depuis `unknown`.** Les `initial` des offsets sont commentés (persistance par restauration). Au premier démarrage, ou après purge de l'historique, un offset à l'état `unknown` fait que le service s'arrête (« Offset indisponible ») : l'apprentissage n'amorce pas une valeur jamais posée. Le cycle ECS, lui, applique alors une valeur de repli. Un seed initial (manuel, ou décommentage des `initial`) est requis pour activer l'apprentissage d'un offset jamais renseigné.
