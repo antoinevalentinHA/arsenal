@@ -200,7 +200,6 @@ include:
     - sensor.pluie_aujourdhui_local
     - sensor.pluie_total_local
     - sensor.pluie_hebdomadaire
-    - sensor.pluie_semaine
     - sensor.pluie_journaliere
     - input_number.palmares_pluie_journalier_rang_01_valeur
     - input_text.palmares_pluie_journalier_rang_01_date

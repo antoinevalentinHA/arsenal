@@ -37,7 +37,7 @@ apex_config:
     show: false
 
 series:
-  - entity: sensor.pluie_semaine
+  - entity: sensor.pluie_hebdomadaire
     name: Pluie (mm)
     type: column
     color: "rgba(144, 202, 249, 0.9)"
