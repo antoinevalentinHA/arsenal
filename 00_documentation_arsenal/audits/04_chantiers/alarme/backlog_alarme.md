@@ -40,6 +40,8 @@
 
 ### CH-3 — Contextes humains & câblage des déclencheurs *(IMP-1, MIN-1)*
 
+> **DISSOUS — fusionné dans CH-5 (contre-expertise runtime, dépôt `92b2ede`).** La facette « armement automatique en babysitting » d'`ALM-IMP-1` est **invalidée** (le babysitting force la présence enfants → décision `PRESENCE` → `DISARMED`). `ALM-IMP-1` est **requalifié Mineur** (résidus contrats `96`/`99`) et, avec `ALM-MIN-1` (câblage visite), **reversé à CH-5**. **V3 répondue** par le code. Les attributs ci-dessous sont conservés pour traçabilité ; CH-3 n'est plus un chantier ouvert distinct.
+
 - **Bénéfice attendu** : **élevé** — ferme un angle mort sécurité adjacent (babysitting) et l'incohérence de câblage des déclencheurs.
 - **Risque de régression** : **moyen** — domaine adjacent à la sécurité (occupants vulnérables) ; calibrage d'inhibition délicat.
 - **Effort relatif** : **moyen** — extension bornée de la décision + réalignement de déclencheurs.
@@ -64,7 +66,7 @@
 - **Dépendances** : latérale = **CH-1** (satisfaite). **Gate V4 : résolu.**
 - **ROI** : **moyen** — petit effort, ferme une dette de gouvernance et nettoie le feedback ; sans urgence.
 
-### CH-5 — Cohérence documentaire & nommage *(DOC-1, DOC-2, MIN-3, MIN-6)*
+### CH-5 — Cohérence documentaire & nommage *(DOC-1, DOC-2, MIN-3, MIN-6 ; + `ALM-IMP-1` résidus contrats 96/99 et `ALM-MIN-1` câblage, reversés depuis CH-3 dissous)*
 
 - **Bénéfice attendu** : **moyen** — fidélité documentaire et opposabilité (contrat d'application restauré), cohérence déclaration↔application (durée de blocage), hygiène de nommage.
 - **Risque de régression** : **faible** — aucun impact sur l'actionnement de sécurité.

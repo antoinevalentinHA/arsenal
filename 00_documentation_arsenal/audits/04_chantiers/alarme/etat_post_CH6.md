@@ -31,10 +31,11 @@
 - `ALM-CRIT-1` *(CH-1)* — garantie négative acquise (statique + CI + terrain observé). `ALM-CRIT-2` *(CH-1)* — détection à l'échéance non établie par l'observation : clôture définitive conditionnée au **seul test positif `S3`**.
 
 **Importants :**
-- `ALM-IMP-1` — babysitting demi-intégré *(CH-3)*
+- *(aucun item Important — `ALM-IMP-1` **requalifié Mineur** par contre-expertise runtime ; voir Mineurs)*
 
 **Mineurs :**
-- `ALM-MIN-1` — désync déclencheurs/entrées (contexte visite) *(CH-3)*
+- `ALM-MIN-1` — désync déclencheurs/entrées (contexte visite) *(ex-CH-3 → CH-5)*
+- `ALM-IMP-1` — *requalifié Important → Mineur (contre-expertise runtime)* : facette armement **invalidée** ; résidus = diagnostic dépendant du mode (contrat 96) + inhibition implicite (contrat 99) *(ex-CH-3 → CH-5)*
 - `ALM-MIN-2` — double bip désarmement + garde mode test absente *(CH-4-A : résolu et **validé terrain** `5892d35` — un seul bip, aucun double bip)*
 - `ALM-MIN-3` — durée de blocage incohérente (5 min / 3 min) *(CH-5)*
 - `ALM-MIN-6` — mismatch nom de fichier ↔ identifiant d'entité *(CH-5)*
@@ -51,7 +52,7 @@
 ### Chantiers ouverts
 
 - **CH-1** — **clôture conditionnelle acquise** ; réserve unique : test positif `S3` (amont CH-2 satisfait).
-- **CH-3** — non démarré ; amont CH-2 satisfait ; **gated V3** (couverture présence babysitting).
+- **CH-3** — **dissous, fusionné dans CH-5** (contre-expertise runtime). `ALM-IMP-1` requalifié Mineur (facette armement invalidée ; résidus contrats 96/99) et `ALM-MIN-1` (câblage visite, atténué) reversés à CH-5. **V3 répondue** par le code (présence forcée en babysitting). Plus de chantier sécurité distinct.
 - **CH-4** — **SOLDÉ** (clôture définitive, réserve levée). **Lot CH-4-A (`ALM-MIN-2`)** : implémenté, déployé et **validé terrain** (`5892d35` — un seul bip, aucun double bip). **Lot CH-4-B (`ALM-IMP-3`)** : implémenté + déployé (`476116e`) — automatisation morte supprimée, résidu runtime résolu. Dette résiduelle (doc coupe-circuit canonique) **portée par CH-5**, hors périmètre CH-4.
 - **CH-5** — non démarré ; documentaire ; lots indépendants (DOC-2, MIN-6, MIN-3) + lots de réalignement contractuel en aval.
 
@@ -69,8 +70,8 @@
 ## 3. Classement par criticité (travail résiduel)
 
 1. 🔴 **Critique** — **test positif `S3` de CH-1** : seule garantie (positive, `ALM-CRIT-2`) non confirmée ; garanties négatives déjà acquises (statique + CI + terrain observé).
-2. 🟠 **Important** — **CH-3** (babysitting, occupants vulnérables).
-3. 🟡 **Mineur** — MIN-1 (CH-3), MIN-2 (CH-4-A résolu/validé terrain), MIN-3 / MIN-6 (CH-5), MIN-5 (CH-1, terrain) ; **`ALM-IMP-3` requalifié post-V4, résidu runtime résolu en CH-4-B (`476116e`)**.
+2. 🟠 **Important** — *(aucun chantier ouvert ; `ALM-IMP-1` requalifié Mineur, CH-3 dissous)*.
+3. 🟡 **Mineur** — MIN-1 (ex-CH-3 → CH-5), MIN-2 (CH-4-A résolu/validé terrain), MIN-3 / MIN-6 (CH-5), MIN-5 (CH-1, terrain) ; **`ALM-IMP-3` requalifié post-V4 (CH-4-B)** ; **`ALM-IMP-1` requalifié (contre-expertise runtime, ex-CH-3 → CH-5)**.
 4. ⚪ **Documentaire** — DOC-1, DOC-2 + dettes nouvelles → CH-5.
 5. ❓ **Observation à trier** — **R2** (RFID inerte) : criticité fonction de l'usage RFID attendu.
 
@@ -80,7 +81,7 @@
 
 1. **Préalable — test positif `S3` de CH-1** (expiration volontaire du délai → `triggered` + sirène unique en mode test). Seul élément restant pour la clôture définitive ; les garanties négatives sont déjà acquises (statique + CI + terrain observé). Coût faible, gain de criticité maximal.
 2. **CH-4 — Sirène & feedback sonore** *(MIN-2 ; `ALM-IMP-3` requalifié Mineur post-V4)*. **V4 réalisée** : auto-extinction device reboot-safe confirmée → IMP-3 sans enjeu sécurité (dette technique : retrait du code mort `stop.yaml` / entité fantôme + documentation du mécanisme device). MIN-2 **traité en lot CH-4-A** : implémenté, déployé et **validé terrain** (`5892d35` — un seul bip, aucun double bip). **Lot CH-4-B** (IMP-3) implémenté + déployé (`476116e`) : automatisation morte supprimée, résidu runtime résolu (reste doc canonique → CH-5). Chantier **SOLDÉ**.
-3. **CH-3 — Contextes humains** *(IMP-1, MIN-1)*. À débloquer via **V3** (couverture présence babysitting) ; amont CH-2 déjà satisfait.
+3. **CH-3 — dissous** (contre-expertise runtime) : `ALM-IMP-1` requalifié Mineur (facette armement invalidée), `ALM-MIN-1` reversé à **CH-5**. Plus d'étape distincte.
 4. **CH-5 — Cohérence documentaire** *(DOC-1, DOC-2, MIN-3, MIN-6)*. Traiter tôt les **quick wins indépendants** (DOC-2, MIN-6, MIN-3) ; y rattacher les dettes nouvelles (en-tête `delai_entree_fin`, alignement contrats 50/51/60/70, dette §9, R1). Lots de réalignement contractuel **en aval** des chantiers runtime.
 5. **En parallèle — trancher R2** (RFID) : décider si l'usage RFID est attendu ; si oui, ouvrir une investigation dédiée (appairage / exposition Zigbee2MQTT), distincte d'`ALM-CRIT-3`.
 
@@ -88,7 +89,7 @@
 
 ## 5. Synthèse
 
-Sur 6 chantiers : **CH-2, CH-6 et CH-4 soldés**, **CH-1 en clôture conditionnelle acquise** (réserve : test positif `S3`), **CH-3 / CH-5 ouverts**. Le domaine **n'est pas clôturé**. La prochaine action à plus forte valeur est le **test positif `S3`** ; **CH-4 est soldé** (`ALM-MIN-2` validé terrain `5892d35` ; `ALM-IMP-3` résidu runtime résolu `476116e`), la dette documentaire du coupe-circuit canonique étant portée par CH-5.
+Sur 6 chantiers : **CH-2, CH-6 et CH-4 soldés**, **CH-1 en clôture conditionnelle acquise** (réserve : test positif `S3`), **CH-5 ouvert** (CH-3 dissous → fusionné dans CH-5). Le domaine **n'est pas clôturé**. La prochaine action à plus forte valeur est le **test positif `S3`** ; **CH-4 est soldé** (`ALM-MIN-2` validé terrain `5892d35` ; `ALM-IMP-3` résidu runtime résolu `476116e`), la dette documentaire du coupe-circuit canonique étant portée par CH-5.
 
 ---
 

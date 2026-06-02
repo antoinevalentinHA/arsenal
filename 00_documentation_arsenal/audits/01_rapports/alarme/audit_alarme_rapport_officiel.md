@@ -30,8 +30,8 @@ Le point structurant : **plusieurs angles morts de sécurité ne sont pas visibl
 | Classe | Nombre | Constats |
 |--------|:------:|----------|
 | Critique | 3 | ALM-CRIT-1, ALM-CRIT-2, ALM-CRIT-3 |
-| Important | 2 | ALM-IMP-1, ALM-IMP-2 |
-| Mineur | 7 | ALM-MIN-1 → ALM-MIN-6, ALM-IMP-3 *(requalifié post-V4 — voir § Constats mineurs)* |
+| Important | 1 | ALM-IMP-2 |
+| Mineur | 8 | ALM-MIN-1 → ALM-MIN-6, ALM-IMP-3, ALM-IMP-1 *(IMP-3 et IMP-1 requalifiés — voir § Constats mineurs)* |
 | Dette documentaire | 2 | ALM-DOC-1, ALM-DOC-2 |
 
 ---
@@ -69,14 +69,9 @@ Le point structurant : **plusieurs angles morts de sécurité ne sont pas visibl
 
 ## 🟠 Constats importants
 
-### ALM-IMP-1 — Babysitting demi-intégré : neutralise le diagnostic, n'inhibe pas la décision *(réf. initiale : C6)*
+### ALM-IMP-1 — Babysitting *(réf. initiale : C6)* — ⤵ requalifié Mineur (contre-expertise runtime)
 
-- **État** : Confirmé (fait structurel) ; réalisation du risque *à confirmer en runtime*
-- **Contrat** : `99_hors_perimetre_et_extensions.md` (babysitting cité comme inhibiteur explicite admissible) ; `96_diagnostic_blocage_armement_incoherence.md` (un diagnostic ne doit jamais dépendre de `input_boolean.mode_babysitting`).
-- **Runtime** : `10_scripts/alarme/decision_centrale.yaml` (ne lit pas `mode_babysitting`) ; `12_template_sensors/alarme/coherence.yaml` (force « cohérent » si `mode_babysitting == on`).
-- **Impact** : si la présence sécurité retombe à `off` (membres tracqués absents) pendant qu'un baby-sitter et des enfants sont présents, le cerveau peut décider `ARMEMENT_AUTORISE` et armer ; un mouvement déclenche alors une fausse intrusion — **sans alerte de cohérence**, neutralisée par le babysitting.
-- **Risque** : armement automatique en présence humaine non tracquée, sans filet d'observabilité. **Escalade en Critique** si la présence ne couvre pas le baby-sitter (à confirmer).
-- **Orientation** : trancher le rôle du babysitting (inhibiteur du cerveau **ou** non-neutralisation du diagnostic) ; les deux comportements actuels ne peuvent coexister sans masquer le risque.
+> **Requalifié Important 🟠 → Mineur 🟡** après contre-expertise du runtime : la facette « armement automatique en babysitting » est **invalidée** (`02_contre_expertises/alarme/contre_expertise_IMP1_alarme.md`). Détail sous **§ Constats mineurs › ALM-IMP-1**. Repère conservé pour la traçabilité ; `ALM-IMP-1` reste l'identifiant stable.
 
 ### ALM-IMP-2 — Autorité et observabilité de la raison décisionnelle *(fusion C1 + C14)*
 
@@ -156,6 +151,17 @@ Le point structurant : **plusieurs angles morts de sécurité ne sont pas visibl
 - **Contrat** : `00_gouvernance_alarme.md` (interdiction des `delay` longs comme mécanisme de sûreté) — non-conformité **latente** (code mort) ; `70_sirene_actions_terminales.md` (actions terminales).
 - **Impact résiduel** : **aucun risque de sécurité** (coupe-circuit assuré et reboot-safe). Le **code mort** (`stop.yaml`, entité fantôme `switch.sirene_alarm`, `delay` latent, notification morte) est **supprimé en CH-4-B** (`476116e`). Résidu restant = **dette de représentation seule** (le mécanisme réel — durée device — n'est pas encore documenté comme canonique), à porter par **CH-5** / contrat `70`.
 - **Orientation (dette technique / gouvernance)** : retrait de l'automatisation morte + référence fantôme **réalisé en CH-4-B** (`476116e`). Reste à **documenter la durée device comme coupe-circuit canonique** (et `arret_sirene` comme coupe immédiate) → **CH-5** / contrat `70` (hors lot runtime).
+
+---
+
+### ALM-IMP-1 — Babysitting : inhibition implicite + diagnostic dépendant du mode *(réf. initiale : C6 ; requalifié Important → Mineur, contre-expertise runtime)*
+
+> **Requalification (contre-expertise runtime, dépôt `92b2ede`).** Gravité **Important 🟠 → Mineur 🟡** ; escalade Critique **écartée**. Détail et preuves : `02_contre_expertises/alarme/contre_expertise_IMP1_alarme.md`. Repère conservé sous « Constats importants ».
+
+- **État** : **Requalifié**. Facette armement **invalidée** : `mode_babysitting → on` force `presence_arnaud` + `presence_matthieu` (`activation.yaml`) → `presence_enfants` → `presence_famille_securite` → décision `PRESENCE` → `DISARMED`. Aucun `ARMEMENT_AUTORISE` atteignable en babysitting (concordant avec le terrain).
+- **Runtime (preuves)** : `11_automations/modes/babysitting/activation.yaml` ; `12_template_sensors/presence/enfants.yaml` ; `…/presence/securite/presence.yaml` ; `10_scripts/alarme/decision_centrale.yaml` (PRESENCE → DISARMED ; 0 lecture de `mode_babysitting`) ; `12_template_sensors/alarme/coherence.yaml` (force « cohérent » si babysitting).
+- **Impact résiduel** : **aucun risque de sécurité**. Résidus **Mineurs / gouvernance** : (1) `coherence.yaml` **dépend de `mode_babysitting`** (violation contrat `96`), effet **bénin** ; (2) inhibition **implicite** (effet de bord) vs inhibiteur **explicite** attendu (contrat `99`) — écart de représentation, fragilité théorique non observée.
+- **Orientation (gouvernance, hors urgence)** : résidus reversés à **CH-5** (alignement contrats `96`/`99`). Aucune correction runtime requise.
 
 ---
 

@@ -87,6 +87,8 @@ Les 14 constats retenus se ramènent à **6 racines**, chacune devenant un chant
 
 ### CH-3 — Contextes humains & câblage des déclencheurs
 
+> **DISSOUS — fusionné dans CH-5 (contre-expertise runtime, dépôt `92b2ede`).** L'arbitrage « le babysitting doit-il inhiber l'armement ? » est **déjà tranché par le runtime** (oui, implicitement, via forçage de présence) ; la facette armement d'`ALM-IMP-1` est **invalidée** ; **V3 est répondue** par le code. `ALM-IMP-1` (requalifié Mineur, résidus contrats 96/99) et `ALM-MIN-1` sont **reversés à CH-5**. La section ci-dessous est conservée comme **record de planification historique**.
+
 - **Lots** : ALM-IMP-1 (babysitting demi-intégré), ALM-MIN-1 (désynchronisation déclencheurs/entrées du cerveau pour le contexte visite).
 - **Objet (état cible visé)** : une **position unique et explicite** sur le rôle des contextes humains (babysitting, visite) — soit inhibiteurs du cerveau, soit non neutralisants du diagnostic, mais **pas les deux à la fois** ; un **alignement strict** entre les déclencheurs de l'application et les entrées réellement consommées par le cerveau ; une **source de vérité unique** pour « visite active ».
 - **Arbitrages à trancher** : le babysitting doit-il inhiber l'armement automatique ? quelle entité porte « visite active » (`presence_visiteur` vs `visite_en_cours`) ?
@@ -139,7 +141,7 @@ Plusieurs chantiers sont **gatés** par une confirmation à chaud. Ces validatio
 |-----|------------|----------|
 | **V1** | Course réconciliation contacts vs chaîne timer à l'ouverture porte/garage | CH-1 |
 | **V2** | Contenu réel de `alarme_raison` et de l'alerte d'incohérence | CH-2 |
-| **V3** | Couverture de présence pendant babysitting ; `presence_visiteur` vs `visite_en_cours` | CH-3 (escalade possible d'ALM-IMP-1) |
+| **V3** | Couverture de présence pendant babysitting ; `presence_visiteur` vs `visite_en_cours` | **Répondue (contre-expertise runtime)** : présence forcée en babysitting → pas d'armement ; `ALM-IMP-1` **dé-escaladé** (Mineur), CH-3 dissous |
 | **V4** | Existence de `switch.sirene_alarm` ; durée sirène vs `trigger_time` ; extinction post-reboot | CH-4 |
 | **V5** | Test PIN réel sur les deux claviers | CH-6 |
 
