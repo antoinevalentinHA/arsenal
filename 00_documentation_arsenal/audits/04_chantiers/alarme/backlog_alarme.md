@@ -72,6 +72,8 @@
 - **Prérequis** : contrats `20/30/40`, `60`, `80` ; arbitrage durée de blocage (3 ou 5 min) ; arbitrage notification visiteur (créer ou retirer la clause).
 - **Dépendances** : lots de réalignement contractuel **en aval de CH-1/CH-2/CH-3/CH-4** ; lots **DOC-2** et **MIN-6** indépendants.
 - **ROI** : **mixte** — lots indépendants à ROI élevé (quick wins) ; lots de réalignement à ROI différé (doivent refléter le runtime final).
+>
+> **Statut (lot 5-DOC réalisé)** — sous-lot documentaire autonome traité : **contrat `70`** complété (chemin d'arrêt canonique : `arret_sirene` = coupe immédiate ; durée device = auto-extinction reboot-safe ; mention explicite que `stop.yaml` / `switch.sirene_alarm` ne participent plus) ; **en-tête `delai_entree_fin.yaml`** réaligné post-CH-1. Restent : DOC-1, MIN-6, **5-DEC** (MIN-3, DOC-2 — décision métier), **5-S3** (contrats 50/51, post-`S3`).
 
 ### CH-6 — Intégrité du flux clavier (PIN) *(CRIT-3)*
 

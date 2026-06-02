@@ -27,21 +27,27 @@
 #  🛡️ ROBUSTESSE
 #
 #     - Zéro wait
-#     - Réaction événementielle
+#     - Réaction événementielle (timer.finished)
 #     - Garde systeme_stable (post-reboot)
-#     - Garde ouverture_qualifiee_maison (intrusion toujours active)
+#     - Garde armed_away
+#     - L'expiration du délai (timer.finished) vaut preuve d'intrusion
+#       (B2/CH-1 : la garde ouverture_qualifiee_maison a été retirée du corps)
 #
 #  ⚠️  DETTE ARCHITECTURALE DOCUMENTÉE
 #
 #     Cette automation court-circuite le pipeline canonique
-#     Arsenal (Décision → Helpers → Application).
-#     Elle appelle alarm_control_panel.alarm_trigger et
-#     script.sirene_brutale directement, sans passer par
-#     script.alarme_decision_centrale ni input_text.alarme_etat_cible.
+#     Arsenal (Décision → Helpers → Application) : elle appelle
+#     alarm_control_panel.alarm_trigger directement, sans passer
+#     par script.alarme_decision_centrale ni
+#     input_text.alarme_etat_cible.
 #
-#     Refonte cible : matérialiser "intrusion confirmée" comme
-#     état contractuel persisté, puis déclencher panneau et
-#     sirène depuis cet état via le pipeline canonique.
+#     Note (C1/CH-1) : l'appel direct à script.sirene_brutale a été
+#     retiré ; la sirène est déclenchée par le seul chemin canonique
+#     triggered -> script.sirene_forte.
+#
+#     Refonte cible (§9, hors périmètre actuel) : matérialiser
+#     "intrusion confirmée" comme état contractuel persisté, puis
+#     déclencher le panneau depuis cet état via le pipeline canonique.
 #
 #  ✅ Compatibilité : Home Assistant 2024.8+
 # ==========================================================

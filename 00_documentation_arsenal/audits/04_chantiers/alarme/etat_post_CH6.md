@@ -59,8 +59,8 @@
 
 - `ALM-DOC-1`, `ALM-DOC-2`, `ALM-MIN-6`, `ALM-MIN-3` *(périmètre CH-5)*.
 - **Issues des chantiers livrés, à porter par CH-5 :**
-  - en-tête de `delai_entree_fin.yaml` désaligné (sections ROBUSTESSE / DETTE §9 citant `ouverture_qualifiee_maison` et `sirene_brutale`, retirés par CH-1) ;
-  - alignement des contrats `50`/`51`/`60`/`70` sur l'arbitrage A1+B2+C1 (CH-1) ;
+  - en-tête de `delai_entree_fin.yaml` — **réaligné (5-DOC-c)** : ROBUSTESSE (gardes `systeme_stable` + `armed_away`) et DETTE (`sirene_brutale` retiré par C1 ; court-circuit `alarm_trigger` §9 toujours documenté) ;
+  - alignement des contrats : **`70` documenté (5-DOC-a : coupe-circuit canonique)** ; restent `50`/`51` (détection, **post-`S3`**) et `60` (lié à `ALM-MIN-3`) ;
   - dette §9 résiduelle : court-circuit `alarm_trigger` direct (`…007` / `…009` / `…032`), hors arbitrage, documentée et inchangée ;
   - **R1** : champ « badge » porteur de la valeur PIN (dette sémantique de nommage).
 

@@ -56,7 +56,7 @@ Deux mécanismes **complémentaires et suffisants**, confirmés par la cartograp
 
 L'ancienne automatisation `stop.yaml` (commutateur fantôme) n'a jamais participé à ce chemin ; sa suppression ne modifie aucun comportement.
 
-> **Réserve documentaire (hors lot runtime)** : la durée device n'est pas encore **documentée comme coupe-circuit canonique** au niveau du contrat `70` / des en-têtes — dette de représentation à porter par **CH-5**.
+> **Réserve documentaire (hors lot runtime)** : la durée device est désormais **documentée comme coupe-circuit canonique** dans le contrat `70` (lot **CH-5 / 5-DOC-a**). *(Dette levée ; note conservée pour traçabilité.)*
 
 ---
 
