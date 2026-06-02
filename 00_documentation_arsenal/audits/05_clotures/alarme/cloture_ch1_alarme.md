@@ -1,6 +1,6 @@
 # Clôture de chantier — CH-1 Alarme
 
-> **Statut :** clôture de **chantier** — CH-1 **implémenté au runtime** et **validé statiquement** ; **validation terrain NON réalisée** ; clôture définitive **conditionnée** ; domaine **Alarme NON clôturé**
+> **Statut :** clôture de **chantier** — CH-1 en **clôture conditionnelle acquise** (validé statiquement + protégé CI [tests `N5`-`N7`] + garanties **négatives** observées en production) ; **réserve unique** pour clôture définitive = **test positif d'expiration volontaire du délai** (`S3`) ; domaine **Alarme NON clôturé**. *Voir l'avenant §10, qui prévaut sur §6 et §9.*
 > **Domaine :** `alarme` — détection d'intrusion sur la voie d'accès principale (porte d'entrée, garage)
 > **Destination d'archivage :** `00_documentation_arsenal/audits/05_clotures/alarme/cloture_ch1_alarme.md`
 > **Documents de référence (en dépôt) :**
@@ -68,6 +68,8 @@ Fichiers runtime concernés (2) : `11_automations/alarme/intrusion/ouverture/aut
 
 **Implémenté au runtime et validé statiquement ; validation terrain en attente.** Le chantier **n'est pas clôturé définitivement** : sa clôture est **conditionnée** à l'exécution favorable des scénarios terrain `S1`–`S8`.
 
+> *Statut réévalué — voir §10 (avenant), qui prévaut : « clôture conditionnelle acquise », réserve unique `S3`.*
+
 ---
 
 ## 7. Élimination des constats (au plan statique/structurel)
@@ -91,6 +93,24 @@ Fichiers runtime concernés (2) : `11_automations/alarme/intrusion/ouverture/aut
 ## 9. Verdict
 
 **CH-1 implémenté au runtime et validé statiquement — validation terrain en attente — chantier non clôturé définitivement.** Le domaine **Alarme reste NON clôturé**. Conformément au principe directeur, le runtime est la référence ; l'alignement des contrats et des en-têtes suivra (CH-5).
+
+> *Réévalué par l'avenant §10 ci-dessous (postérieur).*
+
+---
+
+## 10. Avenant — réévaluation post-CI & terrain observé
+
+> **Date de l'avenant :** dépôt à `origin/main` = `ef97faf`. **Cet avenant prévaut sur les §6 et §9.**
+
+Trois éléments postérieurs à la rédaction initiale modifient le statut de CH-1 :
+
+1. **Protection CI dédiée.** Les invariants A1/B2/C1 sont gardés par `scripts/arsenal_contracts/check_alarme_contracts.py` (tests **N5-N7**) : ouvrants d'entrée hors du chemin immédiat (`N5`), fin de délai sans `ouverture_qualifiee_maison` et sur `timer.finished` (`N6`), pas d'appel direct à `sirene_brutale` (`N7`). Toute régression structurelle de l'arbitrage fait échouer la CI.
+2. **Validation terrain observée (garanties négatives).** Lors d'une arrivée réelle au domicile, **géolocalisation non encore active** (système toujours `armed_away`), l'ouverture de la voie d'entrée **n'a déclenché aucun faux positif** ni notification parasite ; le **désarmement clavier** est intervenu avant l'échéance et a **annulé le délai** (aucune alarme). Les scénarios `S1` (entrée légitime sans déclenchement immédiat) et `S2` (désarmement à temps → délai annulé) sont ainsi **confirmés en conditions réelles**.
+3. **Distinction des garanties (rappel méthodologique).** Les **garanties négatives** (absence de faux positif `ALM-CRIT-1`, absence de double sirène `ALM-MIN-5`, non-régression) sont désormais acquises par la **conjonction statique + CI + terrain observé**. La **garantie positive** (`ALM-CRIT-2` / B2 : intrusion **détectée** à l'expiration du délai) **ne peut pas** être établie par l'observation passive (le désarmement annule le délai avant échéance) — elle exige un **test positif contrôlé** (`S3` : laisser le délai expirer sans désarmement → `triggered` + sirène unique en mode test). Ce test **n'a pas** été réalisé.
+
+**Statut requalifié de CH-1 : clôture conditionnelle acquise.** Les conditions négatives sont remplies ; la **clôture définitive** reste suspendue au **seul** test positif `S3`. Les scénarios `S4`–`S8` ne conditionnent plus la clôture : `S4` (garage) relève du même mécanisme que `S1`/`S3` et est gardé structurellement par `N5` ; `S6` par `N7` ; `S5`/`S8` (non-régression) par `N5`-`N7` et l'observation.
+
+*Avenant documentaire. Aucune modification runtime, contrat ou CI. Domaine Alarme toujours NON clôturé.*
 
 ---
 

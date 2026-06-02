@@ -46,6 +46,8 @@ Fichiers concernés : `11_automations/alarme/armement/clavier.yaml`, `10_scripts
 
 Les trois objectifs fonctionnels de CH-6 (armement PIN, désarmement PIN, non-parasitage badge) sont **confirmés en conditions réelles**.
 
+**Observation complémentaire — armement clavier avec présence active.** Un armement par clavier réalisé alors que la géolocalisation / présence était active **arme bien l'alarme**, immédiatement suivie d'un **désarmement par la logique de présence**. Ce comportement est **attendu** dans l'architecture Arsenal (l'automatisation de présence peut reprendre la main aussitôt) ; il **ne constitue pas un échec du flux clavier** — il confirme au contraire que le flux d'armement clavier s'exécute correctement.
+
 ---
 
 ## 5. Résidus documentés (non bloquants)
@@ -70,7 +72,7 @@ Les trois objectifs fonctionnels de CH-6 (armement PIN, désarmement PIN, non-pa
 
 **Domaine Alarme NON clôturé.** État après CH-6 :
 - **CH-2** soldé ; **CH-6** soldé.
-- **CH-1** implémenté au runtime — **validation terrain en attente** (clôture définitive conditionnée).
+- **CH-1** en **clôture conditionnelle acquise** — réserve : test positif `S3` (cf. clôture CH-1 §10).
 - Chantiers restants : **CH-3** (`ALM-IMP-1`), **CH-4** (`ALM-IMP-3`), **CH-5** (documentaire).
 - Observation ouverte distincte : **R2** (flux RFID inerte) — hors `ALM-CRIT-3`, à investiguer séparément.
 

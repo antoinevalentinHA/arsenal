@@ -13,11 +13,11 @@
 |----------|----------|--------|-----------------|
 | **CH-2** | `ALM-IMP-2`, `ALM-MIN-4` | **SOLDÉ** | `dc8667e`, `99cbc0b` |
 | **CH-6** | `ALM-CRIT-3` | **SOLDÉ — validé terrain** | `139640b`, `5f56ee7` |
-| **CH-1** | `ALM-CRIT-1`, `ALM-CRIT-2`, `ALM-MIN-5` | **Implémenté au runtime — validation terrain en attente** (clôture conditionnée) | `812f2cf`, `5dda40b`, `fe57c73` |
+| **CH-1** | `ALM-CRIT-1`, `ALM-CRIT-2`, `ALM-MIN-5` | **Clôture conditionnelle acquise** — réserve : test positif `S3` | `812f2cf`, `5dda40b`, `fe57c73` |
 
 - **CH-2** : le cerveau est écrivain exclusif de `input_text.alarme_raison` ; code mort retiré.
-- **CH-6** : clavier PIN opérant (armement + désarmement validés terrain), plus de notification « badge inconnu » sur saisie PIN. Résidus non bloquants : champ « badge » porteur de la valeur PIN (**R1**, cosmétique) ; flux **badge RFID sans évènement observable** (**R2**, observation distincte d'`ALM-CRIT-3`).
-- **CH-1** : arbitrage A1+B2+C1 appliqué (ouvrants d'entrée hors chemin immédiat ; `timer.finished` = preuve d'intrusion ; chemin sonore unique). Validé statiquement ; **scénarios terrain S1–S8 non encore exécutés**.
+- **CH-6** : clavier PIN opérant (armement + désarmement validés terrain), plus de notification « badge inconnu » sur saisie PIN. Un armement clavier en **présence active** est immédiatement suivi d'un **désarmement par la logique de présence** — comportement **attendu**, non un échec du flux clavier. Résidus non bloquants : champ « badge » porteur de la valeur PIN (**R1**, cosmétique) ; flux **badge RFID sans évènement observable** (**R2**, observation distincte d'`ALM-CRIT-3`).
+- **CH-1** : arbitrage A1+B2+C1 appliqué (ouvrants d'entrée hors chemin immédiat ; `timer.finished` = preuve d'intrusion ; chemin sonore unique). **Validé statiquement + protégé CI (`N5`-`N7`)** ; **garanties négatives observées en production** (entrée réelle sans faux positif `S1`, désarmement annulant le délai `S2`). **Réserve unique** : test positif d'expiration volontaire (`S3`).
 
 ---
 
@@ -26,7 +26,7 @@
 ### Constats ouverts
 
 **Critiques — corrigés au runtime, à confirmer en terrain :**
-- `ALM-CRIT-1`, `ALM-CRIT-2` *(CH-1)* — clôture définitive conditionnée à la validation terrain.
+- `ALM-CRIT-1` *(CH-1)* — garantie négative acquise (statique + CI + terrain observé). `ALM-CRIT-2` *(CH-1)* — détection à l'échéance non établie par l'observation : clôture définitive conditionnée au **seul test positif `S3`**.
 
 **Importants :**
 - `ALM-IMP-1` — babysitting demi-intégré *(CH-3)*
@@ -48,7 +48,7 @@
 
 ### Chantiers ouverts
 
-- **CH-1** — implémenté, **validation terrain en attente** (amont CH-2 satisfait).
+- **CH-1** — **clôture conditionnelle acquise** ; réserve unique : test positif `S3` (amont CH-2 satisfait).
 - **CH-3** — non démarré ; amont CH-2 satisfait ; **gated V3** (couverture présence babysitting).
 - **CH-4** — non démarré ; dépendance latérale CH-1 **satisfaite** ; **gated V4** (existence de `switch.sirene_alarm`).
 - **CH-5** — non démarré ; documentaire ; lots indépendants (DOC-2, MIN-6, MIN-3) + lots de réalignement contractuel en aval.
@@ -66,7 +66,7 @@
 
 ## 3. Classement par criticité (travail résiduel)
 
-1. 🔴 **Critique** — **validation terrain de CH-1** : seul critique non confirmé ; risque sécurité résiduel n°1 (voie d'entrée).
+1. 🔴 **Critique** — **test positif `S3` de CH-1** : seule garantie (positive, `ALM-CRIT-2`) non confirmée ; garanties négatives déjà acquises (statique + CI + terrain observé).
 2. 🟠 **Important** — **CH-4** (sirène, actionneur terminal) ; **CH-3** (babysitting, occupants vulnérables).
 3. 🟡 **Mineur** — MIN-1 (CH-3), MIN-2 (CH-4), MIN-3 / MIN-6 (CH-5), MIN-5 (CH-1, terrain).
 4. ⚪ **Documentaire** — DOC-1, DOC-2 + dettes nouvelles → CH-5.
@@ -76,7 +76,7 @@
 
 ## 4. Ordre recommandé des travaux
 
-1. **Préalable — validation terrain de CH-1** (scénarios S1–S8 déjà rédigés). Clôt `ALM-CRIT-1`/`CRIT-2`/`MIN-5` et fige la voie d'entrée. Coût faible, gain de criticité maximal.
+1. **Préalable — test positif `S3` de CH-1** (expiration volontaire du délai → `triggered` + sirène unique en mode test). Seul élément restant pour la clôture définitive ; les garanties négatives sont déjà acquises (statique + CI + terrain observé). Coût faible, gain de criticité maximal.
 2. **CH-4 — Sirène & feedback sonore** *(IMP-3, MIN-2)*. Continuité directe de la convergence sonore posée par CH-1 ; actionneur terminal ; défaut concret (entité d'extinction non définie). Préalable léger : **V4**.
 3. **CH-3 — Contextes humains** *(IMP-1, MIN-1)*. À débloquer via **V3** (couverture présence babysitting) ; amont CH-2 déjà satisfait.
 4. **CH-5 — Cohérence documentaire** *(DOC-1, DOC-2, MIN-3, MIN-6)*. Traiter tôt les **quick wins indépendants** (DOC-2, MIN-6, MIN-3) ; y rattacher les dettes nouvelles (en-tête `delai_entree_fin`, alignement contrats 50/51/60/70, dette §9, R1). Lots de réalignement contractuel **en aval** des chantiers runtime.
@@ -86,7 +86,7 @@
 
 ## 5. Synthèse
 
-Sur 6 chantiers : **CH-2 et CH-6 soldés**, **CH-1 implémenté** (terrain en attente), **CH-3 / CH-4 / CH-5 ouverts**. Le domaine **n'est pas clôturé**. La prochaine action à plus forte valeur est la **validation terrain de CH-1** ; le prochain chantier à engager est **CH-4**.
+Sur 6 chantiers : **CH-2 et CH-6 soldés**, **CH-1 en clôture conditionnelle acquise** (réserve : test positif `S3`), **CH-3 / CH-4 / CH-5 ouverts**. Le domaine **n'est pas clôturé**. La prochaine action à plus forte valeur est le **test positif `S3`** ; le prochain chantier à engager est **CH-4**.
 
 ---
 
