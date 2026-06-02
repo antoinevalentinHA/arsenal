@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # Résilience et gestion des défaillances
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/10_resilience_et_defaillances.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/10_resilience_et_defaillances.md`  
 Statut : **CRITIQUE — OPPOSABLE**  
 Périmètre : Résilience ECS
 

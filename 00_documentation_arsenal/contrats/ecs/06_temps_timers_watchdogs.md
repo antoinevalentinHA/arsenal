@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # Temps, timers et watchdogs
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/06_temps_timers_watchdogs.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/06_temps_timers_watchdogs.md`  
 Statut : **STRUCTURANT — OPPOSABLE**  
 Périmètre : Gestion du temps ECS
 
@@ -61,16 +61,26 @@ Timers `restore: true`
 
 Ils définissent :
 
-- une durée maximale absolue
-- une limite infranchissable
+- une durée maximale absolue de la **session de cycle** (verrou `input_boolean.ecs_cycle_en_cours`)
+- une limite infranchissable pour ce **verrou**, au terme de laquelle sa libération est garantie
+
+> Précision doctrinale (arbitrage rendu — voir
+> `00_documentation_arsenal/audits/02_arbitrages/ecs/arbitrage_watchdog_ecs.md`) :
+> la « durée maximale » et la « limite infranchissable » portent sur le **verrou de
+> cycle**, non sur l'exécution interne du script orchestrateur.
 
 ---
 
 ### 4.2 Invariants
 
-- aucun cycle ne survit à son watchdog
+- aucun **verrou** de cycle ne survit à son watchdog : à expiration, le rabaissement de la consigne et la libération unilatérale du verrou sont garantis (cf. `07` §6 — Watchdog terminal)
 - expiration = événement critique
 - déclenchement de procédures de sûreté
+
+> Le watchdog **borne le verrou**. Il **n'interrompt pas** le séquencement interne de
+> l'orchestrateur (`script.chauffage_ecs_cycle`) et ne l'empêche pas de poursuivre. La
+> doctrine « watchdog souverain sur le processus complet » est **rejetée** (arbitrage rendu) ;
+> le comportement runtime est la référence.
 
 ---
 

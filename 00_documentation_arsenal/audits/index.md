@@ -2,9 +2,6 @@
 
 ## Rapports
 
-### ECS
-- ecs/audit_ecs_domaine.md  _(audit complet du domaine ECS ; ECS-WD-1 requalifié — voir contre-expertise)_
-
 ### Bouclage
 - bouclage/audit_bouclage_ecs.md
 
@@ -23,9 +20,6 @@
 ### Voiture
 - voiture/audit_domaine_audi.md
 
-### Alarme
-- alarme/audit_alarme_rapport_officiel.md
-
 ## Arbitrages
 
 ### Température intérieure
@@ -37,15 +31,8 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ## Contre-expertises
 
-### ECS
-- ecs/contre_expertise_watchdog_ecs.md  _(ECS-WD-1 requalifié 🔴 Haute → INFIRMÉ comme violation ; lecture « cycle = script » invalidée ; doctrine watchdog = filet de sûreté terminal ; reliquat ECS-WD-2 versé au backlog)_
-
 ### Vacances
 - vacances/contre_expertise_audit_vacances.md
-
-### Alarme
-- alarme/contre_expertise_CH6_alarme.md  _(CH-6 requalifié — cause initiale « trigger perdu » infirmée)_
-- alarme/contre_expertise_IMP1_alarme.md  _(ALM-IMP-1 requalifié Mineur — facette « armement automatique en babysitting » invalidée par le runtime ; CH-3 dissous, fusionné dans CH-5)_
 
 ## Plans d'action
 
@@ -60,33 +47,17 @@ _(emplacement réservé — aucun document à ce jour)_
 - vacances/plan_action_vacances_chauffage_effectivite.md
 - vacances/etape_A_reecriture_contractuelle_vacances_chauffage.md
 
-### Alarme
-- alarme/plan_action_alarme.md
-
 ## Chantiers
 
-> **Chantiers documentés réellement ouverts : VAC-IMP-5.** Les entrées Climatisation et Transverses ci-dessous sont conservées pour la traçabilité, avec leur statut réel (livré / analyse) ; elles ne correspondent pas à du travail restant. Domaine **Alarme** : CH-2, CH-6 et CH-4 soldés, **CH-1 en clôture conditionnelle acquise** (réserve : test positif `S3`) ; chantier restant CH-5 (CH-3 dissous → fusionné dans CH-5 après contre-expertise d'`ALM-IMP-1`) (cf. § Clôtures / État du domaine Alarme). Domaine **ECS** : backlog seul, **aucun chantier ouvert** (cf. § État du domaine ECS).
-
-### ECS
-- ecs/backlog_ecs.md  _(backlog priorisé ECS — aucun chantier ouvert ; ECS-WD-2 bloqué sur arbitrage doctrinal)_
-
 ### Climatisation
-- climatisation/chantier_observabilite_cool.md  _(LIVRÉ — v15.8.4 ; conservé comme dossier de conception / as-built)_
+- climatisation/chantier_observabilite_cool.md
 
 ### Transverses
-- transverses/hysteresis_5_domaines.md  _(analyse transverse — alimente le backlog ; aucun chantier ouvert)_
+- transverses/hysteresis_5_domaines.md
 
 ### Vacances
 - vacances/chantier_vac_imp_5_desinfection_retour.md  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
 - vacances/rapport_observation_vac_imp_5.md  _(observation runtime — cause requalifiée)_
-
-### Alarme
-- alarme/etat_post_CH6.md  _(note d'état — synthèse post-CH-6 : soldé / reste / ordre recommandé)_
-- alarme/backlog_alarme.md  _(backlog priorisé — alimente les chantiers ; CH-2 et CH-6 soldés, CH-1 clôture conditionnelle acquise)_
-- alarme/dossier_conception_CH1_alarme.md  _(CH-1 — IMPLÉMENTÉ ; dossier de conception, arbitrage A1+B2+C1)_
-- alarme/plan_implementation_CH1_alarme.md  _(CH-1 — IMPLÉMENTÉ ; plan d'implémentation, runtime `812f2cf` / `5dda40b` / `fe57c73` ; clôture conditionnelle acquise — réserve test positif `S3`)_
-- alarme/dossier_conception_CH2_alarme.md  _(CH-2 — SOLDÉ ; dossier de conception)_
-- alarme/plan_implementation_CH2_alarme.md  _(CH-2 — SOLDÉ ; plan d'implémentation, runtime `dc8667e` / `99cbc0b`)_
 
 ## Clôtures
 
@@ -94,19 +65,7 @@ _(emplacement réservé — aucun document à ce jour)_
 - vacances/cloture_partielle_vacances.md  _(clôture partielle — domaine NON clôturé)_
 - vacances/cloture_phase_traitement_vacances.md  _(clôture de phase — Lots 1 à 5)_
 
-### Alarme
-- alarme/cloture_ch2_alarme.md  _(clôture de chantier CH-2 — domaine NON clôturé)_
-- alarme/cloture_ch1_alarme.md  _(clôture de chantier CH-1 — clôture conditionnelle acquise, réserve test positif `S3` (cf. avenant §10) — domaine NON clôturé)_
-- alarme/cloture_ch6_alarme.md  _(clôture de chantier CH-6 — ALM-CRIT-3 résolu et validé terrain — domaine NON clôturé)_
-- alarme/cloture_ch4_alarme.md  _(clôture de chantier CH-4 — **SOLDÉ** : ALM-MIN-2 validé terrain (réserve levée, cf. avenant §10), ALM-IMP-3 résidu runtime résolu — domaine NON clôturé)_
-
 ---
-
-### État du domaine ECS
-Premier audit du domaine posé (`f6efd6a`). Baseline CI **conforme** (4 validateurs). **ECS-WD-1** (watchdog) **requalifié par contre-expertise** : 🔴 Haute → **INFIRMÉ comme violation** — doctrine réelle = watchdog filet de sûreté terminal (rabaissement + libération du verrou), runtime conforme à `07` §6 ; reste une **dette documentaire** sur `06` §4.2 (désambiguïsation « cycle », **gated** sur arbitrage). **ECS-WD-2** (cohérence orchestrateur/watchdog, non contractuel) **ouvert**, versé au backlog, **bloqué sur arbitrage doctrinal (a)/(b)**. Autres constats (`ECS-DESINF-1/2`, `ECS-DOC-1/2`, `ECS-CI-1/2/3`) **confirmés**, backlog non priorisé ; implémentation désinfection-retour **conforme** aux invariants `09` (couverture CI manquante). **Aucun chantier ouvert. Domaine non clôturé.**
 
 ### État du domaine Vacances
 Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.
-
-### État du domaine Alarme
-Chantier **CH-2 soldé** (`ALM-IMP-2`, `ALM-MIN-4`) — runtime commité (`dc8667e`, `99cbc0b`), rechargé sans erreur ; `input_text.alarme_raison` écrit **exclusivement** par le cerveau. Chantier **CH-1 en clôture conditionnelle acquise** (`ALM-CRIT-1`, `ALM-CRIT-2`, `ALM-MIN-5`) — commits `812f2cf` / `5dda40b` / `fe57c73`, arbitrage **A1+B2+C1** ; **validé statiquement + protégé CI (`N5`-`N7`) + garanties négatives observées en production** (entrée réelle sans faux positif, désarmement annulant le délai). Réserve unique pour clôture définitive : **test positif d'expiration volontaire du délai (`S3`)** — la détection à l'échéance (`ALM-CRIT-2`) n'est pas établie par l'observation passive. Chantier **CH-6 soldé** (`ALM-CRIT-3`) — correctifs runtime `139640b` / `5f56ee7`, **validé terrain** (armement et désarmement PIN OK, plus de notification « badge inconnu ») ; constat **résolu**. Résidus documentés non bloquants : valeur PIN exposée dans le champ historiquement « badge » (cosmétique) ; **flux badge RFID sans évènement observable** — observation distincte d'`ALM-CRIT-3`, à investiguer séparément (cf. clôture CH-6). **Domaine non clôturé** : clôture définitive de CH-1 conditionnée à la validation terrain (`S3`) ; **CH-4 soldé** (`ALM-MIN-2` validé terrain `5892d35`, réserve levée ; `ALM-IMP-3` résidu runtime résolu `476116e` ; doc canonique documentée — 5-DOC-a) ; chantier restant **CH-5** (documentaire ; lots **5-DOC** (contrat 70 + en-tête `delai_entree_fin`) et **5-DEC** (DOC-2 : contrat 80 réaligné ; MIN-3 : durée 3 min) réalisés) ; **CH-3 dissous** (contre-expertise runtime : `ALM-IMP-1` requalifié Mineur — facette armement invalidée — et `ALM-MIN-1` reversés à CH-5).

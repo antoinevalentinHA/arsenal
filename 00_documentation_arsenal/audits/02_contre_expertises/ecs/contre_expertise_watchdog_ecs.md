@@ -1,5 +1,7 @@
 # Contre-expertise — ECS-WD-1 (watchdog ECS : doctrine et survie du cycle)
 
+> **🧷 AVENANT (arbitrage rendu).** La doctrine est désormais **officiellement arrêtée** : *« le watchdog ECS borne le verrou »* (doctrine (a)), runtime déclaré référence, doctrine (b) « souverain sur le processus » **rejetée** — voir `00_documentation_arsenal/audits/02_arbitrages/ecs/arbitrage_watchdog_ecs.md`. Conséquences : `ECS-WD-1` **clos** (dette `06` §4.2 résorbée par réalignement) ; `ECS-WD-2` **requalifié comportement assumé** (plus un défaut) ; **aucun chantier runtime watchdog**. Le corps ci-dessous est conservé verbatim comme acte d'analyse archivé.
+
 > **Statut :** contre-expertise de constat — `ECS-WD-1` **requalifié 🔴 Haute → INFIRMÉ comme violation de contrat** ; lecture « cycle = script orchestrateur » **invalidée** ; doctrine réelle établie = **watchdog = filet de sûreté terminal** (rabaissement + libération du verrou) ; dette résiduelle 🟡 documentaire sur `06` §4.2 (gated) + constat distinct `ECS-WD-2` (cohérence orchestrateur/watchdog) versé au backlog ; domaine **ECS NON clôturé**.
 > **Domaine :** `ecs` — orchestration de cycle thermique, sécurité active, gestion du temps.
 > **Destination d'archivage :** `00_documentation_arsenal/audits/02_contre_expertises/ecs/contre_expertise_watchdog_ecs.md`

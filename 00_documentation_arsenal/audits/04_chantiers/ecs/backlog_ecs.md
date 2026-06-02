@@ -16,22 +16,19 @@
 - **Effort relatif** : surface technique + conception (`faible` · `moyen` · `élevé`).
 - **ROI** (qualitatif) : bénéfice × levier, rapporté à effort × risque (`élevé` · `moyen` · `faible`).
 
-### Gate doctrinale en amont
+### Décision doctrinale rendue (gate levée)
 
-> **`ECS-WD-2` conditionne tout traitement du périmètre watchdog.** Tant que l'architecte n'a pas tranché entre doctrine (a) « le watchdog borne le verrou » (statu quo → simple désambiguïsation documentaire `06` §4.2) et (b) « le watchdog borne le processus complet » (→ chantier d'architecture), aucune fiche du registre watchdog n'est actionnable. Cf. `contre_expertise_watchdog_ecs.md` §7.
+> **Arbitrage rendu — doctrine (a) « le watchdog borne le verrou ».** Le runtime est déclaré référence ; la doctrine (b) « souverain sur le processus complet » est **rejetée** ; **aucun chantier runtime watchdog**. Le périmètre watchdog est clos en gouvernance. Voir `00_documentation_arsenal/audits/02_arbitrages/ecs/arbitrage_watchdog_ecs.md`. Le volet documentaire (`06` §4.2) est réaligné par le lot de clôture doctrinale.
 
 ---
 
 ## 🗂️ Fiches
 
-### ECS-WD-2 — Cohérence orchestrateur / watchdog *(post-contre-expertise)*
+### ECS-WD-2 — Cohérence orchestrateur / watchdog *(CLOS — comportement assumé)*
 
-- **Constat** : l'orchestrateur n'est pas *watchdog-aware* ; à l'étape 7 (boost) il peut ré-appliquer une consigne haute après que le watchdog a rabaissé à 10 °C et libéré le verrou (cycle désinfection > 30 min). Non contractuel, non bloquant.
-- **Bénéfice attendu** : **moyen** — cohérence de la fin de cycle en cas d'expiration watchdog ; supprime la fenêtre « consigne haute après dernier rempart ».
-- **Risque de régression** : **moyen** — touche la séquence d'exécution du cycle (boost / fin) ; transition sensible.
-- **Effort relatif** : **moyen à élevé** — selon doctrine retenue (garde légère dans l'orchestrateur vs refonte de souveraineté watchdog).
-- **Prérequis** : **arbitrage doctrinal (a)/(b) rendu** ; alignement éventuel de `06` §4.2.
-- **ROI** : **à déterminer après arbitrage.**
+- **Statut** : **clos par arbitrage** (`arbitrage_watchdog_ecs.md`). Le runtime étant déclaré référence sous doctrine (a), la ré-application possible d'une consigne haute après passage du watchdog (cycle désinfection > 30 min) **n'est plus un défaut** mais une **caractéristique assumée** du domaine.
+- **Volet runtime (`ECS-WD-2b`)** : **CADUC** — doctrine (b) rejetée, aucun chantier runtime autorisé.
+- **Réouverture** : conditionnée à une **preuve forte** (occurrence réelle observée d'une désinfection > 30 min produisant l'effet), non à une hypothèse théorique. Tracé pour éviter une ré-ouverture en audit.
 
 ### ECS-DESINF-1 — Couverture CI du sous-système désinfection-retour
 
@@ -50,10 +47,10 @@
 - **Effort relatif** : **faible** — garde CI sur la cardinalité du select, ou trigger plus robuste.
 - **ROI** : **moyen** — préventif, peu coûteux.
 
-### ECS-DOC — Hygiène documentaire du corpus contrats ECS
+### ECS-DOC — Hygiène documentaire du corpus contrats ECS  *(TRAITÉ — lot de clôture doctrinale)*
 
-- **ECS-DOC-1** : corriger en lot les en-têtes `Chemin :` (`…/ecs/` → `…/contrats/ecs/`), 12+ fichiers.
-- **ECS-DOC-2** : restaurer l'extension `.md` de `10_resilience_et_defaillances` (renommage) — impact réel sur l'indexation `*.md`.
+- **ECS-DOC-1** *(traité)* : en-têtes `Chemin :` réalignés `…/ecs/` → `…/contrats/ecs/` sur les **11 fichiers** concernés.
+- **ECS-DOC-2** *(traité)* : extension `.md` restaurée pour `10_resilience_et_defaillances` (option 1 — fichier unique ; migration dossier non relancée). Impact réel sur l'indexation `*.md` résorbé.
 - **Bénéfice attendu** : **moyen** — fiabilité des outils d'indexation / conversion documentaire.
 - **Risque de régression** : **nul** (documentaire).
 - **Effort relatif** : **faible**.
@@ -71,12 +68,14 @@
 
 ---
 
-## 🧭 Ordre indicatif (hors gate watchdog)
+## 🧭 Ordre indicatif (post-arbitrage)
 
-1. **ECS-DOC** (trivial, sans condition, débloque l'indexation).
-2. **ECS-DESINF-1** (fort levier de protection, faible risque).
-3. **ECS-CI** (hygiène de chaîne).
-4. **ECS-DESINF-2** (préventif).
-5. **ECS-WD-2** — **bloqué** jusqu'à l'arbitrage doctrinal (a)/(b).
+1. **ECS-DOC** — ✅ traité (lot de clôture doctrinale).
+2. **ECS-WD** — ✅ résolu par arbitrage (doctrine (a)) ; `ECS-WD-2` clos (comportement assumé), `ECS-WD-2b` caduc.
+3. **ECS-DESINF-1** (fort levier de protection, faible risque) — reste à traiter via le chantier CI.
+4. **ECS-CI** (hygiène de chaîne) — reste à traiter via le chantier CI.
+5. **ECS-DESINF-2** *(variante garde CI uniquement)* — préventif, dans le chantier CI.
+
+> Reliquat actionnable = un seul **chantier « Durcissement CI ECS »** (`ECS-DESINF-1`, `ECS-DESINF-2` garde, `ECS-CI-1/2/3`), distinct et ultérieur. Aucun item runtime ouvert.
 
 *Backlog ECS. Acte documentaire — aucun patch, aucune correction. Domaine ECS non clôturé.*

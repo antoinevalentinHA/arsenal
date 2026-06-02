@@ -48,7 +48,7 @@ check_bouclage        → CONFORME (T01–T12)
 
 ### 🔴 ECS-WD-1 — Watchdog « absolu » vs orchestrateur (mode désinfection)
 
-> **⚠️ CONSTAT REQUALIFIÉ PAR CONTRE-EXPERTISE.** La qualification « violation de contrat / 🔴 Haute » ci-dessous est celle de l'audit initial. Elle a été **infirmée** : voir `audits/02_contre_expertises/ecs/contre_expertise_watchdog_ecs.md`. Statut final : pas de violation de contrat ; dette documentaire 🟡 (`06` §4.2 ambigu) + question de cohérence distincte `ECS-WD-2`. Le présent paragraphe est conservé tel quel pour traçabilité.
+> **⚠️ CONSTAT CLOS PAR ARBITRAGE.** La qualification « violation de contrat / 🔴 Haute » ci-dessous est celle de l'audit initial. Elle a été **infirmée** par la contre-expertise (`audits/02_contre_expertises/ecs/contre_expertise_watchdog_ecs.md`), puis **tranchée par arbitrage rendu** (`audits/02_arbitrages/ecs/arbitrage_watchdog_ecs.md`) : doctrine (a) « le watchdog borne le verrou » officielle, runtime = référence, doctrine (b) rejetée. Statut final : **`ECS-WD-1` clos** (dette `06` §4.2 résorbée par réalignement) ; **`ECS-WD-2` requalifié comportement assumé** (non-défaut) ; aucun chantier runtime. Le présent paragraphe est conservé tel quel pour traçabilité.
 
 **Énoncé initial.** `06_temps_timers_watchdogs.md` §4.1/§4.2 qualifie le watchdog de « durée maximale absolue », « limite infranchissable », « aucun cycle ne survit à son watchdog » ; hiérarchie §8 « absolue ». Or :
 
