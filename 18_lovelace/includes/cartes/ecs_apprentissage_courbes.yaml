@@ -7,7 +7,7 @@ cards:
   # 03_exceptions §graphes) — non décisionnelles.
   # ----------------------------------------------------------
   - type: custom:mini-graph-card
-    name: 🧠 Trajectoire des offsets
+    name: 📈 Trajectoire des offsets
     icon: mdi:tune-variant
     entities:
       - entity: input_number.ecs_off_normal

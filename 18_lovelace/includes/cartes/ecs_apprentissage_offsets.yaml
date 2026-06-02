@@ -1,7 +1,7 @@
 type: markdown
 title: null
 content: |
-  ### 🧠 Apprentissage des offsets — état
+  ### 🔁 Apprentissage des offsets — état
 
   {% set auto = states('input_boolean.ecs_autocorrect_active') %}
   {% if auto == 'on' %}
@@ -30,5 +30,3 @@ content: |
   {% else %}
   _Aucun ajustement enregistré._
   {% endif %}
-
-  > Lecture seule. Modification des offsets : dashboard Réglages ECS.

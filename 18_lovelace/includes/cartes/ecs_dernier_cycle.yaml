@@ -50,10 +50,4 @@ content: |
 
   **Cycle validé** : {{ valide | upper }}
 
-  {% set ajust = states('input_text.ecs_dernier_ajustement') %}
-  {% if ajust not in ['unknown','unavailable','none','', None] %}
-  **Dernier ajustement offset**  
-  {{ ajust }}
-  {% endif %}
-
   {% endif %}

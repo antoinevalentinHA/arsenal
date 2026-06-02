@@ -25,7 +25,7 @@ views:
           ########################################################
           - type: custom:button-card
             template: section_header
-            name: 🚿 ECS – Données internes
+            name: 🚿 Données internes
 
           - type: custom:button-card
             template: ecs_chauffe_planifiee_status
@@ -37,7 +37,7 @@ views:
           ########################################################
           - type: custom:button-card
             template: section_header
-            name: 🧠 ECS – Apprentissage des offsets
+            name: 🔁 Apprentissage des offsets
 
           - !include ../../includes/cartes/ecs_apprentissage_offsets.yaml
 
