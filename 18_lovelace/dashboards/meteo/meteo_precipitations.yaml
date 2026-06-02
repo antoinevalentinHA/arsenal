@@ -43,7 +43,7 @@ views:
 
               - type: custom:button-card
                 template: carte_precipitations_seuils_variables
-                entity: sensor.pluviometre_precipitation_aujourd_hui
+                entity: sensor.pluie_journaliere
                 name: Aujourd’hui
                 variables:
                   seuil_faible: 1
