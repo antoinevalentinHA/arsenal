@@ -60,7 +60,7 @@ _(emplacement réservé — aucun document à ce jour)_
 ## Chantiers
 
 ### ECS
-- ecs/backlog_ecs.md  _(backlog ECS — watchdog résolu par arbitrage ; ECS-DOC traité ; reliquat = chantier « Durcissement CI ECS » (étendu OFF-5) + observabilité OFF-1 ; non ouverts)_
+- ecs/backlog_ecs.md  _(backlog ECS — watchdog résolu par arbitrage ; ECS-DOC + ECS-OFF-1 réalisés ; reliquat = chantier « Durcissement CI ECS » (étendu OFF-5), non ouvert)_
 
 ### Climatisation
 - climatisation/chantier_observabilite_cool.md
@@ -81,7 +81,7 @@ _(emplacement réservé — aucun document à ce jour)_
 ---
 
 ### État du domaine ECS
-**Watchdog clos par arbitrage** (doctrine (a) « borne le verrou » ; runtime = référence ; (b) rejetée ; `ECS-WD-1` clos, `ECS-WD-2` comportement assumé). **Hygiène doc traitée** (`ECS-DOC-1/2`). **Audit Offsets consolidé** : mécanisme jugé robuste, stable, convergent et borné ; constats `ECS-OFF-*` répartis ainsi — **ouvert** : OFF-1 (observabilité, backlog) ; **dettes documentaires résorbées** (contrat `11`) : OFF-2 (§3.3), OFF-4 (§6.1), OFF-6 (§11), OFF-8 (§11) ; **risques assumés** : OFF-3, OFF-7 (contrat `11` §11) ; **futur chantier** : OFF-5 (→ « Durcissement CI ECS », étendu). Reliquats actionnables : chantier **Durcissement CI ECS** (DESINF-1, DESINF-2 garde, CI-1/2/3, + OFF-5) et **Observabilité apprentissage ECS** (OFF-1) — **aucun ouvert**, sans risque runtime. **Domaine non clôturé.**
+**Watchdog clos par arbitrage** (doctrine (a) « borne le verrou » ; runtime = référence ; (b) rejetée ; `ECS-WD-1` clos, `ECS-WD-2` comportement assumé). **Hygiène doc traitée** (`ECS-DOC-1/2`). **Audit Offsets consolidé** : mécanisme jugé robuste, stable, convergent et borné ; constats `ECS-OFF-*` — **résorbé** : OFF-1 (observabilité réalisée : historisation `recorder` + section « Apprentissage des offsets » du dashboard Diagnostics) ; **dettes documentaires résorbées** (contrat `11`) : OFF-2 (§3.3), OFF-4 (§6.1), OFF-6 (§11), OFF-8 (§11) ; **risques assumés** (désormais surveillables via les courbes OFF-1) : OFF-3, OFF-7 (contrat `11` §11) ; **futur chantier** : OFF-5 (→ « Durcissement CI ECS », étendu). Reliquat actionnable : **un seul** chantier **Durcissement CI ECS** (DESINF-1, DESINF-2 garde, CI-1/2/3, + OFF-5) — **non ouvert**, sans risque runtime. **Domaine non clôturé.**
 
 ### État du domaine Vacances
 Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.

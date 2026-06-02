@@ -226,7 +226,7 @@ Doivent être lisibles :
 | Offset ciblé | `input_number.ecs_off_<bucket>` |
 | Trace dernier ajustement | `input_text.ecs_dernier_ajustement` |
 
-> Portée de l'observabilité (réf. audit Offsets, `ECS-OFF-1`) : ces observables ne sont lisibles qu'en **valeur courante**. Ils ne sont **pas historisés** (`recorder.yaml` en liste blanche, sans glob ni domaine ; aucune de ces entités n'y figure) et la trace `ecs_dernier_ajustement` ne conserve que le **dernier** ajustement. La trajectoire d'apprentissage n'est donc pas auditable depuis le système. Angle mort ouvert (backlog observabilité).
+> Portée de l'observabilité (réf. audit Offsets, `ECS-OFF-1` — **résorbé**) : ces observables sont lisibles en **valeur courante** et **historisés** (`recorder.yaml`, section ECS : `ecs_off_*`, `ecs_temperature_max_reelle_figee`, `ecs_duree_dernier_cycle_figee`, `ecs_autocorrect_active`, `ecs_dernier_ajustement`, `ecs_resume_dernier_cycle_fige`). La **trajectoire d'apprentissage** est visualisée dans le dashboard Diagnostics ECS, section « Apprentissage des offsets » (état lecture seule + courbes offsets et consigne/Tmax). La trajectoire est donc auditable depuis le système ; l'historique se densifie à mesure que les cycles s'accumulent. Chantier `ECS-OFF-1` réalisé (cf. backlog ECS).
 
 ---
 

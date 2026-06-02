@@ -1,5 +1,7 @@
 # Audit Arsenal — ECS / Auto-ajustement des offsets
 
+> **🧷 AVENANT (clôture ECS-OFF-1).** Le constat **`ECS-OFF-1`** (trajectoire d'apprentissage non observable) est **RÉSORBÉ** : chantier d'observabilité réalisé et committé — historisation `recorder` (offsets, données figées, `autocorrect_active`, traces) + section « Apprentissage des offsets » dans le dashboard Diagnostics ECS (synthèse lecture seule + courbes). Justifié par l'état réel du dépôt, non par l'intention. Les §5 et §6 ci-dessous sont conservés **verbatim** comme snapshot d'audit (état au moment de l'audit) ; ils ne sont pas réécrits. Autres constats inchangés : OFF-5 ouvert (→ chantier CI) ; risques assumés OFF-3/OFF-7 (désormais surveillables via les courbes) ; dettes documentaires OFF-2/4/6/8 résorbées (contrat `11`).
+
 > Type : rapport d'audit ciblé — version d'archivage
 > Portée : mécanisme d'apprentissage des offsets ECS (automation `10250000000019`, script `ecs_autocorrect_offsets`, helpers `ecs_off_*`, données figées de cycle, traçabilité, contrat `11_ajustement_des_offsets`).
 > Mode : lecture seule — aucun runtime, contrat, YAML, CI ni UI modifié ; aucun patch produit.

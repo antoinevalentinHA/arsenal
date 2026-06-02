@@ -67,14 +67,13 @@
 - **Effort relatif** : **faible**.
 - **ROI** : **moyen à élevé**.
 
-### ECS-OFF-1 — Observabilité de la trajectoire d'apprentissage *(audit Offsets)*
+### ECS-OFF-1 — Observabilité de la trajectoire d'apprentissage *(CLOS — réalisé)*
 
-- **Constat** : les offsets `ecs_off_*`, la trace `ecs_dernier_ajustement` et les données figées ne sont **pas historisés** (`recorder.yaml` en liste blanche, sans glob). Valeur courante visible, **trajectoire invisible** → dérive lente / biais d'apprentissage indétectables depuis le système.
-- **Bénéfice attendu** : **élevé** — rend l'apprentissage auditable ; condition de détection des dérives lentes.
-- **Risque de régression** : **nul** — purement additif (historisation), aucun changement de comportement.
-- **Effort relatif** : **faible** — ajout d'entrées au `recorder`.
-- **Nature** : famille **observabilité** (distincte du chantier CI).
-- **ROI** : **élevé**.
+- **Statut** : **résorbé** — chantier d'observabilité livré et committé. Justifié par l'état réel du dépôt.
+- **Livré** : historisation `recorder` (`ecs_off_*`, `ecs_temperature_max_reelle_figee`, `ecs_duree_dernier_cycle_figee`, `ecs_autocorrect_active`, `ecs_dernier_ajustement`, `ecs_resume_dernier_cycle_fige`) ; cartes `ecs_apprentissage_offsets.yaml` (synthèse lecture seule) et `ecs_apprentissage_courbes.yaml` (trajectoire offsets + consigne/Tmax) ; section « Apprentissage des offsets » dans `dashboards/diagnostics/ecs.yaml`.
+- **Constat d'origine** (conservé pour traçabilité) : offsets et données d'apprentissage non historisés → trajectoire invisible, dérive lente / biais indétectables.
+- **Effet de bord** : les risques assumés `ECS-OFF-3` (transitoire d'aberration) et `ECS-OFF-7` (convergence lente) deviennent **surveillables** sur les courbes.
+- **Réserve** : aucune (l'historique se densifie naturellement avec les cycles ; propriété runtime inhérente, sans action documentaire).
 
 ### Risques assumés *(hors backlog actionnable — réf. contrat `11` §11)*
 
@@ -95,11 +94,12 @@
 3. **ECS-DESINF-1** (fort levier de protection, faible risque) — reste à traiter via le chantier CI.
 4. **ECS-CI** + **ECS-OFF-5** (hygiène de chaîne + verrouillage des paramètres d'apprentissage `11` §10) — chantier CI.
 5. **ECS-DESINF-2** *(variante garde CI uniquement)* — préventif, dans le chantier CI.
-6. **ECS-OFF-1** (observabilité de l'apprentissage) — famille distincte, additive, sans risque runtime.
+6. **ECS-OFF-1** (observabilité de l'apprentissage) — ✅ **réalisé** (recorder + cartes + section diagnostics).
 
-> Reliquats actionnables = **deux familles**, distinctes et ultérieures, sans item runtime ouvert :
+> Reliquat actionnable = **un seul chantier**, distinct et ultérieur, sans item runtime ouvert :
 > - **Chantier « Durcissement CI ECS »** : `ECS-DESINF-1`, `ECS-DESINF-2` (garde), `ECS-CI-1/2/3`, **+ `ECS-OFF-5`**.
-> - **Observabilité apprentissage ECS** : `ECS-OFF-1` (historisation `recorder`).
+>
+> Réalisés : observabilité `ECS-OFF-1`, hygiène doc `ECS-DOC-1/2`, watchdog (arbitrage).
 > Risques assumés (`ECS-OFF-3`, `ECS-OFF-7`, `ECS-WD-2`) et dettes documentaires (`ECS-OFF-2/4/6/8`) : voir ci-dessus et contrat `11` §11.
 
 *Backlog ECS. Acte documentaire — aucun patch, aucune correction. Domaine ECS non clôturé.*
