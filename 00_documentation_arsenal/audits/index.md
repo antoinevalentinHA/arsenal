@@ -2,6 +2,9 @@
 
 ## Rapports
 
+### ECS
+- ecs/audit_ecs_domaine.md  _(audit complet du domaine ECS ; ECS-WD-1 requalifié — voir contre-expertise)_
+
 ### Bouclage
 - bouclage/audit_bouclage_ecs.md
 
@@ -34,6 +37,9 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ## Contre-expertises
 
+### ECS
+- ecs/contre_expertise_watchdog_ecs.md  _(ECS-WD-1 requalifié 🔴 Haute → INFIRMÉ comme violation ; lecture « cycle = script » invalidée ; doctrine watchdog = filet de sûreté terminal ; reliquat ECS-WD-2 versé au backlog)_
+
 ### Vacances
 - vacances/contre_expertise_audit_vacances.md
 
@@ -59,7 +65,10 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ## Chantiers
 
-> **Chantiers documentés réellement ouverts : VAC-IMP-5.** Les entrées Climatisation et Transverses ci-dessous sont conservées pour la traçabilité, avec leur statut réel (livré / analyse) ; elles ne correspondent pas à du travail restant. Domaine **Alarme** : CH-2, CH-6 et CH-4 soldés, **CH-1 en clôture conditionnelle acquise** (réserve : test positif `S3`) ; chantier restant CH-5 (CH-3 dissous → fusionné dans CH-5 après contre-expertise d'`ALM-IMP-1`) (cf. § Clôtures / État du domaine Alarme).
+> **Chantiers documentés réellement ouverts : VAC-IMP-5.** Les entrées Climatisation et Transverses ci-dessous sont conservées pour la traçabilité, avec leur statut réel (livré / analyse) ; elles ne correspondent pas à du travail restant. Domaine **Alarme** : CH-2, CH-6 et CH-4 soldés, **CH-1 en clôture conditionnelle acquise** (réserve : test positif `S3`) ; chantier restant CH-5 (CH-3 dissous → fusionné dans CH-5 après contre-expertise d'`ALM-IMP-1`) (cf. § Clôtures / État du domaine Alarme). Domaine **ECS** : backlog seul, **aucun chantier ouvert** (cf. § État du domaine ECS).
+
+### ECS
+- ecs/backlog_ecs.md  _(backlog priorisé ECS — aucun chantier ouvert ; ECS-WD-2 bloqué sur arbitrage doctrinal)_
 
 ### Climatisation
 - climatisation/chantier_observabilite_cool.md  _(LIVRÉ — v15.8.4 ; conservé comme dossier de conception / as-built)_
@@ -92,6 +101,9 @@ _(emplacement réservé — aucun document à ce jour)_
 - alarme/cloture_ch4_alarme.md  _(clôture de chantier CH-4 — **SOLDÉ** : ALM-MIN-2 validé terrain (réserve levée, cf. avenant §10), ALM-IMP-3 résidu runtime résolu — domaine NON clôturé)_
 
 ---
+
+### État du domaine ECS
+Premier audit du domaine posé (`f6efd6a`). Baseline CI **conforme** (4 validateurs). **ECS-WD-1** (watchdog) **requalifié par contre-expertise** : 🔴 Haute → **INFIRMÉ comme violation** — doctrine réelle = watchdog filet de sûreté terminal (rabaissement + libération du verrou), runtime conforme à `07` §6 ; reste une **dette documentaire** sur `06` §4.2 (désambiguïsation « cycle », **gated** sur arbitrage). **ECS-WD-2** (cohérence orchestrateur/watchdog, non contractuel) **ouvert**, versé au backlog, **bloqué sur arbitrage doctrinal (a)/(b)**. Autres constats (`ECS-DESINF-1/2`, `ECS-DOC-1/2`, `ECS-CI-1/2/3`) **confirmés**, backlog non priorisé ; implémentation désinfection-retour **conforme** aux invariants `09` (couverture CI manquante). **Aucun chantier ouvert. Domaine non clôturé.**
 
 ### État du domaine Vacances
 Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.
