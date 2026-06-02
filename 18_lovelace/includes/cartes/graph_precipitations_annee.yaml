@@ -37,14 +37,15 @@ apex_config:
     show: false
 
 series:
-  - entity: sensor.pluie_hebdomadaire
+  - entity: sensor.pluie_semaine
     name: Pluie (mm)
     type: column
     color: "rgba(144, 202, 249, 0.9)"
     stroke_width: 0
-    group_by:
-      duration: 1w
-      func: max
+    statistics:
+      type: change
+      period: week
+      align: end
 
 show:
   loading: false

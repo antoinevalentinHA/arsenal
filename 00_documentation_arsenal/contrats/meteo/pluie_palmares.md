@@ -134,7 +134,7 @@ construite via `utility_meter` en cycle `daily` sur `sensor.pluie_total_local`.
 
 **Prérequis V1.** Si `sensor.pluie_journaliere` n'existe pas au moment de la mise en œuvre, sa création est un prérequis bloquant. Le palmarès ne doit pas être mis en service sans sa source canonique.
 
-**Note sur la source amont.** Le contrat ne prescrit pas la `state_class` de `sensor.pluie_total_local`. Il prescrit seulement que `sensor.pluie_journaliere` soit construit par `utility_meter` cycle `daily` sur cette source, en respectant le schéma de la chaîne hebdomadaire existante (`sensor.pluie_hebdomadaire`). Toute modification de l'amont sort du périmètre du présent contrat et doit faire l'objet d'une instruction dédiée.
+**Note sur la source amont.** Le contrat ne prescrit pas la `state_class` de `sensor.pluie_total_local`. Il prescrit seulement que `sensor.pluie_journaliere` soit construit par `utility_meter` cycle `daily` sur cette source, en respectant le schéma de la chaîne hebdomadaire existante (`sensor.pluie_semaine`, instance `utility_meter` cycle `weekly`). Toute modification de l'amont sort du périmètre du présent contrat et doit faire l'objet d'une instruction dédiée.
 
 Déclaration `utility_meter` attendue :
 
@@ -424,7 +424,7 @@ Les éléments suivants sont explicitement exclus du périmètre V1 :
 
 Les évolutions suivantes sont identifiées comme pistes naturelles, **sans aucune valeur normative** dans la V1 :
 
-- **Cycle hebdomadaire** : instance `pluie_hebdomadaire` sur `sensor.pluie_hebdomadaire` existant. Sans changement du contrat de primitive, simple ajout d'une instance.
+- **Cycle hebdomadaire** : instance `pluie_semaine` sur `sensor.pluie_semaine` (utility_meter cycle `weekly`). L'ancien identifiant `pluie_hebdomadaire` était une divergence documentaire, sans entité runtime correspondante.
 - **Autres domaines métier** : humidex, CO₂, ECS, conso électrique, cardio. Chaque instance suit la grammaire de la section 3.
 - **Topologie A2** : remplacement des 20 helpers par rang par 10 `input_text` contenant un mini-JSON. Optimisation de verbosité, contractuellement neutre si le mini-JSON reste observable.
 - **Records de minima** : symétrique, registre des N valeurs les plus basses. Nécessite une extension de la grammaire (paramètre `sens` ∈ `{ max, min }`).
