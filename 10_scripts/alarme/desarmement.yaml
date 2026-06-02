@@ -100,13 +100,19 @@ alarme_desarmer:
         entity_id: alarm_control_panel.alarme_maison
 
     # ------------------------------------------------------
-    # 3) Bip de confirmation hors mode test
+    # 3) Bip de confirmation — hors mode test, et uniquement
+    #    sur desarmement explicite (manuel / clavier / badge /
+    #    dashboard). Aucun bip sur desarmement automatique
+    #    (origine 'automatisme') ni inconnu.
     # ------------------------------------------------------
     - choose:
         - conditions:
             - condition: state
               entity_id: input_boolean.mode_test_alarme
               state: "off"
+            - condition: template
+              value_template: >-
+                {{ origine_norm in ['dashboard', 'clavier', 'badge'] }}
           sequence:
             - action: script.sirene_bip_bip
 
