@@ -50,6 +50,9 @@ alarme_diagnostic_coherence_raison:
 
       const map = {
         "coherent": "Fonctionnement nominal",
+        "force_on_test": "Mode test actif",
+        "force_on_babysitting": "Mode babysitting actif",
+        "force_on_mixte": "Modes test + babysitting actifs",
         "force_on": "Mode test / babysitting actif",
         "blocage_actif": "Blocage armement automatique actif",
         "armed_away_avec_presence": "Alarme armée avec présence détectée",

@@ -83,8 +83,12 @@
           {% set absence_age = (now() - a.last_changed).total_seconds()
                                if a is not none and a.last_changed is not none else 0 %}
 
-          {% if test or babysitting %}
-            force_on
+          {% if test and babysitting %}
+            force_on_mixte
+          {% elif test %}
+            force_on_test
+          {% elif babysitting %}
+            force_on_babysitting
           {% elif blocage %}
             blocage_actif
           {% elif alarme == 'armed_away' and presence and presence_age > 30 %}
