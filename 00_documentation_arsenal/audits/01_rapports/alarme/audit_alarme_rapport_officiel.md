@@ -105,11 +105,11 @@ Le point structurant : **plusieurs angles morts de sécurité ne sont pas visibl
 
 ### ALM-MIN-2 — Double bip de désarmement + absence de garde mode test *(réf. initiale : C7)*
 
-- **État** : Confirmé
+- **État** : Confirmé — **correctif implémenté + déployé** (CH-4-A, commit `5892d35` ; pull + reload scripts/automatisations effectués). **Validation terrain opportuniste en attente** — constat **non clôturé**.
 - **Contrat** : `05_input_booleans/alarme/mode_test.yaml` (« Tester un système ne doit jamais produire d'effets réels ») ; `50_intrusion_detection.md` I2 (bifurcation mode test obligatoire).
-- **Runtime** : `10_scripts/alarme/desarmement.yaml` (`sirene_bip_bip` gardé `mode_test off`) ; `11_automations/alarme/sirene/bip_desactivation.yaml` (`sirene_bip_bip` sur `disarmed`, `condition: []`).
+- **Runtime** : `10_scripts/alarme/desarmement.yaml` (`sirene_bip_bip` gardé `mode_test off`) ; `11_automations/alarme/sirene/bip_desactivation.yaml` (`sirene_bip_bip` sur `disarmed`, `condition: []`) *(automatisation supprimée en CH-4-A)*.
 - **Impact / risque** : double émission sonore au désarmement nominal ; bip émis aussi en mode test et sur désarmement automatique (brèche du principe mode test).
-- **Orientation** : émetteur de feedback unique ; ajouter une garde mode test si l'automatisation est conservée.
+- **Orientation** : émetteur de feedback unique ; ajouter une garde mode test si l'automatisation est conservée. → **Réalisé en CH-4-A** (`5892d35`) : émetteur unique = `script.alarme_desarmer` ; bip restreint aux origines explicites (`dashboard`/`clavier`/`badge`) ; `bip_desactivation.yaml` supprimée ; mode test silencieux conservé ; bips d'armement et de début de délai inchangés. **Implémenté + déployé HA ; validation terrain en attente.**
 
 ### ALM-MIN-3 — Durée de blocage incohérente (5 min déclarés / 3 min appliqués) *(réf. initiale : C9)*
 

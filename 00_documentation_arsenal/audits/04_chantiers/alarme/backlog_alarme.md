@@ -50,6 +50,8 @@
 ### CH-4 — Sirène & feedback sonore *(MIN-2 ; `ALM-IMP-3` requalifié Mineur post-V4)*
 
 > **Post-V4 (dépôt `e3d1349`) — traçabilité.** Auto-extinction device confirmée **reboot-safe** → **`ALM-IMP-3` requalifié Important → Mineur**. CH-4 devient un chantier de **dette technique / gouvernance + hygiène feedback**, **sans enjeu sécurité**. **Gate V4 : résolu.** Les classements ci-dessous, antérieurs à V4, sont à lire à la lumière de cette requalification.
+>
+> **Statut (dépôt `5892d35`) — lot CH-4-A implémenté.** `ALM-MIN-2` : bip de désarmement émis uniquement par `script.alarme_desarmer`, restreint aux origines explicites (`dashboard`/`clavier`/`badge`) ; `bip_desactivation.yaml` supprimée. **Implémenté runtime + déployé HA** (commit `5892d35`, pull + reload effectués) ; **validation terrain opportuniste en attente**. **Lot CH-4-B (`ALM-IMP-3`, dette/gouvernance) : à traiter.** CH-4 **non clôturé**.
 
 - **Bénéfice attendu** : **faible à moyen** — retrait du code mort (`stop.yaml`, entité fantôme `switch.sirene_alarm`), documentation de la durée device comme coupe-circuit canonique, feedback de désarmement propre (unique, neutralisé en test, hors auto-désarmement).
 - **Risque de régression** : **faible** — aucun filet retiré (durée device + `arret_sirene` conservés) ; MIN-2 = feedback.
