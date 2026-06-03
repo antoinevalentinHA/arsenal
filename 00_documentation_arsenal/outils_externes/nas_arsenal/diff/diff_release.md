@@ -6,6 +6,7 @@
 - Couche : NAS Arsenal / versioning sémantique
 - Dépend de : `ha_backup_timeline_extract_v2.py`, `versions/`
 - Indépendante de : `ha_backup_timeline_diff.py`, `_diff/timeline/`
+- Révision : intègre `state/release_diff_last_run.json` (cf. `release_diff_mqtt.md`)
 
 ---
 
@@ -55,7 +56,7 @@ Contrats durs. Toute évolution doit les préserver.
 - **Source unique sémantique** : `release_diff` lit exclusivement `versions/` et `state/releases.json`. Il ne lit jamais `_diff/timeline/*.md`.
 - **Aucun replay** : un diff de release est produit par comparaison directe des deux snapshots ancres. Les backups intermédiaires entre deux ancres sont strictement ignorés.
 - **Régénérabilité** : `_diff/releases/` est intégralement reconstructible à partir de `versions/` + `state/releases.json`. La suppression de `_diff/releases/` n'entraîne aucune perte de patrimoine.
-- **Non-destructif** : la brique n'écrit jamais en dehors de `_diff/releases/` et `state/processed_releases.json`. Elle ne supprime ni ne modifie aucun fichier de `versions/`, `ha_backup_maison/`, ou `_diff/timeline/`.
+- **Non-destructif** : la brique n'écrit jamais en dehors de `_diff/releases/`, `state/processed_releases.json` et `state/release_diff_last_run.json`. Elle ne supprime ni ne modifie aucun fichier de `versions/`, `ha_backup_maison/`, ou `_diff/timeline/`.
 - **Idempotence** : un couple `(ancre_N, ancre_N+1)` déjà traité avec `status=ok` et `sha256` identiques des deux snapshots n'est jamais retraité.
 - **REJECT-not-clamp** : toute ambiguïté de détection d'ancre (doublon de nom, suffixe non reconnu, ordre incohérent) provoque un rejet explicite du couple concerné. Aucune résolution silencieuse.
 - **Strictement flat sur `versions/`** : le scan d'ancres lit uniquement les noms de répertoires de premier niveau de `versions/`. Aucune descente récursive pour cette détection.
@@ -346,6 +347,15 @@ Ne contient jamais de couple rejeté ni d'ancre marquée par `lineage_warning` (
 
 L'index est régénéré intégralement à chaque exécution, à partir de `processed_releases.json`.
 
+### `state/release_diff_last_run.json`
+
+Résumé du dernier run, destiné exclusivement à la projection MQTT (`publish_release_diff_mqtt.sh`).
+
+- Écrit à la fin de chaque exécution que la brique peut mener à terme, y compris en échec contrôlé (schéma d'erreur).
+- Schéma défini par le contrat `release_diff_mqtt.md` §5 (source unique) ; le présent contrat n'en duplique pas la structure.
+- Artefact de projection **non patrimonial** : régénéré intégralement à chaque run, il ne participe ni à l'idempotence (portée par `state/processed_releases.json`), ni à la régénérabilité de `_diff/releases/`. Sa suppression n'entraîne aucune perte de patrimoine.
+- Le champ `produced[]` ne liste que les couples nouvellement produits au cours du run ; il ne se substitue jamais à `processed_releases.json`.
+
 ---
 
 ## Interface CLI
@@ -499,6 +509,7 @@ Renforcés par cette brique :
 - cohérence temporelle observable du graphe d'ancres, sans blocage des workflows de maintenance légitimes,
 - non-interprétation des renommages en V1 (rename = delete + create), garantissant reproductibilité et déterminisme,
 - namespace plat stable pour les artefacts de diff : la nature consécutive ou non d'un couple n'altère ni son chemin, ni son contenu, et reste une métadonnée recalculable.
+- `state/release_diff_last_run.json` est un artefact de projection non patrimonial, régénéré à chaque run, hors idempotence ; son schéma est porté par `release_diff_mqtt.md`.
 
 Déjà établis et préservés :
 
