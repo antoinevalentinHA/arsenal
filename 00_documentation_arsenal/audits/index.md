@@ -5,6 +5,9 @@
 ### Bouclage
 - bouclage/audit_bouclage_ecs.md
 
+### Chauffage
+- chauffage/audit_auto_ajustement_courbe.md  _(audit ciblé auto-ajustement courbe ; **CLÔTURÉ** ; risques reclassifiés, plusieurs constats initiaux déclassés/infirmés)_
+
 ### ECS
 - ecs/audit_ecs_domaine.md  _(audit général du domaine ; ECS-WD-1 clos par arbitrage)_
 - ecs/audit_ecs_offsets.md  _(audit ciblé auto-ajustement offsets ; ECS-OFF-1…8)_
@@ -59,6 +62,10 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ## Chantiers
 
+### Chauffage
+- chauffage/ch_observabilite_auto_ajustement_courbe.md  _(chantier unique issu de l'audit courbe — observabilité du mécanisme ; **non ordonnancé** ; aucun changement de comportement)_
+- chauffage/backlog_auto_ajustement_courbe.md  _(différés : protections empruntées ; rejetés : Eco% tel quel, suspension totale poêle, élargissement pente ; errata contrats 75/06)_
+
 ### ECS
 - ecs/backlog_ecs.md  _(backlog ECS — watchdog résolu par arbitrage ; ECS-DOC + ECS-OFF-1 réalisés ; reliquat = chantier « Durcissement CI ECS » (étendu OFF-5), non ouvert)_
 
@@ -79,6 +86,9 @@ _(emplacement réservé — aucun document à ce jour)_
 - vacances/cloture_phase_traitement_vacances.md  _(clôture de phase — Lots 1 à 5)_
 
 ---
+
+### État du domaine Chauffage — auto-ajustement courbe
+**Audit CLÔTURÉ** (2026-06-03). Système jugé **globalement sain** : exécution transactionnelle saine, découplage décision/action propre, **asymétrie poêle correcte** (baisse interdite / hausse permise — les contrats sont métier-faux sur ce point, pas le runtime), dérive **bornée** (pente quasi-immune en climat doux, parallèle seul exposé, amorti, sans emballement, non démontrée). Plusieurs constats initiaux **déclassés ou infirmés** au fil de la revue contradictoire (immunité poêle, garde fenêtre/aération, représentativité comme manque critique). Deux limites réelles, toutes deux **hors comportement présent** : (1) **aveuglement** du mécanisme sur ses propres variables → **chantier unique** `ch_observabilite_auto_ajustement_courbe` (Important, non ordonnancé) ; (2) **protections empruntées** fenêtre/aération/poêle-actif → **différé** (backlog). Sujets **rejetés** : branchement de `pourcentage_consigne_eco_24h` tel quel (filtre médiocre), suspension totale poêle (régression métier), élargissement de l'apprentissage pente (contre-productif). **Errata contractuels** (75/06) consignés au backlog, à traiter au fil de l'eau. Le chantier qui découle de l'audit **ne maintient pas l'audit ouvert**.
 
 ### État du domaine ECS
 **Watchdog clos par arbitrage** (doctrine (a) « borne le verrou » ; runtime = référence ; (b) rejetée ; `ECS-WD-1` clos, `ECS-WD-2` comportement assumé). **Hygiène doc traitée** (`ECS-DOC-1/2`). **Audit Offsets consolidé** : mécanisme jugé robuste, stable, convergent et borné ; constats `ECS-OFF-*` — **résorbé** : OFF-1 (observabilité réalisée : historisation `recorder` + section « Apprentissage des offsets » du dashboard Diagnostics) ; **dettes documentaires résorbées** (contrat `11`) : OFF-2 (§3.3), OFF-4 (§6.1), OFF-6 (§11), OFF-8 (§11) ; **risques assumés** (désormais surveillables via les courbes OFF-1) : OFF-3, OFF-7 (contrat `11` §11) ; **futur chantier** : OFF-5 (→ « Durcissement CI ECS », étendu). Reliquat actionnable : **un seul** chantier **Durcissement CI ECS** (DESINF-1, DESINF-2 garde, CI-1/2/3, + OFF-5) — **non ouvert**, sans risque runtime. **Domaine non clôturé.**
