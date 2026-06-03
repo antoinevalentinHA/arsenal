@@ -1,0 +1,110 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Reset jour courant (pièces)
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10160000000034"
+#
+# 🎯 RÔLE
+#   Réinitialiser, à minuit civil strict (00:00:00), les
+#   mémoires courantes min et max des 11 pièces à leur
+#   sentinelle d'absence métier, afin de démarrer la nouvelle
+#   journée sans pollution de la veille.
+#       axe min → 999
+#       axe max → -999
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : les 11 pièces intérieures (min ET max)
+#   - Exclut : le Jardin (reset propre au pipeline palmarès,
+#     à 00:00:10, hors de cette automation)
+#
+# 🔖 NATURE
+#   Application (remise à zéro de mémoires de pipeline)
+#
+# ⚙️ MODE
+#   single
+#   Justification : déclenchement horaire unique, sans
+#   concurrence ; aucune sérialisation nécessaire.
+#
+# 📣 DÉCLENCHEURS
+#   Heure locale 00:00:00
+#
+# 🔗 DÉPENDANCES
+#   Appelle  : input_number.set_value
+#   Écrit    : input_number.temperature_min_jour_courant_<piece> = 999
+#              input_number.temperature_max_jour_courant_<piece> = -999
+#              (11 pièces — JAMAIS le Jardin)
+#
+# 🧠 AUTORITÉ
+#   Applique la frontière de journée civile définie par le
+#   contrat extrema_jour_courant.md (§6). Aucune décision propre.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger : l'écriture de la sentinelle est
+#   idempotente (réécrire la sentinelle ne change rien).
+#
+# ⚠️ REDÉMARRAGE
+#   Reset déclenché par l'heure uniquement, JAMAIS au démarrage
+#   HA : un redémarrage en cours de journée préserve ainsi
+#   l'accumulation du jour via restore_state. Conséquence
+#   assumée : un arrêt à cheval sur minuit fait manquer le
+#   reset jusqu'au minuit suivant (même exposition que le
+#   pipeline Jardin existant).
+#
+# 🚫 INTERDITS
+#   - Écrire les mémoires courantes du Jardin
+#   - Ajouter un déclencheur de démarrage (effacerait le jour)
+#   - Réinitialiser ailleurs qu'à minuit
+#
+# 🔗 RÉFÉRENCE
+#   extrema_jour_courant.md — INV-JC-5, INV-JC-6, INV-JC-9, INV-JC-13
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v15.x
+# ==========================================================
+
+- id: "10160000000034"
+  alias: "Météo — Reset jour courant (pièces)"
+  description: >
+    À 00:00:00, réinitialise les mémoires courantes min (→ 999) et
+    max (→ -999) des 11 pièces à leur sentinelle. Jardin exclu.
+  mode: single
+
+  trigger:
+    - platform: time
+      at: "00:00:00"
+
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id:
+          - input_number.temperature_min_jour_courant_entree
+          - input_number.temperature_min_jour_courant_sejour
+          - input_number.temperature_min_jour_courant_palier
+          - input_number.temperature_min_jour_courant_chambre_arnaud
+          - input_number.temperature_min_jour_courant_chambre_matthieu
+          - input_number.temperature_min_jour_courant_chambre_parents
+          - input_number.temperature_min_jour_courant_petite_maison
+          - input_number.temperature_min_jour_courant_sdb_parents
+          - input_number.temperature_min_jour_courant_sdb_enfants
+          - input_number.temperature_min_jour_courant_garage
+          - input_number.temperature_min_jour_courant_cave
+      data:
+        value: 999
+
+    - service: input_number.set_value
+      target:
+        entity_id:
+          - input_number.temperature_max_jour_courant_entree
+          - input_number.temperature_max_jour_courant_sejour
+          - input_number.temperature_max_jour_courant_palier
+          - input_number.temperature_max_jour_courant_chambre_arnaud
+          - input_number.temperature_max_jour_courant_chambre_matthieu
+          - input_number.temperature_max_jour_courant_chambre_parents
+          - input_number.temperature_max_jour_courant_petite_maison
+          - input_number.temperature_max_jour_courant_sdb_parents
+          - input_number.temperature_max_jour_courant_sdb_enfants
+          - input_number.temperature_max_jour_courant_garage
+          - input_number.temperature_max_jour_courant_cave
+      data:
+        value: -999

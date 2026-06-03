@@ -1,0 +1,126 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Météo — Update max jour courant (pièces)
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10160000000033"
+#
+# 🎯 RÔLE
+#   Maintenir, pour chaque pièce, le maximum de température
+#   observé depuis 00:00 du jour civil en cours. Écrit la
+#   mémoire courante lorsque la mesure étend l'extrême vers
+#   le haut, ou initialise la mémoire si elle ne contient pas
+#   encore une valeur métier valide.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : les 11 pièces intérieures
+#   - Exclut : le Jardin (piloté par le pipeline palmarès)
+#
+# 🔖 NATURE
+#   Application (alimentation d'une mémoire de pipeline)
+#
+# ⚙️ MODE
+#   queued
+#   Justification : les 11 sources peuvent changer d'état
+#   quasi simultanément ; queued sérialise les écritures sur
+#   les mémoires sans perdre d'événement. max relevé à 30
+#   pour couvrir un front simultané des 11 zones.
+#
+# 📣 DÉCLENCHEURS
+#   Changement d'état d'une des 11 sources sensor.temperature_<piece>
+#
+# 🔗 DÉPENDANCES
+#   Lit      : sensor.temperature_<piece> (déclencheur),
+#              input_number.temperature_max_jour_courant_<piece>
+#   Appelle  : input_number.set_value
+#   Écrit    : input_number.temperature_max_jour_courant_<piece>
+#              (11 pièces — JAMAIS le Jardin)
+#
+# 🧠 AUTORITÉ
+#   Applique la règle d'extrême du jour en cours définie par
+#   le contrat extrema_jour_courant.md. Aucune décision métier
+#   propre.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger : écriture conditionnée à une
+#   extension stricte de l'extrême (ou à une initialisation) ;
+#   une mesure n'étendant pas l'extrême est ignorée.
+#
+# 🛡️ INITIALISATION (helper sans `initial:`)
+#   La mémoire peut ne pas contenir la sentinelle (helper
+#   nouvellement créé → valeur par défaut = borne min = -999).
+#   Toute valeur courante non métier-valide (sentinelle -999,
+#   défaut -999, hors [5,45]) est traitée comme « aucun maximum
+#   encore enregistré » : la première mesure métier valide
+#   initialise alors la mémoire.
+#
+# 🚫 INTERDITS
+#   - Écrire input_number.temperature_max_jour_courant_jardin
+#   - Faire redescendre le maximum hors d'un reset (monotonicité)
+#   - Écrire une valeur hors plage métier [5, 45]°C
+#   - Confondre bornes techniques du helper et plage métier
+#
+# 🔗 RÉFÉRENCE
+#   extrema_jour_courant.md — INV-JC-1, INV-JC-3, INV-JC-4,
+#   INV-JC-8, INV-JC-9
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal v15.x
+# ==========================================================
+
+- id: "10160000000033"
+  alias: "Météo — Update max jour courant (pièces)"
+  description: >
+    Met à jour le maximum du jour civil en cours d'une pièce si la
+    mesure est dans la plage métier [5, 45]°C ET (la mémoire ne
+    contient pas encore de maximum valide OU la mesure est
+    strictement supérieure au maximum mémorisé). Jardin exclu.
+  mode: queued
+  max: 30
+
+  trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_entree
+        - sensor.temperature_sejour
+        - sensor.temperature_palier
+        - sensor.temperature_chambre_arnaud
+        - sensor.temperature_chambre_matthieu
+        - sensor.temperature_chambre_parents
+        - sensor.temperature_petite_maison
+        - sensor.temperature_sdb_parents
+        - sensor.temperature_sdb_enfants
+        - sensor.temperature_garage
+        - sensor.temperature_cave
+
+  variables:
+    cible: >
+      {{ trigger.entity_id
+         | replace('sensor.temperature_',
+                   'input_number.temperature_max_jour_courant_') }}
+    mesure_state: >
+      {{ trigger.to_state.state }}
+    mesure_valeur: >
+      {{ mesure_state | float(-999) }}
+    courant_state: >
+      {{ states(cible) }}
+    courant_valeur: >
+      {{ courant_state | float(-999) }}
+
+  condition:
+    - condition: template
+      value_template: >
+        {{ mesure_state not in ['unknown', 'unavailable', 'none', '']
+           and mesure_valeur >= 5 and mesure_valeur <= 45
+           and (
+                 not (courant_state not in ['unknown', 'unavailable', 'none', '']
+                      and courant_valeur >= 5 and courant_valeur <= 45)
+                 or mesure_valeur > courant_valeur
+               ) }}
+
+  action:
+    - service: input_number.set_value
+      target:
+        entity_id: "{{ cible }}"
+      data:
+        value: "{{ mesure_valeur }}"
