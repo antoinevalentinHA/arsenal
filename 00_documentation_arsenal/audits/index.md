@@ -65,6 +65,7 @@ _(emplacement réservé — aucun document à ce jour)_
 ### Chauffage
 - chauffage/ch_observabilite_auto_ajustement_courbe.md  _(chantier unique issu de l'audit courbe — observabilité du mécanisme ; **non ordonnancé** ; aucun changement de comportement)_
 - chauffage/backlog_auto_ajustement_courbe.md  _(différés : protections empruntées ; rejetés : Eco% tel quel, suspension totale poêle, élargissement pente ; errata contrats 75/06)_
+- chauffage/validation_L1_observabilite_auto_ajustement_courbe.md  _(validation partielle L1 — cas `suggestion_identique` observé ; lot exploitable ; validations poursuivies au fil des occurrences)_
 
 ### ECS
 - ecs/backlog_ecs.md  _(backlog ECS — watchdog résolu par arbitrage ; ECS-DOC + ECS-OFF-1 réalisés ; reliquat = chantier « Durcissement CI ECS » (étendu OFF-5), non ouvert)_
