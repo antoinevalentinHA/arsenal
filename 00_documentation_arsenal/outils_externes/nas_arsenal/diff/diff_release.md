@@ -349,7 +349,7 @@ L'index est régénéré intégralement à chaque exécution, à partir de `proc
 
 ### `state/release_diff_last_run.json`
 
-Résumé du dernier run, destiné exclusivement à la projection MQTT (`publish_release_diff_mqtt.sh`).
+Résumé du dernier run, destiné exclusivement à la projection MQTT (`publish_release_diff_mqtt.py`).
 
 - Écrit à la fin de chaque exécution que la brique peut mener à terme, y compris en échec contrôlé (schéma d'erreur).
 - Schéma défini par le contrat `release_diff_mqtt.md` §5 (source unique) ; le présent contrat n'en duplique pas la structure.

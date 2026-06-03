@@ -1,6 +1,7 @@
 # Contrat — Domaine Home Assistant `arsenal_nas`
 
-**Version** : v1.0.0
+**Version** : v1.0.1
+**Révision** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`). Aucun changement sémantique.
 **Statut** : proposé / non implémenté
 **Périmètre** : exposition Home Assistant de l'observabilité d'exécution des jobs NAS Arsenal. En V1, locataire unique : `release_diff`.
 **Contrats liés** :
@@ -40,7 +41,7 @@ multi-jobs est explicitement hors périmètre (voir §12).
 | Couche | Responsabilité |
 |---|---|
 | Moteur NAS (`release_diff.py`) | Produit le diff et le run-summary |
-| Wrapper NAS (`publish_release_diff_mqtt.sh`) | Transporte l'état et les événements |
+| Wrapper NAS (`publish_release_diff_mqtt.py`) | Transporte l'état et les événements |
 | Projection MQTT | Achemine le dernier état et les occurrences |
 | Home Assistant `arsenal_nas` | Expose l'état, notifie les événements |
 | Lovelace | Affiche l'état sans logique métier |
@@ -250,4 +251,4 @@ contrat `diff_release.md`.
 
 ---
 
-*Fin du contrat — Domaine Home Assistant `arsenal_nas` v1.0.0.*
+*Fin du contrat — Domaine Home Assistant `arsenal_nas` v1.0.1.*

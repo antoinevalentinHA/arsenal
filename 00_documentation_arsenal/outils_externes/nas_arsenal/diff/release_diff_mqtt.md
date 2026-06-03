@@ -1,11 +1,12 @@
-# Contrat — Projection MQTT de `release_diff` (NAS Arsenal) — V1.0.0
+# Contrat — Projection MQTT de `release_diff` (NAS Arsenal) — V1.0.1
 
-**Version** : v1.0.0
+**Version** : v1.0.1
+**Révision** : v1.0.1 — publisher nommé `publish_release_diff_mqtt.py` (alignement sur le précédent réel `publish_audit_mqtt.py`) ; harmonisation des références croisées (sans pin de version). Aucun changement sémantique.
 **Statut** : proposé / non implémenté
 **Périmètre** : production du run-summary `release_diff` par le moteur NAS et projection MQTT de l'état d'exécution et des événements de génération de diff de release.
 **Dépendances** :
 - `diff/diff_release.md` — moteur `release_diff` (couche sémantique de versioning) ;
-- `contrats/arsenal_nas.md` v1.0.0 — exposition Home Assistant du domaine `arsenal_nas`.
+- `contrats/arsenal_nas.md` — exposition Home Assistant du domaine `arsenal_nas`.
 
 ---
 
@@ -41,7 +42,7 @@ relève du contrat `diff_release.md`.
 | Couche | Produit | Ne produit pas |
 |---|---|---|
 | `release_diff.py` | Diffs, `processed_releases.json`, `release_diff_last_run.json` | Statut de transport |
-| `publish_release_diff_mqtt.sh` | Payloads MQTT `state` et `event` | Analyse sémantique |
+| `publish_release_diff_mqtt.py` | Payloads MQTT `state` et `event` | Analyse sémantique |
 | Home Assistant `arsenal_nas` | Entités HA dérivées | Payload MQTT |
 
 Le publisher observe et projette. Il ne décide pas du résultat du run et
@@ -365,12 +366,12 @@ run_release_diff (manuel ou Scheduler)
   │     ├── _diff/releases/*.md
   │     ├── state/processed_releases.json
   │     └── state/release_diff_last_run.json
-  └── publish_release_diff_mqtt.sh
+  └── publish_release_diff_mqtt.py
         ├── arsenal/nas/release_diff/state   (retain true, toujours)
         └── arsenal/nas/release_diff/event   (retain false, par couple produit + sur échec)
 ```
 
-`publish_release_diff_mqtt.sh` s'exécute après `release_diff.py`, quel
+`publish_release_diff_mqtt.py` s'exécute après `release_diff.py`, quel
 que soit le code retour de ce dernier. L'exit code propagé à DSM reste
 celui du moteur.
 
@@ -453,4 +454,4 @@ contrat `diff_release.md`.
 
 ---
 
-*Fin du contrat — Projection MQTT de `release_diff` (NAS Arsenal) v1.0.0.*
+*Fin du contrat — Projection MQTT de `release_diff` (NAS Arsenal) v1.0.1.*
