@@ -52,128 +52,219 @@
     - platform: time
       at: "10:00:00"
 
-  condition:
-
-    - condition: template
-      value_template: >
-        {{ is_state('input_boolean.chauffage_reglages_auto', 'on') }}
-
-    - condition: template
-      value_template: >
-        {{ is_state('input_select.mode_maison', 'Normal') }}
-
-    # Garde-fou : suggestions disponibles et numériques
-    - condition: template
-      value_template: >
-        {% set ps = states('sensor.chauffage_pente_suggeree') %}
-        {% set pas = states('sensor.chauffage_parallele_suggeree') %}
-        {{ ps not in ['unknown','unavailable','none',''] and pas not in ['unknown','unavailable','none',''] }}
-
-    # Au moins une correction suggérée (comparaison float)
-    - condition: template
-      value_template: >
-        {{ states('sensor.chauffage_pente_suggeree') | float
-           != states('input_number.chauffage_pente_consigne') | float
-           or states('sensor.chauffage_parallele_suggeree') | float
-           != states('input_number.chauffage_parallele_consigne') | float }}
-
   action:
 
+    # ============================================================
+    #  🔎 L1 OBSERVABILITÉ — capture lecture seule (additif)
+    #  INV-1 : n'écrit aucune entrée lue par la décision
+    #  INV-2 : ne réintroduit rien dans la décision
+    # ============================================================
     - variables:
-        pente_actuelle: "{{ states('input_number.chauffage_pente_consigne') | float }}"
-        pente_suggeree: "{{ states('sensor.chauffage_pente_suggeree') | float }}"
-        parallele_actuel: "{{ states('input_number.chauffage_parallele_consigne') | float }}"
-        parallele_suggeree: "{{ states('sensor.chauffage_parallele_suggeree') | float }}"
-        simulation: "{{ is_state('input_boolean.courbe_auto_simulation', 'on') }}"
+        decision_id: "{{ now().isoformat() }}"
+        auto_actif: "{{ is_state('input_boolean.chauffage_reglages_auto', 'on') }}"
+        mode_maison: "{{ states('input_select.mode_maison') }}"
+        representativite: "{{ states('input_select.chauffage_representativite_thermique') }}"
+        poele_stable: "{{ states('binary_sensor.poele_en_fonction_stable') }}"
+        pente_actuelle_obs: "{{ states('input_number.chauffage_pente_consigne') | float(0) }}"
+        parallele_actuel_obs: "{{ states('input_number.chauffage_parallele_consigne') | float(0) }}"
+        pente_sug_raw: "{{ states('sensor.chauffage_pente_suggeree') }}"
+        para_sug_raw: "{{ states('sensor.chauffage_parallele_suggeree') }}"
 
-        apply_pente: >
-          {{ pente_suggeree != pente_actuelle
-             and (pente_suggeree > pente_actuelle
-                  or (pente_suggeree < pente_actuelle
+        # Helpers booléens (sans float) pour l'ETIQUETTE de raison (observation)
+        c1: "{{ is_state('input_boolean.chauffage_reglages_auto', 'on') }}"
+        c2: "{{ is_state('input_select.mode_maison', 'Normal') }}"
+        c3: "{{ states('sensor.chauffage_pente_suggeree') not in ['unknown','unavailable','none',''] and states('sensor.chauffage_parallele_suggeree') not in ['unknown','unavailable','none',''] }}"
+
+        # VERROU DE DÉCISION — prédicats d'origine reproduits VERBATIM (bare | float),
+        # court-circuit identique au bloc condition d'origine : les | float de C4 ne sont
+        # atteints que si C3 (suggestions non-sentinelles) est vrai → jamais d'erreur.
+        cycle_actionnable: >
+          {{ is_state('input_boolean.chauffage_reglages_auto', 'on')
+             and is_state('input_select.mode_maison', 'Normal')
+             and states('sensor.chauffage_pente_suggeree') not in ['unknown','unavailable','none','']
+             and states('sensor.chauffage_parallele_suggeree') not in ['unknown','unavailable','none','']
+             and ( states('sensor.chauffage_pente_suggeree') | float != states('input_number.chauffage_pente_consigne') | float
+                   or states('sensor.chauffage_parallele_suggeree') | float != states('input_number.chauffage_parallele_consigne') | float ) }}
+
+        # Copies d'observation (float(0) car évaluées inconditionnellement ; n'alimentent JAMAIS le verrou)
+        apply_pente_obs: >
+          {{ states('sensor.chauffage_pente_suggeree') | float(0) != states('input_number.chauffage_pente_consigne') | float(0)
+             and (states('sensor.chauffage_pente_suggeree') | float(0) > states('input_number.chauffage_pente_consigne') | float(0)
+                  or (states('sensor.chauffage_pente_suggeree') | float(0) < states('input_number.chauffage_pente_consigne') | float(0)
+                      and is_state('binary_sensor.poele_en_fonction_stable', 'off'))) }}
+        apply_parallele_obs: >
+          {{ states('sensor.chauffage_parallele_suggeree') | float(0) != states('input_number.chauffage_parallele_consigne') | float(0)
+             and (states('sensor.chauffage_parallele_suggeree') | float(0) > states('input_number.chauffage_parallele_consigne') | float(0)
+                  or (states('sensor.chauffage_parallele_suggeree') | float(0) < states('input_number.chauffage_parallele_consigne') | float(0)
                       and is_state('binary_sensor.poele_en_fonction_stable', 'off'))) }}
 
-        apply_parallele: >
-          {{ parallele_suggeree != parallele_actuel
-             and (parallele_suggeree > parallele_actuel
-                  or (parallele_suggeree < parallele_actuel
-                      and is_state('binary_sensor.poele_en_fonction_stable', 'off'))) }}
+        # Raison de cycle (76 §6) — déduite sans float : si C1/C2/C3 vrais mais non actionnable ⇒ C4 faux ⇒ suggestion_identique
+        cycle_reason: >-
+          {%- if not c1 -%}auto_desactive
+          {%- elif not c2 -%}hors_mode_normal
+          {%- elif not c3 -%}suggestion_indisponible
+          {%- elif not cycle_actionnable -%}suggestion_identique
+          {%- else -%}actionnable
+          {%- endif -%}
 
+        pente_issue: >-
+          {%- if not cycle_actionnable -%}{{ 'refused' if cycle_reason == 'suggestion_identique' else 'abstained' }}
+          {%- elif apply_pente_obs -%}applied
+          {%- else -%}refused
+          {%- endif -%}
+        pente_reason: >-
+          {%- if not cycle_actionnable -%}{{ cycle_reason }}
+          {%- elif apply_pente_obs -%}applied
+          {%- elif states('sensor.chauffage_pente_suggeree') | float(0) == states('input_number.chauffage_pente_consigne') | float(0) -%}suggestion_identique
+          {%- else -%}baisse_bloquee_poele
+          {%- endif -%}
+
+        parallele_issue: >-
+          {%- if not cycle_actionnable -%}{{ 'refused' if cycle_reason == 'suggestion_identique' else 'abstained' }}
+          {%- elif apply_parallele_obs -%}applied
+          {%- else -%}refused
+          {%- endif -%}
+        parallele_reason: >-
+          {%- if not cycle_actionnable -%}{{ cycle_reason }}
+          {%- elif apply_parallele_obs -%}applied
+          {%- elif states('sensor.chauffage_parallele_suggeree') | float(0) == states('input_number.chauffage_parallele_consigne') | float(0) -%}suggestion_identique
+          {%- else -%}baisse_bloquee_poele
+          {%- endif -%}
+
+    # ============================================================
+    #  DÉCISION (INCHANGÉE) — corps d'origine déplacé verbatim sous
+    #  garde cycle_actionnable. Seul ajout : decision_id additif dans
+    #  les event_data de chauffage_adjustment (rattachement parent→enfant).
+    # ============================================================
     - choose:
-
         - conditions:
             - condition: template
-              value_template: "{{ simulation }}"
+              value_template: "{{ cycle_actionnable }}"
           sequence:
 
-            - service: logbook.log
-              data:
-                name: "Chauffage"
-                message: >
-                  🧪 Simulation auto-ajustement :
-                  pente {{ pente_actuelle }} → {{ pente_suggeree }},
-                  parallèle {{ parallele_actuel }} → {{ parallele_suggeree }}
+            - variables:
+                pente_actuelle: "{{ states('input_number.chauffage_pente_consigne') | float }}"
+                pente_suggeree: "{{ states('sensor.chauffage_pente_suggeree') | float }}"
+                parallele_actuel: "{{ states('input_number.chauffage_parallele_consigne') | float }}"
+                parallele_suggeree: "{{ states('sensor.chauffage_parallele_suggeree') | float }}"
+                simulation: "{{ is_state('input_boolean.courbe_auto_simulation', 'on') }}"
 
-            - event: chauffage_adjustment
-              event_data:
-                mode: "simulation"
-                pente_before: "{{ pente_actuelle }}"
-                pente_after: "{{ pente_suggeree }}"
-                para_before: "{{ parallele_actuel }}"
-                para_after: "{{ parallele_suggeree }}"
-                timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
+                apply_pente: >
+                  {{ pente_suggeree != pente_actuelle
+                     and (pente_suggeree > pente_actuelle
+                          or (pente_suggeree < pente_actuelle
+                              and is_state('binary_sensor.poele_en_fonction_stable', 'off'))) }}
 
-            - service: persistent_notification.create
-              data:
-                title: "🤖 Simulation auto-ajustement chauffage"
-                message: >
-                  Mode auto actif (simulation).
-
-                  Ajustements proposés :
-                  • Pente : {{ pente_actuelle }} → {{ pente_suggeree }}
-                  • Parallèle : {{ parallele_actuel }} → {{ parallele_suggeree }}
-
-                  Aucun changement n'a été appliqué.
-
-        - conditions:
-            - condition: template
-              value_template: "{{ not simulation }}"
-          sequence:
+                apply_parallele: >
+                  {{ parallele_suggeree != parallele_actuel
+                     and (parallele_suggeree > parallele_actuel
+                          or (parallele_suggeree < parallele_actuel
+                              and is_state('binary_sensor.poele_en_fonction_stable', 'off'))) }}
 
             - choose:
-                - conditions: >
-                    {{ apply_pente }}
+
+                - conditions:
+                    - condition: template
+                      value_template: "{{ simulation }}"
                   sequence:
-                    - service: input_number.set_value
-                      target:
-                        entity_id: input_number.chauffage_pente_consigne
-                      data:
-                        value: "{{ pente_suggeree }}"
 
-            - choose:
-                - conditions: >
-                    {{ apply_parallele }}
+                    - service: logbook.log
+                      data:
+                        name: "Chauffage"
+                        message: >
+                          🧪 Simulation auto-ajustement :
+                          pente {{ pente_actuelle }} → {{ pente_suggeree }},
+                          parallèle {{ parallele_actuel }} → {{ parallele_suggeree }}
+
+                    - event: chauffage_adjustment
+                      event_data:
+                        decision_id: "{{ decision_id }}"
+                        mode: "simulation"
+                        pente_before: "{{ pente_actuelle }}"
+                        pente_after: "{{ pente_suggeree }}"
+                        para_before: "{{ parallele_actuel }}"
+                        para_after: "{{ parallele_suggeree }}"
+                        timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
+
+                    - service: persistent_notification.create
+                      data:
+                        title: "🤖 Simulation auto-ajustement chauffage"
+                        message: >
+                          Mode auto actif (simulation).
+
+                          Ajustements proposés :
+                          • Pente : {{ pente_actuelle }} → {{ pente_suggeree }}
+                          • Parallèle : {{ parallele_actuel }} → {{ parallele_suggeree }}
+
+                          Aucun changement n'a été appliqué.
+
+                - conditions:
+                    - condition: template
+                      value_template: "{{ not simulation }}"
                   sequence:
-                    - service: input_number.set_value
-                      target:
-                        entity_id: input_number.chauffage_parallele_consigne
+
+                    - choose:
+                        - conditions: >
+                            {{ apply_pente }}
+                          sequence:
+                            - service: input_number.set_value
+                              target:
+                                entity_id: input_number.chauffage_pente_consigne
+                              data:
+                                value: "{{ pente_suggeree }}"
+
+                    - choose:
+                        - conditions: >
+                            {{ apply_parallele }}
+                          sequence:
+                            - service: input_number.set_value
+                              target:
+                                entity_id: input_number.chauffage_parallele_consigne
+                              data:
+                                value: "{{ parallele_suggeree }}"
+
+                    - service: logbook.log
                       data:
-                        value: "{{ parallele_suggeree }}"
+                        name: "Chauffage"
+                        message: >
+                          🔧 Auto-ajustement décidé :
+                          pente {{ pente_actuelle }} → {{ pente_suggeree }} ({{ 'appliqué' if apply_pente else 'refusé' }}),
+                          parallèle {{ parallele_actuel }} → {{ parallele_suggeree }} ({{ 'appliqué' if apply_parallele else 'refusé' }})
 
-            - service: logbook.log
-              data:
-                name: "Chauffage"
-                message: >
-                  🔧 Auto-ajustement décidé :
-                  pente {{ pente_actuelle }} → {{ pente_suggeree }} ({{ 'appliqué' if apply_pente else 'refusé' }}),
-                  parallèle {{ parallele_actuel }} → {{ parallele_suggeree }} ({{ 'appliqué' if apply_parallele else 'refusé' }})
-
-            - event: chauffage_adjustment
-              event_data:
-                mode: "real"
-                pente_before: "{{ pente_actuelle }}"
-                pente_after: "{{ pente_suggeree }}"
-                para_before: "{{ parallele_actuel }}"
-                para_after: "{{ parallele_suggeree }}"
-                pente_applied: "{{ apply_pente }}"
-                para_applied: "{{ apply_parallele }}"
-                timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
+                    - event: chauffage_adjustment
+                      event_data:
+                        decision_id: "{{ decision_id }}"
+                        mode: "real"
+                        pente_before: "{{ pente_actuelle }}"
+                        pente_after: "{{ pente_suggeree }}"
+                        para_before: "{{ parallele_actuel }}"
+                        para_after: "{{ parallele_suggeree }}"
+                        pente_applied: "{{ apply_pente }}"
+                        para_applied: "{{ apply_parallele }}"
+                        timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
+    # ============================================================
+    #  🔎 L1 OBSERVABILITÉ — événement de cycle UNIVERSEL (toutes branches)
+    # ============================================================
+    - event: chauffage_courbe_cycle_evalue
+      continue_on_error: true
+      event_data:
+        decision_id: "{{ decision_id }}"
+        mode: "{{ 'simulation' if is_state('input_boolean.courbe_auto_simulation', 'on') else 'real' }}"
+        cycle_actionnable: "{{ cycle_actionnable }}"
+        cycle_reason: "{{ cycle_reason }}"
+        cycle_reason_type: "{{ 'anomal' if cycle_reason in ['suggestion_indisponible','hors_domaine'] else 'nominal' }}"
+        pente_before: "{{ pente_actuelle_obs }}"
+        pente_suggeree: "{{ pente_sug_raw }}"
+        pente_issue: "{{ pente_issue }}"
+        pente_reason: "{{ pente_reason }}"
+        pente_reason_type: "{{ 'anomal' if pente_reason in ['suggestion_indisponible','hors_domaine'] else 'nominal' }}"
+        parallele_before: "{{ parallele_actuel_obs }}"
+        parallele_suggeree: "{{ para_sug_raw }}"
+        parallele_issue: "{{ parallele_issue }}"
+        parallele_reason: "{{ parallele_reason }}"
+        parallele_reason_type: "{{ 'anomal' if parallele_reason in ['suggestion_indisponible','hors_domaine'] else 'nominal' }}"
+        representativite: "{{ representativite }}"
+        poele_stable: "{{ poele_stable }}"
+        mode_maison: "{{ mode_maison }}"
+        auto_actif: "{{ auto_actif }}"
+        timestamp: "{{ now().strftime('%d/%m %H:%M') }}"
