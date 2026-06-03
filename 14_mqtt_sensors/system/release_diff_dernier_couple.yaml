@@ -1,0 +1,45 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     arsenal_nas — Release Diff — Dernier couple produit
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer le dernier couple de versions produit par
+#   release_diff lors du dernier run (forme lisible,
+#   ex. "v15.3 -> v15.4"), publié par le NAS sur
+#   arsenal/nas/release_diff/state.
+#
+# 🧩 PÉRIMÈTRE
+#   - Source : summary.latest_couple
+#   - latest_couple est null sur un run sans nouveau couple
+#     (idempotent) ; summary est null en état d'erreur (§7.2)
+#   - Sentinelle : si summary null/absent OU latest_couple null,
+#     le sensor rend la valeur lisible et stable
+#     "Aucun nouveau couple" (pas de chaîne vide, pas de skip)
+#   - Reflète le dernier run ; ne conserve pas un couple antérieur
+#   - Aucune décision, aucune fraîcheur (§5.3)
+#
+# 🔖 NATURE
+#   context (sub-rôle palette : context)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_nas_release_diff_dernier_couple
+#
+# 🔗 DÉPENDANCES
+#   Source MQTT : arsenal/nas/release_diff/state
+#   Champ JSON  : summary.latest_couple
+#   Contrats    : arsenal_nas.md §5.1 — release_diff_mqtt.md §7
+#
+# 🚫 INTERDITS
+#   - Interpréter la sentinelle comme une erreur
+#     (un run idempotent est nominal : status ok, latest_couple null)
+#   - En dériver une logique de fraîcheur (exclu en V1, §5.3)
+#
+# 🏷️ STATUT
+#   Context — Arsenal — Domaine arsenal_nas
+# ==========================================================
+
+- name: "Arsenal NAS Release Diff Dernier Couple"
+  unique_id: arsenal_nas_release_diff_dernier_couple
+  state_topic: arsenal/nas/release_diff/state
+  value_template: "{{ value_json.summary.latest_couple if value_json.summary and value_json.summary.latest_couple else 'Aucun nouveau couple' }}"
+  qos: 1

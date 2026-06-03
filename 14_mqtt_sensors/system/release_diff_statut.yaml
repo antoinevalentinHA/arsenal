@@ -1,0 +1,38 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     arsenal_nas — Release Diff — Statut (exécution du job)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer le statut d'exécution du job release_diff,
+#   publié par le NAS sur arsenal/nas/release_diff/state.
+#
+# 🧩 PÉRIMÈTRE
+#   - Projection MQTT du statut ; aucune décision locale
+#   - Valeurs possibles : ok | partial | error
+#
+# 🔖 NATURE
+#   diagnostic (sub-rôle palette : diagnostic)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_nas_release_diff_statut
+#
+# 🔗 DÉPENDANCES
+#   Source MQTT : arsenal/nas/release_diff/state
+#   Producteur  : publish_release_diff_mqtt.py (NAS)
+#   Contrats    : arsenal_nas.md §5.1 — release_diff_mqtt.md §7
+#
+# 🚫 INTERDITS
+#   - Modifier le payload
+#   - Interpréter status comme un verdict patrimonial
+#     (status qualifie l'exécution du job ; cf. arsenal_nas.md §6)
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal — Domaine arsenal_nas
+# ==========================================================
+
+- name: "Arsenal NAS Release Diff Statut"
+  unique_id: arsenal_nas_release_diff_statut
+  state_topic: arsenal/nas/release_diff/state
+  value_template: "{{ value_json.status }}"
+  json_attributes_topic: arsenal/nas/release_diff/state
+  qos: 1

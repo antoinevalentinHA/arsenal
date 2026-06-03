@@ -1,0 +1,98 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     arsenal_nas — Notification Release Diff
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10120000000028"
+#
+# 🎯 RÔLE
+#   Notifier le téléphone d'Antoine des occurrences release_diff
+#   (couple produit / échec) relayées par le NAS sur
+#   arsenal/nas/release_diff/event.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : notification événementielle de release_diff_generated
+#     et release_diff_failed
+#   - Exclut : toute décision, filtrage, fraîcheur, journalisation,
+#     écriture d'état ou de helper
+#
+# 🔖 NATURE
+#   Événementielle
+#
+# ⚙️ MODE
+#   queued
+#   Justification : plusieurs release_diff_generated peuvent arriver
+#   en rafale (un par couple) ; queued sérialise sans perte
+#   (single en perdrait), sans concurrence.
+#
+# 📣 DÉCLENCHEURS
+#   Message MQTT sur arsenal/nas/release_diff/event
+#
+# 🔗 DÉPENDANCES
+#   Lit     : trigger.payload_json (champ event + champs métier)
+#   Appelle : script.notification_envoyer
+#             (cible : input_text.telephone_antoine_notify)
+#   Écrit   : rien
+#
+# 🧠 AUTORITÉ
+#   Applique une décision externe : le NAS décide des événements
+#   émis ; l'automation se borne à notifier.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger / redémarrage. Le topic event est
+#   retain=false → aucun rejeu au démarrage HA (pas de notification
+#   fantôme) ; queued garantit l'ordre de traitement.
+#
+# 🚫 INTERDITS
+#   - Aucun service notify.* en dur (indirection via helper obligatoire)
+#   - Aucune décision ni filtrage métier
+#   - Aucune écriture d'état / helper
+#   - Aucune logique hors notification événementielle
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal — Domaine arsenal_nas
+# ==========================================================
+
+- id: "10120000000028"
+  alias: "Système - arsenal_nas - Notification Release Diff"
+  description: "Notifie le téléphone d'Antoine des événements release_diff (généré / échec)."
+  mode: queued
+
+  trigger:
+    - platform: mqtt
+      topic: arsenal/nas/release_diff/event
+
+  action:
+    - choose:
+        # ------------------------------------------------------
+        # Couple produit
+        # ------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.payload_json.event == 'release_diff_generated' }}"
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🧾 Nouveau diff de release"
+                message: |
+                  Diff géneré : {{ trigger.payload_json.from_version }} → {{ trigger.payload_json.to_version }}
+
+                  Fichier : {{ trigger.payload_json.diff_name }}
+
+        # ------------------------------------------------------
+        # Échec / run partiel
+        # ------------------------------------------------------
+        - conditions:
+            - condition: template
+              value_template: "{{ trigger.payload_json.event == 'release_diff_failed' }}"
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "⚠️ Release Diff à vérifier"
+                message: |
+                  Release Diff à signaler.
+
+                  Statut : {{ trigger.payload_json.status }}
+                  Cause : {{ trigger.payload_json.error_reason }}

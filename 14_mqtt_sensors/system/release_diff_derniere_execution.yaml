@@ -1,0 +1,43 @@
+# ==========================================================
+# 🧠 ARSENAL — MQTT SENSOR
+#     arsenal_nas — Release Diff — Dernière exécution
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer l'horodatage du dernier run release_diff
+#   (last_run_at, ISO 8601 UTC), publié par le NAS sur
+#   arsenal/nas/release_diff/state.
+#
+# 🧩 PÉRIMÈTRE
+#   - Timestamp parsable HA (suffixe Z, source last_run_at)
+#   - device_class timestamp : typage datetime UNIQUEMENT
+#   - Aucune fraîcheur dérivée ici (ni age, ni stale) — §5.3
+#   - Garde : last_run_at peut être null (états error §7.2) ;
+#     dans ce cas l'état n'est pas mis à jour (skip), pas de
+#     parsing d'un "None"
+#
+# 🔖 NATURE
+#   context (sub-rôle palette : context)
+#
+# 🆔 UNIQUE_ID
+#   arsenal_nas_release_diff_derniere_execution
+#
+# 🔗 DÉPENDANCES
+#   Source MQTT : arsenal/nas/release_diff/state
+#   Champ JSON  : last_run_at
+#   Contrats    : arsenal_nas.md §5.1 — release_diff_mqtt.md §7
+#
+# 🚫 INTERDITS
+#   - Confondre last_run_at (run moteur) avec published_at
+#     (horodatage de la projection MQTT)
+#   - En dériver une logique de fraîcheur (exclu en V1, §5.3)
+#
+# 🏷️ STATUT
+#   Context — Arsenal — Domaine arsenal_nas
+# ==========================================================
+
+- name: "Arsenal NAS Release Diff Dernière Exécution"
+  unique_id: arsenal_nas_release_diff_derniere_execution
+  state_topic: arsenal/nas/release_diff/state
+  value_template: "{{ value_json.last_run_at if value_json.last_run_at else '' }}"
+  device_class: timestamp
+  qos: 1
