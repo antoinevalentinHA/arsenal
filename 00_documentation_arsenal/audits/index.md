@@ -8,6 +8,7 @@
 ### Chauffage
 - chauffage/audit_auto_ajustement_courbe.md  _(audit ciblé auto-ajustement courbe ; **CLÔTURÉ** ; risques reclassifiés, plusieurs constats initiaux déclassés/infirmés)_
 - chauffage/audit_diagnostics_thermiques_chauffage.md  _(audit architectural des diagnostics thermiques — inertie, reprise, stabilité, cyclage ; cartographie complète du sous-domaine ; identification des écarts de conformité, limites d'observabilité et potentiel d'auto-ajustement futur)_
+- chauffage/audit_blocage_post_aeration_adaptatif.md  _(audit ciblé du mécanisme de blocage post-aération ; analyse du pipeline M1→M6, de la couche ΔT et des limites d'observabilité empêchant un auto-ajustement apprenant)_
 
 ### ECS
 - ecs/audit_ecs_domaine.md  _(audit général du domaine ; ECS-WD-1 clos par arbitrage)_
