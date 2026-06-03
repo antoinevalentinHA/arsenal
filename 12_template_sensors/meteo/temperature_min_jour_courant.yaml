@@ -1,0 +1,209 @@
+# ==========================================================
+# 🧠 ARSENAL — TRIGGERED TEMPLATE SENSOR
+#     Météo — Exposition min jour courant (12 zones)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer, pour chaque zone, le minimum de température du
+#   jour civil en cours, lu depuis sa mémoire courante.
+#   Couche d'exposition consommable par le dashboard.
+#   Retourne unavailable tant que la mémoire ne porte pas une
+#   valeur métier valide (sentinelle, défaut de borne, ou hors
+#   plage métier).
+#
+# 🧩 PÉRIMÈTRE
+#   - Lecture et exposition uniquement
+#   - Aucun calcul métier, aucune décision
+#   - Aucune écriture (INV-JC-8/9 — écrivain souverain)
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   projection_differee
+#   (projection de la mémoire ré-évaluée à chaque écriture ;
+#    forme triggered car la référence mémoire est construite
+#    dynamiquement via this.entity_id — un template continu ne
+#    suivrait pas cette référence)
+#
+# 🆔 UNIQUE_ID
+#   temperature_min_jour_courant_<zone>
+#
+# 📣 DÉCLENCHEUR
+#   Changement d'état d'une des 12 mémoires
+#   input_number.temperature_min_jour_courant_<zone>
+#   + démarrage Home Assistant (peuplement initial)
+#
+# 🔗 DÉPENDANCES
+#   Lit : input_number.temperature_min_jour_courant_<zone>
+#         (11 pièces + jardin — jardin en LECTURE SEULE)
+#
+# 🛡️ AVAILABILITY — VALEUR MÉTIER VALIDE (contrat §3.2 / INV-JC-7)
+#   available ⇔ mémoire numérique ET dans la plage métier de
+#   la zone :
+#     - pièces : [5, 45]°C
+#     - jardin : [-30, 50]°C (enveloppe des plages palmarès)
+#   Sont donc unavailable : 999, -999, -50, et toute valeur
+#   hors plage. La sentinelle ne fuit jamais (INV-JC-7) ; le
+#   défaut de borne d'un helper non encore amorcé ne fuit pas
+#   non plus (§3.3).
+#
+# 🚫 INTERDITS
+#   - Écrire une quelconque mémoire (lecture seule stricte)
+#   - Écrire ou réinitialiser les mémoires du Jardin
+#   - Exposer une sentinelle ou une valeur hors plage métier
+#   - Piloter un équipement / déclencher une action
+#
+# 📋 CONSOMMATION
+#   Capteur déclenché ré-évalué à chaque écriture mémoire,
+#   donc équivalent temps réel pour ses consommateurs.
+#
+# 🔗 RÉFÉRENCE
+#   extrema_jour_courant.md — §3.2, §3.3, §4, INV-JC-1, INV-JC-7,
+#   INV-JC-8, INV-JC-9, INV-JC-12
+#
+# 🏷️ STATUT
+#   Calcul — Arsenal v15.x
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - input_number.temperature_min_jour_courant_entree
+        - input_number.temperature_min_jour_courant_sejour
+        - input_number.temperature_min_jour_courant_palier
+        - input_number.temperature_min_jour_courant_chambre_arnaud
+        - input_number.temperature_min_jour_courant_chambre_matthieu
+        - input_number.temperature_min_jour_courant_chambre_parents
+        - input_number.temperature_min_jour_courant_petite_maison
+        - input_number.temperature_min_jour_courant_sdb_parents
+        - input_number.temperature_min_jour_courant_sdb_enfants
+        - input_number.temperature_min_jour_courant_garage
+        - input_number.temperature_min_jour_courant_cave
+        - input_number.temperature_min_jour_courant_jardin
+
+    - platform: homeassistant
+      event: start
+
+  sensor:
+
+    # ------------------------------------------------------
+    # LOGIQUE D'EXPOSITION (ANCRES)
+    # ------------------------------------------------------
+
+    - name: "Température min jour courant Entrée"
+      unique_id: temperature_min_jour_courant_entree
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: &avail_min_courant >
+        {% set suffixe = this.entity_id | replace('sensor.temperature_min_jour_courant_', '') %}
+        {% set raw = states('input_number.temperature_min_jour_courant_' ~ suffixe) %}
+        {% set bas = -30 if suffixe == 'jardin' else 5 %}
+        {% set haut = 50 if suffixe == 'jardin' else 45 %}
+        {{ raw not in ['unknown', 'unavailable', 'none', '']
+           and (raw | float(999)) >= bas and (raw | float(999)) <= haut }}
+      state: &logic_min_courant >
+        {% set suffixe = this.entity_id | replace('sensor.temperature_min_jour_courant_', '') %}
+        {{ states('input_number.temperature_min_jour_courant_' ~ suffixe) | float }}
+
+    # ------------------------------------------------------
+    # INSTANCES
+    # ------------------------------------------------------
+
+    - name: "Température min jour courant Séjour"
+      unique_id: temperature_min_jour_courant_sejour
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant Palier"
+      unique_id: temperature_min_jour_courant_palier
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant Chambre Arnaud"
+      unique_id: temperature_min_jour_courant_chambre_arnaud
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant Chambre Matthieu"
+      unique_id: temperature_min_jour_courant_chambre_matthieu
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant Chambre Parents"
+      unique_id: temperature_min_jour_courant_chambre_parents
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant Petite Maison"
+      unique_id: temperature_min_jour_courant_petite_maison
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant SDB Parents"
+      unique_id: temperature_min_jour_courant_sdb_parents
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant SDB Enfants"
+      unique_id: temperature_min_jour_courant_sdb_enfants
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant Garage"
+      unique_id: temperature_min_jour_courant_garage
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant Cave"
+      unique_id: temperature_min_jour_courant_cave
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
+
+    - name: "Température min jour courant Jardin"
+      unique_id: temperature_min_jour_courant_jardin
+      unit_of_measurement: "°C"
+      device_class: temperature
+      state_class: measurement
+      icon: mdi:thermometer-low
+      availability: *avail_min_courant
+      state: *logic_min_courant
