@@ -1,0 +1,306 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Extrema du jour civil en cours (mémoires pièces)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker, pour chaque pièce suivie, la valeur minimale et
+#   la valeur maximale observées depuis 00:00:00 du jour civil
+#   en cours. Une mémoire courante par pièce et par axe.
+#   Réinitialisée à sa sentinelle à minuit (jour suivant).
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement (jour en cours)
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Registre de pipeline — mémoire courante
+#
+# 🔗 RÉFÉRENCE
+#   00_documentation_arsenal/contrats/meteo/extrema_jour_courant.md
+#   Famille « extrema du jour civil en cours » — couche mémoire (§4)
+#   Invariants : INV-JC-1, INV-JC-3..6, INV-JC-8, INV-JC-13
+#
+# 📐 BORNES TECHNIQUES
+#   Axe min : min: -50    max: 1000    step: 0.1
+#   Axe max : min: -999   max: 50      step: 0.1
+#
+#   Les bornes sont TECHNIQUES, pas métier. La plage métier
+#   intérieure [5, 45]°C (contrat §3.2) est contrôlée par les
+#   automatisations d'alimentation, jamais par ces bornes.
+#   Les bornes étendues existent uniquement pour autoriser le
+#   stockage des sentinelles hors plage métier :
+#     - axe min : sentinelle 999   (≤ 1000, stockable)
+#     - axe max : sentinelle -999  (≥ -999, stockable)
+#   Sentinelle = absence métier, jamais une mesure (INV-JC-6).
+#
+# 📋 CONVENTIONS
+#   - Valeur initiale au déploiement : sentinelle
+#       axe min → 999     axe max → -999
+#   - Aucune clé `initial:` (réécrirait au redémarrage HA et
+#     ferait perdre l'accumulation du jour en cours)
+#   - Reset quotidien à 00:00:00 → sentinelle (jardin non concerné)
+#   - Update sur extension stricte de l'extrême uniquement
+#   - Écriture exclusivement par :
+#       automation "10160000000032" (update min jour courant pièces)
+#       automation "10160000000033" (update max jour courant pièces)
+#       automation "10160000000034" (reset jour courant pièces)
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire courante et mémoire clôturée
+#   - Confondre stockage et décision
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Saisie manuelle hors procédure de réinitialisation
+#   - Ajouter une clé `initial:`
+#   - Déclarer ici les mémoires du Jardin :
+#       temperature_min_jour_courant_jardin
+#       temperature_max_jour_courant_jardin
+#     existent déjà et restent pilotées EXCLUSIVEMENT par le
+#     pipeline palmarès (écrivain souverain — INV-JC-8/9)
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v15.x
+# ==========================================================
+
+############################################################
+# 🚪 Entrée
+############################################################
+
+temperature_min_jour_courant_entree:
+  name: Température min jour courant entrée
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_entree:
+  name: Température max jour courant entrée
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 🛋️ Séjour
+############################################################
+
+temperature_min_jour_courant_sejour:
+  name: Température min jour courant séjour
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_sejour:
+  name: Température max jour courant séjour
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 🪜 Palier
+############################################################
+
+temperature_min_jour_courant_palier:
+  name: Température min jour courant palier
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_palier:
+  name: Température max jour courant palier
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 🧒 Chambre Arnaud
+############################################################
+
+temperature_min_jour_courant_chambre_arnaud:
+  name: Température min jour courant chambre Arnaud
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_chambre_arnaud:
+  name: Température max jour courant chambre Arnaud
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 👶 Chambre Matthieu
+############################################################
+
+temperature_min_jour_courant_chambre_matthieu:
+  name: Température min jour courant chambre Matthieu
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_chambre_matthieu:
+  name: Température max jour courant chambre Matthieu
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 🛏️ Chambre Parents
+############################################################
+
+temperature_min_jour_courant_chambre_parents:
+  name: Température min jour courant chambre Parents
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_chambre_parents:
+  name: Température max jour courant chambre Parents
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 🏡 Petite Maison
+############################################################
+
+temperature_min_jour_courant_petite_maison:
+  name: Température min jour courant petite maison
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_petite_maison:
+  name: Température max jour courant petite maison
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 🚿 SDB Parents
+############################################################
+
+temperature_min_jour_courant_sdb_parents:
+  name: Température min jour courant SDB parents
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_sdb_parents:
+  name: Température max jour courant SDB parents
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 🚿 SDB Enfants
+############################################################
+
+temperature_min_jour_courant_sdb_enfants:
+  name: Température min jour courant SDB enfants
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_sdb_enfants:
+  name: Température max jour courant SDB enfants
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 🚗 Garage
+############################################################
+
+temperature_min_jour_courant_garage:
+  name: Température min jour courant garage
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_garage:
+  name: Température max jour courant garage
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
+
+############################################################
+# 🍇 Cave
+############################################################
+
+temperature_min_jour_courant_cave:
+  name: Température min jour courant cave
+  min: -50
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-low
+
+temperature_max_jour_courant_cave:
+  name: Température max jour courant cave
+  min: -999
+  max: 50
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:thermometer-chevron-up
