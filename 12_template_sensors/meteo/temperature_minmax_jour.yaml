@@ -16,8 +16,8 @@
 #
 # 🧩 PRINCIPE
 #   - Lecture de :
-#       sensor.temperature_min_jour_<suffixe>
-#       sensor.temperature_max_jour_<suffixe>
+#       sensor.temperature_min_jour_courant_<suffixe>
+#       sensor.temperature_max_jour_courant_<suffixe>
 #
 #   - Sortie compacte :
 #       "18,8 / 20,2 °C"
@@ -32,35 +32,42 @@
 # 🚫 INTERDIT
 #   - Aucun calcul thermique
 #   - Aucune logique couleur
+#
+# 📥 CONSOMMATION D'UN TEMPLATE DÉCLENCHÉ (fiche 12)
+#   Sources : sensor.temperature_min/max_jour_courant_<suffixe>
+#   (templates déclenchés, NATURE projection_differee).
+#   Justification de consommation comme état instantané :
+#   l'exposition est ré-évaluée à chaque écriture de sa mémoire
+#   courante, donc équivalente temps réel pour cette restitution.
 # ==========================================================
 
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_min_jour_cave
-        - sensor.temperature_max_jour_cave
-        - sensor.temperature_min_jour_chambre_arnaud
-        - sensor.temperature_max_jour_chambre_arnaud
-        - sensor.temperature_min_jour_chambre_matthieu
-        - sensor.temperature_max_jour_chambre_matthieu
-        - sensor.temperature_min_jour_chambre_parents
-        - sensor.temperature_max_jour_chambre_parents
-        - sensor.temperature_min_jour_entree
-        - sensor.temperature_max_jour_entree
-        - sensor.temperature_min_jour_garage
-        - sensor.temperature_max_jour_garage
-        - sensor.temperature_min_jour_jardin
-        - sensor.temperature_max_jour_jardin
-        - sensor.temperature_min_jour_palier
-        - sensor.temperature_max_jour_palier
-        - sensor.temperature_min_jour_petite_maison
-        - sensor.temperature_max_jour_petite_maison
-        - sensor.temperature_min_jour_sdb_enfants
-        - sensor.temperature_max_jour_sdb_enfants
-        - sensor.temperature_min_jour_sdb_parents
-        - sensor.temperature_max_jour_sdb_parents
-        - sensor.temperature_min_jour_sejour
-        - sensor.temperature_max_jour_sejour
+        - sensor.temperature_min_jour_courant_cave
+        - sensor.temperature_max_jour_courant_cave
+        - sensor.temperature_min_jour_courant_chambre_arnaud
+        - sensor.temperature_max_jour_courant_chambre_arnaud
+        - sensor.temperature_min_jour_courant_chambre_matthieu
+        - sensor.temperature_max_jour_courant_chambre_matthieu
+        - sensor.temperature_min_jour_courant_chambre_parents
+        - sensor.temperature_max_jour_courant_chambre_parents
+        - sensor.temperature_min_jour_courant_entree
+        - sensor.temperature_max_jour_courant_entree
+        - sensor.temperature_min_jour_courant_garage
+        - sensor.temperature_max_jour_courant_garage
+        - sensor.temperature_min_jour_courant_jardin
+        - sensor.temperature_max_jour_courant_jardin
+        - sensor.temperature_min_jour_courant_palier
+        - sensor.temperature_max_jour_courant_palier
+        - sensor.temperature_min_jour_courant_petite_maison
+        - sensor.temperature_max_jour_courant_petite_maison
+        - sensor.temperature_min_jour_courant_sdb_enfants
+        - sensor.temperature_max_jour_courant_sdb_enfants
+        - sensor.temperature_min_jour_courant_sdb_parents
+        - sensor.temperature_max_jour_courant_sdb_parents
+        - sensor.temperature_min_jour_courant_sejour
+        - sensor.temperature_max_jour_courant_sejour
 
     - platform: homeassistant
       event: start
@@ -71,8 +78,8 @@
       unique_id: temperature_minmax_jour_cave
       state: &temperature_minmax_logic >
         {% set suffixe = this.entity_id | replace('sensor.temperature_minmax_jour_', '') %}
-        {% set min_src = 'sensor.temperature_min_jour_' ~ suffixe %}
-        {% set max_src = 'sensor.temperature_max_jour_' ~ suffixe %}
+        {% set min_src = 'sensor.temperature_min_jour_courant_' ~ suffixe %}
+        {% set max_src = 'sensor.temperature_max_jour_courant_' ~ suffixe %}
 
         {% set min_raw = states(min_src) %}
         {% set max_raw = states(max_src) %}

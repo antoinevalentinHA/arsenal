@@ -20,27 +20,33 @@
 #   - Toute la logique reste dans le backend
 #   - Entités attendues :
 #
-#       sensor.temperature_min_jour_<suffixe>
+#       sensor.temperature_min_jour_courant_<suffixe>
 #       sensor.temperature_seuil_bas_<suffixe>
 #       sensor.temperature_seuil_haut_<suffixe>
+#
+# 📥 CONSOMMATION D'UN TEMPLATE DÉCLENCHÉ (fiche 12)
+#   sensor.temperature_min_jour_courant_<suffixe> est un template
+#   déclenché (NATURE projection_differee). Consommé ici comme état
+#   instantané car ré-évalué à chaque écriture de sa mémoire courante,
+#   donc équivalent temps réel pour le classement couleur.
 #
 # ==========================================================
 
 - trigger:
     - platform: state
       entity_id:
-        - sensor.temperature_min_jour_cave
-        - sensor.temperature_min_jour_chambre_arnaud
-        - sensor.temperature_min_jour_chambre_matthieu
-        - sensor.temperature_min_jour_chambre_parents
-        - sensor.temperature_min_jour_entree
-        - sensor.temperature_min_jour_garage
-        - sensor.temperature_min_jour_jardin
-        - sensor.temperature_min_jour_palier
-        - sensor.temperature_min_jour_petite_maison
-        - sensor.temperature_min_jour_sdb_enfants
-        - sensor.temperature_min_jour_sdb_parents
-        - sensor.temperature_min_jour_sejour
+        - sensor.temperature_min_jour_courant_cave
+        - sensor.temperature_min_jour_courant_chambre_arnaud
+        - sensor.temperature_min_jour_courant_chambre_matthieu
+        - sensor.temperature_min_jour_courant_chambre_parents
+        - sensor.temperature_min_jour_courant_entree
+        - sensor.temperature_min_jour_courant_garage
+        - sensor.temperature_min_jour_courant_jardin
+        - sensor.temperature_min_jour_courant_palier
+        - sensor.temperature_min_jour_courant_petite_maison
+        - sensor.temperature_min_jour_courant_sdb_enfants
+        - sensor.temperature_min_jour_courant_sdb_parents
+        - sensor.temperature_min_jour_courant_sejour
         - sensor.temperature_seuil_bas_cave
         - sensor.temperature_seuil_bas_chambre_arnaud
         - sensor.temperature_seuil_bas_chambre_matthieu
@@ -84,7 +90,7 @@
         {% set prefixe = 'sensor.couleur_temperature_min_jour_' %}
         {% set suffixe = this.entity_id | replace(prefixe, '') %}
 
-        {% set src = 'sensor.temperature_min_jour_' ~ suffixe %}
+        {% set src = 'sensor.temperature_min_jour_courant_' ~ suffixe %}
         {% set src_bas = 'sensor.temperature_seuil_bas_' ~ suffixe %}
         {% set src_haut = 'sensor.temperature_seuil_haut_' ~ suffixe %}
 
@@ -118,7 +124,7 @@
           {% set prefixe = 'sensor.couleur_temperature_min_jour_' %}
           {% set suffixe = this.entity_id | replace(prefixe, '') %}
 
-          {% set src = 'sensor.temperature_min_jour_' ~ suffixe %}
+          {% set src = 'sensor.temperature_min_jour_courant_' ~ suffixe %}
           {% set src_bas = 'sensor.temperature_seuil_bas_' ~ suffixe %}
           {% set src_haut = 'sensor.temperature_seuil_haut_' ~ suffixe %}
 
