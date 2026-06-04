@@ -24,7 +24,7 @@ Ce domaine est strictement **sans pilotage thermique direct** :
 - Nature : CONTRAT NORMATIF DE DOMAINE — ACTIF
 - Autorité d’exécution :
   - pipeline maître `automation ID 10010000000023`
-  - scripts d’étapes `script.aeration_m0..m5_*`
+  - scripts d’étapes `script.aeration_m0..m6_*`
 - Documents transversaux obligatoires : `socle_transversal/`
 
 ---
@@ -50,12 +50,13 @@ Hors périmètre du présent domaine :
   - garde-fous (post-boot, anti-zombie, invalidation tentative)
 
 ### Machine à états
-- `m0_recover/` : remédiation incohérences (recover demandé)
+- `m0_recover_normatif/` : remédiation incohérences (recover demandé)
 - `m1_debut_episode/` : démarrage épisode + snapshots T_REF
 - `m2_fin_episode/` : clôture + blocage + programmation monotone (timers/datetimes)
 - `m3_analyse_delta_t/` : calcul ΔT + prolongation/maintien
 - `m4_fin_blocage/` : levée unique + clôture totale (timers/datetimes/pipeline)
 - `m5_reouverture/` : trace réouverture pendant blocage
+- `m6_refermeture/` : refermeture après réouverture pendant blocage
 
 ---
 
@@ -87,12 +88,13 @@ Hors périmètre du présent domaine :
 - `socle_transversal/12_tentative_aeration_en_grace.md`
 - `socle_transversal/13_interfaces_ouvertures.md`
 
-### Machine à états (M0..M5)
-- `m0_recover/`
+### Machine à états (M0..M6)
+- `m0_recover_normatif/`
 - `m1_debut_episode/`
 - `m2_fin_episode/`
 - `m3_analyse_delta_t/`
 - `m4_fin_blocage/`
 - `m5_reouverture/`
+- `m6_refermeture/`
 
 # ==========================================================
