@@ -1,238 +1,151 @@
 # ==========================================================
-# 🧠 ARSENAL — ARCHITECTURE
-#     AÉRATION — RECOMMANDATION
+# 🚗 ARSENAL — ARCHITECTURE
+#     VOITURE — Audi A3 e-tron
 # ==========================================================
 
 ## 🎯 OBJET DU DOCUMENT
 
-Ce document décrit l’**architecture technique et décisionnelle**
-du sous-système **Aération — Recommandation** dans Arsenal.
+Ce document décrit l'**architecture technique** du sous-système **Voiture
+(Audi A3 e-tron)** dans Arsenal : la manière dont les données sont sécurisées,
+sélectionnées, mémorisées, historisées et restituées.
 
-Il explicite :
+👉 Ce document **N'EST PAS** un contrat métier.
+Il **N'INTRODUIT AUCUNE règle fonctionnelle nouvelle**.
+La gouvernance normative (sources autorisées, invariants, interdits) est définie
+dans le **contrat** : [`contrats/voiture.md`](../contrats/voiture.md).
 
-- la structure des briques logiques,
-- la circulation de l’information,
-- la séparation stricte des responsabilités,
-- les garanties de robustesse,
-- les interfaces entre décision, notification et UI.
-
-👉 Ce document **N’EST PAS** un contrat métier.  
-Il **N’INTRODUIT AUCUNE règle fonctionnelle nouvelle**.
+> **Note de cadrage.** Ce document cartographie fidèlement l'**implémentation
+> existante** telle qu'observée dans le dépôt. La justification architecturale
+> approfondie de chaque choix (alternatives écartées, ADR) **reste à rédiger** ;
+> elle sera ajoutée au fil des décisions, sans modifier la cartographie ci-dessous.
 
 ---
 
 ## 🧱 POSITIONNEMENT ARCHITECTURAL
 
-Le sous-système **Aération — Recommandation** est :
+Le sous-système Voiture est :
 
-- **informatif**
-- **non contraignant**
-- **stateless**
-- **sans effet thermique direct**
+- **observationnel** (il lit l'état d'un véhicule, il ne le pilote pas) ;
+- **défensif vis-à-vis du cloud** (la donnée brute fournisseur est réputée non
+  fiable et n'est jamais consommée directement) ;
+- **stratifié** : chaque couche ne consomme que la sortie de la couche précédente.
 
-Il est **orthogonal** à :
-
-- l’aération physique (`aeration.md`)
-- le chauffage
-- la climatisation
-- toute logique de blocage ou reprise thermique
+L'invariant architectural central est la **non-consommation directe de la donnée
+cloud brute** par une automation métier, un helper, une statistique ou un
+dashboard.
 
 ---
 
-## 🧩 VUE D’ENSEMBLE — CHAÎNE DÉCISIONNELLE
+## 🧩 CHAÎNE CANONIQUE (vue d'ensemble)
 
-  Capteurs physiques
-          ↓ 
-  Capteurs dérivés (HA / T / CO₂ / météo)
-          ↓
-  Binary sensors décisionnels
-          ↓
-  Agrégation globale 
-          ↓ 
-  Notifications (si autorisées) 
-          ↓ 
-  UI (restitution fidèle)
+```
+Cloud brut (non fiable)
+        │
+        ▼
+Capteurs locaux stabilisés        (12_template_sensors/voiture/…)
+        │
+        ▼
+Automatisations de sélection      (11_automations/voiture/…)
+        │
+        ▼
+Helpers de mémorisation           (03_input_numbers/voiture/…)
+        │
+        ▼
+Capteurs statistiques + utility_meter
+        │
+        ▼
+Persistance Recorder
+        │
+        ▼
+UI & Dashboards                   (18_lovelace/dashboards/voiture/…)
+```
 
-Aucune flèche inverse n’est autorisée.
-
----
-
-## 🧠 COUCHE 1 — DONNÉES D’ENTRÉE
-
-### Sources physiques
-
-- Température intérieure (RDC / étage)
-- Température extérieure
-- Humidité absolue intérieure / extérieure
-- Humidité relative extérieure
-- CO₂ (RDC / étage)
-- Pluie (Zigbee + Netatmo)
-- Saison (input_select)
-- Contextes météo / temporels
-
-### Propriété architecturale
-
-- **Aucune donnée brute n’est utilisée directement en UI**
-- Toute donnée est **normalisée avant décision**
+La structure des couches est posée normativement par le contrat ; ce document en
+décrit l'**ancrage réel dans l'arborescence**.
 
 ---
 
-## 🧮 COUCHE 2 — PARAMÉTRAGE DÉCLARATIF
+## 🗂️ ANCRAGE DANS LE DÉPÔT (implémentation observée)
 
-Les `input_number` et `input_boolean` constituent une couche :
+### Couche perception — capteurs locaux stabilisés
+`12_template_sensors/voiture/` (template *triggered* sensors), notamment :
 
-- **déclarative**
-- **modifiable dynamiquement**
-- **sans logique propre**
+- `batterie/` — `etat_charge.yaml`, `pourcentage.yaml`, `autonomie.yaml`,
+  `snapshots_pleine_charge.yaml` ;
+- `kilometrage.yaml`, `derniere_maj.yaml`, `stationnement.yaml` ;
+- `revision/` — `temps.yaml`, `distance.yaml` ;
+- `ouvertures/fenetres/` — capteurs d'ouvrants (voir dette AUDI-04 ci-dessous).
 
-Ils couvrent :
+### Couche sélection — automatisations métier
+`11_automations/voiture/` :
 
-- seuils saisonniers (ΔHA, ΔT),
-- modulateurs contextuels (nuit, pluie, froid, canicule),
-- priorités CO₂,
-- temporalité (stabilisation, anti-spam),
-- autorisations de notification.
+- `autonomie.yaml` — consolidation du snapshot d'autonomie ;
+- `archive.yaml` — archivage périodique ;
+- `notification_etat_charge.yaml` — restitution d'état (projection, non décision).
 
-👉 Aucun helper ne prend de décision.
+### Couche mémorisation — helpers
+`03_input_numbers/voiture/autonomie.yaml` — baselines et snapshots d'autonomie.
 
----
+### Couche mesure — utility_meter
+Dans `utility_meter.yaml` : `audi_e_tron_distance_mois` et
+`audi_e_tron_distance_an`, tous deux dérivés de
+`sensor.audi_e_tron_kilometrage_local` (source locale, jamais le cloud brut).
 
-## 🧠 COUCHE 3 — DÉCISION LOCALE
+### Couche persistance — Recorder
+Section dédiée du `recorder.yaml` (catégorie automobile, dont la corrélation
+thermique). L'historisation est volontairement bornée et explicite.
 
-### Binary sensors décisionnels
-
-- `binary_sensor.aeration_preferable_rdc`
-- `binary_sensor.aeration_preferable_etage`
-
-Rôle :
-
-- calculer **localement** la pertinence d’aérer,
-- exposer :
-  - un état binaire,
-  - une décision textuelle explicite,
-  - des attributs de diagnostic.
-
-Caractéristiques :
-
-- décision **recalculable en continu**,
-- tolérance aux états `unknown` / `unavailable`,
-- aucun effet de bord,
-- aucun appel externe.
+### Couche restitution — UI
+`18_lovelace/dashboards/voiture/` : `audi.yaml`, `audi_batterie.yaml`,
+`audi_securite.yaml`, et `18_lovelace/includes/navigation/voiture.yaml`.
 
 ---
 
-## 🧠 COUCHE 4 — AGRÉGATION GLOBALE
+## ❄️ SNAPSHOT ATOMIQUE & CORRÉLATION THERMIQUE
 
-### Capteur agrégé
+Le domaine repose sur un **snapshot atomique** d'autonomie : les valeurs liées
+(autonomie pleine charge, température au moment du relevé, autonomie corrigée à
+20 °C) sont écrites **dans la même automation, au même instant logique**, afin de
+former un tuple cohérent exploitable pour l'analyse de l'influence thermique sur
+l'autonomie.
 
-- `binary_sensor.aeration_conseillee`
-
-Rôle :
-
-- consolider les décisions locales,
-- produire une **intention globale**,
-- exposer `decision_globale`.
-
-Contraintes :
-
-- **aucun recalcul métier**,
-- aucune réinterprétation,
-- agrégation logique uniquement.
+C'est une **propriété d'architecture** (atomicité d'écriture, cohérence du tuple),
+distincte de la règle métier qui en fixe la finalité — cette dernière relevant du
+contrat.
 
 ---
 
-## 🔔 COUCHE 5 — NOTIFICATIONS
+## 🩹 DETTE & POINTS D'ATTENTION (issus de l'audit du domaine)
 
-Les automatisations de notification :
+Source : [`audits/01_rapports/voiture/audit_domaine_audi.md`](../audits/01_rapports/voiture/audit_domaine_audi.md).
 
-- consomment la décision globale,
-- vérifient :
-  - présence,
-  - état réel des fenêtres,
-  - autorisations utilisateur,
-  - anti-spam persistant.
+- **AUDI-11 — Reproductibilité dépôt → runtime non garantie** *(majeur, enseignement
+  principal)* : l'état documenté/dépôt peut diverger de l'état runtime ; toute
+  évolution doit être revérifiée sur le système réel.
+- **AUDI-04 — Sous-système ouvrants / sécurité hors contrat** *(dette
+  documentaire)* : les capteurs d'ouvrants (`ouvertures/fenetres/…`, dashboard
+  `audi_securite.yaml`) existent en implémentation mais ne sont pas couverts par le
+  contrat. Périmètre à clarifier.
+- **AUDI-05 — Angle mort du checker contractuel** : la validation contractuelle ne
+  couvre pas l'intégralité du domaine.
+- **AUDI-03 (recorder)** : lignes recorder résiduelles à surveiller.
 
-Principes :
-
-- **notification ≠ décision**
-- **notification ≠ action**
-- aucune modification d’état métier.
-
-Les mémoires `input_datetime` assurent une
-**robustesse totale aux redémarrages**.
-
----
-
-## 🎨 COUCHE 6 — UI (RESTITUTION)
-
-### Rôle de l’UI
-
-- traduire une décision existante,
-- afficher :
-  - état,
-  - motif,
-  - seuils appliqués,
-  - contexte.
-
-### Interdictions strictes
-
-- aucun calcul métier,
-- aucune prise de décision,
-- aucune modification d’état.
-
-Les cartes sont :
-
-- des **observateurs passifs**,
-- conformes à la charte UI Arsenal,
-- synchronisées via `triggers_update`.
+Ces points sont des **constats d'audit**, pas des décisions d'architecture : ils
+sont listés ici comme entrées de travail, et leur résolution éventuelle sera tracée
+dans le changelog.
 
 ---
 
-## 🛡️ ROBUSTESSE & RELOAD YAML
+## 🔗 RÉFÉRENCES
 
-Garanties architecturales :
-
-- aucun `condition: state` fragile en décision,
-- usage systématique de templates tolérants,
-- absence d’état figé non reconstructible,
-- recalcul complet possible après reload.
-
-Un reload YAML est considéré comme :
-→ **un test structurel volontaire**.
-
----
-
-## 🧩 SÉPARATION AVEC L’AÉRATION PHYSIQUE
-
-| Aspect | Recommandation | Aération physique |
-|-----|---------------|------------------|
-| Nature | Informatif | Actif |
-| Temporalité | Instantanée | Épisodique |
-| Chauffage | Aucun effet | Blocage |
-| Décision | Réversible | Pipeline armé |
-| Contrat | `aeration_recommandation.md` | `aeration.md` |
-
-Aucune dépendance circulaire n’est autorisée.
-
----
-
-## 🛑 INVARIANTS ARCHITECTURAUX
-
-Il est **strictement interdit** que :
-
-- la recommandation pilote un ouvrant,
-- la recommandation déclenche un blocage thermique,
-- l’UI décide à la place des capteurs,
-- une automation modifie une décision.
+- Contrat normatif : [`contrats/voiture.md`](../contrats/voiture.md)
+- Audit du domaine : [`audits/01_rapports/voiture/audit_domaine_audi.md`](../audits/01_rapports/voiture/audit_domaine_audi.md)
+- Persistance : section automobile de `recorder.yaml`
 
 ---
 
 ## 📌 STATUT
 
-- Document d’architecture : **ACTIF**
-- Domaine : **Aération — Recommandation**
-- Rôle : **Structure & séparation**
-- Dépendance métier : **AUCUNE**
-- Fusion avec d’autres architectures : **NON**
-
-# ==========================================================
+- Nature : **document d'architecture** (référence d'implémentation)
+- Autorité : **subordonnée au contrat** `contrats/voiture.md`
+- Complétude : **cadrage + cartographie de l'existant** ; rationale détaillée à compléter

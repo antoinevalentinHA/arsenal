@@ -1,6 +1,6 @@
 ==================================================
 🧠 ARSENAL — CHANGELOG / INDEX (canon)
-Fichier : 00_documentation_arsenal/changelog/INDEX.md
+Fichier : 00_documentation_arsenal/changelog/index.md
 ==================================================
 
 # 🎯 Rôle
@@ -678,7 +678,7 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 
 ---
 
-## 🧠 ARSENAL HA — v10 — STABLE — 2026-03-XX
+## 🧠 ARSENAL HA — v10 — STABLE — 2026-03-XX — Ouvertures / Aération / Anti-zombie
 **Tags :** ouvertures, aeration, chauffage, temporalite, robustesse, anti_zombie, architecture  
 **Signal net :**
 - Fin de grâce explicitée (writer unique) : booléens `*_grace_echue` → causalité exclusivement portée par `timer.finished`.
@@ -757,7 +757,7 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 
 ---
 
-## 🧠 ARSENAL HA — v10 — STABLE — 2026-03-XX
+## 🧠 ARSENAL HA — v10 (consolidation finale) — STABLE — 2026-03-XX — Système contractuel / Viessmann
 **Tags :** architecture, contrats, meteo, chauffage, eclairage, viessmann, ui, robustesse  
 **Signal net :**
 - Architecture : transformation en système contractuel, déterministe, boot-safe et découplé → documentation prescriptive.
