@@ -1,11 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CARTE UI
-#     [Domaine] — [Fonction courte]
-#
-# 🗂️ COUCHE : [...]
-# 🧱 TYPE UI : [...]
-# 🔍 NIVEAU DE CONFIANCE : [...]
-# ==========================================================
+# 🧠 ARSENAL — CARTE UI · [Domaine] — [Fonction courte] · 🗂️ COUCHE : [...] · 🧱 TYPE UI : [...] · 🔍 NIVEAU DE CONFIANCE : [...]
 #
 # 🎯 RÔLE
 #   ...

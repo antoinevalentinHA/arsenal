@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF
-#     AÉRATION — RECOMMANDATION
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF · AÉRATION — RECOMMANDATION
 
 ## 🎯 OBJET DU CONTRAT
 

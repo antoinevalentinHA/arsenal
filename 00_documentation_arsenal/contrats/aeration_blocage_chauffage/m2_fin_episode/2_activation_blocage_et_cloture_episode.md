@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M2)
-#     CLÔTURE & ACTIVATION BLOCAGE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M2) · CLÔTURE & ACTIVATION BLOCAGE
 
 ## 🎯 CLÔTURE D’ÉPISODE
 

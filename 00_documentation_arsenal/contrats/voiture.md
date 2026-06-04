@@ -1,7 +1,4 @@
-# ==========================================================
-# 🚗 ARSENAL — CONTRAT NORMATIF
-#     VOITURE — Audi A3 e-tron
-# ==========================================================
+# 🚗 ARSENAL — CONTRAT NORMATIF · VOITURE — Audi A3 e-tron
 
 ## 🎯 OBJET DU CONTRAT
 

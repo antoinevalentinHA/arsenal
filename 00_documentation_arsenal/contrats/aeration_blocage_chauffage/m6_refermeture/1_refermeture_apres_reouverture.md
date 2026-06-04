@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M6)
-#     RÉFERMETURE APRÈS RÉOUVERTURE — CADRE GÉNÉRAL
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M6) · RÉFERMETURE APRÈS RÉOUVERTURE — CADRE GÉNÉRAL
 
 ## 🎯 OBJET
 

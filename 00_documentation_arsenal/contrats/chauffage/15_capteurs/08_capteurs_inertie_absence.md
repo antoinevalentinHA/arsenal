@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS D’INERTIE THERMIQUE EN ABSENCE
-#     Observabilité passive — Stabilisation et plancher thermique
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS D’INERTIE THERMIQUE EN ABSENCE · Observabilité passive — Stabilisation et plancher thermique
 # Domaine : Chauffage / Inertie thermique / Absence
 # Couche  : Observabilité physique passive du bâtiment
 # Statut  : STRUCTURANT — FRONTIÈRE D’INERTIE CRITIQUE

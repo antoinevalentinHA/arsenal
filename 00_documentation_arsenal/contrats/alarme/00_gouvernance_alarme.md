@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER (NORMATIF & OPPOSABLE)
-#     Alarme — Gouvernance
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER (NORMATIF & OPPOSABLE) · Alarme — Gouvernance
 
 ## 📌 Statut
 

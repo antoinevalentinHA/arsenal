@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF RACINE
-#     CHAUFFAGE — DOCTRINE DES REGISTRES (V3 PRO)
-#     Sécurité système vs Stabilisation thermique
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF RACINE · CHAUFFAGE — DOCTRINE DES REGISTRES (V3 PRO) · Sécurité système vs Stabilisation thermique
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF RACINE — CLÉ DE LECTURE DU DOMAINE

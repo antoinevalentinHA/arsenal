@@ -1,7 +1,4 @@
-# ==========================================================
-# 🔧 ARSENAL — CONTRAT D'IMPLÉMENTATION
-# script.garage_toggle
-# ==========================================================
+# 🔧 ARSENAL — CONTRAT D'IMPLÉMENTATION · script.garage_toggle
 
 #
 # 📌 Statut :

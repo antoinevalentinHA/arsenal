@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Notifications & feedback
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Notifications & feedback
 
 ## 📌 Statut
 

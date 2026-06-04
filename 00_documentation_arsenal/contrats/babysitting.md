@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Mode Babysitting
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Mode Babysitting
 
 **Version** : v1.0.0
 **Date** : 2026-05-23

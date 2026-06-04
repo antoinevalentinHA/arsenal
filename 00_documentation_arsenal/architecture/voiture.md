@@ -1,7 +1,4 @@
-# ==========================================================
-# 🚗 ARSENAL — ARCHITECTURE
-#     VOITURE — Audi A3 e-tron
-# ==========================================================
+# 🚗 ARSENAL — ARCHITECTURE · VOITURE — Audi A3 e-tron
 
 ## 🎯 OBJET DU DOCUMENT
 

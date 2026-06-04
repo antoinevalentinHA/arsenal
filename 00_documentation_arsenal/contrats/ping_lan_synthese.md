@@ -1,6 +1,6 @@
-<!-- audit:scope=doc -->
-
 # CONTRAT_PING_LAN_SYNTHESE — v1.0
+
+<!-- audit:scope=doc -->
 
 **Domaine** : Système / Connectivité
 **Date de figeage** : 2026-05-07

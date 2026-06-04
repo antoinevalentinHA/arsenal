@@ -1,4 +1,4 @@
-### 🔒 binary_sensor.fenetre_ouverte_maison_avec_delai
+# 🔒 binary_sensor.fenetre_ouverte_maison_avec_delai
 
 - Domaine : Aération / Qualification / Blocages thermiques
 - Autorité : **FRONTIÈRE NIVEAU 1 FINALE**

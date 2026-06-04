@@ -1,4 +1,4 @@
-Contrat — Template Binary Sensors UPS
+# Contrat — Template Binary Sensors UPS
 
 Domaine : Infrastructure
 Version : v1.0

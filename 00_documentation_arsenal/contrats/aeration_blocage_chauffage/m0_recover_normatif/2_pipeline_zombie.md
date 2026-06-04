@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M0)
-#     CAS A — PIPELINE ZOMBIE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M0) · CAS A — PIPELINE ZOMBIE
 
 ## 🎯 OBJET
 

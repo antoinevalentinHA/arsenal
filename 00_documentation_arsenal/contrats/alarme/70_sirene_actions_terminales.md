@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Sirène (actions terminales)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Sirène (actions terminales)
 
 ## 📌 Statut
 

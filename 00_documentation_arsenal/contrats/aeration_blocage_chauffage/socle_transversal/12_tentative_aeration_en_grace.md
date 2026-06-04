@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     TENTATIVE D’AÉRATION EN GRÂCE (N0)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · TENTATIVE D’AÉRATION EN GRÂCE (N0)
 
 ## 🎯 OBJET
 

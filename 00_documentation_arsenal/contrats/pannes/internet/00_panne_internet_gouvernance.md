@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Pannes Internet — Gouvernance
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Pannes Internet — Gouvernance
 
 ## 📌 Statut
 - Contrat normatif et opposable

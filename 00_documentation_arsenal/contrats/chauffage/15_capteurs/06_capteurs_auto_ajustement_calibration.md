@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS D’AUTO-AJUSTEMENT & CALIBRATION
-#     Intelligence thermique supervisée — Propositions et apprentissage
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS D’AUTO-AJUSTEMENT & CALIBRATION · Intelligence thermique supervisée — Propositions et apprentissage
 # Domaine : Chauffage / Auto-ajustement & calibration
 # Couche  : Frontière d’apprentissage thermique supervisé
 # Statut  : STRUCTURANT — FRONTIÈRE CRITIQUE D’OPTIMISATION

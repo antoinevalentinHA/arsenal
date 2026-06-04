@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M5)
-#     INTERACTION AVEC M3 (GARDE-FOU STRUCTUREL)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M5) · INTERACTION AVEC M3 (GARDE-FOU STRUCTUREL)
 
 ## 🎯 OBJET
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🛡️ ARSENAL — RAPPORT D'AUDIT OFFICIEL
-#     Domaine : Sécurité / Alarme
-# ==========================================================
+# 🛡️ ARSENAL — RAPPORT D'AUDIT OFFICIEL · Domaine : Sécurité / Alarme
 
 ## 📌 Métadonnées
 

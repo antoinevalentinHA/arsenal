@@ -1,7 +1,4 @@
-# ==========================================================
-# 📋 ARSENAL — BACKLOG PRIORISÉ
-#     Domaine : Sécurité / Alarme
-# ==========================================================
+# 📋 ARSENAL — BACKLOG PRIORISÉ · Domaine : Sécurité / Alarme
 
 ## 📌 Cadre
 

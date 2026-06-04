@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     HELPERS DU DOMAINE AÉRATION → BLOCAGE CHAUFFAGE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · HELPERS DU DOMAINE AÉRATION → BLOCAGE CHAUFFAGE
 
 ## 🎯 OBJET
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Présence maison
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Présence maison
 
 ## 📌 Statut
 - **Contrat normatif et opposable**

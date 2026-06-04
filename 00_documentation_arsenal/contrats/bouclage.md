@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF
-#     ECS — BOUCLAGE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF · ECS — BOUCLAGE
 
 **Version :** 2.3.0  
 **Statut :** Actif  

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     COHÉRENCE — SIGNAL RECOVER (DEMANDE DE REMÉDIATION)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · COHÉRENCE — SIGNAL RECOVER (DEMANDE DE REMÉDIATION)
 
 ## 🎯 OBJET
 

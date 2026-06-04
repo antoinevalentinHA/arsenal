@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF
-#     AÉRATION — RENVOI
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF · AÉRATION — RENVOI
 
 Le contrat normatif du domaine Aération / Blocage Chauffage
 a été externalisé vers :

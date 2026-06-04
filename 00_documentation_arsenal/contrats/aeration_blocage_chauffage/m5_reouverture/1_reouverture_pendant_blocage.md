@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M5)
-#     RÉOUVERTURE PENDANT BLOCAGE — SUSPENSION TEMPORAIRE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M5) · RÉOUVERTURE PENDANT BLOCAGE — SUSPENSION TEMPORAIRE
 
 ## 🎯 OBJET
 

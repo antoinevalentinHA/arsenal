@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF
-#     OBSERVATION THERMIQUE D’AÉRATION
-#     Détection d’intégrité physique & anti-épisode zombie
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF · OBSERVATION THERMIQUE D’AÉRATION · Détection d’intégrité physique & anti-épisode zombie
 
 # ----------------------------------------------------------
 # 📌 STATUT CONTRACTUEL

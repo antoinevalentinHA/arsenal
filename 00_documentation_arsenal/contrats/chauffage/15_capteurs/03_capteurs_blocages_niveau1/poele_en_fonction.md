@@ -1,4 +1,4 @@
-### 🔒 binary_sensor.poele_en_fonction
+# 🔒 binary_sensor.poele_en_fonction
 
 - Domaine : Blocages / Contexte thermique externe / Apports exogènes non pilotés
 - Autorité : **FRONTIÈRE NIVEAU 1 FINALE**

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — TABLE OFFICIELLE DES CAPTEURS THERMIQUES
-#     Index canonique des frontières d’autorité — Chauffage
-# ----------------------------------------------------------
+# 🧠 ARSENAL — TABLE OFFICIELLE DES CAPTEURS THERMIQUES · Index canonique des frontières d’autorité — Chauffage
 # Domaine : Chauffage / Capteurs structurants
 # Statut  : DOCUMENT NORMATIF — RÉFÉRENCE D’ARCHITECTURE
 # Portée  : Frontières d’autorité du moteur thermique Arsenal

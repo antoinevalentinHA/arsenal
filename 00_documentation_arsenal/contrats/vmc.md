@@ -1,6 +1,4 @@
-# ==========================================================
 # 📜 CONTRAT ARSENAL — VMC (Humidité / CO₂)
-# ----------------------------------------------------------
 # 📛 Domaine : Ventilation mécanique contrôlée (VMC)
 # 🧠 Nature : Pilotage automatique contractuel
 #

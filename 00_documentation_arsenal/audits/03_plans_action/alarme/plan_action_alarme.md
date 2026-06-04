@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧭 ARSENAL — PLAN D'ACTION / FEUILLE DE ROUTE D'ASSAINISSEMENT
-#     Domaine : Sécurité / Alarme
-# ==========================================================
+# 🧭 ARSENAL — PLAN D'ACTION / FEUILLE DE ROUTE D'ASSAINISSEMENT · Domaine : Sécurité / Alarme
 
 ## 📌 Cadre
 

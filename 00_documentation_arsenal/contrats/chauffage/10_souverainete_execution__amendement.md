@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — AMENDEMENT NORMATIF
-#     CHAUFFAGE — SOUVERAINETÉ D'EXÉCUTION (V3 Pro)
-#     Amendement CH-4 : topologie d'appel de la couche d'Application
-# ==========================================================
+# 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — SOUVERAINETÉ D'EXÉCUTION (V3 Pro) · Amendement CH-4 : topologie d'appel de la couche d'Application
 #
 # 📌 STATUT :
 #   AMENDEMENT au contrat fondateur `10_souverainete_execution.md`

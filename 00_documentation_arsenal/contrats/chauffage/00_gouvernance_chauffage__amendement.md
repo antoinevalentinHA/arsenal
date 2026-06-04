@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — AMENDEMENT NORMATIF
-#     CHAUFFAGE — GOUVERNANCE GÉNÉRALE (V3 PRO)
-#     Amendement : ancrage de la doctrine des registres
-# ==========================================================
+# 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — GOUVERNANCE GÉNÉRALE (V3 PRO) · Amendement : ancrage de la doctrine des registres
 #
 # 📌 STATUT :
 #   AMENDEMENT au contrat fondateur `00_gouvernance_chauffage.md`

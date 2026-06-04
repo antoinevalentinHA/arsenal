@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M2)
-#     RESET CONFIRMATION & TRAÇABILITÉ
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M2) · RESET CONFIRMATION & TRAÇABILITÉ
 
 ## 🎯 RESET CONFIRMATION
 

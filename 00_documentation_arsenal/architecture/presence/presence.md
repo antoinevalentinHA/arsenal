@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — ARCHITECTURE
-#     Présence maison
-# ==========================================================
+# 🧠 ARSENAL — ARCHITECTURE · Présence maison
 
 ## 🎯 Objet du document
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Exécution remédiation Internet
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Exécution remédiation Internet
 
 ## 📌 Objet
 

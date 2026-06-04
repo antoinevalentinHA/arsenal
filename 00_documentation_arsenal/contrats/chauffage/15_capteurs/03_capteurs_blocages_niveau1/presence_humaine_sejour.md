@@ -1,4 +1,4 @@
-### 🔒 binary_sensor.presence_humaine_sejour
+# 🔒 binary_sensor.presence_humaine_sejour
 
 - Domaine : Blocages / Apports thermiques externes / Confirmation contextuelle
 - Autorité : **CAPTEUR STRUCTURANT INDIRECT**

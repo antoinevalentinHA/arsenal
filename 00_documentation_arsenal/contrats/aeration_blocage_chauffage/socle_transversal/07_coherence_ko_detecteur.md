@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     COHÉRENCE — DÉTECTEUR KO (BINARY_SENSOR)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · COHÉRENCE — DÉTECTEUR KO (BINARY_SENSOR)
 
 ## 🎯 OBJET
 

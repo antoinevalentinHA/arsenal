@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M3)
-#     PROLONGER LE BLOCAGE — MONOTONICITÉ
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M3) · PROLONGER LE BLOCAGE — MONOTONICITÉ
 
 ## 🎯 OBJET
 

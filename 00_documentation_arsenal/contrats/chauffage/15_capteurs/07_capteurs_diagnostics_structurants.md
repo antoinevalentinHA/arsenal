@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS DE DIAGNOSTIC STRUCTURANT
-#     Observabilité souveraine — Audit et performance thermique
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS DE DIAGNOSTIC STRUCTURANT · Observabilité souveraine — Audit et performance thermique
 # Domaine : Chauffage / Diagnostics structurants
 # Couche  : Observabilité du moteur thermique
 # Statut  : STRUCTURANT — FRONTIÈRE D’AUDIT & DE TRAÇABILITÉ

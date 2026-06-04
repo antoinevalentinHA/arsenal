@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS DE CONTEXTE HUMAIN STRATÉGIQUE
-#     Absence / Géofencing / Anticipation retour
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS DE CONTEXTE HUMAIN STRATÉGIQUE · Absence / Géofencing / Anticipation retour
 # Domaine : Chauffage / Contexte humain & autorisations
 # Couche  : Contexte stratégique du moteur thermique
 # Statut  : STRUCTURANT — FRONTIÈRES STRATÉGIQUES D’OCCUPATION

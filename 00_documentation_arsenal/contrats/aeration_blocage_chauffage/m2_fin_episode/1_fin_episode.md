@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M2)
-#     FIN D'ÉPISODE — CADRE GÉNÉRAL
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M2) · FIN D'ÉPISODE — CADRE GÉNÉRAL
 
 ## 🎯 OBJET
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF PIVOT
-#     CHAUFFAGE — AUTORISATION THERMOSTAT LOGIQUE (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF PIVOT · CHAUFFAGE — AUTORISATION THERMOSTAT LOGIQUE (V3 PRO)
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF PIVOT — INTERFACE ENTRE FAITS & DÉCISION

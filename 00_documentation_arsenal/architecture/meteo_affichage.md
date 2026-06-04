@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — ARCHITECTURE
-#     Affichage météo
-# ==========================================================
+# 🧠 ARSENAL — ARCHITECTURE · Affichage météo
 
 ## 🎯 Objet du document
 

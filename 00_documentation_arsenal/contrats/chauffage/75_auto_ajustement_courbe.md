@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE
-#     CHAUFFAGE — AUTO-AJUSTEMENT DE LA COURBE DE CHAUFFE (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE · CHAUFFAGE — AUTO-AJUSTEMENT DE LA COURBE DE CHAUFFE (V3 PRO)
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF DE DOMAINE — CALIBRATION THERMIQUE SUPERVISÉE

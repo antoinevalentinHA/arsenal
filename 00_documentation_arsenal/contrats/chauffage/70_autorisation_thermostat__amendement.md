@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — AMENDEMENT NORMATIF
-#     CHAUFFAGE — AUTORISATION THERMOSTAT LOGIQUE (V3 PRO)
-#     Amendement : modulation de sobriété météo (suspension_relance_meteo)
-# ==========================================================
+# 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — AUTORISATION THERMOSTAT LOGIQUE (V3 PRO) · Amendement : modulation de sobriété météo (suspension_relance_meteo)
 #
 # 📌 STATUT :
 #   AMENDEMENT au contrat pivot `70_autorisation_thermostat.md`

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M0)
-#     CAS C — BLOCAGE ORPHELIN (DÉLÉGATION M4)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M0) · CAS C — BLOCAGE ORPHELIN (DÉLÉGATION M4)
 
 ## 🎯 OBJET
 

@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — AMENDEMENT NORMATIF
-#     CHAUFFAGE — DÉCISION CENTRALE V3
-#     Amendement : sécurité pure de Niveau 1 & causalité honnête
-# ==========================================================
+# 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — DÉCISION CENTRALE V3 · Amendement : sécurité pure de Niveau 1 & causalité honnête
 #
 # 📌 STATUT :
 #   AMENDEMENT au contrat central `30_decision_centrale.md`

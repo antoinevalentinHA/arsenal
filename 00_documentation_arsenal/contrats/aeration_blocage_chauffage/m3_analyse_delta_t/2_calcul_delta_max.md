@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M3)
-#     CALCUL ΔT MAXIMAL
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M3) · CALCUL ΔT MAXIMAL
 
 ## 🎯 OBJET
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS D’INERTIE THERMIQUE DE REPRISE
-#     Physique de redémarrage — Erreur, latence et récupération
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS D’INERTIE THERMIQUE DE REPRISE · Physique de redémarrage — Erreur, latence et récupération
 # Domaine : Chauffage / Inertie thermique / Reprise présence
 # Couche  : Observabilité événementielle de la physique de redémarrage
 # Statut  : STRUCTURANT — FRONTIÈRE D’INERTIE DE REPRISE CRITIQUE

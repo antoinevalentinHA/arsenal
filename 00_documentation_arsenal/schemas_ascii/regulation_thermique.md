@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — DOCUMENT DE MODÉLISATION CONCEPTUELLE
-#     Régulation Thermique — Schéma Historique
-# ==========================================================
+# 🧠 ARSENAL — DOCUMENT DE MODÉLISATION CONCEPTUELLE · Régulation Thermique — Schéma Historique
 #
 # 📌 STATUT :
 #   DOCUMENT DE RÉFÉRENCE HISTORIQUE — NON NORMATIF — OBSOLÈTE

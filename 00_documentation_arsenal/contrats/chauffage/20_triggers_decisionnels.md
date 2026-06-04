@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF DE GOUVERNANCE
-#     CHAUFFAGE — TRIGGERS DÉCISIONNELS (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF DE GOUVERNANCE · CHAUFFAGE — TRIGGERS DÉCISIONNELS (V3 PRO)
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF — ACTIF — NIVEAU STRUCTURANT

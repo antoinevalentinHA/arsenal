@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M1)
-#     ARMEMENT EXPLICITE DU PIPELINE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M1) · ARMEMENT EXPLICITE DU PIPELINE
 
 ## 🎯 OBJET
 

@@ -1,4 +1,4 @@
-## 🧱 Architecture Énergie — Séparation des couches
+# 🧱 Architecture Énergie — Séparation des couches
 
 Le sous-système Énergie repose sur une séparation stricte
 entre acquisition, sécurisation et exposition.

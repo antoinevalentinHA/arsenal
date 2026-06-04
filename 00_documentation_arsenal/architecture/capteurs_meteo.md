@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — ARCHITECTURE
-#     Capteurs météo & climat intérieur
-# ==========================================================
+# 🧠 ARSENAL — ARCHITECTURE · Capteurs météo & climat intérieur
 
 ## 🎯 Objet du document
 

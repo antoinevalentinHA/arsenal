@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     INVALIDATION TENTATIVE NON CONFIRMÉE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · INVALIDATION TENTATIVE NON CONFIRMÉE
 
 ## 🎯 OBJET
 

@@ -1,4 +1,4 @@
-## 🔒 Sources autorisées — Dashboard Énergie
+# 🔒 Sources autorisées — Dashboard Énergie
 
 ### Intention
 

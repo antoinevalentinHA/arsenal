@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     ΔT PAR PIÈCE (V3) — MANQUE THERMIQUE UNIQUEMENT
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · ΔT PAR PIÈCE (V3) — MANQUE THERMIQUE UNIQUEMENT
 
 ## 🎯 OBJET
 

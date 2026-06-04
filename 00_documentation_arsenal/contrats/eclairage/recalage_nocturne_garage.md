@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-# Recalage nocturne multi-fenetres — Eclairage Garage
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Recalage nocturne multi-fenetres — Eclairage Garage
 
 #
 # 📌 Statut :

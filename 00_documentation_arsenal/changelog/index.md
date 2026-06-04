@@ -1,7 +1,5 @@
-==================================================
-🧠 ARSENAL — CHANGELOG / INDEX (canon)
+# 🧠 ARSENAL — CHANGELOG / INDEX (canon)
 Fichier : 00_documentation_arsenal/changelog/index.md
-==================================================
 
 # 🎯 Rôle
 Index chronologique des versions/époques Arsenal.

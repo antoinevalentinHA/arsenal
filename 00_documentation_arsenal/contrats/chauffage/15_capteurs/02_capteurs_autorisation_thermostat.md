@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS D’AUTORISATION THERMOSTAT
-#     Cohérence d’exécution — Orchestration et contrôle logique
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS D’AUTORISATION THERMOSTAT · Cohérence d’exécution — Orchestration et contrôle logique
 # Domaine : Chauffage / Orchestration thermique
 # Couche  : Interface décision → application
 # Statut  : STRUCTURANT

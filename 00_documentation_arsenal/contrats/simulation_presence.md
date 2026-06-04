@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-# Simulation de présence
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Simulation de présence
 
 ## 🎯 Finalité
 

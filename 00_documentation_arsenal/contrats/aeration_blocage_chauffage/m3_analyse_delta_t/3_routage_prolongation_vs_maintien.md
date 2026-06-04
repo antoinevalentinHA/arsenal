@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M3)
-#     ROUTAGE PROLONGATION / MAINTIEN
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M3) · ROUTAGE PROLONGATION / MAINTIEN
 
 ## 🎯 OBJET
 

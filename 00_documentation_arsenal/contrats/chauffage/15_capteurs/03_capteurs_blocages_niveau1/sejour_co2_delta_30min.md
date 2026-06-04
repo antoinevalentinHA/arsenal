@@ -1,4 +1,4 @@
-### 🔒 sensor.sejour_co2_delta_30min
+# 🔒 sensor.sejour_co2_delta_30min
 
 - Domaine : Blocages / Apports thermiques externes / Confirmation contextuelle CO2
 - Autorité : **CAPTEUR STRUCTURANT INDIRECT**

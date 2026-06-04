@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — AMENDEMENT NORMATIF
-#     CHAUFFAGE — SÉMANTIQUE THERMIQUE OFFICIELLE (V3 PRO)
-#     Amendement : terme canonique suspension_relance_meteo
-# ==========================================================
+# 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — SÉMANTIQUE THERMIQUE OFFICIELLE (V3 PRO) · Amendement : terme canonique suspension_relance_meteo
 #
 # 📌 STATUT :
 #   AMENDEMENT au contrat sémantique fondateur

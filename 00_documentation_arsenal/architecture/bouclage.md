@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — ARCHITECTURE NORMATIVE
-#     ECS — BOUCLAGE
-# ==========================================================
+# 🧠 ARSENAL — ARCHITECTURE NORMATIVE · ECS — BOUCLAGE
 
 ## 🎯 OBJET DU DOCUMENT
 

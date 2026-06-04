@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M4)
-#     DÉSARMEMENT FINAL & TRAÇABILITÉ
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M4) · DÉSARMEMENT FINAL & TRAÇABILITÉ
 
 ## 🎯 OBJET
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M1)
-#     SNAPSHOTS DES TEMPÉRATURES DE RÉFÉRENCE (T_REF)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M1) · SNAPSHOTS DES TEMPÉRATURES DE RÉFÉRENCE (T_REF)
 
 ## 🎯 OBJET
 

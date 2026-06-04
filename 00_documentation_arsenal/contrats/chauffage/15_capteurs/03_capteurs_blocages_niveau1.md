@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS DE BLOCAGES ABSOLUS NIVEAU 1
-#     Immunité thermique — Frontières physiques et apports exogènes
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS DE BLOCAGES ABSOLUS NIVEAU 1 · Immunité thermique — Frontières physiques et apports exogènes
 # Domaine : Chauffage / Blocages absolus
 # Couche  : NIVEAU 1 — Priorité hiérarchique maximale
 # Statut  : STRUCTURANT — FRONTIÈRE DE SÉCURITÉ CRITIQUE

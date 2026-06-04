@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     TIMERS V3 PRO — RÈGLES MONOTONES & ANTI FANTÔMES
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · TIMERS V3 PRO — RÈGLES MONOTONES & ANTI FANTÔMES
 
 ## 🎯 OBJET
 

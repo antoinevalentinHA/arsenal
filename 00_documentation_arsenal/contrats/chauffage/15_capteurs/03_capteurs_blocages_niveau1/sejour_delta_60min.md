@@ -1,4 +1,4 @@
-### 🔒 sensor.sejour_delta_60min
+# 🔒 sensor.sejour_delta_60min
 
 - Domaine : Blocages / Apports thermiques externes / Détection dynamique consolidée
 - Autorité : **CAPTEUR STRUCTURANT INDIRECT**

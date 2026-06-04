@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M1)
-#     DÉBUT D'ÉPISODE — CADRE GÉNÉRAL
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M1) · DÉBUT D'ÉPISODE — CADRE GÉNÉRAL
 
 ## 🎯 OBJET
 

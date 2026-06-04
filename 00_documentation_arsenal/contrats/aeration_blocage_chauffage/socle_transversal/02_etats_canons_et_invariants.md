@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     ÉTATS CANONS & INVARIANTS STRUCTURELS
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · ÉTATS CANONS & INVARIANTS STRUCTURELS
 
 ## 🎯 OBJET
 

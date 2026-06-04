@@ -1,4 +1,4 @@
-### 🔒 binary_sensor.fenetres_maison_fermees_stable
+# 🔒 binary_sensor.fenetres_maison_fermees_stable
 
 - Domaine : Ouvertures / Enveloppe / Clôture stable
 - Autorité : **CANON OUVERTURES — Signal canonique de clôture stable consommé par la couche blocages chauffage**

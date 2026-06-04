@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF FONDATEUR
-#     CHAUFFAGE — GOUVERNANCE GÉNÉRALE (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF FONDATEUR · CHAUFFAGE — GOUVERNANCE GÉNÉRALE (V3 PRO)
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF FONDAMENTAL — CONSTITUTION DU DOMAINE CHAUFFAGE

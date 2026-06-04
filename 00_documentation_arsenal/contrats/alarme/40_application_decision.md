@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Décision centrale (pure)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Décision centrale (pure)
 
 ## 📌 Statut
 

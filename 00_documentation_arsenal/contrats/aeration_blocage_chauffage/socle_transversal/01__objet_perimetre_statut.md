@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     OBJET — PÉRIMÈTRE — STATUT
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · OBJET — PÉRIMÈTRE — STATUT
 
 # ----------------------------------------------------------
 # 📌 STATUT CONTRACTUEL

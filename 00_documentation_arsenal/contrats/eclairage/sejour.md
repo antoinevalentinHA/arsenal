@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT DE DOMAINE
-# Éclairage — Séjour
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT DE DOMAINE · Éclairage — Séjour
 
 **Référence :** `CONTRAT_ECLAIRAGE_SEJOUR.md`
 **Version :** 1.0.0

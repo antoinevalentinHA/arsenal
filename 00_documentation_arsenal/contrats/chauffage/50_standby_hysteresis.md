@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF D’APPLICATION
-#     CHAUFFAGE — STANDBY & HYSTÉRÉSIS D’EXÉCUTION (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF D’APPLICATION · CHAUFFAGE — STANDBY & HYSTÉRÉSIS D’EXÉCUTION (V3 PRO)
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF D’APPLICATION — STABILISATION MÉCANIQUE

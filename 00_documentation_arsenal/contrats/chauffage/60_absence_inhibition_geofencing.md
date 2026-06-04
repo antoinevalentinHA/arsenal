@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE (RÉÉCRITURE V3 PRO)
-#     CHAUFFAGE — ABSENCE & INHIBITION GÉOFENCING
-#     Régulation de stabilisation thermique en absence
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE (RÉÉCRITURE V3 PRO) · CHAUFFAGE — ABSENCE & INHIBITION GÉOFENCING · Régulation de stabilisation thermique en absence
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF DE DOMAINE — STRATÉGIE THERMIQUE D'ABSENCE

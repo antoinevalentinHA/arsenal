@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     INTERFACES EXTERNES — CONTRAT OUVERTURES (RÉFÉRENCE)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · INTERFACES EXTERNES — CONTRAT OUVERTURES (RÉFÉRENCE)
 
 ## 🎯 OBJET
 

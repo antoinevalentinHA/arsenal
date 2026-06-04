@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Hors périmètre & extensions
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Hors périmètre & extensions
 
 ## 📌 Statut
 

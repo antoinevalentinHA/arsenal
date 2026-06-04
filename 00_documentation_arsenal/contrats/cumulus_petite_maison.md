@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Cumulus — Petite Maison
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Cumulus — Petite Maison
 
 ## 📌 Statut
 - **Contrat normatif et opposable**

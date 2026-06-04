@@ -1,4 +1,4 @@
-### 🔍 binary_sensor.fenetre_ouverte_maison
+# 🔍 binary_sensor.fenetre_ouverte_maison
 
 - Domaine : Ouvertures / Aération / Sécurité thermique bâtiment
 - Autorité : **CAPTEUR STRUCTURANT INDIRECT**

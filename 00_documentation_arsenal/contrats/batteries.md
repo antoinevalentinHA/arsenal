@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF
-#     Batteries des capteurs
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF · Batteries des capteurs
 
 ## 📌 Statut
 

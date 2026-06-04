@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     MINI-GUARD PIPELINE — ANTI-ZOMBIE (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · MINI-GUARD PIPELINE — ANTI-ZOMBIE (V3 PRO)
 
 ## 🎯 OBJET
 

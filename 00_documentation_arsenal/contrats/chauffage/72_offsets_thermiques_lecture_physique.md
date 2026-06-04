@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF MÉTHODOLOGIQUE
-#     CHAUFFAGE — OFFSETS THERMIQUES
-#     LECTURE PHYSIQUE & RÉGLAGE DES SEUILS
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF MÉTHODOLOGIQUE · CHAUFFAGE — OFFSETS THERMIQUES · LECTURE PHYSIQUE & RÉGLAGE DES SEUILS
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF MÉTHODOLOGIQUE — PHASE 1

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Détection d'intrusion
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Détection d'intrusion
 
 ## 📌 Statut
 

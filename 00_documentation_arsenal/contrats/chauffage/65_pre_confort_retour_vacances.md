@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE
-#     CHAUFFAGE — PRÉ-CONFORT RETOUR VACANCES (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE · CHAUFFAGE — PRÉ-CONFORT RETOUR VACANCES (V3 PRO)
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF DE DOMAINE — ANTICIPATION THERMIQUE TEMPORISÉE

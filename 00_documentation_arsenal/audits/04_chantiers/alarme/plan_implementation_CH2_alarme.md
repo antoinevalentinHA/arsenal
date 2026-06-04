@@ -1,7 +1,4 @@
-# ==========================================================
-# 🛠️ ARSENAL — PLAN D'IMPLÉMENTATION
-#     Chantier CH-2 — Option 1 : raison décisionnelle, autorité unique au cerveau
-# ==========================================================
+# 🛠️ ARSENAL — PLAN D'IMPLÉMENTATION · Chantier CH-2 — Option 1 : raison décisionnelle, autorité unique au cerveau
 
 ## 📌 Cadre
 

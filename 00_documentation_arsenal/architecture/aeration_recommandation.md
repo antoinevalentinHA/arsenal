@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — ARCHITECTURE
-#     AÉRATION — RECOMMANDATION
-# ==========================================================
+# 🧠 ARSENAL — ARCHITECTURE · AÉRATION — RECOMMANDATION
 
 ## 🎯 OBJET DU DOCUMENT
 

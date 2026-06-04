@@ -1,7 +1,4 @@
-# ==========================================================
-# 📱 ARSENAL — ARCHITECTURE
-# Notifications mobiles
-# ==========================================================
+# 📱 ARSENAL — ARCHITECTURE · Notifications mobiles
 #
 # 📌 Statut :
 # Document ARCHITECTURE

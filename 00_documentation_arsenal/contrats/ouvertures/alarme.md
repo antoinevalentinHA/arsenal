@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Ouvrants d'entrée
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Ouvrants d'entrée
 
 ## 📌 Statut
 

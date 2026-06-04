@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Contexte de remédiation réseau
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Contexte de remédiation réseau
 
 ## 📌 Principe
 

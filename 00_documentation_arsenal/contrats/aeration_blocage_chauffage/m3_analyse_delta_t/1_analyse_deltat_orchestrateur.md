@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M3)
-#     ANALYSE DELTAT — ORCHESTRATEUR
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M3) · ANALYSE DELTAT — ORCHESTRATEUR
 
 ## 🎯 OBJET
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Diagnostics, cohérence, divergence
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Diagnostics, cohérence, divergence
 
 ## 📌 Statut
 

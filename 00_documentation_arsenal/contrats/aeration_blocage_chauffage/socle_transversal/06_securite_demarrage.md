@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     SÉCURITÉ DÉMARRAGE — ANTI BLOCAGE RÉSIDUEL (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · SÉCURITÉ DÉMARRAGE — ANTI BLOCAGE RÉSIDUEL (V3 PRO)
 
 ## 🎯 OBJET
 

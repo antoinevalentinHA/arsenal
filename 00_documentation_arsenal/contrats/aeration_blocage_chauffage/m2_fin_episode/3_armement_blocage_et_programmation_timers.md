@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M2)
-#     CALCUL & PROGRAMMATION MONOTONE DES DÉLAIS
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M2) · CALCUL & PROGRAMMATION MONOTONE DES DÉLAIS
 
 ## 🎯 OBJET
 

@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — AMENDEMENT NORMATIF
-#     CHAUFFAGE — STANDBY & HYSTÉRÉSIS D'EXÉCUTION (V3 PRO)
-#     Amendement : requalification et non-remontée de standby_force
-# ==========================================================
+# 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — STANDBY & HYSTÉRÉSIS D'EXÉCUTION (V3 PRO) · Amendement : requalification et non-remontée de standby_force
 #
 # 📌 STATUT :
 #   AMENDEMENT au contrat d'application `50_standby_hysteresis.md`

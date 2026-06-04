@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL)
-#     NEUTRALISATION DES INPUT_DATETIME — MARQUEUR CANON
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (SOCLE TRANSVERSAL) · NEUTRALISATION DES INPUT_DATETIME — MARQUEUR CANON
 
 ## 🎯 OBJET
 

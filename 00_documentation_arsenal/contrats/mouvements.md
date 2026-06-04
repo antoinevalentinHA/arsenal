@@ -1,6 +1,4 @@
-# ==========================================================
 # 📜 CONTRAT ARSENAL — MOUVEMENTS
-# ----------------------------------------------------------
 # 📛 Domaine : Détection de mouvement (capteurs PIR)
 # 🧠 Nature : Normalisation et agrégation des événements
 #

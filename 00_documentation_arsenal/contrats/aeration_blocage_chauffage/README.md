@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE
-#     AÉRATION → BLOCAGE CHAUFFAGE (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF DE DOMAINE · AÉRATION → BLOCAGE CHAUFFAGE (V3 PRO)
 
 ## 🎯 OBJET
 

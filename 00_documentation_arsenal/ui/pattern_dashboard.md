@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — UI PATTERN CANONIQUE
-# Pattern Dashboard — Navigation & Structure Verticale
-# ==========================================================
+# 🧠 ARSENAL — UI PATTERN CANONIQUE · Pattern Dashboard — Navigation & Structure Verticale
 #
 # 📌 Statut :
 # DOCUMENT NORMATIF — RÉFÉRENCE UI OFFICIELLE

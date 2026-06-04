@@ -1,4 +1,4 @@
-### 🔒 binary_sensor.signature_thermique_poele
+# 🔒 binary_sensor.signature_thermique_poele
 
 - Domaine : Blocages / Apports thermiques externes / Détection thermique candidate
 - Autorité : **CAPTEUR STRUCTURANT INDIRECT**

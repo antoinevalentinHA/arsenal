@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT DE DOMAINE
-# Éclairage — Entrée
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT DE DOMAINE · Éclairage — Entrée
 
 **Référence :** `CONTRAT_ECLAIRAGE_ENTREE.md`
 **Version :** 1.0.0

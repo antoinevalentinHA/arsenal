@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Notifications — Pannes Internet
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Notifications — Pannes Internet
 
 ## 📌 Objet
 

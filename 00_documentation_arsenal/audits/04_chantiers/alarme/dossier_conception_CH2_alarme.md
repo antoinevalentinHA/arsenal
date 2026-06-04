@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — DOSSIER DE CONCEPTION
-#     Chantier CH-2 — Cerveau décisionnel : autorité des helpers & propreté
-# ==========================================================
+# 🧠 ARSENAL — DOSSIER DE CONCEPTION · Chantier CH-2 — Cerveau décisionnel : autorité des helpers & propreté
 
 ## 📌 Cadre
 

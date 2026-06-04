@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M4)
-#     ANNULATION TIMERS & NEUTRALISATION DES TRACES
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M4) · ANNULATION TIMERS & NEUTRALISATION DES TRACES
 
 ## 🎯 OBJET
 

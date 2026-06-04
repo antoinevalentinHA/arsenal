@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Blocage armement automatique
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Blocage armement automatique
 
 ## 📌 Statut
 

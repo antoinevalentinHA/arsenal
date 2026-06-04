@@ -1,12 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT INFRA
-# Boiler Bridge — Architecture système locale
-#
-# 🗂️ COUCHE : Infrastructure / Exécution locale
-# 🧱 TYPE : Contrat normatif
-# 🔍 NIVEAU DE CONFIANCE : ÉLEVÉ — PRODUCTION
-# 📅 VERSION : v1.1 (post-remédiation, contrat opposable)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT INFRA · Boiler Bridge — Architecture système locale · 🗂️ COUCHE : Infrastructure / Exécution locale · 🧱 TYPE : Contrat normatif · 🔍 NIVEAU DE CONFIANCE : ÉLEVÉ — PRODUCTION · 📅 VERSION : v1.1 (post-remédiation, contrat opposable)
 
 ## 🎯 OBJET
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M0)
-#     CAS B — AERATION_CONFIRMEE ORPHELINE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M0) · CAS B — AERATION_CONFIRMEE ORPHELINE
 
 ## 🎯 OBJET
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M1)
-#     ACTIVATION & HORODATAGE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M1) · ACTIVATION & HORODATAGE
 
 ## 🎯 ACTIVATION ÉPISODE
 

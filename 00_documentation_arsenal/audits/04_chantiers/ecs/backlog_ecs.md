@@ -1,7 +1,4 @@
-# ==========================================================
-# 📋 ARSENAL — BACKLOG PRIORISÉ
-#     Domaine : ECS (Eau Chaude Sanitaire)
-# ==========================================================
+# 📋 ARSENAL — BACKLOG PRIORISÉ · Domaine : ECS (Eau Chaude Sanitaire)
 
 ## 📌 Cadre
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Watchdog cohérence blocage armement
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Watchdog cohérence blocage armement
 
 ## 📌 Statut
 

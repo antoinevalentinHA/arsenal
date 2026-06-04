@@ -1,6 +1,4 @@
-# =============================================================================
 # 🧠 ARSENAL — PIPELINE PATRIMONIAL HOME ASSISTANT
-# =============================================================================
 #
 # Objet :
 #   Pipeline patrimonial complet de sauvegarde, extraction, versionnement,

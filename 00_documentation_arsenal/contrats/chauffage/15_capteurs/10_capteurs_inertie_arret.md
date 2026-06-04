@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS D’INERTIE THERMIQUE POST-ARRÊT
-#     Physique de coupure — Overshoot et refroidissement réel
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS D’INERTIE THERMIQUE POST-ARRÊT · Physique de coupure — Overshoot et refroidissement réel
 # Domaine : Chauffage / Inertie thermique / Arrêt présence
 # Couche  : Observabilité de la physique post-coupure
 # Statut  : STRUCTURANT — FRONTIÈRE D’INERTIE DE COUPURE CRITIQUE

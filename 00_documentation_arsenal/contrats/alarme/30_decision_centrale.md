@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Interfaces contexte & helpers
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Interfaces contexte & helpers
 
 ## 📌 Statut
 

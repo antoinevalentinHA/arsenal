@@ -1,6 +1,6 @@
-<!-- audit:scope=doc -->
-
 # ARSENAL — Boiler Bridge · Contrat MQTT
+
+<!-- audit:scope=doc -->
 
 **Composant :** `arsenal-boiler-bridge`
 **Version bridge :** v0.4.3

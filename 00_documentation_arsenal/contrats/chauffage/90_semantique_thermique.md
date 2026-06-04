@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF FONDATEUR
-#     CHAUFFAGE — SÉMANTIQUE THERMIQUE OFFICIELLE (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF FONDATEUR · CHAUFFAGE — SÉMANTIQUE THERMIQUE OFFICIELLE (V3 PRO)
 #
 # 📌 STATUT :
 #   CONTRAT NORMATIF FONDATEUR — RÉFÉRENCE SÉMANTIQUE GLOBALE

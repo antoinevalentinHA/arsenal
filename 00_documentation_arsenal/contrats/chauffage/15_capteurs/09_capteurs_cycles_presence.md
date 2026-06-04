@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS DE CYCLES THERMIQUES EN PRÉSENCE
-#     Cinématique dynamique — Oscillation, période et charge de cyclage
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS DE CYCLES THERMIQUES EN PRÉSENCE · Cinématique dynamique — Oscillation, période et charge de cyclage
 # Domaine : Chauffage / Cycles thermiques / Présence
 # Couche  : Observabilité cinématique événementielle du moteur thermique
 # Statut  : STRUCTURANT — FRONTIÈRE DYNAMIQUE CRITIQUE

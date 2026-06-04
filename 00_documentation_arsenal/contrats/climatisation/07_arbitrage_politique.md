@@ -1,5 +1,6 @@
-> Il n'existe qu'un seul résultat de décision : celui produit par l'Arbitrage selon la politique active.
 # CONTRAT ARSENAL — CLIMATISATION
+
+> Il n'existe qu'un seul résultat de décision : celui produit par l'Arbitrage selon la politique active.
 ## 06 — Arbitrage — Politique active
 
 **Version contrat :** v1.3

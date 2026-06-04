@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT TECHNIQUE
-#     Diagnostic — Cohérence structurelle du blocage armement
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT TECHNIQUE · Diagnostic — Cohérence structurelle du blocage armement
 
 ## 📌 Statut
 

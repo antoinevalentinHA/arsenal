@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Campagne de remédiation Internet
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Campagne de remédiation Internet
 
 ## 📌 Définition
 

@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M0)
-#     AÉRATION — RECOVER — CADRE GÉNÉRAL
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M0) · AÉRATION — RECOVER — CADRE GÉNÉRAL
 
 ## 🎯 OBJET
 

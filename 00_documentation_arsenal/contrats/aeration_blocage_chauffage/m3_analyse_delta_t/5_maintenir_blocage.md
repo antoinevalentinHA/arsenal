@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M3)
-#     MAINTIEN DU BLOCAGE — ΔT FAIBLE
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M3) · MAINTIEN DU BLOCAGE — ΔT FAIBLE
 
 ## 🎯 OBJET
 

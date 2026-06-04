@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF
-#     NOTIFICATIONS
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF · NOTIFICATIONS
 
 ## 🎯 OBJET DU CONTRAT
 

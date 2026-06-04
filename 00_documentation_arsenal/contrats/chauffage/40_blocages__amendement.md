@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — AMENDEMENT NORMATIF
-#     CHAUFFAGE — BLOCAGES & INTERDICTIONS HIÉRARCHIQUES V3
-#     Amendement : poêle comme blocage de stabilisation corroboré
-# ==========================================================
+# 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — BLOCAGES & INTERDICTIONS HIÉRARCHIQUES V3 · Amendement : poêle comme blocage de stabilisation corroboré
 #
 # 📌 STATUT :
 #   AMENDEMENT au contrat de domaine `40_blocages.md`

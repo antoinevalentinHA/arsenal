@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT MÉTIER
-#     Alarme — Modèle d’états & vocabulaire
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Modèle d’états & vocabulaire
 
 ## 📌 Statut
 

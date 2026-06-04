@@ -1,7 +1,4 @@
-# ==========================================================
-# 🛠️ ARSENAL — CADRAGE DE CHANTIER
-#     CH-LL-CI-1 — Validation CI de la résolution des `!include` Lovelace
-# ==========================================================
+# 🛠️ ARSENAL — CADRAGE DE CHANTIER · CH-LL-CI-1 — Validation CI de la résolution des `!include` Lovelace
 
 > **Statut : RÉALISÉ — chantier clos (2026-06-04).**
 > Le validateur cadré ci-dessous a depuis été implémenté et poussé. Ce document

@@ -1,8 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — AMENDEMENT NORMATIF
-#     CHAUFFAGE — TRIGGERS DÉCISIONNELS (V3 PRO)
-#     Amendement : registres des triggers & purge des lignes fantômes
-# ==========================================================
+# 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — TRIGGERS DÉCISIONNELS (V3 PRO) · Amendement : registres des triggers & purge des lignes fantômes
 #
 # 📌 STATUT :
 #   AMENDEMENT au contrat de gouvernance `20_triggers_decisionnels.md`

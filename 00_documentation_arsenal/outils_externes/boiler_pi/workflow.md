@@ -1,6 +1,6 @@
-<!-- audit:scope=doc -->
-
 # Workflow Git — boiler-bridge
+
+<!-- audit:scope=doc -->
 ## PC → GitHub → Pi
 
 > **Objectif** : zéro bricolage, zéro surprise, rollback trivial.  

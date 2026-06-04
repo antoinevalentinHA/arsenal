@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — DOCUMENT D’EXPLOITATION & DE MAINTENANCE
-#     Chauffage — Réglages & Diagnostic Thermique (V3 PRO)
-# ==========================================================
+# 🧠 ARSENAL — DOCUMENT D’EXPLOITATION & DE MAINTENANCE · Chauffage — Réglages & Diagnostic Thermique (V3 PRO)
 #
 # 📌 STATUT :
 #   DOCUMENT D’EXPLOITATION — NON NORMATIF

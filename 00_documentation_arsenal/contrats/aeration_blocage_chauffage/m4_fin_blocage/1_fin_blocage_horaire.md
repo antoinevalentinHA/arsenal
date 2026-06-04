@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT NORMATIF (M4)
-#     FIN BLOCAGE HORAIRE — CADRE GÉNÉRAL
-# ==========================================================
+# 🧠 ARSENAL — CONTRAT NORMATIF (M4) · FIN BLOCAGE HORAIRE — CADRE GÉNÉRAL
 
 ## 🎯 OBJET
 

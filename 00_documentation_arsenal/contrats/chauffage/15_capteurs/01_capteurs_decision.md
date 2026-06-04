@@ -1,7 +1,4 @@
-# ==========================================================
-# 🧠 ARSENAL — CONTRAT CAPTEURS STRUCTURANTS
-#     Cœur thermique — Références et signaux internes canoniques
-# ----------------------------------------------------------
+# 🧠 ARSENAL — CONTRAT CAPTEURS STRUCTURANTS · Cœur thermique — Références et signaux internes canoniques
 # Domaine : Chauffage / Moteur thermique
 # Couche  : Capteurs structurants du cœur décisionnel
 # Statut  : STRUCTURANT — FRONTIÈRE FONDATRICE
