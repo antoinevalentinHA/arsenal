@@ -12,6 +12,20 @@
 - `domaines/` — **hubs de domaine** (un par entrée Tier 1). Produits à ce jour : `chauffage`, `vacances`, `alarme` ; les autres suivront.
 - `pivots/` — **pages pivot transverses** (à venir).
 
+## Familles documentaires
+
+Pour naviguer dans l'ensemble d'une famille :
+
+| Famille | Porte d'entrée | Nature |
+|---|---|---|
+| Contrats | [contrats/index.md](../contrats/index.md) | ToC des contrats |
+| Architecture | [architecture/index.md](../architecture/index.md) | ToC famille architecture |
+| Audits | [audits/index.md](../audits/index.md) | État d'audit par domaine |
+| Changelog | [changelog/index.md](../changelog/index.md) | Index chronologique |
+| UI | [ui/README.md](../ui/README.md) | Référence normative UI |
+
+> Les **hubs** orientent par domaine et traversent les familles. Les **index de famille** permettent d'explorer une famille exhaustivement.
+
 ## Règles de la couche
 
 - **Agréger sans dupliquer** : référencer un *document*, jamais une *entité*, une *version* ou un *seuil* (qui dérivent).
