@@ -1,4 +1,4 @@
-# BACKLOG PRIORISÉ — DETTES RESTANTES
+# BACKLOG — DETTES RÉSIDUELLES CLIMATISATION & HYSTÉRÉSIS
 
 > Sources : audit climatisation (D1–D13), audit hystérésis transverse (H1–H3),
 > runtime du dépôt. Échelle : P0 = incident probable · P1 = correction recommandée ·
@@ -43,11 +43,16 @@ Tout le reste relève de gouvernance, d'explicabilité ou de maintenabilité —
   prolongé). Impact : un échec d'exécution reste silencieux. Complexité faible (notif,
   ou corriger le contrat). Régression faible. **P2.**
 
-**D13 — Couverture CI partielle** (seule l'admissibilité + extinction COOL sont testées)
-- Type : gouvernance. Proba : nulle directe, mais **aucun filet anti-régression** sur
-  raison/blocages/observabilité — ce qui fragilise les corrections d'observabilité **déjà livrées** (v15.8.4).
-- Complexité moyenne. Régression nulle. **P2** — fige les corrections d'observabilité
-  COOL livrées ; seul reliquat du cluster.
+**D13 — Couverture CI partielle** (reliquat étroit)
+- Type : gouvernance. La CI fige **déjà** l'admissibilité (portes 1/2), l'extinction COOL
+  (sens `<=`), la consommation des admissibles par `clim_raison_decision`, la carte
+  `status_72` (F5) et la délégation de cohérence de `carte_clim_decision` (F6) — protections
+  livrées en v15.8.4, présentes dans `check_climatisation_admissibilite_contracts.py` et
+  `check_climatisation_seuils_cool_contracts.py`.
+- **Reliquat réel : aucun test de non-régression sur `clim_bloquee` (F2/D3) ni
+  `clim_action_en_cours` (F3/D7).** Proba incident : nulle directe.
+- Complexité faible (deux assertions à ajouter). Régression nulle. **P2** — complète le
+  filet CI sur les deux derniers artefacts d'observabilité non couverts.
 
 **H2 — VMC : seuils OFF morts mais validés**
 - Type : **gouvernance** (faux sens de contrôle). Proba incident : nulle (le verrou
@@ -102,7 +107,7 @@ s'applique pas. Laisser tel quel.
 |---|---|---|---|---|---|
 | **P0?** | H1 — déshum seuils inversés | Bug latent | Court-cycle compresseur **si OFF≥ON** | Élimine oscillation matérielle | Faible |
 | P2 | D5 — notif échec persistant | Gouvernance | Échec exécution silencieux | Visibilité des pannes | Faible |
-| P2 | D13 — CI partielle | Gouvernance | Pas de filet anti-régression | Fige les corrections livrées | Moyen |
+| P2 | D13 — CI partielle | Gouvernance | Filet incomplet (`clim_bloquee` F2, `clim_action_en_cours` F3) | Fige les 2 derniers artefacts | Faible |
 | P2 | H2 — VMC seuils OFF morts | Gouvernance | Réglage UI sans effet | Contrôle réel ou param supprimé | Faible |
 | P2 | H3a — aération sans deadband | Bug potentiel | Oscillation recommandation | Stabilité du conseil | Moyen |
 | P2 | D-tuile — polarité status_72 | Explicabilité | Tuile diagnostic inversée | Diagnostic COOL/HEAT correct | Moyen |
@@ -120,8 +125,9 @@ s'applique pas. Laisser tel quel.
 
 - **À faire en premier, ce week-end :** vérifier H1 (30 s). C'est le seul item au risque
   matériel et le moins cher à corriger.
-- **Le seul filet encore à poser : D13** (couverture CI raison/blocages/observabilité),
-  partiellement traité — à compléter pour figer les corrections déjà livrées.
+- **Dernier filet à compléter : D13** — la CI couvre déjà admissibilité, extinction COOL,
+  raison, `status_72` et cohérence ; il ne reste qu'à couvrir `clim_bloquee` et
+  `clim_action_en_cours`.
 - **Tout le reste (P3) peut rester tel quel** sans dette opérationnelle : à nettoyer
   seulement de façon opportuniste, jamais comme chantier dédié.
 - **Pré-vérifications avant tout chantier P2** (sans en faire un audit) : l'amortissement

@@ -74,6 +74,7 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ### Climatisation
 - climatisation/chantier_observabilite_cool.md
+- climatisation/backlog_climatisation_hysteresis.md  _(backlog des dettes résiduelles climatisation + hystérésis transverse — D5, D10, D11, D12, D13, D-tuile, H1, H2, H3a/H3b, DRY, contrat 05 ; relocalisé depuis `evolutions_futures/`)_
 
 ### Transverses
 - transverses/hysteresis_5_domaines.md
