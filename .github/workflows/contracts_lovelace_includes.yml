@@ -1,0 +1,25 @@
+name: Arsenal Contracts — Lovelace Includes
+
+on:
+  push:
+    paths:
+      - '18_lovelace/**'
+      - 'scripts/arsenal_contracts/check_lovelace_includes_contracts.py'
+      - '.github/workflows/contracts_lovelace_includes.yml'
+  pull_request:
+    paths:
+      - '18_lovelace/**'
+      - 'scripts/arsenal_contracts/check_lovelace_includes_contracts.py'
+      - '.github/workflows/contracts_lovelace_includes.yml'
+
+jobs:
+  validate-lovelace-includes:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run Lovelace include resolution contract
+        run: |
+          python3 scripts/arsenal_contracts/check_lovelace_includes_contracts.py
