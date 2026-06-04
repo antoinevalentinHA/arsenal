@@ -8,13 +8,12 @@
 
 ## Contenu du dossier
 
-| Fichier | Version | Nature | Portée |
-|---------|---------|--------|--------|
-| `CONTRAT_MQTT.md` | v0.4.3 | Contrat normatif | Bridge MQTT — topics, payloads, pipeline ACK |
-| `CONTRAT_MQTT_ACK_HA.md` | v1.2 | Contrat normatif | Consommation ACK côté Home Assistant |
-| `CONTRAT_SCRIPT_EXECUTIF.md` | v1.1 | Contrat normatif | Script exécutif transactionnel |
-| `CONTRAT_BOILER_SOCLE_TRANSACTIONNEL.md` | — | Contrat métier | Socle transactionnel unifié (toutes commandes) |
-| `AUDIT_CHAINE_MQTT_ACK_ECS.md` | — | Audit | Dette technique — pattern transactionnel boiler |
+| Fichier | Nature | Portée |
+|---------|--------|--------|
+| `mqtt.md` | Contrat normatif | Bridge MQTT — topics, payloads, pipeline ACK |
+| `architecture.md` | Architecture | Infrastructure système locale — Boiler Bridge |
+| `guard.md` | Contrat normatif | Guard exposition HA |
+| `workflow.md` | Référence | Workflow Git — boiler-bridge |
 
 ---
 
@@ -22,15 +21,11 @@
 
 **Pour comprendre le système complet :**
 
-1. `CONTRAT_BOILER_SOCLE_TRANSACTIONNEL.md` — le principe structurant de toute la chaîne
-2. `CONTRAT_MQTT.md` — ce que le bridge produit (topics, ACK, erreurs)
-3. `CONTRAT_MQTT_ACK_HA.md` — ce que Home Assistant consomme
-4. `CONTRAT_SCRIPT_EXECUTIF.md` — comment un script exécute une commande
-5. `AUDIT_CHAINE_MQTT_ACK_ECS.md` — état réel du système, dette identifiée
+1. `socle_transactionnel.md` — le principe structurant de toute la chaîne
+2. `mqtt.md` — ce que le bridge produit (topics, ACK, erreurs)
+3. `mqtt_ack_ha.md` — ce que Home Assistant consomme
+4. `script_executif.md` — comment un script exécute une commande
 
-**Pour un audit ou une revue :**
-
-Commencer par `AUDIT_CHAINE_MQTT_ACK_ECS.md`, puis remonter vers les contrats selon le point investigué.
 
 ---
 
@@ -43,14 +38,13 @@ Le bridge (`arsenal-boiler-bridge`) s'exécute sur un Raspberry Pi et expose la 
 ## Dépendances entre documents
 
 ```
-CONTRAT_BOILER_SOCLE_TRANSACTIONNEL
+socle_transactionnel
         │
-        ├── CONTRAT_MQTT                    (bridge — producteur)
+        ├── mqtt                    (bridge — producteur)
         │
-        ├── CONTRAT_MQTT_ACK_HA             (HA — consommateur)
-        │       └── CONTRAT_SCRIPT_EXECUTIF (HA — exécution)
+        ├── mqtt_ack_ha             (HA — consommateur)
+        │       └── script_executif (HA — exécution)
         │
-        └── AUDIT_CHAINE_MQTT_ACK_ECS       (état réel vs contrats)
 ```
 
 ---
@@ -65,4 +59,4 @@ CONTRAT_BOILER_SOCLE_TRANSACTIONNEL
 | OPEN-04 | Résultat transactionnel dérivé de sensors globaux (non encapsulé nativement) |
 | OPEN-05 | Hétérogénéité des niveaux de complétude entre commandes boiler |
 
-Aucun de ces points ne justifie une modification immédiate. Voir `AUDIT_CHAINE_MQTT_ACK_ECS.md` §10 pour le détail.
+Aucun de ces points ne justifie une modification immédiate.
