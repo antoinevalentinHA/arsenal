@@ -25,7 +25,7 @@ Le dossier est organisé en **2 familles UI distinctes** :
 
 ### A. KPI qualitatifs à couleur upstream
 
-Exemples : `carte_activite_calories_quotidiennes`, `carte_activite_distance_quotidienne`, `carte_duree_qualitative`, `carte_frequence_cardiaque_qualitative`, `carte_frequence_respiratoire_qualitative`, `carte_activite_pas_quotidiens`, `carte_score_qualitatif`
+Exemples : `carte_activite_calories_quotidiennes`, `carte_activite_distance_quotidienne`, `carte_duree_qualitative`, `carte_frequence_respiratoire_qualitative`, `carte_activite_pas_quotidiens`, `carte_score_qualitatif`
 
 - Affichage d'une valeur KPI avec sémantique couleur entièrement déléguée au backend (`sensor.couleur_sante_*`)
 - **Type UI : interprétative** (restitution d'une qualification produite upstream)
@@ -79,7 +79,8 @@ Niveau 2 — KPI informatifs → 20_info/
     carte_activite_calories_quotidiennes.yaml
     carte_activite_distance_quotidienne.yaml
     carte_duree_qualitative.yaml
-    carte_frequence_cardiaque_qualitative.yaml
+    carte_cardio_nuit_synthese.yaml
+    cartes_cardio_nuit.yaml
     carte_frequence_respiratoire_qualitative.yaml
     carte_activite_pas_quotidiens.yaml
     carte_score_qualitatif.yaml

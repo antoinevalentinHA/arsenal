@@ -35,7 +35,7 @@ Exemple : `carte_mode_babysitting_synthese`
 
 ### B. Modes de synthèse / état global
 
-Exemple : `carte_mode_maison_synthese`
+Exemple : *(aucune carte n'implémente actuellement cette famille)*
 
 - Réduction forte du mode maison : `normal → vert`, tout le reste → autre
 - Lecture simplifiée, non exhaustive — perte d'information assumée
@@ -77,7 +77,7 @@ Exemple : `carte_vacances_justification`
 
 | Type UI        | Signification                                                                                    | Exemples                              |
 |----------------|--------------------------------------------------------------------------------------------------|---------------------------------------|
-| interprétative | transformation locale tolérée (affichage, seuils, classification), non source de vérité système | `carte_mode_maison_synthese`          |
+| interprétative | transformation locale tolérée (affichage, seuils, classification), non source de vérité système | —                                     |
 | diagnostic     | qualifie un état conditionnel ou une cohérence                                                  | `carte_vacances_decision`             |
 | action         | proxy UI d'une commande backend                                                                  | `carte_mode_babysitting_synthese`     |
 | info           | contextualise ou justifie, sans qualification d'état                                            | `carte_vacances_justification`        |
@@ -108,9 +108,6 @@ Niveau 4 — Justification       → 40_info/
   10_action/
     carte_mode_babysitting_synthese.yaml
 
-  20_statut/
-    carte_mode_maison_synthese.yaml
-
   30_diagnostic/
     carte_vacances_decision.yaml
 
@@ -122,15 +119,11 @@ Niveau 4 — Justification       → 40_info/
 
 ## Points de fragilité documentés
 
-### 1. `carte_mode_maison_synthese` — simplification forte
-
-Réduction `normal / tout le reste`. Lisible, mais non exhaustive. À documenter comme synthèse visuelle rapide, pas comme source de vérité du mode maison.
-
-### 2. `carte_vacances_justification` — satellite non rattaché
+### 1. `carte_vacances_justification` — satellite non rattaché
 
 Doit être explicitement liée à `carte_vacances_decision` dans son entête. Une carte `info` sans carte parente documentée est une dette documentaire.
 
-### 3. `carte_mode_babysitting_synthese` — nommage trompeur
+### 2. `carte_mode_babysitting_synthese` — nommage trompeur
 
 Le suffixe `_synthese` évoque une carte de lecture. C'est une carte de commande. À clarifier dans l'entête pour éviter une mauvaise catégorisation future.
 

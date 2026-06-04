@@ -134,7 +134,6 @@ carte_base_v2
 ├── socle_status_label_72
 ├── socle_status_label_sans_nom
 ├── socle_status_label_xl
-│   └── socle_status_label_xl_interactif
 ├── socle_toggle
 ├── socle_toggle_compact_68
 └── socle_toggle_confirme
