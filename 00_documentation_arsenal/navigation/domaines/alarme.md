@@ -5,7 +5,7 @@
 
 ## Orientation
 
-Détection d'intrusion, armement, sirène, watchdog d'armement. Cœur : **décision centrale** alarme + application. La chaîne d'audit est organisée par **chantiers « CH-x » propres à l'alarme** (sans rapport avec les CH-x Chauffage-CI). **Particularité** : le domaine est **absent de `audits/index.md`** — l'état faisant foi se lit dans le rapport officiel et les clôtures.
+Détection d'intrusion, armement, sirène, watchdog d'armement. Cœur : **décision centrale** alarme + application. La chaîne d'audit est organisée par **chantiers « CH-x » propres à l'alarme** (sans rapport avec les CH-x Chauffage-CI). **Aucune architecture dédiée.** **Particularité** : le domaine est **absent de `audits/index.md`** — l'état faisant foi se lit dans le rapport officiel et les clôtures.
 
 ## Contrat — « ce que le système doit faire »
 
@@ -21,13 +21,9 @@ Entrée : [`contrats/alarme/`](../../contrats/alarme/) (colonne `00→99`).
 
 > La liste exhaustive des contrats relèvera du futur index intra-famille (non encore présent).
 
-## Architecture — « comment / pourquoi »
+## Audits & état
 
-**Aucun document d'architecture dédié** au domaine alarme.
-
-## Audits — cycle de vie
-
-> **Particularité** : alarme est **absent de [`audits/index.md`](../../audits/index.md)**. L'état faisant foi se lit dans le **rapport officiel** et les **clôtures** (ci-dessous).
+> **Source d'état faisant foi** : alarme étant **absent de [`audits/index.md`](../../audits/index.md)**, l'état se lit dans le **rapport officiel**, [`etat_post_CH6.md`](../../audits/04_chantiers/alarme/etat_post_CH6.md) et les **clôtures CH1/CH2/CH4/CH6**. Non recopié ici.
 
 - Rapport officiel — [`audit_alarme_rapport_officiel.md`](../../audits/01_rapports/alarme/audit_alarme_rapport_officiel.md)
 - Plan d'action — [`plan_action_alarme.md`](../../audits/03_plans_action/alarme/plan_action_alarme.md)
@@ -41,15 +37,13 @@ Entrée : [`contrats/alarme/`](../../contrats/alarme/) (colonne `00→99`).
 - **CH6** — contre-expertise CH6 (ci-dessus) + [`etat_post_CH6.md`](../../audits/04_chantiers/alarme/etat_post_CH6.md) → clôture [`cloture_ch6_alarme.md`](../../audits/05_clotures/alarme/cloture_ch6_alarme.md)
 - **CH3, CH5** — aucun artefact (trous signalés).
 
-## Changelog
+> **Changelog** (pas de chantier dédié) : évolutions diffuses dans les snapshots `vXX` (`v1`, `v5`, `v8`, `v9`, `v13`…). Entrée : [`changelog/index.md`](../../changelog/index.md).
 
-**Pas de changelog de chantier dédié.** Évolutions diffuses dans les snapshots `vXX` (`v1`, `v5`, `v8`, `v9`, `v13`…). Entrée : [`changelog/index.md`](../../changelog/index.md).
+## Liens croisés (sens & appartenance)
 
-## Liens croisés (interfaces)
-
-- **Ouvrants d'entrée** : domaine [`contrats/ouvertures/`](../../contrats/ouvertures/) (interface du `51_`).
-- **Présence** (armement) : [`presence.md`](../../contrats/presence.md).
-- **Notifications** : [`notifications.md`](../../contrats/notifications.md) (interface du `80_`).
+- **Ouvrants d'entrée** — propriétaire : domaine [`contrats/ouvertures/`](../../contrats/ouvertures/) ; l'alarme **consomme** les ouvrants (amont ; interface du `51_`).
+- **Présence** (armement) — propriétaire : domaine [`presence.md`](../../contrats/presence.md) ; l'alarme **consomme** la présence (amont).
+- **Notifications** — l'alarme **émet** vers [`notifications.md`](../../contrats/notifications.md) (aval ; interface du `80_`).
 
 ## Points de vigilance (non normatif)
 
@@ -60,10 +54,6 @@ Entrée : [`contrats/alarme/`](../../contrats/alarme/) (colonne `00→99`).
 - **CH6 atypique** : clôturé via contre-expertise + état post (pattern différent de CH1/CH2).
 - **Double numérotation** : constats « IMP-x » (importance) et chantiers « CH-x » coexistent.
 
-## Statut
-
-alarme étant absent de [`audits/index.md`](../../audits/index.md), l'état faisant foi se lit dans le rapport officiel, [`etat_post_CH6.md`](../../audits/04_chantiers/alarme/etat_post_CH6.md) et les clôtures CH1/CH2/CH4/CH6. Non recopié ici.
-
 ---
 
-*Hub de navigation non normatif. N'énumère pas, ne duplique aucun contenu de famille, pointe les documents canoniques, signale les anomalies sans les corriger.*
+*Hub de navigation non normatif (gabarit v2). N'énumère pas, ne duplique aucun contenu de famille, pointe les documents canoniques, signale les anomalies sans les corriger.*
