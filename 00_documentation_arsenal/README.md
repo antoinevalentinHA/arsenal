@@ -17,7 +17,8 @@ Cette documentation décrit :
 - **comment** et **pourquoi** il est construit ainsi (architecture),
 - comment il a **évolué** dans le temps (changelog, historique),
 - comment il est **audité** et gouverné (audits),
-- comment il s'**interface** avec des outils externes.
+- comment il s'**interface** avec des outils externes,
+- comment il se **navigue** transversalement (navigation).
 
 Elle constitue la **référence de vérité** du système Arsenal.
 
@@ -43,7 +44,7 @@ si une implémentation contredit un contrat, c'est l'implémentation qui est fau
 
 ## 📁 STRUCTURE RÉELLE DU DOSSIER
 
-Le dossier est organisé en **huit zones de premier rang**, plus ce README.
+Le dossier est organisé en **neuf zones de premier rang**, plus ce README.
 
 ```
 00_documentation_arsenal/
@@ -55,6 +56,7 @@ Le dossier est organisé en **huit zones de premier rang**, plus ce README.
 ├── changelog/               ← évolution versionnée + récit historique
 ├── contrats/                ← référence normative (ce que le système doit faire)
 ├── evolutions_futures/      ← fiches prospectives (sas)
+├── navigation/              ← orientation inter-familles (hubs, carte, pivots)
 ├── outils_externes/         ← supervision d'outils hors Home Assistant
 ├── schemas_ascii/           ← diagrammes ASCII de pipelines
 └── ui/                      ← charte couleurs + socle de cartes Lovelace
@@ -62,7 +64,7 @@ Le dossier est organisé en **huit zones de premier rang**, plus ce README.
 
 ---
 
-## 📂 LES HUIT ZONES
+## 📂 LES NEUF ZONES
 
 ### 🏗️ `architecture/`
 Décrit **comment** le système est construit et **pourquoi** : doctrines transverses
@@ -101,6 +103,11 @@ Documente la **supervision d'outils hors Home Assistant** : pont chaudière
 (`boiler_pi/`), outillage NAS Arsenal (`nas_arsenal/`), NAS Imprimerie
 (`nas_imprimerie/`), ainsi que des gabarits d'autoring (prompts de génération).
 
+### 🧭 `navigation/`
+Couche d'**orientation inter-familles** : carte des domaines (`carte_domaines.md`),
+21 hubs Tier-1 (un par domaine, point d'entrée transversal), pivots thématiques.
+👉 **Non normative** — oriente sans redéfinir. Porte d'entrée : [`navigation/README.md`](navigation/README.md).
+
 ### 🗺️ `schemas_ascii/`
 Diagrammes **ASCII** de pipelines (aération, NAS↔HA, régulation thermique),
 destinés à une lecture rapide en texte brut.
@@ -124,6 +131,7 @@ plus les documents d'architecture UI transverse.
 | « À quoi ressemble le **pipeline** ? » | `schemas_ascii/` |
 | « Quelle **couleur / carte** UI utiliser ? » | `ui/` |
 | « Une **idée** pas encore formalisée ? » | `evolutions_futures/` |
+| « **Comment naviguer** dans la documentation ? » | `navigation/` |
 
 ---
 
