@@ -29,7 +29,7 @@ Aucun consommateur ou fournisseur documenté identifié dans les autres domaines
 
 ## Points de vigilance (non normatif)
 
-- **Domaine métier/professionnel** (Imprimerie Baillet) : spécifique à un contexte non résidentiel, isolé des autres domaines Arsenal.
+- **Domaine métier/professionnel** : spécifique à un contexte non résidentiel, isolé des autres domaines Arsenal.
 - **Domaine non audité** : absent de `audits/index.md`. État de cycle.
 - **Clauses d'exclusion meteo jardin** : la zone imprimerie a ses propres capteurs environnementaux, gouvernés séparément.
 - **Domaine léger** (Tier 1 par folderisation) : conservé pour explicitation (carte §6).
