@@ -67,30 +67,35 @@ L’architecture Arsenal repose sur les principes suivants :
 - absence totale de polling non justifié
 
 Ces principes sont détaillés et normés dans :
-- `principes_generaux.md`
+- [`03_doctrines/principes_generaux.md`](03_doctrines/principes_generaux.md)
 
 
 ## 📂 Contenu du dossier
 
-Ce dossier contient notamment :
+Ce dossier est organisé en sous-dossiers thématiques et en documents
+d’architecture par sous-système à la racine.
 
-- `principes_generaux.md`  
+Sous-dossiers principaux :
+- `03_doctrines/` — doctrines d’implémentation transversales Arsenal
+- `00_structure_includes/` · `01_recorder/` · `02_etiquettes/` — infrastructure
+- `chauffage/` · `presence/` · … — architectures de sous-systèmes (liste non exhaustive)
+
+Exemples de documents doctrines :
+
+- [`03_doctrines/principes_generaux.md`](03_doctrines/principes_generaux.md)  
   Principes architecturaux transversaux applicables
   à l’ensemble du système Arsenal.
 
-- `gestion_du_temps.md`  
+- [`03_doctrines/gestion_du_temps.md`](03_doctrines/gestion_du_temps.md)  
   Doctrine officielle concernant l’usage du temps
   dans Home Assistant (interdits, usages autorisés,
   règles de sobriété et de déterminisme).
 
-- `eclairage_jardin.md`  
-  Architecture détaillée du sous-système
-  **éclairage automatique du jardin (MATIN / SOIR)**,
-  conforme au contrat fonctionnel Arsenal v6.x.
+Exemple de document par sous-système :
 
-D’autres documents peuvent être ajoutés pour
-décrire l’architecture d’un sous-système spécifique
-lorsque celui-ci atteint un niveau de maturité suffisant.
+- `eclairage_jardin.md`  
+  Architecture détaillée de l’éclairage automatique
+  du jardin (MATIN / SOIR).
 
 
 ## 🛡️ Statut des documents
