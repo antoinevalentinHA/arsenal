@@ -1,11 +1,13 @@
-name: Arsenal CI — Chauffage (etages 1 & 2)
+name: "Arsenal CI — Chauffage (etages 1, 2 & 3 : lint, decision, execution)"
 
 # Validateur CI structurel Arsenal, domaine Chauffage.
-# Deux jobs aux roles non interchangeables :
+# Quatre jobs aux roles non interchangeables :
 #   - self-test : le validateur est-il sain ? (pytest)
-#   - lint      : la config enfreint-elle la doctrine ? (python -m ...cli)
-# Le lint ne tourne que si le self-test est vert (on ne juge pas avec un
-# juge defectueux).
+#   - lint      : etage 1 — la config (liste CONFIGS) enfreint-elle la doctrine ? (arsenal_ci.cli)
+#   - decision  : etage 2 — cascade de decision (R-COV-1 / R-MIRROR-1 runtime ; n'utilise PAS CONFIGS)
+#   - execution : etage 3 — topologie d'appel R-CALL-1 (CH-4 ; n'utilise PAS CONFIGS)
+# Les trois analyseurs ne tournent que si le self-test est vert (on ne juge pas
+# avec un juge defectueux). CONFIGS ne borne que l'etage 1.
 
 on:
   push:
@@ -14,7 +16,7 @@ on:
       - "tools/arsenal_ci/**"
       # Registre souverain : sa modification change le verdict.
       - "00_documentation_arsenal/contrats/chauffage/ci/registres_entites.yaml"
-      # Config chauffage validee (a ajuster a l'arborescence reelle).
+      # Config chauffage lintee a l'etage 1 (chemin reel verifie ; cf. liste CONFIGS du job lint).
       - "12_template_sensors/chauffage/**.yaml"
       # Cerveau de decision : sa modification change le verdict etage-2.
       - "10_scripts/chauffage/decision_centrale.yaml"
