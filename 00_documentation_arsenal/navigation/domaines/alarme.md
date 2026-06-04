@@ -48,7 +48,7 @@ Entrée : [`contrats/alarme/`](../../contrats/alarme/) (colonne `00→99`).
 ## Points de vigilance (non normatif)
 
 - **Absent de `audits/index.md`** : chaîne pourtant fournie, mais invisible dans l'index. Anomalie signalée, non corrigée.
-- **« CH-x » propre à l'alarme** : `CH1/CH2/CH4/CH6` sont des chantiers **Alarme**, **sans rapport** avec les CH-x **Chauffage-CI** (`changelog/chantiers/climatisation/`). Identifiant relatif au domaine ; désambiguïsation au futur pivot `registre_ch`.
+- **« CH-x » propre à l'alarme** : `CH1/CH2/CH4/CH6` sont des chantiers **Alarme**, **sans rapport** avec les CH-x **Chauffage-CI** (`changelog/chantiers/climatisation/`). Identifiant relatif au domaine ; désambiguïsation au pivot [`registre_ch`](../pivots/registre_ch.md).
 - **Trous CH3 / CH5** : aucun artefact ; lacune signalée, non expliquée.
 - **Clôture CH4 orpheline** : clôture sans conception / implémentation / contre-expertise amont.
 - **CH6 atypique** : clôturé via contre-expertise + état post (pattern différent de CH1/CH2).

@@ -47,7 +47,7 @@ Entrée : [`architecture/chauffage/`](../../architecture/chauffage/).
 
 ## Changelog
 
-- **Gouvernance CI Chauffage (CH-1 à CH-6)** : [`changelog/chantiers/climatisation/`](../../changelog/chantiers/climatisation/) — ⚠️ **classés à tort sous `climatisation/`** : ce sont des chantiers **Chauffage** (dette D2/D4/D6/D7/D8, règle `R-CALL-1`). Anomalie signalée, non corrigée ici ; détail au futur pivot `registre_ch`.
+- **Gouvernance CI Chauffage (CH-1 à CH-6)** : [`changelog/chantiers/climatisation/`](../../changelog/chantiers/climatisation/) — ⚠️ **classés à tort sous `climatisation/`** : ce sont des chantiers **Chauffage** (dette D2/D4/D6/D7/D8, règle `R-CALL-1`). Anomalie signalée, non corrigée ici ; désambiguïsation au pivot [`registre_ch`](../pivots/registre_ch.md).
 - **Thread auto-ajustement courbe (clôture)** : [`v15_8_9.md`](../../changelog/changelogs/v15/v15_8_9.md) (mentions antérieures diffuses : `v8_1`, `v10_pre_v11`, `v11_1_3`, `v14`).
 
 ## Liens croisés (sens & appartenance)
