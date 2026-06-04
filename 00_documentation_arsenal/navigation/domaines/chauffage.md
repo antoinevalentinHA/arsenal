@@ -55,7 +55,7 @@ Entrée : [`architecture/chauffage/`](../../architecture/chauffage/).
 ## Liens croisés (sous-domaines & dépendances)
 
 - **Aération** : domaine [`aeration_blocage_chauffage/`](../../contrats/aeration_blocage_chauffage/) (machine d'état `m0→m6`) ; interface côté chauffage — [`45_aeration.md`](../../contrats/chauffage/45_aeration.md), [`46_aeration_observation_thermique.md`](../../contrats/chauffage/46_aeration_observation_thermique.md).
-- **Vacances** : contrat [`vacances.md`](../../contrats/vacances.md) ; la chaîne vacances vise les contrats chauffage [`65_pre_confort_retour_vacances.md`](../../contrats/chauffage/65_pre_confort_retour_vacances.md) et [`66_adaptation_consigne_vacances.md`](../../contrats/chauffage/66_adaptation_consigne_vacances.md) (appartenance : vacances ; ici renvoi croisé).
+- **Vacances** : contrat [`vacances.md`](../../contrats/vacances.md) ; les contrats [`65_pre_confort_retour_vacances.md`](../../contrats/chauffage/65_pre_confort_retour_vacances.md) et [`66_adaptation_consigne_vacances.md`](../../contrats/chauffage/66_adaptation_consigne_vacances.md) sont des **contrats chauffage**, **consommés par la logique vacances** (appartenance : chauffage ; renvoi croisé vers le domaine vacances).
 - **Boiler** : pont HA↔chaudière (architecture ci-dessus) ; domaine [`contrats/boiler/`](../../contrats/boiler/) et outil externe [`outils_externes/boiler_pi/`](../../outils_externes/boiler_pi/).
 
 ## Points de vigilance (non normatif)
