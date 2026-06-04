@@ -3,6 +3,14 @@
 #     CH-LL-CI-1 — Validation CI de la résolution des `!include` Lovelace
 # ==========================================================
 
+> **Statut : RÉALISÉ — chantier clos (2026-06-04).**
+> Le validateur cadré ci-dessous a depuis été implémenté et poussé. Ce document
+> conserve sa valeur de cadrage initial ; les sections au futur sont à lire au
+> regard de l'état réalisé.
+> - Script : [`check_lovelace_includes_contracts.py`](../../../../scripts/arsenal_contracts/check_lovelace_includes_contracts.py)
+> - Workflow : [`contracts_lovelace_includes.yml`](../../../../.github/workflows/contracts_lovelace_includes.yml)
+> - Clôture : [`CHANGELOG_CH-LL-CI-1.md`](../../../changelog/chantiers/transverses/CHANGELOG_CH-LL-CI-1.md)
+
 ## 📌 Cadre
 
 - **Chantier** : CH-LL-CI-1 — mise en place d'un contrôle CI vérifiant que tout `!include` de la couche Lovelace pointe vers un fichier (ou répertoire) existant.
@@ -100,6 +108,8 @@ Justification :
 
 **Alternative écartée** : `tools/arsenal_ci/rules/` (moteur de graphe décisionnel, règles `R-CI-1`, `R-COV-1`, …). Surdimensionné : il modélise la topologie d'entités/décisions, là où il s'agit ici d'une simple **résolution de chemins sur le système de fichiers**. À ne pas mélanger.
 
+> **Réalisé** : [`scripts/arsenal_contracts/check_lovelace_includes_contracts.py`](../../../../scripts/arsenal_contracts/check_lovelace_includes_contracts.py) — emplacement conforme à la proposition.
+
 ---
 
 ## 6️⃣ Emplacement du futur workflow GitHub Actions
@@ -112,6 +122,8 @@ Caractéristiques attendues (à concevoir ultérieurement) :
 - déclencheurs `push` + `pull_request`, avec filtre `paths:` sur `18_lovelace/**` et sur le script lui-même ;
 - étape unique invoquant le script (`python3 scripts/arsenal_contracts/check_lovelace_includes_contracts.py`) ;
 - **bloquant** : pas de `|| true`. C'est précisément la faiblesse relevée par l'audit sur `validation.yml` (`yamllint -f parsable . || true`) qu'il s'agit de ne pas reproduire.
+
+> **Réalisé** : [`.github/workflows/contracts_lovelace_includes.yml`](../../../../.github/workflows/contracts_lovelace_includes.yml) — bloquant, filtre `paths:` conforme à la proposition.
 
 ---
 
@@ -149,6 +161,8 @@ Tests sur l'état réel (non-régression) :
 
 **Gap à signaler** : `scripts/arsenal_contracts/` ne dispose **d'aucune suite de tests** aujourd'hui (seul `tools/arsenal_ci/tests/` existe). Deux options à trancher au lancement : créer `scripts/arsenal_contracts/tests/`, ou héberger les tests du validateur dans `tools/arsenal_ci/tests/`. À décider lors de l'implémentation, hors de ce cadrage.
 
+> **Décision retenue à l'implémentation** : tests **embarqués dans le script** (fonctions `test_*` du registre, dont un auto-test de résolution sur fixtures jetables), fidèle au patron dominant des contrôles `check_*_contracts.py`. Aucune suite `pytest` séparée, aucun nouveau dossier, aucune dépendance ajoutée.
+
 ---
 
 ## 9️⃣ Risque résiduel hors périmètre
@@ -172,6 +186,6 @@ Même avec ce validateur **vert**, les risques suivants **subsistent** et ne son
 - **Où (workflow)** : `.github/workflows/contracts_lovelace_includes.yml`.
 - **Identité** : chantier `CH-LL-CI-1`, contrat `R-LL-INC-1`, slug `lovelace_includes`.
 - **Limites assumées** : existence uniquement, pas de sémantique ; Lovelace uniquement ; `filename:` exclu.
-- **Suite** : ce document ne déclenche aucune implémentation. La création du script et du workflow est conditionnée à une demande explicite ultérieure.
+- **Suite** : chantier **réalisé et clos** (cf. bandeau de statut et [clôture CH-LL-CI-1](../../../changelog/chantiers/transverses/CHANGELOG_CH-LL-CI-1.md)). Le script et le workflow sont en place ; toute extension (`filename:`, contenu, hors-Lovelace) relèverait d'un chantier distinct.
 
-*Document de cadrage en lecture seule. Aucune modification de la couche Lovelace, aucun code, aucun workflow produit.*
+*Document de cadrage : la production initiale n'a modifié que ce document ; l'implémentation associée a été livrée par la suite (chantier clos).*
