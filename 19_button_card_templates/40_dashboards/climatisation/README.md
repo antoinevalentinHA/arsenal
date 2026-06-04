@@ -1,11 +1,10 @@
-````markdown
-# `40_dashboards/clim/` — Architecture UI
+# `40_dashboards/climatisation/` — Architecture UI
 
 ---
 
 ## Nature du dossier
 
-`clim/` est un **dashboard métier décisionnel multi-modes**.
+`climatisation/` est un **dashboard métier décisionnel multi-modes**.
 
 Il expose :
 
@@ -234,7 +233,7 @@ Rôle :
 ## Structure cible
 
 ```text
-40_dashboards/clim/
+40_dashboards/climatisation/
 
   20_statut_metier/
     clim_decision_synthetique_72.yaml
@@ -407,7 +406,7 @@ carte_diagnostic_chauffage_blocage_aeration
 
 ## Conclusion
 
-Le domaine `clim/` constitue :
+Le domaine `climatisation/` constitue :
 
 > **un système décisionnel sous contraintes avec activation conditionnelle**
 
