@@ -84,7 +84,7 @@ Cette séparation n'est pas théorique. Elle est visible dans l'arborescence et 
 ## Structure du repo
 
 ```
-00_documentation_arsenal/   Contrats, changelogs, architecture, doctrine
+00_documentation_arsenal/   Documentation normative (contrats, architecture, audits, changelogs) · navigation inter-familles
 01_customize/               Personnalisation des entités
 02_groups/                  Groupes Home Assistant
 03_input_numbers/           Helpers numériques — seuils et paramètres métier
@@ -159,9 +159,11 @@ Le même modèle architectural se retrouve dans chaque domaine : alarme, ECS, d�
 La documentation n'est pas un supplément — elle est normative.
 
 - **Contrats** — Spécifications formelles de chaque domaine. Un contrat dit ce que le système *doit* faire, pas comment il le fait. Le YAML implémente le contrat.
-- **Changelogs** — Chaque version d'Arsenal a un changelog structuré. Les décisions architecturales y sont documentées, pas seulement les changements.
 - **Architecture** — Schémas d'infrastructure, topologie MQTT, organisation des couches.
+- **Audits** — Rapports, arbitrages, contre-expertises, plans d'action et clôtures. Trace le cycle de validation de chaque domaine.
+- **Changelogs** — Chaque version d'Arsenal a un changelog structuré. Les décisions architecturales y sont documentées, pas seulement les changements.
 - **Outils externes** — Contrats et documentation des composants satellites : bridge boiler Pi, pipelines NAS, proxies BLE.
+- **Navigation** — Couche d'orientation inter-familles : carte des domaines, 21 hubs Tier-1, pivots. Non normative — porte d'entrée transversale du corpus.
 
 ---
 
@@ -170,6 +172,7 @@ La documentation n'est pas un supplément — elle est normative.
 ```
 scripts/security/audit_publication_git.py   Audit sécurité pré-publication
 scripts/arsenal_contracts/                  Validation des contrats par domaine
+tools/arsenal_ci/                           Moteur CI — validation contrats chauffage, graphe décision/exécution
 ```
 
 L'audit de publication est bloquant. Zéro CRITICAL = condition nécessaire pour publier. Les WARNING documentaires sont qualifiés et traçables (`[scope=doc]`).
