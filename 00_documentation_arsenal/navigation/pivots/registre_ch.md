@@ -13,7 +13,7 @@
 |---|---|---|---|---|---|---|
 | **Chauffage-CI** | Chauffage | `CH-n` (nu) | [`changelog/chantiers/climatisation/`](../../changelog/chantiers/climatisation/) | gouvernance CI | CH1–CH6 | [`chauffage`](../domaines/chauffage.md) |
 | **Alarme** | Alarme | `CH-n` (nu) | `audits/**` (alarme) | chantiers d'audit | CH1, CH2, CH4, CH6 | [`alarme`](../domaines/alarme.md) |
-| **Lovelace/CI** | Transverse (Lovelace/CI) | `CH-LL-CI-n` (**qualifié**) | [`CHANGELOG_CH-LL-CI-1.md`](../../changelog/chantiers/transverses/CHANGELOG_CH-LL-CI-1.md) | CI transverse | CH-LL-CI-1 | `ui_lovelace` (hub à venir) |
+| **Lovelace/CI** | Transverse (Lovelace/CI) | `CH-LL-CI-n` (**qualifié**) | [`CHANGELOG_CH-LL-CI-1.md`](../../changelog/chantiers/transverses/CHANGELOG_CH-LL-CI-1.md) | CI transverse | CH-LL-CI-1 | [`ui_lovelace`](../domaines/ui_lovelace.md) |
 
 ## Collision par numéro (séries à préfixe nu)
 
