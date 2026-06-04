@@ -25,27 +25,27 @@
 
 | Domaine (nom canonique) | Familles | Note taxonomique |
 |---|---|---|
-| `chauffage` | C·A·Au·Ch | Chaîne complète. `Ch` = les `CHANGELOG_CH1..6` (gouvernance CI Chauffage) **actuellement classés à tort** sous `changelog/chantiers/climatisation/`. |
-| `ecs` | C·Au | Inclut le **sous-domaine `bouclage`** (cf. §5). Boucle d'arbitrage *watchdog* aboutie. |
-| `alarme` | C·Au | Chaîne complète (CH1/CH2/CH6) ; **absente de `audits/index.md`**. « CH-x » **propre à alarme** (cf. §5). |
-| `climatisation` | C·Au | Chantier COOL livré (v15.8.4). **Pas de `Ch` propre** : le dossier `changelog/chantiers/climatisation/` contient en réalité les CH-x du **Chauffage**. |
-| `vacances` | C·Au | Contrat mono-fichier mais **chaîne d'audit complète** (→ clôture partielle, VAC-IMP-5). Réfs croisées vers `contrats/chauffage/65_,66_`. |
-| `meteo` | C·A·Au | **Météo extérieure** (sources, axe température/humidité *jardin*). Distincte de la température/humidité intérieures (cf. §5). |
-| `temperature_interieure` | C·A·Au | **Domaine propre**, mais contrat **logé sous** `contrats/meteo/` (`axe_temperature`, `temperature_interieure/`). Chaîne audit autonome. |
-| `humidite_relative_interieure` | C·RT | **Domaine propre**, contrat **logé sous** `contrats/meteo/` ; pipeline dérivé + **CI dédiée** présents. **Non audité — état de cycle, pas un défaut.** |
-| `ui_lovelace` | C·A·Au·Ch | **Fusion `ui` + `lovelace`** (un domaine, deux façades : référence `ui/` + cycle audit Lovelace). `Ch` = `CHANGELOG_CH-LL-CI-1`. |
-| `aeration_blocage_chauffage` | C | Folder (37) — machine d'état `m0→m6`. **Distinct** de `aeration_recommandation` (cf. §3 et §5). |
-| `pannes` | C | Folder (9) — `internet` + `secteur`. Réf. résilience croisée avec `energie_chaudiere`. |
-| `boiler` | C·Ext | Contrat HA (`contrats/boiler/`) **distinct** de l'outil `outils_externes/boiler_pi/` (pont Raspberry Pi). |
-| `eclairage` | C·A | Folder (6) + `architecture/eclairage_jardin.md`. |
-| `ouvertures` | C·A | Folder (3) + `architecture/ouvertures.md`. **Léger — hub conservé** (carte explicite plutôt qu'invisibilisation). |
-| `voiture` | C·A·Au | `architecture/voiture.md` porte un **contenu erroné** (copie d'aération) — signalé par l'audit structurel. |
-| `energie_chaudiere` | C·RT | Fichier `contrats/bluetti.md` (Bluetti AC180). Couche dérivée **vérifiée fidèle au runtime**. Nom de fichier ≠ nom canonique. |
-| `presence` | C·A | `contrats/presence.md` + `architecture/presence/` (`presence`, `wifi`). |
-| `energie` | C·A | `contrats/energie.md` + `architecture/energie.md`. |
-| `deshumidificateur` | C | Folder (2). **Léger — hub conservé** (carte explicite plutôt qu'invisibilisation). |
-| `imprimerie` | C | Folder (3) — domaine **métier/pro** (capteurs bruit Baillet). **Léger — hub conservé.** |
-| `sante` | C | Folder (2) — `cardio_nuit`, `sommeil`. **Léger — hub conservé.** `sommeil` = draft `v0.9` non validé. |
+| [`chauffage`](domaines/chauffage.md) | C·A·Au·Ch | Chaîne complète. `Ch` = les `CHANGELOG_CH1..6` (gouvernance CI Chauffage) **actuellement classés à tort** sous `changelog/chantiers/climatisation/`. |
+| [`ecs`](domaines/ecs.md) | C·Au | Inclut le **sous-domaine `bouclage`** (cf. §5). Boucle d'arbitrage *watchdog* aboutie. |
+| [`alarme`](domaines/alarme.md) | C·Au | Chaîne complète (CH1/CH2/CH6) ; **absente de `audits/index.md`**. « CH-x » **propre à alarme** (cf. §5). |
+| [`climatisation`](domaines/climatisation.md) | C·Au | Chantier COOL livré (v15.8.4). **Pas de `Ch` propre** : le dossier `changelog/chantiers/climatisation/` contient en réalité les CH-x du **Chauffage**. |
+| [`vacances`](domaines/vacances.md) | C·Au | Contrat mono-fichier mais **chaîne d'audit complète** (→ clôture partielle, VAC-IMP-5). Réfs croisées vers `contrats/chauffage/65_,66_`. |
+| [`meteo`](domaines/meteo.md) | C·A·Au | **Météo extérieure** (sources, axe température/humidité *jardin*). Distincte de la température/humidité intérieures (cf. §5). |
+| [`temperature_interieure`](domaines/temperature_interieure.md) | C·A·Au | **Domaine propre**, mais contrat **logé sous** `contrats/meteo/` (`axe_temperature`, `temperature_interieure/`). Chaîne audit autonome. |
+| [`humidite_relative_interieure`](domaines/humidite_relative_interieure.md) | C·RT | **Domaine propre**, contrat **logé sous** `contrats/meteo/` ; pipeline dérivé + **CI dédiée** présents. **Non audité — état de cycle, pas un défaut.** |
+| [`ui_lovelace`](domaines/ui_lovelace.md) | C·A·Au·Ch | **Fusion `ui` + `lovelace`** (un domaine, deux façades : référence `ui/` + cycle audit Lovelace). `Ch` = `CHANGELOG_CH-LL-CI-1`. |
+| [`aeration_blocage_chauffage`](domaines/aeration_blocage_chauffage.md) | C | Folder (37) — machine d'état `m0→m6`. **Distinct** de `aeration_recommandation` (cf. §3 et §5). |
+| [`pannes`](domaines/pannes.md) | C | Folder (9) — `internet` + `secteur`. Réf. résilience croisée avec `energie_chaudiere`. |
+| [`boiler`](domaines/boiler.md) | C·Ext | Contrat HA (`contrats/boiler/`) **distinct** de l'outil `outils_externes/boiler_pi/` (pont Raspberry Pi). |
+| [`eclairage`](domaines/eclairage.md) | C·A | Folder (6) + `architecture/eclairage_jardin.md`. |
+| [`ouvertures`](domaines/ouvertures.md) | C·A | Folder (3) + `architecture/ouvertures.md`. **Léger — hub conservé** (carte explicite plutôt qu'invisibilisation). |
+| [`voiture`](domaines/voiture.md) | C·A·Au | `architecture/voiture.md` porte un **contenu erroné** (copie d'aération) — signalé par l'audit structurel. |
+| [`energie_chaudiere`](domaines/energie_chaudiere.md) | C·RT | Fichier `contrats/bluetti.md` (Bluetti AC180). Couche dérivée **vérifiée fidèle au runtime**. Nom de fichier ≠ nom canonique. |
+| [`presence`](domaines/presence.md) | C·A | `contrats/presence.md` + `architecture/presence/` (`presence`, `wifi`). |
+| [`energie`](domaines/energie.md) | C·A | `contrats/energie.md` + `architecture/energie.md`. |
+| [`deshumidificateur`](domaines/deshumidificateur.md) | C | Folder (2). **Léger — hub conservé** (carte explicite plutôt qu'invisibilisation). |
+| [`imprimerie`](domaines/imprimerie.md) | C | Folder (3) — domaine **métier/pro** (capteurs bruit Baillet). **Léger — hub conservé.** |
+| [`sante`](domaines/sante.md) | C | Folder (2) — `cardio_nuit`, `sommeil`. **Léger — hub conservé.** `sommeil` = draft `v0.9` non validé. |
 
 ---
 
