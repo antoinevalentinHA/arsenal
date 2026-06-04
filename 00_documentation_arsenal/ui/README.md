@@ -55,7 +55,7 @@ Elle **ne les fabrique jamais**.
 /homeassistant/00_documentation_arsenal/ui/
 ├── README.md
 ├── architecture.md
-├── couleurs.md
+├── couleurs/
 ├── navigation.md
 ├── pattern_dashboard.md
 └── socle_ui/
@@ -69,7 +69,9 @@ Elle **ne les fabrique jamais**.
     ├── 06_kpi.md
     ├── 07_status.md
     ├── 08_toggle.md
-    └── 09_diagnostic.md
+    ├── 09_diagnostic.md
+    ├── 10_badge.md
+    └── 11_header.md
 
 ---
 
@@ -84,7 +86,7 @@ Document de référence des **principes architecturaux UI Arsenal** :
 
 ---
 
-### `couleurs.md`
+### `couleurs/`
 Charte contractuelle **Couleurs & Sémantique** :
 - palette officielle Arsenal
 - cas strictement délimités (gris neutre / gris indisponibilité)
