@@ -37,17 +37,17 @@ Chaque fichier correspond à **un domaine fonctionnel** distinct.
 
 Exemples :
 
-- `eclairage_jardin.md`  
-  → règles métier de l’éclairage extérieur
+- `vmc.md`  
+  → qualité d’air, ventilation, arbitrages hygrothermiques
 
-- `chauffage.md`  
-  → logique de confort thermique et de sobriété
+- `presence.md`  
+  → règles de détection et d’exploitation de la présence
 
-- `ecs.md`  
-  → règles de production et de sécurité de l’eau chaude sanitaire
+- `vacances.md`  
+  → comportement du système en mode vacances
 
-- `ventilation.md`  
-  → aération, qualité d’air, arbitrages hygrothermiques
+- `bouclage.md`  
+  → maintien en température du réseau ECS
 
 Chaque contrat est **autoportant** :
 - il peut être lu indépendamment
@@ -76,7 +76,7 @@ elle garantit la lisibilité et l’auditabilité.
 
 ## 🔗 RELATION AVEC LES AUTRES DOSSIERS
 
-### Avec `changelog_arsenal/`
+### Avec `changelog/`
 
 - le changelog explique **ce qui a changé**
 - le contrat explique **ce qui est vrai**
@@ -87,7 +87,7 @@ elle garantit la lisibilité et l’auditabilité.
 
 ---
 
-### Avec `architecture_arsenal/`
+### Avec `architecture/`
 
 - les contrats décrivent les règles métier **locales**
 - l’architecture décrit les principes **transverses**
