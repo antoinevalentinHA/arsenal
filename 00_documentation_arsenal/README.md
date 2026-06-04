@@ -4,21 +4,25 @@
 
 ## 🎯 OBJET
 
-Ce dossier contient la **documentation fonctionnelle et architecturale**
+Ce dossier contient la **documentation fonctionnelle, architecturale et historique**
 du système **Arsenal**.
 
-Il ne s’agit **ni** d’une aide Home Assistant,
-**ni** d’un tutoriel,
-**ni** d’un historique de commits.
+Il ne s'agit **ni** d'une aide Home Assistant,
+**ni** d'un tutoriel,
+**ni** d'un journal de commits Git.
 
 Cette documentation décrit :
 
-- ce que le système **doit faire**
-- pourquoi il a été conçu ainsi
-- quelles sont les règles non négociables
-- comment éviter les dérives fonctionnelles dans le temps
+- ce que le système **doit faire** (contrats),
+- **comment** et **pourquoi** il est construit ainsi (architecture),
+- comment il a **évolué** dans le temps (changelog, historique),
+- comment il est **audité** et gouverné (audits),
+- comment il s'**interface** avec des outils externes.
 
 Elle constitue la **référence de vérité** du système Arsenal.
+
+> **Règle d'or.** Ce qui n'est pas documenté ici n'existe pas fonctionnellement.
+> Inversement, ce qui est documenté ici doit pouvoir être retrouvé dans le système.
 
 ---
 
@@ -31,112 +35,99 @@ Arsenal repose sur une séparation stricte entre :
 - **Décisions observables**
 - **Actions matérielles**
 
-La documentation reflète cette séparation.
-
-👉 Si une logique n’est pas décrite ici,
-elle ne doit pas exister implicitement dans le code.
+La documentation reflète cette séparation. En particulier, le **contrat** (ce que
+le système doit faire) est distinct de l'**architecture** (comment il le fait) :
+si une implémentation contredit un contrat, c'est l'implémentation qui est fausse.
 
 ---
 
-## 📁 STRUCTURE DU DOSSIER
+## 📁 STRUCTURE RÉELLE DU DOSSIER
 
+Le dossier est organisé en **huit zones de premier rang**, plus ce README.
+
+```
 00_documentation_arsenal/
 │
-├── README.md
+├── README.md                ← ce fichier
 │
-├── changelog_arsenal/
-│ ├── changelog.md
-│ └── archives/
-│
-├── contrats_arsenal/
-│ ├── eclairage_jardin.md
-│ ├── chauffage.md
-│ ├── ecs.md
-│ ├── ventilation.md
-│ └── README.md
-│
-├── architecture_arsenal/
-│ ├── principes_generaux.md
-│ ├── gestion_du_temps.md
-│ ├── separation_decision_action.md
-│ └── README.md
-
+├── architecture/            ← référence d'implémentation (comment / pourquoi)
+├── audits/                  ← cycle de vie d'audit par domaine
+├── changelog/               ← évolution versionnée + récit historique
+├── contrats/                ← référence normative (ce que le système doit faire)
+├── evolutions_futures/      ← fiches prospectives (sas)
+├── outils_externes/         ← supervision d'outils hors Home Assistant
+├── schemas_ascii/           ← diagrammes ASCII de pipelines
+└── ui/                      ← charte couleurs + socle de cartes Lovelace
+```
 
 ---
 
-## 📜 `changelog_arsenal/`
+## 📂 LES HUIT ZONES
 
-### Rôle
+### 🏗️ `architecture/`
+Décrit **comment** le système est construit et **pourquoi** : doctrines transverses
+(`03_doctrines/`), structure des includes (`00_structure_includes/`), recorder,
+étiquettes, et documents d'architecture par sous-système.
+👉 Référence d'implémentation. **N'introduit aucune règle métier.**
+Voir [`architecture/README.md`](architecture/README.md).
 
-Tracer **l’évolution du système** dans le temps.
+### 🔍 `audits/`
+Trace le **cycle de vie d'audit** par domaine, en étapes successives :
+`01_rapports/` → `02_{arbitrages, conception, constats, contre_expertises}/` →
+`03_plans_action/` → `04_chantiers/` → `05_clotures/`.
+👉 Point d'entrée : [`audits/index.md`](audits/index.md).
 
-Ce dossier contient :
-- les changements consolidés
-- les évolutions en cours
-- les décisions réversibles
-- les transitions de version
+### 📜 `changelog/`
+Trace **l'évolution du système** dans le temps. Versionnage atomique et diffable
+sous `changelogs/vXX/`, changelogs de chantiers sous `chantiers/`, récit
+rétrospectif des inflexions dans `historique.md`.
+👉 Point d'entrée : [`changelog/index.md`](changelog/index.md).
+👉 Récit : [`changelog/historique.md`](changelog/historique.md).
 
-### Ce qu’on y met
-- ce qui a changé
-- pourquoi ça a changé
-- ce qui est encore en évaluation
+### 📘 `contrats/`
+Définit **ce que chaque sous-système DOIT faire** : intention utilisateur, règles
+métier, invariants, dérives interdites. Domaines folderisés (`chauffage/`,
+`climatisation/`, `alarme/`, `ecs/`, `meteo/`, `aeration_blocage_chauffage/`,
+`boiler/`, `pannes/`…) et contrats de domaine à la racine.
+👉 Principe : **le contrat précède l'implémentation.**
+👉 Voir [`contrats/README.md`](contrats/README.md).
 
-### Ce qu’on n’y met pas
-- la logique métier complète
-- l’architecture détaillée
-- les intentions utilisateur
+### 🌱 `evolutions_futures/`
+Sas de **fiches prospectives**. Une fiche y séjourne tant qu'elle n'est pas
+formalisée ; une fois actée, elle migre vers `contrats/` ou `outils_externes/`.
 
----
+### 🧰 `outils_externes/`
+Documente la **supervision d'outils hors Home Assistant** : pont chaudière
+(`boiler_pi/`), outillage NAS Arsenal (`nas_arsenal/`), NAS Imprimerie
+(`nas_imprimerie/`), ainsi que des gabarits d'autoring (prompts de génération).
 
-## 📘 `contrats_arsenal/`
+### 🗺️ `schemas_ascii/`
+Diagrammes **ASCII** de pipelines (aération, NAS↔HA, régulation thermique),
+destinés à une lecture rapide en texte brut.
 
-### Rôle
-
-Définir **ce que chaque sous-système DOIT faire**.
-
-Un contrat fonctionnel :
-- décrit l’intention utilisateur
-- définit les règles métier
-- fixe les invariants
-- interdit explicitement certaines dérives
-
-Exemples :
-- éclairage jardin
-- chauffage
-- ECS
-- ventilation
-
-### Principe fondamental
-
-> **Le contrat précède l’implémentation.**
-
-Si le code contredit un contrat,
-le code est faux — pas le contrat.
-
----
-
-## 🏗️ `architecture_arsenal/`
-
-### Rôle
-
-Décrire les **principes transverses** du système Arsenal.
-
-Ce dossier contient :
-- les règles architecturales communes
-- les modèles temporels retenus
-- les choix de séparation logique
-- les patterns validés (guards, ECS-like, etc.)
-
-### Objectif
-
-Éviter :
-- les régressions conceptuelles
-- les décisions techniques incohérentes
-- les refactorings destructeurs
+### 🎨 `ui/`
+**Charte couleurs** (`couleurs/`) et **socle de cartes** Lovelace (`socle_ui/`),
+plus les documents d'architecture UI transverse.
+👉 Voir [`ui/README.md`](ui/README.md).
 
 ---
 
-## 🚫 CE QUE CETTE DOCUMENTATION N’EST PAS
+## 🧭 OÙ CHERCHER QUOI
+
+| Question | Zone |
+|---|---|
+| « Que **doit** faire ce domaine ? » | `contrats/` |
+| « **Comment** est-ce implémenté, et pourquoi ? » | `architecture/` |
+| « **Qu'est-ce qui a changé** et quand ? » | `changelog/` |
+| « Cet état a-t-il été **audité** ? » | `audits/` |
+| « Comment Arsenal parle à un **outil externe** ? » | `outils_externes/` |
+| « À quoi ressemble le **pipeline** ? » | `schemas_ascii/` |
+| « Quelle **couleur / carte** UI utiliser ? » | `ui/` |
+| « Une **idée** pas encore formalisée ? » | `evolutions_futures/` |
+
+---
+
+## 🚫 CE QUE CETTE DOCUMENTATION N'EST PAS
 
 - ❌ un dump de configuration Home Assistant
 - ❌ une documentation utilisateur finale
@@ -145,33 +136,17 @@ Ce dossier contient :
 
 ---
 
-## 🧠 RÈGLE D’OR ARSENAL
-
-> **Ce qui n’est pas documenté ici
-> n’existe pas fonctionnellement.**
-
-Inversement :
-> **Ce qui est documenté ici
-> doit pouvoir être retrouvé dans le système.**
-
----
-
 ## 📌 STATUT
 
 - Portée : **système Arsenal**
 - Nature : **documentation de référence**
-- Autorité : **contrats fonctionnels**
-- Mise à jour : volontaire, réfléchie, tracée
+- Autorité : **contrats fonctionnels** (prioritaires sur le code)
+- Mise à jour : volontaire, réfléchie, tracée dans le changelog
 
 ---
 
 ## ✍️ NOTE FINALE
 
-Cette documentation n’est pas figée,
-mais elle ne doit évoluer **que**
-lorsqu’une **intention utilisateur évolue**.
-
-Toute modification doit être :
-- consciente
-- explicitée
-- tracée dans le changelog Arsenal
+Cette documentation n'est pas figée, mais elle ne doit évoluer **que** lorsqu'une
+intention utilisateur, une décision d'architecture ou un fait d'évolution le
+justifie. Toute modification doit être **consciente, explicitée et tracée**.
