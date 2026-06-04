@@ -276,7 +276,7 @@ Conséquence normative :
 - `automation 10260000000002` — Bouclage AUTO : extinction → OFF
   Déclencheur : front descendant de `binary_sensor.bouclage_autorise`
 
-- `script.bouclage_ecs_manuel` → ON + flag
+- `script.bouclage_ecs_5_minutes` → ON + flag
   **Règle : indépendant de `input_boolean.bouclage_auto_active`. Un cycle manuel reste déclenchable même lorsque le sous-système AUTO est désarmé.**
 
 - `automation 10260000000003` — Extinction bouclage manuel → flag OFF inconditionnel + switch OFF si `bouclage_autorise == off`  
@@ -348,12 +348,12 @@ ECS ne doit jamais être utilisé pour inférer, corriger ou rétroagir sur l'é
 | # | De | Vers | Condition |
 |---|---|---|---|
 | 1 | IDLE | BOUCLAGE_AUTO | `bouclage_autorise` devient `on` |
-| 2 | IDLE | CYCLE_MANUEL_5_MIN | déclenchement `script.bouclage_ecs_manuel` |
+| 2 | IDLE | CYCLE_MANUEL_5_MIN | déclenchement `script.bouclage_ecs_5_minutes` |
 | 3 | BOUCLAGE_AUTO | IDLE | `bouclage_autorise` devient `off` (cause indifférente : désarmement AUTO, refroidissement ballon, ou départ occupation) |
 | 4 | CYCLE_MANUEL_5_MIN | IDLE | fin timer ET `bouclage_autorise == off` |
 | 5 | CYCLE_MANUEL_5_MIN | SUPERPOSITION | `bouclage_autorise` devient `on` pendant cycle |
 | 6 | SUPERPOSITION | BOUCLAGE_AUTO | fin timer (AUTO continue) |
-| 7 | BOUCLAGE_AUTO | SUPERPOSITION | déclenchement `script.bouclage_ecs_manuel` pendant AUTO |
+| 7 | BOUCLAGE_AUTO | SUPERPOSITION | déclenchement `script.bouclage_ecs_5_minutes` pendant AUTO |
 
 Note sur la transition 3 :
 
