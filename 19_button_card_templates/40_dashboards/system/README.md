@@ -1,8 +1,8 @@
-# `40_dashboards/systeme/` — Architecture UI
+# `40_dashboards/system/` — Architecture UI
 
 ## Nature du dossier
 
-`systeme/` est un **dashboard de supervision opérationnelle du socle maison**, centré sur la disponibilité, la stabilité, la connectivité et la santé des composants critiques.
+`system/` est un **dashboard de supervision opérationnelle du socle maison**, centré sur la disponibilité, la stabilité, la connectivité et la santé des composants critiques.
 
 Ce n'est pas un domaine métier utilisateur, ni une UI transactionnelle. C'est une **UI de supervision et d'alerte**, orientée détection d'incident, visibilité de stabilité, lecture de santé synthétique et accès optionnel à une action de remédiation manuelle.
 
@@ -70,7 +70,7 @@ Exemple : `boiler_status_health`
 - Health synthétique multi-états d'un sous-système spécifique
 - **Type UI : diagnostic**
 
-> Ce template est cohérent dans `systeme/` comme supervision transversale de santé. À distinguer de `boiler/` : `boiler/` expose l'observabilité interne du sous-système, `systeme/` en expose la santé synthétique depuis l'extérieur.
+> Ce template est cohérent dans `system/` comme supervision transversale de santé. À distinguer de `boiler/` : `boiler/` expose l'observabilité interne du sous-système, `system/` en expose la santé synthétique depuis l'extérieur.
 
 ---
 
@@ -102,7 +102,7 @@ Niveau 4 — Intégrations / Santé     → 40_diagnostic_integrations/
 ## Structure cible recommandée
 
 ```
-40_dashboards/systeme/
+40_dashboards/system/
 
   10_info_stabilite/
     carte_uptime_systeme.yaml
@@ -138,9 +138,9 @@ Mélange connectivité instantanée et qualité historique à 7 jours. Utile, ma
 
 Dépendance forte à l'entity sous-jacente. À documenter dans l'entête comme dépendance non découplée.
 
-### 4. `boiler_status_health` dans `systeme/`
+### 4. `boiler_status_health` dans `system/`
 
-Cohérent ici comme vue externe de santé. Risque de doublon conceptuel avec `boiler/` si mal utilisé. La règle : `boiler/` = observabilité interne, `systeme/` = santé synthétique vue de l'extérieur.
+Cohérent ici comme vue externe de santé. Risque de doublon conceptuel avec `boiler/` si mal utilisé. La règle : `boiler/` = observabilité interne, `system/` = santé synthétique vue de l'extérieur.
 
 ---
 
@@ -160,4 +160,4 @@ Ajouter le champ `TYPE UI` normalisé :
 Ajouter dans son entête : rôle canonique de supervision d'intégration, action secondaire et conditionnelle, non généralisable comme carte d'action.
 
 **Étape 4 — Documenter les fragilités**
-Ajouter dans les entêtes : dualité temporelle (`carte_etat_internet`), dépendance `states[]` (`carte_uptime_systeme`), frontière `boiler/` vs `systeme/` (`boiler_status_health`).
+Ajouter dans les entêtes : dualité temporelle (`carte_etat_internet`), dépendance `states[]` (`carte_uptime_systeme`), frontière `boiler/` vs `system/` (`boiler_status_health`).
