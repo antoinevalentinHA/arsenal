@@ -16,7 +16,7 @@
 | Fichier | `socle_transversal/01__objet_perimetre_statut.md` |
 | Convention attendue | `01_objet_perimetre_statut.md` (simple underscore) |
 | Source | Audit README `contrats/aeration_blocage_chauffage/` |
-| Statut | **À renommer** — README corrigé, fichier inchangé |
+| Statut | **✅ CLOS — 2026-06-05.** Fichier renommé en `01_objet_perimetre_statut.md` (plan, Étape 4) ; réf `changelog/v14.md` mise à jour ; README déjà aligné. Entrée conservée pour trace. |
 | Impact | Lien mort depuis le README (pointe vers `01_`) |
 
 ### 1.2 Typo — `contrats/boiler/guard_expostion_ha.md`
@@ -26,7 +26,7 @@
 | Fichier | `contrats/boiler/guard_expostion_ha.md` |
 | Coquille | `expostion` → `exposition` |
 | Source | Hub navigation `boiler` — Points de vigilance |
-| Statut | **À renommer** |
+| Statut | **✅ CLOS — 2026-06-05.** Fichier renommé en `guard_exposition_ha.md` (plan, Étape 3) ; réfs `dependances_inter_domaines.md` et `changelog/v12_2.md` mises à jour. Entrée conservée pour trace. |
 | Impact | Cosmétique — nom trompeur |
 
 ### 1.3 Référence morte — `contrats/chauffage/30_decision_centrale.md`
@@ -187,8 +187,8 @@
 
 | Priorité | Anomalie | Action |
 |---|---|---|
-| **P1** | `01__objet_perimetre_statut.md` — double underscore | Renommer le fichier |
-| **P1** | `guard_expostion_ha.md` — typo | Renommer le fichier |
+| **Clos** | `01__objet_perimetre_statut.md` — double underscore | Renommage exécuté (Étape 4) — voir §1.1 |
+| **Clos** | `guard_expostion_ha.md` — typo | Renommage exécuté (Étape 3) — voir §1.2 |
 | **P1** | `30_decision_centrale.md` — référence morte | Supprimer la ligne |
 | **Clos** | `pannes/secteur/` — double `10_` | Renommage `10_`→`11_temporalite` exécuté (Étape 2) — voir §2.4 |
 | **Clos** | `resilience_electrique` — nommage hérité / 6 renvois | Reroute à plat exécuté (B1, Étape 6) — voir §1.4 |

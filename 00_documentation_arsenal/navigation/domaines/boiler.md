@@ -37,7 +37,7 @@ Interface physique HA↔chaudière via Boiler Pi (Raspberry Pi exécutant le boi
 
 - **Double présence documentaire** : `contrats/boiler/` (contrats HA) + `outils_externes/boiler_pi/` (outil) — domaine unique parmi les 21 Tier-1.
 - **Double titre README** : `contrats/boiler/README.md` et `outils_externes/boiler_pi/README.md` partagent le même titre (« Boiler Pi · Documentation »). Le README dans `contrats/` est un redirect vers `outils_externes/`.
-- **`guard_expostion_ha.md`** : typo dans le nom de fichier (« expostion »). Signalé, non corrigé.
+- **`guard_expostion_ha.md`** : typo dans le nom de fichier (« expostion »). **Corrigé** — renommé `guard_exposition_ha.md`. _(Anomalie historique, résolue.)_
 - **`interface_ha_boiler_bridge.md`** hébergé sous `architecture/chauffage/` — non trouvable depuis `architecture/boiler/` (inexistant). Signalé, non corrigé.
 
 ---
