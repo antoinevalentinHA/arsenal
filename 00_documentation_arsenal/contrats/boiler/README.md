@@ -21,10 +21,10 @@
 
 **Pour comprendre le système complet :**
 
-1. `socle_transactionnel.md` — le principe structurant de toute la chaîne
-2. `mqtt.md` — ce que le bridge produit (topics, ACK, erreurs)
-3. `mqtt_ack_ha.md` — ce que Home Assistant consomme
-4. `script_executif.md` — comment un script exécute une commande
+1. [`socle_transactionnel.md`](socle_transactionnel.md) — le principe structurant de toute la chaîne
+2. [`mqtt.md`](../../outils_externes/boiler_pi/mqtt.md) — ce que le bridge produit (topics, ACK, erreurs)
+3. [`mqtt_ack_ha.md`](mqtt_ack_ha.md) — ce que Home Assistant consomme
+4. [`script_executif.md`](script_executif.md) — comment un script exécute une commande
 
 
 ---

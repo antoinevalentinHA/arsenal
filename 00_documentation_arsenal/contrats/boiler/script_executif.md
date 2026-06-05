@@ -411,7 +411,7 @@ Aucune journalisation verbeuse pas-à-pas n'est conforme.
 ## 18. Bornes et pas physiques — paramètres de courbe (v0.5)
 
 Ces valeurs sont normatives et opposables à toute couche émettrice Arsenal.  
-Source : `CONTRAT_MQTT.md` §11 / `arsenal-boiler-bridge` v0.5.
+Source : [`mqtt.md`](../../outils_externes/boiler_pi/mqtt.md) §5.3 et §5.4 / `arsenal-boiler-bridge` v0.4.3.
 
 | Paramètre | Commande | Bornes | Pas | Type émis |
 |-----------|----------|--------|-----|-----------|
