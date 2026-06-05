@@ -110,8 +110,8 @@ L'ajout respecte les interdictions sémantiques de `90` §12 :
 
 ## 6. Dépendances et portée
 
-**Subordonné à :** `00_gouvernance_chauffage.md` (+ amendement) ·
-`01_doctrine_registres.md`
+**Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) (+ amendement) ·
+[`01_doctrine_registres.md`](01_doctrine_registres.md)
 
 **Transversal à :** l'ensemble des contrats Chauffage (comme `90`).
 

@@ -212,10 +212,10 @@ surface de trigger.
 
 ## 8. Dépendances et portée
 
-**Subordonné à :** `00_gouvernance_chauffage.md` (+ amendement) ·
-`01_doctrine_registres.md`
+**Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) (+ amendement) ·
+[`01_doctrine_registres.md`](01_doctrine_registres.md)
 
-**Complémentaire de :** `30_decision_centrale.md` (+ amendement) ·
+**Complémentaire de :** [`30_decision_centrale.md`](30_decision_centrale.md) (+ amendement) ·
 `80_table_decision_canonique` (+ réécriture partielle)
 
 **Cohérent avec :** `60` (réécriture) · `70`/`90` (amendements)

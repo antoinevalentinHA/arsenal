@@ -131,10 +131,10 @@ mixte). La désintrication étant retenue, il est abandonné.
 
 ## A7. Dépendances contractuelles
 
-**Subordonné à :** `00_gouvernance_chauffage.md` · `01_doctrine_registres.md`
+**Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) · [`01_doctrine_registres.md`](01_doctrine_registres.md)
 
-**Complémentaire de :** `30_decision_centrale.md` ·
-`70_autorisation_thermostat.md` · `80_table_decision_canonique.md`
+**Complémentaire de :** [`30_decision_centrale.md`](30_decision_centrale.md) ·
+[`70_autorisation_thermostat.md`](70_autorisation_thermostat.md) · [`80_table_decision_canonique.md`](80_table_decision_canonique.md)
 
 **Gouverne directement :** `input_boolean.chauffage_standby_force` et
 l'automation d'application de l'autorisation thermique.

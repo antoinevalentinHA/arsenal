@@ -2,9 +2,9 @@
 ## Chauffage — Table de Décision Canonique V3 (réécriture partielle)
 
 **Statut :** Contrat normatif formel — spécification ultime de décision — opposable
-**Subordonné à :** `00_gouvernance_chauffage.md` · `01_doctrine_registres.md`
+**Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) · [`01_doctrine_registres.md`](01_doctrine_registres.md)
 **Implémenté par :** `30_decision_centrale.md`
-**Complémentaire de :** `40_blocages.md` · `50_standby_hysteresis.md` · `60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`
+**Complémentaire de :** [`40_blocages.md`](40_blocages.md) · [`50_standby_hysteresis.md`](50_standby_hysteresis.md) · [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) · [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
 **Nature de la révision :** réécriture partielle — passage d'une logique d'**ordre** à une logique de **comportement** sur l'axe blocages, en application de la doctrine des registres (D1, D2).
 
 ---
@@ -237,10 +237,10 @@ sans raison métier ; priorité à la stabilité sur la réactivité.
 
 ## 13. Dépendances & portée
 
-**Subordonné à :** `00_gouvernance_chauffage.md` · `01_doctrine_registres.md`
+**Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) · [`01_doctrine_registres.md`](01_doctrine_registres.md)
 **Implémenté par :** `30_decision_centrale.md`
-**Complémentaire de :** `40_blocages.md` · `50_standby_hysteresis.md` ·
-`60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`
+**Complémentaire de :** [`40_blocages.md`](40_blocages.md) · [`50_standby_hysteresis.md`](50_standby_hysteresis.md) ·
+[`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) · [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
 
 Cette réécriture partielle est la référence ultime du comportement
 décisionnel sur l'axe blocages. Elle est stable long terme, opposable, et

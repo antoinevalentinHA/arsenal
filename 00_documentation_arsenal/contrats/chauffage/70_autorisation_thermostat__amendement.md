@@ -161,14 +161,14 @@ La modulation `suspension_relance_meteo` ne doit JAMAIS :
 
 ## 9. Dépendances contractuelles
 
-**Subordonné à :** `00_gouvernance_chauffage.md` (+ amendement) ·
-`01_doctrine_registres.md`
+**Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) (+ amendement) ·
+[`01_doctrine_registres.md`](01_doctrine_registres.md)
 
 **Utilisé par :** `30_decision_centrale.md` (consomme l'intention produite)
 
-**Complémentaire de :** `60_absence_inhibition_geofencing.md` ·
+**Complémentaire de :** [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) ·
 `80_table_decision_canonique` (+ réécriture partielle) ·
-`90_semantique_thermique.md` (+ amendement — terme canonique)
+[`90_semantique_thermique.md`](90_semantique_thermique.md) (+ amendement — terme canonique)
 
 **Gouverne directement :** la post-règle de modulation météo du capteur
 `sensor.chauffage_autorisation_cible`.

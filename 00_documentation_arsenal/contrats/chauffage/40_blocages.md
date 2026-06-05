@@ -2,9 +2,9 @@
 ## Chauffage — Blocages & Interdictions Hiérarchiques V3
 
 **Statut :** Contrat normatif de domaine — sûreté hiérarchique chauffage — opposable  
-**Subordonné à :** `contrats/chauffage/00_gouvernance_chauffage.md`  
+**Subordonné à :** [`contrats/chauffage/00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)  
 **Utilisé par :** `contrats/chauffage/30_decision_centrale.md`  
-**Complémentaire de :** `45_aeration.md` · `60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`  
+**Complémentaire de :** [`45_aeration.md`](45_aeration.md) · [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) · [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)  
 **Date :** 2026-04-07
 
 ---
@@ -198,11 +198,11 @@ Toute violation constitue une perte de maîtrise thermique, une incohérence hi�
 
 ## 13. Dépendances contractuelles
 
-**Subordonné à :** `00_gouvernance_chauffage.md`
+**Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 **Utilisé par :** `30_decision_centrale.md`
 
-**Complémentaire de :** `45_aeration.md` · `60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`
+**Complémentaire de :** [`45_aeration.md`](45_aeration.md) · [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) · [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
 
 Gouverne directement : capteurs de blocage fenêtres, helpers poêle, états aération, `binary_sensor.chauffage_autorise_systeme`, toute interdiction hiérarchique du chauffage.
 

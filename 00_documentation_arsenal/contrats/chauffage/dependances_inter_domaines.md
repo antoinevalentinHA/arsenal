@@ -3,7 +3,7 @@
 
 **Statut :** Cartographie de référence — descriptive, non doctrinale
 **Rôle :** Recenser les couplages d'entités entre le domaine Chauffage et les autres domaines, dans les deux sens
-**Subordonné à :** `contrats/chauffage/00_gouvernance_chauffage.md`
+**Subordonné à :** [`contrats/chauffage/00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 **Renvoie à (sans redéfinir) :** les contrats d'autorité listés au §6
 **Chantier :** CH-5 (dette D8) · **Date :** 2026-05-30
 **Périmètre :** dépôt réel à `HEAD = 961f1e6` (post CH-1 → CH-4)

@@ -168,7 +168,7 @@ respectifs (`40`, `50`, `60`, `70`, `80`).
 
 ## 8. Dépendances contractuelles
 
-**Subordonné à :** `00_gouvernance_chauffage.md`
+**Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 **Gouverne l'interprétation de :** `30_decision_centrale.md` ·
 `40_blocages.md` · `50_standby_hysteresis.md` ·

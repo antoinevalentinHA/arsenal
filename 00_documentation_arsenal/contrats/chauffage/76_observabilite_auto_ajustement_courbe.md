@@ -7,7 +7,7 @@
 | **Référence** | `76_observabilite_auto_ajustement_courbe.md` |
 | **Version** | 1.0 |
 | **Date** | 2026-06-03 |
-| **Subordonné à** | `contrats/chauffage/75_auto_ajustement_courbe.md` ; `contrats/chauffage/00_gouvernance_chauffage.md` |
+| **Subordonné à** | [`contrats/chauffage/75_auto_ajustement_courbe.md`](75_auto_ajustement_courbe.md) ; [`contrats/chauffage/00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) |
 | **Source de conception** | `architecture/chauffage/observabilite_auto_ajustement_courbe.md` ; `…/revue_architecturale_…md` ; `…/conception/dossier_conception_observabilite.md` |
 | **Nature** | Norme d'observabilité — **sans implémentation, sans stockage, sans paramètre** |
 
@@ -198,7 +198,7 @@ La démonstration de ces six points constitue la **preuve de conformité** oppos
 
 ## Dépendances contractuelles
 
-- **Subordonné à** : `75_auto_ajustement_courbe.md` (domaine observé), `00_gouvernance_chauffage.md`.
+- **Subordonné à** : [`75_auto_ajustement_courbe.md`](75_auto_ajustement_courbe.md) (domaine observé), [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md).
 - **Référence** : la couche d'exécution (vocabulaire d'acquittement corrélé) ; le dossier de conception (mécaniques, stockage, paramètres — non opposables ici).
 - **Vocation transversale** : les sections §6 à §10 constituent une **grammaire générique** délimitée, destinée à être extraite ultérieurement dans une doctrine transversale d'observabilité Arsenal, **après confirmation sur un second domaine** (ECS). Jusque-là, elles font autorité **localement**.
 

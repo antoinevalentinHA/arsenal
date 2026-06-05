@@ -2,9 +2,9 @@
 ## Chauffage — Table de Décision Canonique V3
 
 **Statut :** Contrat normatif formel — spécification ultime de décision — opposable  
-**Subordonné à :** `contrats/chauffage/00_gouvernance_chauffage.md`  
+**Subordonné à :** [`contrats/chauffage/00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)  
 **Implémenté par :** `contrats/chauffage/30_decision_centrale.md`  
-**Complémentaire de :** `40_blocages.md` · `60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`  
+**Complémentaire de :** [`40_blocages.md`](40_blocages.md) · [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) · [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)  
 **Date :** 2026-04-07
 
 ---
@@ -224,11 +224,11 @@ Toute violation constitue une incohérence formelle, une perte de déterminisme,
 
 ## 12. Dépendances contractuelles
 
-**Subordonné à :** `00_gouvernance_chauffage.md`
+**Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 **Implémenté par :** `30_decision_centrale.md`
 
-**Complémentaire de :** `40_blocages.md` · `60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md`
+**Complémentaire de :** [`40_blocages.md`](40_blocages.md) · [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) · [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
 
 Gouverne directement : toute transition de programme chauffage, toute validation de décision centrale, toute évolution future du moteur.
 
