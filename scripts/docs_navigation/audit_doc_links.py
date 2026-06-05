@@ -583,15 +583,18 @@ def print_report(
     for file in sorted(by_file):
         rel_file = file.relative_to(doc_root).as_posix()
         items = by_file[file]
-        visible_items = [
-            c for c in items
-            if c.status != STATUS_IGNORED
-        ]
-
         if status_filter is not None:
+            # Filtre explicite : afficher uniquement ce statut, y compris
+            # les références "ignored".
             visible_items = [
-                c for c in visible_items
+                c for c in items
                 if c.status == status_filter
+            ]
+        else:
+            # Sans filtre : comportement par défaut, on masque les "ignored".
+            visible_items = [
+                c for c in items
+                if c.status != STATUS_IGNORED
             ]
 
         if not visible_items:
