@@ -624,6 +624,111 @@ def print_report(
     print()
 
 
+def write_markdown_report(
+    candidates: list[Candidate],
+    doc_root: Path,
+    files_scanned: list[Path],
+    output_path: Path,
+    status_filter: str | None = None,
+    path_label: str = "",
+) -> None:
+    """
+    Écrit le rapport d'audit au format Markdown.
+
+    Reprend exactement l'agrégation et le filtrage de print_report() :
+    - sans status_filter : les "ignored" ne sont pas détaillés ;
+    - avec status_filter : seuls les candidats de ce statut sont détaillés
+      (y compris "ignored").
+    """
+    by_status: dict[str, int] = {}
+    by_category: dict[str, int] = {}
+    by_file: dict[Path, list[Candidate]] = {}
+
+    for candidate in candidates:
+        by_status[candidate.status] = by_status.get(candidate.status, 0) + 1
+        by_category[candidate.category] = by_category.get(candidate.category, 0) + 1
+        by_file.setdefault(candidate.source, []).append(candidate)
+
+    concerned = {
+        c.source for c in candidates
+        if c.status != STATUS_IGNORED
+    }
+
+    def cell(text: str) -> str:
+        # Échapper les barres verticales et neutraliser les retours ligne.
+        return text.replace("|", "\\|").replace("\n", " ")
+
+    def code_cell(text: str) -> str:
+        text = text.replace("\n", " ")
+        if "`" in text:
+            # Un backtick dans le token casserait le code span : repli texte.
+            return cell(text)
+        return "`" + text.replace("|", "\\|") + "`"
+
+    lines: list[str] = []
+    lines.append("# ARSENAL — Audit navigation documentaire")
+    lines.append("")
+    lines.append(f"- Root : {doc_root.as_posix()}")
+    lines.append(f"- Path : {path_label or doc_root.as_posix()}")
+    lines.append(f"- Files scanned : {len(files_scanned)}")
+    lines.append(f"- Files concerned : {len(concerned)}")
+    lines.append(f"- Candidates total : {len(candidates)}")
+    lines.append(f"- Detail filter : {status_filter or '(none)'}")
+    lines.append("")
+
+    lines.append("## Synthèse par statut")
+    lines.append("")
+    lines.append("| Statut | Nombre |")
+    lines.append("|---|---:|")
+    for key in (STATUS_AUTO, STATUS_AMBIGUOUS, STATUS_DEAD, STATUS_MULTI, STATUS_IGNORED):
+        lines.append(f"| {key} | {by_status.get(key, 0)} |")
+    lines.append("")
+
+    lines.append("## Synthèse par catégorie")
+    lines.append("")
+    lines.append("| Catégorie | Nombre |")
+    lines.append("|---|---:|")
+    for key in sorted(by_category):
+        lines.append(f"| {key} | {by_category[key]} |")
+    lines.append("")
+
+    lines.append("## Détails")
+    lines.append("")
+
+    any_detail = False
+    for file in sorted(by_file):
+        rel_file = file.relative_to(doc_root).as_posix()
+        items = by_file[file]
+        if status_filter is not None:
+            visible_items = [c for c in items if c.status == status_filter]
+        else:
+            visible_items = [c for c in items if c.status != STATUS_IGNORED]
+
+        if not visible_items:
+            continue
+
+        any_detail = True
+        lines.append(f"### {rel_file}")
+        lines.append("")
+        lines.append("| Ligne | Statut | Catégorie | Token | Cible / raison |")
+        lines.append("|---:|---|---|---|---|")
+        for c in visible_items:
+            target = c.target if c.target else c.reason
+            lines.append(
+                f"| {c.line_no} | {cell(c.status)} | {cell(c.category)} | "
+                f"{code_cell(c.token)} | {cell(target)} |"
+            )
+        lines.append("")
+
+    if not any_detail:
+        lines.append("_Aucun détail à afficher pour ce filtre._")
+        lines.append("")
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    print(f"Report written: {output_path}")
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Audit Arsenal des références Markdown internes non cliquables."
@@ -684,6 +789,15 @@ def parse_args() -> argparse.Namespace:
         choices=("original", "basename"),
         default="original",
         help="Mode de libellé des liens proposés par --fix-auto.",
+    )
+
+    parser.add_argument(
+        "--output",
+        default=None,
+        help=(
+            "Écrire le rapport d'audit dans un fichier Markdown "
+            "au lieu de la sortie console."
+        ),
     )
 
     return parser.parse_args()
@@ -947,12 +1061,22 @@ def main() -> int:
             )
             return 0
 
-    print_report(
-        all_candidates,
-        doc_root,
-        files_scanned,
-        status_filter=args.status,
-    )
+    if args.output:
+        write_markdown_report(
+            all_candidates,
+            doc_root,
+            files_scanned,
+            output_path=Path(args.output),
+            status_filter=args.status,
+            path_label=args.path or f"(scope: {args.scope})",
+        )
+    else:
+        print_report(
+            all_candidates,
+            doc_root,
+            files_scanned,
+            status_filter=args.status,
+        )
 
     return 0
 
