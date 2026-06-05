@@ -25,6 +25,7 @@ Un domaine, deux façades : `ui/` (référence normative du design system Arsena
 
 - [`architecture/00_structure_includes/18_lovelace.md`](../../architecture/00_structure_includes/18_lovelace.md) — structure du include dashboards
 - [`architecture/00_structure_includes/button_card_templates.md`](../../architecture/00_structure_includes/button_card_templates.md) — structure button-card templates
+- [`architecture/capteurs_couleur.md`](../../architecture/capteurs_couleur.md) — cartographie des capteurs producteurs des clés couleur consommées par les socles *(transverse ; non normatif)*
 
 > `ui/architecture.md` et `ui/architecture_transverse.md` sont des docs d'architecture dans la **famille `ui/`**, pas dans `architecture/` — voir section Contrat ci-dessus.
 

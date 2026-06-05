@@ -11,6 +11,7 @@
 - **Dépendances (lecture)** :
   - [`capteurs_meteo.md`](capteurs_meteo.md) (mesures, période météo, seuils dynamiques)
   - [`affichage.md`](../contrats/meteo/affichage.md) (contrat de restitution)
+  - [`capteurs_couleur.md`](capteurs_couleur.md) (cartographie transverse — situe le mécanisme A parmi les autres mécanismes « hors périmètre » de ce document)
   - [`ui/couleurs/`](../ui/couleurs/) (charte des couleurs)
 - **Périmètre** : le mécanisme principal du domaine, dit ici **mécanisme A** — interprétation des grandeurs disposant d'un capteur couleur dédié : **température, humidité relative, humidité absolue, humidex**. Les autres mécanismes (CO₂ à seuils fixes, précipitations, cohérence inter-capteurs, prévisions) **sont hors périmètre** (cf. §6).
 

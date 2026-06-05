@@ -42,6 +42,7 @@
 |---|---|
 | [capteurs_meteo.md](./capteurs_meteo.md) | Architecture capteurs météo |
 | [securisation_capteurs_externes.md](./securisation_capteurs_externes.md) | Sécurisation des capteurs externes |
+| [capteurs_couleur.md](./capteurs_couleur.md) | Cartographie transverse des capteurs de couleur — descriptif, non normatif (familles A→G) |
 
 ---
 

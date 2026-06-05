@@ -16,6 +16,15 @@
 
 ---
 
+## 🔗 Dépendances (lecture)
+
+- [`meteo_interpretation_contextuelle.md`](meteo_interpretation_contextuelle.md) — **référence du mécanisme A** (météo). Ce document ne re-décrit pas A : il y délègue.
+- [`capteurs_meteo.md`](capteurs_meteo.md) — mesures, périodes et seuils source de la famille A.
+- [`../ui/couleurs/00_index.md`](../ui/couleurs/00_index.md) — charte *aval* : palette rgba et sémantique des clés.
+- [`../ui/socle_ui/06_kpi.md`](../ui/socle_ui/06_kpi.md) — `socle_kpi`, consommateur canonique (mapping clé → rgba).
+
+---
+
 ## 1. Vue d'ensemble
 
 **[F]** Le dépôt définit **158 entités** `sensor.couleur_*` (`unique_id: couleur_*`), majoritairement sous `12_template_sensors/couleurs/` et ses sous-dossiers `meteo/` et `sante/`.

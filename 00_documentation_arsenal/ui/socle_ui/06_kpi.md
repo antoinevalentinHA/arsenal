@@ -236,3 +236,9 @@ Variante sans icône : `socle_kpi_label_72_sans_icone`.
 - Aucun seuil, aucun mapping d'état dans les socles KPI
 - Les variantes `_72` et `_72_sans_icone` ne doivent pas embarquer
   de logique couleur JS (réservée à `socle_kpi` et `socle_kpi_label`)
+
+---
+
+## Voir aussi
+
+- [`../../architecture/capteurs_couleur.md`](../../architecture/capteurs_couleur.md) — cartographie des capteurs `sensor.couleur_*` **producteurs** des clés que ce socle observe (le socle ne les calcule pas).

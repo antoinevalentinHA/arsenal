@@ -70,3 +70,4 @@ principe de validation contractuelle.
 ## Voir aussi
 
 - `architecture/meteo_interpretation_contextuelle.md` — modèle *amont* qui produit la clé couleur météo. La présente charte régit la **palette et la sémantique** des couleurs ; elle ne régit pas la **logique d'interprétation** qui produit la clé.
+- [`architecture/capteurs_couleur.md`](../../architecture/capteurs_couleur.md) — cartographie *transverse* des capteurs qui produisent les clés couleur (familles A→G : météo, santé, système, ECS, diagnostic…). Décrit l'amont ; ne régit rien.
