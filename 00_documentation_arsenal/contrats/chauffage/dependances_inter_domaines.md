@@ -104,7 +104,7 @@ La « possession » d'une entité est déterminée par l'arborescence où elle e
 
 | Propriétaire | Entité | Domaine lecteur | Fichier(s) lecteur(s) | Nature | Contrat d'autorité | Risque refactor |
 |---|---|---|---|---|---|---|
-| boiler | `binary_sensor.boiler_bridge_online` | chauffage | `application_consigne.yaml` · `decision_centrale.yaml` · `retry_transactionnel/*` | **Gate d'exécution** : aucune consigne appliquée si le bridge est hors-ligne (gardé G2) | `contrats/boiler/guard_expostion_ha.md` · `chauffage/10_souverainete_execution.md` (+ amendement CH-4) | **CRITIQUE** |
+| boiler | `binary_sensor.boiler_bridge_online` | chauffage | `application_consigne.yaml` · `decision_centrale.yaml` · `retry_transactionnel/*` | **Gate d'exécution** : aucune consigne appliquée si le bridge est hors-ligne (gardé G2) | `contrats/boiler/guard_exposition_ha.md` · `chauffage/10_souverainete_execution.md` (+ amendement CH-4) | **CRITIQUE** |
 | boiler | `sensor.boiler_heating_setpoint` | chauffage | `12_template_sensors/chauffage/consigne_appliquee.yaml` | Relecture du point de consigne réellement appliqué côté chaudière | `contrats/boiler/socle_transactionnel.md` | **CRITIQUE** |
 | boiler | `sensor.boiler_ack_heating_set_temperature_{request_id,status,reason}` | chauffage | `application_consigne.yaml` · `retry_transactionnel/{armement,declenchement,etat,reprise}.yaml` | ACK transactionnel de la commande **température** (corrélation `request_id`, statut, raison) | `contrats/boiler/mqtt_ack_ha.md` · `contrats/boiler/retry_transactionnel.md` | **CRITIQUE** |
 | boiler | `sensor.boiler_ack_heating_set_curve_shift_{request_id,status,reason}` | chauffage | `courbe_de_chauffe/{application_parallele,application_pente}.yaml` · `courbe_de_chauffe/correction_demarrage.yaml` · `retry_transactionnel/*` | ACK transactionnel de la commande **décalage de courbe** | `contrats/boiler/mqtt_ack_ha.md` · `contrats/boiler/retry_transactionnel.md` | **CRITIQUE** |
@@ -172,7 +172,7 @@ Le périmètre CH-5 listait **ECS / bouclage** et **bluetti / énergie**. Le dé
 Ce document **renvoie** à ces contrats et n'en duplique aucune règle :
 
 - **Aération ↔ chauffage :** `contrats/aeration_blocage_chauffage/` · `chauffage/40_blocages.md` · `45_aeration.md` · `46_aeration_observation_thermique.md`
-- **Boiler (transactionnel) :** `contrats/boiler/{socle_transactionnel,retry_transactionnel,mqtt_ack_ha,guard_expostion_ha,consommation_ack,script_executif}.md` · `chauffage/10_souverainete_execution.md` (+ amendement CH-4)
+- **Boiler (transactionnel) :** `contrats/boiler/{socle_transactionnel,retry_transactionnel,mqtt_ack_ha,guard_exposition_ha,consommation_ack,script_executif}.md` · `chauffage/10_souverainete_execution.md` (+ amendement CH-4)
 - **Poêle :** `chauffage/15_capteurs/03_capteurs_blocages_niveau1/{poele_en_fonction,signature_thermique_poele}.md` · `chauffage/75_auto_ajustement_courbe.md`
 - **Climatisation :** `contrats/climatisation/{04_entrees_metier,05_decision_candidats,06_doctrine_blocages}.md`
 - **Météo :** `contrats/meteo/{meteo,axe_temperature}.md`
