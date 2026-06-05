@@ -12,7 +12,7 @@ Domaine éclairage couvrant 4 zones : entrée, jardin, garage, séjour. Chaque z
 - Entrée : [`entree.md`](../../contrats/eclairage/entree.md)
 - Jardin : [`jardin.md`](../../contrats/eclairage/jardin.md)
 - Séjour : [`sejour.md`](../../contrats/eclairage/sejour.md)
-- Garage : [`garage.md`](../../contrats/eclairage/garage.md) *(`garage_implementation.md` coexiste — voir vigilance)*
+- Garage : [`garage.md`](../../contrats/eclairage/garage.md)
 
 ## Architecture — « comment / pourquoi »
 
@@ -34,7 +34,6 @@ Domaine éclairage couvrant 4 zones : entrée, jardin, garage, séjour. Chaque z
 
 ## Points de vigilance (non normatif)
 
-- **`garage.md` et `garage_implementation.md`** partagent le même titre (« CONTRAT D'IMPLÉMENTATION — script.garage_toggle ») — doublon potentiel ou contenu différencié non évident depuis le nom de fichier. Signalé, non corrigé.
 - **Architecture documentée pour la zone jardin uniquement** : aucune architecture pour les zones entrée, garage, séjour.
 - **Domaine non audité** : absent de `audits/index.md`. État de cycle.
 

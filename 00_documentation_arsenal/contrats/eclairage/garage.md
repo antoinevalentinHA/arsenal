@@ -11,6 +11,10 @@
 # 📌 Portée :
 # Implémentation exclusive de script.garage_toggle
 #
+# 📌 Version : 2.0.0
+# 📌 Introduced : Arsenal v15.5 (refonte architecture Zigbee)
+# 📌 Statut : Normatif
+#
 # ==========================================================
 
 ## 🎯 Objet
@@ -21,9 +25,23 @@ unique pour l'éclairage garage.
 Il couvre :
 
 - la séquence d'exécution interne,
-- la stratégie de choix actionneur,
+- la stratégie de bascule de l'actionneur,
 - les mises à jour d'état logique,
 - les interdictions d'implémentation.
+
+---
+
+## 🧱 Architecture matérielle
+
+L'éclairage du garage est commandé via un **module Zigbee intégré**
+dans l'un des interrupteurs muraux. L'actionneur physique exposé par
+Home Assistant est :
+
+**Actionneur unique :** `switch.lumiere_garage`
+
+> Le module Zigbee ne fournit pas de capteur de vérité physique
+> indépendant de la commande. L'état de `switch.lumiere_garage`
+> reflète la dernière commande envoyée, non un retour matériel confirmé.
 
 ---
 
@@ -31,7 +49,8 @@ Il couvre :
 
 Ce script est l'unique point d'exécution physique du sous-système.
 
-Il n'existe aucun autre chemin légitime vers les actionneurs.
+Il n'existe aucun autre chemin légitime vers `switch.lumiere_garage`
+hors de ce script.
 
 ---
 
@@ -39,10 +58,10 @@ Il n'existe aucun autre chemin légitime vers les actionneurs.
 
 Toute exécution du script suit impérativement cet ordre :
 
-1. **Lecture** — lire `input_boolean.<zone>_light_state`
-2. **Décision** — choisir l'actionneur selon la stratégie définie (§ Stratégie)
-3. **Action** — appeler l'actionneur retenu
-4. **Mise à jour** — basculer `input_boolean.<zone>_light_state`
+1. **Lecture** — lire `input_boolean.garage_light_state`
+2. **Décision** — choisir la direction de bascule selon l'état logique courant
+3. **Action** — appeler `switch.lumiere_garage` via `switch.turn_on` ou `switch.turn_off`
+4. **Mise à jour** — basculer `input_boolean.garage_light_state`
 
 ### Interdictions
 
@@ -53,41 +72,39 @@ Toute exécution du script suit impérativement cet ordre :
 
 ---
 
-## 🔒 Invariant I3 — Stratégie de choix actionneur
+## 🔒 Invariant I3 — Stratégie de bascule
 
 ### Principe
 
-Le choix entre `button.garage_1` et `button.garage_2` est fondé
-sur une stratégie interne cohérente basée sur l'état logique courant.
+Le choix de la commande (`turn_on` ou `turn_off`) est fondé
+sur l'état logique courant de `input_boolean.garage_light_state`.
 
 Cette stratégie vise à maintenir une cohérence logique interne,
 sans garantie d'effet physique réel.
 
 ### Table de correspondance (implémentation)
 
-| État logique courant | Action logique visée | Actionneur retenu |
-|----------------------|----------------------|-------------------|
-| `off`                | passer à `on`        | `button.garage_1` |
-| `on`                 | passer à `off`       | `button.garage_2` |
+| État logique courant | Action logique visée | Commande switch        |
+|----------------------|----------------------|------------------------|
+| `off`                | passer à `on`        | `switch.turn_on`       |
+| `on`                 | passer à `off`       | `switch.turn_off`      |
 
 > ⚠️ Cette correspondance :
 > - est purement logique
-> - ne garantit pas l'état réel
-> - peut être inversée selon le câblage, sans modification du présent contrat
+> - ne garantit pas l'état réel de la lampe
+> - dépend de la fiabilité du module Zigbee
 
 ### Interdictions
 
-- considérer cette table comme une vérité physique
-- déduire l'état réel depuis le choix effectué
+- déduire l'état réel depuis la commande effectuée
 - utiliser une information matérielle pour ajuster la stratégie
-- utiliser les timestamps des `button.*` comme critère de choix
 - implémenter une logique de rotation ou d'alternance
 
 ---
 
 ## 🔒 Invariant I4 — Mise à jour de l'état logique
 
-La mise à jour de `input_boolean.<zone>_light_state` :
+La mise à jour de `input_boolean.garage_light_state` :
 
 - est **systématique** après chaque action physique,
 - reflète l'intention, non une confirmation matérielle,
@@ -119,7 +136,7 @@ L'exécution du script est conçue comme atomique :
 - la séquence I2 est exécutée sans divergence logique interne,
 - aucun appel concurrent ne doit produire d'état incohérent.
 
-La gestion de la concurrence repose sur le mode du script (ex : `mode: single`).
+La gestion de la concurrence repose sur `mode: single`.
 
 > La garantie d'atomicité est logique, non système.
 > Elle dépend de la configuration du mode d'exécution HA.
@@ -131,13 +148,13 @@ La gestion de la concurrence repose sur le mode du script (ex : `mode: single`).
 ```
 [ENTRÉE] : demande d'action (allumer / éteindre / toggler)
     ↓
-[1] Lecture input_boolean → état courant
+[1] Lecture input_boolean.garage_light_state → état courant
     ↓
-[2] Décision actionneur (table I3)
+[2] Décision : turn_on ou turn_off (table I3)
     ↓
-[3] Appel button.garage_X (via press)
+[3] Appel switch.lumiere_garage
     ↓
-[4] Mise à jour input_boolean
+[4] Mise à jour input_boolean.garage_light_state
 [SORTIE] : état logique cohérent avec l'intention
 ```
 
@@ -145,8 +162,8 @@ La gestion de la concurrence repose sur le mode du script (ex : `mode: single`).
 
 ## 🚫 Interdictions d'implémentation
 
-- lire ou écrire un autre `input_boolean` que `<zone>_light_state`
-- appeler directement `button.garage_1` ou `button.garage_2` hors séquence
+- lire ou écrire un autre `input_boolean` que `garage_light_state`
+- piloter `switch.lumiere_garage` hors de ce script
 - introduire une logique conditionnelle basée sur le matériel
 - logger un "succès" impliquant une confirmation physique
 - toute forme de retry automatique
@@ -182,10 +199,27 @@ uniquement une contrainte logique interne.
 Ce contrat garantit :
 
 - conformité totale aux invariants du contrat métier,
-- cohérence systématique de `input_boolean.<zone>_light_state`,
+- cohérence systématique de `input_boolean.garage_light_state`,
 - traçabilité de chaque décision,
 - indépendance totale vis-à-vis du matériel réel,
 - extensibilité sans rupture de contrat.
+
+---
+
+## 📋 Changelog
+
+### v2.0.0 — Arsenal v15.5
+- Refonte complète de l'architecture matérielle : remplacement du système
+  va-et-vient avec boutons SwitchBot par un module Zigbee intégré.
+- Actionneur unique : `switch.lumiere_garage` (précédemment `button.garage_1`
+  / `button.garage_2`).
+- Suppression de la table de correspondance button → remplacement par
+  table turn_on / turn_off sur switch unique.
+- Suppression des invariants liés à la stratégie de choix entre deux boutons.
+- Mise à jour de la section architecture matérielle.
+
+### v1.0.0 — Arsenal initial
+- Architecture va-et-vient avec `button.garage_1` / `button.garage_2`.
 
 # ==========================================================
 # FIN CONTRAT D'IMPLÉMENTATION — script.garage_toggle
