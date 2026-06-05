@@ -17,6 +17,7 @@
 | **3** | `guard_expostion_ha.md` → `guard_exposition_ha.md` | Renommage | 4 | — |
 | **4** | `01__objet_perimetre_statut.md` → `01_objet_perimetre_statut.md` | Renommage | 2 | — |
 | **5** | `contrats/README.md` — description P2 | Édition | 1 | — |
+| **6** | Rerouter 6 renvois `resilience_electrique` → `pannes/secteur/` | Édition | 4 | Étape 2 (ordre) |
 
 Toutes les étapes 1–4 sont **indépendantes** et peuvent être produites en parallèle.
 
@@ -275,25 +276,61 @@ docs(contrats): update README — note mixed flat/folder structure
 
 ---
 
-## Anomalie connexe identifiée
+## Étape 6 — Rerouter les 6 références `resilience_electrique`
 
-### `10_socle.md:49` — chemin mort `architecture/resilience_electrique/`
+### Contexte
 
-D�couverte lors de l'analyse de l'étape 2.
+Arbitrage acté (note d'arbitrage `resilience_electrique`) : **B1 — reroute à plat**.
+Le contenu existe déjà dans `contrats/pannes/secteur/` ; **aucun paquet `resilience_electrique/`** n'est créé.
+Cette étape **enregistre le périmètre** ; le reroute n'est **pas** exécuté ici.
 
-`contrats/pannes/secteur/10_socle.md` ligne 49 référence :
+### Périmètre — 6 renvois dans 4 fichiers
+
+| Fichier : ligne | Renvoi mort actuel | Cible de reroute |
+|---|---|---|
+| `secteur/10_socle.md:49` | `architecture/resilience_electrique/10_temporalite.md` | `11_temporalite.md` (nom **post-renommage**, cf. Étape 2) |
+| `secteur/10_socle.md:121` | `architecture/resilience_electrique/20_fallback.md` | ancre interne au socle (fallback décrit sur place) — reformuler |
+| `secteur/10_temporalite.md:18` | `contrats/resilience_electrique/00_panne_secteur_socle.md` | `10_socle.md` |
+| `secteur/20_chauffage_et_ecs.md:16` | `contrats/resilience_electrique/00_panne_secteur_socle.md` | `10_socle.md` |
+| `secteur/30_cycle_vie_et_signalisation.md:16` | `contrats/resilience_electrique/00_panne_secteur_socle.md` | `10_socle.md` |
+| `secteur/30_cycle_vie_et_signalisation.md:22` | `contrats/resilience_electrique/01_panne_secteur_resilience_thermique.md` | `20_chauffage_et_ecs.md` |
+
+### Dépendance d'ordre
+
+Étape 6 **séquencée après l'Étape 2**, sans fusion : l'Étape 2 est un renommage mécanique (`10_temporalite` → `11_temporalite`) ; l'Étape 6 est un reroute. Le renvoi `10_socle.md:49` devra viser `11_temporalite.md`. **Les deux ne doivent pas être committées ensemble.**
+
+### Cas particulier `20_fallback.md`
+
+Aucun fichier cible : le mécanisme de fallback est décrit inline dans `10_socle.md`. Le reroute pointera une ancre interne ou reformulera le renvoi — **pas de fichier créé**. Sous-décision à acter au moment du reroute.
+
+### Statut
+
+**En attente** — périmètre enregistré, reroute non exécuté.
+
+### Commit suggéré (au moment du reroute, pas maintenant)
+
 ```
-/00_documentation_arsenal/architecture/resilience_electrique/10_temporalite.md
+fix(contrats/pannes): reroute 6 stale resilience_electrique refs to secteur/
 ```
 
-Le dossier `architecture/resilience_electrique/` **n'existe pas**.
+---
 
-**Deux hypothèses :**
-- A) Le document normatif de temporalité devait être créé dans `architecture/` mais ne l'a jamais été → créer `architecture/resilience_electrique/10_temporalite.md`.
-- B) La référence devrait pointer vers `contrats/pannes/secteur/11_temporalite.md` (même contenu, chemin différent) → corriger le chemin.
+## Anomalie connexe identifiée — *promue, voir Étape 6*
 
-**Action recommandée :** arbitrer A vs B, puis produire le patch correspondant.
-**À ajouter au registre** `audits/registre_anomalies_transverses.md` §1 (anomalie de chemin).
+### `resilience_electrique` — nommage hérité (migration documentaire incomplète)
+
+Découverte à l'analyse de l'Étape 2, d'abord cernée comme un seul chemin mort
+(`10_socle.md:49`). La revue contradictoire a porté le périmètre réel à **6 renvois
+dans 4 fichiers** de `contrats/pannes/secteur/`, vers deux racines inexistantes.
+
+**Cause :** nommage hérité après refonte du domaine `pannes` — 6 références internes
+non migrées. Les liens morts sont la conséquence, pas la nature du défaut.
+
+Arbitrage tranché (note d'arbitrage `resilience_electrique`) : **B1 — reroute à plat**
+(le contenu existe déjà sous `pannes/secteur/` ; pas de paquet `resilience_electrique/`).
+L'hypothèse A (créer le paquet) est **écartée** : double source de vérité.
+
+→ Traitement : **Étape 6**. Registre : **§1.4**.
 
 ---
 

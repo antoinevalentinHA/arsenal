@@ -39,6 +39,22 @@
 | Statut | **À corriger** — supprimer la référence morte |
 | Impact | Lien mort dans un contrat normatif |
 
+### 1.4 Nommage hérité — `resilience_electrique` (migration documentaire incomplète)
+
+**Cause :** nommage hérité après **refonte du domaine `pannes`** ; **6 références internes non mises à jour**. Les liens morts en sont la *conséquence*, pas la nature du défaut.
+
+| Champ | Valeur |
+|---|---|
+| Cause | Refonte du domaine `pannes` : le contenu de `resilience_electrique` a été **relocalisé** sous `contrats/pannes/secteur/`, mais 6 renvois internes n'ont pas suivi la migration. Défaut de migration documentaire, pas sous-domaine manquant. |
+| Fichiers porteurs | `contrats/pannes/secteur/` : `10_socle.md` (×2, L49 + L121), `10_temporalite.md` (L18), `20_chauffage_et_ecs.md` (L16), `30_cycle_vie_et_signalisation.md` (×2, L16 + L22) |
+| Renvois | 6 liens vers deux racines inexistantes : `contrats/resilience_electrique/…` (×4) et `architecture/resilience_electrique/…` (×2) |
+| Cibles réelles | `00_panne_secteur_socle` → `10_socle.md` · `01_panne_secteur_resilience_thermique` → `20_chauffage_et_ecs.md` · `10_temporalite` → `10_temporalite.md` (à plat) · `20_fallback` → contenu **inline** dans `10_socle.md` (pas de fichier) |
+| Conséquence | 6 liens morts dans des contrats normatifs ; signalement lint persistant tant que non rerouté. Aucune perte de contenu (tout existe déjà sous `pannes/secteur/`). |
+| Source | Revue contradictoire du plan P1 + note d'arbitrage `resilience_electrique` |
+| Arbitrage | **B1 — reroute à plat vers `pannes/secteur/`** (acté). Aucun paquet `resilience_electrique/` créé (éviterait une double source de vérité). |
+| Statut | **P1 — défaut de migration documentaire à résorber par reroute.** Reroute **non exécuté** (cf. plan, Étape 6). |
+| Dépendance d'ordre | Le renvoi vers la temporalité (`10_socle.md:49`) devra viser le nom **post-renommage** `11_temporalite.md` (cf. Étape 2). **Ne pas fusionner** les deux chantiers. |
+
 ---
 
 ## 2. Anomalies structurelles documentaires
@@ -175,6 +191,7 @@
 | **P1** | `guard_expostion_ha.md` — typo | Renommer le fichier |
 | **P1** | `30_decision_centrale.md` — référence morte | Supprimer la ligne |
 | **P1** | `pannes/secteur/` — double `10_` | Renommer un des deux fichiers |
+| **P1** | `resilience_electrique` — nommage hérité / 6 renvois morts | Rerouter vers `pannes/secteur/` (B1) — voir §1.4 |
 | **P2** | `eclairage/garage.md` vs `garage_implementation.md` | Arbitrage fusion/distinction |
 | **P2** | Double emplacement `bouclage` | Arbitrage hébergement unique |
 | **P2** | `contrats/README.md` — structure plate vs dossiers | Mise à jour description |
