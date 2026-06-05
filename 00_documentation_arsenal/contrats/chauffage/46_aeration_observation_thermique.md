@@ -20,7 +20,7 @@
 #
 # - Hiérarchie :
 #     Subordonné à :
-#       /00_documentation_arsenal/contrats/chauffage/aeration_perimetre_strict.md
+#       /00_documentation_arsenal/contrats/chauffage/45_aeration.md
 #
 #     Indépendant de :
 #       • décision centrale chauffage,
