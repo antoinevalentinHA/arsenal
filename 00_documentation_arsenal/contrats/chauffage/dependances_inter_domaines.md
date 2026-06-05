@@ -171,15 +171,15 @@ Le périmètre CH-5 listait **ECS / bouclage** et **bluetti / énergie**. Le dé
 
 Ce document **renvoie** à ces contrats et n'en duplique aucune règle :
 
-- **Aération ↔ chauffage :** `contrats/aeration_blocage_chauffage/` · `chauffage/40_blocages.md` · `45_aeration.md` · `46_aeration_observation_thermique.md`
-- **Boiler (transactionnel) :** `contrats/boiler/{socle_transactionnel,retry_transactionnel,mqtt_ack_ha,guard_exposition_ha,consommation_ack,script_executif}.md` · `chauffage/10_souverainete_execution.md` (+ amendement CH-4)
-- **Poêle :** `chauffage/15_capteurs/03_capteurs_blocages_niveau1/{poele_en_fonction,signature_thermique_poele}.md` · `chauffage/75_auto_ajustement_courbe.md`
-- **Climatisation :** `contrats/climatisation/{04_entrees_metier,05_decision_candidats,06_doctrine_blocages}.md`
-- **Météo :** `contrats/meteo/{meteo,axe_temperature}.md`
-- **Présence / géofencing :** `contrats/presence.md` · `chauffage/60_absence_inhibition_geofencing.md`
-- **Modes / vacances / zones :** `contrats/{vacances,zones}.md` · `chauffage/{65_pre_confort_retour_vacances,66_adaptation_consigne_vacances}.md`
+- **Aération ↔ chauffage :** `contrats/aeration_blocage_chauffage/` · [`chauffage/40_blocages.md`](40_blocages.md) · [`45_aeration.md`](45_aeration.md) · [`46_aeration_observation_thermique.md`](46_aeration_observation_thermique.md)
+- **Boiler (transactionnel) :** [`contrats/boiler/socle_transactionnel.md`](../boiler/socle_transactionnel.md) · [`contrats/boiler/retry_transactionnel.md`](../boiler/retry_transactionnel.md) · [`contrats/boiler/mqtt_ack_ha.md`](../boiler/mqtt_ack_ha.md) · [`contrats/boiler/guard_exposition_ha.md`](../boiler/guard_exposition_ha.md) · [`contrats/boiler/consommation_ack.md`](../boiler/consommation_ack.md) · [`contrats/boiler/script_executif.md`](../boiler/script_executif.md) · [`chauffage/10_souverainete_execution.md`](10_souverainete_execution.md) (+ amendement CH-4)
+- **Poêle :** [`chauffage/15_capteurs/03_capteurs_blocages_niveau1/poele_en_fonction.md`](15_capteurs/03_capteurs_blocages_niveau1/poele_en_fonction.md) · [`chauffage/15_capteurs/03_capteurs_blocages_niveau1/signature_thermique_poele.md`](15_capteurs/03_capteurs_blocages_niveau1/signature_thermique_poele.md) · [`chauffage/75_auto_ajustement_courbe.md`](75_auto_ajustement_courbe.md)
+- **Climatisation :** [`contrats/climatisation/04_entrees_metier.md`](../climatisation/04_entrees_metier.md) · [`contrats/climatisation/05_decision_candidats.md`](../climatisation/05_decision_candidats.md) · [`contrats/climatisation/06_doctrine_blocages.md`](../climatisation/06_doctrine_blocages.md)
+- **Météo :** [`contrats/meteo/meteo.md`](../meteo/meteo.md) · [`contrats/meteo/axe_temperature.md`](../meteo/axe_temperature.md)
+- **Présence / géofencing :** [`contrats/presence.md`](../presence.md) · [`chauffage/60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md)
+- **Modes / vacances / zones :** [`contrats/vacances.md`](../vacances.md) · [`contrats/zones.md`](../zones.md) · [`chauffage/65_pre_confort_retour_vacances.md`](65_pre_confort_retour_vacances.md) · [`chauffage/66_adaptation_consigne_vacances.md`](66_adaptation_consigne_vacances.md)
 - **Ouvertures :** `contrats/ouvertures/`
-- **Réglages / intégrité :** `contrats/parametres_invalides.md` · `chauffage/{30_decision_centrale,70_autorisation_thermostat,72_offsets_thermiques_lecture_physique}.md`
+- **Réglages / intégrité :** [`contrats/parametres_invalides.md`](../parametres_invalides.md) · [`chauffage/30_decision_centrale.md`](30_decision_centrale.md) · [`chauffage/70_autorisation_thermostat.md`](70_autorisation_thermostat.md) · [`chauffage/72_offsets_thermiques_lecture_physique.md`](72_offsets_thermiques_lecture_physique.md)
 - **Pannes :** `contrats/pannes/`
 
 ---
