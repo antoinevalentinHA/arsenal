@@ -106,7 +106,7 @@
 | Fichier | `contrats/README.md` |
 | Problème | Décrit la famille comme plate alors que 14 domaines sont folderisés |
 | Source | Audit README `contrats/` — P2 non traité |
-| Statut | **P2 — amélioration différée** |
+| Statut | **✅ CLOS — 2026-06-05.** Description mise à jour (plan, Étape 5) : structure mixte (14 domaines folderisés + fichiers plats), « dossier ou fichier ». Entrée conservée pour trace. |
 | Impact | Description partiellement inexacte |
 
 ---
@@ -194,7 +194,7 @@
 | **Clos** | `resilience_electrique` — nommage hérité / 6 renvois | Reroute à plat exécuté (B1, Étape 6) — voir §1.4 |
 | **P2** | `eclairage/garage.md` vs `garage_implementation.md` | Arbitrage fusion/distinction |
 | **P2** | Double emplacement `bouclage` | Arbitrage hébergement unique |
-| **P2** | `contrats/README.md` — structure plate vs dossiers | Mise à jour description |
+| **Clos** | `contrats/README.md` — structure plate vs dossiers | Description mise à jour (Étape 5) — voir §2.5 |
 | **Accepté** | Double titre README `boiler` | Intentionnel — redirect explicite |
 | **Accepté** | `capteurs_meteo.md` périmètre étendu | Antérieur à l'arbitrage |
 | **Accepté** | `axe_temperature.md` dans `contrats/meteo/` | Arbitrage carte §5.3 |

@@ -16,7 +16,7 @@
 | **2** | `10_temporalite.md` → `11_temporalite.md` — **exécutée** | Renommage | 2 | — |
 | **3** | `guard_expostion_ha.md` → `guard_exposition_ha.md` — **exécutée** | Renommage | 4 | — |
 | **4** | `01__objet_perimetre_statut.md` → `01_objet_perimetre_statut.md` — **exécutée** | Renommage | 2 | — |
-| **5** | `contrats/README.md` — description P2 | Édition | 1 | — |
+| **5** | `contrats/README.md` — description P2 — **exécutée** | Édition | 1 | — |
 | **6** | Rerouter 6 renvois `resilience_electrique` → `pannes/secteur/` — **exécutée** | Édition | 4 | Étape 2 (ordre) |
 
 Les étapes 1–4 étaient **indépendantes** ; toutes sont désormais **exécutées**.
@@ -254,6 +254,8 @@ fix(contrats/aeration): rename 01__objet → 01_objet, fix v14 changelog ref
 ---
 
 ## Étape 5 — Mise à jour `contrats/README.md` (P2)
+
+> **Statut : ✅ Exécutée — 2026-06-05.** Description « CONTENU DU DOSSIER » mise à jour (structure mixte folderisé/plat, « dossier ou fichier »). Contexte conservé pour trace.
 
 ### Objectif
 
