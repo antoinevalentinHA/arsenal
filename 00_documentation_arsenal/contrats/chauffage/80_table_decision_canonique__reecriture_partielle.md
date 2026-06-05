@@ -107,7 +107,7 @@ maintenue.
 L'exception pré-confort demeure interne à l'absence effective Vacances et soumise à la
 validation complète de la Décision Centrale (cf. `40 §6.1`). La projection
 `input_select.mode_maison` ne porte plus, à elle seule, l'effet de régime
-(cf. `vacances.md` §10).
+(cf. [`vacances.md`](../vacances.md) §10).
 
 ### 4.3 Poêle — règle de comportement par corroboration (registre stabilisation, D2)
 

@@ -102,44 +102,44 @@ Aucune frontière ne doit mélanger :
 ### Pour toute question de…
 
 #### 🔥 Décision thermique
-→ `01_capteurs_decision.md`  
-→ `30_decision_centrale.md`  
-→ `80_table_decision_canonique.md`  
+→ [`01_capteurs_decision.md`](01_capteurs_decision.md)  
+→ [`30_decision_centrale.md`](../30_decision_centrale.md)  
+→ [`80_table_decision_canonique.md`](../80_table_decision_canonique.md)  
 
 #### 🔓 Autorisation / exécution
-→ `02_capteurs_autorisation_thermostat.md`  
-→ `70_autorisation_thermostat.md`  
+→ [`02_capteurs_autorisation_thermostat.md`](02_capteurs_autorisation_thermostat.md)  
+→ [`70_autorisation_thermostat.md`](../70_autorisation_thermostat.md)  
 
 #### ⛔ Blocages absolus
-→ `03_capteurs_blocages_niveau1.md`  
-→ `40_blocages.md`  
+→ [`03_capteurs_blocages_niveau1.md`](03_capteurs_blocages_niveau1.md)  
+→ [`40_blocages.md`](../40_blocages.md)  
 
 #### 🧍 Présence / absence
-→ `04_capteurs_absence_geofencing.md`  
-→ `60_absence_inhibition_geofencing.md`  
+→ [`04_capteurs_absence_geofencing.md`](04_capteurs_absence_geofencing.md)  
+→ [`60_absence_inhibition_geofencing.md`](../60_absence_inhibition_geofencing.md)  
 
 #### ⚙️ Paramétrage thermique
-→ `05_capteurs_parametrage_canonique.md`  
-→ `75_auto_ajustement_courbe.md`  
+→ [`05_capteurs_parametrage_canonique.md`](05_capteurs_parametrage_canonique.md)  
+→ [`75_auto_ajustement_courbe.md`](../75_auto_ajustement_courbe.md)  
 
 #### 🧪 Auto-ajustement / calibration
-→ `06_capteurs_auto_ajustement_calibration.md`  
+→ [`06_capteurs_auto_ajustement_calibration.md`](06_capteurs_auto_ajustement_calibration.md)  
 
 #### 🧠 Audit & gouvernance
-→ `07_capteurs_diagnostics_structurants.md`  
-→ `90_semantique_thermique.md`  
+→ [`07_capteurs_diagnostics_structurants.md`](07_capteurs_diagnostics_structurants.md)  
+→ [`90_semantique_thermique.md`](../90_semantique_thermique.md)  
 
 #### 🏠 Inertie bâtiment (absence)
-→ `08_capteurs_inertie_absence.md`  
+→ [`08_capteurs_inertie_absence.md`](08_capteurs_inertie_absence.md)  
 
 #### 🔁 Cycles et stabilité
-→ `09_capteurs_cycles_presence.md`  
+→ [`09_capteurs_cycles_presence.md`](09_capteurs_cycles_presence.md)  
 
 #### ⏹️ Coupure chauffage
-→ `10_capteurs_inertie_arret.md`  
+→ [`10_capteurs_inertie_arret.md`](10_capteurs_inertie_arret.md)  
 
 #### ▶️ Reprise chauffage
-→ `11_capteurs_inertie_reprise.md`  
+→ [`11_capteurs_inertie_reprise.md`](11_capteurs_inertie_reprise.md)  
 
 ---
 

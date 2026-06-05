@@ -251,7 +251,7 @@ intentionnel, postérieur et distinct** du refactor de désintrication CH-2.
   la désintrication de `standby_force` n'a pas modifié `desired_mode`.
 - VAC-IMP-1 modifie délibérément `desired_mode` dans le seul contexte
   « projection Vacances ∧ présence réelle » (correction de S-CHAUFFAGE-PRESENCE),
-  conformément à `vacances.md` §10. Ce changement est **hors du champ
+  conformément à [`vacances.md`](../vacances.md) §10. Ce changement est **hors du champ
   d'invariance de CH-2** et n'en constitue pas une violation.
 - **Invariant structurel maintenu (permanent, indépendant de CH-2) :**
   l'isomorphisme des gardes de tête entre les axes `desired_mode` et `reason` de

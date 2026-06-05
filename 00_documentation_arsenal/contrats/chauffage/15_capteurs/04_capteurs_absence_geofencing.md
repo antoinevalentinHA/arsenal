@@ -112,7 +112,7 @@ Il est la **référence souveraine de contexte humain** du moteur thermique.
 - Synchronisation chauffage ↔ occupation réelle  
 - Base des modules :
   - 60_absence_inhibition_geofencing.md  
-  - 30_decision_centrale.md  
+  - ../30_decision_centrale.md  
   - 20_triggers_decisionnels.md  
 
 ⛔ Interdictions absolues :
@@ -144,7 +144,7 @@ Sources de présence :
 
 Consommateurs contractuels majeurs :
 - 60_absence_inhibition_geofencing.md  
-- 30_decision_centrale.md  
+- ../30_decision_centrale.md  
 - 20_triggers_decisionnels.md  
 - 50_standby_hysteresis.md  
 - 70_autorisation_thermostat.md  
@@ -191,7 +191,7 @@ Il constitue la **frontière officielle d’anticipation thermique programmée**
 - Levée partielle de l’inhibition Vacances dans une fenêtre temporelle bornée  
 - Condition primaire de :
   - 60_absence_inhibition_geofencing.md  
-  - 30_decision_centrale.md (opportunités de reprise anticipée)  
+  - ../30_decision_centrale.md (opportunités de reprise anticipée)  
 - Synchronisation chauffage ↔ calendrier de retour  
 - Protection contre retours dans bâtiment froid  
 
@@ -228,9 +228,9 @@ Stabilité système :
 - input_boolean.systeme_stable  
 
 Consommateurs contractuels majeurs :
-- 60_absence_inhibition_geofencing.md  
-- 30_decision_centrale.md  
-- 70_autorisation_thermostat.md  
+- [`60_absence_inhibition_geofencing.md`](../60_absence_inhibition_geofencing.md)  
+- [`30_decision_centrale.md`](../30_decision_centrale.md)  
+- [`70_autorisation_thermostat.md`](../70_autorisation_thermostat.md)  
 - Pipelines retour vacances  
 
 ⚠️ Risques :

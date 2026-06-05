@@ -76,7 +76,7 @@ Consommateurs contractuels :
 - `07_coherence_ko_detecteur.md` — conditions de détection d'incohérence pipeline aération
 - `13_interfaces_ouvertures.md` — interface transversale aération / blocage chauffage
 - `07_capteurs_diagnostics_structurants.md` — référencé comme blocage structurant
-- `40_blocages.md` — via `30_decision_centrale.md` (section 4.1 blocage fenêtres)
+- `40_blocages.md` — via `../../30_decision_centrale.md` (section 4.1 blocage fenêtres)
 - UI diagnostics ouvertures / aération (tentative / qualifiée)
 
 ---

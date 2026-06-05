@@ -135,7 +135,7 @@ Règles cardinales : `neutre` produit toujours une abstention. Aucune oscillatio
 
 > En régime automatique d'absence, toute recherche de confort est interdite hors inhibition géofencing.
 
-**Note sur le pré-confort retour vacances :** cette source d'autorisation n'est pas évaluée en régime absence standard. Elle est traitée exclusivement lorsque l'absence Vacances est effective (`binary_sensor.vacances_actives = on`) (§4, ligne 6\*). Hors de ce contexte d'effectivité, elle ne produit aucun effet. La projection `input_select.mode_maison = Vacances` ne suffit pas à elle seule : c'est l'effectivité qui gouverne le régime, conformément à `vacances.md` §10.
+**Note sur le pré-confort retour vacances :** cette source d'autorisation n'est pas évaluée en régime absence standard. Elle est traitée exclusivement lorsque l'absence Vacances est effective (`binary_sensor.vacances_actives = on`) (§4, ligne 6\*). Hors de ce contexte d'effectivité, elle ne produit aucun effet. La projection `input_select.mode_maison = Vacances` ne suffit pas à elle seule : c'est l'effectivité qui gouverne le régime, conformément à [`vacances.md`](../vacances.md) §10.
 
 ---
 
