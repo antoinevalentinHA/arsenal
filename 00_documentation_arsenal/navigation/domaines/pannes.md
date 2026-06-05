@@ -33,6 +33,7 @@ Gestion des pannes critiques du système Arsenal. Deux sous-systèmes : **`inter
 
 - **Aucun fichier racine** dans `contrats/pannes/` : ce hub est la seule porte d'entrée qui présente les deux sous-domaines ensemble.
 - **Double préfixe `10_`** dans `secteur/` : `10_socle.md` et `10_temporalite.md` partagent le même rang numérique sans ordre relatif documenté. Anomalie signalée, non corrigée.
+- **`resilience_electrique`** : nommage hérité après refonte du domaine `pannes` — 6 renvois morts dans `contrats/pannes/secteur/`. Arbitrage B1 acté (reroute à plat vers `pannes/secteur/`), non exécuté. Suivi canonique : `audits/registre_anomalies_transverses.md` §1.4 + `audits/plan_action_anomalies_p1.md` Étape 6.
 - **Domaine non audité** : absent de `audits/index.md`. État de cycle.
 
 ---
