@@ -99,3 +99,10 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ### État du domaine Vacances
 Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.
+
+---
+
+## Transverse
+
+- [registre_anomalies_transverses.md](registre_anomalies_transverses.md) _(registre vivant — anomalies connues et non corrigées, toutes origines)_
+- [plan_action_anomalies_p1.md](plan_action_anomalies_p1.md) _(plan d'action P1 — corrections nommage et références mortes)_
