@@ -120,7 +120,7 @@ Aucune frontière ne doit mélanger :
 
 #### ⚙️ Paramétrage thermique
 → `05_capteurs_parametrage_canonique.md`  
-→ `85_auto_ajustement_courbe.md`  
+→ `75_auto_ajustement_courbe.md`  
 
 #### 🧪 Auto-ajustement / calibration
 → `06_capteurs_auto_ajustement_calibration.md`  

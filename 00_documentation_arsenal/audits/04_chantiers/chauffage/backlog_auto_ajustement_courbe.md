@@ -63,7 +63,7 @@
 
 ### E-3 — Renvoi pendant `85_` vs fichier `75_`
 
-- **Résumé.** `06_capteurs_auto_ajustement_calibration.md` référence un consommateur `85_auto_ajustement_courbe.md` ; le fichier réel est `75_auto_ajustement_courbe.md`. Aucun `85_` n'existe.
+- **Résumé.** `06_capteurs_auto_ajustement_calibration.md` référence un consommateur `75_auto_ajustement_courbe.md` ; le fichier réel est `75_auto_ajustement_courbe.md`. Aucun `85_` n'existe.
 - **Décision.** Errata — corriger le renvoi.
 - **Justification.** Référence morte.
 

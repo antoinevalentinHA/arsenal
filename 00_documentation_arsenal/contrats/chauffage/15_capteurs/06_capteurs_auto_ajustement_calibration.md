@@ -545,7 +545,7 @@ Mémoire temporelle :
 - input_boolean.poele_recent  
 
 Consommateurs contractuels attendus :
-- 85_auto_ajustement_courbe.md  
+- 75_auto_ajustement_courbe.md  
 - Modules d’apprentissage thermique  
 - Diagnostics calibrants  
 - Pipelines d’optimisation  
