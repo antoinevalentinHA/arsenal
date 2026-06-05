@@ -33,7 +33,7 @@ Gestion des pannes critiques du système Arsenal. Deux sous-systèmes : **`inter
 
 - **Aucun fichier racine** dans `contrats/pannes/` : ce hub est la seule porte d'entrée qui présente les deux sous-domaines ensemble.
 - **Double préfixe `10_`** dans `secteur/` : **corrigé** — `10_temporalite.md` renommé `11_temporalite.md`, séquence désormais déterministe (10/11/20/30). _(Anomalie historique, résolue.)_
-- **`resilience_electrique`** : nommage hérité après refonte du domaine `pannes` — **reroute exécuté** (B1, à plat vers `pannes/secteur/`). Plus aucune référence héritée dans les contrats. _(Anomalie historique, résolue ; trace : `audits/registre_anomalies_transverses.md` §1.4 + `audits/plan_action_anomalies_p1.md` Étape 6.)_
+- **`resilience_electrique`** : nommage hérité après refonte du domaine `pannes` — **reroute exécuté** (B1, à plat vers `pannes/secteur/`). Plus aucune référence héritée dans les contrats. _(Anomalie historique, résolue ; trace : `audits/02_constats/transverses/registre_anomalies_transverses.md` §1.4 + `audits/03_plans_action/transverses/plan_action_anomalies_p1.md` Étape 6.)_
 - **Domaine non audité** : absent de `audits/index.md`. État de cycle.
 
 ---

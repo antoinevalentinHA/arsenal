@@ -105,5 +105,5 @@ Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — 
 
 ## Transverse
 
-- [registre_anomalies_transverses.md](registre_anomalies_transverses.md) _(registre vivant — anomalies connues et non corrigées, toutes origines)_
-- [plan_action_anomalies_p1.md](plan_action_anomalies_p1.md) _(plan d'action P1 — corrections nommage et références mortes)_
+- [registre_anomalies_transverses.md](02_constats/transverses/registre_anomalies_transverses.md) _(registre vivant — anomalies connues et non corrigées, toutes origines)_
+- [plan_action_anomalies_p1.md](03_plans_action/transverses/plan_action_anomalies_p1.md) _(plan d'action P1 — corrections nommage et références mortes)_

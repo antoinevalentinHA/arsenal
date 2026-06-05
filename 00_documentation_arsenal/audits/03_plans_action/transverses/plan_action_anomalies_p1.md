@@ -2,7 +2,7 @@
 
 > **Nature :** plan d'action documentaire et de nommage.
 > **Périmètre :** anomalies P1 issues de l'audit README et du registre transverse.
-> **Source :** `audits/registre_anomalies_transverses.md`.
+> **Source :** `audits/02_constats/transverses/registre_anomalies_transverses.md`.
 > **Statut initial :** toutes les étapes sont **en attente** sauf indication contraire.
 
 ---
@@ -26,6 +26,7 @@ Les étapes 1–4 étaient **indépendantes** ; toutes sont désormais **exécut
 ## Étape 0 — Déposer le registre transverse
 
 > **Statut : ✅ Exécutée — 2026-06-05.** Registre déposé dans `audits/` et référencé dans `audits/index.md`. Contexte conservé pour trace.
+> **Correctif de placement — 2026-06-05.** Le dépôt initial à la **racine** `audits/` est requalifié comme **erreur de classement** : le registre est relocalisé en `audits/02_constats/transverses/` et ce plan en `audits/03_plans_action/transverses/` (renvois mis à jour ; section « Transverse » de l'index conservée comme vue transverse).
 
 ### Objectif
 
