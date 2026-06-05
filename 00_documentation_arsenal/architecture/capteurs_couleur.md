@@ -1,4 +1,4 @@
-# 🎨 ARSENAL — README · Capteurs de couleur (cartographie)
+# 🎨 ARSENAL — Architecture · Capteurs de couleur
 
 > **Carte de l'existant.** Ce document *recense* et *décrit* les capteurs de couleur d'Arsenal et leurs mécanismes. Il ne propose ni contrat, ni architecture transverse, ni évolution. Il sert de point d'entrée pour comprendre « qui produit une couleur, comment, et pour qui ».
 
