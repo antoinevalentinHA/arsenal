@@ -75,6 +75,11 @@ class Candidate:
     token: str
     target: str | None
     reason: str
+    # Positions exactes du token dans la ligne (colonne 0-indexée), pour un
+    # remplacement positionnel fiable. None pour les candidats non remplaçables
+    # (tableaux, blocs de code, etc.).
+    start: int | None = None
+    end: int | None = None
 
 
 def iter_markdown_files(root: Path) -> list[Path]:
@@ -389,6 +394,8 @@ def detect_candidates_in_file(
                     token=token,
                     target=target,
                     reason=reason,
+                    start=match.start(),
+                    end=match.end(),
                 )
             )
 
@@ -440,6 +447,8 @@ def detect_candidates_in_file(
                     token=token,
                     target=target,
                     reason=reason,
+                    start=match.start(),
+                    end=match.end(),
                 )
             )
 
@@ -680,108 +689,195 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+REPLACEABLE_CATEGORIES = (
+    CATEGORY_BACKTICK_MD,
+    CATEGORY_RAW_MD,
+    CATEGORY_ABSOLUTE_DOC,
+    CATEGORY_ABSOLUTE_HA,
+    CATEGORY_EXTENSIONLESS,
+)
+
+
+def _split_eol(raw_line: str) -> tuple[str, str]:
+    """Sépare une ligne en (contenu sans fin de ligne, fin de ligne)."""
+    if raw_line.endswith("\r\n"):
+        return raw_line[:-2], "\r\n"
+    if raw_line.endswith("\n"):
+        return raw_line[:-1], "\n"
+    if raw_line.endswith("\r"):
+        return raw_line[:-1], "\r"
+    return raw_line, ""
+
+
+def plan_file_replacements(
+    file: Path,
+    file_candidates: list[Candidate],
+    doc_root: Path,
+    label_mode: str,
+) -> tuple[str, list[tuple[Candidate, str]], list[tuple[Candidate, str]]]:
+    """
+    Calcule le nouveau contenu d'un fichier par remplacement POSITIONNEL.
+
+    - Aucun `line.replace()` : on remplace exactement `line[start:end]`.
+    - Sur une même ligne, remplacements appliqués de droite à gauche
+      (start décroissant), sans chevauchement : les positions à gauche
+      restent valides tant qu'on ne touche jamais une zone déjà remplacée
+      plus à droite.
+    - Un candidat sans positions fiables n'est jamais remplacé ; il est
+      reporté comme "skipped".
+
+    Retourne (new_text, applied, skipped) où
+      applied = [(candidate, replacement_str)]
+      skipped = [(candidate, reason)]
+    """
+    original_text = file.read_text(encoding="utf-8", errors="replace")
+    raw_lines = original_text.splitlines(keepends=True)
+    contents: list[str] = []
+    eols: list[str] = []
+    for raw_line in raw_lines:
+        content, eol = _split_eol(raw_line)
+        contents.append(content)
+        eols.append(eol)
+
+    by_line: dict[int, list[Candidate]] = {}
+    for candidate in file_candidates:
+        by_line.setdefault(candidate.line_no, []).append(candidate)
+
+    applied: list[tuple[Candidate, str]] = []
+    skipped: list[tuple[Candidate, str]] = []
+
+    for line_no, line_candidates in by_line.items():
+        index = line_no - 1
+
+        if index < 0 or index >= len(contents):
+            for candidate in line_candidates:
+                skipped.append((candidate, "line_out_of_range"))
+            continue
+
+        line = contents[index]
+
+        usable: list[Candidate] = []
+        for candidate in line_candidates:
+            if candidate.start is None or candidate.end is None:
+                skipped.append((candidate, "no_position"))
+                continue
+            if not (0 <= candidate.start < candidate.end <= len(line)):
+                skipped.append((candidate, "invalid_position"))
+                continue
+            usable.append(candidate)
+
+        usable.sort(key=lambda c: c.start, reverse=True)
+
+        new_line = line
+        boundary = len(line)
+        for candidate in usable:
+            if candidate.end > boundary:
+                skipped.append((candidate, "overlap"))
+                continue
+            replacement = markdown_link_for_candidate(
+                candidate, doc_root, label_mode=label_mode
+            )
+            new_line = (
+                new_line[: candidate.start]
+                + replacement
+                + new_line[candidate.end :]
+            )
+            applied.append((candidate, replacement))
+            boundary = candidate.start
+
+        contents[index] = new_line
+
+    new_text = "".join(content + eol for content, eol in zip(contents, eols))
+    return new_text, applied, skipped
+
+
+def _auto_candidates_by_file(
+    candidates: list[Candidate],
+) -> dict[Path, list[Candidate]]:
+    by_file: dict[Path, list[Candidate]] = {}
+    for candidate in candidates:
+        if candidate.status == STATUS_AUTO:
+            by_file.setdefault(candidate.source, []).append(candidate)
+    return by_file
+
+
+def _print_skipped(skipped: list[tuple[Candidate, str]], doc_root: Path) -> None:
+    if not skipped:
+        return
+    print(f"Skipped (positions non fiables, non remplacés): {len(skipped)}")
+    for candidate, reason in skipped:
+        rel = candidate.source.relative_to(doc_root).as_posix()
+        print(
+            f"  {rel}:L{candidate.line_no} "
+            f"{candidate.category} {candidate.token} [{reason}]"
+        )
+    print()
+
+
 def print_fix_auto_dry_run(
     candidates: list[Candidate],
     doc_root: Path,
     label_mode: str = "original",
 ) -> None:
-    auto_candidates = [
-        c for c in candidates
-        if c.status == STATUS_AUTO
-    ]
+    by_file = _auto_candidates_by_file(candidates)
+    total_auto = sum(len(items) for items in by_file.values())
 
     print()
     print("ARSENAL DOC NAVIGATION FIX-AUTO DRY-RUN")
     print("=======================================")
     print()
-    print(f"Auto candidates: {len(auto_candidates)}")
+    print(f"Auto candidates: {total_auto}")
     print(f"Label mode: {label_mode}")
     print()
 
-    by_file: dict[Path, list[Candidate]] = {}
-
-    for candidate in auto_candidates:
-        by_file.setdefault(candidate.source, []).append(candidate)
+    total_planned = 0
+    all_skipped: list[tuple[Candidate, str]] = []
 
     for file in sorted(by_file):
-        rel_file = file.relative_to(doc_root).as_posix()
-        print(rel_file)
+        _, applied, skipped = plan_file_replacements(
+            file, by_file[file], doc_root, label_mode
+        )
+        all_skipped.extend(skipped)
+        if not applied:
+            continue
 
-        for candidate in by_file[file]:
-            replacement = markdown_link_for_candidate(
-                candidate,
-                doc_root,
-                label_mode=label_mode,
-            )
+        print(file.relative_to(doc_root).as_posix())
+        for candidate, replacement in sorted(
+            applied, key=lambda pair: (pair[0].line_no, pair[0].start or 0)
+        ):
             print(
                 f"  L{candidate.line_no:<4} "
                 f"{candidate.category:<24} "
                 f"{candidate.token} -> {replacement}"
             )
-
         print()
+        total_planned += len(applied)
+
+    print(f"Planned replacements: {total_planned}")
+    print()
+    _print_skipped(all_skipped, doc_root)
 
 
 def apply_fix_auto(
     candidates: list[Candidate],
     doc_root: Path,
-    label_mode: str = "basename",
+    label_mode: str = "original",
 ) -> int:
-    auto_candidates = [
-        c for c in candidates
-        if c.status == STATUS_AUTO
-    ]
-
-    by_file: dict[Path, list[Candidate]] = {}
-
-    for candidate in auto_candidates:
-        by_file.setdefault(candidate.source, []).append(candidate)
+    by_file = _auto_candidates_by_file(candidates)
 
     changed_files = 0
     total_replacements = 0
+    all_skipped: list[tuple[Candidate, str]] = []
 
-    for file, file_candidates in sorted(by_file.items()):
-        original_text = file.read_text(encoding="utf-8", errors="replace")
-        lines = original_text.splitlines(keepends=True)
-
-        replacements = sorted(
-            file_candidates,
-            key=lambda c: c.line_no,
-            reverse=True,
+    for file in sorted(by_file):
+        new_text, applied, skipped = plan_file_replacements(
+            file, by_file[file], doc_root, label_mode
         )
-
-        file_changed = False
-
-        for candidate in replacements:
-            line_index = candidate.line_no - 1
-
-            if line_index < 0 or line_index >= len(lines):
-                continue
-
-            line = lines[line_index]
-            replacement = markdown_link_for_candidate(
-                candidate,
-                doc_root,
-                label_mode=label_mode,
-            )
-
-            token = candidate.token
-
-            if candidate.category == CATEGORY_BACKTICK_MD:
-                old = f"`{token}`"
-            else:
-                old = token
-
-            if old not in line:
-                continue
-
-            lines[line_index] = line.replace(old, replacement, 1)
-            file_changed = True
-            total_replacements += 1
-
-        if file_changed:
-            file.write_text("".join(lines), encoding="utf-8")
+        all_skipped.extend(skipped)
+        if applied:
+            file.write_text(new_text, encoding="utf-8")
             changed_files += 1
+            total_replacements += len(applied)
 
     print()
     print("ARSENAL DOC NAVIGATION FIX-AUTO APPLY")
@@ -791,6 +887,7 @@ def apply_fix_auto(
     print(f"Replacements: {total_replacements}")
     print(f"Label mode: {label_mode}")
     print()
+    _print_skipped(all_skipped, doc_root)
 
     return total_replacements
 
@@ -830,6 +927,10 @@ def main() -> int:
             print("ERREUR: --dry-run et --apply sont incompatibles.")
             return 2
 
+        if not args.dry_run and not args.apply:
+            print("ERREUR: --fix-auto requiert --dry-run ou --apply.")
+            return 2
+
         if args.dry_run:
             print_fix_auto_dry_run(
                 all_candidates,
@@ -839,8 +940,12 @@ def main() -> int:
             return 0
 
         if args.apply:
-            print("ERREUR: --apply est temporairement désactivé. Utiliser --dry-run uniquement.")
-            return 2
+            apply_fix_auto(
+                all_candidates,
+                doc_root,
+                label_mode=args.label_mode,
+            )
+            return 0
 
     print_report(
         all_candidates,
