@@ -348,11 +348,13 @@ L'hypothèse A (créer le paquet) est **écartée** : double source de vérité.
 
 ## Étapes différées (décision requise)
 
-### D1 — `eclairage/garage.md` vs `garage_implementation.md`
+### D1 — `eclairage/garage.md` vs `garage_implementation.md` — *résolu*
+
+> **Statut : ✅ Résolu — 2026-06-05 (Option A).** Succession de version (v1 deux-boutons → v2.0.0 Zigbee) : contenu v2.0.0 consolidé sous le nom canonique `garage.md`, `garage_implementation.md` supprimé, hub repointé. Registre : §2.1 (clos).
 
 Deux fichiers dans `contrats/eclairage/` à titre et cible identiques.
-**Question :** redondants (fusionner) ou distincts (différencier les périmètres) ?
-Aucun patch avant arbitrage.
+**Question (historique) :** redondants (fusionner) ou distincts (différencier les périmètres) ?
+**Arbitrage :** Option A — consolidation sous `garage.md`.
 
 ### D2 — Double emplacement `bouclage`
 

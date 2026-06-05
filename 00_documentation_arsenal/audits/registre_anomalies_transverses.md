@@ -66,7 +66,7 @@
 | Fichiers | `garage.md` et `garage_implementation.md` |
 | Problème | Même titre (`CONTRAT D'IMPLÉMENTATION — script.garage_toggle`), même cible |
 | Source | Hub navigation `eclairage` — Points de vigilance |
-| Statut | **À arbitrer** — fusion ou distinction à documenter |
+| Statut | **✅ CLOS — 2026-06-05.** Arbitrage D1 = **Option A** : succession de version (v1 deux-boutons → v2.0.0 Zigbee). Contenu v2.0.0 consolidé sous le nom canonique `garage.md` ; `garage_implementation.md` supprimé ; hub repointé. Entrée conservée pour trace. |
 | Impact | Ambiguïté sur le contrat de référence |
 
 ### 2.2 Double titre README — domaine `boiler`
@@ -192,7 +192,7 @@
 | **Clos** | `30_decision_centrale.md` — référence morte | Référence corrigée (Étape 1) — voir §1.3 |
 | **Clos** | `pannes/secteur/` — double `10_` | Renommage `10_`→`11_temporalite` exécuté (Étape 2) — voir §2.4 |
 | **Clos** | `resilience_electrique` — nommage hérité / 6 renvois | Reroute à plat exécuté (B1, Étape 6) — voir §1.4 |
-| **P2** | `eclairage/garage.md` vs `garage_implementation.md` | Arbitrage fusion/distinction |
+| **Clos** | `eclairage/garage.md` vs `garage_implementation.md` | Consolidé sous `garage.md` (Option A, D1) — voir §2.1 |
 | **P2** | Double emplacement `bouclage` | Arbitrage hébergement unique |
 | **Clos** | `contrats/README.md` — structure plate vs dossiers | Description mise à jour (Étape 5) — voir §2.5 |
 | **Accepté** | Double titre README `boiler` | Intentionnel — redirect explicite |
