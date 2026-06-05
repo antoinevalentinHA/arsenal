@@ -3,9 +3,9 @@
 
 **Statut :** Contrat normatif central — opposable  
 **Rôle :** Cerveau métier du domaine Chauffage · Point d'entrée canonique de décision  
-**Subordonné à :** `contrats/chauffage/00_gouvernance_chauffage.md`  
-**Complémentaire de :** `20_triggers_decisionnels.md` · `70_autorisation_thermostat.md` · `80_table_decision_canonique.md`  
-**Références boiler :** `contrats/boiler/socle_transactionnel.md`  
+**Subordonné à :** [`contrats/chauffage/00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)  
+**Complémentaire de :** [`20_triggers_decisionnels.md`](20_triggers_decisionnels.md) · [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md) · [`80_table_decision_canonique.md`](80_table_decision_canonique.md)  
+**Références boiler :** [`contrats/boiler/socle_transactionnel.md`](../boiler/socle_transactionnel.md)  
 **Date :** 2026-04-07
 
 ---
