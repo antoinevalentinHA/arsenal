@@ -24,7 +24,7 @@
 #     - une rupture de gouvernance.
 #
 #   Subordonné à :
-#     /homeassistant/00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
+#     [/homeassistant/00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md](00_gouvernance_chauffage.md)
 #
 # ==========================================================
 
@@ -438,7 +438,7 @@ Toute confusion constitue :
 Ce contrat est :
 
 - subordonné à :
-  - `00_gouvernance_chauffage.md`
+  - [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 - transversal à :
   - `10_souverainete_execution.md`

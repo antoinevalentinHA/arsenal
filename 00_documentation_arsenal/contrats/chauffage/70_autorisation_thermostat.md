@@ -17,10 +17,10 @@
 #     • toute lecture par la Décision Centrale.
 #
 #   Subordonné à :
-#     /00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
+#     [/00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md](00_gouvernance_chauffage.md)
 #
 #   Utilisé directement par :
-#     /00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md
+#     [/00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md](30_decision_centrale.md)
 #
 # ==========================================================
 
@@ -335,14 +335,14 @@ Toute violation constitue :
 Ce contrat est :
 
 - subordonné à :
-  - `00_gouvernance_chauffage.md`
+  - [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 - utilisé directement par :
-  - `30_decision_centrale.md`
+  - [`30_decision_centrale.md`](30_decision_centrale.md)
 
 - complémentaire de :
-  - `60_absence_inhibition_geofencing.md`
-  - `80_table_decision_canonique.md`
+  - [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md)
+  - [`80_table_decision_canonique.md`](80_table_decision_canonique.md)
 
 Il gouverne directement :
 

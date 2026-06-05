@@ -24,10 +24,10 @@
 #     • mécanismes d'apprentissage.
 #
 #   Subordonné à :
-#     /00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
+#     [/00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md](00_gouvernance_chauffage.md)
 #
 #   Utilisé directement par :
-#     /00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md
+#     [/00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md](30_decision_centrale.md)
 #
 # ==========================================================
 
@@ -573,14 +573,14 @@ Relation d'invariant :
 
 Subordonné à :
 
-- `00_gouvernance_chauffage.md`
+- [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 Complémentaire de :
 
 - `15_capteurs_thermiques.md`
-- `70_autorisation_thermostat.md`
-- `80_table_decision_canonique.md`
-- `90_semantique_thermique.md`
+- [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
+- [`80_table_decision_canonique.md`](80_table_decision_canonique.md)
+- [`90_semantique_thermique.md`](90_semantique_thermique.md)
 
 Gouverne directement :
 

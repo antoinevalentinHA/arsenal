@@ -153,7 +153,7 @@ asymétriquement sûre.
 
 **Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) · [`01_doctrine_registres.md`](01_doctrine_registres.md)
 
-**Utilisé par :** `30_decision_centrale.md` · `80_table_decision_canonique.md`
+**Utilisé par :** [`30_decision_centrale.md`](30_decision_centrale.md) · [`80_table_decision_canonique.md`](80_table_decision_canonique.md)
 
 **Complémentaire de :** [`45_aeration.md`](45_aeration.md) ·
 [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) · [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)

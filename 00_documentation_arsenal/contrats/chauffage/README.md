@@ -44,7 +44,7 @@ Contrats avec amendement : `00`, `10`, `20`, `30`, `40`, `50`, `70`, `90`.
 
 Ce fichier est **différent d'un amendement** : c'est une **réécriture partielle** (V3) du contrat `80_table_decision_canonique.md`. Il remplace partiellement ce contrat sur les points qu'il couvre.
 
-Statut : subordonné à `00_gouvernance_chauffage.md` et `01_doctrine_registres.md`.
+Statut : subordonné à [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) et [`01_doctrine_registres.md`](01_doctrine_registres.md).
 
 ---
 

@@ -72,11 +72,11 @@
 #
 # Ce contrat est :
 #   Subordonné à :
-#     /00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
+#     [/00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md](00_gouvernance_chauffage.md)
 #
 #   Complémentaire de :
-#     /00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md
-#     /00_documentation_arsenal/contrats/chauffage/80_table_decision_canonique.md
+#     [/00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md](30_decision_centrale.md)
+#     [/00_documentation_arsenal/contrats/chauffage/80_table_decision_canonique.md](80_table_decision_canonique.md)
 #
 # Il gouverne spécifiquement :
 #     • les automatismes de rappel décisionnel,

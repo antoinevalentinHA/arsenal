@@ -19,7 +19,7 @@ Il est opposable à toute implémentation : scripts d'application, automatisatio
 adaptateurs locaux, commandes UI.
 
 Subordonné à :
-`/homeassistant/00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md`
+[`/homeassistant/00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 ---
 
@@ -362,7 +362,7 @@ Toute violation constitue :
 ## 9. Dépendances contractuelles
 
 Ce contrat est subordonné à :
-- `00_gouvernance_chauffage.md`
+- [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 Il est fondation de :
 - `30_decision_centrale.md`

@@ -20,11 +20,11 @@
 #     • couches matérielles.
 #
 #   Subordonné à :
-#     /homeassistant/00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
+#     [/homeassistant/00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md](00_gouvernance_chauffage.md)
 #
 #   Utilisé directement par :
-#     /homeassistant/00_documentation_arsenal/contrats/chauffage/70_autorisation_thermostat.md
-#     /homeassistant/00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md
+#     [/homeassistant/00_documentation_arsenal/contrats/chauffage/70_autorisation_thermostat.md](70_autorisation_thermostat.md)
+#     [/homeassistant/00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md](30_decision_centrale.md)
 #
 # ==========================================================
 
@@ -307,15 +307,15 @@ Toute violation constitue :
 Ce contrat est :
 
 - subordonné à :
-  - `00_gouvernance_chauffage.md`
+  - [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 - utilisé par :
-  - `70_autorisation_thermostat.md`
-  - `30_decision_centrale.md`
+  - [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
+  - [`30_decision_centrale.md`](30_decision_centrale.md)
 
 - complémentaire de :
-  - `10_souverainete_execution.md`
-  - `80_table_decision_canonique.md`
+  - [`10_souverainete_execution.md`](10_souverainete_execution.md)
+  - [`80_table_decision_canonique.md`](80_table_decision_canonique.md)
 
 Il gouverne directement :
 
