@@ -658,6 +658,12 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Applique réellement les conversions --fix-auto.",
+    )
+
+    parser.add_argument(
         "--label-mode",
         choices=("original", "basename"),
         default="original",
@@ -709,6 +715,79 @@ def print_fix_auto_dry_run(
         print()
 
 
+def apply_fix_auto(
+    candidates: list[Candidate],
+    doc_root: Path,
+    label_mode: str = "basename",
+) -> int:
+    auto_candidates = [
+        c for c in candidates
+        if c.status == STATUS_AUTO
+    ]
+
+    by_file: dict[Path, list[Candidate]] = {}
+
+    for candidate in auto_candidates:
+        by_file.setdefault(candidate.source, []).append(candidate)
+
+    changed_files = 0
+    total_replacements = 0
+
+    for file, file_candidates in sorted(by_file.items()):
+        original_text = file.read_text(encoding="utf-8", errors="replace")
+        lines = original_text.splitlines(keepends=True)
+
+        replacements = sorted(
+            file_candidates,
+            key=lambda c: c.line_no,
+            reverse=True,
+        )
+
+        file_changed = False
+
+        for candidate in replacements:
+            line_index = candidate.line_no - 1
+
+            if line_index < 0 or line_index >= len(lines):
+                continue
+
+            line = lines[line_index]
+            replacement = markdown_link_for_candidate(
+                candidate,
+                doc_root,
+                label_mode=label_mode,
+            )
+
+            token = candidate.token
+
+            if candidate.category == CATEGORY_BACKTICK_MD:
+                old = f"`{token}`"
+            else:
+                old = token
+
+            if old not in line:
+                continue
+
+            lines[line_index] = line.replace(old, replacement, 1)
+            file_changed = True
+            total_replacements += 1
+
+        if file_changed:
+            file.write_text("".join(lines), encoding="utf-8")
+            changed_files += 1
+
+    print()
+    print("ARSENAL DOC NAVIGATION FIX-AUTO APPLY")
+    print("=====================================")
+    print()
+    print(f"Files changed: {changed_files}")
+    print(f"Replacements: {total_replacements}")
+    print(f"Label mode: {label_mode}")
+    print()
+
+    return total_replacements
+
+
 def main() -> int:
     args = parse_args()
 
@@ -740,16 +819,21 @@ def main() -> int:
         )
 
     if args.fix_auto:
-        if not args.dry_run:
-            print("ERREUR: --fix-auto est disponible uniquement avec --dry-run pour cette version.")
+        if args.dry_run and args.apply:
+            print("ERREUR: --dry-run et --apply sont incompatibles.")
             return 2
 
-        print_fix_auto_dry_run(
-            all_candidates,
-            doc_root,
-            label_mode=args.label_mode,
-        )
-        return 0
+        if args.dry_run:
+            print_fix_auto_dry_run(
+                all_candidates,
+                doc_root,
+                label_mode=args.label_mode,
+            )
+            return 0
+
+        if args.apply:
+            print("ERREUR: --apply est temporairement désactivé. Utiliser --dry-run uniquement.")
+            return 2
 
     print_report(
         all_candidates,
