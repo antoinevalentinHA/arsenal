@@ -288,6 +288,17 @@ def resolve_token(
     if not non_self and self_present:
         return STATUS_IGNORED, None, "self_reference"
 
+    # Garde-fou doctrine : la couche navigation/ est détachable et ne doit
+    # pas être ciblée automatiquement depuis la documentation. Si toutes les
+    # cibles existantes sont sous navigation/, on classe la référence en
+    # "ignored" plutôt qu'en "auto"/"ambiguous".
+    doc_root_resolved = doc_root.resolve()
+    if non_self and all(
+        p.relative_to(doc_root_resolved).as_posix().startswith("navigation/")
+        for p in non_self
+    ):
+        return STATUS_IGNORED, None, "navigation_layer"
+
     if len(non_self) == 1:
         rel = non_self[0].relative_to(doc_root.resolve()).as_posix()
         return STATUS_AUTO, rel, "unique_target"
