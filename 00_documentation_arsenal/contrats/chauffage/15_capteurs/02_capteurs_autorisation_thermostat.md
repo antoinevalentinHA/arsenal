@@ -139,7 +139,7 @@ Garde-fou critique contre toute relance illégitime.
 Autorité finale d’autorisation hors décision thermique.  
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Autorisation thermostat / Verrous système  
 Classe : Capteur STRUCTURANT
 
@@ -215,7 +215,7 @@ Tout usage comme autorité décisionnelle primaire constitue
 une erreur de conception.
 
 ✅ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`
+INCLUS DANS `15_capteurs/13_capteurs_index.md`
 Section : Lecture métier dérivée / Interface thermique
 
 # ----------------------------------------------------------
@@ -278,5 +278,5 @@ Tout usage comme source de décision constitue une erreur
 de conception.
 
 ✅ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`
+INCLUS DANS `15_capteurs/13_capteurs_index.md`
 Section : Lecture réelle / Interface thermique

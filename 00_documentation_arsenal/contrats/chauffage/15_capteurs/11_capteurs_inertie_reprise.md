@@ -264,7 +264,7 @@ Frontière d’autorité thermique critique du moteur Chauffage Arsenal.
 
 ### ⚠️ Décision
 
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Inertie reprise  
 Classe : Capteur STRUCTURANT
 
@@ -368,7 +368,7 @@ Pilier fondamental du réglage des offsets ON présence et de la qualité de con
 
 ### ⚠️ Décision
 
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Inertie reprise  
 Classe : Capteur STRUCTURANT
 
@@ -483,7 +483,7 @@ Pilier fondamental de l’analyse inertielle et du réglage des offsets ON prés
 
 ### ⚠️ Décision
 
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Inertie reprise  
 Classe : Capteur STRUCTURANT
 
@@ -587,6 +587,6 @@ Pilier fondamental du réglage de courbe de chauffe et de la qualification de pu
 
 ### ⚠️ Décision
 
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Inertie reprise  
 Classe : Capteur STRUCTURANT

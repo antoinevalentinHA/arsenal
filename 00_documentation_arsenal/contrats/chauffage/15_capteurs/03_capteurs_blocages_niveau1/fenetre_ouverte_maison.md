@@ -95,6 +95,6 @@ La frontière N1 finale est `binary_sensor.fenetre_ouverte_maison_avec_delai`.
 ---
 
 ⚠️ Classification :
-INCLUS DANS `15_capteurs_thermiques.md`
+INCLUS DANS `15_capteurs/13_capteurs_index.md`
 Section : Blocages / Aération physique
 Classe : Capteur STRUCTURANT INDIRECT

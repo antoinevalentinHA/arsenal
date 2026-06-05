@@ -177,7 +177,7 @@ Référence officielle de qualité d’hystérésis et de confort dynamique.
 Pilier du réglage offsets ON / OFF et de la limitation des cycles.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Cycles présence  
 Classe : Capteur STRUCTURANT
 
@@ -251,7 +251,7 @@ Référence officielle de fréquence de cyclage en régime Présence.
 Pilier du diagnostic de stabilité, d’usure et de qualité de régulation.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Cycles présence  
 Classe : Capteur STRUCTURANT
 
@@ -327,6 +327,6 @@ Référence officielle de charge dynamique quotidienne du système thermique.
 Pilier du diagnostic d’usure, de stabilité et de qualité de régulation.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Cycles présence  
 Classe : Capteur STRUCTURANT

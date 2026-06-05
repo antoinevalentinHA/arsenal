@@ -131,7 +131,7 @@ Frontière entre diagnostic et paramétrage durable.
 Toute automatisation directe constitue une violation de gouvernance.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Auto-ajustement / Calibration  
 Classe : Capteur DE RÉFÉRENCE STRUCTURANT
 
@@ -191,7 +191,7 @@ Affecte la loi de chauffe globale.
 Toute automatisation directe constitue une violation critique de gouvernance.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Auto-ajustement / Calibration  
 Classe : Capteur DE RÉFÉRENCE STRUCTURANT
 
@@ -246,7 +246,7 @@ INDICATEUR SYNTHÈSE PRINCIPAL DE RÉGULATION
 Référence quotidienne centrale pour la surveillance et la calibration globale.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Auto-ajustement  
 Classe : Capteur DE RÉFÉRENCE STRUCTURANT
 
@@ -305,7 +305,7 @@ INDICATEUR D’OBSERVABILITÉ — RÉGIME FROID
 Capteur UI de surveillance. Non consommé par la chaîne de calibration active.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Auto-ajustement  
 Classe : Capteur DIAGNOSTIQUE STRUCTURANT
 
@@ -360,7 +360,7 @@ INDICATEUR SYNTHÈSE DE PARALLÈLE DE COURBE
 Référence officielle de calibration de translation en régime doux.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Auto-ajustement  
 Classe : Capteur DE RÉFÉRENCE STRUCTURANT
 
@@ -421,7 +421,7 @@ Référence d’erreur thermique en régime doux,
 exclusivement destinée à l’analyse et à la calibration supervisée.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Auto-ajustement  
 Classe : Capteur DE RÉFÉRENCE STRUCTURANT
 
@@ -482,7 +482,7 @@ Référence d’erreur thermique sous loi de chauffe active,
 exclusivement destinée à l’analyse et à la calibration de pente.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Diagnostic structurant / Auto-ajustement  
 Classe : Capteur DE RÉFÉRENCE STRUCTURANT
 
@@ -563,6 +563,6 @@ Garde-fou absolu contre toute pollution par source externe non pilotée.
 Frontière d’immunité thermique du moteur d’auto-ajustement Arsenal.  
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs_thermiques.md`  
+INCLUS DANS `15_capteurs/13_capteurs_index.md`  
 Section : Auto-ajustement / Protection contre apports externes  
 Classe : Capteur STRUCTURANT
