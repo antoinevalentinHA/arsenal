@@ -11,19 +11,21 @@
 
 | Étape | Objet | Type | Fichiers impactés | Dépend de |
 |---|---|---|---|---|
-| **0** | Déposer le registre d'anomalies | Création | 2 | — |
-| **1** | `30_decision_centrale.md` — références mortes | Édition | 1 | — |
+| **0** | Déposer le registre d'anomalies — **exécutée** | Création | 2 | — |
+| **1** | `30_decision_centrale.md` — références mortes — **exécutée** | Édition | 1 | — |
 | **2** | `10_temporalite.md` → `11_temporalite.md` — **exécutée** | Renommage | 2 | — |
-| **3** | `guard_expostion_ha.md` → `guard_exposition_ha.md` | Renommage | 4 | — |
-| **4** | `01__objet_perimetre_statut.md` → `01_objet_perimetre_statut.md` | Renommage | 2 | — |
+| **3** | `guard_expostion_ha.md` → `guard_exposition_ha.md` — **exécutée** | Renommage | 4 | — |
+| **4** | `01__objet_perimetre_statut.md` → `01_objet_perimetre_statut.md` — **exécutée** | Renommage | 2 | — |
 | **5** | `contrats/README.md` — description P2 | Édition | 1 | — |
 | **6** | Rerouter 6 renvois `resilience_electrique` → `pannes/secteur/` — **exécutée** | Édition | 4 | Étape 2 (ordre) |
 
-Toutes les étapes 1–4 sont **indépendantes** et peuvent être produites en parallèle.
+Les étapes 1–4 étaient **indépendantes** ; toutes sont désormais **exécutées**.
 
 ---
 
 ## Étape 0 — Déposer le registre transverse
+
+> **Statut : ✅ Exécutée — 2026-06-05.** Registre déposé dans `audits/` et référencé dans `audits/index.md`. Contexte conservé pour trace.
 
 ### Objectif
 
@@ -57,6 +59,8 @@ docs(audits): add cross-domain anomaly register
 ---
 
 ## Étape 1 — Corriger `30_decision_centrale.md`
+
+> **Statut : ✅ Exécutée — 2026-06-05.** Ligne 8 corrigée : références mortes supprimées, renvoi unique vers `contrats/boiler/socle_transactionnel.md`. Contexte conservé pour trace.
 
 ### Objectif
 
@@ -142,6 +146,8 @@ fix(contrats/pannes): rename 10_temporalite → 11_temporalite, fix ref in 10_so
 
 ## Étape 3 — Renommer `guard_expostion_ha.md` → `guard_exposition_ha.md`
 
+> **Statut : ✅ Exécutée — 2026-06-05.** Renommage effectué ; réfs `dependances_inter_domaines.md` et `changelog/v12_2.md` mises à jour. Contexte conservé pour trace.
+
 ### Contexte
 
 Typo dans le nom de fichier (`expostion` au lieu de `exposition`).
@@ -202,6 +208,8 @@ fix(contrats/boiler): rename guard_expostion → guard_exposition, fix 3 refs
 ---
 
 ## Étape 4 — Renommer `01__objet_perimetre_statut.md` → `01_objet_perimetre_statut.md`
+
+> **Statut : ✅ Exécutée — 2026-06-05.** Renommage effectué ; réf `changelog/v14.md` mise à jour ; README déjà aligné. Contexte conservé pour trace.
 
 ### Contexte
 
