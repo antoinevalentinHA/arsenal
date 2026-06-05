@@ -156,7 +156,7 @@ Le présent contrat ne confère aucune autorité métier sur le chauffage, l'ECS
 
 | Garantie | Fondement contractuel |
 |---|---|
-| Exclusion des micro-coupures | Confirmation temporelle obligatoire → `10_temporalite.md` |
+| Exclusion des micro-coupures | Confirmation temporelle obligatoire → `11_temporalite.md` |
 | Stabilité au redémarrage HA | Qualification fondée sur le réel — exclusion de la réhydratation logicielle |
 | Séparation des responsabilités | Principe fondamental Arsenal + Neutralité métier du socle |
 | Absence de rebond d'état | Monotonicité de l'état |
