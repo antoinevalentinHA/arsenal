@@ -2,7 +2,7 @@
 #
 # 📌 STATUT :
 #   AMENDEMENT au contrat sémantique fondateur
-#   `90_semantique_thermique.md`
+#   [`90_semantique_thermique.md`](90_semantique_thermique.md)
 #
 # 🎯 OBJET :
 #   Introduire dans la sémantique officielle le terme canonique
@@ -11,8 +11,8 @@
 #   et un `neutre` issu d'une suspension météo.
 #
 # 🔒 SUBORDINATION :
-#   • 00_gouvernance_chauffage.md (+ amendement)
-#   • 01_doctrine_registres.md
+#   • [00_gouvernance_chauffage.md](00_gouvernance_chauffage.md) (+ amendement)
+#   • [01_doctrine_registres.md](01_doctrine_registres.md)
 #   Cohérent avec : 70_autorisation_thermostat (+ amendement)
 #
 # ==========================================================
@@ -115,7 +115,7 @@ L'ajout respecte les interdictions sémantiques de `90` §12 :
 
 **Transversal à :** l'ensemble des contrats Chauffage (comme `90`).
 
-**Cohérent avec :** `70_autorisation_thermostat__amendement.md` (mécanisme).
+**Cohérent avec :** [`70_autorisation_thermostat__amendement.md`](70_autorisation_thermostat__amendement.md) (mécanisme).
 
 Cet amendement est sémantique, stable, opposable, et versionné avec `90`. Il
 prend effet conjointement avec l'amendement de `70`. Aucun patch runtime n'est

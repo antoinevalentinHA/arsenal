@@ -142,7 +142,7 @@ Consommateurs contractuels :
 ---
 
 ⚠️ Classification :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)
 Section : Diagnostic structurant / Décision thermique
 Classe : **STRUCTURANT**
 
@@ -229,8 +229,8 @@ Contextes :
 Consommateurs contractuels :
 - `decision_centrale.yaml` — régime présence (entrée, pas sortie)
 - `11_automations/chauffage/autorisation.yaml` — application du verrou standby
-- `20_triggers_decisionnels.md` — capteur pivot des triggers présence
-- `50_standby_hysteresis.md` — pilotage du standby
+- [`20_triggers_decisionnels.md`](../20_triggers_decisionnels.md) — capteur pivot des triggers présence
+- [`50_standby_hysteresis.md`](../50_standby_hysteresis.md) — pilotage du standby
 - `diagnostic/mode.yaml` et `diagnostic/raison.yaml` — diagnostics structurants
 - Recorder / logbook / UI
 
@@ -255,6 +255,6 @@ Toute modification est une modification MÉTIER de premier niveau.
 ---
 
 ⚠️ Classification :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)
 Section : Autorisation thermostat / Évaluation thermique canonique
 Classe : **STRUCTURANT — NIVEAU CRITIQUE**

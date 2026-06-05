@@ -69,6 +69,6 @@ Transite obligatoirement par `binary_sensor.poele_en_fonction`.
 ---
 
 ⚠️ Classification :
-INCLUS DANS `03_capteurs_blocages_niveau1.md`
+INCLUS DANS [`03_capteurs_blocages_niveau1.md`](../03_capteurs_blocages_niveau1.md)
 Section : Apports thermiques externes / Confirmation contextuelle
 Classe : **STRUCTURANT INDIRECT**

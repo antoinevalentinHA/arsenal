@@ -1,12 +1,12 @@
 # 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — GOUVERNANCE GÉNÉRALE (V3 PRO) · Amendement : ancrage de la doctrine des registres
 #
 # 📌 STATUT :
-#   AMENDEMENT au contrat fondateur `00_gouvernance_chauffage.md`
+#   AMENDEMENT au contrat fondateur [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 #
 # 🎯 OBJET :
 #   Ancrer dans la constitution du domaine la distinction
 #   sécurité système / stabilisation thermique formalisée par
-#   le contrat racine `01_doctrine_registres.md`, et préciser
+#   le contrat racine [`01_doctrine_registres.md`](01_doctrine_registres.md), et préciser
 #   que le Niveau 1 de la hiérarchie des causes est strictement
 #   sécuritaire.
 #
@@ -24,7 +24,7 @@
 Ajouter, en tête de la hiérarchie documentaire (§11 de `00`), la mention :
 
 > Le présent contrat est complété par le contrat racine
-> `01_doctrine_registres.md`, qui définit la clé de lecture du domaine
+> [`01_doctrine_registres.md`](01_doctrine_registres.md), qui définit la clé de lecture du domaine
 > (sécurité système vs stabilisation thermique) et gouverne l'interprétation
 > de tous les contrats subordonnés. En cas de divergence d'interprétation
 > entre deux contrats de domaine, la classification des registres posée par
@@ -92,6 +92,6 @@ non-remontée :
 
 Cet amendement est stable, opposable, et versionné avec la constitution du
 domaine. Il prend effet en même temps que la publication de
-`01_doctrine_registres.md`.
+[`01_doctrine_registres.md`](01_doctrine_registres.md).
 
 # ==========================================================

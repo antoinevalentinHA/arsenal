@@ -153,7 +153,7 @@ Point d’ancrage officiel B0 de tout le sous-système inertie arrêt.
 Référence unique et obligatoire pour toute analyse post-coupure.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`  
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
 Section : Diagnostic structurant / Inertie arrêt  
 Classe : Capteur STRUCTURANT — INFRASTRUCTURE FONDATRICE
 
@@ -225,7 +225,7 @@ Référence officielle de surchauffe inertielle hydraulique en fin de cycle.
 Pilier du réglage offsets OFF et de la stabilité de coupure.
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`  
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
 Section : Diagnostic structurant / Inertie arrêt  
 Classe : Capteur STRUCTURANT
 
@@ -324,7 +324,7 @@ Pilier du réglage temporel des offsets OFF et de la stabilité de fin de cycle.
 
 ### ⚠️ Décision
 
-INCLUS DANS `15_capteurs/13_capteurs_index.md`  
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
 Section : Diagnostic structurant / Inertie arrêt  
 Classe : Capteur STRUCTURANT
 
@@ -427,6 +427,6 @@ Pilier fondamental de caractérisation inertielle et d’auto-calibration absenc
 
 ### ⚠️ Décision
 
-INCLUS DANS `15_capteurs/13_capteurs_index.md`  
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
 Section : Diagnostic structurant / Inertie arrêt  
 Classe : Capteur STRUCTURANT

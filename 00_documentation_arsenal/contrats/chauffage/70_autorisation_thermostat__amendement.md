@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — AUTORISATION THERMOSTAT LOGIQUE (V3 PRO) · Amendement : modulation de sobriété météo (suspension_relance_meteo)
 #
 # 📌 STATUT :
-#   AMENDEMENT au contrat pivot `70_autorisation_thermostat.md`
+#   AMENDEMENT au contrat pivot [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
 #
 # 🎯 OBJET :
 #   Contractualiser la modulation météo présente dans le capteur
@@ -11,8 +11,8 @@
 #   anticipation » qui englobait abusivement ce mécanisme.
 #
 # 🔒 SUBORDINATION :
-#   • 00_gouvernance_chauffage.md (+ amendement)
-#   • 01_doctrine_registres.md
+#   • [00_gouvernance_chauffage.md](00_gouvernance_chauffage.md) (+ amendement)
+#   • [01_doctrine_registres.md](01_doctrine_registres.md)
 #   Cohérent avec : 30, 60, 80, 90 (+ leurs amendements/réécritures)
 #
 # ==========================================================
@@ -167,7 +167,7 @@ La modulation `suspension_relance_meteo` ne doit JAMAIS :
 **Utilisé par :** [`30_decision_centrale.md`](30_decision_centrale.md) (consomme l'intention produite)
 
 **Complémentaire de :** [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) ·
-`80_table_decision_canonique` (+ réécriture partielle) ·
+[`80_table_decision_canonique.md`](80_table_decision_canonique.md) (+ réécriture partielle) ·
 [`90_semantique_thermique.md`](90_semantique_thermique.md) (+ amendement — terme canonique)
 
 **Gouverne directement :** la post-règle de modulation météo du capteur

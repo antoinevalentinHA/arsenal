@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — DÉCISION CENTRALE V3 · Amendement : sécurité pure de Niveau 1 & causalité honnête
 #
 # 📌 STATUT :
-#   AMENDEMENT au contrat central `30_decision_centrale.md`
+#   AMENDEMENT au contrat central [`30_decision_centrale.md`](30_decision_centrale.md)
 #   NIVEAU : structurant — point de convergence du chemin critique
 #
 # 🎯 OBJET :
@@ -26,17 +26,17 @@
 # 🧱 SUBORDINATION
 #
 #   Subordonné à :
-#     • 00_gouvernance_chauffage.md
-#     • 00_gouvernance_chauffage__amendement.md
-#     • 01_doctrine_registres.md
+#     • [00_gouvernance_chauffage.md](00_gouvernance_chauffage.md)
+#     • [00_gouvernance_chauffage__amendement.md](00_gouvernance_chauffage__amendement.md)
+#     • [01_doctrine_registres.md](01_doctrine_registres.md)
 #
 #   Cohérent avec :
-#     • 50_standby_hysteresis__amendement.md
-#     • 40_blocages__amendement.md
-#     • 80_table_decision_canonique__reecriture_partielle.md
+#     • [50_standby_hysteresis__amendement.md](50_standby_hysteresis__amendement.md)
+#     • [40_blocages__amendement.md](40_blocages__amendement.md)
+#     • [80_table_decision_canonique__reecriture_partielle.md](80_table_decision_canonique__reecriture_partielle.md)
 #
 #   Implémente :
-#     • 80_table_decision_canonique__reecriture_partielle.md
+#     • [80_table_decision_canonique__reecriture_partielle.md](80_table_decision_canonique__reecriture_partielle.md)
 #
 # ==========================================================
 

@@ -75,7 +75,7 @@ Consommateurs contractuels :
 ❗ Statut particulier :
 **CAPTEUR STRUCTURANT INDIRECT DE CONSOLIDATION THERMIQUE**
 Source de preuve durable de la signature thermique poêle.
-Plus résistant aux montées lentes prolongées que `sejour_delta_30min`
+Plus résistant aux montées lentes prolongées que [`sejour_delta_30min.md`](sejour_delta_30min.md)
 grâce à une baseline glissante de 60 minutes.
 Ne vaut jamais blocage direct.
 Transite obligatoirement par `binary_sensor.signature_thermique_poele`.
@@ -83,6 +83,6 @@ Transite obligatoirement par `binary_sensor.signature_thermique_poele`.
 ---
 
 ⚠️ Classification :
-INCLUS DANS `03_capteurs_blocages_niveau1.md`
+INCLUS DANS [`03_capteurs_blocages_niveau1.md`](../03_capteurs_blocages_niveau1.md)
 Section : Apports thermiques externes / Détection dynamique consolidée
 Classe : **STRUCTURANT INDIRECT**

@@ -94,7 +94,7 @@ Il agit exclusivement sur :
 
 via la couche définie dans :
 
-- `70_autorisation_thermostat.md`
+- [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
 
 Il est :
 
@@ -303,7 +303,7 @@ du mécanisme de pré-confort.
 Il ne produit aucune décision,
 mais alimente exclusivement la couche :
 
-- `70_autorisation_thermostat.md`
+- [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
 
 ---
 

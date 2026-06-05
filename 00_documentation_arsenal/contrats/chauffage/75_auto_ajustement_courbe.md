@@ -577,7 +577,7 @@ Subordonné à :
 
 Complémentaire de :
 
-- `15_capteurs/13_capteurs_index.md`
+- [`13_capteurs_index.md`](15_capteurs/13_capteurs_index.md)
 - [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
 - [`80_table_decision_canonique.md`](80_table_decision_canonique.md)
 - [`90_semantique_thermique.md`](90_semantique_thermique.md)

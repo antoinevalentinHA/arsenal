@@ -13,15 +13,15 @@
 #   Décision Centrale.
 #
 #   Subordonné à :
-#     • 00_gouvernance_chauffage.md
-#     • 00_gouvernance_chauffage__amendement.md
-#     • 01_doctrine_registres.md
+#     • [00_gouvernance_chauffage.md](00_gouvernance_chauffage.md)
+#     • [00_gouvernance_chauffage__amendement.md](00_gouvernance_chauffage__amendement.md)
+#     • [01_doctrine_registres.md](01_doctrine_registres.md)
 #
 #   Utilisé directement par :
-#     • 30_decision_centrale.md (+ amendement)
+#     • [30_decision_centrale.md](30_decision_centrale.md) (+ amendement)
 #
 #   Complémentaire de :
-#     • 70_autorisation_thermostat.md
+#     • [70_autorisation_thermostat.md](70_autorisation_thermostat.md)
 #     • 80_table_decision_canonique (+ réécriture partielle)
 #
 # ==========================================================
@@ -316,7 +316,7 @@ L'inhibition du géofencing ne doit JAMAIS :
 **Utilisé par :** [`30_decision_centrale.md`](30_decision_centrale.md) (+ amendement)
 
 **Complémentaire de :** [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md) ·
-`80_table_decision_canonique` (+ réécriture partielle)
+[`80_table_decision_canonique.md`](80_table_decision_canonique.md) (+ réécriture partielle)
 
 **Gouverne directement :**
 - `binary_sensor.chauffage_inhibition_geofencing_requise` (qualification) ;

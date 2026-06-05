@@ -52,7 +52,7 @@ Ces capteurs :
 
 - produisent directement un **blocage thermique absolu**
 - constituent la **source normative finale consommée par la décision centrale**
-- sont consommés par les mécanismes décrits dans `40_blocages.md`
+- sont consommés par les mécanismes décrits dans [`40_blocages.md`](../40_blocages.md)
 
 ### 2️⃣ Capteurs structurants indirects
 
@@ -142,7 +142,7 @@ Cette couche **protège** la régulation — elle ne la gouverne pas.
 
 Les capteurs NIVEAU 1 peuvent être consommés par :
 
-- `40_blocages.md` (mécanismes de blocage thermique)
+- [`40_blocages.md`](../40_blocages.md) (mécanismes de blocage thermique)
 - la décision centrale chauffage
 - les pipelines normatifs d'aération
 - l'invalidation des cycles thermiques

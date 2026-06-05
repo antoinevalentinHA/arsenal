@@ -120,7 +120,7 @@ Verrou post-aération :
 - input_boolean.chauffage_blocage_aeration  
 
 Consommateurs contractuels attendus :
-- 70_autorisation_thermostat.md  
+- [70_autorisation_thermostat.md](../70_autorisation_thermostat.md)  
 - Automations d’application chauffage  
 - Scripts d’exécution chaudière  
 - UI de diagnostic autorisation  
@@ -139,7 +139,7 @@ Garde-fou critique contre toute relance illégitime.
 Autorité finale d’autorisation hors décision thermique.  
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`  
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
 Section : Autorisation thermostat / Verrous système  
 Classe : Capteur STRUCTURANT
 
@@ -215,7 +215,7 @@ Tout usage comme autorité décisionnelle primaire constitue
 une erreur de conception.
 
 ✅ Décision :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)
 Section : Lecture métier dérivée / Interface thermique
 
 # ----------------------------------------------------------
@@ -278,5 +278,5 @@ Tout usage comme source de décision constitue une erreur
 de conception.
 
 ✅ Décision :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)
 Section : Lecture réelle / Interface thermique

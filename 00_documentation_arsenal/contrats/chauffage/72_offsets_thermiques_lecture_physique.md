@@ -11,11 +11,11 @@
 #
 # 📍 POSITION ARCHITECTURALE :
 #   - Subordonné à :
-#       • 50_standby_hysteresis.md
-#       • 70_autorisation_thermostat.md
+#       • [50_standby_hysteresis.md](50_standby_hysteresis.md)
+#       • [70_autorisation_thermostat.md](70_autorisation_thermostat.md)
 #
 #   - Amont de :
-#       • 75_auto_ajustement_courbe.md
+#       • [75_auto_ajustement_courbe.md](75_auto_ajustement_courbe.md)
 #       • Phase 2 — stratégie auto-ajustement offsets
 #
 # 🔒 PORTÉE :

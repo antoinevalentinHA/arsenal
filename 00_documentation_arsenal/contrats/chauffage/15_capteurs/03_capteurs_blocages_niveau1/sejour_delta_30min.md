@@ -78,7 +78,7 @@ Consommateurs contractuels :
   peut rester sous le seuil d'amorce malgré une influence poêle réelle —
   limite structurelle du mode de calcul, compensée par `sensor.sejour_delta_60min`
 - Faux négatifs sur poêles à montée très lente
-- Pollution thermique si seuils mal calibrés dans `signature_thermique_poele`
+- Pollution thermique si seuils mal calibrés dans [`signature_thermique_poele.md`](signature_thermique_poele.md)
 - Blocage prolongé si dérive persiste artificiellement
 - Dérive critique s'il est utilisé comme signal décisionnel direct
 
@@ -94,6 +94,6 @@ Transite obligatoirement par `binary_sensor.signature_thermique_poele`.
 ---
 
 ⚠️ Classification :
-INCLUS DANS `03_capteurs_blocages_niveau1.md`
+INCLUS DANS [`03_capteurs_blocages_niveau1.md`](../03_capteurs_blocages_niveau1.md)
 Section : Apports thermiques externes / Détection dynamique primaire
 Classe : **STRUCTURANT INDIRECT**

@@ -121,7 +121,7 @@ Le blocage est déclenché uniquement par événement ON, maintenu exclusivement
 
 **Exception normative explicite :** si `input_boolean.pre_confort_actif_calcule` est actif, la Décision Centrale peut produire `comfort`. Cette exception est bornée : elle ne vaut que dans le bloc Vacances, sous réserve d'absence de tout blocage pur actif, et sous réserve de validation complète par la Décision Centrale.
 
-Cette exception ne constitue pas un contournement hiérarchique. Elle est une règle normative explicite, documentée et opposable, reconnue par `30_decision_centrale.md`.
+Cette exception ne constitue pas un contournement hiérarchique. Elle est une règle normative explicite, documentée et opposable, reconnue par [`30_decision_centrale.md`](30_decision_centrale.md).
 
 Aucune autre exception n'existe en contexte Vacances. Toute autorisation ordinaire de confort reste écrasée.
 

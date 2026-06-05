@@ -9,7 +9,7 @@
 #   SÉCURITÉ SYSTÈME et STABILISATION THERMIQUE.
 #
 #   Il est subordonné à la constitution du domaine
-#   (`00_gouvernance_chauffage.md`) et gouverne l'interprétation
+#   ([`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)) et gouverne l'interprétation
 #   de TOUS les autres contrats Chauffage : blocages, décision
 #   centrale, table canonique, standby, géofencing, autorisation.
 #
@@ -170,10 +170,10 @@ respectifs (`40`, `50`, `60`, `70`, `80`).
 
 **Subordonné à :** [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
-**Gouverne l'interprétation de :** `30_decision_centrale.md` ·
-`40_blocages.md` · `50_standby_hysteresis.md` ·
-`60_absence_inhibition_geofencing.md` · `70_autorisation_thermostat.md` ·
-`80_table_decision_canonique.md` · `90_semantique_thermique.md`
+**Gouverne l'interprétation de :** [`30_decision_centrale.md`](30_decision_centrale.md) ·
+[`40_blocages.md`](40_blocages.md) · [`50_standby_hysteresis.md`](50_standby_hysteresis.md) ·
+[`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md) · [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md) ·
+[`80_table_decision_canonique.md`](80_table_decision_canonique.md) · [`90_semantique_thermique.md`](90_semantique_thermique.md)
 
 ---
 

@@ -18,7 +18,7 @@ Il synthétise exclusivement une **triple preuve causale** :
 - une **présence humaine probable dans le séjour** (hausse CO2),
 - la **confirmation que la chaudière n'est pas en cause** (`bruleur_mode_chauffage = off`).
 
-Toute consommation directe des signaux amont (`signature_thermique_poele`, `presence_humaine_sejour`, `bruleur_mode_chauffage`) à des fins de blocage poêle est interdite.
+Toute consommation directe des signaux amont ([`signature_thermique_poele.md`](signature_thermique_poele.md), [`presence_humaine_sejour.md`](presence_humaine_sejour.md), `bruleur_mode_chauffage`) à des fins de blocage poêle est interdite.
 
 Seul `binary_sensor.poele_en_fonction` peut être consommé comme frontière de blocage poêle pour :
 - bloquer le chauffage pour cause d'apport poêle,
@@ -35,7 +35,7 @@ Seul `binary_sensor.poele_en_fonction` peut être consommé comme frontière de 
 - Protection des offsets et modèles inertiels
 - Alimentation des mécanismes mémoire / stabilisation aval
 - Signal maître pour :
-  - `40_blocages.md`
+  - [`40_blocages.md`](../../40_blocages.md)
   - invalidation de cycles thermiques
   - protection auto-ajustement
   - diagnostics thermiques structurants
@@ -79,7 +79,7 @@ Capteurs amont structurants :
 - `binary_sensor.bruleur_mode_chauffage` (exclusion causale chaudière — durci localement)
 
 Consommateurs contractuels :
-- `40_blocages.md` (blocage poêle événementiel temporisé — section 4.3)
+- [`40_blocages.md`](../../40_blocages.md) (blocage poêle événementiel temporisé — section 4.3)
 - invalidation cycles thermiques
 - protection auto-ajustement et modèles inertiels
 - diagnostics thermiques structurants
@@ -103,6 +103,6 @@ Toute consommation directe des signaux amont hors de cette frontière est interd
 ---
 
 ⚠️ Classification :
-INCLUS DANS `03_capteurs_blocages_niveau1.md`
+INCLUS DANS [`03_capteurs_blocages_niveau1.md`](../03_capteurs_blocages_niveau1.md)
 Section : Apports thermiques externes / Frontière finale poêle
 Classe : **FRONTIÈRE NIVEAU 1 FINALE**

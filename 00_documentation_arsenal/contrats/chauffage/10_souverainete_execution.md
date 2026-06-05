@@ -365,11 +365,11 @@ Ce contrat est subordonné à :
 - [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md)
 
 Il est fondation de :
-- `30_decision_centrale.md`
-- `40_blocages.md`
-- `60_absence_inhibition_geofencing.md`
-- `70_autorisation_thermostat.md`
-- `80_table_decision_canonique.md`
+- [`30_decision_centrale.md`](30_decision_centrale.md)
+- [`40_blocages.md`](40_blocages.md)
+- [`60_absence_inhibition_geofencing.md`](60_absence_inhibition_geofencing.md)
+- [`70_autorisation_thermostat.md`](70_autorisation_thermostat.md)
+- [`80_table_decision_canonique.md`](80_table_decision_canonique.md)
 
 Il gouverne directement :
 

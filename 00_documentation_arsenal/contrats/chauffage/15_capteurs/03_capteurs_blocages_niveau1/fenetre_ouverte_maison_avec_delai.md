@@ -68,15 +68,15 @@ Sous-systèmes temporisés :
 - `binary_sensor.fenetre_ouverte_etage_avec_delai`
 
 Consommateurs contractuels :
-- `decision_centrale.yaml` — blocage `desired_mode = reduced` + raison `fenetre_ouverte_maison`
+- `decision_centrale.yaml` — blocage `desired_mode = reduced` + raison [`fenetre_ouverte_maison.md`](fenetre_ouverte_maison.md)
 - `decision_centrale_trigger.yaml` — trigger NIVEAU 1 (off→on / on→off)
 - `m0_remediation_incoherence.yaml` — condition de garde (double vérification avec brut)
 - `12_template_sensors/chauffage/diagnostic/raison.yaml` — diagnostic de raison chauffage
 - `12_template_sensors/aeration/coherence.yaml` — capteur de cohérence aération
-- `07_coherence_ko_detecteur.md` — conditions de détection d'incohérence pipeline aération
-- `13_interfaces_ouvertures.md` — interface transversale aération / blocage chauffage
-- `07_capteurs_diagnostics_structurants.md` — référencé comme blocage structurant
-- `40_blocages.md` — via `../../30_decision_centrale.md` (section 4.1 blocage fenêtres)
+- [`07_coherence_ko_detecteur.md`](../../../aeration_blocage_chauffage/socle_transversal/07_coherence_ko_detecteur.md) — conditions de détection d'incohérence pipeline aération
+- [`13_interfaces_ouvertures.md`](../../../aeration_blocage_chauffage/socle_transversal/13_interfaces_ouvertures.md) — interface transversale aération / blocage chauffage
+- [`07_capteurs_diagnostics_structurants.md`](../07_capteurs_diagnostics_structurants.md) — référencé comme blocage structurant
+- [`40_blocages.md`](../../40_blocages.md) — via [`30_decision_centrale.md`](../../30_decision_centrale.md) (section 4.1 blocage fenêtres)
 - UI diagnostics ouvertures / aération (tentative / qualifiée)
 
 ---
@@ -100,6 +100,6 @@ Pilier du pipeline aération et des blocages post-aération Arsenal.
 ---
 
 ⚠️ Classification :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`
+INCLUS DANS [`13_capteurs_index.md`](../13_capteurs_index.md)
 Section : Blocages / Aération qualifiée
 Classe : **FRONTIÈRE NIVEAU 1 FINALE**

@@ -155,7 +155,7 @@ La « possession » d'une entité est déterminée par l'arborescence où elle e
 3. `input_boolean.blocage_chauffage_poele` — poêle → chauffage, **au niveau décision**.
 4. `sensor.temperature_consigne_appliquee_locale` — chauffage → climatisation (pilote les seuils on/off de la clim en mode chaud).
 
-**Couplages MOYENS** (décision/inhibition secondaire ou paramètre partagé) : `poele_en_fonction_stable`, `meteo_favorable_chauffage`, `presence_famille_unifiee`, `vacances_actives`, `mode_maison`, `fenetre_ouverte_maison_avec_delai`, `programme_chauffage`, `mode_confort_chauffage`, `poele_duree_blocage_chauffage_minutes`.
+**Couplages MOYENS** (décision/inhibition secondaire ou paramètre partagé) : `poele_en_fonction_stable`, `meteo_favorable_chauffage`, `presence_famille_unifiee`, `vacances_actives`, `mode_maison`, [`fenetre_ouverte_maison_avec_delai.md`](15_capteurs/03_capteurs_blocages_niveau1/fenetre_ouverte_maison_avec_delai.md), `programme_chauffage`, `mode_confort_chauffage`, `poele_duree_blocage_chauffage_minutes`.
 
 **Couplages FAIBLES** (lecture de configuration ou diagnostic, sans incidence sur la décision) : lectures de consignes/seuils/offsets par météo et par `system/integrite_reglages`, navigation dashboard.
 

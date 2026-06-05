@@ -9,8 +9,8 @@
 Détecter une **signature thermique compatible avec un fonctionnement de poêle**,
 par combinaison d'une :
 
-- **amorce de montée thermique sur 30 minutes** (`sejour_delta_30min`),
-- **consolidation thermique sur 60 minutes** (`sejour_delta_60min`).
+- **amorce de montée thermique sur 30 minutes** ([`sejour_delta_30min.md`](sejour_delta_30min.md)),
+- **consolidation thermique sur 60 minutes** ([`sejour_delta_60min.md`](sejour_delta_60min.md)).
 
 Ce capteur ne constitue **jamais** une frontière finale de blocage.
 Il fournit uniquement une **preuve thermique candidate** d'apport exogène,
@@ -38,7 +38,7 @@ destinée à être consommée par `binary_sensor.poele_en_fonction`.
 
 🔒 Garanties exigées :
 - Détection basée exclusivement sur dynamiques thermiques locales
-- Double critère temporel obligatoire : `sejour_delta_30min` (amorce) + `sejour_delta_60min` (consolidation)
+- Double critère temporel obligatoire : [`sejour_delta_30min.md`](sejour_delta_30min.md) (amorce) + [`sejour_delta_60min.md`](sejour_delta_60min.md) (consolidation)
 - Hystérésis asymétrique : seuils d'entrée plus élevés que seuils de maintien — résistance aux faux positifs
 - Inertie de sortie : `delay_off 5 min` — stabilisation de la signature candidate
 - Valeur binaire pure : signature présente / absente
@@ -79,6 +79,6 @@ Transite obligatoirement par `binary_sensor.poele_en_fonction`.
 ---
 
 ⚠️ Classification :
-INCLUS DANS `03_capteurs_blocages_niveau1.md`
+INCLUS DANS [`03_capteurs_blocages_niveau1.md`](../03_capteurs_blocages_niveau1.md)
 Section : Apports thermiques externes / Détection thermique candidate
 Classe : **STRUCTURANT INDIRECT**

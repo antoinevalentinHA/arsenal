@@ -75,6 +75,6 @@ Transite obligatoirement par `binary_sensor.presence_humaine_sejour`.
 ---
 
 ⚠️ Classification :
-INCLUS DANS `03_capteurs_blocages_niveau1.md`
+INCLUS DANS [`03_capteurs_blocages_niveau1.md`](../03_capteurs_blocages_niveau1.md)
 Section : Apports thermiques externes / Confirmation contextuelle CO2
 Classe : **STRUCTURANT INDIRECT**

@@ -40,9 +40,9 @@ Chaque amendement précise un point spécifique du contrat parent (§ ciblé). L
 
 Contrats avec amendement : `00`, `10`, `20`, `30`, `40`, `50`, `70`, `90`.
 
-### `80_table_decision_canonique__reecriture_partielle.md` (1 fichier)
+### [`80_table_decision_canonique__reecriture_partielle.md`](80_table_decision_canonique__reecriture_partielle.md) (1 fichier)
 
-Ce fichier est **différent d'un amendement** : c'est une **réécriture partielle** (V3) du contrat `80_table_decision_canonique.md`. Il remplace partiellement ce contrat sur les points qu'il couvre.
+Ce fichier est **différent d'un amendement** : c'est une **réécriture partielle** (V3) du contrat [`80_table_decision_canonique.md`](80_table_decision_canonique.md). Il remplace partiellement ce contrat sur les points qu'il couvre.
 
 Statut : subordonné à [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage.md) et [`01_doctrine_registres.md`](01_doctrine_registres.md).
 
@@ -55,4 +55,4 @@ Statut : subordonné à [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage
    ne distingue pas les deux mécanismes.
 
 2. **`15_capteurs/03_capteurs_blocages_niveau1/`** (8 fichiers) : sous-sous-dossier
-   sans artefact de navigation propre. Accessible via `13_capteurs_index.md`.
+   sans artefact de navigation propre. Accessible via [`13_capteurs_index.md`](15_capteurs/13_capteurs_index.md).

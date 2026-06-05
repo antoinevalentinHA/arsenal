@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — TRIGGERS DÉCISIONNELS (V3 PRO) · Amendement : registres des triggers & purge des lignes fantômes
 #
 # 📌 STATUT :
-#   AMENDEMENT au contrat de gouvernance `20_triggers_decisionnels.md`
+#   AMENDEMENT au contrat de gouvernance [`20_triggers_decisionnels.md`](20_triggers_decisionnels.md)
 #
 # 🎯 OBJET :
 #   Mettre `20` en conformité avec la doctrine des registres (`01`)
@@ -21,8 +21,8 @@
 #   vérification runtime (voir §5, faits opposables).
 #
 # 🔒 SUBORDINATION :
-#   • 00_gouvernance_chauffage.md (+ amendement)
-#   • 01_doctrine_registres.md
+#   • [00_gouvernance_chauffage.md](00_gouvernance_chauffage.md) (+ amendement)
+#   • [01_doctrine_registres.md](01_doctrine_registres.md)
 #   Cohérent avec : 30 (+ amendement), 60 (réécriture), 70/90
 #   (+ amendements), 80 (réécriture partielle)
 #
@@ -165,7 +165,7 @@ Source : `11_automations/chauffage/decision_centrale_trigger.yaml`.
 **Triggers réels (16 entités) :** `chauffage_autorise_systeme`,
 `mode_confort_chauffage`, `pre_confort_actif_calcule`, `mode_maison`,
 `vacances_actives`, `aeration_episode_en_cours`, `aeration_confirmee`,
-`chauffage_blocage_aeration`, `fenetre_ouverte_maison_avec_delai`,
+`chauffage_blocage_aeration`, [`fenetre_ouverte_maison_avec_delai.md`](15_capteurs/03_capteurs_blocages_niveau1/fenetre_ouverte_maison_avec_delai.md),
 `blocage_chauffage_poele`, `presence_famille_unifiee`,
 `chauffage_inhibition_geofencing`, `chauffage_autorisation_cible`,
 `boiler_bridge_online`, `chauffage_application_en_cours`, `systeme_stable`
@@ -216,7 +216,7 @@ surface de trigger.
 [`01_doctrine_registres.md`](01_doctrine_registres.md)
 
 **Complémentaire de :** [`30_decision_centrale.md`](30_decision_centrale.md) (+ amendement) ·
-`80_table_decision_canonique` (+ réécriture partielle)
+[`80_table_decision_canonique.md`](80_table_decision_canonique.md) (+ réécriture partielle)
 
 **Cohérent avec :** `60` (réécriture) · `70`/`90` (amendements)
 

@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — AMENDEMENT NORMATIF · CHAUFFAGE — SOUVERAINETÉ D'EXÉCUTION (V3 Pro) · Amendement CH-4 : topologie d'appel de la couche d'Application
 #
 # 📌 STATUT :
-#   AMENDEMENT au contrat fondateur `10_souverainete_execution.md`
+#   AMENDEMENT au contrat fondateur [`10_souverainete_execution.md`](10_souverainete_execution.md)
 #   NIVEAU : structurant — gouvernance de la frontière d'exécution
 #
 # 🎯 OBJET :
@@ -24,19 +24,19 @@
 # 🧱 SUBORDINATION
 #
 #   Subordonné à :
-#     • 00_gouvernance_chauffage.md
-#     • 10_souverainete_execution.md (contrat de base)
+#     • [00_gouvernance_chauffage.md](00_gouvernance_chauffage.md)
+#     • [10_souverainete_execution.md](10_souverainete_execution.md) (contrat de base)
 #
 #   Cohérent avec :
-#     • boiler/retry_transactionnel.md (mécanique MQTT, non dupliquée)
-#     • 30_decision_centrale.md (autorité décisionnelle unique)
+#     • [retry_transactionnel.md](../boiler/retry_transactionnel.md) (mécanique MQTT, non dupliquée)
+#     • [30_decision_centrale.md](30_decision_centrale.md) (autorité décisionnelle unique)
 # ----------------------------------------------------------
 
 ---
 
 ## 1. Objet
 
-Le contrat de base (`10_souverainete_execution.md`, §3.3) institue
+Le contrat de base ([`10_souverainete_execution.md`](10_souverainete_execution.md), §3.3) institue
 `script.chauffage_appliquer_consigne` comme **couche d'Application** et interdit
 tout accès matériel hors chaîne officielle. Il ne **nommait pas** les entités
 autorisées à **invoquer** cette couche. Cet amendement comble cet angle mort
@@ -118,7 +118,7 @@ est traité comme un retrait : il doit casser la CI et déclencher un amendement
 La **mécanique transactionnelle** des commandes (corrélation `request_id`,
 ACK `applied`/`rejected`/`timeout`, plafond de tentatives, annulation si la
 couche décision a relancé) reste **intégralement régie** par
-`boiler/retry_transactionnel.md` (v1.0). Le présent amendement **ne la redéfinit
+[`retry_transactionnel.md`](../boiler/retry_transactionnel.md) (v1.0). Le présent amendement **ne la redéfinit
 pas** et ne la duplique pas.
 
 ---

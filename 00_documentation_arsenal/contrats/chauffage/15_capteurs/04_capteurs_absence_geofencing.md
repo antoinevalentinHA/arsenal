@@ -63,7 +63,7 @@
 #   - Mode Maison
 #
 # 🔗 Autorités aval autorisées :
-#   - 60_absence_inhibition_geofencing.md
+#   - [60_absence_inhibition_geofencing.md](../60_absence_inhibition_geofencing.md)
 #   - Décision centrale Chauffage
 #   - Triggers décisionnels
 #   - Standby / hystérésis
@@ -111,9 +111,9 @@ Il est la **référence souveraine de contexte humain** du moteur thermique.
 - Garde-fou contre faux départs thermiques  
 - Synchronisation chauffage ↔ occupation réelle  
 - Base des modules :
-  - 60_absence_inhibition_geofencing.md  
-  - ../30_decision_centrale.md  
-  - 20_triggers_decisionnels.md  
+  - [60_absence_inhibition_geofencing.md](../60_absence_inhibition_geofencing.md)  
+  - [30_decision_centrale.md](../30_decision_centrale.md)  
+  - [20_triggers_decisionnels.md](../20_triggers_decisionnels.md)  
 
 ⛔ Interdictions absolues :
 - Ne décide jamais d’une consigne  
@@ -143,11 +143,11 @@ Sources de présence :
 - binary_sensor.presence_famille_securite  
 
 Consommateurs contractuels majeurs :
-- 60_absence_inhibition_geofencing.md  
-- ../30_decision_centrale.md  
-- 20_triggers_decisionnels.md  
-- 50_standby_hysteresis.md  
-- 70_autorisation_thermostat.md  
+- [60_absence_inhibition_geofencing.md](../60_absence_inhibition_geofencing.md)  
+- [30_decision_centrale.md](../30_decision_centrale.md)  
+- [20_triggers_decisionnels.md](../20_triggers_decisionnels.md)  
+- [50_standby_hysteresis.md](../50_standby_hysteresis.md)  
+- [70_autorisation_thermostat.md](../70_autorisation_thermostat.md)  
 
 ⚠️ Risques :
 - Décisions erronées si temporisations mal calibrées  
@@ -162,7 +162,7 @@ Frontière d’autorité officielle Présence / Absence du moteur Chauffage Arse
 Signal maître de l’inhibition géofencing et des choix de régime thermique.  
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`  
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
 Section : Absence / Inhibition géofencing  
 Classe : Capteur STRUCTURANT
 
@@ -190,8 +190,8 @@ Il constitue la **frontière officielle d’anticipation thermique programmée**
 - Autorisation exceptionnelle de décisions Confort en mode Vacances  
 - Levée partielle de l’inhibition Vacances dans une fenêtre temporelle bornée  
 - Condition primaire de :
-  - 60_absence_inhibition_geofencing.md  
-  - ../30_decision_centrale.md (opportunités de reprise anticipée)  
+  - [60_absence_inhibition_geofencing.md](../60_absence_inhibition_geofencing.md)  
+  - [30_decision_centrale.md](../30_decision_centrale.md) (opportunités de reprise anticipée)  
 - Synchronisation chauffage ↔ calendrier de retour  
 - Protection contre retours dans bâtiment froid  
 
@@ -246,6 +246,6 @@ Frontière officielle de levée partielle du mode Vacances.
 Autorité unique d’anticipation Confort avant retour programmé.  
 
 ⚠️ Décision :
-INCLUS DANS `15_capteurs/13_capteurs_index.md`  
+INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
 Section : Absence / Inhibition géofencing / Anticipation retour  
 Classe : Capteur STRUCTURANT
