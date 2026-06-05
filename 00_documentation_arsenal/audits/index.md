@@ -3,40 +3,40 @@
 ## Rapports
 
 ### Bouclage
-- bouclage/audit_bouclage_ecs.md
+- [bouclage/audit_bouclage_ecs.md](01_rapports/bouclage/audit_bouclage_ecs.md)
 
 ### Chauffage
-- chauffage/audit_auto_ajustement_courbe.md  _(audit ciblé auto-ajustement courbe ; **CLÔTURÉ** ; risques reclassifiés, plusieurs constats initiaux déclassés/infirmés)_
-- chauffage/audit_diagnostics_thermiques_chauffage.md  _(audit architectural des diagnostics thermiques — inertie, reprise, stabilité, cyclage ; cartographie complète du sous-domaine ; identification des écarts de conformité, limites d'observabilité et potentiel d'auto-ajustement futur)_
-- chauffage/audit_blocage_post_aeration_adaptatif.md  _(audit ciblé du mécanisme de blocage post-aération ; analyse du pipeline M1→M6, de la couche ΔT et des limites d'observabilité empêchant un auto-ajustement apprenant)_
+- [chauffage/audit_auto_ajustement_courbe.md](01_rapports/chauffage/audit_auto_ajustement_courbe.md)  _(audit ciblé auto-ajustement courbe ; **CLÔTURÉ** ; risques reclassifiés, plusieurs constats initiaux déclassés/infirmés)_
+- [chauffage/audit_diagnostics_thermiques_chauffage.md](01_rapports/chauffage/audit_diagnostics_thermiques_chauffage.md)  _(audit architectural des diagnostics thermiques — inertie, reprise, stabilité, cyclage ; cartographie complète du sous-domaine ; identification des écarts de conformité, limites d'observabilité et potentiel d'auto-ajustement futur)_
+- [chauffage/audit_blocage_post_aeration_adaptatif.md](01_rapports/chauffage/audit_blocage_post_aeration_adaptatif.md)  _(audit ciblé du mécanisme de blocage post-aération ; analyse du pipeline M1→M6, de la couche ΔT et des limites d'observabilité empêchant un auto-ajustement apprenant)_
 
 ### ECS
-- ecs/audit_ecs_domaine.md  _(audit général du domaine ; ECS-WD-1 clos par arbitrage)_
-- ecs/audit_ecs_offsets.md  _(audit ciblé auto-ajustement offsets ; ECS-OFF-1…8)_
+- [ecs/audit_ecs_domaine.md](01_rapports/ecs/audit_ecs_domaine.md)  _(audit général du domaine ; ECS-WD-1 clos par arbitrage)_
+- [ecs/audit_ecs_offsets.md](01_rapports/ecs/audit_ecs_offsets.md)  _(audit ciblé auto-ajustement offsets ; ECS-OFF-1…8)_
 
 ### Climatisation
-- climatisation/audit_climatisation_arsenal.md
+- [climatisation/audit_climatisation_arsenal.md](01_rapports/climatisation/audit_climatisation_arsenal.md)
 
 ### Météo
-- meteo/audit_meteo_axe_temperature_rapport_final.md
-- meteo/audit_affichage_meteo.md
+- [meteo/audit_meteo_axe_temperature_rapport_final.md](01_rapports/meteo/audit_meteo_axe_temperature_rapport_final.md)
+- [meteo/audit_affichage_meteo.md](01_rapports/meteo/audit_affichage_meteo.md)
 
 ### Température intérieure
-- temperature_interieure/audit_temperature_interieure_rapport_final.md
+- [temperature_interieure/audit_temperature_interieure_rapport_final.md](01_rapports/temperature_interieure/audit_temperature_interieure_rapport_final.md)
 
 ### Vacances
-- vacances/audit_vacances_rapport_final.md
+- [vacances/audit_vacances_rapport_final.md](01_rapports/vacances/audit_vacances_rapport_final.md)
 
 ### Voiture
-- voiture/audit_domaine_audi.md
+- [voiture/audit_domaine_audi.md](01_rapports/voiture/audit_domaine_audi.md)
 
 ## Arbitrages
 
 ### ECS
-- ecs/arbitrage_watchdog_ecs.md  _(ARBITRAGE RENDU — doctrine (a) « le watchdog borne le verrou » ; runtime = référence ; (b) rejetée ; ECS-WD-1 clos, ECS-WD-2 comportement assumé)_
+- [ecs/arbitrage_watchdog_ecs.md](02_arbitrages/ecs/arbitrage_watchdog_ecs.md)  _(ARBITRAGE RENDU — doctrine (a) « le watchdog borne le verrou » ; runtime = référence ; (b) rejetée ; ECS-WD-1 clos, ECS-WD-2 comportement assumé)_
 
 ### Température intérieure
-- temperature_interieure/arbitrage_temperature_interieure_agregats.md
+- [temperature_interieure/arbitrage_temperature_interieure_agregats.md](02_arbitrages/temperature_interieure/arbitrage_temperature_interieure_agregats.md)
 
 ## Constats
 
@@ -45,50 +45,50 @@ _(emplacement réservé — aucun document à ce jour)_
 ## Contre-expertises
 
 ### ECS
-- ecs/contre_expertise_watchdog_ecs.md  _(ECS-WD-1 INFIRMÉ comme violation ; doctrine watchdog = filet de sûreté terminal — tranché par arbitrage)_
+- [ecs/contre_expertise_watchdog_ecs.md](02_contre_expertises/ecs/contre_expertise_watchdog_ecs.md)  _(ECS-WD-1 INFIRMÉ comme violation ; doctrine watchdog = filet de sûreté terminal — tranché par arbitrage)_
 
 ### Vacances
-- vacances/contre_expertise_audit_vacances.md
+- [vacances/contre_expertise_audit_vacances.md](02_contre_expertises/vacances/contre_expertise_audit_vacances.md)
 
 ## Plans d'action
 
 ### Météo
-- meteo/plan_action_meteo_axe_temperature.md
+- [meteo/plan_action_meteo_axe_temperature.md](03_plans_action/meteo/plan_action_meteo_axe_temperature.md)
 
 ### Température intérieure
-- temperature_interieure/plan_action_temperature_interieure_agregats.md
+- [temperature_interieure/plan_action_temperature_interieure_agregats.md](03_plans_action/temperature_interieure/plan_action_temperature_interieure_agregats.md)
 
 ### Vacances
-- vacances/plan_action_vacances_couches_consommation.md
-- vacances/plan_action_vacances_chauffage_effectivite.md
-- vacances/etape_A_reecriture_contractuelle_vacances_chauffage.md
+- [vacances/plan_action_vacances_couches_consommation.md](03_plans_action/vacances/plan_action_vacances_couches_consommation.md)
+- [vacances/plan_action_vacances_chauffage_effectivite.md](03_plans_action/vacances/plan_action_vacances_chauffage_effectivite.md)
+- [vacances/etape_A_reecriture_contractuelle_vacances_chauffage.md](03_plans_action/vacances/etape_A_reecriture_contractuelle_vacances_chauffage.md)
 
 ## Chantiers
 
 ### Chauffage
-- chauffage/ch_observabilite_auto_ajustement_courbe.md  _(chantier unique issu de l'audit courbe — observabilité du mécanisme ; **non ordonnancé** ; aucun changement de comportement)_
-- chauffage/backlog_auto_ajustement_courbe.md  _(différés : protections empruntées ; rejetés : Eco% tel quel, suspension totale poêle, élargissement pente ; errata contrats 75/06)_
-- chauffage/validation_L1_observabilite_auto_ajustement_courbe.md  _(validation partielle L1 — cas `suggestion_identique` observé ; lot exploitable ; validations poursuivies au fil des occurrences)_
+- [chauffage/ch_observabilite_auto_ajustement_courbe.md](04_chantiers/chauffage/ch_observabilite_auto_ajustement_courbe.md)  _(chantier unique issu de l'audit courbe — observabilité du mécanisme ; **non ordonnancé** ; aucun changement de comportement)_
+- [chauffage/backlog_auto_ajustement_courbe.md](04_chantiers/chauffage/backlog_auto_ajustement_courbe.md)  _(différés : protections empruntées ; rejetés : Eco% tel quel, suspension totale poêle, élargissement pente ; errata contrats 75/06)_
+- [chauffage/validation_L1_observabilite_auto_ajustement_courbe.md](04_chantiers/chauffage/validation_L1_observabilite_auto_ajustement_courbe.md)  _(validation partielle L1 — cas `suggestion_identique` observé ; lot exploitable ; validations poursuivies au fil des occurrences)_
 
 ### ECS
-- ecs/backlog_ecs.md  _(backlog ECS — watchdog résolu par arbitrage ; ECS-DOC + ECS-OFF-1 réalisés ; reliquat = chantier « Durcissement CI ECS » (étendu OFF-5), non ouvert)_
+- [ecs/backlog_ecs.md](04_chantiers/ecs/backlog_ecs.md)  _(backlog ECS — watchdog résolu par arbitrage ; ECS-DOC + ECS-OFF-1 réalisés ; reliquat = chantier « Durcissement CI ECS » (étendu OFF-5), non ouvert)_
 
 ### Climatisation
-- climatisation/chantier_observabilite_cool.md
-- climatisation/backlog_climatisation_hysteresis.md  _(backlog des dettes résiduelles climatisation + hystérésis transverse — D5, D10, D11, D12, D13, D-tuile, H1, H2, H3a/H3b, DRY, contrat 05 ; relocalisé depuis `evolutions_futures/`)_
+- [climatisation/chantier_observabilite_cool.md](04_chantiers/climatisation/chantier_observabilite_cool.md)
+- [climatisation/backlog_climatisation_hysteresis.md](04_chantiers/climatisation/backlog_climatisation_hysteresis.md)  _(backlog des dettes résiduelles climatisation + hystérésis transverse — D5, D10, D11, D12, D13, D-tuile, H1, H2, H3a/H3b, DRY, contrat 05 ; relocalisé depuis `evolutions_futures/`)_
 
 ### Transverses
-- transverses/hysteresis_5_domaines.md
+- [transverses/hysteresis_5_domaines.md](04_chantiers/transverses/hysteresis_5_domaines.md)
 
 ### Vacances
-- vacances/chantier_vac_imp_5_desinfection_retour.md  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
-- vacances/rapport_observation_vac_imp_5.md  _(observation runtime — cause requalifiée)_
+- [vacances/chantier_vac_imp_5_desinfection_retour.md](04_chantiers/vacances/chantier_vac_imp_5_desinfection_retour.md)  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
+- [vacances/rapport_observation_vac_imp_5.md](04_chantiers/vacances/rapport_observation_vac_imp_5.md)  _(observation runtime — cause requalifiée)_
 
 ## Clôtures
 
 ### Vacances
-- vacances/cloture_partielle_vacances.md  _(clôture partielle — domaine NON clôturé)_
-- vacances/cloture_phase_traitement_vacances.md  _(clôture de phase — Lots 1 à 5)_
+- [vacances/cloture_partielle_vacances.md](05_clotures/vacances/cloture_partielle_vacances.md)  _(clôture partielle — domaine NON clôturé)_
+- [vacances/cloture_phase_traitement_vacances.md](05_clotures/vacances/cloture_phase_traitement_vacances.md)  _(clôture de phase — Lots 1 à 5)_
 
 ---
 
