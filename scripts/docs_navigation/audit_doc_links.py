@@ -21,6 +21,7 @@ from __future__ import annotations
 
 import argparse
 import re
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -488,6 +489,48 @@ def files_for_scope(doc_root: Path, scope: str | None, custom_path: Path | None)
     raise ValueError(f"Scope inconnu : {scope}")
 
 
+def markdown_href_from_target(
+    source: Path,
+    doc_root: Path,
+    target_relative_to_doc_root: str,
+) -> str:
+    target_abs = (doc_root / target_relative_to_doc_root).resolve()
+    source_dir = source.parent.resolve()
+    return os.path.relpath(target_abs, source_dir).replace("\\", "/")
+
+
+def markdown_link_for_candidate(
+    candidate: Candidate,
+    doc_root: Path,
+    label_mode: str = "original",
+) -> str:
+    if candidate.target is None:
+        raise ValueError("Candidate target is required for markdown link generation")
+
+    href = markdown_href_from_target(
+        source=candidate.source,
+        doc_root=doc_root,
+        target_relative_to_doc_root=candidate.target,
+    )
+
+    if label_mode == "basename":
+        label = Path(candidate.target).name
+    else:
+        label = candidate.token
+
+    return f"[`{label}`]({href})"
+    if candidate.target is None:
+        raise ValueError("Candidate target is required for markdown link generation")
+
+    href = markdown_href_from_target(
+        source=candidate.source,
+        doc_root=doc_root,
+        target_relative_to_doc_root=candidate.target,
+    )
+
+    return f"[`{candidate.token}`]({href})"
+
+
 def print_report(
     candidates: list[Candidate],
     doc_root: Path,
@@ -602,7 +645,68 @@ def parse_args() -> argparse.Namespace:
         help="Filtrer l'affichage détaillé par statut.",
     )
 
+    parser.add_argument(
+        "--fix-auto",
+        action="store_true",
+        help="Préparer la conversion des références auto en liens Markdown.",
+    )
+
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="N'écrit rien ; affiche uniquement les remplacements prévus.",
+    )
+
+    parser.add_argument(
+        "--label-mode",
+        choices=("original", "basename"),
+        default="original",
+        help="Mode de libellé des liens proposés par --fix-auto.",
+    )
+
     return parser.parse_args()
+
+
+def print_fix_auto_dry_run(
+    candidates: list[Candidate],
+    doc_root: Path,
+    label_mode: str = "original",
+) -> None:
+    auto_candidates = [
+        c for c in candidates
+        if c.status == STATUS_AUTO
+    ]
+
+    print()
+    print("ARSENAL DOC NAVIGATION FIX-AUTO DRY-RUN")
+    print("=======================================")
+    print()
+    print(f"Auto candidates: {len(auto_candidates)}")
+    print(f"Label mode: {label_mode}")
+    print()
+
+    by_file: dict[Path, list[Candidate]] = {}
+
+    for candidate in auto_candidates:
+        by_file.setdefault(candidate.source, []).append(candidate)
+
+    for file in sorted(by_file):
+        rel_file = file.relative_to(doc_root).as_posix()
+        print(rel_file)
+
+        for candidate in by_file[file]:
+            replacement = markdown_link_for_candidate(
+                candidate,
+                doc_root,
+                label_mode=label_mode,
+            )
+            print(
+                f"  L{candidate.line_no:<4} "
+                f"{candidate.category:<24} "
+                f"{candidate.token} -> {replacement}"
+            )
+
+        print()
 
 
 def main() -> int:
@@ -634,6 +738,18 @@ def main() -> int:
                 by_stem=by_stem,
             )
         )
+
+    if args.fix_auto:
+        if not args.dry_run:
+            print("ERREUR: --fix-auto est disponible uniquement avec --dry-run pour cette version.")
+            return 2
+
+        print_fix_auto_dry_run(
+            all_candidates,
+            doc_root,
+            label_mode=args.label_mode,
+        )
+        return 0
 
     print_report(
         all_candidates,
