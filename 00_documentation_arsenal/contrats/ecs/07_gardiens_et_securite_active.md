@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # Gardiens et sécurité active
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/07_gardiens_et_securite_active.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/07_gardiens_et_securite_active.md`  
 Statut : **CRITIQUE — OPPOSABLE**  
 Périmètre : Sécurité ECS
 

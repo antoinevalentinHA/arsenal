@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # Orchestration et wrappers non thermiques
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/03_orchestration_et_wrappers.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/03_orchestration_et_wrappers.md`  
 Statut : **STRUCTURANT — OPPOSABLE**  
 Périmètre : Orchestration ECS
 

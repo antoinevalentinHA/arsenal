@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # Journalisation et traçabilité des cycles
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/08_journalisation_et_tracabilite.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/08_journalisation_et_tracabilite.md`  
 Statut : **CRITIQUE — OPPOSABLE**  
 Périmètre : Traçabilité ECS
 

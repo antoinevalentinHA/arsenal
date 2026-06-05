@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # Contrat fondamental — Fondations et statut
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/00_fondations_et_statut.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/00_fondations_et_statut.md`  
 Statut : **FONDATEUR — GELÉ — OPPOSABLE**  
 Périmètre : Eau Chaude Sanitaire (ECS)
 
@@ -32,7 +32,7 @@ Aucune implémentation ECS ne peut déroger à ces fondations.
 Le sous-système ECS est régi par un ensemble structuré
 de contrats spécialisés, organisés dans le dossier :
 
-`/homeassistant/00_documentation_arsenal/ecs/`
+`/homeassistant/00_documentation_arsenal/contrats/ecs/`
 
 Chaque document définit une autorité documentaire distincte.
 

@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # Principes, périmètre et rôles
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/01_principes_perimetre_et_roles.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/01_principes_perimetre_et_roles.md`  
 Statut : **STRUCTURANT — OPPOSABLE**  
 Périmètre : Eau Chaude Sanitaire (ECS)
 

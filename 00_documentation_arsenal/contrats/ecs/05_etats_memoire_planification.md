@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # États, mémoire et planification
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/05_etats_memoire_planification.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/05_etats_memoire_planification.md`  
 Statut : **STRUCTURANT — OPPOSABLE**  
 Périmètre : États et mémoire ECS
 

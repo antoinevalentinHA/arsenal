@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # Gouvernance, autorités et chaîne d’exécution
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/02_gouvernance_autorites_et_chaine.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/02_gouvernance_autorites_et_chaine.md`  
 Statut : **STRUCTURANT — OPPOSABLE**  
 Périmètre : Gouvernance ECS
 

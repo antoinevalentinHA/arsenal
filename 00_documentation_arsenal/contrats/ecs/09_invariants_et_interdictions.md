@@ -1,7 +1,7 @@
 # 🧠 ARSENAL — ECS  
 # Invariants absolus et interdictions
 
-Chemin : `/homeassistant/00_documentation_arsenal/ecs/09_invariants_et_interdictions.md`  
+Chemin : `/homeassistant/00_documentation_arsenal/contrats/ecs/09_invariants_et_interdictions.md`  
 Statut : **FONDATEUR — CRITIQUE — OPPOSABLE**  
 Périmètre : Constitution matérielle ECS
 
