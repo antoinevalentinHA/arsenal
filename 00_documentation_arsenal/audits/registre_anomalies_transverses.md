@@ -36,7 +36,7 @@
 | Fichier | `contrats/chauffage/30_decision_centrale.md` (ligne 8) |
 | Référence | `AUDIT_CHAINE_MQTT_ACK_ECS.md` (supprimé en v12.3) |
 | Source | Arbitrage audit README `contrats/boiler/` |
-| Statut | **À corriger** — supprimer la référence morte |
+| Statut | **✅ CLOS — 2026-06-05.** Ligne 8 corrigée (plan, Étape 1) : réfs mortes `CONTRAT_BOILER_SOCLE_TRANSACTIONNEL.md` + `AUDIT_CHAINE_MQTT_ACK_ECS.md` supprimées, renvoi unique vers `contrats/boiler/socle_transactionnel.md` (cible existante). Entrée conservée pour trace. |
 | Impact | Lien mort dans un contrat normatif |
 
 ### 1.4 Nommage hérité — `resilience_electrique` (migration documentaire — **clôturée**)
@@ -189,7 +189,7 @@
 |---|---|---|
 | **Clos** | `01__objet_perimetre_statut.md` — double underscore | Renommage exécuté (Étape 4) — voir §1.1 |
 | **Clos** | `guard_expostion_ha.md` — typo | Renommage exécuté (Étape 3) — voir §1.2 |
-| **P1** | `30_decision_centrale.md` — référence morte | Supprimer la ligne |
+| **Clos** | `30_decision_centrale.md` — référence morte | Référence corrigée (Étape 1) — voir §1.3 |
 | **Clos** | `pannes/secteur/` — double `10_` | Renommage `10_`→`11_temporalite` exécuté (Étape 2) — voir §2.4 |
 | **Clos** | `resilience_electrique` — nommage hérité / 6 renvois | Reroute à plat exécuté (B1, Étape 6) — voir §1.4 |
 | **P2** | `eclairage/garage.md` vs `garage_implementation.md` | Arbitrage fusion/distinction |
