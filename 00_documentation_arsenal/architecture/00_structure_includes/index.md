@@ -43,7 +43,8 @@
 | [`14_mqtt_sensors.md`](./14_mqtt_sensors.md) | `mqtt sensor` |
 | [`15_mqtt_binary_sensors.md`](./15_mqtt_binary_sensors.md) | `mqtt binary_sensor` |
 
-> ⚠️ `16_*.md` — absent (trou dans la séquence 01→18, voir §Anomalies).
+> `16_template_alarm_panels/` contient un seul fichier (`alarme_maison.yaml`) :
+> pas de pattern à documenter, pas de `16_*.md`.
 
 ### Infrastructure géographique (17)
 
@@ -91,11 +92,9 @@ Quatre fichiers contenant uniquement des blocs YAML de référence (pas de secti
 
 ## Anomalies signalées (non corrigées)
 
-1. **Trou `16_*.md`** : la séquence 01→18 saute de 15 à 17. La cible du numéro 16
-   est inconnue — signalée sans correction.
-2. **Quatre fragments sans H1** : `logbook.md`, `logger.md`, `recorder.md`,
+1. **Quatre fragments sans H1** : `logbook.md`, `logger.md`, `recorder.md`,
    `utility_meter.md` — aucun titre ni section `## Rôle`. Anomalie documentaire légère.
-3. **`18_lovelace.md` format différent** : le fichier ne débute pas par un H1
+2. **`18_lovelace.md` format différent** : le fichier ne débute pas par un H1
    « Structure — 18_lovelace » (format des 17 autres numérotés) mais par un H2
    « 5.14 — 18_lovelace/dashboards » (référence à une section de
    [`00_structure_includes.md`](./00_structure_includes.md)). Cohérence de format
