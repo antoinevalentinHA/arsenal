@@ -1,6 +1,6 @@
 # Binary Sensors — Franchissements
 
-Tous retournent `false` si une entrée est `unavailable` ou `unknown`, sauf `clim_humidex_sup_cible_dry` (voir `90_observations.md`).
+Tous retournent `false` si une entrée est `unavailable` ou `unknown`, sauf `clim_humidex_sup_cible_dry` (voir [`90_observations.md`](90_observations.md)).
 
 ---
 

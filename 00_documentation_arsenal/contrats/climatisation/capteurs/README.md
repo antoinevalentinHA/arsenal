@@ -18,7 +18,7 @@
 | [decision/](./decision/00_overview.md) | 4 | Couche décision — résultat final |
 | [coherence/](./coherence/00_overview.md) | 4 | Cohérence décision / état réel |
 
-> **Entrée par catégorie :** lien vers `00_overview.md` (ou `00_admissibilite.md`
+> **Entrée par catégorie :** lien vers `00_overview.md` (ou [`00_admissibilite.md`](admissibilite/00_admissibilite.md)
 > pour `admissibilite/`).
 
 ---
@@ -38,9 +38,9 @@ Chaque catégorie suit le même pattern à 4 fichiers :
 
 ## ⚠️ Anomalies signalées (non corrigées)
 
-1. **`admissibilite/`** : un seul fichier (`00_admissibilite.md`) — pas de
+1. **`admissibilite/`** : un seul fichier ([`00_admissibilite.md`](admissibilite/00_admissibilite.md)) — pas de
    `10_`, `20_`, `90_`. Structure incomplète ou couche délibérément minimale.
 
-2. **`seuils_et_franchissements/`** : 5 fichiers (pattern + `30_chaines_fonctionnelles.md`
+2. **`seuils_et_franchissements/`** : 5 fichiers (pattern + [`30_chaines_fonctionnelles.md`](seuils_et_franchissements/30_chaines_fonctionnelles.md)
    supplémentaire). La couche est plus complexe que les autres et dépasse le
    pattern standard.

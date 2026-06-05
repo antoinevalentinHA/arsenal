@@ -328,5 +328,5 @@ convergence sur `input_boolean.systeme_stable` avant toute évaluation.
 de ne pas générer de retrigger runtime non désiré. C'est une garde de
 convergence interne, postérieure au déclenchement.
 
-Voir `capteurs/admissibilite/00_admissibilite.md` pour les détails du pattern
+Voir [`00_admissibilite.md`](capteurs/admissibilite/00_admissibilite.md) pour les détails du pattern
 de réconciliation.

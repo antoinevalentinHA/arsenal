@@ -4,7 +4,7 @@
 > **Document normatif.**
 > Il définit la classification des blocages du domaine climatisation, le patron d'implémentation
 > d'un blocage activable, et les invariants de cohérence avec la couche autorisation et l'observabilité.
-> Il précède et gouverne les spécifications d'entités de `10_blocages.md`.
+> Il précède et gouverne les spécifications d'entités de [`10_blocages.md`](capteurs/blocages/10_blocages.md).
 
 ---
 
@@ -74,7 +74,7 @@ Sinon le voyant ment : il afficherait `mdi:lock` alors que la climatisation tour
 clim_bloquee == on  ⟺  au moins un blocage est réellement effectif sur la chaîne de décision
 ```
 
-Cela corrige aussi l'asymétrie documentée en `90_observations.md` §4 : le voyant lisait `fenetre_ouverte_maison` + `fenetre_ouverte_etage` (brutes, non temporisées), alors que les autorisations lisent `fenetre_ouverte_maison_avec_delai`. Après refonte, le voyant lit `clim_blocage_fenetres_reel` — même vérité que la décision.
+Cela corrige aussi l'asymétrie documentée en [`90_observations.md`](capteurs/blocages/90_observations.md) §4 : le voyant lisait `fenetre_ouverte_maison` + `fenetre_ouverte_etage` (brutes, non temporisées), alors que les autorisations lisent `fenetre_ouverte_maison_avec_delai`. Après refonte, le voyant lit `clim_blocage_fenetres_reel` — même vérité que la décision.
 
 ---
 

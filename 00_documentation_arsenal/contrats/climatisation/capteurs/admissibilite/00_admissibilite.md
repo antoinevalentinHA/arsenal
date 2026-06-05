@@ -77,7 +77,7 @@ séparées :
 **Justification de la séparation** : l'automation runtime tourne en
 `mode: single`. Si la réconciliation au boot était portée par la même
 automation, son délai d'activation gardée (5 min) bloquerait tout front
-causal runtime pendant cette fenêtre. Le contrat `05_decision_candidats.md`
+causal runtime pendant cette fenêtre. Le contrat [`05_decision_candidats.md`](../../05_decision_candidats.md)
 (v1.4) impose la séparation explicite.
 
 ---
@@ -195,4 +195,4 @@ La Décision ne consomme **jamais** :
 
 ## Contrat associé
 
-- `05_decision_candidats.md` (v1.4)
+- [`05_decision_candidats.md`](../../05_decision_candidats.md) (v1.4)
