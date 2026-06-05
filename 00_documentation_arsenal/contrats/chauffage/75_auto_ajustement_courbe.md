@@ -197,7 +197,7 @@ Correspond aux capacités réelles du système thermique :
 
 Ces bornes :
 
-- sont définies par le constructeur (source : `CONTRAT_MQTT.md` §11)
+- sont définies par le constructeur (source : [`contrats/boiler/script_executif.md`](../boiler/script_executif.md) §18)
 - sont utilisées par :
   - le bridge MQTT
   - les scripts d'exécution
@@ -591,7 +591,7 @@ Gouverne directement :
 
 Dépend explicitement de :
 
-- `CONTRAT_MQTT.md` §11 — Règle normative de validation des bornes côté exécution Arsenal
+- [`contrats/boiler/script_executif.md`](../boiler/script_executif.md) §18 — Règle normative de validation des bornes côté exécution Arsenal
   (bornes physiques opposables : pente [0.2 ; 3.5] pas 0.1 / parallèle [-13 ; 40] pas 1)
 
 ---
