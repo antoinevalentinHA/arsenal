@@ -33,7 +33,7 @@ Un contrat fonctionnel est :
 
 ## 📘 CONTENU DU DOSSIER
 
-Chaque fichier correspond à **un domaine fonctionnel** distinct.
+La famille est **mixte** : 14 domaines sont organisés en sous-dossiers (`chauffage/`, `ecs/`, `alarme/`, etc.) ; les domaines plus simples restent en fichiers plats à la racine. Chaque dossier ou fichier correspond à **un domaine fonctionnel** distinct.
 
 Exemples :
 
