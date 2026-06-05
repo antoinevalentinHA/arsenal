@@ -9,9 +9,9 @@
 - **Caractère** : **Descriptif** — ce document *décrit* le mécanisme observé ; il n'impose rien.
 - **Autorité** : aucune. En cas de divergence, **le runtime fait foi**, et le contrat `contrats/meteo/affichage.md` prime pour tout ce qui concerne la restitution.
 - **Dépendances (lecture)** :
-  - `architecture/capteurs_meteo.md` (mesures, période météo, seuils dynamiques)
-  - `contrats/meteo/affichage.md` (contrat de restitution)
-  - `ui/couleurs/` (charte des couleurs)
+  - [`capteurs_meteo.md`](capteurs_meteo.md) (mesures, période météo, seuils dynamiques)
+  - [`affichage.md`](../contrats/meteo/affichage.md) (contrat de restitution)
+  - [`ui/couleurs/`](../ui/couleurs/) (charte des couleurs)
 - **Périmètre** : le mécanisme principal du domaine, dit ici **mécanisme A** — interprétation des grandeurs disposant d'un capteur couleur dédié : **température, humidité relative, humidité absolue, humidex**. Les autres mécanismes (CO₂ à seuils fixes, précipitations, cohérence inter-capteurs, prévisions) **sont hors périmètre** (cf. §6).
 
 ---

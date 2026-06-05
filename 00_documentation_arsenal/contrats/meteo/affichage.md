@@ -150,7 +150,7 @@ La palette et la logique de couleur :
 
 - sont définies **en amont**, hors UI,
 - exposées sous forme de **capteurs dédiés**,
-- utilisées telles quelles par les templates `carte_*`.
+- utilisées telles quelles par les templates de cartes (socle `socle_kpi`).
 
 L'UI :
 - n'invente pas de couleur,

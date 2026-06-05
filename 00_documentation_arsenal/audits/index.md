@@ -19,6 +19,7 @@
 
 ### Météo
 - meteo/audit_meteo_axe_temperature_rapport_final.md
+- meteo/audit_affichage_meteo.md
 
 ### Température intérieure
 - temperature_interieure/audit_temperature_interieure_rapport_final.md

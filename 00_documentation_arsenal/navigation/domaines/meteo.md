@@ -5,7 +5,7 @@
 
 ## Orientation
 
-Domaine météo extérieure : observation et structuration des données météo (température jardin, humidité jardin, pluie, palmarès, affichage). Distinct de `temperature_interieure` et `humidite_relative_interieure` — deux domaines propres co-hébergés sous `contrats/meteo/` **pour des raisons d'héritage documentaire** (arbitrage acté — voir [`carte_domaines.md`](../carte_domaines.md) §5.3). Deux docs architecture. Audit partiel (rapport + plan d'action, **non clôturé**).
+Domaine météo extérieure : observation et structuration des données météo (température jardin, humidité jardin, pluie, palmarès, affichage). Distinct de `temperature_interieure` et `humidite_relative_interieure` — deux domaines propres co-hébergés sous `contrats/meteo/` **pour des raisons d'héritage documentaire** (arbitrage acté — voir [`carte_domaines.md`](../carte_domaines.md) §5.3). Trois docs architecture. Audit partiel (rapport + plan d'action, **non clôturé**).
 
 ## Contrat — « ce que le système doit faire »
 
@@ -33,6 +33,7 @@ Domaine météo extérieure : observation et structuration des données météo 
 
 - [`capteurs_meteo.md`](../../architecture/capteurs_meteo.md) — capteurs météo & climat intérieur *(voir vigilance)*
 - [`meteo_affichage.md`](../../architecture/meteo_affichage.md) — affichage météo
+- [`meteo_interpretation_contextuelle.md`](../../architecture/meteo_interpretation_contextuelle.md) — modèle d'interprétation contextuelle (amont de l'affichage)
 
 ## Audits & état
 
@@ -40,6 +41,7 @@ Domaine météo extérieure : observation et structuration des données météo 
 
 - Rapport final — [`audit_meteo_axe_temperature_rapport_final.md`](../../audits/01_rapports/meteo/audit_meteo_axe_temperature_rapport_final.md)
 - Plan d'action — [`plan_action_meteo_axe_temperature.md`](../../audits/03_plans_action/meteo/plan_action_meteo_axe_temperature.md)
+- Audit affichage — [`audit_affichage_meteo.md`](../../audits/01_rapports/meteo/audit_affichage_meteo.md)
 
 > **Changelog** (pas de chantier dédié) : mentions diffuses `v15_7_2`, `v15_7_3`, `v15_8_3`, `v15_8_9`.
 
@@ -54,7 +56,7 @@ Domaine météo extérieure : observation et structuration des données météo 
 
 - **`axe_temperature.md`** dans `contrats/meteo/` = axe température **intérieure** — appartient au domaine `temperature_interieure` malgré son hébergement physique ici (héritage documentaire, carte §5.3).
 - **`capteurs_meteo.md`** (architecture/) titre « météo & **climat intérieur** » : couvre les capteurs des domaines co-hébergés — document antérieur à l'arbitrage de séparation des domaines.
-- **Audit partiel** : rapport + plan d'action uniquement — domaine non clôturé.
+- **Audit partiel** : axe température (rapport + plan d'action) et affichage (audit de découverte) — domaine non clôturé.
 
 ---
 

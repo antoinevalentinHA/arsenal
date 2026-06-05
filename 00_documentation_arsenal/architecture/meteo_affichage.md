@@ -109,6 +109,8 @@ Chaque carte :
 
 ## 🧩 Templates de cartes
 
+> ⚠️ **Note de mise à jour (post-intégration).** L'implémentation courante n'utilise plus de templates `carte_*` par grandeur : la restitution passe par le socle générique `socle_kpi`. Les noms ci-dessous décrivent un design antérieur, conservé pour mémoire. Voir `architecture/meteo_interpretation_contextuelle.md` (§5).
+
 Les templates `carte_*` :
 
 - sont **génériques**,
@@ -165,8 +167,8 @@ Ces points sont **structurellement exclus**.
 Ce document :
 
 - **implémente structurellement** :
-  - `contrats/meteo.md`
-  - `contrats/meteo_affichage.md`
+  - `contrats/meteo/meteo.md`
+  - `contrats/meteo/affichage.md`
 - **ne les modifie pas**,
 - **ne les complète pas**.
 
@@ -182,9 +184,10 @@ En cas de divergence :
 - Caractère : Normatif (structure)
 - Autorité : Aucune
 - Dépendances :
-  - `/contrats/meteo.md`
-  - `/contrats/meteo_affichage.md`
-  - `/architecture/capteurs_meteo.md`
+  - `contrats/meteo/meteo.md`
+  - `contrats/meteo/affichage.md`
+  - `architecture/capteurs_meteo.md`
+  - `architecture/meteo_interpretation_contextuelle.md` (modèle d'interprétation amont)
 
 Toute évolution de cette architecture
 doit être motivée par une évolution contractuelle préalable.

@@ -64,3 +64,9 @@ principe de validation contractuelle.
 >
 > Si la réponse n'est pas unique, claire et documentée :
 > **la couleur est invalide.**
+
+---
+
+## Voir aussi
+
+- `architecture/meteo_interpretation_contextuelle.md` — modèle *amont* qui produit la clé couleur météo. La présente charte régit la **palette et la sémantique** des couleurs ; elle ne régit pas la **logique d'interprétation** qui produit la clé.

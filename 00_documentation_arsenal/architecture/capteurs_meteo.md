@@ -265,6 +265,12 @@ Toute logique métier appartient aux couches supérieures :
 
 ---
 
+## 🔗 Voir aussi
+
+- `architecture/meteo_interpretation_contextuelle.md` — modèle d'interprétation (normale contextuelle, enveloppe de confort) construit **en aval** de ces seuils ; il emploie « enveloppe de confort » pour désigner le « cadre de confort dynamique » décrit ici.
+
+---
+
 ## 📌 Statut du document
 
 - Type : Architecture
