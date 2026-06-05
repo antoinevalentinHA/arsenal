@@ -13,11 +13,11 @@
 |---|---|---|---|---|
 | **0** | Déposer le registre d'anomalies | Création | 2 | — |
 | **1** | `30_decision_centrale.md` — références mortes | Édition | 1 | — |
-| **2** | `10_temporalite.md` → `11_temporalite.md` | Renommage | 2 | — |
+| **2** | `10_temporalite.md` → `11_temporalite.md` — **exécutée** | Renommage | 2 | — |
 | **3** | `guard_expostion_ha.md` → `guard_exposition_ha.md` | Renommage | 4 | — |
 | **4** | `01__objet_perimetre_statut.md` → `01_objet_perimetre_statut.md` | Renommage | 2 | — |
 | **5** | `contrats/README.md` — description P2 | Édition | 1 | — |
-| **6** | Rerouter 6 renvois `resilience_electrique` → `pannes/secteur/` | Édition | 4 | Étape 2 (ordre) |
+| **6** | Rerouter 6 renvois `resilience_electrique` → `pannes/secteur/` — **exécutée** | Édition | 4 | Étape 2 (ordre) |
 
 Toutes les étapes 1–4 sont **indépendantes** et peuvent être produites en parallèle.
 
@@ -91,6 +91,8 @@ fix(contrats/chauffage): remove stale boiler refs in 30_decision_centrale
 ---
 
 ## Étape 2 — Renommer `10_temporalite.md` → `11_temporalite.md`
+
+> **Statut : ✅ Exécutée — 2026-06-05.** Renommage effectué et renvoi local `10_socle.md:159` mis à jour. Contexte conservé pour trace.
 
 ### Contexte
 
@@ -305,9 +307,9 @@ Aucun fichier cible : le mécanisme de fallback est décrit inline dans `10_socl
 
 ### Statut
 
-**En attente** — périmètre enregistré, reroute non exécuté.
+**✅ Exécutée — 2026-06-05.** 6 renvois reroutés vers `pannes/secteur/` ; 0 référence `resilience_electrique` résiduelle dans les contrats ; aucun lien mort créé.
 
-### Commit suggéré (au moment du reroute, pas maintenant)
+### Commit (exécuté)
 
 ```
 fix(contrats/pannes): reroute 6 stale resilience_electrique refs to secteur/
@@ -317,7 +319,7 @@ fix(contrats/pannes): reroute 6 stale resilience_electrique refs to secteur/
 
 ## Anomalie connexe identifiée — *promue, voir Étape 6*
 
-### `resilience_electrique` — nommage hérité (migration documentaire incomplète)
+### `resilience_electrique` — nommage hérité (migration documentaire — **clôturée**)
 
 Découverte à l'analyse de l'Étape 2, d'abord cernée comme un seul chemin mort
 (`10_socle.md:49`). La revue contradictoire a porté le périmètre réel à **6 renvois
@@ -330,7 +332,7 @@ Arbitrage tranché (note d'arbitrage `resilience_electrique`) : **B1 — reroute
 (le contenu existe déjà sous `pannes/secteur/` ; pas de paquet `resilience_electrique/`).
 L'hypothèse A (créer le paquet) est **écartée** : double source de vérité.
 
-→ Traitement : **Étape 6**. Registre : **§1.4**.
+→ Traité : **Étape 6 (exécutée, 2026-06-05)**. Registre : **§1.4 (clos)**.
 
 ---
 
