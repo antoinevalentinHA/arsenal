@@ -173,12 +173,21 @@ def build_index(doc_root: Path) -> tuple[dict[str, list[Path]], dict[str, list[P
     return by_name, by_stem
 
 
+def _contrats_domain(rel_posix: str) -> str | None:
+    """Retourne <X> si le chemin est sous contrats/<X>/..., sinon None."""
+    parts = rel_posix.split("/")
+    if len(parts) >= 2 and parts[0] == "contrats":
+        return parts[1]
+    return None
+
+
 def resolve_token(
     token: str,
     source: Path,
     doc_root: Path,
     by_name: dict[str, list[Path]],
     by_stem: dict[str, list[Path]],
+    category: str,
 ) -> tuple[str, str | None, str]:
     """
     Résout une référence documentaire.
@@ -300,7 +309,20 @@ def resolve_token(
         return STATUS_IGNORED, None, "navigation_layer"
 
     if len(non_self) == 1:
-        rel = non_self[0].relative_to(doc_root.resolve()).as_posix()
+        rel = non_self[0].relative_to(doc_root_resolved).as_posix()
+        # Garde-fou cross-domaine : une référence "extensionless" dont la
+        # cible unique est dans un AUTRE domaine contrats/<...> que la source
+        # est très probablement un identifiant technique (nom de sensor, etc.),
+        # pas un lien documentaire. On l'ignore plutôt que de la classer auto.
+        if category == CATEGORY_EXTENSIONLESS:
+            try:
+                src_rel = source_resolved.relative_to(doc_root_resolved).as_posix()
+            except ValueError:
+                src_rel = ""
+            src_domain = _contrats_domain(src_rel)
+            tgt_domain = _contrats_domain(rel)
+            if src_domain and tgt_domain and src_domain != tgt_domain:
+                return STATUS_IGNORED, None, "cross_domain_extensionless"
         return STATUS_AUTO, rel, "unique_target"
 
     if len(non_self) > 1:
@@ -393,7 +415,7 @@ def detect_candidates_in_file(
                 continue
 
             status, target, reason = resolve_token(
-                token, source, doc_root, by_name, by_stem
+                token, source, doc_root, by_name, by_stem, category
             )
 
             results.append(
@@ -446,7 +468,7 @@ def detect_candidates_in_file(
                 category = CATEGORY_RAW_MD
 
             status, target, reason = resolve_token(
-                token, source, doc_root, by_name, by_stem
+                token, source, doc_root, by_name, by_stem, category
             )
 
             results.append(
