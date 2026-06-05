@@ -270,20 +270,27 @@ def resolve_token(
 
     source_resolved = source.resolve()
 
-    # Auto-référence
-    unique_existing = [
+    # Auto-référence : le token pointe vers le fichier source lui-même.
+    self_present = source_resolved in unique_existing
+    non_self = [
         p for p in unique_existing
         if p != source_resolved
     ]
 
-    if len(unique_existing) == 1:
-        rel = unique_existing[0].relative_to(doc_root.resolve()).as_posix()
+    # Si la seule cible existante est la source elle-même, c'est une
+    # auto-référence : on l'ignore explicitement plutôt que de la
+    # comptabiliser comme cible morte.
+    if not non_self and self_present:
+        return STATUS_IGNORED, None, "self_reference"
+
+    if len(non_self) == 1:
+        rel = non_self[0].relative_to(doc_root.resolve()).as_posix()
         return STATUS_AUTO, rel, "unique_target"
 
-    if len(unique_existing) > 1:
+    if len(non_self) > 1:
         rels = [
             p.relative_to(doc_root.resolve()).as_posix()
-            for p in unique_existing
+            for p in non_self
         ]
         return STATUS_AMBIGUOUS, " | ".join(rels), "multiple_targets"
 
@@ -518,17 +525,14 @@ def markdown_link_for_candidate(
     else:
         label = candidate.token
 
-    return f"[`{label}`]({href})"
-    if candidate.target is None:
-        raise ValueError("Candidate target is required for markdown link generation")
+    # Préserver le style visible de la source :
+    # - références en backticks (et sans extension, toujours détectées en
+    #   contexte backticks) -> libellé conservé en backticks ;
+    # - texte brut et chemins absolus -> libellé sans backticks.
+    if candidate.category in (CATEGORY_BACKTICK_MD, CATEGORY_EXTENSIONLESS):
+        return f"[`{label}`]({href})"
 
-    href = markdown_href_from_target(
-        source=candidate.source,
-        doc_root=doc_root,
-        target_relative_to_doc_root=candidate.target,
-    )
-
-    return f"[`{candidate.token}`]({href})"
+    return f"[{label}]({href})"
 
 
 def print_report(
