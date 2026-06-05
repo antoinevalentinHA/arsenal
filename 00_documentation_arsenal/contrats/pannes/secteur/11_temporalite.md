@@ -15,7 +15,7 @@ Ce document définit les **durées de confirmation normatives** utilisées pour 
 
 Il est référencé comme document NORMATIF par le contrat socle :
 
-`/00_documentation_arsenal/contrats/resilience_electrique/00_panne_secteur_socle.md`
+`/00_documentation_arsenal/contrats/pannes/secteur/10_socle.md`
 
 Toute durée de confirmation non issue de ce document est invalide.
 

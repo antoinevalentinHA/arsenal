@@ -13,7 +13,7 @@
 
 Ce contrat est un contrat **dérivé**. Il dépend du contrat socle :
 
-`/00_documentation_arsenal/contrats/resilience_electrique/00_panne_secteur_socle.md`
+`/00_documentation_arsenal/contrats/pannes/secteur/10_socle.md`
 
 La notion de **"panne secteur avérée"** est définie exclusivement par ce contrat socle.  
 Toute qualification d'entrée ou de sortie de panne doit respecter les invariants du socle.

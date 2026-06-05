@@ -46,7 +46,7 @@ Cette confirmation temporelle doit :
 - exclure les micro-coupures et sauts de tension
 - reposer sur une durée minimale de confirmation
 - être définie explicitement dans le document normatif de temporalité :  
-  `/00_documentation_arsenal/architecture/resilience_electrique/10_temporalite.md`
+  `/00_documentation_arsenal/contrats/pannes/secteur/11_temporalite.md`
 
 Ce document est **NORMATIF** pour toute implémentation. Toute durée de confirmation non issue de ce document est invalide.
 
@@ -118,7 +118,7 @@ Dans ce cas :
 Le système garantit la **disponibilité du signal canonique**, pas la disponibilité d'un capteur individuel.
 
 Le mécanisme de fallback est défini dans :  
-`/00_documentation_arsenal/architecture/resilience_electrique/20_fallback.md`
+le présent document (mécanisme décrit ci-dessous).
 
 Ce mécanisme relève **exclusivement de la couche de détection**. Il peut reposer sur :
 
