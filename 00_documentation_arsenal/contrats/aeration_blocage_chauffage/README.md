@@ -71,19 +71,19 @@ Hors périmètre du présent domaine :
 ## 📌 INDEX (RACCOURCI)
 
 ### Socle transversal
-- `socle_transversal/01_objet_perimetre_statut.md`
-- `socle_transversal/02_etats_canons_et_invariants.md`
-- `socle_transversal/03_helpers_du_domaine.md`
-- `socle_transversal/04_neutralisation_input_datetime.md`
-- `socle_transversal/05_timers_v3_pro_regles_monotones.md`
-- `socle_transversal/06_securite_demarrage.md`
-- `socle_transversal/07_coherence_ko_detecteur.md`
-- `socle_transversal/08_signal_recover.md`
-- `socle_transversal/09_mini_guard_pipeline_anti_zombie.md`
-- `socle_transversal/10_invalidation_tentative_non_confirmee.md`
-- `socle_transversal/11_deltat_capteurs_v3.md`
-- `socle_transversal/12_tentative_aeration_en_grace.md`
-- `socle_transversal/13_interfaces_ouvertures.md`
+- [`socle_transversal/01_objet_perimetre_statut.md`](socle_transversal/01_objet_perimetre_statut.md)
+- [`socle_transversal/02_etats_canons_et_invariants.md`](socle_transversal/02_etats_canons_et_invariants.md)
+- [`socle_transversal/03_helpers_du_domaine.md`](socle_transversal/03_helpers_du_domaine.md)
+- [`socle_transversal/04_neutralisation_input_datetime.md`](socle_transversal/04_neutralisation_input_datetime.md)
+- [`socle_transversal/05_timers_v3_pro_regles_monotones.md`](socle_transversal/05_timers_v3_pro_regles_monotones.md)
+- [`socle_transversal/06_securite_demarrage.md`](socle_transversal/06_securite_demarrage.md)
+- [`socle_transversal/07_coherence_ko_detecteur.md`](socle_transversal/07_coherence_ko_detecteur.md)
+- [`socle_transversal/08_signal_recover.md`](socle_transversal/08_signal_recover.md)
+- [`socle_transversal/09_mini_guard_pipeline_anti_zombie.md`](socle_transversal/09_mini_guard_pipeline_anti_zombie.md)
+- [`socle_transversal/10_invalidation_tentative_non_confirmee.md`](socle_transversal/10_invalidation_tentative_non_confirmee.md)
+- [`socle_transversal/11_deltat_capteurs_v3.md`](socle_transversal/11_deltat_capteurs_v3.md)
+- [`socle_transversal/12_tentative_aeration_en_grace.md`](socle_transversal/12_tentative_aeration_en_grace.md)
+- [`socle_transversal/13_interfaces_ouvertures.md`](socle_transversal/13_interfaces_ouvertures.md)
 
 ### Machine à états (M0..M6)
 - `m0_recover_normatif/`
