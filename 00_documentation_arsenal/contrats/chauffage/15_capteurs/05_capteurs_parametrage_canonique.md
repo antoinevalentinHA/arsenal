@@ -1,0 +1,1 @@
+# Capteurs — paramétrage canonique
