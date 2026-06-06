@@ -1,54 +1,55 @@
 # Arsenal
 
-> Home Assistant as a governed system.
+> Home Assistant, traité comme un logiciel. Gouverné comme tel.
 
-Arsenal est une configuration Home Assistant construite comme un **logiciel long terme** — avec une architecture en couches, des contrats explicites, et une séparation stricte entre ce qui décide et ce qui agit.
+La plupart des installations Home Assistant sont des configurations. Arsenal est un **système** : chaque domaine y répond à un contrat écrit, ce contrat est confronté à l'implémentation **par intégration continue**, et chaque domaine est suivi par un cycle d'audit jusqu'à sa **clôture**.
 
-Ce n'est pas un dump de configuration. Ce n'est pas un smart home setup à copier.
-C'est une **référence d'architecture** pour qui veut traiter HA sérieusement.
+Ce n'est pas un dump de config à copier. C'est une démonstration : on *peut* faire tenir une maison connectée aux standards d'un logiciel sérieux — et le prouver, fichier par fichier.
 
 ---
 
 ## Le problème
 
-Home Assistant est remarquablement puissant. Il est aussi très facile à laisser dériver vers un système difficilement maintenable.
+Home Assistant est puissant, et c'est précisément ce qui le rend facile à laisser dériver :
 
-La trajectoire naturelle d'une installation HA non gouvernée :
+- des automatisations qui en déclenchent d'autres ;
+- de la logique métier éparpillée entre l'UI, les scripts, les automations et les helpers ;
+- des dashboards qui *agissent* au lieu de *montrer* ;
+- des entités dont plus personne ne sait si elles servent encore ;
+- un `configuration.yaml` qui grossit organiquement depuis des années.
 
-- Des automatisations qui déclenchent d'autres automatisations
-- Une logique métier dispersée entre l'UI, les scripts, les automations et les helpers
-- Des dashboards qui *font des choses* au lieu de les rendre visibles
-- Des entités dont personne ne sait plus si elles sont encore utilisées
-- Un `configuration.yaml` qui a grandi organiquement depuis 2019
-- Une dette système invisible jusqu'à la rupture opérationnelle
+La dette s'accumule, invisible, jusqu'à la rupture. Arsenal répond à une seule question :
 
-Arsenal existe pour répondre à une question simple :
-
-> Comment construire une installation HA qui reste maintenable, observable et cohérente sur le long terme ?
+> Comment construire une installation HA qui reste maintenable, observable et cohérente sur plusieurs années ?
 
 ---
 
-## Le modèle mental
+## Trois principes non négociables
 
-Arsenal repose sur trois principes qui ne se négocient pas.
+**Le backend décide. L'UI observe. Jamais l'inverse.**
+Aucune logique dans les dashboards. Les cartes affichent des états — elles ne les calculent pas.
 
-**1. Le backend décide. L'UI observe. Jamais l'inverse.**
+**Contrat avant YAML.**
+Chaque domaine a un contrat écrit *avant* d'avoir du code : entités impliquées, transitions valides, invariants à respecter. Le YAML implémente le contrat — si l'implémentation contredit le contrat, c'est l'implémentation qui est fausse.
 
-Aucune logique dans les dashboards. Les cartes affichent des états — elles ne les calculent pas. Les décisions sont prises en amont, dans des entités dédiées. L'UI est un miroir, pas un moteur.
-
-**2. Contrat avant YAML.**
-
-Chaque domaine fonctionnel a un contrat écrit avant d'avoir du code. Ce contrat définit les entités impliquées, leurs rôles, leurs transitions d'état valides, et les invariants que le système doit respecter. Le YAML implémente le contrat — pas l'inverse.
-
-**3. L'exposition est une décision, pas un accident.**
-
-Ce qui est visible depuis l'extérieur (API, MQTT, notifications) est explicitement gouverné. Ce qui est interne reste interne. La séparation n'est pas une convention de nommage — c'est une contrainte architecturale.
+**L'exposition est une décision, pas un accident.**
+Ce qui sort vers l'extérieur (API, MQTT, notifications) est explicitement gouverné. La séparation interne/externe est une contrainte d'architecture, pas une convention de nommage.
 
 ---
 
-## L'architecture
+## Ce qui rend Arsenal différent
 
-Arsenal est organisé en trois couches :
+Beaucoup de projets revendiquent une « architecture propre ». Peu la rendent **opposable**.
+
+Chez Arsenal, les contrats ne sont pas des commentaires : ce sont des documents de référence confrontés au code. Une quinzaine de domaines sont contractualisés — chauffage, ECS, climatisation, alarme, aération, météo… — sur plusieurs centaines de fichiers de contrat, adossés à une bibliothèque de doctrines (nommage, séparation décision/action, gestion du temps, causalité métier).
+
+Et surtout : **cette discipline est exécutée par la machine.** Une intégration continue confronte les implémentations à leurs contrats, domaine par domaine. La documentation elle-même est gouvernée — conventions de nommage vérifiées, index sans rapport orphelin, le tout sous CI. La gouvernance n'est pas un vœu ; c'est un test qui passe ou qui échoue.
+
+La meilleure façon de le croire, c'est de regarder un domaine en entier.
+
+---
+
+## L'architecture, en une image
 
 ```
 ┌─────────────────────────────────────────────┐
@@ -57,159 +58,64 @@ Arsenal est organisé en trois couches :
                         │ états bruts
                         ▼
 ┌─────────────────────────────────────────────┐
-│  Template sensors · Helpers · Admissibilité │  DECISION
+│  Template sensors · Helpers · Admissibilité │  DÉCISION
 └───────────────────────┬─────────────────────┘
                         │ états de décision
                         ▼
 ┌─────────────────────────────────────────────┐
-│  Automatisations · Scripts souverains       │  EXECUTION
+│  Automatisations · Scripts souverains       │  EXÉCUTION
 └───────────────────────┬─────────────────────┘
                         │ commandes
                         ▼
                     Hardware
 ```
 
-L'UI n'apparaît pas dans ce schéma. Elle observe — elle ne participe pas au flux.
-
-**Perception** — Ce que le système observe. Capteurs physiques, états d'intégration, données MQTT, métriques NAS. Aucune logique ici — seulement de la mesure.
-
-**Decision** — Ce que le système conclut. Template sensors, helpers d'état, scripts souverains. C'est ici que vivent les règles métier : admissibilité, besoin brut, contraintes, verrouillages. Le résultat est toujours un état lisible, pas une action directe.
-
-**Execution** — Ce que le système applique. Automatisations déclenchées par des états de décision, scripts d'action, commandes physiques. Cette couche ne contient pas de logique — elle réagit à des états.
-
-Cette séparation n'est pas théorique. Elle est visible dans l'arborescence et vérifiable par les scripts d'audit.
+La perception mesure, la décision conclut, l'exécution applique. L'UI n'apparaît pas dans ce flux : elle l'observe. Le détail des couches et des doctrines vit dans [`architecture/index.md`](00_documentation_arsenal/architecture/index.md).
 
 ---
 
-## Structure du repo
+## La gouvernance, prouvée sur un domaine
 
-```
-00_documentation_arsenal/   Documentation normative (contrats, architecture, audits, changelogs) · navigation inter-familles
-01_customize/               Personnalisation des entités
-02_groups/                  Groupes Home Assistant
-03_input_numbers/           Helpers numériques — seuils et paramètres métier
-04_input_texts/             Helpers texte — mémoire des décisions
-05_input_booleans/          Helpers booléens — activation, modes, verrous
-06_input_selects/           Helpers sélection — modes et états énumérés
-07_input_datetimes/         Helpers date/heure — planification métier
-08_timers/                  Timers — temporisations explicites
-09_counters/                Compteurs — mémoires incrémentales
-10_scripts/                 Scripts souverains — actions atomiques
-11_automations/             Réactions à des états — jamais de logique
-12_template_sensors/        Capteurs de décision — cerveau du système
-13_sensor_platforms/        Capteurs par plateformes Home Assistant
-14_mqtt_sensors/            Surface MQTT — perception externe
-15_mqtt_binary_sensors/     Capteurs binaires MQTT — perception externe
-16_template_alarm_panels/   Panneau alarme contractualisé
-17_zones/                   Zones métier
-18_lovelace/                UI — rendu uniquement
-19_button_card_templates/   Palette de composants UI
-scripts/                    Outillage — audit, validation, CI
-utility_meter.yaml          Compteurs d’énergie
-recorder.yaml               Politique de persistance
-logbook.yaml                Politique du journal
-logger.yaml                 Politique de logs
-```
+L'argument le plus solide n'est pas une promesse d'architecture : c'est une chaîne qu'on peut suivre sur des fichiers réels. Prenons le chauffage comme témoin.
 
-Les numéros de préfixe ne sont pas décoratifs. Ils expriment l'ordre de chargement et la couche architecturale.
+Son **contrat** ([`contrats/chauffage/`](00_documentation_arsenal/contrats/chauffage/README.md)) dit ce que le domaine doit faire ; la décision est centralisée dans un script souverain qui ne produit que des états *lisibles* (`binary_sensor.chauffage_autorise_systeme`, `meteo_favorable_chauffage`, `poele_en_fonction`…). À chaque `push`, le workflow [`arsenal-ci-chauffage.yml`](.github/workflows/arsenal-ci-chauffage.yml) confronte l'implémentation au contrat : un self-test garde les analyseurs (on ne juge pas avec un juge défectueux), puis des étages *lint*, *décision* (`R-COV-1` / `R-MIRROR-1`) et *exécution* (`R-CALL-1`) rendent le verdict, contre un registre d'entités souverain — le domaine étant dans une transition documentée *warn-only → bloquant* (`ARSENAL_CI_ENFORCE`). Et l'audit est tracé jusqu'à sa [clôture](00_documentation_arsenal/audits/05_clotures/chauffage/validation_L1_observabilite_auto_ajustement_courbe.md), où chaque constat est résorbé ou explicitement assumé.
+
+Le héros de cette section n'est pas le chauffage : c'est la chaîne **contrat → CI → audit → clôture**. Le chauffage la rend simplement vérifiable — par vous, dans les fichiers liés.
 
 ---
 
-## Les patterns clés
+## Comment Arsenal se gouverne
 
-**Sovereign script** — Un script qui encapsule une action atomique avec ses préconditions, son ACK et son logging. Aucune automatisation ne fait une action directement : elle appelle un script souverain.
+Le chauffage n'est pas une exception : c'est le motif.
 
-**Helper memory** — Les helpers ne stockent pas que des valeurs — ils stockent des décisions. `input_text.alarme_raison` n'est pas un champ texte libre, c'est le motif formel de la dernière décision de la centrale d'alarme.
+Chaque domaine suit la même chaîne — **contrat → implémentation → vérification CI → audit → clôture** —, validée par une intégration continue par domaine. Le cycle d'audit n'est pas informel : rapports, contre-expertises, arbitrages, plans d'action, chantiers et clôtures sont des documents datés et traçables.
 
-**Métier truth sensor** — Un `template sensor` qui synthétise l'état réel d'un domaine en un seul état lisible. L'UI lit ce capteur. Les automatisations se déclenchent sur ce capteur. Les diagnostics interrogent ce capteur.
+La documentation elle-même est soumise au même régime. Le corpus est tenu par ses propres gates, vérifiées en CI à chaque modification : tout rapport doit être indexé (aucun orphelin), et les pages d'orientation et de table des matières suivent une convention unique et opposable (`README.md` pour l'atterrissage, `index.md` pour l'énumération). Autrement dit, la référence de vérité ne peut pas dériver en silence de ce qu'elle décrit : la doc s'impose à elle-même le standard qu'elle impose au système.
 
-**Transactional ACK** — Les commandes critiques (alarme, ECS, VMC) suivent un cycle request → applied/rejected/timeout avec `request_id`. L'état n'est jamais supposé — il est confirmé.
-
-**Reconciliation engine** — Après un redémarrage HA, les domaines critiques se reconcilent avec l'état réel du hardware avant d'accepter de nouvelles commandes.
+C'est ce qui distingue Arsenal d'une configuration soignée : la rigueur n'y dépend pas de la discipline d'un humain un soir donné. Elle est **exécutée**.
 
 ---
 
-## Exemple — le domaine VMC
+## Entrer dans la documentation
 
-Un domaine Arsenal complet, de la perception à l'exécution.
+La documentation est la référence de vérité du système. Points d'entrée :
 
-**Perception**
-`sensor.vmc_etat_reel` — état retourné par le relais Sonoff Dual R3 via MQTT.
-`sensor.co2_salon`, `sensor.humidite_sdb` — mesures environnementales.
-
-**Decision**
-`sensor.vmc_besoin_brut` — template sensor : y a-t-il un besoin de ventilation ?
-`sensor.vmc_admissibilite` — le contexte permet-il d'agir ? (heure, présence, contraintes)
-`input_text.vmc_decision` — état de décision final : `on_demande` / `off_demande` / `verrouille`
-
-**Execution**
-`automation.vmc_application_decision` — se déclenche sur changement de `vmc_decision`.
-`script.vmc_allumage` / `script.vmc_extinction` — scripts souverains avec ACK MQTT.
-
-**Diagnostic**
-`sensor.vmc_coherence` — détecte les incohérences entre décision et état réel.
-Un watchdog se déclenche si l'état réel diverge de la décision pendant plus de 30 secondes.
-
-Le même modèle architectural se retrouve dans chaque domaine : alarme, ECS, déhumidificateur, chauffage.
-
----
-
-## Ce que contient `00_documentation_arsenal`
-
-La documentation n'est pas un supplément — elle est normative.
-
-- **Contrats** — Spécifications formelles de chaque domaine. Un contrat dit ce que le système *doit* faire, pas comment il le fait. Le YAML implémente le contrat.
-- **Architecture** — Schémas d'infrastructure, topologie MQTT, organisation des couches.
-- **Audits** — Rapports, arbitrages, contre-expertises, plans d'action et clôtures. Trace le cycle de validation de chaque domaine.
-- **Changelogs** — Chaque version d'Arsenal a un changelog structuré. Les décisions architecturales y sont documentées, pas seulement les changements.
-- **Outils externes** — Contrats et documentation des composants satellites : bridge boiler Pi, pipelines NAS, proxies BLE.
-- **Navigation** — Couche d'orientation inter-familles : carte des domaines, 21 hubs Tier-1, pivots. Non normative — porte d'entrée transversale du corpus.
-
----
-
-## Outillage
-
-```
-scripts/security/audit_publication_git.py   Audit sécurité pré-publication
-scripts/arsenal_contracts/                  Validation des contrats par domaine
-tools/arsenal_ci/                           Moteur CI — validation contrats chauffage, graphe décision/exécution
-```
-
-L'audit de publication est bloquant. Zéro CRITICAL = condition nécessaire pour publier. Les WARNING documentaires sont qualifiés et traçables (`[scope=doc]`).
-
-Les scripts de validation de contrats vérifient la cohérence des entités déclarées dans les contrats avec leur implémentation réelle dans le YAML.
+- [`00_documentation_arsenal/README.md`](00_documentation_arsenal/README.md) — accueil et autorité du corpus.
+- [`navigation/carte_domaines.md`](00_documentation_arsenal/navigation/carte_domaines.md) — la carte des domaines et ses hubs.
+- [`contrats/index.md`](00_documentation_arsenal/contrats/index.md) — l'index des contrats fonctionnels.
+- [`architecture/index.md`](00_documentation_arsenal/architecture/index.md) — couches, topologie, doctrines.
+- [`audits/index.md`](00_documentation_arsenal/audits/index.md) — le cycle d'audit, des rapports aux clôtures.
+- [`changelog/index.md`](00_documentation_arsenal/changelog/index.md) — l'historique versionné (canon).
 
 ---
 
 ## Ce qu'Arsenal n'est pas
 
-**Pas une installation à copier.** Les entités, les IPs, les topics MQTT et les noms de devices sont spécifiques à une installation. Ce qui est réutilisable, ce sont les patterns, les invariants et la doctrine.
+**Pas une installation à copier.** Les entités, IPs, topics MQTT et noms de devices sont spécifiques. Ce qui est réutilisable, ce sont les patterns, les invariants et la doctrine.
 
-**Pas une vitrine.** Arsenal n'est pas optimisé pour être impressionnant en screenshot. Il est optimisé pour rester maintenable, observable et gouvernable plusieurs années après sa construction.
+**Pas une vitrine.** Arsenal n'est pas optimisé pour le screenshot. Il est optimisé pour rester maintenable et gouvernable des années après sa construction.
 
-**Pas une documentation Home Assistant.** La documentation officielle reste la référence pour les intégrations, Lovelace et les comportements natifs. Arsenal se concentre sur l'architecture du système : séparation décision/exécution, gouvernance documentaire, robustesse runtime et contractualisation.
-
----
-
-## Versions
-
-Arsenal n'a pas évolué comme une simple configuration Home Assistant.
-Chaque période correspond à une mutation d'architecture, de gouvernance ou de modèle d'exécution.
-
-| Ère       | Période                | Inflexion dominante                                                                                                                                                                          |
-|-----------|------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Émergence | 2025-08 → 2025-10      | Atomisation progressive de l'arborescence, normalisation des includes, premières conventions UI et gouvernance des entités.                                                                  |
-| v1 → v5   | 2025-10 → 2026-01      | Construction des premiers moteurs décisionnels : chauffage centralisé, ouvertures temporisées, doctrine `systeme_stable`, pipelines reboot-safe.                                             |
-| v6 → v8   | 2026-01                | Fondation du modèle Arsenal moderne : applicateurs idempotents, séparation décision/exécution, observabilité thermique structurée, gouvernance UI et temporelle.                             |
-| v9        | 2026-02                | Industrialisation massive : architecture UI à trois niveaux, templates factorisés, corpus contractuel versionné, réconciliation Zigbee et pipelines diagnostiques.                           |
-| v10       | 2026-03                | Canonisation des temporalités et des ouvertures : qualification métier, anti-zombie, orchestration déterministe, moteurs de réconciliation robustes.                                         |
-| v11       | 2026-03 → 2026-04      | Passage transactionnel local : Boiler Bridge, ACK corrélés, souveraineté Viessmann locale, pipelines ECS/chauffage transactionnels et retry externe.                                         |
-| v12       | 2026-04                | Durcissement architectural : admissibility locks, invariants système, pipelines météo structurés, VMC dual-relais, transactionnel SwitchBot/guard.                                           |
-| v13       | 2026-04 → 2026-05      | Extension satellite : supervision NAS Imprimerie, Bluetti, UPS, snapshots santé/sommeil, taxonomie intégrité paramètres, observabilité multi-domaines.                                       |
-| v14       | 2026-05                | Formalisation totale de la gouvernance : arborescence numérique canonique `00_* → 19_*`, contrats opposables par domaine, doctrine “documentation avant implémentation”.                     |
-| v15       | 2026-05 → aujourd'hui  | Consolidation runtime et gouvernance documentaire : deadlines persistantes, robustesse post-restart, diagnostics UI structurés, outillage NAS Arsenal, validation contractuelle automatisée. |
-
-Le détail complet est disponible dans [`00_documentation_arsenal/changelog/`](00_documentation_arsenal/changelog/).
+**Pas une documentation Home Assistant.** La doc officielle reste la référence pour les intégrations et Lovelace. Arsenal porte sur l'architecture du système : séparation décision/exécution, contractualisation, robustesse runtime et gouvernance.
 
 ---
 
@@ -217,5 +123,4 @@ Le détail complet est disponible dans [`00_documentation_arsenal/changelog/`](0
 
 MIT — les patterns sont libres de réutilisation.
 
-Arsenal est publié pour partager une façon d'architecturer Home Assistant, pas une maison.
-Le but n'est pas d'être reproduit. Le but est d'être étudié.
+Arsenal est publié pour partager une façon d'architecturer Home Assistant, pas une maison. Le but n'est pas d'être reproduit. Le but est d'être étudié.
