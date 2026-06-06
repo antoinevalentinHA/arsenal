@@ -65,13 +65,13 @@
 | [aeration_blocage_chauffage/](./aeration_blocage_chauffage/) | 37 | README ✅ | Machine d'état aération→blocage chauffage (m0→m6) |
 | [alarme/](./alarme/) | 15 | — | Pipeline alarme numéroté 00→99 |
 | [boiler/](./boiler/) | 7 | README ✅ | Chaudière / boiler bridge |
-| [chauffage/](./chauffage/) | 50 | — | Pipeline chauffage + capteurs + amendements |
-| [climatisation/](./climatisation/) | 38 | `00_index.md` ✅ | Climatisation (12 root + 26 capteurs) |
+| [chauffage/](./chauffage/) | 52 | README ✅ | Pipeline chauffage + capteurs + amendements |
+| [climatisation/](./climatisation/) | 39 | `00_index.md` ✅ | Climatisation (12 root + 26 capteurs) |
 | [deshumidificateur/](./deshumidificateur/) | 2 | — | Déshumidificateur cave |
-| [eclairage/](./eclairage/) | 6 | — | Éclairage |
+| [eclairage/](./eclairage/) | 5 | — | Éclairage |
 | [ecs/](./ecs/) | 28 | — | ECS — fondation (00-11) + contrats d'exécution |
 | [imprimerie/](./imprimerie/) | 3 | — | Bruit machines industrielles (Imprimerie Baillet) |
-| [meteo/](./meteo/) | 15 | — | Météo — axes, palmarès, validation, sous-domaines |
+| [meteo/](./meteo/) | 16 | — | Météo — axes, palmarès, validation, sous-domaines |
 | [ouvertures/](./ouvertures/) | 3 | — | Ouvertures (portes / fenêtres) |
 | [pannes/](./pannes/) | 9 | — | Pannes — internet + secteur |
 | [publication/](./publication/) | 1 | — | Publication |
@@ -81,13 +81,11 @@
 
 ## Anomalies signalées (non corrigées)
 
-1. **`README.md` obsolète** : référence `chauffage.md`, `ecs.md` et `ventilation.md`
-   comme fichiers plats — ces domaines sont depuis des sous-dossiers. Le README
-   n'est pas modifié.
+1. **`bouclage.md` (racine) et `ecs/04_bouclage_ecs_sous_systeme.md`** : **résolu
+   par renvoi** (ARB-2) — `bouclage.md` est le contrat canonique ;
+   `ecs/04_bouclage_ecs_sous_systeme.md` est un renvoi sans doctrine autonome.
+   Source unique de vérité.
 
-2. **`bouclage.md` (racine) et `ecs/04_bouclage_ecs_sous_systeme.md`** : deux
-   emplacements pour le même sous-système. Coexistence signalée.
-
-3. **`aeration_recommandation.md` (racine) et `aeration_blocage_chauffage/`
+2. **`aeration_recommandation.md` (racine) et `aeration_blocage_chauffage/`
    (sous-dossier)** : deux objets distincts portant la racine nominale
    `aeration_`. Distinction actée dans `carte_domaines.md` §5.7.
