@@ -315,6 +315,10 @@ def resolve_token(
         # est très probablement un identifiant technique (nom de sensor, etc.),
         # pas un lien documentaire. On l'ignore plutôt que de la classer auto.
         if category == CATEGORY_EXTENSIONLESS:
+            # Garde-fou version : un token "vN" résolu vers le changelog est
+            # une variable/version textuelle, pas un lien documentaire.
+            if re.fullmatch(r"v\d+", token) and rel.startswith("changelog/"):
+                return STATUS_IGNORED, None, "version_token"
             try:
                 src_rel = source_resolved.relative_to(doc_root_resolved).as_posix()
             except ValueError:
