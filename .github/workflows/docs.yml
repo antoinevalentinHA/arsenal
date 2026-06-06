@@ -30,8 +30,6 @@ jobs:
           python scripts/docs_lint/docs_ci_changelog_index.py \
             --base "${{ github.event.pull_request.base.sha }}"
 
-      - name: Orphan report gate (DOC-CI-3, pull_request only)
-        if: github.event_name == 'pull_request'
+      - name: Orphan report gate (DOC-CI-3, stock)
         run: |
-          python scripts/docs_lint/docs_ci_orphan_report.py \
-            --base "${{ github.event.pull_request.base.sha }}"
+          python scripts/docs_lint/docs_ci_orphan_report.py
