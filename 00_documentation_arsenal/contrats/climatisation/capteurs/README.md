@@ -2,7 +2,7 @@
 
 > Ce dossier contient la documentation des capteurs implémentant les couches
 > du système climatisation. Pour la vue d'ensemble du domaine :
-> voir [climatisation/00_index.md](../00_index.md).
+> voir [climatisation/README.md](../README.md).
 
 ---
 

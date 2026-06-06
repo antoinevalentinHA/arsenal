@@ -9,7 +9,7 @@ Climatisation résidentielle (mode COOL). Contrat v1.4, statut « Stable — ali
 
 ## Contrat — « ce que le système doit faire »
 
-Entrée : [`contrats/climatisation/`](../../contrats/climatisation/) — index : [`00_index.md`](../../contrats/climatisation/00_index.md) (v1.4).
+Entrée : [`contrats/climatisation/`](../../contrats/climatisation/) — atterrissage : [`README.md`](../../contrats/climatisation/README.md) (v1.4).
 
 - Décision canonique : [`03_decision_canonique.md`](../../contrats/climatisation/03_decision_canonique.md)
 - Doctrine blocages : [`06_doctrine_blocages.md`](../../contrats/climatisation/06_doctrine_blocages.md)

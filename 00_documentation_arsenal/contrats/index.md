@@ -66,7 +66,7 @@
 | [alarme/](./alarme/) | 15 | — | Pipeline alarme numéroté 00→99 |
 | [boiler/](./boiler/) | 7 | README ✅ | Chaudière / boiler bridge |
 | [chauffage/](./chauffage/) | 52 | README ✅ | Pipeline chauffage + capteurs + amendements |
-| [climatisation/](./climatisation/) | 39 | `00_index.md` ✅ | Climatisation (12 root + 26 capteurs) |
+| [climatisation/](./climatisation/) | 39 | README ✅ | Climatisation (12 root + 26 capteurs) |
 | [deshumidificateur/](./deshumidificateur/) | 2 | — | Déshumidificateur cave |
 | [eclairage/](./eclairage/) | 5 | — | Éclairage |
 | [ecs/](./ecs/) | 28 | — | ECS — fondation (00-11) + contrats d'exécution |
