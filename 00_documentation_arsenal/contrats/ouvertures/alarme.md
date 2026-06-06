@@ -4,7 +4,7 @@
 
 - **Contrat normatif et opposable**
 - Domaine : **Sécurité / Alarme**
-- Chemin : `homeassistant/00_documentation_arsenal/contrats/alarme/51_ouvrants_entree_alarme.md`
+- Chemin : `00_documentation_arsenal/contrats/ouvertures/alarme.md`
 
 ---
 
@@ -27,7 +27,7 @@ Il ne couvre pas la détection d'intrusion confirmée, ni le déclenchement de s
 Ce contrat est **complémentaire** au contrat de réconciliation ouvrants :
 
 ```
-/homeassistant/00_documentation_arsenal/contrats/ouvertures_redondance.md
+00_documentation_arsenal/contrats/ouvertures/redondance.md
 ```
 
 Le contrat parent produit une vérité métier **stricte**, orientée chauffage et dashboards.
@@ -173,5 +173,5 @@ Elles **ne sont pas** des substituts à la vérité métier générique du contr
 
 ## 📎 Documents liés
 
-- `ouvertures_redondance.md` — contrat parent, réconciliation stricte
-- `50_intrusion_detection.md` — contrat détection intrusion, consommateur en aval
+- [`redondance.md`](redondance.md) — contrat parent, réconciliation stricte
+- [`50_intrusion_detection.md`](../alarme/50_intrusion_detection.md) — contrat détection intrusion, consommateur en aval
