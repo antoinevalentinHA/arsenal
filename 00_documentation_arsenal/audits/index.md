@@ -144,6 +144,9 @@ Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — 
 ### État du domaine Alarme — post-CH-6
 - [alarme/etat_post_CH6.md](04_chantiers/alarme/etat_post_CH6.md)
 
+### Chantier documentaire — NAV-1 / GOV-1 / CI documentaire
+- [cloture_chantier_documentaire_2026_06_06.md](05_clotures/cloture_chantier_documentaire_2026_06_06.md)  _(chantier CLÔTURÉ — 2026-06-06)_
+
 ---
 
 ## Transverse
