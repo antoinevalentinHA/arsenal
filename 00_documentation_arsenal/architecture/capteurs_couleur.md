@@ -20,7 +20,7 @@
 
 - [`meteo_interpretation_contextuelle.md`](meteo_interpretation_contextuelle.md) — **référence du mécanisme A** (météo). Ce document ne re-décrit pas A : il y délègue.
 - [`capteurs_meteo.md`](capteurs_meteo.md) — mesures, périodes et seuils source de la famille A.
-- [`../ui/couleurs/00_index.md`](../ui/couleurs/00_index.md) — charte *aval* : palette rgba et sémantique des clés.
+- [`../ui/couleurs/README.md`](../ui/couleurs/README.md) — charte *aval* : palette rgba et sémantique des clés.
 - [`../ui/socle_ui/06_kpi.md`](../ui/socle_ui/06_kpi.md) — `socle_kpi`, consommateur canonique (mapping clé → rgba).
 
 ---
