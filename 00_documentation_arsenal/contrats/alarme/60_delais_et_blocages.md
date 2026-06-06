@@ -62,6 +62,7 @@ Toute implémentation hybride est interdite.
 
 ### Invariant 2 — Cohérence blocage ↔ timer
 
+```
 Si `input_boolean.blocage_armement_auto == on`
 → `timer.blocage_armement_auto` doit être dans `{active, paused}`.
 
