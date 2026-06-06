@@ -93,8 +93,8 @@ binary_sensor.parametres_invalides_<domaine>
 ```
 
 Où `<domaine>` est un identifiant snake_case unique correspondant au
-sous-système surveillé (`modes_maison`, `chauffage`, `vmc`, `bouclage_ecs`,
-`vacances`, `eclairage`, `deshumidificateur`, …).
+sous-système surveillé (modes_maison, chauffage, vmc, bouclage_ecs,
+vacances, eclairage, deshumidificateur, …).
 
 ## 📂 EMPLACEMENT FICHIER
 
