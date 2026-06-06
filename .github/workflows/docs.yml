@@ -37,3 +37,7 @@ jobs:
       - name: Contract index count gate (DOC-CI-2)
         run: |
           python scripts/docs_lint/docs_ci_contract_counts.py
+
+      - name: Index naming gate (DOC-CI-5, stock)
+        run: |
+          python scripts/docs_lint/docs_ci_naming.py
