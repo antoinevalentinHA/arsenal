@@ -30,6 +30,26 @@
 ### Voiture
 - [voiture/audit_domaine_audi.md](01_rapports/voiture/audit_domaine_audi.md)
 
+### Documentation
+- [documentation/arbitrage_ambiguites_structurelles_arsenal.md](01_rapports/documentation/arbitrage_ambiguites_structurelles_arsenal.md)
+- [documentation/audit_structure_documentaire.md](01_rapports/documentation/audit_structure_documentaire.md)
+- [documentation/audit_navigation_documentation_arsenal.md](01_rapports/documentation/audit_navigation_documentation_arsenal.md)
+- [documentation/audit_maturite_hypertexte_documentation.md](01_rapports/documentation/audit_maturite_hypertexte_documentation.md)
+- [documentation/cartographie_artefacts_navigation_arsenal.md](01_rapports/documentation/cartographie_artefacts_navigation_arsenal.md)
+- [documentation/cartographie_chaines_documentaires_arsenal.md](01_rapports/documentation/cartographie_chaines_documentaires_arsenal.md)
+- [documentation/conception_couche_navigation_arsenal.md](01_rapports/documentation/conception_couche_navigation_arsenal.md)
+- [documentation/candidats_verification_runtime_priorisation.md](01_rapports/documentation/candidats_verification_runtime_priorisation.md)
+- [documentation/triage_recalibre_post_bluetti.md](01_rapports/documentation/triage_recalibre_post_bluetti.md)
+- [documentation/audit_documentaire_global_2026_06_06.md](01_rapports/documentation/audit_documentaire_global_2026_06_06.md)
+
+### Architecture
+- [architecture/audit_couverture_maturite_gouvernance_consolide.md](01_rapports/architecture/audit_couverture_maturite_gouvernance_consolide.md)
+- [architecture/plan_action_gouvernance_revise.md](01_rapports/architecture/plan_action_gouvernance_revise.md)
+- [architecture/cadrage_D1_doc_moteur_chauffage.md](01_rapports/architecture/cadrage_D1_doc_moteur_chauffage.md)
+
+### Perception externe
+- [perception_externe/rapport_perception_externe_depot.md](01_rapports/perception_externe/rapport_perception_externe_depot.md)
+
 ## Arbitrages
 
 ### ECS
@@ -79,6 +99,8 @@ _(emplacement réservé — aucun document à ce jour)_
 
 ### Transverses
 - [transverses/hysteresis_5_domaines.md](04_chantiers/transverses/hysteresis_5_domaines.md)
+- [transverses/cadrage_ci_includes_lovelace.md](04_chantiers/transverses/cadrage_ci_includes_lovelace.md)
+- [transverses/etat_avancement_chantier_navigation_documentaire_contrats.md](04_chantiers/transverses/etat_avancement_chantier_navigation_documentaire_contrats.md)
 
 ### Vacances
 - [vacances/chantier_vac_imp_5_desinfection_retour.md](04_chantiers/vacances/chantier_vac_imp_5_desinfection_retour.md)  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
