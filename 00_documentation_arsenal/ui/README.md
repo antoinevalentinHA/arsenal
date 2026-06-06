@@ -59,7 +59,7 @@ Elle **ne les fabrique jamais**.
 ├── navigation.md
 ├── pattern_dashboard.md
 └── socle_ui/
-    ├── 00_index.md
+    ├── index.md
     ├── 00_synthese.md
     ├── 01_carte_base.md
     ├── 02_action.md
@@ -114,7 +114,7 @@ Document normatif du **pattern canonique** des dashboards Arsenal :
 
 ---
 
-### `socle_ui/00_index.md`
+### `socle_ui/index.md`
 **Inventaire constaté** de l’arborescence réelle des templates `socle/`
 (`/homeassistant/button_card_templates/socle/`) et des écarts factuels
 doc ↔ implémentation (si présents).

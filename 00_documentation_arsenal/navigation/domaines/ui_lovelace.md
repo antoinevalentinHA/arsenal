@@ -13,7 +13,7 @@ Un domaine, deux façades : `ui/` (référence normative du design system Arsena
 
 - Entrée : [`ui/README.md`](../../ui/README.md) (26 docs — design system normatif, s'impose à tous les dashboards)
 - Architecture UI : [`ui/architecture.md`](../../ui/architecture.md) · [`ui/architecture_transverse.md`](../../ui/architecture_transverse.md) *(docs d'architecture dans la famille `ui/`, pas dans `architecture/`)*
-- Socle UI (patterns) : [`ui/socle_ui/00_index.md`](../../ui/socle_ui/00_index.md)
+- Socle UI (patterns) : [`ui/socle_ui/index.md`](../../ui/socle_ui/index.md)
 - Couleurs : [`ui/couleurs/00_index.md`](../../ui/couleurs/00_index.md)
 - Navigation : [`ui/navigation.md`](../../ui/navigation.md)
 
