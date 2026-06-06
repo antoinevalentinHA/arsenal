@@ -1241,6 +1241,77 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - CI région décision : `cli_decision` applique R-COV-1 au runtime sans l'axiome `AX-D2` (`A=()`), import `AXIOMES_D2` retiré ; `AX-D2` conservé pour la fixture `d2_reason_pre_correction.yaml` (inchangée) ; snapshot G2 re-figé à `R-COV-1 == 0` ; assertions de `test_lot_2_1` mises à jour (9 branches).
 - Contrat `30_decision_centrale.md` : Niveau 1 marqué réservé sans cause active, `chauffage_non_autorise` réservée, renommage de la raison `absence_protection_thermique` en `stabilisation_absence`.
 
+---
+
+## 🧠 ARSENAL HA — [v15.8.3](changelogs/v15/v15_8_3.md) — STABLE — 2026-05-30
+**Tags :** chauffage, ui, raisons, source_unique, charte
+
+**Signal net :**
+- Source unique `chauffage_registres_raison` (libellé court/long, icône, couleur par raison) ; les cartes synthèse/décision/diagnostic la consomment → fin des traductions d'affichage dupliquées d'une carte à l'autre.
+- Éclatement des causes de sécurité affichées : `aeration_en_cours`, `blocage_aeration_en_cours` et `fenetre_ouverte_maison` distinctes ; `confort_suffisant` promue catégorie métier nominale.
+
+---
+
+## 🧠 ARSENAL HA — [v15.8.4](changelogs/v15/v15_8_4.md) — STABLE — 2026-05-30
+**Tags :** climatisation, cool, correctif_runtime, ci, observabilite
+
+**Signal net :**
+- Correctif critique extinction COOL (D8) : comparateur `>=` → `<=` dans `binary_sensor.clim_seuil_extinction_cool_atteint` → suppression d'un deadlock thermique (front d'extinction jamais atteignable, chemin réel vers OFF rétabli).
+- CI dédiée figeant le sens du comparateur d'extinction COOL (gèle `<=`, interdit le retour `>=`).
+
+---
+
+## 🧠 ARSENAL HA — [v15.8.5](changelogs/v15/v15_8_5.md) — STABLE — 2026-05-30
+**Tags :** climatisation, cool, application_consigne, idempotence, restart_safe
+
+**Signal net :**
+- Automation `cool/application_consigne.yaml` : applique `sensor.consigne_clim_appliquee` à `climate.clim` en mode COOL (entrée mode, changement de consigne, reconvergence post-boot sous `systeme_stable`).
+- Envoi idempotent et robuste (pose seulement si cible valide et actuelle inconnue/différente) ; sélection présence/absence portée en amont par la consigne, pas dans l'automation.
+
+---
+
+## 🧠 ARSENAL HA — [v15.8.6](changelogs/v15/v15_8_6.md) — STABLE — 2026-06-01
+**Tags :** vacances, chauffage, decision_centrale, effectivite
+
+**Signal net :**
+- Passage à l'effectivité Vacances : `binary_sensor.vacances_actives` remplace `input_select.mode_maison = Vacances` dans la Décision Centrale chauffage (ajout du trigger + diagnostics `mode`/`raison`).
+- Retrait de la dépendance Vacances dans `sensor.chauffage_autorisation_cible` ; token technique `mode_maison_vacances` conservé.
+
+---
+
+## 🧠 ARSENAL HA — [v15.8.7](changelogs/v15/v15_8_7.md) — STABLE — 2026-06-01
+**Tags :** ecs, vacances, desinfection, timer_finished
+
+**Signal net :**
+- Désinfection au retour de vacances : helper `input_boolean.ecs_desinfection_retour_due` + automation `ecs/desinfection_retour_pose_due.yaml`, pilotée par l'événement `timer.finished` (remplace la détection sur `timer.vacances_longues_ecs.remaining`).
+- `binary_sensor.ecs_desinfection_retour_vacances_autorisee` mis à jour ; autorisation réinitialisée après consommation du cycle ECS.
+
+---
+
+## 🧠 ARSENAL HA — [v15.8.8](changelogs/v15/v15_8_8.md) — STABLE — 2026-06-02
+**Tags :** alarme, sirene, desarmement, nettoyage
+
+**Signal net :**
+- Alarme : bip de désarmement restreint aux origines `dashboard`/`clavier`/`badge` (en complément de la garde `mode_test off`) ; suppression des automatisations `sirene/bip_desactivation.yaml` et `sirene/stop.yaml` (delay long).
+- Mise à jour d'en-tête `intrusion/ouverture/delai_entree_fin.yaml` + ajustements capteurs et dashboards.
+
+---
+
+## 🧠 ARSENAL HA — [v15.8.9](changelogs/v15/v15_8_9.md) — STABLE — 2026-06-03
+**Tags :** chauffage, auto_ajustement, observabilite, contrats, audits
+
+**Signal net :**
+- Observabilité de l'auto-ajustement de courbe : ajout du contrat `76_observabilite_auto_ajustement_courbe.md`, de la documentation d'architecture associée et du corpus d'audits dédié.
+
+---
+
+## 🧠 ARSENAL HA — [v15.9](changelogs/v15/v15_9_0.md) — STABLE — 2026-06-03
+**Tags :** nas_arsenal, release_diff, mqtt, observabilite, etat_run
+
+**Signal net :**
+- `release_diff` (NAS Arsenal) : ajout de `state/release_diff_last_run.json`, écrit en fin de chaque run mené à terme (y compris échec contrôlé), schéma défini par `release_diff_mqtt.md` §5.
+- Artefact non patrimonial régénéré à chaque run (hors idempotence et hors régénérabilité de `_diff/releases/`) ; champ `produced[]` = couples produits pendant le run.
+
 ==================================================
 FIN INDEX
 ==================================================
