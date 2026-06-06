@@ -1,8 +1,8 @@
-# Rapport de clôture — Chantier « Navigation documentaire » (`contrats`)
+# Rapport d’avancement — Chantier « Navigation documentaire » (`contrats`)
 
 - **Périmètre :** `00_documentation_arsenal/contrats`
 - **Outil :** `scripts/docs_navigation/audit_doc_links.py`
-- **Statut :** clos au bon niveau (plancher atteint sans création de contenu)
+- **Statut :** point d’étape consolidé — phase de réduction des `dead` terminée au bon niveau
 - **Méthode :** audit en lecture seule → décision éditoriale → corrections ciblées (rechercher/remplacer VS Code) pour les lots sûrs ; garde-fous outil ajoutés par patches validés. Aucun `--fix-auto --apply` global.
 
 ---
@@ -80,4 +80,4 @@ Tous validés (compilation, audit avant/après, round-trip) ; aucun n'altère le
 
 ---
 
-*Chantier clos. État final : `auto 103 · ambiguous 2 · dead 5 · multi_target 0 · ignored 481` sur 591 candidats / 248 fichiers. Les compteurs résiduels correspondent à des décisions assumées et documentées, non à des défauts ouverts.*
+*Point d’étape consolidé. État courant : `auto 103 · ambiguous 2 · dead 5 · multi_target 0 · ignored 481` sur 591 candidats / 248 fichiers. La phase de réduction des `dead` réels est stabilisée ; les compteurs résiduels correspondent à des décisions assumées, des références futures/externes, ou des lots à traiter ultérieurement au cas par cas.*
