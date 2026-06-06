@@ -165,7 +165,7 @@ Les contrats suivants s’y appuient explicitement :
 - contrat Présence maison,
 - contrat Chauffage,
 - contrat Climatisation,
-- contrat Alarme (à venir),
+- contrat Alarme,
 - contrat Éclairage.
 
 Un contrat **ne redéfinit jamais** la notion de présence.
