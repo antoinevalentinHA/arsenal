@@ -35,7 +35,7 @@ Rendre disponible dans le dépôt le registre des anomalies connues et non corri
 ### Fichier à créer
 
 ```
-00_documentation_arsenal/audits/registre_anomalies_transverses.md
+00_documentation_arsenal/audits/02_constats/transverses/registre_anomalies_transverses.md
 ```
 
 Le fichier est déjà rédigé (généré lors de la session d'audit).
@@ -47,7 +47,7 @@ Ajouter une section transverse à la fin du fichier, avant le bloc `---` final :
 ```markdown
 ## Transverse
 
-- [registre_anomalies_transverses.md](registre_anomalies_transverses.md)
+- [registre_anomalies_transverses.md](02_constats/transverses/registre_anomalies_transverses.md)
   _(registre vivant — anomalies connues et non corrigées, toutes origines)_
 ```
 
