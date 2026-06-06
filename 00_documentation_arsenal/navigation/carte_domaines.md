@@ -4,7 +4,7 @@
 >
 > **Rôle.** Registre **canonique** des domaines Arsenal et **autorité** de la couche navigation : tout futur hub découle d'une entrée de cette carte (1 hub ⟺ 1 entrée Tier 1).
 >
-> **Statut.** v1. **Sans liens hypertexte à ce stade** (les chemins sont donnés en texte ; le maillage sera ajouté à une passe ultérieure).
+> **Statut.** v2. **Maillé** — les 21 hubs de domaine sont liés en hypertexte depuis cette carte.
 
 ---
 
