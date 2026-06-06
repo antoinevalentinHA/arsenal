@@ -55,7 +55,6 @@ Un domaine, deux façades : `ui/` (référence normative du design system Arsena
 - **Lovelace absent de `audits/index.md`** : anomalie signalée, non corrigée.
 - **CH-LL-CI-1 clos (changelog) ≠ clôture formelle** du cycle d'audit lovelace.
 - **Domaine fusionné** : ui + lovelace = une seule entrée Tier 1 (arbitrage acté).
-- **`registre_ch`** cite ce hub comme « à venir » — un suivi pour le lier activement une fois ce hub en place.
 
 ---
 
