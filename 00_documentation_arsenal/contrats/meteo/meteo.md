@@ -1,8 +1,8 @@
-# contrat_meteo.md
+# meteo.md
 # Arsenal — Contrat du domaine météo
 # Version : 1.1
 # Statut : normatif
-# Dépend de : contrat_validation.md, contrat_fallback.md
+# Dépend de : validation.md, fallback.md
 # Consommateurs : contrats locaux par axe météo
 
 ---
@@ -39,8 +39,8 @@ Tout capteur Arsenal du domaine météo DOIT appliquer :
 
 | Opération  | Contrat de référence    |
 |------------|-------------------------|
-| Validation | `contrat_validation.md` |
-| Fallback   | `contrat_fallback.md`   |
+| Validation | `validation.md` |
+| Fallback   | `fallback.md`   |
 
 Aucune implémentation ne peut contourner ces deux contrats.
 
@@ -79,6 +79,6 @@ Chaque contrat d'axe DOIT définir :
 
 ## 6. Renvois contractuels
 
-- Validation des sources → `contrat_validation.md`
-- Stratégie de fallback  → `contrat_fallback.md`
+- Validation des sources → `validation.md`
+- Stratégie de fallback  → `fallback.md`
 - Paramètres par axe     → contrats locaux d'axe

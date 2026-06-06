@@ -117,7 +117,7 @@ Ils :
 ## ✅ Validité d'une donnée météo
 
 La validité d'une donnée météo est déterminée
-**exclusivement par `contrat_validation.md`.**
+**exclusivement par `validation.md`.**
 
 Ce contrat définit notamment :
 
@@ -132,7 +132,7 @@ Une donnée invalide est **interdite d'exploitation directe**.
 ## 🔁 Continuité météo
 
 La continuité de la donnée météo est assurée
-**exclusivement par `contrat_fallback.md`.**
+**exclusivement par `fallback.md`.**
 
 Ce contrat définit :
 
@@ -177,9 +177,9 @@ est **centralisée dans les contrats dédiés**.
 Le domaine météo repose sur l'architecture suivante :
 
 ```
-contrat_meteo_gouvernance.md
+gouvernance.md
         ↓
-contrat_validation.md   contrat_fallback.md
+validation.md   fallback.md
         ↓
 contrats d'axe (température intérieure, température extérieure, humidité, etc.)
 ```

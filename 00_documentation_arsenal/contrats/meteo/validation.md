@@ -1,8 +1,8 @@
-# contrat_validation.md
+# validation.md
 # Arsenal — Contrat de validation des sources de données
 # Version : 1.1
 # Statut : normatif
-# Consommateurs : contrat_fallback.md, contrats locaux par axe
+# Consommateurs : fallback.md, contrats locaux par axe
 
 ---
 
@@ -85,8 +85,8 @@ transmises au mécanisme de fallback.
 
 Ce contrat ne définit pas :
 
-- la hiérarchie entre sources valides → voir `contrat_fallback.md`
-- la stratégie en l'absence de source valide → voir `contrat_fallback.md`
+- la hiérarchie entre sources valides → voir `fallback.md`
+- la stratégie en l'absence de source valide → voir `fallback.md`
 - les plages de plausibilité par axe → voir contrats locaux d'axe
 
 ---

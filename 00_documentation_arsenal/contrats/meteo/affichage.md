@@ -24,8 +24,8 @@ Il établit :
 - les **invariants d'honnêteté visuelle**.
 
 Ce contrat **ne gouverne pas la validité des données météo**
-(couverte par `contrat_meteo_gouvernance.md`,
-`contrat_validation.md`, `contrat_fallback.md`).
+(couverte par `gouvernance.md`,
+`validation.md`, `fallback.md`).
 
 ---
 
@@ -65,9 +65,9 @@ n'est autorisée dans la couche UI.
 
 ## 🧩 Relation aux contrats météo
 
-`contrat_meteo_gouvernance.md` définit le cadre normatif du domaine.
-`contrat_validation.md` définit ce qu'est une donnée météo valide.
-`contrat_fallback.md` définit la continuité et les conditions d'abstention.
+`gouvernance.md` définit le cadre normatif du domaine.
+`validation.md` définit ce qu'est une donnée météo valide.
+`fallback.md` définit la continuité et les conditions d'abstention.
 
 Le présent contrat :
 
@@ -199,9 +199,9 @@ Toute violation constitue une **non-conformité contractuelle**.
 - Normatif et opposable
 - Domaine : Affichage météo
 - Dépendances :
-  - `contrat_meteo_gouvernance.md`
-  - `contrat_validation.md`
-  - `contrat_fallback.md`
+  - `gouvernance.md`
+  - `validation.md`
+  - `fallback.md`
   - `/architecture/capteurs_meteo.md`
 
 Toute évolution nécessite :

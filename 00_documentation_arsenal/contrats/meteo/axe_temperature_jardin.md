@@ -1,8 +1,8 @@
-# contrat_axe_temperature_jardin.md
+# axe_temperature_jardin.md
 # Arsenal — Contrat d'axe : Température jardin
 # Version : 1.2
 # Statut : normatif
-# Dépend de : contrat_meteo.md (non versionné), contrat_validation.md (non versionné), contrat_fallback.md (non versionné)
+# Dépend de : meteo.md (non versionné), validation.md (non versionné), fallback.md (non versionné)
 # Note : les contrats amont ne sont pas versionnés — dette documentaire à solder en v1.2
 #
 # Delta v1.0 → v1.1
@@ -60,7 +60,7 @@ sous réserve de validation et des règles locales définies
 dans le présent contrat.
 
 Une source est considérée comme valide exclusivement selon
-les règles définies dans contrat_validation.md.
+les règles définies dans validation.md.
 Aucune logique de validation n'est redéfinie ici.
 
 ### 2.1 Note sur la source 3
@@ -104,9 +104,9 @@ justifiée par la nature physique du risque d'exposition.
 | Maximum | +50 °C |
 
 Toute valeur hors de cette plage est invalide au sens
-de contrat_validation.md, même si elle est techniquement lisible.
+de validation.md, même si elle est techniquement lisible.
 
-La vérification de plausibilité est déléguée à contrat_validation.md
+La vérification de plausibilité est déléguée à validation.md
 et n'est pas réimplémentée dans le présent contrat.
 
 ---
@@ -161,7 +161,7 @@ et n'est pas réimplémentée dans le présent contrat.
 ### 6.1 Périmètre d'application
 
 La détection s'applique exclusivement aux sources valides
-au sens de contrat_validation.md pour le cycle courant.
+au sens de validation.md pour le cycle courant.
 Une source invalide est déjà exclue avant cette étape.
 
 ### 6.2 Référence de divergence
@@ -191,7 +191,7 @@ elle est retirée du calcul pour le cycle courant.
 Le statut `suspect_chaud` :
 
 - est purement local au cycle courant
-- n'invalide pas la source au sens de contrat_validation.md
+- n'invalide pas la source au sens de validation.md
 - n'interdit pas son retour automatique dans un cycle ultérieur
   si la condition de divergence n'est plus présente
 - ne déclenche aucune alarme ni blocage
@@ -202,7 +202,7 @@ Le statut `suspect_chaud` :
 
 La cible robuste est construite à partir des sources :
 
-- valides au sens de contrat_validation.md
+- valides au sens de validation.md
 - non déclarées `suspect_chaud` à l'étape §6
 
 ### 7.1 Cas nominal — au moins 2 sources retenues
@@ -503,20 +503,20 @@ Leur implémentation est recommandée mais non obligatoire en v1.0.
 
 | Contrat / Composant                  | Rôle                                           | Caractère              |
 |--------------------------------------|------------------------------------------------|------------------------|
-| contrat_validation.md                | Validation des sources amont                   | **bloquant**           |
-| contrat_fallback.md                  | Mécanisme TTL et mémoire de continuité         | fonctionnel            |
-| contrat_meteo.md                     | Cadre du domaine météo/climat                  | cadre                  |
+| validation.md                | Validation des sources amont                   | **bloquant**           |
+| fallback.md                  | Mécanisme TTL et mémoire de continuité         | fonctionnel            |
+| meteo.md                     | Cadre du domaine météo/climat                  | cadre                  |
 | input_boolean.systeme_stable         | Garde de stabilité système pour la publication | **bloquant publication** |
 
-### 11.2 Note sur le caractère bloquant de contrat_validation.md
+### 11.2 Note sur le caractère bloquant de validation.md
 
-Si contrat_validation.md est absent, mal implémenté ou incohérent,
+Si validation.md est absent, mal implémenté ou incohérent,
 le présent contrat est sans fondation : la distinction
 valide / invalide est indéfinie et toutes les règles de fusion
 perdent leur sens.
 
 L'implémentation de cet axe est conditionnée à l'existence
-et à la conformité de contrat_validation.md.
+et à la conformité de validation.md.
 
 ### 11.3 Avertissement d'implémentation — séparation des couches
 
@@ -526,7 +526,7 @@ stabilisation) doivent rester strictement séparées en implémentation.
 En Home Assistant, toute dépendance circulaire entre templates
 issues d'un mélange de ces couches invalide les garanties
 du présent contrat. La validation relève exclusivement de
-contrat_validation.md et ne doit pas être réimplémentée
+validation.md et ne doit pas être réimplémentée
 dans les composants de fusion ou de stabilisation.
 
 ---
@@ -546,5 +546,5 @@ sont effectués en précision native.
 
 ## 13. Renvois contractuels
 
-- Cadre du domaine    → `contrat_meteo.md`
+- Cadre du domaine    → `meteo.md`
 - Validation sources  → `contrat_v

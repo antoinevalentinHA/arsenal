@@ -2,7 +2,7 @@
 # Palmarès historique — Journées les plus froides
 # Version : 1.0.2
 # Statut : normatif
-# Chemin : 00_documentation_arsenal/contrats/meteo/CONTRAT_PALMARES_TEMPERATURE_JOURNALIER_FROID.md
+# Chemin : 00_documentation_arsenal/contrats/meteo/palmares_froid.md
 
 ---
 

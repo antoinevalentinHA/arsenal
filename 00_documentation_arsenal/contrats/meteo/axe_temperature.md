@@ -1,9 +1,9 @@
-# contrat_axe_temperature.md
+# axe_temperature.md
 # Arsenal — Contrat d'axe : Température intérieure
 # Version : 1.1
 # Statut : normatif
-# Dépend de : contrat_meteo.md, contrat_validation.md,
-#             contrat_fallback.md
+# Dépend de : meteo.md, validation.md,
+#             fallback.md
 
 ---
 
@@ -42,7 +42,7 @@ Aucune autre substitution n'est autorisée.
 | Maximum | 40 °C  |
 
 Toute valeur hors de cette plage est invalide
-au sens de contrat_validation.md §4,
+au sens de validation.md §4,
 même si elle est techniquement exploitable.
 
 ---
@@ -78,6 +78,6 @@ permettre l'expiration effective du TTL.
 
 ## 7. Renvois contractuels
 
-- Cadre du domaine → `contrat_meteo.md`
-- Validation       → `contrat_validation.md`
-- Fallback         → `contrat_fallback.md`
+- Cadre du domaine → `meteo.md`
+- Validation       → `validation.md`
+- Fallback         → `fallback.md`
