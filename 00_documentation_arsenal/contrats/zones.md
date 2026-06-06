@@ -1,4 +1,4 @@
-# CONTRAT_ZONES.md
+# zones.md
 # Arsenal — Référentiel des zones géographiques
 # Version : 1.0.3
 # Statut : Normatif
@@ -100,9 +100,9 @@ La contribution effective d’une zone à la présence canonique
 (sécurité ou confort) n’est pas définie dans ce contrat.
 
 Elle est définie exclusivement dans :
-`presence.md` — section "États techniques de projection reconnus".
+[`presence.md`](presence.md) — section "États techniques de projection reconnus".
 
-Toute divergence entre ce contrat et `presence.md`
+Toute divergence entre ce contrat et [`presence.md`](presence.md)
 constitue une incohérence structurelle et doit être arbitrée.
 
 ---
@@ -166,7 +166,7 @@ Toute zone définie dans Arsenal doit être explicitement classée comme :
 
 Cette classification doit être cohérente avec :
 
-- le contrat `presence.md`
+- le contrat [`presence.md`](presence.md)
 - les capteurs de présence amont
 
 ### 🛑 Interdictions
