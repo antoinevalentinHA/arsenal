@@ -60,7 +60,7 @@
 
 ## Constats
 
-_(emplacement réservé — aucun document à ce jour)_
+_Constats transverses consignés dans le registre vivant : [registre_anomalies_transverses.md](02_constats/transverses/registre_anomalies_transverses.md)._
 
 ## Contre-expertises
 
