@@ -11,6 +11,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -21,3 +23,9 @@ jobs:
         run: |
           python scripts/docs_lint/docs_lint.py \
             --exceptions scripts/docs_lint/docs_lint_exceptions.txt
+
+      - name: Changelog index gate (DOC-CI-1, pull_request only)
+        if: github.event_name == 'pull_request'
+        run: |
+          python scripts/docs_lint/docs_ci_changelog_index.py \
+            --base "${{ github.event.pull_request.base.sha }}"
