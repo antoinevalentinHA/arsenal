@@ -50,6 +50,13 @@
 ### Perception externe
 - [perception_externe/rapport_perception_externe_depot.md](01_rapports/perception_externe/rapport_perception_externe_depot.md)
 
+### Alarme
+- [alarme/audit_alarme_rapport_officiel.md](01_rapports/alarme/audit_alarme_rapport_officiel.md)
+
+### Lovelace
+- [lovelace/audit_19_button_card_templates.md](01_rapports/lovelace/audit_19_button_card_templates.md)
+- [lovelace/audit_lovelace_arborescence.md](01_rapports/lovelace/audit_lovelace_arborescence.md)
+
 ## Arbitrages
 
 ### ECS
@@ -89,6 +96,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [chauffage/ch_observabilite_auto_ajustement_courbe.md](04_chantiers/chauffage/ch_observabilite_auto_ajustement_courbe.md)  _(chantier unique issu de l'audit courbe — observabilité du mécanisme ; **non ordonnancé** ; aucun changement de comportement)_
 - [chauffage/backlog_auto_ajustement_courbe.md](04_chantiers/chauffage/backlog_auto_ajustement_courbe.md)  _(différés : protections empruntées ; rejetés : Eco% tel quel, suspension totale poêle, élargissement pente ; errata contrats 75/06)_
 - [chauffage/validation_L1_observabilite_auto_ajustement_courbe.md](04_chantiers/chauffage/validation_L1_observabilite_auto_ajustement_courbe.md)  _(validation partielle L1 — cas `suggestion_identique` observé ; lot exploitable ; validations poursuivies au fil des occurrences)_
+- [chauffage/dossier_conception_observabilite.md](04_chantiers/chauffage/dossier_conception_observabilite.md)
 
 ### ECS
 - [ecs/backlog_ecs.md](04_chantiers/ecs/backlog_ecs.md)  _(backlog ECS — watchdog résolu par arbitrage ; ECS-DOC + ECS-OFF-1 réalisés ; reliquat = chantier « Durcissement CI ECS » (étendu OFF-5), non ouvert)_
@@ -106,6 +114,16 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [vacances/chantier_vac_imp_5_desinfection_retour.md](04_chantiers/vacances/chantier_vac_imp_5_desinfection_retour.md)  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
 - [vacances/rapport_observation_vac_imp_5.md](04_chantiers/vacances/rapport_observation_vac_imp_5.md)  _(observation runtime — cause requalifiée)_
 
+### Alarme
+- [alarme/dossier_conception_CH1_alarme.md](04_chantiers/alarme/dossier_conception_CH1_alarme.md)
+- [alarme/plan_implementation_CH1_alarme.md](04_chantiers/alarme/plan_implementation_CH1_alarme.md)
+- [alarme/dossier_conception_CH2_alarme.md](04_chantiers/alarme/dossier_conception_CH2_alarme.md)
+- [alarme/plan_implementation_CH2_alarme.md](04_chantiers/alarme/plan_implementation_CH2_alarme.md)
+- [alarme/backlog_alarme.md](04_chantiers/alarme/backlog_alarme.md)
+
+### Lovelace
+- [lovelace/exploitation_audit_19_button_card_templates.md](04_chantiers/lovelace/exploitation_audit_19_button_card_templates.md)
+
 ## Clôtures
 
 ### Vacances
@@ -122,6 +140,9 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 
 ### État du domaine Vacances
 Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — faux négatif structurel), contrat réconcilié (`2ab3526`), runtime commité (`c4faf68`), **validation runtime en attente** ; constat **toujours ouvert**, **domaine non clôturé**.
+
+### État du domaine Alarme — post-CH-6
+- [alarme/etat_post_CH6.md](04_chantiers/alarme/etat_post_CH6.md)
 
 ---
 
