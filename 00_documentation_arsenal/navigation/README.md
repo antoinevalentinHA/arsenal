@@ -9,8 +9,8 @@
 ## Contenu
 
 - [`carte_domaines.md`](carte_domaines.md) — **registre canonique des domaines** et **autorité** de la couche : tout hub découle d'une de ses entrées (1 hub ⟺ 1 entrée Tier 1).
-- `domaines/` — **hubs de domaine** (un par entrée Tier 1). Produits à ce jour : `chauffage`, `vacances`, `alarme` ; les autres suivront.
-- `pivots/` — **pages pivot transverses** (à venir).
+- `domaines/` — **hubs de domaine** (un par entrée Tier 1). **21 hubs produits**, un par domaine de `carte_domaines.md`.
+- `pivots/` — **pages pivot transverses**. Présent : `registre_ch.md` (désambiguïsation des identifiants « CH-x »).
 
 ## Familles documentaires
 
