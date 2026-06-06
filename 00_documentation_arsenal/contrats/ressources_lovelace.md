@@ -1,4 +1,4 @@
-# CONTRAT_RESSOURCES_LOVELACE.md
+# CONTRAT ARSENAL — RESSOURCES LOVELACE
 
 **Version :** 1.2
 **Domaine :** Approvisionnement, figeage local et chargement des ressources frontend Lovelace (cartes custom)
@@ -115,7 +115,7 @@ Ce principe garantit :
 
 ### 3.2 Manifeste de version
 
-`/homeassistant/www/readme.md` est le **manifeste de version** du runtime frontend et la **source de vérité fonctionnelle** du sous-système (cf. INV-14).
+le manifeste runtime du dossier /homeassistant/www est le **manifeste de version** du runtime frontend et la **source de vérité fonctionnelle** du sous-système (cf. INV-14).
 
 Il liste **toutes** les ressources figées avec leur version exacte, leur chemin, leur fichier actif, leur statut, leur criticité et leur date de dernière mise à jour. Il est la **référence canonique opposable** du frontend.
 
@@ -149,7 +149,7 @@ Pour toute entrée `url: /local/<dir>/<file>.js` dans `resources.yaml`, le fichi
 Toute entrée de `resources.yaml` déclare un type explicite. La valeur par défaut est `module`. Toute déviation (`js`, `css`, etc.) doit être justifiée et documentée dans le manifeste, dans le champ `notes` de la ressource concernée.
 
 ### INV-5 — Manifeste exhaustif
-Toute ressource présente dans `resources.yaml` est listée dans `/homeassistant/www/readme.md` avec sa version exacte, son fichier cible et son statut. Réciproquement, toute ressource listée dans le manifeste avec un statut `actif` est référencée dans `resources.yaml`.
+Toute ressource présente dans `resources.yaml` est listée dans le manifeste runtime du dossier /homeassistant/www avec sa version exacte, son fichier cible et son statut. Réciproquement, toute ressource listée dans le manifeste avec un statut `actif` est référencée dans `resources.yaml`.
 
 ### INV-6 — Sauvegarde locale exploitable
 Pour toute ressource ayant subi au moins une mise à jour, le dossier `/homeassistant/www/<ressource>/` contient une **sauvegarde locale exploitable** de la version précédente stable. La forme est libre (suffixe `.bak`, dossier versionné, archive `.tar.gz`, etc.) tant que :
@@ -163,7 +163,7 @@ Une ressource jamais mise à jour depuis son installation initiale est dispensé
 Une mise à jour d'une ressource n'est considérée terminée que lorsque les **quatre** modifications suivantes sont effectuées et cohérentes entre elles :
 
 1. fichiers copiés dans `/homeassistant/www/<ressource>/`
-2. version, fichier cible et date mis à jour dans `/homeassistant/www/readme.md`
+2. version, fichier cible et date mis à jour dans le manifeste runtime du dossier /homeassistant/www
 3. (si l'URL ou le nom de fichier change) `resources.yaml` mis à jour
 4. cache navigateur invalidé et chargement effectif du nouveau JS vérifié (cf. INV-11)
 
@@ -222,7 +222,7 @@ Toute version retirée pour cause de régression est conservée avec un suffixe 
 Le `.bak` reste la dernière version **stable connue**. Le `.broken` est une version **fautive conservée pour analyse**. Cette distinction est non négociable : la confondre détruit l'historique de stabilité.
 
 ### INV-14 — Source de vérité fonctionnelle unique
-Le manifeste `/homeassistant/www/readme.md` est la **source de vérité fonctionnelle** du sous-système ressources Lovelace.
+Le manifeste le manifeste runtime du dossier /homeassistant/www est la **source de vérité fonctionnelle** du sous-système ressources Lovelace.
 
 `resources.yaml` est une **projection technique** de ce manifeste, requise par Home Assistant pour le chargement effectif des ressources mais subordonnée au manifeste sur le plan de la gouvernance.
 
@@ -254,7 +254,7 @@ Une avance de phase non documentée est une violation.
 Supprimer la ligne d'une ressource dans `resources.yaml` sans avoir audité au préalable les dashboards qui l'utilisent (risque de cartes cassées en production UI).
 
 ### INT-5
-Ajouter une ressource directement en runtime sans la déclarer dans le manifeste `readme.md`.
+Ajouter une ressource directement en runtime sans la déclarer dans le manifeste le manifeste runtime du dossier /homeassistant/www.
 
 ### INT-6
 Pousser un changement vers `resources.yaml` sans procéder au contrôle de cohérence cache (INV-11).
@@ -293,7 +293,7 @@ Modifier directement `resources.yaml` sans avoir préalablement mis à jour le m
    Copier l'intégralité du contenu de `/homeassistant/www/community/<ressource>/` vers `/homeassistant/www/<ressource>/`.
 
 4. **Mise à jour du manifeste (source de vérité)**
-   Mettre à jour dans `/homeassistant/www/readme.md` :
+   Mettre à jour dans le manifeste runtime du dossier /homeassistant/www :
    - `version`
    - `fichier` (si renommage)
    - `derniere_mise_a_jour` (date du jour)
