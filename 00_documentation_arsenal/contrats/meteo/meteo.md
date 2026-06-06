@@ -79,6 +79,6 @@ Chaque contrat d'axe DOIT définir :
 
 ## 6. Renvois contractuels
 
-- Validation des sources → `validation.md`
-- Stratégie de fallback  → `fallback.md`
+- Validation des sources → [`validation.md`](validation.md)
+- Stratégie de fallback  → [`fallback.md`](fallback.md)
 - Paramètres par axe     → contrats locaux d'axe

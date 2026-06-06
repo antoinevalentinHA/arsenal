@@ -514,10 +514,10 @@ adaptée à la perception humaine et à la stabilité visuelle attendue.
 
 ## 13. Renvois contractuels
 
-- Cadre du domaine    → `meteo.md`
-- Validation sources  → `validation.md`
-- Continuité/fallback → `fallback.md`
-- Axe lié             → `axe_temperature_jardin.md`
+- Cadre du domaine    → [`meteo.md`](meteo.md)
+- Validation sources  → [`validation.md`](validation.md)
+- Continuité/fallback → [`fallback.md`](fallback.md)
+- Axe lié             → [`axe_temperature_jardin.md`](axe_temperature_jardin.md)
 
 ---
 

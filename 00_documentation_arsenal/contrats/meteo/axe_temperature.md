@@ -78,6 +78,6 @@ permettre l'expiration effective du TTL.
 
 ## 7. Renvois contractuels
 
-- Cadre du domaine → `meteo.md`
-- Validation       → `validation.md`
-- Fallback         → `fallback.md`
+- Cadre du domaine → [`meteo.md`](meteo.md)
+- Validation       → [`validation.md`](validation.md)
+- Fallback         → [`fallback.md`](fallback.md)

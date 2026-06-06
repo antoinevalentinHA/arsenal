@@ -199,10 +199,10 @@ Toute violation constitue une **non-conformité contractuelle**.
 - Normatif et opposable
 - Domaine : Affichage météo
 - Dépendances :
-  - `gouvernance.md`
-  - `validation.md`
-  - `fallback.md`
-  - `/architecture/capteurs_meteo.md`
+  - [`gouvernance.md`](gouvernance.md)
+  - [`validation.md`](validation.md)
+  - [`fallback.md`](fallback.md)
+  - [`/architecture/capteurs_meteo.md`](../../architecture/capteurs_meteo.md)
 
 Toute évolution nécessite :
 - modification explicite du contrat,

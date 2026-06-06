@@ -85,8 +85,8 @@ transmises au mécanisme de fallback.
 
 Ce contrat ne définit pas :
 
-- la hiérarchie entre sources valides → voir `fallback.md`
-- la stratégie en l'absence de source valide → voir `fallback.md`
+- la hiérarchie entre sources valides → voir [`fallback.md`](fallback.md)
+- la stratégie en l'absence de source valide → voir [`fallback.md`](fallback.md)
 - les plages de plausibilité par axe → voir contrats locaux d'axe
 
 ---

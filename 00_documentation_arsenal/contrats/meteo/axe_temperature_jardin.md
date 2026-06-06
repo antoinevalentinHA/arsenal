@@ -546,5 +546,6 @@ sont effectués en précision native.
 
 ## 13. Renvois contractuels
 
-- Cadre du domaine    → `meteo.md`
-- Validation sources  → `contrat_v
+- Cadre du domaine    → [`meteo.md`](meteo.md)
+- Validation sources  → [`validation.md`](validation.md)
+- Continuité/fallback → [`fallback.md`](fallback.md)
