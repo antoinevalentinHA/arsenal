@@ -1,6 +1,6 @@
 # 🧠 ARSENAL — CONTRAT DE DOMAINE · Éclairage — Séjour
 
-**Référence :** `CONTRAT_ECLAIRAGE_SEJOUR.md`
+**Référence :** `sejour.md`
 **Version :** 1.0.0
 **Introduced :** Arsenal v15.5
 **Statut :** Normatif
@@ -189,7 +189,7 @@ si la lampe est allumée et la deadline atteinte, elle s'éteint quelle que soit
 
 ## 8. Robustesse au redémarrage
 
-Ce domaine est robuste au redémarrage conformément à `DOCTRINE_CAUSALITE.md`.
+Ce domaine est robuste au redémarrage conformément à [Doctrine de causalité métier](../../architecture/03_doctrines/causalite_metier.md).
 
 - La deadline est persistée dans `input_datetime.sejour_extinction_deadline`
 - L'automation `10070000000015` embarque une branche `homeassistant.start`
@@ -227,4 +227,4 @@ Ce domaine est robuste au redémarrage conformément à `DOCTRINE_CAUSALITE.md`.
 
 *Document normatif Arsenal. Toute modification des automations du domaine
 doit être cohérente avec les invariants de ce contrat.*
-*Référence doctrinale transversale : `DOCTRINE_CAUSALITE.md`*
+*Référence doctrinale transversale : [Doctrine de causalité métier](../../architecture/03_doctrines/causalite_metier.md)*

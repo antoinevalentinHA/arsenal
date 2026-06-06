@@ -1,6 +1,6 @@
 # 🧠 ARSENAL — CONTRAT DE DOMAINE · Éclairage — Entrée
 
-**Référence :** `CONTRAT_ECLAIRAGE_ENTREE.md`
+**Référence :** `entree.md`
 **Version :** 1.0.0
 **Introduced :** Arsenal v15.5
 **Statut :** Normatif
@@ -229,7 +229,7 @@ quelle que soit la luminosité courante.
 
 ## 9. Robustesse au redémarrage
 
-Ce domaine est robuste au redémarrage conformément à `DOCTRINE_CAUSALITE.md`.
+Ce domaine est robuste au redémarrage conformément à [Doctrine de causalité métier](../../architecture/03_doctrines/causalite_metier.md).
 
 - La deadline est persistée dans `input_datetime.entree_extinction_deadline`
 - L'automation `10070000000027` embarque une branche `homeassistant.start`
@@ -268,4 +268,4 @@ Ce domaine est robuste au redémarrage conformément à `DOCTRINE_CAUSALITE.md`.
 
 *Document normatif Arsenal. Toute modification des automations du domaine
 doit être cohérente avec les invariants de ce contrat.*
-*Références doctrinales : `DOCTRINE_CAUSALITE.md`, `CONTRAT_ECLAIRAGE_SEJOUR.md`*
+*Références doctrinales : [Doctrine de causalité métier](../../architecture/03_doctrines/causalite_metier.md), [`sejour.md`](sejour.md)*
