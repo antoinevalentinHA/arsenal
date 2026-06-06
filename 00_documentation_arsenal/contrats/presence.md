@@ -3,7 +3,7 @@
 ## 📌 Statut
 - **Contrat normatif et opposable**
 - Domaine : **Transversal / Contexte global**
-- Chemin : `homeassistant/00_documentation_arsenal/contrats/presence.md`
+- Chemin : `00_documentation_arsenal/contrats/presence.md`
 
 ---
 
