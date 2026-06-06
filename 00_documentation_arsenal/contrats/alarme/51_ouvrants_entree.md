@@ -13,8 +13,8 @@ est desormais centralisee dans :
 ## Renvoi canonique
 
 Voir en particulier :
-- `alarme.md`
-- `redondance.md`
+- [`alarme.md`](../ouvertures/alarme.md)
+- [`redondance.md`](../ouvertures/redondance.md)
 
 ## Statut
 

@@ -125,10 +125,10 @@ Un watchdog ne doit jamais :
 
 - Watchdog blocage armement :
   - automation `10020000000034`
-  - contrat associé : `60_delais_et_blocages.md`
+  - contrat associé : [`60_delais_et_blocages.md`](60_delais_et_blocages.md)
   - contrat associé : `95_diagnostics_et_coherence.md` (présent document)
 
 ### Contrats techniques locaux associés
 
-- `96_blocage_armement_incoherence.md` — diagnostic structurel du couple
+- [`96_diagnostic_blocage_armement_incoherence.md`](96_diagnostic_blocage_armement_incoherence.md) — diagnostic structurel du couple
   `input_boolean.blocage_armement_auto` ↔ `timer.blocage_armement_auto`

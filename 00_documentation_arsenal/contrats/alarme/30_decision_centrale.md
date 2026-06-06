@@ -4,7 +4,7 @@
 
 - **Contrat normatif et opposable**
 - Domaine : **Sécurité / Alarme**
-- Chemin : `homeassistant/00_documentation_arsenal/contrats/alarme/20_interfaces_contexte_et_helpers.md`
+- Chemin : [`20_interfaces_contexte_et_helpers.md`](20_interfaces_contexte_et_helpers.md)
 
 ---
 

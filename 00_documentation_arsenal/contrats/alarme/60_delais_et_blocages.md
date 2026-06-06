@@ -4,7 +4,7 @@
 
 - **Contrat normatif et opposable**
 - Domaine : **Sécurité / Alarme**
-- Chemin : `homeassistant/00_documentation_arsenal/contrats/alarme/51_blocage_armement.md`
+- Chemin : `60_delais_et_blocages.md`
 
 ---
 

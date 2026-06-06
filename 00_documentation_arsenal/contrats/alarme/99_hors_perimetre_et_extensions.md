@@ -36,7 +36,7 @@ au noyau alarme.
 
 Recommandation d’architecture :
 
-- isoler la visite dans un dossier contractuel dédié (ex : `contrats/contexte/visite.md`)
+- isoler la visite dans un dossier contractuel dédié (ex : [`visite.md`](../visite.md))
 - l’alarme ne consomme qu’un signal stable :
   - `input_boolean.presence_visiteur`
   - `input_boolean.visite_en_cours`

@@ -4,7 +4,7 @@
 
 - **Contrat normatif et opposable**
 - Domaine : **Sécurité / Alarme**
-- Chemin : `homeassistant/00_documentation_arsenal/contrats/alarme/30_decision_centrale.md`
+- Chemin : [`30_decision_centrale.md`](30_decision_centrale.md)
 
 ---
 

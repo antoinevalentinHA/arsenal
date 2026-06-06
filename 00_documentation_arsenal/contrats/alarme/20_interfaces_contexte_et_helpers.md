@@ -4,7 +4,7 @@
 
 - **Contrat normatif et opposable**
 - Domaine : **Sécurité / Alarme**
-- Chemin : `homeassistant/00_documentation_arsenal/contrats/alarme/10_modele_etats_et_vocabulaire.md`
+- Chemin : [`10_modele_etats_et_vocabulaire.md`](10_modele_etats_et_vocabulaire.md)
 
 ---
 

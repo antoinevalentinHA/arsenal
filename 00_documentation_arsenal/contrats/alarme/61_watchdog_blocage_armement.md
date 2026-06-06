@@ -4,7 +4,7 @@
 
 - **Contrat normatif et opposable**
 - Domaine : **Sécurité / Alarme**
-- Chemin : `homeassistant/00_documentation_arsenal/contrats/alarme/52_watchdog_blocage_armement.md`
+- Chemin : `61_watchdog_blocage_armement.md`
 
 ---
 
@@ -16,7 +16,7 @@ Garantir la **cohérence structurelle** entre :
 - `timer.blocage_armement_auto`
 
 en détectant et corrigeant toute divergence non conforme
-au contrat `60_delais_et_blocages.md`.
+au contrat [`60_delais_et_blocages.md`](60_delais_et_blocages.md).
 
 ---
 
@@ -213,6 +213,6 @@ Chaque déclenchement du watchdog doit :
 
 ## 🔗 Contrats liés
 
-- `60_delais_et_blocages.md` — contrat principal des délais et blocages
-- `95_diagnostics_et_coherence.md` — cadre général des watchdogs structurels
-- `50_intrusion_detection.md` — consomme l'état dérivé du blocage
+- [`60_delais_et_blocages.md`](60_delais_et_blocages.md) — contrat principal des délais et blocages
+- [`95_diagnostics_et_coherence.md`](95_diagnostics_et_coherence.md) — cadre général des watchdogs structurels
+- [`50_intrusion_detection.md`](50_intrusion_detection.md) — consomme l'état dérivé du blocage
