@@ -3,7 +3,7 @@
 **Version** : 1.4.0
 **Statut** : Normatif — Clos
 **Domaine** : `vacances`
-**Dépendances** : `presence`, `mode_maison`, `visite`
+**Dépendances** : présence maison, mode maison, visite
 **Dépendance transverse** : `system/integrite_reglages` — convention `binary_sensor.parametres_invalides_*`
 **Dernière révision** : 2026-04
 
