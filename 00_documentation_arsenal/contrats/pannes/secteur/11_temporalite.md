@@ -15,7 +15,7 @@ Ce document définit les **durées de confirmation normatives** utilisées pour 
 
 Il est référencé comme document NORMATIF par le contrat socle :
 
-`/00_documentation_arsenal/contrats/pannes/secteur/10_socle.md`
+[10_socle.md](10_socle.md)
 
 Toute durée de confirmation non issue de ce document est invalide.
 
@@ -53,6 +53,6 @@ Toute durée de confirmation non issue de ce document est invalide.
 
 ## 🔗 Références
 
-- Contrat socle : `00_panne_secteur_socle.md`
+- Contrat socle : [`10_socle.md`](10_socle.md)
 - Automation d'entrée : `ID 1004000000001`
 - Automation de sortie : `ID 1004000000002`

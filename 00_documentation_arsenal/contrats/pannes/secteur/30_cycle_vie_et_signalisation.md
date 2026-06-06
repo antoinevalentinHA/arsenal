@@ -13,13 +13,13 @@
 
 Ce contrat est un contrat **dérivé**. Il dépend du contrat socle :
 
-`/00_documentation_arsenal/contrats/pannes/secteur/10_socle.md`
+[10_socle.md](10_socle.md)
 
 Les notions de **"coupure secteur confirmée"** et de **"panne secteur qualifiée"** sont définies exclusivement par ce contrat socle.
 
 Les effets métier chauffage et ECS déclenchés à l'entrée en mode panne sont régis par :
 
-`/00_documentation_arsenal/contrats/pannes/secteur/20_chauffage_et_ecs.md`
+[20_chauffage_et_ecs.md](20_chauffage_et_ecs.md)
 
 Le présent contrat ne redéfinit pas ces effets. Il les référence comme actions autorisées dans le cycle de vie.
 

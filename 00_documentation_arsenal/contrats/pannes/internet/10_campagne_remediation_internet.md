@@ -48,7 +48,7 @@ au sens de ce contrat.
   de remédiation conforme à la cadence définie par contrat.
 
 La cadence de remédiation est définie exclusivement
-par le contrat `20_execution_remediation_internet.md`.
+par le contrat [`20_execution_remediation_internet.md`](20_execution_remediation_internet.md).
 
 ---
 
@@ -76,7 +76,7 @@ Pendant une campagne active :
   sur la base de ces observations.
 
 → Les invariants et interdictions associés sont définis dans
-`30_contexte_remediation_reseau.md`.
+[`30_contexte_remediation_reseau.md`](30_contexte_remediation_reseau.md).
 
 ---
 

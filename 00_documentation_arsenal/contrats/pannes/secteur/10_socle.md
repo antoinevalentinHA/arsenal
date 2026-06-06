@@ -46,7 +46,7 @@ Cette confirmation temporelle doit :
 - exclure les micro-coupures et sauts de tension
 - reposer sur une durée minimale de confirmation
 - être définie explicitement dans le document normatif de temporalité :  
-  `/00_documentation_arsenal/contrats/pannes/secteur/11_temporalite.md`
+  [11_temporalite.md](11_temporalite.md)
 
 Ce document est **NORMATIF** pour toute implémentation. Toute durée de confirmation non issue de ce document est invalide.
 
