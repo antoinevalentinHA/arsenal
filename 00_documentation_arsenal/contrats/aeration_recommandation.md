@@ -48,7 +48,7 @@ Ce contrat **NE COUVRE PAS** :
 - toute temporisation thermique post-aération.
 
 👉 Ces éléments relèvent du contrat distinct :  
-`aeration.md` — *Aération physique / blocage thermique*.
+[`aeration.md`](aeration_blocage_chauffage/README.md) — *Aération physique / blocage thermique*.
 
 ---
 
@@ -277,7 +277,7 @@ Toute extension devra :
 - Action thermique : **AUCUNE**
 - Notification : **AUCUNE**
 - Canal de restitution : **UI uniquement**
-- Dépendance avec `aeration.md` : **SÉPARÉE**
+- Dépendance avec [`aeration.md`](aeration_blocage_chauffage/README.md) : **SÉPARÉE**
 - Fusion : **NON**
 
 # ==========================================================
