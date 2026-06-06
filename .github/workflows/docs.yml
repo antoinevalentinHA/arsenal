@@ -1,0 +1,23 @@
+name: Arsenal Docs
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  docs-lint:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Documentation lint (read-only, blocking)
+        run: |
+          python scripts/docs_lint/docs_lint.py \
+            --exceptions scripts/docs_lint/docs_lint_exceptions.txt
