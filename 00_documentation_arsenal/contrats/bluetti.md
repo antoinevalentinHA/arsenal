@@ -174,7 +174,7 @@ Cartes : Santé · Secteur · Sortie AC · SOC · Puissance sortie · Sur batter
 
 Le domaine `energie_chaudiere` ne qualifie jamais une panne secteur Arsenal.
 
-Le seul signal canonique de panne secteur reste `binary_sensor.coupure_secteur`, tel que défini dans le contrat socle `10_socle.md`. Aucun état Bluetti ne peut s'y substituer ni le dupliquer.
+Le seul signal canonique de panne secteur reste `binary_sensor.coupure_secteur`, tel que défini dans le contrat socle [`10_socle.md`](pannes/secteur/10_socle.md). Aucun état Bluetti ne peut s'y substituer ni le dupliquer.
 
 Les états Bluetti (`sur_batterie`, `offline`, `critical`) décrivent uniquement la **continuité énergétique locale de la chaîne thermique** alimentée par le Bluetti. Ils ne constituent pas une qualification de panne secteur Arsenal.
 

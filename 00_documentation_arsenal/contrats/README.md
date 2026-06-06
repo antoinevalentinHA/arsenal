@@ -37,16 +37,16 @@ La famille est **mixte** : 14 domaines sont organisés en sous-dossiers (`chauff
 
 Exemples :
 
-- `vmc.md`  
+- [`vmc.md`](vmc.md)  
   → qualité d’air, ventilation, arbitrages hygrothermiques
 
-- `presence.md`  
+- [`presence.md`](presence.md)  
   → règles de détection et d’exploitation de la présence
 
-- `vacances.md`  
+- [`vacances.md`](vacances.md)  
   → comportement du système en mode vacances
 
-- `bouclage.md`  
+- [`bouclage.md`](bouclage.md)  
   → maintien en température du réseau ECS
 
 Chaque contrat est **autoportant** :

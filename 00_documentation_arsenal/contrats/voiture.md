@@ -68,7 +68,7 @@ Il ne couvre pas :
 - l'intégration Audi elle-même,
 - les API cloud,
 - les mécanismes réseau,
-- le domaine Météo (régi par `contrats/meteo/axe_temperature_jardin.md`).
+- le domaine Météo (régi par [`contrats/meteo/axe_temperature_jardin.md`](meteo/axe_temperature_jardin.md)).
 
 ---
 
@@ -189,7 +189,7 @@ ID      : 1015000000001
 - aucune automation tierce ne peut écrire ces trois helpers.
 
 **Source température :** `sensor.temperature_jardin` (source canonique Arsenal —
-voir `contrats/meteo/axe_temperature_jardin.md`).
+voir [`contrats/meteo/axe_temperature_jardin.md`](meteo/axe_temperature_jardin.md)).
 
 **Formule de correction thermique :**
 

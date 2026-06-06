@@ -5,8 +5,8 @@
 **Statut** : proposé / non implémenté
 **Périmètre** : exposition Home Assistant de l'observabilité d'exécution des jobs NAS Arsenal. En V1, locataire unique : `release_diff`.
 **Contrats liés** :
-- `outils_externes/nas_arsenal/diff/diff_release.md`
-- `outils_externes/nas_arsenal/diff/release_diff_mqtt.md`
+- [`outils_externes/nas_arsenal/diff/diff_release.md`](../outils_externes/nas_arsenal/diff/diff_release.md)
+- [`outils_externes/nas_arsenal/diff/release_diff_mqtt.md`](../outils_externes/nas_arsenal/diff/release_diff_mqtt.md)
 
 ---
 
@@ -56,7 +56,7 @@ divergence.
 ## 4. Source de données
 
 Le domaine consomme deux topics MQTT, conformément au contrat
-`release_diff_mqtt.md` :
+[`release_diff_mqtt.md`](../outils_externes/nas_arsenal/diff/release_diff_mqtt.md) :
 
 ```text
 arsenal/nas/release_diff/state    (plan état, retain true)
@@ -154,7 +154,7 @@ notifications d'Arsenal (`script.notification_envoyer*`). Aucune cible
 
 ### 7.3 Nature
 
-Conformément au contrat `notifications.md`, ces notifications sont des
+Conformément au contrat [`notifications.md`](notifications.md), ces notifications sont des
 **traces d'événement**, pas des projections d'état. Elles ne sont jamais
 persistantes et ne se substituent pas à l'état consultable.
 
@@ -244,10 +244,10 @@ Toute modification des entités exposées, de leur sémantique ou de leur
 responsabilité nécessite une évolution versionnée du présent contrat.
 
 Toute modification du topic MQTT, du schéma JSON ou des règles de
-publication relève du contrat `release_diff_mqtt.md`.
+publication relève du contrat [`release_diff_mqtt.md`](../outils_externes/nas_arsenal/diff/release_diff_mqtt.md).
 
 Toute modification de la sémantique de génération du diff relève du
-contrat `diff_release.md`.
+contrat [`diff_release.md`](../outils_externes/nas_arsenal/diff/diff_release.md).
 
 ---
 

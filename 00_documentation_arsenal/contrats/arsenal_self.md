@@ -4,8 +4,8 @@
 **Statut** : actif
 **Périmètre** : exposition Home Assistant de l’auto-observation Arsenal issue du pipeline NAS d’audit patrimonial.
 **Contrats liés** :
-- `outils_externes/nas_arsenal/audit/audit.md`
-- `outils_externes/nas_arsenal/audit/mqtt.md`
+- [`outils_externes/nas_arsenal/audit/audit.md`](../outils_externes/nas_arsenal/audit/audit.md)
+- [`outils_externes/nas_arsenal/audit/mqtt.md`](../outils_externes/nas_arsenal/audit/mqtt.md)
 
 ---
 
