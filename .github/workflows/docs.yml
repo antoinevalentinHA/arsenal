@@ -33,3 +33,7 @@ jobs:
       - name: Orphan report gate (DOC-CI-3, stock)
         run: |
           python scripts/docs_lint/docs_ci_orphan_report.py
+
+      - name: Contract index count gate (DOC-CI-2)
+        run: |
+          python scripts/docs_lint/docs_ci_contract_counts.py
