@@ -14,7 +14,7 @@ Entrée : [`contrats/chauffage/`](../../contrats/chauffage/) (colonne `00→92` 
 - Gouvernance : [`00_gouvernance_chauffage.md`](../../contrats/chauffage/00_gouvernance_chauffage.md) ([amendement](../../contrats/chauffage/00_gouvernance_chauffage__amendement.md))
 - Autorité décisionnelle : [`30_decision_centrale.md`](../../contrats/chauffage/30_decision_centrale.md) ([amendement](../../contrats/chauffage/30_decision_centrale__amendement.md))
 - Table de décision : [`80_table_decision_canonique.md`](../../contrats/chauffage/80_table_decision_canonique.md) ([réécriture partielle](../../contrats/chauffage/80_table_decision_canonique__reecriture_partielle.md))
-- Capteurs : [`15_capteurs/` (index)](../../contrats/chauffage/15_capteurs/13_capteurs_index.md)
+- Capteurs : [`15_capteurs/` (index)](../../contrats/chauffage/15_capteurs/index.md)
 - Contrat exécutable / CI : [`ci/registres_entites.yaml`](../../contrats/chauffage/ci/registres_entites.yaml)
 - Dépendances inter-domaines : [`dependances_inter_domaines.md`](../../contrats/chauffage/dependances_inter_domaines.md)
 

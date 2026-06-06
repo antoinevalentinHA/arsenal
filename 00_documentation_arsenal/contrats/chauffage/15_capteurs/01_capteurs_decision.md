@@ -142,7 +142,7 @@ Consommateurs contractuels :
 ---
 
 ⚠️ Classification :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)
+INCLUS DANS [`index.md`](index.md)
 Section : Diagnostic structurant / Décision thermique
 Classe : **STRUCTURANT**
 
@@ -255,6 +255,6 @@ Toute modification est une modification MÉTIER de premier niveau.
 ---
 
 ⚠️ Classification :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)
+INCLUS DANS [`index.md`](index.md)
 Section : Autorisation thermostat / Évaluation thermique canonique
 Classe : **STRUCTURANT — NIVEAU CRITIQUE**

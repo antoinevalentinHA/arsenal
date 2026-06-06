@@ -162,7 +162,7 @@ Frontière d’autorité officielle Présence / Absence du moteur Chauffage Arse
 Signal maître de l’inhibition géofencing et des choix de régime thermique.  
 
 ⚠️ Décision :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
+INCLUS DANS [`index.md`](index.md)  
 Section : Absence / Inhibition géofencing  
 Classe : Capteur STRUCTURANT
 
@@ -246,6 +246,6 @@ Frontière officielle de levée partielle du mode Vacances.
 Autorité unique d’anticipation Confort avant retour programmé.  
 
 ⚠️ Décision :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
+INCLUS DANS [`index.md`](index.md)  
 Section : Absence / Inhibition géofencing / Anticipation retour  
 Classe : Capteur STRUCTURANT

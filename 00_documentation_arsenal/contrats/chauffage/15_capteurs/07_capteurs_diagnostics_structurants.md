@@ -145,7 +145,7 @@ Outil de contrôle de cohérence du moteur Chauffage.
 Toute divergence avec le moteur réel constitue un défaut critique.
 
 ⚠️ Décision :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
+INCLUS DANS [`index.md`](index.md)  
 Section : Diagnostic structurant  
 Classe : Capteur DE RÉFÉRENCE STRUCTURANT
 
@@ -219,7 +219,7 @@ Référence officielle de CAUSE MÉTIER.
 Pilier de traçabilité et d’audit du moteur Chauffage.
 
 ⚠️ Décision :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
+INCLUS DANS [`index.md`](index.md)  
 Section : Diagnostic structurant  
 Classe : Capteur DE RÉFÉRENCE STRUCTURANT
 
@@ -276,7 +276,7 @@ RÉFÉRENCE D’ÉCART THERMIQUE CANONIQUE CONFORT
 Base de tous les diagnostics de déficit et des mécanismes de protection confort.
 
 ✅ Décision :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
+INCLUS DANS [`index.md`](index.md)  
 Section : Diagnostic structurant
 
 # ----------------------------------------------------------
@@ -334,6 +334,6 @@ Référence d’erreur thermique quotidienne,
 base de toutes les statistiques globales et de la surveillance de confort.
 
 ⚠️ Décision :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
+INCLUS DANS [`index.md`](index.md)  
 Section : Diagnostic structurant  
 Classe : Capteur DE RÉFÉRENCE STRUCTURANT

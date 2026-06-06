@@ -11,7 +11,7 @@
 | Document | Rôle |
 |---|---|
 | [00_gouvernance_chauffage.md](./00_gouvernance_chauffage.md) | Contrat fondateur — lire en premier |
-| [15_capteurs/13_capteurs_index.md](./15_capteurs/13_capteurs_index.md) | Table officielle des capteurs thermiques (entrée `15_capteurs/`) |
+| [15_capteurs/index.md](./15_capteurs/index.md) | Table officielle des capteurs thermiques (entrée `15_capteurs/`) |
 | [dependances_inter_domaines.md](./dependances_inter_domaines.md) | Cartographie CH-5 — couplages d'entités inter-domaines |
 
 ---
@@ -55,4 +55,4 @@ Statut : subordonné à [`00_gouvernance_chauffage.md`](00_gouvernance_chauffage
    ne distingue pas les deux mécanismes.
 
 2. **`15_capteurs/03_capteurs_blocages_niveau1/`** (8 fichiers) : sous-sous-dossier
-   sans artefact de navigation propre. Accessible via [`13_capteurs_index.md`](15_capteurs/13_capteurs_index.md).
+   sans artefact de navigation propre. Accessible via [`index.md`](15_capteurs/index.md).

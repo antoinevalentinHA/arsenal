@@ -413,7 +413,7 @@ Référence officielle de stabilisation thermique du bâtiment en régime passif
 Base normative de calibration absence long terme.
 
 ⚠️ Décision :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
+INCLUS DANS [`index.md`](index.md)  
 Section : Diagnostic structurant / Absence  
 Classe : Capteur STRUCTURANT
 
@@ -501,7 +501,7 @@ Référence officielle de température minimale passive atteinte par le bâtimen
 Pilier de qualification d’isolation, d’inertie et de calibration absence.
 
 ⚠️ Décision :
-INCLUS DANS [`13_capteurs_index.md`](13_capteurs_index.md)  
+INCLUS DANS [`index.md`](index.md)  
 Section : Diagnostic structurant / Absence  
 Classe : Capteur STRUCTURANT
 

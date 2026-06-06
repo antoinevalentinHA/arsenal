@@ -100,6 +100,6 @@ Pilier du pipeline aération et des blocages post-aération Arsenal.
 ---
 
 ⚠️ Classification :
-INCLUS DANS [`13_capteurs_index.md`](../13_capteurs_index.md)
+INCLUS DANS [`index.md`](../index.md)
 Section : Blocages / Aération qualifiée
 Classe : **FRONTIÈRE NIVEAU 1 FINALE**
