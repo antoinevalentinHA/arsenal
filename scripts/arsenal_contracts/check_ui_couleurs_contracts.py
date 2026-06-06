@@ -11,7 +11,7 @@ ERRORS = []
 DOC_ROOT = ROOT / "00_documentation_arsenal" / "ui" / "couleurs"
 
 FILES = {
-    "00_index.md": DOC_ROOT / "00_index.md",
+    "README.md": DOC_ROOT / "README.md",
     "01_principes.md": DOC_ROOT / "01_principes.md",
     "02_palette.md": DOC_ROOT / "02_palette.md",
     "02_1_palette_etiquettes.md": DOC_ROOT / "02_1_palette_etiquettes.md",
