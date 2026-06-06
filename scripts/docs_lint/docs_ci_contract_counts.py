@@ -46,10 +46,16 @@ ROW = re.compile(r"^\|\s*\[\s*([A-Za-z0-9_]+)/\s*\]\([^)]*\)\s*\|\s*(\d+)\s*\|")
 
 def rec_all_count(directory: Path) -> int:
     """Nombre de .md sous `directory` en récursif, README/index inclus,
-    zone gelée exclue (convention rec_all)."""
+    zone gelée exclue (convention rec_all).
+
+    Ne compte que les fichiers RÉGULIERS : les liens symboliques sont
+    exclus (parité avec `find -type f`). `iter_markdown_files` retient les
+    chemins via `is_file()`, qui suit les liens — un .md symbolique (p. ex.
+    un alias de compatibilité laissé après un renommage) gonflerait sinon
+    le compte d'une unité par rapport au filesystem réel."""
     return sum(
         1 for p in iter_markdown_files(directory)
-        if FROZEN_MARKER not in p.as_posix()
+        if FROZEN_MARKER not in p.as_posix() and not p.is_symlink()
     )
 
 
