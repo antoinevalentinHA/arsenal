@@ -64,6 +64,8 @@
 | `mouvements` | Mono-contrat. |
 | `mobile.high_accuracy.contextuel` | Mobile, mono-contrat. |
 | `bssid` | Réseau, mono-contrat (à la frontière du système). |
+| `reveils` | Mono-contrat. Réveils nocturnes enfants — observabilité, reset, babyphone opt-in. |
+| `electromenager` | Mono-contrat. Détection de cycle + notification (lave-vaisselle, buanderie). Périmètre restreint. |
 
 ---
 
@@ -84,6 +86,7 @@
 | `integrite_parametres` *(architecture seule)* | Intégrité des paramètres. |
 | `infrastructure_puissance` *(architecture seule)* | Infrastructure d'alimentation. |
 | `aeration_recommandation` (C·A) | **Contrat transverse / recommandation.** Distinct de `aeration_blocage_chauffage` ; **non rattaché** et **sans hub dédié** (décision v1). |
+| `poele` | **Contrat souverain transverse.** Apport thermique exogène : mémoire / blocage chauffage + climatisation HEAT ; détection déléguée aux capteurs chauffage. **Sans hub dédié.** |
 
 ---
 
