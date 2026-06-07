@@ -159,26 +159,28 @@ Stocker la **valeur-cible de température applicable en mode Vacances**.
 
 ---
 
-## 🧷 Slot connexe hors périmètre canonique — divergence à aligner
+## 🧷 Slot connexe — sauvegarde de la consigne réduite (aligné au registre)
 
 L'entité `input_number.chauffage_consigne_reduite_sauvegarde` existe réellement
 dans `03_input_numbers/chauffage/consignes.yaml` (`min 0` / `max 20` / `step 1`
-°C) et sert de **slot de sauvegarde** de la consigne réduite.
+°C) et sert de **slot de sauvegarde** de la consigne réduite (sentinelle `0` =
+aucune sauvegarde active). Son contrat causal souverain est
+[`66_adaptation_consigne_vacances.md`](../66_adaptation_consigne_vacances.md) ;
+elle est écrite par `consigne_vacances` et lue/réinitialisée par
+`consigne_fin_vacances`.
 
-Elle est mentionnée ici pour exhaustivité, mais **n'est pas traitée comme un
-élément pleinement canonique** par le présent contrat, pour deux raisons
-vérifiées sur `main` :
+Elle est désormais **déclarée** dans la section `parametres:` de
+[`ci/registres_entites.yaml`](../ci/registres_entites.yaml) avec
+`role: parametre` (réglage non causal), au même titre que les trois consignes
+de régime.
 
-1. elle **n'apparaît pas** dans la section `parametres:` de
-   [`ci/registres_entites.yaml`](../ci/registres_entites.yaml) (registre déclaré
-   PARTIEL — cercle 1) ;
-2. elle **n'est pas exposée** dans le dashboard réglages chauffage (ce n'est
-   pas une surface de réglage utilisateur).
+Elle n'appartient toutefois **pas** à la population canonique des **références
+thermiques métier** de la frontière 05 : ce n'est pas une cible de régime mais
+une **mémoire interne de sauvegarde/restauration**, et elle n'est **pas
+exposée** dans le dashboard réglages chauffage.
 
-**Statut retenu :** slot réel de sauvegarde, à aligner avec le registre.
-L'alignement (ajout au registre `parametres:` ou qualification explicite) relève
-d'un **patch registre séparé, non inclus dans le présent chantier**. Aucune
-canonicité n'est affirmée tant que cet alignement n'est pas fait.
+**Statut retenu :** slot de sauvegarde **aligné au registre** (`role:
+parametre`), hors population canonique des références de régime.
 
 ---
 
