@@ -1,9 +1,9 @@
 # cardio_nuit.md
 **Arsenal — Domaine Santé / Cardio nocturne**
-Version : 2.0.2
-Statut : READY FOR IMPLEMENTATION
+Version : 2.1
+Statut : NORMATIF (implémenté — documente le runtime existant)
 Auteur : Arsenal Architecture
-Date : 2026-05-04
+Date : 2026-06-07
 
 ---
 
@@ -20,7 +20,7 @@ Il couvre :
 Il ne couvre pas :
 - la fréquence cardiaque diurne (hors périmètre v1)
 - la variabilité HRV (réservée v2 si donnée disponible)
-- les automations d'alerte (couvertes par `CONTRAT_ALERTE_SANTE.md`, à créer)
+- les automations d'alerte santé : **hors périmètre de ce contrat et non contractualisées à ce jour** (aucun contrat d'alerte santé n'existe dans Arsenal ; ce contrat ne prétend pas qu'elles sont couvertes)
 
 ---
 
@@ -176,7 +176,7 @@ L'UI doit distinguer visuellement `confirmation = false` (vigilance) de `confirm
 
 | Domaine | Nature de l'interaction |
 |---|---|
-| Sommeil (`CONTRAT_SOMMEIL_NUIT.md`) | Fournit le signal de réveil déclenchant la consolidation matinale. `cardio_nuit_etat` peut enrichir l'évaluation qualité sommeil (corrélation, non substitution). Couplage unidirectionnel : cardio consomme sommeil, jamais l'inverse. |
+| Sommeil ([`sommeil.md`](sommeil.md)) | Fournit le signal de réveil déclenchant la consolidation matinale. `cardio_nuit_etat` peut enrichir l'évaluation qualité sommeil (corrélation, non substitution). Couplage unidirectionnel : cardio consomme sommeil, jamais l'inverse. |
 | Alertes santé | `binary_sensor.cardio_anomalie` (avec `confirmation = true`) est l'input candidat pour un contrat d'alerte dédié |
 | Journalisation | Chaque consolidation est loggée avec horodatage, statut de validité et raison d'invalidation |
 
@@ -218,3 +218,4 @@ Constituent une violation :
 | 2.0.0 | 2026-05-05 | **Refonte sur audit source réelle.** Entité source corrigée (`sensor.withings_average_heart_rate_local`). Suppression de `cardio_nuit_min`, `cardio_nuit_max`, `cardio_nuit_variabilite` (entités fantômes). Fenêtre temporelle supprimée. Règle de stabilité 30 min ajoutée. Logique `cardio_nuit_etat` et `cardio_anomalie` allégées. |
 | 2.0.1 | 2026-05-05 | Ajout `input_number.cardio_nuit_duree_stabilite` et `input_text.cardio_nuit_historique_7j` dans le snapshot. Précision "valeur stable la plus récente". Baseline §4.2 mise à jour. Violations complétées. |
 | 2.0.2 | 2026-05-05 | §5.3 : comportement sur nuit invalide documenté — `cardio_anomalie_nuit_precedente` préservé (non remis à zéro). Continuité de détection maintenue à travers une nuit invalide intercalée. |
+| 2.1 | 2026-06-07 | Promotion du statut pré-implémentation vers **NORMATIF (implémenté)** : le contrat documente un runtime existant et conforme (consolidation `cardio_consolidation.yaml`, capteurs métier `cardio_nuit_etat` / `cardio_nuit_delta_baseline` / `cardio_anomalie` / `cardio_baseline_*`, snapshot helpers, couleur UI). Réparation de deux références héritées : renvoi sommeil corrigé vers `sommeil.md` ; retrait du renvoi d'alerte santé inexistant (alerte santé hors périmètre, non contractualisée à ce jour). Aucun changement de règle ni d'entité. |
