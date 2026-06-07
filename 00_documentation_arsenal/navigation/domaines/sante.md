@@ -5,17 +5,17 @@
 
 ## Orientation
 
-Monitoring santé : cardio nocturne et sommeil (intégration Withings). Domaine léger (2 contrats), conservé dans la carte pour explicitation. **Aucune architecture dédiée. Domaine non audité** (état de cycle). Le hub référence deux contrats de maturité distincte : `cardio_nuit.md` (READY FOR IMPLEMENTATION) et `sommeil.md` (v1.0 normatif, aligné runtime).
+Monitoring santé : cardio nocturne et sommeil (intégration Withings). Domaine léger (2 contrats), conservé dans la carte pour explicitation. **Aucune architecture dédiée. Domaine non audité** (état de cycle). Le hub référence deux contrats normatifs alignés sur le runtime : `cardio_nuit.md` (v2.1 normatif, implémenté) et `sommeil.md` (v1.0 normatif, aligné runtime).
 
 ## Contrat — « ce que le système doit faire »
 
-- Cardio nocturne : [`cardio_nuit.md`](../../contrats/sante/cardio_nuit.md) (v2.0.2 — **READY FOR IMPLEMENTATION**)
+- Cardio nocturne : [`cardio_nuit.md`](../../contrats/sante/cardio_nuit.md) (v2.1 — **NORMATIF**, implémenté)
 - Sommeil Withings : [`sommeil.md`](../../contrats/sante/sommeil.md) (v1.0 — **NORMATIF**)
 
 ## Audits & état
 
 > **Domaine non audité** — aucun artefact d'audit, absent de [`audits/index.md`](../../audits/index.md).
-> Références documentaires : `cardio_nuit.md` (READY FOR IMPLEMENTATION) et `sommeil.md` (v1.0 normatif, aligné runtime).
+> Références documentaires : `cardio_nuit.md` (v2.1 normatif, implémenté) et `sommeil.md` (v1.0 normatif, aligné runtime).
 > État de cycle : non audité — cf. [`carte_domaines.md`](../carte_domaines.md).
 
 > **Changelog** (pas de chantier dédié) : mentions diffuses `v15`, `v15_3`, `v15_4`, `v15_7`.
@@ -26,7 +26,7 @@ Aucun consommateur ou fournisseur documenté identifié dans les contrats exista
 
 ## Points de vigilance (non normatif)
 
-- **Maturité différenciée mais clarifiée** : `cardio_nuit.md` (v2.0.2, READY FOR IMPLEMENTATION) et `sommeil.md` (v1.0, normatif). `sommeil.md` porte désormais une autorité normative opposable ; `cardio_nuit.md` reste à traiter dans une passe dédiée.
+- **Deux contrats normatifs opposables** : `cardio_nuit.md` (v2.1, normatif implémenté) et `sommeil.md` (v1.0, normatif), tous deux alignés sur le runtime réel. La passe dédiée `cardio_nuit.md` (promotion de statut + réparation des renvois hérités) est faite ; l'alerte santé reste hors périmètre et non contractualisée.
 - **`sommeil.md` est normatif (v1.0)** — réécrit et aligné sur le runtime réel ; à traiter comme contrat opposable.
 - **Domaine léger** (Tier 1 par folderisation) : conservé dans la carte pour explicitation, pas pour la richesse de sa chaîne.
 - **Aucune architecture dédiée.**
