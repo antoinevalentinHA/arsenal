@@ -109,6 +109,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [transverses/hysteresis_5_domaines.md](04_chantiers/transverses/hysteresis_5_domaines.md)
 - [transverses/cadrage_ci_includes_lovelace.md](04_chantiers/transverses/cadrage_ci_includes_lovelace.md)
 - [transverses/etat_avancement_chantier_navigation_documentaire_contrats.md](04_chantiers/transverses/etat_avancement_chantier_navigation_documentaire_contrats.md)
+- [transverses/etat_couverture_normative_domaines.md](04_chantiers/transverses/etat_couverture_normative_domaines.md)
 
 ### Vacances
 - [vacances/chantier_vac_imp_5_desinfection_retour.md](04_chantiers/vacances/chantier_vac_imp_5_desinfection_retour.md)  _(VAC-IMP-5 — runtime commité `c4faf68`, validation runtime en attente)_
