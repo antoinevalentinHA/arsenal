@@ -52,6 +52,7 @@
 | Contrat | Objet |
 |---|---|
 | [aeration_recommandation.md](./aeration_recommandation.md) | Recommandation aération (transversal) |
+| [poele.md](./poele.md) | Poêle — apport thermique exogène : mémoire / blocage chauffage + climatisation (transversal) |
 | [bouclage.md](./bouclage.md) | Bouclage ECS ⚠️ (voir §Anomalies) |
 | [vmc.md](./vmc.md) | VMC |
 | [volets_pluie.md](./volets_pluie.md) | Volets — pluie |
