@@ -17,6 +17,7 @@
 | [vacances.md](./vacances.md) | Domaine vacances |
 | [visite.md](./visite.md) | Contexte visite |
 | [babysitting.md](./babysitting.md) | Contexte babysitting |
+| [reveils.md](./reveils.md) | Réveils nocturnes enfants — observabilité, reset, babyphone opt-in |
 | [simulation_presence.md](./simulation_presence.md) | Simulation de présence |
 | [mobile.high_accuracy.contextuel.md](./mobile.high_accuracy.contextuel.md) | Géolocalisation haute précision contextuelle |
 | [bssid.md](./bssid.md) | Référentiel BSSID maison |
