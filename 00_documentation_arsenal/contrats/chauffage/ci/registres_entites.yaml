@@ -484,6 +484,11 @@ parametres:
       contrat: "80_...reecriture_partielle 4.2 (Vacances)"
       note: "Consigne Vacances. Réglage, non causal."
 
+    - entity_id: input_number.chauffage_consigne_reduite_sauvegarde
+      role: parametre
+      contrat: "66_adaptation_consigne_vacances.md (sauvegarde/restauration consigne réduite)"
+      note: "Slot de sauvegarde de la consigne réduite (mécanisme Vacances). Sentinelle 0 = aucune sauvegarde active. Réglage non causal, écrit/lu par consigne_vacances / consigne_fin_vacances."
+
     - entity_id: input_number.chauffage_seuil_ext_on
       role: parametre
       contrat: "70_autorisation_thermostat.md (seuil extérieur)"
