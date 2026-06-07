@@ -1,18 +1,19 @@
-# Arsenal — Pré-contrat métier et architectural
+# Arsenal — Contrat métier et architectural
 # Famille — Extrema du jour civil en cours (températures par zone)
-# Version : 0.1.0
-# Statut : pré-normatif — à figer avant toute phase d'implémentation
+# Version : 1.0
+# Statut : normatif — famille implémentée
 # Chemin : 00_documentation_arsenal/contrats/meteo/extrema_jour_courant.md
 
 ---
 
 ## 0. Statut et portée de ce document
 
-Ce document est un **pré-contrat**. Il fixe la doctrine d'une nouvelle famille
-Arsenal avant écriture de toute entité. Il ne contient aucun YAML, aucune
-automatisation, aucun helper, aucune implémentation. Il a vocation à devenir
-contrat normatif (`v1.0`) une fois validé, et à servir de référence opposable
-lors de la phase patch.
+Ce document est un **contrat normatif**. Il fixe la doctrine de la famille
+Arsenal « extrema du jour civil en cours », **désormais implémentée** au runtime
+(helpers `input_number.temperature_*_jour_courant_<zone>`, automations `update` /
+`reset` pièces — ids `10160000000032`, `10160000000033`, `10160000000034` — et
+exposition `sensor.temperature_*_jour_courant_<zone>`). Il sert de **référence
+opposable** : le comportement réel du runtime fait foi, et ce contrat le documente.
 
 Toute implémentation ultérieure doit être conforme aux invariants `INV-JC-*`
 ci-dessous. Tout écart d'implémentation est une non-conformité, pas une
@@ -37,9 +38,11 @@ sur la fenêtre **du jour civil en cours** :
 
 avec **remise à zéro à minuit** et **aucune conservation de la veille**.
 
-La famille remplace, pour le dashboard « Températures Min · Max », la branche
-glissante 24 h (`platform: statistics`, `max_age: 24h`) jugée non conforme à la
-notion métier « jour en cours » (cf. §9).
+La famille est la **source canonique** des extrema du jour en cours. La branche
+glissante 24 h (`platform: statistics`, `max_age: 24h`), jugée non conforme à la
+notion métier « jour en cours » (cf. §9), **subsiste au runtime** mais est **hors
+source canonique** ; son retrait effectif est une dette de migration (DETTE-JC-1,
+§17).
 
 ---
 
@@ -87,7 +90,7 @@ La famille ne couvre **pas** :
 - les palmarès par pièce ;
 - la conservation de la valeur de la veille ;
 - les records hebdomadaires / mensuels / saisonniers ;
-- la branche glissante 24 h (qui est explicitement abandonnée, cf. §9).
+- la branche glissante 24 h (écartée comme source métier, cf. §9 ; subsiste au runtime — DETTE-JC-1).
 
 ---
 
@@ -355,8 +358,9 @@ comme source de la présente famille.
 
 L'interdiction porte sur l'usage de la fenêtre glissante **comme source des
 extrema du jour en cours**. Elle ne proscrit pas la plateforme `statistics` en
-soi pour d'autres usages explicitement qualifiés « tendance ». La famille
-existe pour **remplacer** la fenêtre glissante, jamais pour l'encapsuler.
+soi pour d'autres usages explicitement qualifiés « tendance ». La famille est la
+source canonique du jour courant et n'encapsule jamais la fenêtre glissante ;
+celle-ci **subsiste encore au runtime** (DETTE-JC-1, §17), hors source canonique.
 
 ---
 
@@ -381,8 +385,9 @@ sensor.temperature_max_jour_courant_<zone>
 ### 10.3 Disparition du nom ambigu
 
 Le segment `_jour_` employé seul (sans `courant`) par la branche glissante
-(`sensor.temperature_min_jour_<zone>`) **disparaît** du périmètre métier au
-terme de la migration. Grammaire finale, sans ambiguïté :
+(`sensor.temperature_min_jour_<zone>`) **subsiste encore au runtime** : son
+retrait du périmètre métier est une dette de migration (DETTE-JC-1, §17), non
+encore réalisée. Grammaire cible, sans ambiguïté :
 
 ```text
 _jour_courant_   → jour civil en cours      (présente famille)
@@ -498,7 +503,15 @@ Jardin complet (INV-JC-10, INV-JC-12).
   explicite et un consommateur nommé apparaissent, et sous contrat dédié
   (INV-JC-11).
 
-Aucune de ces extensions n'a de valeur normative en v0.1.
+Aucune de ces extensions n'a de valeur normative à ce stade.
+
+---
+
+## 17. Dette de migration
+
+| ID | Dette |
+|---|---|
+| DETTE-JC-1 | La branche glissante 24 h `sensor.temperature_{min,max}_jour_<zone>` (`platform: statistics`, `max_age: 24h`, sans `courant`) **subsiste au runtime** (`13_sensor_platforms/statistics/meteo/`). Elle est **hors source canonique** des extrema du jour courant (interdiction §9 maintenue) ; son **retrait effectif** reste à réaliser. Ce contrat **ne supprime aucun `statistics`** et **n'ouvre aucun chantier runtime** : il acte la dette et maintient l'interdiction d'usage comme source. |
 
 ---
 
@@ -506,4 +519,5 @@ Aucune de ces extensions n'a de valeur normative en v0.1.
 
 | Version | Date | Modification |
 |---|---|---|
+| 1.0 | 2026-06-07 | Promotion en contrat normatif : la famille « extrema du jour civil en cours » est implémentée au runtime (helpers, automations `10160000000032` / `10160000000033` / `10160000000034`, exposition) et conforme aux invariants `INV-JC-*`. Cadrage « pré-contrat / avant implémentation » retiré. Ajout `DETTE-JC-1` : la branche glissante 24 h subsiste au runtime, hors source canonique, retrait non réalisé (aucun `statistics` supprimé, aucun chantier runtime ouvert). |
 | 0.1.0 | 2026-06-03 | Brouillon pré-normatif initial — formalisation de la famille « extrema du jour civil en cours » : nature métier, monotonicité, remise à zéro, écrivain souverain (Jardin en lecture seule), relation non obligatoire au palmarès, interdiction de la fenêtre glissante 24 h comme source, et garde-fous Arsenal (familles homogènes, ancres, `this.entity_id`, pas de couche sans consommateur). |
