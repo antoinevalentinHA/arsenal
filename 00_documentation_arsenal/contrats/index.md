@@ -45,6 +45,7 @@
 | [bluetti.md](./bluetti.md) | Domaine `energie_chaudiere` (Bluetti) |
 | [energie.md](./energie.md) | Sources autorisées — dashboard Énergie |
 | [cumulus_petite_maison.md](./cumulus_petite_maison.md) | Cumulus petite maison |
+| [electromenager.md](./electromenager.md) | Détection de cycle + notification (lave-vaisselle, buanderie) |
 
 ### Environnement physique et sécurité
 
