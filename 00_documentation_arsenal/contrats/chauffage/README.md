@@ -38,7 +38,21 @@ Un fichier `NN_contrat__amendement.md` **complète** son contrat parent — il n
 
 Chaque amendement précise un point spécifique du contrat parent (§ ciblé). Le contrat parent reste la référence normative principale. L'amendement est lu **en supplément**, jamais à la place.
 
-Contrats avec amendement : `00`, `10`, `20`, `30`, `40`, `50`, `70`, `90`.
+Contrats avec amendement :
+
+- [`00_gouvernance_chauffage__amendement.md`](00_gouvernance_chauffage__amendement.md)
+- [`10_souverainete_execution__amendement.md`](10_souverainete_execution__amendement.md)
+- [`20_triggers_decisionnels__amendement.md`](20_triggers_decisionnels__amendement.md)
+- [`30_decision_centrale__amendement.md`](30_decision_centrale__amendement.md)
+- [`40_blocages__amendement.md`](40_blocages__amendement.md)
+- [`50_standby_hysteresis__amendement.md`](50_standby_hysteresis__amendement.md)
+- [`70_autorisation_thermostat__amendement.md`](70_autorisation_thermostat__amendement.md)
+- [`90_semantique_thermique__amendement.md`](90_semantique_thermique__amendement.md)
+
+Autres contrats du pipeline non référencés ci-dessus :
+
+- [`76_observabilite_auto_ajustement_courbe.md`](76_observabilite_auto_ajustement_courbe.md)
+- [`92_ui_notifications_persistantes.md`](92_ui_notifications_persistantes.md)
 
 ### [`80_table_decision_canonique__reecriture_partielle.md`](80_table_decision_canonique__reecriture_partielle.md) (1 fichier)
 

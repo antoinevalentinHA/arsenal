@@ -11,18 +11,18 @@
 
 | Fichier / dossier | Contenu |
 |---|---|
-| `01_finalite.md` | Finalité du système, états exclusifs, objectifs |
-| `02_architecture.md` | Couches Arsenal, invariants globaux de déclenchement |
-| `03_decision_canonique.md` | Objet `sensor.clim_target_mode`, pureté, déterminisme, consommation exclusive des besoins admissibles |
-| `04_entrees_metier.md` | Températures, humidex, présence, contraintes physiques |
-| `05_decision_candidats.md` | Production des besoins admissibles par mode (verrou de requalification) |
-| `06_doctrine_blocages.md` | Doctrine opérateur des blocages, classification, gardes et invariants |
-| `07_arbitrage_politique.md` | Politique d'arbitrage active, hiérarchie des modes |
-| `08_execution.md` | Application idempotente du mode cible |
-| `09_securite.md` | Guards et Watchdog |
-| `10_observabilite.md` | États explicatifs, robustesse, déterminisme post-redémarrage |
-| `11_perimetre_exclu.md` | Ce que le système ne fait pas |
-| `capteurs/` | Documentation détaillée des capteurs implémentant les couches du système |
+| [`01_finalite.md`](01_finalite.md) | Finalité du système, états exclusifs, objectifs |
+| [`02_architecture.md`](02_architecture.md) | Couches Arsenal, invariants globaux de déclenchement |
+| [`03_decision_canonique.md`](03_decision_canonique.md) | Objet `sensor.clim_target_mode`, pureté, déterminisme, consommation exclusive des besoins admissibles |
+| [`04_entrees_metier.md`](04_entrees_metier.md) | Températures, humidex, présence, contraintes physiques |
+| [`05_decision_candidats.md`](05_decision_candidats.md) | Production des besoins admissibles par mode (verrou de requalification) |
+| [`06_doctrine_blocages.md`](06_doctrine_blocages.md) | Doctrine opérateur des blocages, classification, gardes et invariants |
+| [`07_arbitrage_politique.md`](07_arbitrage_politique.md) | Politique d'arbitrage active, hiérarchie des modes |
+| [`08_execution.md`](08_execution.md) | Application idempotente du mode cible |
+| [`09_securite.md`](09_securite.md) | Guards et Watchdog |
+| [`10_observabilite.md`](10_observabilite.md) | États explicatifs, robustesse, déterminisme post-redémarrage |
+| [`11_perimetre_exclu.md`](11_perimetre_exclu.md) | Ce que le système ne fait pas |
+| [`capteurs/`](capteurs/README.md) | Documentation détaillée des capteurs implémentant les couches du système |
 
 ---
 
