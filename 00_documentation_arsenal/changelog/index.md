@@ -1312,6 +1312,38 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - `release_diff` (NAS Arsenal) : ajout de `state/release_diff_last_run.json`, écrit en fin de chaque run mené à terme (y compris échec contrôlé), schéma défini par `release_diff_mqtt.md` §5.
 - Artefact non patrimonial régénéré à chaque run (hors idempotence et hors régénérabilité de `_diff/releases/`) ; champ `produced[]` = couples produits pendant le run.
 
+---
+
+---
+
+## 🧠 ARSENAL HA — [v15.9.1](changelogs/v15/v15_9_1.md) — STABLE — 2026-06-04
+**Tags :** documentation, navigation, audits, contrats, lovelace, ci
+
+**Signal net :**
+- Documentation Arsenal : ajout de la navigation documentaire, des index d’architecture/contrats, et d’un lot d’audits couvrant documentation, Lovelace, architecture et perception externe.
+- Contrats : ajout des README chauffage/climatisation, renvoi ECS vers le contrat canonique Bouclage, correction `script.bouclage_ecs_5_minutes`.
+- Lovelace / CI : ajout du contrôle des includes Lovelace, suppression de `carte_mode_toggle.yaml`, mise à jour des README `modes` et `sante`.
+
+---
+
+## 🧠 ARSENAL HA — [v15.9.2](changelogs/v15/v15_9_2.md) — STABLE — 2026-06-06
+**Tags :** documentation, lint, contrats, audits, meteo, navigation, ui
+
+**Signal net :**
+- Outillage documentaire : ajout du lint documentaire, des contrôles CI docs, du contrôle des liens et des rapports associés.
+- Contrats : corrections et renommages documentaires sur chauffage, boiler, météo, pannes secteur, éclairage garage, UI couleurs et socle UI.
+- Audits / navigation : ajout de l’audit documentaire global, du plan d’action documentaire et des vagues de correction immédiates ; mise à jour large de l’index des audits et du changelog.
+
+---
+
+## 🧠 ARSENAL HA — [v15.9.3](changelogs/v15/v15_9_3.md) — STABLE — 2026-06-08
+**Tags :** contrats, sommeil, couverture_normative, navigation, documentation
+
+**Signal net :**
+- CI Sommeil : ajout du workflow `contracts_sommeil.yml` et du checker `check_sommeil_contracts.py`.
+- Contrats : ajout des contrats `reveils.md`, `electromenager.md` et `poele.md` ; mise à jour des contrats Santé / Sommeil.
+- Couverture normative : ajout du suivi transverse de couverture des domaines et clôture du chantier documentaire du 06/06/2026.
+
 ==================================================
 FIN INDEX
 ==================================================
