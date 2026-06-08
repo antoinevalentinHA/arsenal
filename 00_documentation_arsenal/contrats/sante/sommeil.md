@@ -26,7 +26,7 @@ détection de nuit manquante, statistiques de moyennes.
 **Hors périmètre (référencé, non redéfini) :** familles `_local` cardiaques,
 respiratoires et d'activité (voir [`cardio_nuit.md`](cardio_nuit.md)) ; capteurs
 couleur et dashboards (UI) ; mécanisme de notification (voir
-[`notifications.md`](notifications.md) — **la chaîne sommeil n'émet aucune
+[`notifications.md`](../notifications.md) — **la chaîne sommeil n'émet aucune
 notification**).
 
 ## 2. Principe fondateur
