@@ -73,7 +73,7 @@
 | [deshumidificateur/](./deshumidificateur/) | 3 | README ✅ | Déshumidificateur cave |
 | [eclairage/](./eclairage/) | 6 | README ✅ | Éclairage |
 | [ecs/](./ecs/) | 29 | README ✅ | ECS — fondation (00-11) + contrats d'exécution |
-| [imprimerie/](./imprimerie/) | 4 | README ✅ | Bruit machines industrielles (Imprimerie Baillet) |
+| [imprimerie/](./imprimerie/) | 4 | README ✅ | Bruit machines industrielles (Imprimerie) |
 | [meteo/](./meteo/) | 17 | README ✅ | Météo — axes, palmarès, validation, sous-domaines |
 | [ouvertures/](./ouvertures/) | 4 | README ✅ | Ouvertures (portes / fenêtres) |
 | [pannes/](./pannes/) | 10 | README ✅ | Pannes — internet + secteur |

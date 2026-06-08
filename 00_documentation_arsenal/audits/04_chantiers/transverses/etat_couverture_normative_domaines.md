@@ -50,7 +50,7 @@
 
 Domaines disposant d'une couverture normative suffisante dans `contrats/` :
 
-chauffage (52 fichiers) · ECS (28) · bouclage (`bouclage.md`, contrat canonique) · climatisation (39) · alarme (15) · aération (`aeration_blocage_chauffage/` + `aeration_recommandation.md`) · météo (16 ; axes, palmarès chaud/froid `normatif`, validation, gouvernance) · éclairage (5) · boiler (7) · présence · vacances · visite · babysitting · simulation_presence · mobile high-accuracy contextuel · bssid · zones · ouvertures (3) · pannes (internet + secteur) · VMC · volets/pluie · déshumidificateur (couvre la cave) · voiture · bluetti (`energie_chaudiere`) · batteries · cumulus petite-maison/studio · energie · switchbot · notifications · homekit_diagnostic · ups · ping_lan · mouvements · imprimerie (bruit machines Baillet) · arsenal_nas · arsenal_self · ressources_lovelace · parametres_invalides · publication/sécurité Git.
+chauffage (52 fichiers) · ECS (28) · bouclage (`bouclage.md`, contrat canonique) · climatisation (39) · alarme (15) · aération (`aeration_blocage_chauffage/` + `aeration_recommandation.md`) · météo (16 ; axes, palmarès chaud/froid `normatif`, validation, gouvernance) · éclairage (5) · boiler (7) · présence · vacances · visite · babysitting · simulation_presence · mobile high-accuracy contextuel · bssid · zones · ouvertures (3) · pannes (internet + secteur) · VMC · volets/pluie · déshumidificateur (couvre la cave) · voiture · bluetti (`energie_chaudiere`) · batteries · cumulus petite-maison/studio · energie · switchbot · notifications · homekit_diagnostic · ups · ping_lan · mouvements · imprimerie (bruit machines) · arsenal_nas · arsenal_self · ressources_lovelace · parametres_invalides · publication/sécurité Git.
 
 ---
 

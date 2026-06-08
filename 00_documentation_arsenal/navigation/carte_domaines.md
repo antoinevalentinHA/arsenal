@@ -44,7 +44,7 @@
 | [`presence`](domaines/presence.md) | C·A | `contrats/presence.md` + `architecture/presence/` (`presence`, `wifi`). |
 | [`energie`](domaines/energie.md) | C·A | `contrats/energie.md` + `architecture/energie.md`. |
 | [`deshumidificateur`](domaines/deshumidificateur.md) | C | Folder (2). **Léger — hub conservé** (carte explicite plutôt qu'invisibilisation). |
-| [`imprimerie`](domaines/imprimerie.md) | C | Folder (3) — domaine **métier/pro** (capteurs bruit Baillet). **Léger — hub conservé.** |
+| [`imprimerie`](domaines/imprimerie.md) | C | Folder (3) — domaine **métier/pro** (capteurs bruit). **Léger — hub conservé.** |
 | [`sante`](domaines/sante.md) | C | Folder (2) — `cardio_nuit`, `sommeil`. **Léger — hub conservé.** `sommeil` = draft `v0.9` non validé. |
 
 ---

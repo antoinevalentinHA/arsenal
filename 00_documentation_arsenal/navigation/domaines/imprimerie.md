@@ -5,7 +5,7 @@
 
 ## Orientation
 
-Monitoring acoustique des machines industrielles d'**Imprimerie Baillet** : Bobst, Komori, Media. Trois contrats homogènes (Perception / Signal industriel) — conversion du signal brut en régime acoustique de chaque machine. Domaine **métier/professionnel**, distinct du périmètre résidentiel Arsenal. Aucune architecture dédiée. **Domaine non audité** (état de cycle). Conservé en Tier 1 pour explicitation (carte §6).
+Monitoring acoustique des machines industrielles d'**Imprimerie** : Bobst, Komori, Media. Trois contrats homogènes (Perception / Signal industriel) — conversion du signal brut en régime acoustique de chaque machine. Domaine **métier/professionnel**, distinct du périmètre résidentiel Arsenal. Aucune architecture dédiée. **Domaine non audité** (état de cycle). Conservé en Tier 1 pour explicitation (carte §6).
 
 ## Contrat — « ce que le système doit faire »
 
