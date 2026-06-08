@@ -7,8 +7,8 @@
 # =============================================================================
 
 - name: Approche securite
-  latitude: 44.8522979
-  longitude: -0.5875885
+  latitude: !secret home_latitude
+  longitude: !secret home_longitude
   radius: 400
   icon: mdi:map-marker-radius
   passive: false

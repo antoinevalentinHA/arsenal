@@ -7,8 +7,8 @@
 # =============================================================================
 
 - name: Maison securite
-  latitude: 44.8522979
-  longitude: -0.5875885
+  latitude: !secret home_latitude
+  longitude: !secret home_longitude
   radius: 40
   icon: mdi:shield-home
   passive: false
