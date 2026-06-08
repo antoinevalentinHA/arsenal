@@ -97,11 +97,13 @@ métier, invariants, dérives interdites. Domaines folderisés (`chauffage/`,
 ### 🌱 `evolutions_futures/`
 Sas de **fiches prospectives**. Une fiche y séjourne tant qu'elle n'est pas
 formalisée ; une fois actée, elle migre vers `contrats/` ou `outils_externes/`.
+👉 Voir [`evolutions_futures/README.md`](evolutions_futures/README.md).
 
 ### 🧰 `outils_externes/`
 Documente la **supervision d'outils hors Home Assistant** : pont chaudière
 (`boiler_pi/`), outillage NAS Arsenal (`nas_arsenal/`), NAS Imprimerie
 (`nas_imprimerie/`), ainsi que des gabarits d'autoring (prompts de génération).
+👉 Voir [`outils_externes/README.md`](outils_externes/README.md).
 
 ### 🧭 `navigation/`
 Couche d'**orientation inter-familles** : carte des domaines (`carte_domaines.md`),
@@ -111,6 +113,7 @@ Couche d'**orientation inter-familles** : carte des domaines (`carte_domaines.md
 ### 🗺️ `schemas_ascii/`
 Diagrammes **ASCII** de pipelines (aération, NAS↔HA, régulation thermique),
 destinés à une lecture rapide en texte brut.
+👉 Voir [`schemas_ascii/README.md`](schemas_ascii/README.md).
 
 ### 🎨 `ui/`
 **Charte couleurs** (`couleurs/`) et **socle de cartes** Lovelace (`socle_ui/`),
