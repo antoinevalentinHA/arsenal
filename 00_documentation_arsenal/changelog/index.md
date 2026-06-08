@@ -1344,6 +1344,16 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Contrats : ajout des contrats `reveils.md`, `electromenager.md` et `poele.md` ; mise à jour des contrats Santé / Sommeil.
 - Couverture normative : ajout du suivi transverse de couverture des domaines et clôture du chantier documentaire du 06/06/2026.
 
+---
+
+## 🧠 ARSENAL HA — [v16.0.0](changelogs/v16/v16_0_0.md) — STABLE — 2026-06-08
+**Tags :** documentation, navigation, contrats, ui, ci
+
+**Signal net :**
+- Navigation documentaire : ajout de README dans plusieurs dossiers feuilles et ajout de liens internes dans les index Architecture, Contrats, UI et outils externes.
+- Contrats : ajout de README de domaine pour alarme, ECS, météo, pannes, santé, publication, ouvertures, éclairage, imprimerie et déshumidificateur ; mise à jour de `contrats/index.md`.
+- CI documentation : ajout du contrôle `DOC-CI-6` sur les pages feuilles de navigation et intégration dans `.github/workflows/docs.yml`.
+
 ==================================================
 FIN INDEX
 ==================================================
