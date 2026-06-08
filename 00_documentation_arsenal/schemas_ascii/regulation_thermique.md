@@ -1,134 +1,172 @@
-# 🧠 ARSENAL — DOCUMENT DE MODÉLISATION CONCEPTUELLE · Régulation Thermique — Schéma Historique
+# ARSENAL — RÉGULATION THERMIQUE — CHAUFFAGE V3 PRO (schéma décisionnel)
 #
-# 📌 STATUT :
-#   DOCUMENT DE RÉFÉRENCE HISTORIQUE — NON NORMATIF — OBSOLÈTE
+# 📌 STATUT : SCHÉMA ACTIF — NON NORMATIF
 #
-# 🔒 AUTORITÉ :
-#   Ce document ne constitue PAS un contrat métier.
-#   Il ne possède AUCUNE autorité décisionnelle ni normative.
+# 🔒 AUTORITÉ
+#   Ce schéma illustre la doctrine décisionnelle Chauffage Arsenal V3 PRO.
+#   En cas de divergence, SEULS font foi les contrats :
+#     contrats/chauffage/00_gouvernance_chauffage.md          (constitution)
+#     contrats/chauffage/30_decision_centrale.md              (cerveau métier)
+#     contrats/chauffage/80_table_decision_canonique.md       (table finale)
+#     contrats/chauffage/80_table_decision_canonique__reecriture_partielle.md
+#   Ce schéma n'a aucune autorité décisionnelle ni normative.
 #
-#   Il ne reflète PLUS la doctrine Chauffage Arsenal V3 PRO.
+# 🎯 PORTÉE
+#   Chaîne de décision thermique du chauffage : faits -> autorisation ->
+#   décision centrale -> application. La climatisation est un domaine DISTINCT
+#   (correcteur confort/hygrométrie), gouverné séparément — non représenté ici.
 #
-#   En cas de divergence, seules font foi :
-#     - /00_documentation_arsenal/contrats/chauffage/00_gouvernance_chauffage.md
-#     - /00_documentation_arsenal/contrats/chauffage/30_decision_centrale.md
-#     - /00_documentation_arsenal/contrats/chauffage/80_table_decision_canonique.md
-#
-# 🎯 RÔLE :
-#   Conserver une trace de la modélisation conceptuelle
-#   ayant précédé la stabilisation de la doctrine V3 PRO :
-#     - hiérarchie thermique initiale,
-#     - articulation chauffage / climatisation,
-#     - émergence des notions de blocage, confort, protection.
-#
-#   Ce document a une valeur :
-#     • historique,
-#     • pédagogique,
-#     • de mémoire d’architecture.
-#
-# ----------------------------------------------------------
-# ⚠️ OBSOLESCENCE DOCTRINALE
-# ----------------------------------------------------------
-#
-# Ce schéma :
-#
-# - introduit une hiérarchie décisionnelle N1..N5
-#   qui n’existe PLUS dans le système actuel,
-#
-# - présente à tort :
-#     • le standby comme niveau métier,
-#     • la protection thermique comme niveau décisionnel,
-#     • le confort d’opportunité comme décision automatique,
-#     • un déclenchement direct par écart thermique.
-#
-# Ces représentations sont incompatibles avec :
-#   - l’abstention (neutre),
-#   - la séparation autorisation / décision,
-#   - la table canonique V3 PRO,
-#   - la souveraineté décisionnelle actuelle.
-#
-# ----------------------------------------------------------
-# 🧠 RÈGLE DE GOUVERNANCE
-# ----------------------------------------------------------
-#
-# - Ce document :
-#     ❌ ne doit JAMAIS être utilisé pour concevoir une règle,
-#     ❌ ne doit JAMAIS être opposé au YAML,
-#     ❌ ne doit JAMAIS servir d’arbitrage fonctionnel,
-#     ❌ ne doit JAMAIS être cité comme contrat.
-#
-# - Il est conservé uniquement comme :
-#     ✅ mémoire conceptuelle,
-#     ✅ trace de maturation du système,
-#     ✅ support de compréhension historique.
-#
-# ----------------------------------------------------------
-# 📌 VALEUR
-# ----------------------------------------------------------
-#
-# - Nature :
-#     Schéma d’architecture conceptuelle historique.
-#
-# - Intérêt principal :
-#     Montrer l’évolution du modèle mental vers
-#     la gouvernance décisionnelle Arsenal V3 PRO.
-#
-# ==========================================================
+# 🧠 MODÈLE MENTAL
+#   Système décisionnel GOUVERNÉ, pas un thermostat. La présence n'est jamais
+#   une décision ; la température n'est jamais une cause directe ; l'abstention
+#   (neutre) est un état nominal ; la sobriété est un objectif structurel.
 
+LÉGENDE
+- ====   : frontière de couche (séparation stricte des responsabilités)
+- --->   : flux / délégation
+- [Nx]   : niveau de la hiérarchie des causes (décision centrale)
+- {..}   : sortie (régime : comfort / reduced / abstention)
+- (..)   : capteur / helper / condition (vérité amont consommée)
 
-                    GOUVERNANCE THERMIQUE GLOBALE
-                                |
-                +---------------+----------------+
-                |                                |
-          CHAUFFAGE (V3 PRO)                 CLIMATISATION
-     (autorite thermique batiment)     (correcteur confort/hygro)
-                |                                |
-   +------------+------------+         +---------+---------+
-   |                         |         |                   |
- [N1..N3] imposent          [N4/N5]    COOL/DRY/HEAT decide
- ECO/ATTENTE                 CONFORT   sous contraintes
-   |
-   v
- etat chauffage resultant
-                |
-                +-------------------------------------------+
-                                |
-                      COHERENCE D’ENSEMBLE
-   (aucun correcteur clim ne doit contredire les interdictions structurantes)
+======================================================================
+              COUCHES — SÉPARATION STRICTE DES RESPONSABILITÉS
+======================================================================
 
+   ============================ FAITS THERMIQUES ====================
+   températures · présence · fenêtres · poêle · états système
+   "ce qui est" — ne décident JAMAIS
+                                |
+                                v
+   ========================= AUTORISATION D'INTENTION ===============
+   produit une INTENTION : { comfort | neutre | reduced }
+   ne décide pas · ne déclenche aucune action · ne lit pas le matériel
+   · ne connaît pas la table de décision
+                                |
+            sources amont reconnues (jamais des décisions) :
+              - override opérateur  (input_boolean.mode_confort_chauffage)
+              - inhibition géofencing (input_boolean.chauffage_inhibition_geofencing)
+              - pré-confort vacances  (input_boolean.pre_confort_actif_calcule)
+              - présence -> sensor.chauffage_autorisation_cible
+                                |
+                                v
+   ========================== DÉCISION CENTRALE =====================
+   AUTORITÉ UNIQUE — cerveau métier · déterministe · traçable · opposable
+   applique la hiérarchie des causes -> { comfort | reduced | ABSTENTION }
+   seul appelant légitime de script.chauffage_appliquer_consigne
+                                |
+                                v
+   ========================= APPLICATION MATÉRIELLE =================
+   script.chauffage_appliquer_consigne -> protocole local (boiler bridge)
+   exécute · observe · NE DÉCIDE JAMAIS
+   valide UNIQUEMENT après ACK explicite (souveraineté : l'état interne
+   prévaut tant qu'aucune confirmation d'exécution n'est reçue)
 
-                     DECISION CHAUFFAGE (V3 PRO)
-                                |
-                evaluation descendante (priorites strictes)
-                                |
-   +----------------------------+----------------------------+
-   |                            |                            |
- [N1] BLOCAGES ABSOLUS       [N2] AUTORISATION SYSTEME    [N3] STANDBY
-   |                            |                            |
- ECO force                     ATTENTE                      ATTENTE
-   |
-   +----------------------------+----------------------------+
-                                |
-                         si N1/N2/N3 non actifs
-                                |
-   +----------------------------+----------------------------+
-   |                                                         |
- [N4] CONFORT OPPORTUNITE                               [N5] PROTECTION
-   |                                                         |
- CONFORT requis (presence/forcage)                            CONFORT ponctuel
- (declenchement par ecart thermique)                          (absence + derive)
+======================================================================
+        HIÉRARCHIE DES CAUSES (décision centrale — descendante stricte)
+======================================================================
+  Aucune cause de niveau inférieur ne peut contredire un niveau supérieur.
+  La PREMIÈRE règle applicable est souveraine ; aucune suivante n'est évaluée.
 
+  [N0] OVERRIDE OPÉRATEUR ........ input_boolean.mode_confort_chauffage = on
+        -> impose {comfort} · écrase toute logique métier
+        -> ne contourne PAS les gardes techniques (G2 bridge, G5 idempotence)
+        raison : confort_force
 
-                          CONTEXTE
-                             |
-                +------------+------------+
-                |                         |
-             PRESENCE                    ABSENCE
-                |                         |
-      +---------+---------+        +------+------+
-      |                   |        |             |
-  tres froid            chaud   derive excessive  sinon
-      |                   |        |             |
-      v                   v        v             v
- CHAUFFAGE + HEAT        COOL   CHAUFFAGE        OFF/ATTENTE
- (chauffage souverain)         (protection N5)   (sobriete)
+  [N1] INTERDICTION SYSTÈME ...... binary_sensor.chauffage_autorise_systeme
+        -> catégorie RÉSERVÉE (hook constant `on` depuis CH-2) : aucune cause
+           active aujourd'hui, branche non évaluable. Si future cause -> {reduced}
+           en stop hiérarchique. (Le blocage post-aération relève de N2.)
+
+  [N2] CONTEXTES MAJEURS ......... -> {reduced}
+        - aération en cours confirmée                 raison aeration_en_cours
+        - blocage post-aération (blocage_aeration_en_cours)  raison blocage_aeration_en_cours
+        - fenêtre ouverte avec délai (binary_sensor.fenetre_ouverte_maison_avec_delai)  raison fenetre_ouverte_maison
+        - poêle CORROBORÉ (signature thermique ∧ signal non thermique)  raison poele_actif
+        - absence effective Vacances (binary_sensor.vacances_actives = on) raison mode_maison_vacances
+              EXCEPTION : + pré-confort (pre_confort_actif_calcule)
+              et aucun blocage pur actif -> {comfort}   raison pre_confort_vacances
+
+  [N3] CONFORT D'OPPORTUNITÉ
+        3a  présence réelle (binary_sensor.presence_famille_unifiee)
+              -> délègue à sensor.chauffage_autorisation_cible
+                 comfort  -> {comfort}     raison besoin_thermique
+                 neutre   -> {ABSTENTION}  raison presence_on
+                 reduced  -> {reduced}     raison confort_suffisant
+        3b  inhibition géofencing (chauffage_inhibition_geofencing) en absence
+              -> {comfort} (préservation reprise)  raison stabilisation_absence
+                 (écrasée immédiatement par toute cause N1/N2)
+        3c  défaut -> {reduced}                     raison absence
+
+  DOCTRINE DES REGISTRES (réécriture partielle) :
+    - les SÉCURITÉS (interdiction système, fenêtre, aération, post-aération)
+      dominent par l'ORDRE (registre sécurité) ;
+    - le POÊLE est un mécanisme de STABILISATION : résolu par CORROBORATION,
+      pas par rang. Règle opposable : aucun {comfort} si poêle corroboré,
+      Vacances + pré-confort INCLUS. Un poêle non corroboré n'a aucun effet.
+
+======================================================================
+        TABLE CANONIQUE (condensée) — autorisation x programme actuel
+======================================================================
+  Hors override. `neutre` produit TOUJOURS une abstention. Zéro oscillation.
+
+  RÉGIME PRÉSENCE (aucun blocage)
+    comfort + reduced  -> {comfort}     (besoin thermique avéré)
+    comfort + comfort  -> abstention    (déjà en confort)
+    neutre  + *        -> abstention     (confort suffisant / sobriété)
+    reduced + comfort  -> {reduced}     (fin de besoin)
+    reduced + reduced  -> abstention
+
+  RÉGIME ABSENCE (aucun blocage, géofencing inactif)
+    comfort + reduced  -> abstention    (confort interdit en absence)
+    comfort + comfort  -> {reduced}     (retour sobriété)
+    neutre  + comfort  -> {reduced}     (fin confort absence)
+    * + reduced        -> abstention    (état nominal absence)
+
+  ABSENCE + INHIBITION GÉOFENCING ACTIVE
+    comfort + reduced  -> {comfort}     (préservation reprise, TEMPORAIRE)
+    -> retour automatique à reduced obligatoire · une activation par cycle
+
+======================================================================
+        SÉQUENCE D'EXÉCUTION — GARDES (décision centrale §8/§9)
+======================================================================
+
+   START
+     |
+     +-- G1  anti-rebond actif ET pas override ?  -> STOP   (contournable override)
+     |
+     +-- SET : prog_actuel / desired_mode / reason
+     |
+     +-- G3  programme = unknown ET pas override ? -> STOP  (contournable override)
+     +-- G4  desired_mode = neutre ?               -> STOP  (NON contournable)
+     +-- G5  desired_mode = prog_actuel ?          -> STOP  (NON — idempotence)
+     +-- G2  bridge offline (binary_sensor.boiler_bridge_online=off)? -> STOP (NON)
+     |
+     v
+   EXÉCUTION
+     -> script.chauffage_appliquer_consigne (consigne, raison)
+     -> timer.chauffage_geoloc_antirebond (start)
+
+   NB : une décision valide peut être produite mais NON exécutée (bridge offline).
+        Décision et exécution sont deux événements distincts.
+
+======================================================================
+                          INVARIANTS NON NÉGOCIABLES
+======================================================================
+- Décision unique, centrale, déterministe, traçable, opposable.
+- Aucune action sans cause métier explicite et récente.
+- Aucune reprise {comfort} par simple levée d'un blocage (réévaluation complète
+  exigée) ; respect strict de l'inertie ; zéro oscillation.
+- `neutre` = absence de décision (ni régime, ni erreur, ni attente dégradée).
+- L'abstention est l'état nominal : le système cherche à NE PAS agir.
+- L'ordre d'évaluation est réservé à la dominance des sécurités ; les conflits
+  de stabilisation se résolvent par corroboration, jamais par rang.
+- Aucune cause de stabilisation ne compose un capteur de sécurité système.
+- Souveraineté : aucune décision externe ; validité d'exécution = ACK explicite.
+
+# ----------------------------------------------------------------------
+# 🗄️ NOTE HISTORIQUE
+#   La modélisation conceptuelle antérieure (hiérarchie N1..N5 pré-V3 PRO,
+#   standby/protection traités comme niveaux décisionnels, déclenchement direct
+#   par écart thermique) a été remplacée par le présent schéma. Elle reste
+#   restituable via l'historique git de ce fichier.
+# ======================================================================
