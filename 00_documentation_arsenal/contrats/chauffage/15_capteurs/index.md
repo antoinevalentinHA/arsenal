@@ -114,6 +114,19 @@ Aucune frontière ne doit mélanger :
 → [`03_capteurs_blocages_niveau1.md`](03_capteurs_blocages_niveau1.md)  
 → [`40_blocages.md`](../40_blocages.md)  
 
+Détail du sous-dossier [`03_capteurs_blocages_niveau1/`](03_capteurs_blocages_niveau1.md) :
+
+- [`fenetre_ouverte_maison.md`](03_capteurs_blocages_niveau1/fenetre_ouverte_maison.md)
+- [`fenetre_ouverte_maison_avec_delai.md`](03_capteurs_blocages_niveau1/fenetre_ouverte_maison_avec_delai.md)
+- [`fenetres_maison_fermees_stable.md`](03_capteurs_blocages_niveau1/fenetres_maison_fermees_stable.md)
+- [`poele_en_fonction.md`](03_capteurs_blocages_niveau1/poele_en_fonction.md)
+- [`presence_humaine_sejour.md`](03_capteurs_blocages_niveau1/presence_humaine_sejour.md)
+- [`sejour_co2_delta_30min.md`](03_capteurs_blocages_niveau1/sejour_co2_delta_30min.md)
+- [`sejour_delta_30min.md`](03_capteurs_blocages_niveau1/sejour_delta_30min.md)
+- [`sejour_delta_60min.md`](03_capteurs_blocages_niveau1/sejour_delta_60min.md)
+- [`signature_thermique_poele.md`](03_capteurs_blocages_niveau1/signature_thermique_poele.md)
+
+
 #### 🧍 Présence / absence
 → [`04_capteurs_absence_geofencing.md`](04_capteurs_absence_geofencing.md)  
 → [`60_absence_inhibition_geofencing.md`](../60_absence_inhibition_geofencing.md)  

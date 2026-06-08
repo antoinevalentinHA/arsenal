@@ -86,12 +86,42 @@ Hors périmètre du présent domaine :
 - [`socle_transversal/13_interfaces_ouvertures.md`](socle_transversal/13_interfaces_ouvertures.md)
 
 ### Machine à états (M0..M6)
-- `m0_recover_normatif/`
-- `m1_debut_episode/`
-- `m2_fin_episode/`
-- `m3_analyse_delta_t/`
-- `m4_fin_blocage/`
-- `m5_reouverture/`
-- `m6_refermeture/`
+
+**M0 — recover normatif**
+- [`m0_recover_normatif/1_recover_normatif.md`](m0_recover_normatif/1_recover_normatif.md)
+- [`m0_recover_normatif/2_pipeline_zombie.md`](m0_recover_normatif/2_pipeline_zombie.md)
+- [`m0_recover_normatif/3_confirmee_orpheline.md`](m0_recover_normatif/3_confirmee_orpheline.md)
+- [`m0_recover_normatif/4_blocage_orphelin.md`](m0_recover_normatif/4_blocage_orphelin.md)
+
+**M1 — début épisode**
+- [`m1_debut_episode/1_debut_episode.md`](m1_debut_episode/1_debut_episode.md)
+- [`m1_debut_episode/2_activation_episode_et_horodatage.md`](m1_debut_episode/2_activation_episode_et_horodatage.md)
+- [`m1_debut_episode/3_snapshots_reference.md`](m1_debut_episode/3_snapshots_reference.md)
+- [`m1_debut_episode/4_armement_pipeline.md`](m1_debut_episode/4_armement_pipeline.md)
+
+**M2 — fin épisode**
+- [`m2_fin_episode/1_fin_episode.md`](m2_fin_episode/1_fin_episode.md)
+- [`m2_fin_episode/2_activation_blocage_et_cloture_episode.md`](m2_fin_episode/2_activation_blocage_et_cloture_episode.md)
+- [`m2_fin_episode/3_armement_blocage_et_programmation_timers.md`](m2_fin_episode/3_armement_blocage_et_programmation_timers.md)
+- [`m2_fin_episode/4_reset_confirmation_et_log.md`](m2_fin_episode/4_reset_confirmation_et_log.md)
+
+**M3 — analyse ΔT**
+- [`m3_analyse_delta_t/1_analyse_deltat_orchestrateur.md`](m3_analyse_delta_t/1_analyse_deltat_orchestrateur.md)
+- [`m3_analyse_delta_t/2_calcul_delta_max.md`](m3_analyse_delta_t/2_calcul_delta_max.md)
+- [`m3_analyse_delta_t/3_routage_prolongation_vs_maintien.md`](m3_analyse_delta_t/3_routage_prolongation_vs_maintien.md)
+- [`m3_analyse_delta_t/4_prolonger_blocage_monotone.md`](m3_analyse_delta_t/4_prolonger_blocage_monotone.md)
+- [`m3_analyse_delta_t/5_maintenir_blocage.md`](m3_analyse_delta_t/5_maintenir_blocage.md)
+
+**M4 — fin blocage**
+- [`m4_fin_blocage/1_fin_blocage_horaire.md`](m4_fin_blocage/1_fin_blocage_horaire.md)
+- [`m4_fin_blocage/2_annulation_timers_et_neutralisation_traces.md`](m4_fin_blocage/2_annulation_timers_et_neutralisation_traces.md)
+- [`m4_fin_blocage/3_desarmement_pipeline_et_log.md`](m4_fin_blocage/3_desarmement_pipeline_et_log.md)
+
+**M5 — réouverture**
+- [`m5_reouverture/1_reouverture_pendant_blocage.md`](m5_reouverture/1_reouverture_pendant_blocage.md)
+- [`m5_reouverture/2_interaction_avec_m3.md`](m5_reouverture/2_interaction_avec_m3.md)
+
+**M6 — refermeture**
+- [`m6_refermeture/1_refermeture_apres_reouverture.md`](m6_refermeture/1_refermeture_apres_reouverture.md)
 
 # ==========================================================

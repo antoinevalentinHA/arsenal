@@ -10,10 +10,10 @@
 
 | Fichier | Nature | Portée |
 |---------|--------|--------|
-| `mqtt.md` | Contrat normatif | Bridge MQTT — topics, payloads, pipeline ACK |
-| `architecture.md` | Architecture | Infrastructure système locale — Boiler Bridge |
-| `guard.md` | Contrat normatif | Guard exposition HA |
-| `workflow.md` | Référence | Workflow Git — boiler-bridge |
+| [`mqtt.md`](mqtt.md) | Contrat normatif | Bridge MQTT — topics, payloads, pipeline ACK |
+| [`architecture.md`](architecture.md) | Architecture | Infrastructure système locale — Boiler Bridge |
+| [`guard.md`](guard.md) | Contrat normatif | Guard exposition HA |
+| [`workflow.md`](workflow.md) | Référence | Workflow Git — boiler-bridge |
 
 ---
 

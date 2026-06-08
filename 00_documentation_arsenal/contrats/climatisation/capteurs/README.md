@@ -36,6 +36,50 @@ Chaque catégorie suit le même pattern à 4 fichiers :
 
 ---
 
+## Documents par catégorie
+
+**admissibilite/**
+- [`00_admissibilite.md`](admissibilite/00_admissibilite.md)
+
+**besoins/**
+- [`00_overview.md`](besoins/00_overview.md)
+- [`10_besoins.md`](besoins/10_besoins.md)
+- [`20_chaines.md`](besoins/20_chaines.md)
+- [`90_observations.md`](besoins/90_observations.md)
+
+**seuils_et_franchissements/**
+- [`00_overview.md`](seuils_et_franchissements/00_overview.md)
+- [`10_sensors_seuils.md`](seuils_et_franchissements/10_sensors_seuils.md)
+- [`20_binary_sensors_franchissement.md`](seuils_et_franchissements/20_binary_sensors_franchissement.md)
+- [`30_chaines_fonctionnelles.md`](seuils_et_franchissements/30_chaines_fonctionnelles.md)
+- [`90_observations.md`](seuils_et_franchissements/90_observations.md)
+
+**autorisations/**
+- [`00_overview.md`](autorisations/00_overview.md)
+- [`10_autorisations.md`](autorisations/10_autorisations.md)
+- [`20_chaines.md`](autorisations/20_chaines.md)
+- [`90_observations.md`](autorisations/90_observations.md)
+
+**blocages/**
+- [`00_overview.md`](blocages/00_overview.md)
+- [`10_blocages.md`](blocages/10_blocages.md)
+- [`20_chaines.md`](blocages/20_chaines.md)
+- [`90_observations.md`](blocages/90_observations.md)
+
+**decision/**
+- [`00_overview.md`](decision/00_overview.md)
+- [`10_decision.md`](decision/10_decision.md)
+- [`20_chaines.md`](decision/20_chaines.md)
+- [`90_observations.md`](decision/90_observations.md)
+
+**coherence/**
+- [`00_overview.md`](coherence/00_overview.md)
+- [`10_coherence.md`](coherence/10_coherence.md)
+- [`20_chaines.md`](coherence/20_chaines.md)
+- [`90_observations.md`](coherence/90_observations.md)
+
+---
+
 ## ⚠️ Anomalies signalées (non corrigées)
 
 1. **`admissibilite/`** : un seul fichier ([`00_admissibilite.md`](admissibilite/00_admissibilite.md)) — pas de
