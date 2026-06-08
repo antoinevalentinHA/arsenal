@@ -349,7 +349,6 @@ include:
     # ==== 🛌 WITHINGS ====
     # =====================================================
     - sensor.withings_average_respiratory_rate_local
-    - sensor.withings_temperature_du_corps_local
     - sensor.withings_steps_today_local
     - sensor.withings_distance_travelled_today_local
     - sensor.withings_total_calories_burnt_today_local
