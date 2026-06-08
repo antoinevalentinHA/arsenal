@@ -189,6 +189,23 @@ Inventaire & catégorisation des socles **Header** (titres de sections / sous-se
 
 ---
 
+## 🧭 NAVIGATION
+
+**Sous-dossiers**
+
+- [`couleurs/README.md`](couleurs/README.md) — charte contractuelle Couleurs & Sémantique
+- [`socle_ui/index.md`](socle_ui/index.md) — index du socle de cartes `button-card`
+
+**Documents transverses**
+
+- [`architecture.md`](architecture.md) — principes architecturaux UI Arsenal
+- [`architecture_transverse.md`](architecture_transverse.md) — architecture UI transverse
+- [`navigation.md`](navigation.md) — référence de navigation du système
+- [`pattern_dashboard.md`](pattern_dashboard.md) — pattern canonique des dashboards
+- [`template_header_modele.md`](template_header_modele.md) — modèle canonique d'en-tête de carte UI
+
+---
+
 ## 🚫 CE QUE CETTE DOCUMENTATION N’EST PAS
 
 - ❌ une documentation Lovelace générique

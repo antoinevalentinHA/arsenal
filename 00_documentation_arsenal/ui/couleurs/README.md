@@ -67,6 +67,19 @@ principe de validation contractuelle.
 
 ---
 
+## Documents du dossier
+
+| Document | Rôle |
+|---|---|
+| [`01_principes.md`](01_principes.md) | Fondamentaux contractuels de la couleur |
+| [`02_palette.md`](02_palette.md) | Palette officielle Arsenal |
+| [`02_1_palette_etiquettes.md`](02_1_palette_etiquettes.md) | Palette structurelle (étiquettes) |
+| [`03_exceptions.md`](03_exceptions.md) | Exceptions contrôlées (HVAC / thermique / NAV) |
+| [`04_typographie.md`](04_typographie.md) | Couleur typographique canonique (`#111`) |
+| [`05_regles.md`](05_regles.md) | Priorités sémantiques, interdits, données indisponibles |
+
+---
+
 ## Voir aussi
 
 - `architecture/meteo_interpretation_contextuelle.md` — modèle *amont* qui produit la clé couleur météo. La présente charte régit la **palette et la sémantique** des couleurs ; elle ne régit pas la **logique d'interprétation** qui produit la clé.

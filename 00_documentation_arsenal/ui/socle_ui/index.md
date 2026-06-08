@@ -7,6 +7,25 @@ Référence structurelle : fichiers, socles, héritages.
 
 ---
 
+## Documents
+
+| Document | Rôle |
+|---|---|
+| [`00_synthese.md`](00_synthese.md) | Liste & synthèse de repérage du socle UI |
+| [`01_carte_base.md`](01_carte_base.md) | Socle canonique `carte_base_v2` |
+| [`02_action.md`](02_action.md) | Socles Action |
+| [`03_decision.md`](03_decision.md) | Socles Decision |
+| [`04_etat.md`](04_etat.md) | Socles État |
+| [`05_info.md`](05_info.md) | Socles Info |
+| [`06_kpi.md`](06_kpi.md) | Socles KPI |
+| [`07_status.md`](07_status.md) | Socles Status |
+| [`08_toggle.md`](08_toggle.md) | Socles Toggle |
+| [`09_diagnostic.md`](09_diagnostic.md) | Socles Diagnostic |
+| [`10_badge.md`](10_badge.md) | Socles Badge |
+| [`11_header.md`](11_header.md) | Socles Header |
+
+---
+
 ## Arborescence des fichiers
 ```text
 /homeassistant/button_card_templates/socle/
