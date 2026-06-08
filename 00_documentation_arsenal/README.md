@@ -109,6 +109,7 @@ Documente la **supervision d'outils hors Home Assistant** : pont chaudière
 Couche d'**orientation inter-familles** : carte des domaines (`carte_domaines.md`),
 21 hubs Tier-1 (un par domaine, point d'entrée transversal), pivots thématiques.
 👉 **Non normative** — oriente sans redéfinir. Porte d'entrée : [`navigation/README.md`](navigation/README.md).
+👉 Routeur des 21 hubs de domaine : [`navigation/carte_domaines.md`](navigation/carte_domaines.md).
 
 ### 🗺️ `schemas_ascii/`
 Diagrammes **ASCII** de pipelines (aération, NAS↔HA, régulation thermique),
