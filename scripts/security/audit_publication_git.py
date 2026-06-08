@@ -4,8 +4,20 @@
 # ----------------------------------------------------------
 # Contrat :
 #   documentation_arsenal/contrats/publication/securite_publication_git.md
-# Version contrat : v1.1.0  (script patch v1.1.1)
-# Version script  : v1.1.1
+# Version contrat : v1.1.0  (S8 à promouvoir : voir § 9 du contrat)
+# Version script  : v1.2.0
+#
+# v1.2.0 :
+#   - Implémentation du contrôle S8 — Coordonnées GPS (état courant + historique).
+#     S8 était listé en « Évolutions prévues (hors scope v1.1) » dans le contrat
+#     mais non implémenté : c'est l'angle mort à l'origine de la fuite des
+#     coordonnées du domicile dans 17_zones/*_securite.yaml.
+#   - Correctif scan_history : git grep invoqué en mode Perl (-P). Les patterns
+#     historiques (\s, \d, |, {n}) étaient sinon interprétés en BRE et ne
+#     matchaient rien — l'invariant « un CRITICAL en historique bloque » était
+#     de fait inopérant.
+#   - scan_history respecte désormais EXCLUDED_DIRS (cohérence avec l'état courant ;
+#     évite le bruit des répertoires tiers www/custom_components/zigbee2mqtt).
 # ==========================================================
 
 from __future__ import annotations
@@ -137,6 +149,34 @@ BSSID_PATTERN           = re.compile(r"bssid\s*[:=]\s*([0-9a-fA-F]{2}:){5}[0-9a-
 ARM_DISARM_CODE_PATTERN = re.compile(r"\b(arm|disarm)\b.*\b(code|pin)\b.*[:=]\s*\d+", re.I)
 DOMESTIC_WARN_PATTERN   = re.compile(r"[:=]\s*['\"]?[^#\n]*\b(alarme|clavier|intrusion)\b", re.I)
 NOMINATIVE_PATTERN      = re.compile(r"\bpresence\b.*\bantoine\b|\bantoine\b.*\bpresence\b", re.I)
+
+
+# ---------------------------------------------------------------------------
+# Patterns S8 — Coordonnées GPS (position physique du domicile)
+# ---------------------------------------------------------------------------
+# Contrat § 9 : « S8 — Coordonnées GPS (latitude, longitude, zone home) ».
+# Catégorie la plus sensible du dépôt : une coordonnée en clair localise le
+# domicile au mètre près. La parade fonctionnelle est l'externalisation via
+# !secret (capturée par _PLACEHOLDER_PATTERN, donc non signalée).
+#
+# Trois formes complémentaires, calibrées sur le dépôt réel (0 FP CRITICAL) :
+#   1. KEYED — clé géo + valeur décimale. Séparateur ':' '=' (YAML/JSON/INI)
+#      ou '|' (tableau Markdown : « | Latitude | 44.8522979 | »).
+#   2. PAIR  — deux décimales haute précision adjacentes séparées par une
+#      virgule (« 44.8522979, -0.5875885 ») : forme narrative / liste / GeoJSON.
+#   3. BARE  — filet heuristique (WARNING) : décimale isolée à signature GPS
+#      (>= 6 décimales, dernier chiffre non nul pour exclure les valeurs
+#      « rondes » type températures). Attrape les littéraux de coordonnées
+#      sans clé ni paire (ex. constantes LATITUDE_REF = "44.8522979").
+GEO_COORD_KEYED_PATTERN = re.compile(
+    r"\b(?:latitude|longitude)\b\s*[:=|]\s*[+-]?\d{1,3}\.\d+", re.I
+)
+GEO_COORD_PAIR_PATTERN = re.compile(
+    r"[+-]?\d{1,3}\.\d{3,}\s*,\s*[+-]?\d{1,3}\.\d{3,}"
+)
+GEO_COORD_BARE_PATTERN = re.compile(
+    r"(?<![\w.])[+-]?\d{1,3}\.\d{5,}[1-9](?![\d.])"
+)
 
 
 # ---------------------------------------------------------------------------
@@ -427,6 +467,27 @@ def scan_text_file(path: Path, findings: list[Finding]) -> None:
         if NOMINATIVE_PATTERN.search(active):
             add_once("WARNING", "S4", idx, "présence nominative")
 
+        # ── S8 — Coordonnées GPS ───────────────────────────────────────────
+        # is_placeholder neutralise « latitude: !secret home_latitude » et les
+        # exemples documentaires (« <decimal> », « ... »).
+        geo_critical = False
+        for pattern, label_pattern in [
+            (GEO_COORD_KEYED_PATTERN, "coordonnée géographique (clé + valeur)"),
+            (GEO_COORD_PAIR_PATTERN,  "paire de coordonnées géographiques"),
+        ]:
+            if pattern.search(active) and not is_placeholder(active):
+                add_once("CRITICAL", "S8", idx, label_pattern)
+                geo_critical = True
+
+        # Filet heuristique : seulement si la ligne n'est pas déjà CRITICAL S8
+        # (mime la logique S2 URL_WARNING / already_critical).
+        if (
+            not geo_critical
+            and GEO_COORD_BARE_PATTERN.search(active)
+            and not is_placeholder(active)
+        ):
+            add_once("WARNING", "S8", idx, "valeur à signature de coordonnée GPS")
+
     # S3 — username + password dans le même fichier (CRITICAL)
     # is_placeholder vérifié ligne par ligne : un seul "password: null" ailleurs
     # ne doit pas masquer un vrai mot de passe sur une autre ligne.
@@ -449,6 +510,9 @@ _HISTORY_PATTERNS: list[tuple[str, str, re.Pattern[str]]] = [
     ("S3", "WARNING",  re.compile(r"\b(synology|nas)\b", re.I)),
     ("S4", "CRITICAL", re.compile(r"(alarm_code\s*[:=]\s*\d+|bssid\s*[:=])", re.I)),
     ("S4", "WARNING",  re.compile(r"\b(alarme|clavier|intrusion)\b", re.I)),
+    # S8 — coordonnée GPS keyed : forme exacte de la fuite historique
+    # (« latitude: 44.8522979 » dans 17_zones/*_securite.yaml@parent-du-fix).
+    ("S8", "CRITICAL", re.compile(r"\b(latitude|longitude)\b\s*[:=|]\s*[+-]?\d{1,3}\.\d+", re.I)),
 ]
 
 
@@ -467,20 +531,29 @@ def scan_history(findings: list[Finding]) -> None:
 
     for control, severity, pattern in _HISTORY_PATTERNS:
         for commit in commits:
+            # -P (PCRE) : les patterns utilisent \s \d \b | {n} — non interprétés
+            # par le BRE par défaut de git grep, qui ne matcherait alors rien.
             raw = run_git(
-                "grep", "-I", "-n", "-e", pattern.pattern,
+                "grep", "-I", "-n", "-P", "-e", pattern.pattern,
                 commit, "--",
             )
             if not raw:
                 continue
-            # Format : <file>:<lineno>:<content>
+            # Format git grep <commit> : « <commit>:<file>:<lineno>:<content> »
+            # (le préfixe <commit> est présent car on grep une révision explicite).
             for line in raw.splitlines():
-                parts = line.split(":", 2)
-                if len(parts) < 3:
+                parts = line.split(":", 3)
+                if len(parts) < 4:
                     continue
-                file_path, lineno, content = parts
+                _commit_prefix, file_path, lineno, content = parts
+                if not lineno.isdigit():
+                    continue
 
                 if file_path in EXCLUDED_PATHS:
+                    continue
+                # Cohérence avec le walker de l'état courant : les répertoires
+                # tiers / techniques (EXCLUDED_DIRS) sont hors périmètre Arsenal.
+                if any(part in EXCLUDED_DIRS for part in Path(file_path).parts):
                     continue
                 if is_placeholder(content):
                     continue
@@ -495,7 +568,7 @@ def scan_history(findings: list[Finding]) -> None:
                     severity,
                     control,
                     f"{file_path}@{commit[:8]}",
-                    int(lineno) if lineno.isdigit() else None,
+                    int(lineno),
                     pattern.pattern,
                     historical=True,
                 )
@@ -574,6 +647,7 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
         "S4": "Sécurité domestique",
         "S5": "Fichiers interdits",
         "S6": "Historique Git",
+        "S8": "Coordonnées GPS",
     }
 
     for control, label in control_labels.items():
@@ -615,13 +689,13 @@ def write_report(findings: list[Finding], verdict: str, history_enabled: bool) -
     elif verdict == "WARNING":
         out.append("⚠️  **Revue manuelle obligatoire** avant toute publication. Chaque `WARNING` doit être explicitement accepté ou corrigé.")
     else:
-        out.append("✅ Publication techniquement autorisée selon le contrat `securite_publication_git.md` v1.1.0.")
+        out.append("✅ Publication techniquement autorisée selon le contrat `securite_publication_git.md` (S8 inclus, script v1.2.0).")
 
     out += [
         "",
         "---",
         "",
-        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.1.1_",
+        "_Rapport généré par `scripts/security/audit_publication_git.py` v1.2.0_",
         "",
     ]
 

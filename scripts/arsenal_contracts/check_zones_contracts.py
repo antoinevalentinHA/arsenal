@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Validation contractuelle : Zones géographiques
-Contrat : CONTRAT_ZONES v1.0.3
+Contrat : CONTRAT_ZONES v1.0.4
 Script  : scripts/arsenal_contracts/check_zones_contracts.py
 """
 
@@ -44,8 +44,21 @@ DIRS_INFRASTRUCTURE = [
 # ---------------------------------------------------------------------------
 # Paramètres normatifs (§3)
 # ---------------------------------------------------------------------------
-LATITUDE_REF  = "44.8522979"
-LONGITUDE_REF = "-0.5875885"
+# I5 (v1.0.4) : les coordonnées GPS du domicile sont externalisées dans
+# secrets.yaml. Le checker ne connaît jamais la valeur réelle — il valide
+# uniquement la FORME (!secret <clé>), l'unicité de la référence entre les
+# deux zones, et l'absence de toute coordonnée littérale (anti-réintroduction).
+SECRET_LAT_KEY  = "home_latitude"
+SECRET_LON_KEY  = "home_longitude"
+
+# latitude/longitude: !secret <clé>
+RE_LAT_SECRET = re.compile(r"latitude\s*:\s*!secret\s+(\S+)", re.IGNORECASE)
+RE_LON_SECRET = re.compile(r"longitude\s*:\s*!secret\s+(\S+)", re.IGNORECASE)
+# Garde anti-fuite : latitude/longitude suivi d'une valeur décimale littérale.
+RE_COORD_LITTERALE = re.compile(
+    r"\b(?:latitude|longitude)\s*:\s*[+-]?\d{1,3}\.\d+", re.IGNORECASE
+)
+
 RAYON_MAISON  = "40"
 RAYON_APPROCHE = "400"
 ICON_MAISON   = "mdi:shield-home"
@@ -93,32 +106,75 @@ def test_zone_files_present() -> None:
 
 
 # ---------------------------------------------------------------------------
-# T2 — Coordonnées GPS alignées sur zone.home (I5)
+# T2 — Coordonnées GPS externalisées via !secret (I5)
 #
-# Invariant (I5) : latitude = 44.8522979, longitude = -0.5875885
-# dans les deux fichiers zones métier.
+# Invariant (I5, v1.0.4) : les deux zones métier déclarent
+#   latitude:  !secret home_latitude
+#   longitude: !secret home_longitude
+# Le checker valide trois propriétés, sans jamais connaître la valeur réelle :
+#   (a) FORME       — chaque zone utilise bien !secret sur lat ET lon ;
+#   (b) UNICITÉ     — les deux zones référencent les MÊMES clés secret
+#                     (garantie « même référence domicile ») ;
+#   (c) ANTI-FUITE  — aucune coordonnée décimale littérale ne subsiste.
 # ---------------------------------------------------------------------------
 
 def test_gps_coordinates() -> None:
     all_ok = True
+    lat_keys: set[str] = set()
+    lon_keys: set[str] = set()
+
     for path in [F_MAISON_SECURITE, F_APPROCHE_SECURITE]:
         content = read(path)
+        rel = path.relative_to(REPO_ROOT)
         if not content:
-            ERRORS.append(f"T2 — Fichier inaccessible : "
-                          f"{path.relative_to(REPO_ROOT)}")
+            ERRORS.append(f"T2 — Fichier inaccessible : {rel}")
             all_ok = False
             continue
-        if LATITUDE_REF not in content:
-            ERRORS.append(f"T2 — Latitude {LATITUDE_REF} absente de "
-                          f"{path.relative_to(REPO_ROOT)} (I5)")
+
+        # (a) Forme + (b) collecte des clés
+        m_lat = RE_LAT_SECRET.search(content)
+        m_lon = RE_LON_SECRET.search(content)
+
+        if not m_lat:
+            ERRORS.append(f"T2 — latitude doit être externalisée "
+                          f"(`latitude: !secret {SECRET_LAT_KEY}`) dans {rel} (I5)")
             all_ok = False
-        if LONGITUDE_REF not in content:
-            ERRORS.append(f"T2 — Longitude {LONGITUDE_REF} absente de "
-                          f"{path.relative_to(REPO_ROOT)} (I5)")
+        else:
+            lat_keys.add(m_lat.group(1))
+            if m_lat.group(1) != SECRET_LAT_KEY:
+                ERRORS.append(f"T2 — clé secret latitude inattendue "
+                              f"'{m_lat.group(1)}' dans {rel} ; "
+                              f"attendu '{SECRET_LAT_KEY}' (I5)")
+                all_ok = False
+
+        if not m_lon:
+            ERRORS.append(f"T2 — longitude doit être externalisée "
+                          f"(`longitude: !secret {SECRET_LON_KEY}`) dans {rel} (I5)")
             all_ok = False
+        else:
+            lon_keys.add(m_lon.group(1))
+            if m_lon.group(1) != SECRET_LON_KEY:
+                ERRORS.append(f"T2 — clé secret longitude inattendue "
+                              f"'{m_lon.group(1)}' dans {rel} ; "
+                              f"attendu '{SECRET_LON_KEY}' (I5)")
+                all_ok = False
+
+        # (c) Anti-réintroduction : aucune coordonnée littérale tolérée
+        if RE_COORD_LITTERALE.search(content):
+            ERRORS.append(f"T2 — coordonnée GPS littérale détectée dans {rel} : "
+                          f"doit être externalisée via !secret (I5, anti-fuite)")
+            all_ok = False
+
+    # (b) Unicité de la référence domicile entre les deux zones
+    if len(lat_keys) > 1 or len(lon_keys) > 1:
+        ERRORS.append("T2 — les deux zones métier ne référencent pas la même "
+                      "clé secret domicile (référence non unique, I5)")
+        all_ok = False
+
     if all_ok:
-        print(f"✔ T2 — Coordonnées GPS {LATITUDE_REF}, {LONGITUDE_REF} "
-              f"alignées dans les deux zones (I5)")
+        print(f"✔ T2 — Coordonnées GPS externalisées via "
+              f"!secret {SECRET_LAT_KEY}/{SECRET_LON_KEY}, référence domicile "
+              f"unique, aucune valeur littérale (I5)")
 
 
 # ---------------------------------------------------------------------------
@@ -376,7 +432,7 @@ TESTS = [
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    print("Arsenal — Validation contractuelle : Zones géographiques v1.0.3\n")
+    print("Arsenal — Validation contractuelle : Zones géographiques v1.0.4\n")
 
     for test_fn in TESTS:
         test_fn()
