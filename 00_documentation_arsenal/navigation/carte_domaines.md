@@ -4,7 +4,7 @@
 >
 > **Rôle.** Registre **canonique** des domaines Arsenal et **autorité** de la couche navigation : tout futur hub découle d'une entrée de cette carte (1 hub ⟺ 1 entrée Tier 1).
 >
-> **Statut.** v2. **Maillé** — les 21 hubs de domaine sont liés en hypertexte depuis cette carte.
+> **Statut.** v2. **Maillé** — Tier 1, Tier 2 et contrats système/transverses liés vers leurs documents canoniques ; §4 maillé uniquement pour les cibles existantes.
 
 ---
 
@@ -53,19 +53,19 @@
 
 | Domaine | Note |
 |---|---|
-| `vmc` | Sous-système réel, mono-contrat. *Rich leaf* — promotion Tier 1 possible plus tard. |
-| `visite` | Mono-contrat. **Consommé par ECS** (`presence_visiteur`) — réf. croisée à signaler. |
-| `babysitting` | Mode de présence. |
-| `simulation_presence` | Mode de présence. |
-| `cumulus_petite_maison` | Adjacent ECS, mono-contrat. |
-| `batteries` | Mono-contrat. |
-| `volets_pluie` | Mono-contrat. Dérive **cosmétique** de slug d'automatisation repérée (triage). |
-| `switchbot_transactionnel` | Patron transactionnel, mono-contrat. |
-| `mouvements` | Mono-contrat. |
-| `mobile.high_accuracy.contextuel` | Mobile, mono-contrat. |
-| `bssid` | Réseau, mono-contrat (à la frontière du système). |
-| `reveils` | Mono-contrat. Réveils nocturnes enfants — observabilité, reset, babyphone opt-in. |
-| `electromenager` | Mono-contrat. Détection de cycle + notification (lave-vaisselle, buanderie). Périmètre restreint. |
+| [`vmc`](../contrats/vmc.md) | Sous-système réel, mono-contrat. *Rich leaf* — promotion Tier 1 possible plus tard. |
+| [`visite`](../contrats/visite.md) | Mono-contrat. **Consommé par ECS** (`presence_visiteur`) — réf. croisée à signaler. |
+| [`babysitting`](../contrats/babysitting.md) | Mode de présence. |
+| [`simulation_presence`](../contrats/simulation_presence.md) | Mode de présence. |
+| [`cumulus_petite_maison`](../contrats/cumulus_petite_maison.md) | Adjacent ECS, mono-contrat. |
+| [`batteries`](../contrats/batteries.md) | Mono-contrat. |
+| [`volets_pluie`](../contrats/volets_pluie.md) | Mono-contrat. Dérive **cosmétique** de slug d'automatisation repérée (triage). |
+| [`switchbot_transactionnel`](../contrats/switchbot_transactionnel.md) | Patron transactionnel, mono-contrat. |
+| [`mouvements`](../contrats/mouvements.md) | Mono-contrat. |
+| [`mobile.high_accuracy.contextuel`](../contrats/mobile.high_accuracy.contextuel.md) | Mobile, mono-contrat. |
+| [`bssid`](../contrats/bssid.md) | Réseau, mono-contrat (à la frontière du système). |
+| [`reveils`](../contrats/reveils.md) | Mono-contrat. Réveils nocturnes enfants — observabilité, reset, babyphone opt-in. |
+| [`electromenager`](../contrats/electromenager.md) | Mono-contrat. Détection de cycle + notification (lave-vaisselle, buanderie). Périmètre restreint. |
 
 ---
 
@@ -73,20 +73,20 @@
 
 | Contrat | Note |
 |---|---|
-| `arsenal_self` | Contrat du système sur lui-même. |
-| `arsenal_nas` | Supervision NAS — **frontière externe** (partie hors HA). **Hors hub** (décision v1). |
-| `parametres_invalides` | Doctrine des paramètres invalides ; entités citées = **placeholders** (`yyy/zzz`). |
-| `notifications` (+ `architecture/notifications_mobiles.md`) | Mécanisme transverse de notification. |
-| `ressources_lovelace` | Ressources UI — **rattaché à `ui_lovelace`** (facette). |
-| `zones` | Zones HA. |
-| `ping_lan_synthese` | Synthèse réseau LAN. |
-| `homekit_diagnostic` | Diagnostic HomeKit. |
-| `ups_arret_ha` | Arrêt HA sur UPS. |
-| `publication` (`securite_publication_git`) | Gouvernance de publication Git. |
-| `integrite_parametres` *(architecture seule)* | Intégrité des paramètres. |
-| `infrastructure_puissance` *(architecture seule)* | Infrastructure d'alimentation. |
-| `aeration_recommandation` (C·A) | **Contrat transverse / recommandation.** Distinct de `aeration_blocage_chauffage` ; **non rattaché** et **sans hub dédié** (décision v1). |
-| `poele` | **Contrat souverain transverse.** Apport thermique exogène : mémoire / blocage chauffage + climatisation HEAT ; détection déléguée aux capteurs chauffage. **Sans hub dédié.** |
+| [`arsenal_self`](../contrats/arsenal_self.md) | Contrat du système sur lui-même. |
+| [`arsenal_nas`](../contrats/arsenal_nas.md) | Supervision NAS — **frontière externe** (partie hors HA). **Hors hub** (décision v1). |
+| [`parametres_invalides`](../contrats/parametres_invalides.md) | Doctrine des paramètres invalides ; entités citées = **placeholders** (`yyy/zzz`). |
+| [`notifications`](../contrats/notifications.md) (+ [`architecture/notifications_mobiles.md`](../architecture/notifications_mobiles.md)) | Mécanisme transverse de notification. |
+| [`ressources_lovelace`](../contrats/ressources_lovelace.md) | Ressources UI — **rattaché à `ui_lovelace`** (facette). |
+| [`zones`](../contrats/zones.md) | Zones HA. |
+| [`ping_lan_synthese`](../contrats/ping_lan_synthese.md) | Synthèse réseau LAN. |
+| [`homekit_diagnostic`](../contrats/homekit_diagnostic.md) | Diagnostic HomeKit. |
+| [`ups_arret_ha`](../contrats/ups_arret_ha.md) | Arrêt HA sur UPS. |
+| [`publication`](../contrats/publication/securite_publication_git.md) (`securite_publication_git`) | Gouvernance de publication Git. |
+| [`integrite_parametres`](../architecture/integrite_parametres.md) *(architecture seule)* | Intégrité des paramètres. |
+| [`infrastructure_puissance`](../architecture/infrastructure_puissance.md) *(architecture seule)* | Infrastructure d'alimentation. |
+| [`aeration_recommandation`](../contrats/aeration_recommandation.md) (C·A) | **Contrat transverse / recommandation.** Distinct de `aeration_blocage_chauffage` ; **non rattaché** et **sans hub dédié** (décision v1). |
+| [`poele`](../contrats/poele.md) | **Contrat souverain transverse.** Apport thermique exogène : mémoire / blocage chauffage + climatisation HEAT ; détection déléguée aux capteurs chauffage. **Sans hub dédié.** |
 
 ---
 
@@ -94,11 +94,11 @@
 
 | Objet | Nature | Destination |
 |---|---|---|
-| `documentation` *(audit)* | Rapports **méta** sur le dépôt (audit structurel, audit hypertexte) | pivot `cluster_meta` |
-| `perception_externe` *(audit)* | Rapport **méta** « perception externe du dépôt » (non normatif, non remédiant) | pivot `cluster_meta` |
-| `architecture` *(audit)* | Audit **de la famille** architecture (pas un domaine) | pivot `cluster_meta` / index architecture |
-| `transverses` *(audit + changelog)* | Buckets cross-domaines (`hysteresis_5_domaines`, cadrage CI Lovelace) | pivots (`matrice_cycle_audit`, `registre_ch`) |
-| Infra famille architecture (`00_system_log`, `01_logger`, `02_logbook`, `00_structure_includes/`, `01_recorder/`, `02_etiquettes/`, `03_doctrines/`) | Doctrine/infra **interne** à `architecture/` | index intra-famille `architecture/` |
+| `documentation` *(audit)* | Rapports **méta** sur le dépôt (audit structurel, audit hypertexte) | pivot `cluster_meta` *(à créer)* |
+| `perception_externe` *(audit)* | Rapport **méta** « perception externe du dépôt » (non normatif, non remédiant) | pivot `cluster_meta` *(à créer)* |
+| `architecture` *(audit)* | Audit **de la famille** architecture (pas un domaine) | pivot `cluster_meta` *(à créer)* / [`index architecture`](../architecture/index.md) |
+| `transverses` *(audit + changelog)* | Buckets cross-domaines (`hysteresis_5_domaines`, cadrage CI Lovelace) | pivots (`matrice_cycle_audit` *(à créer)*, [`registre_ch`](pivots/registre_ch.md)) |
+| Infra famille architecture (`00_system_log`, `01_logger`, `02_logbook`, `00_structure_includes/`, `01_recorder/`, `02_etiquettes/`, `03_doctrines/`) | Doctrine/infra **interne** à `architecture/` | [`index intra-famille architecture/`](../architecture/index.md) |
 
 ---
 
@@ -125,4 +125,4 @@
 
 ---
 
-*v1 de `navigation/carte_domaines.md`. Document non normatif. Aucun lien, aucun hub, aucun fichier de famille créé.*
+*v2 de `navigation/carte_domaines.md`. Document non normatif. Tier 1, Tier 2 et contrats système/transverses maillés vers leurs documents canoniques ; §4 relié uniquement aux pivots/index existants.*
