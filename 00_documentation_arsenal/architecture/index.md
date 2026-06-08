@@ -63,6 +63,7 @@
 | [eclairage_jardin.md](./eclairage_jardin.md) | Architecture éclairage jardin (MATIN / SOIR) |
 | [maintenance_chauffage.md](./maintenance_chauffage.md) | Exploitation et maintenance — chauffage |
 | [meteo_affichage.md](./meteo_affichage.md) | Architecture affichage météo |
+| [meteo_interpretation_contextuelle.md](./meteo_interpretation_contextuelle.md) | Interprétation météo contextuelle (amont de la clé couleur météo) |
 | [notifications_mobiles.md](./notifications_mobiles.md) | Architecture notifications mobiles |
 | [ouvertures.md](./ouvertures.md) | Architecture ouvertures |
 | [voiture.md](./voiture.md) | Architecture voiture (Audi A3 e-tron) |
@@ -86,9 +87,8 @@
 | [03_doctrines/](./03_doctrines/) | 8 | **Bibliothèque doctrinale fondamentale** : nommage, causalité, gestion du temps, séparation décision/action, git, principes généraux (voir note) |
 
 > Note : `03_doctrines/` contient les documents les plus structurants du
-> système Arsenal. `principes_generaux.md` et `gestion_du_temps.md` y sont
-> hébergés — ils sont référencés dans le README comme fichiers racine, mais
-> résident physiquement dans ce sous-dossier (voir §Anomalies).
+> système Arsenal — `principes_generaux.md`, `gestion_du_temps.md`, etc. y
+> sont hébergés. Le README les référence via leur chemin `03_doctrines/`.
 
 ### Domaines spécifiques
 
@@ -101,25 +101,8 @@
 
 ## Anomalies signalées (non corrigées)
 
-1. **README désynchronisé** : la section « 📂 Contenu » du README référence
-   `principes_generaux.md` et `gestion_du_temps.md` comme fichiers racine —
-   ils résident en réalité dans `03_doctrines/`. Le README précède la
-   réorganisation en sous-dossiers.
-
-2. **Nommage ambigu logger / logbook** : `01_logger.md` et `02_logbook.md`
+1. **Nommage ambigu logger / logbook** : `01_logger.md` et `02_logbook.md`
    (racine `architecture/`) coexistent avec `logger.md` et `logbook.md`
    (dans `00_structure_includes/`). Mêmes noms de base, contenus distincts :
    les fichiers racine sont des **docs d'architecture**, les fichiers dans
    `00_structure_includes/` sont des **fragments YAML de configuration**.
-
-3. **`03_doctrines/` sans README ni index** : ce sous-dossier est la
-   bibliothèque doctrinale fondamentale d'Arsenal (principes généraux,
-   nommage des entités, séparation décision/action, gestion du temps…).
-   Son poids documentaire dépasse celui des dossiers domaines (`chauffage/`,
-   `presence/`), mais il n'est pas distingué par un artefact de navigation
-   interne.
-
-4. **Dépendance index `00_structure_includes/`** : le lien vers
-   [`00_structure_includes/index.md`](./00_structure_includes/index.md)
-   est actif uniquement après application du patch
-   `architecture_structure_includes_index.patch`.
