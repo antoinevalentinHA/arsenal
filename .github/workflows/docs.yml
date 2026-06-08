@@ -41,3 +41,7 @@ jobs:
       - name: Index naming gate (DOC-CI-5, stock)
         run: |
           python scripts/docs_lint/docs_ci_naming.py
+
+      - name: Navigation leaf pages gate (DOC-CI-6, R-NAV-LEAF-1)
+        run: |
+          python scripts/docs_lint/docs_ci_navigation_leaf_pages.py
