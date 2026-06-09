@@ -37,6 +37,7 @@
 
 - platform: statistics
   name: "Température min Chambres moyenne 60 min"
+  unique_id: temperature_min_chambres_moyenne_60_min
   entity_id: sensor.temperature_min_chambres
   state_characteristic: mean
   max_age: &max_age_60min
@@ -45,6 +46,7 @@
 
 - platform: statistics
   name: "Température moyenne Maison moyenne 60 min"
+  unique_id: temperature_moyenne_maison_moyenne_60_min
   entity_id: sensor.temperature_moyenne_maison
   state_characteristic: mean
   max_age: *max_age_60min
@@ -52,6 +54,7 @@
 
 - platform: statistics
   name: "Température max Chambres moyenne 60 min"
+  unique_id: temperature_max_chambres_moyenne_60_min
   entity_id: sensor.temperature_max_chambres
   state_characteristic: mean
   max_age: *max_age_60min
