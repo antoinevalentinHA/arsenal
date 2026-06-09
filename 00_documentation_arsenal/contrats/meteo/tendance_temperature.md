@@ -1,7 +1,7 @@
 # Arsenal — Contrat métier et architectural
 # Famille — Tendance thermique des agrégats intérieurs (lecture glanceable)
-# Version : 0.1.0
-# Statut : pré-normatif — avant implémentation
+# Version : 1.0
+# Statut : normatif — famille implémentée
 # Chemin : 00_documentation_arsenal/contrats/meteo/tendance_temperature.md
 # Dépend de : meteo.md, affichage.md, validation.md, fallback.md
 # Renvoi : extrema_jour_courant.md §9.3 (usage « tendance » de la plateforme statistics)
@@ -10,20 +10,18 @@
 
 ## 0. Statut et portée de ce document
 
-Ce document est un **contrat normatif en cours de formalisation**, rédigé
-**avant toute implémentation**. Il fixe la doctrine de la famille Arsenal
-« tendance thermique des agrégats intérieurs », destinée à enrichir la lecture
-des trois capteurs de température déjà exposés dans la catégorie *Favoris* de
-l'interface de conduite Home Assistant (Android Auto).
+Ce document est un **contrat normatif**. Il fixe la doctrine de la famille
+Arsenal « tendance thermique des agrégats intérieurs », **désormais
+implémentée** au runtime (couche perception `sensor.temperature_<axe>_moyenne_60_min`
+— `statistics` / `mean`, fenêtre 60 min ; couche interprétation
+`sensor.tendance_temperature_<axe>` — trigger template sensors ; `<axe>` ∈
+{`min_chambres`, `moyenne_maison`, `max_chambres`} ; ni automatisation, ni
+helper). Il sert de **référence opposable** : le comportement réel du runtime
+fait foi, et ce contrat le documente.
 
-Conformément à la méthode Arsenal, **aucune implémentation Home Assistant n'est
-décrite ici** : ni YAML, ni script, ni helper, ni automatisation, ni identifiant
-d'entité figé. Le présent contrat décrit **ce que le système doit faire**, pas
-**comment**.
-
-Lorsque la famille sera implémentée, l'invariant Arsenal s'applique : **le
-runtime est la référence, le contrat documente le runtime**. Tout écart
-d'implémentation sera une non-conformité, pas une interprétation.
+Toute implémentation ultérieure doit être conforme aux invariants `INV-TEND-*`
+ci-dessous. Tout écart d'implémentation est une non-conformité, pas une
+interprétation.
 
 ---
 
@@ -411,4 +409,5 @@ Aucune de ces extensions n'a de valeur normative à ce stade.
 
 | Version | Date | Modification |
 |---|---|---|
+| 1.0 | 2026-06-09 | Promotion en contrat normatif : la famille « tendance thermique des agrégats intérieurs » est implémentée au runtime (couche perception `sensor.temperature_<axe>_moyenne_60_min` — `statistics`/`mean`, fenêtre 60 min ; couche interprétation `sensor.tendance_temperature_<axe>` — trigger template sensors, hystérésis `S_in`=0.4 / `S_out`=0.2, écart arrondi au centième, `time_pattern` 5 min ; ni automatisation ni helper) et conforme aux invariants `INV-TEND-*`. Grammaire de nommage (§11) désormais figée aux valeurs ci-dessus. Cadrage « pré-contrat / avant implémentation » retiré. |
 | 0.1.0 | 2026-06-09 | Brouillon pré-normatif initial — formalisation de la famille « tendance thermique des agrégats intérieurs » destinée aux Favoris Android Auto : nature métier (écart instantané vs moyenne glissante), méthode retenue (`statistics`/`mean` + interprétation à bande morte et hystérésis), états fermés, icônes dynamiques, gestion d'indisponibilité, observabilité, exclusions et invariants `INV-TEND-*`. Avant implémentation : aucun identifiant figé, aucune entité existante modifiée. |
