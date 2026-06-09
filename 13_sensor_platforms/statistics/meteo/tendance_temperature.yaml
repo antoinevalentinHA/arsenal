@@ -1,0 +1,58 @@
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Tendance thermique — moyenne glissante 60 min des agrégats intérieurs
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la moyenne glissante sur 60 minutes des trois agrégats
+#   thermiques intérieurs déjà affichés en conduite. Sert de référence
+#   de lissage à la couche d'interprétation « tendance ».
+#
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier, aucun seuil, aucune décision
+#   - Lecture seule des agrégats sources (jamais modifiés)
+#
+# 📦 Capteurs créés (entity_id = slug du name) :
+#   • sensor.temperature_min_chambres_moyenne_60_min
+#   • sensor.temperature_moyenne_maison_moyenne_60_min
+#   • sensor.temperature_max_chambres_moyenne_60_min
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : mean
+#   max_age              : 60 min — fenêtre glissante (contrat §8.1)
+#   sampling_size        : généreux, borné par l'âge (cf. temperature.yaml)
+#
+# 🔗 DÉPENDANCES (lecture)
+#   - sensor.temperature_min_chambres
+#   - sensor.temperature_moyenne_maison
+#   - sensor.temperature_max_chambres
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier ou un seuil
+#   - Piloter un équipement
+#   - Réécrire ou renommer un agrégat source
+#
+# 🏷️ Contrat : contrats/meteo/tendance_temperature.md (couche perception)
+# ==========================================================
+
+- platform: statistics
+  name: "Température min Chambres moyenne 60 min"
+  entity_id: sensor.temperature_min_chambres
+  state_characteristic: mean
+  max_age: &max_age_60min
+    minutes: 60
+  sampling_size: &sampling_size_tendance 10000
+
+- platform: statistics
+  name: "Température moyenne Maison moyenne 60 min"
+  entity_id: sensor.temperature_moyenne_maison
+  state_characteristic: mean
+  max_age: *max_age_60min
+  sampling_size: *sampling_size_tendance
+
+- platform: statistics
+  name: "Température max Chambres moyenne 60 min"
+  entity_id: sensor.temperature_max_chambres
+  state_characteristic: mean
+  max_age: *max_age_60min
+  sampling_size: *sampling_size_tendance

@@ -1,0 +1,157 @@
+# ==========================================================
+# 🌡️ ARSENAL — TRIGGER TEMPLATE SENSORS
+#     Tendance thermique des agrégats intérieurs (hausse/baisse/stable)
+# ----------------------------------------------------------
+# 🎯 Objectif :
+#   Restituer, pour chacun des trois agrégats intérieurs affichés en
+#   conduite, une tendance lisible : hausse / baisse / stable, avec
+#   icône dynamique. Indisponible si la source n'est pas numérique.
+#
+# ⚙️ Méthode (contrat §5) :
+#   écart = valeur instantanée source − moyenne glissante 60 min.
+#   Hystérésis à bande morte asymétrique (contrat §8) :
+#     S_in = 0.4 °C (entrée), S_out = 0.2 °C (sortie), S_out < S_in.
+#   La mémoire d'état nécessaire à l'hystérésis est portée par
+#   this.state (trigger template sensor). Le time_pattern réévalue
+#   la sortie de bande même sans changement de source.
+#
+# 📦 Capteurs créés :
+#   • sensor.tendance_temperature_min_chambres
+#   • sensor.tendance_temperature_moyenne_maison
+#   • sensor.tendance_temperature_max_chambres
+#
+# 🧩 Sources consommées (lecture seule, jamais modifiées) :
+#   • sensor.temperature_<axe>                 (agrégat source)
+#   • sensor.temperature_<axe>_moyenne_60_min  (moyenne glissante)
+#   où <axe> ∈ {min_chambres, moyenne_maison, max_chambres}
+#   dérivé de this.entity_id.
+#
+# 🚫 Hors périmètre (contrat §15, arbitrage D5) :
+#   - aucune détection de staleness / âge / fraîcheur
+#   - aucune revalidation de plausibilité
+#   - une source numérique = exploitable ; non numérique = indisponible
+#
+# 🏷️ Contrat : contrats/meteo/tendance_temperature.md (couche interprétation)
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_min_chambres
+        - sensor.temperature_min_chambres_moyenne_60_min
+    - platform: homeassistant
+      event: start
+    - platform: time_pattern
+      minutes: "/5"
+
+  sensor:
+    - name: "Tendance température min Chambres"
+      unique_id: tendance_temperature_min_chambres
+
+      icon: &tendance_icon >
+        {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
+        {% set source = 'sensor.temperature_' ~ axe %}
+        {% set moyenne = 'sensor.temperature_' ~ axe ~ '_moyenne_60_min' %}
+        {% set vf = states(source) | float(default=none) %}
+        {% set mf = states(moyenne) | float(default=none) %}
+        {% if vf is none or mf is none %}
+          mdi:thermometer-off
+        {% else %}
+          {% set ecart = (vf - mf) | round(2) %}
+          {% set s_in = 0.4 %}
+          {% set s_out = 0.2 %}
+          {% set prev = this.state %}
+          {% if ecart >= s_in %}
+            mdi:thermometer-chevron-up
+          {% elif ecart <= -s_in %}
+            mdi:thermometer-chevron-down
+          {% elif prev == 'hausse' and ecart > s_out %}
+            mdi:thermometer-chevron-up
+          {% elif prev == 'baisse' and ecart < -s_out %}
+            mdi:thermometer-chevron-down
+          {% else %}
+            mdi:thermometer
+          {% endif %}
+        {% endif %}
+
+      state: &tendance_state >
+        {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
+        {% set source = 'sensor.temperature_' ~ axe %}
+        {% set moyenne = 'sensor.temperature_' ~ axe ~ '_moyenne_60_min' %}
+        {% set vf = states(source) | float(default=none) %}
+        {% set mf = states(moyenne) | float(default=none) %}
+        {% if vf is none or mf is none %}
+          indisponible
+        {% else %}
+          {% set ecart = (vf - mf) | round(2) %}
+          {% set s_in = 0.4 %}
+          {% set s_out = 0.2 %}
+          {% set prev = this.state %}
+          {% if ecart >= s_in %}
+            hausse
+          {% elif ecart <= -s_in %}
+            baisse
+          {% elif prev == 'hausse' and ecart > s_out %}
+            hausse
+          {% elif prev == 'baisse' and ecart < -s_out %}
+            baisse
+          {% else %}
+            stable
+          {% endif %}
+        {% endif %}
+
+      attributes: &tendance_attrs
+        ecart_c: >
+          {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
+          {% set source = 'sensor.temperature_' ~ axe %}
+          {% set moyenne = 'sensor.temperature_' ~ axe ~ '_moyenne_60_min' %}
+          {% set vf = states(source) | float(default=none) %}
+          {% set mf = states(moyenne) | float(default=none) %}
+          {% if vf is none or mf is none %}
+            unavailable
+          {% else %}
+            {{ (vf - mf) | round(2) }}
+          {% endif %}
+        moyenne_reference: >
+          {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
+          {{ states('sensor.temperature_' ~ axe ~ '_moyenne_60_min') }}
+        fenetre_minutes: 60
+        seuil_entree: 0.4
+        seuil_sortie: 0.2
+        source: >
+          {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
+          sensor.temperature_{{ axe }}
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_moyenne_maison
+        - sensor.temperature_moyenne_maison_moyenne_60_min
+    - platform: homeassistant
+      event: start
+    - platform: time_pattern
+      minutes: "/5"
+
+  sensor:
+    - name: "Tendance température moyenne Maison"
+      unique_id: tendance_temperature_moyenne_maison
+      icon: *tendance_icon
+      state: *tendance_state
+      attributes: *tendance_attrs
+
+- trigger:
+    - platform: state
+      entity_id:
+        - sensor.temperature_max_chambres
+        - sensor.temperature_max_chambres_moyenne_60_min
+    - platform: homeassistant
+      event: start
+    - platform: time_pattern
+      minutes: "/5"
+
+  sensor:
+    - name: "Tendance température max Chambres"
+      unique_id: tendance_temperature_max_chambres
+      icon: *tendance_icon
+      state: *tendance_state
+      attributes: *tendance_attrs
