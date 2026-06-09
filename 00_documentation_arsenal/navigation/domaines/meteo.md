@@ -20,6 +20,7 @@ Domaine météo extérieure : observation et structuration des données météo 
 
 **Analytics :**
 - [`extrema_jour_courant.md`](../../contrats/meteo/extrema_jour_courant.md)
+- [`tendance_temperature.md`](../../contrats/meteo/tendance_temperature.md)
 - [`palmares_chaleur.md`](../../contrats/meteo/palmares_chaleur.md)
 - [`palmares_froid.md`](../../contrats/meteo/palmares_froid.md)
 - [`pluie_palmares.md`](../../contrats/meteo/pluie_palmares.md)
