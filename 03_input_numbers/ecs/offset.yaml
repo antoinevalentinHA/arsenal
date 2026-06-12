@@ -65,10 +65,14 @@ ecs_off_medium:
   icon: mdi:tune-variant
   # initial: 2.6
 
+# Borne haute portée de 3.0 à 4.0 après audit du 12/06/2026
+# (audits/01_rapports/ecs/audit_borne_desinfection_3_vers_4.md) :
+#   - ]3.0 ; 4.0] reste iso-consigne par quantification entière (floor)
+#   - borne > 4.0 non retenue : ouvrirait une dépendance structurelle au boost
 ecs_off_desinfection:
   name: ECS — Offset Désinfection (consigne - X)
   min: 0.0
-  max: 3.0
+  max: 4.0
   step: 0.1
   unit_of_measurement: "°C"
   mode: box

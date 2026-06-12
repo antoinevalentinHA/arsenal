@@ -17,7 +17,7 @@ content: |
   | Tiny | {{ states('input_number.ecs_off_tiny') }} °C | 0.5 – 4.0 |
   | Medium | {{ states('input_number.ecs_off_medium') }} °C | 0.5 – 4.0 |
   | Normal | {{ states('input_number.ecs_off_normal') }} °C | 1.0 – 6.0 |
-  | Désinfection | {{ states('input_number.ecs_off_desinfection') }} °C | 0.0 – 3.0 |
+  | Désinfection | {{ states('input_number.ecs_off_desinfection') }} °C | 0.0 – 4.0 |
 
   {% set ajust = states('input_text.ecs_dernier_ajustement') %}
   {% if ajust not in ['unknown','unavailable','none','', None] %}
