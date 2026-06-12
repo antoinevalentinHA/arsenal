@@ -13,6 +13,8 @@
 ### ECS
 - [ecs/audit_ecs_domaine.md](01_rapports/ecs/audit_ecs_domaine.md)  _(audit général du domaine ; ECS-WD-1 clos par arbitrage)_
 - [ecs/audit_ecs_offsets.md](01_rapports/ecs/audit_ecs_offsets.md)  _(audit ciblé auto-ajustement offsets ; ECS-OFF-1…8)_
+- [ecs/audit_offsets_ecs_bucket_desinfection.md](01_rapports/ecs/audit_offsets_ecs_bucket_desinfection.md)  _(audit ciblé bornes du bucket Désinfection ; saturation silencieuse confirmée runtime ; constats proposés ECS-OFF-9…13)_
+- [ecs/audit_borne_desinfection_3_vers_4.md](01_rapports/ecs/audit_borne_desinfection_3_vers_4.md)  _(analyse d'impact borne max 3.0 → 4.0 ; conclusion B — passage recommandé ; ]3.0 ; 4.0] iso-consigne par quantification entière)_
 
 ### Climatisation
 - [climatisation/audit_climatisation_arsenal.md](01_rapports/climatisation/audit_climatisation_arsenal.md)
