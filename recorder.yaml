@@ -251,6 +251,16 @@ include:
     - sensor.clim_mode_local
     - sensor.clim_consommation_estimee_energie
     - sensor.clim_consommation_estimee_aujourd_hui
+    # ---- Observabilité chaîne décisionnelle (audit historique) ----
+    # Permet aux audits de LIRE la décision, sa cause, ses autorisations et
+    # le blocage horaire au lieu de les reconstruire. Entités existantes,
+    # lecture seule, faible volume. Aucun seuil ni logique modifié.
+    - sensor.clim_target_mode
+    - sensor.clim_raison_decision
+    - binary_sensor.autorisation_clim_cool
+    - binary_sensor.autorisation_clim_dry
+    - binary_sensor.autorisation_clim_heat
+    - binary_sensor.clim_blocage_horaire_reel
 
     # =====================================================
     #  ==== 🪟 AERATION ====
