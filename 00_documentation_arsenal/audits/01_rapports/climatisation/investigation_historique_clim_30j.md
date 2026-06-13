@@ -192,6 +192,8 @@ Décomposition des 145 segments COOL contigus :
   [`backlog_climatisation_hysteresis.md`](../../04_chantiers/climatisation/backlog_climatisation_hysteresis.md)
 - Chantier observabilité COOL (LIVRÉ v15.8.4, observabilité UI — périmètre distinct) :
   [`chantier_observabilite_cool.md`](../../04_chantiers/climatisation/chantier_observabilite_cool.md)
+- Protocole d'observation seuils COOL (expérimental, en cours — utilise cette investigation comme référence « avant ») :
+  [`protocole_observation_seuils_cool.md`](../../04_chantiers/climatisation/protocole_observation_seuils_cool.md)
 - Outil d'investigation (NAS) :
   [`enquete_clim_historique.md`](../../../outils_externes/nas_arsenal/investigations/enquete_clim_historique.md)
 - Hub de navigation : [`navigation/domaines/climatisation.md`](../../../navigation/domaines/climatisation.md)

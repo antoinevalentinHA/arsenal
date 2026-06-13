@@ -29,6 +29,7 @@ Entrée : [`contrats/climatisation/`](../../contrats/climatisation/) — atterri
 - Investigation dynamique (audit historique Recorder 30 j) — [`investigation_historique_clim_30j.md`](../../audits/01_rapports/climatisation/investigation_historique_clim_30j.md)
 - Chantier COOL (**LIVRÉ v15.8.4**, trace as-built) — [`chantier_observabilite_cool.md`](../../audits/04_chantiers/climatisation/chantier_observabilite_cool.md)
 - Backlog hysteresis (**ouvert**) — [`backlog_climatisation_hysteresis.md`](../../audits/04_chantiers/climatisation/backlog_climatisation_hysteresis.md)
+- Protocole d'observation (**expérimental, en cours, non normatif**) — [`protocole_observation_seuils_cool.md`](../../audits/04_chantiers/climatisation/protocole_observation_seuils_cool.md)
 
 ## Changelog
 
