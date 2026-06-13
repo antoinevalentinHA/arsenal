@@ -5,7 +5,7 @@
 
 ## Orientation
 
-Climatisation résidentielle (mode COOL). Contrat v1.4, statut « Stable — aligné runtime Arsenal v15.x ». Chaîne d'audit : rapport → chantier COOL livré (v15.8.4, trace as-built) → backlog hysteresis ouvert. Pas de clôture formelle d'audit. **Aucune architecture dédiée** (`02_architecture.md` est un contrat de la famille `contrats/`, pas un document de la famille `architecture/`).
+Climatisation résidentielle (mode COOL). Contrat v1.4, statut « Stable — aligné runtime Arsenal v15.x ». Chaîne d'audit : rapport statique → investigation dynamique (audit historique Recorder 30 j) → chantier COOL livré (v15.8.4, trace as-built) → backlog hysteresis ouvert. Pas de clôture formelle d'audit. **Aucune architecture dédiée** (`02_architecture.md` est un contrat de la famille `contrats/`, pas un document de la famille `architecture/`).
 
 ## Contrat — « ce que le système doit faire »
 
@@ -26,6 +26,7 @@ Entrée : [`contrats/climatisation/`](../../contrats/climatisation/) — atterri
 > État : domaine **non clôturé** (contrat stable v15.x ≠ clôture formelle d'audit).
 
 - Rapport — [`audit_climatisation_arsenal.md`](../../audits/01_rapports/climatisation/audit_climatisation_arsenal.md)
+- Investigation dynamique (audit historique Recorder 30 j) — [`investigation_historique_clim_30j.md`](../../audits/01_rapports/climatisation/investigation_historique_clim_30j.md)
 - Chantier COOL (**LIVRÉ v15.8.4**, trace as-built) — [`chantier_observabilite_cool.md`](../../audits/04_chantiers/climatisation/chantier_observabilite_cool.md)
 - Backlog hysteresis (**ouvert**) — [`backlog_climatisation_hysteresis.md`](../../audits/04_chantiers/climatisation/backlog_climatisation_hysteresis.md)
 

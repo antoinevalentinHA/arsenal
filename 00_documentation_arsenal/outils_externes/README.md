@@ -20,6 +20,7 @@ Imprimerie, ainsi qu'un gabarit d'autoring.
 | [`nas_arsenal/capteurs.md`](nas_arsenal/capteurs.md) | Template binary sensors UPS (infrastructure) |
 | [`nas_arsenal/audit/audit.md`](nas_arsenal/audit/audit.md) | Système d'audit patrimonial NAS Arsenal |
 | [`nas_arsenal/audit/mqtt.md`](nas_arsenal/audit/mqtt.md) | Projection MQTT de l'audit NAS Arsenal |
+| [`nas_arsenal/investigations/enquete_clim_historique.md`](nas_arsenal/investigations/enquete_clim_historique.md) | Enquête historique climatisation (REST API, lecture seule) — audit dynamique sur Recorder |
 | [`nas_arsenal/diff/diff_auto.md`](nas_arsenal/diff/diff_auto.md) | Timeline automatisée des backups Home Assistant |
 | [`nas_arsenal/diff/diff_release.md`](nas_arsenal/diff/diff_release.md) | `release_diff` — diffs sémantiques de version |
 | [`nas_arsenal/diff/release_diff_mqtt.md`](nas_arsenal/diff/release_diff_mqtt.md) | Projection MQTT de `release_diff` |

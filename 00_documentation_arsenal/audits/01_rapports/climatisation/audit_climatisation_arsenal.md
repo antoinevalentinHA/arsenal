@@ -4,6 +4,10 @@
 > Méthode : confrontation systématique contrat ↔ code réel du dépôt cloné
 > (`github.com/antoinevalentinHA/arsenal`, branche par défaut).
 > Statut contrat affiché : v1.4, « aligné runtime v15.x ».
+>
+> **Complément dynamique** : les comportements dynamiques absents de cet audit
+> statique sont couverts par l'investigation historique (Recorder 30 j) —
+> [`investigation_historique_clim_30j.md`](investigation_historique_clim_30j.md).
 
 ## Note de périmètre et de méthode
 
