@@ -111,6 +111,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [climatisation/protocole_observation_seuils_cool.md](04_chantiers/climatisation/protocole_observation_seuils_cool.md)  _(**protocole d'observation expérimental** — confort soirée/chambres après abaissement runtime des seuils COOL −0,5 °C ; observation avant/après ; **non normatif, aucun réglage proposé** ; référence « avant » = investigation 30 j)_
 - [climatisation/audit_strategie_max_on_min_off_cool.md](04_chantiers/climatisation/audit_strategie_max_on_min_off_cool.md)  _(audit **non normatif** — stratégie COOL max-ON/min-OFF ; v2 : contre-analyse topologique mono-zone, min-OFF = robustesse / atteignabilité de OFF)_
 - [climatisation/patch_doc_intention_asymetrie_cool.md](04_chantiers/climatisation/patch_doc_intention_asymetrie_cool.md)  _(patch documentaire séparé — correction d'intention « asymétrie max/min COOL » ; appliqué dans `90_observations.md`)_
+- [climatisation/chantier_efficacite_clim_par_chambre.md](04_chantiers/climatisation/chantier_efficacite_clim_par_chambre.md)  _(chantier **observationnel** Phase 0 — efficacité clim par chambre = **effectivité de couplage, pas COP** ; **non normatif**, zéro runtime/capteur/UI ; porte = variable cachée, extérieur = confondant, CO₂ = proxy de découplage ; métriques candidates figées)_
 
 ### Transverses
 - [transverses/hysteresis_5_domaines.md](04_chantiers/transverses/hysteresis_5_domaines.md)

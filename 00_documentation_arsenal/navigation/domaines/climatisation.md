@@ -32,6 +32,7 @@ Entrée : [`contrats/climatisation/`](../../contrats/climatisation/) — atterri
 - Protocole d'observation (**expérimental, en cours, non normatif**) — [`protocole_observation_seuils_cool.md`](../../audits/04_chantiers/climatisation/protocole_observation_seuils_cool.md)
 - Audit stratégie COOL max-ON/min-OFF (**non normatif** — v2 topologie mono-zone) — [`audit_strategie_max_on_min_off_cool.md`](../../audits/04_chantiers/climatisation/audit_strategie_max_on_min_off_cool.md)
 - Patch doc intention asymétrie COOL (**appliqué dans le contrat**) — [`patch_doc_intention_asymetrie_cool.md`](../../audits/04_chantiers/climatisation/patch_doc_intention_asymetrie_cool.md)
+- Efficacité clim par chambre (**chantier observationnel Phase 0, non normatif** — effectivité de couplage, pas COP) — [`chantier_efficacite_clim_par_chambre.md`](../../audits/04_chantiers/climatisation/chantier_efficacite_clim_par_chambre.md)
 
 ## Changelog
 
