@@ -30,6 +30,8 @@ Entrée : [`contrats/climatisation/`](../../contrats/climatisation/) — atterri
 - Chantier COOL (**LIVRÉ v15.8.4**, trace as-built) — [`chantier_observabilite_cool.md`](../../audits/04_chantiers/climatisation/chantier_observabilite_cool.md)
 - Backlog hysteresis (**ouvert**) — [`backlog_climatisation_hysteresis.md`](../../audits/04_chantiers/climatisation/backlog_climatisation_hysteresis.md)
 - Protocole d'observation (**expérimental, en cours, non normatif**) — [`protocole_observation_seuils_cool.md`](../../audits/04_chantiers/climatisation/protocole_observation_seuils_cool.md)
+- Audit stratégie COOL max-ON/min-OFF (**non normatif** — v2 topologie mono-zone) — [`audit_strategie_max_on_min_off_cool.md`](../../audits/04_chantiers/climatisation/audit_strategie_max_on_min_off_cool.md)
+- Patch doc intention asymétrie COOL (**appliqué dans le contrat**) — [`patch_doc_intention_asymetrie_cool.md`](../../audits/04_chantiers/climatisation/patch_doc_intention_asymetrie_cool.md)
 
 ## Changelog
 

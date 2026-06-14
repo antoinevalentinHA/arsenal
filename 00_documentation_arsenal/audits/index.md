@@ -109,6 +109,8 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [climatisation/chantier_observabilite_cool.md](04_chantiers/climatisation/chantier_observabilite_cool.md)
 - [climatisation/backlog_climatisation_hysteresis.md](04_chantiers/climatisation/backlog_climatisation_hysteresis.md)  _(backlog des dettes résiduelles climatisation + hystérésis transverse — D5, D10, D11, D12, D13, D-tuile, H1, H2, H3a/H3b, DRY, contrat 05 ; relocalisé depuis `evolutions_futures/`)_
 - [climatisation/protocole_observation_seuils_cool.md](04_chantiers/climatisation/protocole_observation_seuils_cool.md)  _(**protocole d'observation expérimental** — confort soirée/chambres après abaissement runtime des seuils COOL −0,5 °C ; observation avant/après ; **non normatif, aucun réglage proposé** ; référence « avant » = investigation 30 j)_
+- [climatisation/audit_strategie_max_on_min_off_cool.md](04_chantiers/climatisation/audit_strategie_max_on_min_off_cool.md)  _(audit **non normatif** — stratégie COOL max-ON/min-OFF ; v2 : contre-analyse topologique mono-zone, min-OFF = robustesse / atteignabilité de OFF)_
+- [climatisation/patch_doc_intention_asymetrie_cool.md](04_chantiers/climatisation/patch_doc_intention_asymetrie_cool.md)  _(patch documentaire séparé — correction d'intention « asymétrie max/min COOL » ; appliqué dans `90_observations.md`)_
 
 ### Transverses
 - [transverses/hysteresis_5_domaines.md](04_chantiers/transverses/hysteresis_5_domaines.md)

@@ -36,12 +36,16 @@ Ce choix repose sur l'hypothèse que `sensor.humidex_max_chambres` est considér
 Allumage COOL : basé sur `temperature_max_chambres`.  
 Extinction COOL : basée sur `temperature_min_chambres`.
 
-Cette asymétrie est volontaire :
+Cette asymétrie est volontaire et reflète la topologie **mono-zone** du système (un seul climatiseur sur le palier, chambres ouvrables/fermables, aucun capteur de porte ; pilotage multi-zones explicitement hors périmètre — voir `11_perimetre_exclu.md`) :
 
-- l'allumage se déclenche dès qu'une zone atteint une température élevée
-- l'extinction attend que l'ensemble des zones redescendent sous le seuil
+- **Allumage indexé sur la chambre la plus chaude** (`temperature_max_chambres`) : réactivité à la surchauffe locale — aucune pièce chaude n'est ignorée.
+- **Extinction indexée sur la chambre la plus froide** (`temperature_min_chambres`) : en régime de refroidissement, la pièce la plus froide est presque toujours une pièce **couplée** (porte ouverte), donc une pièce que le climatiseur **contrôle effectivement**. Indexer l'extinction sur elle garantit que l'état **OFF reste atteignable**.
 
-Ce mécanisme favorise une réactivité rapide à la surchauffe locale et une extinction stabilisée (évite les oscillations).
+**Intention réelle.** L'extinction n'attend **pas** que toutes les zones repassent sous le seuil (cela imposerait `max` pour OFF). Le critère `min`-OFF empêche qu'une chambre **thermiquement découplée** (porte fermée, hors d'atteinte de l'appareil de palier) ne maintienne **indéfiniment** la climatisation active. Rappel `01_finalite.md` : « OFF est un état normal et volontaire, jamais une erreur ».
+
+⚠️ **Portée exacte de la garantie.** `min`-OFF protège l'atteignabilité de OFF **uniquement lorsque la chambre la plus chaude est repassée sous le seuil d'allumage** (le franchissement ON est prioritaire dans `besoin_clim_cool`). Au-dessus du seuil d'allumage, c'est le critère d'**allumage sur le max** qui gouverne le maintien en marche, indépendamment de l'extinction.
+
+**Compromis assumé.** En régime entièrement **couplé** (toutes portes ouvertes) et avec un écart inter-chambres ≥ hystérésis, le revers de `min`-OFF est un arrêt **possiblement précoce** de la pièce la plus chaude accessible. Ce compromis est **accepté** : il est borné et auto-corrigé (la pièce se réchauffe et redéclenche, ou l'utilisateur ouvre une porte). Le compromis **refusé** est celui qu'imposerait `max`-OFF : un **acharnement climatique** sur une chambre fermée, sans échappatoire automatique. Analyse complète : `audits/04_chantiers/climatisation/audit_strategie_max_on_min_off_cool.md`, Phase 6.
 
 ---
 
