@@ -33,6 +33,7 @@ Entrée : [`contrats/climatisation/`](../../contrats/climatisation/) — atterri
 - Audit stratégie COOL max-ON/min-OFF (**non normatif** — v2 topologie mono-zone) — [`audit_strategie_max_on_min_off_cool.md`](../../audits/04_chantiers/climatisation/audit_strategie_max_on_min_off_cool.md)
 - Patch doc intention asymétrie COOL (**appliqué dans le contrat**) — [`patch_doc_intention_asymetrie_cool.md`](../../audits/04_chantiers/climatisation/patch_doc_intention_asymetrie_cool.md)
 - Efficacité clim par chambre (**chantier observationnel Phase 0, non normatif** — effectivité de couplage, pas COP) — [`chantier_efficacite_clim_par_chambre.md`](../../audits/04_chantiers/climatisation/chantier_efficacite_clim_par_chambre.md)
+- Conception — stabilisation présence confort thermique COOL (**cadrage contractuel proposé, non opposable, non implémenté**) — [`cadrage_contrat_presence_confort_thermique_stabilisee.md`](../../audits/02_conception/climatisation/cadrage_contrat_presence_confort_thermique_stabilisee.md) · calibration [`note_calibration_tenue_T`](../../audits/02_conception/climatisation/note_calibration_tenue_T_presence_confort_thermique.md) (T non ratifiée) · périmètre [`inventaire_consommateurs`](../../audits/02_conception/climatisation/inventaire_consommateurs_presence_famille_unifiee.md)
 
 ## Changelog
 

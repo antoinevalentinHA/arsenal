@@ -26,6 +26,10 @@ Entrée : [`contrats/presence.md`](../../contrats/presence.md) (mono-fichier —
 
 > **Changelog** (pas de chantier dédié) : mentions diffuses dans les snapshots `v15_8_3`, `v15_8_4`, `v15_8_5`, `v15_8_8`.
 
+## Conception — correction en cours de cadrage (proposé, non opposable)
+
+- Stabilisation présence confort thermique (interface COOL clim) — [`cadrage_contrat_presence_confort_thermique_stabilisee.md`](../../audits/02_conception/climatisation/cadrage_contrat_presence_confort_thermique_stabilisee.md) — **cadrage contractuel proposé, non opposable, non implémenté** ; signal dérivé de `presence_famille_unifiee`, confiné aux décisions COOL ; tenue : [`note_calibration_tenue_T`](../../audits/02_conception/climatisation/note_calibration_tenue_T_presence_confort_thermique.md) (T non ratifiée) ; périmètre : [`inventaire_consommateurs`](../../audits/02_conception/climatisation/inventaire_consommateurs_presence_famille_unifiee.md).
+
 ## Liens croisés (sens & appartenance)
 
 Présence est un **fournisseur transversal** (amont). Consommateurs principaux :

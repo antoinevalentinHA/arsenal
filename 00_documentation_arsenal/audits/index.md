@@ -69,6 +69,13 @@
 ### Température intérieure
 - [temperature_interieure/arbitrage_temperature_interieure_agregats.md](02_arbitrages/temperature_interieure/arbitrage_temperature_interieure_agregats.md)
 
+## Conception
+
+### Climatisation
+- [climatisation/cadrage_contrat_presence_confort_thermique_stabilisee.md](02_conception/climatisation/cadrage_contrat_presence_confort_thermique_stabilisee.md)  _(**cadrage contractuel proposé — non opposable, non implémenté** ; signal d'interface `presence_confort_thermique_stabilisee` confiné aux décisions COOL ; clim interne / alarme / `securite` / `unifiee` intacts)_
+- [climatisation/note_calibration_tenue_T_presence_confort_thermique.md](02_conception/climatisation/note_calibration_tenue_T_presence_confort_thermique.md)  _(note de calibration — **non normative tant que le contrat n'est pas ratifié** ; plage [90 s, 180 s], candidat prudent T = 120 s, révisable)_
+- [climatisation/inventaire_consommateurs_presence_famille_unifiee.md](02_conception/climatisation/inventaire_consommateurs_presence_famille_unifiee.md)  _(inventaire de périmètre / support de décision — **non normatif** ; 26 consommateurs classés ; périmètre minimal COOL = 5 fichiers)_
+
 ## Constats
 
 _Constats transverses consignés dans le registre vivant : [registre_anomalies_transverses.md](02_constats/transverses/registre_anomalies_transverses.md)._
