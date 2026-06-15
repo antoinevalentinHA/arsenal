@@ -24,6 +24,39 @@ views:
       - type: vertical-stack
         cards:
           # ==================================================
+          # 🧩 SYNTHÈSE GLOBALE (P1-5)
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🧩 Synthèse aération
+
+              - type: custom:button-card
+                template: carte_aeration_preferable
+                entity: binary_sensor.aeration_conseillee
+                name: Aération conseillée
+
+              # 🧪 CO₂ RDC / Étage (P2-1) — affichage brut, sans logique métier
+              - type: grid
+                square: false
+                columns: 2
+                cards:
+                  - type: custom:button-card
+                    template: carte_kpi_bleu
+                    entity: sensor.co2_rdc
+                    name: CO₂ RDC
+                    icon: mdi:molecule-co2
+
+                  - type: custom:button-card
+                    template: carte_kpi_bleu
+                    entity: sensor.co2_etage
+                    name: CO₂ Étage
+                    icon: mdi:molecule-co2
+
+          # ==================================================
           # 🪟 AÉRATION RDC
           # ==================================================
           - type: grid

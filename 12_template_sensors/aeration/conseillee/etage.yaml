@@ -240,14 +240,16 @@
           {% set co2_fort  = states('input_number.aeration_co2_seuil_fort') | float(1200) %}
           {% set canicule = (t_out is not none and t_out >= (states('input_number.aeration_canicule_seuil_ext') | float(28))) %}
 
-          {% if pluie %}
-            pluie_recente
-          {% elif [int_abs, ext_abs, t_in, t_out] | select('equalto', none) | list | count > 0 %}
+          {# P0-1 : ordre aligné sur l'état (indispo > co2_fort > canicule > pluie > seuils).
+             CO₂ fort prime sur la pluie : le corner pluie + co2_fort produit co2_priorite, jamais pluie_recente. #}
+          {% if [int_abs, ext_abs, t_in, t_out] | select('equalto', none) | list | count > 0 %}
             inconnue
           {% elif (co2 is not none) and (co2 >= co2_fort) %}
             co2_priorite
           {% elif canicule and (co2 is none or co2 < co2_seuil) %}
             canicule
+          {% elif pluie %}
+            pluie_recente
           {% elif (int_abs - ext_abs) < ha_min %}
             seuil_ha_non_atteint
           {% elif (t_in - t_out) < dt_min %}

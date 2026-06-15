@@ -52,10 +52,11 @@
         {% set rdc   = state_attr('binary_sensor.aeration_preferable_rdc','decision') %}
         {% set etage = state_attr('binary_sensor.aeration_preferable_etage','decision') %}
         {% set all = [rdc, etage] | select('defined') | list %}
-        {% if is_state('input_boolean.pluie_en_cours','on') %}
-          mdi:weather-rainy
-        {% elif 'co2_priorite' in all %}
+        {# P0-1 : co2_priorite prime sur la pluie (cohérent avec l'état des capteurs amont). #}
+        {% if 'co2_priorite' in all %}
           mdi:molecule-co2
+        {% elif is_state('input_boolean.pluie_en_cours','on') %}
+          mdi:weather-rainy
         {% elif 'pluie_recente' in all %}
           mdi:weather-rainy
         {% elif 'canicule' in all %}
@@ -81,15 +82,22 @@
         rdc_decision: "{{ state_attr('binary_sensor.aeration_preferable_rdc', 'decision') }}"
         etage_decision: "{{ state_attr('binary_sensor.aeration_preferable_etage', 'decision') }}"
 
+        # 🔁 Alias UI : expose decision_globale sous la clé `decision`
+        #    pour réutiliser la carte `carte_aeration_preferable` sans logique métier UI.
+        #    Aucun calcul : simple recopie de l'attribut decision_globale.
+        decision: "{{ state_attr('binary_sensor.aeration_conseillee', 'decision_globale') }}"
+
         # 🧠 Décision globale consolidée
         decision_globale: >
           {% set d_rdc   = state_attr('binary_sensor.aeration_preferable_rdc', 'decision') %}
           {% set d_etage = state_attr('binary_sensor.aeration_preferable_etage', 'decision') %}
           {% set all = [d_rdc, d_etage] | select('defined') | list %}
-          {% if is_state('input_boolean.pluie_en_cours','on') %}
-            pluie_recente
-          {% elif 'co2_priorite' in all %}
+          {# P0-1 : co2_priorite prime sur la pluie. Le corner pluie + co2_fort produit
+             co2_priorite, jamais pluie_recente, cohérent avec l'état global ON. #}
+          {% if 'co2_priorite' in all %}
             co2_priorite
+          {% elif is_state('input_boolean.pluie_en_cours','on') %}
+            pluie_recente
           {% elif 'pluie_recente' in all %}
             pluie_recente
           {% elif 'canicule' in all %}
