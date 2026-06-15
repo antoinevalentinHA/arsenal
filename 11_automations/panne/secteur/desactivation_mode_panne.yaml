@@ -85,11 +85,19 @@
   # 🔔 Déclencheur — Retour courant secteur confirmé
   # ======================================================
   trigger:
-    - platform: state
+    - id: retour_secteur
+      platform: state
       entity_id: binary_sensor.coupure_secteur
       from: 'on'
       to: 'off'
       for: "00:05:00"
+
+    # Réconciliation : épisode resté actif alors que le secteur est revenu
+    # (transition manquée pendant un reboot HA, ou on→unavailable→off).
+    - id: reconcile
+      platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
 
   # ======================================================
   # ✅ Conditions — Retour réel d’un épisode actif
@@ -99,9 +107,14 @@
       entity_id: input_boolean.panne_secteur_active
       state: "on"
 
+    # Réconciliation/sortie : le secteur doit réellement être revenu.
+    - condition: state
+      entity_id: binary_sensor.coupure_secteur
+      state: "off"
+
     - condition: template
       value_template: >
-        {{ not (
+        {{ trigger.id == 'reconcile' or not (
           (trigger.from_state and trigger.from_state.attributes.get('restored', false)) or
           (trigger.to_state and trigger.to_state.attributes.get('restored', false))
         ) }}
@@ -110,6 +123,21 @@
   # 🔁 Actions — Sortie du mode panne secteur
   # ======================================================
   action:
+
+    # 0) Réinitialiser l'ECS à sa valeur de sécurité (contrat 20 — sortie ECS),
+    #    SAUF si un cycle ECS est encore en cours (ne pas combattre son verrou :
+    #    il se termine, puis le gardien hors-cycle — désinhibé hors panne — rabaisse).
+    #    Chemin canonique, contexte retour_basse. Idempotent.
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.ecs_cycle_en_cours
+              state: "off"
+          sequence:
+            - service: script.ecs_appliquer_consigne_confirmee
+              data:
+                target_temp: 10
+                contexte: "retour_basse"
 
     # 1) Clôturer l’épisode de panne
     - service: input_boolean.turn_off
@@ -134,7 +162,8 @@
         message: >
           Alimentation rétablie à {{ now().strftime('%H:%M') }}.
           L’épisode de panne secteur est clôturé.
-          Le signal chauffage de sécurisation est levé.
+          Le signal chauffage de sécurisation est levé
+          et l’ECS réinitialisée à sa valeur de sécurité (10 °C).
         extra:
           ttl: 0
           priority: high

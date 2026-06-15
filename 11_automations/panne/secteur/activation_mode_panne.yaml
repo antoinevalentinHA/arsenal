@@ -132,10 +132,29 @@
       target:
         entity_id: input_boolean.panne_secteur_active
 
-    # 2) Publier le signal logique chauffage
-    - service: input_boolean.turn_on
-      target:
-        entity_id: input_boolean.mode_confort_chauffage
+    # 2) Publier le signal confort chauffage UNIQUEMENT s'il apporte quelque chose
+    #    (doctrine Bluetti — réserve thermique à dépenser utilement).
+    #    Conditions cumulées, évaluées à l'entrée :
+    #      - budget SOC Bluetti OK (pas en batterie faible <30 %)
+    #      - besoin thermique réel : sensor.chauffage_autorisation_cible ∈ {comfort, neutre}
+    #        (rend 'reduced' en été / maison déjà chaude → confort inutile)
+    #      - présence famille
+    #    Sinon NEUTRALISÉ : le chauffage reste en régime réduit (pas de dépense inutile).
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ is_state('binary_sensor.bluetti_batterie_faible', 'off')
+                   and states('sensor.chauffage_autorisation_cible') in ['comfort', 'neutre']
+                   and is_state('binary_sensor.presence_famille_unifiee', 'on') }}
+          sequence:
+            - service: input_boolean.turn_on
+              target:
+                entity_id: input_boolean.mode_confort_chauffage
+      default:
+        - service: input_boolean.turn_off
+          target:
+            entity_id: input_boolean.mode_confort_chauffage
 
     # 3) Déléguer la mise en régime ECS de secours + la signalisation
     - service: script.mode_panne_coupure_secteur

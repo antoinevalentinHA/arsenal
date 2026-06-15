@@ -78,77 +78,56 @@ mode_panne_coupure_secteur:
   mode: single
   sequence:
 
-    # 1) ECS -> appliquer la consigne de secours par le chemin canonique
-    - action: script.ecs_appliquer_consigne_confirmee
-      data:
-        target_temp: 45
-        contexte: "consigne_haute"
+    - variables:
+        # Bluetti thermique DISPONIBLE (sortie AC active) et NON CRITIQUE (SOC >=15 %)
+        # → on gonfle le ballon au maximum via le cycle désinfection canonique.
+        # (sortie indisponible / SOC critique / non mesurable → pas de cycle).
+        budget_ecs_ok: >
+          {{ is_state('binary_sensor.bluetti_sortie_ac_active', 'on')
+             and is_state('binary_sensor.bluetti_batterie_critique', 'off') }}
+        # Le confort a déjà été décidé à l'entrée (gate besoin/présence/SOC faible).
+        confort_engage: "{{ is_state('input_boolean.mode_confort_chauffage', 'on') }}"
 
-    # 2) Notification persistante – état système
+    # 1) ECS de secours = STOCKAGE THERMIQUE MAXIMAL via le cycle désinfection canonique
+    #    (script.chauffage_ecs_cycle mode desinfection — montée haute sécurisée,
+    #    cible input_number.ecs_temperature_desinfection ; verrou interne au cycle).
+    #    Uniquement si le Bluetti thermique est disponible et non critique.
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ budget_ecs_ok }}"
+          sequence:
+            - action: script.chauffage_ecs_cycle
+              data:
+                mode: "desinfection"
+    # sinon : pas de cycle ECS — autonomie restante de la chaîne préservée
+    # 2) Notification persistante – reflète l'état RÉEL des deux volets
     - service: persistent_notification.create
       data:
         notification_id: mode_panne_secteur
         title: "⚠️ Coupure secteur – Mode panne actif"
         message: >
-          Coupure d’alimentation secteur en cours.
+          Coupure d'alimentation secteur en cours.
 
-          **État système actif :**
-          • `input_boolean.panne_secteur_active` = ON
-          • signal chauffage de sécurisation publié
-            (`input_boolean.mode_confort_chauffage`)
-          • demande ECS de secours envoyée
-            (consigne haute : 45 °C)
+          **État système :** `input_boolean.panne_secteur_active` = ON.
+
+          **Chauffage confort :** {{ 'activé (besoin thermique + présence + SOC)' if confort_engage else 'neutralisé (inutile ou SOC bas) — régime réduit maintenu' }}
+
+          **ECS de secours (stockage thermique) :** {{ 'cycle désinfection déclenché — ballon poussé au maximum' if budget_ecs_ok else 'non déclenché — Bluetti indisponible ou SOC critique, autonomie préservée' }}
 
           Cette notification restera visible tant que
           la panne secteur sera active.
 
-    # 3) Notification mobile prioritaire selon résultat normalisé
-    - choose:
-        - conditions:
-            - condition: state
-              entity_id: input_text.ecs_cycle_last_action_status
-              state: "applied"
-          sequence:
-            - service: script.notification_envoyer_avance
-              data:
-                cible: input_text.telephone_antoine_notify
-                titre: "⚠️ Coupure secteur détectée"
-                message: >
-                  Mode panne actif : signal chauffage de sécurisation publié
-                  et consigne ECS de secours appliquée à 45 °C.
-                extra:
-                  ttl: 0
-                  priority: high
-                  importance: high
-
-        - conditions:
-            - condition: state
-              entity_id: input_text.ecs_cycle_last_action_status
-              state: "rejected"
-          sequence:
-            - service: script.notification_envoyer_avance
-              data:
-                cible: input_text.telephone_antoine_notify
-                titre: "⚠️ Coupure secteur détectée"
-                message: >
-                  Mode panne actif : signal chauffage de sécurisation publié,
-                  mais la consigne ECS de secours à 45 °C
-                  a été rejetée.
-                extra:
-                  ttl: 0
-                  priority: high
-                  importance: high
-
-      default:
-        - service: script.notification_envoyer_avance
-          data:
-            cible: input_text.telephone_antoine_notify
-            titre: "⚠️ Coupure secteur détectée"
-            message: >
-              Mode panne actif : signal chauffage de sécurisation publié,
-              mais la consigne ECS de secours à 45 °C
-              n’a pas été confirmée.
-            extra:
-              ttl: 0
-              priority: high
-              importance: high
+    # 3) Notification mobile prioritaire – état réel
+    - service: script.notification_envoyer_avance
+      data:
+        cible: input_text.telephone_antoine_notify
+        titre: "⚠️ Coupure secteur détectée"
+        message: >
+          Mode panne actif.
+          Confort chauffage : {{ 'activé' if confort_engage else 'neutralisé (régime réduit)' }}.
+          ECS secours : {{ ('cycle désinfection déclenché — statut ' ~ states('input_text.ecs_cycle_last_action_status')) if budget_ecs_ok else 'non déclenché (Bluetti indispo / SOC critique)' }}.
+        extra:
+          ttl: 0
+          priority: high
+          importance: high
