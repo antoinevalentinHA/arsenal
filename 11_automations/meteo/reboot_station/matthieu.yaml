@@ -40,6 +40,17 @@
       entity_id: binary_sensor.acces_externe
       state: "on"
 
+    # Pendant une panne secteur, la station muette traduit la perte
+    # d'alimentation (KO attendu) : power-cycler sa prise (non secourue) est
+    # futile. acces_externe peut rester ON en coupure LOCALE (box sur UPS),
+    # d'où cette garde explicite. Reporté en sortie de panne.
+    - condition: state
+      entity_id: input_boolean.panne_secteur_active
+      state: "off"
+    - condition: state
+      entity_id: binary_sensor.coupure_secteur
+      state: "off"
+
   action:
     - action: script.reboot_netatmo
       data:
