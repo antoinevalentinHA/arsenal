@@ -81,6 +81,15 @@ views:
           # ==================================================
           # ❄️ DIAGNOSTICS — MODE COOL
           # ==================================================
+          - type: custom:button-card
+            template: carte_clim_verdict_mode
+            entity: sensor.clim_verdict_cool
+            name: Verdict COOL
+            visibility:
+              - condition: state
+                entity: input_select.clim_conditions_mode
+                state: Cool
+
           - type: grid
             square: false
             columns: 2
@@ -114,6 +123,16 @@ views:
               - entity: input_select.clim_conditions_mode
                 state: Dry
             card:
+              type: custom:button-card
+              template: carte_clim_verdict_mode
+              entity: sensor.clim_verdict_dry
+              name: Verdict DRY
+
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_conditions_mode
+                state: Dry
+            card:
               type: grid
               square: false
               columns: 2
@@ -140,6 +159,16 @@ views:
           # ==================================================
           # 🔥 DIAGNOSTICS — MODE HEAT
           # ==================================================
+          - type: conditional
+            conditions:
+              - entity: input_select.clim_conditions_mode
+                state: Heat
+            card:
+              type: custom:button-card
+              template: carte_clim_verdict_mode
+              entity: sensor.clim_verdict_heat
+              name: Verdict HEAT
+
           - type: conditional
             conditions:
               - entity: input_select.clim_conditions_mode

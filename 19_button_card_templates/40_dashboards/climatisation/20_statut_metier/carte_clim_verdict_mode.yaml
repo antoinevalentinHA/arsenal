@@ -1,0 +1,126 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Verdict du mode inspecté (tuile 72)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Restituer le verdict d'un mode donné (COOL, DRY ou HEAT)
+#     dans la section dynamique « Conditions » du dashboard, pilotée
+#     par input_select.clim_conditions_mode. Affiche un verdict
+#     contextualisé au mode inspecté, DISTINCT de la décision globale
+#     rendue par carte_clim_decision.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_decision_72
+#     - UI uniquement (aucune décision, aucune action)
+#     - Lecture directe de l'entité passée (un capteur clim_verdict_<mode>)
+#
+# 🎨 SEMANTIQUE (palette sémantique Arsenal — 02_palette.md)
+#     Cette carte traduit un STATUT par mode, et NON un mode de
+#     fonctionnement HVAC : elle relève de la palette sémantique
+#     (02_palette.md), pas de l'Exception 1 « Modes HVAC » (03_exceptions.md),
+#     laquelle est non décisionnelle et interdite pour exprimer un statut.
+#     - actif | admissible | autorise_attente -> 🟢 vert (favorable / autorisé)
+#     - <cause de blocage> (mode nécessaire mais bloqué) -> 🔴 rouge (blocage actif)
+#     - aucun_besoin          -> ⚪ gris neutre (aucun besoin exprimé)
+#     - unknown / unavailable -> ⚪ gris indisponibilité (prime sur tout, R6)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor.clim_verdict_cool | _dry | _heat
+#       (verdict explicatif par mode, produit côté backend)
+#
+# ⚠️ CONTRAINTES
+#     - Aucune logique métier locale : la carte ne fait que traduire
+#       un code de verdict déjà calculé par le backend.
+#     - Toutes les actions désactivées.
+#     - Ne remplace pas carte_clim_decision et ne la pilote pas.
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_verdict_mode
+#     entity: sensor.clim_verdict_cool
+#     name: Verdict COOL
+#
+# ==========================================================
+
+carte_clim_verdict_mode:
+  template: socle_decision_72
+
+  show_name: true
+  show_state: true
+  show_label: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  state_display: |
+    [[[
+      const v = entity.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      if (UNAV.includes(v)) return "Indisponible";
+      const map = {
+        'actif':               'Mode actif',
+        'admissible':          'Retenu (admissible)',
+        'autorise_attente':    'Autorisé — requalification',
+        'aucun_besoin':        'Aucun besoin',
+        'exterieur_trop_froid':'Bloqué',
+        'aeration_etage':      'Bloqué',
+        'fenetre_ouverte':     'Bloqué',
+        'blocage_horaire':     'Bloqué',
+        'absence_prolongee':   'Bloqué',
+        'absence':             'Bloqué',
+        'chauffage_inactif':   'Bloqué',
+        'blocage_aeration':    'Bloqué',
+        'blocage_poele':       'Bloqué'
+      };
+      return map[v] || v;
+    ]]]
+
+  label: |
+    [[[
+      const v = entity.state;
+      const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+      if (UNAV.includes(v)) return "Verdict du mode indisponible";
+      const cause = {
+        'actif':               'Le mode tourne actuellement.',
+        'admissible':          'Besoin admissible : le mode serait retenu par l’arbitrage global.',
+        'autorise_attente':    'Besoin et autorisation présents ; requalification en cours.',
+        'aucun_besoin':        'Aucun besoin pour ce mode.',
+        'exterieur_trop_froid':'Cause : extérieur trop froid.',
+        'aeration_etage':      'Cause : aération préférable (étage).',
+        'fenetre_ouverte':     'Cause : fenêtre ouverte (maison).',
+        'blocage_horaire':     'Cause : blocage horaire.',
+        'absence_prolongee':   'Cause : absence prolongée.',
+        'absence':             'Cause : absence (présence requise).',
+        'chauffage_inactif':   'Cause : chauffage par climatisation désactivé.',
+        'blocage_aeration':    'Cause : blocage post-aération (domaine chauffage).',
+        'blocage_poele':       'Cause : poêle en fonctionnement.'
+      };
+      return cause[v] || ('Code : ' + v);
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            // Palette SEMANTIQUE Arsenal (02_palette.md) : cette carte traduit
+            // un STATUT par mode, pas un mode HVAC (donc pas l'Exception 1).
+            const v = entity.state;
+            const UNAV = ['unknown','unavailable',undefined,null,'none',''];
+            // Gris indisponibilité — prime sur tout (05_regles, R6)
+            if (UNAV.includes(v)) return 'rgba(158,158,158,0.1)';
+            // Vert — favorable / autorisé (actif, admissible, autorisé en attente)
+            if (['actif','admissible','autorise_attente'].includes(v)) return 'rgba(76,175,80,0.2)';
+            // Gris neutre — aucun besoin exprimé (inactif volontaire)
+            if (v === 'aucun_besoin') return 'rgba(158,158,158,0.2)';
+            // Rouge — blocage actif d'un mode pourtant nécessaire (toute cause)
+            return 'rgba(244,67,54,0.2)';
+          ]]]

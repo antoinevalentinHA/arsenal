@@ -15,6 +15,9 @@
 | `sensor.clim_mode_local` | `sensor` (template déclenché) | Fournir une lecture locale persistante du mode actif de la climatisation | Lecture locale / état réel |
 | `sensor.clim_target_mode` | `sensor` (template) | Produire la décision centrale du mode cible à partir des besoins et autorisations | Décision |
 | `sensor.clim_raison_decision` | `sensor` (template) | Expliquer la raison principale de l'état actuel ou de la non-activation | Explicatif / diagnostic |
+| `sensor.clim_verdict_cool` | `sensor` (template) | Exposer le verdict d'inspection du mode COOL (actif, admissible, cause de non-action, absence de besoin) | Explicatif / diagnostic par mode |
+| `sensor.clim_verdict_dry` | `sensor` (template) | Exposer le verdict d'inspection du mode DRY | Explicatif / diagnostic par mode |
+| `sensor.clim_verdict_heat` | `sensor` (template) | Exposer le verdict d'inspection du mode HEAT | Explicatif / diagnostic par mode |
 
 ---
 
@@ -31,6 +34,7 @@ Exécution
 Toutes les entités de ce groupe ne relèvent pas du même patron :
 - `clim_target_mode` porte la décision centrale
 - `clim_action_en_cours` et `clim_raison_decision` sont explicatifs
+- `clim_verdict_cool` / `_dry` / `_heat` sont explicatifs par mode (inspection UI)
 - `clim_mode_local` lit et stabilise l'état réel
 - `consigne_clim_appliquee` dérive un paramètre opératoire
 
@@ -45,6 +49,7 @@ Toutes les entités de ce groupe ne relèvent pas du même patron :
 | `clim_mode_local` | Lecture locale persistante via template déclenché |
 | `clim_target_mode` | Décision combinatoire pure avec arbitrage implicite par ordre d'évaluation |
 | `clim_raison_decision` | Hiérarchie explicative priorisée de causes métier |
+| `clim_verdict_cool` / `clim_verdict_dry` / `clim_verdict_heat` | Verdict explicatif par mode, miroir de la chaîne d'autorisation du mode, sans arbitrage entre modes |
 
 ---
 

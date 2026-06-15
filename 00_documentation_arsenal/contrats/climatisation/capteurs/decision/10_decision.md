@@ -322,37 +322,87 @@ de la climatisation, en cohérence avec la décision réelle.
 
 ### Dépendances strictes
 
-| Dépendance | Type | Priorité | Valeur retournée |
+Contexte calculé en amont de la cascade :
+
+| Variable | Source | Rôle |
+|---|---|---|
+| `target` | `sensor.clim_target_mode` | Mode arbitré courant |
+| `cool_adm` / `dry_adm` / `heat_adm` | `binary_sensor.besoin_clim_<mode>_admissible` | Admissibles par mode |
+| `heat_contexte` | `(target == 'heat')` ou `(not cool_adm and not dry_adm)` | Garde des blocages chauffage-only |
+| `cool_besoin` | `binary_sensor.besoin_clim_cool` | Active les causes COOL-seules |
+
+Cascade priorisée :
+
+| Priorité | Dépendance | Garde | Valeur retournée |
 |---|---|---|---|
-| `input_boolean.blocage_clim_poele` | `input_boolean` | 1 | `blocage_poele` |
-| `input_boolean.chauffage_blocage_aeration` | `input_boolean` | 2 | `blocage_aeration` |
-| `binary_sensor.clim_blocage_horaire_reel` | `binary_sensor` | 3 | `blocage_horaire` |
-| `binary_sensor.fenetre_ouverte_maison` | `binary_sensor` | 4 | `fenetre_ouverte` |
-| `binary_sensor.besoin_clim_cool_admissible` | `binary_sensor` | 5 | `refroidissement` |
-| `binary_sensor.besoin_clim_dry_admissible` | `binary_sensor` | 6 | `deshumidification` |
-| `binary_sensor.besoin_clim_heat_admissible` | `binary_sensor` | 7 | `soutien_chauffage` |
-| (aucune condition) | — | 8 | `aucune_demande_admissible` |
+| 1 | `input_boolean.blocage_clim_poele` | `heat_contexte` | `blocage_poele` |
+| 2 | `input_boolean.chauffage_blocage_aeration` | `heat_contexte` | `blocage_aeration` |
+| 3 | `binary_sensor.clim_blocage_horaire_reel` | — | `blocage_horaire` |
+| 4 | `binary_sensor.clim_blocage_aeration_etage_reel` | — | `blocage_aeration_etage` |
+| 5 | `binary_sensor.fenetre_ouverte_maison_avec_delai` | — | `fenetre_ouverte` |
+| 6 | `binary_sensor.besoin_clim_cool_admissible` | — | `refroidissement` |
+| 7 | `binary_sensor.besoin_clim_dry_admissible` | — | `deshumidification` |
+| 8 | `binary_sensor.besoin_clim_heat_admissible` | — | `soutien_chauffage` |
+| 9 | `binary_sensor.clim_extinction_absence_prolongee_autorisee` | `cool_besoin` | `absence_prolongee` |
+| 10 | `sensor.temperature_jardin` < `input_number.clim_seuil_temperature_exterieure_minimum` | `cool_besoin` | `exterieur_trop_froid` |
+| 11 | (aucune condition) | — | `aucune_demande_admissible` |
 
 ### Logique
 
 ```text
-SI blocage_clim_poele == on                       → blocage_poele
-SINON SI chauffage_blocage_aeration == on         → blocage_aeration
-SINON SI clim_blocage_horaire_reel == on          → blocage_horaire
-SINON SI fenetre_ouverte_maison == on             → fenetre_ouverte
-SINON SI besoin_clim_cool_admissible == on        → refroidissement
-SINON SI besoin_clim_dry_admissible == on         → deshumidification
-SINON SI besoin_clim_heat_admissible == on        → soutien_chauffage
-SINON                                             → aucune_demande_admissible
+target        = clim_target_mode
+cool_adm      = besoin_clim_cool_admissible == on
+dry_adm       = besoin_clim_dry_admissible == on
+heat_adm      = besoin_clim_heat_admissible == on
+heat_contexte = (target == 'heat') OU (NON cool_adm ET NON dry_adm)
+cool_besoin   = besoin_clim_cool == on
+
+SI blocage_clim_poele == on ET heat_contexte               → blocage_poele
+SINON SI chauffage_blocage_aeration == on ET heat_contexte → blocage_aeration
+SINON SI clim_blocage_horaire_reel == on                   → blocage_horaire
+SINON SI clim_blocage_aeration_etage_reel == on            → blocage_aeration_etage
+SINON SI fenetre_ouverte_maison_avec_delai == on           → fenetre_ouverte
+SINON SI cool_adm                                          → refroidissement
+SINON SI dry_adm                                           → deshumidification
+SINON SI heat_adm                                          → soutien_chauffage
+SINON SI cool_besoin ET absence_prolongee_autorisee == on  → absence_prolongee
+SINON SI cool_besoin ET temperature_jardin < seuil_min     → exterieur_trop_froid
+SINON                                                      → aucune_demande_admissible
 ```
 
 ### Alignement avec la décision
 
-La hiérarchie reflète d'abord les blocages structurels (priorités 1-4),
-puis les besoins admissibles dans le même ordre que la politique
-d'arbitrage active (`ThermalPriorityPolicy v1` : cool > dry > heat).
+La hiérarchie reflète d'abord les blocages, puis les admissibles dans
+l'ordre de la politique d'arbitrage active (`ThermalPriorityPolicy v1` :
+cool > dry > heat), puis les causes COOL-seules de non-action.
 Le capteur consomme exclusivement des **vérités métier** : aucune
 primitive brute (franchissement de seuil, humidex) n'est lue.
+
+Deux points sont structurants pour la lecture de cette raison :
+
+- **Garde `heat_contexte`.** `blocage_poele` et `blocage_aeration` sont
+  des blocages du domaine chauffage (doctrine des blocages, §4 — modes
+  impactés : HEAT). Ils ne sont émis comme raison **que** sous contexte
+  HEAT : ils ne peuvent jamais masquer un refroidissement ou une
+  déshumidification admissibles. Quand `blocage_aeration` apparaît,
+  COOL/DRY n'ont aucun besoin admissible : la raison décrit la décision
+  globale, pas un blocage de COOL/DRY.
+- **`blocage_aeration` ≠ `blocage_aeration_etage`.** `blocage_aeration`
+  (priorité 2, HEAT, source `input_boolean.chauffage_blocage_aeration`)
+  est distinct de `blocage_aeration_etage` (priorité 4, COOL/DRY, source
+  `binary_sensor.clim_blocage_aeration_etage_reel`). Seul le second est
+  une cause de non-action COOL/DRY.
+
+La fenêtre lue est la version **temporisée**
+(`fenetre_ouverte_maison_avec_delai`), alignée sur celle que consomment
+les autorisations, et non la version brute.
+
+> **Inspection par mode.** Pour le diagnostic mode par mode du dashboard
+> (section « Conditions », pilotée par `input_select.clim_conditions_mode`),
+> les verdicts dédiés `sensor.clim_verdict_cool | _dry | _heat` exposent la
+> situation propre à chaque mode, sans arbitrage entre modes. Ils sont
+> explicatifs (aucun consommateur runtime) et ne remplacent pas cette
+> raison globale.
 
 ### Fallback
 
@@ -371,6 +421,77 @@ Toute absence de cause reconnue aboutit à `aucune_demande_admissible`.
 ### Consommateurs connus
 
 Non déterminables depuis le YAML fourni.
+
+
+---
+
+## `sensor.clim_verdict_cool` · `sensor.clim_verdict_dry` · `sensor.clim_verdict_heat`
+
+### Identité
+
+| Champ | Valeur |
+|---|---|
+| `unique_id` | `clim_verdict_cool` · `clim_verdict_dry` · `clim_verdict_heat` |
+| Type | `sensor` template |
+| Famille | Explicatif / diagnostic par mode |
+| `icon` | `mdi:snowflake-thermometer` · `mdi:water-percent` · `mdi:fire` |
+
+### Nature
+
+Verdict explicatif **par mode**, destiné à l'inspection du dashboard
+(section « Conditions », pilotée par `input_select.clim_conditions_mode`).
+Chaque capteur évalue un seul mode, sans arbitrage entre modes, et retourne
+un code de verdict unique. Contrairement à `clim_raison_decision` (raison de
+la décision globale arbitrée), ces capteurs répondent à : « pour CE mode,
+quelle est la situation ? ».
+
+### Rôle
+
+Lever l'ambiguïté de juxtaposition : quand l'utilisateur inspecte un mode,
+le dashboard expose un verdict propre à ce mode, distinct de la décision
+globale. Le verdict COOL/DRY ne peut jamais émettre `blocage_aeration`
+(blocage chauffage-only), conformément à la doctrine des blocages.
+
+### Logique (par mode)
+
+```text
+SI climate.clim == <mode>                         → actif
+SINON SI besoin_clim_<mode>_admissible == on      → admissible
+SINON SI besoin_clim_<mode> == on                 → première cause de
+                                                    non-autorisation du mode
+                                                    (miroir de
+                                                    autorisation_clim_<mode>),
+                                                    sinon autorise_attente
+SINON                                             → aucun_besoin
+```
+
+Causes par mode (ordre miroir de l'autorisation correspondante) :
+
+| Mode | Causes possibles |
+|---|---|
+| COOL | `exterieur_trop_froid`, `aeration_etage`, `fenetre_ouverte`, `blocage_horaire`, `absence_prolongee` |
+| DRY | `absence`, `fenetre_ouverte`, `aeration_etage`, `blocage_horaire` |
+| HEAT | `exterieur_trop_froid`, `chauffage_inactif`, `blocage_aeration`, `absence`, `fenetre_ouverte`, `blocage_horaire`, `blocage_poele` |
+
+### Fallback
+
+Aucun fallback mémoire ni numérique. Les seuils extérieurs reprennent les
+mêmes valeurs de repli `float()` que les autorisations correspondantes.
+
+### Position dans l'architecture
+
+```text
+[chaînes besoin / autorisation / blocage par mode]
+                       │
+                       ▼
+   clim_verdict_cool / _dry / _heat  (explicatif par mode, UI)
+```
+
+### Consommateurs connus
+
+UI uniquement (cartes `carte_clim_verdict_mode` du dashboard climatisation).
+Aucun consommateur runtime : ces capteurs ne participent à aucune décision,
+automatisation ou script.
 
 
 ---

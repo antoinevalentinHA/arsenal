@@ -12,6 +12,12 @@
 #     (binary_sensor.clim_incoherence_decision_reel).
 #     Colore selon cette cohérence ; l'orange nuance un état cohérent
 #     mais explicitement bloqué.
+#     Carte GLOBALE : elle restitue l'état réel physique et la décision
+#     globale de la climatisation. Elle est indépendante de
+#     input_select.clim_conditions_mode (helper d'affichage par mode) et
+#     ne doit jamais être pilotée par lui. La raison affichée est la
+#     raison globale (sensor.clim_raison_decision), distincte du verdict
+#     par mode (sensor.clim_verdict_cool | _dry | _heat).
 #
 # 🧱 NATURE
 #     - Template button-card
@@ -49,7 +55,7 @@
 carte_clim_decision:
   template: socle_decision_72
 
-  name: Clim – État réel
+  name: Clim – État réel & décision globale
 
   state_display: |
     [[[
@@ -66,7 +72,7 @@ carte_clim_decision:
   label: |
     [[[
       const raison = states['sensor.clim_raison_decision']?.state || '—';
-      return `Raison : ${raison}`;
+      return `Raison globale : ${raison}`;
     ]]]
 
   state:

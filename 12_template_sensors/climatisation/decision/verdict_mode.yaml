@@ -1,0 +1,135 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim verdict cool / dry / heat
+#
+# 🎯 Rôle :
+#   Exposer, MODE PAR MODE, le verdict d'inspection du mode
+#   considéré : actif, admissible, autorisé en attente de
+#   requalification, première cause de non-autorisation, ou
+#   absence de besoin. Répond à la question « pour CE mode,
+#   quelle est la situation ? » dans le contexte d'inspection
+#   du dashboard (input_select.clim_conditions_mode).
+#
+# 🧱 Principe Arsenal :
+#   - Capteurs STRICTEMENT explicatifs / diagnostic
+#   - Aucune décision, aucune action, aucune modification d'état
+#   - Aucune temporisation, aucun fallback mémoire
+#   - Ne recréent AUCUNE décision runtime parallèle : ils ne font
+#     que relire des vérités métier déjà produites par les couches
+#     besoin / autorisation / blocage.
+#
+# 🧭 Distinction avec sensor.clim_raison_decision :
+#   - clim_raison_decision explique la décision GLOBALE unique
+#     (un seul mode arbitré, contexte HEAT gardé).
+#   - clim_verdict_<mode> explique CHAQUE mode séparément, sans
+#     arbitrage entre modes, pour l'inspection par mode de l'UI.
+#   La carte globale reste pilotée par clim_raison_decision ; ces
+#   verdicts par mode ne la remplacent pas et ne la pilotent pas.
+#
+# 🔗 Dépendances (lecture pure des chaînes existantes) :
+#   - COOL : miroir de binary_sensor.autorisation_clim_cool
+#   - DRY  : miroir de binary_sensor.autorisation_clim_dry
+#   - HEAT : miroir de binary_sensor.autorisation_clim_heat
+#   - besoin_clim_<mode>, besoin_clim_<mode>_admissible
+#   - climate.clim (état réel pour la branche « actif »)
+#
+# ⚠️ IMPORTANT :
+#   blocage_aeration (post-chauffage) n'apparaît QUE dans le verdict
+#   HEAT, conformément à la doctrine des blocages (06_doctrine_blocages,
+#   §4 — modes impactés : HEAT). Le verdict COOL/DRY ne peut jamais
+#   l'émettre : COOL/DRY n'ont que blocage_aeration_etage.
+#
+# 🔖 Vocabulaire de verdict :
+#   actif | admissible | autorise_attente | aucun_besoin
+#   exterieur_trop_froid | aeration_etage | fenetre_ouverte
+#   blocage_horaire | absence_prolongee | absence
+#   chauffage_inactif | blocage_aeration | blocage_poele
+# ==========================================================
+
+- sensor:
+    - name: "Clim verdict cool"
+      unique_id: clim_verdict_cool
+      icon: mdi:snowflake-thermometer
+      state: >
+        {% set seuil = states('input_number.clim_seuil_temperature_exterieure_minimum') | float(99) %}
+        {% set tjardin = states('sensor.temperature_jardin') | float(0) %}
+        {% if is_state('climate.clim', 'cool') %}
+          actif
+        {% elif is_state('binary_sensor.besoin_clim_cool_admissible', 'on') %}
+          admissible
+        {% elif is_state('binary_sensor.besoin_clim_cool', 'on') %}
+          {% if tjardin < seuil %}
+            exterieur_trop_froid
+          {% elif is_state('binary_sensor.clim_blocage_aeration_etage_reel', 'on') %}
+            aeration_etage
+          {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
+            fenetre_ouverte
+          {% elif is_state('binary_sensor.clim_blocage_horaire_reel', 'on') %}
+            blocage_horaire
+          {% elif is_state('binary_sensor.clim_extinction_absence_prolongee_autorisee', 'on') %}
+            absence_prolongee
+          {% else %}
+            autorise_attente
+          {% endif %}
+        {% else %}
+          aucun_besoin
+        {% endif %}
+
+    - name: "Clim verdict dry"
+      unique_id: clim_verdict_dry
+      icon: mdi:water-percent
+      state: >
+        {% if is_state('climate.clim', 'dry') %}
+          actif
+        {% elif is_state('binary_sensor.besoin_clim_dry_admissible', 'on') %}
+          admissible
+        {% elif is_state('binary_sensor.besoin_clim_dry', 'on') %}
+          {% if not (is_state('binary_sensor.presence_famille_unifiee', 'on')
+                     or is_state('input_boolean.mode_babysitting', 'on')) %}
+            absence
+          {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
+            fenetre_ouverte
+          {% elif is_state('binary_sensor.clim_blocage_aeration_etage_reel', 'on') %}
+            aeration_etage
+          {% elif is_state('binary_sensor.clim_blocage_horaire_reel', 'on') %}
+            blocage_horaire
+          {% else %}
+            autorise_attente
+          {% endif %}
+        {% else %}
+          aucun_besoin
+        {% endif %}
+
+    - name: "Clim verdict heat"
+      unique_id: clim_verdict_heat
+      icon: mdi:fire
+      state: >
+        {% set seuil = states('input_number.clim_hiver_seuil_temperature_exterieure') | float(99) %}
+        {% set tjardin = states('sensor.temperature_jardin') | float(0) %}
+        {% if is_state('climate.clim', 'heat') %}
+          actif
+        {% elif is_state('binary_sensor.besoin_clim_heat_admissible', 'on') %}
+          admissible
+        {% elif is_state('binary_sensor.besoin_clim_heat', 'on') %}
+          {% if tjardin <= seuil %}
+            exterieur_trop_froid
+          {% elif is_state('input_boolean.chauffage_clim_active_en_hiver', 'off') %}
+            chauffage_inactif
+          {% elif is_state('input_boolean.chauffage_blocage_aeration', 'on') %}
+            blocage_aeration
+          {% elif is_state('binary_sensor.presence_famille_unifiee', 'off') %}
+            absence
+          {% elif is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
+            fenetre_ouverte
+          {% elif is_state('binary_sensor.clim_blocage_horaire_reel', 'on') %}
+            blocage_horaire
+          {% elif is_state('input_boolean.blocage_clim_poele', 'on') %}
+            blocage_poele
+          {% else %}
+            autorise_attente
+          {% endif %}
+        {% else %}
+          aucun_besoin
+        {% endif %}
