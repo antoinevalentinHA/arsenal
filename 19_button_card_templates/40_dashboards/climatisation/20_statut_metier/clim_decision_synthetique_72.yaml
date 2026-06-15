@@ -21,7 +21,7 @@
 #     - mode = dry             -> 🟢 vert    "Décision active — 💧 DRY"
 #     - mode = heat            -> 🔴 rouge   "Décision active — 🔥 HEAT"
 #     - mode = off             -> ⚪ gris    "Aucune action en cours"
-#     - mode inconnu / autre   -> 🟠 orange  "Décision indéterminée"
+#     - mode inconnu / autre   -> ⚪ gris indispo  "Décision indéterminée"
 #     - unavailable            -> ⚪ gris clair
 #
 # 🔗 DEPENDANCES
@@ -136,5 +136,5 @@ clim_decision_synthetique_72:
             if (mode === 'heat') return 'rgba(244, 67, 54, 0.2)';
             if (mode === 'off')  return 'rgba(158, 158, 158, 0.2)';
 
-            return 'rgba(255, 152, 0, 0.2)';
+            return 'rgba(158, 158, 158, 0.1)';
           ]]]

@@ -21,21 +21,19 @@ views:
       - type: vertical-stack
         cards:
           ########################################################
-          # 🧠 SECTION : Décision centrale
+          # 🧠 SECTION : Décision globale du système
           ########################################################
-          - type: custom:button-card
-            template: section_header
-            name: ⚖️ Décision du système
+          - !include ../../includes/section_headers/decision.yaml
 
           - type: custom:button-card
             template: clim_decision_synthetique_72
 
           ########################################################
-          # 🌡 SECTION : Conditions actuelles & seuils
+          # 🌡 SECTION : Lecture seuils / besoins
           ########################################################
           - type: custom:button-card
             template: section_header
-            name: 🔎 Lecture métier
+            name: 🔎 Lecture seuils / besoins
 
           - type: grid
             columns: 3
@@ -68,9 +66,8 @@ views:
                   entity_on: binary_sensor.clim_humidex_sup_cible_dry
 
           ########################################################
-          # 🚫 SECTION : Blocages clim & Saison
+          # 🚫 SECTION : Blocages
           ########################################################
-          # Sous-section : Blocages clim
           - type: custom:button-card
             template: section_header
             name: 🚫 Blocages
