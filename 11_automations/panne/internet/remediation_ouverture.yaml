@@ -61,10 +61,7 @@
     # Un reboot physique de la box serait futile et power-cyclerait le réseau
     # qui maintient HA. Reporté en sortie de panne.
     - condition: state
-      entity_id: input_boolean.panne_secteur_active
-      state: "off"
-    - condition: state
-      entity_id: binary_sensor.coupure_secteur
+      entity_id: binary_sensor.panne_secteur_en_cours
       state: "off"
 
   action:

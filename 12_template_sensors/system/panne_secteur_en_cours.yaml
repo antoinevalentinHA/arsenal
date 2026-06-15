@@ -1,0 +1,33 @@
+# ============================================================
+# ARSENAL — PANNE SECTEUR — SIGNAL CANONIQUE « EN COURS »
+#
+# Domaine : panne / secteur
+# Role :
+#   Indiquer qu'une panne secteur est EN COURS (coupure live) ou
+#   encore LATCHÉE (épisode actif non clôturé). Hook unique pour
+#   inhiber les remédiations automatiques (reloads, reboot box,
+#   watchdogs, reboot stations Netatmo, scripts de reprise).
+#
+# Sources :
+#   - binary_sensor.coupure_secteur      (détection — NON modifiée ici)
+#   - input_boolean.panne_secteur_active (épisode latché)
+#
+# Invariant :
+#   - state        : coupure ON ou épisode latché.
+#   - availability : si la détection est indéterminée
+#       (unavailable/unknown) ET aucun épisode latché, le capteur
+#       devient lui-même unavailable. Couplé à une garde `state == off`,
+#       cela inhibe PAR PRUDENCE — ce qui reproduit à l'identique la
+#       sémantique des gardes à deux booléens qu'il remplace.
+#   - Capteur PUR : aucune décision, aucune action, aucun effet de bord.
+# ============================================================
+
+- binary_sensor:
+    - name: "Panne secteur en cours"
+      unique_id: panne_secteur_en_cours
+      state: >
+        {{ is_state('binary_sensor.coupure_secteur', 'on')
+           or is_state('input_boolean.panne_secteur_active', 'on') }}
+      availability: >
+        {{ states('binary_sensor.coupure_secteur') not in ['unavailable', 'unknown']
+           or is_state('input_boolean.panne_secteur_active', 'on') }}

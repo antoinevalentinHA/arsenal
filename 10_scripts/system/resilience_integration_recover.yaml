@@ -62,8 +62,7 @@ resilience_integration_recover:
             - condition: template
               value_template: >
                 {{ (op | default('attempt')) == 'attempt'
-                   and (is_state('input_boolean.panne_secteur_active', 'on')
-                        or is_state('binary_sensor.coupure_secteur', 'on')) }}
+                   and is_state('binary_sensor.panne_secteur_en_cours', 'on') }}
           sequence:
             - stop: "Inhibé : panne secteur active (reload d'intégration futile)"
 

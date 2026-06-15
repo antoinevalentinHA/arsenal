@@ -52,10 +52,7 @@
 
     # Ne pas poursuivre les cycles de reboot box pendant une panne secteur.
     - condition: state
-      entity_id: input_boolean.panne_secteur_active
-      state: "off"
-    - condition: state
-      entity_id: binary_sensor.coupure_secteur
+      entity_id: binary_sensor.panne_secteur_en_cours
       state: "off"
 
   action:
