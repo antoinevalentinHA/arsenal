@@ -43,12 +43,34 @@ Snapshot Home Assistant post-correctif (cas **canicule**, cohérent) :
 Laissés ouverts **en connaissance de cause**, sans correction dans cette passe (aucun risque runtime) :
 
 - **Logique métier résiduelle dans `carte_delta_ha`** : la carte recalcule un seuil saisonnier en JavaScript (fallback) — fuite de logique métier UI, contraire au contrat. À traiter en lecture seule d'attribut. *(P1-2, backlog)*
-- **Réglages déclaratifs / inertes** exposés dans le dashboard réglages (`aeration_rain_max_mm`, hystérésis, durées) : présentés comme actifs mais non consommés par le moteur. À implémenter, marquer « inactif » ou retirer. *(P1-4, backlog)*
+- **Réglages déclaratifs / inertes** exposés dans le dashboard réglages : audit décisionnel mené, verdicts par helper et passe suivante préparés en **§ 5.1**. *(P1-4, backlog)*
 - **Absence de dashboard diagnostic dédié à la recommandation** : `seuils_utilises` / `decision` / disponibilité par niveau ne sont pas exposés dans une vue diagnostic propre (l'actuel `diagnostics/aeration` couvre le domaine physique/blocage). *(P2-4, backlog)*
 - **Normalisation du `unique_id` étage** (`humidite_absolue_interieur_etage`, sans « e ») : incohérence latente avec son entity_id runtime et le sibling RDC. **À ne pas modifier sans validation runtime/registre** (un changement de `unique_id` peut recréer l'entité). *(P1-3, backlog, prudence)*
 - **Factorisation future de la logique de décision** : le moteur ré-implémente la sélection de seuils plusieurs fois par capteur (source de divergence). **À traiter dans une passe séparée**, hors de cette clôture. *(P1-1, backlog)*
 
-## 6. Critères de clôture (satisfaits)
+### 5.1 Backlog — réglages déclaratifs (P1-4)
+
+Audit décisionnel ciblé (références vérifiées par grep exhaustif). **Cause commune** des inerties : le moteur de recommandation est un **comparateur Jinja sans état** ; il ne peut honorer aucun réglage supposant une **mémoire d'état ou une temporisation** (anti-flapping, cadence, cap de durée).
+
+| Helper | Statut runtime observé | Décision |
+|---|---|---|
+| `aeration_duree_cible_minutes` | **Actif** — seuil d'affichage lu par `carte_duree_aeration` (dashboard principal) | **Rester visible** (réglage d'**affichage**, hors moteur de reco) |
+| `aeration_rain_max_mm` | Lu uniquement dans l'attribut `seuils_utilises` (affichage), **jamais** dans la décision | **Masquer de l'UI** ; conserver (réserve câblée en lecture) ; idée « porte pluie au cumul mm » au backlog |
+| `aeration_hysteresis_ha` / `aeration_hysteresis_t` | **Non câblés** (aucun lecteur runtime) | **Sortir de l'UI** ; rattachés au chantier transverse [hystérésis 5 domaines](../../04_chantiers/transverses/hysteresis_5_domaines.md) |
+| `aeration_intervalle_min_heures` | **Aucun** consommateur (def + UI réglages) | **Candidat au retrait runtime** (après cette traçabilité) |
+| `aeration_stabilisation_minutes` | **Aucun** consommateur (def + UI réglages) | **Candidat au retrait runtime** |
+| `aeration_duree_grand_froid_max_minutes` | **Aucun** consommateur (pas même `carte_duree_aeration`) | **Candidat au retrait runtime** |
+
+**Passe suivante préparée** (hors de cette passe documentaire) :
+
+1. **Retrait UI** des réglages non actifs du moteur : masquer `aeration_rain_max_mm`, `aeration_hysteresis_ha`, `aeration_hysteresis_t` du dashboard réglages.
+2. **Suppression runtime** des helpers **sans aucun consommateur** : `aeration_intervalle_min_heures`, `aeration_stabilisation_minutes`, `aeration_duree_grand_froid_max_minutes` (+ retrait de leurs tuiles dans `18_lovelace/dashboards/reglages/aeration.yaml`).
+3. **Nettoyage des références résiduelles** en cas de suppression ultérieure de `aeration_rain_max_mm` : ligne `rain_max` de l'attribut `seuils_utilises` dans `12_template_sensors/aeration/conseillee/{rdc,etage}.yaml` (à traiter dans une passe capteur dédiée, hors périmètre UI).
+4. **Aucun changement** pour `aeration_duree_cible_minutes` (réglage d'affichage actif).
+
+> ⚠️ Fait Home Assistant : supprimer un `input_number` supprime l'entité **et son historique recorder**. La présente fiche assure la **traçabilité de l'intention** avant tout retrait.
+
+
 
 - [x] P0-1 appliqué sur RDC, étage et global ; corner pluie + CO₂ fort prouvé corrigé.
 - [x] Règle normative CO₂ > pluie consignée au contrat (table de précédence + invariant de cohérence).
