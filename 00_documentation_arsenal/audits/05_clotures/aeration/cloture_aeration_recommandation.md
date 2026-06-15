@@ -52,21 +52,22 @@ Laissés ouverts **en connaissance de cause**, sans correction dans cette passe 
 
 Audit décisionnel ciblé (références vérifiées par grep exhaustif). **Cause commune** des inerties : le moteur de recommandation est un **comparateur Jinja sans état** ; il ne peut honorer aucun réglage supposant une **mémoire d'état ou une temporisation** (anti-flapping, cadence, cap de durée).
 
-| Helper | Statut runtime observé | Décision |
+| Helper | Statut runtime observé | Statut après passe de retrait (2026-06-15) |
 |---|---|---|
-| `aeration_duree_cible_minutes` | **Actif** — seuil d'affichage lu par `carte_duree_aeration` (dashboard principal) | **Rester visible** (réglage d'**affichage**, hors moteur de reco) |
-| `aeration_rain_max_mm` | Lu uniquement dans l'attribut `seuils_utilises` (affichage), **jamais** dans la décision | **Masquer de l'UI** ; conserver (réserve câblée en lecture) ; idée « porte pluie au cumul mm » au backlog |
-| `aeration_hysteresis_ha` / `aeration_hysteresis_t` | **Non câblés** (aucun lecteur runtime) | **Sortir de l'UI** ; rattachés au chantier transverse [hystérésis 5 domaines](../../04_chantiers/transverses/hysteresis_5_domaines.md) |
-| `aeration_intervalle_min_heures` | **Aucun** consommateur (def + UI réglages) | **Candidat au retrait runtime** (après cette traçabilité) |
-| `aeration_stabilisation_minutes` | **Aucun** consommateur (def + UI réglages) | **Candidat au retrait runtime** |
-| `aeration_duree_grand_froid_max_minutes` | **Aucun** consommateur (pas même `carte_duree_aeration`) | **Candidat au retrait runtime** |
+| `aeration_duree_cible_minutes` | **Actif** — seuil d'affichage lu par `carte_duree_aeration` (dashboard principal) | ✅ **Conservé visible** (réglage d'**affichage**, hors moteur de reco) |
+| `aeration_rain_max_mm` | Lu uniquement dans l'attribut `seuils_utilises` (affichage), **jamais** dans la décision | 👁️ **Masqué de l'UI**, **runtime conservé** (encore lu dans `seuils_utilises`) ; idée « porte pluie au cumul mm » au backlog |
+| `aeration_hysteresis_ha` / `aeration_hysteresis_t` | **Non câblés** (aucun lecteur runtime) | 👁️ **Masqués de l'UI**, **runtime conservé** ; rattachés au chantier transverse [hystérésis 5 domaines](../../04_chantiers/transverses/hysteresis_5_domaines.md) |
+| `aeration_intervalle_min_heures` | **Aucun** consommateur (def + UI réglages) | 🗑️ **Retiré du runtime** (helper + tuile supprimés) |
+| `aeration_stabilisation_minutes` | **Aucun** consommateur (def + UI réglages) | 🗑️ **Retiré du runtime** (helper + tuile supprimés) |
+| `aeration_duree_grand_froid_max_minutes` | **Aucun** consommateur (pas même `carte_duree_aeration`) | 🗑️ **Retiré du runtime** (helper + tuile supprimés) |
 
-**Passe suivante préparée** (hors de cette passe documentaire) :
+**Passe de retrait exécutée (2026-06-15)** :
 
-1. **Retrait UI** des réglages non actifs du moteur : masquer `aeration_rain_max_mm`, `aeration_hysteresis_ha`, `aeration_hysteresis_t` du dashboard réglages.
-2. **Suppression runtime** des helpers **sans aucun consommateur** : `aeration_intervalle_min_heures`, `aeration_stabilisation_minutes`, `aeration_duree_grand_froid_max_minutes` (+ retrait de leurs tuiles dans `18_lovelace/dashboards/reglages/aeration.yaml`).
-3. **Nettoyage des références résiduelles** en cas de suppression ultérieure de `aeration_rain_max_mm` : ligne `rain_max` de l'attribut `seuils_utilises` dans `12_template_sensors/aeration/conseillee/{rdc,etage}.yaml` (à traiter dans une passe capteur dédiée, hors périmètre UI).
-4. **Aucun changement** pour `aeration_duree_cible_minutes` (réglage d'affichage actif).
+1. **Retiré du runtime** — helpers sans aucun consommateur : `aeration_intervalle_min_heures`, `aeration_stabilisation_minutes` (fichier `03_input_numbers/aeration/conseil/system.yaml` supprimé, devenu vide) et `aeration_duree_grand_froid_max_minutes` (retiré de `duree.yaml`). Tuiles correspondantes retirées de `18_lovelace/dashboards/reglages/aeration.yaml`.
+2. **Masqués de l'UI, runtime conservé** : `aeration_rain_max_mm`, `aeration_hysteresis_ha`, `aeration_hysteresis_t` (tuiles retirées du dashboard réglages ; définitions `input_number` inchangées). Le bloc « 🚧 Réglages déclaratifs » du dashboard est supprimé (devenu vide).
+3. **Conservé visible** : `aeration_duree_cible_minutes` (réglage d'affichage actif).
+
+**Reliquat résiduel (non traité ici, passe capteur dédiée)** : la ligne `rain_max` de l'attribut `seuils_utilises` dans `12_template_sensors/aeration/conseillee/{rdc,etage}.yaml` n'a **pas** été touchée (interdit dans cette passe). `aeration_rain_max_mm` reste donc référencé par ces capteurs — c'est la raison pour laquelle il a été **masqué et non supprimé**.
 
 > ⚠️ Fait Home Assistant : supprimer un `input_number` supprime l'entité **et son historique recorder**. La présente fiche assure la **traçabilité de l'intention** avant tout retrait.
 

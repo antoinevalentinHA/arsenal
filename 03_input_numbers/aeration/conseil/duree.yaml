@@ -38,12 +38,3 @@ aeration_duree_cible_minutes:
   unit_of_measurement: "min"
   mode: slider
   icon: mdi:timer
-
-aeration_duree_grand_froid_max_minutes:
-  name: "Durée max en grand froid"
-  min: 2
-  max: 15
-  step: 1
-  unit_of_measurement: "min"
-  mode: slider
-  icon: mdi:timer-sand

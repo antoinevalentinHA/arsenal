@@ -225,82 +225,18 @@ views:
 
               - type: custom:button-card
                 template: sub_section_header
-                name: ⏱️ Durées (affichage)
+                name: ⏱️ Durée (affichage)
 
               - type: markdown
                 content: >
                   <div style="font-size: 12px; line-height: 1.4;">
-                  Cibles d’affichage de la durée d’aération. <b>Sans effet sur la
-                  décision de recommandation</b> (elles servent uniquement au suivi
-                  de durée).
+                  Cible d’affichage de la durée d’aération. <b>Sans effet sur la
+                  décision de recommandation</b> (sert uniquement au suivi de durée).
                   </div>
 
               - type: tile
                 entity: input_number.aeration_duree_cible_minutes
                 name: Durée cible (min)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.aeration_duree_grand_froid_max_minutes
-                name: Durée max en grand froid (min)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-          # === Bloc 4 : 🚧 Réglages déclaratifs / non implémentés ===
-          - type: vertical-stack
-            cards:
-              - type: custom:button-card
-                template: section_header
-                name: 🚧 Réglages déclaratifs / non implémentés
-
-              - type: markdown
-                content: >
-                  <div style="font-size: 13px; line-height: 1.4;">
-                  ⚠️ Ces réglages sont exposés mais <b>ne modifient pas encore la
-                  décision de recommandation</b>. Les ajuster n’a aucun effet sur le
-                  moteur actuel.
-                  </div>
-
-              - type: tile
-                entity: input_number.aeration_rain_max_mm
-                name: Pluie max admissible (mm sur 1h)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.aeration_intervalle_min_heures
-                name: Intervalle minimal entre aérations (h)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.aeration_stabilisation_minutes
-                name: Stabilisation avant reco (min)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.aeration_hysteresis_ha
-                name: Hystérésis ∆HA (arrêt reco)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
-              - type: tile
-                entity: input_number.aeration_hysteresis_t
-                name: Hystérésis ∆T (arrêt reco)
                 features_position: inline
                 features:
                   - type: numeric-input
