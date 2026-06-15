@@ -38,6 +38,8 @@
 #     - L'etat actif de chaque blocage est lu depuis les capteurs
 #       backend ; aucun recalcul horaire cote navigateur
 #     - La plage horaire n'est affichee qu'a titre informatif
+#     - Hauteur adaptative (height auto, min-height 56px) : compacte en
+#       cas nominal, extensible si plusieurs blocages sont listes
 #
 # 🧩 USAGE
 #     Exemple minimal :
@@ -139,6 +141,13 @@ clim_blocages_synthese_xl:
             const actif = (horaire === 'on') || (aeration === 'on') || (postAeration === 'on');
             return actif ? 'rgba(244, 67, 54, 0.2)' : 'rgba(76, 175, 80, 0.2)';
           ]]]
+
+      # Hauteur adaptative : neutralise le height fixe herite du socle
+      # (socle_status_label_xl = 80px) au profit d'un contenu variable.
+      # Compacte en cas nominal (aucun blocage), extensible si plusieurs
+      # blocages sont listes. Aucune incidence logique, entite ou couleur.
+      - height: auto
+      - min-height: 56px
 
     label:
       - white-space: normal
