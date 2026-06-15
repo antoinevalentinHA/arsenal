@@ -46,7 +46,7 @@ views:
 
               - type: custom:button-card
                 template: section_header
-                name: 📊 Seuils par saison
+                name: 📊 Seuils par saison (actifs)
 
               - type: custom:button-card
                 template: sub_section_header
@@ -113,7 +113,7 @@ views:
             cards:
               - type: custom:button-card
                 template: section_header
-                name: 🎛️ Modulateurs
+                name: 🎛️ Modulateurs (actifs)
 
               - type: custom:button-card
                 template: sub_section_header
@@ -155,14 +155,6 @@ views:
                   - type: numeric-input
                     style: buttons
 
-              - type: tile
-                entity: input_number.aeration_rain_max_mm
-                name: Pluie max admissible (mm sur 1h)
-                features_position: inline
-                features:
-                  - type: numeric-input
-                    style: buttons
-
               - type: custom:button-card
                 template: sub_section_header
                 name: 🥶 Grand froid
@@ -199,9 +191,18 @@ views:
                 template: sub_section_header
                 name: 🧪 Modulateur – CO₂
 
+              - type: markdown
+                content: >
+                  <div style="font-size: 12px; line-height: 1.4;">
+                  <b>Seuil (lève blocage canicule)</b> : en canicule, l’aération reste
+                  possible si le CO₂ dépasse ce seuil.<br>
+                  <b>Seuil fort (priorité sanitaire)</b> : au-delà, l’aération est
+                  recommandée immédiatement, <i>y compris sous la pluie</i>.
+                  </div>
+
               - type: tile
                 entity: input_number.aeration_co2_seuil
-                name: Seuil CO₂ (priorité)
+                name: Seuil CO₂ (lève blocage canicule)
                 features_position: inline
                 features:
                   - type: numeric-input
@@ -209,7 +210,7 @@ views:
 
               - type: tile
                 entity: input_number.aeration_co2_seuil_fort
-                name: Seuil CO₂ fort
+                name: Seuil CO₂ fort (priorité sanitaire)
                 features_position: inline
                 features:
                   - type: numeric-input
@@ -224,7 +225,15 @@ views:
 
               - type: custom:button-card
                 template: sub_section_header
-                name: ⏱️ Durées & Fréquence
+                name: ⏱️ Durées (affichage)
+
+              - type: markdown
+                content: >
+                  <div style="font-size: 12px; line-height: 1.4;">
+                  Cibles d’affichage de la durée d’aération. <b>Sans effet sur la
+                  décision de recommandation</b> (elles servent uniquement au suivi
+                  de durée).
+                  </div>
 
               - type: tile
                 entity: input_number.aeration_duree_cible_minutes
@@ -242,6 +251,29 @@ views:
                   - type: numeric-input
                     style: buttons
 
+          # === Bloc 4 : 🚧 Réglages déclaratifs / non implémentés ===
+          - type: vertical-stack
+            cards:
+              - type: custom:button-card
+                template: section_header
+                name: 🚧 Réglages déclaratifs / non implémentés
+
+              - type: markdown
+                content: >
+                  <div style="font-size: 13px; line-height: 1.4;">
+                  ⚠️ Ces réglages sont exposés mais <b>ne modifient pas encore la
+                  décision de recommandation</b>. Les ajuster n’a aucun effet sur le
+                  moteur actuel.
+                  </div>
+
+              - type: tile
+                entity: input_number.aeration_rain_max_mm
+                name: Pluie max admissible (mm sur 1h)
+                features_position: inline
+                features:
+                  - type: numeric-input
+                    style: buttons
+
               - type: tile
                 entity: input_number.aeration_intervalle_min_heures
                 name: Intervalle minimal entre aérations (h)
@@ -249,10 +281,6 @@ views:
                 features:
                   - type: numeric-input
                     style: buttons
-
-              - type: custom:button-card
-                template: sub_section_header
-                name: 🧽 Stabilité & anti-flapping
 
               - type: tile
                 entity: input_number.aeration_stabilisation_minutes
