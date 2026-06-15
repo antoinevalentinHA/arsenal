@@ -1,21 +1,44 @@
 # ==========================================================
-# ⚡ TEMPLATE BINARY SENSOR — Coupure secteur
+# ⚡ TEMPLATE BINARY SENSOR — Coupure secteur (signal canonique)
 # ----------------------------------------------------------
 # 💡 Objectif :
-#   Détecter une coupure de courant sur la prise de la cave à vin.
+#   Qualifier une coupure secteur Arsenal à partir de témoins qui
+#   restent OBSERVABLES PENDANT l'événement et CHUTENT à la perte
+#   du secteur (invariant socle : « une source dépendante du secteur
+#   ne peut pas constituer une source primaire valide »).
 #
-# ⚙️ Fonctionnement :
-#   - ON  → si la tension mesurée est égale à 0 V
-#   - OFF → si la tension est différente de 0 V
+# ⚙️ Logique (consolidation OR — couche de détection) :
+#   ON          → au moins un témoin fiable signale une absence secteur :
+#                   • UPS sur batterie  : binary_sensor.critere_ups_sur_batterie == on
+#                   • ou Bluetti absent : binary_sensor.bluetti_secteur_present  == off
+#   OFF         → aucun témoin fiable ne signale d'absence secteur.
+#   UNAVAILABLE → aucun témoin fiable n'est informatif (code UPS ET
+#                 Bluetti tous deux indisponibles). Conforme à
+#                 10_socle.md § « Indisponibilité du signal canonique » :
+#                 le système ne qualifie alors ni entrée ni sortie de panne.
 #
-# 🧩 Source :
-#   sensor.prise_onduleur_voltage
+# 🧩 Sources canoniques :
+#   - binary_sensor.critere_ups_sur_batterie  (12_template_sensors/system/ups.yaml)
+#   - binary_sensor.bluetti_secteur_present    (12_template_sensors/bluetti/secteur_present.yaml)
+#   Disponibilité UPS évaluée sur sa source documentée
+#   sensor.ups_code_d_etat (le critère UPS masque unknown/unavailable → off).
 #
-# 🧠 Détails techniques :
-#   - Device class “problem” pour signaler une anomalie (coupure)
+# 🧪 Diagnostic secondaire (NON décisionnel) :
+#   - sensor.prise_onduleur_voltage : RÉTROGRADÉ. Point SECOURU par
+#     l'UPS, donc structurellement aveugle à une coupure compensée.
+#     Conservé comme entité diagnostic indépendante ; ne pilote plus l'état.
+#
+# 🧠 Détails :
+#   - device_class « problem » : on = anomalie (coupure)
+#   - Plus de défaut float(230) : une source absente n'est jamais
+#     interprétée comme « secteur OK » (cf. bloc availability).
+#   - Aucune logique temporelle ici : le for: 00:00:30 reste porté par
+#     automation.panne_detection_coupure_secteur (trigger power_cut).
 #
 # 📊 Type : Template Binary Sensor
-# 📍 Entité : binary_sensor.coupure_secteur
+# 📍 Entité : binary_sensor.coupure_secteur (entity_id canonique inchangé)
+# 🔗 Audit : 00_documentation_arsenal/audits/01_rapports/pannes/
+#            audit_panne_detection_coupure_secteur.md
 # ==========================================================
 
 - binary_sensor:
@@ -25,6 +48,24 @@
       default_entity_id: binary_sensor.coupure_secteur
       device_class: problem
 
-      # Coupure détectée si la tension est mesurée à 0 V
+      # ON si au moins un témoin fiable signale une absence secteur.
+      # is_state(...) : seule une valeur EXPLICITE compte. Une source
+      # indisponible ne contribue jamais un faux « on » ni un faux « off ».
       state: >
-        {{ states('sensor.prise_onduleur_voltage') | float(230) == 0 }}
+        {{ is_state('binary_sensor.critere_ups_sur_batterie', 'on')
+           or is_state('binary_sensor.bluetti_secteur_present', 'off') }}
+
+      # Le signal n'est valide que si AU MOINS un témoin fiable est
+      # informatif. Si le code UPS ET Bluetti sont tous deux indisponibles,
+      # le capteur passe `unavailable` plutôt que d'affirmer « secteur OK ».
+      availability: >
+        {% set ups = states('sensor.ups_code_d_etat') %}
+        {% set bluetti = states('binary_sensor.bluetti_secteur_present') %}
+        {{ (ups not in ['unknown', 'unavailable', ''])
+           or (bluetti not in ['unknown', 'unavailable']) }}
+
+      # Traçabilité runtime (constantes — sans coût recorder).
+      attributes:
+        source_ups: binary_sensor.critere_ups_sur_batterie
+        source_bluetti: binary_sensor.bluetti_secteur_present
+        diagnostic_secondaire: sensor.prise_onduleur_voltage

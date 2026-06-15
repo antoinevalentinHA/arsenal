@@ -7,8 +7,12 @@
 # Detecter la presence secteur en entree du Bluetti AC180.
 #
 # Invariant :
-# Ce capteur decrit uniquement l'etat local du Bluetti.
-# Il ne qualifie jamais une panne secteur Arsenal.
+# Ce capteur decrit l'etat secteur local en entree du Bluetti AC180.
+# Il peut participer, via la couche de detection, a la consolidation du
+# signal canonique binary_sensor.coupure_secteur (cf. 10_socle.md,
+# section Unicite du signal canonique). Il n'est jamais lu directement
+# par un consommateur : seul binary_sensor.coupure_secteur fait interface.
+# Ref P0 : audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md
 # ============================================================
 
 - binary_sensor:
