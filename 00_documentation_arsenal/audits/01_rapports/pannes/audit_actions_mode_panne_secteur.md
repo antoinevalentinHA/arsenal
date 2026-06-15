@@ -4,6 +4,7 @@
 > Principe : le runtime fait foi ; toute affirmation est tracée à une preuve du dépôt.
 > Convention : **[FAIT]** observé dans le dépôt · **[HYP]** hypothèse · **[RECO]** recommandation.
 > Audit frère (détection) : [`audit_panne_detection_coupure_secteur.md`](audit_panne_detection_coupure_secteur.md).
+> **STATUT (clôture) — recommandations implémentées en production** : ECS de secours `desinfection` bornée par le budget SOC Bluetti, veto confort (besoin/présence/SOC), réinitialisation + réconciliation de sortie, remédiations inhibées via `binary_sensor.panne_secteur_en_cours`. Les mentions « ECS 45 °C » et la divergence script plus bas décrivent l'état **antérieur** aux patchs ; voir contrats [`20_chauffage_et_ecs.md`](../../../contrats/pannes/secteur/20_chauffage_et_ecs.md) et [`30_cycle_vie_et_signalisation.md`](../../../contrats/pannes/secteur/30_cycle_vie_et_signalisation.md).
 
 ---
 

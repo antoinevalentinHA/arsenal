@@ -1,11 +1,12 @@
 # 🔥🚿 Contrat Arsenal — Panne secteur (Résilience thermique)
 
-**Version :** 1.0  
-**Compatible :** Arsenal v6+  
+**Version :** 1.1
+**Compatible :** Arsenal v6+
 **Statut :** Contrat actif
 
 **Historique :**
 - v1.0 : création — effets métier chauffage/ECS, définition d'épisode, idempotence ECS, justification exception
+- v1.1 : réalignement runtime — confort conditionné (veto besoin/présence/SOC), ECS de secours = cycle `desinfection` borné par le budget SOC Bluetti, réinitialisation ECS de sortie protégée par le verrou de cycle
 
 ---
 
@@ -15,7 +16,7 @@ Ce contrat est un contrat **dérivé**. Il dépend du contrat socle :
 
 [10_socle.md](10_socle.md)
 
-La notion de **"panne secteur avérée"** est définie exclusivement par ce contrat socle.  
+La notion de **"panne secteur avérée"** est définie exclusivement par ce contrat socle.
 Toute qualification d'entrée ou de sortie de panne doit respecter les invariants du socle.
 
 ---
@@ -44,11 +45,17 @@ La frontière d'épisode est définie par les transitions confirmées du signal 
 
 ### ✔️ Intention
 
-En cas de panne secteur avérée :
+En cas de panne secteur avérée, le système **publie** le signal `input_boolean.mode_confort_chauffage` **uniquement lorsque le confort apporte quelque chose**.
 
-- le système **active explicitement** `input_boolean.mode_confort_chauffage`
+Cette publication est **conditionnée** (évaluée à l'entrée) — le confort n'est engagé que si, cumulativement :
 
-Cette activation constitue :
+- le besoin thermique est réel (`sensor.chauffage_autorisation_cible` ∈ {`comfort`, `neutre`} — rend `reduced` en été / maison déjà chaude),
+- la présence famille est confirmée,
+- le budget SOC Bluetti est suffisant (pas en `binary_sensor.bluetti_batterie_faible`).
+
+Sinon le confort est **neutralisé** : le chauffage reste en régime réduit (pas de dépense inutile sur le rail Bluetti).
+
+Lorsqu'elle est émise, cette activation constitue :
 
 - un **signal logique de sécurisation**
 - une **intention**, et non une action thermique
@@ -88,10 +95,14 @@ Cette exception est **strictement limitée** à ce cas et ne constitue pas une r
 En cas de panne secteur avérée :
 
 - le système est **autorisé à déclencher** un cycle ECS de secours
-- ce déclenchement doit impérativement passer par le script canonique Arsenal :  
+- ce déclenchement doit impérativement passer par le script canonique Arsenal :
   `script.chauffage_ecs_cycle`
 
-Le cycle retenu peut être de type `desinfection` si tel est le choix métier en vigueur.
+En production, le cycle de secours est de type **`desinfection`** (montée haute sécurisée) : il maximise le **stockage thermique** dans le ballon, exploitable pendant et après la coupure.
+
+Ce déclenchement est **conditionné par le rail Bluetti** : il n'a lieu que si le Bluetti alimente la chaîne (`binary_sensor.bluetti_sortie_ac_active == on`) et que son SOC n'est **pas critique** (`binary_sensor.bluetti_batterie_critique == off`). En deçà, le cycle n'est pas déclenché : l'autonomie résiduelle de la chaîne est préservée.
+
+> La chaleur provient du **gaz** (chaudière) ; le Bluetti n'alimente que l'électronique de commande et le boiler bridge. La désinfection en panne suit donc le **même profil temporel** qu'un cycle programmé.
 
 ### ✔️ Idempotence
 
@@ -109,6 +120,7 @@ Au retour du secteur :
 
 - la consigne ECS est réinitialisée à la **valeur de sécurité ECS** (10 °C dans l'implémentation actuelle)
 - via le mécanisme canonique défini dans le contrat ECS en vigueur
+- **sauf si un cycle ECS est encore en cours** (`input_boolean.ecs_cycle_en_cours == on`) : la réinitialisation ne combat pas le verrou du cycle ; ce dernier se termine, puis le gardien hors-cycle (désinhibé hors panne) rabaisse la consigne
 - sans impact sur la logique chauffage
 
 ---

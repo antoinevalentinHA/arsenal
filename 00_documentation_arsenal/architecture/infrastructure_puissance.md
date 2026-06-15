@@ -9,9 +9,9 @@ Le système Arsenal est conçu pour maintenir sa gouvernance thermique même en 
 - **Rôle** : Garantir l'intégrité de la base de données, éviter les corruptions de fichiers lors des reboots brutaux et maintenir le réseau local (LAN) actif.
 
 ### 🔥 2. Terminaux de Chauffe (Hardware)
-**Équipements** : Chaudière Viessmann, Boîtier Vitoconnect.
-- **Protection** : Batteries de secours dédiées.
-- **Rôle** : Permettre l'exécution physique de la chauffe et le maintien de la liaison avec le Cloud/HA, même si le disjoncteur général est déclenché.
+**Équipements** : Chaudière **gaz** Viessmann (électronique de commande), Boîtier Vitoconnect, boiler bridge.
+- **Protection** : **Bluetti** (rail thermique).
+- **Rôle** : Alimenter l'**électronique de commande** de la chaudière et la liaison Cloud/HA, même disjoncteur général déclenché. La **chaleur provient du gaz** : le Bluetti ne chauffe pas l'eau, il maintient la chaîne de commande active.
 
 ### 🛰️ 3. Souveraineté en mode Dégradé
 Cette architecture électrique permet à Arsenal de :

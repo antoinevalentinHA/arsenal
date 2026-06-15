@@ -1,11 +1,12 @@
 # 🔁🔔 Contrat Arsenal — Panne secteur (Cycle de vie & signalisation)
 
-**Version :** 1.0  
-**Compatible :** Arsenal v6+  
+**Version :** 1.1
+**Compatible :** Arsenal v6+
 **Statut :** Contrat actif
 
 **Historique :**
 - v1.0 : création — cycle de vie, idempotence, signalisation persistante, persistance inter-redémarrage
+- v1.1 : réalignement runtime — confort conditionné (veto), ECS de secours `desinfection` bornée SOC, réconciliation de sortie, signal canonique `binary_sensor.panne_secteur_en_cours` pour l'inhibition des remédiations
 
 ---
 
@@ -60,12 +61,12 @@ Cet état :
 
 ### Actions autorisées
 
-- activation de `input_boolean.mode_confort_chauffage`
-- déclenchement du mécanisme ECS de secours canonique
+- activation **conditionnelle** de `input_boolean.mode_confort_chauffage` (**veto confort** : besoin thermique réel + présence + budget SOC Bluetti ; sinon neutralisé)
+- déclenchement du mécanisme ECS de secours canonique (cycle `desinfection`, **borné par le budget SOC Bluetti**)
 - notification persistante (état système)
 - notification mobile (optionnelle, événementielle)
 
-Les deux premières actions sont régies par le contrat de résilience thermique. En cas de conflit d'interprétation, ce contrat est subordonné au contrat thermique sur ces points.
+Les deux premières actions sont régies par le contrat de résilience thermique [`20_chauffage_et_ecs.md`](20_chauffage_et_ecs.md). En cas de conflit d'interprétation, ce contrat est subordonné au contrat thermique sur ces points.
 
 ---
 
@@ -145,8 +146,36 @@ Il est strictement interdit de :
 
 ### Principe Arsenal
 
-> On persiste **l'état critique en cours**.  
+> On persiste **l'état critique en cours**.
 > On ne persiste **jamais** sa résolution.
+
+---
+
+## 🔁 Sortie de panne & réconciliation
+
+La sortie de panne (retour secteur confirmé) :
+
+- clôt l'épisode (`input_boolean.panne_secteur_active → off`)
+- lève le signal confort (`input_boolean.mode_confort_chauffage → off`)
+- réinitialise l'ECS à sa valeur de sécurité (cf. [`20_chauffage_et_ecs.md`](20_chauffage_et_ecs.md), sortie ECS)
+- supprime la notification persistante
+
+Un **mécanisme de réconciliation** garantit qu'un épisode resté actif alors que le secteur est revenu (par exemple transition manquée pendant un redémarrage HA) est clôturé : à la stabilisation système, si `binary_sensor.coupure_secteur == off` et que l'épisode est encore actif, la sortie est rejouée.
+
+---
+
+## 🛡️ Signal canonique d'inhibition des remédiations
+
+L'état de panne (en cours **ou** encore latché) est exposé par un **signal canonique unique** :
+
+```
+binary_sensor.panne_secteur_en_cours
+```
+
+- `state` : `on` si coupure live (`coupure_secteur == on`) **ou** épisode latché (`panne_secteur_active == on`)
+- `availability` : indéterminé (détection `unavailable`/`unknown` **et** pas d'épisode latché) → le capteur devient lui-même `unavailable`, ce qui inhibe **par prudence** côté consommateurs
+
+**Doctrine.** Pendant une panne secteur, les indisponibilités des périphériques **non secourus** (intégrations cloud, stations météo, climatisation, accès externe) sont des **KO attendus**, pas des dysfonctionnements. Les remédiations automatiques (reloads d'intégration, reboot box, watchdog climatisation, reboot des stations Netatmo) sont donc **inhibées** tant que `binary_sensor.panne_secteur_en_cours != off`, et reprennent naturellement au retour du secteur. Tout nouveau système de remédiation référence ce signal unique plutôt que de dupliquer les conditions d'état.
 
 ---
 
@@ -172,3 +201,5 @@ Il est strictement interdit de :
 | Absence de notification résiduelle | Interdiction explicite + suppression à la sortie |
 | Cohérence avec le socle | Dépendance normative déclarée |
 | Non-redéfinition des effets métier | Subordination au contrat thermique déclarée |
+| Clôture d'un épisode resté actif | Mécanisme de réconciliation à la stabilisation système |
+| Inhibition des remédiations en panne | Signal canonique `binary_sensor.panne_secteur_en_cours` |
