@@ -34,6 +34,9 @@
 ### Voiture
 - [voiture/audit_domaine_audi.md](01_rapports/voiture/audit_domaine_audi.md)
 
+### Pannes secteur
+- [pannes/audit_panne_detection_coupure_secteur.md](01_rapports/pannes/audit_panne_detection_coupure_secteur.md)  _(audit ciblé — coupure réelle non détectée ; automation conforme au code mais témoin canonique structurellement aveugle (point secouru UPS) ; **violation de l'invariant socle « source observable pendant l'événement »** ; témoins `critere_ups_sur_batterie` / `bluetti_secteur_present` pertinents mais non câblés ; **correction P0 préparée, non appliquée**)_
+
 ### Documentation
 - [documentation/arbitrage_ambiguites_structurelles_arsenal.md](01_rapports/documentation/arbitrage_ambiguites_structurelles_arsenal.md)
 - [documentation/audit_structure_documentaire.md](01_rapports/documentation/audit_structure_documentaire.md)

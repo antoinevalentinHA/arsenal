@@ -5,7 +5,7 @@
 
 ## Orientation
 
-Gestion des pannes critiques du système Arsenal. Deux sous-systèmes : **`internet/`** (panne internet — remédiation, notifications) et **`secteur/`** (panne secteur — résilience thermique, cycle de vie, signalisation). L'entrée documentaire se fait par ces deux sous-domaines : `internet/` pour les pannes réseau, `secteur/` pour les coupures électriques. Aucune architecture dédiée. **Domaine non audité** (état de cycle).
+Gestion des pannes critiques du système Arsenal. Deux sous-systèmes : **`internet/`** (panne internet — remédiation, notifications) et **`secteur/`** (panne secteur — résilience thermique, cycle de vie, signalisation). L'entrée documentaire se fait par ces deux sous-domaines : `internet/` pour les pannes réseau, `secteur/` pour les coupures électriques. Aucune architecture dédiée. **Sous-domaine `secteur/` : audité (audit ciblé, voir ci-dessous)** ; sous-domaine `internet/` non audité.
 
 ## Contrat — « ce que le système doit faire »
 
@@ -17,9 +17,10 @@ Gestion des pannes critiques du système Arsenal. Deux sous-systèmes : **`inter
 
 ## Audits & état
 
-> **Domaine non audité** — aucun artefact d'audit, absent de [`audits/index.md`](../../audits/index.md).
-> Référence normative : les deux entrées ci-dessus.
-> État de cycle : non audité — cf. [`carte_domaines.md`](../carte_domaines.md).
+**Panne secteur :**
+- [`audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md`](../../audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md) — audit ciblé : coupure réelle non détectée ; témoin canonique structurellement aveugle (point secouru UPS) ; **violation de l'invariant socle « source observable pendant l'événement »** ; **correction P0 préparée, non appliquée**. Indexé : [`audits/index.md`](../../audits/index.md).
+
+**Panne internet :** non audité — référence normative : `internet/00_panne_internet_gouvernance.md`.
 
 > **Changelog** (pas de chantier dédié) : mentions diffuses `v11`, `v13`, `v15_7_1`.
 
@@ -34,7 +35,7 @@ Gestion des pannes critiques du système Arsenal. Deux sous-systèmes : **`inter
 - **Aucun fichier racine** dans `contrats/pannes/` : ce hub est la seule porte d'entrée qui présente les deux sous-domaines ensemble.
 - **Double préfixe `10_`** dans `secteur/` : **corrigé** — `10_temporalite.md` renommé `11_temporalite.md`, séquence désormais déterministe (10/11/20/30). _(Anomalie historique, résolue.)_
 - **`resilience_electrique`** : nommage hérité après refonte du domaine `pannes` — **reroute exécuté** (B1, à plat vers `pannes/secteur/`). Plus aucune référence héritée dans les contrats. _(Anomalie historique, résolue ; trace : `audits/02_constats/transverses/registre_anomalies_transverses.md` §1.4 + `audits/03_plans_action/transverses/plan_action_anomalies_p1.md` Étape 6.)_
-- **Domaine non audité** : absent de `audits/index.md`. État de cycle.
+- **Audit** : sous-domaine `secteur/` désormais référencé dans `audits/index.md` (audit ciblé `panne_detection_coupure_secteur`) ; sous-domaine `internet/` non audité. État de cycle.
 
 ---
 
