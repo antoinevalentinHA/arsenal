@@ -5,6 +5,8 @@
 > Chaque entrée indique la source, la nature et le statut.
 > Ce registre ne se substitue pas aux rapports d'audit de domaine.
 
+> **Dette de modélisation (transverse) — présence.** Au-delà des anomalies *documentaires* recensées ci-dessous, une dette *de modélisation* est consignée à part, dans un cadrage dédié non décisionnel : [`cadrage_dette_modelisation_presence.md`](cadrage_dette_modelisation_presence.md) _(séparation preuves ↔ vérités de présence, confort consommant sécurité ; **incident clim = cas révélateur**)_.
+
 ---
 
 ## 1. Anomalies de nommage / fichiers

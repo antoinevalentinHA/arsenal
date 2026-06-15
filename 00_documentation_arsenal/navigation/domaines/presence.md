@@ -22,6 +22,8 @@ Entrée : [`contrats/presence.md`](../../contrats/presence.md) (mono-fichier —
 > Référence normative du domaine : [`contrats/presence.md`](../../contrats/presence.md) (normatif et opposable).
 > État de cycle : non audité — cf. [`carte_domaines.md`](../carte_domaines.md).
 
+> **Constat transverse rattaché** : [`cadrage_dette_modelisation_presence.md`](../../audits/02_constats/transverses/cadrage_dette_modelisation_presence.md) — cadrage *non normatif / non décisionnel* d'une dette de modélisation de la présence (séparation preuves ↔ vérités ; confort consommant sécurité). N'altère pas l'état « non audité » : constat transverse, pas audit de domaine. Cas révélateur : incident climatisation.
+
 > **Changelog** (pas de chantier dédié) : mentions diffuses dans les snapshots `v15_8_3`, `v15_8_4`, `v15_8_5`, `v15_8_8`.
 
 ## Liens croisés (sens & appartenance)

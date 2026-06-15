@@ -163,3 +163,4 @@ Lots 1 à 5 soldés ; **VAC-IMP-5** : observation faite (cause requalifiée — 
 
 - [registre_anomalies_transverses.md](02_constats/transverses/registre_anomalies_transverses.md) _(registre vivant — anomalies connues et non corrigées, toutes origines)_
 - [plan_action_anomalies_p1.md](03_plans_action/transverses/plan_action_anomalies_p1.md) _(plan d'action P1 — corrections nommage et références mortes)_
+- [cadrage_dette_modelisation_presence.md](02_constats/transverses/cadrage_dette_modelisation_presence.md) _(cadrage **non normatif / non décisionnel** — dette de modélisation de la présence : preuves ↔ vérités, confort consommant sécurité, redondance GPS apparente, nommage zones/contrats/runtime, high accuracy gaté sur l'alarme ; **incident clim = cas révélateur, non sujet**)_

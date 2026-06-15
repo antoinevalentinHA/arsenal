@@ -42,6 +42,8 @@ Thread COOL : livraison principale [`v15_8_4.md`](../../changelog/changelogs/v15
 
 ## Liens croisés (sens & appartenance)
 
+- **Présence** (amont) — la clim **consomme** la présence confort (`binary_sensor.presence_famille_unifiee`). Un incident clim transitoire a servi de **cas révélateur** à une dette de modélisation de la présence, consignée **hors domaine clim** : [`cadrage_dette_modelisation_presence.md`](../../audits/02_constats/transverses/cadrage_dette_modelisation_presence.md). **La clim est le témoin, pas le sujet.**
+
 - **Aération** — propriétaire : [`contrats/aeration_blocage_chauffage/`](../../contrats/aeration_blocage_chauffage/) ; la clim **consomme** l'état d'aération comme condition de blocage (amont).
 - **Vacances** (mode absence prolongée → extinction clim) — propriétaire : [`contrats/vacances.md`](../../contrats/vacances.md) ; interface avec la politique clim (amont).
 - **Chauffage** — propriétaire : [`contrats/chauffage/`](../../contrats/chauffage/) ; la clim **consomme** le chauffage (amont) via deux couplages critiques : `chauffage_blocage_aeration` (entrée d'autorisation clim) et `temperature_consigne_appliquee_locale` (seuils on/off mode chaud). **Couplage unidirectionnel** : le chauffage ne lit aucune entité clim. Référence : [`dependances_inter_domaines.md`](../../contrats/chauffage/dependances_inter_domaines.md).
