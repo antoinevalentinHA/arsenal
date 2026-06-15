@@ -8,7 +8,7 @@
 
 ## Verdict
 
-L'automation a fonctionné **exactement comme codée**. Le non-déclenchement provient de son **témoin unique**, structurellement incapable de voir une coupure que l'onduleur compense. **Gravité : P0** (détection structurellement aveugle). Correction reportée à la passe suivante (cf. § Passe suivante).
+L'automation a fonctionné **exactement comme codée**. Le non-déclenchement provient de son **témoin unique**, structurellement incapable de voir une coupure que l'onduleur compense. **Gravité : P0** (détection structurellement aveugle). **Correction P0 appliquée** (runtime `f963128`) ; les actions en aval font l'objet d'un audit métier séparé (cf. Références).
 
 - **Cause la plus plausible :** le seul signal d'entrée mesure un point **secouru par l'UPS**, resté sous tension pendant la coupure réelle.
 - **Confiance :** élevée sur la chaîne logique (témoin → trigger) ; moyenne sur le détail physique exact (mesure de la sortie UPS *vs* passage en `unavailable`) — les deux mènent au même résultat.
@@ -100,7 +100,9 @@ Deux signaux restent **observables pendant** une coupure et **chutent** à la pe
 
 ## Passe suivante — correction P0 du témoin canonique
 
-Cette trace **prépare** la passe correctrice, qui sera **runtime** et donc hors du présent périmètre documentaire. Périmètre prévu de la passe P0 :
+> **Statut : APPLIQUÉE** (runtime `f963128`). `binary_sensor.coupure_secteur` requalifié sur deux témoins observables pendant la coupure (UPS `sensor.ups_code_d_etat` flag `OB`, et `binary_sensor.bluetti_secteur_present`), défaut `float(230)` supprimé, `availability:` ajouté ; `sensor.prise_onduleur_voltage` rétrogradé en diagnostic. **Suite : audit métier des actions** — [`audit_actions_mode_panne_secteur.md`](audit_actions_mode_panne_secteur.md).
+
+Périmètre réalisé de la passe P0 :
 
 - **Cible runtime :** `12_template_sensors/system/coupure_secteur.yaml` (requalification de la source) — et, si la voie Bluetti est retenue, **révision d'invariant** de `12_template_sensors/bluetti/secteur_present.yaml:11` et `sur_batterie.yaml:11`.
 - **Contrat impacté :** `10_socle.md` (mécanisme de fallback / sélection de source, L108–135) — mise en cohérence du signal canonique avec son invariant d'observabilité.

@@ -35,7 +35,8 @@
 - [voiture/audit_domaine_audi.md](01_rapports/voiture/audit_domaine_audi.md)
 
 ### Pannes secteur
-- [pannes/audit_panne_detection_coupure_secteur.md](01_rapports/pannes/audit_panne_detection_coupure_secteur.md)  _(audit ciblé — coupure réelle non détectée ; automation conforme au code mais témoin canonique structurellement aveugle (point secouru UPS) ; **violation de l'invariant socle « source observable pendant l'événement »** ; témoins `critere_ups_sur_batterie` / `bluetti_secteur_present` pertinents mais non câblés ; **correction P0 préparée, non appliquée**)_
+- [pannes/audit_panne_detection_coupure_secteur.md](01_rapports/pannes/audit_panne_detection_coupure_secteur.md)  _(audit ciblé — coupure réelle non détectée ; témoin canonique structurellement aveugle (point secouru UPS) ; **violation de l'invariant socle « source observable pendant l'événement »** ; **correction P0 appliquée** (runtime `f963128`) — requalification sur témoins UPS (`OB`) / `bluetti_secteur_present`, défaut `float(230)` supprimé)_
+- [pannes/audit_actions_mode_panne_secteur.md](01_rapports/pannes/audit_actions_mode_panne_secteur.md)  _(audit **métier** des actions du mode panne ; détection P0 OK mais actions **non contextualisées** ; analyse séparée — **ECS 45 °C = consommation réelle** sur batterie (toute saison), **confort = signal non gardé** probablement inerte en été ; **contradiction doctrine/runtime** (sobriété batterie attendue) ; P0 conception, sans patch runtime)_
 
 ### Documentation
 - [documentation/arbitrage_ambiguites_structurelles_arsenal.md](01_rapports/documentation/arbitrage_ambiguites_structurelles_arsenal.md)

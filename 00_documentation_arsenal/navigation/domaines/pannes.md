@@ -18,7 +18,8 @@ Gestion des pannes critiques du système Arsenal. Deux sous-systèmes : **`inter
 ## Audits & état
 
 **Panne secteur :**
-- [`audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md`](../../audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md) — audit ciblé : coupure réelle non détectée ; témoin canonique structurellement aveugle (point secouru UPS) ; **violation de l'invariant socle « source observable pendant l'événement »** ; **correction P0 préparée, non appliquée**. Indexé : [`audits/index.md`](../../audits/index.md).
+- [`audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md`](../../audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md) — audit détection : coupure réelle non détectée (témoin sur point secouru UPS) ; **violation de l'invariant socle « source observable »** ; **correction P0 appliquée** (runtime `f963128`, requalification UPS/Bluetti).
+- [`audits/01_rapports/pannes/audit_actions_mode_panne_secteur.md`](../../audits/01_rapports/pannes/audit_actions_mode_panne_secteur.md) — audit **métier** des actions : détection corrigée mais réponse **non contextualisée** ; analyse séparée — ECS 45 °C = consommation réelle sur batterie, confort = signal probablement inerte en été ; **contradiction doctrine/runtime** (sobriété attendue) ; P0 conception. Indexé : [`audits/index.md`](../../audits/index.md).
 
 **Panne internet :** non audité — référence normative : `internet/00_panne_internet_gouvernance.md`.
 
