@@ -47,6 +47,27 @@ resilience_integration_recover:
   sequence:
 
     # =========================
+    # 🛡️ GARDE PANNE SECTEUR
+    # =========================
+    # Pendant une coupure secteur (coupure_secteur=on) ou tant que l'épisode
+    # est latché (panne_secteur_active=on), le gel d'une intégration traduit la
+    # perte d'alimentation du périphérique — un KO ATTENDU, pas un blocage
+    # logiciel. Un reload de config_entry serait futile (le device est éteint)
+    # et générerait spam de tentatives + backoff + notifications.
+    # On n'inhibe QUE la tentative (op=attempt) ; le reset (retour OK) reste
+    # autorisé. À la sortie de panne, le device se ré-alimente et l'intégration
+    # récupère naturellement, sans reload.
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ (op | default('attempt')) == 'attempt'
+                   and (is_state('input_boolean.panne_secteur_active', 'on')
+                        or is_state('binary_sensor.coupure_secteur', 'on')) }}
+          sequence:
+            - stop: "Inhibé : panne secteur active (reload d'intégration futile)"
+
+    # =========================
     # 🧱 GARDE PARAMETRES
     # =========================
     - variables:

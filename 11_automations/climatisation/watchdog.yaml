@@ -30,6 +30,16 @@
       entity_id: input_boolean.systeme_stable
       state: "on"
 
+    # L'AC (non secourue) devient indisponible pendant une coupure : l'incohérence
+    # décision/réel est un KO ATTENDU, pas un dysfonctionnement. Piloter un AC
+    # éteint est futile. Reporté en sortie de panne (cohérence rétablie au retour).
+    - condition: state
+      entity_id: input_boolean.panne_secteur_active
+      state: "off"
+    - condition: state
+      entity_id: binary_sensor.coupure_secteur
+      state: "off"
+
   action:
     - service: script.turn_on
       target:

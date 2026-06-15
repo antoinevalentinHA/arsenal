@@ -50,6 +50,14 @@
       entity_id: binary_sensor.acces_externe
       state: "off"
 
+    # Ne pas poursuivre les cycles de reboot box pendant une panne secteur.
+    - condition: state
+      entity_id: input_boolean.panne_secteur_active
+      state: "off"
+    - condition: state
+      entity_id: binary_sensor.coupure_secteur
+      state: "off"
+
   action:
     - action: script.cycle_alimentation_box
 
