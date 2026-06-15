@@ -53,7 +53,19 @@ thermo_variance_12h_72:
   label: "Dispersion"
   styles:
     card:
-      - background-color: rgba(33, 150, 243, 0.2)
+      - background-color: |
+          [[[
+            const piece = states['input_select.adjustment_piece']?.state;
+            if (!piece || ['unknown','unavailable'].includes(piece))
+              return 'rgba(158, 158, 158, 0.1)';
+
+            const id = `sensor.temperature_stats_12h_variance_${piece}`;
+            const v = states[id]?.state;
+            if (!v || ['unknown','unavailable'].includes(v))
+              return 'rgba(158, 158, 158, 0.1)';
+
+            return 'rgba(33, 150, 243, 0.2)';
+          ]]]
 
 thermo_stabilite_12h_status:
   template: socle_status_72

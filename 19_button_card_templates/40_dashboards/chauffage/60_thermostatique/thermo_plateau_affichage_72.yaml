@@ -51,4 +51,11 @@ thermo_plateau_affichage_72:
   label: "Valeur affichée"
   styles:
     card:
-      - background-color: rgba(33, 150, 243, 0.2)
+      - background-color: |
+          [[[
+            const v = states['sensor.plateau_thermostatique_piece_affichage']?.state;
+            if (!v || ['unknown','unavailable'].includes(v))
+              return 'rgba(158, 158, 158, 0.1)';
+
+            return 'rgba(33, 150, 243, 0.2)';
+          ]]]
