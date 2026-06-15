@@ -147,6 +147,9 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 
 ## Clôtures
 
+### Aération — recommandation
+- [aeration/cloture_aeration_recommandation.md](05_clotures/aeration/cloture_aeration_recommandation.md)  _(audit CLÔTURÉ — 2026-06-15 ; P0-1 cohérence moteur, P1-5 synthèse visible, P2-1 CO₂ visible ; chantiers résiduels au backlog)_
+
 ### Vacances
 - [vacances/cloture_partielle_vacances.md](05_clotures/vacances/cloture_partielle_vacances.md)  _(clôture partielle — domaine NON clôturé)_
 - [vacances/cloture_phase_traitement_vacances.md](05_clotures/vacances/cloture_phase_traitement_vacances.md)  _(clôture de phase — Lots 1 à 5)_

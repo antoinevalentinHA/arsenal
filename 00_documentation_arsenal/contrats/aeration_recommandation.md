@@ -270,6 +270,34 @@ Toute extension devra :
 
 ---
 
+## 🔁 PRÉCÉDENCE NORMATIVE — CO₂ vs PLUIE
+
+*(clarification d'audit — 2026-06-15)*
+
+La **priorité sanitaire CO₂** (§ 2️⃣) **prime sur la pluie**.
+
+Lorsque `CO₂ ≥ seuil fort`, la recommandation est `on` **même en cas de pluie** :
+le motif normatif est alors `co2_priorite`, **jamais** `pluie_recente`.
+
+La hiérarchie de décision est **unique** et s'applique de façon **cohérente**
+à tous les canaux d'un même capteur :
+
+| Rang | Condition | Motif |
+|------|-----------|-------|
+| 1 | données critiques indisponibles | `inconnue` |
+| 2 | `CO₂ ≥ seuil fort` | `co2_priorite` |
+| 3 | canicule active **et** `CO₂ < seuil` | `canicule` |
+| 4 | pluie en cours | `pluie_recente` |
+| 5 | `ΔHA < seuil` | `seuil_ha_non_atteint` |
+| 6 | `ΔT < seuil` | `seuil_dt_non_atteint` |
+| 7 | sinon | `aeration_ok` |
+
+**Invariant de cohérence :** l'**état** booléen, l'attribut `decision`,
+l'attribut `decision_globale` et l'**icône** doivent refléter ce **même ordre**.
+Aucun canal explicatif ne doit contredire l'état.
+
+---
+
 ## ✅ STATUT
 
 - Contrat normatif : **ACTIF**
@@ -279,5 +307,6 @@ Toute extension devra :
 - Canal de restitution : **UI uniquement**
 - Dépendance avec [`aeration.md`](aeration_blocage_chauffage/README.md) : **SÉPARÉE**
 - Fusion : **NON**
+- Dernière clôture d'audit : **2026-06-15** — voir [clôture](../audits/05_clotures/aeration/cloture_aeration_recommandation.md)
 
 # ==========================================================
