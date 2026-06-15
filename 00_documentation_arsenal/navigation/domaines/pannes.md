@@ -19,7 +19,7 @@ Gestion des pannes critiques du système Arsenal. Deux sous-systèmes : **`inter
 
 **Panne secteur :**
 - [`audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md`](../../audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md) — audit détection : coupure réelle non détectée (témoin sur point secouru UPS) ; **violation de l'invariant socle « source observable »** ; **correction P0 appliquée** (runtime `f963128`, requalification UPS/Bluetti).
-- [`audits/01_rapports/pannes/audit_actions_mode_panne_secteur.md`](../../audits/01_rapports/pannes/audit_actions_mode_panne_secteur.md) — audit **métier** des actions : détection corrigée mais réponse **non contextualisée** ; analyse séparée — ECS 45 °C = consommation réelle sur batterie, confort = signal probablement inerte en été ; **contradiction doctrine/runtime** (sobriété attendue) ; P0 conception. Indexé : [`audits/index.md`](../../audits/index.md).
+- [`audits/01_rapports/pannes/audit_actions_mode_panne_secteur.md`](../../audits/01_rapports/pannes/audit_actions_mode_panne_secteur.md) — audit **métier** des actions : **doctrine des deux réservoirs** (UPS = HA/box/réseau, *sobriété critique* ; Bluetti = chaîne thermique). **ECS haute = stockage thermique utile** (pas une anomalie) ; le **confort d'ambiance** est le volet sacrifiable. Manque : **budget SOC Bluetti** + veto confort. Remplace la « sobriété batterie » globale. P0 doctrine. Indexé : [`audits/index.md`](../../audits/index.md).
 
 **Panne internet :** non audité — référence normative : `internet/00_panne_internet_gouvernance.md`.
 
