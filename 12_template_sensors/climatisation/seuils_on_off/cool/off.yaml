@@ -24,7 +24,7 @@
 - trigger:
     - platform: state
       entity_id:
-        - binary_sensor.presence_famille_unifiee
+        - binary_sensor.presence_confort_thermique_stabilisee
         - input_number.clim_seuil_extinction_presence
         - input_number.clim_seuil_extinction_absence
     - platform: homeassistant
@@ -36,14 +36,14 @@
       unit_of_measurement: "°C"
       icon: mdi:thermometer-chevron-down
       state: >
-        {% if is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+        {% if is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on') %}
           {{ states('input_number.clim_seuil_extinction_presence') | float(0) }}
         {% else %}
           {{ states('input_number.clim_seuil_extinction_absence') | float(0) }}
         {% endif %}
       attributes:
         mode_actif: >
-          {% if is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+          {% if is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on') %}
             Présence
           {% else %}
             Absence

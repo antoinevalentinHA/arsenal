@@ -17,7 +17,7 @@
 # 🧠 Détails techniques :
 #   - Unité        : °C
 #   - Attributs :
-#       • presence → état du binary_sensor.presence_famille_unifiee
+#       • presence → état du binary_sensor.presence_confort_thermique_stabilisee
 #       • source   → input_number utilisé (présence / absence)
 #
 # 📊 Type : Template Sensor
@@ -31,7 +31,7 @@
 
       # Sélection de la consigne selon la présence familiale
       state: >
-        {% if is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+        {% if is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on') %}
           {% set val = states('input_number.clim_consigne_presence') %}
         {% else %}
           {% set val = states('input_number.clim_consigne_absence') %}
@@ -44,9 +44,9 @@
 
       # Attributs complémentaires : suivi du contexte
       attributes:
-        presence: "{{ states('binary_sensor.presence_famille_unifiee') }}"
+        presence: "{{ states('binary_sensor.presence_confort_thermique_stabilisee') }}"
         source: >
-          {% if is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+          {% if is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on') %}
             input_number.clim_consigne_presence
           {% else %}
             input_number.clim_consigne_absence

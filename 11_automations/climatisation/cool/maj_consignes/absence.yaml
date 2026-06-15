@@ -35,7 +35,7 @@
 #
 #     - sensor.consigne_clim_appliquee
 #     - sensor.clim_mode_local
-#     - binary_sensor.presence_famille_unifiee
+#     - binary_sensor.presence_confort_thermique_stabilisee
 #
 #  📤 ACTION RÉALISÉE
 #
@@ -75,7 +75,7 @@
 
     # ✅ Absence détectée
     - condition: state
-      entity_id: binary_sensor.presence_famille_unifiee
+      entity_id: binary_sensor.presence_confort_thermique_stabilisee
       state: 'off'
 
     # 🧠 Anti-redondance : éviter les ordres inutiles

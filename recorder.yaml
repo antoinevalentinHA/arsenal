@@ -243,6 +243,7 @@ include:
     # =====================================================
     - binary_sensor.presence_famille_unifiee
     - binary_sensor.presence_famille_securite
+    - binary_sensor.presence_confort_thermique_stabilisee
 
     # =====================================================
     # ==== ❄️ CLIMATISATION ====

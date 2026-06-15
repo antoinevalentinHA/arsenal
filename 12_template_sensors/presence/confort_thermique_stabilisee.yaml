@@ -1,0 +1,32 @@
+# ==========================================================================
+# Présence — Confort thermique stabilisée
+# --------------------------------------------------------------------------
+# Signal d'INTERFACE (perception), dérivé EN LECTURE SEULE de
+# binary_sensor.presence_famille_unifiee, immunisé contre les faux-absents
+# COURTS pour les SEULES décisions COOL de la climatisation.
+#
+#   • Source unique  : binary_sensor.presence_famille_unifiee
+#   • Montée (ON)    : instantanée — confort rétabli au retour (pas de delay_on)
+#   • Descente (OFF) : temporisée — tenue T = 120 s (delay_off)
+#   • Glitch court   : une absence de unifiee < T ne produit aucune bascule OFF
+#
+# Cadrage contractuel (proposé, non opposable, non implémenté) :
+#   00_documentation_arsenal/audits/02_conception/climatisation/
+#     cadrage_contrat_presence_confort_thermique_stabilisee.md
+# Calibration T = 120 s (note de calibration — valeur de départ révisable).
+#
+# NE lit NI presence_famille_securite, NI l'alarme. N'altère AUCUNE entité.
+# Consommateurs autorisés (cf. inventaire de périmètre) : seuils COOL on/off,
+# consigne clim appliquée, maj_consignes présence/absence.
+# ==========================================================================
+- binary_sensor:
+    - name: "Présence (Confort thermique - Stabilisée)"
+      unique_id: presence_confort_thermique_stabilisee
+      default_entity_id: binary_sensor.presence_confort_thermique_stabilisee
+      device_class: presence
+
+      # Tenue OFF : T = 120 s. Montée instantanée (aucun delay_on).
+      delay_off: "00:02:00"
+
+      state: >
+        {{ is_state('binary_sensor.presence_famille_unifiee', 'on') }}
