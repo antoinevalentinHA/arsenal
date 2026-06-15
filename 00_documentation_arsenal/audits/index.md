@@ -61,6 +61,7 @@
 - [lovelace/audit_19_button_card_templates.md](01_rapports/lovelace/audit_19_button_card_templates.md)
 - [lovelace/audit_lovelace_arborescence.md](01_rapports/lovelace/audit_lovelace_arborescence.md)
 - [lovelace/audit_dashboard_diagnostics_chauffage.md](01_rapports/lovelace/audit_dashboard_diagnostics_chauffage.md)  _(audit UI du dashboard diagnostics chauffage + sous-dashboard thermique ; **dashboard sain** ; conformité couleur intégrale contre la doctrine réelle du dépôt ; 0 référence morte, navigation résolue, séparation diagnostic/action stricte ; densité fonctionnelle à préserver ; **aucun patch runtime immédiat** ; 2 arbitrages différés (IMPORTANT-1 seuils UI, IMPORTANT-2 surcouche rouge non exposée) + 2 confort)_
+- [lovelace/audit_dashboard_diagnostics_vannes_thermostatiques.md](01_rapports/lovelace/audit_dashboard_diagnostics_vannes_thermostatiques.md)  _(audit UI du dashboard diagnostics vannes thermostatiques ; dashboard sain, 0 référence morte, action confirmée bornée non-pilotante ; **V-1 CORRIGÉ** (fond KPI dégradé en gris indispo) ; **V-2 ouvert** (seuils verdict en UI + duplication backend), **V-3 ouvert** (sous-domaine sans contrat))_
 
 ## Arbitrages
 
@@ -142,6 +143,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 ### Lovelace
 - [lovelace/exploitation_audit_19_button_card_templates.md](04_chantiers/lovelace/exploitation_audit_19_button_card_templates.md)
 - [lovelace/suivi_audit_dashboard_diagnostics_chauffage.md](04_chantiers/lovelace/suivi_audit_dashboard_diagnostics_chauffage.md)  _(suivi de l'audit UI diagnostics chauffage — points différés tracés ; **non ordonnancé, aucun changement runtime/UI** ; IMPORTANT-1, IMPORTANT-2 (arbitrages ouverts), CONFORT-3, CONFORT-4)_
+- [lovelace/suivi_audit_dashboard_diagnostics_vannes_thermostatiques.md](04_chantiers/lovelace/suivi_audit_dashboard_diagnostics_vannes_thermostatiques.md)  _(suivi de l'audit UI diagnostics vannes — **V-1 corrigé** ; **V-2 ouvert** (seuils verdict UI + duplication), **V-3 ouvert** (contrat de gouvernance à rédiger) ; non ordonnancé, aucun changement runtime/UI)_
 
 ## Clôtures
 
