@@ -15,6 +15,7 @@
 | [principes_generaux.md](./principes_generaux.md) | Invariants universels Arsenal — s'appliquent à tout le système |
 | [separation_decision_action.md](./separation_decision_action.md) | Principe architectural fondamental : séparation décision / action |
 | [causalite_metier.md](./causalite_metier.md) | Doctrine causalité métier et temporalité persistante |
+| [commandabilite.md](./commandabilite.md) | Doctrine de commandabilité : gate conditionnel de capacité d'exécution (distinct de la disponibilité ; pas une couche universelle) |
 
 ## Conventions opérationnelles
 

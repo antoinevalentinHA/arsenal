@@ -91,6 +91,14 @@ Exemples de documents doctrines :
   dans Home Assistant (interdits, usages autorisés,
   règles de sobriété et de déterminisme).
 
+- [`03_doctrines/commandabilite.md`](03_doctrines/commandabilite.md) —
+  Doctrine de commandabilité : gate conditionnel de capacité
+  d’exécution (distinct de la disponibilité), avec la distinction
+  impossible (A) / interdit par politique (B) et la règle de
+  symétrie automatique ↔ manuelle. Ce n’est pas une couche
+  universelle : la majorité des chaînes restent observation →
+  décision → action.
+
 Exemple de document par sous-système :
 
 - `eclairage_jardin.md`  
