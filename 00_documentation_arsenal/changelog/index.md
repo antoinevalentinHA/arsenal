@@ -1354,6 +1354,22 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Contrats : ajout de README de domaine pour alarme, ECS, météo, pannes, santé, publication, ouvertures, éclairage, imprimerie et déshumidificateur ; mise à jour de `contrats/index.md`.
 - CI documentation : ajout du contrôle `DOC-CI-6` sur les pages feuilles de navigation et intégration dans `.github/workflows/docs.yml`.
 
+---
+
+## 🧠 ARSENAL HA — [v16.0.1](changelogs/v16/v16_0_1.md) — STABLE — 2026-06-16
+**Tags :** panne_secteur, presence, climatisation, aeration, meteo, ecs, chauffage, recorder, documentation
+
+**Signal net :**
+- Panne secteur : réécriture de `binary_sensor.coupure_secteur` (état dérivé par OR de `binary_sensor.critere_ups_sur_batterie` et `binary_sensor.bluetti_secteur_present`, source tension rétrogradée en diagnostic) ; ajout du signal `binary_sensor.panne_secteur_en_cours` et de gardes d'inhibition des remédiations.
+- Mode panne : confort conditionné par `choose`, ECS de secours via `script.chauffage_ecs_cycle` (désinfection) bornée SOC, ajout d'un trigger de réconciliation et d'une réinitialisation ECS à la sortie.
+- Présence : ajout de `binary_sensor.presence_confort_thermique_stabilisee` ; bascule des consommateurs clim COOL depuis `binary_sensor.presence_famille_unifiee`.
+- Climatisation : extension de la cascade de `sensor.clim_raison_decision` (causes `blocage_aeration_etage`, `absence_prolongee`, `exterieur_trop_froid`, garde `heat_contexte`) ; ajout des verdicts par mode (`sensor.clim_verdict_cool/dry/heat`) et cartes associées.
+- Aération : réordonnancement `co2_priorite` avant `pluie_recente` dans les recommandations étage/rdc/global ; suppression de réglages et tuiles inutilisés.
+- Météo / ECS / Chauffage : ajout d'un capteur de tendance température (+ contrat `meteo/tendance_temperature.md`) ; borne max `input_number.ecs_off_desinfection` portée à 4.0 ; cartes thermostatiques en gris indisponibilité sur source `unknown`/`unavailable`.
+- HomeKit / Netatmo : ajout de la garde `input_boolean.systeme_stable == on` sur le reboot des stations (`contrats/homekit_diagnostic.md` v1.2).
+- Recorder : ajout de `binary_sensor.presence_confort_thermique_stabilisee` et des entités de la chaîne décisionnelle clim ; suppression de `sensor.withings_temperature_du_corps_local`.
+- Documentation : ajout des rapports d'audit (climatisation, ECS, Lovelace, pannes), des documents de conception/chantiers climatisation et de la clôture aération ; mise à jour des contrats pannes secteur, climatisation, aération et des hubs de navigation.
+
 ==================================================
 FIN INDEX
 ==================================================
