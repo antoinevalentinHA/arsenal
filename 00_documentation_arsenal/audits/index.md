@@ -35,7 +35,7 @@
 - [voiture/audit_domaine_audi.md](01_rapports/voiture/audit_domaine_audi.md)
 
 ### Pannes secteur
-- [pannes/audit_panne_detection_coupure_secteur.md](01_rapports/pannes/audit_panne_detection_coupure_secteur.md)  _(audit ciblé — coupure réelle non détectée ; témoin canonique structurellement aveugle (point secouru UPS) ; **violation de l'invariant socle « source observable pendant l'événement »** ; **correction P0 appliquée** (runtime `f963128`) — requalification sur témoins UPS (`OB`) / `bluetti_secteur_present`, défaut `float(230)` supprimé)_
+- [pannes/audit_panne_detection_coupure_secteur.md](01_rapports/pannes/audit_panne_detection_coupure_secteur.md)  _(audit ciblé — coupure réelle non détectée ; témoin canonique structurellement aveugle (prise alimentée par le secteur surveillé, en amont de l'UPS) ; **violation de l'invariant socle « source observable pendant l'événement »** ; **correction P0 appliquée** (runtime `f963128`) — requalification sur témoins UPS (`OB`) / `bluetti_secteur_present`, défaut `float(230)` supprimé)_
 - [pannes/audit_actions_mode_panne_secteur.md](01_rapports/pannes/audit_actions_mode_panne_secteur.md)  _(audit **métier** des actions du mode panne ; **doctrine des deux réservoirs** — UPS = HA/box/réseau (sobriété critique), Bluetti = électronique de la chaîne thermique gaz ; substitue le raisonnement « sobriété batterie » global ; **recommandations implémentées en production** : ECS de secours `desinfection` bornée **budget SOC Bluetti**, **veto confort** (besoin/présence/SOC), réinitialisation + **réconciliation** de sortie, **remédiations inhibées** via `binary_sensor.panne_secteur_en_cours`)_
 
 ### Documentation

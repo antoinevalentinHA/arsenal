@@ -24,8 +24,10 @@
 #   sensor.ups_code_d_etat (le critère UPS masque unknown/unavailable → off).
 #
 # 🧪 Diagnostic secondaire (NON décisionnel) :
-#   - sensor.prise_onduleur_voltage : RÉTROGRADÉ. Point SECOURU par
-#     l'UPS, donc structurellement aveugle à une coupure compensée.
+#   - sensor.prise_onduleur_voltage : RÉTROGRADÉ. Prise connectée
+#     alimentée par le secteur (EN AMONT de l'UPS, donc NON protégée) :
+#     lors d'une coupure elle perd son alimentation et passe `unavailable`,
+#     elle ne peut donc pas témoigner de la coupure qu'elle devrait détecter.
 #     Conservé comme entité diagnostic indépendante ; ne pilote plus l'état.
 #
 # 🧠 Détails :

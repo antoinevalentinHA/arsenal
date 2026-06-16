@@ -8,10 +8,10 @@
 
 ## Verdict
 
-L'automation a fonctionné **exactement comme codée**. Le non-déclenchement provient de son **témoin unique**, structurellement incapable de voir une coupure que l'onduleur compense. **Gravité : P0** (détection structurellement aveugle). **Correction P0 appliquée** (runtime `f963128`) ; les actions en aval font l'objet d'un audit métier séparé (cf. Références).
+L'automation a fonctionné **exactement comme codée**. Le non-déclenchement provient de son **témoin unique** : une prise connectée alimentée par le secteur qu'elle est censée surveiller, qui perd son alimentation pendant la coupure et ne peut donc plus en témoigner. **Gravité : P0** (détection structurellement aveugle). **Correction P0 appliquée** (runtime `f963128`) ; les actions en aval font l'objet d'un audit métier séparé (cf. Références).
 
-- **Cause la plus plausible :** le seul signal d'entrée mesure un point **secouru par l'UPS**, resté sous tension pendant la coupure réelle.
-- **Confiance :** élevée sur la chaîne logique (témoin → trigger) ; moyenne sur le détail physique exact (mesure de la sortie UPS *vs* passage en `unavailable`) — les deux mènent au même résultat.
+- **Cause confirmée :** le seul signal d'entrée est une prise connectée alimentée par le secteur, **en amont de l'UPS**. Lors de la coupure elle perd son alimentation et passe `unavailable` ; le défaut `float(230)` du template lit alors cette indisponibilité comme « 230 V / secteur présent ».
+- **Confiance :** élevée — une entité alimentée par le secteur qu'elle surveille ne peut pas être un témoin fiable de la disparition de ce secteur.
 
 ---
 
@@ -45,13 +45,13 @@ Coupure secteur réelle constatée (date non consignée dans cette trace). Infra
    (`zigbee2mqtt/configuration.yaml:79-80`), documentée « Prise onduleur (NAS / réseau) »
    (`utility_meter.yaml:175`).
 
-**[FAIT]** `infrastructure_puissance.md:6-9` place NAS / Serveur HA / Box sous protection **Onduleur (UPS)**. Le point mesuré appartient donc au cœur **secouru**.
+**[FAIT]** `infrastructure_puissance.md:6-9` place NAS / Serveur HA / Box (sortie UPS) sous protection **Onduleur (UPS)**. La prise `prise_onduleur` est en revanche alimentée par le secteur, **en amont de l'UPS** : elle perd son alimentation avec le secteur et cesse de publier.
 
 ---
 
 ## Cause du non-déclenchement
 
-1. **[FAIT]** Le témoin mesure un circuit secouru. Pendant la coupure, ce point reste alimenté (UPS) → tension ≠ 0 V → `binary_sensor.coupure_secteur` reste `off` → trigger `power_cut` jamais armé.
+1. **[FAIT]** Le témoin est alimenté par le secteur (en amont de l'UPS). Pendant la coupure, la prise perd son alimentation et passe `unavailable` ; combinée au défaut `float(230)` (point 2), elle est lue 230 V → `binary_sensor.coupure_secteur` reste `off` → trigger `power_cut` jamais armé.
 2. **[FAIT]** Aggravant — défaut `float(230)` sans `availability:` : un témoin `unknown`/`unavailable` est lu **230 V**, soit « pas de coupure ». L'échec se fait du **mauvais côté**.
 3. **[FAIT, écarté]** `ha_start` ne pouvait pas suppléer : HA n'a pas redémarré (secouru), et sa condition exige de toute façon `coupure_secteur == on`.
 4. **[FAIT, écarté]** `for: 00:00:30` n'est pas en cause : valeur **normative** (`11_temporalite.md:30`), coupure réelle plus longue.
@@ -65,7 +65,7 @@ Le contrat socle est explicite — `00_documentation_arsenal/contrats/pannes/sec
 - **L88–90** : « Tout dispositif participant à la qualification d'une panne secteur doit demeurer **observable pendant l'événement qu'il qualifie**. […] ne peut pas constituer à lui seul une source de vérité suffisante. »
 - **L135** : « **Une source dépendante du secteur ne peut pas constituer une source primaire valide.** »
 
-**[FAIT]** L'implémentation actuelle viole cet invariant : la source primaire (`prise_onduleur_voltage`) est précisément un point dont l'observabilité « normale » dépend du secteur, mais qui — étant secouru — ne reflète pas l'événement. Le signal canonique ne peut donc pas qualifier la coupure.
+**[FAIT]** L'implémentation actuelle viole cet invariant : la source primaire (`prise_onduleur_voltage`) dépend du secteur qu'elle doit qualifier et **cesse d'être observable précisément pendant cet événement** (perte d'alimentation → `unavailable`). Le signal canonique ne peut donc pas qualifier la coupure.
 
 ---
 
@@ -84,9 +84,9 @@ Deux signaux restent **observables pendant** une coupure et **chutent** à la pe
 
 ## Hypothèses (à départager en runtime)
 
-- **[HYP, confiance élevée]** `prise_onduleur` mesure une tension **en aval de l'UPS** → ~230 V maintenus pendant la coupure → coupure invisible.
-- **[HYP, alternative]** `prise_onduleur` est **en amont** → la prise Zigbee perd son alimentation → `unavailable` → `float(230)` ramène 230 V → même résultat.
-- **Donnée runtime manquante :** historique de `sensor.prise_onduleur_voltage` pendant l'épisode (~230 V constant *ou* `unavailable`). C'est le seul point qui distingue les deux hypothèses ; il ne change pas le verdict P0.
+- **[FAIT, confirmé]** `prise_onduleur` est **en amont** de l'UPS → la prise Zigbee perd son alimentation pendant la coupure → `unavailable` → `float(230)` ramène 230 V → coupure invisible.
+- **[HYP, écartée]** Une mesure **en aval de l'UPS** (~230 V maintenus) aurait produit le même non-déclenchement, mais ne correspond pas au câblage réel : la prise est alimentée par le secteur, en amont.
+- **Donnée de départage :** le comportement runtime (`unavailable` pendant l'épisode) confirme l'amont ; le verdict P0 est inchangé.
 
 ---
 

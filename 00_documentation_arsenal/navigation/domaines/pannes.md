@@ -18,7 +18,7 @@ Gestion des pannes critiques du système Arsenal. Deux sous-systèmes : **`inter
 ## Audits & état
 
 **Panne secteur :**
-- [`audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md`](../../audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md) — audit détection : coupure réelle non détectée (témoin sur point secouru UPS) ; **violation de l'invariant socle « source observable »** ; **correction P0 appliquée** (runtime `f963128`, requalification UPS/Bluetti).
+- [`audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md`](../../audits/01_rapports/pannes/audit_panne_detection_coupure_secteur.md) — audit détection : coupure réelle non détectée (témoin alimenté par le secteur surveillé, en amont de l'UPS) ; **violation de l'invariant socle « source observable »** ; **correction P0 appliquée** (runtime `f963128`, requalification UPS/Bluetti).
 - [`audits/01_rapports/pannes/audit_actions_mode_panne_secteur.md`](../../audits/01_rapports/pannes/audit_actions_mode_panne_secteur.md) — audit **métier** des actions : **doctrine des deux réservoirs** (UPS = HA/box/réseau, *sobriété critique* ; Bluetti = électronique de la chaîne thermique gaz), substituée à la « sobriété batterie » globale. **Recommandations implémentées en production** : ECS de secours `desinfection` bornée par le **budget SOC Bluetti**, **veto confort** (besoin/présence/SOC), réinitialisation + **réconciliation** de sortie, **remédiations inhibées** via `binary_sensor.panne_secteur_en_cours`. Indexé : [`audits/index.md`](../../audits/index.md).
 
 **Panne internet :** non audité — référence normative : `internet/00_panne_internet_gouvernance.md`.
