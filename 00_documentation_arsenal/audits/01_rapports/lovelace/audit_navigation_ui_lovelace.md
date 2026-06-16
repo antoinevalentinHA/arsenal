@@ -5,6 +5,8 @@
 **Nature** : audit en **lecture seule**. Aucun patch runtime, aucune modification de dashboard, aucun renommage. Les corrections runtime (P0/P1) sont **différées à une passe séparée**.
 **Statut** : **Révision v2** — corrige et remplace une première passe (v1) invalidée par une erreur méthodologique (voir §1). Les faux positifs de la v1 ne doivent pas être réintroduits.
 
+> **⏩ MISE À JOUR DE CLÔTURE (postérieure à l'audit).** Ce document reste le **constat historique** au HEAD `41bdc5c`, en lecture seule. Les corrections P0/P1 et la normalisation des segments de vue **différées dans les sections ci-dessous ont depuis été intégralement réalisées** ; le bilan figure en **§10 — Clôture du chantier**. Les §0–9 ne sont **pas réécrits** : ils conservent la trace des constats initiaux tels qu'observés.
+
 ---
 
 ## 0. Verdict en une phrase
@@ -172,3 +174,33 @@ Cette convention est cohérente avec la référence UI [`ui/navigation.md`](../.
 - Audit **lecture seule** — aucun patch runtime, aucune modification de dashboard dans cette passe.
 - **Corrections P0/P1 différées** à une passe d'application séparée.
 - Documents liés : [`audit_lovelace_arborescence.md`](audit_lovelace_arborescence.md) (le risque « includes relatifs » y est déjà identifié), hub de domaine [`ui_lovelace.md`](../../../navigation/domaines/ui_lovelace.md), structure include [`18_lovelace.md`](../../../architecture/00_structure_includes/18_lovelace.md).
+
+---
+
+## 10. Clôture du chantier (suites réalisées)
+
+> Addendum **postérieur** à l'audit. Les §0–9 ci-dessus restent le constat d'origine ; cette section enregistre les suites effectivement appliquées, dans des passes séparées et validées en CI. **Le chantier navigation UI Lovelace est clos.**
+
+**Suites réalisées (chronologie) :**
+
+1. **P0 corrigé** (§4.1) — les 3 `hold_action` `/reglages-dashboard/maison` → `/reglages-maison-dashboard/maison`.
+2. **Checker `R-LL-NAV-1` créé** — `scripts/arsenal_contracts/check_lovelace_navigation_contracts.py` : résout les `!include` et les surcharges d'instance avant tout constat (la leçon §1, outillée), puis **activé en CI** via `contracts_lovelace_navigation.yml` (push + pull_request).
+3. **P1 corrigé** (§5.1) — Retour de `reglages/sommeil.yaml` re-routé vers le parent Sommeil (forme canonique `/sommeil-dashboard`).
+4. **Hygiène R5** (§4.2) — en-têtes des templates Paramètres/Diagnostics clarifiés (défaut = **placeholder à surcharger obligatoirement**, non résolvant par dessein). Les valeurs de défaut sont **inchangées** : R5 reste un **warning non bloquant** assumé (dette latente tracée, sans impact runtime puisque toutes les instances surchargent).
+5. **Normalisation R4** (§4.3, §4.4, et P2 §8) — résorption complète des segments de vue non canoniques :
+   - segments **nommés** historiques : **73 → 0** (passes mécanique A+B+D puis manuelle C+E) ;
+   - derniers segments **numériques** `/<dashboard-key>/0` : supprimés.
+6. **Durcissement du checker** — R4 est passé de simple constat à **erreur bloquante** : tout `navigation_path` interne ciblant une clé de dashboard existante doit employer la forme canonique **`/<dashboard-key>`**.
+
+**Doctrine finale formalisée (déjà validée — aucune doctrine nouvelle) :**
+
+- Arsenal Lovelace est **mono-vue par dashboard** ; **un domaine fonctionnel = un dashboard**.
+- Un dashboard Arsenal **ne dépend d'aucune navigation intra-dashboard**.
+- La cible canonique d'un `navigation_path` interne Arsenal est **strictement `/<dashboard-key>`**.
+- Les formes **`/<dashboard-key>/<segment>`** et **`/<dashboard-key>/0`** sont **interdites** (erreur R4 bloquante).
+- **Aucun `path:`** n'est ajouté aux vues pour justifier une ancienne navigation intra-dashboard.
+- Les segments de vue étaient des **reliquats historiques** de l'ancienne grammaire Home Assistant UI multi-vues (anciens dashboards Réglages et Diagnostics multi-vues). **Cette logique multi-vues est abandonnée** ; Arsenal en est sorti.
+
+**Exemption résiduelle assumée** : un segment égal à un `path:` de vue **réellement déclaré** par le dashboard cible reste accepté par le checker (cas unique observé : `imprimerie-nas-dashboard`, qui déclare explicitement `path: nas-imprimerie`). Aucun `path:` n'est ajouté par le checker ; cette exemption ne légitime pas l'ajout de nouvelles vues.
+
+**État final du checker** : `0 erreur`, **R4 = 0**, **R5 ×2** (warnings non bloquants), CI verte.
