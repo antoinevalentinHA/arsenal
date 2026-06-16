@@ -24,7 +24,7 @@
 #
 # ⚠️ CONTRAINTES
 #     - Confirmation modale obligatoire avec texte contextuel
-#     - hold_action navigue vers /reglages-dashboard/maison
+#     - hold_action navigue vers /reglages-maison-dashboard/maison
 #
 # 🧩 USAGE
 #     type: custom:button-card

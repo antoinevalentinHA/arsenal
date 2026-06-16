@@ -12,7 +12,11 @@
 #   du dashboard Arsenal.
 #
 # 📡 SOURCE
-#   - navigation_path : /diagnostics-dashboard/diagnostics
+#   - navigation_path (défaut placeholder) : /diagnostics-dashboard/diagnostics
+#     ⚠️ Clé de dashboard NON résolvante PAR DESSEIN : ce défaut DOIT être
+#        surchargé par chaque instance (tap_action.navigation_path) vers la
+#        cible diagnostics réelle du domaine. Un oubli de surcharge échoue
+#        visiblement (dashboard introuvable) plutôt que silencieusement.
 #
 # ⚙️ LOGIQUE UI
 #   - basé sur bouton_navigation_base

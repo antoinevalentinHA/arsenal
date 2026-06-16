@@ -25,7 +25,7 @@
 #
 # ⚠️ CONTRAINTES
 #     - Confirmation modale obligatoire avec texte contextuel (on/off)
-#     - hold_action navigue vers /reglages-dashboard/maison —
+#     - hold_action navigue vers /reglages-maison-dashboard/maison —
 #       ne pas utiliser si cette route n'existe pas
 #     - Carte de commande active — à ne pas confondre avec
 #       carte_clim_diagnostic_presence_babysitting (lecture seule)
