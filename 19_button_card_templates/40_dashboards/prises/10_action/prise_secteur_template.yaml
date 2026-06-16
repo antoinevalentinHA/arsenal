@@ -1,0 +1,116 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Prise secteur mains-dépendante — Gate de commandabilité
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER — spécialisation de prise_template
+#
+# 🎯 ROLE
+#     Spécialisation des prises dont l'alimentation dépend
+#     PHYSIQUEMENT du secteur (rail mains, NI UPS, NI Bluetti).
+#     Ajoute un gate de COMMANDABILITÉ : pendant une panne secteur
+#     globale, l'action est physiquement impossible (la prise perd
+#     son alimentation) et ne doit donc pas être présentée comme
+#     exécutable, y compris sur le chemin manuel — même si l'entité
+#     reste temporairement on/off (latence Zigbee2MQTT).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de prise_template (hérite tout son comportement)
+#     - Ajoute UNIQUEMENT le gate de commandabilité secteur
+#     - UI uniquement (aucune décision, aucun capteur, aucune entité)
+#
+# 🧠 DOCTRINE (commandabilité)
+#     - Catégorie A (impossible physiquement) : symétrie auto ↔ manuel.
+#       Le reboot Netatmo automatique est DÉJÀ inhibé par
+#       binary_sensor.panne_secteur_en_cours ; ce template aligne le
+#       chemin manuel sur la même vérité d'exécution.
+#     - Réutilisation avant création : consomme le signal canonique
+#       EXISTANT binary_sensor.panne_secteur_en_cours. Aucun capteur,
+#       aucun méga-signal, aucune entité créés.
+#     - Neutralise UNIQUEMENT sur panne CONFIRMÉE (state == 'on'). Si
+#       le signal panne est lui-même unavailable (détection
+#       indéterminée), le chemin manuel N'est PAS sur-neutralisé :
+#       l'inhibition par prudence est correcte pour l'automatique, trop
+#       agressive pour l'UI manuelle.
+#
+# 🎨 SEMANTIQUE
+#     - state = on               -> 🟢 vert       (actif)
+#     - state = off              -> ⚪ gris        (inactif)
+#     - unknown / unavailable    -> ⚪ gris clair  (indisponible, non commandable)
+#       / none
+#     - panne secteur en cours   -> ⚪ gris clair  (non commandable : impossible
+#                                                   physiquement) + action neutralisée
+#
+# 🔗 DEPENDANCES
+#     - entity : switch.* de prise secteur mains-dépendante (PROUVÉE).
+#     - binary_sensor.panne_secteur_en_cours (signal canonique existant).
+#
+# ⚠️ CONTRAINTES
+#     - RÉSERVÉ aux prises dont la dépendance secteur est PROUVÉE.
+#       NE PAS appliquer à une prise UPS (ex. prise_box), amont UPS
+#       (prise_onduleur), Bluetti/thermique, ou à topologie indéterminée
+#       (ex. prise_bouclage) : ce serait un faux positif de neutralisation.
+#     - NE PAS confondre impossible physique (ici) et interdit par
+#       politique (mode vacances, anti-yo-yo, etc. — hors de ce template).
+#     - Le gris d'indisponibilité est canonique (charte couleurs
+#       §02/§05, R6) ; pointer-events est comportemental (hors charte).
+#     - L'ordre des states est critique : les états de neutralisation
+#       (indisponibilité, puis panne) sont évalués EN DERNIER et
+#       l'emportent sur on/off.
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: prise_secteur_template
+#     entity: switch.prise_chambre_arnaud
+#     name: Netatmo Arnaud
+#
+# 📎 PÉRIMÈTRE ACTUEL (besoin démontré)
+#     switch.prise_chambre_arnaud, switch.prise_chambre_matthieu
+#     (stations Netatmo, mains, reboot automatique déjà gaté panne).
+#     Toute extension exige une dépendance secteur PROUVÉE par prise.
+# ==========================================================
+
+
+prise_secteur_template:
+  template: prise_template
+
+  # Liste de states re-déclarée intégralement (et non additive) : button-card
+  # voit ici la liste complète, l'override final l'emporte. on/off identiques au
+  # socle ; ajout du gate de commandabilité secteur en dernier.
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    - operator: template
+      value: |
+        [[[
+          return ['unknown','unavailable','none'].includes(entity?.state);
+        ]]]
+      styles:
+        card:
+          # Indisponibilité Zigbee (comportement hérité, inchangé).
+          - background-color: rgba(158, 158, 158, 0.1)
+          - pointer-events: none
+
+    - operator: template
+      value: |
+        [[[
+          // Gate de COMMANDABILITÉ SECTEUR (catégorie A — impossible physiquement).
+          // Réutilise le signal canonique existant ; neutralise uniquement sur
+          // panne CONFIRMÉE (state === 'on'), même si l'entité reste on/off.
+          return states['binary_sensor.panne_secteur_en_cours']?.state === 'on';
+        ]]]
+      styles:
+        card:
+          # Même neutralisation canonique que l'indisponibilité (gris indispo + action coupée).
+          - background-color: rgba(158, 158, 158, 0.1)
+          - pointer-events: none

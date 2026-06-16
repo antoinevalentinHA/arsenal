@@ -44,7 +44,7 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_chambre_arnaud
                 name: Netatmo Arnaud
                 icon: mdi:thermometer
@@ -55,7 +55,7 @@ views:
                   entity: switch.prise_chambre_arnaud
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_chambre_matthieu
                 name: Netatmo Matthieu
                 icon: mdi:thermometer
