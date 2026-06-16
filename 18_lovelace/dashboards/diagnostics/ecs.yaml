@@ -32,9 +32,23 @@ views:
             entity: sensor.boiler_bridge_sante
             name: Boiler Bridge
             icon: mdi:lan-connect
-            tap_action:
-              action: navigate
-              navigation_path: /diagnostics-boiler-dashboard
+
+          - type: horizontal-stack
+            cards:
+              - type: custom:button-card
+                template: boiler_kpi_consigne
+                entity: sensor.boiler_dhw_setpoint
+                name: Consigne ECS
+
+              - type: custom:button-card
+                template: boiler_decision_ack
+                entity: sensor.boiler_ack_dhw_set_setpoint_status
+                name: ACK ECS
+
+              - type: custom:button-card
+                template: boiler_status_burner
+                entity: binary_sensor.boiler_burner_on
+                name: Brûleur
 
           ########################################################
           # 🚿 SECTION : ECS – Données internes
