@@ -59,21 +59,9 @@ views:
                 name: Consigne Chauffage
 
               - type: custom:button-card
-                template: boiler_decision_ack
-                entity: sensor.boiler_ack_heating_set_temperature_status
-                name: ACK Chauffage
-
-          - type: horizontal-stack
-            cards:
-              - type: custom:button-card
                 template: boiler_status_burner
                 entity: binary_sensor.boiler_burner_on
                 name: Brûleur
-
-              - type: custom:button-card
-                template: boiler_kpi_temperature
-                entity: sensor.boiler_supply_temperature
-                name: T° de départ
 
           ########################################################
           # 📊 1) Performances chauffage

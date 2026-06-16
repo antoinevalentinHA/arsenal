@@ -41,11 +41,6 @@ views:
                 name: Consigne ECS
 
               - type: custom:button-card
-                template: boiler_decision_ack
-                entity: sensor.boiler_ack_dhw_set_setpoint_status
-                name: ACK ECS
-
-              - type: custom:button-card
                 template: boiler_status_burner
                 entity: binary_sensor.boiler_burner_on
                 name: Brûleur
