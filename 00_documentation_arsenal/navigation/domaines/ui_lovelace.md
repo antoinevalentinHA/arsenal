@@ -37,6 +37,7 @@ Un domaine, deux façades : `ui/` (référence normative du design system Arsena
 - Rapport button-card templates — [`audit_19_button_card_templates.md`](../../audits/01_rapports/lovelace/audit_19_button_card_templates.md) *(audit documentaire)*
 - Chantier exploitation button-card templates — [`exploitation_audit_19_button_card_templates.md`](../../audits/04_chantiers/lovelace/exploitation_audit_19_button_card_templates.md)
 - Cadrage CI includes (transverse CH-LL-CI-1) — [`cadrage_ci_includes_lovelace.md`](../../audits/04_chantiers/transverses/cadrage_ci_includes_lovelace.md)
+- Rapport navigation UI Lovelace (Révision v2) — [`audit_navigation_ui_lovelace.md`](../../audits/01_rapports/lovelace/audit_navigation_ui_lovelace.md) *(lecture seule ; leçon : résoudre les `!include` et surcharges d'instance avant tout constat de navigation ; P0 `/reglages-dashboard/maison`, P1 Retour `reglages/sommeil.yaml` — corrections différées)*
 
 ## Changelog
 
