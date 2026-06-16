@@ -52,7 +52,7 @@ carte_vacances_demande_manuelle:
 
   hold_action:
     action: navigate
-    navigation_path: /reglages-dashboard/maison
+    navigation_path: /reglages-maison-dashboard/maison
 
   styles:
     card:

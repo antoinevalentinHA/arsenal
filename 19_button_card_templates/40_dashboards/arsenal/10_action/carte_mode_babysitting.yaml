@@ -54,7 +54,7 @@ carte_mode_babysitting:
 
   hold_action:
     action: navigate
-    navigation_path: /reglages-dashboard/maison
+    navigation_path: /reglages-maison-dashboard/maison
 
   double_tap_action:
     action: none
