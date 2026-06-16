@@ -8,31 +8,34 @@
 # ==========================================================
 #
 # 🎯 RÔLE
-#   Afficher l’état réel de la climatisation ainsi que
-#   la consigne appliquée lorsque disponible.
+#   Afficher l’état métier réel de la climatisation sur l’accueil,
+#   aligné sur la carte Chauffage. La consigne n’est montrée que
+#   lorsqu’elle explique une action en cours (refroidissement actif).
 #
 # 📡 SOURCE
-#   - entity.state (climate.clim)
-#   - sensor.consigne_clim_appliquee
+#   - sensor.clim_action_en_cours (lecture principale : libellé + couleur)
+#       valeurs : cool_actif / dry_actif / heat_actif / bloquee / arret
+#   - sensor.consigne_clim_appliquee (affichée UNIQUEMENT si cool_actif)
+#   Note : la carte reste bindée à sensor.clim_mode_local (entity) pour
+#   le more-info uniquement ; elle ne lit PAS climate.clim directement.
 #
 # ⚙️ LOGIQUE UI
-#   - Lit l’état réel de la climatisation
-#   - Lit la consigne appliquée locale lorsque disponible
-#   - Produit un libellé contextuel selon le mode réel :
-#       - cool → affichage de la consigne appliquée
-#       - dry  → « Mode Dry actif »
-#       - heat → « Mode Chauffage actif »
-#       - off  → « Veille »
-#       - autre → affichage brut de l’état
-#   - Code visuel :
-#       - cool → bleu
-#       - dry  → vert
-#       - heat → rouge
-#       - off / autre → gris neutre
+#   - Lit l’action réelle exposée par le backend (lecture pure)
+#   - Produit un libellé d’état métier :
+#       - cool_actif → « Consigne : N°C » (consigne appliquée)
+#       - dry_actif  → « Déshumidification »
+#       - heat_actif → « Soutien chauffage »
+#       - bloquee    → « Bloquée »
+#       - arret      → « Repos »
+#       - indispo    → « Indisponible »
+#   - Code visuel = MODE HVAC (Exception 1 — ui/couleurs/03_exceptions.md),
+#     dérivé de l’action réelle, sans jugement de statut :
+#       - cool_actif → bleu · dry_actif → vert · heat_actif → rouge
+#       - bloquee / arret → gris neutre (off / absence de mode)
+#       - indispo → gris indisponibilité (prime sur tout)
 #   - Navigation vers le dashboard Climatisation sur appui
 #   - More-info sur maintien
-#   - Aucun calcul du mode cible
-#   - Aucun pilotage de l’équipement
+#   - Aucun calcul de décision, aucun mode cible, aucun pilotage
 #
 # ----------------------------------------------------------
 # 🔒 STRUCTURE
@@ -54,18 +57,25 @@ carte_clim_etat:
 
   label: |
     [[[
-      const mode = (entity.state || '').toLowerCase();
-      const consigne = states['sensor.consigne_clim_appliquee']?.state;
+      // Lecture pure de l'action réelle (aucune décision recalculée ici).
+      const action = states['sensor.clim_action_en_cours']?.state;
+      const UNAV = ['unknown','unavailable','none','',undefined,null];
 
-      if (mode === 'cool')
-        return 'Consigne : ' +
-          ((!consigne || ['unavailable','unknown'].includes(consigne)) ? '-' : consigne) + '°C';
+      if (UNAV.includes(action)) return 'Indisponible';
 
-      if (mode === 'dry')  return 'Mode Dry actif';
-      if (mode === 'heat') return 'Mode Chauffage actif';
-      if (mode === 'off')  return 'Veille';
+      // Consigne montrée UNIQUEMENT quand elle explique une action en cours.
+      if (action === 'cool_actif') {
+        const c = states['sensor.consigne_clim_appliquee']?.state;
+        const cTxt = UNAV.includes(c) ? '-' : c;
+        return 'Consigne : ' + cTxt + '°C';
+      }
 
-      return 'État : ' + (mode || '-');
+      if (action === 'dry_actif')  return 'Déshumidification';
+      if (action === 'heat_actif') return 'Soutien chauffage';
+      if (action === 'bloquee')    return 'Bloquée';
+      if (action === 'arret')      return 'Repos';
+
+      return 'Repos';
     ]]]
 
   tap_action:
@@ -79,9 +89,18 @@ carte_clim_etat:
     card:
       - background-color: |
           [[[
-            const mode = (entity.state || '').toLowerCase();
-            if (mode === 'cool') return 'rgba(33, 150, 243, 0.2)';
-            if (mode === 'dry')  return 'rgba(76, 175, 80, 0.2)';
-            if (mode === 'heat') return 'rgba(244, 67, 54, 0.2)';
+            // 🎨 Couleur = MODE HVAC (Exception 1 — ui/couleurs/03_exceptions.md),
+            // dérivée de l'action réelle. Encode le mode, jamais un statut OK/KO.
+            const action = states['sensor.clim_action_en_cours']?.state;
+            const UNAV = ['unknown','unavailable','none','',undefined,null];
+
+            // Indisponibilité — prime sur toute couleur de mode (02_palette.md).
+            if (UNAV.includes(action)) return 'rgba(158, 158, 158, 0.1)';
+
+            if (action === 'cool_actif') return 'rgba(33, 150, 243, 0.2)'; // cool → bleu
+            if (action === 'dry_actif')  return 'rgba(76, 175, 80, 0.2)';  // dry  → vert
+            if (action === 'heat_actif') return 'rgba(244, 67, 54, 0.2)';  // heat → rouge
+
+            // bloquee / arret → off / absence de mode → gris neutre
             return 'rgba(158, 158, 158, 0.2)';
           ]]]
