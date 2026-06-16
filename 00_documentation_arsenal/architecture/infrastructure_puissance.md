@@ -25,6 +25,43 @@ Cette architecture électrique permet à Arsenal de :
 
 ---
 
+## 🔌 TOPOLOGIE D'ALIMENTATION DES PRISES COMMANDABLES
+
+Les prises pilotables exposées sur le dashboard Prises n'ont pas toutes la même dépendance électrique. Cette topologie détermine leur **commandabilité pendant une panne secteur globale** (cf. doctrine [`03_doctrines/commandabilite.md`](03_doctrines/commandabilite.md)) : une prise alimentée en secteur direct devient **physiquement non commandable** dès la perte du secteur, tandis qu'une prise secourue (rail UPS) reste commandable. **Cette table est la source de vérité de cette topologie ; l'UI (`prise_secteur_template`) en est une conséquence, pas la source.**
+
+### Prises secteur direct (mains-dépendantes — gate de commandabilité appliqué)
+
+Alimentées directement par le secteur, **sans secours UPS ni Bluetti**. Pendant une panne secteur globale (`binary_sensor.panne_secteur_en_cours` à `on`), elles perdent leur alimentation : l'action est impossible et l'UI la neutralise via `prise_secteur_template`.
+
+| Entité | Équipement alimenté | Topologie | Secourue ? | Comportement en panne secteur | Conséquence commandabilité UI | Statut / preuve |
+|---|---|---|---|---|---|---|
+| `switch.prise_chambre_arnaud` | Station Netatmo (Arnaud) | Secteur direct | Non | Perte d'alimentation ; entité peut rester `on`/`off` transitoirement (latence z2m) | Gatée (`prise_secteur_template`) | Mains prouvé — reboot automatique déjà gaté panne |
+| `switch.prise_chambre_matthieu` | Station Netatmo (Matthieu) | Secteur direct | Non | Perte d'alimentation ; latence z2m | Gatée | Mains prouvé — reboot automatique déjà gaté panne |
+| `switch.prise_bouclage` | Pompe de bouclage ECS | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_deshumidificateur` | Déshumidificateur | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_palier` | Bridge iDiamant (volets) | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_lampe_sejour` | Lumière séjour | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_sejour_baies_vitrees` | Lumière (baies vitrées) | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_lampe_parents` | Lampe chambre parents | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_jardin` | Éclairage jardin | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_refrigerateur` | Réfrigérateur | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_lave_vaisselle` | Lave-vaisselle | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_buanderie` | Machines à linge | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_sdb_enfants` | SDB enfants | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_cage_escalier_rdc` | Cage d'escalier RDC | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+| `switch.prise_sejour_placard` | Séjour placards | Secteur direct | Non | Perte d'alimentation | Gatée | Secteur direct confirmé |
+
+### Prises exclues du gate secteur
+
+| Entité | Équipement alimenté | Topologie | Secourue ? | Comportement en panne secteur | Conséquence commandabilité UI | Statut / preuve | Remarque |
+|---|---|---|---|---|---|---|---|
+| `switch.prise_box` | Box Internet / réseau | Rail UPS | Oui (UPS) | Reste alimentée | **Non** gatée — reste commandable (`prise_template`) | UPS prouvé (§1 Cœur du Système) | Le reboot box inhibé en panne relève d'une **politique** (catégorie B), pas d'une impossibilité physique — ne pas gater |
+| `switch.prise_onduleur` | Onduleur (témoin secteur) | Amont UPS (non secouru) | Non | Perte d'alimentation → passe `unavailable` | Non gatée par le signal panne ; neutralisée par l'indisponibilité native (`prise_template`) | Amont UPS prouvé (contrat panne secteur, `contrats/pannes/secteur/README.md`) | Ex-témoin de détection de coupure secteur |
+
+> **Cohérence UI ↔ topologie.** Le sous-ensemble « secteur direct » ci-dessus correspond exactement aux cartes utilisant `prise_secteur_template` ; les deux exclusions restent sur `prise_template`. Toute évolution de cette topologie doit être répercutée dans les deux : **cette table est la source, l'UI la conséquence.**
+
+---
+
 ## 🛠️ MAINTENANCE & MONITORING
 L'état de l'onduleur et des batteries est intégré à Arsenal :
 - **Entité** : `sensor.ups_status` / `binary_sensor.on_battery`.
