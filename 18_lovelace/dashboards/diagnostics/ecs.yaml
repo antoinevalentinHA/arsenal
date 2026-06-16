@@ -21,6 +21,22 @@ views:
       - type: vertical-stack
         cards:
           ########################################################
+          # 🔗 SECTION : Capacité d'exécution — Boiler Bridge
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: 🔗 Capacité d'exécution
+
+          - type: custom:button-card
+            template: boiler_status_health
+            entity: sensor.boiler_bridge_sante
+            name: Boiler Bridge
+            icon: mdi:lan-connect
+            tap_action:
+              action: navigate
+              navigation_path: /diagnostics-boiler-dashboard
+
+          ########################################################
           # 🚿 SECTION : ECS – Données internes
           ########################################################
           - type: custom:button-card
