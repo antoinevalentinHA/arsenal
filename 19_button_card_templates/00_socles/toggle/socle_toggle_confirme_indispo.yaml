@@ -1,0 +1,92 @@
+# ==========================================================
+# 🧠 ARSENAL — SOCLE UI
+#     Toggle — Confirmé avec gestion d'indisponibilité
+# ==========================================================
+#
+# 📌 STATUT
+#     SOCLE UI (générique)
+#
+# 🎯 RÔLE
+#     Socle toggle avec confirmation modale ET neutralisation
+#     d'action sur indisponibilité. Comportement strictement
+#     générique : tout toggle confirmé dont l'entité peut passer
+#     unknown / unavailable / none. Aucune logique métier, aucune
+#     hypothèse de domaine (prise, relais, VMC, etc.).
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_toggle_confirme
+#     - Ajoute UNIQUEMENT le state d'indisponibilité + neutralisation
+#     - UI uniquement (aucune décision)
+#
+# 🎨 SEMANTIQUE
+#     - state = on            -> 🟢 vert       (actif)
+#     - state = off           -> ⚪ gris        (inactif)
+#     - unknown / unavailable -> ⚪ gris clair  (indisponible, non commandable)
+#       / none
+#
+# 🔗 DEPENDANCES
+#     - entity : switch.* / input_boolean.* (toggle confirmé quelconque)
+#
+# ⚠️ CONTRAINTES
+#     - Confirmation modale obligatoire avant toggle.
+#     - L'ordre des states est critique : unavailable évalué en
+#       dernier via operator template.
+#     - Le gris d'indisponibilité est canonique (charte couleurs
+#       §02/§05, R6) ; pointer-events est comportemental (hors charte).
+#     - Aucune logique métier, de protection, de séquencement ou de
+#       commandabilité ici (rester strictement générique).
+#     - Le texte de confirmation par défaut est un fallback
+#       surchargeable carte par carte ; sa formulation n'est pas
+#       normative à ce niveau.
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: socle_toggle_confirme_indispo
+#     entity: switch.un_toggle
+#     name: Mon toggle
+#
+# 📎 NOTE D'EXTRACTION
+#     Corps extrait verbatim de prise_template (étape 1 du typage UI,
+#     commit de restructuration). Comportement strictement identique à
+#     l'ancien prise_template. prise_template devient une spécialisation
+#     mince réservée aux prises secteur ; la commandabilité secteur est
+#     traitée dans une passe ultérieure. Aucun changement visuel.
+# ==========================================================
+
+
+socle_toggle_confirme_indispo:
+  template: socle_toggle_confirme
+
+  tap_action:
+    action: toggle
+    confirmation:
+      text: Basculer la prise ON / OFF ?
+
+  state:
+    - value: 'on'
+      styles:
+        card:
+          - background-color: rgba(76, 175, 80, 0.2)
+
+    - value: 'off'
+      styles:
+        card:
+          - background-color: rgba(158, 158, 158, 0.2)
+
+    - operator: template
+      value: |
+        [[[
+          return ['unknown','unavailable','none'].includes(entity?.state);
+        ]]]
+      styles:
+        card:
+          # Gris indisponibilité canonique (charte couleurs §02/§05, R6) — INCHANGÉ.
+          # Distinct du gris neutre OFF par doctrine (deux gris contractuels).
+          - background-color: rgba(158, 158, 158, 0.1)
+          # Neutralisation fonctionnelle de la commande : indisponible = non
+          # commandable. pointer-events est une propriété comportementale (pas un
+          # token visuel/colorimétrique) : hors périmètre de la charte couleurs,
+          # n'introduit aucune nuance. Vit dans le bloc state (styles), non
+          # surchargé par les tap_action déclarés carte par carte.
+          - pointer-events: none

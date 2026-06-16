@@ -38,13 +38,13 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: prise_template
+                template: socle_toggle_confirme_indispo
                 entity: switch.vmc_l1
                 name: Relais L1
                 icon: mdi:electric-switch
 
               - type: custom:button-card
-                template: prise_template
+                template: socle_toggle_confirme_indispo
                 entity: switch.vmc_l2
                 name: Relais L2
                 icon: mdi:electric-switch
