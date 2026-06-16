@@ -66,7 +66,7 @@ views:
                   entity: switch.prise_chambre_matthieu
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_palier
                 name: iDiamant
                 icon: mdi:remote
@@ -83,7 +83,7 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_lampe_sejour
                 name: Lumière Séjour
                 icon: mdi:lamp
@@ -94,7 +94,7 @@ views:
                   entity: switch.prise_lampe_sejour
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_sejour_baies_vitrees
                 name: Lumière Sapin
                 icon: mdi:pine-tree
@@ -105,7 +105,7 @@ views:
                   entity: switch.prise_sejour_baies_vitrees
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_lampe_parents
                 name: Lampe chambre Parents
                 icon: mdi:lamp
@@ -116,7 +116,7 @@ views:
                   entity: switch.prise_lampe_parents
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_jardin
                 name: Eclairage Jardin
                 icon: mdi:tree
@@ -135,7 +135,7 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_refrigerateur
                 name: Réfrigérateur
                 icon: mdi:fridge
@@ -146,7 +146,7 @@ views:
                   entity: switch.prise_refrigerateur
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_lave_vaisselle
                 name: Lave-vaisselle
                 icon: mdi:dishwasher
@@ -157,7 +157,7 @@ views:
                   entity: switch.prise_lave_vaisselle
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_buanderie
                 name: Machines linge
                 icon: mdi:washing-machine
@@ -206,7 +206,7 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_sdb_enfants
                 name: SDB Enfants
                 icon: mdi:access-point
@@ -217,7 +217,7 @@ views:
                   entity: switch.prise_sdb_enfants
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_cage_escalier_rdc
                 name: Cage d'escaliers RDC
                 icon: mdi:access-point
@@ -228,7 +228,7 @@ views:
                   entity: switch.prise_cage_escalier_rdc
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_sejour_placard
                 name: Séjour placards
                 icon: mdi:access-point

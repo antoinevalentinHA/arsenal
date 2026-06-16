@@ -67,10 +67,19 @@
 #     name: Netatmo Arnaud
 #
 # 📎 PÉRIMÈTRE ACTUEL (besoin démontré / dépendance secteur prouvée)
-#     switch.prise_chambre_arnaud, switch.prise_chambre_matthieu
-#     (stations Netatmo, mains, reboot automatique déjà gaté panne) ;
-#     switch.prise_bouclage, switch.prise_deshumidificateur
-#     (secteur direct confirmé).
+#     Toutes les prises à dépendance secteur PROUVÉE (mains, aucun
+#     secours UPS ni Bluetti) :
+#       - switch.prise_chambre_arnaud, switch.prise_chambre_matthieu
+#         (Netatmo, reboot automatique déjà gaté panne) ;
+#       - switch.prise_bouclage, switch.prise_deshumidificateur ;
+#       - switch.prise_palier, switch.prise_lampe_sejour,
+#         switch.prise_sejour_baies_vitrees, switch.prise_lampe_parents,
+#         switch.prise_jardin, switch.prise_refrigerateur,
+#         switch.prise_lave_vaisselle, switch.prise_buanderie,
+#         switch.prise_sdb_enfants, switch.prise_cage_escalier_rdc,
+#         switch.prise_sejour_placard (secteur direct confirmé).
+#     EXCLUES (ne PAS migrer ici) : switch.prise_box (UPS),
+#     switch.prise_onduleur (amont UPS).
 #     Toute extension exige une dépendance secteur PROUVÉE par prise.
 # ==========================================================
 
