@@ -2,7 +2,7 @@
 
 Ce dossier documente la **supervision d'outils hors Home Assistant**, tels
 qu'ils existent dans ce répertoire : pont chaudière, outillage NAS Arsenal, NAS
-Imprimerie, ainsi qu'un gabarit d'autoring.
+Imprimerie.
 
 ## Contenu du dossier
 
@@ -34,12 +34,6 @@ Imprimerie, ainsi qu'un gabarit d'autoring.
 | [`nas_imprimerie/alerte.md`](nas_imprimerie/alerte.md) | Décision d'alerte NAS Imprimerie |
 | [`nas_imprimerie/stockage.md`](nas_imprimerie/stockage.md) | Décision de niveau de stockage |
 | [`nas_imprimerie/synthese_sante.md`](nas_imprimerie/synthese_sante.md) | Synthèse santé NAS Imprimerie |
-
-### Gabarits d'autoring
-
-| Document | Rôle |
-|---|---|
-| [`prompt_changelog.md`](prompt_changelog.md) | Gabarit / prompt de génération de changelog |
 
 ## Navigation
 
