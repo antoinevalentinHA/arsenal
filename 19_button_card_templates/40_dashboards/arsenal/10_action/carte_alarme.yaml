@@ -74,7 +74,7 @@ carte_alarme:
 
   hold_action:
     action: navigate
-    navigation_path: /alarme-dashboard/alarme
+    navigation_path: /alarme-dashboard
 
   double_tap_action:
     action: none

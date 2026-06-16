@@ -13,7 +13,7 @@ views:
         template: bouton_retour_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /alarme-dashboard/alarme
+          navigation_path: /alarme-dashboard
 
     cards:
       - type: vertical-stack

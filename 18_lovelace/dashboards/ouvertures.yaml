@@ -18,7 +18,7 @@ views:
         template: bouton_diagnostics_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /diagnostics-ouvertures-dashboard/diagnostics-ouvertures
+          navigation_path: /diagnostics-ouvertures-dashboard
 
     ########################################################
     # 🧱 VERTICAL STACK PRINCIPAL

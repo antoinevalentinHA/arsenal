@@ -12,7 +12,7 @@ views:
         template: bouton_retour_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /chauffage-dashboard/chauffage
+          navigation_path: /chauffage-dashboard
 
       - type: custom:button-card
         template: bouton_navigation_badge_carre
@@ -20,7 +20,7 @@ views:
         icon: mdi:radiator
         tap_action:
           action: navigate
-          navigation_path: /diagnostics-vannes-dashboard/diagnostics-vannes
+          navigation_path: /diagnostics-vannes-dashboard
 
       - type: custom:button-card
         template: bouton_navigation_badge_carre
@@ -28,7 +28,7 @@ views:
         icon: mdi:magnify
         tap_action:
           action: navigate
-          navigation_path: /diagnostics-thermiques-dashboard/diagnostics-thermiques
+          navigation_path: /diagnostics-thermiques-dashboard
 
     ########################################################
     # ♨️ VERTICAL STACK PRINCIPAL

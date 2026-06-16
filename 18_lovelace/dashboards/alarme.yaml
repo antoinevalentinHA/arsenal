@@ -12,13 +12,13 @@ views:
         template: bouton_parametres_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /reglages-alarme-dashboard/alarme
+          navigation_path: /reglages-alarme-dashboard
 
       - type: custom:button-card
         template: bouton_diagnostics_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /diagnostics-alarme-dashboard/alarme
+          navigation_path: /diagnostics-alarme-dashboard
 
     cards:
       - type: vertical-stack

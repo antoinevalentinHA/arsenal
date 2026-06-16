@@ -12,13 +12,13 @@ views:
         template: bouton_parametres_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /reglages-climatisation-dashboard/climatisation
+          navigation_path: /reglages-climatisation-dashboard
 
       - type: custom:button-card
         template: bouton_diagnostics_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /diagnostics-climatisation-dashboard/diagnostics-climatisation
+          navigation_path: /diagnostics-climatisation-dashboard
 
     cards:
       - type: vertical-stack

@@ -43,7 +43,7 @@ carte_mode_maison:
 
   tap_action:
     action: navigate
-    navigation_path: /modes-dashboard/home
+    navigation_path: /modes-dashboard
 
   state_display: |
     [[[

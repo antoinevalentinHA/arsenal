@@ -13,7 +13,7 @@ cards:
     icon: mdi:thermometer
     tap_action:
       action: navigate
-      navigation_path: /meteo-temperature-dashboard/temperature
+      navigation_path: /meteo-temperature-dashboard
     styles:
       icon:
         - color: '#B71C1C'
@@ -49,7 +49,7 @@ cards:
     icon: mdi:thermometer-water
     tap_action:
       action: navigate
-      navigation_path: /meteo-humidex-dashboard/humidex
+      navigation_path: /meteo-humidex-dashboard
     styles:
       icon:
         - color: '#E65100'
@@ -61,7 +61,7 @@ cards:
     icon: mdi:molecule-co2
     tap_action:
       action: navigate
-      navigation_path: /meteo-co2-dashboard/co2
+      navigation_path: /meteo-co2-dashboard
     styles:
       icon:
         - color: '#3E2723'
@@ -73,7 +73,7 @@ cards:
     icon: mdi:volume-high
     tap_action:
       action: navigate
-      navigation_path: /meteo-bruit-dashboard/bruit
+      navigation_path: /meteo-bruit-dashboard
     styles:
       icon:
         - color: '#6A1B9A'
@@ -85,7 +85,7 @@ cards:
     icon: mdi:weather-rainy
     tap_action:
       action: navigate
-      navigation_path: /meteo-precipitations-dashboard/precipitations
+      navigation_path: /meteo-precipitations-dashboard
     styles:
       icon:
         - color: '#0277BD'
@@ -97,7 +97,7 @@ cards:
     icon: mdi:gauge
     tap_action:
       action: navigate
-      navigation_path: /meteo-pression-dashboard/pression
+      navigation_path: /meteo-pression-dashboard
     styles:
       icon:
         - color: '#455A64'

@@ -174,7 +174,7 @@ views:
 
                     tap_action:
                       action: navigate
-                      navigation_path: /vmc-dashboard/home
+                      navigation_path: /vmc-dashboard
 
                     hold_action:
                       action: none

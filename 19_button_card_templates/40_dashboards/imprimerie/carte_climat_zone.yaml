@@ -33,7 +33,7 @@ carte_climat_zone:
 
   tap_action:
     action: navigate
-    navigation_path: /imprimerie-meteo-humidex-dashboard/humidex
+    navigation_path: /imprimerie-meteo-humidex-dashboard
 
   state_display: |
     [[[

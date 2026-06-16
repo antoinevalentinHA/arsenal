@@ -12,13 +12,13 @@ views:
         template: bouton_parametres_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /reglages-sommeil-dashboard/sommeil
+          navigation_path: /reglages-sommeil-dashboard
 
       - type: custom:button-card
         template: bouton_retour_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /sante-dashboard/sante
+          navigation_path: /sante-dashboard
 
     # ======================================================
     # 🔊 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL

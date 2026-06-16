@@ -12,4 +12,4 @@ card:
   show_state: true
   tap_action:
     action: navigate
-    navigation_path: /diagnostics-automatisations-dashboard/diagnostics-automatisations
+    navigation_path: /diagnostics-automatisations-dashboard

@@ -14,7 +14,7 @@ cards:
     icon: mdi:magnify
     tap_action:
       action: navigate
-      navigation_path: /imprimerie-dashboard/menu
+      navigation_path: /imprimerie-dashboard
     styles:
       icon:
         - color: '#424242'
@@ -27,7 +27,7 @@ cards:
     icon: mdi:thermometer
     tap_action:
       action: navigate
-      navigation_path: /imprimerie-meteo-temperature-dashboard/temperature
+      navigation_path: /imprimerie-meteo-temperature-dashboard
     styles:
       icon:
         - color: '#B71C1C'
@@ -66,7 +66,7 @@ cards:
     icon: mdi:thermometer-water
     tap_action:
       action: navigate
-      navigation_path: /imprimerie-meteo-humidex-dashboard/humidex
+      navigation_path: /imprimerie-meteo-humidex-dashboard
     styles:
       icon:
         - color: '#E65100'
@@ -79,7 +79,7 @@ cards:
     icon: mdi:volume-high
     tap_action:
       action: navigate
-      navigation_path: /imprimerie-bruit-dashboard/bruit
+      navigation_path: /imprimerie-bruit-dashboard
     styles:
       icon:
         - color: '#1565C0'
@@ -92,7 +92,7 @@ cards:
     icon: mdi:warehouse
     tap_action:
       action: navigate
-      navigation_path: /imprimerie-stockage-dashboard/stockage
+      navigation_path: /imprimerie-stockage-dashboard
     styles:
       icon:
         - color: '#1B5E20'
@@ -105,7 +105,7 @@ cards:
     icon: mdi:factory
     tap_action:
       action: navigate
-      navigation_path: /imprimerie-atelier-dashboard/atelier
+      navigation_path: /imprimerie-atelier-dashboard
     styles:
       icon:
         - color: '#2E7D32'

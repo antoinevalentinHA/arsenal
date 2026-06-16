@@ -27,7 +27,7 @@ cards:
     icon: mdi:shield
     tap_action:
       action: navigate
-      navigation_path: /audi-securite-dashboard/securite
+      navigation_path: /audi-securite-dashboard
     styles:
       icon:
         - color: '#B71C1C'

@@ -12,7 +12,7 @@ views:
         template: bouton_retour_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /reglages-ecs-dashboard/ecs
+          navigation_path: /reglages-ecs-dashboard
 
     cards:
       - type: vertical-stack

@@ -36,7 +36,7 @@ carte_regime_acoustique_imprimerie:
 
   tap_action:
     action: navigate
-    navigation_path: /imprimerie-bruit-dashboard/bruit
+    navigation_path: /imprimerie-bruit-dashboard
 
   state_display: |
     [[[

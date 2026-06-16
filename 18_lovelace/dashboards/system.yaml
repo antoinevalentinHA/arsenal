@@ -14,7 +14,7 @@ views:
         icon: mdi:cellphone-cog
         tap_action:
           action: navigate
-          navigation_path: /reglages-telephones-dashboard/reglages-telephones
+          navigation_path: /reglages-telephones-dashboard
 
       - type: custom:button-card
         template: bouton_navigation_badge_carre
@@ -22,7 +22,7 @@ views:
         icon: mdi:numeric
         tap_action:
           action: navigate
-          navigation_path: /id-automatisations-dashboard/id-automatisations
+          navigation_path: /id-automatisations-dashboard
 
     ########################################################
     # 🧱 VERTICAL STACK PRINCIPAL
@@ -148,7 +148,7 @@ views:
                 icon: mdi:battery-alert
                 tap_action:
                   action: navigate
-                  navigation_path: /diagnostics-batteries-dashboard/batteries
+                  navigation_path: /diagnostics-batteries-dashboard
                 hold_action:
                   action: more-info
 
@@ -160,7 +160,7 @@ views:
             icon: mdi:lan-connect
             tap_action:
               action: navigate
-              navigation_path: /diagnostics-boiler-dashboard/boiler
+              navigation_path: /diagnostics-boiler-dashboard
 
           ####################################################
           # ⚠️ AUTOMATISATIONS DÉSACTIVÉES
@@ -191,7 +191,7 @@ views:
                   ]]]
                 tap_action:
                   action: navigate
-                  navigation_path: /diagnostics-zigbee-dashboard/zigbee
+                  navigation_path: /diagnostics-zigbee-dashboard
                 hold_action:
                   action: more-info
 
@@ -207,7 +207,7 @@ views:
                   ]]]
                 tap_action:
                   action: navigate
-                  navigation_path: /diagnostics-bluetooth-dashboard/bluetooth
+                  navigation_path: /diagnostics-bluetooth-dashboard
                 hold_action:
                   action: more-info
 
@@ -223,7 +223,7 @@ views:
                   ]]]
                 tap_action:
                   action: navigate
-                  navigation_path: /diagnostics-netatmo-wifi-dashboard/wifi
+                  navigation_path: /diagnostics-netatmo-wifi-dashboard
 
               # RF
               - type: custom:button-card

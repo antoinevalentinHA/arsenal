@@ -65,7 +65,7 @@ carte_ecs_action:
 
   tap_action:
     action: navigate
-    navigation_path: /ecs-dashboard/home
+    navigation_path: /ecs-dashboard
 
   hold_action:
     action: call-service

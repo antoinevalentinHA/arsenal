@@ -12,7 +12,7 @@ views:
         template: bouton_parametres_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /reglages-deshumidificateur-dashboard/deshumidificateur
+          navigation_path: /reglages-deshumidificateur-dashboard
 
       - type: custom:button-card
         template: bouton_diagnostics_badge_carre

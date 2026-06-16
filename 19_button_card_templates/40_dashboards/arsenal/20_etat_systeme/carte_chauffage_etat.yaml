@@ -64,7 +64,7 @@ carte_chauffage_etat:
 
   tap_action:
     action: navigate
-    navigation_path: /chauffage-dashboard/chauffage
+    navigation_path: /chauffage-dashboard
 
   hold_action:
     action: more-info

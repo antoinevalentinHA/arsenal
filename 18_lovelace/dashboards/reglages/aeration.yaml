@@ -12,7 +12,7 @@ views:
         template: bouton_retour_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /aeration-dashboard/aeration
+          navigation_path: /aeration-dashboard
 
     # ======================================================
     # 🪟 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL

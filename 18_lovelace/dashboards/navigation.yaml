@@ -41,7 +41,7 @@ views:
                     icon: mdi:home
                     tap_action:
                       action: navigate
-                      navigation_path: /modes-dashboard/home
+                      navigation_path: /modes-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -51,7 +51,7 @@ views:
                     icon: mdi:fire
                     tap_action:
                       action: navigate
-                      navigation_path: /chauffage-dashboard/chauffage
+                      navigation_path: /chauffage-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -71,7 +71,7 @@ views:
                     icon: mdi:water-pump
                     tap_action:
                       action: navigate
-                      navigation_path: /ecs-dashboard/home
+                      navigation_path: /ecs-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -81,7 +81,7 @@ views:
                     icon: mdi:fan
                     tap_action:
                       action: navigate
-                      navigation_path: /vmc-dashboard/home
+                      navigation_path: /vmc-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -91,7 +91,7 @@ views:
                     icon: mdi:air-filter
                     tap_action:
                       action: navigate
-                      navigation_path: /aeration-dashboard/aeration
+                      navigation_path: /aeration-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -111,7 +111,7 @@ views:
                     icon: mdi:lightbulb
                     tap_action:
                       action: navigate
-                      navigation_path: /eclairage-dashboard/home
+                      navigation_path: /eclairage-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -121,7 +121,7 @@ views:
                     icon: mdi:shield-home
                     tap_action:
                       action: navigate
-                      navigation_path: /alarme-dashboard/alarme
+                      navigation_path: /alarme-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -141,7 +141,7 @@ views:
                     icon: mdi:motion-sensor
                     tap_action:
                       action: navigate
-                      navigation_path: /mouvements-dashboard/mouvements
+                      navigation_path: /mouvements-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation
@@ -160,7 +160,7 @@ views:
                     icon: mdi:power-plug
                     tap_action:
                       action: navigate
-                      navigation_path: /prises-dashboard/home
+                      navigation_path: /prises-dashboard
                     styles:
                       icon:
                         - color: "#607D8B"
@@ -171,7 +171,7 @@ views:
                     icon: mdi:heart-pulse
                     tap_action:
                       action: navigate
-                      navigation_path: /sante-dashboard/sante
+                      navigation_path: /sante-dashboard
                     styles:
                       icon:
                         - color: "#E91E63"
@@ -203,7 +203,7 @@ views:
                     icon: mdi:factory
                     tap_action:
                       action: navigate
-                      navigation_path: /imprimerie-dashboard/menu
+                      navigation_path: /imprimerie-dashboard
                     styles:
                       icon:
                         - color: "#1E468C"
@@ -214,7 +214,7 @@ views:
                     icon: mdi:nas
                     tap_action:
                       action: navigate
-                      navigation_path: /nas-dashboard/dashboard
+                      navigation_path: /nas-dashboard
                     styles:
                       icon:
                         - color: "#1976D2"
