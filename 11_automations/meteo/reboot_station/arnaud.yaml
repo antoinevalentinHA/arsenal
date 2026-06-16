@@ -33,6 +33,10 @@
 
   condition:
     - condition: state
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+    - condition: state
       entity_id: input_boolean.reboot_box_en_cours
       state: "off"
 

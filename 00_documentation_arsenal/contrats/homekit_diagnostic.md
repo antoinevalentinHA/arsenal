@@ -1,5 +1,5 @@
 # Contrat — Diagnostic station météo Netatmo
-**Arsenal** · Couche observation · v1.1
+**Arsenal** · Couche observation · v1.2
 
 ---
 
@@ -113,6 +113,8 @@ Conditions :
 Lecture honnête :
 
 > La station est silencieuse à tous les niveaux observables. Cause la plus probable : panne réseau ou perte d'alimentation de la station. Une remédiation par alimentation (reboot prise) est défendable.
+
+> **Garde de démarrage.** Un `muet_ping_ko` observé pendant la phase d'instabilité post-redémarrage de Home Assistant est un **artefact d'initialisation** (preuves encore `unavailable`, ping pas encore remonté), non une panne réelle. Toute remédiation automatique consommant cet état — le redémarrage électrique de station — n'est donc exécutée que lorsque `input_boolean.systeme_stable` est `on`. Tant qu'il ne l'est pas, le power-cycle physique de la station est bloqué.
 
 ---
 
@@ -279,7 +281,8 @@ L'abstention sur `muet_ping_ok` n'est pas un trou de remédiation. C'est une dé
 
 - **v1.0** — Contrat initial. États : `ok` / `ko_homekit` / `ko_reseau`.
 - **v1.1** — Renommage des états vers une forme strictement observationnelle suite à une leçon terrain (§11). `ko_homekit` → `muet_ping_ok`, `ko_reseau` → `muet_ping_ko`. Ajout du §10 (règle de nommage), du §11 (leçon terrain), précision en §2.3 sur la portée réelle du ping. Aucune modification de la logique d'évaluation.
+- **v1.2** — Précision de la garde de démarrage en §3 (`muet_ping_ko`) : la remédiation automatique consommant cet état (redémarrage électrique de station) est subordonnée à `input_boolean.systeme_stable = on`, afin d'éviter un power-cycle parasite déclenché par un `muet_ping_ko` artefact d'initialisation post-redémarrage de Home Assistant. Aucune modification de la logique d'évaluation.
 
 ---
 
-*Arsenal — document contractuel · couche observation · diagnostic Netatmo · v1.1*
+*Arsenal — document contractuel · couche observation · diagnostic Netatmo · v1.2*
