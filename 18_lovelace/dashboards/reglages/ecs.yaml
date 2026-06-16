@@ -46,7 +46,7 @@ views:
                 icon: mdi:calendar-clock
                 tap_action:
                   action: navigate
-                  navigation_path: /reglages-ecs-planning-dashboard/ecs_planning
+                  navigation_path: /reglages-ecs-planning-dashboard
 
           # === Bouclage automatique ===
           - type: custom:button-card

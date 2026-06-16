@@ -61,7 +61,7 @@ views:
                     icon: mdi:air-conditioner
                     tap_action:
                       action: navigate
-                      navigation_path: /clim-dashboard/climatisation
+                      navigation_path: /clim-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -101,7 +101,7 @@ views:
                     icon: mdi:water-percent
                     tap_action:
                       action: navigate
-                      navigation_path: /deshumidificateur-dashboard/cave
+                      navigation_path: /deshumidificateur-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -131,7 +131,7 @@ views:
                     icon: mdi:door-open
                     tap_action:
                       action: navigate
-                      navigation_path: /ouvertures-dashboard/portes_et_fenetres
+                      navigation_path: /ouvertures-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -149,7 +149,7 @@ views:
                     icon: mdi:window-shutter
                     tap_action:
                       action: navigate
-                      navigation_path: /volets-dashboard/general
+                      navigation_path: /volets-dashboard
                     styles:
                       icon:
                         - color: "#6D4C41"
@@ -184,7 +184,7 @@ views:
                     icon: mdi:car
                     tap_action:
                       action: navigate
-                      navigation_path: /audi-dashboard/audi_a3_e-tron
+                      navigation_path: /audi-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation
@@ -227,7 +227,7 @@ views:
                     icon: mdi:monitor-dashboard
                     tap_action:
                       action: navigate
-                      navigation_path: /system-dashboard/systeme
+                      navigation_path: /system-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation

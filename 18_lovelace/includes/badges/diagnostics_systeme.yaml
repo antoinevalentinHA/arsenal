@@ -8,4 +8,4 @@
   template: bouton_retour_badge_carre
   tap_action:
     action: navigate
-    navigation_path: /system-dashboard/systeme
+    navigation_path: /system-dashboard

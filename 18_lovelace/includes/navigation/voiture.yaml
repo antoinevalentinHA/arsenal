@@ -14,7 +14,7 @@ cards:
     icon: mdi:car
     tap_action:
       action: navigate
-      navigation_path: /audi-dashboard/audi_a3_e-tron
+      navigation_path: /audi-dashboard
     styles:
       icon:
         - color: '#1565C0'
@@ -40,7 +40,7 @@ cards:
     icon: mdi:battery
     tap_action:
       action: navigate
-      navigation_path: /audi-batterie-dashboard/statistiques
+      navigation_path: /audi-batterie-dashboard
     styles:
       icon:
         - color: '#2E7D32'

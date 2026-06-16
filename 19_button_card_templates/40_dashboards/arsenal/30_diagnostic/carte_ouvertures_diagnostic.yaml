@@ -60,7 +60,7 @@ carte_ouvertures_diagnostic:
 
   tap_action:
     action: navigate
-    navigation_path: /ouvertures-dashboard/portes_et_fenetres
+    navigation_path: /ouvertures-dashboard
 
   hold_action:
     action: more-info

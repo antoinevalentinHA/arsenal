@@ -12,7 +12,7 @@ views:
         template: bouton_retour_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /clim-dashboard/climatisation
+          navigation_path: /clim-dashboard
 
     ########################################################
     # ❄️ VERTICAL STACK PRINCIPAL

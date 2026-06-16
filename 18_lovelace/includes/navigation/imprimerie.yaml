@@ -40,7 +40,7 @@ cards:
     icon: mdi:water-percent
     tap_action:
       action: navigate
-      navigation_path: /imprimerie-meteo-humidite-relative-dashboard/humidite_relative
+      navigation_path: /imprimerie-meteo-humidite-relative-dashboard
     styles:
       icon:
         - color: '#1565C0'
@@ -53,7 +53,7 @@ cards:
     icon: mdi:water
     tap_action:
       action: navigate
-      navigation_path: /imprimerie-meteo-humidite-absolue-dashboard/humidite_absolue
+      navigation_path: /imprimerie-meteo-humidite-absolue-dashboard
     styles:
       icon:
         - color: '#1B5E20'

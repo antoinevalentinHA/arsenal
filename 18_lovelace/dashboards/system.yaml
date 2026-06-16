@@ -237,7 +237,7 @@ views:
                   ]]]
                 tap_action:
                   action: navigate
-                  navigation_path: /diagnostics-netatmo-dashboard/rf
+                  navigation_path: /diagnostics-netatmo-dashboard
 
           - type: custom:button-card
             template: ping_lan_synthese

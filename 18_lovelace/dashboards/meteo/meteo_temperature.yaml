@@ -13,7 +13,7 @@ views:
         icon: mdi:alert
         tap_action:
           action: navigate
-          navigation_path: /meteo-min-max-temperature-dashboard/temperature_min_max
+          navigation_path: /meteo-min-max-temperature-dashboard
         styles:
           icon:
             - color: "#B71C1C"
@@ -28,7 +28,7 @@ views:
         template: bouton_diagnostics_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /meteo-backups-dashboard/backup_meteo
+          navigation_path: /meteo-backups-dashboard
 
     # ======================================================
     # 🌡️ CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
