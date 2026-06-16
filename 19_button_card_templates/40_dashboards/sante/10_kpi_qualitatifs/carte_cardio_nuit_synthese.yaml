@@ -85,4 +85,4 @@ carte_cardio_nuit_synthese:
 
   tap_action:
     action: navigate
-    navigation_path: /cardio-dashboard/0
+    navigation_path: /cardio-dashboard

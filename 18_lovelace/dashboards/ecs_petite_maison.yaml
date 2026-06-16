@@ -12,7 +12,7 @@ views:
         template: bouton_parametres_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /reglages-ecs-petite-maison-dashboard/0
+          navigation_path: /reglages-ecs-petite-maison-dashboard
 
     cards:
       - type: vertical-stack

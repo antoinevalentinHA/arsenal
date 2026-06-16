@@ -131,14 +131,14 @@ views:
                 name: UPS
                 tap_action:
                   action: navigate
-                  navigation_path: /ups-dashboard/0
+                  navigation_path: /ups-dashboard
 
               # Bluetti – Energie chaudière
               - type: custom:button-card
                 template: carte_bluetti_energie_chaudiere
                 tap_action:
                   action: navigate
-                  navigation_path: /bluetti-dashboard/0
+                  navigation_path: /bluetti-dashboard
 
               # Batteries
               - type: custom:button-card

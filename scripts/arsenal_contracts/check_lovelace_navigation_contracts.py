@@ -46,14 +46,14 @@ Règles contrôlées
                  Détecte le cas connu `reglages/sommeil.yaml` (Retour -> Bruit météo).
   R3 (ERROR)   — **cul-de-sac strict** : page sans badge Accueil/Navigation/Retour
                  ET sans aucune action `navigate`, APRÈS résolution. Attendu : 0.
-  R4 (ERROR)   — **segments de vue non canoniques** (`/clé/segment` nommé, sans
-                 vue `path: segment` déclarée). BLOQUANT : Arsenal est mono-vue,
-                 la forme canonique d'un `navigation_path` interne est `/<clé>`
-                 (cibler le dashboard, pas une vue interne). Exemptions de
-                 transition conservées, SANS les promouvoir comme canoniques :
-                 segment numérique `/0` (forme historique tolérée — aucune
-                 conversion vers `/0` n'est introduite) et segment correspondant
-                 à un `path:` de vue réellement déclaré.
+  R4 (ERROR)   — **segments de vue non canoniques**. BLOQUANT : Arsenal est
+                 mono-vue, la forme canonique d'un `navigation_path` interne est
+                 STRICTEMENT `/<clé>` (cibler le dashboard, pas une vue interne).
+                 Tout `/<clé>/<segment>` est rejeté — Y COMPRIS `/<clé>/0`
+                 (ancienne forme de transition, désormais interdite). Forme
+                 canonique proposée : toujours `/<clé>`, jamais `/<clé>/0`.
+                 Seule exemption résiduelle : un segment égal à un `path:` de vue
+                 réellement déclaré (aucun `path:` n'est ajouté par ce checker).
   R5 (WARNING) — **dette latente** : défauts des templates de badge
                  Paramètres/Diagnostics pointant vers une clé inexistante
                  (surchargés partout aujourd'hui — sans impact runtime).
@@ -366,13 +366,14 @@ def analyze(lovelace_root: Path, config_root: Path) -> Result:
             )
 
     # R4 — segments de vue non canoniques (ERROR bloquant)
-    # Doctrine : Arsenal est mono-vue ; la forme canonique d'un navigation_path
-    # interne est /<dashboard-key> (cibler le dashboard, pas une vue interne).
-    # Tout /<dashboard-key>/<segment nommé> non déclaré est une régression
-    # bloquante. Exemptions de transition CONSERVÉES (sans promotion canonique) :
-    #   - segment numérique /0,/1… : forme historique tolérée — NON canonique,
-    #     mais non bloquée ici ; aucune conversion vers /0 n'est introduite ;
-    #   - segment correspondant à un path: de vue réellement déclaré.
+    # Doctrine FINALE : Arsenal est mono-vue ; la forme canonique d'un
+    # navigation_path interne est STRICTEMENT /<dashboard-key> (cibler le
+    # dashboard, pas une vue interne). Tout /<dashboard-key>/<segment> est une
+    # régression bloquante — Y COMPRIS le segment numérique /0 (ancienne forme
+    # de transition, désormais interdite). La forme canonique proposée est
+    # toujours /<dashboard-key>, JAMAIS /<dashboard-key>/0.
+    # Seule exemption résiduelle : un segment égal à un path: de vue réellement
+    # déclaré par le dashboard cible (aucun path: n'est ajouté par ce checker).
     noncanon = set()
     for key, page in res.pages.items():
         for np in set(page["nps"]):
@@ -380,7 +381,7 @@ def analyze(lovelace_root: Path, config_root: Path) -> Result:
                 continue
             dk = path_dashkey(np)
             seg = path_view_segment(np)
-            if dk not in dash_keys or seg is None or seg == "0" or seg.isdigit():
+            if dk not in dash_keys or seg is None:
                 continue
             target = res.pages.get(dk)
             declared = declared_view_paths(target["data"]) if target else set()
@@ -529,7 +530,7 @@ def selftest() -> list[str]:
             "        template: bouton_retour_badge_carre\n"
             "        tap_action:\n"
             "          action: navigate\n"
-            "          navigation_path: /hub-dashboard/0\n"
+            "          navigation_path: /hub-dashboard\n"
             "    cards: []\n",
             encoding="utf-8",
         )
@@ -561,27 +562,36 @@ def selftest() -> list[str]:
             "      - type: custom:button-card\n"
             "        tap_action:\n"
             "          action: navigate\n"
-            "          navigation_path: /hub-dashboard/0\n",          # numérique -> toléré
+            "          navigation_path: /hub-dashboard/0\n",          # numérique -> ERROR
             encoding="utf-8",
         )
         res4 = analyze(ll, config_root=base)
         r4 = [e for e in res4.errors if "R4 segment de vue non canonique" in e]
 
+        # /foo-dashboard/foo (segment nommé) -> bloquant, canonique /foo-dashboard
         if not any("/page-a-dashboard/page-a" in e and "attendue=/page-a-dashboard" in e
                    for e in r4):
             failures.append(
-                "auto-test : R4 durci — /page-a-dashboard/page-a doit être une ERREUR "
-                "bloquante avec forme canonique /page-a-dashboard"
+                "auto-test : R4 final — /foo-dashboard/foo doit être bloquant "
+                "(forme canonique /foo-dashboard)"
             )
-        if any("/hub-dashboard/0" in e for e in r4):
+        # /foo-dashboard/0 (segment numérique) -> DÉSORMAIS bloquant, canonique /foo-dashboard
+        if not any("/hub-dashboard/0" in e and "attendue=/hub-dashboard" in e
+                   for e in r4):
             failures.append(
-                "auto-test : R4 durci — /<clé>/0 ne doit PAS être bloqué "
-                "(forme de transition tolérée)"
+                "auto-test : R4 final — /foo-dashboard/0 doit DÉSORMAIS être bloquant "
+                "(forme canonique /foo-dashboard)"
             )
-        if any("attendue=/" in e and e.split("attendue=", 1)[1].split()[0].endswith("/0")
+        # /foo-dashboard (sans segment) -> accepté, jamais signalé
+        if any("navigation_path=/hub-dashboard " in (e + " ") for e in r4):
+            failures.append(
+                "auto-test : R4 final — la forme canonique /<clé> ne doit jamais être signalée"
+            )
+        # La forme canonique proposée n'est JAMAIS /<clé>/0
+        if any("attendue=" in e and e.split("attendue=", 1)[1].split()[0].endswith("/0")
                for e in r4):
             failures.append(
-                "auto-test : R4 durci — /0 ne doit jamais être proposé comme forme canonique"
+                "auto-test : R4 final — /0 ne doit jamais être proposé comme forme canonique"
             )
 
     return failures

@@ -13,14 +13,14 @@ views:
         icon: mdi:sleep
         tap_action:
           action: navigate
-          navigation_path: /sommeil-dashboard/0
+          navigation_path: /sommeil-dashboard
 
       - type: custom:button-card
         template: bouton_navigation_badge_carre
         icon: mdi:heart-pulse
         tap_action:
           action: navigate
-          navigation_path: /cardio-dashboard/0
+          navigation_path: /cardio-dashboard
 
     # ==========================================================
     # 🧩 CONTENEUR PRINCIPAL
@@ -43,7 +43,7 @@ views:
             icon: mdi:bed-clock
             tap_action:
               action: navigate
-              navigation_path: /sommeil-dashboard/0
+              navigation_path: /sommeil-dashboard
 
           ########################################################
           # ❤️ SANTÉ / ACTIVITÉ PHYSIOLOGIQUE

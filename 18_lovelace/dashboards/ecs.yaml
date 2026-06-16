@@ -25,7 +25,7 @@ views:
         icon: mdi:home-outline
         tap_action:
           action: navigate
-          navigation_path: /ecs-petite-maison-dashboard/0
+          navigation_path: /ecs-petite-maison-dashboard
 
     cards:
       - type: vertical-stack
