@@ -176,7 +176,7 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_bouclage
                 name: Bouclage
                 icon: mdi:water-pump
@@ -187,7 +187,7 @@ views:
                   entity: switch.prise_bouclage
 
               - type: custom:button-card
-                template: prise_template
+                template: prise_secteur_template
                 entity: switch.prise_deshumidificateur
                 name: Déshumidificateur
                 icon: mdi:air-humidifier

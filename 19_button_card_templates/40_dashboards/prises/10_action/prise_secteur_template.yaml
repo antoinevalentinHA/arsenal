@@ -66,9 +66,11 @@
 #     entity: switch.prise_chambre_arnaud
 #     name: Netatmo Arnaud
 #
-# 📎 PÉRIMÈTRE ACTUEL (besoin démontré)
+# 📎 PÉRIMÈTRE ACTUEL (besoin démontré / dépendance secteur prouvée)
 #     switch.prise_chambre_arnaud, switch.prise_chambre_matthieu
-#     (stations Netatmo, mains, reboot automatique déjà gaté panne).
+#     (stations Netatmo, mains, reboot automatique déjà gaté panne) ;
+#     switch.prise_bouclage, switch.prise_deshumidificateur
+#     (secteur direct confirmé).
 #     Toute extension exige une dépendance secteur PROUVÉE par prise.
 # ==========================================================
 
