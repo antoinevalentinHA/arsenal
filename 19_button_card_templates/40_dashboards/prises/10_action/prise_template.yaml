@@ -66,5 +66,13 @@ prise_template:
         ]]]
       styles:
         card:
+          # Gris indisponibilité canonique (charte couleurs §02/§05, R6) — INCHANGÉ.
+          # Distinct du gris neutre OFF par doctrine (deux gris contractuels).
           - background-color: rgba(158, 158, 158, 0.1)
+          # Neutralisation fonctionnelle de la commande : indisponible = non
+          # commandable. pointer-events est une propriété comportementale (pas un
+          # token visuel/colorimétrique) : hors périmètre de la charte couleurs,
+          # n'introduit aucune nuance. Vit dans le bloc state (styles), non
+          # surchargé par les tap_action déclarés carte par carte.
+          - pointer-events: none
 
