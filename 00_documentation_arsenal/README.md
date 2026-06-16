@@ -102,7 +102,7 @@ formalisée ; une fois actée, elle migre vers `contrats/` ou `outils_externes/`
 ### 🧰 `outils_externes/`
 Documente la **supervision d'outils hors Home Assistant** : pont chaudière
 (`boiler_pi/`), outillage NAS Arsenal (`nas_arsenal/`), NAS Imprimerie
-(`nas_imprimerie/`), ainsi que des gabarits d'autoring (prompts de génération).
+(`nas_imprimerie/`).
 👉 Voir [`outils_externes/README.md`](outils_externes/README.md).
 
 ### 🧭 `navigation/`

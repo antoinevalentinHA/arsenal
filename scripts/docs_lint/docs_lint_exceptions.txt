@@ -1,4 +1,4 @@
 # Exceptions lint documentaire — objets non documentaires uniquement.
 # Format: REGLE:glob (relatif au perimetre). Pas d exception de confort.
-R-DOC-H1-1:outils_externes/prompt_changelog.md
+R-DOC-H1-1:changelog/prompt_changelog.md
 R-DOC-H1-1:contrats/chauffage/15_capteurs/05_capteurs_parametrage_canonique.md
