@@ -1,0 +1,32 @@
+name: Arsenal Contracts — Lovelace Navigation
+
+on:
+  push:
+    paths:
+      - '18_lovelace/**'
+      - '19_button_card_templates/**'
+      - 'scripts/arsenal_contracts/check_lovelace_navigation_contracts.py'
+      - '.github/workflows/contracts_lovelace_navigation.yml'
+  pull_request:
+    paths:
+      - '18_lovelace/**'
+      - '19_button_card_templates/**'
+      - 'scripts/arsenal_contracts/check_lovelace_navigation_contracts.py'
+      - '.github/workflows/contracts_lovelace_navigation.yml'
+
+jobs:
+  validate-lovelace-navigation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Run Lovelace navigation contract
+        run: |
+          python3 scripts/arsenal_contracts/check_lovelace_navigation_contracts.py
