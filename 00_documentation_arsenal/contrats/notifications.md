@@ -80,6 +80,33 @@ Caractéristiques :
 
 👉 Une notification éphémère **n’est pas un état**.
 
+#### 🏷️ Titre mobile — Emoji obligatoire
+
+Toute notification mobile émise via le canal central — `script.notification_envoyer`,
+`script.notification_envoyer_famille`, `script.notification_envoyer_avance` — doit
+fournir un champ `titre:` commençant par un **emoji de domaine**, au même titre
+qu’une notification persistante.
+
+Cette règle prolonge au canal mobile le format normatif défini plus bas
+(§ « FORMAT NORMATIF DES NOTIFICATIONS ») : l’emoji de tête identifie le domaine
+fonctionnel sur l’écran de verrouillage, sans dépendre du message ni du contexte
+d’appel.
+
+Sont non conformes :
+
+- un `titre:` sans emoji initial,
+- un `titre:` commençant par une lettre, même accentuée.
+
+Exception explicite : un `titre:` entièrement dynamique (template Jinja `{{ … }}`)
+ne peut pas être vérifié statiquement ; sa conformité relève de l’automatisation
+émettrice. C’est la même tolérance que pour les titres persistants dynamiques.
+
+Exemples conformes :
+
+- `👶 Matthieu`
+- `🔋 Audi A3 e-tron`
+- `🚨 Badge inconnu`
+
 ---
 
 ### 2️⃣ Notification persistante

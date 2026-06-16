@@ -41,7 +41,7 @@ EMOJI_AT_START = re.compile(
     r"^("
     r"[\U0001F1E6-\U0001F1FF]{2}"                  # drapeaux régionaux
     r"|[\U0001F300-\U0001FAFF]"                    # emojis principaux
-    r"|[\u2600-\u27BF]"                            # symboles emoji BMP
+    r"|[\u2139\u2600-\u27BF]"                      # symboles emoji BMP (dont ℹ U+2139)
     r")"
     r"(?:\ufe0f)?"
     r"(?:\u200d(?:[\U0001F300-\U0001FAFF]|[\u2600-\u27BF])(?:\ufe0f)?)*"
@@ -109,6 +109,37 @@ def extract_persistent_create_blocks(content: str) -> list[str]:
 def extract_title_from_block(block: str) -> str | None:
     """Extrait la valeur du champ title: dans un bloc."""
     m = re.search(r'title\s*:\s*["\']?([^"\'\n]+)["\']?', block)
+    if m:
+        return m.group(1).strip().strip('"\'')
+    return None
+
+
+def extract_mobile_titre_blocks(content: str) -> list[str]:
+    """
+    Extrait une fenêtre de contexte après chaque appel au canal mobile central
+    (script.notification_envoyer / _famille / _avance), hors commentaires.
+
+    L'ancrage sur le préfixe `script.` ne capture que les SITES D'APPEL : la
+    définition des wrappers (`notification_envoyer:` en tête de ligne, sans
+    préfixe) n'est jamais matchée, ce qui évite de lire les `titre:` de
+    description de champ du fichier de définition.
+    """
+    blocks = []
+    for m in re.finditer(r"script\.notification_envoyer\w*", content):
+        start = m.start()
+        line_start = content.rfind("\n", 0, start) + 1
+        line = content[line_start:start]
+        if line.strip().startswith("#"):
+            continue
+        blocks.append(content[start:start + 500])
+    return blocks
+
+
+def extract_titre_from_block(block: str) -> str | None:
+    """Extrait la valeur du champ titre: (canal mobile) dans un bloc."""
+    m = re.search(r'titre\s*:\s*["\']([^"\'\n]+)["\']', block)
+    if not m:
+        m = re.search(r'titre\s*:\s*([^\n#]+)', block)
     if m:
         return m.group(1).strip().strip('"\'')
     return None
@@ -301,6 +332,44 @@ def test_unicite_notification_id() -> None:
 
 
 # ---------------------------------------------------------------------------
+# T6 — Chaque titre de notification mobile commence par un emoji
+#
+# Invariant (§ Titre mobile — Emoji obligatoire / § Format normatif) : toute
+# notification mobile émise via le canal central (script.notification_envoyer*)
+# doit fournir un `titre:` commençant par un emoji de domaine.
+# Scope : sites d'appel script.notification_envoyer{,_famille,_avance} dans les
+# automations et scripts.
+# Exception : un titre entièrement dynamique (template Jinja {{ … }}) ne peut
+# pas être vérifié statiquement — même tolérance que pour T1 (persistant).
+# ---------------------------------------------------------------------------
+
+def test_titre_mobile_commence_par_emoji() -> None:
+    files = yaml_files(DIR_AUTOMATIONS, DIR_SCRIPTS)
+    violations = []
+
+    for path in files:
+        content = read(path)
+        for block in extract_mobile_titre_blocks(content):
+            titre = extract_titre_from_block(block)
+            if titre is None:
+                continue
+            # Ignorer les titres dynamiques (templates Jinja) — non vérifiables
+            if titre.startswith("{{"):
+                continue
+            if not EMOJI_AT_START.match(titre):
+                violations.append(
+                    f"{path.relative_to(REPO_ROOT)} : "
+                    f"titre mobile sans emoji normatif en tête : «{titre}»"
+                )
+
+    if violations:
+        for v in violations:
+            ERRORS.append(f"T6 — Emoji de tête obligatoire (mobile) : {v}")
+    else:
+        print("✔ T6 — Tous les titres de notifications mobiles commencent par un emoji normatif")
+
+
+# ---------------------------------------------------------------------------
 # Registre des tests
 # ---------------------------------------------------------------------------
 
@@ -310,6 +379,7 @@ TESTS = [
     test_titre_sans_formulation_evenementielle,
     test_absence_reference_temporelle,
     test_unicite_notification_id,
+    test_titre_mobile_commence_par_emoji,
 ]
 
 # ---------------------------------------------------------------------------

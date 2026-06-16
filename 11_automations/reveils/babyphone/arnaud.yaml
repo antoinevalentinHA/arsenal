@@ -56,5 +56,5 @@
     - service: script.notification_envoyer
       data:
         cible: input_text.telephone_antoine_notify
-        titre: "Arnaud"
+        titre: "👶 Arnaud"
         message: "🌙 Bruit détecté dans sa chambre"
