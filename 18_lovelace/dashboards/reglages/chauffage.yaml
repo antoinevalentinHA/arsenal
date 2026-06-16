@@ -26,6 +26,10 @@ views:
             entity: input_boolean.mode_confort_chauffage
             name: Confort forcé
             icon: mdi:radiator
+            tap_action:
+              action: toggle
+              confirmation:
+                text: "⚠️ Forcer le mode Confort chauffage ?"
 
           - type: custom:button-card
             template: section_header
