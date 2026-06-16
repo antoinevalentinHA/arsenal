@@ -46,9 +46,14 @@ Règles contrôlées
                  Détecte le cas connu `reglages/sommeil.yaml` (Retour -> Bruit météo).
   R3 (ERROR)   — **cul-de-sac strict** : page sans badge Accueil/Navigation/Retour
                  ET sans aucune action `navigate`, APRÈS résolution. Attendu : 0.
-  R4 (WARNING) — **segments de vue non canoniques** (`/clé/segment` sans vue
-                 `path: segment` déclarée). Non bloquant : Arsenal est mono-vue,
-                 le repli sur la 1re vue fonctionne ; politique P2 non tranchée ici.
+  R4 (ERROR)   — **segments de vue non canoniques** (`/clé/segment` nommé, sans
+                 vue `path: segment` déclarée). BLOQUANT : Arsenal est mono-vue,
+                 la forme canonique d'un `navigation_path` interne est `/<clé>`
+                 (cibler le dashboard, pas une vue interne). Exemptions de
+                 transition conservées, SANS les promouvoir comme canoniques :
+                 segment numérique `/0` (forme historique tolérée — aucune
+                 conversion vers `/0` n'est introduite) et segment correspondant
+                 à un `path:` de vue réellement déclaré.
   R5 (WARNING) — **dette latente** : défauts des templates de badge
                  Paramètres/Diagnostics pointant vers une clé inexistante
                  (surchargés partout aujourd'hui — sans impact runtime).
@@ -360,7 +365,14 @@ def analyze(lovelace_root: Path, config_root: Path) -> Result:
                 f"| page={key} ({rel(page['file'])})"
             )
 
-    # R4 — segments de vue non canoniques (WARNING, agrégé)
+    # R4 — segments de vue non canoniques (ERROR bloquant)
+    # Doctrine : Arsenal est mono-vue ; la forme canonique d'un navigation_path
+    # interne est /<dashboard-key> (cibler le dashboard, pas une vue interne).
+    # Tout /<dashboard-key>/<segment nommé> non déclaré est une régression
+    # bloquante. Exemptions de transition CONSERVÉES (sans promotion canonique) :
+    #   - segment numérique /0,/1… : forme historique tolérée — NON canonique,
+    #     mais non bloquée ici ; aucune conversion vers /0 n'est introduite ;
+    #   - segment correspondant à un path: de vue réellement déclaré.
     noncanon = set()
     for key, page in res.pages.items():
         for np in set(page["nps"]):
@@ -373,13 +385,13 @@ def analyze(lovelace_root: Path, config_root: Path) -> Result:
             target = res.pages.get(dk)
             declared = declared_view_paths(target["data"]) if target else set()
             if seg not in declared:
-                noncanon.add(f"{np}")
-    if noncanon:
-        sample = "; ".join(sorted(noncanon)[:6])
-        res.warnings.append(
-            f"R4 segments de vue non canoniques : {len(noncanon)} occurrence(s) "
-            f"(mono-vue ; repli sur la 1re vue ; politique P2 non tranchée). "
-            f"Exemples : {sample}"
+                noncanon.add(np)
+    for np in sorted(noncanon):
+        dk = path_dashkey(np)
+        res.errors.append(
+            f"R4 segment de vue non canonique | navigation_path={np} "
+            f"| forme canonique attendue=/{dk} "
+            f"(Arsenal est mono-vue ; cibler le dashboard, pas une vue interne)"
         )
 
     # R5 — défauts latents des templates de badge Paramètres/Diagnostics (WARNING)
@@ -527,6 +539,49 @@ def selftest() -> list[str]:
             failures.append(
                 "auto-test : faux positif R2 — un Retour vers le prédécesseur réel "
                 "ne doit pas être signalé"
+            )
+
+        # R4 DURCI — un /<dashboard-key>/<segment nommé> non déclaré est désormais
+        # une ERREUR bloquante ; la forme canonique attendue est /<dashboard-key>.
+        # page-a-dashboard existe, est mono-vue et ne déclare aucun path:.
+        (ll / "dashboards" / "other.yaml").write_text(
+            "views:\n"
+            "  - badges:\n"
+            "      - type: custom:button-card\n"
+            "        template: bouton_accueil_badge_carre\n"
+            "    cards:\n"
+            "      - type: custom:button-card\n"
+            "        tap_action:\n"
+            "          action: navigate\n"
+            "          navigation_path: /page-a-dashboard/page-a\n"   # nommé -> ERROR
+            "      - type: custom:button-card\n"
+            "        tap_action:\n"
+            "          action: navigate\n"
+            "          navigation_path: /hub-dashboard\n"             # canonique -> OK
+            "      - type: custom:button-card\n"
+            "        tap_action:\n"
+            "          action: navigate\n"
+            "          navigation_path: /hub-dashboard/0\n",          # numérique -> toléré
+            encoding="utf-8",
+        )
+        res4 = analyze(ll, config_root=base)
+        r4 = [e for e in res4.errors if "R4 segment de vue non canonique" in e]
+
+        if not any("/page-a-dashboard/page-a" in e and "attendue=/page-a-dashboard" in e
+                   for e in r4):
+            failures.append(
+                "auto-test : R4 durci — /page-a-dashboard/page-a doit être une ERREUR "
+                "bloquante avec forme canonique /page-a-dashboard"
+            )
+        if any("/hub-dashboard/0" in e for e in r4):
+            failures.append(
+                "auto-test : R4 durci — /<clé>/0 ne doit PAS être bloqué "
+                "(forme de transition tolérée)"
+            )
+        if any("attendue=/" in e and e.split("attendue=", 1)[1].split()[0].endswith("/0")
+               for e in r4):
+            failures.append(
+                "auto-test : R4 durci — /0 ne doit jamais être proposé comme forme canonique"
             )
 
     return failures
