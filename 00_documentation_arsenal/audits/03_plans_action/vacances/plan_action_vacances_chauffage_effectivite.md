@@ -1,5 +1,8 @@
 # Plan d'action Arsenal — Sous-chantier Lot 5 / Chauffage Vacances sur l'effectivité
 
+> **⚠️ ÉTAT (2026-06-17) — RÉALISÉ AU RUNTIME ET AU CONTRAT. Ce plan n'est plus un chantier ouvert ; il est conservé comme cadrage historique.**
+> Les **deux** chemins de décision consomment désormais `binary_sensor.vacances_actives` (et non plus la projection `input_select.mode_maison`) : commits `f2071ac1` (« remove vacation context from autorisation_cible ») et `b2bcbaa0` (« switch vacation regime decision to effectivity »), 2026-06-01. Le contrat [`80_table_decision_canonique.md`](../../../contrats/chauffage/80_table_decision_canonique.md) est aligné sur l'effectivité. Suivi d'état : [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (« Clos récents »). Les sections ci-dessous, rédigées **au futur**, décrivent un travail **déjà accompli**.
+
 > Statut : plan d'action — **non normatif** tant que non promu en contrat
 > Révision : **v2** — intègre la contre-expertise de cadrage (compléments **C1** amendement 30 / R-30.6 / INV-30-5, **C2** périmètre CI réel + lockstep + atomicité, **C3** comportement boot) et la **clôture de l'arbitrage de la branche `autorisation_cible`** (option B). La v1 reste tracée par l'historique Git.
 > Portée : régime chauffage en contexte Vacances et toute sa chaîne de décision (script central, capteur cible, trigger, diagnostics), contrats chauffage associés (dont l'amendement de `30_decision_centrale`), CI chauffage (pytest structurel + invariants R-ISO-1 / R-MIRROR-1 / R-COV-1 / R-CALL-1)

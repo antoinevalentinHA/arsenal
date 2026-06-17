@@ -105,6 +105,7 @@ La documentation est la référence de vérité du système. Points d'entrée :
 - [`contrats/index.md`](00_documentation_arsenal/contrats/index.md) — l'index des contrats fonctionnels.
 - [`architecture/index.md`](00_documentation_arsenal/architecture/index.md) — couches, topologie, doctrines.
 - [`audits/index.md`](00_documentation_arsenal/audits/index.md) — le cycle d'audit, des rapports aux clôtures.
+- [`audits/REGISTRE_CHANTIERS.md`](00_documentation_arsenal/audits/REGISTRE_CHANTIERS.md) — le **cockpit de pilotage** : ce qui est réellement ouvert aujourd'hui.
 - [`changelog/index.md`](00_documentation_arsenal/changelog/index.md) — l'historique versionné (canon).
 
 ---

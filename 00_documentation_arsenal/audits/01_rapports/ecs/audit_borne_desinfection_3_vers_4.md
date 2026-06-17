@@ -11,6 +11,8 @@
 
 ## 0. Verdict
 
+> **⚠️ ÉTAT (2026-06-17) — APPLIQUÉ. La borne haute `ecs_off_desinfection` est passée à `4.0`** dans `03_input_numbers/ecs/offset.yaml` (commit `0a602aed`, 2026-06-12). Ce rapport reste la **justification** de la borne ; il ne décrit plus une recommandation ouverte. Suivi : [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (« Clos récents »).
+
 **Conclusion B — passage à 4.0 recommandé**, avec deux mises à jour d'accompagnement obligatoires (carte Lovelace en dur, documentation de la borne) et un point de surveillance (premier cycle post-modification).
 
 L'argument décisif est structurel : la consigne chaudière étant quantifiée en entier (`floor`) et la cible désinfection étant entière (`step: 1`), **tout offset dans l'intervalle ]3.0 ; 4.0] produit exactement la même consigne chaudière** (cible − 4 arrondie, soit 55 pour 59.0). Le passage à 4.0 autorise donc précisément **un** cran de −1 °C de consigne, ni plus ni moins — et le pire cas (re-saturation à 4.0 sous contamination boost) est physiquement identique au cas nominal convergé. Le risque de boucle boost identifié dans l'audit précédent ne devient réel qu'au-delà de 4.0. Détail en §4.

@@ -1,0 +1,25 @@
+name: Arsenal Contracts — Registre Chantiers
+
+on:
+  push:
+    paths:
+      - '00_documentation_arsenal/audits/REGISTRE_CHANTIERS.md'
+      - 'scripts/arsenal_contracts/check_registre_chantiers.py'
+      - '.github/workflows/contracts_registre_chantiers.yml'
+  pull_request:
+    paths:
+      - '00_documentation_arsenal/audits/REGISTRE_CHANTIERS.md'
+      - 'scripts/arsenal_contracts/check_registre_chantiers.py'
+      - '.github/workflows/contracts_registre_chantiers.yml'
+
+jobs:
+  validate-registre-chantiers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Run chantiers registry link contract
+        run: |
+          python3 scripts/arsenal_contracts/check_registre_chantiers.py

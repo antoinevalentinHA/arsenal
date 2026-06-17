@@ -8,6 +8,7 @@
 ---
 
 > **Statut** : Cadrage — *non normatif*, *non décisionnel*
+> **Classement (2026-06-17)** : **dossier d'arbitrage dormant** — *ce n'est pas un chantier à planifier*. La dette est structurellement réelle (cf. §4–§7) mais **non ordonnançable en l'état** : aucune des 6 questions du §9 n'est ouverte pour décision, et l'incident révélateur (clim) est élucidé et mitigé par ailleurs (signal `presence_confort_thermique_stabilisee`, confiné COOL/DRY). **Réveil sur déclencheur** : un incident reproductible sur un consommateur de présence **brute** (chauffage / HEAT / éclairage / vacances), ou l'ouverture explicite d'une question d'arbitrage. Suivi d'état : [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (« À arbitrer / dormants »).
 > **Nature** : Document de problématisation. Il ne corrige rien, ne modifie aucun YAML, n'amende aucun contrat métier.
 > **Objet** : Poser proprement une dette de modélisation révélée par un incident climatisation, en distinguant les notions, en classant les risques, et en ouvrant des pistes — sans en choisir aucune.
 > **Périmètre** : Domaine Présence (sécurité, confort, preuves, haute précision GPS, zones). Le domaine Climatisation n'apparaît qu'à titre de **cas révélateur**.

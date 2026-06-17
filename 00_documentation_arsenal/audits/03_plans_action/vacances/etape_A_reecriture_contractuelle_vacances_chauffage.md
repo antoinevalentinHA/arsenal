@@ -1,5 +1,7 @@
 # Étape A — Proposition de réécriture contractuelle (VAC-IMP-1)
 
+> **⚠️ ÉTAT (2026-06-17) — APPLIQUÉ. Les réécritures proposées ici ont été intégrées au contrat [`80_table_decision_canonique.md`](../../../contrats/chauffage/80_table_decision_canonique.md)** (aligné sur l'absence effective `binary_sensor.vacances_actives = on`). Document conservé comme **trace de conception**, plus comme proposition ouverte. Suivi : [`../../REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (« Clos récents »).
+
 > **Statut :** proposition de rédaction — **à relire avant génération des patchs documentaires**.
 > **Nature :** texte contractuel cible, document par document. **Aucun patch, aucun diff, aucun YAML, aucun runtime, aucune CI.** Le dépôt n'est pas modifié ; ce document est produit hors du clone.
 > **Fondement :** note de réconciliation Étape A validée (axe unique : le régime d'absence chauffage consomme `binary_sensor.vacances_actives`, jamais la projection `input_select.mode_maison` ; `sensor.chauffage_autorisation_cible` redevient purement thermique — option B ; `decision_centrale` devient l'unique arbitre Vacances).
