@@ -9,20 +9,19 @@
 #
 # 🎯 RÔLE
 #   Afficher l’état métier réel de la climatisation sur l’accueil,
-#   aligné sur la carte Chauffage. La consigne n’est montrée que
-#   lorsqu’elle explique une action en cours (refroidissement actif).
+#   aligné sur la carte Chauffage : « qu’est-ce que la clim fait ».
+#   Aucune consigne affichée ici (gérée sur le dashboard climatisation).
 #
 # 📡 SOURCE
 #   - sensor.clim_action_en_cours (lecture principale : libellé + couleur)
 #       valeurs : cool_actif / dry_actif / heat_actif / bloquee / arret
-#   - sensor.consigne_clim_appliquee (affichée UNIQUEMENT si cool_actif)
 #   Note : la carte reste bindée à sensor.clim_mode_local (entity) pour
 #   le more-info uniquement ; elle ne lit PAS climate.clim directement.
 #
 # ⚙️ LOGIQUE UI
 #   - Lit l’action réelle exposée par le backend (lecture pure)
 #   - Produit un libellé d’état métier :
-#       - cool_actif → « Consigne : N°C » (consigne appliquée)
+#       - cool_actif → « Refroidissement »
 #       - dry_actif  → « Déshumidification »
 #       - heat_actif → « Soutien chauffage »
 #       - bloquee    → « Bloquée »
@@ -63,13 +62,7 @@ carte_clim_etat:
 
       if (UNAV.includes(action)) return 'Indisponible';
 
-      // Consigne montrée UNIQUEMENT quand elle explique une action en cours.
-      if (action === 'cool_actif') {
-        const c = states['sensor.consigne_clim_appliquee']?.state;
-        const cTxt = UNAV.includes(c) ? '-' : c;
-        return 'Consigne : ' + cTxt + '°C';
-      }
-
+      if (action === 'cool_actif') return 'Refroidissement';
       if (action === 'dry_actif')  return 'Déshumidification';
       if (action === 'heat_actif') return 'Soutien chauffage';
       if (action === 'bloquee')    return 'Bloquée';
