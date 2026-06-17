@@ -280,15 +280,20 @@ classe**, jamais une valeur masquée ni une chaîne vide.
 ## 7. Icônes dynamiques
 
 À chaque état correspond **une et une seule** icône, portée par le capteur de
-tendance lui-même (jamais par une carte). Vocabulaire aligné sur celui déjà
-employé dans le dépôt pour le sens thermique :
+tendance lui-même (jamais par une carte).
+
+Le vocabulaire iconographique est volontairement **directionnel et fortement
+lisible**, car les capteurs de tendance sont destinés à être affichés sous les
+valeurs de température correspondantes, notamment dans Android Auto. Le contexte
+thermique est donc déjà porté par la tuile de température ; l'icône de tendance
+ne doit restituer que le sens d'évolution.
 
 | État | Icône | Justification |
 |---|---|---|
-| hausse | `mdi:thermometer-chevron-up` | déjà l'icône canonique de montée thermique dans le dépôt (≈47 usages) |
-| baisse | `mdi:thermometer-chevron-down` | déjà l'icône canonique de descente thermique (≈24 usages) |
-| stable | `mdi:thermometer` | neutre, vocabulaire thermique de base du dépôt |
-| indisponible | `mdi:thermometer-off` | déjà employé dans le dépôt pour l'absence de mesure |
+| hausse | `mdi:arrow-up-bold` | flèche montante explicite, lisible en conduite |
+| baisse | `mdi:arrow-down-bold` | flèche descendante explicite, lisible en conduite |
+| stable | `mdi:minus-thick` | absence d'évolution significative, sans ambiguïté thermique |
+| indisponible | `mdi:alert-circle-outline` | absence d'exploitation fiable, distincte d'une tendance stable |
 
 L'icône est **descriptive**, jamais prescriptive : elle ne suggère aucune action
 ni aucun confort souhaitable (cf. `affichage.md`, Invariant 5).
