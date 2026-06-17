@@ -56,7 +56,7 @@ Un **item de backlog** n'entre en *Actifs* qu'une fois **promu** (décision d'ag
 | **Aération** | Résiduels de clôture : factorisation décision, fuite UI `carte_delta_ha`, `unique_id` étage, dashboard diagnostic | [`05_clotures/aeration/cloture_aeration_recommandation.md`](05_clotures/aeration/cloture_aeration_recommandation.md) (§5) |
 | **Couverture normative** | P3/P4 restants (`12_capteurs_observabilite_pure`, `deshumidificateur/guard §12`, `couleurs`/`boutons`/`statistiques`, `modes/normal`) | [`04_chantiers/transverses/etat_avancement_couverture_normative_domaines.md`](04_chantiers/transverses/etat_avancement_couverture_normative_domaines.md) |
 
-> **Vérification candidate** (ni chantier, ni backlog) : conformité runtime de `clim/06_doctrine_blocages.md` (patron `_reel`/`_actif`). Si elle révèle un écart, un chantier naît et entre en ①. Source : [`01_rapports/documentation/triage_recalibre_post_bluetti.md`](01_rapports/documentation/triage_recalibre_post_bluetti.md) (§4).
+> **Vérification candidate — faite (2026-06-17).** Conformité runtime de `clim/06_doctrine_blocages.md` (patron `_reel`/`_actif`) : **runtime conforme** (les deux blocages appliqués suivent le patron ; dette fenêtres/absence fidèle au runtime). Un seul écart **documentaire mineur** (description périmée du voyant `clim_bloquee` en §5/§8), **corrigé dans le contrat** au même commit. Dette fenêtres/absence inchangée (renommage `_reel` différé, hors périmètre). **Aucun chantier ① créé.** Source : [`01_rapports/documentation/triage_recalibre_post_bluetti.md`](01_rapports/documentation/triage_recalibre_post_bluetti.md) (§4).
 
 ---
 

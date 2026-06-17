@@ -74,7 +74,7 @@ Sinon le voyant ment : il afficherait `mdi:lock` alors que la climatisation tour
 clim_bloquee == on  ⟺  au moins un blocage est réellement effectif sur la chaîne de décision
 ```
 
-Cela corrige aussi l'asymétrie documentée en [`90_observations.md`](capteurs/blocages/90_observations.md) §4 : le voyant lisait `fenetre_ouverte_maison` + `fenetre_ouverte_etage` (brutes, non temporisées), alors que les autorisations lisent `fenetre_ouverte_maison_avec_delai`. Après refonte, le voyant lit `clim_blocage_fenetres_reel` — même vérité que la décision.
+Cela corrige aussi l'asymétrie documentée en [`90_observations.md`](capteurs/blocages/90_observations.md) §4 : le voyant lisait `fenetre_ouverte_maison` + `fenetre_ouverte_etage` (brutes, non temporisées), alors que les autorisations lisent `fenetre_ouverte_maison_avec_delai`. **Au runtime, le voyant lit désormais `fenetre_ouverte_maison_avec_delai` — donc la même vérité temporisée que la décision.** La cible `clim_blocage_fenetres_reel` ne changera pas cette vérité : elle ne fera que la **normaliser sous le patron `_reel`** (renommage différé, cf. §8).
 
 ---
 
@@ -114,5 +114,5 @@ La doctrine et la classification (§2–§7) sont **validées dans leur intégra
 Dettes assumées et tracées :
 
 1. `clim_blocage_fenetres_reel` et `clim_blocage_absence_prolongee_reel` ne sont pas créés. Les autorisations continuent de lire `fenetre_ouverte_maison_avec_delai` et `clim_extinction_absence_prolongee_autorisee` en brut. La double négation aval sur l'absence (§7.5) subsiste jusqu'à la levée de cette dette.
-2. La refonte du voyant `clim_bloquee` (§5) est différée. **Sans danger dans ce périmètre** : le voyant n'a jamais agrégé l'aération étage, donc le passage de l'aération en blocage gardé ne crée aucune nouvelle incohérence du voyant. Les incohérences préexistantes (fenêtres brutes non temporisées) restent en l'état.
+2. La **cohérence de vérité** du voyant `clim_bloquee` (§5) est **déjà acquise au runtime** : le voyant agrège l'aération étage via `binary_sensor.clim_blocage_aeration_etage_reel` et lit `binary_sensor.fenetre_ouverte_maison_avec_delai` — la **vérité temporisée**, identique à celle consommée par les autorisations. Ce qui reste **différé** n'est donc **pas** la cohérence du voyant pour les fenêtres, mais la seule **normalisation de nommage** vers `clim_blocage_fenetres_reel` / `clim_blocage_absence_prolongee_reel` (cf. dette #1). **Résidu connu :** l'absence prolongée n'est pas encore agrégée au voyant (même famille différée), donc l'invariant §5 reste **partiel pour cette seule cause** jusqu'à la levée de la dette #1.
 3. Nommage `blocage_clim_poele` / `chauffage_blocage_aeration` conservé hors convention `clim_blocage_*_actif`. **Aucun renommage** : pas de cosmétique au milieu d'un chantier décisionnel.
