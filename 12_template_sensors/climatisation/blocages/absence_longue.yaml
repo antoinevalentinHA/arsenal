@@ -21,7 +21,7 @@
       default_entity_id: binary_sensor.clim_extinction_absence_prolongee_autorisee
       state: >
         {{
-          is_state('binary_sensor.presence_famille_unifiee', 'off')
+          is_state('binary_sensor.presence_confort_thermique_stabilisee', 'off')
           and is_state('timer.absence_longue_clim', 'idle')
         }}
       icon: >

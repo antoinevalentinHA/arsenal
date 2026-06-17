@@ -14,7 +14,7 @@
 #   - Aucune action
 #
 # 🔌 Dérivé STRICTEMENT de :
-#   - présence réelle ou babysitting
+#   - présence stabilisée (anti faux-absent court) ou babysitting
 #   - fenêtres (version temporisée — délais métier)
 #   - aération préférable étage
 #   - blocage horaire
@@ -25,7 +25,7 @@
       unique_id: autorisation_clim_dry
       default_entity_id: binary_sensor.autorisation_clim_dry
       state: >
-        {% set presence    = is_state('binary_sensor.presence_famille_unifiee', 'on') %}
+        {% set presence    = is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on') %}
         {% set babysitting = is_state('input_boolean.mode_babysitting', 'on') %}
         {% set fenetres    = is_state('binary_sensor.fenetre_ouverte_maison_avec_delai', 'on') %}
         {% set aeration    = is_state('binary_sensor.clim_blocage_aeration_etage_reel', 'on') %}
