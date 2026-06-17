@@ -71,15 +71,20 @@
         para_sug_raw: "{{ states('sensor.chauffage_parallele_suggeree') }}"
 
         # Helpers booléens (sans float) pour l'ETIQUETTE de raison (observation)
+        # c0 = précondition prioritaire §7/§8 : représentativité thermique REPRESENTATIF
+        c0: "{{ is_state('input_select.chauffage_representativite_thermique', 'REPRESENTATIF') }}"
         c1: "{{ is_state('input_boolean.chauffage_reglages_auto', 'on') }}"
         c2: "{{ is_state('input_select.mode_maison', 'Normal') }}"
         c3: "{{ states('sensor.chauffage_pente_suggeree') not in ['unknown','unavailable','none',''] and states('sensor.chauffage_parallele_suggeree') not in ['unknown','unavailable','none',''] }}"
 
-        # VERROU DE DÉCISION — prédicats d'origine reproduits VERBATIM (bare | float),
+        # VERROU DE DÉCISION — prédicats reproduits VERBATIM (bare | float), précédés
+        # de la précondition prioritaire §7/§8 (représentativité = REPRESENTATIF) : garde
+        # BLOQUANTE — hors REPRESENTATIF, cycle_actionnable est faux → aucune écriture.
         # court-circuit identique au bloc condition d'origine : les | float de C4 ne sont
         # atteints que si C3 (suggestions non-sentinelles) est vrai → jamais d'erreur.
         cycle_actionnable: >
-          {{ is_state('input_boolean.chauffage_reglages_auto', 'on')
+          {{ is_state('input_select.chauffage_representativite_thermique', 'REPRESENTATIF')
+             and is_state('input_boolean.chauffage_reglages_auto', 'on')
              and is_state('input_select.mode_maison', 'Normal')
              and states('sensor.chauffage_pente_suggeree') not in ['unknown','unavailable','none','']
              and states('sensor.chauffage_parallele_suggeree') not in ['unknown','unavailable','none','']
@@ -98,9 +103,12 @@
                   or (states('sensor.chauffage_parallele_suggeree') | float(0) < states('input_number.chauffage_parallele_consigne') | float(0)
                       and is_state('binary_sensor.poele_en_fonction_stable', 'off'))) }}
 
-        # Raison de cycle (76 §6) — déduite sans float : si C1/C2/C3 vrais mais non actionnable ⇒ C4 faux ⇒ suggestion_identique
+        # Raison de cycle (76 §6) — déduite sans float. c0 (représentativité §7/§8)
+        # est la précondition prioritaire : si non REPRESENTATIF ⇒ non_representatif.
+        # Sinon, si C1/C2/C3 vrais mais non actionnable ⇒ C4 faux ⇒ suggestion_identique.
         cycle_reason: >-
-          {%- if not c1 -%}auto_desactive
+          {%- if not c0 -%}non_representatif
+          {%- elif not c1 -%}auto_desactive
           {%- elif not c2 -%}hors_mode_normal
           {%- elif not c3 -%}suggestion_indisponible
           {%- elif not cycle_actionnable -%}suggestion_identique
