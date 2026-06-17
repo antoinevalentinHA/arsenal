@@ -35,10 +35,15 @@ via SQLite, non via l'API. C'est précisément le risque P3 (« cécité sans hi
 > états d'entrée à l'instant du cycle**, rejouables sans décodage de la table `events`. Les deux
 > sont complémentaires, non redondants.
 
-## 3. Liste normative à historiser
+## 3. Liste normative — issue de l'audit Recorder (2026-06-17)
 
-Classes : **CRITIQUE** (sans quoi la décision n'est pas reconstituable) · **IMPORTANT** (amont /
-résultat nécessaires à l'explication) · **UTILE** (confort de diagnostic).
+> **Mise à jour (passe observabilité).** La sélection initiale a été confrontée au **contrat
+> Recorder** (`scripts/arsenal_contracts/check_recorder_contracts.py`). Deux corrections en
+> découlent : les ACK sont **inéligibles** (T08, motif `_ack_` — artefact transactionnel
+> transitoire) ; les capteurs `platform: statistics` et les suggestions sont **différés** (volume
+> / déjà couverts). Le set retenu est volontairement **minimal et faible-fréquence**.
+
+### 3.1 Retenu — historisé dans `recorder.yaml` (Population B, ≤ 1 changement/jour)
 
 | Entité | Couche | Pourquoi indispensable | Classe |
 |---|---|---|---|
@@ -47,16 +52,37 @@ résultat nécessaires à l'explication) · **UTILE** (confort de diagnostic).
 | `input_boolean.courbe_auto_simulation` | Décision | Distingue une décision réelle d'une simulation | **CRITIQUE** |
 | `input_number.chauffage_pente_consigne` | Exécution | Cible **et** résultat appliqué ; trajectoire du paramètre | **CRITIQUE** |
 | `input_number.chauffage_parallele_consigne` | Exécution | Idem ; c'est la grandeur écrite le 16/06 | **CRITIQUE** |
-| `sensor.chauffage_pente_suggeree` | Décision | Proposition amont ; explique pourquoi un cycle est actionnable | **IMPORTANT** |
-| `sensor.chauffage_parallele_suggeree` | Décision | Idem (parallèle) | **IMPORTANT** |
-| `sensor.ecart_consigne_stats_froid` | Perception | Entrée de la suggestion pente ; détecte les valeurs gelées | **IMPORTANT** |
-| `sensor.ecart_consigne_stats_24h` | Perception | Entrée de la suggestion parallèle | **IMPORTANT** |
-| `sensor.boiler_ack_heating_set_curve_slope_status` | Exécution | ACK corrélé ; prouve l'application physique (pente) | **IMPORTANT** |
-| `sensor.boiler_ack_heating_set_curve_shift_status` | Exécution | ACK corrélé (parallèle) | **IMPORTANT** |
-| `input_text.chauffage_last_adjustment` | Diagnostic | Trace lisible de la dernière décision (déjà event-portée) | **UTILE** |
+| `input_text.chauffage_last_adjustment` | Diagnostic | Trace lisible de la dernière décision appliquée (avant→après, mode) ; consultable en historique HA **sans SQLite** | **IMPORTANT** |
+
+Ce set rend l'**incident-classe du 16/06 reconstituable depuis l'historique HA seul** : croiser
+l'historique de `…representativite_thermique` (= `NON_REPRESENTATIF` à 10:00) avec celui de
+`…parallele_consigne` (= 2.0→1.0 à 10:00) **prouve la violation sans extraire la base**.
+
+### 3.2 Exclus — par contrat Recorder
+
+| Entité | Motif d'exclusion |
+|---|---|
+| `sensor.boiler_ack_heating_set_curve_slope_status` | **T08** (`_ack_`, Population B Non éligible) ; l'« appliqué/refusé » est déjà porté par l'événement `chauffage_adjustment` (`pente_applied`) |
+| `sensor.boiler_ack_heating_set_curve_shift_status` | **T08** ; idem (`para_applied`) |
+
+### 3.3 Différés — risque de volume (à reconsidérer si besoin avéré)
+
+| Entité | Motif de différé |
+|---|---|
+| `sensor.chauffage_pente_suggeree` / `…parallele_suggeree` | Churn d'attributs (miroir des écarts) → volume ; la valeur **au cycle** est déjà captée par `chauffage_last_adjustment` (action) et les événements |
+| `sensor.ecart_consigne_stats_froid` / `…stats_24h` | `platform: statistics` recalculées à chaque échantillon → haute fréquence ; `sensor.ecart_consigne_instantane` **déjà historisé** couvre la perception |
 
 Déjà historisés (à conserver, pour rappel) : `input_select.mode_maison`,
 `sensor.ecart_consigne_instantane`, `input_boolean.blocage_chauffage_poele`.
+
+### 3.4 Reste event-only — limite connue
+
+Le **verdict dérivé** de cycle (`cycle_actionnable`, `cycle_reason`, p.ex. `non_representatif`
+sur une **abstention**) n'est porté par **aucune entité d'état** : il ne vit que dans
+`chauffage_courbe_cycle_evalue`. Une abstention reste donc invisible à l'historique d'états
+(seules les **actions** écrivent `chauffage_last_adjustment` et les consignes). L'historiser comme
+état queryable supposerait une **nouvelle entité** (code) — hors périmètre de cette passe minimale,
+signalé comme suite possible si la visibilité des abstentions sans événements devient un besoin.
 
 ## 4. Garde-fous
 

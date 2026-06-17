@@ -470,3 +470,32 @@ include:
     # ==== ⚡ CONSOMMATION – CUMULUS PETITE MAISON ====
     # =====================================================
     - sensor.petite_maison_modbuslink_1_2_electric_energy_consumption
+
+    # =====================================================
+    # ==== 🔥 CHAUFFAGE – AUTO-AJUSTEMENT COURBE (TERMES DE DÉCISION) ====
+    # =====================================================
+    # Origine : rapport d'écart runtime du 16/06/2026 (D-CRIT-1). La
+    #   reconstitution de l'incident a dû passer par la table `events` SQLite,
+    #   faute d'historisation des termes de décision. Concrétise la phase P3
+    #   (Persistance) du plan d'action observabilité — contrat 76.
+    #
+    # RECORDER — Population B (registre de décision, faible fréquence)
+    # Principe : on historise les ENTRÉES de garde et le RÉSULTAT appliqué.
+    #   Sont volontairement EXCLUS : les ACK transactionnels
+    #   (`boiler_ack_*` — Population B Non éligible, T08), et les capteurs
+    #   `platform: statistics` `ecart_consigne_stats_*` (haute fréquence /
+    #   volume ; `sensor.ecart_consigne_instantane` déjà historisé). Le VERDICT
+    #   dérivé de cycle (`cycle_reason`) reste porté par les événements custom,
+    #   complémentaires et non redondants.
+    #
+    # Précondition de garde §7/§8 — état à hystérésis (quelques transitions/saison)
+    - input_select.chauffage_representativite_thermique
+    # Gate d'activation + mode simulation/réel — binaires, variation rare
+    - input_boolean.chauffage_reglages_auto
+    - input_boolean.courbe_auto_simulation
+    # Résultat appliqué (cible = grandeur écrite sur la chaudière) — ≤ 1 écriture/jour
+    # Cardinalité bornée : pente [0.2;3.5] pas 0.1 ; parallèle [-13;40] entier
+    - input_number.chauffage_pente_consigne
+    - input_number.chauffage_parallele_consigne
+    # Trace lisible de la dernière décision appliquée (avant→après, mode) — ≤ 1/jour
+    - input_text.chauffage_last_adjustment
