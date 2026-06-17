@@ -15,16 +15,12 @@
 # 📡 SOURCE
 #   - entity.attributes.delta_humidite_absolue
 #   - entity.attributes.seuils_utilises.ha_min_applique
-#   - input_select.saison (fallback seuil)
-#   - input_number.aeration_delta_ha_min_hiver
-#   - input_number.aeration_delta_ha_min_ete
-#   - input_number.aeration_delta_ha_min_inter
 #
 # ⚙️ LOGIQUE UI
 #   - Affiche la valeur ΔHA en g/m³ (2 décimales)
 #   - Label : seuil appliqué (1 décimale)
-#   - Seuil résolu depuis seuils_utilises.ha_min_applique
-#     ou fallback saison si absent
+#   - Seuil lu en LECTURE SEULE depuis seuils_utilises.ha_min_applique ;
+#     si absent / non numérique → affichage neutre (—), aucun recalcul UI
 #   - Coloration :
 #       - valeur inconnue → gris indispo
 #       - valeur >= seuil → fond vert
@@ -73,19 +69,9 @@ carte_delta_ha:
       };
       const attrs  = entity.attributes || {};
       const seuils = toObj(attrs.seuils_utilises);
-      let seuil = parseFloat(seuils.ha_min_applique);
+      const seuil = parseFloat(seuils.ha_min_applique);
 
-      if (!Number.isFinite(seuil)) {
-        const saison = states['input_select.saison']?.state || '';
-        if (saison === 'Hiver')
-          seuil = parseFloat(states['input_number.aeration_delta_ha_min_hiver']?.state) || 2.0;
-        else if (saison === 'Été')
-          seuil = parseFloat(states['input_number.aeration_delta_ha_min_ete']?.state) || 1.0;
-        else if (['Printemps','Automne'].includes(saison))
-          seuil = parseFloat(states['input_number.aeration_delta_ha_min_inter']?.state) || 1.5;
-        else
-          seuil = 1.0;
-      }
+      if (!Number.isFinite(seuil)) return "Seuil : —";
 
       return "Seuil : " + seuil.toFixed(1) + " g/m³";
     ]]]
@@ -106,21 +92,9 @@ carte_delta_ha:
             const v = toNumber(entity.attributes?.delta_humidite_absolue);
             const attrs = entity.attributes || {};
             const seuils = toObj(attrs.seuils_utilises);
-            let seuil = parseFloat(seuils.ha_min_applique);
+            const seuil = parseFloat(seuils.ha_min_applique);
 
-            if (!Number.isFinite(seuil)) {
-              const saison = states['input_select.saison']?.state || '';
-              if (saison === 'Hiver')
-                seuil = parseFloat(states['input_number.aeration_delta_ha_min_hiver']?.state) || 2.0;
-              else if (saison === 'Été')
-                seuil = parseFloat(states['input_number.aeration_delta_ha_min_ete']?.state) || 1.0;
-              else if (['Printemps','Automne'].includes(saison))
-                seuil = parseFloat(states['input_number.aeration_delta_ha_min_inter']?.state) || 1.5;
-              else
-                seuil = 1.0;
-            }
-
-            if (isNaN(v)) return "rgba(158, 158, 158, 0.1)";
+            if (isNaN(v) || !Number.isFinite(seuil)) return "rgba(158, 158, 158, 0.1)";
             return v >= seuil
               ? "rgba(76, 175, 80, 0.2)"
               : "rgba(158, 158, 158, 0.2)";

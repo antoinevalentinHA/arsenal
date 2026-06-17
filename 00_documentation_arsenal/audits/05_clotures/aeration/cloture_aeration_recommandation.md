@@ -42,7 +42,7 @@ Snapshot Home Assistant post-correctif (cas **canicule**, cohérent) :
 
 Laissés ouverts **en connaissance de cause**, sans correction dans cette passe (aucun risque runtime) :
 
-- **Logique métier résiduelle dans `carte_delta_ha`** : la carte recalcule un seuil saisonnier en JavaScript (fallback) — fuite de logique métier UI, contraire au contrat. À traiter en lecture seule d'attribut. *(P1-2, backlog)*
+- **Logique métier résiduelle dans `carte_delta_ha`** — ✅ **Résolu (2026-06-17)** : le fallback saisonnier JavaScript a été retiré (`label` et `background-color`) ; la carte lit `seuils_utilises.ha_min_applique` en **lecture seule** et affiche un état neutre (`—` / gris indispo) si l'attribut est absent. Plus aucun recalcul métier ni lecture de helper saisonnier en UI. *(P1-2, soldé)*
 - **Réglages déclaratifs / inertes** exposés dans le dashboard réglages : audit décisionnel mené, verdicts par helper et passe suivante préparés en **§ 5.1**. *(P1-4, backlog)*
 - **Absence de dashboard diagnostic dédié à la recommandation** : `seuils_utilises` / `decision` / disponibilité par niveau ne sont pas exposés dans une vue diagnostic propre (l'actuel `diagnostics/aeration` couvre le domaine physique/blocage). *(P2-4, backlog)*
 - **Normalisation du `unique_id` étage** (`humidite_absolue_interieur_etage`, sans « e ») : incohérence latente avec son entity_id runtime et le sibling RDC. **À ne pas modifier sans validation runtime/registre** (un changement de `unique_id` peut recréer l'entité). *(P1-3, backlog, prudence)*
