@@ -11,18 +11,22 @@
 | # | Sujet | Localisation | Statut |
 |---|---|---|---|
 | **V-1** | Fond KPI non dégradé en gris indispo | `thermo_plateau_strict_72`, `thermo_plateau_affichage_72`, `thermo_mean_12h_72`, `thermo_variance_12h_72` | ✅ **CORRIGÉ** (patch UI séparé) |
-| **V-2** | Seuils `0.02` / `0.05` du verdict codés en UI ; `0.02` dupliqué backend | `thermo_stabilite_12h_status` ↔ `plateaux_stricts.yaml` | **ouvert — différé** |
+| **V-2** | Seuils `0.02` / `0.05` du verdict codés en UI ; `0.02` dupliqué backend | `thermo_stabilite_12h_status` ↔ `plateaux_stricts.yaml` | ✅ **TRAITÉ** — duplication d'affichage acceptable, documentée (§2) ; dé-doublonnage technique parqué |
 | **V-3** | Sous-domaine sans contrat de gouvernance | `00_documentation_arsenal/contrats/` (absence) | ✅ **TRAITÉ** — contrat créé : [`contrats/chauffage/vannes_thermostatiques_plateaux.md`](../../../contrats/chauffage/vannes_thermostatiques_plateaux.md) |
 
 ---
 
-## 2. V-2 — Seuils de verdict en UI (différé)
+## 2. V-2 — Seuils de verdict en UI (✅ traité par documentation)
 
-Options non tranchées :
-- (a) Documenter explicitement l'exception (seuils de verdict assumés en UI).
-- (b) Sourcer `0.02` / `0.05` depuis un attribut backend / `input_number`, et **dé-dupliquer** le `0.02` partagé avec la détection plateau, pour une source unique de vérité.
+**Décision : duplication d'affichage acceptable.** La carte `thermo_variance_12h_72.yaml` recalcule côté JS un verdict 3 niveaux à partir de la variance brute (`< 0.02` → « Très stable » ; `< 0.05` → « Modérément stable » ; `>= 0.05` → « Instable »). Ce recalcul produit **uniquement** icône, label et couleur — **aucune décision, écriture d'état, consigne ou action chauffage**. C'est une **échelle visuelle**, pas une décision dupliquée.
 
-Aucune urgence tant que le critère backend de stabilité reste stable. Toute action toucherait `19_button_card_templates/` (et/ou le runtime) → **hors de la passe documentaire**.
+Caractérisation des deux seuils :
+- **`0.02` = miroir du seuil canonique.** Identique au seuil de détection de plateau strict (backend `plateaux_stricts.yaml` + écriture `update_plateaux_thermostatiques.yaml`), **canonisé** par [`contrats/chauffage/vannes_thermostatiques_plateaux.md`](../../../contrats/chauffage/vannes_thermostatiques_plateaux.md) (§11). Sa présence en dur dans la carte est un **miroir d'affichage** ; **point de coordination** explicite : toute évolution du `0.02` canonique devra être répercutée sur la carte.
+- **`0.05` = palier UI-seulement.** Aucune source backend ni contrat (le `diagnostic_chauffage_stabilite` classe par nombre de cycles/jour, et le `0.05` de `programme.yaml` est sans rapport). C'est un raffinement d'affichage propre à la carte, **non gouverné** (à promouvoir uniquement si on souhaite le contractualiser un jour).
+
+**Pourquoi ne pas dé-dupliquer maintenant.** Il n'existe **aucun capteur backend de verdict variance** `0.02`/`0.05` : la carte est la seule productrice du verdict, elle ne peut donc pas « lire » un verdict déjà calculé. Supprimer le recalcul exigerait soit un porteur backend nouveau (capteur/attribut), soit une réécriture du JS de la carte — donc une modification de `19_button_card_templates/` (et/ou du runtime), **hors d'une passe documentaire** et de **faible valeur** (affichage seul). Le **dé-doublonnage technique est parqué** comme option résiduelle optionnelle.
+
+> Reste : option (b) historique (sourcer les seuils depuis un attribut backend / `input_number` pour une source unique) — **parquée**, non bloquante, faible valeur.
 
 ---
 
