@@ -28,8 +28,8 @@
 ### R-1 — Brancher `pourcentage_consigne_eco_24h` tel quel
 
 - **Résumé.** Câbler le proxy de représentativité existant (part du temps en mode Eco sur 24 h) comme verrou d'apprentissage.
-- **Décision.** **Rejeté.**
-- **Justification.** Le proxy mesure un rapport cyclique de la **demande de confort**, pas le **travail de la chaudière sous charge propre**. Il est redondant avec la garde confort et la bande morte là où il fonctionne, **aveugle** là où le biais résiduel subsiste (journées douces/ensoleillées/inertielles en confort), et **destructeur de données rares et précieuses** (faux négatifs sur les soirées froides après absence diurne). Le brancher constituerait un filtre médiocre, susceptible d'introduire autant de problèmes qu'il en résout. Le besoin physique de représentativité reste réel mais appellerait un **signal fondé sur le travail/charge réels**, non traité ici.
+- **Décision.** **Requalifié** (revue contradictoire 2026-06-17) — anciennement « rejeté ».
+- **Justification.** **Comme proxy physique** de charge chaudière, le signal reste faible : il mesure un rapport cyclique de la **demande de confort**, pas le **travail de la chaudière sous charge propre** ; ces limites (redondance partielle avec la garde confort, faux négatifs sur soirées froides après absence diurne, **angle mort du confort sous chaleur gratuite**) sont **conservées**. Mais ce n'est **pas** ce qu'il gouverne : retenu comme **critère métier d'éligibilité du cycle** (le régime confort a-t-il tourné assez pour rendre l'écart calibrant ?), il est **acceptable** et bien aligné avec le pipeline d'écart qu'il garde — il est d'ailleurs **déjà câblé** par le verrou §7/§8. **Conservé tel quel à ce stade ; aucun patch code demandé.** Ne reste différé que le seul **biais résiduel confort/chaleur gratuite sur le parallèle** : **observer d'abord** sur l'historique Recorder désormais disponible, **puis si confirmé** une **garde extérieure légère** (seuil `temperature_jardin`) sur la **branche parallèle uniquement** — sans modèle physique. Voir contre-expertise audit §5.6.
 
 ### R-2 — Imposer une suspension totale de la calibration liée au poêle
 

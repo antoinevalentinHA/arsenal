@@ -63,10 +63,13 @@ Observabilité en abstention : `cycle_reason_type=nominal`, `pente_issue=abstain
 
 ## 5. Périmètre explicitement EXCLU (reste ouvert)
 
-- **Qualité du signal de représentativité (§5.6).** Le verrou enforce le signal *tel quel*
-  (`pourcentage_consigne_eco_24h`), que l'audit jugeait faible. Cette clôture résorbe l'écart de
-  **conformité** (implémentation ↔ contrat), **pas** la question de qualité du signal — laquelle
-  est ré-ouverte par le fait runtime du 16/06 et reste à arbitrer.
+- **Qualité du signal de représentativité (§5.6) — réarbitrée (2026-06-17).** Le verrou enforce le
+  signal *tel quel* (`pourcentage_consigne_eco_24h`), que l'audit jugeait faible **comme proxy
+  physique**. La contre-expertise le **requalifie en critère métier d'éligibilité du cycle**, jugé
+  **acceptable** et **conservé tel quel** (voir audit §5.6). Cette clôture résorbe l'écart de
+  **conformité** (implémentation ↔ contrat) ; le seul résidu est l'**angle mort confort sous chaleur
+  gratuite** pouvant biaiser le **parallèle**, à **observer** sur l'historique Recorder avant
+  d'envisager une garde extérieure légère sur cette seule branche. **Aucun patch code demandé.**
 - **Observabilité / historisation (D-CRIT-2, D-CRIT-3).** → plan d'action observabilité,
   phase **P3**, concrétisée par
   [`spec_persistance_termes_decision_courbe.md`](../../03_plans_action/chauffage/spec_persistance_termes_decision_courbe.md).

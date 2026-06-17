@@ -50,7 +50,7 @@ L'observabilité est donc le **préalable** qui transforme tous les autres jugem
 ## 4. Hors périmètre
 
 - Toute **modification du comportement** de l'auto-ajustement.
-- Le **câblage de la représentativité** thermique (jugé non prioritaire ; le signal disponible est médiocre — voir backlog).
+- Le **câblage de la représentativité** thermique (le signal, faible *comme proxy physique*, est **retenu comme critère métier d'éligibilité** et désormais **câblé en verrou §7/§8** ; voir contre-expertise audit §5.6 et backlog R-1).
 - Toute évolution des **garde-fous** poêle / fenêtre / aération.
 - Tout changement des **bornes, du pas, de la cadence ou de la bande morte**.
 - La **couche d'exécution transactionnelle** (déjà saine, non rouverte).

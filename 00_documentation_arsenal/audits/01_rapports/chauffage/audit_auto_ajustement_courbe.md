@@ -81,7 +81,21 @@ Confrontée à l'algorithme réel et au climat bordelais :
 
 → Verdict intermédiaire de gravité : **MOYENNE**.
 
-### 5.6 Audit du proxy de représentativité — déclassement
+### 5.6 Audit du proxy de représentativité — déclassement comme proxy physique
+
+> **Contre-expertise — revue contradictoire (2026-06-17).** L'examen ci-dessous évalue le signal
+> comme **proxy physique de la charge chaudière** ; à ce titre il est faible, et ce constat
+> **reste valide** (limites conservées ci-dessous). Réévalué pour ce qu'il **gouverne réellement**
+> — un **critère métier d'éligibilité du cycle** (le régime confort a-t-il tourné assez longtemps
+> pour que l'écart confort soit calibrant ?) —, il est jugé **acceptable** et **conservé tel quel**
+> à ce stade. Il capte bien les régimes non représentatifs (absence, réduit, aération, vacances →
+> consigne réduite → Eco). **Angle mort résiduel principal** : une journée tenue en **confort** mais
+> chauffée par **chaleur gratuite** (soleil, apports internes, poêle) lit un Eco% bas → REPRESENTATIF,
+> ce qui peut biaiser **la seule branche parallèle** vers la baisse (la pente est immunisée,
+> apprentissage `t_ext ≤ 5 °C`). **Aucun patch code n'est demandé.** Suite logique : **observer
+> d'abord** sur l'historique Recorder désormais disponible (termes de décision historisés, P3) ;
+> **puis seulement si** le biais est confirmé, envisager une **garde extérieure légère** (seuil
+> `temperature_jardin`) sur la **branche parallèle uniquement** — sans modèle physique.
 
 Examen du signal lui-même (`pourcentage_consigne_eco_24h` = part des 24 h en mode Eco ; hystérésis 40/55) :
 
@@ -91,7 +105,7 @@ Examen du signal lui-même (`pourcentage_consigne_eco_24h` = part des 24 h en mo
 - **Faux négatifs coûteux** : absence diurne + soirée froide en confort → Eco% haut → **rejet d'une donnée rare et précieuse**.
 - **Pouvoir discriminant marginal FAIBLE** : redondant avec la garde confort + bande morte là où il fonctionne, aveugle là où le biais résiduel vit, et destructeur de bonnes journées.
 
-→ Le brancher tel quel constituerait un **filtre médiocre**.
+→ Le brancher tel quel constituerait un **filtre médiocre** *en tant que proxy physique de charge*. **Requalification (2026-06-17, voir contre-expertise en tête de section) :** retenu comme **critère métier d'éligibilité du cycle**, il est jugé **acceptable** et conservé tel quel ; les limites ci-dessus restent réelles mais relèvent du **proxy physique**, pas du critère métier.
 
 ## 6. Constats invalidés ou déclassés
 
@@ -101,7 +115,7 @@ Examen du signal lui-même (`pourcentage_consigne_eco_24h` = part des 24 h en mo
 | **D-CRIT-4** — immunité poêle « partielle / insuffisante » | **Infirmé dans sa formulation** | L'asymétrie baisse-uniquement est l'invariant métier **correct** (5.3). |
 | **C-GAP-2** — « le runtime sous-implémente le contrat » | **Sens inversé** | Les contrats sur-spécifient une suspension totale **métier-fausse** ; le runtime est plus correct (5.3). La divergence demeure, le tort change de camp. |
 | **D-CRIT-2** — « boucle ouverte = défaut critique » | **Reformulé** | La boucle ouverte est intentionnelle (calibration lente, non adaptative). Le résidu réel n'est pas l'ouverture, mais la faiblesse d'instrumentation de la supervision (→ rejoint D-CRIT-3). |
-| **Représentativité = manque critique** | **Déclassé à MINEUR** | Le proxy disponible est médiocre (5.6) ; le brancher n'apporterait quasiment rien et coûterait des faux négatifs. |
+| **Représentativité = manque critique** | **Déclassé à MINEUR** | Le proxy est médiocre *comme proxy physique* (5.6) ; **requalifié (2026-06-17)** en **critère métier d'éligibilité** et depuis **câblé** (verrou §7/§8) — voir contre-expertise §5.6. |
 
 ## 7. Constats confirmés
 
@@ -120,7 +134,7 @@ Le système se comporte bien et **ne peut pas diverger dangereusement** : exécu
 1. **Aveuglement** — le système ne peut ni montrer ni prouver ce qu'il fait à la courbe dans le temps, alors qu'il se présente comme une calibration *supervisée*.
 2. **Sûreté empruntée** — ses protections critiques fonctionnent via un effet de bord de la consigne appliquée, révocable sans alarme.
 
-La représentativité, dans l'absolu, répond à un besoin physique réel ; mais le **signal actuellement conçu pour la porter est faible**, ce qui retire à son absence le caractère de gravité d'abord supposé.
+La représentativité, dans l'absolu, répond à un besoin physique réel ; le **signal conçu pour la porter est faible comme proxy physique** — mais **retenu comme critère métier d'éligibilité du cycle, il est acceptable** (contre-expertise §5.6, 2026-06-17), ce qui retire à son absence le caractère de gravité d'abord supposé.
 
 ## 9. Reclassification finale des risques
 
@@ -128,7 +142,7 @@ La représentativité, dans l'absolu, répond à un besoin physique réel ; mais
 |---|---|---|
 | Auto-ajustement aveugle sur ses propres variables | **Important** | Boucle la plus impactante, non observable d'elle-même ; préalable à toute certitude. |
 | Protections fenêtre/aération/poêle-actif empruntées | **Important (non urgent)** | Fonctionne aujourd'hui ; fragilité latente révocable sans signal. |
-| Représentativité non câblée | **Mineur** | Absence faible ; le proxy disponible (Eco%) est médiocre. |
+| Représentativité non câblée | **Mineur** | Absence faible ; proxy Eco% médiocre *comme proxy physique*, depuis **câblé comme critère métier d'éligibilité** (verrou §7/§8 — voir §5.6). |
 | Pente quasi inerte en climat doux | **Sans action** | Prudence cohérente : peu d'occasions = peu de risque et peu de bénéfice. |
 | Asymétrie poêle non formalisée comme invariant explicite | **Mineur** | Comportement correct ; manque seulement une formalisation de confort. |
 | Divergences contrats (75/06) | **Mineur** | Le runtime est plus juste ; risque = confusion future, pas comportement. |

@@ -30,8 +30,11 @@ Le rapport d'audit conserve, après revue contradictoire, une position nuancée 
   (hystérésis 40/55) — est jugé **faible** (§5.6) : faux positifs (journées douces/ensoleillées
   déclarées représentatives à tort) et faux négatifs (journées froides rares rejetées).
 - En conséquence, l'audit avait **rangé au rejeté** le branchement du proxy *tel quel*
-  (« filtre médiocre ») et borné la gravité de la dérive (§5.5 : pente quasi-immunisée en climat
-  doux, parallèle seul exposé, fortement amorti), **« sans trace d'une dérive observée »** (§5.4–§5.5).
+  (« filtre médiocre » *comme proxy physique*) et borné la gravité de la dérive (§5.5 : pente
+  quasi-immunisée en climat doux, parallèle seul exposé, fortement amorti), **« sans trace d'une
+  dérive observée »** (§5.4–§5.5). *(Mise à jour 2026-06-17 : ce jugement est requalifié — le signal
+  est désormais retenu comme **critère métier d'éligibilité du cycle**, acceptable et conservé tel
+  quel ; voir contre-expertise audit §5.6.)*
 
 Ce rapport n'infirme aucun de ces raisonnements. Il ajoute un **fait nouveau** que l'audit
 n'avait pas : une trace.

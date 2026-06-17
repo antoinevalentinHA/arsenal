@@ -49,7 +49,7 @@ Le premier modèle (cascade *Suggestion → Décision → Application → Acquit
 
 - **I1 — Effet lu comme causal.** Même annoté « corrélation », un panneau d'effet par ajustement invite à un verdict causal. L'effet doit être cadré comme **tendance au niveau régime**, jamais comme score d'un ajustement isolé.
 - **I2 — Silence nominal lu comme anomalie** (corollaire de A1/M3).
-- **I3 — Représentativité relue comme verrou.** L'affichage de l'état représentatif ne doit jamais être interprété comme une condition décisionnelle (décision déjà actée : proxy médiocre, non promu en verrou).
+- **I3 — Affichage de la représentativité ≠ source de décision.** La représentativité **est** désormais le **verrou d'éligibilité métier** de l'auto-ajustement (contrat 75 §7/§8, câblé). L'invariant porte sur la **couche d'affichage** : un panneau d'état représentatif ne doit jamais être pris pour la **source** de la décision — la source est le helper `input_select.chauffage_representativite_thermique` lu par le verrou, non l'UI. *(Signal requalifié de « proxy physique faible » en **critère métier d'éligibilité acceptable** — contre-expertise audit §5.6, 2026-06-17.)*
 
 ---
 
