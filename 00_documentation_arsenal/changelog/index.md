@@ -1370,6 +1370,20 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Recorder : ajout de `binary_sensor.presence_confort_thermique_stabilisee` et des entités de la chaîne décisionnelle clim ; suppression de `sensor.withings_temperature_du_corps_local`.
 - Documentation : ajout des rapports d'audit (climatisation, ECS, Lovelace, pannes), des documents de conception/chantiers climatisation et de la clôture aération ; mise à jour des contrats pannes secteur, climatisation, aération et des hubs de navigation.
 
+---
+
+## 🧠 ARSENAL HA — [v16.0.2](changelogs/v16/v16_0_2.md) — STABLE — 2026-06-17
+**Tags :** navigation, lovelace, prises, commandabilite, notifications, climatisation, panne_secteur, documentation, ci
+
+**Signal net :**
+- Navigation Lovelace : passage des chemins de vue aux chemins canoniques `/<dashboard-key>` (suppression des suffixes `/home`, `/0`, `/aeration`, `/chauffage`, `/diagnostics-*`, `/reglages-*`), `/reglages-dashboard/maison` → `/reglages-maison-dashboard`, correction des liens de retour (dashboards, diagnostics, réglages, includes) ; ajout du checker `check_lovelace_navigation_contracts.py` et du workflow `contracts_lovelace_navigation.yml` (clés de dashboards, chemins de retour, culs-de-sac, segments de vue non canoniques).
+- Prises / Commandabilité UI : ajout du socle `socle_toggle_confirme_indispo` (consommé par `prise_template`) et du template `prise_secteur_template` ; bascule des prises secteur direct vers `prise_secteur_template`, conservation de `prise_template` pour les prises hors gate secteur ; table de topologie des prises commandables dans `infrastructure_puissance.md`, exclusions `switch.prise_box` et `switch.prise_onduleur` documentées.
+- Panne secteur : correction documentaire de l'analyse de `sensor.prise_onduleur_voltage` (« prise alimentée en amont de l'UPS » au lieu de « point secouru UPS »), maintenu en diagnostic secondaire non décisionnel ; mise à jour de l'audit `audit_panne_detection_coupure_secteur.md`, du README contrat `pannes/secteur` et des commentaires de `12_template_sensors/system/coupure_secteur.yaml`.
+- Notifications : ajout du test T6 dans `check_notifications_contracts.py` (emoji initial obligatoire sur les titres mobiles statiques de `script.notification_envoyer`/`_famille`/`_avance`, exception pour les titres entièrement dynamiques Jinja, `ℹ` ajouté à la regex) ; ajout de `👶` aux titres des notifications babyphone Arnaud et Matthieu.
+- Climatisation UI : `carte_clim_etat` lit `sensor.clim_action_en_cours` au lieu du mode HVAC direct, libellés remappés (`cool_actif`/`dry_actif`/`heat_actif`/`bloquee`/`arret`), gris indisponibilité sur `unknown`/`unavailable`/`none`/vide, couleur par mode HVAC conservée, navigation corrigée vers `/clim-dashboard`.
+- Architecture / Doctrine : ajout de la doctrine `architecture/03_doctrines/commandabilite.md`, liée depuis `architecture/README.md`, `architecture/03_doctrines/README.md` et `infrastructure_puissance.md`, et ajoutée aux index Architecture et Doctrines.
+- Documentation / Changelog : gel de `v16_0_1.md` et ajout de son entrée d'index, déplacement de `prompt_changelog.md` de `outils_externes/` vers `changelog/` (retrait du README `outils_externes` et de la mention des gabarits d'autoring dans `00_documentation_arsenal/README.md`), réécriture de `historique.md` (convention distinguant faits et interprétation), mise à jour de `docs_lint_exceptions.txt` et de l'exemple d'exception dans `docs_lint.py`.
+
 ==================================================
 FIN INDEX
 ==================================================
