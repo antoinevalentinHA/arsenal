@@ -14,6 +14,14 @@
 
 > **Objet :** répondre à « comment exécuter le chantier en sécurité jusqu'à sa clôture ». Le plan découpe la réalisation du contrat `76` en phases incrémentales, chacune porteuse de valeur, validable seule, et réductrice d'un risque. Il ne rouvre ni l'audit, ni l'architecture, ni la conception, ni le contrat.
 
+> **Avancement (2026-06-17).** **P1/P2 (Capture)** acquis : les événements
+> `chauffage_courbe_cycle_evalue` et `chauffage_adjustment` sont émis à chaque cycle.
+> **P3 (Persistance) — réalisée pour les termes de décision** : historisation Recorder minimale
+> des entrées de garde et du résultat appliqué (6 entités faible-fréquence), cf.
+> [`spec_persistance_termes_decision_courbe.md`](spec_persistance_termes_decision_courbe.md) §3.1
+> et le bloc dédié de `recorder.yaml` ; contrat Recorder CONFORME. Exclusions assumées : ACK (T08),
+> capteurs `statistics`/suggestions (volume). **P4–P9 non démarrées.** Le chantier reste **ouvert**.
+
 ---
 
 ## 1. Découpage en phases

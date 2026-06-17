@@ -5,7 +5,7 @@
 |---|---|
 | **Type** | Spécification d'exécution (liste normative d'entités) |
 | **Domaine** | Chauffage / Observabilité de l'auto-ajustement courbe |
-| **Statut** | Spec — non démarrée |
+| **Statut** | ✅ Réalisée — Recorder historisé (2026-06-17) |
 | **Version** | 1.0 |
 | **Date** | 2026-06-17 |
 | **Concrétise** | [`plan_action_observabilite_auto_ajustement_courbe.md`](plan_action_observabilite_auto_ajustement_courbe.md) — phase **P3 (Persistance)** |
@@ -14,6 +14,12 @@
 | **Cadre** | Liste d'entités + justification. Aucun YAML, aucune valeur de rétention fine. |
 
 ---
+
+> **Statut d'exécution (2026-06-17).** Les 6 entités du §3.1 sont historisées dans
+> `recorder.yaml` (bloc « CHAUFFAGE – AUTO-AJUSTEMENT COURBE (TERMES DE DÉCISION) »).
+> Contrat Recorder **CONFORME** (T01–T10, `check_recorder_contracts.py`). Les exclusions
+> §3.2 (ACK, T08) et §3.3 (statistics/suggestions, volume) ainsi que la limite §3.4
+> (verdict event-only) sont **actées telles quelles**. `recorder.yaml` n'est pas rouvert.
 
 ## 1. Objet
 

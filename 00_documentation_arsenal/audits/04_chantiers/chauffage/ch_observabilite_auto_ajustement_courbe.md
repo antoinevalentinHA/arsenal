@@ -12,6 +12,15 @@
 
 ---
 
+> **Avancement (2026-06-17).** Capture (P1/P2) acquise ; **persistance P3 réalisée** pour les
+> termes de décision (historisation Recorder minimale : entrées de garde + résultat appliqué),
+> cf. [`plan d'action`](../../03_plans_action/chauffage/plan_action_observabilite_auto_ajustement_courbe.md)
+> et [`spec`](../../03_plans_action/chauffage/spec_persistance_termes_decision_courbe.md). Le **« quoi/quand »**
+> (valeurs appliquées + horodatage) est désormais requêtable dans l'historique HA sans SQLite.
+> Le **« pourquoi »** d'une **abstention** reste porté par les événements (verdict event-only,
+> cf. spec §3.4). **Chantier toujours ouvert** : P4–P9 (complétude, dérivation, effet, supervision)
+> non démarrées.
+
 ## 1. Objectif
 
 Rendre l'auto-ajustement de la courbe de chauffe **observable de lui-même** : permettre à un humain de répondre, à partir de traces durables, à quatre questions sur tout ajustement (réel ou simulé) :
