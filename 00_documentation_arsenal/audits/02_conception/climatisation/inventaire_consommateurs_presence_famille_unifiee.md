@@ -4,7 +4,7 @@
 |---|---|
 | **Type** | Inventaire de périmètre / support de décision |
 | **Domaine** | Climatisation / Présence — cadrage du rebranchement COOL |
-| **Statut** | **Non normatif, non implémenté** — support de la conception du signal stabilisé |
+| **Statut** | **Implémenté V1+V2 — support de décision, mis à jour post-déploiement** (voir §*État de déploiement V1+V2*) |
 | **Version** | 0.1 |
 | **Date** | 2026-06-15 |
 | **Dépôt** | `antoinevalentinHA/arsenal` @ HEAD `84066894` |
@@ -70,6 +70,40 @@ Décisionnels mais soit **déjà protégés**, soit **hors périmètre thermique
 
 - **Périmètre minimal validé** = **5 fichiers COOL clim** (Catégorie 1, hors les 2 chauffage) : `seuils_on_off/cool/on.yaml`, `seuils_on_off/cool/off.yaml`, `decision/consigne.yaml`, `cool/maj_consignes/absence.yaml`, `cool/maj_consignes/presence.yaml`.
 - **Hors périmètre par construction** : aucun fichier sécurité/alarme, aucun maillon `besoin`/`admissibilite`/`target_mode`, `presence/global.yaml`. `autorisation/cool.yaml` **ne lit pas** `unifiee` directement (présence via `absence_prolongee`, Catégorie 3, timer-gardée).
+
+## État de déploiement V1+V2
+
+> Réconciliation entre le classement initial (ci-dessus) et ce qui a été
+> **réellement rebranché**. Le classement initial est conservé tel quel comme
+> trace d'audit ; cette section le corrige là où la contre-expertise runtime l'a
+> infirmé.
+
+- **V1 — rebranché** : les **5 fichiers COOL** de la Catégorie 1 (hors les 2
+  chauffage). Conforme au périmètre minimal.
+- **V2 — rebranché** : **2 fichiers initialement classés Catégorie 3 (« à
+  discuter »)**, requalifiés en chemins de coupure **actifs** :
+  - `blocages/absence_longue.yaml` — le verdict initial « **déjà immunisé par le
+    timer** sur les drops courts » est **infirmé** : la fenêtre de ~5 s **avant**
+    le démarrage du timer (`cool/start_timer_absence.yaml`, `delay: 5 s`) ouvre
+    une coupure COOL transitoire (via `clim_extinction_absence_prolongee_autorisee`
+    → `autorisation/cool.yaml`). Rebranché sur la stabilisée.
+  - `autorisation/dry.yaml` — le verdict initial « impact **non observé** » est
+    **dépassé** : impact DRY observé le 15/06 (coupure immédiate sur présence
+    brute). Rebranché sur la stabilisée.
+- **Maintenu hors périmètre** : les **2 fichiers chauffage** de la Catégorie 1
+  (`10_scripts/chauffage/decision_centrale.yaml`,
+  `11_automations/chauffage/decision_centrale_trigger.yaml`) — **non rebranchés**
+  (pas d'élargissement chauffage) ; `autorisation/heat.yaml` et
+  `silence/autorisation.yaml` (Catégorie 3) — laissés (HEAT hors saison, silence
+  hors périmètre thermique).
+- **`cool/start_timer_absence.yaml`** : **laissé sur présence brute**. Le garde
+  stabilisé étant porté par `absence_longue.yaml` (point de lecture), le timer
+  reste sur la présence brute — démarrage de l'horloge 8 h à l'instant du départ
+  réel, churn invisible à COOL.
+
+Bilan : **7 fichiers rebranchés** (5 en V1 + 2 en V2), tous sur
+`presence_confort_thermique_stabilisee`. Suivi d'observation :
+[`suivi_post_deploiement_presence_confort_thermique_stabilisee.md`](../../04_chantiers/climatisation/suivi_post_deploiement_presence_confort_thermique_stabilisee.md).
 
 ## Liens
 

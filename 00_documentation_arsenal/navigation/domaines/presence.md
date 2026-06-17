@@ -28,7 +28,7 @@ Entrée : [`contrats/presence.md`](../../contrats/presence.md) (mono-fichier —
 
 ## Conception — correction en cours de cadrage (proposé, non opposable)
 
-- Stabilisation présence confort thermique (interface COOL clim) — [`cadrage_contrat_presence_confort_thermique_stabilisee.md`](../../audits/02_conception/climatisation/cadrage_contrat_presence_confort_thermique_stabilisee.md) — **cadrage contractuel proposé, non opposable, non implémenté** ; signal dérivé de `presence_famille_unifiee`, confiné aux décisions COOL ; tenue : [`note_calibration_tenue_T`](../../audits/02_conception/climatisation/note_calibration_tenue_T_presence_confort_thermique.md) (T non ratifiée) ; périmètre : [`inventaire_consommateurs`](../../audits/02_conception/climatisation/inventaire_consommateurs_presence_famille_unifiee.md).
+- Stabilisation présence confort thermique (interface COOL/DRY clim) — [`cadrage_contrat_presence_confort_thermique_stabilisee.md`](../../audits/02_conception/climatisation/cadrage_contrat_presence_confort_thermique_stabilisee.md) — **implémenté V1+V2, sous observation, en attente de validation terrain** ; contrat **non ratifié / non opposable** ; signal dérivé de `presence_famille_unifiee`, confiné aux décisions COOL/DRY ; tenue : [`note_calibration_tenue_T`](../../audits/02_conception/climatisation/note_calibration_tenue_T_presence_confort_thermique.md) (T = 120 s déployé, non ratifié) ; périmètre : [`inventaire_consommateurs`](../../audits/02_conception/climatisation/inventaire_consommateurs_presence_famille_unifiee.md) ; suivi : [`suivi_post_deploiement`](../../audits/04_chantiers/climatisation/suivi_post_deploiement_presence_confort_thermique_stabilisee.md).
 
 ## Liens croisés (sens & appartenance)
 

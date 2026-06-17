@@ -4,11 +4,17 @@
 |---|---|
 | **Type** | Note de calibration (support de décision, mesurée) |
 | **Domaine** | Climatisation / Présence — interface de stabilisation COOL |
-| **Statut** | **Non normative tant que le contrat n'est pas ratifié** — `T` non ratifiée |
+| **Statut** | **T = 120 s déployé en V1 (valeur observationnelle, non ratifiée)** — sous observation |
 | **Version** | 0.1 |
 | **Date** | 2026-06-15 |
 | **Dépôt** | `antoinevalentinHA/arsenal` @ HEAD `84066894` |
 | **Cadre** | Aucun YAML, aucun patch, aucun choix définitif de `T`. Base = mesures déjà acquises. |
+
+> **Mise à jour post-déploiement.** Le candidat prudent `T = 120 s` a été
+> **déployé** (`delay_off: 120s`). Il reste **non ratifié** et **révisable** :
+> sa validation contre la distribution réelle des faux-absents est un critère du
+> suivi d'observation
+> [`suivi_post_deploiement_presence_confort_thermique_stabilisee.md`](../../04_chantiers/climatisation/suivi_post_deploiement_presence_confort_thermique_stabilisee.md).
 
 > **Objet :** proposer une **plage** raisonnable pour la tenue OFF `T` du signal `presence_confort_thermique_stabilisee`, à partir des seules mesures acquises, et un candidat prudent pour un premier déploiement. Base réalisée **mince** (2 impacts, un seul jour) ⟹ `T` doit rester révisable.
 

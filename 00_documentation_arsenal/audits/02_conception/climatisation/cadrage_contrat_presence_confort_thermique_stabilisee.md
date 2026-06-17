@@ -4,12 +4,19 @@
 |---|---|
 | **Type** | Cadrage contractuel (préalable, sans implémentation) |
 | **Domaine** | Climatisation / Présence — interface de stabilisation COOL |
-| **Statut** | **Proposé — non opposable, non implémenté** |
+| **Statut** | **Implémenté (V1 + V2 déployés) — sous observation, en attente de validation terrain ; contrat non ratifié (non opposable)** |
 | **Version** | 0.1 (cadrage) |
 | **Date** | 2026-06-15 |
 | **Dépôt** | `antoinevalentinHA/arsenal` @ HEAD `84066894` |
 | **Signal cadré** | `binary_sensor.presence_confort_thermique_stabilisee` |
 | **Cadre** | Aucun YAML, aucun patch runtime, aucun contrat existant modifié. Ne ratifie pas la valeur de tenue `T`. |
+
+> **Mise à jour post-déploiement.** Le signal et son rebranchement ont été
+> **implémentés** (V1 : 5 consommateurs seuils/consignes COOL ; V2 :
+> `autorisation/dry.yaml` + `blocages/absence_longue.yaml`) et déployés après
+> redémarrage HA. Ce cadrage **reste non ratifié et non opposable** ; il n'est
+> pas promu en contrat à ce stade. Suivi d'observation :
+> [`suivi_post_deploiement_presence_confort_thermique_stabilisee.md`](../../04_chantiers/climatisation/suivi_post_deploiement_presence_confort_thermique_stabilisee.md).
 
 > **Objet :** cadrer un **signal d'interface de présence**, stabilisé contre les faux-absents courts, destiné aux **seules décisions COOL** de la climatisation démontrées vulnérables. Document destiné à devenir un contrat (ou une section du contrat présence) **après ratification** ; il n'est pas opposable en l'état.
 
