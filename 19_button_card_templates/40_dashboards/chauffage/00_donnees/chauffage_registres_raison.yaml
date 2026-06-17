@@ -35,9 +35,13 @@
 #       - Orange rgba(255, 152, 0, 0.2)   — situation limite / dégradé
 #       - Vert   rgba(76, 175, 80, 0.2)   — condition remplie / favorable
 #       - Gris   rgba(158, 158, 158, 0.2) — aucune demande / passif
-#     Les surcouches d'indisponibilité (gris 0.1, prioritaire) et
-#     d'incohérence (rouge, prioritaire) sont portées PAR LES BRIQUES,
-#     pas par cette table (cf. 05_regles.md).
+#     La surcouche d'indisponibilité (gris 0.1, prioritaire) est portée
+#     PAR LES BRIQUES, pas par cette table (cf. 05_regles.md). La surcouche
+#     d'incohérence (rouge) est PRÉVUE mais N'EST PAS exposée à ce jour :
+#     `coherent` est calculé dans `chauffage_diagnostic_global_compact`
+#     mais consommé par aucun champ (dette UI distincte, différée — cf. le
+#     commentaire « Code mort préexistant conservé hors périmètre CH-6 »
+#     dans la brique).
 #
 # 🧱 NATURE
 #     - Template button-card sans rendu propre (pas de carte).
