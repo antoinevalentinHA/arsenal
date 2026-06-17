@@ -12,7 +12,7 @@
 |---|---|---|---|
 | **V-1** | Fond KPI non dégradé en gris indispo | `thermo_plateau_strict_72`, `thermo_plateau_affichage_72`, `thermo_mean_12h_72`, `thermo_variance_12h_72` | ✅ **CORRIGÉ** (patch UI séparé) |
 | **V-2** | Seuils `0.02` / `0.05` du verdict codés en UI ; `0.02` dupliqué backend | `thermo_stabilite_12h_status` ↔ `plateaux_stricts.yaml` | **ouvert — différé** |
-| **V-3** | Sous-domaine sans contrat de gouvernance | `00_documentation_arsenal/contrats/` (absence) | **ouvert — différé** |
+| **V-3** | Sous-domaine sans contrat de gouvernance | `00_documentation_arsenal/contrats/` (absence) | ✅ **TRAITÉ** — contrat créé : [`contrats/chauffage/vannes_thermostatiques_plateaux.md`](../../../contrats/chauffage/vannes_thermostatiques_plateaux.md) |
 
 ---
 
@@ -26,11 +26,9 @@ Aucune urgence tant que le critère backend de stabilité reste stable. Toute ac
 
 ---
 
-## 3. V-3 — Contractualisation du sous-domaine (différé)
+## 3. V-3 — Contractualisation du sous-domaine (✅ traité)
 
-Le sous-domaine inclut une **écriture d'état** (`script.reset_plateau_piece` → `input_number.plateau_chambre_*`) sans contrat. Chantier de **rédaction documentaire** : un contrat de gouvernance décrivant capteurs, helpers, script de reset, frontières diagnostic/décision/action, et invariants couleur du dashboard.
-
-Ce suivi **ne rédige pas** le contrat (hors périmètre de la passe). Il consigne le besoin pour qu'il ne soit pas perdu.
+Le sous-domaine inclut une **écriture d'état** (`script.reset_plateau_piece` → `input_number.plateau_chambre_*`). Un **contrat de gouvernance** a été créé : [`contrats/chauffage/vannes_thermostatiques_plateaux.md`](../../../contrats/chauffage/vannes_thermostatiques_plateaux.md). Il consolide l'existant (détection, mémoire, writers, reset, frontières, invariants, seuil canonique `0.02`, UI/verdict, relations) **sans modifier le runtime**. La frontière stricte avec la décision chauffage y est posée (le plateau ne décide jamais). **V-2 reste ouvert** (dé-doublonnage des seuils côté cartes UI, hors de cette passe).
 
 ---
 

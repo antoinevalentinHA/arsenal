@@ -53,6 +53,7 @@ Autres contrats du pipeline non référencés ci-dessus :
 
 - [`76_observabilite_auto_ajustement_courbe.md`](76_observabilite_auto_ajustement_courbe.md)
 - [`92_ui_notifications_persistantes.md`](92_ui_notifications_persistantes.md)
+- [`vannes_thermostatiques_plateaux.md`](vannes_thermostatiques_plateaux.md) — sous-domaine **diagnostic / mémoire** des plateaux thermostatiques (hors pipeline décisionnel)
 
 ### [`80_table_decision_canonique__reecriture_partielle.md`](80_table_decision_canonique__reecriture_partielle.md) (1 fichier)
 
