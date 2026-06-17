@@ -98,7 +98,7 @@ Les éléments ci-dessous restent ouverts ; ils renvoient aux listes compactes `
 | P3 | `deshumidificateur/guard.md` (§12) | helpers diagnostiques « à créer » | ouvert |
 | P3 ✅ | `sante/cardio_nuit.md` | promu v2.1 normatif + renvois assainis + nav alignée (`3a2e71c9`, `37a94cee`) | **traité** |
 | P3 ✅ | `couleurs`, `boutons`, `statistiques` | **faux trou** : déjà couverts dans la bonne couche — couleurs en UI (`ui/couleurs/`, charte opposable) + inventaire `architecture/capteurs_couleur.md` ; boutons en architecture (`00_structure_includes/button_card_templates.md`) + UI (`ui/socle_ui/`) ; statistiques en architecture (`00_structure_includes/13_sensor_platforms.md` + `01_recorder/contrat.md`) | **traité — restent rattachés UI/architecture ; aucun contrat dédié requis** (en créer un serait une source concurrente) |
-| P4 | `modes/normal` | renvoi à acter depuis `vacances.md` | ouvert |
+| P4 ✅ | `modes/normal` | **faux trou** : `Normal` est l'**état complément** de `Vacances` (select à 2 états), pas un domaine autonome ; doctrine de projection déjà couverte par `contrats/vacances.md` §6 / §8.1 ; exécutant runtime identifié : `11_automations/modes/normal.yaml` | **traité — couvert par `vacances.md` §6/§8.1 ; aucun contrat dédié requis** (en créer un serait une source concurrente) |
 
 > Les dettes/arbitrages de `reveils.md` §7 ne figurent pas dans ce backlog de **couverture documentaire** : ce sont des dettes runtime / arbitrages métier, suivies dans le contrat lui-même. Le domaine `reveils` n’est plus un trou de couverture.
 
@@ -107,7 +107,7 @@ Les éléments ci-dessous restent ouverts ; ils renvoient aux listes compactes `
 1. **P2 — contrats draft à figer : fait** — `sante/sommeil.md` (v1.0), `meteo/fallback.md` (v1.0), `meteo/extrema_jour_courant.md` (v1.0). Dette résiduelle `DETTE-JC-1` (glissante 24 h) suivie dans le contrat, **sans chantier runtime**.
 2. **P2 — domaines à documenter : fait** — `electromenager` et `poele` documentés + indexés. **Plus aucun P2 ouvert.**
 3. **P3 — consolidations :** `deshumidificateur/guard.md §12`, arbitrage `12_capteurs_observabilite_pure.md`. *(`sante/cardio_nuit.md` — statut + renvois + nav — fait ; `couleurs` / `boutons` / `statistiques` — faux trou, fait : restent UI/architecture, aucun contrat.)*
-4. **P4 — `modes/normal` :** renvoi depuis `vacances.md`.
+4. **P4 — `modes/normal` : fait** — faux trou : `Normal` = état complément de `Vacances`, couvert par `vacances.md` §6/§8.1 (exécutant runtime `11_automations/modes/normal.yaml`), aucun contrat dédié.
 
 > Tous les P1 et **tous les P2** de l’audit sont traités : P1 (`05_capteurs_parametrage_canonique.md`, `reveils`/`babyphone`) ; P2 (`sante/sommeil.md`, `meteo/fallback.md`, `meteo/extrema_jour_courant.md` en v1.0 ; `electromenager` et `poele` en contrats racine). **Le backlog restant ne comporte plus que des P3 et un P4** ; le premier P3 (`sante/cardio_nuit.md`) est traité, le chantier global **reste ouvert**.
 
