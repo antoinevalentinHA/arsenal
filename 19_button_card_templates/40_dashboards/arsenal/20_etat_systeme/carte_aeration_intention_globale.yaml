@@ -22,8 +22,9 @@
 #   - Traduit `decision_globale` en icône et libellé
 #     explicatifs
 #   - Code visuel :
-#       - state = on  → aération conseillée → vert
-#       - state = off → aération non pertinente → gris neutre
+#       - state = on          → aération conseillée → vert
+#       - state = off         → aération non pertinente → gris neutre
+#       - state = unavailable → indisponibilité → gris indispo (prime sur tout)
 #   - Navigation vers le dashboard Aération sur appui
 #   - Accès au more-info sur maintien
 #   - Aucun calcul d’intention dans la carte
@@ -50,7 +51,9 @@ carte_aeration_intention_globale:
 
   icon: |
     [[[
-      const d = entity.attributes.decision_globale;
+      const d = entity.attributes?.decision_globale;
+      // Indisponibilité / décision inconnue → icône cohérente (cf. backend + contrat)
+      if (entity.state === 'unavailable' || d === 'inconnue') return 'mdi:help-circle';
       if (d === 'co2_priorite') return 'mdi:molecule-co2';
       if (d === 'canicule') return 'mdi:weather-sunny-alert';
       if (d === 'pluie_recente') return 'mdi:weather-rainy';
@@ -66,9 +69,10 @@ carte_aeration_intention_globale:
         'pluie_recente': 'Pluie récente',
         'aeration_ok': 'Conditions favorables',
         'seuil_ha_non_atteint': 'Humidité stable',
-        'seuil_dt_non_atteint': 'Écart thermique insuffisant'
+        'seuil_dt_non_atteint': 'Écart thermique insuffisant',
+        'inconnue': 'Motif : Données indisponibles'
       };
-      return map[entity.attributes.decision_globale] || '';
+      return map[entity.attributes?.decision_globale] || 'Motif : Analyse en cours';
     ]]]
 
   triggers_update:
@@ -87,6 +91,8 @@ carte_aeration_intention_globale:
     card:
       - background-color: |
           [[[
+            if (entity.state === 'unavailable')
+              return 'rgba(158, 158, 158, 0.1)'; // ⚪ indisponibilité (prime sur tout)
             return entity.state === 'on'
               ? 'rgba(76, 175, 80, 0.2)'    // 🟢 conseillée
               : 'rgba(158, 158, 158, 0.2)'; // ⚪ non pertinente
