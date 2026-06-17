@@ -18,7 +18,7 @@ hubs de navigation (voir §Navigation).
 | [`axe_temperature_jardin.md`](axe_temperature_jardin.md) | Règles locales de l'axe température jardin |
 | [`axe_humidite_relative_jardin.md`](axe_humidite_relative_jardin.md) | Règles locales de l'axe humidité relative jardin |
 | [`extrema_jour_courant.md`](extrema_jour_courant.md) | Affichage des extrema du jour courant par zone |
-| [`tendance_temperature.md`](tendance_temperature.md) | Tendance thermique (hausse/baisse/stable) des agrégats intérieurs — restitution Android Auto |
+| [`tendance_temperature.md`](tendance_temperature.md) | Tendance thermique (hausse/baisse/stable) des agrégats intérieurs — restitution Android Auto. **v1.1** : grandeur de décision amendée (`moyenne_courte − moyenne_longue`) ; runtime en écart temporaire (§18). Voir l'audit fondateur : [`audit_tendance_temperature_sensibilite.md`](../../audits/01_rapports/meteo/audit_tendance_temperature_sensibilite.md) |
 | [`palmares_chaleur.md`](palmares_chaleur.md) | Palmarès historique — chaleur |
 | [`palmares_froid.md`](palmares_froid.md) | Palmarès historique — froid |
 | [`pluie_palmares.md`](pluie_palmares.md) | Palmarès — pluie |

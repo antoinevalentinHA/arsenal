@@ -28,6 +28,7 @@
 ### Météo
 - [meteo/audit_meteo_axe_temperature_rapport_final.md](01_rapports/meteo/audit_meteo_axe_temperature_rapport_final.md)
 - [meteo/audit_affichage_meteo.md](01_rapports/meteo/audit_affichage_meteo.md)
+- [meteo/audit_tendance_temperature_sensibilite.md](01_rapports/meteo/audit_tendance_temperature_sensibilite.md)  _(audit ciblé tendance thermique intérieure — faux `stable` ; cause racine **doctrinale** : la grandeur v1.0 `valeur − moyenne_60_min` sature sur rampes lentes ; recommandation `moyenne_courte − moyenne_longue` ; **contrat amendé v1.1**, **runtime non corrigé** (écart temporaire tracé, contrat §18) ; lecture seule, aucun runtime modifié)_
 
 ### Température intérieure
 - [temperature_interieure/audit_temperature_interieure_rapport_final.md](01_rapports/temperature_interieure/audit_temperature_interieure_rapport_final.md)

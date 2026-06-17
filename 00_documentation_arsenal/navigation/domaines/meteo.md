@@ -43,6 +43,7 @@ Domaine météo extérieure : observation et structuration des données météo 
 - Rapport final — [`audit_meteo_axe_temperature_rapport_final.md`](../../audits/01_rapports/meteo/audit_meteo_axe_temperature_rapport_final.md)
 - Plan d'action — [`plan_action_meteo_axe_temperature.md`](../../audits/03_plans_action/meteo/plan_action_meteo_axe_temperature.md)
 - Audit affichage — [`audit_affichage_meteo.md`](../../audits/01_rapports/meteo/audit_affichage_meteo.md)
+- Audit tendance température (sensibilité) — [`audit_tendance_temperature_sensibilite.md`](../../audits/01_rapports/meteo/audit_tendance_temperature_sensibilite.md) — faux `stable` ; **contrat [`tendance_temperature.md`](../../contrats/meteo/tendance_temperature.md) amendé v1.1**, runtime en écart temporaire (contrat §18), correction runtime à venir.
 
 > **Changelog** (pas de chantier dédié) : mentions diffuses `v15_7_2`, `v15_7_3`, `v15_8_3`, `v15_8_9`.
 
