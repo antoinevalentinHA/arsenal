@@ -5,36 +5,23 @@
 > P2 = amélioration utile · P3 = cosmétique.
 >
 > **Backlog de travail : ne liste que les dettes encore ouvertes.** Les items soldés
-> D1, D2, D3, D4, D6, D7, D8, D9 ont été retirés. Leur historique fait foi ailleurs —
-> changelogs v15.8.4 / v15.8.5, audits sources
+> D1, D2, D3, D4, D6, D7, D8, D9 ont été retirés ; **H1 (déshumidificateur — seuils
+> inversés) est résolu et retiré** (durcissement structurel des plages). Leur historique
+> fait foi ailleurs — changelogs v15.8.4 / v15.8.5, audits sources
 > (`audits/01_rapports/climatisation/audit_climatisation_arsenal.md`,
-> `audits/04_chantiers/transverses/hysteresis_5_domaines.md`) et git. Ce document
-> n'est pas un registre historique.
+> `audits/04_chantiers/transverses/hysteresis_5_domaines.md`), registre *Clos récents*
+> (pour H1) et git. Ce document n'est pas un registre historique.
 
 ## Note de cadrage
 
 Aucun incident fonctionnel n'est ouvert : il ne subsiste **aucun P0 inconditionnel**.
-Le seul item **P0 conditionnel** est **H1** (il ne devient actif que si
-`cave_rh_cible_off ≥ cave_rh_cible_on`, ce que le runtime ne présente pas aujourd'hui).
+Depuis la résolution de **H1** (durcissement structurel des plages, `max(OFF)=74 < min(ON)=75`),
+il ne subsiste **plus aucun P0 conditionnel** non plus.
 Tout le reste relève de gouvernance, d'explicabilité ou de maintenabilité — pas de panne.
 
 ---
 
 ## Classification et estimation, dette par dette
-
-### Candidats P0 conditionnels
-
-**H1 — Déshumidificateur : seuils potentiellement inversés**
-- Type : **bug réel (latent)**.
-- Proba incident : haute *si* `cave_rh_cible_off ≥ cave_rh_cible_on` (défauts d'usine
-  sans `initial` → ON=60/OFF=65 = inversé) ; nulle si correctement réglé.
-- Impact utilisateur : court-cycle du déshumidificateur (bruit, comportement erratique).
-- Impact énergétique : réel (cycles compresseur rapprochés).
-- Complexité : faible (ajouter `initial` + resserrer les plages).
-- Régression : très faible.
-- **Priorité : P1 — escalade P0 immédiate si les valeurs courantes sont inversées.**
-  Vérification : comparer les deux helpers ; l'`integrite_reglages/deshumidificateur`
-  le signale déjà s'il est armé.
 
 ### P2 — améliorations utiles
 
@@ -105,7 +92,6 @@ s'applique pas. Laisser tel quel.
 
 | Priorité | Dette | Type | Risque | Bénéfice | Effort |
 |---|---|---|---|---|---|
-| **P0?** | H1 — déshum seuils inversés | Bug latent | Court-cycle compresseur **si OFF≥ON** | Élimine oscillation matérielle | Faible |
 | P2 | D5 — notif échec persistant | Gouvernance | Échec exécution silencieux | Visibilité des pannes | Faible |
 | P2 | D13 — CI partielle | Gouvernance | Filet incomplet (`clim_bloquee` F2, `clim_action_en_cours` F3) | Fige les 2 derniers artefacts | Faible |
 | P2 | H2 — VMC seuils OFF morts | Gouvernance | Réglage UI sans effet | Contrôle réel ou param supprimé | Faible |
@@ -123,8 +109,6 @@ s'applique pas. Laisser tel quel.
 
 ## Lecture stratégique
 
-- **À faire en premier, ce week-end :** vérifier H1 (30 s). C'est le seul item au risque
-  matériel et le moins cher à corriger.
 - **Dernier filet à compléter : D13** — la CI couvre déjà admissibilité, extinction COOL,
   raison, `status_72` et cohérence ; il ne reste qu'à couvrir `clim_bloquee` et
   `clim_action_en_cours`.
