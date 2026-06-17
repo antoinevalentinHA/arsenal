@@ -1,11 +1,15 @@
 # ==========================================================
 # 🧠 ARSENAL — STATISTICS SENSOR
-#     Tendance thermique — moyenne glissante 60 min des agrégats intérieurs
+#     Tendance thermique — moyennes glissantes courte (15 min) et
+#     longue (60 min) des agrégats intérieurs
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Exposer la moyenne glissante sur 60 minutes des trois agrégats
-#   thermiques intérieurs déjà affichés en conduite. Sert de référence
-#   de lissage à la couche d'interprétation « tendance ».
+#   Exposer, pour les trois agrégats thermiques intérieurs déjà
+#   affichés en conduite, DEUX moyennes glissantes :
+#     • longue  (60 min) — référence de fond ;
+#     • courte  (15 min) — référence récente.
+#   La couche d'interprétation « tendance » décide sur l'écart
+#   moyenne_courte − moyenne_longue (contrat v1.1 §3.2, §5, §8).
 #
 # 🧩 PÉRIMÈTRE
 #   - Statistique dérivée sur série temporelle uniquement
@@ -16,10 +20,13 @@
 #   • sensor.temperature_min_chambres_moyenne_60_min
 #   • sensor.temperature_moyenne_maison_moyenne_60_min
 #   • sensor.temperature_max_chambres_moyenne_60_min
+#   • sensor.temperature_min_chambres_moyenne_15_min
+#   • sensor.temperature_moyenne_maison_moyenne_15_min
+#   • sensor.temperature_max_chambres_moyenne_15_min
 #
 # 📋 PARAMÈTRES
 #   state_characteristic : mean
-#   max_age              : 60 min — fenêtre glissante (contrat §8.1)
+#   max_age              : 60 min (longue) / 15 min (courte) — contrat §8
 #   sampling_size        : généreux, borné par l'âge (cf. temperature.yaml)
 #
 # 🔗 DÉPENDANCES (lecture)
@@ -58,4 +65,34 @@
   entity_id: sensor.temperature_max_chambres
   state_characteristic: mean
   max_age: *max_age_60min
+  sampling_size: *sampling_size_tendance
+
+# ----------------------------------------------------------
+# ⏱️ Moyenne courte (15 min) — référence récente (contrat v1.1 §8)
+#    Même gabarit que la moyenne longue ; seul max_age change.
+# ----------------------------------------------------------
+
+- platform: statistics
+  name: "Température min Chambres moyenne 15 min"
+  unique_id: temperature_min_chambres_moyenne_15_min
+  entity_id: sensor.temperature_min_chambres
+  state_characteristic: mean
+  max_age: &max_age_15min
+    minutes: 15
+  sampling_size: *sampling_size_tendance
+
+- platform: statistics
+  name: "Température moyenne Maison moyenne 15 min"
+  unique_id: temperature_moyenne_maison_moyenne_15_min
+  entity_id: sensor.temperature_moyenne_maison
+  state_characteristic: mean
+  max_age: *max_age_15min
+  sampling_size: *sampling_size_tendance
+
+- platform: statistics
+  name: "Température max Chambres moyenne 15 min"
+  unique_id: temperature_max_chambres_moyenne_15_min
+  entity_id: sensor.temperature_max_chambres
+  state_characteristic: mean
+  max_age: *max_age_15min
   sampling_size: *sampling_size_tendance

@@ -7,10 +7,12 @@
 #   conduite, une tendance lisible : hausse / baisse / stable, avec
 #   icône dynamique. Indisponible si la source n'est pas numérique.
 #
-# ⚙️ Méthode (contrat §5) :
-#   écart = valeur instantanée source − moyenne glissante 60 min.
+# ⚙️ Méthode (contrat v1.1 §3.2, §5, §8) :
+#   écart = moyenne glissante courte (15 min) − moyenne glissante longue (60 min).
 #   Hystérésis à bande morte asymétrique (contrat §8) :
-#     S_in = 0.4 °C (entrée), S_out = 0.2 °C (sortie), S_out < S_in.
+#     S_in = 0.15 °C (entrée), S_out = 0.08 °C (sortie), S_out < S_in.
+#   La grandeur v1.0 « valeur instantanée − moyenne 60 min » est dépréciée
+#   (saturation sur rampes lentes, cf. audit sensibilité §4).
 #   La mémoire d'état nécessaire à l'hystérésis est portée par
 #   this.state (trigger template sensor). Le time_pattern réévalue
 #   la sortie de bande même sans changement de source.
@@ -21,8 +23,9 @@
 #   • sensor.tendance_temperature_max_chambres
 #
 # 🧩 Sources consommées (lecture seule, jamais modifiées) :
-#   • sensor.temperature_<axe>                 (agrégat source)
-#   • sensor.temperature_<axe>_moyenne_60_min  (moyenne glissante)
+#   • sensor.temperature_<axe>                 (agrégat source — gate exploitabilité)
+#   • sensor.temperature_<axe>_moyenne_15_min  (moyenne glissante courte)
+#   • sensor.temperature_<axe>_moyenne_60_min  (moyenne glissante longue)
 #   où <axe> ∈ {min_chambres, moyenne_maison, max_chambres}
 #   dérivé de this.entity_id.
 #
@@ -38,6 +41,7 @@
     - platform: state
       entity_id:
         - sensor.temperature_min_chambres
+        - sensor.temperature_min_chambres_moyenne_15_min
         - sensor.temperature_min_chambres_moyenne_60_min
     - platform: homeassistant
       event: start
@@ -51,15 +55,17 @@
       icon: &tendance_icon >
         {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
         {% set source = 'sensor.temperature_' ~ axe %}
-        {% set moyenne = 'sensor.temperature_' ~ axe ~ '_moyenne_60_min' %}
+        {% set moy_courte = 'sensor.temperature_' ~ axe ~ '_moyenne_15_min' %}
+        {% set moy_longue = 'sensor.temperature_' ~ axe ~ '_moyenne_60_min' %}
         {% set vf = states(source) | float(default=none) %}
-        {% set mf = states(moyenne) | float(default=none) %}
-        {% if vf is none or mf is none %}
+        {% set mc = states(moy_courte) | float(default=none) %}
+        {% set ml = states(moy_longue) | float(default=none) %}
+        {% if vf is none or mc is none or ml is none %}
           mdi:thermometer-off
         {% else %}
-          {% set ecart = (vf - mf) | round(2) %}
-          {% set s_in = 0.4 %}
-          {% set s_out = 0.2 %}
+          {% set ecart = (mc - ml) | round(2) %}
+          {% set s_in = 0.15 %}
+          {% set s_out = 0.08 %}
           {% set prev = this.state %}
           {% if ecart >= s_in %}
             mdi:thermometer-chevron-up
@@ -77,15 +83,17 @@
       state: &tendance_state >
         {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
         {% set source = 'sensor.temperature_' ~ axe %}
-        {% set moyenne = 'sensor.temperature_' ~ axe ~ '_moyenne_60_min' %}
+        {% set moy_courte = 'sensor.temperature_' ~ axe ~ '_moyenne_15_min' %}
+        {% set moy_longue = 'sensor.temperature_' ~ axe ~ '_moyenne_60_min' %}
         {% set vf = states(source) | float(default=none) %}
-        {% set mf = states(moyenne) | float(default=none) %}
-        {% if vf is none or mf is none %}
+        {% set mc = states(moy_courte) | float(default=none) %}
+        {% set ml = states(moy_longue) | float(default=none) %}
+        {% if vf is none or mc is none or ml is none %}
           indisponible
         {% else %}
-          {% set ecart = (vf - mf) | round(2) %}
-          {% set s_in = 0.4 %}
-          {% set s_out = 0.2 %}
+          {% set ecart = (mc - ml) | round(2) %}
+          {% set s_in = 0.15 %}
+          {% set s_out = 0.08 %}
           {% set prev = this.state %}
           {% if ecart >= s_in %}
             hausse
@@ -103,21 +111,25 @@
       attributes: &tendance_attrs
         ecart_c: >
           {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
-          {% set source = 'sensor.temperature_' ~ axe %}
-          {% set moyenne = 'sensor.temperature_' ~ axe ~ '_moyenne_60_min' %}
-          {% set vf = states(source) | float(default=none) %}
-          {% set mf = states(moyenne) | float(default=none) %}
-          {% if vf is none or mf is none %}
+          {% set moy_courte = 'sensor.temperature_' ~ axe ~ '_moyenne_15_min' %}
+          {% set moy_longue = 'sensor.temperature_' ~ axe ~ '_moyenne_60_min' %}
+          {% set mc = states(moy_courte) | float(default=none) %}
+          {% set ml = states(moy_longue) | float(default=none) %}
+          {% if mc is none or ml is none %}
             unavailable
           {% else %}
-            {{ (vf - mf) | round(2) }}
+            {{ (mc - ml) | round(2) }}
           {% endif %}
-        moyenne_reference: >
+        moyenne_courte: >
+          {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
+          {{ states('sensor.temperature_' ~ axe ~ '_moyenne_15_min') }}
+        moyenne_longue: >
           {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
           {{ states('sensor.temperature_' ~ axe ~ '_moyenne_60_min') }}
-        fenetre_minutes: 60
-        seuil_entree: 0.4
-        seuil_sortie: 0.2
+        fenetre_courte_minutes: 15
+        fenetre_longue_minutes: 60
+        seuil_entree: 0.15
+        seuil_sortie: 0.08
         source: >
           {% set axe = this.entity_id | replace('sensor.tendance_temperature_', '') %}
           sensor.temperature_{{ axe }}
@@ -126,6 +138,7 @@
     - platform: state
       entity_id:
         - sensor.temperature_moyenne_maison
+        - sensor.temperature_moyenne_maison_moyenne_15_min
         - sensor.temperature_moyenne_maison_moyenne_60_min
     - platform: homeassistant
       event: start
@@ -143,6 +156,7 @@
     - platform: state
       entity_id:
         - sensor.temperature_max_chambres
+        - sensor.temperature_max_chambres_moyenne_15_min
         - sensor.temperature_max_chambres_moyenne_60_min
     - platform: homeassistant
       event: start
