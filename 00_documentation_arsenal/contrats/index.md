@@ -68,7 +68,7 @@
 | [aeration_blocage_chauffage/](./aeration_blocage_chauffage/) | 37 | README ✅ | Machine d'état aération→blocage chauffage (m0→m6) |
 | [alarme/](./alarme/) | 16 | README ✅ | Pipeline alarme numéroté 00→99 |
 | [boiler/](./boiler/) | 7 | README ✅ | Chaudière / boiler bridge |
-| [chauffage/](./chauffage/) | 52 | README ✅ | Pipeline chauffage + capteurs + amendements |
+| [chauffage/](./chauffage/) | 51 | README ✅ | Pipeline chauffage + capteurs + amendements |
 | [climatisation/](./climatisation/) | 39 | README ✅ | Climatisation (12 root + 26 capteurs) |
 | [deshumidificateur/](./deshumidificateur/) | 3 | README ✅ | Déshumidificateur cave |
 | [eclairage/](./eclairage/) | 6 | README ✅ | Éclairage |
