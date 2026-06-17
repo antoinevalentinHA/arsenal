@@ -181,7 +181,9 @@ En particulier :
 
 ---
 
-## 12. Helpers diagnostiques à créer
+## 12. Helpers diagnostiques (implémentés)
+
+Les 7 helpers ci-dessous sont **implémentés et opérationnels** : définis dans `04_input_texts/deshumidificateur/guard.yaml`, écrits exclusivement par `10_scripts/deshumidificateur/guard_deshumidificateur.yaml` (via `input_text.set_value`, conformément à l'invariant d'observation), et gardés en CI par `scripts/arsenal_contracts/check_deshum_guard_contracts.py` (déclaration des 7 helpers + écritures limitées au diagnostic).
 
 | Entité | Type | Description |
 |---|---|---|
