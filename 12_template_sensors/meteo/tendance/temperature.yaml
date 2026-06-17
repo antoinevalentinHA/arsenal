@@ -61,22 +61,22 @@
         {% set mc = states(moy_courte) | float(default=none) %}
         {% set ml = states(moy_longue) | float(default=none) %}
         {% if vf is none or mc is none or ml is none %}
-          mdi:thermometer-off
+          mdi:alert-circle-outline
         {% else %}
           {% set ecart = (mc - ml) | round(2) %}
           {% set s_in = 0.15 %}
           {% set s_out = 0.08 %}
           {% set prev = this.state %}
           {% if ecart >= s_in %}
-            mdi:thermometer-chevron-up
+            mdi:arrow-up-bold
           {% elif ecart <= -s_in %}
-            mdi:thermometer-chevron-down
+            mdi:arrow-down-bold
           {% elif prev == 'hausse' and ecart > s_out %}
-            mdi:thermometer-chevron-up
+            mdi:arrow-up-bold
           {% elif prev == 'baisse' and ecart < -s_out %}
-            mdi:thermometer-chevron-down
+            mdi:arrow-down-bold
           {% else %}
-            mdi:thermometer
+            mdi:minus-thick
           {% endif %}
         {% endif %}
 
