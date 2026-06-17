@@ -38,12 +38,12 @@
 #   Plages disjointes : max(OFF) = 74 < min(ON) = 75
 #   => OFF < ON garanti structurellement ; l'UI ne peut plus
 #   saisir OFF >= ON. Ne pas elargir ces bornes sans rouvrir H1.
-#   `initial` = valeurs runtime saines verifiees (ON = 78 / OFF = 73).
+#   Pas d'`initial` : l'input_number restaure la derniere valeur
+#   reglee par l'utilisateur au redemarrage HA (stockage persistant).
 # ----------------------------------------------------------
 
 cave_rh_cible_on:
   name: Cave - RH cible ON
-  initial: 78
   min: 75
   max: 85
   step: 1
@@ -52,7 +52,6 @@ cave_rh_cible_on:
 
 cave_rh_cible_off:
   name: Cave - RH cible OFF
-  initial: 73
   min: 65
   max: 74
   step: 1
