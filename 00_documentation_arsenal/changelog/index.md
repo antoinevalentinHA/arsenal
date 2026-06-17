@@ -1384,6 +1384,21 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Architecture / Doctrine : ajout de la doctrine `architecture/03_doctrines/commandabilite.md`, liée depuis `architecture/README.md`, `architecture/03_doctrines/README.md` et `infrastructure_puissance.md`, et ajoutée aux index Architecture et Doctrines.
 - Documentation / Changelog : gel de `v16_0_1.md` et ajout de son entrée d'index, déplacement de `prompt_changelog.md` de `outils_externes/` vers `changelog/` (retrait du README `outils_externes` et de la mention des gabarits d'autoring dans `00_documentation_arsenal/README.md`), réécriture de `historique.md` (convention distinguant faits et interprétation), mise à jour de `docs_lint_exceptions.txt` et de l'exemple d'exception dans `docs_lint.py`.
 
+---
+
+## 🧠 ARSENAL HA — [v16.0.3](changelogs/v16/v16_0_3.md) — STABLE — 2026-06-17
+**Tags :** chauffage, climatisation, presence, meteo, aeration, deshumidificateur, recorder, contrats, ci, documentation
+
+**Signal net :**
+- Chauffage auto-ajustement : ajout de la garde `input_select.chauffage_representativite_thermique == REPRESENTATIF` (bloquante) dans `auto_ajustement.yaml` (`cycle_actionnable`), raison de cycle `non_representatif` ; historisation Recorder des termes de décision (6 entités : représentativité, gate auto, simulation, pente, parallèle, dernier ajustement).
+- Météo tendance : ajout des moyennes glissantes courtes 15 min (`sensor.temperature_<axe>_moyenne_15_min`), grandeur de décision passée à `moyenne_15_min − moyenne_60_min`, seuils 0.4/0.2 → 0.15/0.08 ; contrat `tendance_temperature.md` v1.0 → v1.1 (ajout §18 écart contrat/runtime, `INV-TEND-13`/`INV-TEND-14`).
+- Climatisation présence : `autorisation/dry.yaml` et `blocages/absence_longue.yaml` rebranchés de `binary_sensor.presence_famille_unifiee` vers `binary_sensor.presence_confort_thermique_stabilisee` (V2).
+- Climatisation UI : `carte_clim_etat` n'affiche plus la consigne (`cool_actif` → « Refroidissement »), suppression de la lecture de `sensor.consigne_clim_appliquee`.
+- Déshumidificateur : `cave_rh_cible_on`/`cave_rh_cible_off` — ajout de `initial` (78/73) et resserrement des plages (max OFF 74 < min ON 75) ; `guard.md` §12 « helpers à créer » → « implémentés » ; retrait de l'item H1 du backlog hystérésis.
+- Aération UI : `carte_delta_ha` lit `seuils_utilises.ha_min_applique` en lecture seule (suppression du fallback saisonnier JS) ; `carte_aeration_intention_globale` gère `unavailable`/`inconnue`.
+- Vannes thermostatiques : ajout du contrat `contrats/chauffage/vannes_thermostatiques_plateaux.md`, suppression du stub `contrats/chauffage/15_capteurs/12_capteurs_observabilite_pure.md`.
+- Documentation : ajout du registre `audits/REGISTRE_CHANTIERS.md`, du checker `check_registre_chantiers.py` et du workflow `contracts_registre_chantiers.yml` ; gel de `v16_0_2.md` et ajout de son entrée d'index ; ajout de `19_button_card_templates/README.md`.
+
 ==================================================
 FIN INDEX
 ==================================================
