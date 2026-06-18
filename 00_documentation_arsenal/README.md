@@ -139,6 +139,39 @@ plus les documents d'architecture UI transverse.
 
 ---
 
+## 🚦 AVANT DE PROPOSER OU MODIFIER — IA & CONTRIBUTEURS
+
+> **Pointeur d'orientation, non normatif.** Cette section ne redéfinit rien et ne
+> duplique pas la table ci-dessus : elle **route** vers les documents propriétaires.
+> En cas de divergence, le document de famille fait foi.
+
+Avant de proposer un changement — qu'on soit humain ou IA — s'assurer d'avoir
+intégré les points suivants :
+
+- **Un seul propriétaire par vérité ; aucune vérité concurrente.** Une décision a
+  un décideur unique, un fait a un document propriétaire unique ; ne pas recréer
+  ailleurs une vérité déjà détenue. Voir
+  [`architecture/03_doctrines/principes_generaux.md`](architecture/03_doctrines/principes_generaux.md)
+  (autorité unique par domaine).
+- **Contrat / doctrine avant runtime.** Le contrat précède l'implémentation : si le
+  YAML contredit le contrat, c'est l'implémentation qui est fausse.
+- **Ce qui est réellement ouvert aujourd'hui.** Consulter le cockpit
+  [`audits/REGISTRE_CHANTIERS.md`](audits/REGISTRE_CHANTIERS.md) — statut des
+  chantiers, à ne pas confondre avec la navigation.
+- **S'orienter par domaine.** Entrer par
+  [`navigation/carte_domaines.md`](navigation/carte_domaines.md) (registre des
+  domaines et hubs) plutôt que par un fichier isolé.
+- **Identifier les checkers CI applicables _avant_ le patch.** Les gates
+  documentaires (`scripts/docs_lint/`) et les checkers de contrat par domaine
+  (`scripts/arsenal_contracts/`) sont orchestrés en intégration continue — voir
+  [`../.github/workflows/docs.yml`](../.github/workflows/docs.yml) pour le corpus.
+  Un changement non conforme est rejeté par la machine, pas par un relecteur.
+- **Discipline de commit.** Respecter la frontière patrimoine / runtime et les
+  règles de commit. Voir
+  [`architecture/03_doctrines/git.md`](architecture/03_doctrines/git.md).
+
+---
+
 ## 🚫 CE QUE CETTE DOCUMENTATION N'EST PAS
 
 - ❌ un dump de configuration Home Assistant
