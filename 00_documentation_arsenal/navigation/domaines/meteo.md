@@ -54,6 +54,18 @@ Domaine météo extérieure : observation et structuration des données météo 
 - **Chauffage** — [`contrats/chauffage/`](../../contrats/chauffage/) ; consomme les données météo extérieures (température jardin, dérive thermique) — aval.
 - **Climatisation** — [`contrats/climatisation/`](../../contrats/climatisation/) ; consomme l'humidex (dérivé température + humidité) — aval.
 
+## Organisation des vues — pages live & records (cible chantier C7)
+
+> **NON NORMATIF — cible de chantier, non réalisée.** Note d'orientation ; aucune donnée ni capteur n'est concerné. Détail faisant foi : [`audits/04_chantiers/lovelace/cadrage_palmares_meteo.md`](../../audits/04_chantiers/lovelace/cadrage_palmares_meteo.md) (chantier **C7**).
+
+- **Pages météo de consultation courante** : elles restent centrées sur l'**état du jour**, les **valeurs courantes**, les **cumuls** et les **graphes** utiles — lecture « live », pas archive.
+- **Palmarès historiques** : les palmarès existants ont **vocation à être regroupés** dans une destination dédiée **Palmarès météo**. La centralisation vise les **trois** palmarès déjà en place :
+  - jours les plus **chauds** ;
+  - jours les plus **froids** ;
+  - **précipitations**.
+- **Sans effet sur la donnée** : cette destination ne modifie **aucune donnée ni aucun capteur** ; elle **réunit** des cartes de restitution existantes. Les contrats palmarès restent inchangés (UI hors périmètre / extension future).
+- **Réalisation** : la création runtime effective sera traitée au **Lot 2** du chantier C7. À ce stade, **rien n'est créé ni déplacé** au runtime.
+
 ## Points de vigilance (non normatif)
 
 - **`axe_temperature.md`** dans `contrats/meteo/` = axe température **intérieure** — appartient au domaine `temperature_interieure` malgré son hébergement physique ici (héritage documentaire, carte §5.3).
