@@ -47,6 +47,14 @@
         - binary_sensor.mouvement_garage
       from: 'off'
       to: 'on'
+      # Anti-course (ALM-A2-3) : la chaîne qui établit timer.delai_entree = active
+      # (contact -> alarme_ouverture_* -> delai_entree_start -> timer.start) comporte
+      # plus de sauts que la détection mouvement (template pur, synchrone). Un mouvement
+      # quasi simultané a l'ouverture (cas garage / rafale d'entree) pouvait etre evalue
+      # alors que le timer etait encore idle -> faux declenchement. Ce debounce laisse la
+      # chaine d'inhibition s'etablir avant l'evaluation. Detection preservee (PIR remanent).
+      for:
+        seconds: 2
 
   condition:
     - condition: state
