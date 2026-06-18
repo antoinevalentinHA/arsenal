@@ -155,7 +155,7 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 - [lovelace/exploitation_audit_19_button_card_templates.md](04_chantiers/lovelace/exploitation_audit_19_button_card_templates.md)
 - [lovelace/suivi_audit_dashboard_diagnostics_chauffage.md](04_chantiers/lovelace/suivi_audit_dashboard_diagnostics_chauffage.md)  _(suivi de l'audit UI diagnostics chauffage — points différés tracés ; **non ordonnancé, aucun changement runtime/UI** ; IMPORTANT-1, IMPORTANT-2 (arbitrages ouverts), CONFORT-3, CONFORT-4)_
 - [lovelace/suivi_audit_dashboard_diagnostics_vannes_thermostatiques.md](04_chantiers/lovelace/suivi_audit_dashboard_diagnostics_vannes_thermostatiques.md)  _(suivi de l'audit UI diagnostics vannes — **V-1 corrigé** ; **V-2 ouvert** (seuils verdict UI + duplication), **V-3 ouvert** (contrat de gouvernance à rédiger) ; non ordonnancé, aucun changement runtime/UI)_
-- [lovelace/cadrage_palmares_meteo.md](04_chantiers/lovelace/cadrage_palmares_meteo.md)  _(chantier **C7** — centralisation des palmarès météo ; **cadré, arbitrages tranchés, prêt à exécuter** ; aucun runtime/doc modifié)_
+- [lovelace/cadrage_palmares_meteo.md](04_chantiers/lovelace/cadrage_palmares_meteo.md)  _(chantier **C7** — centralisation des palmarès météo ; **clos (2026-06-18)** — Option B retenue (dashboard dédié « Palmarès météo » + accès hub Navigation « Rec. météo ») ; composition Lovelace / navigation UI, aucun capteur/entité/logique modifié)_
 
 ## Clôtures
 

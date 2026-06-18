@@ -1,7 +1,7 @@
 # 🏗️ Chantier — Centralisation des palmarès météo (dashboard « Palmarès météo »)
 
 > **Type :** chantier Lovelace / météo. **Document faisant foi** du chantier (pointé par `REGISTRE_CHANTIERS.md`).
-> **ID registre :** `C7` *(proposé — voir §0)*. **Statut :** **cadré, arbitrages tranchés, prêt à exécuter.** Lots 1→4 non exécutés.
+> **ID registre :** `C7`. **Statut :** **CLOS (2026-06-18)** — Option B retenue, validée terrain (merge #16). Lots 0→4 exécutés ; voir §9 Clôture.
 > **Amont :** audit lecture seule *Températures Min · Max* (Option 3) + cadrage lecture seule *Cible B*. Le présent document **fige** la cible et les décisions ; il ne recopie pas l'intégralité du cadrage.
 > **Discipline :** aucune modification runtime/doc tant qu'un lot n'est pas explicitement lancé ; co-commit du registre à chaque changement d'état.
 
@@ -131,12 +131,34 @@ Lot 0 (CE DOCUMENT + ligne registre C7)        ← ouverture
 
 | Lot | État | Date |
 |---|---|---|
-| Lot 0 — ouverture (ce doc + registre `C7`) | **prêt à committer** | 2026-06-18 |
-| Lot 1 — note doctrinale | non démarré | — |
-| Lot 2 — runtime | non démarré | — |
-| Lot 3 — validations | non démarré | — |
-| Lot 4 — changelog / clôture | non démarré | — |
+| Lot 0 — ouverture (ce doc + registre `C7`) | **fait** | 2026-06-18 |
+| Lot 1 — note doctrinale (`navigation/domaines/meteo.md`) | **fait** | 2026-06-18 |
+| Lot 2 — runtime (dashboard + accès hub Navigation + nettoyage sources + finition UI) | **fait** | 2026-06-18 |
+| Lot 3 — validations (checkers + rendu terrain desktop/mobile) | **fait** | 2026-06-18 |
+| Lot 4 — clôture documentaire | **fait** (ce document + registre ⑤) ; changelog **hors périmètre**, traité séparément | 2026-06-18 |
 
 ---
 
-*Document de chantier — aucun fichier runtime/doc modifié à ce stade. L'exécution de chaque lot requiert un lancement explicite et respecte les invariants de séquence ci-dessus.*
+## 9. Clôture
+
+**Décision finale : Option B** (accès par le hub Navigation).
+
+- **Option A rejetée** — bouton `Palmarès` dans le bandeau météo : **débordement en mobile portrait** (10 boutons), KO terrain. Le bandeau météo est resté/restauré à **9 boutons** et n'est plus touché.
+- **Destination finale** :
+  - hub Navigation → bouton **« Rec. météo »** (`mdi:trophy`, zone environnement ; `Système` conservé en bas à droite du groupe Navigation ; `Logs HA`/`Journal` côte à côte côté Système) ;
+  - dashboard **« Palmarès météo »** (`/meteo-palmares-dashboard`, clé/titre inchangés).
+- **Structure finale** du dashboard — trois sections records :
+  - **🌡️ Records de chaleur**
+  - **❄️ Records de froid**
+  - **🌧️ Records de précipitations**
+- **Conséquences** :
+  - *Températures Min · Max* ne porte plus les palmarès chaud/froid ;
+  - *Précipitations* ne porte plus le palmarès pluie ;
+  - les includes palmarès ne portent plus de titre markdown interne (cartes utilisées uniquement par le dashboard dédié).
+- **Nature** : composition Lovelace / navigation UI uniquement — **aucun capteur, aucune entité, aucune logique métier modifiés** ; contrats palmarès inchangés.
+- **Validation terrain** : desktop + mobile portrait ; **rechargement Lovelace suffisant, sans redémarrage HA**.
+- **Intégration** : mergé dans `main` (#16, `0c1eb51f`).
+
+---
+
+*Chantier C7 **clos** le 2026-06-18. Document conservé en trace ; statut faisant foi : [`REGISTRE_CHANTIERS.md`](../../REGISTRE_CHANTIERS.md) (⑤ Clos récents).*
