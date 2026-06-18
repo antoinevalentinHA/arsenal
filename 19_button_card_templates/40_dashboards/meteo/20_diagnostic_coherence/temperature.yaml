@@ -63,7 +63,7 @@ temperature:
               red: "rgba(244, 67, 54, 0.2)",
               yellow: "rgba(255, 193, 7, 0.25)",
               green: "rgba(76, 175, 80, 0.2)",
-              grey: "rgba(158, 158, 158, 0.2)"
+              grey: "rgba(158, 158, 158, 0.1)"
             };
             if (!entity || !entity.entity_id) return map.grey;
 
