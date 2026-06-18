@@ -39,6 +39,7 @@ views:
               - type: custom:button-card
                 entity: alarm_control_panel.alarme_maison
                 template: carte_alarme_decision
+                name: Alarme Maison
 
           # ==================================================
           # 🚨 SIRÈNE
@@ -72,6 +73,7 @@ views:
               - type: history-graph
                 entities:
                   - entity: alarm_control_panel.alarme_maison
+                    name: Alarme Maison
                   - entity: binary_sensor.presence_famille_securite
                 hours_to_show: 0
                 logarithmic_scale: true

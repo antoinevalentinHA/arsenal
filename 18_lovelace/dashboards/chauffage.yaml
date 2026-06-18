@@ -73,4 +73,5 @@ views:
               - type: history-graph
                 entities:
                   - entity: sensor.programme_chauffage
+                    name: Programme
                 logarithmic_scale: true
