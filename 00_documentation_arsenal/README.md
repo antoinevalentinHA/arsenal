@@ -155,6 +155,30 @@ intégré les points suivants :
   (autorité unique par domaine).
 - **Contrat / doctrine avant runtime.** Le contrat précède l'implémentation : si le
   YAML contredit le contrat, c'est l'implémentation qui est fausse.
+
+**Lire la doc canonique applicable _avant_ de créer ou modifier — jamais se fonder
+sur un fichier voisin ou une intuition.** Selon ce qu'on modifie, lire d'abord :
+
+| Type de modification | Doc(s) canonique(s) à lire avant patch | Gate / contrôle |
+|---|---|---|
+| Runtime YAML (tout include) | [`structure_includes/index.md`](architecture/00_structure_includes/index.md) — carte dossier → document | `docs_lint` + checker de domaine |
+| Template sensors (`12_`) | [`12_template_sensors.md`](architecture/00_structure_includes/12_template_sensors.md) | `docs_lint` + checker de domaine |
+| Automations (`11_`) | [`11_automations.md`](architecture/00_structure_includes/11_automations.md) + [`id_automatisations.md`](architecture/03_doctrines/id_automatisations.md) | `docs_lint` + checker de domaine |
+| Scripts (`10_`) | [`10_scripts.md`](architecture/00_structure_includes/10_scripts.md) + [`separation_decision_action.md`](architecture/03_doctrines/separation_decision_action.md) | `docs_lint` + checker de domaine |
+| Customize (`01_`) | [`01_customize.md`](architecture/00_structure_includes/01_customize.md) | `check_01_customize_contracts` |
+| Lovelace (`18_`) | [`18_lovelace.md`](architecture/00_structure_includes/18_lovelace.md) | `check_lovelace_includes_contracts` |
+| Button-card templates (`19_`) | [`button_card_templates.md`](architecture/00_structure_includes/button_card_templates.md) + [`socle_ui/index.md`](ui/socle_ui/index.md) | `check_19_button_card_templates_contracts` |
+| **UI couleurs** | **corpus `ui/couleurs/` à lire _intégralement_** : [`README.md`](ui/couleurs/README.md) + `01_principes` → `05_regles` (pas seulement le README) | `check_ui_couleurs_contracts` + `check_ui_runtime_colors_contracts` |
+| Doc métier / contrats | [`contrats/index.md`](contrats/index.md) | `docs_ci_contract_counts` |
+| Changelog / release | [`changelog/prompt_changelog.md`](changelog/prompt_changelog.md) | `docs_ci_changelog_index` |
+| Navigation documentaire | [`navigation/README.md`](navigation/README.md) — règles R1–R8 | `docs_ci_navigation_leaf_pages` |
+| Registre des chantiers | [`REGISTRE_CHANTIERS.md`](audits/REGISTRE_CHANTIERS.md) — gouvernance, co-commit | `check_registre_chantiers` |
+| Checkers CI | [`../.github/workflows/docs.yml`](../.github/workflows/docs.yml) + `scripts/arsenal_contracts/` | `check_arsenal_self_contracts` (self-test) |
+
+> Pointeur, non normatif : la table **route** vers les documents propriétaires, qui
+> font foi. Elle ne recopie ni règle, ni seuil. « checker de domaine » = le checker
+> du domaine fonctionnel touché (cf. `scripts/arsenal_contracts/`).
+
 - **Ce qui est réellement ouvert aujourd'hui.** Consulter le cockpit
   [`audits/REGISTRE_CHANTIERS.md`](audits/REGISTRE_CHANTIERS.md) — statut des
   chantiers, à ne pas confondre avec la navigation.
