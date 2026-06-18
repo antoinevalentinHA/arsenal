@@ -400,15 +400,22 @@ def test_intrusion_automations_present() -> None:
 
 def test_intrusion_mode_test_bifurcation() -> None:
     """50 — Les automations d'intrusion doivent bifurquer sur mode_test_alarme."""
-    files_intrusion = [F_AUTO_DELAI_FIN, F_AUTO_MOUVEMENT, F_AUTO_AUTRES]
-    for path in files_intrusion:
-        content = read(path)
+    # Localisation par ID (file_with_id), robuste au déplacement de fichiers,
+    # comme N1/N5/N6/N7. Fail-closed : un fichier introuvable est une erreur,
+    # jamais un passage silencieux (cf. correctif vacuité N2/N3/N4).
+    intrusion_ids = [AUTO_DELAI_FIN_ID, AUTO_MOUVEMENT_ID, AUTO_AUTRES_ID]
+    for auto_id in intrusion_ids:
+        path, content = file_with_id(auto_id)
         if not content:
+            ERRORS.append(
+                f"N2 — Automation d'intrusion (ID {auto_id}) introuvable par ID "
+                f"(50_intrusion §I2)"
+            )
             continue
         if "mode_test_alarme" not in active_content(content):
             ERRORS.append(
                 f"N2 — Bifurcation mode_test_alarme absente de "
-                f"{path.relative_to(REPO_ROOT)} (50_intrusion §I2)"
+                f"{path.relative_to(REPO_ROOT)} (ID {auto_id}) (50_intrusion §I2)"
             )
     if not any("N2" in e for e in ERRORS):
         print("✔ N2 — Bifurcation mode_test_alarme présente dans les automations d'intrusion")
@@ -416,16 +423,22 @@ def test_intrusion_mode_test_bifurcation() -> None:
 
 def test_intrusion_condition_armed_away() -> None:
     """50 — Chaque automation d'intrusion vérifie armed_away."""
-    files_intrusion = [F_AUTO_DELAI_START, F_AUTO_DELAI_FIN, F_AUTO_MOUVEMENT, F_AUTO_AUTRES]
-    for path in files_intrusion:
-        content = read(path)
+    # Localisation par ID (file_with_id), fail-closed.
+    intrusion_ids = [
+        AUTO_DELAI_START_ID, AUTO_DELAI_FIN_ID, AUTO_MOUVEMENT_ID, AUTO_AUTRES_ID
+    ]
+    for auto_id in intrusion_ids:
+        path, content = file_with_id(auto_id)
         if not content:
+            ERRORS.append(
+                f"N3 — Automation d'intrusion (ID {auto_id}) introuvable par ID "
+                f"(50_intrusion §I3)"
+            )
             continue
-        ac = active_content(content)
-        if "armed_away" not in ac:
+        if "armed_away" not in active_content(content):
             ERRORS.append(
                 f"N3 — Garde armed_away absente de "
-                f"{path.relative_to(REPO_ROOT)} (50_intrusion §I3)"
+                f"{path.relative_to(REPO_ROOT)} (ID {auto_id}) (50_intrusion §I3)"
             )
     if not any("N3" in e for e in ERRORS):
         print("✔ N3 — Garde armed_away présente dans toutes les automations d'intrusion")
@@ -433,10 +446,15 @@ def test_intrusion_condition_armed_away() -> None:
 
 def test_sirene_brutale_pas_en_mode_test() -> None:
     """50 — script.sirene_brutale n'est jamais appelé en mode test. (I6)"""
-    files_intrusion = [F_AUTO_DELAI_FIN, F_AUTO_MOUVEMENT, F_AUTO_AUTRES]
-    for path in files_intrusion:
-        content = read(path)
+    # Localisation par ID (file_with_id), fail-closed.
+    intrusion_ids = [AUTO_DELAI_FIN_ID, AUTO_MOUVEMENT_ID, AUTO_AUTRES_ID]
+    for auto_id in intrusion_ids:
+        path, content = file_with_id(auto_id)
         if not content:
+            ERRORS.append(
+                f"N4 — Automation d'intrusion (ID {auto_id}) introuvable par ID "
+                f"(50_intrusion §I6)"
+            )
             continue
         # Cherche si sirene_brutale apparaît dans un bloc conditionné par mode_test == on
         # Approximation : sirene_brutale ne doit apparaître que dans les branches mode_test off
