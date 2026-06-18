@@ -231,14 +231,14 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Journal
-                    icon: mdi:book-open-variant
+                    name: Palmarès météo
+                    icon: mdi:trophy
                     styles:
                       icon:
-                        - color: "#5D4037"
+                        - color: "#F9A825"
                     tap_action:
                       action: navigate
-                      navigation_path: /logbook
+                      navigation_path: /meteo-palmares-dashboard
 
           # ==================================================
           # ⚙️ SYSTÈME — OUTILS & ADMINISTRATION
@@ -334,14 +334,14 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: File Editor
-                    icon: mdi:wrench
+                    name: Journal
+                    icon: mdi:book-open-variant
                     styles:
                       icon:
-                        - color: "#0288D1"
+                        - color: "#5D4037"
                     tap_action:
                       action: navigate
-                      navigation_path: /app/core_configurator
+                      navigation_path: /logbook
 
                   - type: custom:button-card
                     template: bouton_navigation

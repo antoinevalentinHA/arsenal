@@ -1,7 +1,7 @@
 type: custom:layout-card
 layout_type: custom:grid-layout
 layout:
-  grid-template-columns: 1fr repeat(10, 46px) 1fr
+  grid-template-columns: 1fr repeat(9, 46px) 1fr
   justify-items: center
   align-items: center
 cards:
@@ -113,15 +113,3 @@ cards:
     styles:
       icon:
         - color: '#00897B'
-
-  - type: custom:button-card
-    view_layout:
-      grid-column: 11
-    template: bouton_navigation_badge_carre
-    icon: mdi:trophy
-    tap_action:
-      action: navigate
-      navigation_path: /meteo-palmares-dashboard
-    styles:
-      icon:
-        - color: '#F9A825'
