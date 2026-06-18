@@ -23,7 +23,7 @@
 #   Démarrage Home Assistant.
 #
 # 🔗 DÉPENDANCES
-#   Lit      : input_boolean.systeme_stable, binary_sensor.besoin_clim_dry, binary_sensor.autorisation_clim_dry
+#   Lit      : input_boolean.systeme_stable, binary_sensor.besoin_clim_dry, binary_sensor.autorisation_clim_dry, binary_sensor.chambre_max_humidex_en_dessous_seuil_off
 #   Appelle  : input_boolean.turn_on, input_boolean.turn_off
 #   Écrit    : input_boolean.besoin_clim_dry_admissible
 #
@@ -74,7 +74,7 @@
 
     - choose:
 
-        # Sous-branche : extinction conservatrice si signaux KO
+        # Sous-branche : extinction conservatrice — raison prouvée (autorisation off ou seuil d'extinction atteint)
         - conditions:
             - condition: template
               value_template: >
