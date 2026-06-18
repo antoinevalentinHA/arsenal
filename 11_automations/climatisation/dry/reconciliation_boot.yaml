@@ -78,9 +78,8 @@
         - conditions:
             - condition: template
               value_template: >
-                {{ wait.completed == false
-                   or is_state('binary_sensor.besoin_clim_dry', 'off')
-                   or is_state('binary_sensor.autorisation_clim_dry', 'off') }}
+                {{ is_state('binary_sensor.autorisation_clim_dry', 'off')
+                   or is_state('binary_sensor.chambre_max_humidex_en_dessous_seuil_off', 'on') }}
           sequence:
             - action: input_boolean.turn_off
               target:

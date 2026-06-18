@@ -78,9 +78,8 @@
         - conditions:
             - condition: template
               value_template: >
-                {{ wait.completed == false
-                   or is_state('binary_sensor.besoin_clim_cool', 'off')
-                   or is_state('binary_sensor.autorisation_clim_cool', 'off') }}
+                {{ is_state('binary_sensor.autorisation_clim_cool', 'off')
+                   or is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') }}
           sequence:
             - action: input_boolean.turn_off
               target:
