@@ -70,11 +70,6 @@ views:
           - !include ../../includes/cartes/graph_precipitations_annee.yaml
 
           # ------------------------------------------------------
-          # 🏆 Palmarès historique
-          # ------------------------------------------------------
-          - !include ../../includes/cartes/pluie_palmares.yaml
-
-          # ------------------------------------------------------
           # 🚨 Détection pluie Zigbee (24h)
           # ------------------------------------------------------
           - type: history-graph

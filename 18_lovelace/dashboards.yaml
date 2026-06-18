@@ -243,6 +243,13 @@ meteo-min-max-temperature-dashboard:
   show_in_sidebar: false
   filename: 18_lovelace/dashboards/meteo/meteo_temperature_min_max.yaml
 
+meteo-palmares-dashboard:
+  mode: yaml
+  title: Palmarès météo
+  icon: mdi:trophy
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/meteo/meteo_palmares.yaml
+
 meteo-backups-dashboard:
   mode: yaml
   title: Météo Backups

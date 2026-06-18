@@ -104,14 +104,15 @@ views:
                       navigation_path: /deshumidificateur-dashboard
 
                   - type: custom:button-card
-                    template: bouton_navigation_dynamique
-                    variables:
-                      etat_dashboard: sensor.etat_eclairage_dashboard
-                    name: Éclairage
-                    icon: mdi:lightbulb
+                    template: bouton_navigation
+                    name: Rec. météo
+                    icon: mdi:trophy
+                    styles:
+                      icon:
+                        - color: "#F9A825"
                     tap_action:
                       action: navigate
-                      navigation_path: /eclairage-dashboard
+                      navigation_path: /meteo-palmares-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -155,6 +156,16 @@ views:
                         - color: "#6D4C41"
 
                   - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_eclairage_dashboard
+                    name: Éclairage
+                    icon: mdi:lightbulb
+                    tap_action:
+                      action: navigate
+                      navigation_path: /eclairage-dashboard
+
+                  - type: custom:button-card
                     template: bouton_navigation
                     name: Prises
                     icon: mdi:power-plug
@@ -188,17 +199,6 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Énergie
-                    icon: mdi:flash
-                    tap_action:
-                      action: navigate
-                      navigation_path: /energy
-                    styles:
-                      icon:
-                        - color: "#FBC02D"
-
-                  - type: custom:button-card
-                    template: bouton_navigation
                     name: Imprimerie
                     icon: mdi:factory
                     tap_action:
@@ -220,6 +220,17 @@ views:
                         - color: "#1976D2"
 
                   - type: custom:button-card
+                    template: bouton_navigation
+                    name: Énergie
+                    icon: mdi:flash
+                    tap_action:
+                      action: navigate
+                      navigation_path: /energy
+                    styles:
+                      icon:
+                        - color: "#FBC02D"
+
+                  - type: custom:button-card
                     template: bouton_navigation_dynamique
                     variables:
                       etat_dashboard: sensor.etat_systeme_dashboard
@@ -228,17 +239,6 @@ views:
                     tap_action:
                       action: navigate
                       navigation_path: /system-dashboard
-
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: Journal
-                    icon: mdi:book-open-variant
-                    styles:
-                      icon:
-                        - color: "#5D4037"
-                    tap_action:
-                      action: navigate
-                      navigation_path: /logbook
 
           # ==================================================
           # ⚙️ SYSTÈME — OUTILS & ADMINISTRATION
@@ -255,17 +255,6 @@ views:
                 square: false
                 columns: 4
                 cards:
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: Sauvegardes
-                    icon: mdi:backup-restore
-                    styles:
-                      icon:
-                        - color: "#E53935"
-                    tap_action:
-                      action: navigate
-                      navigation_path: /config/backup/overview
-
                   - type: custom:button-card
                     template: bouton_navigation
                     name: Automations
@@ -301,6 +290,28 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
+                    name: Journal
+                    icon: mdi:book-open-variant
+                    styles:
+                      icon:
+                        - color: "#5D4037"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /logbook
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Historique
+                    icon: mdi:chart-line
+                    styles:
+                      icon:
+                        - color: "#1E88E5"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /history
+
+                  - type: custom:button-card
+                    template: bouton_navigation
                     name: États
                     icon: mdi:state-machine
                     styles:
@@ -323,25 +334,14 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Historique
-                    icon: mdi:chart-line
+                    name: Sauvegardes
+                    icon: mdi:backup-restore
                     styles:
                       icon:
-                        - color: "#1E88E5"
+                        - color: "#E53935"
                     tap_action:
                       action: navigate
-                      navigation_path: /history
-
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: File Editor
-                    icon: mdi:wrench
-                    styles:
-                      icon:
-                        - color: "#0288D1"
-                    tap_action:
-                      action: navigate
-                      navigation_path: /app/core_configurator
+                      navigation_path: /config/backup/overview
 
                   - type: custom:button-card
                     template: bouton_navigation
