@@ -104,14 +104,15 @@ views:
                       navigation_path: /deshumidificateur-dashboard
 
                   - type: custom:button-card
-                    template: bouton_navigation_dynamique
-                    variables:
-                      etat_dashboard: sensor.etat_eclairage_dashboard
-                    name: Éclairage
-                    icon: mdi:lightbulb
+                    template: bouton_navigation
+                    name: Rec. météo
+                    icon: mdi:trophy
+                    styles:
+                      icon:
+                        - color: "#F9A825"
                     tap_action:
                       action: navigate
-                      navigation_path: /eclairage-dashboard
+                      navigation_path: /meteo-palmares-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique
@@ -220,15 +221,14 @@ views:
                         - color: "#1976D2"
 
                   - type: custom:button-card
-                    template: bouton_navigation
-                    name: Palmarès météo
-                    icon: mdi:trophy
-                    styles:
-                      icon:
-                        - color: "#F9A825"
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_eclairage_dashboard
+                    name: Éclairage
+                    icon: mdi:lightbulb
                     tap_action:
                       action: navigate
-                      navigation_path: /meteo-palmares-dashboard
+                      navigation_path: /eclairage-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation_dynamique

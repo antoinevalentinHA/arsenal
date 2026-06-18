@@ -27,18 +27,18 @@ views:
           # ======================================================
           - type: custom:button-card
             template: section_header
-            name: Records de chaleur
+            name: 🌡️ Records de chaleur
 
           - !include ../../includes/cartes/palmares_temperature_chaude.yaml
 
           - type: custom:button-card
             template: section_header
-            name: Records de froid
+            name: ❄️ Records de froid
 
           - !include ../../includes/cartes/palmares_temperature_froide.yaml
 
           - type: custom:button-card
             template: section_header
-            name: Records de précipitations
+            name: 🌧️ Records de précipitations
 
           - !include ../../includes/cartes/pluie_palmares.yaml
