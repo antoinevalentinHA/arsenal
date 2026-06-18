@@ -252,8 +252,8 @@ meteo-palmares-dashboard:
 
 meteo-backups-dashboard:
   mode: yaml
-  title: Météo Backups
-  icon: mdi:database
+  title: Cohérence capteurs
+  icon: mdi:compare-horizontal
   show_in_sidebar: false
   filename: 18_lovelace/dashboards/meteo/meteo_backups.yaml
 
