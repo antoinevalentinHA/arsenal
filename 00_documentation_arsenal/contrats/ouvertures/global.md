@@ -95,7 +95,7 @@ Invariants N1 :
 
 - Dépend exclusivement de N0.
 - État toujours `on` ou `off`.
-- Si la source est indisponible → état forcé `off`.
+- Si la source est indisponible → **maintien du dernier état valide connu** (`on`/`off`) ; `off` par défaut à froid (aucun état antérieur). Évite la fabrication d'un front `off → on` lors de la reconnexion d'un ouvrant resté ouvert.
 - L’indisponibilité est exposée uniquement en attribut.
 - Aucun délai.
 - Aucune qualification.

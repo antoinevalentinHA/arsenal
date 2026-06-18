@@ -40,7 +40,7 @@
         {% if s in ['on','off'] %}
           {{ s }}
         {% else %}
-          off
+          {{ this.state if this.state in ['on','off'] else 'off' }}
         {% endif %}
       icon: &contact_norm_icon >
         {% set s = states(this.entity_id) %}
