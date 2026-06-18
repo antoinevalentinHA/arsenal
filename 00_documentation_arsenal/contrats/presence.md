@@ -227,11 +227,21 @@ y compris `not_home`, est considéré comme `absent`.
 
 ### 🔐 Présence Sécurité — projections valides
 
-| État `person.*`       | Valide ? | Motif                                     |
-|-----------------------|----------|-------------------------------------------|
-| `Maison – Sécurité`   | ✅ oui   | périmètre maison strict                   |
-| `home`                | ❌ non   | périmètre trop large, non contrôlé        |
-| `Approche – Sécurité` | ❌ non   | infra uniquement, hors périmètre sécurité |
+La présence sécurité **ne consomme aucune projection `person.*`**.
+Elle est calculée exclusivement à partir de la **distance GPS explicite**
+(trackers téléphone via helpers `input_text.telephone_*_tracker`),
+du **WiFi/BSSID** (`binary_sensor.presence_wifi_maison`),
+de la **présence enfants** (`binary_sensor.presence_enfants`)
+et de la **présence visiteur** (`input_boolean.presence_visiteur`).
+
+En conséquence, **aucun état `person.*` n'est une projection valide
+de la présence sécurité** :
+
+| État `person.*`       | Valide ? | Motif                                          |
+|-----------------------|----------|------------------------------------------------|
+| `Maison – Sécurité`   | ❌ non   | présence sécurité non dérivée de `person.*`    |
+| `home`                | ❌ non   | périmètre trop large, non contrôlé             |
+| `Approche – Sécurité` | ❌ non   | infra uniquement, hors périmètre sécurité      |
 
 ### 🌡️ Présence Confort — projections valides
 

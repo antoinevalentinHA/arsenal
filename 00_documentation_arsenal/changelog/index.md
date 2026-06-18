@@ -1409,6 +1409,14 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Contrats : `ouvertures/global.md` §2.2 aligné (invariant N1 « maintien du dernier état valide »).
 - Effet transverse : ferme en amont la cause racine des faux fronts consommés par l'alarme et l'aération, sans modifier le domaine Alarme.
 
+## 🧠 ARSENAL HA — [v16.0.5](changelogs/v16/v16_0_5.md) — CLOSE — 2026-06-18
+**Tags :** presence, contrats
+
+**Signal net :**
+- Présence / R3 : retrait des deux branches mortes `person.* == 'Zone maison'` de `presence_famille_securite` (chaîne sans zone correspondante, toujours fausses) — aucun changement de comportement.
+- Contrats : `presence.md` réaligné — `person.*` / `Maison – Sécurité` n'est plus présenté comme projection valide de la présence sécurité (modèle acté : GPS-distance + WiFi/BSSID + enfants + visiteur).
+- Nature : réalignement de vérité (fausse redondance supprimée, contrat rendu honnête), **pas** une amélioration de robustesse — la robustesse de fond de l'autorité de désarmement reste hors périmètre.
+
 ==================================================
 FIN INDEX
 ==================================================
