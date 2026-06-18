@@ -74,19 +74,41 @@
       state: "armed_away"
 
   action:
-    # 🚨 Déclenchement de l'alarme
-    - action: alarm_control_panel.alarm_trigger
-      target:
-        entity_id: alarm_control_panel.alarme_maison
+    # Bifurcation mode test (contrat 50 §I2) :
+    #   - hors mode test : déclenchement réel + notification critique
+    #   - en mode test   : notification uniquement, aucun déclenchement réel
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: input_boolean.mode_test_alarme
+              state: "off"
+          sequence:
+            # 🚨 Déclenchement de l'alarme
+            - action: alarm_control_panel.alarm_trigger
+              target:
+                entity_id: alarm_control_panel.alarme_maison
 
-    # 📲 Notification critique
-    - action: script.notification_envoyer_avance
-      data:
-        cible: input_text.telephone_antoine_notify
-        titre: "🚨 Alarme déclenchée"
-        message: >
-          Aucun désarmement détecté après expiration
-          du délai d'entrée.
-        extra:
-          priority: high
-          importance: high
+            # 📲 Notification critique
+            - action: script.notification_envoyer_avance
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "🚨 Alarme déclenchée"
+                message: >
+                  Aucun désarmement détecté après expiration
+                  du délai d'entrée.
+                extra:
+                  priority: high
+                  importance: high
+
+      # 🔕 Mode test : notification uniquement, aucun déclenchement réel
+      default:
+        - action: script.notification_envoyer_avance
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "🔕 Fin de délai simulée (mode test)"
+            message: >
+              Délai d'entrée expiré sans désarmement.
+              Aucun déclenchement réel : le système est en **mode test**.
+            extra:
+              priority: high
+              importance: high
