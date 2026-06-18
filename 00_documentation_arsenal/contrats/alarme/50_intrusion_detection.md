@@ -51,14 +51,14 @@ Les automations de détection :
 - **Conditions** :
   - `input_boolean.systeme_stable == on` (garde post-reboot)
   - `alarm_control_panel.alarme_maison == armed_away`
-- **Action** : `alarm_control_panel.alarm_trigger` + notification critique. La sirène est déclenchée par le **seul** chemin canonique `triggered → script.sirene_forte` (CH-1 C1). Le garde `binary_sensor.ouverture_qualifiee_maison` n'intervient plus : `timer.finished` vaut à lui seul preuve d'intrusion non désarmée (CH-1 B2).
+- **Action** : hors mode test → `alarm_control_panel.alarm_trigger` + notification critique ; en mode test → notification de test uniquement, aucun déclenchement réel (bifurcation `input_boolean.mode_test_alarme`, conforme à I2 — **ALM-A2-2 résolu**, commit `db9fba8c`). La sirène est déclenchée par le **seul** chemin canonique `triggered → script.sirene_forte` (CH-1 C1). Le garde `binary_sensor.ouverture_qualifiee_maison` n'intervient plus : `timer.finished` vaut à lui seul preuve d'intrusion non désarmée (CH-1 B2).
 - **Mode** : `single`
 - **⚠️ Dette architecturale documentée** : court-circuite le pipeline canonique (voir §9).
 
 ### `1002000000009` — Intrusion mouvement
 
 - **Rôle** : déclencher l'alarme sur détection de mouvement dans une zone sensible.
-- **Triggers** : `binary_sensor.mouvement_sejour`, `binary_sensor.mouvement_entree`, `binary_sensor.mouvement_garage` — front `off → on`
+- **Triggers** : `binary_sensor.mouvement_sejour`, `binary_sensor.mouvement_entree`, `binary_sensor.mouvement_garage` — front `off → on`, **débounce `for: 2 s`** (anti-course, voir I4 — **ALM-A2-3**)
 - **Conditions** :
   - `alarm_control_panel.alarme_maison == armed_away`
   - `timer.delai_entree != active` (délai d'entrée non en cours)
@@ -95,13 +95,16 @@ Toute automation de détection doit implémenter un comportement distinct en mod
 
 La bifurcation est portée par `input_boolean.mode_test_alarme`.
 
-> **Écart connu — ALM-A2-2 (audit 2026-06).** `10020000000032` (fin de délai)
-> appelle `alarm_control_panel.alarm_trigger` **sans** bifurcation mode test.
-> En mode test, le panneau passe donc réellement à `triggered` (seule la sirène
-> audible étant inhibée en aval par `sirene_forte`). Cet écart à I2 est
-> **documenté et non encore tranché** (arbitrage runtime). Tant qu'il subsiste,
-> la validation positive `S3` doit en tenir compte (l'expiration volontaire du
-> délai en mode test produit un déclenchement réel du panneau).
+> **ALM-A2-2 (audit 2026-06) — RÉSOLU.** `10020000000032` (fin de délai) bifurque
+> désormais sur `input_boolean.mode_test_alarme` (commit `db9fba8c`) : hors mode test,
+> déclenchement réel + notification critique ; en mode test, notification de test
+> uniquement, **sans** déclenchement réel du panneau. L'écart à I2 est levé.
+>
+> **Conséquence pour `S3`.** En mode test, l'expiration du délai ne produit plus de
+> `triggered` ni de sirène (notification de test seule). La validation **positive** de
+> la détection à l'échéance (`ALM-CRIT-2`) doit donc être conduite **hors mode test**.
+> Les mentions « S3 → triggered + sirène en mode test » des snapshots datés
+> (`etat_post_CH6.md`, `cloture_ch1_alarme.md` §10) sont antérieures à cette résolution.
 
 ### I3 — Garde `armed_away`
 
@@ -112,6 +115,18 @@ Aucune automation de détection ne déclenche l'alarme si `alarm_control_panel.a
 L'automation mouvement ne déclenche pas pendant le délai d'entrée (`timer.delai_entree == active`).
 
 L'automation ouvrants d'entrée (délai start) est la seule à réagir pendant cette fenêtre.
+
+> **Fenêtre d'établissement (ALM-A2-3, audit 2026-06) — résolu.** L'inhibition repose
+> sur `timer.delai_entree == active`, état posé par une chaîne plus longue (contact →
+> `alarme_ouverture_*` trigger-based → `delai_entree_start` → `timer.start`) que la
+> détection mouvement (capteurs `mouvement_*` agrégés en **template pur, synchrone**).
+> Un mouvement quasi simultané à l'ouverture (cas **garage** / rafale d'entrée, cf.
+> backpressure acceptée au contrat `30_…` Position A) pouvait être évalué alors que le
+> timer était encore `idle` → faux déclenchement rare. Le trigger mouvement porte donc
+> un **débounce `for: 2 s`** (commit `e3f14563`) qui laisse la chaîne d'inhibition
+> s'établir avant l'évaluation. Détection préservée (rémanence PIR ≫ 2 s) ; coût = +2 s
+> de latence sur la détection par mouvement seul. Valeur ajustable (résidu de queue
+> extrême si l'établissement dépasse 2 s).
 
 ### I5 — Garde capteur valide
 
