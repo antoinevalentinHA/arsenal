@@ -58,6 +58,11 @@
 
   condition:
     - condition: state
+      alias: "Système stable (anti-recomposition post-reboot)"
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
+    - condition: state
       entity_id: alarm_control_panel.alarme_maison
       state: armed_away
 

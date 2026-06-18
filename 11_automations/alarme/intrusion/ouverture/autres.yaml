@@ -60,6 +60,11 @@
       to: 'on'
 
   condition:
+    - condition: state
+      alias: "Système stable (anti-recomposition post-reboot)"
+      entity_id: input_boolean.systeme_stable
+      state: "on"
+
     - condition: template
       alias: "Capteur valide (pas unknown/unavailable)"
       value_template: >
