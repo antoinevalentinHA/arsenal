@@ -1417,6 +1417,14 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Contrats : `presence.md` réaligné — `person.*` / `Maison – Sécurité` n'est plus présenté comme projection valide de la présence sécurité (modèle acté : GPS-distance + WiFi/BSSID + enfants + visiteur).
 - Nature : réalignement de vérité (fausse redondance supprimée, contrat rendu honnête), **pas** une amélioration de robustesse — la robustesse de fond de l'autorité de désarmement reste hors périmètre.
 
+## 🧠 ARSENAL HA — [v16.0.6](changelogs/v16/v16_0_6.md) — CLOSE — 2026-06-18
+**Tags :** alarme, contrats, documentation
+
+**Signal net :**
+- Contrats Alarme : chaîne 20/30/40 réalignée — chaque fichier portait le contenu du slot précédent ; `20` était un duplicata du `10` et la couche **Application** (`40`) était absente de l'arbre.
+- Diagnostic git : réorganisation correcte (`4bbde856`) annulée par un revert trop large (`c42033e8`) ciblant `evolutions_futures/github.md` ; contenu Application restauré depuis cette version authentique (fidèle au runtime, `id 10020000000027`).
+- Correction : rotation de contenu (noms de fichiers préservés), aucun runtime/ID/checker touché ; README et navigation inchangés (déjà conformes à l'intention).
+
 ==================================================
 FIN INDEX
 ==================================================

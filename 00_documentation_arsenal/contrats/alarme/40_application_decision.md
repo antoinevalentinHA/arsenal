@@ -1,70 +1,71 @@
-# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Décision centrale (pure)
+# 🧠 ARSENAL — CONTRAT MÉTIER · Alarme — Application de la décision
 
 ## 📌 Statut
 
 - **Contrat normatif et opposable**
 - Domaine : **Sécurité / Alarme**
-- Chemin : [`30_decision_centrale.md`](30_decision_centrale.md)
+- Chemin : [`40_application_decision.md`](40_application_decision.md)
 
 ---
 
 ## 🎯 Objet
 
-Définir le contrat d’exécution du cerveau :
+Définir la couche d’application unique :
 
-- `script.alarme_decision_centrale`
+- `automation.alarme_decision_centrale` (ID `10020000000027`)
 
 ---
 
 ## 🧠 Rôle
 
-Le cerveau :
-
-- lit des **entrées contractuelles**,
-- calcule une décision **déterministe**,
-- publie la décision via helpers,
-- n’exécute aucune action.
-
----
-
-## 🔒 Propriétés obligatoires
-
-- **Déterministe** : mêmes entrées → mêmes sorties.
-- **Idempotent** : exécutable sans effet de bord.
-- **Sans action** :
-  - aucun appel à `alarm_control_panel.*`,
-  - aucun `timer.*`,
-  - aucune notification,
-  - aucune sirène.
+- snapshot état cible (avant),
+- exécute le cerveau,
+- snapshot état cible (après),
+- applique l’intention **une seule fois**, de manière idempotente,
+- ne contient aucune logique métier.
 
 ---
 
-## 📤 Sorties obligatoires
+## ✅ Exécution autorisée
 
-Le cerveau publie :
+### Désarmer
 
-- `input_text.alarme_decision`
-- `input_text.alarme_etat_cible`
-- `input_text.alarme_raison`
+Condition canonique :
+
+- `input_text.alarme_etat_cible == DISARMED`
+- et `alarm_control_panel.alarme_maison != disarmed`
+
+Action canonique :
+
+- `script.alarme_desarmer`
+
+### Armer (away)
+
+Condition canonique :
+
+- `input_text.alarme_etat_cible == ARMED_AWAY`
+- et `alarm_control_panel.alarme_maison == disarmed`
+
+Action canonique :
+
+- `script.alarme_armer`
+
+### NOOP
+
+- aucune action
 
 ---
 
-## 🧩 Canon décisionnel (niveau contrat)
+## 🛡️ Robustesse
 
-La décision doit tenir compte, au minimum, de :
-
-1) contexte visiteur (si présent)
-2) présence sécurité
-3) mode alarme (automatique vs non)
-4) absence stabilisée
-5) blocage armement auto
-6) délai d’entrée en cours
-7) sinon : armement autorisé
+- mode `queued` autorisé
+- aucune temporisation bloquante
+- post-reboot safe (déclenchement sur `input_boolean.systeme_stable`)
 
 ---
 
 ## 🛑 Interdictions
 
-- Introduire une logique d’application (arm/disarm) dans le cerveau.
-- Introduire un `delay` ou un `wait`.
-- Déclencher une sirène ou une notification.
+- recalculer la logique décisionnelle dans l’automation,
+- armer/désarmer via `alarm_control_panel.*` directement,
+- introduire des conditions non contractuelles (hors gardes d’idempotence).
