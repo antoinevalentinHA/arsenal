@@ -1,0 +1,29 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE
+#     Alarme — Panneau maison (libellé Android Auto)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Centraliser le libellé court (friendly_name) du panneau
+#   d'alarme maison, lisible en conduite (Android Auto).
+#
+# 🧩 PÉRIMÈTRE
+#   - friendly_name uniquement
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
+#
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v16.x
+# ==========================================================
+
+############################################################
+# 🛡️ ALARME — PANNEAU
+############################################################
+
+alarm_control_panel.alarme_maison:
+  friendly_name: "Alarme"
