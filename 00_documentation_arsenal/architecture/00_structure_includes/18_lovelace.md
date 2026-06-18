@@ -165,3 +165,16 @@ lovelace:
 - url: <chemin>
   type: <type>
 ```
+---
+
+## Découplage `name:` / `friendly_name`
+
+Le `name:` d'une carte fixe son libellé et **découple son rendu du `friendly_name`**
+de l'entité. Une carte **sans** `name:` (ou un socle à `show_name: true`, une série
+`history-graph` / `mini-graph-card`) retombe sur le `friendly_name` : elle en dépend
+**implicitement**.
+
+Conséquence : avant tout changement global de `friendly_name` (p. ex. libellés
+courts Android Auto), ces cartes doivent être **verrouillées** par un `name:`
+explicite figé sur le libellé courant. Doctrine et procédure complètes :
+[`01_customize.md`](01_customize.md) § *friendly_name & surfaces d'affichage*.
