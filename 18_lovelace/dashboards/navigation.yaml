@@ -220,16 +220,6 @@ views:
                         - color: "#1976D2"
 
                   - type: custom:button-card
-                    template: bouton_navigation_dynamique
-                    variables:
-                      etat_dashboard: sensor.etat_systeme_dashboard
-                    name: Système
-                    icon: mdi:monitor-dashboard
-                    tap_action:
-                      action: navigate
-                      navigation_path: /system-dashboard
-
-                  - type: custom:button-card
                     template: bouton_navigation
                     name: Palmarès météo
                     icon: mdi:trophy
@@ -239,6 +229,16 @@ views:
                     tap_action:
                       action: navigate
                       navigation_path: /meteo-palmares-dashboard
+
+                  - type: custom:button-card
+                    template: bouton_navigation_dynamique
+                    variables:
+                      etat_dashboard: sensor.etat_systeme_dashboard
+                    name: Système
+                    icon: mdi:monitor-dashboard
+                    tap_action:
+                      action: navigate
+                      navigation_path: /system-dashboard
 
           # ==================================================
           # ⚙️ SYSTÈME — OUTILS & ADMINISTRATION
@@ -255,17 +255,6 @@ views:
                 square: false
                 columns: 4
                 cards:
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: Sauvegardes
-                    icon: mdi:backup-restore
-                    styles:
-                      icon:
-                        - color: "#E53935"
-                    tap_action:
-                      action: navigate
-                      navigation_path: /config/backup/overview
-
                   - type: custom:button-card
                     template: bouton_navigation
                     name: Automations
@@ -301,6 +290,28 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
+                    name: Journal
+                    icon: mdi:book-open-variant
+                    styles:
+                      icon:
+                        - color: "#5D4037"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /logbook
+
+                  - type: custom:button-card
+                    template: bouton_navigation
+                    name: Historique
+                    icon: mdi:chart-line
+                    styles:
+                      icon:
+                        - color: "#1E88E5"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /history
+
+                  - type: custom:button-card
+                    template: bouton_navigation
                     name: États
                     icon: mdi:state-machine
                     styles:
@@ -323,25 +334,14 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
-                    name: Historique
-                    icon: mdi:chart-line
+                    name: Sauvegardes
+                    icon: mdi:backup-restore
                     styles:
                       icon:
-                        - color: "#1E88E5"
+                        - color: "#E53935"
                     tap_action:
                       action: navigate
-                      navigation_path: /history
-
-                  - type: custom:button-card
-                    template: bouton_navigation
-                    name: Journal
-                    icon: mdi:book-open-variant
-                    styles:
-                      icon:
-                        - color: "#5D4037"
-                    tap_action:
-                      action: navigate
-                      navigation_path: /logbook
+                      navigation_path: /config/backup/overview
 
                   - type: custom:button-card
                     template: bouton_navigation

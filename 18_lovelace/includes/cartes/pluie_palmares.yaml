@@ -2,8 +2,6 @@ type: markdown
 content: |
   {% set r = state_attr('sensor.palmares_pluie_journalier', 'records') or [] %}
 
-  **🌧️ Palmarès pluie journalière**
-
   {% if r | count == 0 %}
   _Aucun record enregistré._
   {% else %}

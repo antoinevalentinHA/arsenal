@@ -1,7 +1,5 @@
 type: markdown
 content: |
-  **🌡️ Palmarès journées les plus chaudes**
-
   {% set ns = namespace(records=[]) %}
 
   {% for i in range(1, 11) %}
