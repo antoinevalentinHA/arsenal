@@ -1,0 +1,29 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE
+#     Pannes — Secteur (libellé Android Auto)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Centraliser le libellé court (friendly_name) du signal
+#   canonique de panne secteur, lisible en conduite (Android Auto).
+#
+# 🧩 PÉRIMÈTRE
+#   - friendly_name uniquement
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
+#
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v16.x
+# ==========================================================
+
+############################################################
+# ⚡ PANNES — SECTEUR
+############################################################
+
+binary_sensor.panne_secteur_en_cours:
+  friendly_name: "Panne secteur"
