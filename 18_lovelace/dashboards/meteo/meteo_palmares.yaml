@@ -1,0 +1,34 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges: !include ../../includes/badges/base.yaml
+
+    # ======================================================
+    # 🏆 CONTENU PRINCIPAL — FLUX VERTICAL CANON ARSENAL
+    # ------------------------------------------------------
+    # badges
+    #   ↓
+    # vertical-stack racine
+    # ======================================================
+    cards:
+      - type: vertical-stack
+        cards:
+          # ------------------------------------------------------
+          # 🧭 Navigation météo
+          # ------------------------------------------------------
+          - !include ../../includes/navigation/meteo.yaml
+
+          # ======================================================
+          # 🏆 PALMARÈS MÉTÉO
+          # ------------------------------------------------------
+          # Destination dédiée regroupant les palmarès historiques
+          # existants (chantier C7). Cartes réutilisées verbatim,
+          # aucune entité ni capteur modifié.
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🏆 Palmarès météo
+
+          - !include ../../includes/cartes/palmares_temperature_chaude.yaml
+          - !include ../../includes/cartes/palmares_temperature_froide.yaml
+          - !include ../../includes/cartes/pluie_palmares.yaml
