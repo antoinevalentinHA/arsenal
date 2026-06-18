@@ -95,5 +95,11 @@ sensor.temperature_jardin:
 ############################################################
 
 sensor.temperature_moyenne_maison:
-  friendly_name: "Température moyenne Maison"
+  friendly_name: "Moy. maison"
   icon: mdi:thermometer
+
+sensor.temperature_min_chambres:
+  friendly_name: "Min chambres"
+
+sensor.temperature_max_chambres:
+  friendly_name: "Max chambres"

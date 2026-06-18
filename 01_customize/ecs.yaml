@@ -1,0 +1,30 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE
+#     ECS — Température ballon (libellé Android Auto)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Centraliser le libellé court (friendly_name) du capteur de
+#   température ballon ECS sécurisée, lisible en conduite
+#   (Android Auto).
+#
+# 🧩 PÉRIMÈTRE
+#   - friendly_name uniquement
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
+#
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v16.x
+# ==========================================================
+
+############################################################
+# ♨️ ECS — BALLON
+############################################################
+
+sensor.ecs_temperature_ballon_securisee:
+  friendly_name: "Eau chaude"

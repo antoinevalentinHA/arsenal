@@ -1,0 +1,39 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE
+#     Volets — Scripts de commande groupée (libellés Android Auto)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Centraliser les libellés courts (friendly_name) des scripts
+#   de commande groupée de volets, lisibles en conduite
+#   (Android Auto). Les alias runtime restent inchangés.
+#
+# 🧩 PÉRIMÈTRE
+#   - friendly_name uniquement
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
+#
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Documenter ici le modèle métier du domaine
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v16.x
+# ==========================================================
+
+############################################################
+# 🪟 VOLETS — COMMANDES GROUPÉES
+############################################################
+
+script.ouvrir_tous_les_volets:
+  friendly_name: "Ouvrir tout"
+
+script.fermer_tous_les_volets:
+  friendly_name: "Fermer tout"
+
+script.ouvrir_volets_sejour:
+  friendly_name: "Ouvrir séjour"
+
+script.fermer_volets_sejour:
+  friendly_name: "Fermer séjour"

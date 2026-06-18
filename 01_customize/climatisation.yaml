@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE
+#     Climatisation — Mode décidé (libellé Android Auto)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Centraliser le libellé court (friendly_name) du capteur de
+#   mode climatisation décidé, lisible en conduite (Android Auto).
+#
+# 🧩 PÉRIMÈTRE
+#   - friendly_name uniquement
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
+#
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Poser une clé icon : l'icône est dynamique (compatible
+#     Android Auto), produite au runtime — une icône statique
+#     l'écraserait
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v16.x
+# ==========================================================
+
+############################################################
+# ❄️ CLIMATISATION — DÉCISION
+############################################################
+
+sensor.clim_mode_local:
+  friendly_name: "Clim"

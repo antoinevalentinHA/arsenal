@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — CUSTOMIZE
+#     Thermique — Tendances de température (libellés Android Auto)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Centraliser les libellés courts (friendly_name) des capteurs
+#   de tendance thermique, lisibles en conduite (Android Auto).
+#
+# 🧩 PÉRIMÈTRE
+#   - friendly_name uniquement
+#   - Ne calcule aucune valeur
+#   - Ne porte aucune logique métier
+#   - Ne déclenche aucune action
+#
+# 🚫 INTERDITS
+#   - Modifier une valeur fonctionnelle
+#   - Introduire une logique conditionnelle
+#   - Poser une clé icon : l'icône est dynamique (état), produite
+#     au runtime — une icône statique l'écraserait
+#     (cf. INV-TEND-8, contrats/meteo/tendance_temperature.md)
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v16.x
+# ==========================================================
+
+############################################################
+# 📈 TENDANCES THERMIQUES — AGRÉGATS INTÉRIEURS
+############################################################
+
+sensor.tendance_temperature_min_chambres:
+  friendly_name: "Tendance min"
+
+sensor.tendance_temperature_moyenne_maison:
+  friendly_name: "Tendance moy."
+
+sensor.tendance_temperature_max_chambres:
+  friendly_name: "Tendance max"
