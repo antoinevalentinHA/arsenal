@@ -51,8 +51,7 @@ Les automations de détection :
 - **Conditions** :
   - `input_boolean.systeme_stable == on` (garde post-reboot)
   - `alarm_control_panel.alarme_maison == armed_away`
-  - `binary_sensor.ouverture_qualifiee_maison == on` (intrusion toujours active)
-- **Action** : `alarm_control_panel.alarm_trigger` + notification critique + `script.sirene_brutale` (hors mode test)
+- **Action** : `alarm_control_panel.alarm_trigger` + notification critique. La sirène est déclenchée par le **seul** chemin canonique `triggered → script.sirene_forte` (CH-1 C1). Le garde `binary_sensor.ouverture_qualifiee_maison` n'intervient plus : `timer.finished` vaut à lui seul preuve d'intrusion non désarmée (CH-1 B2).
 - **Mode** : `single`
 - **⚠️ Dette architecturale documentée** : court-circuite le pipeline canonique (voir §9).
 
@@ -95,6 +94,14 @@ Toute automation de détection doit implémenter un comportement distinct en mod
 - hors mode test : déclenchement réel + notification critique.
 
 La bifurcation est portée par `input_boolean.mode_test_alarme`.
+
+> **Écart connu — ALM-A2-2 (audit 2026-06).** `10020000000032` (fin de délai)
+> appelle `alarm_control_panel.alarm_trigger` **sans** bifurcation mode test.
+> En mode test, le panneau passe donc réellement à `triggered` (seule la sirène
+> audible étant inhibée en aval par `sirene_forte`). Cet écart à I2 est
+> **documenté et non encore tranché** (arbitrage runtime). Tant qu'il subsiste,
+> la validation positive `S3` doit en tenir compte (l'expiration volontaire du
+> délai en mode test produit un déclenchement réel du panneau).
 
 ### I3 — Garde `armed_away`
 
