@@ -1399,6 +1399,16 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Vannes thermostatiques : ajout du contrat `contrats/chauffage/vannes_thermostatiques_plateaux.md`, suppression du stub `contrats/chauffage/15_capteurs/12_capteurs_observabilite_pure.md`.
 - Documentation : ajout du registre `audits/REGISTRE_CHANTIERS.md`, du checker `check_registre_chantiers.py` et du workflow `contracts_registre_chantiers.yml` ; gel de `v16_0_2.md` et ajout de son entrée d'index ; ajout de `19_button_card_templates/README.md`.
 
+---
+
+## 🧠 ARSENAL HA — [v16.0.4](changelogs/v16/v16_0_4.md) — CLOSE — 2026-06-18
+**Tags :** ouvertures, zigbee, contrats, aeration
+
+**Signal net :**
+- Ouvertures / OUV-R1 : la normalisation N1 (`capteurs_base.yaml`) maintient le dernier état valide à l'indisponibilité au lieu de forcer `off` — supprime le front d'ouverture fabriqué `off → on` à la reconnexion d'un ouvrant resté ouvert.
+- Contrats : `ouvertures/global.md` §2.2 aligné (invariant N1 « maintien du dernier état valide »).
+- Effet transverse : ferme en amont la cause racine des faux fronts consommés par l'alarme et l'aération, sans modifier le domaine Alarme.
+
 ==================================================
 FIN INDEX
 ==================================================

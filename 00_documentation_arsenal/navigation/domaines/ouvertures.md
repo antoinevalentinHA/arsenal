@@ -23,7 +23,7 @@ Observation des états de portes et fenêtres. Domaine purement observationnel :
 > Référence normative : [`contrats/ouvertures/global.md`](../../contrats/ouvertures/global.md).
 > État de cycle : non audité — cf. [`carte_domaines.md`](../carte_domaines.md).
 
-> **Changelog** (pas de chantier dédié) : mentions diffuses `v15_8_3`, `v15_8_4`, `v15_8_7`, `v15_8_8`.
+> **Changelog** (pas de chantier dédié) : mentions diffuses `v15_8_3`, `v15_8_4`, `v15_8_7`, `v15_8_8` ; clôture **OUV-R1** en `v16_0_4` (normalisation N1 — maintien du dernier état valide à l'indisponibilité).
 
 ## Liens croisés (sens & appartenance)
 
