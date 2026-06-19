@@ -58,6 +58,7 @@ Elle **ne les fabrique jamais**.
 ├── couleurs/
 ├── navigation.md
 ├── pattern_dashboard.md
+├── pattern_dashboard_reglages.md
 └── socle_ui/
     ├── index.md
     ├── 00_synthese.md
@@ -111,6 +112,18 @@ Document normatif du **pattern canonique** des dashboards Arsenal :
 - pattern officiel de navigation par domaine via fichiers d’includes
 - composants autorisés / interdits (structurels)
 - règle d’alignement vertical et ordre canonique (badges → navigation → contenu)
+
+---
+
+### `pattern_dashboard_reglages.md`
+**Proposition** de spécialisation du pattern pour les dashboards de réglage
+(`18_lovelace/dashboards/reglages/**`) :
+- typologie des réglages (classe principale + qualificatif **Sensible** surclassant)
+- conditions d’acceptabilité d’une `tile` native
+- séparation / confirmation des réglages sensibles
+- statut des cartes markdown « effet réel »
+- rôle du bandeau de validité conditionnel
+- stratégie de généralisation progressive (statut : proposition à valider)
 
 ---
 
@@ -202,6 +215,7 @@ Inventaire & catégorisation des socles **Header** (titres de sections / sous-se
 - [`architecture_transverse.md`](architecture_transverse.md) — architecture UI transverse
 - [`navigation.md`](navigation.md) — référence de navigation du système
 - [`pattern_dashboard.md`](pattern_dashboard.md) — pattern canonique des dashboards
+- [`pattern_dashboard_reglages.md`](pattern_dashboard_reglages.md) — spécialisation Réglages (proposition)
 - [`template_header_modele.md`](template_header_modele.md) — modèle canonique d'en-tête de carte UI
 
 ---

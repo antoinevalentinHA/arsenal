@@ -261,6 +261,10 @@ Familles concernées :
 - Energie
 - Diagnostics
 
+Spécialisation Réglages :
+- Pour les dashboards `reglages/**`, voir le pattern dédié
+  [`pattern_dashboard_reglages.md`](pattern_dashboard_reglages.md) (proposition).
+
 ---
 
 🔒 RÈGLES DE CONFORMITÉ
