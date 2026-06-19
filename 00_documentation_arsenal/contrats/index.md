@@ -71,7 +71,7 @@
 | [chauffage/](./chauffage/) | 52 | README ✅ | Pipeline chauffage + capteurs + amendements |
 | [climatisation/](./climatisation/) | 39 | README ✅ | Climatisation (12 root + 26 capteurs) |
 | [deshumidificateur/](./deshumidificateur/) | 3 | README ✅ | Déshumidificateur cave |
-| [eclairage/](./eclairage/) | 6 | README ✅ | Éclairage |
+| [eclairage/](./eclairage/) | 7 | README ✅ | Éclairage |
 | [ecs/](./ecs/) | 29 | README ✅ | ECS — fondation (00-11) + contrats d'exécution |
 | [imprimerie/](./imprimerie/) | 4 | README ✅ | Bruit machines industrielles (Imprimerie) |
 | [meteo/](./meteo/) | 20 | README ✅ | Météo — axes, palmarès, validation, sous-domaines |

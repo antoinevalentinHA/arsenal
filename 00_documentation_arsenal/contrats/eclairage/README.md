@@ -12,6 +12,7 @@ l'**éclairage**, tels qu'ils existent dans ce répertoire.
 | [`jardin.md`](jardin.md) | Contrat fonctionnel — éclairage jardin |
 | [`garage.md`](garage.md) | Contrat d'implémentation du script autoritaire `script.garage_toggle` |
 | [`recalage_nocturne_garage.md`](recalage_nocturne_garage.md) | Recalage nocturne multi-fenêtres — éclairage garage |
+| [`mode_astronomie.md`](mode_astronomie.md) | Contrat transverse — mode astronomie (neutralisation séjour + jardin) |
 
 ## Navigation
 

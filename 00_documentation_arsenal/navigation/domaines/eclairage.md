@@ -13,6 +13,7 @@ Domaine éclairage couvrant 4 zones : entrée, jardin, garage, séjour. Chaque z
 - Jardin : [`jardin.md`](../../contrats/eclairage/jardin.md)
 - Séjour : [`sejour.md`](../../contrats/eclairage/sejour.md)
 - Garage : [`garage.md`](../../contrats/eclairage/garage.md)
+- Mode astronomie (transverse) : [`mode_astronomie.md`](../../contrats/eclairage/mode_astronomie.md)
 
 ## Architecture — « comment / pourquoi »
 

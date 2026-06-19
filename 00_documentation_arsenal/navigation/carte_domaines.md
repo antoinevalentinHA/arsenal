@@ -37,7 +37,7 @@
 | [`aeration_blocage_chauffage`](domaines/aeration_blocage_chauffage.md) | C | Folder (37) — machine d'état `m0→m6`. **Distinct** de `aeration_recommandation` (cf. §3 et §5). |
 | [`pannes`](domaines/pannes.md) | C | Folder (9) — `internet` + `secteur`. Réf. résilience croisée avec `energie_chaudiere`. |
 | [`boiler`](domaines/boiler.md) | C·Ext | Contrat HA (`contrats/boiler/`) **distinct** de l'outil `outils_externes/boiler_pi/` (pont Raspberry Pi). |
-| [`eclairage`](domaines/eclairage.md) | C·A | Folder (6) + `architecture/eclairage_jardin.md`. |
+| [`eclairage`](domaines/eclairage.md) | C·A | Folder (7) + `architecture/eclairage_jardin.md`. |
 | [`ouvertures`](domaines/ouvertures.md) | C·A | Folder (3) + `architecture/ouvertures.md`. **Léger — hub conservé** (carte explicite plutôt qu'invisibilisation). |
 | [`voiture`](domaines/voiture.md) | C·A·Au | `architecture/voiture.md` porte un **contenu erroné** (copie d'aération) — signalé par l'audit structurel. |
 | [`energie_chaudiere`](domaines/energie_chaudiere.md) | C·RT | Fichier `contrats/bluetti.md` (Bluetti AC180). Couche dérivée **vérifiée fidèle au runtime**. Nom de fichier ≠ nom canonique. |
