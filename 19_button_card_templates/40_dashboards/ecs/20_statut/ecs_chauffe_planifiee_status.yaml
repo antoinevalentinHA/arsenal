@@ -75,7 +75,7 @@ ecs_chauffe_planifiee_status:
       if (UNAV.includes(st)) return "État indisponible";
       return (st === 'on')
         ? "La programmation ECS est temporairement désactivée"
-        : "La programmation ECS suit son planning normal";
+        : "Chauffe ECS selon planning";
     ]]]
 
   styles:
