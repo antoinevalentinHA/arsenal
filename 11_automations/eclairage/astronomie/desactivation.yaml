@@ -1,0 +1,82 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Astronomie – Désactivation du mode (restauration fidèle)
+#
+#  ID : 10070000000034
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation de SORTIE du mode astronomie.
+#
+#     Lorsqu'elle est déclenchée, elle restaure les trois
+#     autorisations d'éclairage à leur état capturé lors de
+#     l'activation, et NE touche à aucun actionneur.
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement sur passage de input_boolean.mode_astronomie
+#       à OFF (front descendant explicite)
+#     - Restauration fidèle depuis la mémoire de capture
+#       (et non un retour forcé à ON)
+#     - Aucune action matérielle : la reprise éventuelle est
+#       laissée aux automatismes nominaux
+#
+#  🧠 SOURCE D'ÉVÉNEMENT
+#
+#     input_boolean.mode_astronomie  (on → off)
+#
+#  🧠 MÉMOIRE LUE (capture persistante)
+#
+#     input_boolean.astronomie_memo_sejour_auto
+#     input_boolean.astronomie_memo_jardin_matin
+#     input_boolean.astronomie_memo_jardin_soir
+#
+#  🧠 RESTAURATION (autorisations existantes)
+#
+#     input_boolean.sejour_auto_light
+#     input_boolean.auto_lumiere_jardin_matin
+#     input_boolean.auto_lumiere_jardin_soir
+#
+#  ♻️ IDEMPOTENCE
+#
+#     mode single + front descendant.
+#     Restaurer vers une valeur capturée est idempotent.
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - N'allume NI le séjour NI le jardin
+#     - Ne force PAS les autorisations à ON
+#     - Ne pilote AUCUN actionneur
+#     - Ne touche PAS à mode_maison / vacances / babysitting
+#
+#  🔗 CONTRAT
+#
+#     contrats/eclairage/mode_astronomie.md (§5.2)
+# ==========================================================
+
+- id: "10070000000034"
+  alias: "Éclairage - Astronomie - Désactivation"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.mode_astronomie
+      from: "on"
+      to: "off"
+
+  action:
+    # Restauration fidèle des trois autorisations depuis la mémoire
+    - alias: "Restaurer l'autorisation séjour"
+      action: "input_boolean.turn_{{ 'on' if is_state('input_boolean.astronomie_memo_sejour_auto', 'on') else 'off' }}"
+      target:
+        entity_id: input_boolean.sejour_auto_light
+
+    - alias: "Restaurer l'autorisation jardin matin"
+      action: "input_boolean.turn_{{ 'on' if is_state('input_boolean.astronomie_memo_jardin_matin', 'on') else 'off' }}"
+      target:
+        entity_id: input_boolean.auto_lumiere_jardin_matin
+
+    - alias: "Restaurer l'autorisation jardin soir"
+      action: "input_boolean.turn_{{ 'on' if is_state('input_boolean.astronomie_memo_jardin_soir', 'on') else 'off' }}"
+      target:
+        entity_id: input_boolean.auto_lumiere_jardin_soir

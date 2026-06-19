@@ -1,0 +1,72 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT : Éclairage Séjour — Extinction stable
+# ----------------------------------------------------------
+# 🎯 RÔLE FONDAMENTAL
+#   Point UNIQUE et volontaire d’extinction de l’éclairage séjour.
+#
+#   Ce script garantit une extinction :
+#     - sans effet de bord
+#     - sans bascule inutile
+#     - sans dépendance au contexte appelant
+#
+# ----------------------------------------------------------
+# 🧱 PRINCIPE DE STABILITÉ
+#
+#   - Si l’éclairage est déjà éteint :
+#       → aucune action
+#
+#   - Si l’éclairage est allumé :
+#       → extinction explicite
+#
+#   ➜ Comportement idempotent
+#
+# ----------------------------------------------------------
+# 🧠 SÉPARATION DES RÔLES
+#
+#   - Les automatisations décident QUAND éteindre
+#     (extinction temporisée, neutralisation par un mode, etc.)
+#
+#   - Ce script applique COMMENT éteindre,
+#     sans interprétation ni logique métier.
+#
+# ----------------------------------------------------------
+# 🛑 CE SCRIPT NE FAIT PAS
+#
+#   - Aucun calcul horaire
+#   - Aucune détection de présence
+#   - Aucun toggle
+#   - Aucune logique inverse
+#
+#   ➜ Il exécute une extinction sûre, point final.
+#
+# ----------------------------------------------------------
+# 🧩 ARCHITECTURE ARSENAL
+#
+#   - Centralise toutes les extinctions séjour pilotées hors
+#     du cycle nominal (autorité d’action canonique)
+#   - Évite les appels directs à `switch.prise_lampe_sejour`
+#   - Symétrique de `script.jardin_off`
+#
+# ----------------------------------------------------------
+# 📊 Type :
+#   Script utilitaire — action stable
+#
+# 📍 Entité :
+#   script.sejour_off
+#
+# ✅ Compatibilité :
+#   Home Assistant 2024.8+
+#   Arsenal v16+
+# ==========================================================
+
+sejour_off:
+  alias: "Éclairage - Séjour - Extinction"
+  mode: single
+  sequence:
+    - condition: state
+      entity_id: switch.prise_lampe_sejour
+      state: "on"
+
+    - action: switch.turn_off
+      target:
+        entity_id: switch.prise_lampe_sejour

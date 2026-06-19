@@ -22,6 +22,14 @@ views:
 
           - type: custom:button-card
             template: section_header
+            name: 🔭 Mode astronomie
+
+          - type: tile
+            entity: input_boolean.mode_astronomie
+            name: Mode astronomie
+
+          - type: custom:button-card
+            template: section_header
             name: 💡 Éclairage auto
 
           - !include ../../includes/sub_section_headers/garage.yaml

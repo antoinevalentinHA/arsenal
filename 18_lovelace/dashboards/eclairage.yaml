@@ -58,6 +58,17 @@ views:
                 entity: switch.prise_lampe_parents
 
           # ==================================================
+          # 🔭 MODE ASTRONOMIE
+          # ==================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔭 Mode astronomie
+
+          - type: tile
+            entity: input_boolean.mode_astronomie
+            name: Mode astronomie
+
+          # ==================================================
           # 🎄 BAIES VITRÉES / SAPIN — CONDITIONNEL
           # ==================================================
           - type: conditional

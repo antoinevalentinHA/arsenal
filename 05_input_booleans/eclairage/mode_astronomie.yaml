@@ -1,0 +1,36 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN : Mode astronomie
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Commande manuelle du mode astronomie (observation Seestar).
+#    Surcouche transverse neutralisant temporairement les
+#    éclairages séjour et jardin.
+#
+# 🧩 Principe :
+#    - ON  → automatismes séjour + jardin neutralisés,
+#            séjour et jardin éteints
+#    - OFF → autorisations restaurées à leur état antérieur,
+#            aucun rallumage forcé
+#
+# 🔒 Invariants (cf. contrat) :
+#    - Orthogonal à mode_maison / vacances / babysitting
+#    - Ne modifie aucun réglage des automatismes
+#    - Idempotent, activable/désactivable explicitement
+#
+# 🔍 Utilisation :
+#    - Automatisations :
+#        • 10070000000033 (activation)
+#        • 10070000000034 (désactivation)
+#    - Dashboards :
+#        • éclairage
+#        • réglages éclairage
+#    - Contrat :
+#        • contrats/eclairage/mode_astronomie.md
+#
+# 🏷️ Statut :
+#    - Arsenal v16.x
+# ==========================================================
+
+mode_astronomie:
+  name: "Mode astronomie"
+  icon: mdi:telescope

@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN : Mémoire capture mode astronomie
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#    Mémoriser l'état des trois autorisations d'éclairage
+#    AVANT neutralisation par le mode astronomie, afin de les
+#    restaurer fidèlement à la désactivation.
+#
+# 🧩 Principe :
+#    - Écrits uniquement par l'activation (10070000000033)
+#    - Lus uniquement par la désactivation (10070000000034)
+#    - Persistants (restore HA) → robustes au redémarrage
+#
+# 🔒 Invariants :
+#    - Pure mémoire de snapshot — aucune décision, aucun gating
+#    - Ne pilotent aucun actionneur
+#    - Reflètent l'état capturé, jamais l'état courant des
+#      autorisations après neutralisation
+#
+# 🔍 Utilisation :
+#    - Contrat : contrats/eclairage/mode_astronomie.md (§5.3)
+#
+# 🏷️ Statut :
+#    - Arsenal v16.x
+# ==========================================================
+
+astronomie_memo_sejour_auto:
+  name: "Astronomie — mémoire séjour auto"
+  icon: mdi:content-save-cog
+
+astronomie_memo_jardin_matin:
+  name: "Astronomie — mémoire jardin matin"
+  icon: mdi:content-save-cog
+
+astronomie_memo_jardin_soir:
+  name: "Astronomie — mémoire jardin soir"
+  icon: mdi:content-save-cog

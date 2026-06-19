@@ -68,6 +68,11 @@ sur l'état de l'éclairage. Aucun état logique parallèle n'existe ni n'est au
 Aucune autre entité ne pilote directement cet actionneur hors des automations
 formalisées dans ce contrat.
 
+L'extinction matérielle peut également être portée par le script canonique
+`script.sejour_off` (autorité d'action unique pour l'extinction du séjour,
+symétrique de `script.jardin_off`). Tout pilotage de `switch.prise_lampe_sejour`
+hors des automations du domaine et de ce script demeure interdit.
+
 ### I2 — Unicité de la source de vérité
 
 L'état de `switch.prise_lampe_sejour` est l'unique vérité du domaine.

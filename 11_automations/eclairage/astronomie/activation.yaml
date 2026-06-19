@@ -1,0 +1,108 @@
+# ==========================================================
+#  🧠 ARSENAL — AUTOMATION :
+#     Astronomie – Activation du mode (neutralisation + extinction)
+#
+#  ID : 10070000000033
+# ----------------------------------------------------------
+#  🎯 RÔLE
+#
+#     Automation d'ENTRÉE dans le mode astronomie.
+#
+#     Lorsqu'elle est déclenchée, elle :
+#       • capture l'état courant des trois autorisations
+#         d'éclairage (séjour, jardin matin, jardin soir)
+#       • neutralise ces trois autorisations (→ off)
+#       • éteint les actionneurs séjour et jardin
+#
+#  🧩 PRINCIPE
+#
+#     - Déclenchement sur passage de input_boolean.mode_astronomie
+#       à ON (front montant explicite)
+#     - Capture AVANT neutralisation (condition de la
+#       restauration fidèle exigée par le contrat)
+#     - Extinction matérielle déléguée aux scripts canoniques
+#
+#  🧠 SOURCE D'ÉVÉNEMENT
+#
+#     input_boolean.mode_astronomie  (off → on)
+#
+#  🧠 CAPTURE (mémoire persistante)
+#
+#     input_boolean.astronomie_memo_sejour_auto
+#     input_boolean.astronomie_memo_jardin_matin
+#     input_boolean.astronomie_memo_jardin_soir
+#
+#  🧠 NEUTRALISATION (autorisations existantes)
+#
+#     input_boolean.sejour_auto_light
+#     input_boolean.auto_lumiere_jardin_matin
+#     input_boolean.auto_lumiere_jardin_soir
+#
+#  🧠 EXTINCTION (déléguée aux scripts canoniques)
+#
+#     script.sejour_off
+#     script.jardin_off
+#
+#     Aucune écriture directe sur les actionneurs
+#     (switch.* piloté uniquement par ces scripts — I1).
+#
+#  ♻️ IDEMPOTENCE
+#
+#     mode single + déclenchement sur front montant.
+#     Les services turn_on/turn_off sont idempotents.
+#
+#  🚫 CE QUE CETTE AUTOMATION NE FAIT PAS
+#
+#     - Ne crée AUCUNE logique de gating parallèle
+#     - Ne modifie AUCUN réglage des automatismes
+#     - Ne touche PAS à mode_maison / vacances / babysitting
+#     - N'allume JAMAIS un actionneur
+#
+#  🔗 CONTRAT
+#
+#     contrats/eclairage/mode_astronomie.md (§5.1)
+# ==========================================================
+
+- id: "10070000000033"
+  alias: "Éclairage - Astronomie - Activation"
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_boolean.mode_astronomie
+      from: "off"
+      to: "on"
+
+  action:
+    # 1. Capture de l'état courant des trois autorisations
+    - alias: "Capturer l'autorisation séjour"
+      action: "input_boolean.turn_{{ 'on' if is_state('input_boolean.sejour_auto_light', 'on') else 'off' }}"
+      target:
+        entity_id: input_boolean.astronomie_memo_sejour_auto
+
+    - alias: "Capturer l'autorisation jardin matin"
+      action: "input_boolean.turn_{{ 'on' if is_state('input_boolean.auto_lumiere_jardin_matin', 'on') else 'off' }}"
+      target:
+        entity_id: input_boolean.astronomie_memo_jardin_matin
+
+    - alias: "Capturer l'autorisation jardin soir"
+      action: "input_boolean.turn_{{ 'on' if is_state('input_boolean.auto_lumiere_jardin_soir', 'on') else 'off' }}"
+      target:
+        entity_id: input_boolean.astronomie_memo_jardin_soir
+
+    # 2. Neutralisation des automatismes séjour et jardin
+    - alias: "Neutraliser les automatismes séjour et jardin"
+      action: input_boolean.turn_off
+      target:
+        entity_id:
+          - input_boolean.sejour_auto_light
+          - input_boolean.auto_lumiere_jardin_matin
+          - input_boolean.auto_lumiere_jardin_soir
+
+    # 3. Extinction effective des éclairages, via les scripts canoniques
+    #    (autorités d'action uniques — I1 séjour et I1 jardin)
+    - alias: "Éteindre le séjour (script canonique)"
+      action: script.sejour_off
+
+    - alias: "Éteindre le jardin (script canonique)"
+      action: script.jardin_off

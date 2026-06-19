@@ -368,8 +368,9 @@ def test_switch_exclusivity():
     Vérifie que switch.prise_lampe_sejour n'est piloté (écriture réelle
     via target: block) que depuis les automations du domaine sejour.
 
-    Écrivain légitime externe connu :
+    Écrivains légitimes externes connus :
       - 10_scripts/scenario_extinction_soir.yaml (script transversal)
+      - 10_scripts/eclairage/sejour/off.yaml (script.sejour_off, autorité canonique)
 
     Scope : 10_scripts/ et 11_automations/ hors domaine sejour et hors écrivain externe.
     """
@@ -377,14 +378,17 @@ def test_switch_exclusivity():
     target_kw     = re.compile(r"^\s+target\s*:")
     target_entity = re.compile(r"prise_lampe_sejour")
 
-    external_writer = (ROOT / "10_scripts/scenario_extinction_soir.yaml").resolve()
+    external_writers = {
+        (ROOT / "10_scripts/scenario_extinction_soir.yaml").resolve(),
+        (ROOT / "10_scripts/eclairage/sejour/off.yaml").resolve(),
+    }
 
     scan_roots = [ROOT / "10_scripts", ROOT / "11_automations"]
     for scan_root in scan_roots:
         for yaml_file in scan_root.rglob("*.yaml"):
             if not yaml_file.is_file():
                 continue
-            if yaml_file.resolve() == external_writer:
+            if yaml_file.resolve() in external_writers:
                 continue
             # Exclure le domaine canonique lui-même
             try:
