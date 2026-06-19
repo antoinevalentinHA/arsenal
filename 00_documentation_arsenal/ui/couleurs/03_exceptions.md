@@ -377,3 +377,67 @@ Les règles suivantes restent absolues :
 - Utiliser cette palette dans des cartes métier
 - Utiliser cette palette pour représenter une sévérité système
 - Introduire d'autres nuances hydriques non documentées
+---
+
+## Exception 8 — Échelle absolue Humidex (risque chaud/humide)
+
+### Objet
+
+Autoriser un codage visuel de l'**humidex** fondé sur son **échelle
+d'interprétation absolue** (paliers fixes Environnement Canada), en
+lieu et place de la qualification relative du mécanisme A.
+
+L'humidex est un indice de stress chaud/humide doté d'une échelle
+absolue largement admise : une même valeur a la même signification
+quelle que soit la normale locale récente. La couleur exprime donc un
+**niveau absolu**, pas un écart à une enveloppe glissante.
+
+Cette exception est **catégorielle** (strictement humidex) et
+**perceptive UI** : elle ne pilote aucune décision runtime.
+
+### Scope autorisé
+
+Strictement limité aux capteurs `couleur_humidex_*`
+(`12_template_sensors/couleurs/meteo/humidex.yaml`) et à leur
+projection dans le socle KPI.
+
+Ne s'applique pas :
+- aux autres grandeurs du mécanisme A (température, humidité relative,
+  humidité absolue), qui restent en qualification relative,
+- aux seuils opérationnels climatisation / DRY,
+- à toute autre carte métier.
+
+### Apex de l'axe rouge — `dark_red`
+
+Cette exception **n'ajoute pas une couleur canon générale**. Elle
+introduit un **apex de l'axe rouge**, réservé au palier humidex le
+plus sévère (« coup de chaleur imminent »), strictement au-dessus du
+rouge standard.
+
+| Palier humidex | Clé | Valeur | Interprétation (Env. Canada) |
+|----------------|-----|--------|------------------------------|
+| `< 30` | `green` | `rgba(76, 175, 80, 0.2)` | aucun inconfort |
+| `30 – 39` | `yellow` | `rgba(255, 235, 59, 0.2)` | un certain inconfort |
+| `40 – 44` | `orange` | `rgba(255, 152, 0, 0.2)` | beaucoup d'inconfort |
+| `45 – 54` | `red` | `rgba(244, 67, 54, 0.2)` | danger (coup de chaleur probable) |
+| `>= 55` | `dark_red` | `rgba(183, 28, 28, 0.2)` | coup de chaleur imminent |
+| invalide / non numérique | `grey` | `rgba(158, 158, 158, 0.2)` | donnée indisponible |
+
+Seul `dark_red` (`rgba(183, 28, 28, 0.2)`, Material Red 900, opacité
+canon 0.2) est nouveau ; les autres clés sont du canon Arsenal existant.
+
+### Priorité
+
+- Le gris indisponibilité prime toujours.
+- `dark_red` est un **renforcement** de la criticité rouge, jamais un
+  axe sémantique concurrent : la règle « le rouge prime toujours »
+  reste valable (`dark_red` est un rouge maximal).
+
+### 🚫 Interdits
+
+- Propager `dark_red` comme couleur canon générale hors humidex.
+- Réutiliser `dark_red` pour un autre domaine ou une autre sévérité.
+- Réintroduire une qualification relative (enveloppe glissante) pour
+  l'humidex.
+- Encoder l'humidex avec une couleur « froid » : l'échelle absolue
+  n'a pas de sémantique de froid (`< 30` → `green`).

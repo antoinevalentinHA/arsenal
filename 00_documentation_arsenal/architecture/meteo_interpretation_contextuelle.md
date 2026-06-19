@@ -13,7 +13,7 @@
   - [`affichage.md`](../contrats/meteo/affichage.md) (contrat de restitution)
   - [`capteurs_couleur.md`](capteurs_couleur.md) (cartographie transverse — situe le mécanisme A parmi les autres mécanismes « hors périmètre » de ce document)
   - [`ui/couleurs/`](../ui/couleurs/) (charte des couleurs)
-- **Périmètre** : le mécanisme principal du domaine, dit ici **mécanisme A** — interprétation des grandeurs disposant d'un capteur couleur dédié : **température, humidité relative, humidité absolue, humidex**. Les autres mécanismes (CO₂ à seuils fixes, précipitations, cohérence inter-capteurs, prévisions) **sont hors périmètre** (cf. §6).
+- **Périmètre** : le mécanisme principal du domaine, dit ici **mécanisme A** — interprétation des grandeurs disposant d'un capteur couleur dédié : **température, humidité relative, humidité absolue**. L'**humidex** est sorti du mécanisme A : sa couleur suit désormais une **échelle absolue** (paliers fixes Environnement Canada), documentée comme *Exception 8* dans [`ui/couleurs/03_exceptions.md`](../ui/couleurs/03_exceptions.md). Les autres mécanismes (CO₂ à seuils fixes, précipitations, cohérence inter-capteurs, prévisions) **sont hors périmètre** (cf. §6).
 
 ---
 
@@ -106,7 +106,7 @@ seuil_haut = moyenne_filtrée(période) + offset_haut(saison)
   centre + zone < valeur ≤ seuil_haut          → yellow
   valeur > seuil_haut                          → red
   ```
-- **Variante par les bords** (humidex) — qualification *par rapport aux bornes de l'enveloppe*, avec une marge `= (seuil_haut − seuil_bas) / 5` ; le **vert** couvre l'intérieur de l'enveloppe, encadré de transitions.
+- **Variante par les bords** — *(historique : appliquée à l'humidex jusqu'à sa migration vers l'échelle absolue — cf. Exception 8).* Qualification *par rapport aux bornes d'une enveloppe* dynamique, avec une marge `= (seuil_haut − seuil_bas) / 5` ; le **vert** couvre l'intérieur de l'enveloppe. **Plus aucune grandeur active du mécanisme A n'utilise cette variante.**
 
 **[F]** Dans tous les cas, une valeur absente, non numérique, ou des seuils incohérents (`bas ≥ haut`, `bas` ou `haut` à 0) produisent **`grey`**, et l'attribut `reason` distingue `unavailable` de `invalid_thresholds`. La validité **prime** sur toute couleur.
 

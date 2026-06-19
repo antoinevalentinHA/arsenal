@@ -52,48 +52,33 @@
       state: &couleur_humidex_logic >
         {% set suffixe = this.entity_id | replace('sensor.couleur_humidex_', '') %}
         {% set src = 'sensor.humidex_' ~ suffixe %}
-        {% set src_bas = 'sensor.humidex_seuil_bas_' ~ suffixe %}
-        {% set src_haut = 'sensor.humidex_seuil_haut_' ~ suffixe %}
 
         {% set raw = states(src) %}
         {% set h = raw | replace(',', '.') | float(999) %}
-        {% set bas = states(src_bas) | replace(',', '.') | float(0) %}
-        {% set haut = states(src_haut) | replace(',', '.') | float(0) %}
-        {% set marge = (haut - bas) / 5 if (haut - bas) > 0 else 1.0 %}
 
         {% if raw in ['unknown', 'unavailable', None] or h == 999 %}
           grey
-        {% elif bas == 0 or haut == 0 or bas >= haut %}
-          grey
-        {% elif h < bas - marge %}
-          blue
-        {% elif h < bas %}
-          light_blue
-        {% elif h < bas + marge %}
-          light_green
-        {% elif h < haut %}
+        {% elif h < 30 %}
           green
-        {% elif h < haut + marge %}
+        {% elif h < 40 %}
           yellow
-        {% else %}
+        {% elif h < 45 %}
+          orange
+        {% elif h < 55 %}
           red
+        {% else %}
+          dark_red
         {% endif %}
       attributes:
         reason: >
           {% set suffixe = this.entity_id | replace('sensor.couleur_humidex_', '') %}
           {% set src = 'sensor.humidex_' ~ suffixe %}
-          {% set src_bas = 'sensor.humidex_seuil_bas_' ~ suffixe %}
-          {% set src_haut = 'sensor.humidex_seuil_haut_' ~ suffixe %}
 
           {% set raw = states(src) %}
           {% set h = raw | replace(',', '.') | float(999) %}
-          {% set bas = states(src_bas) | replace(',', '.') | float(0) %}
-          {% set haut = states(src_haut) | replace(',', '.') | float(0) %}
 
           {% if raw in ['unknown', 'unavailable', None] or h == 999 %}
             unavailable
-          {% elif bas == 0 or haut == 0 or bas >= haut %}
-            invalid_thresholds
           {% else %}
             ok
           {% endif %}

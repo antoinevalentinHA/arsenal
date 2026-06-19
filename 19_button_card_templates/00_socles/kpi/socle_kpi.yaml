@@ -60,6 +60,8 @@ socle_kpi:
               arsenal: {
                 green: "rgba(76, 175, 80, 0.2)",
                 red: "rgba(244, 67, 54, 0.2)",
+                // Exception 8 — apex axe rouge, palier humidex >= 55 (coup de chaleur imminent)
+                dark_red: "rgba(183, 28, 28, 0.2)",
                 orange: "rgba(255, 152, 0, 0.2)",
                 blue: "rgba(33, 150, 243, 0.2)",
                 grey: "rgba(158, 158, 158, 0.2)",
