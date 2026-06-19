@@ -28,4 +28,4 @@ views:
             name: ⚖️ Conformité
 
           - type: custom:button-card
-            template: carte_deshum_conformite_execution
+            template: carte_deshumidificateur_conformite_execution
