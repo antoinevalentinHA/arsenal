@@ -17,6 +17,9 @@ views:
     cards:
       - type: vertical-stack
         cards:
+          # ✅ Bandeau de validité (conditionnel)
+          - !include ../../includes/alerte_configuration_invalide.yaml
+
           - type: custom:button-card
             template: section_header
             name: 💧 Humidité relative
@@ -36,6 +39,11 @@ views:
             features:
               - type: numeric-input
                 style: buttons
+
+          - type: markdown
+            content: >
+              Le déshumidificateur démarre au-dessus de la cible ON,
+              s’arrête sous la cible OFF.
 
           - type: custom:button-card
             template: section_header

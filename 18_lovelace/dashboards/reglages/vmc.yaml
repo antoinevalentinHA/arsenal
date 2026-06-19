@@ -17,6 +17,9 @@ views:
     cards:
       - type: vertical-stack
         cards:
+          # ✅ Bandeau de validité (conditionnel)
+          - !include ../../includes/alerte_configuration_invalide.yaml
+
           - type: custom:button-card
             template: section_header
             name: 🎯 Seuils
@@ -68,6 +71,11 @@ views:
                 features:
                   - type: numeric-input
                     style: buttons
+
+          - type: markdown
+            content: >
+              Pour l’humidité comme pour le CO₂ : passage en haute vitesse
+              au-dessus du seuil de déclenchement, retour sous le seuil d’arrêt.
 
           - type: custom:button-card
             template: section_header
