@@ -62,6 +62,8 @@ Conséquences normatives :
 
 Note de classification : le blocage **fenêtres** est le seul candidat « bon sens / quasi-matériel ». Faire tourner le groupe fenêtres ouvertes gaspille mais n'endommage pas. Il reste donc en étage 2 (désactivable librement), pas en étage 1.
 
+> **Plage nocturne — mode nuit :** voir §9. Le mode nuit **n'est pas un blocage** : il *neutralise* le blocage horaire et *requalifie* la stratégie COOL en régime absence. Il ne figure donc pas dans le tableau de classification ci-dessus.
+
 ---
 
 ## 5. Invariant de cohérence du voyant
@@ -116,3 +118,36 @@ Dettes assumées et tracées :
 1. `clim_blocage_fenetres_reel` et `clim_blocage_absence_prolongee_reel` ne sont pas créés. Les autorisations continuent de lire `fenetre_ouverte_maison_avec_delai` et `clim_extinction_absence_prolongee_autorisee` en brut. La double négation aval sur l'absence (§7.5) subsiste jusqu'à la levée de cette dette.
 2. La **cohérence de vérité** du voyant `clim_bloquee` (§5) est **déjà acquise au runtime** : le voyant agrège l'aération étage via `binary_sensor.clim_blocage_aeration_etage_reel` et lit `binary_sensor.fenetre_ouverte_maison_avec_delai` — la **vérité temporisée**, identique à celle consommée par les autorisations. Ce qui reste **différé** n'est donc **pas** la cohérence du voyant pour les fenêtres, mais la seule **normalisation de nommage** vers `clim_blocage_fenetres_reel` / `clim_blocage_absence_prolongee_reel` (cf. dette #1). **Résidu connu :** l'absence prolongée n'est pas encore agrégée au voyant (même famille différée), donc l'invariant §5 reste **partiel pour cette seule cause** jusqu'à la levée de la dette #1.
 3. Nommage `blocage_clim_poele` / `chauffage_blocage_aeration` conservé hors convention `clim_blocage_*_actif`. **Aucun renommage** : pas de cosmétique au milieu d'un chantier décisionnel.
+
+---
+
+## 9. Plage nocturne : blocage dur vs mode nuit (stratégie absence)
+
+La plage nocturne (`input_datetime.clim_heure_blocage_autom_on` / `…_off`) admet **deux politiques exclusives par priorité**, sur la **même fenêtre horaire** :
+
+| Politique | Garde | Effet sur la plage nocturne |
+|---|---|---|
+| **Mode nuit** | `input_boolean.clim_mode_nuit_actif` | Climatisation **autorisée**, **régime absence** (COOL) ; blocage horaire **neutralisé** |
+| **Blocage dur** | `input_boolean.clim_blocage_horaire_actif` | Climatisation **interdite** pendant la plage (comportement historique) |
+
+### Règle métier
+
+- **Mode nuit actif** : pendant la plage nocturne, la climatisation est autorisée. Les sélecteurs COOL (`sensor.consigne_clim_appliquee`, `sensor.seuil_allumage_clim_applique`, `sensor.seuil_extinction_clim_applique`) appliquent le **régime absence** (`*_absence`). **Aucune consigne « nuit » dédiée** n'est créée : réutilisation **stricte** du régime absence existant.
+- **Mode nuit inactif** : la plage nocturne **conserve le comportement actuel** — blocage dur si `clim_blocage_horaire_actif == on`.
+- **Priorité** : si les deux interrupteurs sont armés, **le mode nuit prime** (autorisation + stratégie absence). La neutralisation est portée à la source : `clim_blocage_horaire_reel == off` dès que `clim_mode_nuit_actif == on`.
+
+### Vérité de bascule
+
+`binary_sensor.clim_mode_nuit_effectif` = `clim_mode_nuit_actif == on` **ET** heure courante dans la plage nocturne (même logique de chevauchement minuit que `clim_blocage_horaire_reel`). C'est la **seule** vérité consommée par les sélecteurs COOL pour basculer en régime absence. Elle **n'est pas un blocage** et n'entre dans aucune chaîne d'autorisation.
+
+### Portée HEAT / DRY
+
+La neutralisation de `clim_blocage_horaire_reel` est **globale**. HEAT et DRY ne sont donc plus bloqués horairement pendant le mode nuit ; ils restent soumis à leur logique propre. Le mode nuit **ne paramètre que la stratégie COOL** — seul mode disposant d'un régime présence/absence.
+
+### Vocabulaire opposable
+
+« Plage nocturne », « mode nuit », « stratégie absence », « consigne appliquée ». Le libellé « blocage actif » / « arrêt programmé » est **proscrit** comme désignation générique de la plage nocturne dès lors que la climatisation peut y être autorisée.
+
+### Statut
+
+Doctrine **validée comme cible** (au sens de §8). **Implémentation runtime non réalisée** à ce stade : la création des entités `input_boolean.clim_mode_nuit_actif` et `binary_sensor.clim_mode_nuit_effectif`, la requalification des trois sélecteurs COOL, la neutralisation de `clim_blocage_horaire_reel` et l'exposition UI relèvent d'une **étape runtime séparée**, postérieure à la validation de la présente doctrine.
