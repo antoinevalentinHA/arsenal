@@ -88,8 +88,8 @@
 | Fichiers | `contrats/bouclage.md` (racine) et `contrats/ecs/04_*/` |
 | Problème | Deux ancrages pour le même sous-domaine |
 | Source | Hub navigation `ecs` — Points de vigilance (`Conflit ecs/04 ↔ bouclage.md`) |
-| Statut | **À arbitrer** — décision d'hébergement unique requise |
-| Impact | Ambiguïté de source de vérité |
+| Statut | **✅ CLOS — 2026-06-19.** Résolu de fait : `contrats/ecs/04_bouclage_ecs_sous_systeme.md` est un **renvoi pur** (conversion appliquée en v15.9.1, commit `4dd95f34`), sans doctrine autonome ; `contrats/bouclage.md` (v2.3.0, Actif) est la **source de vérité unique**. Méta-doc du hub `ecs` réalignée (mention « conflit actif / STRUCTURANT — OPPOSABLE » retirée). Aucun fichier déplacé/renommé, aucun runtime touché. Entrée conservée pour trace. |
+| Impact | Ambiguïté de source de vérité (résorbée) |
 
 ### 2.4 Double préfixe `10_` — `contrats/pannes/secteur/`
 

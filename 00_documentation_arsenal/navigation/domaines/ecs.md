@@ -22,7 +22,7 @@ Entrée : [`contrats/ecs/`](../../contrats/ecs/) (colonne `00→11` + contrats d
 
 **Sous-domaine — Bouclage** (recirculation ECS, non thermique) :
 - Contrat **canonique** : [`contrats/bouclage.md`](../../contrats/bouclage.md) (arbitrage acté, runtime vérifié AUTO v2.3)
-- ⚠️ [`contrats/ecs/04_bouclage_ecs_sous_systeme.md`](../../contrats/ecs/04_bouclage_ecs_sous_systeme.md) toujours marqué **STRUCTURANT — OPPOSABLE** — conflit actif (voir vigilance).
+- [`contrats/ecs/04_bouclage_ecs_sous_systeme.md`](../../contrats/ecs/04_bouclage_ecs_sous_systeme.md) — **renvoi** vers le contrat canonique, sans doctrine autonome.
 
 ## Architecture
 
@@ -56,7 +56,6 @@ Entrée : [`contrats/ecs/`](../../contrats/ecs/) (colonne `00→11` + contrats d
 
 ## Points de vigilance (non normatif)
 
-- **Conflit `ecs/04` ↔ `bouclage.md`** : `ecs/04` est toujours marqué *STRUCTURANT — OPPOSABLE* alors que l'arbitrage acte `contrats/bouclage.md` comme canonique. Le patch de conversion en renvoi (`bouclage_alignement_runtime`) a été produit mais **non appliqué**. Signalé, non corrigé.
 - **Double stage-2 inédit** : ECS est le seul domaine à employer séquentiellement `02_contre_expertises` *et* `02_arbitrages` pour le même thread. La contre-expertise est l'analyse ; l'arbitrage en est la résolution (acte terminal).
 - **Deux états d'audit coexistants** : bouclage clôturé, ECS principal non clôturé.
 - **Thread offsets** : rapport seul, pas d'aval documenté.
