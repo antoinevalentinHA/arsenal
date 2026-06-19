@@ -191,7 +191,6 @@ Les seuils définissent un **cadre d’interprétation**, jamais une décision.
 - Température seuil bas / haut
 - Humidité relative seuil bas / haut
 - Humidité absolue seuil bas / haut
-- Humidex seuil bas / haut
 
 ### Sources
 

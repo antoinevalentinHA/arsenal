@@ -2,36 +2,30 @@
 # 🌡️ TEMPLATE TRIGGERED SENSORS — Couleur Humidex (toutes zones)
 # ----------------------------------------------------------
 # 💡 Objectif :
-#   Fournir une indication visuelle du niveau de confort
-#   thermique perçu (Humidex) pour chaque zone, en comparant
-#   la valeur mesurée à des seuils bas et haut définis
-#   localement.
+#   Fournir une indication visuelle du niveau de confort/risque
+#   humidex pour chaque zone, sur une **échelle absolue** (paliers
+#   fixes Environnement Canada), indépendante de toute normale locale.
 #
 # ⚙️ Fonctionnement :
-#   - Source principale :
+#   - Source unique :
 #       • sensor.humidex_<zone>
-#   - Seuils métier associés :
-#       • sensor.humidex_seuil_bas_<zone>
-#       • sensor.humidex_seuil_haut_<zone>
-#   - Calcul d’une marge dynamique :
-#       • marge = (seuil_haut - seuil_bas) / 5
+#   - Bornes fixes (cf. ui/couleurs/03_exceptions.md — Exception 8)
 #
 # 🎨 Interprétation des couleurs :
-#   - blue        → Humidex très bas (froid sec)
-#   - light_blue  → Bas
-#   - light_green → Légèrement sous la zone de confort
-#   - green       → Zone de confort optimale
-#   - yellow      → Légèrement inconfortable (chaleur/humidité)
-#   - red         → Inconfort marqué
-#   - grey        → Valeurs invalides ou seuils incohérents
+#   - green    → humidex < 30        (aucun inconfort)
+#   - yellow   → 30 ≤ humidex < 40   (un certain inconfort)
+#   - orange   → 40 ≤ humidex < 45   (beaucoup d'inconfort)
+#   - red      → 45 ≤ humidex < 55   (danger)
+#   - dark_red → humidex ≥ 55        (coup de chaleur imminent)
+#   - grey     → valeur invalide / non numérique
 #
 # 🔁 Rafraîchissement :
-#   - À chaque changement de valeur ou de seuil
+#   - À chaque changement de la valeur humidex de la zone
 #   - Au démarrage de Home Assistant
 #
 # 🧠 Détails techniques :
 #   - Capteurs indépendants par zone
-#   - Les seuils ne sont jamais modifiés
+#   - Échelle absolue : aucune dépendance aux seuils dynamiques
 #   - Sortie sous forme de texte (nom de couleur)
 #
 # 📊 Type :
@@ -42,8 +36,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_chambre_arnaud
-        - sensor.humidex_seuil_bas_chambre_arnaud
-        - sensor.humidex_seuil_haut_chambre_arnaud
     - platform: homeassistant
       event: start
   sensor:
@@ -87,8 +79,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_chambre_matthieu
-        - sensor.humidex_seuil_bas_chambre_matthieu
-        - sensor.humidex_seuil_haut_chambre_matthieu
     - platform: homeassistant
       event: start
   sensor:
@@ -100,8 +90,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_chambre_parents
-        - sensor.humidex_seuil_bas_chambre_parents
-        - sensor.humidex_seuil_haut_chambre_parents
     - platform: homeassistant
       event: start
   sensor:
@@ -113,8 +101,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_entree
-        - sensor.humidex_seuil_bas_entree
-        - sensor.humidex_seuil_haut_entree
     - platform: homeassistant
       event: start
   sensor:
@@ -126,8 +112,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_petite_maison
-        - sensor.humidex_seuil_bas_petite_maison
-        - sensor.humidex_seuil_haut_petite_maison
     - platform: homeassistant
       event: start
   sensor:
@@ -139,8 +123,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_sejour
-        - sensor.humidex_seuil_bas_sejour
-        - sensor.humidex_seuil_haut_sejour
     - platform: homeassistant
       event: start
   sensor:
@@ -152,8 +134,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_jardin
-        - sensor.humidex_seuil_bas_jardin
-        - sensor.humidex_seuil_haut_jardin
     - platform: homeassistant
       event: start
   sensor:
@@ -165,8 +145,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_exterieur
-        - sensor.humidex_seuil_bas_exterieur
-        - sensor.humidex_seuil_haut_exterieur
     - platform: homeassistant
       event: start
   sensor:
@@ -178,8 +156,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_direction
-        - sensor.humidex_seuil_bas_direction
-        - sensor.humidex_seuil_haut_direction
     - platform: homeassistant
       event: start
   sensor:
@@ -191,8 +167,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_compta
-        - sensor.humidex_seuil_bas_compta
-        - sensor.humidex_seuil_haut_compta
     - platform: homeassistant
       event: start
   sensor:
@@ -204,8 +178,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_qualite
-        - sensor.humidex_seuil_bas_qualite
-        - sensor.humidex_seuil_haut_qualite
     - platform: homeassistant
       event: start
   sensor:
@@ -217,8 +189,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_devis
-        - sensor.humidex_seuil_bas_devis
-        - sensor.humidex_seuil_haut_devis
     - platform: homeassistant
       event: start
   sensor:
@@ -230,8 +200,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_commercial
-        - sensor.humidex_seuil_bas_commercial
-        - sensor.humidex_seuil_haut_commercial
     - platform: homeassistant
       event: start
   sensor:
@@ -243,8 +211,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_komori
-        - sensor.humidex_seuil_bas_komori
-        - sensor.humidex_seuil_haut_komori
     - platform: homeassistant
       event: start
   sensor:
@@ -256,8 +222,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_bobst
-        - sensor.humidex_seuil_bas_bobst
-        - sensor.humidex_seuil_haut_bobst
     - platform: homeassistant
       event: start
   sensor:
@@ -269,8 +233,6 @@
     - platform: state
       entity_id:
         - sensor.humidex_media
-        - sensor.humidex_seuil_bas_media
-        - sensor.humidex_seuil_haut_media
     - platform: homeassistant
       event: start
   sensor:
