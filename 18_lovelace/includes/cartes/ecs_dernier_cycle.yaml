@@ -33,15 +33,15 @@ content: |
   {% else %}
 
     {% if delta >= -0.3 and delta <= 0.3 %}
-    🟢 Cycle conforme  
+    🟢 Conforme  
     Écart final : {{ delta }} °C
 
     {% elif delta > 0.3 %}
-    🟠 Cycle trop haut  
+    🟠 Trop haut  
     Écart final : +{{ delta }} °C
 
     {% else %}
-    🟠 Cycle insuffisant  
+    🟠 Insuffisant  
     Écart final : {{ delta }} °C
 
     {% endif %}
