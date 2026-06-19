@@ -48,6 +48,6 @@ content: |
 
   {% endif %}
 
-  **Cycle validé** : {{ valide | upper }}
+  **Cycle validé** : {{ valide }}
 
   {% endif %}
