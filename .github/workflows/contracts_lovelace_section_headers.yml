@@ -1,0 +1,30 @@
+name: Arsenal Contracts — Lovelace Section Headers
+
+on:
+  push:
+    paths:
+      - '18_lovelace/**'
+      - 'scripts/arsenal_contracts/check_lovelace_section_headers_contracts.py'
+      - '.github/workflows/contracts_lovelace_section_headers.yml'
+  pull_request:
+    paths:
+      - '18_lovelace/**'
+      - 'scripts/arsenal_contracts/check_lovelace_section_headers_contracts.py'
+      - '.github/workflows/contracts_lovelace_section_headers.yml'
+
+jobs:
+  validate-lovelace-section-headers:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyyaml
+
+      - name: Run Lovelace section headers contract
+        run: |
+          python3 scripts/arsenal_contracts/check_lovelace_section_headers_contracts.py

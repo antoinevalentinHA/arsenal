@@ -53,6 +53,23 @@ aligné à gauche. Fond transparent, sans ombre. Strictement non interactif.
 
 ---
 
+## 🏷️ Instanciation — emoji obligatoire (contractuel)
+
+À l'instanciation d'un header dans un dashboard ou un include Lovelace
+(`template: section_header` ou `template: sub_section_header`), le `name`
+DOIT contenir au moins un **emoji visible**.
+
+- L'emoji porte le repère visuel de section ; il n'est pas décoratif.
+- Forme canonique : emoji en tête de libellé (ex. `name: 🌡️ Calibration Zigbee`).
+- S'applique aux deux niveaux (section et sous-section), sans exception.
+
+**Contrôle CI** : `scripts/arsenal_contracts/check_lovelace_section_headers_contracts.py`
+(contrat `R-LL-HEADER-EMOJI-1`, workflow
+`.github/workflows/contracts_lovelace_section_headers.yml`). Le checker scanne
+`18_lovelace/**` et échoue si un header est instancié sans emoji.
+
+---
+
 ## 🚫 Interdits (contractuels)
 
 - Aucune interaction utilisateur

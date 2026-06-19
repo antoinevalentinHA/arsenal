@@ -55,7 +55,7 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
-            name: Seuils de déclenchement
+            name: 🌡️ Seuils de déclenchement
 
           - type: grid
             square: false
@@ -79,7 +79,7 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
-            name: Seuils d'extinction
+            name: 🌡️ Seuils d'extinction
 
           - type: grid
             square: false
@@ -148,7 +148,7 @@ views:
 
           - type: custom:button-card
             template: sub_section_header
-            name: Offsets
+            name: 🎚️ Offsets
 
           - type: grid
             square: false
