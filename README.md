@@ -1,5 +1,11 @@
 # Arsenal
 
+[![License: MIT](https://img.shields.io/github/license/antoinevalentinHA/arsenal?color=blue)](./LICENSE)
+[![Home Assistant](https://img.shields.io/badge/Home_Assistant-system-41BDF5?logo=home-assistant&logoColor=white)](https://www.home-assistant.io/)
+[![Arsenal Validation](https://github.com/antoinevalentinHA/arsenal/actions/workflows/validation.yml/badge.svg)](https://github.com/antoinevalentinHA/arsenal/actions/workflows/validation.yml)
+[![Arsenal Doctrine](https://github.com/antoinevalentinHA/arsenal/actions/workflows/doctrine.yml/badge.svg)](https://github.com/antoinevalentinHA/arsenal/actions/workflows/doctrine.yml)
+[![Arsenal Docs](https://github.com/antoinevalentinHA/arsenal/actions/workflows/docs.yml/badge.svg)](https://github.com/antoinevalentinHA/arsenal/actions/workflows/docs.yml)
+
 > Home Assistant, traité comme un logiciel. Gouverné comme tel.
 
 La plupart des installations Home Assistant sont des configurations. Arsenal est un **système** : chaque domaine y répond à un contrat écrit, ce contrat est confronté à l'implémentation **par intégration continue**, et chaque domaine est suivi par un cycle d'audit jusqu'à sa **clôture**.
@@ -117,6 +123,24 @@ La documentation est la référence de vérité du système. Points d'entrée :
 **Pas une vitrine.** Arsenal n'est pas optimisé pour le screenshot. Il est optimisé pour rester maintenable et gouvernable des années après sa construction.
 
 **Pas une documentation Home Assistant.** La doc officielle reste la référence pour les intégrations et Lovelace. Arsenal porte sur l'architecture du système : séparation décision/exécution, contractualisation, robustesse runtime et gouvernance.
+
+---
+
+## Patterns & outils extraits
+
+Arsenal n'est pas une configuration à copier. En revanche, certains patterns et outils en ont été isolés en dépôts publics autonomes, réutilisables indépendamment du reste :
+
+- [`ha-self-parametrized-template-sensors`](https://github.com/antoinevalentinHA/ha-self-parametrized-template-sensors) — template sensors auto-paramétrés par `this.entity_id` : écrire la logique une fois, la réutiliser sur de nombreuses entités sans duplication.
+- [`ha-state-archive`](https://github.com/antoinevalentinHA/ha-state-archive) — pipeline d'archivage, d'audit et de versionnement d'états Home Assistant, côté infrastructure.
+- [`ha-archive-search`](https://github.com/antoinevalentinHA/ha-archive-search) — moteur de recherche sur les versions archivées, côté infrastructure.
+
+Ce sont des extractions ponctuelles, pas un framework : Arsenal reste un système, pas une bibliothèque.
+
+---
+
+## Discussion
+
+Présentation et échanges d'architecture sur le forum Home Assistant : [Arsenal — a contract-driven architecture for Home Assistant](https://community.home-assistant.io/t/arsenal-a-contract-driven-architecture-for-home-assistant/1011597).
 
 ---
 
