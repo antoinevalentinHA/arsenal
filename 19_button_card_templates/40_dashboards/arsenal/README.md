@@ -8,6 +8,48 @@ Ce n'est ni un domaine métier, ni un fourre-tout. C'est une surface de contrôl
 
 ---
 
+## Bloc « Lumières » du dashboard Arsenal — sélection UI non exhaustive
+
+> Note de cadrage. Le dashboard Arsenal (`18_lovelace/dashboards/arsenal.yaml`)
+> expose un bloc « 💡 Lumières » qui **réutilise des templates du domaine
+> éclairage** (`carte_action_eclairage`, `carte_action_eclairage_script`,
+> définis dans `40_dashboards/eclairage/`, pas dans ce dossier). Cette section
+> documente ce bloc côté cockpit ; elle ne crée aucune doctrine du domaine
+> éclairage.
+
+En tant que cockpit, Arsenal permet de **voir l'essentiel et de commander
+l'essentiel**. Le bloc Lumières en est une illustration : une **sélection UI
+pratique d'accès rapide**, **volontairement courte et non exhaustive**.
+
+- L'**exhaustivité** des commandes d'éclairage relève du **dashboard Eclairage**
+  (`18_lovelace/dashboards/eclairage.yaml`).
+- La sélection ci-dessous est un **choix d'ergonomie UI**, **pas** une
+  cartographie complète ni une doctrine du domaine éclairage.
+
+Commandes actuellement exposées (4) :
+
+| Tuile | Entité / cible | Nature UI |
+|---|---|---|
+| Jardin | `switch.prise_jardin` | action toggle confirmée (`carte_action_eclairage`) |
+| Séjour | `switch.prise_lampe_sejour` | action toggle confirmée (`carte_action_eclairage`) |
+| Parents | `switch.prise_lampe_parents` | action toggle confirmée (`carte_action_eclairage`) |
+| Garage | `script.garage_toggle` | action pure confirmée (`carte_action_eclairage_script`) |
+
+Précisions par tuile (faits vérifiables uniquement) :
+
+- **Parents** — pas d'automatisation de confort ni de détecteur en usage
+  normal ; la commande manuelle HA reste utile depuis le cockpit. (Une
+  automatisation de simulation de présence existe par ailleurs, hors usage
+  courant.)
+- **Garage** — commande via `script.garage_toggle` ; **carte d'action pure**,
+  **sans affichage d'état dans la tuile** ; s'appuie sur
+  `input_boolean.garage_light_state` comme **état logique souverain du domaine**,
+  en l'absence de retour physique confirmé (cf.
+  `00_documentation_arsenal/contrats/eclairage/garage.md`,
+  `00_documentation_arsenal/contrats/eclairage/sejour.md`).
+
+---
+
 ## Structure implicite identifiée
 
 Le dossier est organisé en **4 familles UI distinctes** :
