@@ -1,6 +1,6 @@
 type: markdown
 content: |
-  ### 🔍 Dernier cycle ECS
+  ### 🔍 Dernier cycle
 
   {% set resume = states('input_text.ecs_resume_dernier_cycle_fige') %}
   {% if resume in ['unknown','unavailable','none','', None] %}
