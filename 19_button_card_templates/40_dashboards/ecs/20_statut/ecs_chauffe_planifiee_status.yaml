@@ -74,8 +74,8 @@ ecs_chauffe_planifiee_status:
       const UNAV = ['unknown','unavailable',undefined,null,'none',''];
       if (UNAV.includes(st)) return "État indisponible";
       return (st === 'on')
-        ? "La programmation ECS est temporairement désactivée"
-        : "Chauffe ECS selon planning";
+        ? "Programmation désactivée"
+        : "Chauffe selon planning";
     ]]]
 
   styles:
