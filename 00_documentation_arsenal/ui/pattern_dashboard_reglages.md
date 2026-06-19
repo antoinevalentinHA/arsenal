@@ -1,8 +1,7 @@
 # 🧠 ARSENAL — UI PATTERN CANONIQUE · Pattern Dashboard **Réglages**
 #
 # 📌 Statut :
-# PROPOSITION — PRÊTE À VALIDATION
-# (n'a pas encore force normative ; à valider avant opposabilité)
+# DOCUMENT NORMATIF — OPPOSABLE
 #
 # 📌 Domaine :
 # UI / Lovelace / Dashboards de réglage
@@ -247,7 +246,7 @@ La conformité s'installe **par vague**, jamais en refonte globale.
 
 ## 🔒 RÈGLES DE CONFORMITÉ
 
-Une fois cette proposition validée, un dashboard de `reglages/**` conforme :
+Un dashboard de `reglages/**` conforme :
 - expose le **bandeau de validité conditionnel** en tête ;
 - attribue à **chaque** réglage **une** classe principale et **au plus un**
   qualificatif surclassant **Sensible** ;
@@ -273,6 +272,6 @@ composant que sous **preuve de répétition**.
 > Arsenal expose des réglages gouvernés.
 
 # ==========================================================
-# 📌 Statut : PROPOSITION — prête à validation.
-#    Autorité d'intégration : 00_documentation_arsenal/ui/.
+# 📌 Statut : DOCUMENT NORMATIF — OPPOSABLE.
+#    Autorité : 00_documentation_arsenal/ui/.
 # ==========================================================
