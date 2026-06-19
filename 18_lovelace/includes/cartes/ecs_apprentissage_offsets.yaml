@@ -4,9 +4,9 @@ content: |
 
   {% set auto = states('input_boolean.ecs_autocorrect_active') %}
   {% if auto == 'on' %}
-  🟢 **Auto-ajustement : ACTIF**
+  🟢 **Auto-ajustement : Actif**
   {% elif auto == 'off' %}
-  ⚪ **Auto-ajustement : INACTIF**
+  ⚪ **Auto-ajustement : Inactif**
   {% else %}
   ⚪ **Auto-ajustement : —**
   {% endif %}
