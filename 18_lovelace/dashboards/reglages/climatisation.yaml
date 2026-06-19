@@ -226,11 +226,11 @@ views:
 
           - type: tile
             entity: input_boolean.clim_mode_nuit_actif
-            name: Mode nuit (stratégie absence)
+            name: Mode nuit
 
           - type: tile
             entity: input_boolean.clim_blocage_horaire_actif
-            name: Blocage dur (hors mode nuit)
+            name: Blocage dur
 
           - type: grid
             square: false
@@ -243,6 +243,14 @@ views:
               - type: tile
                 entity: input_datetime.clim_heure_blocage_autom_off
                 name: à
+
+          - type: markdown
+            content: >
+              Mode nuit : pendant la plage nocturne, la climatisation reste
+              autorisée mais applique la stratégie absence (consignes et seuils
+              « absence »), et le blocage horaire est neutralisé. Blocage dur :
+              interdit la climatisation pendant la plage. Si les deux sont
+              actifs, le mode nuit prime.
 
           - type: custom:button-card
             template: section_header
