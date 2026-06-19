@@ -169,6 +169,9 @@ _Constats transverses consignés dans le registre vivant : [registre_anomalies_t
 ### Chauffage
 - [chauffage/cloture_verrou_representativite_courbe.md](05_clotures/chauffage/cloture_verrou_representativite_courbe.md)  _(chantier ciblé CLÔTURÉ — 2026-06-17 ; représentativité câblée comme garde bloquante (contrat 75 §7/§8) ; écart de **conformité** résorbé ; **qualité du signal** et **observabilité** restent hors périmètre)_
 
+### Climatisation
+- [climatisation/cloture_presence_confort_thermique_stabilisee.md](05_clotures/climatisation/cloture_presence_confort_thermique_stabilisee.md)  _(chantier **C4** CLÔTURÉ — 2026-06-19 ; présence confort thermique stabilisée **validée terrain** sur le périmètre **COOL/DRY** (C1/C2/C3 PASS) ; `T = 120 s` **ratifié** avec réserve de surveillance ; volet B (extension hors COOL/DRY) **hors périmètre**, porté par D-PRES)_
+
 ---
 
 ### État du domaine Chauffage — auto-ajustement courbe

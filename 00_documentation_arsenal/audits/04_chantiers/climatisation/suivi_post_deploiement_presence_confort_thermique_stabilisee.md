@@ -4,8 +4,8 @@
 |---|---|
 | **Type** | Note de suivi post-déploiement (observation) |
 | **Domaine** | Climatisation / Présence — interface de stabilisation COOL/DRY |
-| **Statut** | **Implémenté (V1 + V2) — sous observation — en attente de validation terrain** |
-| **Non clôturé** | Le problème **n'est pas** considéré comme résolu. Correction déployée, **non encore validée en conditions réelles**. |
+| **Statut** | **Implémenté (V1 + V2) — validé terrain le 2026-06-19 (volet A, COOL/DRY) — `T = 120 s` ratifié** |
+| **Clôturé (COOL/DRY)** | Volet A validé en conditions réelles (C1/C2/C3 PASS). Clôture : [`cloture_presence_confort_thermique_stabilisee.md`](../../05_clotures/climatisation/cloture_presence_confort_thermique_stabilisee.md). Volet B (extension hors COOL/DRY) porté par D-PRES. |
 | **Version** | 0.1 (ouverture du suivi) |
 | **Cadre** | Aucun runtime modifié par ce document. Reflète l'état réel après V1+V2 et redémarrage HA. |
 
@@ -105,10 +105,13 @@ stabilisée). Critères proposés, **non ratifiés** :
 ## 6. État du chantier
 
 - **Implémenté** : V1 + V2 déployés, HA redémarré, signal opérationnel.
-- **Sous observation** : phase en cours, aucun incident post-V2 encore disponible.
-- **En attente de validation terrain** : critères §5 à statuer.
-- **Non clôturé** : aucune `05_clotures/` n'est ouverte ; le problème n'est pas
-  déclaré résolu.
+- **Validé terrain (volet A)** : critères §5 statués le 2026-06-19 — C1/C2/C3 PASS,
+  `T = 120 s` ratifié (réserve de surveillance ~13 s). Preuve :
+  [`cloture_presence_confort_thermique_stabilisee.md`](../../05_clotures/climatisation/cloture_presence_confort_thermique_stabilisee.md).
+- **Clôturé (périmètre COOL/DRY)** : chantier C4 descendu en ⑤ Clos récents au
+  registre.
+- **Hors périmètre (volet B)** : l'extension de la stabilisée hors COOL/DRY est
+  portée par le dossier dormant D-PRES ; elle ne rouvre pas ce suivi.
 
 ---
 
