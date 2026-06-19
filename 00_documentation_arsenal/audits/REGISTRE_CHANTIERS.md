@@ -23,6 +23,7 @@ Un **item de backlog** n'entre en *Actifs* qu'une fois **promu** (décision d'ag
 |----|----------|---------|------|--------|-----------------|------------------------|
 | **C1** | Clôture définitive de l'alarme | alarme | **P0-cond → P1** | clôture conditionnelle acquise | Exécuter le **test positif `S3`** (établit la garantie `ALM-CRIT-2`), puis réaligner CH-5 (contrats 50/51) | [`05_clotures/alarme/cloture_ch1_alarme.md`](05_clotures/alarme/cloture_ch1_alarme.md) · [`04_chantiers/alarme/etat_post_CH6.md`](04_chantiers/alarme/etat_post_CH6.md) |
 | **C3** | Clôture du domaine Vacances | vacances / ECS | **P1** | VAC-IMP-5 : validation runtime en attente | Rejouer les 4 scénarios runtime (`S-COMPLETION-NATURELLE`…), puis clôturer le domaine | [`04_chantiers/vacances/chantier_vac_imp_5_desinfection_retour.md`](04_chantiers/vacances/chantier_vac_imp_5_desinfection_retour.md) |
+| **C8** | Mode nuit climatisation / stratégie absence | climatisation | P2 | runtime livré (CI verte) ; validation terrain en attente | Valider en plage nocturne réelle (bascule régime absence COOL + neutralisation blocage horaire), puis décider de la clôture | [`06_doctrine_blocages.md` §9](../contrats/climatisation/06_doctrine_blocages.md) |
 
 ---
 
