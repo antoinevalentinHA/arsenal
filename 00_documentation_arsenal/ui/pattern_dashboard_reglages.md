@@ -168,8 +168,8 @@ Tant qu'un template dédié n'est pas justifié par une **preuve de répétition
 
 ## ✅ RÔLE DU BANDEAU DE VALIDITÉ
 
-Chaque dashboard de réglage **devrait** exposer, en **première position** du
-flux, un **bandeau de validité conditionnel** adossé à l'indicateur de cohérence
+Chaque dashboard de réglage **devrait** exposer, en **tête du flux de
+contenu**, un **bandeau de validité conditionnel** adossé à l'indicateur de cohérence
 global existant (`binary_sensor.parametres_invalides_global`, via l'include
 `alerte_configuration_invalide.yaml`).
 
@@ -180,6 +180,13 @@ global existant (`binary_sensor.parametres_invalides_global`, via l'include
   backend, il n'en fabrique aucun ;
 - **seule** synthèse autorisée en tête de vue ; il ne porte ni édition ni action
   métier.
+
+**Placement :** le bandeau est la première carte du **flux de contenu**. Dans
+une vue Réglages **sans navigation interne**, il apparaît en première position
+du `vertical-stack`. Dans une vue qui porte une **navigation interne** conforme
+au pattern général (`badges → navigation → contenu`), cette navigation reste
+prioritaire : le bandeau est placé **immédiatement après elle** et ouvre alors
+le flux de contenu réglage.
 
 Le bandeau répond à « ce que je règle ici est-il cohérent ? » à l'endroit même
 où l'incohérence se crée.
