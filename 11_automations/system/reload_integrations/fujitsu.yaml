@@ -39,6 +39,11 @@
       to: "on"
       id: gel
 
+    - platform: state
+      entity_id: binary_sensor.indisponibilite_franche_airstage
+      to: "on"
+      id: indispo
+
     - platform: event
       event_type: timer.finished
       event_data:
@@ -80,6 +85,7 @@
             kind: reload_entry
             notify_title_prefix: "Airstage"
             age_entity: sensor.fujitsu_age_donnees
+            unavail_entity: binary_sensor.indisponibilite_franche_airstage
             seuil_minutes: 45
             ok_minutes: 10
             attempts_entity: input_number.airstage_reload_tentatives

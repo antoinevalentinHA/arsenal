@@ -1,0 +1,214 @@
+# ==========================================================
+#  ARSENAL — REGISTRE CI : Résilience des intégrations
+#  Source d'autorité du checker check_resilience_integrations_contracts.py
+#  Contrat : 00_documentation_arsenal/contrats/resilience_integrations.md (v1.0)
+#
+#  NATURE : données de référence CI. PAS du YAML runtime Home Assistant.
+#  Aucune entité définie ici. Toutes les valeurs sont extraites du dépôt.
+#
+#  TYPAGE DES MAILLONS (champ 'statut', vocabulaire fermé) :
+#    present                          -> existe ; entity_id renseigné
+#    absent_non_conforme_temporaire   -> exigé mais absent = DETTE (cf. exceptions)
+#    non_applicable                   -> hors périmètre pour ce mode (PAS une dette)
+#
+#  Un maillon a TOUJOURS la forme : { statut: <…>, entity_id: <id|null> }
+# ==========================================================
+
+meta:
+  contrat: resilience_integrations.md
+  version: "1.0"
+  mode: report-only
+  vocabulaire_statut: [present, absent_non_conforme_temporaire, non_applicable]
+  delay_on_gel_reference: "00:05:00"   # ancre *age_gel_delay_5
+  delay_on_ok_reference: "00:02:00"    # ancre *age_ok_delay
+  action_canon: script.resilience_integration_recover
+  garde_decision: input_boolean.systeme_stable
+  inhibition: binary_sensor.panne_secteur_en_cours
+
+integrations:
+
+  # ========================================================
+  # ACTIVES — mode fraicheur+disponibilite (axe disponibilité câblé)
+  # ========================================================
+
+  - nom: Netatmo
+    mode: fraicheur+disponibilite
+    statut_attendu: active
+    groupe_source:           { statut: present, entity_id: group.netatmo_capteurs }
+    capteur_age:             { statut: present, entity_id: sensor.netatmo_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_netatmo }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_netatmo }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_netatmo }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_netatmo }
+    automation:              { statut: present, id: "1012000000008", alias: "Système - Relance Netatmo", fichier: 11_automations/system/reload_integrations/netatmo.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.netatmo_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.netatmo_reload_tentatives }
+    action_recovery:         { statut: present, type: reload_entry, via: canon }
+    seuil_gel_attendu: 70
+    seuil_automation_constate: 70
+    delay_on_gel: "00:05:00"
+    exceptions_temporaires: []
+
+  - nom: Airstage
+    mode: fraicheur+disponibilite
+    statut_attendu: active
+    groupe_source:           { statut: present, entity_id: group.fujitsu_capteurs }
+    capteur_age:             { statut: present, entity_id: sensor.fujitsu_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_airstage }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_airstage }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_airstage }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_airstage }
+    automation:              { statut: present, id: "1012000000013", alias: "Système - Relance Airstage", fichier: 11_automations/system/reload_integrations/fujitsu.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.airstage_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.airstage_reload_tentatives }
+    action_recovery:         { statut: present, type: reload_entry, via: canon }
+    seuil_gel_attendu: 45
+    seuil_automation_constate: 45
+    delay_on_gel: "00:05:00"
+    exceptions_temporaires: []
+
+  - nom: HomeKit
+    mode: fraicheur+disponibilite
+    statut_attendu: active
+    groupe_source:           { statut: present, entity_id: group.homekit_capteurs }
+    capteur_age:             { statut: present, entity_id: sensor.homekit_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_homekit }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_homekit }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_homekit }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_homekit }
+    automation:              { statut: present, id: "10120000000019", alias: "Système - Relance HomeKit", fichier: 11_automations/system/reload_integrations/homekit.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.homekit_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.homekit_reload_tentatives }
+    action_recovery:         { statut: present, type: reload_entry, via: canon }
+    seuil_gel_attendu: 45
+    seuil_automation_constate: 45
+    delay_on_gel: "00:05:00"
+    exceptions_temporaires: []
+
+  - nom: Overkiz
+    mode: fraicheur+disponibilite
+    statut_attendu: active
+    groupe_source:           { statut: present, entity_id: group.petite_maison_cumulus }
+    capteur_age:             { statut: present, entity_id: sensor.petite_maison_cumulus_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_overkiz }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_overkiz }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_overkiz }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_overkiz }
+    automation:              { statut: present, id: "1012000000012", alias: "Système - Relance Overkiz", fichier: 11_automations/system/reload_integrations/overkiz.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.overkiz_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.overkiz_reload_tentatives }
+    action_recovery:         { statut: present, type: reload_entry, via: canon }
+    seuil_gel_attendu: 90
+    seuil_automation_constate: 90
+    delay_on_gel: "00:05:00"
+    a_confirmer_runtime: "Groupe à entités d'état (binary_sensor/number/water_heater) — pertinence seuil 90 et comptage membres exploitables à valider sur données réelles."
+    exceptions_temporaires: []
+
+  - nom: SwitchBot
+    mode: fraicheur+disponibilite
+    statut_attendu: active
+    groupe_source:           { statut: present, entity_id: group.switchbot_capteurs }
+    capteur_age:             { statut: present, entity_id: sensor.switchbot_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_switchbot }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_switchbot }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_switchbot }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_switchbot }
+    automation:              { statut: present, id: "1012000000011", alias: "Système - Relance SwitchBot", fichier: 11_automations/system/reload_integrations/switchbot.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.switchbot_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.switchbot_reload_tentatives }
+    action_recovery:         { statut: present, type: reload_entry, via: canon }
+    seuil_gel_attendu: 45
+    seuil_automation_constate: 45
+    delay_on_gel: "00:05:00"
+    exceptions_temporaires: []
+
+  - nom: Synology
+    mode: fraicheur+disponibilite
+    statut_attendu: active
+    groupe_source:           { statut: present, entity_id: group.synology_capteurs }
+    capteur_age:             { statut: present, entity_id: sensor.synology_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_synology }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.indisponibilite_franche_synology }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_synology }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_synology }
+    automation:              { statut: present, id: "10120000000021", alias: "Système - Relance Synology", fichier: 11_automations/system/reload_integrations/synology.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.synology_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.synology_reload_tentatives }
+    action_recovery:         { statut: present, type: reload_entry, via: canon }
+    seuil_gel_attendu: 45
+    seuil_automation_constate: 45
+    delay_on_gel: "00:05:00"
+    exceptions_temporaires: []
+
+  # ========================================================
+  # MODÈLE DE RÉFÉRENCE — disponibilité native (exception légitime)
+  # Axes d'âge non_applicable (PAS une dette).
+  # ========================================================
+
+  - nom: Zigbee2MQTT
+    mode: disponibilite_native
+    statut_attendu: modele_reference
+    groupe_source:           { statut: non_applicable, entity_id: null }
+    capteur_age:             { statut: non_applicable, entity_id: null }
+    binaire_gel:             { statut: non_applicable, entity_id: null }
+    binaire_indisponibilite: { statut: present, entity_id: binary_sensor.zigbee2mqtt_bridge_connection_state, fourni_par: integration_native }
+    binaire_retour_ok:       { statut: non_applicable, entity_id: null, note: "retour OK = transition to:'on' for 2min du bridge, pas un binaire dédié" }
+    binaire_recovery:        { statut: non_applicable, entity_id: null, note: "recovery porté par le timer de backoff, pas un binaire dédié" }
+    automation:              { statut: present, id: "1012000000010", alias: "Système - Relance Zigbee2MQTT", fichier: 11_automations/system/reload_integrations/zigbee.yaml }
+    timer_backoff:           { statut: present, entity_id: timer.zigbee2mqtt_reload_backoff }
+    compteur_tentatives:     { statut: present, entity_id: input_number.zigbee_reload_tentatives }
+    action_recovery:         { statut: present, type: addon_restart, via: inline, cible: a0d7b954_zigbee2mqtt }
+    seuil_gel_attendu: null
+    exception_documentee:
+      motif: "Disponibilité native via bridge MQTT ; action addon_restart inline ; ne suit pas le canon d'âge."
+      reload_direct_autorise: true
+      invariants_applicables: [backoff, plafond, anti_boucle, garde_systeme_stable, observabilite]
+    exceptions_temporaires: []
+
+  # ========================================================
+  # ORPHELINES À ARBITRER — dette temporaire connue (PAS une exception légitime)
+  # Infrastructure présente, mais automation + compteur absents.
+  # AUCUN runtime ajouté dans ce patch (pas d'ID d'automatisation fourni).
+  # ========================================================
+
+  - nom: Audi
+    mode: orpheline_a_arbitrer
+    statut_attendu: orpheline
+    groupe_source:           { statut: present, entity_id: group.audi_capteurs }
+    capteur_age:             { statut: present, entity_id: sensor.audi_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_audi }
+    binaire_indisponibilite: { statut: absent_non_conforme_temporaire, entity_id: null }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_audi }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_audi }
+    automation:              { statut: absent_non_conforme_temporaire, id: null, alias: null, fichier: null }
+    timer_backoff:           { statut: present, entity_id: timer.audi_reload_backoff }
+    compteur_tentatives:     { statut: absent_non_conforme_temporaire, entity_id: null }
+    action_recovery:         { statut: absent_non_conforme_temporaire, type: null, via: null }
+    seuil_gel_attendu: 120
+    delay_on_gel: "00:10:00"
+    exceptions_temporaires:
+      - chaine_orpheline
+      - automation_decision_absente
+      - compteur_tentatives_absent
+      - axe_disponibilite_absent
+
+  - nom: Withings
+    mode: orpheline_a_arbitrer
+    statut_attendu: orpheline
+    groupe_source:           { statut: present, entity_id: group.withings_capteurs }
+    capteur_age:             { statut: present, entity_id: sensor.withings_age_donnees }
+    binaire_gel:             { statut: present, entity_id: binary_sensor.gel_avere_withings }
+    binaire_indisponibilite: { statut: absent_non_conforme_temporaire, entity_id: null }
+    binaire_retour_ok:       { statut: present, entity_id: binary_sensor.retour_ok_withings }
+    binaire_recovery:        { statut: present, entity_id: binary_sensor.recovery_en_cours_withings }
+    automation:              { statut: absent_non_conforme_temporaire, id: null, alias: null, fichier: null }
+    timer_backoff:           { statut: present, entity_id: timer.withings_reload_backoff }
+    compteur_tentatives:     { statut: absent_non_conforme_temporaire, entity_id: null }
+    action_recovery:         { statut: absent_non_conforme_temporaire, type: null, via: null }
+    seuil_gel_attendu: 45
+    delay_on_gel: "00:05:00"
+    exceptions_temporaires:
+      - chaine_orpheline
+      - automation_decision_absente
+      - compteur_tentatives_absent
+      - axe_disponibilite_absent

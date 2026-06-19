@@ -1,0 +1,600 @@
+#!/usr/bin/env python3
+"""
+Arsenal — Vérification contractuelle : Résilience des intégrations
+Contrat Arsenal — resilience_integrations.md v1.0
+
+Mode report-only par défaut. Lit le registre comme source d'autorité et
+le compare au dépôt réel. Ne modifie aucun runtime.
+
+Variables d'environnement :
+  RESILIENCE_CHECK_MODE = report (défaut) | strict
+  STRICT_ON_NEW         = 0 (défaut) | 1     (en report : FAIL => exit 1)
+
+Codes de sortie :
+  0  conforme (selon le mode)
+  1  échec de conformité (FAIL, ou DETTE en strict)
+  2  erreur interne du checker (registre/fichier illisible)
+"""
+
+import os
+import sys
+import re
+from pathlib import Path
+
+try:
+    import yaml
+except Exception as exc:  # pragma: no cover
+    print(f"❌ ERREUR INTERNE : PyYAML indisponible ({exc})")
+    sys.exit(2)
+
+
+ROOT = Path(__file__).resolve().parents[2]
+REGISTRE = ROOT / "scripts" / "arsenal_contracts" / "resilience_integrations_registre.yaml"
+
+DIR_GROUPS = ROOT / "02_groups" / "integrations"
+FILE_AGE = ROOT / "12_template_sensors" / "system" / "integrations" / "age_des_donnees.yaml"
+FILE_ETAT = ROOT / "12_template_sensors" / "system" / "integrations" / "etat.yaml"
+DIR_TIMERS = ROOT / "08_timers" / "reload_integrations"
+DIR_COMPTEURS = ROOT / "03_input_numbers" / "system" / "reload_integrations"
+
+
+# ──────────────────────────────────────────────────────────────
+# Loader YAML tolérant aux tags HA (!secret, !include, etc.)
+# ──────────────────────────────────────────────────────────────
+
+class HALoader(yaml.SafeLoader):
+    pass
+
+
+def _opaque(loader, node):
+    return "OPAQUE_TAG"
+
+
+for _tag in ("!secret", "!include", "!include_dir_merge_list",
+             "!include_dir_merge_named", "!include_dir_list",
+             "!include_dir_named", "!env_var", "!input"):
+    HALoader.add_constructor(_tag, _opaque)
+HALoader.add_multi_constructor("!", lambda l, s, n: "OPAQUE_TAG")
+
+
+def load_yaml(path: Path):
+    if not path.is_file():
+        return None
+    return yaml.load(path.read_text(encoding="utf-8", errors="ignore"), Loader=HALoader)
+
+
+# ──────────────────────────────────────────────────────────────
+# Catégories de verdict
+# ──────────────────────────────────────────────────────────────
+
+PASS, DETTE, EXCEPTION, WARN, FAIL = "PASS", "DETTE", "EXCEPTION", "WARN", "FAIL"
+RESULTS = []  # (integration, regle, categorie, message)
+
+
+def record(integ, regle, categorie, message):
+    RESULTS.append((integ, regle, categorie, message))
+
+
+# ──────────────────────────────────────────────────────────────
+# Helpers de résolution dans le dépôt réel
+# ──────────────────────────────────────────────────────────────
+
+def group_keys():
+    keys = set()
+    for f in sorted(DIR_GROUPS.glob("*.yaml")):
+        data = load_yaml(f)
+        if isinstance(data, dict):
+            keys.update(data.keys())
+    return keys
+
+
+def template_unique_ids(path: Path):
+    uids = set()
+    data = load_yaml(path)
+    if not isinstance(data, list):
+        return uids
+    for block in data:
+        if not isinstance(block, dict):
+            continue
+        for _domain, entries in block.items():
+            if isinstance(entries, list):
+                for e in entries:
+                    if isinstance(e, dict) and "unique_id" in e:
+                        uids.add(str(e["unique_id"]))
+    return uids
+
+
+def gel_thresholds():
+    """Map unique_id gel_avere_* -> seuil numérique (depuis etat.yaml)."""
+    thresholds = {}
+    data = load_yaml(FILE_ETAT)
+    if not isinstance(data, list):
+        return thresholds
+    for block in data:
+        if not isinstance(block, dict):
+            continue
+        for _domain, entries in block.items():
+            if not isinstance(entries, list):
+                continue
+            for e in entries:
+                if isinstance(e, dict) and str(e.get("unique_id", "")).startswith("gel_avere_"):
+                    state = str(e.get("state", ""))
+                    m = re.search(r">=\s*(\d+)", state)
+                    if m:
+                        thresholds[e["unique_id"]] = int(m.group(1))
+    return thresholds
+
+
+def mapping_keys(folder: Path):
+    keys = set()
+    for f in sorted(folder.glob("*.yaml")):
+        data = load_yaml(f)
+        if isinstance(data, dict):
+            keys.update(data.keys())
+    return keys
+
+
+def load_automation(path: Path):
+    data = load_yaml(path)
+    if isinstance(data, list):
+        for item in data:
+            if isinstance(item, dict) and "trigger" in item:
+                return item
+    return None
+
+
+def automation_entities(autom: dict):
+    """entity_id cités dans les triggers (parsés)."""
+    ents = set()
+    triggers = autom.get("trigger", []) or []
+    if isinstance(triggers, dict):
+        triggers = [triggers]
+    for t in triggers:
+        if not isinstance(t, dict):
+            continue
+        eid = t.get("entity_id")
+        if isinstance(eid, str):
+            ents.add(eid)
+        elif isinstance(eid, list):
+            ents.update(eid)
+        ed = t.get("event_data", {})
+        if isinstance(ed, dict) and isinstance(ed.get("entity_id"), str):
+            ents.add(ed["entity_id"])
+        vt = t.get("value_template")
+        if isinstance(vt, str):
+            for m in re.finditer(r"(binary_sensor|sensor)\.[a-z0-9_]+", vt):
+                ents.add(m.group(0))
+    return ents
+
+
+def trigger_platforms(autom: dict):
+    plats = set()
+    triggers = autom.get("trigger", []) or []
+    if isinstance(triggers, dict):
+        triggers = [triggers]
+    for t in triggers:
+        if isinstance(t, dict) and "platform" in t:
+            plats.add(t["platform"])
+    return plats
+
+
+def automation_service_calls(autom: dict):
+    calls = set()
+
+    def visit(node):
+        if isinstance(node, dict):
+            for key in ("service", "action"):
+                if isinstance(node.get(key), str):
+                    calls.add(node[key])
+            for v in node.values():
+                visit(v)
+        elif isinstance(node, list):
+            for v in node:
+                visit(v)
+
+    visit(autom.get("action", []))
+    return calls
+
+
+def automation_condition_entities(autom: dict):
+    ents = set()
+
+    def visit(node):
+        if isinstance(node, dict):
+            eid = node.get("entity_id")
+            if isinstance(eid, str):
+                ents.add(eid)
+            elif isinstance(eid, list):
+                ents.update(eid)
+            for v in node.values():
+                visit(v)
+        elif isinstance(node, list):
+            for v in node:
+                visit(v)
+
+    visit(autom.get("condition", []))
+    return ents
+
+
+def recover_calls(autom: dict):
+    """
+    Tous les appels à script.resilience_integration_recover dans le bloc action,
+    avec leur payload 'data'. Retourne une liste de dicts (le data de chaque appel).
+    Parsing structurel : on suit service/action + data, sans heuristique texte.
+    """
+    calls = []
+
+    def visit(node):
+        if isinstance(node, dict):
+            svc = node.get("service") or node.get("action")
+            if svc == "script.resilience_integration_recover":
+                data = node.get("data", {})
+                if isinstance(data, dict):
+                    calls.append(data)
+            for v in node.values():
+                visit(v)
+        elif isinstance(node, list):
+            for v in node:
+                visit(v)
+
+    visit(autom.get("action", []))
+    return calls
+
+
+def attempt_call(autom: dict):
+    """Le payload data de l'appel canon op=attempt, ou None."""
+    for data in recover_calls(autom):
+        if data.get("op") == "attempt":
+            return data
+    return None
+
+
+def short_id(entity_id):
+    return entity_id.split(".", 1)[1] if entity_id and "." in entity_id else entity_id
+
+
+# ──────────────────────────────────────────────────────────────
+# Cœur : évaluation d'une intégration contre le dépôt
+# ──────────────────────────────────────────────────────────────
+
+def evaluate(integ, ctx):
+    nom = integ["nom"]
+    mode = integ.get("mode", "")
+    exceptions = set(integ.get("exceptions_temporaires", []) or [])
+    has_exception_doc = isinstance(integ.get("exception_documentee"), dict)
+
+    def maillon(field):
+        return integ.get(field, {}) or {}
+
+    def is_native(field):
+        return maillon(field).get("statut") == "non_applicable"
+
+    autom_decl = maillon("automation")
+    autom_obj = None
+    if autom_decl.get("statut") == "present" and autom_decl.get("fichier"):
+        autom_obj = load_automation(ROOT / autom_decl["fichier"])
+
+    # ---------- R1 : axe disponibilité ----------
+    ind = maillon("binaire_indisponibilite")
+    if ind.get("statut") == "present":
+        eid = ind.get("entity_id")
+        if ind.get("fourni_par") == "integration_native":
+            if autom_obj and eid in automation_entities(autom_obj):
+                record(nom, "R1", PASS, f"disponibilité native ({short_id(eid)})")
+            else:
+                record(nom, "R1", FAIL, f"binaire indisponibilité natif non référencé ({eid})")
+        else:
+            if eid in ctx["etat_uids_full"]:
+                record(nom, "R1", PASS, f"axe disponibilité présent ({short_id(eid)})")
+            else:
+                record(nom, "R1", FAIL, f"binaire indisponibilité introuvable ({eid})")
+    elif ind.get("statut") == "absent_non_conforme_temporaire":
+        if "axe_disponibilite_absent" in exceptions:
+            record(nom, "R1", DETTE, "axe_disponibilite_absent")
+        else:
+            record(nom, "R1", FAIL, "axe disponibilité absent (non documenté)")
+
+    # ---------- R2 : chaîne orpheline ----------
+    if mode != "disponibilite_native":
+        diag_ok = all(
+            maillon(f).get("statut") == "present"
+            for f in ("groupe_source", "capteur_age", "binaire_gel",
+                      "binaire_retour_ok", "binaire_recovery")
+        )
+        autom_present = autom_decl.get("statut") == "present"
+        if diag_ok and autom_present:
+            record(nom, "R2", PASS, "chaîne complète (diagnostic + décision)")
+        else:
+            if "chaine_orpheline" in exceptions:
+                record(nom, "R2", DETTE, "chaine_orpheline")
+            else:
+                record(nom, "R2", FAIL, "chaîne orpheline (non documentée)")
+
+    # ---------- R3 : automation de décision ----------
+    if mode != "disponibilite_native" or autom_decl.get("statut") == "present":
+        st = autom_decl.get("statut")
+        if st == "present":
+            if autom_obj is None:
+                record(nom, "R3", FAIL, f"automation déclarée mais introuvable ({autom_decl.get('fichier')})")
+            else:
+                decl_id = str(autom_decl.get("id", ""))
+                real_id = str(autom_obj.get("id", ""))
+                if decl_id and decl_id != real_id:
+                    record(nom, "R3", FAIL, f"id automation incohérent (registre {decl_id} / dépôt {real_id})")
+                else:
+                    record(nom, "R3", PASS, f"automation présente ({real_id})")
+        elif st == "absent_non_conforme_temporaire":
+            if "automation_decision_absente" in exceptions:
+                record(nom, "R3", DETTE, "automation_decision_absente")
+            else:
+                record(nom, "R3", FAIL, "automation de décision absente (non documentée)")
+
+    # ---------- R4 : compteur tentatives ----------
+    cpt = maillon("compteur_tentatives")
+    if autom_decl.get("statut") == "present":
+        if cpt.get("statut") == "present":
+            if short_id(cpt.get("entity_id")) in ctx["compteur_keys"]:
+                record(nom, "R4", PASS, "compteur tentatives présent")
+            else:
+                record(nom, "R4", FAIL, f"compteur introuvable ({cpt.get('entity_id')})")
+    else:
+        if cpt.get("statut") == "absent_non_conforme_temporaire":
+            if "compteur_tentatives_absent" in exceptions:
+                record(nom, "R4", DETTE, "compteur_tentatives_absent")
+            else:
+                record(nom, "R4", FAIL, "compteur tentatives absent (non documenté)")
+
+    # ---------- R5 : timer backoff ----------
+    tmr = maillon("timer_backoff")
+    if tmr.get("statut") == "present":
+        if short_id(tmr.get("entity_id")) in ctx["timer_keys"]:
+            record(nom, "R5", PASS, "timer backoff présent")
+        else:
+            record(nom, "R5", FAIL, f"timer backoff introuvable ({tmr.get('entity_id')})")
+
+    # ---------- R6 : alignement des seuils ----------
+    # Compare trois sources : seuil_gel_attendu (registre), seuil réel lu dans
+    # gel_avere_* (etat.yaml), et seuil_minutes réel lu dans l'appel attempt de
+    # l'automation déclarée. Le registre 'seuil_automation_constate' reste
+    # documentaire et n'est PAS la source de vérité ici.
+    if not is_native("binaire_gel") and integ.get("seuil_gel_attendu") is not None:
+        attendu = integ["seuil_gel_attendu"]
+        gel_uid = short_id(maillon("binaire_gel").get("entity_id"))
+        runtime_seuil = ctx["gel_thresholds"].get(gel_uid)
+
+        autom_seuil = None
+        if autom_obj is not None:
+            data = attempt_call(autom_obj)
+            if data is not None and "seuil_minutes" in data:
+                try:
+                    autom_seuil = int(data["seuil_minutes"])
+                except (TypeError, ValueError):
+                    autom_seuil = data["seuil_minutes"]
+
+        coherent = (runtime_seuil == attendu) and (autom_seuil is None or autom_seuil == attendu)
+        if coherent:
+            record(nom, "R6", PASS, f"seuils alignés ({attendu})")
+        else:
+            if "seuil_desaligne" in exceptions:
+                record(nom, "R6", DETTE,
+                       f"seuil_desaligne (attendu {attendu} / gel {runtime_seuil} / automation {autom_seuil})")
+            else:
+                record(nom, "R6", FAIL,
+                       f"seuil désaligné non documenté (attendu {attendu} / gel {runtime_seuil} / automation {autom_seuil})")
+
+    # ---------- R7 : câblage bi-axes (triggers + transmission unavail_entity) ----------
+    if mode == "fraicheur+disponibilite" and autom_obj is not None:
+        ents = automation_entities(autom_obj)
+        gel_eid = maillon("binaire_gel").get("entity_id")
+        ind_eid = maillon("binaire_indisponibilite").get("entity_id")
+        gel_present = gel_eid in ents
+        ind_present = bool(ind_eid) and ind_eid in ents
+
+        # Transmission de l'indisponibilité au script canon (op=attempt)
+        data = attempt_call(autom_obj)
+        unavail_passe = bool(ind_eid) and data is not None and data.get("unavail_entity") == ind_eid
+
+        if gel_present and ind_present and unavail_passe:
+            record(nom, "R7", PASS, "câblage bi-axes (triggers gel+indispo, unavail_entity transmis)")
+        else:
+            if "axe_disponibilite_absent" in exceptions:
+                record(nom, "R7", DETTE, "mono-axe (fraîcheur seule)")
+            else:
+                manques = []
+                if not gel_present:
+                    manques.append("trigger gel absent")
+                if not ind_present:
+                    manques.append("trigger indisponibilité absent")
+                if not unavail_passe:
+                    manques.append("unavail_entity non transmis au script canon")
+                record(nom, "R7", FAIL, "câblage bi-axes incomplet : " + ", ".join(manques))
+
+    # ---------- R8 : garde systeme_stable ----------
+    if autom_obj is not None:
+        if ctx["garde"] in automation_condition_entities(autom_obj):
+            record(nom, "R8", PASS, "garde systeme_stable présente")
+        else:
+            record(nom, "R8", FAIL, "garde systeme_stable absente")
+
+    # ---------- R9 : reload hors canon ----------
+    if autom_decl.get("statut") == "present" and autom_obj is not None:
+        calls = automation_service_calls(autom_obj)
+        reload_direct = any(
+            c in ("homeassistant.reload_config_entry", "hassio.addon_restart")
+            for c in calls
+        )
+        if reload_direct:
+            allowed = has_exception_doc and integ["exception_documentee"].get("reload_direct_autorise") is True
+            if allowed:
+                record(nom, "R9", EXCEPTION, "reload direct autorisé (documenté)")
+            else:
+                record(nom, "R9", FAIL, "reload direct hors script canon (non autorisé)")
+        else:
+            record(nom, "R9", PASS, "action déléguée au script canon")
+
+    # ---------- R10 : références mortes ----------
+    morts = []
+    for f in ("groupe_source", "capteur_age", "binaire_gel", "binaire_indisponibilite",
+              "binaire_retour_ok", "binaire_recovery", "timer_backoff", "compteur_tentatives"):
+        m = maillon(f)
+        if m.get("statut") == "present":
+            eid = m.get("entity_id")
+            if not eid:
+                continue
+            if m.get("fourni_par") == "integration_native":
+                continue
+            dom = eid.split(".", 1)[0]
+            key = short_id(eid)
+            resolved = (
+                (dom == "group" and key in ctx["group_keys"]) or
+                (dom == "sensor" and key in ctx["age_uids"]) or
+                (dom == "binary_sensor" and key in ctx["etat_uids"]) or
+                (dom == "timer" and key in ctx["timer_keys"]) or
+                (dom == "input_number" and key in ctx["compteur_keys"])
+            )
+            if not resolved:
+                morts.append(eid)
+    if morts:
+        record(nom, "R10", FAIL, "référence(s) morte(s) : " + ", ".join(morts))
+    else:
+        record(nom, "R10", PASS, "aucune référence morte")
+
+    # ---------- R11 : anti-boucle ----------
+    if autom_obj is not None:
+        mode_single = autom_obj.get("mode") == "single"
+        has_time_pattern = "time_pattern" in trigger_platforms(autom_obj)
+        if mode_single and not has_time_pattern:
+            record(nom, "R11", PASS, "mode single, pas de time_pattern")
+        else:
+            detail = []
+            if not mode_single:
+                detail.append("mode != single")
+            if has_time_pattern:
+                detail.append("time_pattern présent")
+            record(nom, "R11", FAIL, "anti-boucle : " + ", ".join(detail))
+
+    # ---------- R12 : câblage action disponibilité ----------
+    # Pour les chaînes fraicheur+disponibilite : l'automation doit (a) déclencher
+    # sur le binaire d'indisponibilité, (b) transmettre ce MÊME entity_id au
+    # script canon via unavail_entity, (c) déléguer à resilience_integration_recover.
+    if mode == "fraicheur+disponibilite" and autom_obj is not None:
+        ind_eid = maillon("binaire_indisponibilite").get("entity_id")
+        triggers = automation_entities(autom_obj)
+        data = attempt_call(autom_obj)
+        calls = automation_service_calls(autom_obj)
+
+        a_trigger = bool(ind_eid) and ind_eid in triggers
+        b_transmis = bool(ind_eid) and data is not None and data.get("unavail_entity") == ind_eid
+        c_delegue = "script.resilience_integration_recover" in calls
+
+        if a_trigger and b_transmis and c_delegue:
+            record(nom, "R12", PASS, "câblage action disponibilité complet")
+        else:
+            if "axe_disponibilite_absent" in exceptions:
+                record(nom, "R12", DETTE, "câblage action disponibilité absent")
+            else:
+                manques = []
+                if not a_trigger:
+                    manques.append("pas de trigger indisponibilité")
+                if not b_transmis:
+                    manques.append("unavail_entity non transmis ou incohérent")
+                if not c_delegue:
+                    manques.append("pas de délégation au script canon")
+                record(nom, "R12", FAIL, "câblage action disponibilité incomplet : " + ", ".join(manques))
+
+    # ---------- WARN : a_confirmer_runtime ----------
+    if integ.get("a_confirmer_runtime"):
+        record(nom, "WARN", WARN, integ["a_confirmer_runtime"])
+
+
+# ──────────────────────────────────────────────────────────────
+# Exécution
+# ──────────────────────────────────────────────────────────────
+
+def main():
+    mode = os.environ.get("RESILIENCE_CHECK_MODE", "report").strip().lower()
+    strict_on_new = os.environ.get("STRICT_ON_NEW", "0").strip() == "1"
+
+    if mode not in ("report", "strict"):
+        print(f"❌ ERREUR INTERNE : RESILIENCE_CHECK_MODE invalide ('{mode}')")
+        return 2
+
+    registre = load_yaml(REGISTRE)
+    if not isinstance(registre, dict) or "integrations" not in registre:
+        print(f"❌ ERREUR INTERNE : registre illisible ou invalide ({REGISTRE})")
+        return 2
+
+    meta = registre.get("meta", {}) or {}
+    garde = meta.get("garde_decision", "input_boolean.systeme_stable")
+
+    try:
+        ctx = {
+            "group_keys": group_keys(),
+            "age_uids": template_unique_ids(FILE_AGE),
+            "etat_uids": template_unique_ids(FILE_ETAT),
+            "etat_uids_full": {f"binary_sensor.{u}" for u in template_unique_ids(FILE_ETAT)},
+            "gel_thresholds": gel_thresholds(),
+            "timer_keys": mapping_keys(DIR_TIMERS),
+            "compteur_keys": mapping_keys(DIR_COMPTEURS),
+            "garde": garde,
+        }
+    except Exception as exc:
+        print(f"❌ ERREUR INTERNE : lecture du dépôt impossible ({exc})")
+        return 2
+
+    print("Arsenal — Contrat Résilience intégrations (report-only)\n")
+    print(f"Mode : {mode}   |   STRICT_ON_NEW : {int(strict_on_new)}\n")
+
+    try:
+        for integ in registre["integrations"]:
+            print(f"[{integ['nom']}]  {integ.get('statut_attendu', '')}")
+            before = len(RESULTS)
+            evaluate(integ, ctx)
+            for (_i, regle, cat, msg) in RESULTS[before:]:
+                sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
+                tag = "" if cat == PASS or regle == "WARN" else f" {cat}"
+                label = "WARN" if regle == "WARN" else regle
+                print(f"  {sym} {label}{tag} {msg}")
+            print()
+    except Exception as exc:
+        print(f"❌ ERREUR INTERNE durant l'évaluation : {exc}")
+        return 2
+
+    counts = {PASS: 0, DETTE: 0, EXCEPTION: 0, WARN: 0, FAIL: 0}
+    for (_i, _r, cat, _m) in RESULTS:
+        counts[cat] += 1
+
+    print("──────────────────────────────")
+    print("RÉCAPITULATIF")
+    print(f"  PASS       : {counts[PASS]}")
+    print(f"  DETTE      : {counts[DETTE]}   (tolérées report-only — voir registre)")
+    print(f"  EXCEPTION  : {counts[EXCEPTION]}   (documentées)")
+    print(f"  WARN       : {counts[WARN]}   (à confirmer runtime)")
+    print(f"  FAIL       : {counts[FAIL]}   (écarts nouveaux / non documentés)")
+    print("──────────────────────────────")
+
+    has_fail = counts[FAIL] > 0
+    has_dette = counts[DETTE] > 0
+
+    if mode == "strict":
+        if has_fail or has_dette:
+            print("MODE strict → exit 1 (FAIL et/ou DETTE bloquants)")
+            return 1
+        print("MODE strict → exit 0")
+        return 0
+
+    if strict_on_new and has_fail:
+        print("MODE report + STRICT_ON_NEW=1 → exit 1 (FAIL nouveau détecté)")
+        return 1
+    print("MODE report → exit 0 (dettes/exceptions/warn non bloquantes)")
+    return 0
+
+
+if __name__ == "__main__":
+    try:
+        sys.exit(main())
+    except SystemExit:
+        raise
+    except Exception as exc:  # filet de sécurité -> code 2
+        print(f"❌ ERREUR INTERNE non rattrapée : {exc}")
+        sys.exit(2)

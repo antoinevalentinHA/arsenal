@@ -27,6 +27,8 @@ resilience_integration_recover:
       description: "Ex: ViCare, Netatmo, Zigbee2MQTT"
     age_entity:
       description: "Ex: sensor.vicare_age_donnees"
+    unavail_entity:
+      description: "Optionnel. Binaire d'indisponibilité franche (ex: binary_sensor.indisponibilite_franche_netatmo). Si 'on', l'incident est confirmé même si l'âge est figé bas."
     seuil_minutes:
       description: "Gel si age >= seuil"
     ok_minutes:
@@ -81,6 +83,10 @@ resilience_integration_recover:
 
     - variables:
         UNAV: ['unknown','unavailable',None,'none','']
+        unavail_entity_safe: "{{ unavail_entity | default('') }}"
+        unavail: >
+          {{ unavail_entity_safe | length > 0
+             and is_state(unavail_entity_safe, 'on') }}
         age_state: "{{ states(age_entity_safe) }}"
         age: "{{ states(age_entity_safe) | float(default=none) }}"
         seuil: "{{ seuil_minutes | float(default=45) }}"
@@ -143,9 +149,11 @@ resilience_integration_recover:
             - stop: "plafond"
 
     # Si gel non confirmé / valeur non numérique : on ne fait rien
+    # Incident confirmé si l'âge dépasse le seuil (gel silencieux)
+    # OU si l'indisponibilité franche est avérée (unavail = on, âge figé bas).
     - condition: template
       value_template: >
-        {{ age is not none and age >= seuil }}
+        {{ (age is not none and age >= seuil) or unavail }}
 
     # Annule un backoff pendu (si on relance à cause d’un nouveau gel)
     - service: timer.cancel
@@ -173,9 +181,13 @@ resilience_integration_recover:
                 addon: "{{ addon_slug }}"
 
     # Attente “retour réel”
+    # Succès = données fraîches (âge < ok) ET indisponibilité franche levée.
+    # Tant qu'un binaire unavail est fourni et reste 'on', on n'a pas récupéré.
     - wait_template: >
         {% set v = states(age_entity_safe) | float(default=none) %}
-        {{ v is not none and v < ok }}
+        {% set still_unavail = unavail_entity_safe | length > 0
+           and is_state(unavail_entity_safe, 'on') %}
+        {{ v is not none and v < ok and not still_unavail }}
       timeout: "{{ timeout }}"
       continue_on_timeout: true
 
@@ -183,7 +195,9 @@ resilience_integration_recover:
     - choose:
         - conditions: >
             {% set v = states(age_entity_safe) | float(default=none) %}
-            {{ v is not none and v < ok }}
+            {% set still_unavail = unavail_entity_safe | length > 0
+               and is_state(unavail_entity_safe, 'on') %}
+            {{ v is not none and v < ok and not still_unavail }}
           sequence:
             - service: timer.cancel
               target:

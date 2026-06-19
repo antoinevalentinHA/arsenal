@@ -1,0 +1,26 @@
+name: Arsenal Contracts — Résilience intégrations
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  contract-check:
+    runs-on: ubuntu-latest
+    env:
+      RESILIENCE_CHECK_MODE: report
+      STRICT_ON_NEW: "1"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install PyYAML
+        run: pip install pyyaml
+
+      - name: Vérification contractuelle — Résilience intégrations
+        run: python3 scripts/arsenal_contracts/check_resilience_integrations_contracts.py

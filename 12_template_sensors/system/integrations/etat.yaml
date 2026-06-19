@@ -84,6 +84,15 @@
           and (states('sensor.petite_maison_cumulus_age_donnees') | int(999)) < 10
         }}
 
+    - name: "Indisponibilité franche — Overkiz"
+      unique_id: indisponibilite_franche_overkiz
+      default_entity_id: binary_sensor.indisponibilite_franche_overkiz
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ expand('group.petite_maison_cumulus')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count == 0 }}
+
     # ==========================================================
     # AIRSTAGE (FUJITSU)
     # ==========================================================
@@ -110,6 +119,15 @@
           is_state('binary_sensor.recovery_en_cours_airstage', 'on')
           and (states('sensor.fujitsu_age_donnees') | int(999)) < 10
         }}
+
+    - name: "Indisponibilité franche — Airstage"
+      unique_id: indisponibilite_franche_airstage
+      default_entity_id: binary_sensor.indisponibilite_franche_airstage
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ expand('group.fujitsu_capteurs')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count == 0 }}
 
     # ==========================================================
     # HOMEKIT
@@ -138,6 +156,15 @@
           and (states('sensor.homekit_age_donnees') | int(999)) < 10
         }}
 
+    - name: "Indisponibilité franche — HomeKit"
+      unique_id: indisponibilite_franche_homekit
+      default_entity_id: binary_sensor.indisponibilite_franche_homekit
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ expand('group.homekit_capteurs')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count == 0 }}
+
     # ==========================================================
     # NETATMO
     # ==========================================================
@@ -164,6 +191,15 @@
           is_state('binary_sensor.recovery_en_cours_netatmo', 'on')
           and (states('sensor.netatmo_age_donnees') | int(999)) < 10
         }}
+
+    - name: "Indisponibilité franche — Netatmo"
+      unique_id: indisponibilite_franche_netatmo
+      default_entity_id: binary_sensor.indisponibilite_franche_netatmo
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ expand('group.netatmo_capteurs')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count == 0 }}
 
     # ==========================================================
     # SWITCHBOT
@@ -192,6 +228,15 @@
           and (states('sensor.switchbot_age_donnees') | int(999)) < 10
         }}
 
+    - name: "Indisponibilité franche — SwitchBot"
+      unique_id: indisponibilite_franche_switchbot
+      default_entity_id: binary_sensor.indisponibilite_franche_switchbot
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ expand('group.switchbot_capteurs')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count == 0 }}
+
     # ==========================================================
     # SYNOLOGY
     # ==========================================================
@@ -218,6 +263,15 @@
           is_state('binary_sensor.recovery_en_cours_synology', 'on')
           and (states('sensor.synology_age_donnees') | int(999)) < 10
         }}
+
+    - name: "Indisponibilité franche — Synology"
+      unique_id: indisponibilite_franche_synology
+      default_entity_id: binary_sensor.indisponibilite_franche_synology
+      delay_on: *age_gel_delay_5
+      state: >
+        {{ expand('group.synology_capteurs')
+           | rejectattr('state', 'in', ['unknown', 'unavailable'])
+           | list | count == 0 }}
 
     # ==========================================================
     # WITHINGS

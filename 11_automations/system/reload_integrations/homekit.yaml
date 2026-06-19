@@ -16,6 +16,11 @@
       to: "on"
       id: gel
 
+    - platform: state
+      entity_id: binary_sensor.indisponibilite_franche_homekit
+      to: "on"
+      id: indispo
+
     - platform: event
       event_type: timer.finished
       event_data:
@@ -56,6 +61,7 @@
             kind: reload_entry
             notify_title_prefix: "HomeKit"
             age_entity: sensor.homekit_age_donnees
+            unavail_entity: binary_sensor.indisponibilite_franche_homekit
             seuil_minutes: 45
             ok_minutes: 10
             attempts_entity: input_number.homekit_reload_tentatives
