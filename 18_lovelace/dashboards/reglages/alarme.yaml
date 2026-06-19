@@ -18,13 +18,26 @@ views:
     cards:
       - type: vertical-stack
         cards:
+          # ======================================================
+          # ✅ BANDEAU DE VALIDITÉ (conditionnel)
+          # ======================================================
+          - !include ../../includes/alerte_configuration_invalide.yaml
+
+          # ======================================================
+          # 🛡️ SÉCURITÉ — RÉGLAGES SENSIBLES
+          # ======================================================
           - type: custom:button-card
             template: section_header
-            name: 🔐 Modes
+            name: 🛡️ Sécurité — réglages sensibles
 
-          - type: tile
-            entity: input_boolean.mode_test_alarme
-            name: Mode test
+          - type: markdown
+            content: >
+              Ces réglages modifient le comportement de protection.
+              Vérifier l’effet avant toute modification.
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🔐 Mode d’armement
 
           - type: tile
             entity: input_select.mode_alarme
@@ -33,9 +46,13 @@ views:
             features:
               - type: select-options
 
+          - type: markdown
+            content: >
+              « Désactivé » interdit tout armement, manuel comme automatique.
+
           - type: custom:button-card
-            template: section_header
-            name: 🌍 Zone sécurité
+            template: sub_section_header
+            name: 🌍 Zone de sécurité
 
           - type: tile
             entity: input_number.zone_securite_radius
@@ -45,9 +62,14 @@ views:
               - type: numeric-input
                 style: buttons
 
+          - type: markdown
+            content: >
+              Rayon de la zone de géolocalisation utilisée par la logique de
+              présence / sécurité.
+
           - type: custom:button-card
-            template: section_header
-            name: ⌛ Délais (s)
+            template: sub_section_header
+            name: ⌛ Délai d’entrée (s)
 
           - type: tile
             entity: input_number.alarme_delai_entree
@@ -58,6 +80,18 @@ views:
               - type: numeric-input
                 style: buttons
 
+          - type: markdown
+            content: >
+              Temps accordé pour désarmer après ouverture d’un accès protégé ;
+              un délai court laisse moins de temps pour réagir.
+
+          # ======================================================
+          # 🚨 SIRÈNE
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🚨 Sirène
+
           - type: tile
             entity: number.sirene_max_duration
             name: 🚨 Durée max sirène
@@ -66,3 +100,21 @@ views:
             features:
               - type: numeric-input
                 style: buttons
+
+          # ======================================================
+          # 🧪 TEST / MAINTENANCE
+          # ======================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🧪 Test / Maintenance
+
+          - type: markdown
+            content: >
+              Neutralise temporairement la protection, à des fins de test
+              uniquement.
+
+          - type: custom:button-card
+            template: socle_toggle_confirme
+            entity: input_boolean.mode_test_alarme
+            name: Mode test
+            icon: mdi:shield-off
