@@ -64,9 +64,11 @@ views:
             template: section_header
             name: 🔭 Mode astronomie
 
-          - type: tile
-            entity: input_boolean.mode_astronomie
+          - type: custom:button-card
+            template: carte_action_eclairage
             name: Mode astronomie
+            icon: mdi:telescope
+            entity: input_boolean.mode_astronomie
 
           # ==================================================
           # 🎄 BAIES VITRÉES / SAPIN — CONDITIONNEL
