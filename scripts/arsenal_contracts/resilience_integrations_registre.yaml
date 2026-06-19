@@ -1,7 +1,7 @@
 # ==========================================================
 #  ARSENAL — REGISTRE CI : Résilience des intégrations
 #  Source d'autorité du checker check_resilience_integrations_contracts.py
-#  Contrat : 00_documentation_arsenal/contrats/resilience_integrations.md (v1.0)
+#  Contrat : 00_documentation_arsenal/contrats/resilience_integrations.md (v1.1)
 #
 #  NATURE : données de référence CI. PAS du YAML runtime Home Assistant.
 #  Aucune entité définie ici. Toutes les valeurs sont extraites du dépôt.
@@ -16,7 +16,7 @@
 
 meta:
   contrat: resilience_integrations.md
-  version: "1.0"
+  version: "1.1"
   mode: report-only
   vocabulaire_statut: [present, absent_non_conforme_temporaire, non_applicable]
   delay_on_gel_reference: "00:05:00"   # ancre *age_gel_delay_5
@@ -24,6 +24,7 @@ meta:
   action_canon: script.resilience_integration_recover
   garde_decision: input_boolean.systeme_stable
   inhibition: binary_sensor.panne_secteur_en_cours
+  inhibition_wan: binary_sensor.contexte_wan_indisponible
 
 integrations:
 
@@ -33,6 +34,7 @@ integrations:
 
   - nom: Netatmo
     mode: fraicheur+disponibilite
+    classe_reseau: cloud_wan
     statut_attendu: active
     groupe_source:           { statut: present, entity_id: group.netatmo_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.netatmo_age_donnees }
@@ -51,6 +53,7 @@ integrations:
 
   - nom: Airstage
     mode: fraicheur+disponibilite
+    classe_reseau: local_lan
     statut_attendu: active
     groupe_source:           { statut: present, entity_id: group.fujitsu_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.fujitsu_age_donnees }
@@ -69,6 +72,7 @@ integrations:
 
   - nom: HomeKit
     mode: fraicheur+disponibilite
+    classe_reseau: local_lan
     statut_attendu: active
     groupe_source:           { statut: present, entity_id: group.homekit_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.homekit_age_donnees }
@@ -87,6 +91,7 @@ integrations:
 
   - nom: Overkiz
     mode: fraicheur+disponibilite
+    classe_reseau: cloud_wan
     statut_attendu: active
     groupe_source:           { statut: present, entity_id: group.petite_maison_cumulus }
     capteur_age:             { statut: present, entity_id: sensor.petite_maison_cumulus_age_donnees }
@@ -106,6 +111,7 @@ integrations:
 
   - nom: SwitchBot
     mode: fraicheur+disponibilite
+    classe_reseau: local_lan
     statut_attendu: active
     groupe_source:           { statut: present, entity_id: group.switchbot_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.switchbot_age_donnees }
@@ -124,6 +130,7 @@ integrations:
 
   - nom: Synology
     mode: fraicheur+disponibilite
+    classe_reseau: local_lan
     statut_attendu: active
     groupe_source:           { statut: present, entity_id: group.synology_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.synology_age_donnees }
@@ -147,6 +154,7 @@ integrations:
 
   - nom: Zigbee2MQTT
     mode: disponibilite_native
+    classe_reseau: local_lan
     statut_attendu: modele_reference
     groupe_source:           { statut: non_applicable, entity_id: null }
     capteur_age:             { statut: non_applicable, entity_id: null }
@@ -173,6 +181,7 @@ integrations:
 
   - nom: Audi
     mode: orpheline_a_arbitrer
+    classe_reseau: cloud_wan
     statut_attendu: orpheline
     groupe_source:           { statut: present, entity_id: group.audi_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.audi_age_donnees }
@@ -194,6 +203,7 @@ integrations:
 
   - nom: Withings
     mode: orpheline_a_arbitrer
+    classe_reseau: cloud_wan
     statut_attendu: orpheline
     groupe_source:           { statut: present, entity_id: group.withings_capteurs }
     capteur_age:             { statut: present, entity_id: sensor.withings_age_donnees }

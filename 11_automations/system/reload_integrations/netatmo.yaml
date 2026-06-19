@@ -86,6 +86,7 @@
             notify_title_prefix: "Netatmo"
             age_entity: sensor.netatmo_age_donnees
             unavail_entity: binary_sensor.indisponibilite_franche_netatmo
+            wan_entity: binary_sensor.contexte_wan_indisponible
             seuil_minutes: 70
             ok_minutes: 10
             attempts_entity: input_number.netatmo_reload_tentatives

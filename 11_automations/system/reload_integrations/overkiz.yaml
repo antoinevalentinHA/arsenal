@@ -86,6 +86,7 @@
             notify_title_prefix: "Overkiz"
             age_entity: sensor.petite_maison_cumulus_age_donnees
             unavail_entity: binary_sensor.indisponibilite_franche_overkiz
+            wan_entity: binary_sensor.contexte_wan_indisponible
             seuil_minutes: 90
             ok_minutes: 10
             attempts_entity: input_number.overkiz_reload_tentatives

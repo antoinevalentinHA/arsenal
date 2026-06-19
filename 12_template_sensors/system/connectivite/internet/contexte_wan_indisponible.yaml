@@ -1,0 +1,66 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Connectivité / WAN — Contexte WAN indisponible
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Diagnostic : indiquer si le support WAN est indisponible ou non stabilisé,
+#   contexte dans lequel un recovery d'intégration cloud serait futile.
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   diagnostic
+#
+# 🆔 UNIQUE_ID
+#   contexte_wan_indisponible
+#
+# 🔗 DÉPENDANCES
+#   Lit : input_boolean.reboot_box_en_cours, binary_sensor.acces_externe
+#
+# 🕒 STABILISATION
+#   Le retour à off est retardé par delay_off.
+#   L'attribut cause décrit l'état instantané des sources, pas le compte à rebours
+#   interne de delay_off.
+#   Si delay_off est modifié, l'attribut delai_stabilisation_secondes doit être
+#   mis à jour en cohérence.
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Lire ou modifier binary_sensor.panne_secteur_en_cours
+#   - Confondre état booléen et action automatique
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x
+# ==========================================================
+
+- binary_sensor:
+    - name: "Contexte WAN indisponible"
+      unique_id: contexte_wan_indisponible
+
+      delay_off: "00:05:00"
+
+      attributes:
+        acces_externe: >
+          {{ states('binary_sensor.acces_externe') }}
+        reboot_box_en_cours: >
+          {{ states('input_boolean.reboot_box_en_cours') }}
+        delai_stabilisation_secondes: >
+          {{ 300 }}
+        derniere_transition_acces_externe: >
+          {{ states.binary_sensor.acces_externe.last_changed }}
+        cause: >
+          {% if is_state('input_boolean.reboot_box_en_cours', 'on') %}
+            remediation_active
+          {% elif not is_state('binary_sensor.acces_externe', 'on') %}
+            wan_down
+          {% else %}
+            disponible
+          {% endif %}
+
+      state: >
+        {{ is_state('input_boolean.reboot_box_en_cours', 'on')
+           or not is_state('binary_sensor.acces_externe', 'on') }}

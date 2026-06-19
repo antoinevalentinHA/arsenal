@@ -1,12 +1,14 @@
 # ARSENAL — Contrat de résilience des intégrations
 
 **Composant :** `arsenal-ha`
-**Version :** v1.0
+**Version :** v1.1
 **Scope :** Détection et relance automatique des intégrations critiques (gel des données et indisponibilité des entités).
 **Mode d'application :** report-only — voir §10 et le registre.
 **Dépendances :**
 - `script.resilience_integration_recover` (action canon)
-- `binary_sensor.panne_secteur_en_cours` (inhibition)
+- `binary_sensor.panne_secteur_en_cours` (inhibition secteur)
+- `binary_sensor.contexte_wan_indisponible` (inhibition WAN des intégrations cloud — voir §11)
+- Contrat `pannes/internet/30` — contexte de remédiation réseau
 - Contrat Notifications
 - Registre : `scripts/arsenal_contracts/resilience_integrations_registre.yaml`
 
@@ -66,6 +68,7 @@ Les deux axes doivent exister **séparément**. Aucun ne peut servir de substitu
 8. **Inhibition panne secteur** — aucune tentative pendant `panne_secteur_en_cours = on` ; le reset reste autorisé.
 9. **Observabilité** — état des axes, compteur, backoff exposables ; notifications sur attempt/échec/block/retour OK.
 10. **Absence de boucle agressive** — `mode: single`, `max_exceeded: silent`, déclenchement sur transition, garde `systeme_stable`.
+11. **Support WAN disponible** — une intégration de classe `cloud_wan` ne tente aucun recovery (`op == attempt`) tant que le contexte WAN est indisponible (`binary_sensor.contexte_wan_indisponible = on`). Cette inhibition ne concerne **que** les intégrations `cloud_wan` ; les intégrations `local_lan` n'y sont jamais soumises. Comme pour l'inhibition panne secteur (invariant 8), seul `attempt` est inhibé ; `reset` et `block` restent autorisés.
 
 ---
 
@@ -76,6 +79,9 @@ Les deux axes doivent exister **séparément**. Aucun ne peut servir de substitu
 - Déclenchement sur un seul axe quand les deux sont requis (chaîne aveugle).
 - Infrastructure de diagnostic sans automation consommatrice (chaîne orpheline).
 - Appel direct à `homeassistant.reload_config_entry` ou `hassio.addon_restart` **hors** du script canon, **sauf exception inscrite au registre** (§7).
+- Tenter un recovery d'une intégration `cloud_wan` pendant un contexte WAN indisponible ou un contexte de remédiation réseau actif (cf. `pannes/internet/30`).
+- Coder `binary_sensor.contexte_wan_indisponible` en dur dans une garde globale du script canon : la garde WAN est **paramétrée** (`wan_entity`), pour qu'une intégration `local_lan` ne puisse jamais être inhibée par effet de bord.
+- Inhiber une intégration `local_lan` (Airstage, HomeKit, SwitchBot, Synology, Zigbee2MQTT) sur un signal WAN.
 
 ---
 
@@ -111,3 +117,56 @@ La conformité est vérifiée par `scripts/arsenal_contracts/check_resilience_in
 Le registre type chaque maillon par un statut fermé : `present`, `absent_non_conforme_temporaire` (dette tolérée en report-only via les exceptions du registre), ou `non_applicable` (hors périmètre pour le mode de l'intégration, jamais une dette). Une dérogation légitime n'est pas un statut de maillon mais un bloc `exception_documentee` au niveau de l'intégration. Le checker lit ces statuts tels quels, sans inférence.
 
 Le contrat s'applique en **mode report-only** : les écarts connus inscrits au registre n'échouent pas la CI ; tout écart **nouveau ou non documenté** échoue dès `STRICT_ON_NEW=1`. La résorption d'une dette se traduit par la suppression de sa ligne d'exception au registre.
+
+---
+
+## 11. Garde réseau WAN (intégrations cloud)
+
+### 11.1 Principe
+
+Une intégration dont le support transite par Internet (**`cloud_wan`**) devient légitimement `unavailable` pendant une panne WAN ou une campagne de remédiation réseau. Dans ce cas, son indisponibilité est un **KO attendu**, pas un dysfonctionnement d'intégration : un recovery (reload de config entry) serait **futile** — le support distant est inatteignable — et consommerait tentatives, backoff et notifications jusqu'au blocage.
+
+Par symétrie stricte avec l'inhibition panne secteur (invariant 8), le recovery des intégrations `cloud_wan` est inhibé tant que le support WAN n'est pas disponible et stabilisé.
+
+### 11.2 Conformité à `pannes/internet/30`
+
+Le contrat `pannes/internet/30` (Contexte de remédiation réseau) impose à tout composant **réseau-dépendant** de bloquer toute action corrective fondée sur une observation réseau pendant un contexte de remédiation actif. L'axe disponibilité des intégrations `cloud_wan` est un tel composant.
+
+**Déclaration explicite (exigée par `pannes/internet/30`) :** pendant un contexte de remédiation réseau, une indisponibilité WAN, ou un retour WAN non encore stabilisé, les recoveries des intégrations `cloud_wan` sont **inhibés**. Les diagnostics (axes fraîcheur/disponibilité) continuent d'observer ; seule l'action de recovery est suspendue.
+
+### 11.3 Signal canon
+
+Le contexte WAN est porté par un binaire diagnostic unique :
+
+> **`binary_sensor.contexte_wan_indisponible`** (`unique_id: contexte_wan_indisponible`)
+
+Il est `on` si une campagne de remédiation réseau est active (`input_boolean.reboot_box_en_cours = on`) **ou** si l'accès externe n'est pas disponible (`binary_sensor.acces_externe != on`, donc `off`/`unknown`/`unavailable`). Il ne repasse `off` qu'après stabilisation du retour WAN (cf. son `delay_off`). Ce binaire décrit un **état système WAN** ; il ne lit ni ne modifie `binary_sensor.panne_secteur_en_cours`, et n'évoque aucune action de recovery. La garde secteur (invariant 8) et la garde WAN sont **complémentaires et indépendantes**.
+
+### 11.4 Contrat de câblage
+
+| Élément | Rôle |
+|---|---|
+| `meta.inhibition_wan` (registre) | nom canonique du signal WAN : `binary_sensor.contexte_wan_indisponible`. Déclaré **une seule fois**. |
+| `classe_reseau` (registre, par intégration) | `cloud_wan` ou `local_lan`. **Seule clé de vérité** ; aucune clé `garde_wan` concurrente. |
+| `wan_entity` (paramètre du script canon) | optionnel. Transmis par l'appel `op: attempt` d'une intégration `cloud_wan`, jamais par une `local_lan`. |
+
+**Règles de câblage :**
+
+- Pour une intégration **`cloud_wan`** avec automation active, l'appel `op: attempt` à `script.resilience_integration_recover` transmet `wan_entity: binary_sensor.contexte_wan_indisponible`.
+- Pour une intégration **`local_lan`**, l'appel `op: attempt` ne transmet **jamais** `wan_entity`.
+- Dans le script canon, la garde WAN est **optionnelle et paramétrée** : elle ne s'arme que si `wan_entity` est défini, inhibe uniquement `op == attempt`, bloque si l'entité transmise est `on`, et ne bloque jamais `reset` ni `block`. Elle ne code jamais le binaire en dur.
+
+**Classification :**
+
+| Classe | Intégrations |
+|---|---|
+| `cloud_wan` | Netatmo, Overkiz, Audi, Withings |
+| `local_lan` | Airstage / Fujitsu, HomeKit, SwitchBot, Synology, Zigbee2MQTT |
+
+Câblage runtime immédiat : Netatmo et Overkiz (cloud actives). Audi et Withings sont `cloud_wan` mais orphelines (§8) — leur classe est enregistrée pour le jour de leur câblage, sans appel à garder aujourd'hui.
+
+### 11.5 Réserve — gardes locales hors périmètre
+
+Cet invariant couvre **exclusivement** le support WAN. Les intégrations `local_lan` ne sont **jamais** inhibées par une panne WAN : Airstage (équipement joignable sur le LAN via `binary_sensor.climatiseur`), HomeKit (pont local), SwitchBot (BLE via proxys ESP32), Synology (NAS LAN) et Zigbee2MQTT (bridge MQTT) conservent un recovery pleinement actif même Internet coupé.
+
+Une éventuelle garde « support **local/LAN** disponible » — qui inhiberait le recovery d'une intégration locale pendant un KO LAN attendu — relèverait d'un **invariant distinct**, non traité ici. Elle utiliserait d'autres signaux (LAN, non WAN) et un autre périmètre d'intégrations. Sa mention ici vaut **réserve explicite**, pas ouverture de chantier.

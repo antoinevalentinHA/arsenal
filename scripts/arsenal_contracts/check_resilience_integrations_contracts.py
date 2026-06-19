@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Arsenal — Vérification contractuelle : Résilience des intégrations
-Contrat Arsenal — resilience_integrations.md v1.0
+Contrat Arsenal — resilience_integrations.md v1.1
 
 Mode report-only par défaut. Lit le registre comme source d'autorité et
 le compare au dépôt réel. Ne modifie aucun runtime.
@@ -34,6 +34,8 @@ REGISTRE = ROOT / "scripts" / "arsenal_contracts" / "resilience_integrations_reg
 DIR_GROUPS = ROOT / "02_groups" / "integrations"
 FILE_AGE = ROOT / "12_template_sensors" / "system" / "integrations" / "age_des_donnees.yaml"
 FILE_ETAT = ROOT / "12_template_sensors" / "system" / "integrations" / "etat.yaml"
+FILE_WAN = ROOT / "12_template_sensors" / "system" / "connectivite" / "internet" / "contexte_wan_indisponible.yaml"
+FILE_SCRIPT_CANON = ROOT / "10_scripts" / "system" / "resilience_integration_recover.yaml"
 DIR_TIMERS = ROOT / "08_timers" / "reload_integrations"
 DIR_COMPTEURS = ROOT / "03_input_numbers" / "system" / "reload_integrations"
 
@@ -247,6 +249,48 @@ def attempt_call(autom: dict):
         if data.get("op") == "attempt":
             return data
     return None
+
+
+def wan_binary_exists():
+    """Le binaire de contexte WAN est défini dans son fichier canonique ?"""
+    uids = template_unique_ids(FILE_WAN)
+    return "contexte_wan_indisponible" in uids
+
+
+def script_has_parameterized_wan_guard():
+    """
+    Le script canon porte une garde WAN PARAMÉTRÉE (lit wan_entity), inhibant
+    op==attempt, et NON codée en dur sur contexte_wan_indisponible.
+    Retourne (present: bool, en_dur: bool).
+    """
+    if not FILE_SCRIPT_CANON.is_file():
+        return (False, False)
+    raw = FILE_SCRIPT_CANON.read_text(encoding="utf-8", errors="ignore")
+    data = load_yaml(FILE_SCRIPT_CANON)
+    # Collecte des value_template du script (parsing structurel)
+    templates = []
+
+    def visit(node):
+        if isinstance(node, dict):
+            vt = node.get("value_template")
+            if isinstance(vt, str):
+                templates.append(vt)
+            for v in node.values():
+                visit(v)
+        elif isinstance(node, list):
+            for v in node:
+                visit(v)
+
+    visit(data)
+    # Garde paramétrée : un value_template référence wan_entity + op attempt
+    parameterized = any(
+        "wan_entity" in t and "attempt" in t for t in templates
+    )
+    # En dur : un value_template inhibe en codant le binaire en dur (sans passer par wan_entity)
+    en_dur = any(
+        "contexte_wan_indisponible" in t and "wan_entity" not in t for t in templates
+    )
+    return (parameterized, en_dur)
 
 
 def short_id(entity_id):
@@ -502,6 +546,38 @@ def evaluate(integ, ctx):
                     manques.append("pas de délégation au script canon")
                 record(nom, "R12", FAIL, "câblage action disponibilité incomplet : " + ", ".join(manques))
 
+    # ---------- R13 : garde réseau WAN (intégrations cloud) ----------
+    # Exclut le mode disponibilite_native (Zigbee).
+    if mode != "disponibilite_native":
+        classe = integ.get("classe_reseau")
+        wan_canon = ctx["inhibition_wan"]
+        data = attempt_call(autom_obj) if autom_obj is not None else None
+        wan_passe = data.get("wan_entity") if data else None
+
+        if classe == "cloud_wan":
+            if autom_obj is None:
+                # orpheline (Audi/Withings) : pas d'appel à vérifier, pas de FAIL
+                pass
+            elif wan_passe == wan_canon:
+                record(nom, "R13", PASS, f"garde WAN câblée ({short_id(wan_canon)})")
+            elif wan_passe is None:
+                if "garde_wan_absente" in exceptions:
+                    record(nom, "R13", DETTE, "garde_wan_absente")
+                else:
+                    record(nom, "R13", FAIL, "cloud_wan sans wan_entity (garde WAN non câblée)")
+            else:
+                record(nom, "R13", FAIL,
+                       f"wan_entity incohérent (attendu {wan_canon}, trouvé {wan_passe})")
+
+        elif classe == "local_lan":
+            # Protection inverse : une locale ne doit JAMAIS transmettre wan_entity.
+            if autom_obj is not None and wan_passe is not None:
+                record(nom, "R13", FAIL,
+                       "intégration local_lan ne doit pas recevoir la garde WAN "
+                       f"(wan_entity={wan_passe})")
+            else:
+                record(nom, "R13", PASS, "local_lan sans garde WAN (correct)")
+
     # ---------- WARN : a_confirmer_runtime ----------
     if integ.get("a_confirmer_runtime"):
         record(nom, "WARN", WARN, integ["a_confirmer_runtime"])
@@ -526,6 +602,7 @@ def main():
 
     meta = registre.get("meta", {}) or {}
     garde = meta.get("garde_decision", "input_boolean.systeme_stable")
+    inhibition_wan = meta.get("inhibition_wan", "binary_sensor.contexte_wan_indisponible")
 
     try:
         ctx = {
@@ -537,6 +614,7 @@ def main():
             "timer_keys": mapping_keys(DIR_TIMERS),
             "compteur_keys": mapping_keys(DIR_COMPTEURS),
             "garde": garde,
+            "inhibition_wan": inhibition_wan,
         }
     except Exception as exc:
         print(f"❌ ERREUR INTERNE : lecture du dépôt impossible ({exc})")
@@ -544,6 +622,37 @@ def main():
 
     print("Arsenal — Contrat Résilience intégrations (report-only)\n")
     print(f"Mode : {mode}   |   STRICT_ON_NEW : {int(strict_on_new)}\n")
+
+    # ---------- R13 global : binaire WAN + garde script ----------
+    print("[Contexte WAN]  global")
+    WAN_CANON = "binary_sensor.contexte_wan_indisponible"
+    inhibition_wan_decl = ctx["inhibition_wan"]
+    binaire_existe = wan_binary_exists()
+    meta_canon = (inhibition_wan_decl == WAN_CANON)
+    if meta_canon and binaire_existe:
+        record("Contexte WAN", "R13-a", PASS,
+               f"meta.inhibition_wan canon ({WAN_CANON}) et binaire présent")
+    elif not meta_canon:
+        # meta pointe vers une autre entité : FAIL même si le fichier canon existe
+        record("Contexte WAN", "R13-a", FAIL,
+               f"meta.inhibition_wan doit valoir {WAN_CANON}, trouvé {inhibition_wan_decl}")
+    else:
+        record("Contexte WAN", "R13-a", FAIL,
+               f"binaire {WAN_CANON} introuvable (unique_id: contexte_wan_indisponible)")
+    wan_param, wan_en_dur = script_has_parameterized_wan_guard()
+    if wan_en_dur:
+        record("Contexte WAN", "R13-b", FAIL,
+               "garde WAN codée en dur dans le script (risque d'inhiber les locales)")
+    elif wan_param:
+        record("Contexte WAN", "R13-b", PASS, "garde WAN paramétrée (wan_entity) présente")
+    else:
+        record("Contexte WAN", "R13-b", FAIL, "garde WAN absente du script canon")
+    for (_i, regle, cat, msg) in RESULTS:
+        if _i == "Contexte WAN":
+            sym = {PASS: "✔", DETTE: "⚠", EXCEPTION: "✔", WARN: "⚠", FAIL: "✗"}[cat]
+            tag = "" if cat == PASS else f" {cat}"
+            print(f"  {sym} {regle}{tag} {msg}")
+    print()
 
     try:
         for integ in registre["integrations"]:

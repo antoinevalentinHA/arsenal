@@ -29,6 +29,8 @@ resilience_integration_recover:
       description: "Ex: sensor.vicare_age_donnees"
     unavail_entity:
       description: "Optionnel. Binaire d'indisponibilité franche (ex: binary_sensor.indisponibilite_franche_netatmo). Si 'on', l'incident est confirmé même si l'âge est figé bas."
+    wan_entity:
+      description: "Optionnel. Binaire de contexte WAN (ex: binary_sensor.contexte_wan_indisponible). Transmis UNIQUEMENT par les intégrations cloud_wan. Si défini et 'on', la tentative (op=attempt) est inhibée : le support WAN est indisponible, un reload serait futile. Ne jamais transmettre pour une intégration local_lan."
     seuil_minutes:
       description: "Gel si age >= seuil"
     ok_minutes:
@@ -67,6 +69,26 @@ resilience_integration_recover:
                    and is_state('binary_sensor.panne_secteur_en_cours', 'on') }}
           sequence:
             - stop: "Inhibé : panne secteur active (reload d'intégration futile)"
+
+    # =========================
+    # 🛡️ GARDE CONTEXTE WAN
+    # =========================
+    # Pour les intégrations cloud_wan UNIQUEMENT (qui transmettent wan_entity) :
+    # pendant une indisponibilité WAN ou une campagne de remédiation réseau
+    # (binary_sensor.contexte_wan_indisponible=on), un reload de config_entry est
+    # FUTILE — le support distant est inatteignable. KO ATTENDU, pas un blocage.
+    # Garde PARAMÉTRÉE (jamais codée en dur) : inerte si wan_entity non transmis,
+    # donc les intégrations local_lan ne sont jamais inhibées par effet de bord.
+    # On n'inhibe QUE la tentative (op=attempt) ; reset et block restent autorisés.
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ (op | default('attempt')) == 'attempt'
+                   and (wan_entity | default('')) | length > 0
+                   and is_state(wan_entity, 'on') }}
+          sequence:
+            - stop: "Inhibé : contexte WAN indisponible (reload d'intégration cloud futile)"
 
     # =========================
     # 🧱 GARDE PARAMETRES
