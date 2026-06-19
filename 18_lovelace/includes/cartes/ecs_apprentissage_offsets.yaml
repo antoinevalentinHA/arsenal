@@ -1,7 +1,6 @@
 type: markdown
 title: null
 content: |
-  ### 🔁 État
 
   {% set auto = states('input_boolean.ecs_autocorrect_active') %}
   {% if auto == 'on' %}
