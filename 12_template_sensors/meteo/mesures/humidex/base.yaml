@@ -15,7 +15,7 @@
 #       • À chaque changement de température OU de point de rosée
 #       • Au démarrage de Home Assistant (event: start)
 #   - Si les deux valeurs sont valides :
-#       → calcul complet et résultat arrondi à 0.1°C
+#       → calcul complet et résultat arrondi à 0.1 point
 #   - Sinon :
 #       → conservation de la dernière valeur connue
 #
@@ -24,7 +24,7 @@
 #   - Chaque capteur inclut en attributs :
 #       • `temperature_source` — l’entité de température utilisée
 #       • `rosee_source` — l’entité du point de rosée associée
-#   - Unité : °C (degré Celsius)
+#   - Unité : aucune (indice sans dimension)
 #   - Icône : mdi:thermometer
 #
 # 🏷️ Exemples d’entités :
@@ -46,7 +46,6 @@
   sensor:
     - name: "Humidex Entrée"
       unique_id: humidex_entree
-      unit_of_measurement: "°C"
       state: &humidex_logic >
         {% set T_raw = states(this.attributes.temperature_source) %}
         {% set Td_raw = states(this.attributes.rosee_source) %}
@@ -73,7 +72,6 @@
   sensor:
     - name: "Humidex Petite Maison"
       unique_id: humidex_petite_maison
-      unit_of_measurement: "°C"
       state: *humidex_logic
       attributes:
         temperature_source: sensor.temperature_petite_maison
@@ -89,7 +87,6 @@
   sensor:
     - name: "Humidex Jardin"
       unique_id: humidex_jardin
-      unit_of_measurement: "°C"
       state: *humidex_logic
       attributes:
         temperature_source: sensor.temperature_jardin
@@ -106,7 +103,6 @@
   sensor:
     - name: "Humidex Bobst"
       unique_id: humidex_bobst
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -124,7 +120,6 @@
   sensor:
     - name: "Humidex Commercial"
       unique_id: humidex_commercial
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -142,7 +137,6 @@
   sensor:
     - name: "Humidex Compta"
       unique_id: humidex_compta
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -160,7 +154,6 @@
   sensor:
     - name: "Humidex Devis"
       unique_id: humidex_devis
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -177,7 +170,6 @@
   sensor:
     - name: "Humidex Direction"
       unique_id: humidex_direction
-      unit_of_measurement: "°C"
       state: *humidex_logic
       attributes:
         temperature_source: sensor.temperature_direction
@@ -194,7 +186,6 @@
   sensor:
     - name: "Humidex Komori"
       unique_id: humidex_komori
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -212,7 +203,6 @@
   sensor:
     - name: "Humidex Media"
       unique_id: media_humidex
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -230,7 +220,6 @@
   sensor:
     - name: "Humidex Qualité"
       unique_id: humidex_qualite
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -248,7 +237,6 @@
   sensor:
     - name: "Humidex Séjour"
       unique_id: humidex_sejour
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -266,7 +254,6 @@
   sensor:
     - name: "Humidex Chambre Arnaud"
       unique_id: humidex_chambre_arnaud
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -284,7 +271,6 @@
   sensor:
     - name: "Humidex Chambre Matthieu"
       unique_id: humidex_chambre_matthieu
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -302,7 +288,6 @@
   sensor:
     - name: "Humidex Chambre Parents"
       unique_id: humidex_chambre_parents
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:
@@ -320,7 +305,6 @@
   sensor:
     - name: "Humidex Extérieur"
       unique_id: humidex_exterieur
-      unit_of_measurement: "°C"
       icon: mdi:thermometer
       state: *humidex_logic
       attributes:

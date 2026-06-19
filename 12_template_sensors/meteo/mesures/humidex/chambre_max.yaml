@@ -25,7 +25,7 @@
 #   - L’attribut `chambre_max` conserve le dernier nom connu
 #     pour éviter les trous de données.
 #
-# 📏 Unité : °C (degré Celsius)
+# 📏 Unité : aucune (indice sans dimension)
 # 📊 Type : Trigger Template Sensor
 # 📍 Nom de l’entité : sensor.humidex_max_chambres
 # ==========================================================
@@ -41,7 +41,6 @@
   sensor:
     - name: "Humidex max Chambres"
       unique_id: humidex_max_chambres
-      unit_of_measurement: "°C"
       state: >
         {% set sources = {
           'Chambre Arnaud': states('sensor.humidex_chambre_arnaud'),
