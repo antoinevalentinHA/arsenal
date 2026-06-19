@@ -16,6 +16,9 @@ views:
           # ======================================================
           - !include ../../includes/navigation/meteo.yaml
 
+          # ✅ Bandeau de validité (conditionnel)
+          - !include ../../includes/alerte_configuration_invalide.yaml
+
           # ======================================================
           # 🌡️ CALIBRATION ZIGBEE
           # ======================================================

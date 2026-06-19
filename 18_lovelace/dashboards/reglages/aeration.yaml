@@ -26,6 +26,9 @@ views:
     cards:
       - type: vertical-stack
         cards:
+          # ✅ Bandeau de validité (conditionnel)
+          - !include ../../includes/alerte_configuration_invalide.yaml
+
           # === Bloc 1 : Introduction + Seuils par saison ===
           - type: vertical-stack
             cards:

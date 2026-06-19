@@ -22,6 +22,9 @@ views:
           # ======================================================
           - !include ../../includes/navigation/ecs_planning.yaml
 
+          # ✅ Bandeau de validité (conditionnel)
+          - !include ../../includes/alerte_configuration_invalide.yaml
+
           # ======================================================
           # 📅 LUNDI
           # ======================================================
