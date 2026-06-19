@@ -4,11 +4,11 @@ content: |
 
   {% set auto = states('input_boolean.ecs_autocorrect_active') %}
   {% if auto == 'on' %}
-  🟢 **Auto-ajustement : Actif**
+  🟢 **Système Actif**
   {% elif auto == 'off' %}
-  ⚪ **Auto-ajustement : Inactif**
+  ⚪ **Système Inactif**
   {% else %}
-  ⚪ **Auto-ajustement : —**
+  ⚪ **Système : —**
   {% endif %}
 
   | Bucket | Offset courant | Bornes |
