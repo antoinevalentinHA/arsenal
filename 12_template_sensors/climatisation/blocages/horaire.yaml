@@ -16,12 +16,16 @@
 #
 # 🔌 Dépendances STRICTES :
 #   - input_boolean.clim_blocage_horaire_actif  (activation)
+#   - input_boolean.clim_mode_nuit_actif        (neutralisation §9)
 #   - input_datetime.clim_heure_blocage_autom_on
 #   - input_datetime.clim_heure_blocage_autom_off
 #
 # 🧠 Logique :
 #   - ON  si blocage activé ET heure courante dans la plage
 #   - OFF sinon
+#   - NEUTRALISÉ (OFF) si le mode nuit est armé :
+#     le mode nuit prime et lève le blocage horaire dur
+#     (cf. 06_doctrine_blocages.md §9)
 #
 # 📤 Consommé par :
 #   - binary_sensor.autorisation_clim_cool
@@ -35,7 +39,8 @@
       default_entity_id: binary_sensor.clim_blocage_horaire_reel
       state: >
         {% set blocage_active =
-             is_state('input_boolean.clim_blocage_horaire_actif', 'on') %}
+             is_state('input_boolean.clim_blocage_horaire_actif', 'on')
+             and not is_state('input_boolean.clim_mode_nuit_actif', 'on') %}
         {% set h_on  = states('input_datetime.clim_heure_blocage_autom_on')[:5] %}
         {% set h_off = states('input_datetime.clim_heure_blocage_autom_off')[:5] %}
         {% set now_h = now().strftime('%H:%M') %}

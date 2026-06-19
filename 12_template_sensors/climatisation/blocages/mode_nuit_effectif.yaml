@@ -1,0 +1,63 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim — Mode nuit effectif
+#
+# 🎯 Rôle :
+#   Exprimer la vérité métier du MODE NUIT à l'instant T :
+#   l'interrupteur opérateur est armé ET l'heure courante
+#   est dans la plage nocturne configurée.
+#   (cf. 06_doctrine_blocages.md §9 — « Vérité de bascule »)
+#
+#   Vérité de BASCULE DE STRATÉGIE (≠ blocage) : lorsqu'elle
+#   est ON, les sélecteurs COOL appliquent le régime ABSENCE.
+#
+# 🧱 Principe Arsenal :
+#   - Synthèse PURE de réglages amont
+#   - Calculé en continu
+#   - Aucun état persistant
+#   - Aucune action
+#
+# 🔌 Dépendances STRICTES :
+#   - input_boolean.clim_mode_nuit_actif          (activation)
+#   - input_datetime.clim_heure_blocage_autom_on  (plage — partagée)
+#   - input_datetime.clim_heure_blocage_autom_off (plage — partagée)
+#   - now()
+#
+# 🧠 Logique :
+#   - ON  si mode nuit armé ET heure courante dans la plage
+#   - OFF sinon
+#   - Gère le chevauchement minuit (h_on >= h_off)
+#
+# 📤 Consommé par :
+#   - sensor.consigne_clim_appliquee
+#   - sensor.seuil_allumage_clim_applique
+#   - sensor.seuil_extinction_clim_applique
+#
+# ⚠️ La plage horaire est PARTAGÉE avec le blocage horaire
+#    (mêmes input_datetime). Le mode nuit ne définit pas une
+#    seconde fenêtre : il REQUALIFIE la même plage nocturne.
+#    N'entre dans AUCUNE chaîne d'autorisation.
+# ==========================================================
+
+- binary_sensor:
+    - name: "Clim mode nuit effectif"
+      unique_id: clim_mode_nuit_effectif
+      default_entity_id: binary_sensor.clim_mode_nuit_effectif
+      state: >
+        {% set nuit_active =
+             is_state('input_boolean.clim_mode_nuit_actif', 'on') %}
+        {% set h_on  = states('input_datetime.clim_heure_blocage_autom_on')[:5] %}
+        {% set h_off = states('input_datetime.clim_heure_blocage_autom_off')[:5] %}
+        {% set now_h = now().strftime('%H:%M') %}
+
+        {% if nuit_active and h_on and h_off %}
+          {{ (h_on <= now_h < h_off)
+             if (h_on < h_off)
+             else (now_h >= h_on or now_h < h_off) }}
+        {% else %}
+          false
+        {% endif %}
+      icon: >
+        mdi:weather-night

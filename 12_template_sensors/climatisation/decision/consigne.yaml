@@ -31,7 +31,9 @@
 
       # Sélection de la consigne selon la présence familiale
       state: >
-        {% if is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on') %}
+        {% set presence = is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on') %}
+        {% set nuit = is_state('binary_sensor.clim_mode_nuit_effectif', 'on') %}
+        {% if presence and not nuit %}
           {% set val = states('input_number.clim_consigne_presence') %}
         {% else %}
           {% set val = states('input_number.clim_consigne_absence') %}
@@ -45,8 +47,10 @@
       # Attributs complémentaires : suivi du contexte
       attributes:
         presence: "{{ states('binary_sensor.presence_confort_thermique_stabilisee') }}"
+        mode_nuit: "{{ states('binary_sensor.clim_mode_nuit_effectif') }}"
         source: >
-          {% if is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on') %}
+          {% if is_state('binary_sensor.presence_confort_thermique_stabilisee', 'on')
+                and not is_state('binary_sensor.clim_mode_nuit_effectif', 'on') %}
             input_number.clim_consigne_presence
           {% else %}
             input_number.clim_consigne_absence

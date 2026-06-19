@@ -1,0 +1,43 @@
+# ==========================================================
+#  INPUT_BOOLEAN : Climatisation – Mode nuit actif
+# ----------------------------------------------------------
+#  🧠 Rôle :
+#     Autorisation de la stratégie « mode nuit » de la
+#     climatisation (cf. 06_doctrine_blocages.md §9).
+#
+#     Lorsqu'il est actif, et pendant la plage nocturne,
+#     la climatisation est AUTORISÉE mais bascule sur le
+#     RÉGIME ABSENCE (consignes et seuils `*_absence`),
+#     et le blocage horaire dur est NEUTRALISÉ.
+#
+#  🧱 Nature :
+#     - Paramètre de stratégie
+#     - Interrupteur opérateur (étage 2)
+#
+#  🔄 Fonctionnement :
+#     - ON  : pendant la plage nocturne, clim autorisée
+#             en stratégie absence ; blocage horaire levé
+#     - OFF : la plage nocturne conserve le comportement
+#             actuel (blocage dur si activé)
+#
+#  📥 N'effectue PAS :
+#     - aucun calcul d'horaires
+#     - aucune décision de mode
+#     - aucune commande directe de la clim
+#
+#  📤 Utilisation :
+#     - Lu par :
+#         • binary_sensor.clim_mode_nuit_effectif
+#         • binary_sensor.clim_blocage_horaire_reel (neutralisation)
+#     - Piloté via le dashboard de réglages climatisation
+#
+#  🧠 Principe Arsenal :
+#     - Une stratégie doit pouvoir être explicitement
+#       activée ou neutralisée
+#     - Si mode nuit ET blocage horaire armés :
+#       le mode nuit prime (autorisation + stratégie absence)
+# ==========================================================
+
+clim_mode_nuit_actif:
+  name: "Mode nuit clim actif"
+  icon: mdi:weather-night

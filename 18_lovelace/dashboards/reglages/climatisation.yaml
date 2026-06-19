@@ -222,11 +222,15 @@ views:
 
           - type: custom:button-card
             template: section_header
-            name: ⏱️ Arrêt programmé
+            name: 🌙 Plage nocturne
+
+          - type: tile
+            entity: input_boolean.clim_mode_nuit_actif
+            name: Mode nuit (stratégie absence)
 
           - type: tile
             entity: input_boolean.clim_blocage_horaire_actif
-            name: Blocage actif
+            name: Blocage dur (hors mode nuit)
 
           - type: grid
             square: false
