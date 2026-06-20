@@ -37,6 +37,7 @@
     - platform: state
       entity_id:
         - binary_sensor.presence_famille_securite
+        - binary_sensor.presence_famille_securite_confirmee_alarme
         - binary_sensor.presence_famille_securite_absent_depuis_5_min
         - input_select.mode_alarme
         - input_boolean.visite_en_cours

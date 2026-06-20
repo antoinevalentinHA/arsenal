@@ -1,0 +1,41 @@
+# ==========================================================
+# 🛡️ TEMPLATE BINARY SENSOR — Présence sécurité confirmée (alarme)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Projection STABILISÉE À L'ON de la présence sécurité,
+#   réservée AU SEUL désarmement automatique de l'alarme.
+#
+# ⚙️ Fonctionnement :
+#   - Source : binary_sensor.presence_famille_securite (signal brut partagé)
+#   - delay_on 15 s : l'ON doit persister 15 s avant d'être confirmé
+#   - pas de delay_off : la perte de présence est répercutée immédiatement
+#
+# 🎯 Raison d'être :
+#   À proximité immédiate du domicile, le signal brut peut clignoter
+#   (jitter GPS, franchissement de frontière de zone, BSSID Wi-Fi).
+#   Ce filtre empêche un blip ON inférieur à 15 s de provoquer un
+#   désarmement automatique parasite.
+#
+# 🔗 DÉPENDANCES :
+#   - binary_sensor.presence_famille_securite
+#
+# 🚫 INTERDITS / NE FAIT PAS :
+#   - Ne modifie pas le signal brut binary_sensor.presence_famille_securite
+#   - Ne sert PAS à l'armement (qui reste fondé sur l'absence stable 5 min)
+#   - Ne doit PAS être consommé par l'ECS / bouclage / volets / jardin / confort
+#   - N'exécute aucune action
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.presence_famille_securite_confirmee_alarme
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "presence_famille_securite_confirmee_alarme"
+      unique_id: presence_famille_securite_confirmee_alarme
+      device_class: presence
+
+      delay_on: "00:00:15"
+
+      state: >
+        {{ is_state('binary_sensor.presence_famille_securite', 'on') }}

@@ -63,6 +63,21 @@ La décision doit tenir compte, au minimum, de :
 
 ---
 
+## 🧭 Source de la présence sécurité (déterminants armement / désarmement)
+
+Le canon décisionnel distingue deux entrées de présence aux exigences de stabilité différentes :
+
+- **Désarmement automatique** (canon §2 « présence sécurité ») : le cerveau lit la **projection confirmée** `binary_sensor.presence_famille_securite_confirmee_alarme` — image stabilisée du signal brut avec `delay_on: 15 s`. Une présence sécurité doit donc être **confirmée pendant au moins 15 s** avant de produire un désarmement automatique. Cette projection filtre les `on` fugitifs (jitter GPS, franchissement de frontière de zone, BSSID Wi-Fi) à proximité du domicile.
+- **Armement automatique** (canon §4 « absence stabilisée ») : **inchangé** — fondé sur `binary_sensor.presence_famille_securite_absent_depuis_5_min` (absence stable 5 min).
+
+### Invariants de séparation
+
+- Le **signal brut partagé** `binary_sensor.presence_famille_securite` **n'est pas modifié** : il reste la vérité de présence sécurité commune, consommée telle quelle par les autres domaines.
+- La projection `presence_famille_securite_confirmee_alarme` est **réservée au désarmement automatique de l'alarme** ; elle ne doit pas être consommée hors de ce périmètre.
+- Les consommateurs **ECS / bouclage**, volets, éclairage jardin et confort thermique **ne sont pas affectés** : ils continuent de lire le signal brut.
+
+---
+
 ## 🛑 Interdictions
 
 - Introduire une logique d’application (arm/disarm) dans le cerveau.
