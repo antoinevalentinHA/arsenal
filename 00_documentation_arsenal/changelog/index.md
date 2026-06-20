@@ -1401,6 +1401,16 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 
 ---
 
+## 🧠 ARSENAL HA — [v16.0.5](changelogs/v16/v16_0_5.md) — STABLE — 2026-06-21
+**Tags :** alarme, presence, securite, contrats, ci, integrite
+
+**Signal net :**
+- Alarme / armement : ajout de la projection confirmée d'absence `binary_sensor.presence_famille_securite_absence_confirmee_alarme` (`delay_on: 5 min`, temporisation atomique) ; migration des consommateurs décisionnels (`decision_centrale.yaml`, triggers d'application, `armement_possible.yaml`) ; retrait du trigger sur le signal brut. Corrige la race d'armement immédiat au front OFF.
+- Déclassement (phase 1, sans suppression) du trio `absent_depuis_5_min` + `timer.presence_famille_securite_absence` + `presence/absence_5_min.yaml`, conservé en diagnostic.
+- Contrats `30_decision_centrale.md` / `20_interfaces_contexte_et_helpers.md` / `presence.md` alignés ; checker `check_presence_contracts.py` R3-b/R2 mis à jour.
+
+---
+
 ## 🧠 ARSENAL HA — [v16.0.4](changelogs/v16/v16_0_4.md) — STABLE — 2026-06-18
 **Tags :** ui, customize, android_auto, meteo, climatisation, deshumidificateur, lovelace, contrats, documentation
 

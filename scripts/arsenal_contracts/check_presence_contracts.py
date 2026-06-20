@@ -42,12 +42,14 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 # Entités canoniques
 # ---------------------------------------------------------------------------
 ENT_CONFIRMEE   = "binary_sensor.presence_famille_securite_confirmee_alarme"
+ENT_ABSENCE_CONFIRMEE = "binary_sensor.presence_famille_securite_absence_confirmee_alarme"
 ENT_BRUT        = "binary_sensor.presence_famille_securite"
 ENT_ABSENT_5MIN = "binary_sensor.presence_famille_securite_absent_depuis_5_min"
 PREFIX_PANEL    = "alarm_control_panel."
 
-# Fichier définisseur de la projection confirmée (exclu de R2).
+# Fichiers définisseurs des projections confirmées (exclus de R2).
 F_DEFINISSEUR = REPO_ROOT / "12_template_sensors/alarme/presence_securite_confirmee.yaml"
+F_DEFINISSEUR_ABSENCE = REPO_ROOT / "12_template_sensors/alarme/presence_securite_absence_confirmee.yaml"
 
 # Cœur décisionnel alarme (R3).
 F_DECISION    = REPO_ROOT / "10_scripts/alarme/decision_centrale.yaml"
@@ -203,22 +205,28 @@ def _is_within(path: Path, directory: Path) -> bool:
 
 
 def test_r2_confinement_alarme() -> None:
-    """R2 — toute consommation de la projection confirmée reste dans le périmètre alarme.
-    Le fichier définisseur est exclu (déclaration, pas consommation)."""
+    """R2 — toute consommation des projections confirmées (présence / absence)
+    reste dans le périmètre alarme. Les fichiers définisseurs sont exclus
+    (déclaration, pas consommation)."""
+    projections = (
+        (ENT_CONFIRMEE, F_DEFINISSEUR),
+        (ENT_ABSENCE_CONFIRMEE, F_DEFINISSEUR_ABSENCE),
+    )
     fuites = []
     for path in yaml_files(*R2_RACINES_RUNTIME):
-        if path.resolve() == F_DEFINISSEUR.resolve():
-            continue  # définisseur exclu
         content = read(path)
-        # skip_decl : tolère name/unique_id/default_entity_id si l'entité se redéclarait
-        if references_entity(content, ENT_CONFIRMEE, skip_decl=True):
-            if not _in_perimetre_alarme(path):
-                fuites.append(rel(path))
+        for entity, definisseur in projections:
+            if path.resolve() == definisseur.resolve():
+                continue  # définisseur exclu
+            # skip_decl : tolère name/unique_id/default_entity_id si l'entité se redéclarait
+            if references_entity(content, entity, skip_decl=True):
+                if not _in_perimetre_alarme(path):
+                    fuites.append((entity, rel(path)))
     if fuites:
-        for f in sorted(fuites):
-            ERRORS.append(f"R2 — {ENT_CONFIRMEE} consommée hors périmètre alarme : {f}")
+        for entity, f in sorted(fuites):
+            ERRORS.append(f"R2 — {entity} consommée hors périmètre alarme : {f}")
     else:
-        print("✔ R2 — projection confirmée confinée au périmètre alarme (Lovelace inclus dans le scan)")
+        print("✔ R2 — projections confirmées (présence / absence) confinées au périmètre alarme (Lovelace inclus dans le scan)")
 
 
 # ---------------------------------------------------------------------------
@@ -267,8 +275,8 @@ def test_r3_desarmement_pas_de_brut() -> None:
         print("✔ R3-c — désarmement ne réintroduit pas la présence sécurité brute")
 
 
-def test_r3_absence_stable_lit_5min() -> None:
-    """R3-b — absence_stable lit l'absence 5 min (armement inchangé)."""
+def test_r3_absence_stable_lit_confirmee() -> None:
+    """R3-b — absence_stable lit la projection confirmée d'absence (armement atomique)."""
     content = read(F_DECISION)
     if not content:
         return
@@ -276,23 +284,23 @@ def test_r3_absence_stable_lit_5min() -> None:
     if not ligne:
         ERRORS.append(f"R3-b — variable 'absence_stable:' absente de {rel(F_DECISION)}")
         return
-    pat = re.compile(r"(?<![A-Za-z0-9_.])" + re.escape(ENT_ABSENT_5MIN) + r"\b")
+    pat = re.compile(r"(?<![A-Za-z0-9_.])" + re.escape(ENT_ABSENCE_CONFIRMEE) + r"\b")
     if not pat.search(ligne):
-        ERRORS.append(f"R3-b — 'absence_stable:' ne lit pas {ENT_ABSENT_5MIN} dans {rel(F_DECISION)}")
+        ERRORS.append(f"R3-b — 'absence_stable:' ne lit pas {ENT_ABSENCE_CONFIRMEE} dans {rel(F_DECISION)}")
     else:
-        print("✔ R3-b — absence stable fondée sur l'absence 5 min")
+        print("✔ R3-b — absence stable fondée sur la projection confirmée d'absence")
 
 
-def test_r3_armement_lit_5min() -> None:
-    """R3-b (gate) — l'armement possible référence l'absence 5 min."""
+def test_r3_armement_lit_confirmee() -> None:
+    """R3-b (gate) — l'armement possible référence la projection confirmée d'absence."""
     content = read(F_ARMEMENT)
     if not content:
         ERRORS.append(f"R3-b — fichier introuvable : {rel(F_ARMEMENT)}")
         return
-    if references_entity(content, ENT_ABSENT_5MIN):
-        print("✔ R3-b — armement_possible fondé sur l'absence 5 min")
+    if references_entity(content, ENT_ABSENCE_CONFIRMEE):
+        print("✔ R3-b — armement_possible fondé sur la projection confirmée d'absence")
     else:
-        ERRORS.append(f"R3-b — {rel(F_ARMEMENT)} ne référence pas {ENT_ABSENT_5MIN}")
+        ERRORS.append(f"R3-b — {rel(F_ARMEMENT)} ne référence pas {ENT_ABSENCE_CONFIRMEE}")
 
 
 # ---------------------------------------------------------------------------
@@ -349,8 +357,8 @@ TESTS = [
     test_r2_confinement_alarme,
     test_r3_desarmement_lit_confirmee,
     test_r3_desarmement_pas_de_brut,
-    test_r3_absence_stable_lit_5min,
-    test_r3_armement_lit_5min,
+    test_r3_absence_stable_lit_confirmee,
+    test_r3_armement_lit_confirmee,
 ]
 
 

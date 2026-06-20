@@ -1,4 +1,12 @@
 # ==========================================================
+# ⚠️ DÉPRÉCIÉ (phase 1) — diagnostic uniquement
+# ----------------------------------------------------------
+#   N'est plus un déterminant décisionnel de l'alarme.
+#   Remplacé pour l'armement par la projection atomique
+#   binary_sensor.presence_famille_securite_absence_confirmee_alarme.
+#   Conservé pour le seul diagnostic (coherence.yaml).
+#   Suppression planifiée en phase 2.
+# ----------------------------------------------------------
 # 🧠 ARSENAL — TEMPLATE BINARY SENSOR (MODERNE)
 #     Absence zone securite >= 5 min
 # ----------------------------------------------------------

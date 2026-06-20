@@ -1,0 +1,43 @@
+# ==========================================================
+# 🛡️ TEMPLATE BINARY SENSOR — Absence sécurité confirmée (alarme)
+# ----------------------------------------------------------
+# 💡 Objectif :
+#   Projection STABILISÉE À L'ON de l'absence sécurité,
+#   réservée AU SEUL armement automatique de l'alarme.
+#
+# ⚙️ Fonctionnement :
+#   - Source : binary_sensor.presence_famille_securite (signal brut partagé)
+#   - delay_on 5 min : l'absence (présence OFF) doit persister 5 min
+#     avant d'être confirmée
+#   - pas de delay_off : le retour de présence est répercuté immédiatement
+#
+# 🎯 Raison d'être :
+#   La temporisation d'absence est portée par la projection elle-même,
+#   et non plus par un timer démarré dans une automatisation tierce.
+#   L'état est ainsi ATOMIQUE et reconstructible à partir d'un seul
+#   état persistant, ce qui supprime la race d'armement immédiat
+#   au front OFF (front brut + timer démarré ailleurs).
+#
+# 🔗 DÉPENDANCES :
+#   - binary_sensor.presence_famille_securite
+#
+# 🚫 INTERDITS / NE FAIT PAS :
+#   - Ne modifie pas le signal brut binary_sensor.presence_famille_securite
+#   - Ne sert PAS au désarmement (fondé sur la présence confirmée)
+#   - Ne doit PAS être consommé hors du périmètre alarme
+#   - N'exécute aucune action
+#
+# 📊 Type : Template Binary Sensor
+# 📍 Entité générée : binary_sensor.presence_famille_securite_absence_confirmee_alarme
+# ==========================================================
+
+- binary_sensor:
+
+    - name: "presence_famille_securite_absence_confirmee_alarme"
+      unique_id: presence_famille_securite_absence_confirmee_alarme
+      device_class: presence
+
+      delay_on: "00:05:00"
+
+      state: >
+        {{ is_state('binary_sensor.presence_famille_securite', 'off') }}

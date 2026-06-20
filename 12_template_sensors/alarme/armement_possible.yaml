@@ -27,6 +27,6 @@
           is_state('alarm_control_panel.alarme_maison', 'disarmed') and
           is_state('input_boolean.blocage_armement_auto', 'off') and
           is_state('binary_sensor.presence_famille_securite', 'off') and
-          is_state('binary_sensor.presence_famille_securite_absent_depuis_5_min', 'on') and
+          is_state('binary_sensor.presence_famille_securite_absence_confirmee_alarme', 'on') and
           is_state('binary_sensor.delai_desarmement_en_cours', 'off')
         }}

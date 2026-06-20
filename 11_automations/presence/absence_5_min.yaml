@@ -1,4 +1,12 @@
 # ==========================================================
+# ⚠️ DÉPRÉCIÉ (phase 1) — diagnostic uniquement
+# ----------------------------------------------------------
+#   Démarre/annule le timer alimentant le capteur déprécié
+#   binary_sensor.presence_famille_securite_absent_depuis_5_min.
+#   N'intervient plus dans l'armement automatique (remplacé par la
+#   projection atomique presence_famille_securite_absence_confirmee_alarme).
+#   Conservée sans modification de logique ; suppression en phase 2.
+# ----------------------------------------------------------
 #  🧠 ARSENAL — AUTOMATION :
 #     Présence sécurité – Durée d’absence (5 min)
 #

@@ -295,6 +295,20 @@ et doit être mise à jour à chaque renommage ou restructuration.
 - Toute duplication ou recalcul parallèle
   de la vérité de présence est **interdite**.
 
+### Projections stabilisées réservées (domaine alarme)
+
+Le domaine alarme matérialise la « confirmation explicite de l'absence »
+(et symétriquement de la présence) par **deux projections stabilisées
+de l'entité canonique sécurité**, réservées à son seul périmètre :
+
+- `binary_sensor.presence_famille_securite_confirmee_alarme` — désarmement,
+- `binary_sensor.presence_famille_securite_absence_confirmee_alarme` — armement.
+
+Ces projections **ne modifient pas** l'entité canonique
+`binary_sensor.presence_famille_securite` et **ne créent pas** une nouvelle
+classe de présence : ce sont des **sous-états de projection** d'un même
+état canonique, non consommables hors du domaine alarme.
+
 ---
 
 ## 🔒 Invariants absolus

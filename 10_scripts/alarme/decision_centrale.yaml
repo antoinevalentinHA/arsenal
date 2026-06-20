@@ -71,7 +71,7 @@ alarme_decision_centrale:
 
         presence_securite: "{{ is_state('binary_sensor.presence_famille_securite_confirmee_alarme', 'on') }}"
         presence_visiteur: "{{ is_state('input_boolean.presence_visiteur', 'on') }}"
-        absence_stable: "{{ is_state('binary_sensor.presence_famille_securite_absent_depuis_5_min', 'on') }}"
+        absence_stable: "{{ is_state('binary_sensor.presence_famille_securite_absence_confirmee_alarme', 'on') }}"
 
         blocage_armement_auto: "{{ is_state('input_boolean.blocage_armement_auto', 'on') }}"
         delai_en_cours: "{{ is_state('binary_sensor.delai_desarmement_en_cours', 'on') }}"
