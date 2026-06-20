@@ -57,6 +57,8 @@
 
         {{
           inside.flag
+          or is_state('person.valentin', 'Maison securite')
+          or is_state('person.constance', 'Maison securite')
           or is_state('binary_sensor.presence_wifi_maison', 'on')
           or is_state('binary_sensor.presence_enfants', 'on')
           or is_state('input_boolean.presence_visiteur', 'on')
