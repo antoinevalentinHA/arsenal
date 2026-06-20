@@ -168,13 +168,6 @@ include:
     # =====================================================
     # ==== 🌫️ HUMIDEX ====
     # =====================================================
-    - sensor.humidex_jardin
-    - sensor.humidex_entree
-    - sensor.humidex_sejour
-    - sensor.humidex_chambre_arnaud
-    - sensor.humidex_chambre_matthieu
-    - sensor.humidex_chambre_parents
-    - sensor.humidex_petite_maison
 
     # =====================================================
     # ==== 🫁 CO2 ====
@@ -387,14 +380,6 @@ include:
     # =====================================================
     # ==== 🏭🌫️ IMPRIMERIE – HUMIDEX ====
     # =====================================================
-    - sensor.humidex_direction
-    - sensor.humidex_compta
-    - sensor.humidex_qualite
-    - sensor.humidex_devis
-    - sensor.humidex_commercial
-    - sensor.humidex_komori
-    - sensor.humidex_bobst
-    - sensor.humidex_media
 
     # =====================================================
     # ==== 🏭🔊 IMPRIMERIE – BRUIT ====

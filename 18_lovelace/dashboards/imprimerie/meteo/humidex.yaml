@@ -26,6 +26,8 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_exterieur
                 name: Humidex
                 icon: mdi:thermometer-water
@@ -41,6 +43,8 @@ views:
 
           - type: custom:button-card
             template: socle_kpi
+            tap_action:
+              action: none
             entity: sensor.humidex_direction
             name: Direction
             icon: mdi:thermometer-water
@@ -53,6 +57,8 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_compta
                 name: Compta
                 icon: mdi:thermometer-water
@@ -61,6 +67,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_qualite
                 name: Qualité
                 icon: mdi:thermometer-water
@@ -69,6 +77,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_devis
                 name: Devis
                 icon: mdi:thermometer-water
@@ -77,6 +87,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_commercial
                 name: Commercial
                 icon: mdi:thermometer-water
@@ -94,6 +106,8 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_komori
                 name: Komori
                 icon: mdi:thermometer-water
@@ -102,6 +116,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_bobst
                 name: Bobst
                 icon: mdi:thermometer-water
@@ -110,6 +126,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_media
                 name: Media
                 icon: mdi:thermometer-water

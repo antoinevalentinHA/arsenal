@@ -29,6 +29,8 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_jardin
                 name: Humidex
                 triggers_update:
@@ -45,6 +47,8 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_entree
                 name: Entrée
                 triggers_update:
@@ -52,6 +56,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_sejour
                 name: Séjour
                 icon: mdi:thermometer-water
@@ -69,6 +75,8 @@ views:
             cards:
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_chambre_arnaud
                 name: Arnaud
                 triggers_update:
@@ -76,6 +84,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_chambre_matthieu
                 name: Matthieu
                 triggers_update:
@@ -83,6 +93,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_chambre_parents
                 name: Parents
                 triggers_update:
@@ -90,6 +102,8 @@ views:
 
               - type: custom:button-card
                 template: socle_kpi
+                tap_action:
+                  action: none
                 entity: sensor.humidex_petite_maison
                 name: Petite Maison
                 icon: mdi:thermometer-water
