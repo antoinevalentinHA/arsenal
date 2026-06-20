@@ -1,6 +1,6 @@
 # 🧠 ARSENAL — CONTRAT NORMATIF · ECS — BOUCLAGE
 
-**Version :** 2.3.0  
+**Version :** 2.3.1  
 **Statut :** Actif  
 **Rupture :** Abandon des plages horaires au profit d'un maintien conditionnel opportuniste (AUTO) + cycle manuel borné par timer (5 min)  
 **Migration :** `binary_sensor.bouclage_autorise` conservé — migrations sémantiques contrôlées :
@@ -119,7 +119,7 @@ Statut :
 Portée :
 - **gouverne uniquement le mode AUTO**,
 - **ne gouverne pas le cycle manuel** : un cycle manuel reste déclenchable et fonctionnel même lorsque `bouclage_auto_active == off`,
-- **ne corrige jamais l'état physique** de `switch.prise_bouclage` directement : la transition à `off` agit via `bouclage_autorise` et l'automation 10260000000002 (front descendant), conformément à la doctrine de séparation autorité logique / actionneur.
+- **ne corrige jamais l'état physique** de `switch.prise_bouclage` directement : la transition à `off` agit via `bouclage_autorise` et l'automation 10260000000005 (front descendant), conformément à la doctrine de séparation autorité logique / actionneur.
 
 ---
 
@@ -130,17 +130,27 @@ Portée :
 Rôle :
 - Indiquer si le ballon est dans une plage thermique exploitable pour le bouclage.
 
-Règles :
+Seuils :
+- Les bornes sont des paramètres **configurables**, portés par deux helpers structurants :
+  - `input_number.bouclage_ecs_seuil_on` — borne d'activation
+  - `input_number.bouclage_ecs_seuil_off` — borne d'extinction
+- Valeurs courantes (à titre indicatif, non normatives) : `seuil_on = 45 °C`, `seuil_off = 39 °C` → hystérésis effective 6 °C.
+
+Règles (hystérésis) :
 
 | Condition | État |
 |---|---|
-| `sensor.ecs_temperature_ballon_securisee` >= 45 °C | `on` |
-| `sensor.ecs_temperature_ballon_securisee` <= 40 °C | `off` |
+| `ecs_disponible == off` ET `sensor.ecs_temperature_ballon_securisee` >= `seuil_on` | `on` |
+| `ecs_disponible == on` ET `sensor.ecs_temperature_ballon_securisee` <= `seuil_off` | `off` |
+| sources `none`/indisponibles, ou `seuil_off >= seuil_on` | `off` (fail-safe) |
 
-Hystérésis : 5 °C (seuil_on = 45 °C, seuil_off = 40 °C)
+Invariant gardé (cf. `binary_sensor.parametres_invalides_bouclage_ecs`) :
+
+> `seuil_on > seuil_off`. Toute configuration `seuil_off >= seuil_on` est invalide et force `ecs_disponible = off`.
 
 Statut :
 - **CAPTEUR DE QUALIFICATION THERMIQUE**
+- seuils paramétrables (helpers), non figés dans le contrat
 - non décisionnel
 - non actionneur
 
@@ -266,18 +276,34 @@ Conséquence normative :
 
 ### Domaine ECS (légitimes)
 
-- `automation 10260000000001` — Bouclage AUTO : démarrage → ON  
+- `automation 10260000000004` — Bouclage AUTO : démarrage → ON  
   Déclencheur : front montant de `binary_sensor.bouclage_autorise`  
+  Déclencheur secondaire : `input_boolean.systeme_stable → on` (re-synchronisation post-boot, sous condition `bouclage_autorise == on`)  
   **Règle : ne teste jamais `input_boolean.bouclage_ecs_5_minutes_en_cours`. Le cycle manuel ne constitue pas un verrou d'entrée AUTO.**
 
-- `automation 10260000000002` — Bouclage AUTO : extinction → OFF
-  Déclencheur : front descendant de `binary_sensor.bouclage_autorise`
+- `automation 10260000000005` — Bouclage AUTO : extinction → OFF  
+  Déclencheur : front descendant de `binary_sensor.bouclage_autorise`  
+  Déclencheur secondaire : `input_boolean.systeme_stable → on` (re-synchronisation post-boot, sous condition `bouclage_autorise == off`)
 
 - `script.bouclage_ecs_5_minutes` → ON + flag
   **Règle : indépendant de `input_boolean.bouclage_auto_active`. Un cycle manuel reste déclenchable même lorsque le sous-système AUTO est désarmé.**
 
-- `automation 10260000000003` — Extinction bouclage manuel → flag OFF inconditionnel + switch OFF si `bouclage_autorise == off`  
+- `automation 10260000000002` — Extinction bouclage manuel → flag OFF inconditionnel + switch OFF si `bouclage_autorise == off`  
   Déclencheur : fin de `timer.bouclage_ecs_5_minutes`
+
+---
+
+### Domaine ECS — automations du domaine **non écrivaines de l'actionneur**
+
+Listées ici pour la traçabilité (rattachement ID ↔ rôle). Elles n'écrivent **jamais** `switch.prise_bouclage` :
+
+- `automation 10260000000006` — Notification état réel : crée/efface la notification persistante selon l'état du switch.  
+  Statut : **PROJECTION UI / OBSERVABILITÉ** — n'écrit jamais l'actionneur.
+
+- `automation 10260000000007` — Purge flag manuel au démarrage : `systeme_stable → on` + timer idle + flag `on` → flag `off`.  
+  Statut : **PURGE D'ÉTAT LOGIQUE (flag)** — ne touche jamais `switch.prise_bouclage`, conformément au § Flag.
+
+> **Note de réconciliation post-boot.** Les automations AUTO (`…0004` / `…0005`) re-synchronisent l'actionneur sur `bouclage_autorise` au démarrage via le déclencheur `input_boolean.systeme_stable → on`. Ce mécanisme matérialise le maintien conditionnel après redémarrage ; il est distinct de la purge du flag (`…0007`), qui ne touche pas l'actionneur.
 
 ---
 
@@ -354,7 +380,7 @@ ECS ne doit jamais être utilisé pour inférer, corriger ou rétroagir sur l'é
 
 Note sur la transition 3 :
 
-> Le désarmement du sous-système AUTO (`bouclage_auto_active : on → off`) provoque un front descendant de `bouclage_autorise`. L'automation 10260000000002 réagit à ce front et coupe `switch.prise_bouclage`. Comportement attendu et symétrique : armer AUTO autorise le maintien, le désarmer le retire.
+> Le désarmement du sous-système AUTO (`bouclage_auto_active : on → off`) provoque un front descendant de `bouclage_autorise`. L'automation 10260000000005 réagit à ce front et coupe `switch.prise_bouclage`. Comportement attendu et symétrique : armer AUTO autorise le maintien, le désarmer le retire.
 
 ---
 
@@ -450,7 +476,7 @@ Sont strictement interdits :
 - laisser subsister un flag `on` après expiration ou idle du timer,
 - réintroduire `binary_sensor.presence_famille_unifiee` comme composante de `bouclage_autorise` — sa sémantique de périmètre Confort (incluant l'approche) est inappropriée pour qualifier un usage ECS,
 - soumettre le cycle manuel à `input_boolean.bouclage_auto_active` — l'interrupteur ne gouverne que le mode AUTO,
-- utiliser `input_boolean.bouclage_auto_active` pour piloter directement `switch.prise_bouclage` — sa propagation passe exclusivement par `bouclage_autorise` et l'automation 10260000000002,
+- utiliser `input_boolean.bouclage_auto_active` pour piloter directement `switch.prise_bouclage` — sa propagation passe exclusivement par `bouclage_autorise` et l'automation 10260000000005,
 - piloter `switch.prise_bouclage` depuis tout script autre que `script.bouclage_ecs_5_minutes`.
 
 ---
@@ -496,6 +522,9 @@ Sources officielles :
 | `input_boolean.bouclage_auto_active` | Interrupteur utilisateur du sous-système AUTO |
 | `sensor.ecs_temperature_ballon_securisee` | Température ballon (source physique) |
 | `binary_sensor.ecs_disponible` | Qualification thermique |
+| `input_number.bouclage_ecs_seuil_on` | Borne d'activation thermique (configurable) |
+| `input_number.bouclage_ecs_seuil_off` | Borne d'extinction thermique (configurable) |
+| `binary_sensor.parametres_invalides_bouclage_ecs` | Garde d'intégrité des seuils (`seuil_on > seuil_off`) |
 | `binary_sensor.presence_famille_securite` | Présence foyer — projection stricte (zone Maison – Sécurité) |
 | `input_boolean.presence_visiteur` | Occupation visiteur planifié (consommé en lecture, contrat Visite) |
 | `binary_sensor.bouclage_autorise` | Autorisation AUTO effective |
@@ -513,13 +542,23 @@ Toute divergence entre état logique et état physique est :
 
 ## 📋 CHANGELOG
 
+### v2.3.1
+- **Réalignement documentaire sur le runtime (R — aucun changement de comportement).** Le runtime est la référence ; seul le contrat est corrigé.
+- **§ Écrivains officiels** : correction des IDs d'automation faussement attribués —
+  `…0001 → …0004` (AUTO démarrage), `…0002 → …0005` (AUTO extinction, front descendant), `…0003 → …0002` (extinction cycle manuel). Les renvois du corps (§ Interrupteur, note transition 3, § Interdits) sont réalignés sur `…0005`.
+- **§ Écrivains officiels** : rattachement à leur ID des automations du domaine non écrivaines de l'actionneur — `…0006` (notification, projection UI) et `…0007` (purge flag au boot). Ajout d'une note de réconciliation post-boot.
+- **§ Capteur de disponibilité thermique** : les seuils ne sont plus documentés comme constantes `45 / 40 °C` (valeurs erronées et mutables) mais comme **helpers configurables** `input_number.bouclage_ecs_seuil_on` / `…_seuil_off` ; valeurs courantes indicatives `45 / 39 °C` (hystérésis 6 °C). Invariant d'intégrité `seuil_on > seuil_off` explicité.
+- **§ Observabilité & Diagnostic** : ajout des deux helpers de seuil et de `binary_sensor.parametres_invalides_bouclage_ecs`.
+- **§ Écrivains / changelog** : correction du nom de script résiduel `script.bouclage_ecs_manuel → script.bouclage_ecs_5_minutes`.
+- **Origine** : rapport `audits/01_rapports/bouclage/audit_bouclage_ecs.md` (BCL-01, BCL-02, BCL-04, BCL-05, BCL-08a). Hors périmètre de cette révision documentaire : durcissement du checker (BCL-10) et observabilité recorder (BCL-06/07).
+
 ### v2.3.0
 - **§ En-tête** : bump version, ligne `Migration` étendue avec la rupture v2 → v3 (présence + contractualisation du kill-switch).
 - **§ Périmètre couvert** : ajout de l'interrupteur utilisateur du sous-système AUTO comme objet de premier niveau.
 - **§ Principe fondamental** : la doctrine est triplement conditionnée — activation utilisateur AUTO + disponibilité thermique + occupation maison stricte (foyer ou visiteur).
 - **§ Objets structurants officiels** : ajout de `input_boolean.bouclage_auto_active` comme objet structurant officiel de premier niveau (rattrapage d'un objet préexistant non documenté). Sémantique, statut et portée explicités. Indépendance vis-à-vis du cycle manuel formalisée.
 - **§ Capteur d'autorisation de bouclage AUTO** : redéfinition normative de `binary_sensor.bouclage_autorise`. Ajout de `bouclage_auto_active` comme première composante (court-circuit logique). Composante présence migrée de `binary_sensor.presence_famille_unifiee` vers `binary_sensor.presence_famille_securite OR input_boolean.presence_visiteur`. Bloc de justification étendu aux trois composantes.
-- **§ Écrivains officiels** : ajout d'une note explicite sur l'indépendance de `script.bouclage_ecs_manuel` vis-à-vis de `bouclage_auto_active`.
+- **§ Écrivains officiels** : ajout d'une note explicite sur l'indépendance de `script.bouclage_ecs_5_minutes` vis-à-vis de `bouclage_auto_active`.
 - **§ Règle inter-domaines** : ajout d'une sous-section *Lecture passive du domaine Visite*, formalisant que ECS consomme `presence_visiteur` en lecture seule, sans coupling d'écriture, en cohérence avec l'amendement I8 du contrat Visite (v1.1.0).
 - **§ Machine d'état** : libellé IDLE étendu (sous-système AUTO désarmé inclus). État CYCLE_MANUEL_5_MIN explicité comme indépendant de `bouclage_auto_active`. Note ajoutée sur la transition 3 décrivant le désarmement AUTO comme cause légitime du retour à IDLE.
 - **§ Arbitrage AUTO / cycle manuel** : ajout explicite de l'indépendance du cycle manuel vis-à-vis du kill-switch, avec justification.
@@ -539,8 +578,8 @@ Toute divergence entre état logique et état physique est :
 
 ### v2.2.0
 - **§ Flag d'état cycle manuel** : ajout invariant de non-survie + garanties obligatoires d'implémentation (timer.finished → flag off inconditionnel, reboot-safe reset, watchdog optionnel).
-- **§ Écrivains officiels** : `automation 10260000000001` — ajout de la règle explicite interdisant tout test du flag dans AUTO démarrage.
-- **§ Écrivains officiels** : `automation 10260000000003` — clarification : flag off **inconditionnel** à l'expiration, switch off conditionnel à `bouclage_autorise`.
+- **§ Écrivains officiels** : `automation 10260000000004` — ajout de la règle explicite interdisant tout test du flag dans AUTO démarrage.
+- **§ Écrivains officiels** : `automation 10260000000002` — clarification : flag off **inconditionnel** à l'expiration, switch off conditionnel à `bouclage_autorise`.
 - **§ Invariants structurants** : ajout des deux invariants manquants (non-survie du flag, absence de garde AUTO sur flag manuel).
 - **§ Interdits formels** : ajout de deux interdits explicites (garde flag dans AUTO, flag orphelin post-timer).
 - **Motivation** : bug production — flag `bouclage_ecs_5_minutes_en_cours` resté `on` après expiration timer → paralysie du mode AUTO.

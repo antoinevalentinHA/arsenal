@@ -28,7 +28,7 @@ Toute implémentation divergente est considérée comme :
 Le présent document couvre :
 
 - le **bouclage manuel temporisé** (5 minutes),
-- le **bouclage automatique programmé**,
+- le **bouclage automatique opportuniste**,
 - l’arbitrage AUTO / MANUEL,
 - l’usage du timer comme borne unique,
 - l’orchestration post-cycle ECS,
@@ -216,8 +216,9 @@ Interdits :
 ### Domaine ECS (légitimes)
 
 - `script.bouclage_ecs_5_minutes` → ON  
-- `automation 10260000000001` — Bouclage automatique programmé → ON / OFF  
-- `automation 10260000000002` — Arrêt automatique fin timer → OFF  
+- `automation 10260000000004` — Bouclage AUTO : démarrage → ON  
+- `automation 10260000000005` — Bouclage AUTO : extinction → OFF  
+- `automation 10260000000002` — Extinction bouclage manuel (fin timer) → OFF si `bouclage_autorise == off`  
 
 ---
 
