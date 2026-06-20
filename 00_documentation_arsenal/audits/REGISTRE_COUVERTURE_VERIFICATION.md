@@ -30,8 +30,8 @@ Les deux sont complémentaires : un domaine peut être **contractualisé** (couv
 | Couche | Définition | Source canonique | Volume (cf. §3) |
 |---|---|---|---|
 | **Vérité normative** | Ce que le système DOIT faire : contrats opposables + doctrines transversales. | [`../contrats/`](../contrats/), [`../architecture/03_doctrines/`](../architecture/03_doctrines/) | 267 `.md` de contrats · 10 doctrines |
-| **Couverture mécanique** | Les contrôles qui vérifient une partie de la vérité normative. | [`../../scripts/arsenal_contracts/`](../../scripts/arsenal_contracts/) | 67 checkers |
-| **CI exécutée** | Le sous-ensemble des contrôles effectivement lancés en intégration continue. | [`../../.github/workflows/`](../../.github/workflows/) | 71 workflows (67 contrats + 4 orchestrateurs) |
+| **Couverture mécanique** | Les contrôles qui vérifient une partie de la vérité normative. | `../../scripts/arsenal_contracts/` | 67 checkers |
+| **CI exécutée** | Le sous-ensemble des contrôles effectivement lancés en intégration continue. | `../../.github/workflows/` | 71 workflows (67 contrats + 4 orchestrateurs) |
 
 Relation de couverture attendue : **surface normative à vérifier ≥ surface vérifiée mécaniquement ≥ surface effectivement exécutée en CI**. L'écart entre ces surfaces est l'objet même de la mesure, **pas** un jugement de conformité.
 
