@@ -39,7 +39,7 @@ Un **item de backlog** n'entre en *Actifs* qu'une fois **promu** (décision d'ag
 
 | ID | Sujet | Domaine | Statut | Déclencheur de réveil | Source faisant foi |
 |----|-------|---------|--------|------------------------|--------------------|
-| **D-PRES** | Dette de modélisation de la présence | présence | **dossier d'arbitrage dormant** (non décisionnel) | incident reproductible sur un consommateur de présence **brute**, ou ouverture d'une des 6 questions du §9 ; **inclut l'arbitrage ex-C4 « étendre la présence confort thermique stabilisée hors COOL/DRY vs la confiner » (§9 q5 / piste P-F)** | [`02_constats/transverses/cadrage_dette_modelisation_presence.md`](02_constats/transverses/cadrage_dette_modelisation_presence.md) |
+| **D-PRES** | Dette de modélisation de la présence | présence | **dossier d'arbitrage dormant — annoté** (non décisionnel) | incident reproductible sur un consommateur de présence **brute**, ou ouverture d'une des 6 questions du §9 ; **inclut l'arbitrage ex-C4 « étendre la présence confort thermique stabilisée hors COOL/DRY vs la confiner » (§9 q5 / piste P-F)**. **Note (2026-06-20)** : un incident sur consommateur de présence **brute** (yoyo de désarmement alarme à proximité) a été **mitigé localement** par `binary_sensor.presence_famille_securite_confirmee_alarme` (`delay_on 15 s`, désarmement seul ; armement et signal brut **inchangés**) — **précédent partiel de la piste P-F appliquée au domaine alarme** ; **R1–R8 non clos**, **arbitrage ex-C4 / §9 q5 / P-F côté confort/clim intact** (réf. `../contrats/alarme/30_decision_centrale.md`). | [`02_constats/transverses/cadrage_dette_modelisation_presence.md`](02_constats/transverses/cadrage_dette_modelisation_presence.md) |
 
 ---
 

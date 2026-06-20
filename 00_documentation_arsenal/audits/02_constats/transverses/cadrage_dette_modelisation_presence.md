@@ -101,8 +101,10 @@ Signaux bruts, sans sémantique métier propre :
 
 - Entité canonique : `binary_sensor.presence_famille_securite`.
 - Intention contractuelle ([`architecture/presence/presence.md`](../../../architecture/presence/presence.md)) : conservatrice, **stricte**, **réservée à la sûreté**, *interdite pour tout calcul de confort thermique*.
-- Réglage cohérent avec l'alarme : rayon serré (`input_number.zone_securite_radius`, plage 20–150 m), **aucune temporisation propre**, doit chuter dès la sortie réelle.
+- Réglage cohérent avec l'alarme : rayon serré (`input_number.zone_securite_radius`, plage 20–150 m), **aucune temporisation propre** *(au niveau du signal brut ; voir note d'état post-correctif ci-dessous)*, doit chuter dès la sortie réelle.
 - Comportement *attendu et normal* : lors d'un retour, une séquence `ON → OFF → ON` (entrée pour désarmer, ressortie pour stationner, ré-entrée) est **nominale** côté alarme — le domaine alarme l'absorbe sans se réarmer.
+
+> **Note d'état (post-correctif alarme, 2026-06-20).** Le signal brut `binary_sensor.presence_famille_securite` **reste sans temporisation propre**. En revanche, le **chemin de désarmement de l'alarme** ne le consomme plus directement : il lit désormais une **projection confirmée dédiée** `binary_sensor.presence_famille_securite_confirmee_alarme` (`delay_on 15 s`), introduite pour absorber des blips de présence brute à proximité du domicile que l'alarme **n'absorbait pas** nativement (à proximité, sous bruit GPS/BSSID, contrairement à ce que laisse entendre la description ci-dessus). L'**armement** reste fondé sur `binary_sensor.presence_famille_securite_absent_depuis_5_min`. Cette mitigation est **locale au domaine alarme** — **précédent partiel de la piste P-F (§8)** — et **ne résout pas** la dette structurelle (R1–R8) ni l'arbitrage ex-C4 / §9 q5 côté confort/clim. Réf. contrat : `../../../contrats/alarme/30_decision_centrale.md`.
 
 ### 4.3 Présence confort (vérité du domaine thermique)
 
