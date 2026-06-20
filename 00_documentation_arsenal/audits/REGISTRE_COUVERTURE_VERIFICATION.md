@@ -30,8 +30,8 @@ Les deux sont complémentaires : un domaine peut être **contractualisé** (couv
 | Couche | Définition | Source canonique | Volume (cf. §3) |
 |---|---|---|---|
 | **Vérité normative** | Ce que le système DOIT faire : contrats opposables + doctrines transversales. | [`../contrats/`](../contrats/), [`../architecture/03_doctrines/`](../architecture/03_doctrines/) | 267 `.md` de contrats · 10 doctrines |
-| **Couverture mécanique** | Les contrôles qui vérifient une partie de la vérité normative. | `../../scripts/arsenal_contracts/` | 67 checkers |
-| **CI exécutée** | Le sous-ensemble des contrôles effectivement lancés en intégration continue. | `../../.github/workflows/` | 71 workflows (67 contrats + 4 orchestrateurs) |
+| **Couverture mécanique** | Les contrôles qui vérifient une partie de la vérité normative. | `../../scripts/arsenal_contracts/` | 68 checkers |
+| **CI exécutée** | Le sous-ensemble des contrôles effectivement lancés en intégration continue. | `../../.github/workflows/` | 72 workflows (68 contrats + 4 orchestrateurs) |
 
 Relation de couverture attendue : **surface normative à vérifier ≥ surface vérifiée mécaniquement ≥ surface effectivement exécutée en CI**. L'écart entre ces surfaces est l'objet même de la mesure, **pas** un jugement de conformité.
 
@@ -39,17 +39,17 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 
 ## 3. Vue d'ensemble — compteurs constatés
 
-> Compteurs observés sur `main` @ `fe3c5b7` (2026-06-20). Comptages bruts, non interprétés.
+> Compteurs observés sur `main` @ `fe3c5b7` (2026-06-20), **+ domaine présence** (`check_presence_contracts.py` + `contracts_presence.yml`, working tree). Comptages bruts, non interprétés.
 
 | Indicateur | Valeur | Commande de re-vérification |
 |---|---|---|
 | Contrats `.md` (récursif) | **267** | `find 00_documentation_arsenal/contrats -name '*.md' \| wc -l` |
 | Doctrines transversales | **10** | `ls 00_documentation_arsenal/architecture/03_doctrines/*.md` |
-| Checkers | **67** | `ls scripts/arsenal_contracts/check_*.py \| wc -l` |
-| Workflows (total) | **71** | `ls .github/workflows/*.yml \| wc -l` |
-| Workflows `contracts_*` | **67** | `ls .github/workflows/contracts_*.yml \| wc -l` |
+| Checkers | **68** | `ls scripts/arsenal_contracts/check_*.py \| wc -l` |
+| Workflows (total) | **72** | `ls .github/workflows/*.yml \| wc -l` |
+| Workflows `contracts_*` | **68** | `ls .github/workflows/contracts_*.yml \| wc -l` |
 | Orchestrateurs | **4** | `validation` · `doctrine` · `docs` · `arsenal-ci-chauffage` |
-| Couplage checker ↔ workflow `contracts_*` | **1:1** (67 ↔ 67) | aucun checker orphelin, aucun workflow sans checker |
+| Couplage checker ↔ workflow `contracts_*` | **1:1** (68 ↔ 68) | aucun checker orphelin, aucun workflow sans checker |
 
 **Lecture de couche CI.** Chaque `contracts_*.yml` invoque un checker `check_*.py` et **échoue le job sur sortie non nulle** (bloquant), sur déclencheurs `push` + `pull_request`. Les nuances par workflow (filtres `paths:`, déclarations « non bloquant ») sont consignées en [§5 — Angles morts](#5-angles-morts-connus) plutôt que recopiées ligne à ligne.
 
@@ -73,7 +73,8 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 | Helpers & socle de configuration | 10 | `01_customize`, `02_groups`, `03_input_numbers`, `19_button_card_templates`, inputs, counters, timers, zones | Briques structurelles numérotées + helpers + zones. |
 | Notifications | 1 | `../contrats/notifications.md` | Contrat notifications. |
 | Système, infra & gouvernance | 14 | `arsenal_self`, `recorder`, `redondance`, `resilience_integrations`, `ups_arret_ha`, `batteries`, `parametres_invalides`, `registre_chantiers`, etc. | Self-checks Arsenal, recorder, résilience, UPS, batteries, paramètres invalides, lien registre chantiers, garage, voiture, switchbot, consolidation, stabilisation. |
-| **Total** | **67** | | |
+| Présence (séparation/confinement) | 1 | `../contrats/alarme/30_decision_centrale.md`, `presence.md`, `architecture/presence/` | `presence` — invariants **déjà vrais** (anti-régression) : séparation confort↔sûreté (R1), confinement de `presence_famille_securite_confirmee_alarme` (R2), voies armement/désarmement alarme (R3). Workflow **non filtré**. |
+| **Total** | **68** | | |
 
 > Le détail checker-par-checker (clé stable = nom du checker) pourra être déplié ultérieurement sous chaque famille, sans audit de clauses, si le besoin de traçabilité fine apparaît (cf. §6).
 
@@ -122,3 +123,4 @@ Relation de couverture attendue : **surface normative à vérifier ≥ surface v
 | Date | Base observée | Périmètre |
 |---|---|---|
 | 2026-06-20 | `main` @ `fe3c5b7` | Création initiale. Compteurs : 267 contrats · 10 doctrines · 67 checkers · 71 workflows (67 contrats, 1:1) · 4 orchestrateurs. Matrice par famille (12 familles, 67 checkers). |
+| 2026-06-20 | working tree | Ajout domaine **présence** : `check_presence_contracts.py` + `contracts_presence.yml` (non filtré). Compteurs → 68 checkers · 72 workflows (68 contrats, 1:1). Couvre des invariants déjà vrais (séparation/confinement/voies armement-désarmement). |
