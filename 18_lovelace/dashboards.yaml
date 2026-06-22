@@ -339,7 +339,7 @@ reglages-maison-dashboard:
   title: Modes
   icon: mdi:home-variant
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/modes.yaml
+  filename: 18_lovelace/dashboards/maison/reglages_modes.yaml
 
 reglages-alarme-dashboard:
   mode: yaml
@@ -437,7 +437,7 @@ reglages-sommeil-dashboard:
   title: Sommeil
   icon: mdi:sleep
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/sommeil.yaml
+  filename: 18_lovelace/dashboards/sommeil/reglages.yaml
 
 reglages-telephones-dashboard:
   mode: yaml
