@@ -458,7 +458,7 @@ diagnostics-climatisation-dashboard:
   title: Climatisation
   icon: mdi:snowflake
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/climatisation.yaml
+  filename: 18_lovelace/dashboards/climatisation/diagnostic.yaml
 
 diagnostics-boiler-dashboard:
   mode: yaml
@@ -472,7 +472,7 @@ diagnostics-chauffage-dashboard:
   title: Chauffage
   icon: mdi:fire
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/chauffage.yaml
+  filename: 18_lovelace/dashboards/chauffage/diagnostic.yaml
 
 diagnostics-vannes-dashboard:
   mode: yaml
@@ -486,21 +486,21 @@ diagnostics-thermiques-dashboard:
   title: Diagnostics Thermiques
   icon: mdi:fire
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/thermique_chauffage.yaml
+  filename: 18_lovelace/dashboards/chauffage/diagnostic_thermique.yaml
 
 diagnostics-ecs-dashboard:
   mode: yaml
   title: ECS
   icon: mdi:water-pump
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/ecs.yaml
+  filename: 18_lovelace/dashboards/ecs/diagnostic.yaml
 
 diagnostics-aeration-dashboard:
   mode: yaml
   title: Aération
   icon: mdi:window-open-variant
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/aeration.yaml
+  filename: 18_lovelace/dashboards/aeration/diagnostic.yaml
 
 diagnostics-deshumidificateur-dashboard:
   mode: yaml
@@ -514,14 +514,14 @@ diagnostics-eclairage-dashboard:
   title: Simulation de présence
   icon: mdi:lightbulb
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/eclairage.yaml
+  filename: 18_lovelace/dashboards/eclairage/diagnostic.yaml
 
 diagnostics-ouvertures-dashboard:
   mode: yaml
   title: Ouvertures
   icon: mdi:radar
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/ouvertures.yaml
+  filename: 18_lovelace/dashboards/ouvertures/diagnostic.yaml
 
 diagnostics-mouvements-dashboard:
   mode: yaml
@@ -549,7 +549,7 @@ diagnostics-automatisations-dashboard:
   title: Automatisations
   icon: mdi:toggle-switch-off
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/automatisations.yaml
+  filename: 18_lovelace/dashboards/systeme/automatisations.yaml
 
 diagnostics-batteries-dashboard:
   mode: yaml
