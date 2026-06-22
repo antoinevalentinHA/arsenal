@@ -72,7 +72,7 @@ views:
                 entity: binary_sensor.aeration_preferable_rdc
                 name: Aération RDC
 
-              - !include ../includes/sub_section_headers/criteres.yaml
+              - !include ../../includes/sub_section_headers/criteres.yaml
 
               # Trio DeltaHA / DeltaT / Pluie
               - type: grid
@@ -89,7 +89,7 @@ views:
                     entity: binary_sensor.aeration_preferable_rdc
                     name: Δ Température
 
-                  - !include ../includes/cartes/aeration/aeration_pluie.yaml
+                  - !include ../../includes/cartes/aeration/aeration_pluie.yaml
 
               # Duo Fenêtre / Durée
               - type: grid
@@ -124,7 +124,7 @@ views:
                 entity: binary_sensor.aeration_preferable_etage
                 name: Aération Étage
 
-              - !include ../includes/sub_section_headers/criteres.yaml
+              - !include ../../includes/sub_section_headers/criteres.yaml
 
               # Trio DeltaHA / DeltaT / Pluie
               - type: grid
@@ -141,7 +141,7 @@ views:
                     entity: binary_sensor.aeration_preferable_etage
                     name: Δ Température
 
-                  - !include ../includes/cartes/aeration/aeration_pluie.yaml
+                  - !include ../../includes/cartes/aeration/aeration_pluie.yaml
 
               # Duo Fenêtre / Durée
               - type: grid

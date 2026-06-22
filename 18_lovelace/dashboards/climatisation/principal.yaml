@@ -56,7 +56,7 @@ views:
           # ==================================================
           # 🧠 DÉCISION
           # ==================================================
-          - !include ../includes/section_headers/decision.yaml
+          - !include ../../includes/section_headers/decision.yaml
 
           - type: custom:button-card
             template: carte_clim_decision
@@ -69,7 +69,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/conditions.yaml
+              - !include ../../includes/section_headers/conditions.yaml
 
               - type: tile
                 entity: input_select.clim_conditions_mode
@@ -212,7 +212,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/historique.yaml
+              - !include ../../includes/section_headers/historique.yaml
 
               - type: history-graph
                 entities:
