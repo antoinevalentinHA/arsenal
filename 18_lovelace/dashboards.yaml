@@ -465,7 +465,7 @@ diagnostics-boiler-dashboard:
   title: Boiler
   icon: mdi:fire
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/boiler.yaml
+  filename: 18_lovelace/dashboards/systeme/boiler.yaml
 
 diagnostics-chauffage-dashboard:
   mode: yaml
@@ -556,32 +556,32 @@ diagnostics-batteries-dashboard:
   title: Batteries
   icon: mdi:battery
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/batteries.yaml
+  filename: 18_lovelace/dashboards/systeme/batteries.yaml
 
 diagnostics-zigbee-dashboard:
   mode: yaml
   title: Zigbee
   icon: mdi:zigbee
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/zigbee.yaml
+  filename: 18_lovelace/dashboards/systeme/zigbee.yaml
 
 diagnostics-bluetooth-dashboard:
   mode: yaml
   title: Bluetooth
   icon: mdi:bluetooth
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/bluetooth.yaml
+  filename: 18_lovelace/dashboards/systeme/bluetooth.yaml
 
 diagnostics-netatmo-wifi-dashboard:
   mode: yaml
   title: Netatmo Wi-Fi
   icon: mdi:wifi
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/netatmo_wifi.yaml
+  filename: 18_lovelace/dashboards/systeme/netatmo_wifi.yaml
 
 diagnostics-netatmo-dashboard:
   mode: yaml
   title: Netatmo RF
   icon: mdi:signal
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/netatmo_rf.yaml
+  filename: 18_lovelace/dashboards/systeme/netatmo_rf.yaml
