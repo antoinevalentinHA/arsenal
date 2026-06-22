@@ -37,25 +37,54 @@ views:
               - type: custom:button-card
                 template: carte_clim_synthese
 
+              # --------------------------------------------------
+              # 💨 Ventilation — état réel + action confirmée (script)
+              # --------------------------------------------------
+              - type: custom:button-card
+                template: section_header
+                name: 💨 Ventilation
+
               - type: grid
                 square: false
-                columns: 2
+                columns: 5
                 cards:
                   - type: custom:button-card
-                    template: socle_toggle_compact_68
-                    entity: input_boolean.clim_mode_silencieux_auto_active
-                    name: Mode silencieux auto
-                    icon: mdi:volume-mute
-                    tap_action:
-                      action: toggle
-                      confirmation:
-                        text: "⚠️ Modifier l'activation automatique du mode silencieux clim ?"
+                    template: carte_clim_fan_mode
+                    variables:
+                      mode: quiet
 
                   - type: custom:button-card
-                    template: socle_toggle_compact_68
-                    entity: switch.clim_outdoor_unit_low_noise
-                    name: Réduire bruit extérieur
-                    icon: mdi:volume-off
+                    template: carte_clim_fan_mode
+                    variables:
+                      mode: low
+
+                  - type: custom:button-card
+                    template: carte_clim_fan_mode
+                    variables:
+                      mode: medium
+
+                  - type: custom:button-card
+                    template: carte_clim_fan_mode
+                    variables:
+                      mode: high
+
+                  - type: custom:button-card
+                    template: carte_clim_fan_mode
+                    variables:
+                      mode: auto
+
+              - type: markdown
+                content: >
+                  ℹ️ Mode manuel stable lorsque le silencieux automatique est
+                  désactivé. Lorsqu'il est actif, le silencieux automatique peut
+                  reprendre la main sur le mode Silencieux.
+
+              # Bruit extérieur (actionneur conservé — lot dédié ultérieur)
+              - type: custom:button-card
+                template: socle_toggle_compact_68
+                entity: switch.clim_outdoor_unit_low_noise
+                name: Réduire bruit extérieur
+                icon: mdi:volume-off
 
           # ==================================================
           # 🧠 DÉCISION
