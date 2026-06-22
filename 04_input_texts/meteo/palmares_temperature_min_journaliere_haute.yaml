@@ -1,0 +1,97 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_TEXT
+#     Météo — Palmarès historique nuits les plus chaudes
+#             (minimale journalière la plus haute)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les dates persistantes des 10 nuits les plus
+#   chaudes du palmarès historique.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun parsing
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Registre de pipeline
+#
+# 🔗 RÉFÉRENCE
+#   palmares_min_haute.md V1.0
+#   Instance : temperature_min_journaliere_haute
+#
+# 📋 FORMAT
+#   ISO 8601 — YYYY-MM-DD (longueur 10)
+#   Valeur de rang vide : chaîne vide ""
+#   max: 10 — accepte aussi bien "" que "2026-06-21"
+#
+# 🔗 COUPLAGE
+#   Couplage strict avec input_number de valeur correspondant
+#   (cf. contrat INV-NH-9) :
+#     date ""           ↔ valeur -999 (rang vide)
+#     date YYYY-MM-DD   ↔ valeur ∈ [-50, 50] (rang rempli)
+#   Toute autre combinaison est une anomalie (cf. binary_sensor B2).
+#
+#   Écriture exclusivement par :
+#       automation.evaluation_temperature_min_haute
+#
+# 🚫 INTERDITS
+#   - Interpréter le contenu dans le helper lui-même
+#   - Confondre stockage et décision
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Laisser implicite toute convention de format
+#   - Écrire une chaîne autre que "" ou YYYY-MM-DD
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+palmares_temperature_min_journaliere_haute_rang_01_date:
+  name: Palmarès nuits chaudes — Rang 01 date
+  max: 10
+  icon: mdi:calendar-star
+
+palmares_temperature_min_journaliere_haute_rang_02_date:
+  name: Palmarès nuits chaudes — Rang 02 date
+  max: 10
+  icon: mdi:calendar-star
+
+palmares_temperature_min_journaliere_haute_rang_03_date:
+  name: Palmarès nuits chaudes — Rang 03 date
+  max: 10
+  icon: mdi:calendar-star
+
+palmares_temperature_min_journaliere_haute_rang_04_date:
+  name: Palmarès nuits chaudes — Rang 04 date
+  max: 10
+  icon: mdi:calendar-star
+
+palmares_temperature_min_journaliere_haute_rang_05_date:
+  name: Palmarès nuits chaudes — Rang 05 date
+  max: 10
+  icon: mdi:calendar-star
+
+palmares_temperature_min_journaliere_haute_rang_06_date:
+  name: Palmarès nuits chaudes — Rang 06 date
+  max: 10
+  icon: mdi:calendar-star
+
+palmares_temperature_min_journaliere_haute_rang_07_date:
+  name: Palmarès nuits chaudes — Rang 07 date
+  max: 10
+  icon: mdi:calendar-star
+
+palmares_temperature_min_journaliere_haute_rang_08_date:
+  name: Palmarès nuits chaudes — Rang 08 date
+  max: 10
+  icon: mdi:calendar-star
+
+palmares_temperature_min_journaliere_haute_rang_09_date:
+  name: Palmarès nuits chaudes — Rang 09 date
+  max: 10
+  icon: mdi:calendar-star
+
+palmares_temperature_min_journaliere_haute_rang_10_date:
+  name: Palmarès nuits chaudes — Rang 10 date
+  max: 10
+  icon: mdi:calendar-star

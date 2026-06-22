@@ -1,0 +1,166 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Météo — Palmarès historique nuits les plus chaudes
+#             (minimale journalière la plus haute)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les valeurs numériques persistantes du palmarès
+#   historique des nuits les plus chaudes : 10 valeurs de
+#   rangs (top 10).
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Registre de pipeline
+#
+# 🔗 RÉFÉRENCE
+#   palmares_min_haute.md V1.0
+#   Instance : temperature_min_journaliere_haute
+#
+# 📋 PAS DE HELPER SNAPSHOT
+#   Cette instance ne possède PAS de helper snapshot_veille.
+#   Elle ne crée aucune chaîne de capture propre et lit
+#   directement la mémoire clôturée partagée
+#   input_number.temperature_min_journaliere_jardin
+#   (cf. contrat §3.2 — principe de non-redondance).
+#
+# 📐 BORNES TECHNIQUES
+#   min: -1000    max: 1000    step: 0.1
+#
+#   Trois plages distinctes (cf. contrat §5 et §5.3) :
+#     - plage_metier_source     : [-30,   30]°C  valeurs réelles attendues
+#     - plage_helpers_metier    : [-50,   50]°C  marge métier robuste
+#     - plage_helpers_technique : [-1000, 1000]°C  bornes effectives ici
+#
+#   Justification de min=-1000 : Home Assistant refuse d'écrire toute
+#   valeur hors des bornes min/max d'un input_number. La sentinelle de
+#   rang vide -999 doit être stockable. La plage technique étendue
+#   autorise ce stockage sans contredire la grammaire métier.
+#
+#   La sentinelle reste reconnaissable :
+#     -999 < -30   → hors plage métier source (jamais une vraie mesure)
+#     -999 < -50   → hors plage helpers métier (jamais un extrême plausible)
+#     -999 ≥ -1000 → dans plage helpers technique (stockable)
+#
+# 📋 CONVENTIONS
+#   - Valeur de rang vide : -999 (sentinelle technique)
+#     ⚠️  Le tri étant descendant, un rang vide doit couler en bas
+#     du classement : sa valeur doit être inférieure à tout minimum
+#     journalier réel.
+#     ⚠️  La valeur 0 est interdite comme rang vide : un minimum
+#     journalier de 0 °C est une valeur métier plausible en hiver.
+#     Cf. contrat §5.2 et invariant INV-NH-9.
+#   - Couplage strict avec input_text de date correspondant
+#   - Écriture exclusivement par :
+#       automation.evaluation_temperature_min_haute
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Interpréter implicitement la valeur stockée
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Saisie manuelle hors procédure de réinitialisation
+#   - Ajouter une clé `initial:` (réécrirait au redémarrage HA,
+#     écraserait tout palmarès en cours). L'initialisation à -999
+#     se fait au déploiement via service input_number.set_value.
+#   - Écrire une valeur métier > 50 ou < -50 : interdit par doctrine,
+#     bien que techniquement possible (bornes étendues pour la sentinelle).
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+# --- Rangs ---
+
+palmares_temperature_min_journaliere_haute_rang_01_valeur:
+  name: Palmarès nuits chaudes — Rang 01 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+palmares_temperature_min_journaliere_haute_rang_02_valeur:
+  name: Palmarès nuits chaudes — Rang 02 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+palmares_temperature_min_journaliere_haute_rang_03_valeur:
+  name: Palmarès nuits chaudes — Rang 03 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+palmares_temperature_min_journaliere_haute_rang_04_valeur:
+  name: Palmarès nuits chaudes — Rang 04 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+palmares_temperature_min_journaliere_haute_rang_05_valeur:
+  name: Palmarès nuits chaudes — Rang 05 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+palmares_temperature_min_journaliere_haute_rang_06_valeur:
+  name: Palmarès nuits chaudes — Rang 06 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+palmares_temperature_min_journaliere_haute_rang_07_valeur:
+  name: Palmarès nuits chaudes — Rang 07 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+palmares_temperature_min_journaliere_haute_rang_08_valeur:
+  name: Palmarès nuits chaudes — Rang 08 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+palmares_temperature_min_journaliere_haute_rang_09_valeur:
+  name: Palmarès nuits chaudes — Rang 09 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night
+
+palmares_temperature_min_journaliere_haute_rang_10_valeur:
+  name: Palmarès nuits chaudes — Rang 10 valeur
+  min: -1000
+  max: 1000
+  step: 0.1
+  unit_of_measurement: "°C"
+  mode: box
+  icon: mdi:weather-night

@@ -34,6 +34,12 @@ views:
 
           - type: custom:button-card
             template: section_header
+            name: 🌙 Records de nuits chaudes
+
+          - !include ../../includes/cartes/palmares_temperature_min_haute.yaml
+
+          - type: custom:button-card
+            template: section_header
             name: 🌧️ Records de précipitations
 
           - !include ../../includes/cartes/pluie_palmares.yaml

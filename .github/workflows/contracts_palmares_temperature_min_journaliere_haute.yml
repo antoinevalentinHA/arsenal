@@ -1,0 +1,52 @@
+name: Arsenal Contracts — Palmarès température min journalière haute
+
+on:
+  push:
+    paths:
+      - "00_documentation_arsenal/contrats/meteo/palmares_min_haute.md"
+      - "03_input_numbers/meteo/palmares_temperature_min_journaliere_haute.yaml"
+      - "03_input_numbers/meteo/temperature_min_jour_courant_jardin.yaml"
+      - "03_input_numbers/meteo/temperature_min_journaliere_jardin.yaml"
+      - "04_input_texts/meteo/palmares_temperature_min_journaliere_haute.yaml"
+      - "07_input_datetimes/meteo/palmares_temperature_min_journaliere_haute.yaml"
+      - "11_automations/meteo/cloture_temperature_min.yaml"
+      - "11_automations/meteo/evaluation_temperature_min_haute.yaml"
+      - "12_template_sensors/meteo/palmares_temperature_min_journaliere_haute.yaml"
+      - "12_template_sensors/meteo/palmares_temperature_min_journaliere_haute_anomalie.yaml"
+      - "18_lovelace/includes/cartes/palmares_temperature_min_haute.yaml"
+      - "18_lovelace/dashboards/meteo/meteo_palmares.yaml"
+      - "recorder.yaml"
+      - "scripts/arsenal_contracts/check_palmares_temperature_min_journaliere_haute_contracts.py"
+  pull_request:
+    paths:
+      - "00_documentation_arsenal/contrats/meteo/**"
+      - "03_input_numbers/meteo/**"
+      - "04_input_texts/meteo/**"
+      - "07_input_datetimes/meteo/**"
+      - "11_automations/meteo/**"
+      - "12_template_sensors/meteo/**"
+      - "18_lovelace/includes/cartes/**"
+      - "18_lovelace/dashboards/meteo/**"
+      - "recorder.yaml"
+      - "scripts/arsenal_contracts/**"
+
+jobs:
+  contracts:
+    name: Vérification contractuelle palmarès nuits chaudes
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Installer dépendances
+        run: pip install pyyaml
+
+      - name: Arsenal Contracts — Palmarès température min journalière haute
+        run: |
+          python scripts/arsenal_contracts/check_palmares_temperature_min_journaliere_haute_contracts.py

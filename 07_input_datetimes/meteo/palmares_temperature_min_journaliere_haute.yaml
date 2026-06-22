@@ -1,0 +1,55 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Météo — Palmarès historique nuits les plus chaudes
+#             (minimale journalière la plus haute)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker l'horodatage de la dernière évaluation réussie
+#   du palmarès des nuits les plus chaudes.
+#
+# 🧩 PÉRIMÈTRE
+#   - Mémoire temporelle persistante uniquement
+#   - Aucun calcul temporel autonome
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🔖 NATURE
+#   Mémoire de fraîcheur — repère de pipeline
+#
+# 🔗 RÉFÉRENCE
+#   palmares_min_haute.md V1.0
+#   Instance : temperature_min_journaliere_haute
+#
+# 📋 MODE
+#   has_date: true — has_time: true
+#
+# 📋 USAGE
+#   Consommé par le binary_sensor d'anomalie pour détecter
+#   une évaluation manquante (fraîcheur > seuil_fraicheur_h=36h).
+#   Écrit exclusivement par :
+#       automation.evaluation_temperature_min_haute
+#
+# 📋 SENTINELLE D'ÉTAT INITIAL
+#   La valeur 1970-01-01 00:00:00 est doctrinalement reconnue
+#   comme état initial légitime (cf. contrat §9, exemption B4).
+#   Cette doctrine vit dans le binary_sensor consommateur,
+#   PAS dans cette brique. Le helper se contente de stocker
+#   un horodatage sans interprétation.
+#
+# 🚫 INTERDITS
+#   - Confondre mémoire temporelle et décision
+#   - Constituer à lui seul une autorité décisionnelle
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#   - Utiliser comme déclencheur direct sans justification explicite
+#   - Ajouter une clé `initial:` (réécrirait au redémarrage HA,
+#     fausserait toute évaluation de fraîcheur en cours).
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+palmares_temperature_min_journaliere_haute_derniere_evaluation:
+  name: Palmarès nuits chaudes — Dernière évaluation
+  has_date: true
+  has_time: true
+  icon: mdi:clock-check-outline

@@ -1,0 +1,122 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Météo — Palmarès historique nuits les plus chaudes
+#             (minimale journalière la plus haute)
+#             Synthèse publique
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer une synthèse lisible du palmarès des nuits les plus
+#   chaudes : record absolu (rang 1, la minimale journalière la
+#   plus haute observée), date du record, nombre de rangs remplis,
+#   et l'ensemble des rangs en attributs.
+#   Retourne unavailable si le rang 1 est vide OU à la sentinelle
+#   -999 (palmarès vierge ou incohérent).
+#
+# 🧩 PÉRIMÈTRE
+#   - Calcul et dérivation uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   synthese
+#
+# 🆔 UNIQUE_ID
+#   palmares_temperature_min_journaliere_haute
+#
+# 🔗 RÉFÉRENCE
+#   palmares_min_haute.md V1.0
+#
+# 🔗 DÉPENDANCES
+#   Lit :
+#     input_number.palmares_temperature_min_journaliere_haute_rang_01_valeur … rang_10_valeur
+#     input_text.palmares_temperature_min_journaliere_haute_rang_01_date … rang_10_date
+#
+# 🛡️ DOCTRINE D'AVAILABILITY — GARDE DOUBLE
+#   Le sensor expose une valeur SI ET SEULEMENT SI :
+#     - rang_01_date != ''
+#     - ET rang_01_valeur != -999
+#
+#   Justification : -999 est une sentinelle technique explicite de
+#   rang vide. Un sensor public ne doit JAMAIS exposer -999, même en
+#   cas d'incohérence de couplage signalée par ailleurs par B2.
+#
+#   Séparation des rôles :
+#     - le binary_sensor d'anomalie DIAGNOSTIQUE (B1, B2, B3, B4) ;
+#     - ce sensor synthèse EXPOSE.
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre valeur dérivée et décision exécutive
+#   - Exposer -999 comme valeur métier (cf. doctrine availability)
+#   - Exposer un état si le rang 1 est vide
+#
+# 🏷️ STATUT
+#   Calcul — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: "Palmarès température min journalière haute"
+      unique_id: palmares_temperature_min_journaliere_haute
+      unit_of_measurement: "°C"
+      icon: mdi:weather-night
+      availability: >
+        {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_01_date') != ''
+           and states('input_number.palmares_temperature_min_journaliere_haute_rang_01_valeur') | float(-999) != -999 }}
+      state: >
+        {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_01_valeur') | float }}
+      attributes:
+        rang_01_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_01_valeur') | float(-999) }}
+        rang_01_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_01_date') }}
+        rang_02_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_02_valeur') | float(-999) }}
+        rang_02_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_02_date') }}
+        rang_03_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_03_valeur') | float(-999) }}
+        rang_03_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_03_date') }}
+        rang_04_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_04_valeur') | float(-999) }}
+        rang_04_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_04_date') }}
+        rang_05_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_05_valeur') | float(-999) }}
+        rang_05_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_05_date') }}
+        rang_06_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_06_valeur') | float(-999) }}
+        rang_06_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_06_date') }}
+        rang_07_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_07_valeur') | float(-999) }}
+        rang_07_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_07_date') }}
+        rang_08_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_08_valeur') | float(-999) }}
+        rang_08_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_08_date') }}
+        rang_09_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_09_valeur') | float(-999) }}
+        rang_09_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_09_date') }}
+        rang_10_valeur: >
+          {{ states('input_number.palmares_temperature_min_journaliere_haute_rang_10_valeur') | float(-999) }}
+        rang_10_date: >
+          {{ states('input_text.palmares_temperature_min_journaliere_haute_rang_10_date') }}
+        rangs_remplis: >
+          {% set dates = [
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_01_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_02_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_03_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_04_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_05_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_06_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_07_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_08_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_09_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_10_date')
+          ] %}
+          {{ dates | select('ne', '') | list | count }}

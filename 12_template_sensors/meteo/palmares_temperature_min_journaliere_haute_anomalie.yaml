@@ -1,0 +1,182 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Météo — Palmarès historique nuits les plus chaudes
+#             (minimale journalière la plus haute)
+#             Anomalie
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Signaler une anomalie du palmarès des nuits les plus chaudes.
+#   Ordre canonique d'évaluation :
+#     B1 — ordre rompu (valeur[i] < valeur[i+1]) — TRI DESCENDANT
+#     B2 — couplage valeur/date incohérent
+#          (valeur != -999 ↔ date non vide, cf. INV-NH-9)
+#     B3 — compacité rompue (rang vide suivi d'un rang rempli)
+#     B4 — fraîcheur dépassée (dernière évaluation > seuil_fraicheur_h=36h)
+#          Exemption : sentinelle 1970-01-01 00:00:00 = état initial légitime
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   diagnostic — etat_coherence
+#
+# 🆔 UNIQUE_ID
+#   palmares_temperature_min_journaliere_haute_anomalie
+#
+# 🔗 RÉFÉRENCE
+#   palmares_min_haute.md V1.0
+#   Invariants de cohérence : §9 du contrat
+#
+# 🛡️ DOCTRINE B4 — DATETIME ROBUSTE
+#   La dernière évaluation est parsée une seule fois via as_datetime().
+#   Si la valeur est indisponible, vide ou non convertible, B4 signale
+#   evaluation_indisponible au lieu de fragiliser le template.
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x
+# ==========================================================
+
+- binary_sensor:
+    - name: "Palmarès température min journalière haute — Anomalie"
+      unique_id: palmares_temperature_min_journaliere_haute_anomalie
+      device_class: problem
+      icon: >
+        {{ 'mdi:alert-circle' if this.state == 'on' else 'mdi:check-circle' }}
+      state: >
+        {% set vals = [
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_01_valeur') | float(-999),
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_02_valeur') | float(-999),
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_03_valeur') | float(-999),
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_04_valeur') | float(-999),
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_05_valeur') | float(-999),
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_06_valeur') | float(-999),
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_07_valeur') | float(-999),
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_08_valeur') | float(-999),
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_09_valeur') | float(-999),
+          states('input_number.palmares_temperature_min_journaliere_haute_rang_10_valeur') | float(-999)
+        ] %}
+        {% set dts = [
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_01_date'),
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_02_date'),
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_03_date'),
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_04_date'),
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_05_date'),
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_06_date'),
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_07_date'),
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_08_date'),
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_09_date'),
+          states('input_text.palmares_temperature_min_journaliere_haute_rang_10_date')
+        ] %}
+        {% set derniere = states('input_datetime.palmares_temperature_min_journaliere_haute_derniere_evaluation') %}
+        {% set derniere_dt = as_datetime(derniere) %}
+        {% set a = namespace(found=false) %}
+
+        {% for i in range(9) %}
+          {% if not a.found and dts[i] != '' and dts[i+1] != '' and vals[i] < vals[i+1] %}
+            {% set a.found = true %}
+          {% endif %}
+        {% endfor %}
+
+        {% if not a.found %}
+          {% for i in range(10) %}
+            {% if not a.found and ((vals[i] != -999 and dts[i] == '') or (vals[i] == -999 and dts[i] != '')) %}
+              {% set a.found = true %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        {% if not a.found %}
+          {% set vide = namespace(vu=false) %}
+          {% for i in range(10) %}
+            {% if not a.found %}
+              {% if dts[i] == '' %}
+                {% set vide.vu = true %}
+              {% elif vide.vu %}
+                {% set a.found = true %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        {% if not a.found %}
+          {% if derniere in ['unknown', 'unavailable', ''] or derniere_dt is none %}
+            {% set a.found = true %}
+          {% elif derniere == '1970-01-01 00:00:00' %}
+            {# état initial légitime #}
+          {% elif (as_timestamp(now()) - as_timestamp(derniere_dt)) / 3600 > 36 %}
+            {% set a.found = true %}
+          {% endif %}
+        {% endif %}
+
+        {{ a.found }}
+
+      attributes:
+        raison: >
+          {% set vals = [
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_01_valeur') | float(-999),
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_02_valeur') | float(-999),
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_03_valeur') | float(-999),
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_04_valeur') | float(-999),
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_05_valeur') | float(-999),
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_06_valeur') | float(-999),
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_07_valeur') | float(-999),
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_08_valeur') | float(-999),
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_09_valeur') | float(-999),
+            states('input_number.palmares_temperature_min_journaliere_haute_rang_10_valeur') | float(-999)
+          ] %}
+          {% set dts = [
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_01_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_02_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_03_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_04_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_05_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_06_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_07_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_08_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_09_date'),
+            states('input_text.palmares_temperature_min_journaliere_haute_rang_10_date')
+          ] %}
+          {% set derniere = states('input_datetime.palmares_temperature_min_journaliere_haute_derniere_evaluation') %}
+          {% set derniere_dt = as_datetime(derniere) %}
+          {% set a = namespace(raison='ok') %}
+
+          {% for i in range(9) %}
+            {% if a.raison == 'ok' and dts[i] != '' and dts[i+1] != '' and vals[i] < vals[i+1] %}
+              {% set a.raison = 'ordre_rompu_rang_' ~ '%02d' % (i+1) ~ '_' ~ '%02d' % (i+2) %}
+            {% endif %}
+          {% endfor %}
+
+          {% if a.raison == 'ok' %}
+            {% for i in range(10) %}
+              {% if a.raison == 'ok' and ((vals[i] != -999 and dts[i] == '') or (vals[i] == -999 and dts[i] != '')) %}
+                {% set a.raison = 'incoherence_couplage_rang_' ~ '%02d' % (i+1) %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {% if a.raison == 'ok' %}
+            {% set vide = namespace(vu=false) %}
+            {% for i in range(10) %}
+              {% if a.raison == 'ok' %}
+                {% if dts[i] == '' %}
+                  {% set vide.vu = true %}
+                {% elif vide.vu %}
+                  {% set a.raison = 'compacite_rompue_rang_' ~ '%02d' % (i+1) %}
+                {% endif %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+
+          {% if a.raison == 'ok' %}
+            {% if derniere in ['unknown', 'unavailable', ''] or derniere_dt is none %}
+              {% set a.raison = 'evaluation_indisponible' %}
+            {% elif derniere == '1970-01-01 00:00:00' %}
+              {# état initial légitime #}
+            {% elif (as_timestamp(now()) - as_timestamp(derniere_dt)) / 3600 > 36 %}
+              {% set a.raison = 'evaluation_manquante' %}
+            {% endif %}
+          {% endif %}
+
+          {{ a.raison }}
