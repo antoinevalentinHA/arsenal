@@ -43,9 +43,9 @@ views:
                 cards:
                   - type: custom:button-card
                     template: socle_toggle_compact_68
-                    entity: switch.clim_quiet_fan
-                    name: Ventilation silencieuse
-                    icon: mdi:fan
+                    entity: input_boolean.clim_mode_silencieux_auto_active
+                    name: Mode silencieux auto
+                    icon: mdi:volume-mute
 
                   - type: custom:button-card
                     template: socle_toggle_compact_68
