@@ -56,7 +56,7 @@ views:
                     name: Vaisselle
                     icon: mdi:silverware-clean
 
-                  - !include ../includes/cartes/ecs/bouclage.yaml
+                  - !include ../../includes/cartes/ecs/bouclage.yaml
 
           # ==================================================
           # 📜 HISTORIQUE ECS
@@ -65,9 +65,9 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/historique.yaml
+              - !include ../../includes/section_headers/historique.yaml
 
-              - !include ../includes/cartes/ecs/graph_temperature_ecs.yaml
+              - !include ../../includes/cartes/ecs/graph_temperature_ecs.yaml
 
               - type: history-graph
                 entities:

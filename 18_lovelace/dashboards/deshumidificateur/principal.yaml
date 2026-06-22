@@ -30,9 +30,9 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/cave.yaml
+              - !include ../../includes/section_headers/cave.yaml
 
-              - !include ../includes/cartes/diagnostic/graph_humidite_cave.yaml
+              - !include ../../includes/cartes/diagnostic/graph_humidite_cave.yaml
 
           # ==================================================
           # ⚖️ CONDITIONS DE DÉSHUMIDIFICATION
@@ -41,7 +41,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/conditions.yaml
+              - !include ../../includes/section_headers/conditions.yaml
 
               - type: grid
                 square: false
@@ -84,7 +84,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/decision.yaml
+              - !include ../../includes/section_headers/decision.yaml
 
               - type: grid
                 square: false
@@ -105,7 +105,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/historique.yaml
+              - !include ../../includes/section_headers/historique.yaml
 
               - type: history-graph
                 entities:

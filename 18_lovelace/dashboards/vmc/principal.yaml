@@ -52,7 +52,7 @@ views:
           ####################################################
           - type: vertical-stack
             cards:
-              - !include ../includes/section_headers/conditions_actuelles.yaml
+              - !include ../../includes/section_headers/conditions_actuelles.yaml
 
               - type: grid
                 columns: 3
@@ -97,7 +97,7 @@ views:
           ####################################################
           - type: vertical-stack
             cards:
-              - !include ../includes/section_headers/historique.yaml
+              - !include ../../includes/section_headers/historique.yaml
 
               - type: history-graph
                 entities:

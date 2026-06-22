@@ -30,7 +30,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/lumieres.yaml
+              - !include ../../includes/section_headers/lumieres.yaml
 
               - type: grid
                 columns: 2
@@ -91,7 +91,7 @@ views:
           # ==================================================
           # 🌳 JARDIN
           # ==================================================
-          - !include ../includes/section_headers/jardin.yaml
+          - !include ../../includes/section_headers/jardin.yaml
 
           - type: custom:button-card
             template: carte_jardin_intention_eclairage
@@ -108,7 +108,7 @@ views:
           # 🚗 GARAGE
           # ==================================================
 
-          - !include ../includes/section_headers/garage.yaml
+          - !include ../../includes/section_headers/garage.yaml
 
           - type: custom:button-card
             template: carte_garage_intention_eclairage
