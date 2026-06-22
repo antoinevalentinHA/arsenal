@@ -89,7 +89,7 @@ views:
                     entity: binary_sensor.aeration_preferable_rdc
                     name: Δ Température
 
-                  - !include ../includes/cartes/aeration_pluie.yaml
+                  - !include ../includes/cartes/aeration/aeration_pluie.yaml
 
               # Duo Fenêtre / Durée
               - type: grid
@@ -141,7 +141,7 @@ views:
                     entity: binary_sensor.aeration_preferable_etage
                     name: Δ Température
 
-                  - !include ../includes/cartes/aeration_pluie.yaml
+                  - !include ../includes/cartes/aeration/aeration_pluie.yaml
 
               # Duo Fenêtre / Durée
               - type: grid

@@ -55,7 +55,7 @@ views:
           - type: custom:button-card
             template: ecs_chauffe_planifiee_status
 
-          - !include ../../includes/cartes/ecs_dernier_cycle.yaml
+          - !include ../../includes/cartes/ecs/ecs_dernier_cycle.yaml
 
           ########################################################
           # 🧠 SECTION : ECS – Apprentissage des offsets (ECS-OFF-1)
@@ -64,6 +64,6 @@ views:
             template: section_header
             name: 🔁 Apprentissage des offsets
 
-          - !include ../../includes/cartes/ecs_apprentissage_offsets.yaml
+          - !include ../../includes/cartes/ecs/ecs_apprentissage_offsets.yaml
 
-          - !include ../../includes/cartes/ecs_apprentissage_courbes.yaml
+          - !include ../../includes/cartes/ecs/ecs_apprentissage_courbes.yaml

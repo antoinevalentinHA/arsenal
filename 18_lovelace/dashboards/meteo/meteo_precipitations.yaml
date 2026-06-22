@@ -62,12 +62,12 @@ views:
           # ------------------------------------------------------
           # 📈 Historique 7 jours
           # ------------------------------------------------------
-          - !include ../../includes/cartes/graph_precipitations_semaine.yaml
+          - !include ../../includes/cartes/meteo/graph_precipitations_semaine.yaml
 
           # ------------------------------------------------------
           # 📊 Pluie hebdomadaire — 52 semaines
           # ------------------------------------------------------
-          - !include ../../includes/cartes/graph_precipitations_annee.yaml
+          - !include ../../includes/cartes/meteo/graph_precipitations_annee.yaml
 
           # ------------------------------------------------------
           # 🚨 Détection pluie Zigbee (24h)

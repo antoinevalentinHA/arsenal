@@ -84,4 +84,4 @@ views:
                 name: Chambre parents
                 icon: mdi:bed-king-outline
 
-          - !include ../../includes/cartes/diagnostic_redondance_contact.yaml
+          - !include ../../includes/cartes/diagnostic/diagnostic_redondance_contact.yaml
