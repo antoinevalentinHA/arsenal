@@ -21,6 +21,7 @@ hubs de navigation (voir §Navigation).
 | [`tendance_temperature.md`](tendance_temperature.md) | Tendance thermique (hausse/baisse/stable) des agrégats intérieurs — restitution Android Auto. **v1.1** : grandeur de décision amendée (`moyenne_courte − moyenne_longue`) ; runtime en écart temporaire (§18). Voir l'audit fondateur : [`audit_tendance_temperature_sensibilite.md`](../../audits/01_rapports/meteo/audit_tendance_temperature_sensibilite.md) |
 | [`palmares_chaleur.md`](palmares_chaleur.md) | Palmarès historique — chaleur |
 | [`palmares_froid.md`](palmares_froid.md) | Palmarès historique — froid |
+| [`palmares_min_haute.md`](palmares_min_haute.md) | Palmarès historique — nuits les plus chaudes (minimale journalière la plus haute) |
 | [`pluie_palmares.md`](pluie_palmares.md) | Palmarès — pluie |
 | [`fallback.md`](fallback.md) | Continuité de la donnée météo (fallback) |
 | [`validation.md`](validation.md) | Conditions de validité d'une source de donnée |
