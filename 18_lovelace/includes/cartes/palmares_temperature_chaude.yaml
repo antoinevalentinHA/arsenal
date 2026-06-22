@@ -23,5 +23,5 @@ content: |
   {% set ampli = (ns.records[0].valeur | float - ns.records[-1].valeur | float) | abs %}
   {% set ts1 = as_timestamp(strptime(ns.records[0].date, '%Y-%m-%d'), 0) %}
   {% set recent = ts1 > 0 and (as_timestamp(now()) - ts1) / 86400 < 7 %}
-  📊 {{ total }}/10{% if total >= 2 %} · amplitude {{ ampli | round(1) }} °C{% endif %}{% if recent %} · 🔥 récent{% endif %}
+  📊 {{ total }}/10{% if total >= 2 %} · écart {{ ampli | round(1) }} °C{% endif %}{% if recent %} · 🔥 récent{% endif %}
   {% endif %}
