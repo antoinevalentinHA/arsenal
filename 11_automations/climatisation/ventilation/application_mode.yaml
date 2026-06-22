@@ -25,7 +25,7 @@
 #   Changement de input_select.clim_fan_mode_cible
 #
 # 🔗 DÉPENDANCES
-#   Lit      : input_select.clim_fan_mode_cible, sensor.clim_fan_mode_local
+#   Lit      : input_select.clim_fan_mode_cible, sensor.clim_mode_de_ventilation_local
 #   Appelle  : script.clim_set_fan_mode (data.mode = mode technique mappé)
 #   Écrit    : aucun helper
 #
@@ -62,7 +62,7 @@
       {{ {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
           'Fort': 'high', 'Auto': 'auto'}.get(
             states('input_select.clim_fan_mode_cible')) }}
-    current: "{{ states('sensor.clim_fan_mode_local') }}"
+    current: "{{ states('sensor.clim_mode_de_ventilation_local') }}"
 
   condition:
     # N'agit que si le choix utilisateur diffère de l'état réel

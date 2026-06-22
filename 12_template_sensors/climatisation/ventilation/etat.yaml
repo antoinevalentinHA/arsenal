@@ -15,7 +15,7 @@
 #   - Aucune traduction du state (les libellés FR relèvent de la carte)
 #
 # 📊 Type : Triggered Template Sensor
-# 📍 Entité : sensor.clim_fan_mode_local
+# 📍 Entité : sensor.clim_mode_de_ventilation_local
 # ==========================================================
 
 - trigger:
