@@ -346,91 +346,91 @@ reglages-alarme-dashboard:
   title: Alarme
   icon: mdi:shield-home
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/alarme.yaml
+  filename: 18_lovelace/dashboards/alarme/reglages.yaml
 
 reglages-climatisation-dashboard:
   mode: yaml
   title: Climatisation
   icon: mdi:snowflake
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/climatisation.yaml
+  filename: 18_lovelace/dashboards/climatisation/reglages.yaml
 
 reglages-chauffage-dashboard:
   mode: yaml
   title: Chauffage
   icon: mdi:fire
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/chauffage.yaml
+  filename: 18_lovelace/dashboards/chauffage/reglages.yaml
 
 reglages-ecs-dashboard:
   mode: yaml
   title: ECS
   icon: mdi:water-pump
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/ecs.yaml
+  filename: 18_lovelace/dashboards/ecs/reglages.yaml
 
 reglages-ecs-planning-dashboard:
   mode: yaml
   title: Planning ECS
   icon: mdi:calendar-week
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/ecs_planning.yaml
+  filename: 18_lovelace/dashboards/ecs/reglages_planning.yaml
 
 reglages-ecs-petite-maison-dashboard:
   mode: yaml
   title: ECS Petite Maison
   icon: mdi:water-pump
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/ecs_petite_maison.yaml
+  filename: 18_lovelace/dashboards/ecs/reglages_petite_maison.yaml
 
 reglages-ouvertures-dashboard:
   mode: yaml
   title: Ouvertures
   icon: mdi:door-open
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/ouvertures.yaml
+  filename: 18_lovelace/dashboards/ouvertures/reglages.yaml
 
 reglages-aeration-dashboard:
   mode: yaml
   title: Aération
   icon: mdi:window-open-variant
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/aeration.yaml
+  filename: 18_lovelace/dashboards/aeration/reglages.yaml
 
 reglages-meteo-dashboard:
   mode: yaml
   title: Calibration
   icon: mdi:weather-cloudy-clock
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/meteo.yaml
+  filename: 18_lovelace/dashboards/meteo/reglages.yaml
 
 reglages-deshumidificateur-dashboard:
   mode: yaml
   title: Déshumidificateur
   icon: mdi:air-filter
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/deshumidificateur.yaml
+  filename: 18_lovelace/dashboards/deshumidificateur/reglages.yaml
 
 reglages-vmc-dashboard:
   mode: yaml
   title: VMC
   icon: mdi:fan
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/vmc.yaml
+  filename: 18_lovelace/dashboards/vmc/reglages.yaml
 
 reglages-eclairage-dashboard:
   mode: yaml
   title: Éclairage
   icon: mdi:lightbulb
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/eclairage.yaml
+  filename: 18_lovelace/dashboards/eclairage/reglages.yaml
 
 reglages-volets-dashboard:
   mode: yaml
   title: Volets
   icon: mdi:window-shutter
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/volets.yaml
+  filename: 18_lovelace/dashboards/volets/reglages.yaml
 
 reglages-sommeil-dashboard:
   mode: yaml
@@ -444,7 +444,7 @@ reglages-telephones-dashboard:
   title: Téléphones
   icon: mdi:cellphone-cog
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/reglages/telephones.yaml
+  filename: 18_lovelace/dashboards/systeme/telephones.yaml
 
 diagnostics-alarme-dashboard:
   mode: yaml
