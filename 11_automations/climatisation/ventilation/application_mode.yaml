@@ -1,0 +1,76 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATION
+#     Climatisation — Application mode de ventilation (UI → script)
+# ----------------------------------------------------------
+# 🆔 IDENTIFIANT
+#   "10030000000120"
+#
+# 🎯 RÔLE
+#   Appliquer le mode de ventilation choisi dans le sélecteur UI
+#   en appelant le script d'exécution dédié.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : passerelle input_select → script.clim_set_fan_mode
+#   - Exclut : toute décision climatique, tout pilotage direct de
+#              climate.clim, toute logique horaire ou de présence
+#
+# 🔖 NATURE
+#   Application
+#
+# ⚙️ MODE
+#   single — Justification : une application à la fois, refus des
+#   retriggers concurrents.
+#
+# 📣 DÉCLENCHEURS
+#   Changement de input_select.clim_fan_mode_cible
+#
+# 🔗 DÉPENDANCES
+#   Lit      : input_select.clim_fan_mode_cible, sensor.clim_fan_mode_local
+#   Appelle  : script.clim_set_fan_mode (data.mode = mode technique mappé)
+#   Écrit    : aucun helper
+#
+# 🧠 AUTORITÉ
+#   Applique une intention utilisateur explicite. Ne décide rien.
+#
+# ♻️ IDEMPOTENCE
+#   Compatible retrigger : garde qui n'appelle le script que si le mode
+#   mappé diffère de l'état réel (anti-redondance, anti-boucle avec la
+#   synchronisation). Le script est lui-même idempotent.
+#
+# 🚫 INTERDITS
+#   - Appeler climate.set_fan_mode directement
+#   - Dupliquer la décision silencieux (clim_silencieux_autorise)
+#   - Embarquer une logique métier
+#
+# 🏷️ STATUT
+#   Réactive — Arsenal (chantier ventilation clim, Lot V4-bis)
+# ==========================================================
+
+- id: "10030000000120"
+  alias: "Clim - Application mode de ventilation (UI)"
+  description: >
+    Applique le mode de ventilation choisi dans
+    input_select.clim_fan_mode_cible via script.clim_set_fan_mode.
+  mode: single
+
+  trigger:
+    - platform: state
+      entity_id: input_select.clim_fan_mode_cible
+
+  variables:
+    target: >
+      {{ {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
+          'Fort': 'high', 'Auto': 'auto'}.get(
+            states('input_select.clim_fan_mode_cible')) }}
+    current: "{{ states('sensor.clim_fan_mode_local') }}"
+
+  condition:
+    # N'agit que si le choix utilisateur diffère de l'état réel
+    # (anti-redondance + anti-boucle avec la synchronisation).
+    - condition: template
+      value_template: "{{ target is not none and target != current }}"
+
+  action:
+    - service: script.clim_set_fan_mode
+      data:
+        mode: "{{ target }}"

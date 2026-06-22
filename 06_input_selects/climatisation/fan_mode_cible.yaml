@@ -1,0 +1,34 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_SELECT : Mode de ventilation souhaité (Clim)
+# ----------------------------------------------------------
+# 🎯 Rôle :
+#   Intention utilisateur : mode de ventilation cible de la
+#   climatisation, choisi depuis le dashboard, en libellés FR.
+#
+# 🧩 Nature :
+#   Commande utilisateur (helper). Ne représente PAS l'état réel
+#   (état réel = sensor.clim_fan_mode_local).
+#
+# 🔁 Mapping FR → technique (porté par les automatisations) :
+#   Silencieux→quiet · Faible→low · Moyen→medium · Fort→high · Auto→auto
+#
+# ❌ Ne fait PAS :
+#   - Ne pilote PAS climate.clim directement
+#   - Ne décide RIEN
+#   - L'application passe par script.clim_set_fan_mode via automatisation
+#
+# 🔗 Utilisation :
+#   - Dashboard principal climatisation (sélecteur)
+#   - Automatisation d'application (UI → script)
+#   - Automatisation de synchronisation (état réel → sélecteur)
+# ==========================================================
+
+clim_fan_mode_cible:
+  name: Mode de ventilation souhaité
+  options:
+    - Silencieux
+    - Faible
+    - Moyen
+    - Fort
+    - Auto
+  icon: mdi:fan
