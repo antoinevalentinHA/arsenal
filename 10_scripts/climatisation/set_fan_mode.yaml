@@ -1,0 +1,97 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Climatisation — Application mode de ventilation
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Appliquer explicitement un mode de ventilation (fan_mode) à
+#   climate.clim, sur intention utilisateur, de manière idempotente.
+#
+# 🧩 PÉRIMÈTRE
+#   - Couvre : émission de climate.set_fan_mode vers climate.clim
+#   - Exclut : toute décision thermique, toute logique métier,
+#              toute stratégie automatique, toute UI, toute reprise
+#
+# 🔖 NATURE
+#   Action pure / utilitaire réutilisable
+#
+# ⚙️ MODE
+#   single — Justification : exclusivité stricte, refus des appels
+#   concurrents ; max_exceeded silencieux (pas de log parasite).
+#
+# 🔗 DÉPENDANCES
+#   Lit      : climate.clim (état + attribut fan_mode)
+#   Appelle  : climate.set_fan_mode (climate.clim)
+#   Écrit    : aucun helper (action matérielle observable uniquement)
+#
+# 🧠 AUTORITÉ
+#   Exécution uniquement. L'autorité est l'intention utilisateur
+#   passée via le champ `mode` ; le script ne décide rien.
+#
+# ♻️ IDEMPOTENCE
+#   Garantie : aucune commande si fan_mode courant == cible, ou si
+#   climate.clim est indisponible (abstention silencieuse).
+#
+# 🚫 INTERDITS
+#   - Logique diffuse ou décision thermique
+#   - Lecture de la décision canonique (sensor.clim_target_mode)
+#   - Notification, helper, reprise différée
+#   - Traduction des valeurs techniques (libellés FR = carte métier)
+#
+# 🏷️ STATUT
+#   Utilitaire — Arsenal (chantier ventilation clim, Lot V2)
+# ==========================================================
+
+clim_set_fan_mode:
+  alias: "Clim – Application mode de ventilation"
+  icon: mdi:fan
+  mode: single
+  max_exceeded: silent
+
+  fields:
+    mode:
+      name: "Mode de ventilation"
+      description: "Mode de ventilation cible à appliquer à la climatisation."
+      required: true
+      selector:
+        select:
+          options:
+            - quiet
+            - low
+            - medium
+            - high
+            - auto
+
+  sequence:
+
+    # ======================================================
+    # 1. LECTURE ET QUALIFICATION
+    # ======================================================
+    - variables:
+        target: "{{ mode }}"
+        current: "{{ state_attr('climate.clim', 'fan_mode') }}"
+        mode_valid: "{{ mode in ['quiet', 'low', 'medium', 'high', 'auto'] }}"
+        clim_available: >
+          {{ states('climate.clim') not in ['unknown', 'unavailable'] }}
+
+    # ======================================================
+    # 2. GARDE — PARAMÈTRE HORS CONTRAT
+    #    Abstention silencieuse si le mode demandé est invalide.
+    # ======================================================
+    - condition: template
+      value_template: "{{ mode_valid }}"
+
+    # ======================================================
+    # 3. ACTION — UNIQUEMENT SI NÉCESSAIRE (IDEMPOTENCE)
+    #    Émission seulement si la clim est disponible ET si le
+    #    fan_mode courant diffère de la cible.
+    # ======================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: "{{ clim_available and current != target }}"
+          sequence:
+            - service: climate.set_fan_mode
+              target:
+                entity_id: climate.clim
+              data:
+                fan_mode: "{{ target }}"
