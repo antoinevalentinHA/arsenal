@@ -121,7 +121,7 @@ views:
             template: section_header
             name: 🪟 Aération
 
-          - !include ../../includes/cartes/aeration_timers_chauffage.yaml
+          - !include ../../includes/cartes/chauffage/aeration_timers_chauffage.yaml
 
           ########################################################
           # 🎯 3) Consignes & Écarts

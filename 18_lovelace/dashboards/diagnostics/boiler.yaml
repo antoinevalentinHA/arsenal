@@ -164,7 +164,7 @@ views:
           # ==========================================================
           # 🧠 SECTION — DERNIERE ERREUR
           # ==========================================================
-          - !include ../../includes/cartes/boiler_bloc_erreur_recente.yaml
+          - !include ../../includes/cartes/systeme/boiler_bloc_erreur_recente.yaml
 
           # ==========================================================
           # 🧠 SECTION — SUPERVISION
