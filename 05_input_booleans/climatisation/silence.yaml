@@ -1,0 +1,42 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT BOOLEAN (CLIM)
+#     Mode silencieux — Activation automatisme AUTO
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#
+#     Helper d'autorisation utilisateur permettant d'activer
+#     ou de désactiver globalement l'automatisme de mode
+#     silencieux de la climatisation, sans toucher aux
+#     horaires définis.
+#
+# 🧩 PÉRIMÈTRE
+#
+#     - Autorisation globale utilisateur du mode silencieux AUTO
+#     - Aucune logique thermique
+#     - Aucune logique horaire (portée par les input_datetime)
+#     - Aucun pilotage direct du switch
+#
+# 🔄 SÉMANTIQUE
+#
+#     - ON  : Arsenal peut piloter automatiquement le mode
+#             silencieux selon les horaires et la présence.
+#     - OFF : Arsenal ne pilote plus automatiquement le mode
+#             silencieux (la décision clim_silencieux_autorise
+#             devient off).
+#
+# 🚫 INTERDITS
+#
+#     - Ne pilote aucun équipement directement
+#     - Ne contient aucune logique horaire
+#     - Ne remplace pas les plages horaires utilisateur
+#
+# 🔌 Lu par :
+#     - binary_sensor.clim_silencieux_autorise (facteur d'autorisation)
+#
+# 📍 Entité support :
+#     input_boolean.clim_mode_silencieux_auto_active
+# ==========================================================
+
+clim_mode_silencieux_auto_active:
+  name: "Mode silencieux automatique"
+  icon: mdi:volume-mute
