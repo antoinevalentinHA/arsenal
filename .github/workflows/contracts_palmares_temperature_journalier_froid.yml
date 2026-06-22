@@ -18,7 +18,7 @@ on:
       - "12_template_sensors/meteo/palmares_temperature_journalier_froid.yaml"
       - "12_template_sensors/meteo/palmares_temperature_journalier_froid_anomalie.yaml"
       - "12_template_sensors/meteo/temperature_min_jardin.yaml"
-      - "18_lovelace/includes/cartes/palmares_temperature_froide.yaml"
+      - "18_lovelace/includes/cartes/meteo/palmares/palmares_temperature_froide.yaml"
       - "18_lovelace/dashboards/meteo/meteo_temperature_min_max.yaml"
       - "recorder.yaml"
       - "scripts/arsenal_contracts/check_palmares_temperature_journalier_froid_contracts.py"

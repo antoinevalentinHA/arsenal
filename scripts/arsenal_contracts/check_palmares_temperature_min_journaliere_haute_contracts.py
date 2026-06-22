@@ -230,6 +230,8 @@ def test_carte():
         "18_lovelace",
         "includes",
         "cartes",
+        "meteo",
+        "palmares",
         "palmares_temperature_min_haute.yaml",
     )
 

@@ -13,7 +13,7 @@ on:
       - "11_automations/meteo/evaluation_temperature_min_haute.yaml"
       - "12_template_sensors/meteo/palmares_temperature_min_journaliere_haute.yaml"
       - "12_template_sensors/meteo/palmares_temperature_min_journaliere_haute_anomalie.yaml"
-      - "18_lovelace/includes/cartes/palmares_temperature_min_haute.yaml"
+      - "18_lovelace/includes/cartes/meteo/palmares/palmares_temperature_min_haute.yaml"
       - "18_lovelace/dashboards/meteo/meteo_palmares.yaml"
       - "recorder.yaml"
       - "scripts/arsenal_contracts/check_palmares_temperature_min_journaliere_haute_contracts.py"
