@@ -46,6 +46,10 @@ views:
                     entity: input_boolean.clim_mode_silencieux_auto_active
                     name: Mode silencieux auto
                     icon: mdi:volume-mute
+                    tap_action:
+                      action: toggle
+                      confirmation:
+                        text: "⚠️ Modifier l'activation automatique du mode silencieux clim ?"
 
                   - type: custom:button-card
                     template: socle_toggle_compact_68
