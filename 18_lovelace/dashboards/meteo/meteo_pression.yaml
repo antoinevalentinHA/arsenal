@@ -21,4 +21,4 @@ views:
           # ------------------------------------------------------
           # 📈 Pression atmosphérique (24h)
           # ------------------------------------------------------
-          - !include ../../includes/cartes/graph_pression.yaml
+          - !include ../../includes/cartes/meteo/graph_pression.yaml

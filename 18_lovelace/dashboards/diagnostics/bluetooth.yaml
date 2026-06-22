@@ -14,4 +14,4 @@ views:
           ########################################################
           - !include ../../includes/section_headers/details.yaml
 
-          - !include ../../includes/cartes/barres_bluetooth.yaml
+          - !include ../../includes/cartes/diagnostic/barres_bluetooth.yaml

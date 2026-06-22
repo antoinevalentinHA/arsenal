@@ -21,28 +21,28 @@ views:
             template: section_header
             name: 🧪 Interprétation
 
-          - !include ../../includes/cartes/diagnostic_thermique_interpretation.yaml
+          - !include ../../includes/cartes/chauffage/diagnostic_thermique_interpretation.yaml
 
           - type: custom:button-card
             template: section_header
             name: 🧾 Contexte
 
-          - !include ../../includes/cartes/diagnostic_thermique_contexte.yaml
+          - !include ../../includes/cartes/chauffage/diagnostic_thermique_contexte.yaml
 
           - type: custom:button-card
             template: section_header
             name: 🔥 Dynamiques Présence — Reprise / Arrêt
 
-          - !include ../../includes/cartes/diagnostic_thermique_reprise.yaml
+          - !include ../../includes/cartes/chauffage/diagnostic_thermique_reprise.yaml
 
           - type: custom:button-card
             template: section_header
             name: 🔄 Stabilité — Oscillateur thermique
 
-          - !include ../../includes/cartes/diagnostic_thermique_oscillateur.yaml
+          - !include ../../includes/cartes/chauffage/diagnostic_thermique_oscillateur.yaml
 
           - type: custom:button-card
             template: section_header
             name: 🌙 Absence — Inertie passive
 
-          - !include ../../includes/cartes/diagnostic_thermique_inertie.yaml
+          - !include ../../includes/cartes/chauffage/diagnostic_thermique_inertie.yaml
