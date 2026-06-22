@@ -53,4 +53,4 @@ views:
             template: section_header
             name: 📈 Historique
 
-          - !include ../includes/cartes/sante/graph_cardio_nuit.yaml
+          - !include ../../includes/cartes/sante/graph_cardio_nuit.yaml

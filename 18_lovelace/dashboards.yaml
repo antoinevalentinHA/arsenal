@@ -108,14 +108,14 @@ sommeil-dashboard:
   title: Sommeil
   icon: mdi:sleep
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/sommeil.yaml
+  filename: 18_lovelace/dashboards/sommeil/principal.yaml
 
 cardio-dashboard:
   mode: yaml
   title: Cardio Nuit
   icon: mdi:heart-pulse
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/frequence_cardiaque.yaml
+  filename: 18_lovelace/dashboards/sante/frequence_cardiaque.yaml
 
 ouvertures-dashboard:
   mode: yaml
@@ -136,7 +136,7 @@ modes-dashboard:
   title: Modes
   icon: mdi:account-switch
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/modes.yaml
+  filename: 18_lovelace/dashboards/maison/modes.yaml
 
 nas-dashboard:
   mode: yaml

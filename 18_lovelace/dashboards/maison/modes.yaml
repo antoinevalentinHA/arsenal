@@ -81,7 +81,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/historique.yaml
+              - !include ../../includes/section_headers/historique.yaml
 
               - type: history-graph
                 entities:
