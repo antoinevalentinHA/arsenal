@@ -7,7 +7,7 @@
 #
 # 🧩 Nature :
 #   Commande utilisateur (helper). Ne représente PAS l'état réel
-#   (état réel = sensor.clim_fan_mode_local).
+#   (état réel = sensor.clim_mode_de_ventilation_local).
 #
 # 🔁 Mapping FR → technique (porté par les automatisations) :
 #   Silencieux→quiet · Faible→low · Moyen→medium · Fort→high · Auto→auto

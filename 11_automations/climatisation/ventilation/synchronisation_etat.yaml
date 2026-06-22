@@ -10,7 +10,7 @@
 #   ventilation, afin qu'il ne mente jamais durablement.
 #
 # 🧩 PÉRIMÈTRE
-#   - Couvre : sensor.clim_fan_mode_local → input_select.clim_fan_mode_cible
+#   - Couvre : sensor.clim_mode_de_ventilation_local → input_select.clim_fan_mode_cible
 #   - Exclut : tout pilotage de la climatisation, toute décision
 #
 # 🔖 NATURE
@@ -20,10 +20,10 @@
 #   single — Justification : une synchronisation à la fois.
 #
 # 📣 DÉCLENCHEURS
-#   Changement de sensor.clim_fan_mode_local (état réel fan_mode)
+#   Changement de sensor.clim_mode_de_ventilation_local (état réel fan_mode)
 #
 # 🔗 DÉPENDANCES
-#   Lit      : sensor.clim_fan_mode_local, input_select.clim_fan_mode_cible
+#   Lit      : sensor.clim_mode_de_ventilation_local, input_select.clim_fan_mode_cible
 #   Appelle  : input_select.select_option
 #   Écrit    : input_select.clim_fan_mode_cible
 #
@@ -49,18 +49,18 @@
   alias: "Clim - Synchronisation sélecteur mode de ventilation"
   description: >
     Aligne input_select.clim_fan_mode_cible sur l'état réel
-    sensor.clim_fan_mode_local lorsqu'il change.
+    sensor.clim_mode_de_ventilation_local lorsqu'il change.
   mode: single
 
   trigger:
     - platform: state
-      entity_id: sensor.clim_fan_mode_local
+      entity_id: sensor.clim_mode_de_ventilation_local
 
   variables:
     target_fr: >
       {{ {'quiet': 'Silencieux', 'low': 'Faible', 'medium': 'Moyen',
           'high': 'Fort', 'auto': 'Auto'}.get(
-            states('sensor.clim_fan_mode_local')) }}
+            states('sensor.clim_mode_de_ventilation_local')) }}
     current_select: "{{ states('input_select.clim_fan_mode_cible') }}"
 
   condition:

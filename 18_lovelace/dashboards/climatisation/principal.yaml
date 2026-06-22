@@ -48,7 +48,7 @@ views:
                 content: >
                   **Mode actuel :** {{ {'quiet': 'Silencieux', 'low': 'Faible',
                   'medium': 'Moyen', 'high': 'Fort', 'auto':
-                  'Auto'}.get(states('sensor.clim_fan_mode_local'),
+                  'Auto'}.get(states('sensor.clim_mode_de_ventilation_local'),
                   'Indisponible') }}
 
               - type: entities

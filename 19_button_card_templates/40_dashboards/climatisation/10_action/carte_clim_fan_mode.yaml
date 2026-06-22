@@ -19,7 +19,7 @@
 #   - variables.mode : quiet | low | medium | high | auto
 #
 # 🔗 DÉPENDANCES
-#   Lit      : sensor.clim_fan_mode_local (fan_mode réel)
+#   Lit      : sensor.clim_mode_de_ventilation_local (fan_mode réel)
 #   Appelle  : script.clim_set_fan_mode (data.mode = variables.mode)
 #   Template : socle_action_script_confirme (confirmation + call-service)
 #
@@ -40,7 +40,7 @@
 carte_clim_fan_mode:
   template: socle_action_script_confirme
 
-  entity: sensor.clim_fan_mode_local
+  entity: sensor.clim_mode_de_ventilation_local
   show_state: false
   show_name: true
   show_icon: true
