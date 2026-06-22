@@ -29,7 +29,7 @@ Le plateau est une **mémoire thermique de diagnostic** : la dernière températ
 | Reset (user) | `script.reset_plateau_piece` | `10_scripts/chauffage/reset_plateau.yaml` |
 | Sélecteur pièce | `input_select.adjustment_piece` | (paramétrage) |
 | Affichage / verdict | cartes `thermo_plateau_strict_72`, `thermo_plateau_affichage_72`, `thermo_mean_12h_72`, `thermo_variance_12h_72`, `thermo_stabilite_12h_status` | `19_button_card_templates/40_dashboards/chauffage/60_thermostatique/` |
-| Dashboard | vue diagnostic vannes | `18_lovelace/dashboards/diagnostics/vannes_thermo.yaml` |
+| Dashboard | vue diagnostic vannes | `18_lovelace/dashboards/chauffage/vannes_thermo.yaml` |
 
 ## 4. Sources statistiques 12 h
 
@@ -106,7 +106,7 @@ Le seuil **`0.02`** (variance 12 h) est **canonique** : il définit le **plateau
 
 ## 12. UI / Lovelace
 
-- **Dashboard diagnostic** : `18_lovelace/dashboards/diagnostics/vannes_thermo.yaml` — expose mean/variance 12 h, plateau strict, plateau d'affichage, verdict de stabilité, et le bouton de reset, le tout filtré par `input_select.adjustment_piece`.
+- **Dashboard diagnostic** : `18_lovelace/dashboards/chauffage/vannes_thermo.yaml` — expose mean/variance 12 h, plateau strict, plateau d'affichage, verdict de stabilité, et le bouton de reset, le tout filtré par `input_select.adjustment_piece`.
 - **Cartes** : famille `60_thermostatique` (`*_72`).
 - **Verdict couleur** : porté par `thermo_stabilite_12h_status` et l'axe couleur des cartes.
 - **Indisponibilité** : le fond gris d'indisponibilité doit rester conforme à la charte UI (`ui/couleurs/`) ; cet axe a été corrigé (V-1).

@@ -5,17 +5,24 @@
 
 ## Statut
 
-**ÉVOLUTION FUTURE — NON IMPLÉMENTÉE**
+**RÉALISÉ — chantier clos.**
 
-- **Type** : Dette d'architecture UI
-- **Priorité** : Faible
-- **Urgence** : Nulle
-- **Décision** : Reportée
+- **Type** : Dette d'architecture UI (résorbée)
+- **Décision** : finalement engagée et exécutée par lots successifs après cadrages en lecture seule.
 
-> Document révisé à la lumière de l'audit de contre-expertise :
+> Réalisation : reclassement complet de `18_lovelace/` par domaine — d'abord les
+> includes (`18_lovelace/includes/cartes/` rangés en sous-dossiers de domaine),
+> puis les dashboards. Les dossiers-type `dashboards/diagnostics/` et
+> `dashboards/reglages/` ont été vidés et redistribués en `dashboards/<domaine>/`
+> (`<role>.yaml` : `principal`, `diagnostic`, `reglages`, …) ; les vues racine ont
+> été reclassées de même, seuls les hubs `arsenal.yaml` et `navigation.yaml`
+> restant en racine. Les clés publiques de `dashboards.yaml` ont été **conservées
+> à l'identique** (navigation découplée de l'emplacement des fichiers).
+>
+> Ce document conserve sa valeur de **cadrage et de justification** ; les sections
+> au présent/futur décrivent l'état d'avant migration. Contre-expertise d'origine :
 > [`audits/01_rapports/lovelace/audit_lovelace_arborescence.md`](../audits/01_rapports/lovelace/audit_lovelace_arborescence.md)
 > (base d'analyse : état réel du dépôt, 83 dashboards).
-> Les sections *Contraintes*, *Risques*, *Analyse coût / valeur* et *Stratégie* en reflètent désormais les conclusions.
 
 ---
 

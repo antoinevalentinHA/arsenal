@@ -225,7 +225,7 @@ binary_sensor.sommeil_donnees_exploitables
 
 Marqués UI/diagnostic, hors vérité métier consolidée : capteurs couleur
 `sensor.couleur_sante_duree_sommeil`, `sensor.couleur_sante_score_sommeil` ;
-sensors de pourcentage de phases ; dashboards `18_lovelace/dashboards/sommeil.yaml`
+sensors de pourcentage de phases ; dashboards `18_lovelace/dashboards/sommeil/principal.yaml`
 et `…/sante.yaml`. Ils consomment le snapshot Couche 3, jamais les couches amont.
 
 ## 12. Dettes / limites connues
