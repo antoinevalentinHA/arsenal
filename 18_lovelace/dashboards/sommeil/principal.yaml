@@ -139,7 +139,7 @@ views:
             template: sub_section_header
             name: 📈 Historique
 
-          - !include ../includes/cartes/sante/graph_sommeil.yaml
+          - !include ../../includes/cartes/sante/graph_sommeil.yaml
 
           ########################################################
           # 💤 ENFANTS
