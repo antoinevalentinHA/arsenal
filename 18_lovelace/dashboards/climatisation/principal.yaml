@@ -38,46 +38,28 @@ views:
                 template: carte_clim_synthese
 
               # --------------------------------------------------
-              # 💨 Ventilation — état réel + action confirmée (script)
+              # 💨 Ventilation — état réel + sélecteur (passerelle script)
               # --------------------------------------------------
               - type: custom:button-card
                 template: section_header
                 name: 💨 Ventilation
 
-              - type: grid
-                square: false
-                columns: 5
-                cards:
-                  - type: custom:button-card
-                    template: carte_clim_fan_mode
-                    variables:
-                      mode: quiet
+              - type: markdown
+                content: >
+                  **Mode actuel :** {{ {'quiet': 'Silencieux', 'low': 'Faible',
+                  'medium': 'Moyen', 'high': 'Fort', 'auto':
+                  'Auto'}.get(states('sensor.clim_fan_mode_local'),
+                  'Indisponible') }}
 
-                  - type: custom:button-card
-                    template: carte_clim_fan_mode
-                    variables:
-                      mode: low
-
-                  - type: custom:button-card
-                    template: carte_clim_fan_mode
-                    variables:
-                      mode: medium
-
-                  - type: custom:button-card
-                    template: carte_clim_fan_mode
-                    variables:
-                      mode: high
-
-                  - type: custom:button-card
-                    template: carte_clim_fan_mode
-                    variables:
-                      mode: auto
+              - type: entities
+                entities:
+                  - entity: input_select.clim_fan_mode_cible
+                    name: Mode souhaité
 
               - type: markdown
                 content: >
-                  ℹ️ Mode manuel stable lorsque le silencieux automatique est
-                  désactivé. Lorsqu'il est actif, le silencieux automatique peut
-                  reprendre la main sur le mode Silencieux.
+                  ℹ️ Le silencieux automatique peut reprendre la main sur
+                  Silencieux lorsqu'il est actif.
 
               # Bruit extérieur (actionneur conservé — lot dédié ultérieur)
               - type: custom:button-card
