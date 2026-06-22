@@ -91,7 +91,7 @@ views:
             square: false
             columns: 3
             cards:
-              - !include ../includes/cartes/bouclage.yaml
+              - !include ../includes/cartes/ecs/bouclage.yaml
 
               - type: custom:button-card
                 template: carte_action_ecs_vaisselle

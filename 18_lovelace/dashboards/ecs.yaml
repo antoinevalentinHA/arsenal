@@ -56,7 +56,7 @@ views:
                     name: Vaisselle
                     icon: mdi:silverware-clean
 
-                  - !include ../includes/cartes/bouclage.yaml
+                  - !include ../includes/cartes/ecs/bouclage.yaml
 
           # ==================================================
           # 📜 HISTORIQUE ECS
