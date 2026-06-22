@@ -30,6 +30,7 @@
 #
 #     - input_datetime.clim_heure_silencieux_on
 #     - input_datetime.clim_heure_silencieux_off
+#     - input_boolean.clim_mode_silencieux_auto_active (activation globale)
 #
 # ----------------------------------------------------------
 # 📦 SOURCES TECHNIQUES
@@ -60,13 +61,17 @@
       default_entity_id: binary_sensor.clim_silencieux_autorise
       state: >
 
+        {% set auto = is_state('input_boolean.clim_mode_silencieux_auto_active', 'on') %}
         {% set presence = is_state('binary_sensor.presence_famille_unifiee', 'on') %}
 
         {% set on_time = states('input_datetime.clim_heure_silencieux_on') %}
         {% set off_time = states('input_datetime.clim_heure_silencieux_off') %}
         {% set now_time = states('sensor.time') %}
 
-        {% if not presence %}
+        {% if not auto %}
+          false
+
+        {% elif not presence %}
           false
 
         {% elif on_time == off_time %}

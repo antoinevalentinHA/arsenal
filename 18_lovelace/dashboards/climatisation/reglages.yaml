@@ -208,6 +208,10 @@ views:
             template: section_header
             name: 🤫 Mode silencieux
 
+          - type: tile
+            entity: input_boolean.clim_mode_silencieux_auto_active
+            name: Mode silencieux automatique
+
           - type: grid
             square: false
             columns: 2
