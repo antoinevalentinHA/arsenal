@@ -59,9 +59,9 @@ views:
           # 📈 HISTORIQUE
           ########################################################
 
-          - !include ../includes/section_headers/historique.yaml
+          - !include ../../includes/section_headers/historique.yaml
 
-          - !include ../includes/cartes/ecs/graph_temperature_ecs_petite_maison.yaml
+          - !include ../../includes/cartes/ecs/graph_temperature_ecs_petite_maison.yaml
 
           - type: history-graph
             entities:

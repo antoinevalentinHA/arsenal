@@ -24,14 +24,14 @@ alarme-dashboard:
   title: Alarme
   icon: mdi:shield-home
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/alarme.yaml
+  filename: 18_lovelace/dashboards/alarme/principal.yaml
 
 chauffage-dashboard:
   mode: yaml
   title: Chauffage
   icon: mdi:fire
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/chauffage.yaml
+  filename: 18_lovelace/dashboards/chauffage/principal.yaml
 
 clim-dashboard:
   mode: yaml
@@ -45,28 +45,28 @@ deshumidificateur-dashboard:
   title: Déshumidificateur
   icon: mdi:water-off
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/deshumidificateur.yaml
+  filename: 18_lovelace/dashboards/deshumidificateur/principal.yaml
 
 eclairage-dashboard:
   mode: yaml
   title: Éclairage
   icon: mdi:lightbulb
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/eclairage.yaml
+  filename: 18_lovelace/dashboards/eclairage/principal.yaml
 
 ecs-dashboard:
   mode: yaml
   title: ECS
   icon: mdi:water-boiler
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/ecs.yaml
+  filename: 18_lovelace/dashboards/ecs/principal.yaml
 
 ecs-petite-maison-dashboard:
   mode: yaml
   title: ECS Petite Maison
   icon: mdi:water-boiler
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/ecs_petite_maison.yaml
+  filename: 18_lovelace/dashboards/ecs/petite_maison.yaml
 
 system-dashboard:
   mode: yaml
@@ -87,7 +87,7 @@ vmc-dashboard:
   title: VMC
   icon: mdi:fan
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/vmc.yaml
+  filename: 18_lovelace/dashboards/vmc/principal.yaml
 
 volets-dashboard:
   mode: yaml
@@ -122,14 +122,14 @@ ouvertures-dashboard:
   title: Ouvertures
   icon: mdi:door
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/ouvertures.yaml
+  filename: 18_lovelace/dashboards/ouvertures/principal.yaml
 
 mouvements-dashboard:
   mode: yaml
   title: Mouvements
   icon: mdi:motion-sensor
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/mouvements.yaml
+  filename: 18_lovelace/dashboards/mouvements/principal.yaml
 
 modes-dashboard:
   mode: yaml

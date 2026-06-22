@@ -12,19 +12,37 @@ views:
         template: bouton_parametres_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /reglages-chauffage-dashboard
+          navigation_path: /reglages-alarme-dashboard
 
       - type: custom:button-card
         template: bouton_diagnostics_badge_carre
         tap_action:
           action: navigate
-          navigation_path: /diagnostics-chauffage-dashboard
+          navigation_path: /diagnostics-alarme-dashboard
 
     cards:
       - type: vertical-stack
         cards:
           # ==================================================
-          # 🔥 CHAUDIÈRE — SYNTHÈSE
+          # 🧠 DÉCISION / INTENTION
+          # ==================================================
+          - type: grid
+            square: false
+            columns: 1
+            cards:
+              - !include ../../includes/section_headers/decision.yaml
+
+              - type: custom:button-card
+                entity: input_text.alarme_etat_cible
+                template: carte_alarme_intention
+
+              - type: custom:button-card
+                entity: alarm_control_panel.alarme_maison
+                template: carte_alarme_decision
+                name: Alarme Maison
+
+          # ==================================================
+          # 🚨 SIRÈNE
           # ==================================================
           - type: grid
             square: false
@@ -32,34 +50,16 @@ views:
             cards:
               - type: custom:button-card
                 template: section_header
-                name: 🔥 Chaudière
+                name: 🚨 Sirène
 
-              - type: custom:button-card
-                template: carte_chauffage_synthese
-
-          # ==================================================
-          # 🧠 DÉCISION
-          # ==================================================
-          - type: grid
-            square: false
-            columns: 1
-            cards:
-              - !include ../includes/section_headers/decision.yaml
-
-          # ==================================================
-          # 🎯 INTENTION / DÉCISION
-          # ==================================================
-          - type: grid
-            square: false
-            columns: 1
-            cards:
-              - type: custom:button-card
-                entity: sensor.chauffage_mode_calcule
-                template: carte_chauffage_intention
-
-              - type: custom:button-card
-                entity: sensor.programme_chauffage
-                template: carte_chauffage_decision
+              - type: grid
+                square: false
+                columns: 1
+                cards:
+                  - type: custom:button-card
+                    template: carte_action_arret_sirene
+                    name: Stop
+                    icon: mdi:alarm-off
 
           # ==================================================
           # 📜 HISTORIQUE
@@ -68,10 +68,12 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/historique.yaml
+              - !include ../../includes/section_headers/historique.yaml
 
               - type: history-graph
                 entities:
-                  - entity: sensor.programme_chauffage
-                    name: Programme
+                  - entity: alarm_control_panel.alarme_maison
+                    name: Alarme Maison
+                  - entity: binary_sensor.presence_famille_securite
+                hours_to_show: 0
                 logarithmic_scale: true

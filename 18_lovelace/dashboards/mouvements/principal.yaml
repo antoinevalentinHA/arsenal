@@ -24,7 +24,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/garage.yaml
+              - !include ../../includes/section_headers/garage.yaml
 
               - type: grid
                 square: false
@@ -55,7 +55,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/entree.yaml
+              - !include ../../includes/section_headers/entree.yaml
 
               - type: custom:button-card
                 template: carte_mouvement
@@ -70,7 +70,7 @@ views:
             square: false
             columns: 1
             cards:
-              - !include ../includes/section_headers/sejour.yaml
+              - !include ../../includes/section_headers/sejour.yaml
 
               - type: grid
                 square: false
