@@ -15,8 +15,8 @@
 #
 #   Zones reconnues comme présence :
 #     - home
-#     - Maison – Sécurité
-#     - Approche – Sécurité
+#     - Maison securite
+#     - Approche securite
 #
 # 🧠 DÉFINITION DE VÉRITÉ
 #   ON  si au moins UNE des conditions est vraie :
@@ -61,8 +61,8 @@
 
         {% set etats_presence_personnes = [
           'home',
-          'Maison – Sécurité',
-          'Approche – Sécurité'
+          'Maison securite',
+          'Approche securite'
         ] %}
 
         {{
