@@ -451,7 +451,7 @@ diagnostics-alarme-dashboard:
   title: Alarme
   icon: mdi:shield-home
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/alarme.yaml
+  filename: 18_lovelace/dashboards/alarme/diagnostic.yaml
 
 diagnostics-climatisation-dashboard:
   mode: yaml
@@ -479,7 +479,7 @@ diagnostics-vannes-dashboard:
   title: Vannes
   icon: mdi:radiator
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/vannes_thermo.yaml
+  filename: 18_lovelace/dashboards/chauffage/vannes_thermo.yaml
 
 diagnostics-thermiques-dashboard:
   mode: yaml
@@ -507,7 +507,7 @@ diagnostics-deshumidificateur-dashboard:
   title: Déshumidificateur
   icon: mdi:water-off
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/deshumidificateur.yaml
+  filename: 18_lovelace/dashboards/deshumidificateur/diagnostic.yaml
 
 diagnostics-eclairage-dashboard:
   mode: yaml
@@ -528,21 +528,21 @@ diagnostics-mouvements-dashboard:
   title: Mouvements
   icon: mdi:radar
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/mouvements.yaml
+  filename: 18_lovelace/dashboards/mouvements/diagnostic.yaml
 
 diagnostics-volets-dashboard:
   mode: yaml
   title: Volets
   icon: mdi:weather-pouring
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/volets.yaml
+  filename: 18_lovelace/dashboards/volets/diagnostic.yaml
 
 diagnostics-vmc-dashboard:
   mode: yaml
   title: VMC
   icon: mdi:fan
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/diagnostics/vmc.yaml
+  filename: 18_lovelace/dashboards/vmc/diagnostic.yaml
 
 diagnostics-automatisations-dashboard:
   mode: yaml
