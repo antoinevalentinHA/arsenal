@@ -271,7 +271,7 @@ def test_etage_consumed_only_by_legitimate_consumers() -> None:
 
 def test_dashboard_declared() -> None:
     """T11 — Dashboard aération déclaré dans 18_lovelace/dashboards/"""
-    p = DIR_LOVELACE / "dashboards" / "aeration.yaml"
+    p = DIR_LOVELACE / "dashboards" / "aeration" / "principal.yaml"
     if not p.is_file():
         error(f"T11: {p.relative_to(ROOT)} introuvable — dashboard aération manquant")
     ok("T11 — dashboard aération déclaré")
@@ -281,10 +281,10 @@ def test_dashboard_no_logic() -> None:
     """
     T12 — Le dashboard aération ne contient pas de logique métier.
     Contrat §UI : les cartes ne modifient aucun état.
-    Scope : 18_lovelace/dashboards/aeration.yaml
+    Scope : 18_lovelace/dashboards/aeration/principal.yaml
     Interdit : service calls dans le dashboard.
     """
-    p = DIR_LOVELACE / "dashboards" / "aeration.yaml"
+    p = DIR_LOVELACE / "dashboards" / "aeration" / "principal.yaml"
     if not p.is_file():
         error("T12: aeration.yaml introuvable")
         return

@@ -88,7 +88,7 @@ UI_CARTE_CLIM_DECISION = (
     / "carte_clim_decision.yaml"
 )
 
-UI_DASHBOARD_CLIM = ROOT / "18_lovelace" / "dashboards" / "clim.yaml"
+UI_DASHBOARD_CLIM = ROOT / "18_lovelace" / "dashboards" / "climatisation" / "principal.yaml"
 
 # Documentation
 DOC_ADMISSIBILITE = (

@@ -7,7 +7,7 @@ on:
       - '12_template_sensors/climatisation/**'
       - '05_input_booleans/climatisation/**'
       - '19_button_card_templates/40_dashboards/climatisation/**'
-      - '18_lovelace/dashboards/clim.yaml'
+      - '18_lovelace/dashboards/climatisation/principal.yaml'
       - '00_documentation_arsenal/contrats/climatisation/**'
       - 'scripts/arsenal_contracts/check_climatisation_admissibilite_contracts.py'
       - '.github/workflows/check_climatisation_admissibilite_contracts.yml'
@@ -17,7 +17,7 @@ on:
       - '12_template_sensors/climatisation/**'
       - '05_input_booleans/climatisation/**'
       - '19_button_card_templates/40_dashboards/climatisation/**'
-      - '18_lovelace/dashboards/clim.yaml'
+      - '18_lovelace/dashboards/climatisation/principal.yaml'
       - '00_documentation_arsenal/contrats/climatisation/**'
       - 'scripts/arsenal_contracts/check_climatisation_admissibilite_contracts.py'
   workflow_dispatch:

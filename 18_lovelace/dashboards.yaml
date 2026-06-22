@@ -17,7 +17,7 @@ aeration-dashboard:
   title: Aération
   icon: mdi:air-filter
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/aeration.yaml
+  filename: 18_lovelace/dashboards/aeration/principal.yaml
 
 alarme-dashboard:
   mode: yaml
@@ -38,7 +38,7 @@ clim-dashboard:
   title: Climatisation
   icon: mdi:snowflake
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/clim.yaml
+  filename: 18_lovelace/dashboards/climatisation/principal.yaml
 
 deshumidificateur-dashboard:
   mode: yaml
