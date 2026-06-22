@@ -71,7 +71,7 @@ views:
             template: section_header
             name: 🍃 Mode économique
 
-          - !include ../../includes/cartes/barres_mode_reduit_chauffage.yaml
+          - !include ../../includes/cartes/chauffage/barres_mode_reduit_chauffage.yaml
 
           ########################################################
           # 🧩 2) Diagnostic local

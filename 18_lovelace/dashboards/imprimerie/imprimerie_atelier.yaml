@@ -18,15 +18,15 @@ views:
         cards:
           - !include ../../includes/section_headers/conditions_actuelles.yaml
 
-          - !include ../../includes/cartes/imprimerie_conditions_atelier.yaml
+          - !include ../../includes/cartes/imprimerie/imprimerie_conditions_atelier.yaml
 
           - !include ../../includes/section_headers/min_max_semaine.yaml
 
-          - !include ../../includes/cartes/imprimerie_en_cours_atelier.yaml
+          - !include ../../includes/cartes/imprimerie/imprimerie_en_cours_atelier.yaml
 
           - !include ../../includes/section_headers/historique_4_semaines.yaml
 
-          - !include ../../includes/cartes/imprimerie_historique_atelier.yaml
+          - !include ../../includes/cartes/imprimerie/imprimerie_historique_atelier.yaml
 
           - type: horizontal-stack
             cards:

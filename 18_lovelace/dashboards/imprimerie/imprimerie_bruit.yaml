@@ -48,6 +48,6 @@ views:
 
           # 🔊 Section — Historique
           - !include ../../includes/section_headers/historique.yaml
-          - !include ../../includes/cartes/graph_bruit_komori.yaml
-          - !include ../../includes/cartes/graph_bruit_bobst.yaml
-          - !include ../../includes/cartes/graph_bruit_media.yaml
+          - !include ../../includes/cartes/imprimerie/graph_bruit_komori.yaml
+          - !include ../../includes/cartes/imprimerie/graph_bruit_bobst.yaml
+          - !include ../../includes/cartes/imprimerie/graph_bruit_media.yaml

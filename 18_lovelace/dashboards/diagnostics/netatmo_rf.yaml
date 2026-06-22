@@ -7,4 +7,4 @@ views:
         template: section_header
         name: 📡 Qualité radio RF
 
-      - !include ../../includes/cartes/barres_netatmo_rf.yaml
+      - !include ../../includes/cartes/diagnostic/barres_netatmo_rf.yaml

@@ -30,7 +30,7 @@ views:
     cards:
       - type: vertical-stack
         cards:
-          - !include ../includes/cartes/systeme_stable.yaml
+          - !include ../includes/cartes/systeme/systeme_stable.yaml
 
           ####################################################
           # 🍓 RASPBERRY PI
@@ -166,7 +166,7 @@ views:
           # ⚠️ AUTOMATISATIONS DÉSACTIVÉES
           ####################################################
 
-          - !include ../includes/cartes/automatisations_desactivees.yaml
+          - !include ../includes/cartes/systeme/automatisations_desactivees.yaml
 
           ####################################################
           # 📡 CONNECTIVITÉ

@@ -32,7 +32,7 @@ views:
             template: section_header
             name: 🔒 Effet sur chauffage
 
-          - !include ../../includes/cartes/aeration_timers.yaml
+          - !include ../../includes/cartes/aeration/aeration_timers.yaml
 
           - type: custom:button-card
             template: section_header

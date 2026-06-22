@@ -7,4 +7,4 @@ views:
         template: section_header
         name: 📡 Qualité radio Wi-Fi
 
-      - !include ../../includes/cartes/barres_netatmo_wifi.yaml
+      - !include ../../includes/cartes/diagnostic/barres_netatmo_wifi.yaml
