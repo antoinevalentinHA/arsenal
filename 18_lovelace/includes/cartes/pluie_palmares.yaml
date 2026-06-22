@@ -8,4 +8,10 @@ content: |
   {% for item in r %}
   {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}️⃣{% endif %} {{ item.date }} — **{{ item.valeur }} mm**
   {% endfor %}
+
+  {% set total = r | count %}
+  {% set ampli = (r[0].valeur | float - r[-1].valeur | float) | abs %}
+  {% set ts1 = as_timestamp(strptime(r[0].date, '%Y-%m-%d'), 0) %}
+  {% set recent = ts1 > 0 and (as_timestamp(now()) - ts1) / 86400 < 7 %}
+  📊 {{ total }}/10{% if total >= 2 %} · amplitude {{ ampli | round(1) }} mm{% endif %}{% if recent %} · 🔥 récent{% endif %}
   {% endif %}
