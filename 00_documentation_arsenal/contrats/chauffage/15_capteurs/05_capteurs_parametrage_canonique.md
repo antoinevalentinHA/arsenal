@@ -91,7 +91,7 @@ classés `role: parametre` dans
 
 - **Norme** = le présent contrat (et la doctrine des registres dont il dérive).
 - **Preuve d'exposition utilisateur** = le dashboard réglages chauffage
-  (`18_lovelace/dashboards/reglages/chauffage.yaml`), qui **expose** les
+  (`18_lovelace/dashboards/chauffage/reglages.yaml`), qui **expose** les
   consignes à l'utilisateur mais **ne fait pas autorité**. Le dashboard est une
   surface ; il prouve l'existence d'un point de réglage, il ne définit aucune
   règle.
@@ -262,7 +262,7 @@ thermique** au sens de [`index.md`](index.md).
 - Apprentissage supervisé (consommateur aval) : [`06_capteurs_auto_ajustement_calibration.md`](06_capteurs_auto_ajustement_calibration.md)
 - Classification souveraine des entités : [`ci/registres_entites.yaml`](../ci/registres_entites.yaml) (section `parametres:`)
 - Table d'orientation : [`index.md`](index.md)
-- **Preuve d'exposition utilisateur (runtime/UI, non normative)** : `18_lovelace/dashboards/reglages/chauffage.yaml`
+- **Preuve d'exposition utilisateur (runtime/UI, non normative)** : `18_lovelace/dashboards/chauffage/reglages.yaml`
 
 ---
 

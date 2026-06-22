@@ -157,7 +157,7 @@ Référencés mais **non définis** par ce contrat :
 - le **mécanisme de notification** `script.notification_envoyer` (voir
   [`notifications.md`](notifications.md)) ;
 - les **capteurs couleur** dérivés du bruit (couche `couleurs` / UI) ;
-- les **surfaces UI** (`18_lovelace/dashboards/sommeil.yaml` et
+- les **surfaces UI** (`18_lovelace/dashboards/sommeil/principal.yaml` et
   `…/reglages/sommeil.yaml`), co-localisées avec le contexte « sommeil » sans
   appartenir au domaine `reveils`.
 
