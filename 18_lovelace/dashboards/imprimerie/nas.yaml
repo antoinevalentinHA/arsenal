@@ -21,7 +21,7 @@ views:
             template: section_header
             name: 🧭 Synthèse
 
-          - !include ../../includes/cartes/imprimerie_synthese_nas.yaml
+          - !include ../../includes/cartes/imprimerie/imprimerie_synthese_nas.yaml
 
           # ==================================================
           # 🧩 AXES DE SANTÉ
