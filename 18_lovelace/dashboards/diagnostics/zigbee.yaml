@@ -14,4 +14,4 @@ views:
           ########################################################
           - !include ../../includes/section_headers/details.yaml
 
-          - !include ../../includes/cartes/barres_zigbee.yaml
+          - !include ../../includes/cartes/diagnostic/barres_zigbee.yaml

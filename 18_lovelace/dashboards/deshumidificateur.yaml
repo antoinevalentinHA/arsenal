@@ -32,7 +32,7 @@ views:
             cards:
               - !include ../includes/section_headers/cave.yaml
 
-              - !include ../includes/cartes/graph_humidite_cave.yaml
+              - !include ../includes/cartes/diagnostic/graph_humidite_cave.yaml
 
           # ==================================================
           # ⚖️ CONDITIONS DE DÉSHUMIDIFICATION

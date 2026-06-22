@@ -14,4 +14,4 @@ views:
           ########################################################
           - !include ../../includes/section_headers/details.yaml
 
-          - !include ../../includes/cartes/auto_entities_batteries.yaml
+          - !include ../../includes/cartes/diagnostic/auto_entities_batteries.yaml
