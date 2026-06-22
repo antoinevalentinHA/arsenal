@@ -94,14 +94,14 @@ volets-dashboard:
   title: Volets
   icon: mdi:window-shutter
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/volets.yaml
+  filename: 18_lovelace/dashboards/volets/principal.yaml
 
 sante-dashboard:
   mode: yaml
   title: Santé
   icon: mdi:stethoscope
   show_in_sidebar: false
-  filename: 18_lovelace/dashboards/sante.yaml
+  filename: 18_lovelace/dashboards/sante/principal.yaml
 
 sommeil-dashboard:
   mode: yaml
