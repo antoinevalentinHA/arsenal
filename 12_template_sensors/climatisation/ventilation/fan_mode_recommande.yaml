@@ -42,6 +42,7 @@
 - sensor:
     - name: "Clim mode de ventilation recommandé"
       unique_id: clim_fan_mode_recommande
+      default_entity_id: sensor.clim_fan_mode_recommande
       icon: mdi:fan-chevron-up
 
       availability: >
