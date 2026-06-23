@@ -66,6 +66,16 @@ views:
                   entity_on: binary_sensor.clim_humidex_sup_cible_dry
 
           ########################################################
+          # 💨 SECTION : Ventilation
+          ########################################################
+          - type: custom:button-card
+            template: section_header
+            name: 💨 Ventilation
+
+          - type: custom:button-card
+            template: carte_clim_ventilation_diagnostic_xl
+
+          ########################################################
           # 🚫 SECTION : Blocages
           ########################################################
           - type: custom:button-card

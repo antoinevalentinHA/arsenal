@@ -1,0 +1,142 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Diagnostic ventilation synthese XL
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher la synthese d'observabilite de la ventilation :
+#     besoin froid, recommandation Arsenal, ventilation reelle,
+#     verdict de conformite et cause d'ecart, evitement Auto Fujitsu.
+#     Affichage pur : toute la logique metier est portee par le
+#     capteur backend sensor.clim_ventilation_diagnostic.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Specialisation de socle_status_label_xl
+#     - UI uniquement (aucune decision, aucune action)
+#
+# 🎨 SEMANTIQUE (couleur lue depuis l'attribut backend `couleur`)
+#     - vert         -> conforme
+#     - bleu         -> ecart explicable (mode manuel / silencieux auto)
+#     - orange       -> attention (Auto Fujitsu / situation non couverte)
+#     - rouge        -> incoherence de mapping
+#     - indisponible -> gris indispo (R6 prime)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor.clim_ventilation_diagnostic
+#     - attributs lus : niveau_besoin, intensite, recommande, reel,
+#       cause_ecart, auto_fujitsu_evite, couleur
+#     - aucune autre entite lue cote navigateur (aucun recalcul)
+#
+# ⚠️ CONTRAINTES
+#     - Aucune logique metier locale : le verdict, la cause et la
+#       couleur sont decides par le capteur backend
+#     - Hauteur adaptative (height auto, min-height 56px)
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_ventilation_diagnostic_xl
+#
+# ==========================================================
+
+carte_clim_ventilation_diagnostic_xl:
+  template: socle_status_label_xl
+
+  entity: sensor.clim_ventilation_diagnostic
+
+  show_name: false
+  show_state: true
+  show_label: true
+  show_icon: true
+
+  tap_action:
+    action: none
+  hold_action:
+    action: none
+  double_tap_action:
+    action: none
+
+  icon: |
+    [[[
+      const v = entity.state;
+      if (v === 'conforme') return 'mdi:fan';
+      if (v === 'ecart') return 'mdi:fan-alert';
+      return 'mdi:fan-off';
+    ]]]
+
+  state_display: |
+    [[[
+      const map = { conforme: 'Conforme', ecart: 'Écart', indisponible: 'Indisponible' };
+      return map[entity.state] || 'Indisponible';
+    ]]]
+
+  label: |
+    [[[
+      const a = entity.attributes || {};
+      const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
+      const techFR = { quiet: 'Silencieux', low: 'Faible', medium: 'Moyen', high: 'Fort', auto: 'Auto' };
+      const fr = (v) => UNAV.includes(v) ? '—' : (techFR[v] || v);
+      const cap = (s) => (s && !UNAV.includes(s)) ? (s.charAt(0).toUpperCase() + s.slice(1)) : '—';
+
+      const causeFR = {
+        none: '',
+        entrees_indisponibles: 'entrées de décision indisponibles',
+        recommandation_indisponible: 'recommandation indisponible',
+        fujitsu_non_exploitable: 'état Fujitsu non exploitable',
+        auto_fujitsu: 'Auto Fujitsu actif (doctrine : à éviter)',
+        silencieux_auto: 'silencieux automatique',
+        mode_manuel: 'mode manuel utilisateur',
+        incoherence_mapping: 'incohérence de mapping',
+        non_couvert: 'situation non couverte'
+      };
+
+      const verdict = entity.state;
+      const cause = a.cause_ecart;
+
+      let out = '';
+      out += '<b>Besoin froid :</b> ' + cap(a.niveau_besoin);
+      if (!UNAV.includes(a.intensite)) out += ' (' + a.intensite + ' °C)';
+      out += '<br>';
+      out += '<b>Recommandé :</b> ' + (UNAV.includes(a.recommande) ? '—' : a.recommande) + '<br>';
+      out += '<b>Réel :</b> ' + fr(a.reel) + '<br>';
+
+      if (verdict === 'conforme') {
+        out += '<b>Conformité :</b> réel aligné sur la recommandation';
+      } else if (verdict === 'indisponible') {
+        out += '<b>Diagnostic indisponible :</b> ' + (causeFR[cause] || '—');
+      } else {
+        out += '<b>Écart :</b> ' + (causeFR[cause] || '—');
+      }
+
+      if (a.auto_fujitsu_evite === false || a.auto_fujitsu_evite === 'false') {
+        out += '<br>⚠️ Mode Auto Fujitsu actif (doctrine Arsenal : à éviter)';
+      }
+
+      return out;
+    ]]]
+
+  styles:
+    card:
+      - background-color: |
+          [[[
+            const c = (entity.attributes || {}).couleur;
+            const map = {
+              vert: 'rgba(76, 175, 80, 0.2)',
+              bleu: 'rgba(33, 150, 243, 0.2)',
+              orange: 'rgba(255, 152, 0, 0.2)',
+              rouge: 'rgba(244, 67, 54, 0.2)',
+              indisponible: 'rgba(158, 158, 158, 0.1)'
+            };
+            return map[c] || 'rgba(158, 158, 158, 0.1)';
+          ]]]
+
+      - height: auto
+      - min-height: 56px
+
+    label:
+      - white-space: normal
+      - line-height: 17px
+      - padding-top: 6px

@@ -314,6 +314,9 @@ include:
     # Observationnel : observer ce que ferait une logique automatique
     # future (besoin → vitesse). Lecture seule, aucun pilotage.
     - sensor.clim_fan_mode_recommande
+    # ---- Diagnostic ventilation (synthèse conformité réel/recommandé) ----
+    # Observabilité dashboard : verdict + cause d'écart. Lecture seule.
+    - sensor.clim_ventilation_diagnostic
 
     # =====================================================
     #  ==== 🪟 AERATION ====
