@@ -111,7 +111,7 @@
           {% set reel = states('sensor.clim_mode_de_ventilation_local') %}
           {% set intention = states('input_select.clim_fan_mode_cible') %}
           {% set origine = states('sensor.clim_origine_ventilation') %}
-          {% set fan_modes = state_attr('climate.clim', 'fan_modes') or [] %}
+          {% set fan_modes = (state_attr('climate.clim', 'fan_modes') or []) | map('lower') | list %}
           {% set en_auto = intention in ['Auto Arsenal', 'Auto'] %}
           {% set itech = {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
                           'Fort': 'high'}.get(intention) %}
@@ -145,7 +145,7 @@
           {% set reel = states('sensor.clim_mode_de_ventilation_local') %}
           {% set intention = states('input_select.clim_fan_mode_cible') %}
           {% set origine = states('sensor.clim_origine_ventilation') %}
-          {% set fan_modes = state_attr('climate.clim', 'fan_modes') or [] %}
+          {% set fan_modes = (state_attr('climate.clim', 'fan_modes') or []) | map('lower') | list %}
           {% set en_auto = intention in ['Auto Arsenal', 'Auto'] %}
           {% set itech = {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
                           'Fort': 'high'}.get(intention) %}

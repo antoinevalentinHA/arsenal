@@ -37,7 +37,7 @@
       state: >
         {% set clim = states('climate.clim') %}
         {% set fan = state_attr('climate.clim', 'fan_mode') %}
-        {% set fan_modes = state_attr('climate.clim', 'fan_modes') or [] %}
+        {% set fan_modes = (state_attr('climate.clim', 'fan_modes') or []) | map('lower') | list %}
         {% set souhait = states('input_select.clim_fan_mode_cible') %}
         {% set auto_arsenal = souhait in ['Auto Arsenal', 'Auto'] %}
         {% set cible = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique')
@@ -48,7 +48,7 @@
           indisponible
         {% elif is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
           silencieux_auto
-        {% elif cible is none or cible not in fan_modes %}
+        {% elif cible is none or (cible | string | lower) not in fan_modes %}
           incompatible
         {% elif auto_arsenal %}
           auto_arsenal

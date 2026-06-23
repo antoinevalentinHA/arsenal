@@ -7,7 +7,8 @@
 #
 # ⚙️ Fonctionnement :
 #   - Source : state_attr('climate.clim', 'fan_mode')
-#   - Valeurs : quiet / low / medium / high / auto
+#   - Normalise la casse de l'intégration (ex. « Quiet » → quiet)
+#   - Valeurs canoniques : quiet / low / medium / high / auto
 #   - Sinon (indisponible / inconnu) → unavailable (jamais masqué)
 #
 # 🧱 Principe :
@@ -33,7 +34,7 @@
       unique_id: clim_fan_mode_local
       icon: mdi:fan
       state: >
-        {% set m = state_attr('climate.clim', 'fan_mode') %}
+        {% set m = state_attr('climate.clim', 'fan_mode') | string | lower %}
         {% if m in ['quiet', 'low', 'medium', 'high', 'auto'] %}
           {{ m }}
         {% else %}

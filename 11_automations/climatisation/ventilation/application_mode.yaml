@@ -91,13 +91,20 @@
     # « Auto Arsenal » (et la valeur héritée « Auto » par sécurité) suit la
     # recommandation technique ; les niveaux manuels mappent FR → technique.
     # Aucune branche n'émet « auto » : la voie normale ne délègue jamais à Fujitsu.
-    target: >
+    desired: >
       {{ (state_attr('sensor.clim_fan_mode_recommande', 'mode_technique')
           if states('input_select.clim_fan_mode_cible') in ['Auto Arsenal', 'Auto']
           else {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
                 'Fort': 'high'}.get(states('input_select.clim_fan_mode_cible'))) }}
-    current: "{{ state_attr('climate.clim', 'fan_mode') }}"
     fan_modes: "{{ state_attr('climate.clim', 'fan_modes') or [] }}"
+    # Résolution casse-insensible du mode canonique vers la valeur EXACTE
+    # exposée par l'intégration (ex. quiet → « Quiet »). Si absente, conserve
+    # la valeur canonique : la garde « target in fan_modes » échoue alors et
+    # l'automation s'abstient (jamais d'envoi incompatible).
+    target: >
+      {{ ((fan_modes | select('match', '(?i)^' ~ (desired | string) ~ '$') | list)
+          + [desired]) | first }}
+    current: "{{ state_attr('climate.clim', 'fan_mode') }}"
     override_actif: "{{ is_state('binary_sensor.clim_silencieux_autorise', 'on') }}"
     clim_actif: >
       {{ states('climate.clim') not in ['off', 'unknown', 'unavailable'] }}

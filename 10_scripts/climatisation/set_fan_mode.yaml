@@ -70,7 +70,7 @@ clim_set_fan_mode:
     - variables:
         target: "{{ mode }}"
         current: "{{ state_attr('climate.clim', 'fan_mode') }}"
-        mode_valid: "{{ mode in ['quiet', 'low', 'medium', 'high'] }}"
+        mode_valid: "{{ (mode | string | lower) in ['quiet', 'low', 'medium', 'high'] }}"
         clim_available: >
           {{ states('climate.clim') not in ['unknown', 'unavailable'] }}
 
