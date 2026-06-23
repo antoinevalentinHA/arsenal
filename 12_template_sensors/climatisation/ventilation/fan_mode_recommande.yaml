@@ -7,7 +7,8 @@
 # 🎯 Rôle (contrat 14_recommandation_ventilation.md) :
 #   Produire une RECOMMANDATION diagnostique de vitesse de
 #   ventilation à partir de l'intensité du besoin de froid,
-#   bornée par un frein min et plafonnée par le silencieux.
+#   planchée selon la franchise de la demande et plafonnée par le
+#   silencieux, le frein chambre froide restant une garde absolue finale.
 #   Observationnel : sert à OBSERVER ce que ferait une logique
 #   automatique future. NE PILOTE RIEN.
 #
@@ -21,18 +22,36 @@
 #   - Ne commande JAMAIS climate.clim ni switch.clim_quiet_fan ;
 #   - Ne double PAS le chemin unique de résolution (10030000000120).
 #
-# 🧮 Calcul (mono-axe besoin + garde-fous) :
-#   1. mapping(niveau besoin) → reco_brute (FR)
-#      satisfait/faible→Silencieux · moyen→Faible · eleve→Moyen · extreme→Fort
-#      ⚠️ mapping INITIAL, observationnel, à caler empiriquement (contrat 14 §5).
-#   2. frein min : si clim_seuil_extinction_cool_atteint == on → Silencieux (§6) ;
-#   3. plafond silencieux : si clim_silencieux_autorise == on → min(…, Moyen) (§7) ;
-#      plafond, pas décrément → jamais Fort en plage silencieuse.
+# 🧮 Calcul — planchers de franchise + plafond + frein (ordre EXACT) :
+#   Vitesses indexées : Silencieux=0 · Faible=1 · Moyen=2 · Fort=3.
+#   Objectif : doux quand le besoin est faible/latent ; au moins aussi
+#   efficace que l'ancien comportement dès qu'une vraie demande existe ;
+#   nuit préservée ; frein froid préservé.
+#   1. brute = mapping(niveau besoin) — INCHANGÉ :
+#      satisfait/faible→0 · moyen→1 · eleve→2 · extreme→3.
+#   2. Plancher demande franche :
+#      si clim_seuil_allumage_cool_atteint == on (max >= ON) → idx = max(idx, 1).
+#   3. Plancher demande nette :
+#      si max >= seuil_allumage_clim_applique + 0.5 ET hors silence → idx = max(idx, 2).
+#   4. Plancher demande forte :
+#      si max >= seuil_allumage_clim_applique + 1.5 ET hors silence → idx = max(idx, 3).
+#      (« +0.5 » et « +1.5 » codés en dur ; planchers Moyen/Fort neutralisés en silence.)
+#   5. Plafond silencieux :
+#      si clim_silencieux_autorise == on ET idx > 2 → idx = 2 (cap Moyen, jamais en dessous).
+#   6. Frein chambre froide (ABSOLU, prime sur tout) :
+#      si clim_seuil_extinction_cool_atteint == on → idx = 0.
+#   state = libellé FR de idx.
+#
+#   Conséquences : en plage silencieuse, les planchers Moyen et Fort sont
+#   neutralisés et la sortie est plafonnée à Moyen (sommeil préservé), sans
+#   jamais dégrader un brute existant ; le frein froid ramène à Silencieux
+#   quelles que soient les autres étapes.
 #
 # 🟢 Disponibilité (contrat 14 §4) :
 #   - niveau besoin unknown/unavailable → unavailable (jamais de vitesse défaut) ;
-#   - frein min indéterminé → calcul SANS frein, cause flaggée ;
-#   - silencieux indéterminé → calcul SANS plafond, cause flaggée.
+#   - allumage indéterminé → calcul SANS plancher Faible, cause flaggée ;
+#   - silencieux indéterminé → calcul SANS plafond, cause flaggée ;
+#   - frein min indéterminé → calcul SANS frein, cause flaggée.
 #
 # 🔤 Sortie : state FR (Silencieux/Faible/Moyen/Fort)
 #             + attribut mode_technique (quiet/low/medium/high).
@@ -57,12 +76,31 @@
         {% if brute is none %}
           unavailable
         {% else %}
+          {% set tmax = states('sensor.temperature_max_chambres') | float(none) %}
+          {% set seuil = states('sensor.seuil_allumage_clim_applique') | float(none) %}
+          {% set nette = tmax is not none and seuil is not none and tmax >= seuil + 0.5 %}
+          {% set forte = tmax is not none and seuil is not none and tmax >= seuil + 1.5 %}
+          {% set silence = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
           {% set ns = namespace(idx=brute) %}
+          {# 2. Plancher demande franche #}
+          {% if is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
+            {% set ns.idx = [ns.idx, 1] | max %}
+          {% endif %}
+          {# 3. Plancher demande nette (hors plage silencieuse) #}
+          {% if nette and not silence %}
+            {% set ns.idx = [ns.idx, 2] | max %}
+          {% endif %}
+          {# 4. Plancher demande forte (hors plage silencieuse) #}
+          {% if forte and not silence %}
+            {% set ns.idx = [ns.idx, 3] | max %}
+          {% endif %}
+          {# 5. Plafond silencieux (cap à Moyen) #}
+          {% if silence and ns.idx > 2 %}
+            {% set ns.idx = 2 %}
+          {% endif %}
+          {# 6. Frein chambre froide (ABSOLU) #}
           {% if is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
             {% set ns.idx = 0 %}
-          {% endif %}
-          {% if is_state('binary_sensor.clim_silencieux_autorise', 'on') and ns.idx > 2 %}
-            {% set ns.idx = 2 %}
           {% endif %}
           {{ fr[ns.idx] }}
         {% endif %}
@@ -78,6 +116,33 @@
           {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
                           'eleve': 2, 'extreme': 3}.get(niveau) %}
           {{ fr[brute] if brute is not none else 'indisponible' }}
+        reco_apres_plancher: >
+          {# Observabilité pure : sortie après planchers (étapes 2-3-4),
+             avant plafond silencieux et frein. #}
+          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+          {% set fr = ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
+          {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
+                          'eleve': 2, 'extreme': 3}.get(niveau) %}
+          {% if brute is none %}
+            indisponible
+          {% else %}
+            {% set tmax = states('sensor.temperature_max_chambres') | float(none) %}
+            {% set seuil = states('sensor.seuil_allumage_clim_applique') | float(none) %}
+            {% set nette = tmax is not none and seuil is not none and tmax >= seuil + 0.5 %}
+            {% set forte = tmax is not none and seuil is not none and tmax >= seuil + 1.5 %}
+            {% set silence = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
+            {% set ns = namespace(idx=brute) %}
+            {% if is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
+              {% set ns.idx = [ns.idx, 1] | max %}
+            {% endif %}
+            {% if nette and not silence %}
+              {% set ns.idx = [ns.idx, 2] | max %}
+            {% endif %}
+            {% if forte and not silence %}
+              {% set ns.idx = [ns.idx, 3] | max %}
+            {% endif %}
+            {{ fr[ns.idx] }}
+          {% endif %}
         reco_apres_frein_min: >
           {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
           {% set fr = ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
@@ -99,17 +164,30 @@
         cause_plafonnement: >
           {% set frein = states('binary_sensor.clim_seuil_extinction_cool_atteint') %}
           {% set sil = states('binary_sensor.clim_silencieux_autorise') %}
+          {% set allum = states('binary_sensor.clim_seuil_allumage_cool_atteint') %}
           {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
           {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
                           'eleve': 2, 'extreme': 3}.get(niveau) %}
+          {% set tmax = states('sensor.temperature_max_chambres') | float(none) %}
+          {% set seuil = states('sensor.seuil_allumage_clim_applique') | float(none) %}
+          {% set nette = tmax is not none and seuil is not none and tmax >= seuil + 0.5 %}
+          {% set forte = tmax is not none and seuil is not none and tmax >= seuil + 1.5 %}
           {% if frein not in ['on', 'off'] %}
             frein_min_indisponible
           {% elif sil not in ['on', 'off'] %}
             silencieux_indisponible
+          {% elif allum not in ['on', 'off'] %}
+            allumage_indisponible
           {% elif frein == 'on' %}
             frein_min_actif
           {% elif sil == 'on' and brute is not none and brute > 2 %}
             plafond_silencieux
+          {% elif sil == 'off' and forte and brute is not none and brute < 3 %}
+            plancher_fort_net
+          {% elif sil == 'off' and nette and brute is not none and brute < 2 %}
+            plancher_moyen_net
+          {% elif allum == 'on' and brute is not none and brute < 1 %}
+            plancher_demande_franche
           {% else %}
             none
           {% endif %}
