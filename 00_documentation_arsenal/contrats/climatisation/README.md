@@ -23,6 +23,7 @@
 | [`10_observabilite.md`](10_observabilite.md) | États explicatifs, robustesse, déterminisme post-redémarrage |
 | [`11_perimetre_exclu.md`](11_perimetre_exclu.md) | Ce que le système ne fait pas |
 | [`12_ventilation_intention.md`](12_ventilation_intention.md) | Ventilation (`fan_mode`) — intention persistante (Modèle B), single-writer, résolution, origine de pilotage, convergence |
+| [`13_intensite_besoin_froid.md`](13_intensite_besoin_froid.md) | Intensité du besoin de froid — couche perception (capteur numérique + ordinal), référence `seuil_extinction_clim_applique`, garde anti-gel, sans pilotage matériel |
 | [`capteurs/`](capteurs/README.md) | Documentation détaillée des capteurs implémentant les couches du système |
 
 ---

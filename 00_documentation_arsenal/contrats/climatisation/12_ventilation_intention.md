@@ -25,6 +25,13 @@ et non destructif** de cette intention.
 > avant toute implémentation. Aucun runtime n'est modifié par ce lot
 > (voir §13).
 
+> **Voir aussi.** L'**intensité graduée** du besoin de froid qui pilotera une
+> future résolution automatique de la vitesse de ventilation est spécifiée par
+> le contrat voisin
+> [`13_intensite_besoin_froid.md`](13_intensite_besoin_froid.md) (couche
+> perception, sans pilotage matériel). La présente section reste limitée au
+> `fan_mode` et à l'intention utilisateur.
+
 ---
 
 ## Rôle des entités
