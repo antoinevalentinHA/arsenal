@@ -30,7 +30,7 @@ bornée par un garde-fou de contrôlabilité et plafonnée par le silencieux.
 
 | Entité | Rôle contractuel | Nature |
 |---|---|---|
-| `sensor.clim_fan_mode_recommande` *(à créer)* | **Recommandation** de vitesse (FR), observationnelle. | Diagnostic / perception |
+| `sensor.clim_fan_mode_recommande` | **Recommandation** de vitesse (FR), observationnelle. | Diagnostic / perception |
 | `sensor.clim_intensite_besoin_froid_niveau` | **Moteur** : niveau ordinal de besoin. | Perception (contrat 13) |
 | `binary_sensor.clim_seuil_extinction_cool_atteint` | **Frein min** : pièces atteignables satisfaites. | Franchissement |
 | `binary_sensor.clim_silencieux_autorise` | **Plafond** silencieux. | Décision métier |
@@ -38,9 +38,11 @@ bornée par un garde-fou de contrôlabilité et plafonnée par le silencieux.
 | `input_select.clim_fan_mode_cible` | **Intention** utilisateur — diagnostic d'écart **uniquement**. | Intention (Modèle B) |
 | `sensor.clim_mode_de_ventilation_local` | **Réel** Fujitsu — diagnostic d'écart **uniquement**. | Perception |
 
-> **Nom d'entité à ratifier.** L'`unique_id` de la recommandation n'est pas figé
-> par ce contrat (candidat : `clim_fan_mode_recommande`). Ratification à la
-> création runtime.
+> **Nom d'entité — ratifié.** La recommandation existe désormais au runtime avec
+> l'`unique_id` `clim_fan_mode_recommande`. L'**entity_id canonique** est forcé
+> explicitement par `default_entity_id: sensor.clim_fan_mode_recommande` (idiome
+> Arsenal), afin que l'entité réelle corresponde au nom contractuel et ne dépende
+> pas de la slugification du `name`. Voir § État d'implémentation.
 
 ---
 
@@ -236,16 +238,40 @@ Aucun capteur séparé `sensor.clim_fan_mode_ecart` n'est créé dans ce lot. Le
 
 ---
 
-## 12. Runtime futur minimal
+## 12. Runtime minimal — réalisé
 
-| Fichier | Action future |
+| Fichier | Action (réalisée) |
 |---|---|
-| `12_template_sensors/climatisation/ventilation/fan_mode_recommande.yaml` | créer le capteur diagnostic |
-| `recorder.yaml` | historiser `sensor.clim_fan_mode_recommande` |
+| `12_template_sensors/climatisation/ventilation/fan_mode_recommande.yaml` | capteur diagnostic **créé** |
+| `recorder.yaml` | `sensor.clim_fan_mode_recommande` **historisé** |
 
 La résolution automatique (câblage de la recommandation au matériel via
 l'autorité `10030000000120`) reste **hors périmètre**, subordonnée à une décision
 de gouvernance auto/override ultérieure.
+
+---
+
+## 13. État d'implémentation
+
+> Sur le modèle du contrat 12 (§13). Le runtime de cette couche de recommandation
+> a été implémenté dans un lot séparé, postérieur à la présente passe
+> documentaire.
+
+- **Entité créée** : `sensor.clim_fan_mode_recommande`
+  (`12_template_sensors/climatisation/ventilation/fan_mode_recommande.yaml`),
+  `state` FR (`Silencieux` / `Faible` / `Moyen` / `Fort`) + attribut
+  `mode_technique` (`quiet` / `low` / `medium` / `high`).
+- **Entity_id canonique** forcé via
+  `default_entity_id: sensor.clim_fan_mode_recommande` (le `name` se serait sinon
+  slugifié autrement).
+- **Historisation** : enregistré dans `recorder.yaml` (section CLIMATISATION).
+- **Caractère observationnel** : recommandation diagnostique pure — aucune action,
+  aucun service, aucune écriture.
+- **Absence de pilotage** : n'écrit pas `input_select.clim_fan_mode_cible`, ne
+  commande ni `climate.clim` ni `script.clim_set_fan_mode` ; `input_select` et
+  `sensor.clim_mode_de_ventilation_local` ne servent qu'au diagnostic d'écart.
+- **Modèle B intact** : single-writer de l'intention préservé ; chemin unique de
+  résolution (`10030000000120`) non doublé.
 
 ---
 
