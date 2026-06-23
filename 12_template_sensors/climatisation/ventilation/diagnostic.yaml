@@ -1,0 +1,156 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim — Diagnostic ventilation (synthèse observabilité)
+#
+# 🎯 Rôle :
+#   Couche d'interprétation métier de l'observabilité ventilation.
+#   Synthétise UNE FOIS, côté backend, la conformité entre la
+#   recommandation Arsenal et la ventilation réelle Fujitsu, et
+#   classe la cause d'un éventuel écart. Le dashboard ne fait
+#   qu'AFFICHER cet état (aucune logique métier dans Lovelace).
+#
+# 🧱 Principe Arsenal :
+#   - Perception pure (aucune action, aucune écriture, aucun service)
+#   - Diagnostic ≠ action ; le capteur ne pilote rien
+#   - Backend décide (verdict + cause + clé couleur) ; UI observe
+#
+# 🧭 État (verdict, fini) :
+#   - conforme     : réel exploitable == recommandé (technique)
+#   - ecart        : réel exploitable ≠ recommandé
+#   - indisponible : entrées de décision ou réel non exploitables
+#
+# 🔢 cause_ecart (fini) :
+#   none / entrees_indisponibles / recommandation_indisponible /
+#   fujitsu_non_exploitable / auto_fujitsu / silencieux_auto /
+#   mode_manuel / incoherence_mapping / non_couvert
+#
+# 🎨 couleur (clé sémantique, décidée backend, R6 gris prime) :
+#   - conforme                         -> vert
+#   - ecart mode_manuel / silencieux   -> bleu  (info, non alarmant ;
+#                                         respecte contrat 12 §11 :
+#                                         pas de couleur de divergence
+#                                         souhaité/appliqué)
+#   - ecart auto_fujitsu / non_couvert -> orange (attention non bloquante)
+#   - ecart incoherence_mapping        -> rouge
+#   - indisponible                     -> indisponible (gris indispo)
+#
+# 🔌 Entrées (lecture seule) :
+#   - sensor.clim_intensite_besoin_froid_niveau (moteur — besoin)
+#   - sensor.clim_intensite_besoin_froid (contexte numérique)
+#   - sensor.clim_fan_mode_recommande (+ attributs mode_technique,
+#       cause_plafonnement)
+#   - sensor.clim_mode_de_ventilation_local (réel Fujitsu)
+#   - input_select.clim_fan_mode_cible (intention — diagnostic)
+#   - sensor.clim_origine_ventilation (origine — diagnostic)
+#   - climate.clim (attribut fan_modes — compatibilité)
+#
+# 🚫 Interdits :
+#   - Écrire input_select.clim_fan_mode_cible
+#   - Commander climate.clim / switch.clim_quiet_fan
+#   - Toute action, tout service, toute automatisation
+#
+# 📍 Entité : sensor.clim_ventilation_diagnostic
+# ==========================================================
+
+- sensor:
+    - name: "Clim ventilation diagnostic"
+      unique_id: clim_ventilation_diagnostic
+      default_entity_id: sensor.clim_ventilation_diagnostic
+
+      state: >
+        {% set unav = ['unknown', 'unavailable', 'none', ''] %}
+        {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+        {% set reco_tech = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') %}
+        {% set reel = states('sensor.clim_mode_de_ventilation_local') %}
+        {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
+        {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
+        {% if not niveau_ok or not reco_ok or reel in unav %}
+          indisponible
+        {% elif reel == reco_tech %}
+          conforme
+        {% else %}
+          ecart
+        {% endif %}
+
+      attributes:
+        niveau_besoin: >
+          {{ states('sensor.clim_intensite_besoin_froid_niveau') }}
+        intensite: >
+          {{ states('sensor.clim_intensite_besoin_froid') }}
+        recommande: >
+          {{ states('sensor.clim_fan_mode_recommande') }}
+        recommande_technique: >
+          {{ state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') }}
+        reel: >
+          {{ states('sensor.clim_mode_de_ventilation_local') }}
+        intention: >
+          {{ states('input_select.clim_fan_mode_cible') }}
+        origine_ventilation: >
+          {{ states('sensor.clim_origine_ventilation') }}
+        cause_plafonnement: >
+          {{ state_attr('sensor.clim_fan_mode_recommande', 'cause_plafonnement') }}
+        auto_fujitsu_evite: >
+          {{ states('sensor.clim_mode_de_ventilation_local') != 'auto' }}
+        entrees_disponibles: >
+          {{ states('sensor.clim_intensite_besoin_froid_niveau')
+             in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] }}
+        conforme: >
+          {{ is_state('sensor.clim_ventilation_diagnostic', 'conforme') }}
+        cause_ecart: >
+          {% set unav = ['unknown', 'unavailable', 'none', ''] %}
+          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+          {% set reco_tech = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') %}
+          {% set reel = states('sensor.clim_mode_de_ventilation_local') %}
+          {% set intention = states('input_select.clim_fan_mode_cible') %}
+          {% set origine = states('sensor.clim_origine_ventilation') %}
+          {% set fan_modes = state_attr('climate.clim', 'fan_modes') or [] %}
+          {% set itech = {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
+                          'Fort': 'high', 'Auto': 'auto'}.get(intention) %}
+          {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
+          {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
+          {% if niveau_ok and reco_ok and reel not in unav and reel == reco_tech %}
+            none
+          {% elif not niveau_ok %}
+            entrees_indisponibles
+          {% elif not reco_ok %}
+            recommandation_indisponible
+          {% elif reel in unav %}
+            fujitsu_non_exploitable
+          {% elif reel == 'auto' %}
+            auto_fujitsu
+          {% elif origine == 'silencieux_auto' %}
+            silencieux_auto
+          {% elif itech is not none and reel == itech %}
+            mode_manuel
+          {% elif reco_tech not in fan_modes %}
+            incoherence_mapping
+          {% else %}
+            non_couvert
+          {% endif %}
+        couleur: >
+          {% set unav = ['unknown', 'unavailable', 'none', ''] %}
+          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+          {% set reco_tech = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') %}
+          {% set reel = states('sensor.clim_mode_de_ventilation_local') %}
+          {% set intention = states('input_select.clim_fan_mode_cible') %}
+          {% set origine = states('sensor.clim_origine_ventilation') %}
+          {% set fan_modes = state_attr('climate.clim', 'fan_modes') or [] %}
+          {% set itech = {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
+                          'Fort': 'high', 'Auto': 'auto'}.get(intention) %}
+          {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
+          {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
+          {% if not niveau_ok or not reco_ok or reel in unav %}
+            indisponible
+          {% elif reel == reco_tech %}
+            vert
+          {% elif reel == 'auto' %}
+            orange
+          {% elif origine == 'silencieux_auto' or (itech is not none and reel == itech) %}
+            bleu
+          {% elif reco_tech not in fan_modes %}
+            rouge
+          {% else %}
+            orange
+          {% endif %}
