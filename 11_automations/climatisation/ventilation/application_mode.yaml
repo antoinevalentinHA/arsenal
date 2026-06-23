@@ -7,9 +7,12 @@
 #
 # 🎯 RÔLE
 #   Autorité unique de résolution ventilation (contrat 12_ventilation_intention).
-#   Applique au fan_mode réel le mapping de l'intention utilisateur
-#   (input_select.clim_fan_mode_cible) lorsque l'override silencieux est
-#   inactif. Restaure l'intention sur événements de convergence.
+#   Résout le mode effectif souhaité (input_select.clim_fan_mode_cible) vers le
+#   fan_mode réel lorsque l'override silencieux est inactif :
+#     - « Auto Arsenal » → suit la recommandation technique
+#       (sensor.clim_fan_mode_recommande : quiet/low/medium/high) ;
+#     - niveaux manuels → quiet/low/medium/high.
+#   N'émet JAMAIS fan_mode: auto dans la voie normale. Converge sur événements.
 #
 # 🧩 PÉRIMÈTRE
 #   - Couvre : résolution intention → mode effectif → script.clim_set_fan_mode
@@ -26,16 +29,20 @@
 #
 # 📣 DÉCLENCHEURS (convergence)
 #   - Changement d'intention (input_select.clim_fan_mode_cible)
+#   - Changement de recommandation (sensor.clim_fan_mode_recommande : Auto Arsenal)
 #   - Changement de l'autorisation silencieux (sortie de plage incluse)
 #   - Système stabilisé (input_boolean.systeme_stable → on : boot / reload)
-#   - Changement d'état de climate.clim (retour de disponibilité, reprise
-#     d'activité)
+#
+#   NB : climate.clim n'est PAS un déclencheur (effet matériel de l'action →
+#   éviterait une boucle de rétroaction). Il reste lu en variables/conditions
+#   pour l'idempotence. Réconciliation hors Arsenal au prochain événement.
 #
 # 🔗 DÉPENDANCES
-#   Lit      : input_select.clim_fan_mode_cible (intention),
+#   Lit      : input_select.clim_fan_mode_cible (mode souhaité),
+#              sensor.clim_fan_mode_recommande (attr mode_technique, Auto Arsenal),
 #              binary_sensor.clim_silencieux_autorise (override),
 #              climate.clim (fan_mode réel + fan_modes + état)
-#   Appelle  : script.clim_set_fan_mode (data.mode = mode technique mappé)
+#   Appelle  : script.clim_set_fan_mode (data.mode = mode technique résolu)
 #   Écrit    : aucun helper — N'ÉCRIT JAMAIS l'intention (single-writer)
 #
 # 🧠 AUTORITÉ
@@ -68,6 +75,9 @@
     # Intention utilisateur
     - platform: state
       entity_id: input_select.clim_fan_mode_cible
+    # Recommandation Arsenal (mode « Auto Arsenal » : suit la reco)
+    - platform: state
+      entity_id: sensor.clim_fan_mode_recommande
     # Autorisation silencieux (sortie de plage = front off)
     - platform: state
       entity_id: binary_sensor.clim_silencieux_autorise
@@ -75,17 +85,25 @@
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
-    # Retour de disponibilité / reprise d'activité de la climatisation
-    - platform: state
-      entity_id: climate.clim
 
   variables:
-    target: >
-      {{ {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
-          'Fort': 'high', 'Auto': 'auto'}.get(
-            states('input_select.clim_fan_mode_cible')) }}
-    current: "{{ state_attr('climate.clim', 'fan_mode') }}"
+    # « Auto Arsenal » (et la valeur héritée « Auto » par sécurité) suit la
+    # recommandation technique ; les niveaux manuels mappent FR → technique.
+    # Aucune branche n'émet « auto » : la voie normale ne délègue jamais à Fujitsu.
+    desired: >
+      {{ (state_attr('sensor.clim_fan_mode_recommande', 'mode_technique')
+          if states('input_select.clim_fan_mode_cible') in ['Auto Arsenal', 'Auto']
+          else {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
+                'Fort': 'high'}.get(states('input_select.clim_fan_mode_cible'))) }}
     fan_modes: "{{ state_attr('climate.clim', 'fan_modes') or [] }}"
+    # Résolution casse-insensible du mode canonique vers la valeur EXACTE
+    # exposée par l'intégration (ex. quiet → « Quiet »). Si absente, conserve
+    # la valeur canonique : la garde « target in fan_modes » échoue alors et
+    # l'automation s'abstient (jamais d'envoi incompatible).
+    target: >
+      {{ ((fan_modes | select('match', '(?i)^' ~ (desired | string) ~ '$') | list)
+          + [desired]) | first }}
+    current: "{{ state_attr('climate.clim', 'fan_mode') }}"
     override_actif: "{{ is_state('binary_sensor.clim_silencieux_autorise', 'on') }}"
     clim_actif: >
       {{ states('climate.clim') not in ['off', 'unknown', 'unavailable'] }}
@@ -103,9 +121,10 @@
     # Intention exploitable et compatible matériel (contrat §8)
     - condition: template
       value_template: "{{ target is not none and target in fan_modes }}"
-    # Écart réel ≠ cible (idempotence)
+    # Écart réel ≠ cible (idempotence, casse-insensible : le device peut
+    # renvoyer le fan_mode avec une casse différente de la cible résolue)
     - condition: template
-      value_template: "{{ current != target }}"
+      value_template: "{{ (current | string | lower) != (target | string | lower) }}"
 
   action:
     - service: script.clim_set_fan_mode

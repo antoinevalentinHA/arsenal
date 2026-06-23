@@ -120,7 +120,9 @@
         ecart_reco_intention: >
           {% set reco = states('sensor.clim_fan_mode_recommande') %}
           {% set intent = states('input_select.clim_fan_mode_cible') %}
-          {% if intent in ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
+          {% if intent in ['Auto Arsenal', 'Auto'] %}
+            aligne
+          {% elif intent in ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
             {{ 'aligne' if reco == intent else 'diverge' }}
           {% else %}
             non_comparable

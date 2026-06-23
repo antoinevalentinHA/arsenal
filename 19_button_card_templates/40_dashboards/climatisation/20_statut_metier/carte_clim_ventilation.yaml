@@ -65,7 +65,7 @@ carte_clim_ventilation:
         low:    'Faible',
         medium: 'Moyen',
         high:   'Fort',
-        auto:   'Auto'
+        auto:   'Auto Fujitsu'
       };
       return map[m] || 'Indisponible';
     ]]]

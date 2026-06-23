@@ -36,6 +36,8 @@
 #   - Lecture de la décision canonique (sensor.clim_target_mode)
 #   - Notification, helper, reprise différée
 #   - Traduction des valeurs techniques (libellés FR = carte métier)
+#   - Émettre fan_mode: auto (Auto Fujitsu) : retiré des modes autorisés ;
+#     la voie normale Arsenal ne délègue jamais la ventilation à Fujitsu
 #
 # 🏷️ STATUT
 #   Utilitaire — Arsenal (chantier ventilation clim, Lot V2)
@@ -59,7 +61,6 @@ clim_set_fan_mode:
             - low
             - medium
             - high
-            - auto
 
   sequence:
 
@@ -69,7 +70,7 @@ clim_set_fan_mode:
     - variables:
         target: "{{ mode }}"
         current: "{{ state_attr('climate.clim', 'fan_mode') }}"
-        mode_valid: "{{ mode in ['quiet', 'low', 'medium', 'high', 'auto'] }}"
+        mode_valid: "{{ (mode | string | lower) in ['quiet', 'low', 'medium', 'high'] }}"
         clim_available: >
           {{ states('climate.clim') not in ['unknown', 'unavailable'] }}
 
@@ -88,7 +89,7 @@ clim_set_fan_mode:
     - choose:
         - conditions:
             - condition: template
-              value_template: "{{ clim_available and current != target }}"
+              value_template: "{{ clim_available and (current | string | lower) != (target | string | lower) }}"
           sequence:
             - service: climate.set_fan_mode
               target:
