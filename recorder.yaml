@@ -310,6 +310,10 @@ include:
     # tout câblage. Lecture seule, aucun pilotage.
     - sensor.clim_intensite_besoin_froid
     - sensor.clim_intensite_besoin_froid_niveau
+    # ---- Recommandation diagnostique ventilation (contrat 14) ----
+    # Observationnel : observer ce que ferait une logique automatique
+    # future (besoin → vitesse). Lecture seule, aucun pilotage.
+    - sensor.clim_fan_mode_recommande
 
     # =====================================================
     #  ==== 🪟 AERATION ====

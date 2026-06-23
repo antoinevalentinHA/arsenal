@@ -1,0 +1,138 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim — Mode de ventilation recommandé (diagnostic)
+#
+# 🎯 Rôle (contrat 14_recommandation_ventilation.md) :
+#   Produire une RECOMMANDATION diagnostique de vitesse de
+#   ventilation à partir de l'intensité du besoin de froid,
+#   bornée par un frein min et plafonnée par le silencieux.
+#   Observationnel : sert à OBSERVER ce que ferait une logique
+#   automatique future. NE PILOTE RIEN.
+#
+# 🧱 Principe Arsenal :
+#   - Lecture pure (aucune action, aucune écriture, aucun service) ;
+#   - Distinct de l'intention (input_select) ET du réel (fan_mode) ;
+#   - Modèle B intact, single-writer préservé.
+#
+# 🚫 Interdits (contrat 14 §2) :
+#   - N'écrit JAMAIS input_select.clim_fan_mode_cible ;
+#   - Ne commande JAMAIS climate.clim ni switch.clim_quiet_fan ;
+#   - Ne double PAS le chemin unique de résolution (10030000000120).
+#
+# 🧮 Calcul (mono-axe besoin + garde-fous) :
+#   1. mapping(niveau besoin) → reco_brute (FR)
+#      satisfait/faible→Silencieux · moyen→Faible · eleve→Moyen · extreme→Fort
+#      ⚠️ mapping INITIAL, observationnel, à caler empiriquement (contrat 14 §5).
+#   2. frein min : si clim_seuil_extinction_cool_atteint == on → Silencieux (§6) ;
+#   3. plafond silencieux : si clim_silencieux_autorise == on → min(…, Moyen) (§7) ;
+#      plafond, pas décrément → jamais Fort en plage silencieuse.
+#
+# 🟢 Disponibilité (contrat 14 §4) :
+#   - niveau besoin unknown/unavailable → unavailable (jamais de vitesse défaut) ;
+#   - frein min indéterminé → calcul SANS frein, cause flaggée ;
+#   - silencieux indéterminé → calcul SANS plafond, cause flaggée.
+#
+# 🔤 Sortie : state FR (Silencieux/Faible/Moyen/Fort)
+#             + attribut mode_technique (quiet/low/medium/high).
+# 📍 Entité : sensor.clim_fan_mode_recommande
+# ==========================================================
+
+- sensor:
+    - name: "Clim mode de ventilation recommandé"
+      unique_id: clim_fan_mode_recommande
+      icon: mdi:fan-chevron-up
+
+      availability: >
+        {{ states('sensor.clim_intensite_besoin_froid_niveau')
+           in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] }}
+
+      state: >
+        {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+        {% set fr = ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
+        {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
+                        'eleve': 2, 'extreme': 3}.get(niveau) %}
+        {% if brute is none %}
+          unavailable
+        {% else %}
+          {% set ns = namespace(idx=brute) %}
+          {% if is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
+            {% set ns.idx = 0 %}
+          {% endif %}
+          {% if is_state('binary_sensor.clim_silencieux_autorise', 'on') and ns.idx > 2 %}
+            {% set ns.idx = 2 %}
+          {% endif %}
+          {{ fr[ns.idx] }}
+        {% endif %}
+
+      attributes:
+        niveau_besoin_lu: >
+          {{ states('sensor.clim_intensite_besoin_froid_niveau') }}
+        intensite_num: >
+          {{ states('sensor.clim_intensite_besoin_froid') }}
+        reco_brute: >
+          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+          {% set fr = ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
+          {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
+                          'eleve': 2, 'extreme': 3}.get(niveau) %}
+          {{ fr[brute] if brute is not none else 'indisponible' }}
+        reco_apres_frein_min: >
+          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+          {% set fr = ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
+          {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
+                          'eleve': 2, 'extreme': 3}.get(niveau) %}
+          {% if brute is none %}
+            indisponible
+          {% elif is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
+            Silencieux
+          {% else %}
+            {{ fr[brute] }}
+          {% endif %}
+        reco_finale: >
+          {{ states('sensor.clim_fan_mode_recommande') }}
+        mode_technique: >
+          {% set tech = {'Silencieux': 'quiet', 'Faible': 'low',
+                         'Moyen': 'medium', 'Fort': 'high'} %}
+          {{ tech.get(states('sensor.clim_fan_mode_recommande'), 'unavailable') }}
+        cause_plafonnement: >
+          {% set frein = states('binary_sensor.clim_seuil_extinction_cool_atteint') %}
+          {% set sil = states('binary_sensor.clim_silencieux_autorise') %}
+          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+          {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
+                          'eleve': 2, 'extreme': 3}.get(niveau) %}
+          {% if frein not in ['on', 'off'] %}
+            frein_min_indisponible
+          {% elif sil not in ['on', 'off'] %}
+            silencieux_indisponible
+          {% elif frein == 'on' %}
+            frein_min_actif
+          {% elif sil == 'on' and brute is not none and brute > 2 %}
+            plafond_silencieux
+          {% else %}
+            none
+          {% endif %}
+        intention_actuelle: >
+          {{ states('input_select.clim_fan_mode_cible') }}
+        ventilation_reelle: >
+          {{ states('sensor.clim_mode_de_ventilation_local') }}
+        ecart_reco_intention: >
+          {% set reco = states('sensor.clim_fan_mode_recommande') %}
+          {% set intent = states('input_select.clim_fan_mode_cible') %}
+          {% if intent in ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
+            {{ 'aligne' if reco == intent else 'diverge' }}
+          {% else %}
+            non_comparable
+          {% endif %}
+        ecart_reco_reel: >
+          {% set tech = {'Silencieux': 'quiet', 'Faible': 'low',
+                         'Moyen': 'medium', 'Fort': 'high'} %}
+          {% set reco_tech = tech.get(states('sensor.clim_fan_mode_recommande')) %}
+          {% set reel = states('sensor.clim_mode_de_ventilation_local') %}
+          {% if reco_tech is none %}
+            non_comparable
+          {% elif reel in ['quiet', 'low', 'medium', 'high'] %}
+            {{ 'aligne' if reco_tech == reel else 'diverge' }}
+          {% else %}
+            non_comparable
+          {% endif %}
