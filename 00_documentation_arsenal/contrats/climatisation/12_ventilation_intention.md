@@ -29,8 +29,10 @@ et non destructif** de cette intention.
 > future résolution automatique de la vitesse de ventilation est spécifiée par
 > le contrat voisin
 > [`13_intensite_besoin_froid.md`](13_intensite_besoin_froid.md) (couche
-> perception, sans pilotage matériel). La présente section reste limitée au
-> `fan_mode` et à l'intention utilisateur.
+> perception, sans pilotage matériel). La **recommandation diagnostique** qui en
+> dérive une vitesse — sans écrire l'intention ni piloter — est spécifiée par
+> [`14_recommandation_ventilation.md`](14_recommandation_ventilation.md). La
+> présente section reste limitée au `fan_mode` et à l'intention utilisateur.
 
 ---
 
