@@ -88,6 +88,7 @@ carte_clim_ventilation_diagnostic_xl:
         fujitsu_non_exploitable: 'état Fujitsu non exploitable',
         auto_fujitsu: 'Auto Fujitsu actif (doctrine : à éviter)',
         silencieux_auto: 'silencieux automatique',
+        recommandation_non_appliquee: 'recommandation non appliquée (réel ≠ recommandé en Auto Arsenal)',
         mode_manuel: 'mode manuel utilisateur',
         incoherence_mapping: 'incohérence de mapping',
         non_couvert: 'situation non couverte'

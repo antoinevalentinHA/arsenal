@@ -17,8 +17,9 @@
 # 🧭 Valeurs & priorité (contrat §4) :
 #   1. indisponible    — climate.clim non exploitable (prime, R6)
 #   2. silencieux_auto — override silencieux actif
-#   3. incompatible    — mapping(intention) absent de fan_modes
-#   4. intention       — cas nominal
+#   3. incompatible    — cible résolue absente de fan_modes
+#   4. auto_arsenal    — mode souhaité « Auto Arsenal » : suit la reco
+#   5. intention       — niveau manuel utilisateur
 #
 # 📍 Entité : sensor.clim_origine_ventilation
 # ==========================================================
@@ -31,21 +32,26 @@
         {% if o == 'silencieux_auto' %} mdi:volume-off
         {% elif o == 'incompatible' %} mdi:fan-alert
         {% elif o == 'indisponible' %} mdi:fan-off
+        {% elif o == 'auto_arsenal' %} mdi:fan-auto
         {% else %} mdi:fan {% endif %}
       state: >
         {% set clim = states('climate.clim') %}
         {% set fan = state_attr('climate.clim', 'fan_mode') %}
         {% set fan_modes = state_attr('climate.clim', 'fan_modes') or [] %}
         {% set souhait = states('input_select.clim_fan_mode_cible') %}
-        {% set cible = {'Silencieux': 'quiet', 'Faible': 'low',
-                        'Moyen': 'medium', 'Fort': 'high',
-                        'Auto': 'auto'}.get(souhait) %}
+        {% set auto_arsenal = souhait in ['Auto Arsenal', 'Auto'] %}
+        {% set cible = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique')
+                       if auto_arsenal
+                       else {'Silencieux': 'quiet', 'Faible': 'low',
+                             'Moyen': 'medium', 'Fort': 'high'}.get(souhait) %}
         {% if clim in ['unavailable', 'unknown'] or fan is none %}
           indisponible
         {% elif is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
           silencieux_auto
         {% elif cible is none or cible not in fan_modes %}
           incompatible
+        {% elif auto_arsenal %}
+          auto_arsenal
         {% else %}
           intention
         {% endif %}

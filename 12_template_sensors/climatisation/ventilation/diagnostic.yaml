@@ -24,17 +24,23 @@
 # 🔢 cause_ecart (fini) :
 #   none / entrees_indisponibles / recommandation_indisponible /
 #   fujitsu_non_exploitable / auto_fujitsu / silencieux_auto /
-#   mode_manuel / incoherence_mapping / non_couvert
+#   recommandation_non_appliquee / mode_manuel / incoherence_mapping /
+#   non_couvert
+#
+#   - En « Auto Arsenal », un écart réel ≠ recommandé est un écart
+#     d'APPLICATION (recommandation_non_appliquee), pas un override.
+#   - En niveau manuel, un écart face à la reco est un override utilisateur
+#     informatif (mode_manuel).
+#   - auto_fujitsu ne subsiste que comme cas résiduel/legacy (réel == auto).
 #
 # 🎨 couleur (clé sémantique, décidée backend, R6 gris prime) :
-#   - conforme                         -> vert
-#   - ecart mode_manuel / silencieux   -> bleu  (info, non alarmant ;
-#                                         respecte contrat 12 §11 :
-#                                         pas de couleur de divergence
-#                                         souhaité/appliqué)
-#   - ecart auto_fujitsu / non_couvert -> orange (attention non bloquante)
-#   - ecart incoherence_mapping        -> rouge
-#   - indisponible                     -> indisponible (gris indispo)
+#   - conforme                            -> vert
+#   - ecart mode_manuel / silencieux      -> bleu  (info, non alarmant ;
+#                                            respecte contrat 12 §11)
+#   - ecart recommandation_non_appliquee  -> orange (écart d'application)
+#   - ecart auto_fujitsu / non_couvert    -> orange (attention non bloquante)
+#   - ecart incoherence_mapping           -> rouge
+#   - indisponible                        -> indisponible (gris indispo)
 #
 # 🔌 Entrées (lecture seule) :
 #   - sensor.clim_intensite_besoin_froid_niveau (moteur — besoin)
@@ -106,8 +112,9 @@
           {% set intention = states('input_select.clim_fan_mode_cible') %}
           {% set origine = states('sensor.clim_origine_ventilation') %}
           {% set fan_modes = state_attr('climate.clim', 'fan_modes') or [] %}
+          {% set en_auto = intention in ['Auto Arsenal', 'Auto'] %}
           {% set itech = {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
-                          'Fort': 'high', 'Auto': 'auto'}.get(intention) %}
+                          'Fort': 'high'}.get(intention) %}
           {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
           {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
           {% if niveau_ok and reco_ok and reel not in unav and reel == reco_tech %}
@@ -122,6 +129,8 @@
             auto_fujitsu
           {% elif origine == 'silencieux_auto' %}
             silencieux_auto
+          {% elif en_auto %}
+            recommandation_non_appliquee
           {% elif itech is not none and reel == itech %}
             mode_manuel
           {% elif reco_tech not in fan_modes %}
@@ -137,8 +146,9 @@
           {% set intention = states('input_select.clim_fan_mode_cible') %}
           {% set origine = states('sensor.clim_origine_ventilation') %}
           {% set fan_modes = state_attr('climate.clim', 'fan_modes') or [] %}
+          {% set en_auto = intention in ['Auto Arsenal', 'Auto'] %}
           {% set itech = {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
-                          'Fort': 'high', 'Auto': 'auto'}.get(intention) %}
+                          'Fort': 'high'}.get(intention) %}
           {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
           {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
           {% if not niveau_ok or not reco_ok or reel in unav %}
@@ -147,7 +157,11 @@
             vert
           {% elif reel == 'auto' %}
             orange
-          {% elif origine == 'silencieux_auto' or (itech is not none and reel == itech) %}
+          {% elif origine == 'silencieux_auto' %}
+            bleu
+          {% elif en_auto %}
+            orange
+          {% elif itech is not none and reel == itech %}
             bleu
           {% elif reco_tech not in fan_modes %}
             rouge

@@ -9,8 +9,10 @@
 #   Commande utilisateur (helper). Ne représente PAS l'état réel
 #   (état réel = sensor.clim_mode_de_ventilation_local).
 #
-# 🔁 Mapping FR → technique (porté par les automatisations) :
-#   Silencieux→quiet · Faible→low · Moyen→medium · Fort→high · Auto→auto
+# 🔁 Sémantique du mode souhaité (résolution par 10030000000120) :
+#   Auto Arsenal → suit sensor.clim_fan_mode_recommande (quiet/low/medium/high)
+#   Silencieux→quiet · Faible→low · Moyen→medium · Fort→high
+#   « auto » Fujitsu n'est JAMAIS émis dans la voie normale Arsenal.
 #
 # ❌ Ne fait PAS :
 #   - Ne pilote PAS climate.clim directement
@@ -18,17 +20,16 @@
 #   - L'application passe par script.clim_set_fan_mode via automatisation
 #
 # 🔗 Utilisation :
-#   - Dashboard principal climatisation (sélecteur)
-#   - Automatisation d'application (UI → script)
-#   - Automatisation de synchronisation (état réel → sélecteur)
+#   - Dashboard réglages climatisation (sélecteur)
+#   - Automatisation d'application (UI / reco → script) : 10030000000120
 # ==========================================================
 
 clim_fan_mode_cible:
   name: Mode de ventilation souhaité
   options:
+    - Auto Arsenal
     - Silencieux
     - Faible
     - Moyen
     - Fort
-    - Auto
   icon: mdi:fan
