@@ -31,6 +31,8 @@
 #   - Changement d'intention (input_select.clim_fan_mode_cible)
 #   - Changement de recommandation (sensor.clim_fan_mode_recommande : Auto Arsenal)
 #   - Changement de l'autorisation silencieux (sortie de plage incluse)
+#   - Désactivation du silencieux auto (input_boolean.clim_mode_silencieux_auto_active)
+#   - Libération du quiet au niveau matériel (sensor.clim_mode_silencieux_local → off)
 #   - Système stabilisé (input_boolean.systeme_stable → on : boot / reload)
 #
 #   NB : climate.clim n'est PAS un déclencheur (effet matériel de l'action →
@@ -81,6 +83,15 @@
     # Autorisation silencieux (sortie de plage = front off)
     - platform: state
       entity_id: binary_sensor.clim_silencieux_autorise
+    # Désactivation manuelle du silencieux automatique (toggle utilisateur) :
+    # le binary_sensor dérivé peut ne pas transitionner → trigger direct requis.
+    - platform: state
+      entity_id: input_boolean.clim_mode_silencieux_auto_active
+    # Libération du quiet au niveau matériel (override levé) : re-résolution
+    # du fan_mode effectif au moment où l'appareil quitte le quiet.
+    - platform: state
+      entity_id: sensor.clim_mode_silencieux_local
+      to: "off"
     # Boot / système stabilisé (reload, redémarrage HA)
     - platform: state
       entity_id: input_boolean.systeme_stable
