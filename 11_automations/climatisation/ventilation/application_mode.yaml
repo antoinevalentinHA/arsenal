@@ -1,74 +1,111 @@
 # ==========================================================
 # 🧠 ARSENAL — AUTOMATION
-#     Climatisation — Application mode de ventilation (UI → script)
+#     Climatisation — Résolution & restauration ventilation (Modèle B)
 # ----------------------------------------------------------
 # 🆔 IDENTIFIANT
 #   "10030000000120"
 #
 # 🎯 RÔLE
-#   Appliquer le mode de ventilation choisi dans le sélecteur UI
-#   en appelant le script d'exécution dédié.
+#   Autorité unique de résolution ventilation (contrat 12_ventilation_intention).
+#   Applique au fan_mode réel le mapping de l'intention utilisateur
+#   (input_select.clim_fan_mode_cible) lorsque l'override silencieux est
+#   inactif. Restaure l'intention sur événements de convergence.
 #
 # 🧩 PÉRIMÈTRE
-#   - Couvre : passerelle input_select → script.clim_set_fan_mode
-#   - Exclut : toute décision climatique, tout pilotage direct de
-#              climate.clim, toute logique horaire ou de présence
+#   - Couvre : résolution intention → mode effectif → script.clim_set_fan_mode
+#   - Exclut : pilotage du quiet (réalisé par switch.clim_quiet_fan via
+#              l'automation silence 1003000000020), toute décision thermique,
+#              tout allumage de la climatisation
 #
 # 🔖 NATURE
-#   Application
+#   Résolution / restauration (Modèle B)
 #
 # ⚙️ MODE
-#   single — Justification : une application à la fois, refus des
-#   retriggers concurrents.
+#   single — Justification : une résolution à la fois, refus des retriggers
+#   concurrents.
 #
-# 📣 DÉCLENCHEURS
-#   Changement de input_select.clim_fan_mode_cible
+# 📣 DÉCLENCHEURS (convergence)
+#   - Changement d'intention (input_select.clim_fan_mode_cible)
+#   - Changement de l'autorisation silencieux (sortie de plage incluse)
+#   - Système stabilisé (input_boolean.systeme_stable → on : boot / reload)
+#   - Changement d'état de climate.clim (retour de disponibilité, reprise
+#     d'activité)
 #
 # 🔗 DÉPENDANCES
-#   Lit      : input_select.clim_fan_mode_cible, sensor.clim_mode_de_ventilation_local
+#   Lit      : input_select.clim_fan_mode_cible (intention),
+#              binary_sensor.clim_silencieux_autorise (override),
+#              climate.clim (fan_mode réel + fan_modes + état)
 #   Appelle  : script.clim_set_fan_mode (data.mode = mode technique mappé)
-#   Écrit    : aucun helper
+#   Écrit    : aucun helper — N'ÉCRIT JAMAIS l'intention (single-writer)
 #
 # 🧠 AUTORITÉ
-#   Applique une intention utilisateur explicite. Ne décide rien.
+#   Chemin logique unique vers le fan_mode matériel. Ne décide rien, ne
+#   réécrit jamais l'intention, ne pilote jamais le quiet.
 #
 # ♻️ IDEMPOTENCE
-#   Compatible retrigger : garde qui n'appelle le script que si le mode
-#   mappé diffère de l'état réel (anti-redondance, anti-boucle avec la
-#   synchronisation). Le script est lui-même idempotent.
+#   N'appelle le script que si le mode mappé est compatible (présent dans
+#   fan_modes) et diffère du fan_mode réel. Le script est lui-même idempotent.
 #
 # 🚫 INTERDITS
-#   - Appeler climate.set_fan_mode directement
-#   - Dupliquer la décision silencieux (clim_silencieux_autorise)
-#   - Embarquer une logique métier
+#   - Écrire input_select.clim_fan_mode_cible (intention)
+#   - Agir pendant l'override silencieux (le quiet prime)
+#   - Rallumer la climatisation
+#   - Appeler climate.set_fan_mode directement (passe par le script)
 #
 # 🏷️ STATUT
-#   Réactive — Arsenal (chantier ventilation clim, Lot V4-bis)
+#   Réactive — Arsenal (chantier ventilation clim, Modèle B)
 # ==========================================================
 
 - id: "10030000000120"
-  alias: "Clim - Application mode de ventilation (UI)"
+  alias: "Clim - Résolution & restauration ventilation"
   description: >
-    Applique le mode de ventilation choisi dans
-    input_select.clim_fan_mode_cible via script.clim_set_fan_mode.
+    Autorité unique de résolution ventilation (Modèle B). Restaure le
+    mapping de input_select.clim_fan_mode_cible sur le fan_mode réel
+    lorsque l'override silencieux est inactif. N'écrit jamais l'intention.
   mode: single
 
   trigger:
+    # Intention utilisateur
     - platform: state
       entity_id: input_select.clim_fan_mode_cible
+    # Autorisation silencieux (sortie de plage = front off)
+    - platform: state
+      entity_id: binary_sensor.clim_silencieux_autorise
+    # Boot / système stabilisé (reload, redémarrage HA)
+    - platform: state
+      entity_id: input_boolean.systeme_stable
+      to: "on"
+    # Retour de disponibilité / reprise d'activité de la climatisation
+    - platform: state
+      entity_id: climate.clim
 
   variables:
     target: >
       {{ {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
           'Fort': 'high', 'Auto': 'auto'}.get(
             states('input_select.clim_fan_mode_cible')) }}
-    current: "{{ states('sensor.clim_mode_de_ventilation_local') }}"
+    current: "{{ state_attr('climate.clim', 'fan_mode') }}"
+    fan_modes: "{{ state_attr('climate.clim', 'fan_modes') or [] }}"
+    override_actif: "{{ is_state('binary_sensor.clim_silencieux_autorise', 'on') }}"
+    clim_actif: >
+      {{ states('climate.clim') not in ['off', 'unknown', 'unavailable'] }}
 
   condition:
-    # N'agit que si le choix utilisateur diffère de l'état réel
-    # (anti-redondance + anti-boucle avec la synchronisation).
+    # Système stable (anti-rejeu au boot avant stabilisation)
     - condition: template
-      value_template: "{{ target is not none and target != current }}"
+      value_template: "{{ is_state('input_boolean.systeme_stable', 'on') }}"
+    # Override OFF : la restauration n'agit jamais pendant le silencieux
+    - condition: template
+      value_template: "{{ not override_actif }}"
+    # Climatisation active : l'intention ne rallume jamais la clim (contrat §7)
+    - condition: template
+      value_template: "{{ clim_actif }}"
+    # Intention exploitable et compatible matériel (contrat §8)
+    - condition: template
+      value_template: "{{ target is not none and target in fan_modes }}"
+    # Écart réel ≠ cible (idempotence)
+    - condition: template
+      value_template: "{{ current != target }}"
 
   action:
     - service: script.clim_set_fan_mode

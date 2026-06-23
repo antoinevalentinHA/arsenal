@@ -30,7 +30,7 @@
 # 🔗 DEPENDANCES
 #     - entity : sensor.clim_mode_de_ventilation_local (fan_mode réel)
 #     - helpers externes :
-#         - binary_sensor.clim_silencieux_autorise (reprise silencieux auto)
+#         - sensor.clim_origine_ventilation (origine de pilotage — label)
 #         - input_select.clim_fan_mode_cible (mode souhaité, libellés FR)
 #
 # ⚠️ CONTRAINTES
@@ -72,13 +72,18 @@ carte_clim_ventilation:
 
   label: |
     [[[
-      // Reprise du silencieux automatique : prime sur l'affichage du souhait
-      if (states['binary_sensor.clim_silencieux_autorise']?.state === 'on')
-        return 'Silencieux auto actif';
+      // Le label n'affiche que l'information NON tautologique, portée par
+      // l'origine de pilotage (contrat 12_ventilation_intention §10/§12).
+      const origine = states['sensor.clim_origine_ventilation']?.state;
 
-      const souhaite = states['input_select.clim_fan_mode_cible']?.state;
-      const UNAV = ['unavailable', 'unknown', 'none', undefined, null, ''];
-      return 'Souhaité : ' + (UNAV.includes(souhaite) ? '-' : souhaite);
+      if (origine === 'silencieux_auto') {
+        const intent = states['input_select.clim_fan_mode_cible']?.state;
+        const UNAV = ['unavailable', 'unknown', 'none', undefined, null, ''];
+        return 'Silencieux auto · retour ' + (UNAV.includes(intent) ? '-' : intent);
+      }
+      if (origine === 'incompatible') return 'Mode souhaité non disponible';
+      // intention (nominal) / indisponible : aucun libellé redondant
+      return '';
     ]]]
 
   state:

@@ -122,6 +122,12 @@ confondus :
 **Objectif :** éliminer les doubles commandes, les courses, les boucles et
 les comportements fantômes.
 
+**Implémentation :** l'autorité de résolution est l'automation
+`10030000000120`. Le `quiet` de l'override reste réalisé par
+`switch.clim_quiet_fan` (automation silence `1003000000020`) — actionneur
+distinct de `climate.set_fan_mode`, conformément à la liste des deux
+actionneurs (§ Rôle des entités).
+
 ---
 
 ## 4. Origine de pilotage ventilation
@@ -169,6 +175,11 @@ Elle DOIT être :
 Cet ordre est **conservé** par rapport à la recommandation initiale : il
 est cohérent avec R6 et avec le principe « override = autorité temporaire ».
 Aucune réorganisation n'est justifiée.
+
+**Entité d'implémentation :** `sensor.clim_origine_ventilation`
+(`12_template_sensors/climatisation/ventilation/origine.yaml`) — capteur
+template, perception pure, valeurs `indisponible` / `silencieux_auto` /
+`incompatible` / `intention`.
 
 ---
 
@@ -333,32 +344,28 @@ ventilation :
 
 ---
 
-## 13. Sort de la synchronisation actuelle & périmètre exclu de ce lot
+## 13. État d'implémentation (Modèle B)
 
-### Synchronisation actuelle
+### Synchronisation réel → intention — supprimée
 
-L'automatisation actuelle de synchronisation du **réel → intention**
+L'automatisation de synchronisation du **réel → intention**
 (`sensor.clim_mode_de_ventilation_local` → `input_select.clim_fan_mode_cible`)
-est **incompatible** avec le Modèle B : elle viole le single-writer (§1)
-en réécrivant l'intention depuis la perception.
+violait le single-writer (§1). Elle est **supprimée**
+(`11_automations/climatisation/ventilation/synchronisation_etat.yaml`,
+ex-ID `10030000000121`, retiré) : plus aucune perception n'écrit l'intention.
 
-Décision validée : lors du **chantier d'implémentation**, elle DEVRA être
-**supprimée ou neutralisée** et n'aura plus aucun **droit d'écriture** sur
-l'intention. **Dans ce lot documentaire, elle n'est pas modifiée.**
+### Implémenté par le chantier Modèle B
 
-### Hors périmètre de cette passe documentaire
+- résolution + restauration : automation `10030000000120`
+  (`application_mode.yaml`), réaffectée en autorité unique vers
+  `script.clim_set_fan_mode` (§2, §3, §5, §6) ;
+- origine de pilotage : `sensor.clim_origine_ventilation`
+  (`origine.yaml`, §4) ;
+- UI : `carte_clim_ventilation` consomme l'origine et n'affiche plus le
+  « Souhaité : X » tautologique (§10).
 
-Sont **explicitement exclus** de ce lot (traités dans un chantier
-ultérieur) :
+### Encore hors périmètre
 
-- modification des automatisations ;
-- suppression effective de l'automatisation de synchronisation ;
-- création effective de capteurs (dont l'origine de pilotage) ;
-- modification de la carte `carte_clim_ventilation` ;
-- correction de couleur ;
-- suppression du template orphelin `carte_clim_fan_mode` ;
-- tout redesign Lovelace.
-
-Ce contrat **précède** l'implémentation : il fournit la gestion de
-l'intention, la restauration, l'origine, la convergence et l'autorité de
-résolution, afin qu'aucun chantier futur n'ait à les **réinventer**.
+- suppression du template orphelin `carte_clim_fan_mode` (carte action V3,
+  non consommée par le dashboard principal) ;
+- tout redesign Lovelace supplémentaire.
