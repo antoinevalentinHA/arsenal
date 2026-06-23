@@ -89,7 +89,7 @@ clim_set_fan_mode:
     - choose:
         - conditions:
             - condition: template
-              value_template: "{{ clim_available and current != target }}"
+              value_template: "{{ clim_available and (current | string | lower) != (target | string | lower) }}"
           sequence:
             - service: climate.set_fan_mode
               target:

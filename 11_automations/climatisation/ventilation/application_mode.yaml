@@ -32,8 +32,10 @@
 #   - Changement de recommandation (sensor.clim_fan_mode_recommande : Auto Arsenal)
 #   - Changement de l'autorisation silencieux (sortie de plage incluse)
 #   - Système stabilisé (input_boolean.systeme_stable → on : boot / reload)
-#   - Changement d'état de climate.clim (retour de disponibilité, reprise
-#     d'activité)
+#
+#   NB : climate.clim n'est PAS un déclencheur (effet matériel de l'action →
+#   éviterait une boucle de rétroaction). Il reste lu en variables/conditions
+#   pour l'idempotence. Réconciliation hors Arsenal au prochain événement.
 #
 # 🔗 DÉPENDANCES
 #   Lit      : input_select.clim_fan_mode_cible (mode souhaité),
@@ -83,9 +85,6 @@
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
-    # Retour de disponibilité / reprise d'activité de la climatisation
-    - platform: state
-      entity_id: climate.clim
 
   variables:
     # « Auto Arsenal » (et la valeur héritée « Auto » par sécurité) suit la
@@ -122,9 +121,10 @@
     # Intention exploitable et compatible matériel (contrat §8)
     - condition: template
       value_template: "{{ target is not none and target in fan_modes }}"
-    # Écart réel ≠ cible (idempotence)
+    # Écart réel ≠ cible (idempotence, casse-insensible : le device peut
+    # renvoyer le fan_mode avec une casse différente de la cible résolue)
     - condition: template
-      value_template: "{{ current != target }}"
+      value_template: "{{ (current | string | lower) != (target | string | lower) }}"
 
   action:
     - service: script.clim_set_fan_mode
