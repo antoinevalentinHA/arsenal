@@ -206,6 +206,17 @@ views:
 
           - type: custom:button-card
             template: section_header
+            name: 💨 Ventilation
+
+          - type: tile
+            entity: input_select.clim_fan_mode_cible
+            name: Mode souhaité
+            features_position: bottom
+            features:
+              - type: select-options
+
+          - type: custom:button-card
+            template: section_header
             name: 🤫 Mode silencieux
 
           - type: tile
@@ -223,6 +234,10 @@ views:
               - type: tile
                 entity: input_datetime.clim_heure_silencieux_off
                 name: à
+
+          - type: tile
+            entity: switch.clim_outdoor_unit_low_noise
+            name: Réduire bruit extérieur
 
           - type: custom:button-card
             template: section_header

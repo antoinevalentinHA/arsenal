@@ -37,36 +37,9 @@ views:
               - type: custom:button-card
                 template: carte_clim_synthese
 
-              # --------------------------------------------------
-              # 💨 Ventilation — état réel + sélecteur (passerelle script)
-              # --------------------------------------------------
+              # Mode de ventilation réellement appliqué (statut passif)
               - type: custom:button-card
-                template: section_header
-                name: 💨 Ventilation
-
-              - type: markdown
-                content: >
-                  **Mode actuel :** {{ {'quiet': 'Silencieux', 'low': 'Faible',
-                  'medium': 'Moyen', 'high': 'Fort', 'auto':
-                  'Auto'}.get(states('sensor.clim_mode_de_ventilation_local'),
-                  'Indisponible') }}
-
-              - type: entities
-                entities:
-                  - entity: input_select.clim_fan_mode_cible
-                    name: Mode souhaité
-
-              - type: markdown
-                content: >
-                  ℹ️ Le silencieux automatique peut reprendre la main sur
-                  Silencieux lorsqu'il est actif.
-
-              # Bruit extérieur (actionneur conservé — lot dédié ultérieur)
-              - type: custom:button-card
-                template: socle_toggle_compact_68
-                entity: switch.clim_outdoor_unit_low_noise
-                name: Réduire bruit extérieur
-                icon: mdi:volume-off
+                template: carte_clim_ventilation
 
           # ==================================================
           # 🧠 DÉCISION
