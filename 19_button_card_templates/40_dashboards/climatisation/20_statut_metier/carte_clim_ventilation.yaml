@@ -1,0 +1,98 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Climatisation — Mode de ventilation appliqué (statut passif)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Afficher, en lecture seule, le mode de ventilation réellement
+#     appliqué par la climatisation (fan_mode), accompagné du contexte
+#     utile (souhait utilisateur ou reprise du silencieux automatique).
+#     Carte de supervision — sœur visuelle de carte_clim_synthese.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status_label_xl
+#     - UI uniquement (aucune décision, aucune action)
+#     - Lecture directe de l'état réel exposé par le backend
+#
+# 🎨 SEMANTIQUE (palette Arsenal — 02_palette.md)
+#     Carte volontairement SOBRE : la ventilation ne porte aucun jugement
+#     métier (OK/KO/WARN), donc aucune couleur sémantique n'est attribuée
+#     aux modes. Aucune logique de divergence colorée souhaité/réel.
+#     - état exploitable  -> ⚪ gris neutre (état volontairement neutre)
+#     - unknown / unavailable -> ⚪ gris indisponibilité (prime sur tout, R6)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor.clim_mode_de_ventilation_local (fan_mode réel)
+#     - helpers externes :
+#         - binary_sensor.clim_silencieux_autorise (reprise silencieux auto)
+#         - input_select.clim_fan_mode_cible (mode souhaité, libellés FR)
+#
+# ⚠️ CONTRAINTES
+#     - Aucune logique métier locale : restitution d'un état déjà calculé
+#     - Toutes les actions désactivées (carte passive)
+#     - Ne pilote rien et ne décide rien
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: carte_clim_ventilation
+#
+# ==========================================================
+
+carte_clim_ventilation:
+  template: socle_status_label_xl
+
+  entity: sensor.clim_mode_de_ventilation_local
+
+  icon: |
+    [[[
+      const m = (entity.state || '').toLowerCase();
+      if (['unavailable', 'unknown', 'none', ''].includes(m)) return 'mdi:fan-off';
+      if (m === 'quiet') return 'mdi:volume-off';
+      return 'mdi:fan';
+    ]]]
+
+  state_display: |
+    [[[
+      const m = (entity.state || '').toLowerCase();
+      const map = {
+        quiet:  'Silencieux',
+        low:    'Faible',
+        medium: 'Moyen',
+        high:   'Fort',
+        auto:   'Auto'
+      };
+      return map[m] || 'Indisponible';
+    ]]]
+
+  label: |
+    [[[
+      // Reprise du silencieux automatique : prime sur l'affichage du souhait
+      if (states['binary_sensor.clim_silencieux_autorise']?.state === 'on')
+        return 'Silencieux auto actif';
+
+      const souhaite = states['input_select.clim_fan_mode_cible']?.state;
+      const UNAV = ['unavailable', 'unknown', 'none', undefined, null, ''];
+      return 'Souhaité : ' + (UNAV.includes(souhaite) ? '-' : souhaite);
+    ]]]
+
+  state:
+    # ⚪ Indisponibilité — gris indispo canon (prime sur tout, R6)
+    - operator: template
+      value: |
+        [[[
+          const m = (entity.state || '').toLowerCase();
+          return ['unavailable', 'unknown', 'none', ''].includes(m);
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.1)
+
+    # ⚪ Défaut — gris neutre sobre (aucune sémantique de mode)
+    - operator: default
+      styles:
+        card:
+          - background-color: rgba(158,158,158,0.2)
