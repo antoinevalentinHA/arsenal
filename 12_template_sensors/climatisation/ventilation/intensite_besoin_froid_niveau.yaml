@@ -1,0 +1,108 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim — Intensité du besoin de froid (niveau ordinal)
+#
+# 🎯 Rôle (contrat 13_intensite_besoin_froid.md §5) :
+#   Traduire l'intensité numérique en niveau ordinal de besoin :
+#   satisfait / faible / moyen / eleve / extreme. Perception pure.
+#
+# 🧱 Principe Arsenal :
+#   - Lecture pure (aucune action, aucun pilotage, aucune écriture) ;
+#   - Mono-axe strict : ne lit QUE sensor.clim_intensite_besoin_froid ;
+#   - Disponibilité HÉRITÉE du capteur numérique (unavailable si lui-même
+#     indisponible).
+#
+# 🚫 Non-mapping (contrat 13 §5.4) :
+#   Les 4 niveaux actifs NE constituent PAS un mapping obligatoire vers les
+#   vitesses Silencieux/Faible/Moyen/Fort. La résolution est une couche
+#   séparée, hors périmètre de ce capteur.
+#
+# 🔁 Stabilité de bande (contrat 13 §5.3) :
+#   Hystérésis par seuils montants ≠ descendants, avec maintien du niveau
+#   courant (lecture de this.state) dans la bande morte.
+#
+#   ⚠️ VALEURS INITIALES À OBSERVER — NON un calibrage définitif.
+#   Bandes (déficit °C) et marges choisies sobrement pour démarrer
+#   l'observation historique ; à recalibrer après lecture du recorder.
+#     • satisfait : déficit nul (x = 0) ;
+#     • faible    : montée x ≥ 0.3 / descente x < 0.1 ;
+#     • moyen     : montée x ≥ 1.0 / descente x < 0.7 ;
+#     • eleve     : montée x ≥ 2.0 / descente x < 1.7 ;
+#     • extreme   : montée x ≥ 3.0 / descente x < 2.7.
+#   (marge d'hystérésis ≈ 0.3 °C ; valeurs provisoires.)
+#
+# 📍 Entité : sensor.clim_intensite_besoin_froid_niveau
+# ==========================================================
+
+- sensor:
+    - name: "Clim intensité besoin froid (niveau)"
+      unique_id: clim_intensite_besoin_froid_niveau
+      icon: mdi:gauge
+
+      availability: >
+        {{ states('sensor.clim_intensite_besoin_froid') | float(none) is not none }}
+
+      state: >
+        {% set x = states('sensor.clim_intensite_besoin_froid') | float(none) %}
+        {% if x is none %}
+          unavailable
+        {% else %}
+          {% set levels = ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
+          {% set ups   = [0.3, 1.0, 2.0, 3.0] %}
+          {% set downs = [0.1, 0.7, 1.7, 2.7] %}
+          {% set prev = this.state %}
+          {% set pidx = levels.index(prev) if prev in levels else 0 %}
+          {% set ns = namespace(idx=pidx) %}
+          {% for i in range(1, 5) %}
+            {% if x >= ups[i - 1] and i > ns.idx %}{% set ns.idx = i %}{% endif %}
+          {% endfor %}
+          {% for i in range(4, 0, -1) %}
+            {% if ns.idx >= i and x < downs[i - 1] %}{% set ns.idx = i - 1 %}{% endif %}
+          {% endfor %}
+          {{ levels[ns.idx] }}
+        {% endif %}
+
+      attributes:
+        intensite_num: >
+          {{ states('sensor.clim_intensite_besoin_froid') }}
+        niveau_brut_sans_hysteresis: >
+          {% set x = states('sensor.clim_intensite_besoin_froid') | float(none) %}
+          {% if x is none %}
+            indisponible
+          {% elif x <= 0 %}
+            satisfait
+          {% elif x < 1.0 %}
+            faible
+          {% elif x < 2.0 %}
+            moyen
+          {% elif x < 3.0 %}
+            eleve
+          {% else %}
+            extreme
+          {% endif %}
+        en_maintien: >
+          {% set x = states('sensor.clim_intensite_besoin_froid') | float(none) %}
+          {% if x is none %}
+            false
+          {% else %}
+            {% set raw = 'satisfait' if x <= 0 else ('faible' if x < 1.0 else ('moyen' if x < 2.0 else ('eleve' if x < 3.0 else 'extreme'))) %}
+            {% set levels = ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
+            {% set ups   = [0.3, 1.0, 2.0, 3.0] %}
+            {% set downs = [0.1, 0.7, 1.7, 2.7] %}
+            {% set prev = this.state %}
+            {% set pidx = levels.index(prev) if prev in levels else 0 %}
+            {% set ns = namespace(idx=pidx) %}
+            {% for i in range(1, 5) %}
+              {% if x >= ups[i - 1] and i > ns.idx %}{% set ns.idx = i %}{% endif %}
+            {% endfor %}
+            {% for i in range(4, 0, -1) %}
+              {% if ns.idx >= i and x < downs[i - 1] %}{% set ns.idx = i - 1 %}{% endif %}
+            {% endfor %}
+            {{ levels[ns.idx] != raw }}
+          {% endif %}
+        contexte_seuil: >
+          {{ state_attr('sensor.clim_intensite_besoin_froid', 'contexte_seuil') }}
+        cause: >
+          {{ state_attr('sensor.clim_intensite_besoin_froid', 'cause') }}

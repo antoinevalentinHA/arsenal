@@ -1,0 +1,105 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR (CLIM)
+# ----------------------------------------------------------
+# 📛 Nom :
+#   Clim — Intensité du besoin de froid (numérique)
+#
+# 🎯 Rôle (contrat 13_intensite_besoin_froid.md) :
+#   Quantifier l'intensité brute du besoin de froid, en °C, comme
+#   l'écart de la chambre la plus chaude au plancher de satisfaction
+#   opérationnel (seuil d'extinction COOL appliqué). Perception pure.
+#
+# 🧮 Formule :
+#   max(0, temperature_max_chambres − seuil_extinction_clim_applique)
+#   - état planché à 0 (0 = déficit nul) ;
+#   - écart signé réel exposé en attribut `ecart_signe`.
+#
+# 🧱 Principe Arsenal :
+#   - Lecture pure (aucune action, aucune décision, aucune écriture) ;
+#   - Mono-axe : ne lit QUE max chambres + seuil OFF appliqué.
+#
+# 🚫 Exclusions (contrat 13 §1.1/§1.2) :
+#   - sensor.consigne_clim_appliquee EXCLU (consigne machine/actionneur) ;
+#   - seuils ON/OFF non recalculés, non modifiés.
+#
+# 🔗 C1 (couplage assumé) :
+#   La référence est sensor.seuil_extinction_clim_applique : toute
+#   modification du seuil OFF modifie aussi cette intensité.
+# 🔗 C2 (contextualisation assumée) :
+#   Le seuil OFF est présence/nuit/absence-dépendant → la nuit (seuil OFF
+#   plus haut) baisse mécaniquement l'intensité. Voulu.
+#
+# 🧊 Garde anti-gel (contrat 13 §4.3) :
+#   La disponibilité N'EST JAMAIS dérivée seulement de
+#   temperature_max_chambres (qui gèle sa dernière valeur numérique si
+#   toutes les façades tombent). Elle s'appuie sur la FRAÎCHEUR des façades.
+#   Disponible si : seuil OFF numérique ET ≥1 façade chambre numérique ET
+#   temperature_max_chambres numérique. Sinon → unavailable (jamais 0,
+#   jamais hold).
+#
+# 📊 Type : Template Sensor — unité °C, state_class measurement.
+#   Pas de device_class (écart, non température absolue).
+# 📍 Entité : sensor.clim_intensite_besoin_froid
+# ==========================================================
+
+- sensor:
+    - name: "Clim intensité besoin froid"
+      unique_id: clim_intensite_besoin_froid
+      unit_of_measurement: "°C"
+      state_class: measurement
+      icon: mdi:snowflake-thermometer
+
+      availability: >
+        {% set seuil = states('sensor.seuil_extinction_clim_applique') | float(none) %}
+        {% set maxc  = states('sensor.temperature_max_chambres') | float(none) %}
+        {% set fa = states('sensor.temperature_chambre_arnaud')   | float(none) %}
+        {% set fm = states('sensor.temperature_chambre_matthieu') | float(none) %}
+        {% set fp = states('sensor.temperature_chambre_parents')  | float(none) %}
+        {% set facade_ok = fa is not none or fm is not none or fp is not none %}
+        {{ seuil is not none and maxc is not none and facade_ok }}
+
+      state: >
+        {% set maxc  = states('sensor.temperature_max_chambres') | float(none) %}
+        {% set seuil = states('sensor.seuil_extinction_clim_applique') | float(none) %}
+        {% if maxc is none or seuil is none %}
+          unavailable
+        {% else %}
+          {{ [0, (maxc - seuil)] | max | round(2) }}
+        {% endif %}
+
+      attributes:
+        ecart_signe: >
+          {% set maxc  = states('sensor.temperature_max_chambres') | float(none) %}
+          {% set seuil = states('sensor.seuil_extinction_clim_applique') | float(none) %}
+          {{ (maxc - seuil) | round(2) if (maxc is not none and seuil is not none) else 'indisponible' }}
+        max_chambres_utilise: >
+          {{ states('sensor.temperature_max_chambres') }}
+        seuil_off_utilise: >
+          {{ states('sensor.seuil_extinction_clim_applique') }}
+        chambre_la_plus_chaude: >
+          {{ state_attr('sensor.temperature_max_chambres', 'chambre_la_plus_chaude') }}
+        contexte_seuil: >
+          {{ state_attr('sensor.seuil_extinction_clim_applique', 'mode_actif') }}
+        facades_numeriques: >
+          {% set fa = states('sensor.temperature_chambre_arnaud')   | float(none) %}
+          {% set fm = states('sensor.temperature_chambre_matthieu') | float(none) %}
+          {% set fp = states('sensor.temperature_chambre_parents')  | float(none) %}
+          {{ [fa is not none, fm is not none, fp is not none] | select | list | count }}
+        cause: >
+          {% set seuil = states('sensor.seuil_extinction_clim_applique') | float(none) %}
+          {% set maxc  = states('sensor.temperature_max_chambres') | float(none) %}
+          {% set fa = states('sensor.temperature_chambre_arnaud')   | float(none) %}
+          {% set fm = states('sensor.temperature_chambre_matthieu') | float(none) %}
+          {% set fp = states('sensor.temperature_chambre_parents')  | float(none) %}
+          {% set facade_ok = fa is not none or fm is not none or fp is not none %}
+          {% if seuil is none %}
+            seuil_indisponible
+          {% elif not facade_ok %}
+            gel_max_facades_indisponibles
+          {% elif maxc is none %}
+            max_transitoire
+          {% else %}
+            none
+          {% endif %}
+        min_chambres_observe: >
+          {{ states('sensor.temperature_min_chambres') }}
