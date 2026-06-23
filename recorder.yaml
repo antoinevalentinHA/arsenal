@@ -305,6 +305,11 @@ include:
     - binary_sensor.autorisation_clim_dry
     - binary_sensor.autorisation_clim_heat
     - binary_sensor.clim_blocage_horaire_reel
+    # ---- Intensité du besoin de froid (couche perception, contrat 13) ----
+    # Observationnel : caler les bandes et vérifier l'effet nuit (C2) avant
+    # tout câblage. Lecture seule, aucun pilotage.
+    - sensor.clim_intensite_besoin_froid
+    - sensor.clim_intensite_besoin_froid_niveau
 
     # =====================================================
     #  ==== 🪟 AERATION ====
