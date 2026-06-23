@@ -48,7 +48,7 @@ carte_clim_fan_mode:
 
   name: >
     [[[
-      const m = {quiet: 'Silencieux', low: 'Faible', medium: 'Moyen', high: 'Fort', auto: 'Auto'};
+      const m = {quiet: 'Silencieux', low: 'Faible', medium: 'Moyen', high: 'Fort', auto: 'Auto Fujitsu'};
       return m[variables.mode] || variables.mode;
     ]]]
 

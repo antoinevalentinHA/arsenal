@@ -77,7 +77,7 @@ carte_clim_ventilation_diagnostic_xl:
     [[[
       const a = entity.attributes || {};
       const UNAV = ['unknown', 'unavailable', 'none', '', undefined, null];
-      const techFR = { quiet: 'Silencieux', low: 'Faible', medium: 'Moyen', high: 'Fort', auto: 'Auto' };
+      const techFR = { quiet: 'Silencieux', low: 'Faible', medium: 'Moyen', high: 'Fort', auto: 'Auto Fujitsu' };
       const fr = (v) => UNAV.includes(v) ? '—' : (techFR[v] || v);
       const cap = (s) => (s && !UNAV.includes(s)) ? (s.charAt(0).toUpperCase() + s.slice(1)) : '—';
 
