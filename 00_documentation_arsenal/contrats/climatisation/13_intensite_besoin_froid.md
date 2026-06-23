@@ -43,14 +43,13 @@ d'allumer, d'éteindre ou de changer le mode de la climatisation.
 | `sensor.temperature_max_chambres` | **Opérande de déficit** : porte la température de la chambre la plus chaude. | Perception (agrégat) |
 | `sensor.seuil_extinction_clim_applique` | **Référence opérationnelle** de satisfaction froid (voir §1). | Décision d'arrêt / référence |
 | `sensor.temperature_chambre_arnaud` · `_matthieu` · `_parents` | **Garde anti-gel** : fraîcheur des sources (disponibilité uniquement). | Perception (façades) |
-| Capteur numérique d'intensité *(à créer)* | **Intensité brute** en °C, plancher 0. | Perception pure |
-| Capteur ordinal d'intensité *(à créer)* | **Niveau** de besoin (5 états). | Perception pure |
+| `sensor.clim_intensite_besoin_froid` | **Intensité brute** en °C, plancher 0. | Perception pure |
+| `sensor.clim_intensite_besoin_froid_niveau` | **Niveau** de besoin (5 états). | Perception pure |
 
-> **Noms d'entités à ratifier.** Les `unique_id` des deux nouveaux capteurs ne
-> sont pas figés par ce contrat (candidats : `clim_intensite_besoin_froid` pour
-> le numérique, `clim_intensite_besoin_froid_niveau` pour l'ordinal). La
-> ratification a lieu à la création runtime, sans le radical `consigne`
-> (réservé, côté clim, à la consigne machine).
+> **Noms d'entités — ratifiés.** Les deux capteurs existent désormais au runtime
+> avec les `unique_id` `clim_intensite_besoin_froid` (numérique) et
+> `clim_intensite_besoin_froid_niveau` (ordinal), sans le radical `consigne`
+> (réservé, côté clim, à la consigne machine). Voir § État d'implémentation.
 
 ---
 
@@ -244,9 +243,16 @@ câblage vers la ventilation réelle.
 
 ---
 
-## 8. Hors périmètre (explicite)
+## 8. Hors périmètre du lot documentaire d'origine
 
-Le présent lot est **strictement documentaire**. Sont **hors périmètre** :
+> Cette section décrit le périmètre du **lot documentaire initial** (rédaction du
+> contrat). Le **runtime a depuis été implémenté** dans un lot séparé — voir
+> § 9 État d'implémentation. Les exclusions ci-dessous sont la **trace** de ce
+> que ce lot documentaire ne faisait pas ; elles ne décrivent **pas** l'état
+> actuel du système (les capteurs existent et `recorder.yaml` les historise).
+
+Le lot documentaire d'origine était **strictement documentaire**. Étaient **hors
+de son périmètre** :
 
 - **aucun pilotage matériel** dans cette phase ;
 - **aucune résolution ventilation** (mapping intensité → vitesse, garde-fou par
@@ -260,6 +266,28 @@ Le présent lot est **strictement documentaire**. Sont **hors périmètre** :
   `clim_seuil_extinction_*`) ;
 - **aucune modification** de la consigne machine (`clim_consigne_presence` /
   `_absence`, `sensor.consigne_clim_appliquee`).
+
+---
+
+## 9. État d'implémentation
+
+> Sur le modèle du contrat 12 (§13). Le runtime de cette couche perception a été
+> implémenté dans un lot séparé, postérieur à la présente passe documentaire.
+
+- **Entités créées** (template sensors, sous
+  `12_template_sensors/climatisation/ventilation/`) :
+  - `sensor.clim_intensite_besoin_froid` — numérique, °C, `state_class:
+    measurement`, **sans** `device_class` (écart, non température absolue) ;
+  - `sensor.clim_intensite_besoin_froid_niveau` — ordinal
+    (`satisfait` / `faible` / `moyen` / `eleve` / `extreme`).
+- **Historisation** : les deux capteurs sont enregistrés dans `recorder.yaml`
+  (section CLIMATISATION) pour l'observation et le calage empirique des bandes.
+- **Caractère observationnel** : perception pure — aucune action, aucune
+  écriture, aucun service.
+- **Absence de pilotage** : ne commandent ni `climate.clim` ni aucun actionneur ;
+  n'écrivent pas l'intention.
+- **Modèle B intact** : le single-writer de l'intention reste préservé ; aucun
+  chemin de pilotage n'est introduit.
 
 ---
 
