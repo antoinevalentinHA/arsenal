@@ -19,10 +19,12 @@
 #     - Lecture directe de l'état réel exposé par le backend
 #
 # 🎨 SEMANTIQUE (palette Arsenal — 02_palette.md)
-#     Carte volontairement SOBRE : la ventilation ne porte aucun jugement
-#     métier (OK/KO/WARN), donc aucune couleur sémantique n'est attribuée
-#     aux modes. Aucune logique de divergence colorée souhaité/réel.
-#     - état exploitable  -> ⚪ gris neutre (état volontairement neutre)
+#     La ventilation est une information TECHNIQUE de supervision : un mode
+#     réel exploitable signifie une ventilation active et disponible, ce qui
+#     relève du bleu canonique (02_palette.md : « Ventilation / extraction /
+#     supervision »). Aucun jugement métier (OK/KO/WARN), aucune sémantique
+#     de mode, aucune logique de divergence colorée souhaité/réel.
+#     - état exploitable (quiet/low/medium/high/auto) -> 🔵 bleu (technique/supervision)
 #     - unknown / unavailable -> ⚪ gris indisponibilité (prime sur tout, R6)
 #
 # 🔗 DEPENDANCES
@@ -91,8 +93,8 @@ carte_clim_ventilation:
         card:
           - background-color: rgba(158,158,158,0.1)
 
-    # ⚪ Défaut — gris neutre sobre (aucune sémantique de mode)
+    # 🔵 Défaut — état exploitable : bleu technique (ventilation/supervision)
     - operator: default
       styles:
         card:
-          - background-color: rgba(158,158,158,0.2)
+          - background-color: rgba(33,150,243,0.2)
