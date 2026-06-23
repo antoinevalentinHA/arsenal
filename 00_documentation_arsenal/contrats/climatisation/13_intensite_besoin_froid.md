@@ -267,6 +267,8 @@ Le présent lot est **strictement documentaire**. Sont **hors périmètre** :
 
 - Ventilation (`fan_mode`) — intention persistante :
   [`12_ventilation_intention.md`](12_ventilation_intention.md)
+- Recommandation de ventilation (consommateur diagnostique aval) :
+  [`14_recommandation_ventilation.md`](14_recommandation_ventilation.md)
 - Décision canonique du mode thermique :
   [`03_decision_canonique.md`](03_decision_canonique.md)
 - Entrées métier (températures, seuils) :
