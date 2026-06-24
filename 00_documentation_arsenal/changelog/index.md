@@ -1422,6 +1422,19 @@ Chaîne préhistorique complète jusqu’aux bases `2025_08_final` (puis G1 2025
 - Déshumidificateur : retrait de `initial` sur `cave_rh_cible_on`/`cave_rh_cible_off` (restauration de la dernière valeur réglée au redémarrage) ; plages disjointes conservées.
 - Documentation : ajout de la table « lire avant de modifier » (`README.md`), sections d'affichage `01_customize.md`/`18_lovelace.md`, README de dossier (`10_`, `11_`, `12_`, `18_`) ; gel de `v16_0_3.md` et ajout de son entrée d'index ; chantiers C6/C7 tracés au registre.
 
+---
+
+## 🧠 ARSENAL HA — [v16.1.0](changelogs/v16/v16_1_0.md) — STABLE — 2026-06-23
+**Tags :** alarme, presence, securite, clim, ventilation, meteo, palmares, lovelace, ui, reseau, resilience, contrats, ci, documentation
+
+**Signal net :**
+- Alarme / présence sécurité : projections stabilisées `binary_sensor.presence_famille_securite_confirmee_alarme` (`delay_on: 15 s`, désarmement) et `..._absence_confirmee_alarme` (`delay_on: 5 min`, armement) ; consommateurs décisionnels (`decision_centrale.yaml`, application, `armement_possible.yaml`) migrés du signal brut vers les deux projections ; trio `absence_5_min` déprécié phase 1 (conservé en diagnostic).
+- Climatisation — mode nuit : ajout de `input_boolean.clim_mode_nuit_actif` + `binary_sensor.clim_mode_nuit_effectif` ; neutralisation du blocage horaire et bascule en régime absence COOL quand le mode nuit est effectif (aucune consigne « nuit » dédiée) ; contrat `06_doctrine_blocages.md` §9.
+- Climatisation — ventilation (fan_mode) : intention persistante (`input_select.clim_fan_mode_cible` + `script.clim_set_fan_mode` + automation `application_mode`), capteurs diagnostic (intensité besoin froid, recommandation, diagnostic, état, origine) sans pilotage, contrats `12/13/14`, garde silencieux globale.
+- Résilience intégrations : garde WAN `binary_sensor.contexte_wan_indisponible` + paramètre `wan_entity` inhibant les tentatives de reload cloud (`reset`/`block` conservés) ; contrat v1.0 → v1.1 (invariant 11 + test R13).
+- Météo — palmarès nuits chaudes : minimale journalière la plus haute (rangs valeur/date, automation d'évaluation, capteurs + anomalie, contrat `palmares_min_haute.md`, checker + workflow, historisation Recorder).
+- Lovelace : reclassement par domaine (`dashboards/<domaine>/<role>.yaml`, includes rangés en sous-dossiers), `dashboards.yaml` re-pointé avec **clés publiques inchangées** ; chemins `!include`, checkers et contrats UI mis à jour.
+
 ==================================================
 FIN INDEX
 ==================================================
