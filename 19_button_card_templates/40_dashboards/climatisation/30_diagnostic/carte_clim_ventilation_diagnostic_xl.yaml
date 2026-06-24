@@ -27,8 +27,8 @@
 #
 # 🔗 DEPENDANCES
 #     - entity : sensor.clim_ventilation_diagnostic
-#     - attributs lus : niveau_besoin, intensite, recommande, reel,
-#       cause_ecart, auto_fujitsu_evite, couleur
+#     - attributs lus : niveau_besoin, intensite, recommande, cible_effective,
+#       reel, cause_ecart, raison_arbitrage, auto_fujitsu_evite, couleur
 #     - aucune autre entite lue cote navigateur (aucun recalcul)
 #
 # ⚠️ CONTRAINTES
@@ -101,7 +101,7 @@ carte_clim_ventilation_diagnostic_xl:
       out += '<b>Besoin froid :</b> ' + cap(a.niveau_besoin);
       if (!UNAV.includes(a.intensite)) out += ' (' + a.intensite + ' °C)';
       out += '<br>';
-      out += '<b>Recommandé brut :</b> ' + (UNAV.includes(a.recommande) ? '—' : a.recommande) + '<br>';
+      out += '<b>Recommandé :</b> ' + (UNAV.includes(a.recommande) ? '—' : a.recommande) + '<br>';
       out += '<b>Cible effective :</b> ' + fr(a.cible_effective) + '<br>';
       out += '<b>Réel brut :</b> ' + fr(a.reel) + '<br>';
 
@@ -113,8 +113,18 @@ carte_clim_ventilation_diagnostic_xl:
         out += '<b>Écart :</b> ' + (causeFR[cause] || '—');
       }
 
-      if (a.raison_arbitrage === 'quiet_reserve_silence') {
-        out += '<br><b>Raison :</b> quiet réservé au mode silencieux';
+      // Arbitrage effectif du runtime (déjà calculé par le backend) : rendu
+      // intégral pour rendre visibles absence → Fort, silence et frein.
+      const arbitrageFR = {
+        absence_fort: 'Fort volontaire — maison absente',
+        silence_quiet: 'Silencieux gouverné par le domaine silence',
+        frein_chambre_froide: 'Plafonné Faible — frein chambre froide',
+        quiet_reserve_silence: 'quiet réservé au mode silencieux'
+        // none : aucune ligne
+      };
+      const arbitrage = arbitrageFR[a.raison_arbitrage];
+      if (arbitrage) {
+        out += '<br><b>Arbitrage :</b> ' + arbitrage;
       }
 
       if (a.auto_fujitsu_evite === false || a.auto_fujitsu_evite === 'false') {
