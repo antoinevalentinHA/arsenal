@@ -5,12 +5,11 @@
 #   Clim — Mode de ventilation recommandé (diagnostic)
 #
 # 🎯 Rôle (contrat 14_recommandation_ventilation.md) :
-#   Produire une RECOMMANDATION diagnostique de vitesse de
-#   ventilation à partir de l'intensité du besoin de froid,
-#   planchée selon la franchise de la demande et plafonnée par le
-#   silencieux, le frein chambre froide restant une garde absolue finale.
-#   Observationnel : sert à OBSERVER ce que ferait une logique
-#   automatique future. NE PILOTE RIEN.
+#   Produire une RECOMMANDATION diagnostique de vitesse de ventilation à
+#   partir d'un référentiel UNIQUE : l'intensité du besoin de froid
+#   x = temperature_max_chambres − seuil_extinction_clim_applique
+#   (= sensor.clim_intensite_besoin_froid). Perception thermique pure,
+#   PRÉSENCE-AGNOSTIQUE. NE PILOTE RIEN.
 #
 # 🧱 Principe Arsenal :
 #   - Lecture pure (aucune action, aucune écriture, aucun service) ;
@@ -20,42 +19,44 @@
 # 🚫 Interdits (contrat 14 §2) :
 #   - N'écrit JAMAIS input_select.clim_fan_mode_cible ;
 #   - Ne commande JAMAIS climate.clim ni switch.clim_quiet_fan ;
-#   - Ne double PAS le chemin unique de résolution (10030000000120).
+#   - Ne double PAS le chemin unique de résolution (10030000000120) ;
+#   - N'émet JAMAIS « Silencieux » hors silence (quiet = domaine silence) ;
+#   - N'émet JAMAIS « auto » (Fujitsu) — mapping technique low/medium/high.
 #
-# 🧮 Calcul — planchers de franchise + plafond + frein (ordre EXACT) :
+# 🧮 Calcul — grille x à deux latches + caps (ordre EXACT) :
 #   Vitesses indexées : Silencieux=0 · Faible=1 · Moyen=2 · Fort=3.
-#   Objectif : doux quand le besoin est faible/latent ; au moins aussi
-#   efficace que l'ancien comportement dès qu'une vraie demande existe ;
-#   nuit préservée ; frein froid préservé.
-#   1. brute = mapping(niveau besoin) — INCHANGÉ :
-#      satisfait/faible→0 · moyen→1 · eleve→2 · extreme→3.
-#   2. Plancher demande franche :
-#      si clim_seuil_allumage_cool_atteint == on (max >= ON) → idx = max(idx, 1).
-#   3. Plancher demande nette (hystérésis collante 0.5/0.3) :
-#      engage à max >= seuil_allumage_clim_applique + 0.5, se relâche seulement
-#      sous max < seuil + 0.3 (latch sur attribut plancher_nette_actif ; hold de
-#      l'état précédent si tmax/seuil manquant) ET hors silence → idx = max(idx, 2).
-#      (« +0.5 »/« +0.3 » codés en dur ; plancher Moyen neutralisé en silence.)
-#   4. Plafond silencieux :
-#      si clim_silencieux_autorise == on ET idx > 2 → idx = 2 (cap Moyen, jamais en dessous).
-#   5. Frein chambre froide (ABSOLU, prime sur tout) :
-#      si clim_seuil_extinction_cool_atteint == on → idx = 0.
-#   state = libellé FR de idx.
+#   Référentiel unique : x = sensor.clim_intensite_besoin_froid (°C au-dessus
+#   du seuil d'arrêt). Plus aucun plancher fondé sur seuil_allumage (ON) :
+#   le double référentiel ON/OFF est abandonné.
 #
-#   Conséquences : en plage silencieuse, le plancher Moyen est neutralisé et la
-#   sortie est plafonnée à Moyen (sommeil préservé), sans jamais dégrader un
-#   brute existant ; le frein froid ramène à Silencieux quelles que soient les
-#   autres étapes. Le libellé Fort reste atteignable UNIQUEMENT via la reco
-#   brute « extreme » (plus aucun plancher ne le force).
+#   1. Grille de vitesse (présence-agnostique), plancher Faible :
+#      - latch Moyen : engage x ≥ 1.0, relâche x < 0.6 (dead-band 0.4) ;
+#      - latch Fort  : engage x ≥ 2.0, relâche x < 1.5 (dead-band 0.5) ;
+#      idx = 3 si latch Fort · 2 si latch Moyen · sinon 1 (Faible). Jamais 0.
+#      (seuils codés en dur ; latches persistés en attributs latch_moyen /
+#       latch_fort ; hold de l'état précédent si x manquant.)
+#   2. Plafond silencieux : si clim_silencieux_autorise == on ET idx > 2
+#      → idx = 2 (cap Moyen — diagnostic ; l'application s'abstient en plage).
+#   3. Frein chambre froide : si clim_seuil_extinction_cool_atteint == on
+#      (temperature_min_chambres ≤ seuil_extinction) → cap idx = 1 (Faible).
+#      Presence-agnostique : en présence il plafonne à Faible ; l'ignorance
+#      du frein en ABSENCE (→ Fort) est un arbitrage EFFECTIF porté par
+#      l'application 10030000000120, hors de ce capteur.
+#   state = libellé FR de idx (Faible / Moyen / Fort).
+#
+#   Précédence des caps : frein (1) prime sur plafond silence (2). En plage
+#   silencieuse la sortie est plafonnée à Moyen ; le frein peut la ramener à
+#   Faible. Le « vrai » quiet reste exclusivement appliqué par le domaine
+#   silence (switch.clim_quiet_fan), jamais par cette reco.
 #
 # 🟢 Disponibilité (contrat 14 §4) :
-#   - niveau besoin unknown/unavailable → unavailable (jamais de vitesse défaut) ;
-#   - allumage indéterminé → calcul SANS plancher Faible, cause flaggée ;
+#   - x (clim_intensite_besoin_froid) non numérique → unavailable
+#     (jamais de vitesse par défaut) ;
 #   - silencieux indéterminé → calcul SANS plafond, cause flaggée ;
 #   - frein min indéterminé → calcul SANS frein, cause flaggée.
 #
-# 🔤 Sortie : state FR (Silencieux/Faible/Moyen/Fort)
-#             + attribut mode_technique (quiet/low/medium/high).
+# 🔤 Sortie : state FR (Faible/Moyen/Fort)
+#             + attribut mode_technique (low/medium/high).
 # 📍 Entité : sensor.clim_fan_mode_recommande
 # ==========================================================
 
@@ -66,40 +67,30 @@
       icon: mdi:fan-chevron-up
 
       availability: >
-        {{ states('sensor.clim_intensite_besoin_froid_niveau')
-           in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] }}
+        {{ states('sensor.clim_intensite_besoin_froid') | float(none) is not none }}
 
       state: >
-        {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+        {% set x = states('sensor.clim_intensite_besoin_froid') | float(none) %}
         {% set fr = ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
-        {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
-                        'eleve': 2, 'extreme': 3}.get(niveau) %}
-        {% if brute is none %}
+        {% if x is none %}
           unavailable
         {% else %}
-          {% set tmax = states('sensor.temperature_max_chambres') | float(none) %}
-          {% set seuil = states('sensor.seuil_allumage_clim_applique') | float(none) %}
-          {% set prev = state_attr(this.entity_id, 'plancher_nette_actif') %}
-          {% set prev = prev in [true, 'True', 'true', 'on'] %}
-          {% set nette = prev if (tmax is none or seuil is none)
-                         else (tmax >= seuil + 0.3 if prev else tmax >= seuil + 0.5) %}
+          {% set pm = state_attr(this.entity_id, 'latch_moyen') %}
+          {% set pm = pm in [true, 'True', 'true', 'on'] %}
+          {% set pf = state_attr(this.entity_id, 'latch_fort') %}
+          {% set pf = pf in [true, 'True', 'true', 'on'] %}
+          {% set lm = x >= (0.6 if pm else 1.0) %}
+          {% set lf = x >= (1.5 if pf else 2.0) %}
           {% set silence = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
-          {% set ns = namespace(idx=brute) %}
-          {# 2. Plancher demande franche #}
-          {% if is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
-            {% set ns.idx = [ns.idx, 1] | max %}
-          {% endif %}
-          {# 3. Plancher demande nette (hystérésis 0.5/0.3, hors plage silencieuse) #}
-          {% if nette and not silence %}
-            {% set ns.idx = [ns.idx, 2] | max %}
-          {% endif %}
-          {# 4. Plafond silencieux (cap à Moyen) #}
+          {% set frein = is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
+          {% set ns = namespace(idx = 3 if lf else (2 if lm else 1)) %}
+          {# 2. Plafond silencieux — cap Moyen #}
           {% if silence and ns.idx > 2 %}
             {% set ns.idx = 2 %}
           {% endif %}
-          {# 5. Frein chambre froide (ABSOLU) #}
-          {% if is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
-            {% set ns.idx = 0 %}
+          {# 3. Frein chambre froide — cap Faible (prime sur le plafond) #}
+          {% if frein and ns.idx > 1 %}
+            {% set ns.idx = 1 %}
           {% endif %}
           {{ fr[ns.idx] }}
         {% endif %}
@@ -109,60 +100,39 @@
           {{ states('sensor.clim_intensite_besoin_froid_niveau') }}
         intensite_num: >
           {{ states('sensor.clim_intensite_besoin_froid') }}
-        reco_brute: >
-          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
-          {% set fr = ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
-          {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
-                          'eleve': 2, 'extreme': 3}.get(niveau) %}
-          {{ fr[brute] if brute is not none else 'indisponible' }}
-        plancher_nette_actif: >
-          {# Latch d'hystérésis du plancher « nette » : engage à seuil+0.5,
-             relâche sous seuil+0.3 ; hold de l'état précédent si donnée
-             manquante. Relu (stringifié) par le state au cycle suivant. #}
-          {% set tmax = states('sensor.temperature_max_chambres') | float(none) %}
-          {% set seuil = states('sensor.seuil_allumage_clim_applique') | float(none) %}
-          {% set prev = state_attr(this.entity_id, 'plancher_nette_actif') %}
+        # Latch d'hystérésis Moyen (engage 1.0 / relâche 0.6 ; hold si x absent).
+        # Relu (stringifié) par le state au cycle suivant.
+        latch_moyen: >
+          {% set x = states('sensor.clim_intensite_besoin_froid') | float(none) %}
+          {% set prev = state_attr(this.entity_id, 'latch_moyen') %}
           {% set prev = prev in [true, 'True', 'true', 'on'] %}
-          {{ prev if (tmax is none or seuil is none)
-             else (tmax >= seuil + 0.3 if prev else tmax >= seuil + 0.5) }}
-        reco_apres_plancher: >
-          {# Observabilité pure : sortie après planchers (étapes 2-3),
-             avant plafond silencieux et frein. #}
-          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
+          {{ prev if x is none else (x >= (0.6 if prev else 1.0)) }}
+        # Latch d'hystérésis Fort (engage 2.0 / relâche 1.5 ; hold si x absent).
+        latch_fort: >
+          {% set x = states('sensor.clim_intensite_besoin_froid') | float(none) %}
+          {% set prev = state_attr(this.entity_id, 'latch_fort') %}
+          {% set prev = prev in [true, 'True', 'true', 'on'] %}
+          {{ prev if x is none else (x >= (1.5 if prev else 2.0)) }}
+        # Vitesse issue de la seule grille x, AVANT plafond silence et frein.
+        vitesse_grille: >
+          {% set x = states('sensor.clim_intensite_besoin_froid') | float(none) %}
           {% set fr = ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
-          {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
-                          'eleve': 2, 'extreme': 3}.get(niveau) %}
-          {% if brute is none %}
+          {% if x is none %}
             indisponible
           {% else %}
-            {% set tmax = states('sensor.temperature_max_chambres') | float(none) %}
-            {% set seuil = states('sensor.seuil_allumage_clim_applique') | float(none) %}
-            {% set prev = state_attr(this.entity_id, 'plancher_nette_actif') %}
-            {% set prev = prev in [true, 'True', 'true', 'on'] %}
-            {% set nette = prev if (tmax is none or seuil is none)
-                           else (tmax >= seuil + 0.3 if prev else tmax >= seuil + 0.5) %}
-            {% set silence = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
-            {% set ns = namespace(idx=brute) %}
-            {% if is_state('binary_sensor.clim_seuil_allumage_cool_atteint', 'on') %}
-              {% set ns.idx = [ns.idx, 1] | max %}
-            {% endif %}
-            {% if nette and not silence %}
-              {% set ns.idx = [ns.idx, 2] | max %}
-            {% endif %}
-            {{ fr[ns.idx] }}
+            {% set pm = state_attr(this.entity_id, 'latch_moyen') %}
+            {% set pm = pm in [true, 'True', 'true', 'on'] %}
+            {% set pf = state_attr(this.entity_id, 'latch_fort') %}
+            {% set pf = pf in [true, 'True', 'true', 'on'] %}
+            {% set lm = x >= (0.6 if pm else 1.0) %}
+            {% set lf = x >= (1.5 if pf else 2.0) %}
+            {{ fr[3 if lf else (2 if lm else 1)] }}
           {% endif %}
-        reco_apres_frein_min: >
-          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
-          {% set fr = ['Silencieux', 'Faible', 'Moyen', 'Fort'] %}
-          {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
-                          'eleve': 2, 'extreme': 3}.get(niveau) %}
-          {% if brute is none %}
-            indisponible
-          {% elif is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
-            Silencieux
-          {% else %}
-            {{ fr[brute] }}
-          {% endif %}
+        # Cap effectivement appliqué (frein prime sur silence).
+        cap_actif: >
+          {% set silence = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
+          {% set frein = is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') %}
+          {{ 'frein' if frein else ('silence' if silence else 'none') }}
         reco_finale: >
           {{ states('sensor.clim_fan_mode_recommande') }}
         mode_technique: >
@@ -172,30 +142,18 @@
         cause_plafonnement: >
           {% set frein = states('binary_sensor.clim_seuil_extinction_cool_atteint') %}
           {% set sil = states('binary_sensor.clim_silencieux_autorise') %}
-          {% set allum = states('binary_sensor.clim_seuil_allumage_cool_atteint') %}
-          {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
-          {% set brute = {'satisfait': 0, 'faible': 0, 'moyen': 1,
-                          'eleve': 2, 'extreme': 3}.get(niveau) %}
-          {% set tmax = states('sensor.temperature_max_chambres') | float(none) %}
-          {% set seuil = states('sensor.seuil_allumage_clim_applique') | float(none) %}
-          {% set prev = state_attr(this.entity_id, 'plancher_nette_actif') %}
-          {% set prev = prev in [true, 'True', 'true', 'on'] %}
-          {% set nette = prev if (tmax is none or seuil is none)
-                         else (tmax >= seuil + 0.3 if prev else tmax >= seuil + 0.5) %}
+          {% set x = states('sensor.clim_intensite_besoin_froid') | float(none) %}
+          {% set pf = state_attr(this.entity_id, 'latch_fort') %}
+          {% set pf = pf in [true, 'True', 'true', 'on'] %}
+          {% set lf = false if x is none else (x >= (1.5 if pf else 2.0)) %}
           {% if frein not in ['on', 'off'] %}
             frein_min_indisponible
           {% elif sil not in ['on', 'off'] %}
             silencieux_indisponible
-          {% elif allum not in ['on', 'off'] %}
-            allumage_indisponible
           {% elif frein == 'on' %}
             frein_min_actif
-          {% elif sil == 'on' and brute is not none and brute > 2 %}
+          {% elif sil == 'on' and lf %}
             plafond_silencieux
-          {% elif sil == 'off' and nette and brute is not none and brute < 2 %}
-            plancher_moyen_net
-          {% elif allum == 'on' and brute is not none and brute < 1 %}
-            plancher_demande_franche
           {% else %}
             none
           {% endif %}
