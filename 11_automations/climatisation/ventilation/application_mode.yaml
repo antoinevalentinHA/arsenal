@@ -31,7 +31,9 @@
 #
 # 📣 DÉCLENCHEURS (convergence)
 #   - Changement d'intention (input_select.clim_fan_mode_cible)
-#   - Changement de recommandation (sensor.clim_fan_mode_recommande : Auto Arsenal)
+#   - Changement de recommandation (sensor.clim_fan_mode_recommande : Auto Arsenal) :
+#     déclenchement sur changement de libellé uniquement (to: null), stabilisé 15 s
+#     (ignore le churn d'attributs reco — intensite_num change à chaque tick de T)
 #   - Changement de l'autorisation silencieux (sortie de plage incluse)
 #   - Désactivation du silencieux auto (input_boolean.clim_mode_silencieux_auto_active)
 #   - Libération du quiet au niveau matériel (sensor.clim_mode_silencieux_local → off)
@@ -83,6 +85,8 @@
     # Recommandation Arsenal (mode « Auto Arsenal » : suit la reco)
     - platform: state
       entity_id: sensor.clim_fan_mode_recommande
+      to: null            # ignore les changements d'attribut seuls ; ne tire que sur changement de state/libellé
+      for: "00:00:15"     # stabilisation : la reco doit tenir 15 s avant d'actionner
     # Autorisation silencieux (sortie de plage = front off)
     - platform: state
       entity_id: binary_sensor.clim_silencieux_autorise
