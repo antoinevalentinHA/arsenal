@@ -17,14 +17,22 @@
 #   - Backend décide (verdict + cause + clé couleur) ; UI observe
 #
 # 🧭 État (verdict, fini) :
-#   - conforme     : réel exploitable == cible effective (après arbitrage quiet)
+#   - conforme     : réel exploitable == cible effective
 #   - ecart        : réel exploitable ≠ cible effective
 #   - indisponible : entrées de décision ou réel non exploitables
 #
-#   Cible effective = recommandation brute après arbitrage quiet (doctrine
-#   quiet = domaine silence) : quiet → low hors plage silencieuse, quiet
-#   conservé si le silence l'autorise, low/medium/high inchangés. La
-#   conformité compare le réel brut à cette cible effective, pas à la reco brute.
+#   Cible effective = recommandation après les arbitrages EFFECTIFS DÉJÀ
+#   présents dans le runtime actuel (ordre) :
+#     1. plage silencieuse (binary_sensor.clim_silencieux_autorise == on)
+#        → quiet (domaine silence, automation 1003000000020) ;
+#     2. sinon → recommandation technique (low/medium/high ;
+#        quiet → low résiduel — la reco grille x du Lot 1 n'émet plus quiet).
+#   La conformité compare le réel brut à cette cible effective.
+#
+#   🚧 PÉRIMÈTRE : l'arbitrage « absence → Fort » (Lot 2) N'EST PAS appliqué
+#   par le runtime (application_mode.yaml) → il N'ENTRE PAS dans la cible
+#   effective ni dans le verdict. La présence/absence n'est exposée qu'en
+#   attribut INFORMATIF (presence_thermique), sans effet sur conforme/ecart.
 #
 # 🔢 cause_ecart (fini) :
 #   none / entrees_indisponibles / recommandation_indisponible /
@@ -32,11 +40,15 @@
 #   recommandation_non_appliquee / mode_manuel / incoherence_mapping /
 #   non_couvert
 #
-#   - En « Auto Arsenal », un écart réel ≠ recommandé est un écart
+#   - En « Auto Arsenal », un écart réel ≠ cible effective est un écart
 #     d'APPLICATION (recommandation_non_appliquee), pas un override.
 #   - En niveau manuel, un écart face à la reco est un override utilisateur
 #     informatif (mode_manuel).
 #   - auto_fujitsu ne subsiste que comme cas résiduel/legacy (réel == auto).
+#
+# 🧭 raison_arbitrage (fini) :
+#   silence_quiet / quiet_reserve_silence / frein_chambre_froide / none
+#   (PAS de absence_fort tant que le Lot 2 n'est pas mergé.)
 #
 # 🎨 couleur (clé sémantique, décidée backend, R6 gris prime) :
 #   - conforme                            -> vert
@@ -55,6 +67,9 @@
 #   - sensor.clim_mode_de_ventilation_local (réel Fujitsu)
 #   - input_select.clim_fan_mode_cible (intention — diagnostic)
 #   - sensor.clim_origine_ventilation (origine — diagnostic)
+#   - binary_sensor.clim_silencieux_autorise (plage silencieuse)
+#   - binary_sensor.presence_confort_thermique_stabilisee (présence — INFO)
+#   - binary_sensor.clim_seuil_extinction_cool_atteint (frein — INFO)
 #   - climate.clim (attribut fan_modes — compatibilité)
 #
 # 🚫 Interdits :
@@ -76,7 +91,8 @@
         {% set reco_tech = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') %}
         {% set reel = states('sensor.clim_mode_de_ventilation_local') %}
         {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
-        {% set cible_effective = 'low' if (reco_tech == 'quiet' and not override) else reco_tech %}
+        {% set cible_effective = 'quiet' if override
+                                 else ('low' if reco_tech == 'quiet' else reco_tech) %}
         {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
         {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
         {% if not niveau_ok or not reco_ok or reel in unav %}
@@ -97,16 +113,27 @@
         recommande_technique: >
           {{ state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') }}
         cible_effective: >
-          {# Cible réellement applicable après arbitrage quiet (doctrine quiet =
-             domaine silence) : quiet → low hors plage silencieuse ; quiet
-             conservé si le silence l'autorise ; low/medium/high inchangés. #}
+          {# Cible réellement applicable par le runtime ACTUEL (ordre) :
+             1. silence → quiet (domaine silence) ;
+             2. sinon reco technique (quiet → low résiduel ; la reco grille x
+             n'émet plus quiet). PAS de absence → Fort ici (Lot 2 non mergé). #}
           {% set reco_tech = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') %}
           {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
-          {{ 'low' if (reco_tech == 'quiet' and not override) else reco_tech }}
+          {{ 'quiet' if override
+             else ('low' if reco_tech == 'quiet' else reco_tech) }}
         raison_arbitrage: >
           {% set reco_tech = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') %}
           {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
-          {{ 'quiet_reserve_silence' if (reco_tech == 'quiet' and not override) else 'none' }}
+          {% set cause_plaf = state_attr('sensor.clim_fan_mode_recommande', 'cause_plafonnement') %}
+          {% if override %}
+            silence_quiet
+          {% elif reco_tech == 'quiet' %}
+            quiet_reserve_silence
+          {% elif cause_plaf == 'frein_min_actif' %}
+            frein_chambre_froide
+          {% else %}
+            none
+          {% endif %}
         reel: >
           {{ states('sensor.clim_mode_de_ventilation_local') }}
         intention: >
@@ -115,6 +142,15 @@
           {{ states('sensor.clim_origine_ventilation') }}
         cause_plafonnement: >
           {{ state_attr('sensor.clim_fan_mode_recommande', 'cause_plafonnement') }}
+        # --- Attributs INFORMATIFS (n'influencent NI le verdict NI la couleur) ---
+        # Préparation observation Lot 2 (absence → Fort) : exposés en lecture
+        # seule, jamais intégrés à la conformité tant que le Lot 2 n'est pas mergé.
+        presence_thermique: >
+          {{ states('binary_sensor.presence_confort_thermique_stabilisee') }}
+        clim_active: >
+          {{ states('climate.clim') not in ['off', 'unknown', 'unavailable'] }}
+        frein_chambre_froide_actif: >
+          {{ is_state('binary_sensor.clim_seuil_extinction_cool_atteint', 'on') }}
         auto_fujitsu_evite: >
           {{ states('sensor.clim_mode_de_ventilation_local') != 'auto' }}
         entrees_disponibles: >
@@ -136,7 +172,8 @@
           {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
           {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
           {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
-          {% set cible_effective = 'low' if (reco_tech == 'quiet' and not override) else reco_tech %}
+          {% set cible_effective = 'quiet' if override
+                                   else ('low' if reco_tech == 'quiet' else reco_tech) %}
           {% if niveau_ok and reco_ok and reel not in unav and reel == cible_effective %}
             none
           {% elif not niveau_ok %}
@@ -172,7 +209,8 @@
           {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
           {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
           {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
-          {% set cible_effective = 'low' if (reco_tech == 'quiet' and not override) else reco_tech %}
+          {% set cible_effective = 'quiet' if override
+                                   else ('low' if reco_tech == 'quiet' else reco_tech) %}
           {% if not niveau_ok or not reco_ok or reel in unav %}
             indisponible
           {% elif reel == cible_effective %}
