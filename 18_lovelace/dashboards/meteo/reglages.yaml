@@ -33,6 +33,9 @@ views:
             icon: mdi:axis-z-rotate-clockwise
             variables:
               confirmation: "⚠️ Lancer la calibration des capteurs Zigbee ?"
+              service: script.turn_on
+              data:
+                entity_id: script.calibration_capteurs_zigbee
 
           - type: custom:button-card
             template: carte_action_standard_warning
@@ -41,3 +44,6 @@ views:
             icon: mdi:restart-alert
             variables:
               confirmation: "⚠️ Réinitialiser la calibration des capteurs Zigbee ?"
+              service: script.turn_on
+              data:
+                entity_id: script.reset_calibration_capteurs_zigbee
