@@ -17,9 +17,14 @@
 #   - Backend décide (verdict + cause + clé couleur) ; UI observe
 #
 # 🧭 État (verdict, fini) :
-#   - conforme     : réel exploitable == recommandé (technique)
-#   - ecart        : réel exploitable ≠ recommandé
+#   - conforme     : réel exploitable == cible effective (après arbitrage quiet)
+#   - ecart        : réel exploitable ≠ cible effective
 #   - indisponible : entrées de décision ou réel non exploitables
+#
+#   Cible effective = recommandation brute après arbitrage quiet (doctrine
+#   quiet = domaine silence) : quiet → low hors plage silencieuse, quiet
+#   conservé si le silence l'autorise, low/medium/high inchangés. La
+#   conformité compare le réel brut à cette cible effective, pas à la reco brute.
 #
 # 🔢 cause_ecart (fini) :
 #   none / entrees_indisponibles / recommandation_indisponible /
@@ -70,11 +75,13 @@
         {% set niveau = states('sensor.clim_intensite_besoin_froid_niveau') %}
         {% set reco_tech = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') %}
         {% set reel = states('sensor.clim_mode_de_ventilation_local') %}
+        {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
+        {% set cible_effective = 'low' if (reco_tech == 'quiet' and not override) else reco_tech %}
         {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
         {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
         {% if not niveau_ok or not reco_ok or reel in unav %}
           indisponible
-        {% elif reel == reco_tech %}
+        {% elif reel == cible_effective %}
           conforme
         {% else %}
           ecart
@@ -89,6 +96,17 @@
           {{ states('sensor.clim_fan_mode_recommande') }}
         recommande_technique: >
           {{ state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') }}
+        cible_effective: >
+          {# Cible réellement applicable après arbitrage quiet (doctrine quiet =
+             domaine silence) : quiet → low hors plage silencieuse ; quiet
+             conservé si le silence l'autorise ; low/medium/high inchangés. #}
+          {% set reco_tech = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') %}
+          {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
+          {{ 'low' if (reco_tech == 'quiet' and not override) else reco_tech }}
+        raison_arbitrage: >
+          {% set reco_tech = state_attr('sensor.clim_fan_mode_recommande', 'mode_technique') %}
+          {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
+          {{ 'quiet_reserve_silence' if (reco_tech == 'quiet' and not override) else 'none' }}
         reel: >
           {{ states('sensor.clim_mode_de_ventilation_local') }}
         intention: >
@@ -117,7 +135,9 @@
                           'Fort': 'high'}.get(intention) %}
           {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
           {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
-          {% if niveau_ok and reco_ok and reel not in unav and reel == reco_tech %}
+          {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
+          {% set cible_effective = 'low' if (reco_tech == 'quiet' and not override) else reco_tech %}
+          {% if niveau_ok and reco_ok and reel not in unav and reel == cible_effective %}
             none
           {% elif not niveau_ok %}
             entrees_indisponibles
@@ -151,9 +171,11 @@
                           'Fort': 'high'}.get(intention) %}
           {% set niveau_ok = niveau in ['satisfait', 'faible', 'moyen', 'eleve', 'extreme'] %}
           {% set reco_ok = reco_tech in ['quiet', 'low', 'medium', 'high'] %}
+          {% set override = is_state('binary_sensor.clim_silencieux_autorise', 'on') %}
+          {% set cible_effective = 'low' if (reco_tech == 'quiet' and not override) else reco_tech %}
           {% if not niveau_ok or not reco_ok or reel in unav %}
             indisponible
-          {% elif reel == reco_tech %}
+          {% elif reel == cible_effective %}
             vert
           {% elif reel == 'auto' %}
             orange
