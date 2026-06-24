@@ -13,6 +13,10 @@
 #       (sensor.clim_fan_mode_recommande : quiet/low/medium/high) ;
 #     - niveaux manuels → quiet/low/medium/high.
 #   N'émet JAMAIS fan_mode: auto dans la voie normale. Converge sur événements.
+#   N'émet JAMAIS non plus fan_mode: quiet : le quiet appartient au domaine
+#   silence (switch.clim_quiet_fan / automation 1003000000020). Hors plage
+#   silencieuse, une cible résolue à quiet est bornée à low (Faible) pour ne
+#   pas entrer en conflit avec l'automation silence (boucle quiet↔auto).
 #
 # 🧩 PÉRIMÈTRE
 #   - Couvre : résolution intention → mode effectif → script.clim_set_fan_mode
@@ -108,11 +112,20 @@
     # « Auto Arsenal » (et la valeur héritée « Auto » par sécurité) suit la
     # recommandation technique ; les niveaux manuels mappent FR → technique.
     # Aucune branche n'émet « auto » : la voie normale ne délègue jamais à Fujitsu.
+    #
+    # quiet = PROPRIÉTÉ DU DOMAINE SILENCE (switch.clim_quiet_fan, piloté par
+    # l'automation silence 1003000000020). Cette voie n'agissant qu'hors plage
+    # silencieuse (condition not override_actif), elle ne doit JAMAIS appliquer
+    # quiet via fan_mode : sinon elle bascule le switch quiet, que l'automation
+    # silence rebascule aussitôt → boucle quiet↔auto. On borne donc quiet → low
+    # (Faible). Le vrai quiet reste appliqué exclusivement pendant la plage
+    # silencieuse, par l'automation silence.
     desired: >
-      {{ (state_attr('sensor.clim_fan_mode_recommande', 'mode_technique')
-          if states('input_select.clim_fan_mode_cible') in ['Auto Arsenal', 'Auto']
-          else {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
-                'Fort': 'high'}.get(states('input_select.clim_fan_mode_cible'))) }}
+      {% set raw = (state_attr('sensor.clim_fan_mode_recommande', 'mode_technique')
+                    if states('input_select.clim_fan_mode_cible') in ['Auto Arsenal', 'Auto']
+                    else {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
+                          'Fort': 'high'}.get(states('input_select.clim_fan_mode_cible'))) %}
+      {{ 'low' if raw == 'quiet' else raw }}
     fan_modes: "{{ state_attr('climate.clim', 'fan_modes') or [] }}"
     # Résolution casse-insensible du mode canonique vers la valeur EXACTE
     # exposée par l'intégration (ex. quiet → « Quiet »). Si absente, conserve
