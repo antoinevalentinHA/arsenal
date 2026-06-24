@@ -42,7 +42,7 @@ bornée par un garde-fou de contrôlabilité et plafonnée par le silencieux.
 | `sensor.clim_intensite_besoin_froid_niveau` | **Moteur** : niveau ordinal de besoin. | Perception (contrat 13) |
 | `binary_sensor.clim_seuil_extinction_cool_atteint` | **Frein min** : pièces atteignables satisfaites. | Franchissement |
 | `binary_sensor.clim_silencieux_autorise` | **Plafond** silencieux. | Décision métier |
-| `sensor.clim_intensite_besoin_froid` | Contexte (debug). | Perception (contrat 13) |
+| `sensor.clim_intensite_besoin_froid` | Source numérique amont (x) — contexte observable. | Perception (contrat 13) |
 | `input_select.clim_fan_mode_cible` | **Intention** utilisateur — diagnostic d'écart **uniquement**. | Intention (Modèle B) |
 | `sensor.clim_mode_de_ventilation_local` | **Réel** Fujitsu — diagnostic d'écart **uniquement**. | Perception |
 
@@ -93,8 +93,10 @@ et ses attributs.
 - `binary_sensor.clim_seuil_extinction_cool_atteint` (frein min) ;
 - `binary_sensor.clim_silencieux_autorise` (plafond).
 
-**Pour le contexte (debug uniquement)** :
-- `sensor.clim_intensite_besoin_froid`.
+**Pour le contexte observable (hors calcul du `state`)** :
+- `sensor.clim_intensite_besoin_froid` — source numérique amont (x) dont
+  `sensor.clim_intensite_besoin_froid_niveau` est la projection ordinale
+  effectivement consommée par la recommandation.
 
 **Pour le diagnostic d'écart (attributs uniquement, JAMAIS dans le calcul)** :
 - `input_select.clim_fan_mode_cible` ;
