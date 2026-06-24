@@ -24,8 +24,10 @@
 #   Résolution / restauration (Modèle B)
 #
 # ⚙️ MODE
-#   single — Justification : une résolution à la fois, refus des retriggers
-#   concurrents.
+#   queued (max 2) — Justification : sérialise les rafales de triggers
+#   corrélés (lever du silencieux : toggle + binary + release quiet + reco)
+#   au lieu de les rejeter (« Already running »). L'idempotence empêche
+#   toute double commande matérielle.
 #
 # 📣 DÉCLENCHEURS (convergence)
 #   - Changement d'intention (input_select.clim_fan_mode_cible)
@@ -71,7 +73,8 @@
     Autorité unique de résolution ventilation (Modèle B). Restaure le
     mapping de input_select.clim_fan_mode_cible sur le fan_mode réel
     lorsque l'override silencieux est inactif. N'écrit jamais l'intention.
-  mode: single
+  mode: queued
+  max: 2
 
   trigger:
     # Intention utilisateur
