@@ -107,6 +107,24 @@
     - platform: state
       entity_id: input_boolean.systeme_stable
       to: "on"
+    # Allumage de la clim (P1) : si Auto Arsenal est déjà actif et la reco
+    # stable, aucun autre trigger ne réagit → le fan_mode resterait au défaut
+    # constructeur. Trigger BORNÉ sur from: "off" (off → cool/dry/heat, tout
+    # mode actif). NON bouclant : set_fan_mode change un attribut, pas l'état
+    # principal → ne re-déclenche pas. Jamais de trigger nu sur climate.clim.
+    - platform: state
+      entity_id: climate.clim
+      from: "off"
+    # Reprise Airstage / disponibilité de l'entité en cours de session (P2) :
+    # systeme_stable ne couvre que le boot. Triggers BORNÉS sur from indispo ;
+    # après reprise l'état devient cool → les changements d'attribut ont
+    # from: cool, jamais unavailable/unknown → non bouclant.
+    - platform: state
+      entity_id: climate.clim
+      from: "unavailable"
+    - platform: state
+      entity_id: climate.clim
+      from: "unknown"
 
   variables:
     # « Auto Arsenal » (et la valeur héritée « Auto » par sécurité) suit la
