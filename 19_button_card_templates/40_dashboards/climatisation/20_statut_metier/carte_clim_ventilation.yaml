@@ -19,13 +19,16 @@
 #     - Lecture directe de l'état réel exposé par le backend
 #
 # 🎨 SEMANTIQUE (palette Arsenal — 02_palette.md)
-#     La ventilation est une information TECHNIQUE de supervision : un mode
-#     réel exploitable signifie une ventilation active et disponible, ce qui
+#     La ventilation pilotée par Arsenal est une information TECHNIQUE de
+#     supervision : une vitesse réelle exploitable (quiet/low/medium/high)
 #     relève du bleu canonique (02_palette.md : « Ventilation / extraction /
-#     supervision »). Aucun jugement métier (OK/KO/WARN), aucune sémantique
-#     de mode, aucune logique de divergence colorée souhaité/réel.
-#     - état exploitable (quiet/low/medium/high/auto) -> 🔵 bleu (technique/supervision)
-#     - unknown / unavailable -> ⚪ gris indisponibilité (prime sur tout, R6)
+#     supervision »). Le fan_mode `auto` constructeur n'est PAS un mode
+#     fonctionnel Arsenal (non piloté, hors usage maison) : il est signalé en
+#     orange (avertissement non bloquant). Le verdict détaillé et la doctrine
+#     de conformité relèvent du dashboard diagnostic, pas de cette carte.
+#     - vitesses Arsenal (quiet/low/medium/high) -> 🔵 bleu (technique/supervision)
+#     - auto constructeur                         -> 🟠 orange (hors doctrine, attention)
+#     - unknown / unavailable                     -> ⚪ gris indisponibilité (prime sur tout, R6)
 #
 # 🔗 DEPENDANCES
 #     - entity : sensor.clim_mode_de_ventilation_local (fan_mode réel)
@@ -65,7 +68,7 @@ carte_clim_ventilation:
         low:    'Faible',
         medium: 'Moyen',
         high:   'Fort',
-        auto:   'Auto Fujitsu'
+        auto:   'Auto constructeur'
       };
       return map[m] || 'Indisponible';
     ]]]
@@ -98,7 +101,18 @@ carte_clim_ventilation:
         card:
           - background-color: rgba(158,158,158,0.1)
 
-    # 🔵 Défaut — état exploitable : bleu technique (ventilation/supervision)
+    # 🟠 auto constructeur — état non piloté par Arsenal (hors doctrine) :
+    #    avertissement non bloquant, jamais présenté comme mode normal
+    - operator: template
+      value: |
+        [[[
+          return (entity.state || '').toLowerCase() === 'auto';
+        ]]]
+      styles:
+        card:
+          - background-color: rgba(255,152,0,0.2)
+
+    # 🔵 Défaut — vitesse Arsenal exploitable : bleu technique (ventilation/supervision)
     - operator: default
       styles:
         card:
