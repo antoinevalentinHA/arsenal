@@ -1,8 +1,10 @@
 # CONTRAT ARSENAL — CLIMATISATION
 ## 12 — Ventilation (fan_mode) — Intention persistante (Modèle B)
 
-**Version contrat :** v1.0
-**Statut :** Normatif — cible de conception, antérieure à l'implémentation runtime
+**Version contrat :** v2.0
+**Statut :** Normatif — **aligné runtime** (Modèle B + recalibrage « Auto Arsenal »
+mergés). La résolution est implémentée (automation `10030000000120`,
+`application_mode.yaml`) ; l'arbitrage **absence → Fort** y est porté (§2).
 
 ---
 
@@ -21,18 +23,19 @@ Le modèle retenu est le **Modèle B** : l'intention utilisateur est
 **persistante** et le silencieux automatique est un **override temporaire
 et non destructif** de cette intention.
 
-> Ce document est une **passe documentaire**. Il fixe la cible opposable
-> avant toute implémentation. Aucun runtime n'est modifié par ce lot
-> (voir §13).
+> **v2.0 — aligné runtime.** Le Modèle B et le recalibrage « Auto Arsenal » sont
+> mergés. La résolution **lit** la recommandation (§2/§3) et porte l'arbitrage
+> **absence → Fort** ; l'état d'implémentation est en §13.
 
-> **Voir aussi.** L'**intensité graduée** du besoin de froid qui pilotera une
-> future résolution automatique de la vitesse de ventilation est spécifiée par
-> le contrat voisin
+> **Voir aussi.** L'**intensité graduée** du besoin de froid qui pilote la
+> résolution automatique de la vitesse de ventilation est spécifiée par le
+> contrat voisin
 > [`13_intensite_besoin_froid.md`](13_intensite_besoin_froid.md) (couche
 > perception, sans pilotage matériel). La **recommandation diagnostique** qui en
 > dérive une vitesse — sans écrire l'intention ni piloter — est spécifiée par
-> [`14_recommandation_ventilation.md`](14_recommandation_ventilation.md). La
-> présente section reste limitée au `fan_mode` et à l'intention utilisateur.
+> [`14_recommandation_ventilation.md`](14_recommandation_ventilation.md) : c'est
+> elle que la résolution **suit** en « Auto Arsenal ». La présente section reste
+> limitée au `fan_mode` et à l'intention utilisateur.
 
 ---
 
@@ -57,10 +60,21 @@ recrée pas et n'en crée aucune autre**.
 | Faible | `low` |
 | Moyen | `medium` |
 | Fort | `high` |
-| Auto | `auto` |
+| **Auto Arsenal** (et `Auto` hérité) | **suit la recommandation** (contrat 14) : `low` / `medium` / `high` |
 
 Ce mapping est l'unique table de correspondance autorisée entre
 l'intention et la commande matérielle.
+
+> **`Auto Arsenal` ne mappe pas vers le `auto` Fujitsu.** La résolution **ne
+> délègue jamais** la vitesse à la machine : en « Auto Arsenal » elle suit la
+> recommandation grille `x` (contrat 14, `mode_technique` ∈ `low`/`medium`/`high`),
+> jamais `fan_mode: auto`.
+>
+> **`quiet` borné hors plage silencieuse.** `Silencieux` est propriété
+> **exclusive** du domaine silence (`switch.clim_quiet_fan`,
+> `1003000000020`). Hors plage, une cible résolue à `quiet` est **bornée à
+> `low`** (Faible) par la résolution, pour ne pas entrer en conflit (boucle
+> `quiet ↔ auto`) avec l'automation silence.
 
 ---
 
@@ -93,14 +107,41 @@ Le modèle introduit une **autorité fonctionnelle de résolution** dont le
 seul rôle est de calculer le **mode effectif** à appliquer.
 
 ```
-mode_effectif =
-    si binary_sensor.clim_silencieux_autorise == on   → quiet
-    sinon                                              → mapping(input_select.clim_fan_mode_cible)
+# La résolution n'agit QUE hors plage silencieuse (condition not override_actif).
+# Pendant l'override, le quiet appartient au domaine silence : la résolution
+# S'ABSTIENT (elle n'émet pas quiet elle-même → silence prioritaire).
+
+mode_effectif (hors plage silencieuse) =
+    si « Auto Arsenal » ET absence ET clim active   → high (Fort)
+    sinon si « Auto Arsenal »                        → recommandation grille x (contrat 14)
+    sinon                                            → mapping(intention manuelle)
+
+    [ toute cible résolue à quiet est bornée à low hors plage — cf. mapping ]
+
+absence = binary_sensor.presence_confort_thermique_stabilisee == off
+          ET input_boolean.presence_visiteur == off
 ```
+
+> **Absence → Fort vit ICI, pas dans la recommandation.** Le contrat 14 reste
+> **présence-agnostique** : la grille `x` ne connaît pas la présence. Le forçage
+> `Fort` en absence est un **arbitrage effectif** de la résolution
+> (`application_mode.yaml`), appliqué **uniquement** en « Auto Arsenal », maison
+> absente et clim active. En présence, la résolution suit la recommandation.
+
+> **Silence prioritaire.** L'arbitrage absence → Fort **n'agit pas** pendant la
+> plage silencieuse : la condition `not override_actif` garde toute la
+> résolution. Le `quiet` reste appliqué exclusivement par l'automation silence.
+
+> **Présence stabilisée (R1-b).** La résolution clim lit la **projection
+> stabilisée** `binary_sensor.presence_confort_thermique_stabilisee` (montée
+> instantanée, `delay_off` 120 s) + `input_boolean.presence_visiteur`, **jamais**
+> le brut `binary_sensor.presence_famille_securite` (interdit au domaine clim par
+> le contrat présence R1-b).
 
 Propriétés de l'autorité de résolution :
 
-- elle **lit** l'intention et l'autorisation silencieux ;
+- elle **lit** l'intention, l'autorisation silencieux, la recommandation
+  (contrat 14) et la présence stabilisée + visiteur ;
 - elle **ne décide jamais** d'allumer/éteindre/changer le mode thermique ;
 - elle **n'écrit jamais** dans l'intention (§1) ;
 - elle est le **seul chemin conceptuel** vers l'écriture matérielle du
@@ -158,7 +199,8 @@ Elle DOIT être :
 | `indisponible` | Donnée ou API non exploitable : le pilotage ne peut être ni établi ni expliqué. |
 | `silencieux_auto` | Override silencieux actif : mode effectif forcé à `quiet`. |
 | `incompatible` | Le `fan_mode` cible résolu n'est pas applicable (absent de `fan_modes`) : abstention observable. |
-| `intention` | Nominal : le mode appliqué découle du mapping de l'intention utilisateur. |
+| `auto_arsenal` | Mode souhaité « Auto Arsenal » : le mode appliqué suit la recommandation (contrat 14). |
+| `intention` | Nominal : le mode appliqué découle du mapping de l'intention manuelle. |
 
 ### Hiérarchie de priorité (ordre normatif)
 
@@ -166,7 +208,8 @@ Elle DOIT être :
 1. indisponible      ← prime sur tout
 2. silencieux_auto
 3. incompatible
-4. intention         ← cas nominal
+4. auto_arsenal      ← « Auto Arsenal » suit la reco
+5. intention         ← cas nominal (niveau manuel)
 ```
 
 **Justification de l'ordre (doctrine Arsenal).**
@@ -176,19 +219,20 @@ Elle DOIT être :
   exploitable interdit toute affirmation sur le pilotage.
 - `silencieux_auto` vient ensuite : tant qu'il est actif, l'override est
   l'**autorité gouvernante** du mode effectif (§2) et masque l'intention.
-- `incompatible` précède `intention` : une cible non applicable est un fait
+- `incompatible` précède les cas nominaux : une cible non applicable est un fait
   observable d'abstention, prioritaire sur l'affichage du cas nominal.
+- `auto_arsenal` précède `intention` : il distingue le suivi de la
+  recommandation (mode souhaité « Auto Arsenal ») du niveau manuel.
 - `intention` est le cas par défaut, lorsqu'aucune des conditions
   supérieures n'est vraie.
 
-Cet ordre est **conservé** par rapport à la recommandation initiale : il
-est cohérent avec R6 et avec le principe « override = autorité temporaire ».
-Aucune réorganisation n'est justifiée.
+Cet ordre est cohérent avec R6 et avec le principe « override = autorité
+temporaire ». Aucune réorganisation n'est justifiée.
 
 **Entité d'implémentation :** `sensor.clim_origine_ventilation`
 (`12_template_sensors/climatisation/ventilation/origine.yaml`) — capteur
 template, perception pure, valeurs `indisponible` / `silencieux_auto` /
-`incompatible` / `intention`.
+`incompatible` / `auto_arsenal` / `intention`.
 
 ---
 
@@ -197,7 +241,8 @@ template, perception pure, valeurs `indisponible` / `silencieux_auto` /
 ### Hors plage silencieuse
 
 - l'intention est **conservée** ;
-- `mode_effectif = mapping(intention)` ;
+- `mode_effectif` est résolu selon §2 (Auto Arsenal → recommandation grille `x`,
+  ou **Fort** si absence + clim active ; manuel → mapping de l'intention) ;
 - le silencieux est désactivé sauf autre cause documentée.
 
 ### Entrée en plage silencieuse
@@ -240,13 +285,18 @@ notamment par :
 - changement de l'intention utilisateur ;
 - changement de l'autorisation silencieux
   (`binary_sensor.clim_silencieux_autorise`) ;
+- changement de la **recommandation** (`sensor.clim_fan_mode_recommande`, mode
+  « Auto Arsenal ») ;
+- changement de **présence** (`binary_sensor.presence_confort_thermique_stabilisee`,
+  `input_boolean.presence_visiteur`) : absence → Fort en « Auto Arsenal »,
+  retour présence → relâche Fort (§2) ;
 - détection d'un écart entre mode appliqué et mode effectif attendu.
 
 ### Règle de convergence
 
 > **Si** l'override silencieux est **OFF**
-> **et** `mode appliqué ≠ mapping(intention)`,
-> **alors** réappliquer l'intention (via la résolution, §3),
+> **et** `mode appliqué ≠ mode_effectif` (résolu selon §2),
+> **alors** réappliquer le mode effectif (via la résolution, §3),
 > **sous réserve** de compatibilité (§8) et de disponibilité (§9).
 
 La convergence agit sur le **mode effectif**, jamais sur l'intention (§1).
@@ -363,13 +413,24 @@ violait le single-writer (§1). Elle est **supprimée**
 (`11_automations/climatisation/ventilation/synchronisation_etat.yaml`,
 ex-ID `10030000000121`, retiré) : plus aucune perception n'écrit l'intention.
 
-### Implémenté par le chantier Modèle B
+### Implémenté par le chantier Modèle B (+ recalibrage « Auto Arsenal »)
 
 - résolution + restauration : automation `10030000000120`
-  (`application_mode.yaml`), réaffectée en autorité unique vers
-  `script.clim_set_fan_mode` (§2, §3, §5, §6) ;
+  (`application_mode.yaml`), autorité unique vers `script.clim_set_fan_mode`
+  (§2, §3, §5, §6) ;
+- **« Auto Arsenal » suit la recommandation** grille `x` (contrat 14,
+  `mode_technique`) ; jamais `fan_mode: auto` Fujitsu ;
+- **arbitrage absence → Fort** porté par la résolution (§2) : en « Auto Arsenal »,
+  `presence_confort_thermique_stabilisee == off` ET `presence_visiteur == off`
+  ET clim active → `high`. Présence stabilisée (R1-b), jamais le brut sécurité ;
+- **`quiet` borné à `low` hors plage** (silence prioritaire) ; le vrai `quiet`
+  reste appliqué exclusivement par l'automation silence (`switch.clim_quiet_fan`,
+  `1003000000020`) ;
 - origine de pilotage : `sensor.clim_origine_ventilation`
   (`origine.yaml`, §4) ;
+- diagnostic d'écart : `sensor.clim_fan_mode_recommande` (attributs) et
+  `12_template_sensors/climatisation/ventilation/diagnostic.yaml`
+  (cible effective alignée sur l'arbitrage absence → Fort) ;
 - UI : `carte_clim_ventilation` consomme l'origine et n'affiche plus le
   « Souhaité : X » tautologique (§10).
 
