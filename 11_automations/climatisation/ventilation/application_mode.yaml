@@ -12,6 +12,14 @@
 #     - « Auto Arsenal » → suit la recommandation technique
 #       (sensor.clim_fan_mode_recommande : quiet/low/medium/high) ;
 #     - niveaux manuels → quiet/low/medium/high.
+#   ABSENCE → FORT : en « Auto Arsenal », maison absente et clim active, la
+#   cible effective est forcée à high (efficacité de diffusion ; aucune
+#   contrainte de bruit en absence). « Absence » = personne à la maison via la
+#   projection présence STABILISÉE du clim (contrat présence R1-b : le clim ne
+#   lit pas le brut sécurité) + le visiteur :
+#   binary_sensor.presence_confort_thermique_stabilisee == off ET
+#   input_boolean.presence_visiteur == off. Hors plage silencieuse uniquement —
+#   garanti par la condition existante not override_actif (silence prioritaire).
 #   N'émet JAMAIS fan_mode: auto dans la voie normale. Converge sur événements.
 #   N'émet JAMAIS non plus fan_mode: quiet : le quiet appartient au domaine
 #   silence (switch.clim_quiet_fan / automation 1003000000020). Hors plage
@@ -41,6 +49,9 @@
 #   - Changement de l'autorisation silencieux (sortie de plage incluse)
 #   - Désactivation du silencieux auto (input_boolean.clim_mode_silencieux_auto_active)
 #   - Libération du quiet au niveau matériel (sensor.clim_mode_silencieux_local → off)
+#   - Changement de présence (binary_sensor.presence_confort_thermique_stabilisee,
+#     input_boolean.presence_visiteur) : absence → Fort en Auto Arsenal ;
+#     retour présence → relâche Fort (re-résolution)
 #   - Système stabilisé (input_boolean.systeme_stable → on : boot / reload)
 #
 #   NB : climate.clim n'est PAS un déclencheur (effet matériel de l'action →
@@ -103,6 +114,13 @@
     - platform: state
       entity_id: sensor.clim_mode_silencieux_local
       to: "off"
+    # Présence : absence → Fort en Auto Arsenal ; le retour en présence relâche
+    # Fort (re-résolution sur la reco). Projection STABILISÉE clim (R1-b ;
+    # delay_off 120 s, montée instantanée) + visiteur → aucun for: requis.
+    - platform: state
+      entity_id: binary_sensor.presence_confort_thermique_stabilisee
+    - platform: state
+      entity_id: input_boolean.presence_visiteur
     # Boot / système stabilisé (reload, redémarrage HA)
     - platform: state
       entity_id: input_boolean.systeme_stable
@@ -139,11 +157,23 @@
     # (Faible). Le vrai quiet reste appliqué exclusivement pendant la plage
     # silencieuse, par l'automation silence.
     desired: >
-      {% set raw = (state_attr('sensor.clim_fan_mode_recommande', 'mode_technique')
-                    if states('input_select.clim_fan_mode_cible') in ['Auto Arsenal', 'Auto']
-                    else {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
-                          'Fort': 'high'}.get(states('input_select.clim_fan_mode_cible'))) %}
-      {{ 'low' if raw == 'quiet' else raw }}
+      {% set en_auto = states('input_select.clim_fan_mode_cible') in ['Auto Arsenal', 'Auto'] %}
+      {# « Absence » = projection présence stabilisée du clim (R1-b) + visiteur,
+         les deux explicitement off. #}
+      {% set absence = is_state('binary_sensor.presence_confort_thermique_stabilisee', 'off')
+                       and is_state('input_boolean.presence_visiteur', 'off') %}
+      {# ABSENCE → FORT : en Auto Arsenal, maison absente → high. Clim active et
+         hors-silence sont garantis par les conditions (clim_actif,
+         not override_actif) → pas de doctrine dupliquée ici. #}
+      {% if en_auto and absence %}
+        high
+      {% else %}
+        {% set raw = (state_attr('sensor.clim_fan_mode_recommande', 'mode_technique')
+                      if en_auto
+                      else {'Silencieux': 'quiet', 'Faible': 'low', 'Moyen': 'medium',
+                            'Fort': 'high'}.get(states('input_select.clim_fan_mode_cible'))) %}
+        {{ 'low' if raw == 'quiet' else raw }}
+      {% endif %}
     fan_modes: "{{ state_attr('climate.clim', 'fan_modes') or [] }}"
     # Résolution casse-insensible du mode canonique vers la valeur EXACTE
     # exposée par l'intégration (ex. quiet → « Quiet »). Si absente, conserve
