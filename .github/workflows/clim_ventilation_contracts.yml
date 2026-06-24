@@ -1,0 +1,38 @@
+name: Climatisation ventilation contracts
+
+on:
+  push:
+    paths:
+      - '11_automations/climatisation/**'
+      - '12_template_sensors/climatisation/**'
+      - '10_scripts/climatisation/**'
+      - '18_lovelace/dashboards/climatisation/**'
+      - '19_button_card_templates/40_dashboards/climatisation/**'
+      - 'scripts/arsenal_contracts/check_climatisation_ventilation_contracts.py'
+      - '.github/workflows/clim_ventilation_contracts.yml'
+  pull_request:
+    paths:
+      - '11_automations/climatisation/**'
+      - '12_template_sensors/climatisation/**'
+      - '10_scripts/climatisation/**'
+      - '18_lovelace/dashboards/climatisation/**'
+      - '19_button_card_templates/40_dashboards/climatisation/**'
+      - 'scripts/arsenal_contracts/check_climatisation_ventilation_contracts.py'
+      - '.github/workflows/clim_ventilation_contracts.yml'
+  workflow_dispatch:
+
+jobs:
+  check-clim-ventilation-contracts:
+    name: Vérifier contrat ventilation climatisation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Run contract check
+        run: python scripts/arsenal_contracts/check_climatisation_ventilation_contracts.py
