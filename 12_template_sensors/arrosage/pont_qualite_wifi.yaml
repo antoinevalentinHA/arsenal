@@ -1,0 +1,67 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Arrosage / Rain Bird — Qualité Wi-Fi du pont
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Qualifier le lien Wi-Fi du pont rainbird-esp32 en
+#   niveau lisible (inconnu / faible / acceptable / bon).
+#
+# 🧩 PÉRIMÈTRE
+#   - Calcul ou dérivation uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   diagnostic
+#
+# 🆔 UNIQUE_ID
+#   rain_bird_pont_qualite_wifi
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi
+#
+# 🧱 SEUILS (dBm, proposés)
+#   - bon        : rssi >= -67
+#   - acceptable : -74 <= rssi <= -68
+#   - faible     : rssi <= -75   (le -77 dBm observé = faible)
+#   - inconnu    : donnée unknown / unavailable / non numérique / >= 0
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Transformer une donnée inconnue en certitude
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: "Rain Bird pont qualite wifi"
+      unique_id: rain_bird_pont_qualite_wifi
+      icon: >
+        {% set raw = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
+        {% set rssi = raw | int(default=0) %}
+        {% if raw in ['unknown', 'unavailable', ''] or rssi >= 0 %}
+          mdi:wifi-strength-alert-outline
+        {% elif rssi >= -67 %}
+          mdi:wifi-strength-4
+        {% elif rssi >= -74 %}
+          mdi:wifi-strength-2
+        {% else %}
+          mdi:wifi-strength-1
+        {% endif %}
+      state: >
+        {% set raw = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
+        {% set rssi = raw | int(default=0) %}
+        {% if raw in ['unknown', 'unavailable', ''] or rssi >= 0 %}
+          inconnu
+        {% elif rssi >= -67 %}
+          bon
+        {% elif rssi >= -74 %}
+          acceptable
+        {% else %}
+          faible
+        {% endif %}
+      attributes:
+        rssi_dbm: >
+          {{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') }}

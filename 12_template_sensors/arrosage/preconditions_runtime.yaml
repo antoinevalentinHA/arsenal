@@ -1,0 +1,103 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Arrosage / Rain Bird — Préconditions runtime
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer une autorisation logique GLOBALE indiquant si les
+#   préconditions terrain (P1–P7) sont TOUTES satisfaites
+#   avant d'envisager une quelconque action d'arrosage.
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   autorisation_logique
+#
+# 🆔 UNIQUE_ID
+#   arrosage_rainbird_preconditions_runtime
+#
+# 🔗 DÉPENDANCES
+#   Lit (sources brutes) :
+#     sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
+#     sensor.rain_bird_bat_bt_2_e9a3_battery_level
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi
+#   Lit (drapeaux terrain) :
+#     input_boolean.arrosage_rainbird_test_station_courte_valide
+#     input_boolean.arrosage_rainbird_test_stop_all_valide
+#     input_boolean.arrosage_rainbird_emplacement_physique_valide
+#     input_boolean.arrosage_rainbird_wifi_qualifie
+#
+# 🧱 PRINCIPE (off par défaut)
+#   on  = BLE RSSI connu ET >= acceptable
+#         ET batterie connue
+#         ET Wi-Fi >= acceptable ET Wi-Fi qualifié (drapeau)
+#         ET station courte validée
+#         ET Stop All validé
+#         ET emplacement physique validé
+#   off = au moins une condition manquante / inconnue.
+#   Référence : contrats/arrosage/10_prerequis_runtime.md
+#
+# ⚠️ NON-ACTIONNEL
+#   Cette autorisation NE déclenche rien. Elle ne fait
+#   qu'attester que les verrous terrain sont levés. Aucune
+#   automatisation ne la consomme dans ce lot.
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre autorisation logique et exécution
+#   - Transformer une donnée inconnue en feu vert
+#
+# 🏷️ STATUT
+#   Autorisation — Arsenal v14.x
+# ==========================================================
+
+- binary_sensor:
+    - name: "Arrosage Rain Bird preconditions runtime"
+      unique_id: arrosage_rainbird_preconditions_runtime
+      icon: >
+        {% set indispo = ['unknown', 'unavailable', ''] %}
+        {% set ble_raw = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
+        {% set ble = ble_raw | int(default=0) %}
+        {% set ble_ok = ble_raw not in indispo and ble < 0 and ble >= -74 %}
+        {% set bat_ok = states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') not in indispo %}
+        {% set wifi_raw = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
+        {% set wifi = wifi_raw | int(default=0) %}
+        {% set wifi_ok = wifi_raw not in indispo and wifi < 0 and wifi >= -74 %}
+        {% set tous = ble_ok and bat_ok and wifi_ok
+              and is_state('input_boolean.arrosage_rainbird_wifi_qualifie', 'on')
+              and is_state('input_boolean.arrosage_rainbird_test_station_courte_valide', 'on')
+              and is_state('input_boolean.arrosage_rainbird_test_stop_all_valide', 'on')
+              and is_state('input_boolean.arrosage_rainbird_emplacement_physique_valide', 'on') %}
+        {{ 'mdi:lock-open-check' if tous else 'mdi:lock' }}
+      state: >
+        {% set indispo = ['unknown', 'unavailable', ''] %}
+        {% set ble_raw = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
+        {% set ble = ble_raw | int(default=0) %}
+        {% set ble_ok = ble_raw not in indispo and ble < 0 and ble >= -74 %}
+        {% set bat_ok = states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') not in indispo %}
+        {% set wifi_raw = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
+        {% set wifi = wifi_raw | int(default=0) %}
+        {% set wifi_ok = wifi_raw not in indispo and wifi < 0 and wifi >= -74 %}
+        {{ ble_ok and bat_ok and wifi_ok
+           and is_state('input_boolean.arrosage_rainbird_wifi_qualifie', 'on')
+           and is_state('input_boolean.arrosage_rainbird_test_station_courte_valide', 'on')
+           and is_state('input_boolean.arrosage_rainbird_test_stop_all_valide', 'on')
+           and is_state('input_boolean.arrosage_rainbird_emplacement_physique_valide', 'on') }}
+      attributes:
+        ble_ok: >
+          {% set indispo = ['unknown', 'unavailable', ''] %}
+          {% set r = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
+          {{ r not in indispo and (r | int(default=0)) < 0 and (r | int(default=0)) >= -74 }}
+        batterie_ok: >
+          {{ states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') not in ['unknown', 'unavailable', ''] }}
+        wifi_ok: >
+          {% set indispo = ['unknown', 'unavailable', ''] %}
+          {% set r = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
+          {{ r not in indispo and (r | int(default=0)) < 0 and (r | int(default=0)) >= -74 }}
+        station_courte_validee: "{{ states('input_boolean.arrosage_rainbird_test_station_courte_valide') }}"
+        stop_all_valide: "{{ states('input_boolean.arrosage_rainbird_test_stop_all_valide') }}"
+        emplacement_valide: "{{ states('input_boolean.arrosage_rainbird_emplacement_physique_valide') }}"
+        wifi_qualifie: "{{ states('input_boolean.arrosage_rainbird_wifi_qualifie') }}"

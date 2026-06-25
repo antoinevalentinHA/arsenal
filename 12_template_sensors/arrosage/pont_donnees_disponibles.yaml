@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Arrosage / Rain Bird — Données du pont disponibles
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Indiquer si le pont rainbird-esp32 délivre actuellement
+#   ses données coeur (aucune entité coeur unknown/unavailable).
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   diagnostic
+#
+# 🆔 UNIQUE_ID
+#   rain_bird_pont_donnees_disponibles
+#
+# 🔗 DÉPENDANCES
+#   Lit :
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_version
+#     sensor.rain_bird_bat_bt_2_e9a3_active_station
+#
+# 🧱 PRINCIPE
+#   on  = toutes les entités coeur ont un état exploitable
+#   off = au moins une est unknown / unavailable / vide
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Confondre disponibilité de donnée et preuve d'arrosage
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x
+# ==========================================================
+
+- binary_sensor:
+    - name: "Rain Bird pont donnees disponibles"
+      unique_id: rain_bird_pont_donnees_disponibles
+      device_class: connectivity
+      icon: >
+        {% set core = [
+          'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat',
+          'sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime',
+          'sensor.rain_bird_bat_bt_2_e9a3_bridge_version',
+          'sensor.rain_bird_bat_bt_2_e9a3_active_station'
+        ] %}
+        {% set bad = core | map('states') | select('in', ['unknown', 'unavailable', '']) | list %}
+        {{ 'mdi:database-check' if bad | length == 0 else 'mdi:database-alert' }}
+      state: >
+        {% set core = [
+          'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat',
+          'sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime',
+          'sensor.rain_bird_bat_bt_2_e9a3_bridge_version',
+          'sensor.rain_bird_bat_bt_2_e9a3_active_station'
+        ] %}
+        {% set bad = core | map('states') | select('in', ['unknown', 'unavailable', '']) | list %}
+        {{ bad | length == 0 }}
+      attributes:
+        indisponibles: >
+          {% set core = [
+            'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat',
+            'sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime',
+            'sensor.rain_bird_bat_bt_2_e9a3_bridge_version',
+            'sensor.rain_bird_bat_bt_2_e9a3_active_station'
+          ] %}
+          {{ core | select('is_state', 'unavailable') | list
+             + core | select('is_state', 'unknown') | list }}
