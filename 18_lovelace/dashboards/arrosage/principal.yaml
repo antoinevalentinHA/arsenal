@@ -8,12 +8,18 @@ views:
       - type: custom:button-card
         template: bouton_navigation_badge_carre
 
+      - type: custom:button-card
+        template: bouton_parametres_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /reglages-arrosage-dashboard
+
     # ==========================================================
-    # 💧 ARROSAGE — VUE MÉTIER
+    # 💧 ARROSAGE — VUE MÉTIER (lecture seule)
     # ----------------------------------------------------------
-    # Contexte pluie et seuils de suspension. Observation seule :
-    # ces seuils paramètrent le diagnostic, ils n'actionnent
-    # aucune station et ne déclenchent aucun arrosage.
+    # Contexte pluie et suspension. Observation seule : aucune
+    # carte n'est actionnable, aucun paramétrage ici. Les seuils
+    # modifiables vivent dans /reglages-arrosage-dashboard.
     # ==========================================================
     cards:
       - type: vertical-stack
@@ -67,6 +73,12 @@ views:
                   label_off: Pas de suspension
                   color_on: 'rgba(33, 150, 243, 0.2)'
                   color_off: 'rgba(158, 158, 158, 0.2)'
+                tap_action:
+                  action: none
+                hold_action:
+                  action: none
+                double_tap_action:
+                  action: none
 
           - type: markdown
             content: >
@@ -76,63 +88,3 @@ views:
               • Fiabilité : {{ state_attr('binary_sensor.arrosage_suspension_pluie', 'fiabilite') or '—' }}
               </div>
             text_only: true
-
-          # =========================================================
-          # ⚙️ Seuils pluie (réglage — non actionnel)
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: ⚙️ Seuils pluie
-
-          - type: markdown
-            content: >
-              <div style="font-size: 13px; line-height: 1.45;">
-              Ces seuils paramètrent <b>uniquement</b> le diagnostic de suspension
-              pluie ci-dessus. Ils n'actionnent <b>aucune</b> station et ne
-              déclenchent <b>aucun</b> arrosage.
-              </div>
-            text_only: true
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: input_number.arrosage_pluie_suspension_mm_24h
-                name: Seuil 24 h (mm)
-                icon: mdi:cup-water
-                tap_action:
-                  action: more-info
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: input_number.arrosage_pluie_suspension_mm_48h
-                name: Seuil 48 h (mm)
-                icon: mdi:cup-water
-                tap_action:
-                  action: more-info
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: input_number.arrosage_pluie_suspension_mm_72h
-                name: Seuil 72 h (mm)
-                icon: mdi:cup-water
-                tap_action:
-                  action: more-info
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: input_number.arrosage_pluie_prevue_mm_seuil
-                name: Seuil pluie prévue (mm)
-                icon: mdi:weather-cloudy-clock
-                tap_action:
-                  action: more-info
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: input_number.arrosage_pluie_prevue_horizon_heures
-                name: Horizon pluie prévue (h)
-                icon: mdi:timer-sand
-                tap_action:
-                  action: more-info
