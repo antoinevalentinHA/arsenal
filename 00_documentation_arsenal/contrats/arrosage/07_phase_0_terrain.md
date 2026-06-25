@@ -69,10 +69,23 @@ matériel lui-même.
 | T14 | **Disponibilité ESP32 sur l'alimentation cible** | Comportement sur l'alimentation prévue (EcoFlow / cible retenue) |
 | T15 | **Reconnexion après coupure** | Le pont se rétablit seul après perte Wi-Fi / MQTT / BLE / alimentation |
 | T16 | **OTA du pont** | Vérifier le sujet OTA : le firmware pointe-t-il vers le **fork** `antoinevalentinHA/rainbird-esp32` ou vers l'**amont** ? |
+| T17 | **Atténuation BLE — fosse + plaque d'acier** | Le contrôleur est dans une **fosse recouverte d'une plaque d'acier** : mesurer la dégradation BLE réelle et confirmer qu'un poll reste fiable malgré l'écran métallique |
+| T18 | **Baseline Wi-Fi du pont** | Qualifier `bridge_wifi_rssi` (≈ **-77 dBm** observé, **faible** ; latence moyenne élevée) : décider s'il est acceptable ou s'il faut renforcer le lien avant production |
+| T19 | **Emplacement physique définitif de l'ESP32** | Retenir et valider la position d'installation finale (lien BLE **et** Wi-Fi tenables au point réel) |
+| T20 | **Baseline batterie & RSSI** | Établir les valeurs de référence `battery_level`/`battery_voltage`, `ble_rssi`, `bridge_wifi_rssi` et les juger tenables dans la durée |
 
 > T16 est un point de **gouvernance** : un OTA pointant vers l'amont pourrait
 > remplacer le firmware par une version non maîtrisée. À clarifier avant mise en
 > production.
+
+> **T17–T20 — pré-requis matériels révélés par le déploiement réel.** Ces tests
+> ont été ajoutés **après** le flash et la découverte MQTT du pont
+> ([`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md)) : la
+> contrainte de la **fosse à plaque d'acier** et la **faiblesse du Wi-Fi** ne
+> sont apparues qu'à l'installation. Ils sont consolidés en barrière de sortie par
+> [`10_prerequis_runtime.md`](10_prerequis_runtime.md) (P2, P5, P6, P7). **T17 est
+> couplé à T13** : tant que l'atténuation métallique n'est pas qualifiée, le BLE
+> reste **présumé**.
 
 ---
 
@@ -87,6 +100,9 @@ La Phase 0 est **close** lorsque :
       **nombre réel de stations** établi (zéro station fantôme non identifiée) ;
 - [ ] T13–T16 : portée BLE boîtier fermé validée, ESP32 stable sur alimentation
       cible, reconnexion automatique vérifiée, **sujet OTA tranché** ;
+- [ ] T17–T20 : **atténuation BLE fosse/plaque d'acier qualifiée**, baseline
+      Wi-Fi jugée acceptable, **emplacement physique définitif validé**, baselines
+      batterie/RSSI établies et tenables ;
 - [ ] tous les comportements **présumés** du domaine sont passés en
       **confirmés** (ou la doctrine concernée a été **révisée**) ;
 - [ ] aucun nom conceptuel `‹…›` n'est promu en `entity_id` runtime **avant**
@@ -105,9 +121,12 @@ La Phase 0 est **close** lorsque :
 3. Le **mapping capteur sol ↔ zone** (T02) conditionne le besoin par zone.
 4. Le **nombre réel de stations** (T12) et le **sujet OTA** (T16) doivent être
    tranchés avant production.
-5. Un comportement **non confirmé** reste **présumé** : il ne fonde aucune
+5. L'**atténuation BLE de la fosse à plaque d'acier** (T17) et l'**emplacement
+   physique définitif** (T19) conditionnent la fiabilité du poll : le BLE reste
+   **présumé** tant qu'ils ne sont pas qualifiés.
+6. Un comportement **non confirmé** reste **présumé** : il ne fonde aucune
    automatisation.
-6. La clôture de la Phase 0 **promeut** les hypothèses en faits — et **seulement
+7. La clôture de la Phase 0 **promeut** les hypothèses en faits — et **seulement
    alors** les noms conceptuels peuvent devenir des entités réelles.
 
 ---
@@ -118,5 +137,8 @@ La Phase 0 est **close** lorsque :
 - Régimes & secours : [`02_regimes.md`](02_regimes.md)
 - Besoin par zone (dépend du mapping) : [`04_besoin_hydrique.md`](04_besoin_hydrique.md)
 - Présumé vs confirmé : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)
+- Inventaire du pont (relevé runtime) : [`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md)
+- Classification des entités : [`09_classification_entites.md`](09_classification_entites.md)
+- Pré-requis runtime (barrière de sortie) : [`10_prerequis_runtime.md`](10_prerequis_runtime.md)
 - Résilience / reconnexion : [`resilience_integrations.md`](../resilience_integrations.md)
 - Index du domaine : [`README.md`](README.md)
