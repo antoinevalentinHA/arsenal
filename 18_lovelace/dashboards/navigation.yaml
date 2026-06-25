@@ -105,6 +105,17 @@ views:
 
                   - type: custom:button-card
                     template: bouton_navigation
+                    name: Arrosage
+                    icon: mdi:sprinkler-variant
+                    styles:
+                      icon:
+                        - color: "#43A047"
+                    tap_action:
+                      action: navigate
+                      navigation_path: /diagnostics-arrosage-dashboard
+
+                  - type: custom:button-card
+                    template: bouton_navigation
                     name: Rec. météo
                     icon: mdi:trophy
                     styles:
