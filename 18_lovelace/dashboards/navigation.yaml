@@ -112,7 +112,7 @@ views:
                         - color: "#43A047"
                     tap_action:
                       action: navigate
-                      navigation_path: /diagnostics-arrosage-dashboard
+                      navigation_path: /arrosage-dashboard
 
                   - type: custom:button-card
                     template: bouton_navigation
