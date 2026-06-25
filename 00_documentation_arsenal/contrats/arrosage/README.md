@@ -52,6 +52,15 @@ sont **conceptuels** et marqués par des chevrons : `‹besoin_hydrique_zone›`
 | [`05_intention.md`](05_intention.md) | Intention d'arrosage : séparation stricte besoin → intention → exécution |
 | [`06_observation_et_preuves.md`](06_observation_et_preuves.md) | Honnêteté d'observation : ACK BLE ≠ preuve hydraulique ; confirmé / présumé / inconnu |
 | [`07_phase_0_terrain.md`](07_phase_0_terrain.md) | Phase 0 obligatoire de terrain avant toute automatisation réelle |
+| [`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md) | **Relevé runtime factuel** du pont `rainbird-esp32` et des entités MQTT réellement exposées (recenser ≠ ratifier) |
+| [`09_classification_entites.md`](09_classification_entites.md) | Classification doctrinale de chaque entité : action candidate / observation / dangereux / futur régime / interdit / ignoré |
+| [`10_prerequis_runtime.md`](10_prerequis_runtime.md) | Barrière de sortie : pré-requis runtime (poll BLE, batterie/RSSI, station courte, Stop All, emplacement, Wi-Fi, plaque acier) avant toute automatisation |
+
+> **Deux natures de documents.** Les fichiers `01`–`07` et `09`–`10` sont
+> **normatifs** (doctrine et invariants opposables). Le fichier `08` est
+> **factuel** : un **relevé** de la surface réelle du pont après découverte MQTT,
+> qui **ne crée aucune entité Arsenal** et **ne fige rien**. Recenser une entité
+> exposée par le pont ≠ la ratifier comme commande Arsenal.
 
 ---
 
@@ -68,7 +77,10 @@ Finalité métier (01)
 ```
 
 > **Pré-condition transverse :** la Phase 0 terrain (07) est **obligatoire**
-> avant toute bascule de l'intention vers une exécution réelle.
+> avant toute bascule de l'intention vers une exécution réelle. Le **relevé du
+> pont** (08), la **classification des entités** (09) et les **pré-requis
+> runtime** (10) instruisent cette bascule sans la déclencher — ils recensent,
+> classent et conditionnent, **sans rien créer**.
 
 ---
 
@@ -84,7 +96,9 @@ Finalité métier (01)
 > Le détail des hypothèses du pont (ACK BLE, `rain_delay`, stations fantômes,
 > OTA) et leur vérification sont portés par
 > [`03_coexistence_rainbird.md`](03_coexistence_rainbird.md) et
-> [`07_phase_0_terrain.md`](07_phase_0_terrain.md).
+> [`07_phase_0_terrain.md`](07_phase_0_terrain.md). Le **relevé factuel** de ce
+> pont une fois flashé et découvert (IP, MAC, firmware, entités MQTT) est tenu par
+> [`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md).
 
 ---
 
