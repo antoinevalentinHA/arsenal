@@ -1,0 +1,71 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Arrosage / Rain Bird — Qualité BLE du pont
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Qualifier le lien BLE pont <-> contrôleur Rain Bird en
+#   niveau lisible (inconnu / faible / acceptable / bon).
+#
+# 🧩 PÉRIMÈTRE
+#   - Calcul ou dérivation uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   diagnostic
+#
+# 🆔 UNIQUE_ID
+#   rain_bird_pont_qualite_ble
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
+#
+# ⚠️ BLE NON VALIDÉ
+#   La validation terrain BLE n'est pas terminée et le
+#   contrôleur est sous plaque d'acier (fosse). Une donnée
+#   absente reste 'inconnu', jamais 'bon'. Seuils provisoires
+#   en attente de T17 (atténuation métallique).
+#
+# 🧱 SEUILS (dBm, provisoires)
+#   - bon        : rssi >= -67
+#   - acceptable : -74 <= rssi <= -68
+#   - faible     : rssi <= -75
+#   - inconnu    : donnée unknown / unavailable / non numérique / >= 0
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Transformer une donnée inconnue en certitude
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: "Rain Bird pont qualite ble"
+      unique_id: rain_bird_pont_qualite_ble
+      icon: >
+        {% set raw = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
+        {% set rssi = raw | int(default=0) %}
+        {% if raw in ['unknown', 'unavailable', ''] or rssi >= 0 %}
+          mdi:bluetooth-off
+        {% elif rssi >= -67 %}
+          mdi:bluetooth-connect
+        {% else %}
+          mdi:bluetooth
+        {% endif %}
+      state: >
+        {% set raw = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
+        {% set rssi = raw | int(default=0) %}
+        {% if raw in ['unknown', 'unavailable', ''] or rssi >= 0 %}
+          inconnu
+        {% elif rssi >= -67 %}
+          bon
+        {% elif rssi >= -74 %}
+          acceptable
+        {% else %}
+          faible
+        {% endif %}
+      attributes:
+        rssi_dbm: >
+          {{ states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') }}

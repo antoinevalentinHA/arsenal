@@ -1,0 +1,81 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSOR
+#     Arrosage / Rain Bird — Santé synthétique du pont
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Produire un état synthétique unique de santé du pont
+#   rainbird-esp32 pour supervision et UI.
+#
+# 🧩 PÉRIMÈTRE
+#   - Calcul ou dérivation uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   synthese
+#
+# 🆔 UNIQUE_ID
+#   rain_bird_pont_sante
+#
+# 🔗 DÉPENDANCES
+#   Lit (sources brutes du pont) :
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_version
+#     sensor.rain_bird_bat_bt_2_e9a3_active_station
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi
+#     sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
+#
+# 🧱 PRINCIPE (priorité descendante)
+#   1. inconnu      : données coeur indisponibles
+#   2. indisponible : heartbeat périmé (> 900 s)
+#   3. degrade      : Wi-Fi faible OU BLE non qualifié (inconnu/faible)
+#   4. ok           : tout exploitable et qualifié
+#   BLE non validé => la santé ne peut pas être 'ok' aujourd'hui.
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Transformer une donnée inconnue en certitude
+#
+# 🏷️ STATUT
+#   Synthèse — Arsenal v14.x
+# ==========================================================
+
+- sensor:
+    - name: "Rain Bird pont sante"
+      unique_id: rain_bird_pont_sante
+      state: >
+        {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
+        {% set indispo = ['unknown', 'unavailable', ''] %}
+        {% set core = [
+          hb,
+          'sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime',
+          'sensor.rain_bird_bat_bt_2_e9a3_bridge_version',
+          'sensor.rain_bird_bat_bt_2_e9a3_active_station'
+        ] %}
+        {% set core_bad = core | map('states') | select('in', indispo) | list %}
+
+        {% set wifi_raw = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
+        {% set wifi = wifi_raw | int(default=0) %}
+        {% set wifi_faible = (wifi_raw in indispo) or wifi >= 0 or wifi <= -75 %}
+
+        {% set ble_raw = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
+        {% set ble = ble_raw | int(default=0) %}
+        {% set ble_non_qualifie = (ble_raw in indispo) or ble >= 0 or ble <= -75 %}
+
+        {% if core_bad | length > 0 %}
+          inconnu
+        {% elif states(hb) in indispo
+              or (now() - states[hb].last_updated).total_seconds() >= 900 %}
+          indisponible
+        {% elif wifi_faible or ble_non_qualifie %}
+          degrade
+        {% else %}
+          ok
+        {% endif %}
+      attributes:
+        wifi_rssi: "{{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') }}"
+        ble_rssi: "{{ states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') }}"
+        battery_level: "{{ states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') }}"
+        heartbeat_etat: "{{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat') }}"

@@ -1,0 +1,46 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     Arrosage / Rain Bird — Drapeaux de tests terrain
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Représenter, comme drapeaux persistants, l'état FAIT /
+#   NON FAIT des tests terrain Phase 0 non dérivables d'un
+#   capteur (jugements humains).
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage d'état binaire uniquement
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#   - Aucune action directe sur un équipement
+#
+# 🔖 NATURE
+#   Marqueur de validation terrain (mémoire binaire)
+#
+# 🔗 CORRESPONDANCE CONTRATS
+#   contrats/arrosage/10_prerequis_runtime.md : P3, P4, P5, P6
+#   contrats/arrosage/07_phase_0_terrain.md   : T08/T10, T19, T18
+#
+# 🚫 INTERDITS
+#   - Confondre état et décision
+#   - Déclencher directement une action
+#   - Constituer à lui seul une autorité décisionnelle
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+arrosage_rainbird_test_station_courte_valide:
+  name: "Arrosage Rain Bird — Test station courte validé"
+  icon: mdi:water-check
+
+arrosage_rainbird_test_stop_all_valide:
+  name: "Arrosage Rain Bird — Test Stop All validé"
+  icon: mdi:water-off
+
+arrosage_rainbird_emplacement_physique_valide:
+  name: "Arrosage Rain Bird — Emplacement physique validé"
+  icon: mdi:map-marker-check
+
+arrosage_rainbird_wifi_qualifie:
+  name: "Arrosage Rain Bird — Wi-Fi qualifié suffisant"
+  icon: mdi:wifi-check

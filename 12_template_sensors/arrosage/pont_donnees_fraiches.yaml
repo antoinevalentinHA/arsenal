@@ -1,0 +1,70 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Arrosage / Rain Bird — Données du pont fraîches
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Indiquer si le pont a rafraîchi son heartbeat récemment,
+#   sans interpréter la valeur du heartbeat (uniquement son
+#   horodatage de mise à jour).
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   diagnostic
+#
+# 🆔 UNIQUE_ID
+#   rain_bird_pont_donnees_fraiches
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat
+#         (état + last_updated)
+#
+# 🧱 PRINCIPE
+#   on  = heartbeat exploitable ET mis à jour il y a < 900 s
+#   off = heartbeat unknown / unavailable OU plus ancien que
+#         le seuil (donnée périmée). Le doute penche vers off,
+#         jamais vers un faux 'frais'.
+#   Seuil 900 s proposé (Wi-Fi faible / latence élevée) — ajustable.
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Déclencher une action
+#   - Présenter une donnée périmée comme fraîche
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x
+# ==========================================================
+
+- binary_sensor:
+    - name: "Rain Bird pont donnees fraiches"
+      unique_id: rain_bird_pont_donnees_fraiches
+      icon: >
+        {% set e = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
+        {% set st = states(e) %}
+        {% if st in ['unknown', 'unavailable', ''] %}
+          mdi:timer-alert-outline
+        {% elif (now() - states[e].last_updated).total_seconds() < 900 %}
+          mdi:timer-check-outline
+        {% else %}
+          mdi:timer-alert-outline
+        {% endif %}
+      state: >
+        {% set e = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
+        {% set st = states(e) %}
+        {% if st in ['unknown', 'unavailable', ''] %}
+          false
+        {% else %}
+          {{ (now() - states[e].last_updated).total_seconds() < 900 }}
+        {% endif %}
+      attributes:
+        age_secondes: >
+          {% set e = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
+          {% if states(e) in ['unknown', 'unavailable', ''] %}
+            inconnu
+          {% else %}
+            {{ (now() - states[e].last_updated).total_seconds() | int }}
+          {% endif %}
+        seuil_secondes: "900"
