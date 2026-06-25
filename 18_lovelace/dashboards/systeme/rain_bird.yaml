@@ -49,7 +49,8 @@ views:
             template: section_header
             name: 🔒 Préconditions runtime
 
-          - type: tile
+          - type: custom:button-card
+            template: status_72_on_off
             entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
             name: Préconditions runtime (barrière de sortie)
             icon: mdi:check-decagram
@@ -87,22 +88,26 @@ views:
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: socle_toggle
                 entity: input_boolean.arrosage_rainbird_test_station_courte_valide
                 name: Test station courte
                 icon: mdi:water
 
-              - type: tile
+              - type: custom:button-card
+                template: socle_toggle
                 entity: input_boolean.arrosage_rainbird_test_stop_all_valide
                 name: Test Stop All
                 icon: mdi:stop-circle-outline
 
-              - type: tile
+              - type: custom:button-card
+                template: socle_toggle
                 entity: input_boolean.arrosage_rainbird_emplacement_physique_valide
                 name: Emplacement physique
                 icon: mdi:map-marker-check
 
-              - type: tile
+              - type: custom:button-card
+                template: socle_toggle
                 entity: input_boolean.arrosage_rainbird_wifi_qualifie
                 name: Wi-Fi qualifié
                 icon: mdi:wifi-check
@@ -118,17 +123,20 @@ views:
             columns: 3
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: rain_bird_status_health
                 entity: sensor.rain_bird_pont_sante
                 name: Santé du pont
                 icon: mdi:heart-pulse
 
-              - type: tile
+              - type: custom:button-card
+                template: status_72_on_off
                 entity: binary_sensor.rain_bird_pont_donnees_disponibles
                 name: Données disponibles
                 icon: mdi:database-check
 
-              - type: tile
+              - type: custom:button-card
+                template: status_72_on_off
                 entity: binary_sensor.rain_bird_pont_donnees_fraiches
                 name: Données fraîches
                 icon: mdi:clock-check-outline
@@ -154,12 +162,14 @@ views:
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.rain_bird_pont_qualite_wifi
                 name: Qualité Wi-Fi
                 icon: mdi:wifi
 
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.rain_bird_pont_qualite_ble
                 name: Qualité BLE
                 icon: mdi:bluetooth
