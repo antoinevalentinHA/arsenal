@@ -1,0 +1,292 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /navigation-dashboard
+
+    # ==========================================================
+    # 💧 CONTENU PRINCIPAL — COCKPIT DIAGNOSTIC ARROSAGE
+    # ----------------------------------------------------------
+    # Observabilité seule. Aucune action d'arrosage, aucun appel
+    # Rain Bird, aucun pilotage de station. L'UI montre, elle ne
+    # décide pas.
+    # ==========================================================
+    cards:
+      - type: vertical-stack
+        cards:
+          # =========================================================
+          # 🛰️ Bandeau — Observation seule (pont non actionnable)
+          # =========================================================
+          - type: markdown
+            content: >
+              <div style="background: rgba(33, 150, 243, 0.2); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.45;">
+              <b>🛰️ Cockpit diagnostic — observation seule.</b><br>
+              Cette vue <b>observe</b> le pont Rain Bird (ESP32 / MQTT), la qualité
+              des liens et le contexte pluie. Elle ne pilote <b>aucune</b> station
+              et ne déclenche <b>aucune</b> action d'arrosage.<br>
+              Le contrôleur Rain Bird reste <b>non actionnable</b> par Arsenal tant
+              que les préconditions runtime ne sont pas toutes confirmées.
+              </div>
+
+          # Emphase conditionnelle : préconditions non satisfaites → rouge canon
+          - type: conditional
+            conditions:
+              - entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
+                state: "off"
+            card:
+              type: markdown
+              content: >
+                <div style="background: rgba(244, 67, 54, 0.2); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.45;">
+                <b>⛔ Rain Bird non actionnable.</b><br>
+                Au moins une précondition runtime est <b>non satisfaite</b> :
+                Arsenal <b>s'abstient</b> et laisse le secours Rain Bird opérer.
+                Aucune commande de station n'est possible dans cet état.
+                </div>
+
+          # =========================================================
+          # 🔒 Préconditions runtime
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔒 Préconditions runtime
+
+          - type: tile
+            entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
+            name: Préconditions runtime (barrière de sortie)
+            icon: mdi:check-decagram
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.6;">
+              <b>Détail des préconditions :</b><br>
+              • BLE acceptable : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'ble_ok') else '⛔' }}<br>
+              • Batterie connue : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'batterie_ok') else '⛔' }}<br>
+              • Wi-Fi acceptable : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'wifi_ok') else '⛔' }}<br>
+              • Test station courte validé : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'station_courte_validee') else '⛔' }}<br>
+              • Test Stop All validé : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'stop_all_valide') else '⛔' }}<br>
+              • Emplacement physique validé : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'emplacement_valide') else '⛔' }}<br>
+              • Wi-Fi qualifié : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'wifi_qualifie') else '⛔' }}
+              </div>
+
+          # =========================================================
+          # 🧪 Validation terrain (helpers — saisie opérateur)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🧪 Validation terrain
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.45;">
+              Drapeaux de <b>validation terrain</b> renseignés par l'opérateur.
+              Ils alimentent la barrière de sortie ci-dessus — ils ne pilotent
+              <b>aucune</b> station Rain Bird.
+              </div>
+            text_only: true
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: input_boolean.arrosage_rainbird_test_station_courte_valide
+                name: Test station courte
+                icon: mdi:water
+
+              - type: tile
+                entity: input_boolean.arrosage_rainbird_test_stop_all_valide
+                name: Test Stop All
+                icon: mdi:stop-circle-outline
+
+              - type: tile
+                entity: input_boolean.arrosage_rainbird_emplacement_physique_valide
+                name: Emplacement physique
+                icon: mdi:map-marker-check
+
+              - type: tile
+                entity: input_boolean.arrosage_rainbird_wifi_qualifie
+                name: Wi-Fi qualifié
+                icon: mdi:wifi-check
+
+          # =========================================================
+          # 🛰️ Pont ESP32 / MQTT
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🛰️ Pont ESP32 / MQTT
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.rain_bird_pont_sante
+                name: Santé du pont
+                icon: mdi:heart-pulse
+
+              - type: tile
+                entity: binary_sensor.rain_bird_pont_donnees_disponibles
+                name: Données disponibles
+                icon: mdi:database-check
+
+              - type: tile
+                entity: binary_sensor.rain_bird_pont_donnees_fraiches
+                name: Données fraîches
+                icon: mdi:clock-check-outline
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.6;">
+              <b>Santé détaillée :</b><br>
+              • Heartbeat : {{ state_attr('sensor.rain_bird_pont_sante', 'heartbeat_etat') or '—' }}<br>
+              • Wi-Fi RSSI : {{ state_attr('sensor.rain_bird_pont_sante', 'wifi_rssi') or '—' }} dBm<br>
+              • BLE RSSI : {{ state_attr('sensor.rain_bird_pont_sante', 'ble_rssi') or '—' }} dBm<br>
+              • Batterie : {{ state_attr('sensor.rain_bird_pont_sante', 'battery_level') or '—' }} %
+              </div>
+
+          # =========================================================
+          # 📶 Qualité des liens
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📶 Qualité des liens
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.rain_bird_pont_qualite_wifi
+                name: Qualité Wi-Fi
+                icon: mdi:wifi
+
+              - type: tile
+                entity: sensor.rain_bird_pont_qualite_ble
+                name: Qualité BLE
+                icon: mdi:bluetooth
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.6;">
+              • Wi-Fi : {{ state_attr('sensor.rain_bird_pont_qualite_wifi', 'rssi_dbm') or '—' }} dBm<br>
+              • BLE : {{ state_attr('sensor.rain_bird_pont_qualite_ble', 'rssi_dbm') or '—' }} dBm
+              </div>
+            text_only: true
+
+          # =========================================================
+          # 📝 Diagnostic Rain Bird (texte)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📝 Diagnostic Rain Bird
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.5;">
+              {{ states('sensor.rain_bird_pont_diagnostic') }}
+              </div>
+            text_only: true
+
+          # =========================================================
+          # 🌧️ Pluie observée & prévue
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🌧️ Pluie observée & prévue
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.pluie_cumul_24h
+                name: Cumul 24 h
+                icon: mdi:weather-rainy
+
+              - type: tile
+                entity: sensor.pluie_cumul_48h
+                name: Cumul 48 h
+                icon: mdi:weather-rainy
+
+              - type: tile
+                entity: sensor.pluie_cumul_72h
+                name: Cumul 72 h
+                icon: mdi:weather-pouring
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: sensor.pluie_prevue
+                name: Pluie prévue
+                icon: mdi:weather-cloudy-clock
+
+              - type: tile
+                entity: binary_sensor.arrosage_suspension_pluie
+                name: Suspension pluie
+                icon: mdi:water-off
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.6;">
+              <b>Diagnostic suspension pluie :</b><br>
+              • Motif : {{ state_attr('binary_sensor.arrosage_suspension_pluie', 'motif') or '—' }}<br>
+              • Fiabilité : {{ state_attr('binary_sensor.arrosage_suspension_pluie', 'fiabilite') or '—' }}
+              </div>
+            text_only: true
+
+          # =========================================================
+          # ⚙️ Seuils pluie (réglage — non actionnel)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Seuils pluie
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.45;">
+              Ces seuils paramètrent <b>uniquement</b> le diagnostic de suspension
+              pluie ci-dessus. Ils n'actionnent <b>aucune</b> station et ne
+              déclenchent <b>aucun</b> arrosage.
+              </div>
+            text_only: true
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: tile
+                entity: input_number.arrosage_pluie_suspension_mm_24h
+                name: Seuil 24 h (mm)
+                icon: mdi:cup-water
+
+              - type: tile
+                entity: input_number.arrosage_pluie_suspension_mm_48h
+                name: Seuil 48 h (mm)
+                icon: mdi:cup-water
+
+              - type: tile
+                entity: input_number.arrosage_pluie_suspension_mm_72h
+                name: Seuil 72 h (mm)
+                icon: mdi:cup-water
+
+              - type: tile
+                entity: input_number.arrosage_pluie_prevue_mm_seuil
+                name: Seuil pluie prévue (mm)
+                icon: mdi:weather-cloudy-clock
+
+              - type: tile
+                entity: input_number.arrosage_pluie_prevue_horizon_heures
+                name: Horizon pluie prévue (h)
+                icon: mdi:timer-sand
