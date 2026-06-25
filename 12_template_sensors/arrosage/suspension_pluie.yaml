@@ -1,0 +1,127 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE BINARY_SENSOR
+#     Arrosage — Diagnostic de suspension pluie
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Indiquer, à titre de DIAGNOSTIC, s'il a assez plu (observé)
+#   ou s'il est assez prévu de pleuvoir (présumé) pour suspendre
+#   un arrosage. Aide à la décision future — n'agit pas.
+#
+# 🧩 PÉRIMÈTRE
+#   - Évaluation booléenne uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#   - Aucun appel Rain Bird
+#
+# 🔖 NATURE
+#   diagnostic
+#
+# 🆔 UNIQUE_ID
+#   arrosage_suspension_pluie
+#
+# 🔗 DÉPENDANCES
+#   Lit (observé — fait) :
+#     sensor.pluie_cumul_24h / 48h / 72h
+#   Lit (prévu — présomption) :
+#     sensor.pluie_prevue
+#   Lit (seuils) :
+#     input_number.arrosage_pluie_suspension_mm_24h / 48h / 72h
+#     input_number.arrosage_pluie_prevue_mm_seuil
+#
+# 🧱 PRINCIPE (off par défaut)
+#   on  = cumul 24h >= seuil  OU  48h >= seuil  OU  72h >= seuil
+#         OU  pluie prévue >= seuil
+#   off = aucun seuil atteint, OU toutes les sources inconnues.
+#   Doute => OFF (doctrine F1 : ne jamais priver le jardin sur
+#   une donnée absente). Une source inconnue ne déclenche rien.
+#
+# 🧭 HONNÊTETÉ (contrat arrosage 06)
+#   - 'fiabilite' = confirme si un cumul OBSERVÉ atteint le seuil.
+#   - 'fiabilite' = presume si SEULE la pluie prévue atteint le seuil.
+#   - La pluie prévue ne vaut jamais preuve d'humidité du sol.
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement / Rain Bird
+#   - Déclencher une suspension ou un arrosage
+#   - Présenter une présomption comme un fait
+#
+# 🏷️ STATUT
+#   Diagnostic — Arsenal v14.x
+# ==========================================================
+
+- binary_sensor:
+    - name: "Arrosage suspension pluie"
+      unique_id: arrosage_suspension_pluie
+      default_entity_id: binary_sensor.arrosage_suspension_pluie
+      icon: >
+        {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set v24 = states('sensor.pluie_cumul_24h') %}
+        {% set v48 = states('sensor.pluie_cumul_48h') %}
+        {% set v72 = states('sensor.pluie_cumul_72h') %}
+        {% set vp  = states('sensor.pluie_prevue') %}
+        {% set s24 = states('input_number.arrosage_pluie_suspension_mm_24h') | float(0) %}
+        {% set s48 = states('input_number.arrosage_pluie_suspension_mm_48h') | float(0) %}
+        {% set s72 = states('input_number.arrosage_pluie_suspension_mm_72h') | float(0) %}
+        {% set sp  = states('input_number.arrosage_pluie_prevue_mm_seuil') | float(0) %}
+        {% set obs = (v24 not in indispo and v24 | float(0) >= s24)
+              or (v48 not in indispo and v48 | float(0) >= s48)
+              or (v72 not in indispo and v72 | float(0) >= s72) %}
+        {% set prev = vp not in indispo and vp | float(0) >= sp %}
+        {{ 'mdi:umbrella' if (obs or prev) else 'mdi:watering-can' }}
+      state: >
+        {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set v24 = states('sensor.pluie_cumul_24h') %}
+        {% set v48 = states('sensor.pluie_cumul_48h') %}
+        {% set v72 = states('sensor.pluie_cumul_72h') %}
+        {% set vp  = states('sensor.pluie_prevue') %}
+        {% set s24 = states('input_number.arrosage_pluie_suspension_mm_24h') | float(0) %}
+        {% set s48 = states('input_number.arrosage_pluie_suspension_mm_48h') | float(0) %}
+        {% set s72 = states('input_number.arrosage_pluie_suspension_mm_72h') | float(0) %}
+        {% set sp  = states('input_number.arrosage_pluie_prevue_mm_seuil') | float(0) %}
+        {% set obs = (v24 not in indispo and v24 | float(0) >= s24)
+              or (v48 not in indispo and v48 | float(0) >= s48)
+              or (v72 not in indispo and v72 | float(0) >= s72) %}
+        {% set prev = vp not in indispo and vp | float(0) >= sp %}
+        {{ obs or prev }}
+      attributes:
+        fiabilite: >
+          {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+          {% set v24 = states('sensor.pluie_cumul_24h') %}
+          {% set v48 = states('sensor.pluie_cumul_48h') %}
+          {% set v72 = states('sensor.pluie_cumul_72h') %}
+          {% set vp  = states('sensor.pluie_prevue') %}
+          {% set s24 = states('input_number.arrosage_pluie_suspension_mm_24h') | float(0) %}
+          {% set s48 = states('input_number.arrosage_pluie_suspension_mm_48h') | float(0) %}
+          {% set s72 = states('input_number.arrosage_pluie_suspension_mm_72h') | float(0) %}
+          {% set sp  = states('input_number.arrosage_pluie_prevue_mm_seuil') | float(0) %}
+          {% set obs = (v24 not in indispo and v24 | float(0) >= s24)
+                or (v48 not in indispo and v48 | float(0) >= s48)
+                or (v72 not in indispo and v72 | float(0) >= s72) %}
+          {% set prev = vp not in indispo and vp | float(0) >= sp %}
+          {% if obs %}
+            confirme
+          {% elif prev %}
+            presume
+          {% else %}
+            aucun
+          {% endif %}
+        motif: >
+          {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+          {% set v24 = states('sensor.pluie_cumul_24h') %}
+          {% set v48 = states('sensor.pluie_cumul_48h') %}
+          {% set v72 = states('sensor.pluie_cumul_72h') %}
+          {% set vp  = states('sensor.pluie_prevue') %}
+          {% set s24 = states('input_number.arrosage_pluie_suspension_mm_24h') | float(0) %}
+          {% set s48 = states('input_number.arrosage_pluie_suspension_mm_48h') | float(0) %}
+          {% set s72 = states('input_number.arrosage_pluie_suspension_mm_72h') | float(0) %}
+          {% set sp  = states('input_number.arrosage_pluie_prevue_mm_seuil') | float(0) %}
+          {% set ns = namespace(m=[]) %}
+          {% if v24 not in indispo and v24 | float(0) >= s24 %}{% set ns.m = ns.m + ['observe_24h'] %}{% endif %}
+          {% if v48 not in indispo and v48 | float(0) >= s48 %}{% set ns.m = ns.m + ['observe_48h'] %}{% endif %}
+          {% if v72 not in indispo and v72 | float(0) >= s72 %}{% set ns.m = ns.m + ['observe_72h'] %}{% endif %}
+          {% if vp not in indispo and vp | float(0) >= sp %}{% set ns.m = ns.m + ['prevue'] %}{% endif %}
+          {{ ns.m | join(', ') if ns.m | length > 0 else 'aucun' }}
+        mm_24h: "{{ states('sensor.pluie_cumul_24h') }}"
+        mm_48h: "{{ states('sensor.pluie_cumul_48h') }}"
+        mm_72h: "{{ states('sensor.pluie_cumul_72h') }}"
+        mm_prevue: "{{ states('sensor.pluie_prevue') }}"

@@ -244,6 +244,11 @@ include:
     - sensor.pluie_total_local
     - sensor.pluie_hebdomadaire
     - sensor.pluie_journaliere
+    - sensor.pluie_cumul_24h
+    - sensor.pluie_cumul_48h
+    - sensor.pluie_cumul_72h
+    - sensor.pluie_prevue
+    - binary_sensor.arrosage_suspension_pluie
     - input_number.palmares_pluie_journalier_rang_01_valeur
     - input_text.palmares_pluie_journalier_rang_01_date
     - input_number.palmares_pluie_journalier_rang_02_valeur

@@ -1,0 +1,128 @@
+# ==========================================================
+# 🧠 ARSENAL — TRIGGERED TEMPLATE SENSOR
+#     Météo — Pluie prévue (cumul horizon)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer le cumul de précipitations PRÉVUES (mm) sur un
+#   horizon glissant à venir, via Met.no.
+#
+# 🧩 PÉRIMÈTRE
+#   - Capture événementielle uniquement
+#   - Aucune action
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   projection_differee | snapshot_evenementiel
+#
+# 🆔 UNIQUE_ID
+#   pluie_prevue
+#
+# 📣 DÉCLENCHEUR
+#   - Démarrage HA
+#   - Tick horaire (dépend de now())
+#   - Changement d'horizon ou de la prévision
+#
+# 🔗 DÉPENDANCES
+#   Lit : weather.forecast_maison (service weather.get_forecasts hourly)
+#         input_number.arrosage_pluie_prevue_horizon_heures
+#
+# ⚠️ PRÉSOMPTION — JAMAIS UN FAIT
+#   La pluie prévue est une PRÉSOMPTION probabiliste, distincte
+#   de la pluie tombée. Prévision absente / vide => état 'unknown',
+#   jamais 0 mm. Ne vaut pas une preuve d'humidité du sol.
+#
+# 🚫 INTERDITS
+#   - Piloter directement un équipement
+#   - Présenter une présomption comme un fait
+#   - Être consommé comme pluie réellement tombée
+#
+# 🏷️ STATUT
+#   Projection météo — Arsenal v14.x
+# ==========================================================
+
+- trigger:
+    - platform: homeassistant
+      event: start
+
+    # Tick horaire (24/j) : nécessaire car dépend de now()
+    - platform: time_pattern
+      minutes: 0
+      seconds: 0
+
+    - platform: state
+      entity_id:
+        - input_number.arrosage_pluie_prevue_horizon_heures
+        - weather.forecast_maison
+
+  action:
+    - service: weather.get_forecasts
+      target:
+        entity_id: weather.forecast_maison
+      data:
+        type: hourly
+      response_variable: metno_hourly
+
+    - variables:
+        h: "{{ states('input_number.arrosage_pluie_prevue_horizon_heures') | float(24) }}"
+        now_ts: "{{ as_timestamp(now()) }}"
+        target_ts: "{{ as_timestamp(now() + timedelta(hours=h)) }}"
+        forecasts: "{{ metno_hourly.get('weather.forecast_maison', {}).get('forecast', []) }}"
+
+        somme_mm: >
+          {% set ns = namespace(total=0.0) %}
+          {% for it in forecasts %}
+            {% if it.datetime is defined and it.precipitation is defined %}
+              {% set ts = as_timestamp(as_local(as_datetime(it.datetime))) %}
+              {% if ts >= now_ts and ts < target_ts %}
+                {% set ns.total = ns.total + (it.precipitation | float(0)) %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.total | round(2) }}
+
+        nb_echeances: >
+          {% set ns = namespace(n=0) %}
+          {% for it in forecasts %}
+            {% if it.datetime is defined and it.precipitation is defined %}
+              {% set ts = as_timestamp(as_local(as_datetime(it.datetime))) %}
+              {% if ts >= now_ts and ts < target_ts %}
+                {% set ns.n = ns.n + 1 %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.n }}
+
+        proba_max: >
+          {% set ns = namespace(p=none) %}
+          {% for it in forecasts %}
+            {% if it.datetime is defined and it.precipitation_probability is defined %}
+              {% set ts = as_timestamp(as_local(as_datetime(it.datetime))) %}
+              {% if ts >= now_ts and ts < target_ts %}
+                {% set v = it.precipitation_probability | float(0) %}
+                {% if ns.p is none or v > ns.p %}{% set ns.p = v %}{% endif %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.p if ns.p is not none else 'inconnu' }}
+
+  sensor:
+    - name: "Pluie prévue"
+      unique_id: pluie_prevue
+      unit_of_measurement: "mm"
+      device_class: precipitation
+      state_class: measurement
+      icon: mdi:weather-pouring
+
+      state: >
+        {% if forecasts | length == 0 or nb_echeances | int(0) == 0 %}
+          unknown
+        {% else %}
+          {{ somme_mm }}
+        {% endif %}
+
+      attributes:
+        nature: "présumé"
+        horizon_heures: "{{ h }}"
+        echeances_couvertes: "{{ nb_echeances }}"
+        probabilite_max_pct: "{{ proba_max }}"
+        derniere_maj: "{{ now().isoformat() }}"

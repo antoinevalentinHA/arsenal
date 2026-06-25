@@ -1,0 +1,87 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Arrosage — Seuils de suspension pluie
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les seuils ajustables (mm / heures) du diagnostic
+#   de suspension pluie de l'arrosage, réglables sans
+#   redéploiement.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Paramètres de prudence (suspension), pas des preuves
+#   - Valeurs en millimètres (cumuls) ou heures (horizon)
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre métier | Seuil de prudence
+#
+# 🧱 VALEURS PAR DÉFAUT (validées au démarrage)
+#   - 24 h           : 5 mm
+#   - 48 h           : 10 mm
+#   - 72 h           : 12 mm  (sous-linéaire : l'évapotranspiration
+#                      érode la contribution de la pluie ancienne)
+#   - pluie prévue   : 5 mm sur l'horizon
+#   - horizon prévue : 24 h
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Traiter ces seuils comme des preuves absolues
+#   - Déclencher directement une suspension ou un arrosage
+#   - Écrire sans traçabilité vers l'auteur de l'écriture
+#
+# 🏷️ STATUT
+#   Socle arrosage — Arsenal v14.x
+# ==========================================================
+
+arrosage_pluie_suspension_mm_24h:
+  name: "Arrosage — Seuil suspension pluie 24h"
+  icon: mdi:weather-rainy
+  min: 0
+  max: 50
+  step: 0.5
+  initial: 5
+  unit_of_measurement: mm
+  mode: box
+
+arrosage_pluie_suspension_mm_48h:
+  name: "Arrosage — Seuil suspension pluie 48h"
+  icon: mdi:weather-pouring
+  min: 0
+  max: 50
+  step: 0.5
+  initial: 10
+  unit_of_measurement: mm
+  mode: box
+
+arrosage_pluie_suspension_mm_72h:
+  name: "Arrosage — Seuil suspension pluie 72h"
+  icon: mdi:weather-pouring
+  min: 0
+  max: 50
+  step: 0.5
+  initial: 12
+  unit_of_measurement: mm
+  mode: box
+
+arrosage_pluie_prevue_mm_seuil:
+  name: "Arrosage — Seuil pluie prévue"
+  icon: mdi:weather-partly-rainy
+  min: 0
+  max: 50
+  step: 0.5
+  initial: 5
+  unit_of_measurement: mm
+  mode: box
+
+arrosage_pluie_prevue_horizon_heures:
+  name: "Arrosage — Horizon pluie prévue"
+  icon: mdi:clock-outline
+  min: 1
+  max: 48
+  step: 1
+  initial: 24
+  unit_of_measurement: h
+  mode: box

@@ -1,0 +1,48 @@
+# ==========================================================
+# 🧠 ARSENAL — STATISTICS SENSOR
+#     Météo — Pluie — Cumul glissant 48 h
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exposer la pluie tombée (mm) sur les dernières 48 h
+#   glissantes, par différence du total cumulatif monotone.
+#
+# 🧩 PÉRIMÈTRE
+#   - Statistique dérivée sur série temporelle uniquement
+#   - Aucune logique métier
+#   - Aucun pilotage d'équipement
+#
+# 🔖 NATURE
+#   cumul_glissant | reference_statistique
+#
+# 📋 PARAMÈTRES
+#   state_characteristic : change  (newest - oldest dans la fenêtre)
+#   max_age              : 48 h
+#   sampling_size        : 2000 — large, la pluie n'émet que par
+#                          impulsions ; évite de tronquer la fenêtre
+#   precision            : 2
+#
+# 🔗 DÉPENDANCES
+#   Lit : sensor.pluie_total_local  (mm, total monotone persistant)
+#
+# ⚠️ HYPOTHÈSE
+#   Suppose la source monotone (jamais décroissante). Un reset
+#   de maintenance du store peut produire une fenêtre négative
+#   transitoire — assumé et non corrigé ici.
+#
+# 🚫 INTERDITS
+#   - Introduire une logique métier
+#   - Piloter directement un équipement
+#   - Constituer à lui seul une autorité décisionnelle
+#
+# 🏷️ STATUT
+#   Cumul glissant — Arsenal v14.x
+# ==========================================================
+
+- platform: statistics
+  name: "Pluie cumul 48h"
+  entity_id: sensor.pluie_total_local
+  state_characteristic: change
+  max_age:
+    hours: 48
+  sampling_size: 2000
+  precision: 2
