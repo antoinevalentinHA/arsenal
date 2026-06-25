@@ -3,9 +3,9 @@
 #     Arrosage / Rain Bird — Données du pont fraîches
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Indiquer si le pont a rafraîchi son heartbeat récemment,
-#   sans interpréter la valeur du heartbeat (uniquement son
-#   horodatage de mise à jour).
+#   Indiquer si les données EXPLOITABLES du Rain Bird sont à la
+#   fois présentes et récemment rafraîchies — pas seulement si
+#   le pont a un heartbeat récent.
 #
 # 🧩 PÉRIMÈTRE
 #   - Évaluation booléenne uniquement
@@ -15,24 +15,31 @@
 # 🔖 NATURE
 #   diagnostic
 #
+# 🔗 DÉPENDANCES
+#   Lit (exploitabilité — données issues du BLE) :
+#     sensor.rain_bird_bat_bt_2_e9a3_active_station
+#     sensor.rain_bird_bat_bt_2_e9a3_battery_level
+#     sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
+#   Lit (récence) :
+#     sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat (état + last_updated)
+#
 # 🆔 UNIQUE_ID
 #   rain_bird_pont_donnees_fraiches
 #
-# 🔗 DÉPENDANCES
-#   Lit : sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat
-#         (état + last_updated)
-#
-# 🧱 PRINCIPE
-#   on  = heartbeat exploitable ET mis à jour il y a < 900 s
-#   off = heartbeat unknown / unavailable OU plus ancien que
-#         le seuil (donnée périmée). Le doute penche vers off,
-#         jamais vers un faux 'frais'.
-#   Seuil 900 s proposé (Wi-Fi faible / latence élevée) — ajustable.
+# 🧱 PRINCIPE (off par défaut, jamais faux positif)
+#   on  = données exploitables présentes (active_station, batterie,
+#         BLE non unknown/unavailable)
+#         ET heartbeat exploitable mis à jour il y a < 900 s.
+#   off = au moins une donnée cœur indisponible (ex. BLE down)
+#         OU heartbeat absent / périmé.
+#   Un heartbeat frais alors que les données BLE sont unknown ne
+#   suffit PAS : la fraîcheur du pont ≠ fraîcheur des données utiles.
+#   Seuil 900 s ajustable (Wi-Fi faible / latence élevée).
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
 #   - Déclencher une action
-#   - Présenter une donnée périmée comme fraîche
+#   - Présenter une donnée périmée ou inexploitable comme fraîche
 #
 # 🏷️ STATUT
 #   Diagnostic — Arsenal v14.x
@@ -42,29 +49,47 @@
     - name: "Rain Bird pont donnees fraiches"
       unique_id: rain_bird_pont_donnees_fraiches
       icon: >
-        {% set e = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
-        {% set st = states(e) %}
-        {% if st in ['unknown', 'unavailable', ''] %}
-          mdi:timer-alert-outline
-        {% elif (now() - states[e].last_updated).total_seconds() < 900 %}
-          mdi:timer-check-outline
-        {% else %}
-          mdi:timer-alert-outline
-        {% endif %}
+        {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set core = [
+          'sensor.rain_bird_bat_bt_2_e9a3_active_station',
+          'sensor.rain_bird_bat_bt_2_e9a3_battery_level',
+          'sensor.rain_bird_bat_bt_2_e9a3_ble_rssi'
+        ] %}
+        {% set exploitable = (core | map('states') | select('in', indispo) | list | length) == 0 %}
+        {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
+        {% set hb_st = states(hb) %}
+        {% set recent = hb_st is not none and hb_st not in indispo
+              and (now() - states[hb].last_updated).total_seconds() < 900 %}
+        {{ 'mdi:timer-check-outline' if (exploitable and recent) else 'mdi:timer-alert-outline' }}
       state: >
-        {% set e = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
-        {% set st = states(e) %}
-        {% if st in ['unknown', 'unavailable', ''] %}
-          false
-        {% else %}
-          {{ (now() - states[e].last_updated).total_seconds() < 900 }}
-        {% endif %}
+        {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set core = [
+          'sensor.rain_bird_bat_bt_2_e9a3_active_station',
+          'sensor.rain_bird_bat_bt_2_e9a3_battery_level',
+          'sensor.rain_bird_bat_bt_2_e9a3_ble_rssi'
+        ] %}
+        {% set exploitable = (core | map('states') | select('in', indispo) | list | length) == 0 %}
+        {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
+        {% set hb_st = states(hb) %}
+        {% set recent = hb_st is not none and hb_st not in indispo
+              and (now() - states[hb].last_updated).total_seconds() < 900 %}
+        {{ 'on' if (exploitable and recent) else 'off' }}
       attributes:
-        age_secondes: >
-          {% set e = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
-          {% if states(e) in ['unknown', 'unavailable', ''] %}
+        donnees_exploitables: >
+          {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+          {% set core = [
+            'sensor.rain_bird_bat_bt_2_e9a3_active_station',
+            'sensor.rain_bird_bat_bt_2_e9a3_battery_level',
+            'sensor.rain_bird_bat_bt_2_e9a3_ble_rssi'
+          ] %}
+          {{ (core | map('states') | select('in', indispo) | list | length) == 0 }}
+        heartbeat_age_secondes: >
+          {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+          {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
+          {% set hb_st = states(hb) %}
+          {% if hb_st is none or hb_st in indispo %}
             inconnu
           {% else %}
-            {{ (now() - states[e].last_updated).total_seconds() | int }}
+            {{ (now() - states[hb].last_updated).total_seconds() | int }}
           {% endif %}
         seuil_secondes: "900"

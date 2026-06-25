@@ -22,11 +22,13 @@
 #     sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi
 #     sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
 #     sensor.rain_bird_bat_bt_2_e9a3_battery_level
-#     sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat
 #
-# 🧱 PRINCIPE
-#   Énonce ce qui est connu et ce qui ne l'est pas, sans
-#   maquiller une donnée inconnue en valeur rassurante.
+# 🧱 PRINCIPE (toujours un texte exploitable, jamais unknown)
+#   Énonce ce qui est connu et ce qui ne l'est pas. Les trois
+#   libellés ont une valeur par défaut ('inconnu' / 'non validé')
+#   via namespace : même si BLE/batterie/Wi-Fi sont unknown, le
+#   capteur rend toujours une phrase complète, sans maquiller une
+#   donnée inconnue en valeur rassurante.
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
@@ -42,33 +44,36 @@
       unique_id: rain_bird_pont_diagnostic_resume
       icon: mdi:clipboard-text-outline
       state: >
-        {% set indispo = ['unknown', 'unavailable', ''] %}
+        {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set ns = namespace(wifi='Wi-Fi inconnu', ble='BLE non validé', bat='batterie inconnue') %}
 
-        {% set wifi_raw = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
-        {% set wifi = wifi_raw | int(default=0) %}
-        {% if wifi_raw in indispo or wifi >= 0 %}
-          {% set wifi_txt = 'Wi-Fi inconnu' %}
-        {% elif wifi >= -67 %}
-          {% set wifi_txt = 'Wi-Fi bon (' ~ wifi_raw ~ ' dBm)' %}
-        {% elif wifi >= -74 %}
-          {% set wifi_txt = 'Wi-Fi acceptable (' ~ wifi_raw ~ ' dBm)' %}
-        {% else %}
-          {% set wifi_txt = 'Wi-Fi faible (' ~ wifi_raw ~ ' dBm)' %}
+        {% set wifi = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
+        {% if wifi not in indispo and wifi | int(99) < 0 %}
+          {% set w = wifi | int(99) %}
+          {% if w >= -67 %}
+            {% set ns.wifi = 'Wi-Fi bon (' ~ wifi ~ ' dBm)' %}
+          {% elif w >= -74 %}
+            {% set ns.wifi = 'Wi-Fi acceptable (' ~ wifi ~ ' dBm)' %}
+          {% else %}
+            {% set ns.wifi = 'Wi-Fi faible (' ~ wifi ~ ' dBm)' %}
+          {% endif %}
         {% endif %}
 
-        {% set ble_raw = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
-        {% set ble = ble_raw | int(default=0) %}
-        {% if ble_raw in indispo or ble >= 0 %}
-          {% set ble_txt = 'BLE non validé' %}
-        {% elif ble >= -67 %}
-          {% set ble_txt = 'BLE bon (' ~ ble_raw ~ ' dBm)' %}
-        {% elif ble >= -74 %}
-          {% set ble_txt = 'BLE acceptable (' ~ ble_raw ~ ' dBm)' %}
-        {% else %}
-          {% set ble_txt = 'BLE faible (' ~ ble_raw ~ ' dBm)' %}
+        {% set ble = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
+        {% if ble not in indispo and ble | int(99) < 0 %}
+          {% set b = ble | int(99) %}
+          {% if b >= -67 %}
+            {% set ns.ble = 'BLE bon (' ~ ble ~ ' dBm)' %}
+          {% elif b >= -74 %}
+            {% set ns.ble = 'BLE acceptable (' ~ ble ~ ' dBm)' %}
+          {% else %}
+            {% set ns.ble = 'BLE faible (' ~ ble ~ ' dBm)' %}
+          {% endif %}
         {% endif %}
 
-        {% set bat_raw = states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') %}
-        {% set bat_txt = 'batterie inconnue' if bat_raw in indispo else 'batterie ' ~ bat_raw ~ ' %' %}
+        {% set bat = states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') %}
+        {% if bat is not none and bat not in indispo %}
+          {% set ns.bat = 'batterie ' ~ bat ~ ' %' %}
+        {% endif %}
 
-        {{ wifi_txt ~ ' — ' ~ ble_txt ~ ' — ' ~ bat_txt }}
+        {{ ns.wifi ~ ' — ' ~ ns.ble ~ ' — ' ~ ns.bat }}
