@@ -29,17 +29,20 @@ views:
             columns: 3
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.pluie_cumul_24h
                 name: Cumul 24 h
                 icon: mdi:weather-rainy
 
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.pluie_cumul_48h
                 name: Cumul 48 h
                 icon: mdi:weather-rainy
 
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.pluie_cumul_72h
                 name: Cumul 72 h
                 icon: mdi:weather-pouring
@@ -48,15 +51,22 @@ views:
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: sensor.pluie_prevue
                 name: Pluie prévue
                 icon: mdi:weather-cloudy-clock
 
-              - type: tile
+              - type: custom:button-card
+                template: carte_etat_binaire_interprete_inverse
                 entity: binary_sensor.arrosage_suspension_pluie
                 name: Suspension pluie
                 icon: mdi:water-off
+                variables:
+                  label_on: Suspension pluie
+                  label_off: Pas de suspension
+                  color_on: 'rgba(33, 150, 243, 0.2)'
+                  color_off: 'rgba(158, 158, 158, 0.2)'
 
           - type: markdown
             content: >
@@ -87,27 +97,42 @@ views:
             columns: 2
             square: false
             cards:
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: input_number.arrosage_pluie_suspension_mm_24h
                 name: Seuil 24 h (mm)
                 icon: mdi:cup-water
+                tap_action:
+                  action: more-info
 
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: input_number.arrosage_pluie_suspension_mm_48h
                 name: Seuil 48 h (mm)
                 icon: mdi:cup-water
+                tap_action:
+                  action: more-info
 
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: input_number.arrosage_pluie_suspension_mm_72h
                 name: Seuil 72 h (mm)
                 icon: mdi:cup-water
+                tap_action:
+                  action: more-info
 
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: input_number.arrosage_pluie_prevue_mm_seuil
                 name: Seuil pluie prévue (mm)
                 icon: mdi:weather-cloudy-clock
+                tap_action:
+                  action: more-info
 
-              - type: tile
+              - type: custom:button-card
+                template: carte_kpi_bleu
                 entity: input_number.arrosage_pluie_prevue_horizon_heures
                 name: Horizon pluie prévue (h)
                 icon: mdi:timer-sand
+                tap_action:
+                  action: more-info
