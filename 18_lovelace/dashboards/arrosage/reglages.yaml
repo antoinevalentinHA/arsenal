@@ -1,0 +1,88 @@
+button_card_templates: !include_dir_merge_named /config/19_button_card_templates
+
+views:
+  - badges:
+      - type: custom:button-card
+        template: bouton_accueil_badge_carre
+
+      - type: custom:button-card
+        template: bouton_navigation_badge_carre
+
+      - type: custom:button-card
+        template: bouton_retour_badge_carre
+        tap_action:
+          action: navigate
+          navigation_path: /arrosage-dashboard
+
+    # ==========================================================
+    # 💧 ARROSAGE — RÉGLAGES (paramètres modifiables)
+    # ----------------------------------------------------------
+    # Seuils du diagnostic de suspension pluie. Observation seule :
+    # ces seuils paramètrent uniquement le diagnostic, ils
+    # n'actionnent aucune station et ne déclenchent aucun arrosage.
+    # ==========================================================
+    cards:
+      - type: vertical-stack
+        cards:
+          # ✅ Bandeau de validité (conditionnel)
+          - !include ../../includes/alerte_configuration_invalide.yaml
+
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Seuils pluie
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.45;">
+              Ces seuils paramètrent <b>uniquement</b> le diagnostic de suspension
+              pluie. Ils n'actionnent <b>aucune</b> station et ne déclenchent
+              <b>aucun</b> arrosage.
+              </div>
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🌧️ Pluie observée (cumuls)
+
+          - type: tile
+            entity: input_number.arrosage_pluie_suspension_mm_24h
+            name: Seuil 24 h (mm)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: input_number.arrosage_pluie_suspension_mm_48h
+            name: Seuil 48 h (mm)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: input_number.arrosage_pluie_suspension_mm_72h
+            name: Seuil 72 h (mm)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: custom:button-card
+            template: sub_section_header
+            name: 🌦️ Pluie prévue
+
+          - type: tile
+            entity: input_number.arrosage_pluie_prevue_mm_seuil
+            name: Seuil pluie prévue (mm)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
+
+          - type: tile
+            entity: input_number.arrosage_pluie_prevue_horizon_heures
+            name: Horizon pluie prévue (h)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons

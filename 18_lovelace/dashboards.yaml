@@ -404,6 +404,13 @@ reglages-aeration-dashboard:
   show_in_sidebar: false
   filename: 18_lovelace/dashboards/aeration/reglages.yaml
 
+reglages-arrosage-dashboard:
+  mode: yaml
+  title: Arrosage
+  icon: mdi:sprinkler-variant
+  show_in_sidebar: false
+  filename: 18_lovelace/dashboards/arrosage/reglages.yaml
+
 reglages-meteo-dashboard:
   mode: yaml
   title: Calibration

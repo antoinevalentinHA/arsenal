@@ -124,7 +124,7 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: rain_bird_status_health
+                template: rain_bird_status_health_72
                 entity: sensor.rain_bird_pont_sante
                 name: Santé du pont
                 icon: mdi:heart-pulse
