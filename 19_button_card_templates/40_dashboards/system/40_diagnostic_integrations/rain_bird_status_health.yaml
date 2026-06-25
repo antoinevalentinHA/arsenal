@@ -1,0 +1,97 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE UI METIER
+#     Rain Bird (pont arrosage) — Santé sous-système (status health)
+# ==========================================================
+#
+# 📌 STATUT
+#     TEMPLATE UI METIER
+#
+# 🎯 ROLE
+#     Affiche l'état synthétique de santé du pont Rain Bird
+#     (rainbird-esp32) avec coloration sémantique à quatre niveaux.
+#     Spécialisation visuelle de socle_status — aucune décision.
+#
+# 🧱 NATURE
+#     - Template button-card
+#     - Spécialisation de socle_status
+#     - UI uniquement (aucune décision, aucun pilotage)
+#
+# 🎨 SEMANTIQUE
+#     - ok            -> 🟢 vert    "Disponible"
+#     - degrade       -> 🟠 orange  "Dégradé"
+#     - indisponible  -> 🔴 rouge   "Indispo"
+#     - inconnu       -> ⚪ gris    "Inconnu"
+#     - unknown / unavailable / vide -> ⚪ gris "Inconnu"
+#     - toute autre valeur -> 🟡 jaune "Inconnu" (état non anticipé)
+#
+# 🔗 DEPENDANCES
+#     - entity : sensor.rain_bird_pont_sante
+#       (state attendu : ok | degrade | indisponible | inconnu)
+#
+# ⚠️ CONTRAINTES
+#     - États FR propres au pont Rain Bird — NE PAS confondre avec
+#       boiler_status_health (états EN ok/degraded/down).
+#     - Le jaune signale un état non reconnu — toute nouvelle valeur
+#       upstream doit être ajoutée au mapping explicitement.
+#     - Détection case-insensitive (String.toLowerCase).
+#
+# 🧩 USAGE
+#     type: custom:button-card
+#     template: rain_bird_status_health
+#     entity: sensor.rain_bird_pont_sante
+#     name: Rain Bird
+#
+# ==========================================================
+
+rain_bird_status_health:
+  template:
+    - socle_status
+
+  state_display: >
+    [[[
+      const s = entity ? String(entity.state).toLowerCase() : 'inconnu';
+
+      if (s === 'ok') return 'Disponible';
+      if (s === 'degrade') return 'Dégradé';
+      if (s === 'indisponible') return 'Indispo';
+      if (s === 'inconnu' || s === 'unknown' || s === 'unavailable') return 'Inconnu';
+
+      return 'Inconnu';
+    ]]]
+
+  styles:
+    card:
+      - background-color: >
+          [[[
+            const state = entity ? entity.state : null;
+
+            if (
+              state === null ||
+              state === undefined ||
+              state === '' ||
+              state === 'unknown' ||
+              state === 'unavailable'
+            ) {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            const normalized = String(state).toLowerCase();
+
+            if (normalized === 'ok') {
+              return 'rgba(76, 175, 80, 0.2)';
+            }
+
+            if (normalized === 'degrade') {
+              return 'rgba(255, 152, 0, 0.2)';
+            }
+
+            if (normalized === 'indisponible') {
+              return 'rgba(244, 67, 54, 0.2)';
+            }
+
+            if (normalized === 'inconnu') {
+              return 'rgba(158, 158, 158, 0.1)';
+            }
+
+            return 'rgba(255, 235, 59, 0.2)';
+          ]]]
