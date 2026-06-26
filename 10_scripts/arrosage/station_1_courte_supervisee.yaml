@@ -1,0 +1,139 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Arrosage / Rain Bird — Station 1 courte supervisée (Run)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Lancer une COURTE irrigation supervisée de la station 1 :
+#   gardes complètes, durée fixe courte, commande native
+#   encapsulée, vérification de démarrage, arrêt supervisé en
+#   fin de séquence, notification d'échec.
+#   Conforme au contrat 11 (mode manuel supervisé) :
+#   00_documentation_arsenal/contrats/arrosage/11_mode_manuel_supervise.md
+#
+# 🧱 DOCTRINE (contrat 11 §2, §6, §7)
+#   - Run = action exécutive : gardes COMPLÈTES (préconditions runtime
+#     + pont disponible + aucune station déjà active). Plus strict que Stop.
+#   - La commande native n'est JAMAIS exposée à l'UI : seule frontière =
+#     ce script. La durée native n'est réglée QUE dans ce wrapper.
+#   - Fin de séquence déléguée au Stop supervisé déjà livré
+#     (script.arrosage_rain_bird_stop_supervise), qui vérifie et notifie
+#     son propre échec : on ne duplique pas sa notification (anti-bruit).
+#   - Observation (06) : ACK ≠ preuve ; unknown/unavailable ≠ démarrage.
+#   - ble_status / ble_last_error ne sont PAS une base de décision.
+#
+# 🔗 ENTITÉS
+#   Gardes      : binary_sensor.rain_bird_pont_donnees_disponibles
+#                 binary_sensor.arrosage_rain_bird_preconditions_runtime
+#                 sensor.rain_bird_bat_bt_2_e9a3_active_station
+#   Durée       : number.rain_bird_bat_bt_2_e9a3_station_1_duration (réglée à 2)
+#   Commande    : switch.rain_bird_bat_bt_2_e9a3_station_1
+#   Arrêt       : script.arrosage_rain_bird_stop_supervise
+#   Notif       : script.notification_envoyer
+#
+# 🧮 RÈGLE DE DÉMARRAGE (sémantique active_station)
+#   Le runtime expose 'Idle' (majuscule) au repos ; la valeur exacte
+#   d'une station EN COURS n'est PAS documentée dans le dépôt. Pour ne
+#   rien inventer : démarrage confirmé si active_station | lower n'est
+#   dans AUCUN état "non démarré" connu :
+#     idle / none / off / '' / unknown / unavailable.
+#   Toute autre valeur concrète = au moins une station active.
+#
+# 🚫 NE FAIT PAS
+#   - Aucune station 2, aucun run_program, advance_station,
+#     controller_mode, rain_delay, water_budget, OTA, firmware.
+#   - Aucun helper, aucune UI, aucune automatisation.
+#   - N'introduit aucun arrosage automatique (déclenchement manuel only).
+#
+# 🏷️ STATUT
+#   Runtime supervisé — Arsenal v14.x
+# ==========================================================
+
+arrosage_rain_bird_station_1_courte_supervisee:
+  alias: "Arrosage - Station 1 courte supervisée"
+  mode: single
+
+  sequence:
+
+    - variables:
+        station_switch: switch.rain_bird_bat_bt_2_e9a3_station_1
+        station_duration: number.rain_bird_bat_bt_2_e9a3_station_1_duration
+        active_sensor: sensor.rain_bird_bat_bt_2_e9a3_active_station
+        duree_minutes: 2
+        idle_states: ['idle', 'none', 'off', '']
+        non_demarre: ['idle', 'none', 'off', '', 'unknown', 'unavailable']
+        dispo_ok: "{{ is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') }}"
+        precond_ok: "{{ is_state('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'on') }}"
+
+    # =========================================================
+    # 🛡️ GARDES COMPLÈTES — refus propre, aucune commande native
+    # =========================================================
+    # Refus si : pont indisponible, OU préconditions Run non satisfaites,
+    # OU une station n'est pas au repos (active_station non idle).
+    # On NE déclenche PAS de Stop automatique : on ne masque pas un état
+    # actif inattendu, on le signale (contrat 11 — refus explicite).
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ not (dispo_ok and precond_ok
+                        and (states(active_sensor) | lower in idle_states)) }}
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "💧 Arrosage – Station 1 refusée"
+                message: >-
+                  Lancement station 1 refusé : aucune commande native envoyée.
+                  Pont disponible : {{ dispo_ok }}.
+                  Préconditions runtime : {{ precond_ok }}.
+                  active_station : {{ states(active_sensor) }}.
+            - stop: "Refus : gardes Run non satisfaites"
+
+    # =========================================================
+    # ▶️ COMMANDE ENCADRÉE — durée 2 min puis ouverture station 1
+    # =========================================================
+    - service: number.set_value
+      target:
+        entity_id: "{{ station_duration }}"
+      data:
+        value: "{{ duree_minutes }}"
+
+    - service: switch.turn_on
+      target:
+        entity_id: "{{ station_switch }}"
+
+    # =========================================================
+    # ✅ VÉRIFICATION DE DÉMARRAGE (15 s) — unknown ≠ succès
+    # =========================================================
+    - wait_template: >
+        {{ states(active_sensor) | lower not in non_demarre }}
+      timeout: "00:00:15"
+      continue_on_timeout: true
+
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states(active_sensor) | lower in non_demarre }}
+          sequence:
+            # Démarrage non confirmé : arrêt supervisé par sécurité + notif
+            - service: script.arrosage_rain_bird_stop_supervise
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "💧 Arrosage – Station 1 démarrage non confirmé"
+                message: >-
+                  Démarrage station 1 NON confirmé après 15 s.
+                  active_station : {{ states(active_sensor) }}.
+                  Arrêt supervisé déclenché par sécurité.
+            - stop: "Démarrage station 1 non confirmé"
+
+    # =========================================================
+    # ⏱️ ARROSAGE COURT (2 min max) puis ARRÊT SUPERVISÉ
+    # =========================================================
+    # Le Stop supervisé vérifie l'arrêt et notifie son propre échec :
+    # on ne duplique pas sa notification (anti-bruit). Pas de notif de
+    # succès en fin de cycle nominal.
+    - delay: "00:02:00"
+
+    - service: script.arrosage_rain_bird_stop_supervise
