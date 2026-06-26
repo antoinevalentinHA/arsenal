@@ -57,9 +57,11 @@ sont **conceptuels** et marqués par des chevrons : `‹besoin_hydrique_zone›`
 | [`10_prerequis_runtime.md`](10_prerequis_runtime.md) | Barrière de sortie : pré-requis runtime (poll BLE, batterie/RSSI, station courte, Stop All, emplacement, Wi-Fi, plaque acier) avant toute automatisation |
 | [`11_mode_manuel_supervise.md`](11_mode_manuel_supervise.md) | Doctrine d'exécution : mode manuel supervisé — toute commande native passe par un script Arsenal supervisé (UI → scripts, jamais d'entité native) ; Run confirmé/gardé, Stop encapsulé mais plus accessible |
 | [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md) | **Relevé factuel + doctrine d'observation** des capteurs d'humidité sol **Zigbee** : nommage canonique des zones, entités Zone 1 **confirmées** / Zone 2–3 **attendues**, table de mapping à compléter, classification (observation / calibration manuelle / firmware hors runtime) ; couche d'observation qui **ne déclenche pas** l'arrosage |
+| [`13_observation_hydrique_jardin.md`](13_observation_hydrique_jardin.md) | **Chapeau** de l'observabilité hydrique (v0 = **observation + diagnostic uniquement**) : invariants, frontière observation/diagnostic/recommandation/action, architecture par **canaux** (réservoir sol / demande climatique / modulateurs), classes de recommandation **futures non émises**. Aucune reco, aucune action en v0. |
+| [`14_qualite_donnees_sol.md`](14_qualite_donnees_sol.md) | **Socle transverse de qualité/confiance** des trois points sol : états par point (frais/stale/indisponible/suspect), qualité agrégée, invariants de dégradation, capteur « suspect » (concept, sans seuil chiffré), Point 2 à suivre, vérification humaine = drapeau diagnostic. **Mécanisme, pas valeurs.** |
 
-> **Deux natures de documents.** Les fichiers `01`–`07` et `09`–`11` sont
-> **normatifs** (doctrine et invariants opposables). Les fichiers `08` et `12`
+> **Deux natures de documents.** Les fichiers `01`–`07`, `09`–`11`, `13` et `14`
+> sont **normatifs** (doctrine et invariants opposables). Les fichiers `08` et `12`
 > sont **factuels** : des **relevés** de surfaces réelles (le pont Rain Bird après
 > découverte MQTT ; les sondes sol Zigbee après appairage), qui **ne créent aucune
 > entité Arsenal** et **ne figent rien** — `12` y adjoint la **doctrine

@@ -299,6 +299,7 @@ automatisme autonome).
 ## Liens
 
 - Cadrage amont (ouverture du chantier) : [`cadrage_besoin_hydrique_decision_arrosage.md`](cadrage_besoin_hydrique_decision_arrosage.md)
+- **Socle v0 aval** : chapeau [`13_observation_hydrique_jardin.md`](../../../contrats/arrosage/13_observation_hydrique_jardin.md) · qualité [`14_qualite_donnees_sol.md`](../../../contrats/arrosage/14_qualite_donnees_sol.md) · [`plan_observation_hydrique_v0.md`](plan_observation_hydrique_v0.md)
 - Index audits : [`audits/index.md`](../../index.md)
 - Besoin hydrique (perception, référence) : [`contrats/arrosage/04_besoin_hydrique.md`](../../../contrats/arrosage/04_besoin_hydrique.md)
 - Observation & preuves : [`contrats/arrosage/06_observation_et_preuves.md`](../../../contrats/arrosage/06_observation_et_preuves.md)
