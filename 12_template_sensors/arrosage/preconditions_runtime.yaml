@@ -30,9 +30,19 @@
 #     input_boolean.arrosage_rainbird_wifi_qualifie
 #
 # 🧱 PRINCIPE (off par défaut, jamais unknown)
-#   on  = BLE RSSI connu ET >= acceptable
+#   La barrière exige une radio EXPLOITABLE (présence), PAS une
+#   qualité IDÉALE. La qualité radio honnête (faible/acceptable/bon)
+#   reste portée par pont_qualite_ble / pont_qualite_wifi / pont_sante.
+#   La qualification durable du Wi-Fi reste portée par le drapeau
+#   opérateur input_boolean.arrosage_rainbird_wifi_qualifie.
+#
+#   BLE/Wi-Fi exploitable     = valeur connue, numérique, négative ET >= -90 dBm.
+#   BLE/Wi-Fi non exploitable  = unknown / unavailable / none,
+#                                non numérique, valeur >= 0, ou valeur < -90 dBm.
+#
+#   on  = BLE exploitable
 #         ET batterie connue
-#         ET Wi-Fi >= acceptable ET Wi-Fi qualifié (drapeau)
+#         ET Wi-Fi exploitable ET Wi-Fi qualifié (drapeau)
 #         ET station courte validée
 #         ET Stop All validé
 #         ET emplacement physique validé
@@ -64,9 +74,9 @@
         {% set ble = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
         {% set bat = states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') %}
         {% set wifi = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
-        {% set ble_ok = ble not in indispo and ble | int(99) < 0 and ble | int(99) >= -74 %}
+        {% set ble_ok = ble not in indispo and ble | int(99) < 0 and ble | int(99) >= -90 %}
         {% set bat_ok = bat not in indispo %}
-        {% set wifi_ok = wifi not in indispo and wifi | int(99) < 0 and wifi | int(99) >= -74 %}
+        {% set wifi_ok = wifi not in indispo and wifi | int(99) < 0 and wifi | int(99) >= -90 %}
         {% set tous = ble_ok and bat_ok and wifi_ok
               and is_state('input_boolean.arrosage_rainbird_wifi_qualifie', 'on')
               and is_state('input_boolean.arrosage_rainbird_test_station_courte_valide', 'on')
@@ -78,9 +88,9 @@
         {% set ble = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
         {% set bat = states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') %}
         {% set wifi = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
-        {% set ble_ok = ble not in indispo and ble | int(99) < 0 and ble | int(99) >= -74 %}
+        {% set ble_ok = ble not in indispo and ble | int(99) < 0 and ble | int(99) >= -90 %}
         {% set bat_ok = bat not in indispo %}
-        {% set wifi_ok = wifi not in indispo and wifi | int(99) < 0 and wifi | int(99) >= -74 %}
+        {% set wifi_ok = wifi not in indispo and wifi | int(99) < 0 and wifi | int(99) >= -90 %}
         {{ 'on' if (ble_ok and bat_ok and wifi_ok
            and is_state('input_boolean.arrosage_rainbird_wifi_qualifie', 'on')
            and is_state('input_boolean.arrosage_rainbird_test_station_courte_valide', 'on')
@@ -91,13 +101,13 @@
         ble_ok: >
           {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
           {% set r = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
-          {{ r not in indispo and r | int(99) < 0 and r | int(99) >= -74 }}
+          {{ r not in indispo and r | int(99) < 0 and r | int(99) >= -90 }}
         batterie_ok: >
           {{ states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') not in ['unknown', 'unavailable', 'none', 'None', ''] }}
         wifi_ok: >
           {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
           {% set r = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
-          {{ r not in indispo and r | int(99) < 0 and r | int(99) >= -74 }}
+          {{ r not in indispo and r | int(99) < 0 and r | int(99) >= -90 }}
         station_courte_validee: "{{ states('input_boolean.arrosage_rainbird_test_station_courte_valide') }}"
         stop_all_valide: "{{ states('input_boolean.arrosage_rainbird_test_stop_all_valide') }}"
         emplacement_valide: "{{ states('input_boolean.arrosage_rainbird_emplacement_physique_valide') }}"
