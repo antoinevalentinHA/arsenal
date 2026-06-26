@@ -276,6 +276,26 @@ include:
     - sensor.pression_chambre_arnaud
 
     # =====================================================
+    # ==== 🛰️ RAIN BIRD — PONT / QUALIFICATION P2 & P6 ====
+    # =====================================================
+    # Observabilité lecture seule. Historise la santé du pont et les
+    # mesures du contrôleur pour qualifier dans la durée les pre-requis
+    # P2 (batterie / RSSI) et P6 (Wi-Fi) — cf. contrats/arrosage 08 et 10.
+    # Aucune commande, aucun pilotage Rain Bird.
+    - binary_sensor.arrosage_rain_bird_preconditions_runtime
+    - sensor.rain_bird_pont_sante
+    - sensor.rain_bird_pont_qualite_wifi
+    - sensor.rain_bird_pont_qualite_ble
+    - sensor.rain_bird_pont_diagnostic
+    - binary_sensor.rain_bird_pont_donnees_disponibles
+    - binary_sensor.rain_bird_pont_donnees_fraiches
+    - sensor.rain_bird_bat_bt_2_e9a3_active_station
+    - sensor.rain_bird_bat_bt_2_e9a3_battery_level
+    - sensor.rain_bird_bat_bt_2_e9a3_battery_voltage
+    - sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
+    - sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi
+
+    # =====================================================
     # ==== 🎛️ MODES DE LA MAISON ====
     # =====================================================
     - input_select.mode_maison

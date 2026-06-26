@@ -183,6 +183,26 @@ views:
             text_only: true
 
           # =========================================================
+          # 📟 État Rain Bird — valeurs brutes (lecture seule)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📟 État Rain Bird
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.6;">
+              <b>Lecture seule</b> — entités exposées par le pont, aucune commande Rain Bird.<br>
+              • Station active : {{ states('sensor.rain_bird_bat_bt_2_e9a3_active_station') }}<br>
+              • Batterie : {{ states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') }} % ({{ states('sensor.rain_bird_bat_bt_2_e9a3_battery_voltage') }} V)<br>
+              • Firmware contrôleur : {{ states('sensor.rain_bird_bat_bt_2_e9a3_firmware') }}<br>
+              • Uptime pont : {{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime') }}<br>
+              • Mémoire libre pont : {{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_free_heap') }}<br>
+              • BLE RSSI : {{ states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') }} dBm<br>
+              • Wi-Fi RSSI : {{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') }} dBm
+              </div>
+
+          # =========================================================
           # 📝 Diagnostic Rain Bird (texte)
           # =========================================================
           - type: custom:button-card
