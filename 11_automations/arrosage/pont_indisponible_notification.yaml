@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Arrosage — Pont Rain Bird indisponible (observation)
+#
+#  ID : 10270000000001
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Notifier, de façon purement observationnelle, quand le
+#   pont Rain Bird devient durablement indisponible, puis
+#   son retour à la normale.
+#
+# 📡 SIGNAL UNIQUE
+#   binary_sensor.rain_bird_pont_donnees_disponibles
+#   (dérivé Arsenal validé — n'utilise pas ble_status /
+#    ble_last_error).
+#
+# ⚙️ COMPORTEMENT
+#   - indisponible : signal off pendant 30 minutes
+#   - retour       : signal from off to on
+#
+# 🚫 NE FAIT PAS
+#   - aucune commande Rain Bird (station / stop / run_program /
+#     advance_station / controller_mode / rain_delay /
+#     water_budget / OTA) ;
+#   - aucun pilotage, aucun helper d'intention, aucun script
+#     run/stop ;
+#   - n'utilise ni ble_status ni ble_last_error.
+#
+# ⚠️ LIMITE ASSUMÉE (ce lot)
+#   Le retour est émis sur off → on : un creux < 30 min peut
+#   produire un « retour » sans « indisponible » préalable.
+#   Accepté pour ce lot observationnel (design simple, sans
+#   helper d'état ni condition temporelle).
+# ==========================================================
+
+- id: "10270000000001"
+  alias: "Arrosage - Pont Rain Bird indisponible"
+  mode: single
+
+  trigger:
+    - id: indisponible
+      platform: state
+      entity_id: binary_sensor.rain_bird_pont_donnees_disponibles
+      to: "off"
+      for: "00:30:00"
+
+    - id: retour
+      platform: state
+      entity_id: binary_sensor.rain_bird_pont_donnees_disponibles
+      from: "off"
+      to: "on"
+
+  action:
+    - choose:
+        - conditions: "{{ trigger.id == 'indisponible' }}"
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "💧 Arrosage – pont Rain Bird indisponible"
+                message: >-
+                  Le pont Rain Bird ne remonte plus de données exploitables depuis 30 minutes.
+                  L'arrosage automatique Arsenal reste non autorisé ; les commandes natives
+                  Rain Bird peuvent être indisponibles ou non observables.
+
+        - conditions: "{{ trigger.id == 'retour' }}"
+          sequence:
+            - service: script.notification_envoyer
+              data:
+                cible: input_text.telephone_antoine_notify
+                titre: "💧 Arrosage – pont Rain Bird de nouveau observable"
+                message: >-
+                  Les données du pont Rain Bird sont de nouveau disponibles.

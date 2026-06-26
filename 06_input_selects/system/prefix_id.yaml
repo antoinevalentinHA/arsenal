@@ -55,6 +55,7 @@ prefix_id_select:
   options:
     - "1001 - aeration"
     - "1002 - alarme"
+    - "1027 - arrosage"
     - "1026 - bouclage"
     - "1014 - boutons"
     - "1024 - chauffage"
