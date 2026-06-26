@@ -36,14 +36,15 @@ automation ou un script Arsenal.
 | Élément | Valeur observée |
 |---|---|
 | Contrôleur réel | **Rain Bird BAT-BT-2**, **2 stations** |
-| Pont (opérationnel) | **ELEGOO ESP32 classique (WROOM-32)** — firmware fork `antoinevalentinHA/rainbird-esp32`, image `esp32dev` **validée terrain** (version FW **à relever**) |
+| Pont (opérationnel) | **ELEGOO ESP32 Type-C** (WROOM-32 classique, pont USB-série CP2102) — firmware fork `antoinevalentinHA/rainbird-esp32`, image `esp32dev` **validée terrain** |
 | Pont précédent | **ESP32-C3** (Seeed XIAO) — **abandonné** pour ce rôle : radio BLE insuffisante, **scan Rain Bird non trouvé**. Ne pas réintroduire comme cible. |
 | Appareil découvert (HA / MQTT) | `Rain Bird BAT-BT-2-E9A3` — identité dérivée du **contrôleur**, inchangée par le changement de board |
-| IP réservée | **à relever** (board ELEGOO) — ancienne réservation C3 `192.168.1.115` **caduque** |
-| MAC | **à relever** (board ELEGOO) — ancienne MAC C3 `ac:27:6e:7e:98:1c` **caduque** |
+| IP réservée | `192.168.1.24` (board ELEGOO) — ancienne réservation C3 `192.168.1.115` caduque |
+| MAC | **non relevée lors du test terrain** (board ELEGOO) — ancienne MAC C3 `ac:27:6e:7e:98:1c` caduque |
+| Version firmware (terrain) | `main 535d503` + support `esp32dev` / PM portable — **sans** observabilité `ac306bf` (non flashée) |
 | Configuration firmware | `NUM_STATIONS=2`, OTA pointant vers le **fork** |
-| Wi-Fi | `bridge_wifi_rssi` **à re-qualifier** sur l'ELEGOO au point d'installation (référence C3 ≈ **-77 dBm** caduque) |
-| BLE | **Validé terrain (partiel)** : détection Rain Bird, GATT, poll batterie/mode/station active, **arrosage manuel via HA OK**, **stop via HA OK**. `rain_delay`/dead-man switch et atténuation fosse/plaque d'acier **non testés** → restent **présumés** (cf. [`07_phase_0_terrain.md`](07_phase_0_terrain.md) T09, T17). |
+| Wi-Fi (observé ELEGOO) | `bridge_wifi_rssi` ≈ **-87 dBm** (relevé dans le log de validation) — **faible**, à confirmer dans la durée (P6) ; référence C3 ≈ -77 dBm caduque |
+| BLE (observé ELEGOO) | RSSI ≈ **-83 dBm** pendant le poll. **Validé terrain (partiel)** : détection Rain Bird, GATT, poll batterie/mode/station active, **arrosage manuel via HA OK**, **stop via HA OK**. `rain_delay`/dead-man switch et atténuation fosse/plaque d'acier **non testés** → restent **présumés** (cf. [`07_phase_0_terrain.md`](07_phase_0_terrain.md) T09, T17). |
 
 > **Contrainte physique connue.** Le contrôleur Rain Bird est logé dans une
 > **fosse recouverte d'une plaque d'acier**, susceptible de **dégrader fortement
