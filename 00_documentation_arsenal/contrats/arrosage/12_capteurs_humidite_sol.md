@@ -51,6 +51,14 @@ Zigbee2MQTT / Home Assistant est canonique :
 > [`04`](04_besoin_hydrique.md) §5). Le numéro de zone du capteur est une étiquette
 > d'inventaire, **pas** une affectation hydraulique.
 
+> **⚠️ Vocabulaire — une seule zone d'arrosage, trois points de mesure.** Le
+> système Rain Bird actuel n'a **qu'une seule zone / station d'arrosage**
+> opérationnelle. Les appareils nommés « Zone 1 / 2 / 3 » sont **trois points de
+> mesure d'humidité** répartis **dans cette zone unique**, **PAS** trois zones
+> d'arrosage indépendantes. Le mot « zone » dans le nom du capteur est donc un
+> **repère de point de mesure**, à ne pas confondre avec une zone hydraulique
+> Rain Bird.
+
 ---
 
 ## 3. Entités Zone 1 — **confirmées** (relevé réel)
@@ -94,6 +102,13 @@ Sonde **appairée**. Entités exposées telles que relevées dans Home Assistant
 > Tant que l'appairage n'est pas fait, ces lignes restent une **prévision de
 > surface**, pas un relevé. Distinguer **confirmé** (Zone 1) de **attendu**
 > (Zone 2/3) est un invariant de ce document (§7).
+
+> **Mise à jour terrain (2026-06-26).** Les **trois points de mesure** publient
+> désormais des valeurs d'humidité et de température (snapshots en §12) : les
+> sondes des points 2 et 3 sont donc **appairées et émettent**. Toutefois, la
+> **confirmation formelle de leur jeu d'`entity_id`** (relevé exact des chaînes,
+> sur le schéma de la Zone 1) **reste à faire** : tant qu'elle n'est pas relevée,
+> les `entity_id` ci-dessus demeurent **dérivés**, non recopiés d'un relevé réel.
 
 ---
 
@@ -224,7 +239,60 @@ de nouvelle :
 
 ---
 
-## Renvois
+## 12. Validation terrain (2026-06-26) — réponse à l'eau
+
+> **Note factuelle (terrain), non normative.** Cette section **constate** un test
+> de réaction réussi. Elle **ne fixe aucun seuil**, **ne décide aucune calibration**
+> et **ne crée aucune entité**. Elle correspond aux tests **T03 / T04** de la
+> Phase 0 ([`07`](07_phase_0_terrain.md) §2).
+
+**Contexte.** Arrosage **manuel au tuyau** de la **zone unique** d'arrosage
+(rappel §2 : une seule zone Rain Bird, **trois points de mesure**). Objectif :
+**tester la réaction des sondes à un apport d'eau**, *pas* la couverture Rain Bird.
+**Aucune calibration** appliquée.
+
+### Snapshot avant → après (test tuyau)
+
+| Point de mesure | Humidité avant | Humidité après | Écart | Temp. avant | Temp. après | Âge mesure après |
+|---|---|---|---|---|---|---|
+| Point 1 | 33,64 % | **70,44 %** | **+36,80** | 28,45 °C | 27,07 °C | 0,1 min |
+| Point 2 | 32,84 % | **54,27 %** | **+21,43** | 27,80 °C | 27,08 °C | 0,4 min |
+| Point 3 | 29,64 % | **67,24 %** | **+37,60** | 29,74 °C | 28,62 °C | 0,1 min |
+
+*Horodatages : snapshot avant `2026-06-26 21:24:42` ; snapshot après `2026-06-26 21:35:30`.
+Âges d'humidité avant : Point 1 17,9 min · Point 2 3,1 min · Point 3 8,3 min.*
+
+### Interprétation (validation fonctionnelle)
+
+- Les **trois points répondent clairement** à un apport d'eau ;
+- ils **republient rapidement** après variation (âges après ≤ 0,4 min) ;
+- les valeurs **montent fortement et de façon crédible** ;
+- les **températures baissent légèrement**, cohérent avec un apport d'eau ;
+- **Conclusion** : capteurs d'humidité sol **validés fonctionnellement** — test de
+  **réponse à l'eau réussi**.
+
+### Conclusions à NE PAS tirer
+
+- ❌ **Aucun seuil hydrique** n'est déduit de ce test (valeurs ponctuelles, sol
+  détrempé par un apport direct, non représentatif d'un régime d'arrosage) ;
+- ❌ **Aucune calibration** n'est décidée : un écart d'amplitude entre points **ne
+  prouve pas** un défaut de sonde ;
+- ⚠️ **Point 2 réagit moins fortement** (+21,43 contre +36,80 / +37,60) : **ne pas
+  conclure trop vite**. Causes **possibles** à explorer prudemment — eau moins
+  abondante à cet endroit, sol plus drainant, placement / profondeur différents,
+  contact sonde-sol, micro-hétérogénéité du terrain. **Aucune** de ces hypothèses
+  n'est tranchée ici.
+
+### À observer ensuite
+
+- **Redescente** de l'humidité à **+30 min / +1 h / au lendemain** (cinétique de
+  séchage par point) ;
+- **stabilité Zigbee** des trois sondes dans la durée (disponibilité, linkquality
+  à relever, §5) ;
+- **différence de comportement du Point 2** sur plusieurs apports ;
+- **cycles météo / arrosage futurs** ([`07`](07_phase_0_terrain.md) T03–T04) avant
+  toute idée de seuil — les **seuils hydriques restent à définir après observation
+  longue** (§9).
 
 - Besoin hydrique (consomme `‹humidite_sol_zone›`) : [`04_besoin_hydrique.md`](04_besoin_hydrique.md)
 - Observation & preuves (honnêteté d'état) : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)

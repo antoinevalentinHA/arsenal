@@ -143,6 +143,83 @@ et **après** la commande :
 
 ---
 
+## 9. Validation terrain (2026-06-26) — Run & Stop supervisés
+
+> **Note factuelle (terrain), non normative.** Cette section **constate** des
+> tests des **scripts déjà livrés** ; elle **ne modifie** aucune règle des §1–§8,
+> **ne crée** ni **ne modifie** aucune entité ou script. Les résultats sont
+> **nuancés** : le **Stop** est validé ; le **Run** révèle un **défaut de
+> confirmation de démarrage** à corriger (correctif runtime hors de ce lot).
+
+### Test 1 — Run supervisé station 1 courte : commande effective, **démarrage non confirmé par le script**
+
+Action lancée : `script.arrosage_rain_bird_station_1_courte_supervisee`.
+
+| Observation | Valeur |
+|---|---|
+| Commande physique station 1 | **effective** (arrosage réellement déclenché) |
+| `switch.rain_bird_bat_bt_2_e9a3_station_1` pendant l'arrosage | **`on`** |
+| `sensor.rain_bird_bat_bt_2_e9a3_active_station` pendant l'arrosage | **`Idle`** (incohérent avec le switch) |
+| Verdict du script sur le démarrage | **« démarrage non confirmé »** (notification émise) |
+| `active_station` en fin de cycle | `Idle` (retour à l'idle observé) |
+| Durée station 1 bornée | **2 min** |
+| Santé pont / données dispo / fraîches | `degrade` / on / on |
+| Préconditions runtime / heartbeat | on / online |
+| Wi-Fi RSSI / BLE RSSI | -78 dBm / -72 à -84 dBm selon relevés |
+
+**Interprétation — validation PARTIELLE, à ne pas surévaluer.**
+
+- La **commande physique est effective** : la station 1 s'ouvre réellement (arrosage
+  observé) et le **retour à `Idle`** est constaté en fin de cycle.
+- **MAIS** le script a **notifié « démarrage non confirmé »** : sa vérification de
+  démarrage (fenêtre 15 s) repose sur `active_station`, resté **`Idle`** alors que
+  `switch.…_station_1` était **`on`** pendant l'arrosage.
+- **Diagnostic** : `active_station` **n'est pas une preuve primaire fiable** du
+  démarrage (faux négatif `Idle` station active). Cohérent avec la note du script
+  (« la valeur exacte d'une station EN COURS n'est pas documentée ») et avec
+  l'honnêteté d'observation ([`06`](06_observation_et_preuves.md) : ACK / état ≠ preuve).
+- **Conclusion** : la **Station 1 courte supervisée n'est PAS « pleinement
+  validée »** en l'état. La **commande** fonctionne ; la **confirmation de
+  démarrage** est défaillante et doit être corrigée.
+
+> **Correctif runtime à prévoir (HORS de ce lot documentaire).** Confirmer le
+> démarrage **via le `switch` natif** (`switch.…_station_1 == on`) plutôt que via
+> `active_station` seul — ou **combiner** les deux signaux. Ce correctif **n'est
+> PAS implémenté ici** : ce lot **documente le besoin**, il **ne modifie aucun
+> script** (interdits de périmètre). À traiter dans un **lot runtime dédié**.
+
+### Test 2 — Stop supervisé sur arrosage natif actif
+
+Procédure : déclenchement **manuel natif** de
+`switch.rain_bird_bat_bt_2_e9a3_station_1`, puis
+`script.arrosage_rain_bird_stop_supervise`.
+
+| Observation | Valeur |
+|---|---|
+| `active_station` (après Stop) | `Idle` (retour à l'idle confirmé) |
+| Données pont disponibles / fraîches | on / on |
+| Santé pont | `degrade` |
+| Wi-Fi RSSI | -78 dBm |
+| BLE RSSI | -72 dBm |
+| Stop confirmé | oui |
+
+**Interprétation.** Le **cas sécurité réel** est validé : un arrosage **natif
+actif** est **arrêté** par le Stop Arsenal supervisé, avec retour `Idle`. Le Stop
+n'est **pas seulement validé « à vide »** — il a interrompu un arrosage
+**effectivement en cours** (asymétrie Run/Stop, §7 ; direction de défaillance).
+
+> **Portée et limites.** Le **Stop sécurité** est **validé terrain** (y compris sur
+> arrosage natif actif). Le **Run court** a une **commande effective** mais une
+> **confirmation de démarrage défaillante** (correctif runtime requis ci-dessus) :
+> il **n'est pas pleinement validé**. Ces tests **n'introduisent aucun arrosage
+> automatique** et **ne ferment pas** la Phase 0 : `rain_delay` / expiration
+> (T07–T09, dead-man switch), plaque d'acier (T17) et emplacement définitif (T19)
+> restent **à qualifier** ([`07`](07_phase_0_terrain.md)). La santé **`degrade`**
+> n'empêche **pas** l'exploitation tant que les **préconditions runtime** sont `on`
+> (pré-requis [`10`](10_prerequis_runtime.md) : **P4 satisfait**, **P3 partiel**).
+
+---
+
 ## Renvois
 
 - Classification des entités (classes & autorité) : [`09_classification_entites.md`](09_classification_entites.md)
