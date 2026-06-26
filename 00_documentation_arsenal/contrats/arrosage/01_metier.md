@@ -13,7 +13,8 @@ canonique des couches, **avant** toute implémentation.
 Le domaine `arrosage` gouverne l'**arrosage automatique du jardin** via un
 contrôleur **Rain Bird ESP-BAT-BT2**, ponté à Home Assistant par
 `rainbird-esp32` (MQTT ↔ ELEGOO ESP32 classique ↔ BLE), et informé par des **capteurs
-d'humidité du sol Zigbee** (commandés, non encore appairés).
+d'humidité du sol Zigbee** (**Zone 1 appairée** ; Zones 2–3 attendues — relevé
+[`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md)).
 
 Il répond à une question métier unique :
 
