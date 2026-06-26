@@ -143,6 +143,18 @@
     - platform: state
       entity_id: climate.clim
       from: "unknown"
+    # Dérive vers le « auto » constructeur (P3) : événement d'ATTRIBUT pur
+    # (l'état principal de climate.clim ne change pas → aucun trigger from:
+    # ne réagit) que la chaîne ne captait pas → le auto Fujitsu subsistait
+    # indéfiniment. Trigger BORNÉ (attribute + to) sur fan_mode == "auto"
+    # (FAN_AUTO HA = minuscule, présent dans fan_modes Airstage). NON bouclant :
+    # la résolution réémet low/medium/high (jamais auto). Hors plage silencieuse
+    # seulement (condition not override_actif) ; en plage, le quiet est restauré
+    # par l'automation silence 1003000000020.
+    - platform: state
+      entity_id: climate.clim
+      attribute: fan_mode
+      to: "auto"
 
   variables:
     # « Auto Arsenal » (et la valeur héritée « Auto » par sécurité) suit la
