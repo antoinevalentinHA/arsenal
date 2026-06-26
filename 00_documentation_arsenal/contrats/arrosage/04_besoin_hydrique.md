@@ -34,7 +34,7 @@ n'est encore appairé, aucun `entity_id` n'est figé.
 
 | Entrée conceptuelle | Sens | Source pressentie |
 |---|---|---|
-| `‹humidite_sol_zone›` | Humidité réelle du sol de la zone | Capteur d'humidité sol **Zigbee** (commandé, non appairé) |
+| `‹humidite_sol_zone›` | Humidité réelle du sol de la zone | Capteur d'humidité sol **Zigbee** (**Zone 1 appairée** ; Zones 2–3 attendues — relevé [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md)) |
 | `‹dernier_arrosage_zone›` | Temps écoulé depuis le dernier arrosage **connu** | Observation Arsenal + Rain Bird (cf. [`06_observation_et_preuves.md`](06_observation_et_preuves.md)) |
 | `‹pluie_recente›` | Pluie tombée récemment | Signaux pluie ([`volets_pluie.md`](../volets_pluie.md), [`meteo/README.md`](../meteo/README.md)) |
 | `‹pluie_prevue›` | Pluie prévue à court terme | Prévision météo |
@@ -104,6 +104,7 @@ formules sont **non figés**, à calibrer en Phase 0) :
 
 ## Renvois
 
+- Capteurs d'humidité sol (relevé `‹humidite_sol_zone›`) : [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md)
 - Intention (consomme le besoin) : [`05_intention.md`](05_intention.md)
 - Observation du dernier arrosage : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)
 - Signaux pluie / météo : [`volets_pluie.md`](../volets_pluie.md), [`meteo/README.md`](../meteo/README.md)

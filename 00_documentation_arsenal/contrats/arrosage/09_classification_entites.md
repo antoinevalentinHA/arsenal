@@ -122,7 +122,8 @@ ne **décident** jamais ([`06`](06_observation_et_preuves.md), [`01`](01_metier.
 
 ## Renvois
 
-- Inventaire relevé : [`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md)
+- Inventaire relevé (pont Rain Bird) : [`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md)
+- Relevé & classification des capteurs sol Zigbee : [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md)
 - Pré-requis runtime : [`10_prerequis_runtime.md`](10_prerequis_runtime.md)
 - Régimes (`mode Off`, dead-man) : [`02_regimes.md`](02_regimes.md)
 - Coexistence (`rain_delay`, seconde autorité) : [`03_coexistence_rainbird.md`](03_coexistence_rainbird.md)

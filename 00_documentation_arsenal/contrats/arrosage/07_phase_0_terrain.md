@@ -147,6 +147,7 @@ La Phase 0 est **close** lorsque :
 - Régimes & secours : [`02_regimes.md`](02_regimes.md)
 - Besoin par zone (dépend du mapping) : [`04_besoin_hydrique.md`](04_besoin_hydrique.md)
 - Présumé vs confirmé : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)
+- Relevé des capteurs sol Zigbee (T01–T06) : [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md)
 - Inventaire du pont (relevé runtime) : [`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md)
 - Classification des entités : [`09_classification_entites.md`](09_classification_entites.md)
 - Pré-requis runtime (barrière de sortie) : [`10_prerequis_runtime.md`](10_prerequis_runtime.md)

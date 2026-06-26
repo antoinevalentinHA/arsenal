@@ -56,12 +56,15 @@ sont **conceptuels** et marqués par des chevrons : `‹besoin_hydrique_zone›`
 | [`09_classification_entites.md`](09_classification_entites.md) | Classification doctrinale de chaque entité : action candidate / observation / dangereux / futur régime / interdit / ignoré |
 | [`10_prerequis_runtime.md`](10_prerequis_runtime.md) | Barrière de sortie : pré-requis runtime (poll BLE, batterie/RSSI, station courte, Stop All, emplacement, Wi-Fi, plaque acier) avant toute automatisation |
 | [`11_mode_manuel_supervise.md`](11_mode_manuel_supervise.md) | Doctrine d'exécution : mode manuel supervisé — toute commande native passe par un script Arsenal supervisé (UI → scripts, jamais d'entité native) ; Run confirmé/gardé, Stop encapsulé mais plus accessible |
+| [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md) | **Relevé factuel + doctrine d'observation** des capteurs d'humidité sol **Zigbee** : nommage canonique des zones, entités Zone 1 **confirmées** / Zone 2–3 **attendues**, table de mapping à compléter, classification (observation / calibration manuelle / firmware hors runtime) ; couche d'observation qui **ne déclenche pas** l'arrosage |
 
 > **Deux natures de documents.** Les fichiers `01`–`07` et `09`–`11` sont
-> **normatifs** (doctrine et invariants opposables). Le fichier `08` est
-> **factuel** : un **relevé** de la surface réelle du pont après découverte MQTT,
-> qui **ne crée aucune entité Arsenal** et **ne fige rien**. Recenser une entité
-> exposée par le pont ≠ la ratifier comme commande Arsenal.
+> **normatifs** (doctrine et invariants opposables). Les fichiers `08` et `12`
+> sont **factuels** : des **relevés** de surfaces réelles (le pont Rain Bird après
+> découverte MQTT ; les sondes sol Zigbee après appairage), qui **ne créent aucune
+> entité Arsenal** et **ne figent rien** — `12` y adjoint la **doctrine
+> d'observation** qui borne l'usage des sondes. Recenser une entité exposée ≠ la
+> ratifier comme entrée de décision Arsenal.
 
 ---
 
@@ -92,7 +95,7 @@ Finalité métier (01)
 |---|---|---|
 | Contrôleur Rain Bird ESP-BAT-BT2 | Arrosage physique + programme interne autonome | Filet de survie, alimenté par piles |
 | `rainbird-esp32` (ELEGOO ESP32 classique) | Pont MQTT ↔ BLE ↔ Rain Bird | Exécution + observation **partielle** |
-| Capteurs d'humidité sol Zigbee | Perception du besoin par zone | Commandés — **non encore appairés** |
+| Capteurs d'humidité sol Zigbee | Perception du besoin par zone | **Zone 1 appairée** ; Zones 2–3 **attendues** — relevé [`12`](12_capteurs_humidite_sol.md) |
 | Home Assistant / Arsenal | Décideur principal en régime normal | Sur UPS |
 
 > Le détail des hypothèses du pont (ACK BLE, `rain_delay`, stations fantômes,
