@@ -27,14 +27,18 @@
 #   rain_bird_pont_donnees_fraiches
 #
 # 🧱 PRINCIPE (off par défaut, jamais faux positif)
+#   FRAÎCHEUR MÉTIER = tolérance LONGUE. Le bridge Rain Bird poll
+#   lentement hors commande (de l'ordre de 4 h) ; un seuil court (ex.
+#   15 min) rendrait ce capteur faux la majorité du temps. Seuil retenu :
+#   18000 s (5 h) — marge opérationnelle autour d'un poll lent ~4 h.
 #   on  = données exploitables présentes (active_station, batterie,
 #         BLE non unknown/unavailable)
-#         ET heartbeat exploitable mis à jour il y a < 900 s.
+#         ET heartbeat exploitable mis à jour il y a < 18000 s (5 h).
 #   off = au moins une donnée cœur indisponible (ex. BLE down)
-#         OU heartbeat absent / périmé.
+#         OU heartbeat absent / périmé (>= 5 h).
 #   Un heartbeat frais alors que les données BLE sont unknown ne
 #   suffit PAS : la fraîcheur du pont ≠ fraîcheur des données utiles.
-#   Seuil 900 s ajustable (Wi-Fi faible / latence élevée).
+#   Disponibilité du pont != fraîcheur métier (voir pont_sante).
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
@@ -59,7 +63,7 @@
         {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
         {% set hb_st = states(hb) %}
         {% set recent = hb_st is not none and hb_st not in indispo
-              and (now() - states[hb].last_updated).total_seconds() < 900 %}
+              and (now() - states[hb].last_updated).total_seconds() < 18000 %}
         {{ 'mdi:timer-check-outline' if (exploitable and recent) else 'mdi:timer-alert-outline' }}
       state: >
         {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
@@ -72,7 +76,7 @@
         {% set hb = 'sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat' %}
         {% set hb_st = states(hb) %}
         {% set recent = hb_st is not none and hb_st not in indispo
-              and (now() - states[hb].last_updated).total_seconds() < 900 %}
+              and (now() - states[hb].last_updated).total_seconds() < 18000 %}
         {{ 'on' if (exploitable and recent) else 'off' }}
       attributes:
         donnees_exploitables: >
@@ -92,4 +96,4 @@
           {% else %}
             {{ (now() - states[hb].last_updated).total_seconds() | int }}
           {% endif %}
-        seuil_secondes: "900"
+        seuil_secondes: "18000"
