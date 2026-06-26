@@ -83,6 +83,9 @@
 
 ## Conception
 
+### Arrosage
+- [arrosage/cadrage_besoin_hydrique_decision_arrosage.md](02_conception/arrosage/cadrage_besoin_hydrique_decision_arrosage.md)  _(cadrage de chantier — **besoin hydrique jardin / recommandation d'arrosage** ; ouvre la réflexion et **prépare la consultation externe Claude/Gemini/Grok** avant contrat ; **aucune règle finale, aucun seuil, aucun runtime, aucune automatisation** ; rappel « une zone Rain Bird, trois points de mesure »)_
+
 ### Climatisation
 - [climatisation/cadrage_contrat_presence_confort_thermique_stabilisee.md](02_conception/climatisation/cadrage_contrat_presence_confort_thermique_stabilisee.md)  _(cadrage contractuel — **implémenté V1+V2, sous observation, en attente de validation terrain** ; contrat **non ratifié / non opposable** ; signal d'interface `presence_confort_thermique_stabilisee` confiné aux décisions COOL/DRY ; clim interne / alarme / `securite` / `unifiee` intacts)_
 - [climatisation/note_calibration_tenue_T_presence_confort_thermique.md](02_conception/climatisation/note_calibration_tenue_T_presence_confort_thermique.md)  _(note de calibration — **T = 120 s déployé (observationnel), non ratifié, révisable** ; plage [90 s, 180 s])_
