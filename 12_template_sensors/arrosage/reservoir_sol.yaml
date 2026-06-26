@@ -1,0 +1,186 @@
+# ==========================================================
+# 🧠 ARSENAL — TEMPLATE SENSORS
+#     Arrosage — Canal réservoir sol (observation v0)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Produire les grandeurs d'OBSERVATION du canal réservoir sol
+#   (contrat 15_canal_reservoir_sol.md) à partir des trois points
+#   d'humidité sol d'une ZONE UNIQUE Rain Bird (3 points de mesure,
+#   PAS 3 zones d'arrosage) :
+#     - humidité représentative (médiane des points frais) ;
+#     - point le plus sec (minimum) ;
+#     - hétérogénéité (max - min) ;
+#     - nombre de points frais utilisés ;
+#     - état qualitatif du canal réservoir sol.
+#   OBSERVATION / DIAGNOSTIC UNIQUEMENT.
+#
+# 🧱 DOCTRINE (contrats 13/14/15)
+#   - v0 = observation + diagnostic ; AUCUNE recommandation, AUCUNE action.
+#   - N'émet PAS besoin_hydrique ni arrosage_recommande ; ne pilote pas
+#     Rain Bird ; n'intègre NI pluie, NI température, NI saison, NI canicule,
+#     NI dernier arrosage, NI disponibilité Rain Bird (autres canaux/contrats).
+#   - Médiane != score de besoin, != "le jardin va bien", != vérité globale.
+#   - Minimum seul : ne déclare pas la zone sèche, ne déclenche aucun arrosage.
+#   - Point 2 (réponse plus faible au test tuyau) : traité comme les autres
+#     tant qu'il est frais et numérique ; AUCUNE pondération/correction/
+#     déclassement (contrat 14 §6, contrat 15 §10).
+#
+# 🧮 POINTS FRAIS UTILISABLES (contrat 14)
+#   Un point est "frais utilisable" si :
+#     - son état est numérique (float) ET hors {unknown/unavailable/none/''}
+#     - ET sa dernière mise à jour date de moins du seuil de fraîcheur.
+#   Les points stale / indisponibles N'ENTRENT PAS dans les agrégats.
+#   (Aucune exclusion de "suspect" : aucun critère robuste n'existe en v0,
+#    contrat 14 §5 — un point suspect n'est donc pas exclu automatiquement.)
+#
+# ⏱️ FENÊTRE DE FRAÎCHEUR — 21600 s (6 h) — PARAMÈTRE RUNTIME D'OBSERVATION v0
+#   Valeur conservatrice, NON un seuil agronomique final. La fraîcheur est
+#   évaluée sur `last_updated`, qui n'avance que lorsque l'état CHANGE ; une
+#   humidité sol peut rester quasi-stable plusieurs heures (sonde vivante mais
+#   valeur figée). Une fenêtre courte marquerait alors le canal "stale" à tort
+#   (faux indisponible). 6 h tolère ces plateaux tout en captant une sonde
+#   réellement muette (pile/maillage) en quelques heures — sans action en v0,
+#   la latence de détection est sans danger. Même ordre de grandeur que la
+#   tolérance de fraîcheur du pont (18000 s). À CONFIRMER par l'observation
+#   (plan_observation_hydrique_v0.md — "premières fenêtres de fraîcheur").
+#
+# 🔗 SOURCES
+#   sensor.jardin_humidite_sol_zone_1_soil_moisture
+#   sensor.jardin_humidite_sol_zone_2_soil_moisture
+#   sensor.jardin_humidite_sol_zone_3_soil_moisture
+#
+# 🧱 SOURCE DE VÉRITÉ INTERNE
+#   sensor.jardin_humidite_sol_valeurs_fraiches : liste JSON des valeurs
+#   fraîches utilisables (idiome repo, cf. humidite_relative_jardin_valeurs_
+#   valides). Les 5 grandeurs publiques en dérivent (DRY, pas de logique
+#   de fraîcheur dupliquée).
+#
+# 🚫 INTERDITS
+#   - Piloter un équipement, déclencher une action, recommander un arrosage.
+#   - Transformer unknown/unavailable en valeur utile.
+#   - Calculer un agrégat sur des valeurs non numériques.
+#
+# 🏷️ STATUT
+#   Observation / diagnostic — Arsenal (canal réservoir sol v0)
+# ==========================================================
+
+- sensor:
+
+    # ----- Source de vérité interne : liste JSON des valeurs fraîches -----
+    - name: "Jardin humidite sol valeurs fraiches"
+      unique_id: jardin_humidite_sol_valeurs_fraiches
+      default_entity_id: sensor.jardin_humidite_sol_valeurs_fraiches
+      icon: mdi:code-json
+      state: >
+        {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
+        {% set seuil = 21600 %}
+        {% set pts = [
+          'sensor.jardin_humidite_sol_zone_1_soil_moisture',
+          'sensor.jardin_humidite_sol_zone_2_soil_moisture',
+          'sensor.jardin_humidite_sol_zone_3_soil_moisture'
+        ] %}
+        {% set ns = namespace(vals=[]) %}
+        {% for p in pts %}
+          {% set st = states(p) %}
+          {% set num = st | float(none) %}
+          {% if st not in indispo and num is not none and states[p] is not none
+                and (now() - states[p].last_updated).total_seconds() < seuil %}
+            {% set ns.vals = ns.vals + [num] %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.vals | tojson }}
+      attributes:
+        seuil_fraicheur_secondes: "21600"
+
+    # ----- 1. Humidité représentative = médiane des points frais (3/3) -----
+    - name: "Jardin humidite sol mediane"
+      unique_id: jardin_humidite_sol_mediane
+      default_entity_id: sensor.jardin_humidite_sol_mediane
+      unit_of_measurement: "%"
+      device_class: humidity
+      state_class: measurement
+      icon: mdi:water-percent
+      availability: >
+        {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {{ vals | length >= 3 }}
+      state: >
+        {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+        {% set vals = (raw | from_json if raw not in ['unknown', 'unavailable'] else []) | sort %}
+        {% set n = vals | length %}
+        {{ (vals[n // 2] if n % 2 == 1 else (vals[n // 2 - 1] + vals[n // 2]) / 2) | round(1) }}
+
+    # ----- 2. Point le plus sec = minimum des points frais (>= 1) -----
+    - name: "Jardin humidite sol minimum"
+      unique_id: jardin_humidite_sol_minimum
+      default_entity_id: sensor.jardin_humidite_sol_minimum
+      unit_of_measurement: "%"
+      device_class: humidity
+      state_class: measurement
+      icon: mdi:water-alert-outline
+      availability: >
+        {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {{ vals | length >= 1 }}
+      state: >
+        {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {{ vals | min | round(1) }}
+
+    # ----- 3. Hétérogénéité = max - min des points frais (>= 2) -----
+    - name: "Jardin humidite sol heterogeneite"
+      unique_id: jardin_humidite_sol_heterogeneite
+      default_entity_id: sensor.jardin_humidite_sol_heterogeneite
+      unit_of_measurement: "%"
+      state_class: measurement
+      icon: mdi:arrow-expand-vertical
+      availability: >
+        {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {{ vals | length >= 2 }}
+      state: >
+        {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {{ (vals | max - vals | min) | round(1) }}
+
+    # ----- 4. Nombre de points frais utilisés (0..3) -----
+    - name: "Jardin humidite sol points frais"
+      unique_id: jardin_humidite_sol_points_frais
+      default_entity_id: sensor.jardin_humidite_sol_points_frais
+      state_class: measurement
+      icon: mdi:counter
+      state: >
+        {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+        {% set vals = raw | from_json if raw not in ['unknown', 'unavailable'] else [] %}
+        {{ vals | length }}
+      attributes:
+        seuil_fraicheur_secondes: "21600"
+
+    # ----- 5. État qualitatif du canal réservoir sol -----
+    #   Vocabulaire v0 fondé sur le NOMBRE de points frais uniquement :
+    #     3 -> complet · 2 -> degrade · 1 -> insuffisant · 0 -> indisponible.
+    #   Les états "heterogene" / "a_verifier" du contrat 15 ne sont PAS émis
+    #   en v0 : aucun seuil d'hétérogénéité robuste n'existe (contrat 15 §6),
+    #   on n'introduit donc aucun seuil arbitraire. État diagnostic : ne
+    #   signifie NI "arroser" NI "ne pas arroser".
+    - name: "Jardin reservoir sol etat"
+      unique_id: jardin_reservoir_sol_etat
+      default_entity_id: sensor.jardin_reservoir_sol_etat
+      icon: >
+        {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+        {% set n = (raw | from_json if raw not in ['unknown', 'unavailable'] else []) | length %}
+        {% if n >= 3 %} mdi:check-circle-outline
+        {% elif n == 2 %} mdi:alert-circle-outline
+        {% elif n == 1 %} mdi:alert-outline
+        {% else %} mdi:close-circle-outline {% endif %}
+      state: >
+        {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+        {% set n = (raw | from_json if raw not in ['unknown', 'unavailable'] else []) | length %}
+        {% if n >= 3 %} complet
+        {% elif n == 2 %} degrade
+        {% elif n == 1 %} insuffisant
+        {% else %} indisponible {% endif %}
+      attributes:
+        points_frais: >
+          {% set raw = states('sensor.jardin_humidite_sol_valeurs_fraiches') %}
+          {{ (raw | from_json if raw not in ['unknown', 'unavailable'] else []) | length }}
