@@ -18,25 +18,33 @@
 #   - Fin de séquence déléguée au Stop supervisé déjà livré
 #     (script.arrosage_rain_bird_stop_supervise), qui vérifie et notifie
 #     son propre échec : on ne duplique pas sa notification (anti-bruit).
-#   - Observation (06) : ACK ≠ preuve ; unknown/unavailable ≠ démarrage.
+#   - Observation (06) : la preuve PRIMAIRE de démarrage est l'état 'on' du
+#     SWITCH natif ; active_station n'est PAS probante (peut rester 'Idle'
+#     pendant un arrosage réellement actif).
 #   - ble_status / ble_last_error ne sont PAS une base de décision.
 #
 # 🔗 ENTITÉS
-#   Gardes      : binary_sensor.rain_bird_pont_donnees_disponibles
-#                 binary_sensor.arrosage_rain_bird_preconditions_runtime
-#                 sensor.rain_bird_bat_bt_2_e9a3_active_station
-#   Durée       : number.rain_bird_bat_bt_2_e9a3_station_1_duration (réglée à 2)
-#   Commande    : switch.rain_bird_bat_bt_2_e9a3_station_1
-#   Arrêt       : script.arrosage_rain_bird_stop_supervise
-#   Notif       : script.notification_envoyer
+#   Gardes        : binary_sensor.rain_bird_pont_donnees_disponibles
+#                   binary_sensor.arrosage_rain_bird_preconditions_runtime
+#                   sensor.rain_bird_bat_bt_2_e9a3_active_station (repos avant lancement)
+#   Durée         : number.rain_bird_bat_bt_2_e9a3_station_1_duration (réglée à 2)
+#   Commande      : switch.rain_bird_bat_bt_2_e9a3_station_1
+#   Confirmation  : switch.rain_bird_bat_bt_2_e9a3_station_1 == on (PREUVE PRIMAIRE)
+#   Diag (notif)  : sensor.rain_bird_pont_sante,
+#                   sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi,
+#                   sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
+#   Arrêt         : script.arrosage_rain_bird_stop_supervise
+#   Notif         : script.notification_envoyer
 #
-# 🧮 RÈGLE DE DÉMARRAGE (sémantique active_station)
-#   Le runtime expose 'Idle' (majuscule) au repos ; la valeur exacte
-#   d'une station EN COURS n'est PAS documentée dans le dépôt. Pour ne
-#   rien inventer : démarrage confirmé si active_station | lower n'est
-#   dans AUCUN état "non démarré" connu :
-#     idle / none / off / '' / unknown / unavailable.
-#   Toute autre valeur concrète = au moins une station active.
+# 🧮 RÈGLE DE DÉMARRAGE (PREUVE PRIMAIRE = SWITCH NATIF)
+#   Terrain (PR #96) : pendant un arrosage RÉELLEMENT actif de la station 1,
+#   switch.…_station_1 = on alors que active_station peut rester 'Idle'.
+#   La preuve PRIMAIRE du démarrage est donc l'état 'on' du SWITCH NATIF
+#   station 1 — PAS active_station, qui reste une observation utile mais
+#   N'EST PAS probante ici (cf. contrat 06 : ACK / état ≠ preuve).
+#   Démarrage confirmé  ⇔  switch.…_station_1 == on dans le délai (15 s).
+#   active_station reste lu pour la GARDE (station au repos avant lancement)
+#   et comme INDICATIF dans la notification d'échec.
 #
 # 🚫 NE FAIT PAS
 #   - Aucune station 2, aucun run_program, advance_station,
@@ -60,7 +68,6 @@ arrosage_rain_bird_station_1_courte_supervisee:
         active_sensor: sensor.rain_bird_bat_bt_2_e9a3_active_station
         duree_minutes: 2
         idle_states: ['idle', 'none', 'off', '']
-        non_demarre: ['idle', 'none', 'off', '', 'unknown', 'unavailable']
         dispo_ok: "{{ is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') }}"
         precond_ok: "{{ is_state('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'on') }}"
 
@@ -103,10 +110,13 @@ arrosage_rain_bird_station_1_courte_supervisee:
         entity_id: "{{ station_switch }}"
 
     # =========================================================
-    # ✅ VÉRIFICATION DE DÉMARRAGE (15 s) — unknown ≠ succès
+    # ✅ CONFIRMATION DE DÉMARRAGE (15 s) — PREUVE = SWITCH NATIF
     # =========================================================
+    # Preuve PRIMAIRE = switch.…_station_1 == on. active_station n'est PLUS
+    # exigé non-idle : le terrain (PR #96) montre qu'il peut rester 'Idle'
+    # pendant un arrosage réellement actif (cf. en-tête 🧮 et contrat 06).
     - wait_template: >
-        {{ states(active_sensor) | lower not in non_demarre }}
+        {{ is_state(station_switch, 'on') }}
       timeout: "00:00:15"
       continue_on_timeout: true
 
@@ -114,19 +124,26 @@ arrosage_rain_bird_station_1_courte_supervisee:
         - conditions:
             - condition: template
               value_template: >
-                {{ states(active_sensor) | lower in non_demarre }}
+                {{ not is_state(station_switch, 'on') }}
           sequence:
-            # Démarrage non confirmé : arrêt supervisé par sécurité + notif
+            # Switch non confirmé 'on' : démarrage NON prouvé →
+            # arrêt supervisé par sécurité + notif diagnostique.
             - service: script.arrosage_rain_bird_stop_supervise
             - service: script.notification_envoyer
               data:
                 cible: input_text.telephone_antoine_notify
                 titre: "💧 Arrosage – Station 1 démarrage non confirmé"
                 message: >-
-                  Démarrage station 1 NON confirmé après 15 s.
-                  active_station : {{ states(active_sensor) }}.
-                  Arrêt supervisé déclenché par sécurité.
-            - stop: "Démarrage station 1 non confirmé"
+                  Démarrage station 1 NON confirmé : le switch natif n'est pas
+                  passé 'on' dans le délai (15 s). Arrêt supervisé déclenché par
+                  sécurité.
+                  switch station 1 : {{ states(station_switch) }}.
+                  active_station (indicatif, non probant) : {{ states(active_sensor) }}.
+                  Santé pont : {{ states('sensor.rain_bird_pont_sante') }}.
+                  Préconditions runtime : {{ precond_ok }}.
+                  Wi-Fi RSSI : {{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') }} dBm.
+                  BLE RSSI : {{ states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') }} dBm.
+            - stop: "Démarrage station 1 non confirmé (switch non 'on')"
 
     # =========================================================
     # ⏱️ ARROSAGE COURT (2 min max) puis ARRÊT SUPERVISÉ
