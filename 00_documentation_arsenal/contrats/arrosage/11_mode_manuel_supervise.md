@@ -146,10 +146,11 @@ et **après** la commande :
 ## 9. Validation terrain (2026-06-26) — Run & Stop supervisés
 
 > **Note factuelle (terrain), non normative.** Cette section **constate** des
-> tests des **scripts déjà livrés** ; elle **ne modifie** aucune règle des §1–§8,
-> **ne crée** ni **ne modifie** aucune entité ou script. Les résultats sont
-> **nuancés** : le **Stop** est validé ; le **Run** révèle un **défaut de
-> confirmation de démarrage** à corriger (correctif runtime hors de ce lot).
+> tests des **scripts livrés** ; elle **ne modifie** aucune règle des §1–§8,
+> **ne crée** ni **ne modifie** aucune entité ou script. Historique : le **Stop**
+> a été validé d'emblée (Test 2) ; le **Run** révélait un **défaut de confirmation
+> de démarrage** (Test 1). Ce défaut a depuis été **corrigé** (PR #97) puis
+> **re-validé terrain** (Test 3) : la **réserve Run / P3 est levée**.
 
 ### Test 1 — Run supervisé station 1 courte : commande effective, **démarrage non confirmé par le script**
 
@@ -178,15 +179,15 @@ Action lancée : `script.arrosage_rain_bird_station_1_courte_supervisee`.
   démarrage (faux négatif `Idle` station active). Cohérent avec la note du script
   (« la valeur exacte d'une station EN COURS n'est pas documentée ») et avec
   l'honnêteté d'observation ([`06`](06_observation_et_preuves.md) : ACK / état ≠ preuve).
-- **Conclusion** : la **Station 1 courte supervisée n'est PAS « pleinement
-  validée »** en l'état. La **commande** fonctionne ; la **confirmation de
-  démarrage** est défaillante et doit être corrigée.
+- **Conclusion (état #96, depuis résolue)** : à ce stade, la **Station 1 courte
+  supervisée n'était PAS « pleinement validée »** — la **commande** fonctionnait
+  mais la **confirmation de démarrage** était défaillante. **Réserve levée depuis**
+  par le correctif #97 + test post-correctif (**voir Test 3**).
 
-> **Correctif runtime à prévoir (HORS de ce lot documentaire).** Confirmer le
-> démarrage **via le `switch` natif** (`switch.…_station_1 == on`) plutôt que via
-> `active_station` seul — ou **combiner** les deux signaux. Ce correctif **n'est
-> PAS implémenté ici** : ce lot **documente le besoin**, il **ne modifie aucun
-> script** (interdits de périmètre). À traiter dans un **lot runtime dédié**.
+> **Correctif runtime — LIVRÉ (PR #97).** La confirmation de démarrage repose
+> désormais sur le **`switch` natif** (`switch.…_station_1 == on`), plus sur
+> `active_station`. Correctif **implémenté hors de ce lot documentaire** (le
+> présent lot **ne modifie aucun script**) et **validé terrain** au Test 3.
 
 ### Test 2 — Stop supervisé sur arrosage natif actif
 
@@ -208,15 +209,46 @@ actif** est **arrêté** par le Stop Arsenal supervisé, avec retour `Idle`. Le 
 n'est **pas seulement validé « à vide »** — il a interrompu un arrosage
 **effectivement en cours** (asymétrie Run/Stop, §7 ; direction de défaillance).
 
-> **Portée et limites.** Le **Stop sécurité** est **validé terrain** (y compris sur
-> arrosage natif actif). Le **Run court** a une **commande effective** mais une
-> **confirmation de démarrage défaillante** (correctif runtime requis ci-dessus) :
-> il **n'est pas pleinement validé**. Ces tests **n'introduisent aucun arrosage
+### Test 3 — Run station 1 courte APRÈS correctif #97 : démarrage confirmé par le switch (validé)
+
+Action : `script.arrosage_rain_bird_station_1_courte_supervisee` (runtime **post-#97**).
+
+| Observation (fin de cycle, `2026-06-26 22:01:45`) | Valeur |
+|---|---|
+| `switch.rain_bird_bat_bt_2_e9a3_station_1` | `off` (retour au repos) |
+| `sensor.rain_bird_bat_bt_2_e9a3_active_station` | `Idle` |
+| Notification « démarrage non confirmé » | **aucune** (non reçue) |
+| Durée station 1 | **2 min** (conservée) |
+| Stop final | **OK** |
+| Santé pont / données dispo / fraîches | `degrade` / on / on |
+| Préconditions runtime | on |
+| Wi-Fi RSSI / BLE RSSI | -78 dBm / -73 dBm |
+| Lecture | repos / fin de cycle |
+
+**Interprétation — réserve levée.**
+
+- **Station 1 courte supervisée validée terrain après correctif #97.**
+- **Confirmation de démarrage validée par le `switch` natif station 1** : **aucune
+  notification de démarrage non confirmé** n'a été reçue lors du test post-correctif.
+- `active_station` reste une **observation de repos / diagnostic**, **pas une preuve
+  primaire de démarrage** ; `active_station = Idle` **n'est plus bloquant**.
+- Le **cycle revient au repos** avec `switch_station_1 = off` et `active_station = Idle` ;
+  **durée conservée à 2 min** ; **Stop final OK**.
+- **Pont exploitable** malgré santé `degrade`, **préconditions runtime `on`**.
+
+> **Cadre de la validation.** Validation **runtime manuelle supervisée** uniquement.
+> **Aucun mode automatique** d'arrosage n'est introduit ; **aucun seuil hydrique**
+> n'est fixé ; **aucun lien** capteurs humidité → déclenchement d'arrosage. La
+> Phase 0 reste ouverte pour le reste ([`07`](07_phase_0_terrain.md) : `rain_delay`
+> / expiration, plaque d'acier, emplacement définitif).
+
+> **Portée et limites.** Le **Stop sécurité** (Test 2) et le **Run court** (Test 3,
+> après #97) sont **validés terrain**. Ces tests **n'introduisent aucun arrosage
 > automatique** et **ne ferment pas** la Phase 0 : `rain_delay` / expiration
 > (T07–T09, dead-man switch), plaque d'acier (T17) et emplacement définitif (T19)
 > restent **à qualifier** ([`07`](07_phase_0_terrain.md)). La santé **`degrade`**
 > n'empêche **pas** l'exploitation tant que les **préconditions runtime** sont `on`
-> (pré-requis [`10`](10_prerequis_runtime.md) : **P4 satisfait**, **P3 partiel**).
+> (pré-requis [`10`](10_prerequis_runtime.md) : **P3 et P4 satisfaits terrain**).
 
 ---
 
