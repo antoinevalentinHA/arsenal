@@ -121,7 +121,7 @@
             | rejectattr('state', 'eq', 'off')
             | list
             | count -%}
-          {%- if esp32_ko == 3 -%}critical
+          {%- if esp32_ko == 2 -%}critical
           {%- elif esp32_ko >= 1 -%}degraded
           {%- elif esp32_unknown >= 1 -%}unknown
           {%- else -%}ok
@@ -166,7 +166,7 @@
             | count -%}
           {%- if supervision_unknown > 0 -%}supervision_critique_unknown
           {%- elif critique_ko | count > 0 -%}critique_ko: {{ critique_ko | join(', ') }}
-          {%- elif esp32_ko == 3 -%}esp32_critical: 3_proxies_ko
+          {%- elif esp32_ko == 2 -%}esp32_critical: 2_proxies_ko
           {%- elif importante_ko | count > 0 -%}importante_ko: {{ importante_ko | join(', ') }}
           {%- elif secondaire_ko | count > 0 -%}secondaire_ko: {{ secondaire_ko | join(', ') }}
           {%- elif esp32_ko > 0 -%}esp32_degraded: {{ esp32_ko }}_proxy_ko
@@ -197,7 +197,7 @@
           | count -%}
         {%- if supervision_unknown > 0 -%}unknown
         {%- elif critique_ko > 0 -%}critical
-        {%- elif esp32_ko == 3 -%}critical
+        {%- elif esp32_ko == 2 -%}critical
         {%- elif importante_ko > 0 -%}degraded
         {%- elif secondaire_ko > 0 -%}degraded
         {%- elif esp32_ko >= 1 -%}degraded
