@@ -55,8 +55,9 @@ sont **conceptuels** et marqués par des chevrons : `‹besoin_hydrique_zone›`
 | [`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md) | **Relevé runtime factuel** du pont `rainbird-esp32` et des entités MQTT réellement exposées (recenser ≠ ratifier) |
 | [`09_classification_entites.md`](09_classification_entites.md) | Classification doctrinale de chaque entité : action candidate / observation / dangereux / futur régime / interdit / ignoré |
 | [`10_prerequis_runtime.md`](10_prerequis_runtime.md) | Barrière de sortie : pré-requis runtime (poll BLE, batterie/RSSI, station courte, Stop All, emplacement, Wi-Fi, plaque acier) avant toute automatisation |
+| [`11_mode_manuel_supervise.md`](11_mode_manuel_supervise.md) | Doctrine d'exécution : mode manuel supervisé — toute commande native passe par un script Arsenal supervisé (UI → scripts, jamais d'entité native) ; Run confirmé/gardé, Stop encapsulé mais plus accessible |
 
-> **Deux natures de documents.** Les fichiers `01`–`07` et `09`–`10` sont
+> **Deux natures de documents.** Les fichiers `01`–`07` et `09`–`11` sont
 > **normatifs** (doctrine et invariants opposables). Le fichier `08` est
 > **factuel** : un **relevé** de la surface réelle du pont après découverte MQTT,
 > qui **ne crée aucune entité Arsenal** et **ne fige rien**. Recenser une entité
@@ -78,9 +79,10 @@ Finalité métier (01)
 
 > **Pré-condition transverse :** la Phase 0 terrain (07) est **obligatoire**
 > avant toute bascule de l'intention vers une exécution réelle. Le **relevé du
-> pont** (08), la **classification des entités** (09) et les **pré-requis
-> runtime** (10) instruisent cette bascule sans la déclencher — ils recensent,
-> classent et conditionnent, **sans rien créer**.
+> pont** (08), la **classification des entités** (09), les **pré-requis
+> runtime** (10) et la **doctrine d'exécution supervisée** (11) instruisent cette
+> bascule sans la déclencher — ils recensent, classent, conditionnent et bornent
+> la future commande, **sans rien créer**.
 
 ---
 

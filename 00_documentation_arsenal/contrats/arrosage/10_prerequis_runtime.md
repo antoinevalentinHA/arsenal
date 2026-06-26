@@ -99,4 +99,5 @@ neutralise pas le filet de survie ([`03_coexistence_rainbird.md`](03_coexistence
 - Coexistence / direction de défaillance : [`03_coexistence_rainbird.md`](03_coexistence_rainbird.md)
 - Observation (présumé → confirmé) : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)
 - Résilience / fraîcheur-disponibilité : [`resilience_integrations.md`](../resilience_integrations.md)
+- Exécution supervisée une fois la barrière levée : [`11_mode_manuel_supervise.md`](11_mode_manuel_supervise.md)
 - Index du domaine : [`README.md`](README.md)

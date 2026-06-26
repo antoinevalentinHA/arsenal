@@ -130,4 +130,5 @@ ne **décident** jamais ([`06`](06_observation_et_preuves.md), [`01`](01_metier.
 - Intention (stations candidates) : [`05_intention.md`](05_intention.md)
 - Observation (active_station, niveaux de vérité) : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)
 - Phase 0 (OTA, stations, BLE) : [`07_phase_0_terrain.md`](07_phase_0_terrain.md)
+- Exécution supervisée (comment commander les classes candidate / dangereux) : [`11_mode_manuel_supervise.md`](11_mode_manuel_supervise.md)
 - Index du domaine : [`README.md`](README.md)
