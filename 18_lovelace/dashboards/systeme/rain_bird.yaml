@@ -4,30 +4,106 @@ views:
   - badges: !include ../../includes/badges/diagnostics_systeme.yaml
 
     # ==========================================================
-    # 🛰️ PONT RAIN BIRD — DIAGNOSTIC TECHNIQUE
+    # 🛰️ PONT RAIN BIRD — COCKPIT D'ÉTAT (lecture seule)
     # ----------------------------------------------------------
-    # Observabilité seule. Aucune action d'arrosage, aucun appel
-    # Rain Bird, aucun pilotage de station. L'UI montre, elle ne
-    # décide pas.
+    # Observabilité seule, façon Boiler Bridge : button-card
+    # compacts, 1 valeur = 1 carte, aucun markdown permanent.
+    # Aucune commande Rain Bird, aucune entité native d'action,
+    # aucun tap_action vers une commande. L'UI montre, elle ne
+    # décide pas. La santé reflète honnêtement 'degrade'.
     # ==========================================================
     cards:
       - type: vertical-stack
         cards:
-          # =========================================================
-          # 🛰️ Bandeau — Observation seule (pont non actionnable)
-          # =========================================================
-          - type: markdown
-            content: >
-              <div style="background: rgba(33, 150, 243, 0.2); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.45;">
-              <b>🛰️ Cockpit diagnostic — observation seule.</b><br>
-              Cette vue <b>observe</b> le pont Rain Bird (ESP32 / MQTT), la qualité
-              des liens et le contexte pluie. Elle ne pilote <b>aucune</b> station
-              et ne déclenche <b>aucune</b> action d'arrosage.<br>
-              Le contrôleur Rain Bird reste <b>non actionnable</b> par Arsenal tant
-              que les préconditions runtime ne sont pas toutes confirmées.
-              </div>
 
-          # Emphase conditionnelle : préconditions non satisfaites → rouge canon
+          # =========================================================
+          # 🛰️ État pont
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🛰️ État pont
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: custom:button-card
+                template: rain_bird_status_health_72
+                entity: sensor.rain_bird_pont_sante
+                name: Santé
+                icon: mdi:heart-pulse
+
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: binary_sensor.rain_bird_pont_donnees_disponibles
+                name: Disponibles
+                icon: mdi:database-check
+
+              - type: custom:button-card
+                template: status_72_on_off
+                entity: binary_sensor.rain_bird_pont_donnees_fraiches
+                name: Fraîches
+                icon: mdi:clock-check-outline
+
+          # =========================================================
+          # 📶 Liens & alimentation (une seule carte par valeur)
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 📶 Liens & alimentation
+
+          - type: grid
+            columns: 3
+            square: false
+            cards:
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi
+                name: Wi-Fi RSSI
+                icon: mdi:wifi
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
+                name: BLE RSSI
+                icon: mdi:bluetooth
+
+              - type: custom:button-card
+                template: carte_kpi_bleu
+                entity: sensor.rain_bird_bat_bt_2_e9a3_battery_level
+                name: Batterie
+                icon: mdi:battery
+
+          - type: grid
+            columns: 2
+            square: false
+            cards:
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.rain_bird_bat_bt_2_e9a3_bridge_heartbeat
+                name: Heartbeat
+                icon: mdi:heart-flash
+
+              - type: custom:button-card
+                template: socle_info_72
+                entity: sensor.rain_bird_bat_bt_2_e9a3_active_station
+                name: Station active
+                icon: mdi:sprinkler-variant
+
+          # =========================================================
+          # 🔒 Préconditions
+          # =========================================================
+          - type: custom:button-card
+            template: section_header
+            name: 🔒 Préconditions
+
+          - type: custom:button-card
+            template: status_72_on_off
+            entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
+            name: Préconditions runtime
+            icon: mdi:check-decagram
+
+          # Détail des critères : conditionnel (uniquement si non satisfaites)
           - type: conditional
             conditions:
               - entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
@@ -35,54 +111,23 @@ views:
             card:
               type: markdown
               content: >
-                <div style="background: rgba(244, 67, 54, 0.2); border-radius: 8px; padding: 10px 12px; font-size: 13px; line-height: 1.45;">
-                <b>⛔ Rain Bird non actionnable.</b><br>
-                Au moins une précondition runtime est <b>non satisfaite</b> :
-                Arsenal <b>s'abstient</b> et laisse le secours Rain Bird opérer.
-                Aucune commande de station n'est possible dans cet état.
+                <div style="font-size: 13px; line-height: 1.6;">
+                <b>Critères non satisfaits :</b><br>
+                • BLE exploitable : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'ble_ok') else '⛔' }}<br>
+                • Batterie connue : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'batterie_ok') else '⛔' }}<br>
+                • Wi-Fi exploitable : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'wifi_ok') else '⛔' }}<br>
+                • Test station courte : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'station_courte_validee') else '⛔' }}<br>
+                • Test Stop All : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'stop_all_valide') else '⛔' }}<br>
+                • Emplacement physique : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'emplacement_valide') else '⛔' }}<br>
+                • Wi-Fi qualifié : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'wifi_qualifie') else '⛔' }}
                 </div>
 
           # =========================================================
-          # 🔒 Préconditions runtime
+          # 🧪 Validation / détails (secondaire)
           # =========================================================
           - type: custom:button-card
             template: section_header
-            name: 🔒 Préconditions runtime
-
-          - type: custom:button-card
-            template: status_72_on_off
-            entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
-            name: Préconditions runtime (barrière de sortie)
-            icon: mdi:check-decagram
-
-          - type: markdown
-            content: >
-              <div style="font-size: 13px; line-height: 1.6;">
-              <b>Détail des préconditions :</b><br>
-              • BLE acceptable : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'ble_ok') else '⛔' }}<br>
-              • Batterie connue : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'batterie_ok') else '⛔' }}<br>
-              • Wi-Fi acceptable : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'wifi_ok') else '⛔' }}<br>
-              • Test station courte validé : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'station_courte_validee') else '⛔' }}<br>
-              • Test Stop All validé : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'stop_all_valide') else '⛔' }}<br>
-              • Emplacement physique validé : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'emplacement_valide') else '⛔' }}<br>
-              • Wi-Fi qualifié : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'wifi_qualifie') else '⛔' }}
-              </div>
-
-          # =========================================================
-          # 🧪 Validation terrain (helpers — saisie opérateur)
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🧪 Validation terrain
-
-          - type: markdown
-            content: >
-              <div style="font-size: 13px; line-height: 1.45;">
-              Drapeaux de <b>validation terrain</b> renseignés par l'opérateur.
-              Ils alimentent la barrière de sortie ci-dessus — ils ne pilotent
-              <b>aucune</b> station Rain Bird.
-              </div>
-            text_only: true
+            name: 🧪 Validation / détails
 
           - type: grid
             columns: 2
@@ -112,106 +157,24 @@ views:
                 name: Wi-Fi qualifié
                 icon: mdi:wifi-check
 
-          # =========================================================
-          # 🛰️ Pont ESP32 / MQTT
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🛰️ Pont ESP32 / MQTT
-
           - type: grid
             columns: 3
             square: false
             cards:
               - type: custom:button-card
-                template: rain_bird_status_health_72
-                entity: sensor.rain_bird_pont_sante
-                name: Santé du pont
-                icon: mdi:heart-pulse
+                template: socle_info_72
+                entity: sensor.rain_bird_bat_bt_2_e9a3_bridge_version
+                name: Version pont
+                icon: mdi:tag
 
               - type: custom:button-card
-                template: status_72_on_off
-                entity: binary_sensor.rain_bird_pont_donnees_disponibles
-                name: Données disponibles
-                icon: mdi:database-check
+                template: socle_info_72
+                entity: sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime
+                name: Uptime
+                icon: mdi:timer-outline
 
               - type: custom:button-card
-                template: status_72_on_off
-                entity: binary_sensor.rain_bird_pont_donnees_fraiches
-                name: Données fraîches
-                icon: mdi:clock-check-outline
-
-          - type: markdown
-            content: >
-              <div style="font-size: 13px; line-height: 1.6;">
-              <b>Santé détaillée :</b><br>
-              • Heartbeat : {{ state_attr('sensor.rain_bird_pont_sante', 'heartbeat_etat') or '—' }}<br>
-              • Wi-Fi RSSI : {{ state_attr('sensor.rain_bird_pont_sante', 'wifi_rssi') or '—' }} dBm<br>
-              • BLE RSSI : {{ state_attr('sensor.rain_bird_pont_sante', 'ble_rssi') or '—' }} dBm<br>
-              • Batterie : {{ state_attr('sensor.rain_bird_pont_sante', 'battery_level') or '—' }} %
-              </div>
-
-          # =========================================================
-          # 📶 Qualité des liens
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 📶 Qualité des liens
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.rain_bird_pont_qualite_wifi
-                name: Qualité Wi-Fi
-                icon: mdi:wifi
-
-              - type: custom:button-card
-                template: carte_kpi_bleu
-                entity: sensor.rain_bird_pont_qualite_ble
-                name: Qualité BLE
-                icon: mdi:bluetooth
-
-          - type: markdown
-            content: >
-              <div style="font-size: 13px; line-height: 1.6;">
-              • Wi-Fi : {{ state_attr('sensor.rain_bird_pont_qualite_wifi', 'rssi_dbm') or '—' }} dBm<br>
-              • BLE : {{ state_attr('sensor.rain_bird_pont_qualite_ble', 'rssi_dbm') or '—' }} dBm
-              </div>
-            text_only: true
-
-          # =========================================================
-          # 📟 État Rain Bird — valeurs brutes (lecture seule)
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 📟 État Rain Bird
-
-          - type: markdown
-            content: >
-              <div style="font-size: 13px; line-height: 1.6;">
-              <b>Lecture seule</b> — entités exposées par le pont, aucune commande Rain Bird.<br>
-              • Station active : {{ states('sensor.rain_bird_bat_bt_2_e9a3_active_station') }}<br>
-              • Batterie : {{ states('sensor.rain_bird_bat_bt_2_e9a3_battery_level') }} % ({{ states('sensor.rain_bird_bat_bt_2_e9a3_battery_voltage') }} V)<br>
-              • Firmware contrôleur : {{ states('sensor.rain_bird_bat_bt_2_e9a3_firmware') }}<br>
-              • Uptime pont : {{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_uptime') }}<br>
-              • Mémoire libre pont : {{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_free_heap') }}<br>
-              • BLE RSSI : {{ states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') }} dBm<br>
-              • Wi-Fi RSSI : {{ states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') }} dBm
-              </div>
-
-          # =========================================================
-          # 📝 Diagnostic Rain Bird (texte)
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 📝 Diagnostic Rain Bird
-
-          - type: markdown
-            content: >
-              <div style="font-size: 13px; line-height: 1.5;">
-              {{ states('sensor.rain_bird_pont_diagnostic') }}
-              </div>
-            text_only: true
+                template: socle_info_72
+                entity: sensor.rain_bird_bat_bt_2_e9a3_bridge_free_heap
+                name: Mémoire libre
+                icon: mdi:memory
