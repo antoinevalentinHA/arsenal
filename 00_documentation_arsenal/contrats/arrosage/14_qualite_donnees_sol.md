@@ -147,6 +147,7 @@ En **v0**, explicitement :
 ## Renvois
 
 - Chapeau observation hydrique (frontière v0) : [`13_observation_hydrique_jardin.md`](13_observation_hydrique_jardin.md)
+- Canal réservoir sol (consommateur des points frais) : [`15_canal_reservoir_sol.md`](15_canal_reservoir_sol.md)
 - Capteurs humidité sol (sources, fraîcheur, Point 2) : [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md)
 - Observation & preuves (honnêteté d'état) : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)
 - Plan d'observation v0 (fenêtres de fraîcheur à confirmer) : [`plan_observation_hydrique_v0.md`](../../audits/02_conception/arrosage/plan_observation_hydrique_v0.md)

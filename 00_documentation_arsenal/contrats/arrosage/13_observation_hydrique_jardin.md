@@ -157,6 +157,7 @@ amont — **aucune** n'est un état runtime v0 :
 ## Renvois
 
 - Qualité des données sol (socle transverse) : [`14_qualite_donnees_sol.md`](14_qualite_donnees_sol.md)
+- Canal réservoir sol (grandeurs d'observation, §3.1) : [`15_canal_reservoir_sol.md`](15_canal_reservoir_sol.md)
 - Capteurs humidité sol (3 points / 1 zone) : [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md)
 - Besoin hydrique (perception, référence) : [`04_besoin_hydrique.md`](04_besoin_hydrique.md)
 - Observation & preuves : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)
