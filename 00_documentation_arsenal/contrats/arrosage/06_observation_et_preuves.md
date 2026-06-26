@@ -11,7 +11,7 @@ présenter une présomption comme un fait. Distingue ce qui est **confirmé**,
 
 ## 1. Principe — l'observation est partielle et honnête
 
-Le pont `rainbird-esp32` (MQTT ↔ ESP32-C3 ↔ BLE) offre une observation **réelle
+Le pont `rainbird-esp32` (MQTT ↔ ELEGOO ESP32 classique ↔ BLE) offre une observation **réelle
 mais partielle** : il y a un **ACK BLE** de commande, un **poll périodique** du
 contrôleur, un **état de station active** possiblement latent — mais **aucun
 débitmètre**, **aucune preuve que l'eau coule réellement**.

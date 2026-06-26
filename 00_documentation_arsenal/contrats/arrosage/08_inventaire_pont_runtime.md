@@ -36,19 +36,27 @@ automation ou un script Arsenal.
 | Élément | Valeur observée |
 |---|---|
 | Contrôleur réel | **Rain Bird BAT-BT-2**, **2 stations** |
-| Pont | **ESP32-C3** (firmware fork `antoinevalentinHA/rainbird-esp32` **v0.3.2**) |
-| Appareil découvert (HA / MQTT) | `Rain Bird BAT-BT-2-E9A3` |
-| IP réservée | `192.168.1.115` |
-| MAC | `ac:27:6e:7e:98:1c` |
+| Pont (opérationnel) | **ELEGOO ESP32 classique (WROOM-32)** — firmware fork `antoinevalentinHA/rainbird-esp32`, image `esp32dev` **validée terrain** (version FW **à relever**) |
+| Pont précédent | **ESP32-C3** (Seeed XIAO) — **abandonné** pour ce rôle : radio BLE insuffisante, **scan Rain Bird non trouvé**. Ne pas réintroduire comme cible. |
+| Appareil découvert (HA / MQTT) | `Rain Bird BAT-BT-2-E9A3` — identité dérivée du **contrôleur**, inchangée par le changement de board |
+| IP réservée | **à relever** (board ELEGOO) — ancienne réservation C3 `192.168.1.115` **caduque** |
+| MAC | **à relever** (board ELEGOO) — ancienne MAC C3 `ac:27:6e:7e:98:1c` **caduque** |
 | Configuration firmware | `NUM_STATIONS=2`, OTA pointant vers le **fork** |
-| Wi-Fi (observé) | `bridge_wifi_rssi` ≈ **-77 dBm** — faible mais fonctionnel ; ping 0 % de perte, latence moyenne **élevée** |
-| BLE | **Validation terrain non terminée** — présumé, jamais acquis |
+| Wi-Fi | `bridge_wifi_rssi` **à re-qualifier** sur l'ELEGOO au point d'installation (référence C3 ≈ **-77 dBm** caduque) |
+| BLE | **Validé terrain (partiel)** : détection Rain Bird, GATT, poll batterie/mode/station active, **arrosage manuel via HA OK**, **stop via HA OK**. `rain_delay`/dead-man switch et atténuation fosse/plaque d'acier **non testés** → restent **présumés** (cf. [`07_phase_0_terrain.md`](07_phase_0_terrain.md) T09, T17). |
 
 > **Contrainte physique connue.** Le contrôleur Rain Bird est logé dans une
 > **fosse recouverte d'une plaque d'acier**, susceptible de **dégrader fortement
 > le BLE**. Cette contrainte est traitée comme un **pré-requis terrain** dédié
 > ([`10_prerequis_runtime.md`](10_prerequis_runtime.md),
 > [`07_phase_0_terrain.md`](07_phase_0_terrain.md) §4).
+
+> **Observabilité firmware non déployée — hors relevé.** Une couche de diagnostic
+> BLE (`ble_status`, `last_error`) existe dans la branche firmware
+> `feat/rainbird-elegoo-operational-bridge` (commit `ac306bf`) mais **n'est pas
+> flashée** sur le pont opérationnel. Les entités MQTT correspondantes
+> **n'existent pas** dans Home Assistant et **ne figurent pas** dans ce relevé. À
+> ne recenser **que si** elle est un jour effectivement déployée.
 
 ---
 
@@ -110,8 +118,10 @@ rappelée ici à titre indicatif et **ne vaut pas autorisation**.
   classification [`09`](09_classification_entites.md) et pré-requis
   [`10`](10_prerequis_runtime.md)) ;
 - ❌ il **ne promeut** aucun `entity_id` exposé en rôle conceptuel `‹…›` ratifié ;
-- ❌ il **ne suppose pas** que le BLE fonctionne : le lien BLE reste **présumé**
-  tant que la Phase 0 ne l'a pas **confirmé** ([`07`](07_phase_0_terrain.md)).
+- ⚠️ il **ne préjuge pas** de la **fiabilité durable** du BLE : les **opérations de
+  base** sont validées terrain (cf. §2 — détection, poll, run manuel, stop), mais
+  l'atténuation fosse/plaque d'acier et la tenue au **point d'installation définitif**
+  restent **présumées** ([`07`](07_phase_0_terrain.md) T13, T17).
 
 ---
 
@@ -123,8 +133,9 @@ rappelée ici à titre indicatif et **ne vaut pas autorisation**.
    au-delà de ce qu'expose réellement HA.
 3. La doctrine « aucun `entity_id` Arsenal figé avant Phase 0 » reste **intacte** :
    ce relevé décrit le **pont**, pas des entités Arsenal.
-4. Le BLE est **présumé** ; la fosse à plaque d'acier est une **dégradation
-   possible** à qualifier, pas un détail.
+4. Le **BLE de base est validé terrain (partiel)** ; sa **fiabilité durable** (fosse
+   à plaque d'acier, point d'installation définitif) reste **présumée** à qualifier,
+   pas un détail.
 5. Toute exploitation d'une entité listée est subordonnée à la **classification**
    ([`09`](09_classification_entites.md)) et aux **pré-requis runtime**
    ([`10`](10_prerequis_runtime.md)), eux-mêmes subordonnés à la **Phase 0**

@@ -89,7 +89,7 @@ Finalité métier (01)
 | Maillon | Rôle | Nature |
 |---|---|---|
 | Contrôleur Rain Bird ESP-BAT-BT2 | Arrosage physique + programme interne autonome | Filet de survie, alimenté par piles |
-| `rainbird-esp32` (ESP32-C3) | Pont MQTT ↔ BLE ↔ Rain Bird | Exécution + observation **partielle** |
+| `rainbird-esp32` (ELEGOO ESP32 classique) | Pont MQTT ↔ BLE ↔ Rain Bird | Exécution + observation **partielle** |
 | Capteurs d'humidité sol Zigbee | Perception du besoin par zone | Commandés — **non encore appairés** |
 | Home Assistant / Arsenal | Décideur principal en régime normal | Sur UPS |
 

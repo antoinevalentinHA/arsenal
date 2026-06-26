@@ -61,7 +61,7 @@ matériel lui-même.
 
 ---
 
-## 4. Pont `rainbird-esp32` (ESP32-C3 / BLE / MQTT)
+## 4. Pont `rainbird-esp32` (ELEGOO ESP32 classique / BLE / MQTT)
 
 | # | Test | Objet |
 |---|---|---|
@@ -86,6 +86,16 @@ matériel lui-même.
 > [`10_prerequis_runtime.md`](10_prerequis_runtime.md) (P2, P5, P6, P7). **T17 est
 > couplé à T13** : tant que l'atténuation métallique n'est pas qualifiée, le BLE
 > reste **présumé**.
+
+> **Mise à jour terrain (2026-06-26).** Le pont a été porté sur **ELEGOO ESP32
+> classique** ; l'**ESP32-C3 est abandonné** pour ce rôle (radio BLE insuffisante,
+> **scan Rain Bird non trouvé**). Un **test manuel** sur l'ELEGOO a confirmé :
+> détection BLE du Rain Bird, poll batterie/mode/station active, **arrosage manuel
+> via Home Assistant OK**, **stop via Home Assistant OK**. Ceci **ne clôt pas** la
+> Phase 0 : `rain_delay`/expiration (T07–T09, dead-man switch), atténuation
+> fosse/plaque d'acier et portée boîtier fermé (T13, T17), baseline Wi-Fi (T18) et
+> emplacement définitif (T19) restent **présumés**. Les baselines réseau/RSSI du
+> board ELEGOO sont **à relever** (cf. [`08_inventaire_pont_runtime.md`](08_inventaire_pont_runtime.md)).
 
 ---
 
