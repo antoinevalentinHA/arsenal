@@ -1,0 +1,110 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Arrosage / Rain Bird — Stop supervisé (sécurité)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Encapsuler la commande native d'arrêt d'arrosage Rain Bird
+#   (button.…_stop_all_irrigation) en action SUPERVISÉE :
+#   garde de disponibilité, commande, attente, vérification,
+#   retry borné, notification d'échec.
+#   Conforme au contrat 11 (mode manuel supervisé) :
+#   00_documentation_arsenal/contrats/arrosage/11_mode_manuel_supervise.md
+#
+# 🧱 DOCTRINE (contrat 11 §2, §6, §7)
+#   - Le Stop est une ACTION DE SÉCURITÉ : plus permissif que Run.
+#     Il n'exige PAS toutes les préconditions runtime ni une santé 'ok'.
+#     Seule garde : le pont délivre ses données (donnees_disponibles = on).
+#   - La commande native n'est JAMAIS exposée à l'UI : seule frontière =
+#     ce script. L'UI (lot ultérieur) n'appellera que ce script.
+#   - Vérification de l'effet par observation (06) : ACK ≠ preuve ;
+#     succès uniquement si active_station est réellement idle.
+#   - ble_status / ble_last_error ne sont PAS une base de décision.
+#
+# 🔗 ENTITÉS
+#   Garde      : binary_sensor.rain_bird_pont_donnees_disponibles
+#   Commande   : button.rain_bird_bat_bt_2_e9a3_stop_all_irrigation
+#   Vérif      : sensor.rain_bird_bat_bt_2_e9a3_active_station
+#   Notif      : script.notification_envoyer
+#
+# 🚫 NE FAIT PAS
+#   - Aucun Run de station, aucun réglage de durée.
+#   - Ne touche à aucune autre entité native (run_program, advance,
+#     controller_mode, rain_delay, water_budget, OTA, firmware).
+#   - Ne crée aucun helper (retry borné via repeat.index).
+#   - N'introduit aucun arrosage automatique.
+#
+# 🏷️ STATUT
+#   Runtime supervisé — Arsenal v14.x
+# ==========================================================
+
+arrosage_rain_bird_stop_supervise:
+  alias: "Arrosage - Stop Rain Bird supervisé"
+  mode: single
+
+  sequence:
+
+    - variables:
+        stop_button: button.rain_bird_bat_bt_2_e9a3_stop_all_irrigation
+        active_sensor: sensor.rain_bird_bat_bt_2_e9a3_active_station
+        idle_states: ['idle', 'none', 'off', '']
+        max_tentatives: 3
+
+    # =========================================================
+    # 🛡️ GARDE — pont disponible ? (seule précondition du Stop)
+    # =========================================================
+    # Stop = sécurité : autorisé même si santé 'degrade' ou si des
+    # préconditions Run manquent. Refusé seulement si le pont ne
+    # délivre plus ses données : on n'envoie alors AUCUNE commande.
+    - choose:
+        - conditions:
+            - condition: state
+              entity_id: binary_sensor.rain_bird_pont_donnees_disponibles
+              state: "on"
+          sequence: []
+      default:
+        - service: script.notification_envoyer
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "💧 Arrosage – Stop Rain Bird impossible"
+            message: >-
+              Stop Rain Bird impossible : le pont est indisponible
+              (binary_sensor.rain_bird_pont_donnees_disponibles n'est pas 'on').
+              Aucune commande native n'a été envoyée.
+        - stop: "Refus : pont Rain Bird indisponible"
+
+    # =========================================================
+    # 🔁 STOP supervisé — commande + attente + vérif, borné (3 essais)
+    # =========================================================
+    - repeat:
+        sequence:
+          - service: button.press
+            target:
+              entity_id: "{{ stop_button }}"
+          - wait_template: >
+              {{ states(active_sensor) | lower in idle_states }}
+            timeout: "00:00:08"
+            continue_on_timeout: true
+        until:
+          - condition: template
+            value_template: >
+              {{ states(active_sensor) | lower in idle_states
+                 or repeat.index >= max_tentatives }}
+
+    # =========================================================
+    # 🧾 VERDICT — confirmé (silencieux) ou échec (notifié)
+    # =========================================================
+    - choose:
+        - conditions:
+            - condition: template
+              value_template: >
+                {{ states(active_sensor) | lower in idle_states }}
+          # Confirmé : pas de notification de succès (anti-bruit, doctrine).
+          sequence: []
+      default:
+        - service: script.notification_envoyer
+          data:
+            cible: input_text.telephone_antoine_notify
+            titre: "💧 Arrosage – Stop Rain Bird non confirmé"
+            message: >-
+              Stop Rain Bird NON confirmé après {{ max_tentatives }} tentatives.
+              État active_station observé : {{ states(active_sensor) }}.
