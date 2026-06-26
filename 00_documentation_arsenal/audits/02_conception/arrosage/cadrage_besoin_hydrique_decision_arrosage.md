@@ -277,6 +277,7 @@ Ordre indicatif, **observation → recommandation → (très ultérieurement) ac
 
 ## Liens
 
+- **Confrontation des avis externes (Gemini/Grok/Claude)** : [`confrontation_avis_besoin_hydrique.md`](confrontation_avis_besoin_hydrique.md)
 - Index audits : [`audits/index.md`](../../index.md)
 - Besoin hydrique (perception, référence) : [`contrats/arrosage/04_besoin_hydrique.md`](../../../contrats/arrosage/04_besoin_hydrique.md)
 - Observation & preuves : [`contrats/arrosage/06_observation_et_preuves.md`](../../../contrats/arrosage/06_observation_et_preuves.md)
