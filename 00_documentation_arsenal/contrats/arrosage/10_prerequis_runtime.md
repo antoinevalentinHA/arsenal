@@ -47,6 +47,21 @@ Il matérialise la distinction **présumé → confirmé** de
 > qualifié l'atténuation **et** que P1 n'a pas démontré un poll fiable au point
 > d'installation réel (P5), **aucune** action candidate n'est branchable.
 
+> **Mise à jour terrain (2026-06-26).** Résultats **nuancés** via les scripts
+> supervisés ([`11`](11_mode_manuel_supervise.md) §9) :
+> - **P4 (test Stop All) — validé** : Stop supervisé confirmé **sur un arrosage
+>   natif actif** (retour `Idle`).
+> - **P3 (test station courte) — PARTIEL** : la **commande physique est effective**
+>   (station ouverte 2 min, retour `Idle`), mais la **confirmation de démarrage du
+>   script échoue** — `active_station` reste `Idle` alors que `switch.…_station_1`
+>   est `on` (faux négatif). `active_station` **n'est pas une preuve primaire
+>   fiable** ; un **correctif runtime** (confirmer le démarrage via le `switch`
+>   natif) est requis **avant** de considérer P3 satisfait.
+>
+> Santé pont `degrade` mais **exploitable** (préconditions `on`, données fraîches).
+> **P1, P2, P5, P6, P7** restent **à qualifier**. Ces constats **n'ouvrent aucun
+> lot runtime automatique** et **ne closent pas** la barrière de sortie.
+
 ---
 
 ## 3. Articulation avec la direction de défaillance
