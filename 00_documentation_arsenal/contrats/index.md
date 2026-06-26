@@ -68,7 +68,7 @@
 |---|:--:|---|---|
 | [aeration_blocage_chauffage/](./aeration_blocage_chauffage/) | 37 | README ✅ | Machine d'état aération→blocage chauffage (m0→m6) |
 | [alarme/](./alarme/) | 16 | README ✅ | Pipeline alarme numéroté 00→99 |
-| [arrosage/](./arrosage/) | 11 | README ✅ | Arrosage jardin — coexistence gouvernée Arsenal ↔ Rain Bird (v0.1, pré-runtime) + relevé pont MQTT, classification entités, pré-requis runtime |
+| [arrosage/](./arrosage/) | 12 | README ✅ | Arrosage jardin — coexistence gouvernée Arsenal ↔ Rain Bird (v0.1, pré-runtime) + relevé pont MQTT, classification entités, pré-requis runtime, mode manuel supervisé |
 | [boiler/](./boiler/) | 7 | README ✅ | Chaudière / boiler bridge |
 | [chauffage/](./chauffage/) | 52 | README ✅ | Pipeline chauffage + capteurs + amendements |
 | [climatisation/](./climatisation/) | 42 | README ✅ | Climatisation (15 root + 27 capteurs) |
