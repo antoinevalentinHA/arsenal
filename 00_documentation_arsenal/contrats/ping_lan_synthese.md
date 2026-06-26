@@ -1,4 +1,4 @@
-# CONTRAT_PING_LAN_SYNTHESE — v1.0
+# CONTRAT_PING_LAN_SYNTHESE — v1.1
 
 <!-- audit:scope=doc -->
 
@@ -36,7 +36,6 @@ L'intégration native Ping surveille les entités suivantes :
 | `192.168.1.33` | `binary_sensor.idiamant` | Contrôleur volets iDiamant |
 | `192.168.1.119` | `binary_sensor.boiler_bridge` | Boiler Bridge |
 | `192.168.1.21` | `binary_sensor.climatiseur` | Climatisation |
-| `192.168.1.24` | `binary_sensor.esp32_proxy_2` | Proxy Bluetooth ESP32 |
 | `192.168.1.95` | `binary_sensor.esp32_proxy_3` | Proxy Bluetooth ESP32 |
 | `192.168.1.91` | `binary_sensor.esp32_proxy_4` | Proxy Bluetooth ESP32 |
 | `maisonarsenal.synology.me` | `binary_sensor.acces_externe` | Accès externe Arsenal |
@@ -54,7 +53,7 @@ Toute modification du périmètre (ajout, retrait, renommage) constitue un amend
 | Accès externe | importante | `binary_sensor.acces_externe` |
 | RF / Volets | importante | `binary_sensor.idiamant` |
 | Climatisation | secondaire | `binary_sensor.climatiseur` |
-| ESP32 Proxy | secondaire (avec règle de seuil) | `binary_sensor.esp32_proxy_2`, `binary_sensor.esp32_proxy_3`, `binary_sensor.esp32_proxy_4` |
+| ESP32 Proxy | secondaire (avec règle de seuil) | `binary_sensor.esp32_proxy_3`, `binary_sensor.esp32_proxy_4` |
 | Stations météo | secondaire | `binary_sensor.station_meteo_netatmo_1`, `binary_sensor.station_meteo_netatmo_2` |
 
 La classification détermine la priorité dans la table de vérité, le calcul de la synthèse, le mapping UI, et les futurs comportements automatisés (alertes, redémarrages).
@@ -72,7 +71,7 @@ Ce sous-ensemble protège la synthèse contre les **gris parasites** : un ESP32 
 
 ### Découplage groupes ESP32 / secondaire
 
-Les trois proxies ESP32 sont gérés exclusivement par le groupe `ping_lan_esp32` et sont absents du groupe `ping_lan_secondaire`. Ce découplage permet à la règle de seuil ESP32 (criticité émergente par perte de redondance) de s'appliquer sans double-comptage avec la classe secondaire.
+Les deux proxies ESP32 sont gérés exclusivement par le groupe `ping_lan_esp32` et sont absents du groupe `ping_lan_secondaire`. Ce découplage permet à la règle de seuil ESP32 (criticité émergente par perte de redondance) de s'appliquer sans double-comptage avec la classe secondaire.
 
 ## Architecture
 
@@ -113,7 +112,7 @@ L'état du `sensor.ping_lan_synthese` est calculé selon la règle de priorité 
 |---|---|---|
 | 1 | `unknown` | Au moins une **entité critique de supervision** en `unknown` ou `unavailable` |
 | 2 | `critical` | Au moins un hôte de classe **critique** KO |
-| 3 | `critical` | Seuil ESP32 dépassé (3 proxies KO) |
+| 3 | `critical` | Seuil ESP32 dépassé (2 proxies KO) |
 | 4 | `degraded` | Au moins un hôte de classe **importante** KO |
 | 5 | `degraded` | Au moins un hôte de classe **secondaire** KO |
 | 6 | `degraded` | Au moins un proxy ESP32 KO (sans atteinte du seuil critique) |
@@ -138,12 +137,11 @@ Conséquences concrètes :
 
 Les proxies ESP32 sont individuellement secondaires, mais leur couverture cumulée conditionne la disponibilité Bluetooth de la maison. Cette logique applique la notion de **criticité émergente par perte de redondance** : aucun proxy n'est critique seul, leur perte totale l'est.
 
-| Proxies KO sur 3 | État contribué à la synthèse | Justification |
+| Proxies KO sur 2 | État contribué à la synthèse | Justification |
 |---|---|---|
 | 0 | aucun impact | couverture nominale |
 | 1 | `degraded` | redondance entamée, couverture suffisante |
-| 2 | `degraded` | couverture dégradée mais partiellement maintenue |
-| 3 | `critical` | perte totale de couverture BLE |
+| 2 | `critical` | perte totale de couverture BLE |
 
 ## Mapping états → couleurs UI
 
@@ -193,10 +191,10 @@ Valeurs possibles de `cause` :
 | `nominal` | Tous les hôtes répondent |
 | `supervision_critique_unknown` | Au moins une entité critique de supervision en `unknown` / `unavailable` |
 | `critique_ko: <entity_id>[, ...]` | Un ou plusieurs hôtes critiques KO |
-| `esp32_critical: 3_proxies_ko` | Trois proxies ESP32 KO simultanément |
+| `esp32_critical: 2_proxies_ko` | Deux proxies ESP32 KO simultanément |
 | `importante_ko: <entity_id>[, ...]` | Un ou plusieurs hôtes importants KO |
 | `secondaire_ko: <entity_id>[, ...]` | Un ou plusieurs hôtes secondaires KO |
-| `esp32_degraded: <n>_proxy_ko` | 1 ou 2 proxies ESP32 KO |
+| `esp32_degraded: <n>_proxy_ko` | 1 proxy ESP32 KO (sans atteinte du seuil critique) |
 
 ## Tests d'acceptation
 
@@ -207,7 +205,7 @@ Les huit cas suivants sont opposables. Toute implémentation doit les satisfaire
 | 1 | Tous hôtes `on` | `ok` | `nominal` |
 | 2 | `internet_disponible = off`, reste `on` | `critical` | `critique_ko: binary_sensor.internet_disponible` |
 | 3 | `boiler_bridge = off`, reste `on` | `critical` | `critique_ko: binary_sensor.boiler_bridge` |
-| 4 | 3 ESP32 `off`, reste `on` | `critical` | `esp32_critical: 3_proxies_ko` |
+| 4 | 2 ESP32 `off`, reste `on` | `critical` | `esp32_critical: 2_proxies_ko` |
 | 5 | `idiamant = off`, reste `on` | `degraded` | `importante_ko: binary_sensor.idiamant` |
 | 6 | 1 ESP32 `off` seul, reste `on` | `degraded` | `esp32_degraded: 1_proxy_ko` |
 | 7 | `internet_disponible = unknown` | `unknown` | `supervision_critique_unknown` |
@@ -265,5 +263,6 @@ Il doit :
 | Version | Date | Nature |
 |---|---|---|
 | v1.0 | 2026-05-07 | Création initiale du contrat. Figeage des trois niveaux (groupes, capteur, carte UI). |
+| v1.1 | 2026-06-26 | Retrait de `binary_sensor.esp32_proxy_2` du périmètre (ESP32 hôte reflashé en pont Rain Bird applicatif, supervisé via signaux MQTT métier du domaine arrosage). Seuil ESP32 critique ramené de 3 à 2 proxies KO. Mise à jour des trois niveaux d'implémentation et des tests d'acceptation. |
 
 Tout amendement futur doit être tracé dans cette table et faire l'objet d'une mise à jour cohérente des trois niveaux d'implémentation.

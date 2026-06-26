@@ -27,6 +27,5 @@ ping_lan_esp32:
   name: Ping LAN ESP32
   icon: mdi:bluetooth-connect
   entities:
-    - binary_sensor.esp32_proxy_2
     - binary_sensor.esp32_proxy_3
     - binary_sensor.esp32_proxy_4
