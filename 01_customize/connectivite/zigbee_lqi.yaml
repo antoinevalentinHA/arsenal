@@ -301,3 +301,19 @@ sensor.clavier_alarme_2_linkquality:
 sensor.sirene_linkquality:
   friendly_name: "Sirène alarme"
   icon: mdi:alarm-bell
+
+############################################################
+# 🌱 JARDIN / ARROSAGE
+############################################################
+
+sensor.jardin_humidite_sol_zone_1_linkquality:
+  friendly_name: "Humidité sol jardin — Zone 1"
+  icon: mdi:water-percent
+
+sensor.jardin_humidite_sol_zone_2_linkquality:
+  friendly_name: "Humidité sol jardin — Zone 2"
+  icon: mdi:water-percent
+
+sensor.jardin_humidite_sol_zone_3_linkquality:
+  friendly_name: "Humidité sol jardin — Zone 3"
+  icon: mdi:water-percent

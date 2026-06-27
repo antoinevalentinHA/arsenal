@@ -94,6 +94,9 @@
         - sensor.prise_sejour_placard_linkquality
         - sensor.sirene_linkquality
         - sensor.zigbee_pluie_linkquality
+        - sensor.jardin_humidite_sol_zone_1_linkquality
+        - sensor.jardin_humidite_sol_zone_2_linkquality
+        - sensor.jardin_humidite_sol_zone_3_linkquality
       id: "any_linkquality_change"
 
   binary_sensor:
