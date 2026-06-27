@@ -2,11 +2,17 @@
 ## 10 — Pré-requis runtime avant toute automatisation
 
 **Version contrat :** v0.1
-**Statut :** **Normatif — antérieur au runtime.** Définit la **barrière de
+**Statut :** **Normatif — partiellement réalisé.** Définit la **barrière de
 sortie** : la liste des conditions **toutes obligatoires** avant qu'une seule
 entité « action candidate » ([`09`](09_classification_entites.md)) puisse être
 branchée. Ce document **subordonne** l'automatisation à des faits **confirmés**,
 jamais présumés.
+
+> **Réalisation runtime (partielle).** La barrière de préconditions est réalisée
+> par `12_template_sensors/arrosage/preconditions_runtime.yaml` ; les drapeaux de
+> tests terrain par `05_input_booleans/arrosage/tests_terrain.yaml`. Plusieurs
+> pré-requis restent **à qualifier terrain** (P1, P2, P5, P6, P7 — cf. §2). Le
+> contrat reste la référence normative : pointeur, pas duplication.
 
 ---
 

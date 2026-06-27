@@ -2,10 +2,17 @@
 ## 11 — Mode manuel supervisé (action supervisée Arsenal)
 
 **Version contrat :** v0.1
-**Statut :** **Normatif — antérieur au runtime.** Définit la **seule** manière
-dont Arsenal pourra, plus tard, **commander** le Rain Bird : par une **action
-supervisée encapsulée**. Ce document **ne crée aucun** script, helper, automation,
-bouton ni entité — il fixe la **doctrine d'exécution** avant toute implémentation.
+**Statut :** **Normatif — partiellement réalisé.** Définit la **seule** manière
+dont Arsenal **commande** le Rain Bird : par une **action supervisée encapsulée**.
+Ce document fixe la **doctrine d'exécution** ; les scripts supervisés Run/Stop
+sont livrés (station 2 non implémentée).
+
+> **Réalisation runtime (partielle, scripts livrés).** Run/Stop supervisés :
+> `10_scripts/arrosage/station_1_courte_supervisee.yaml` et
+> `10_scripts/arrosage/stop_supervise.yaml`. Notification d'indisponibilité du
+> pont : `11_automations/arrosage/pont_indisponible_notification.yaml`. La
+> **station 2** n'est **pas implémentée**. Le contrat reste la référence
+> normative : pointeur, pas duplication.
 
 ---
 
