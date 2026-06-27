@@ -107,11 +107,12 @@
         {% set ns = namespace(any_degrade=false) %}
 
         {% for e in entites %}
-          {% set s = states(e) %}
-          {% if s not in ['unknown','unavailable','0',''] %}
-            {% if (s | int(0)) < seuil %}
-              {% set ns.any_degrade = true %}
-            {% endif %}
+          {# LQI réellement numérique uniquement : tout état non convertible
+             (inexistant / none / unknown / unavailable / '' / non numérique)
+             devient -1 et est ignoré ; 0 et négatifs ignorés (v > 0). #}
+          {% set v = states(e) | int(-1) %}
+          {% if v > 0 and v < seuil %}
+            {% set ns.any_degrade = true %}
           {% endif %}
         {% endfor %}
 
@@ -123,13 +124,10 @@
           {% set ns = namespace(worst_val=999, worst_id='') %}
 
           {% for e in entites %}
-            {% set s = states(e) %}
-            {% if s not in ['unknown','unavailable','0',''] %}
-              {% set v = s | int(0) %}
-              {% if v > 0 and v < ns.worst_val %}
-                {% set ns.worst_val = v %}
-                {% set ns.worst_id = e %}
-              {% endif %}
+            {% set v = states(e) | int(-1) %}
+            {% if v > 0 and v < ns.worst_val %}
+              {% set ns.worst_val = v %}
+              {% set ns.worst_id = e %}
             {% endif %}
           {% endfor %}
 
@@ -140,13 +138,10 @@
           {% set ns = namespace(worst_val=999, worst_id='') %}
 
           {% for e in entites %}
-            {% set s = states(e) %}
-            {% if s not in ['unknown','unavailable','0',''] %}
-              {% set v = s | int(0) %}
-              {% if v > 0 and v < ns.worst_val %}
-                {% set ns.worst_val = v %}
-                {% set ns.worst_id = e %}
-              {% endif %}
+            {% set v = states(e) | int(-1) %}
+            {% if v > 0 and v < ns.worst_val %}
+              {% set ns.worst_val = v %}
+              {% set ns.worst_id = e %}
             {% endif %}
           {% endfor %}
 
@@ -158,11 +153,9 @@
           {% set ns = namespace(n=0) %}
 
           {% for e in entites %}
-            {% set s = states(e) %}
-            {% if s not in ['unknown','unavailable','0',''] %}
-              {% if (s | int(0)) < seuil %}
-                {% set ns.n = ns.n + 1 %}
-              {% endif %}
+            {% set v = states(e) | int(-1) %}
+            {% if v > 0 and v < seuil %}
+              {% set ns.n = ns.n + 1 %}
             {% endif %}
           {% endfor %}
 
@@ -174,12 +167,9 @@
           {% set ns = namespace(items=[]) %}
 
           {% for e in entites %}
-            {% set s = states(e) %}
-            {% if s not in ['unknown','unavailable','0',''] %}
-              {% set v = s | int(0) %}
-              {% if v < seuil %}
-                {% set ns.items = ns.items + [e ~ ' -> ' ~ v] %}
-              {% endif %}
+            {% set v = states(e) | int(-1) %}
+            {% if v > 0 and v < seuil %}
+              {% set ns.items = ns.items + [e ~ ' -> ' ~ v] %}
             {% endif %}
           {% endfor %}
 
