@@ -112,23 +112,17 @@ views:
             square: false
             cards:
               - type: custom:button-card
-                template: carte_action_standard_warning
+                template: carte_action_arrosage_script
                 entity: script.arrosage_rain_bird_station_1_courte_supervisee
-                name: Arroser station 1
+                name: Démarrer station 1
                 icon: mdi:sprinkler-variant
                 variables:
-                  confirmation: "⚠️ Lancer l'arrosage supervisé de la station 1 ?"
-                  service: script.turn_on
-                  data:
-                    entity_id: script.arrosage_rain_bird_station_1_courte_supervisee
+                  confirmation: "Démarrer l'arrosage supervisé de la station 1 ?"
 
               - type: custom:button-card
-                template: carte_action_standard
+                template: carte_action_arrosage_script
                 entity: script.arrosage_rain_bird_stop_supervise
-                name: "Arrêter l'arrosage"
+                name: Arrêter station 1
                 icon: mdi:stop
                 variables:
                   confirmation: "Arrêter l'arrosage Rain Bird en cours ?"
-                  service: script.turn_on
-                  data:
-                    entity_id: script.arrosage_rain_bird_stop_supervise
