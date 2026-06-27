@@ -8,11 +8,16 @@ entité « action candidate » ([`09`](09_classification_entites.md)) puisse êt
 branchée. Ce document **subordonne** l'automatisation à des faits **confirmés**,
 jamais présumés.
 
-> **Réalisation runtime (partielle).** La barrière de préconditions est réalisée
-> par `12_template_sensors/arrosage/preconditions_runtime.yaml` ; les drapeaux de
-> tests terrain par `05_input_booleans/arrosage/tests_terrain.yaml`. Plusieurs
-> pré-requis restent **à qualifier terrain** (P1, P2, P5, P6, P7 — cf. §2). Le
-> contrat reste la référence normative : pointeur, pas duplication.
+> **Réalisation runtime (partielle).** Le runtime expose une **garde radio /
+> opérationnelle durable** — `12_template_sensors/arrosage/preconditions_runtime.yaml`
+> (BLE / batterie / Wi-Fi **exploitables**) — lue comme précondition par le script
+> Run supervisé ([`11`](11_mode_manuel_supervise.md)). Cette garde **n'est pas** la
+> checklist P1–P7 : les **validations terrain** (P3 station courte, P4 Stop All,
+> P5 emplacement, P6 Wi-Fi qualifié) sont des **faits de Phase 0 / mode manuel
+> supervisé**, **plus portés par des drapeaux runtime** — les `input_boolean` de
+> recette ont été **retirés** du runtime (ils ne gardaient rien d'opérationnel).
+> Plusieurs pré-requis restent **à qualifier terrain** (P1, P2, P5, P6, P7 —
+> cf. §2). Le contrat reste la référence normative : pointeur, pas duplication.
 
 ---
 
@@ -52,6 +57,15 @@ Il matérialise la distinction **présumé → confirmé** de
 > et la plaque d'acier peut le **dégrader fortement**. Tant que P7 n'a pas
 > qualifié l'atténuation **et** que P1 n'a pas démontré un poll fiable au point
 > d'installation réel (P5), **aucune** action candidate n'est branchable.
+
+> **Garde runtime ≠ checklist.** Cette liste P1–P7 est **documentaire** (barrière
+> de sortie, faits de Phase 0). L'entité runtime
+> `binary_sensor.arrosage_rain_bird_preconditions_runtime` est, elle, une **garde
+> radio / opérationnelle durable** (BLE / batterie / Wi-Fi exploitables) lue par le
+> Run supervisé : elle **ne matérialise pas** la qualification terrain P3–P7 et **ne
+> lit aucun drapeau de recette**. Les `input_boolean` de validation terrain ont été
+> **retirés** du runtime ; leur état relève de l'observation supervisée
+> ([`11`](11_mode_manuel_supervise.md) §9), pas d'un toggle pérenne.
 
 > **Mise à jour terrain (2026-06-26).** Via les scripts supervisés
 > ([`11`](11_mode_manuel_supervise.md) §9) :

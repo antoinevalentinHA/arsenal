@@ -3,64 +3,60 @@
 #     Arrosage / Rain Bird — Préconditions runtime
 # ----------------------------------------------------------
 # 🎯 RÔLE
-#   Exposer une autorisation logique GLOBALE indiquant si les
-#   préconditions terrain (P1–P7) sont TOUTES satisfaites
-#   avant d'envisager une quelconque action d'arrosage.
+#   Exposer une GARDE radio / opérationnelle DURABLE attestant
+#   que le pont Rain Bird est EXPLOITABLE avant d'envisager une
+#   commande d'arrosage : BLE exploitable, batterie connue,
+#   Wi-Fi exploitable. Garde lue par le script Run supervisé.
 #
 # 🧩 PÉRIMÈTRE
 #   - Évaluation booléenne uniquement
 #   - Aucune action
 #   - Aucun pilotage d'équipement
+#   - AUCUN drapeau de recette / validation terrain
 #
 # 🔖 NATURE
-#   autorisation_logique
+#   autorisation_logique (garde radio durable)
 #
 # 🆔 UNIQUE_ID
 #   arrosage_rainbird_preconditions_runtime
 #
 # 🔗 DÉPENDANCES
-#   Lit (sources brutes) :
+#   Lit (sources brutes — observables durables du pont) :
 #     sensor.rain_bird_bat_bt_2_e9a3_ble_rssi
 #     sensor.rain_bird_bat_bt_2_e9a3_battery_level
 #     sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi
-#   Lit (drapeaux terrain) :
-#     input_boolean.arrosage_rainbird_test_station_courte_valide
-#     input_boolean.arrosage_rainbird_test_stop_all_valide
-#     input_boolean.arrosage_rainbird_emplacement_physique_valide
-#     input_boolean.arrosage_rainbird_wifi_qualifie
 #
 # 🧱 PRINCIPE (off par défaut, jamais unknown)
 #   La barrière exige une radio EXPLOITABLE (présence), PAS une
 #   qualité IDÉALE. La qualité radio honnête (faible/acceptable/bon)
 #   reste portée par pont_qualite_ble / pont_qualite_wifi / pont_sante.
-#   La qualification durable du Wi-Fi reste portée par le drapeau
-#   opérateur input_boolean.arrosage_rainbird_wifi_qualifie.
 #
 #   BLE/Wi-Fi exploitable     = valeur connue, numérique, négative ET >= -90 dBm.
 #   BLE/Wi-Fi non exploitable  = unknown / unavailable / none,
 #                                non numérique, valeur >= 0, ou valeur < -90 dBm.
 #
-#   on  = BLE exploitable
-#         ET batterie connue
-#         ET Wi-Fi exploitable ET Wi-Fi qualifié (drapeau)
-#         ET station courte validée
-#         ET Stop All validé
-#         ET emplacement physique validé
+#   on  = BLE exploitable ET batterie connue ET Wi-Fi exploitable
 #   off = au moins une condition manquante / unknown / unavailable.
 #   Sortie explicite 'on'/'off' + défauts positionnels : une donnée
 #   indisponible ou non numérique vaut 'off', jamais unknown.
+#
+#   NB : les validations TERRAIN (station courte, Stop All, emplacement
+#   physique, Wi-Fi qualifié) sont des FAITS de Phase 0 / mode manuel
+#   supervisé (contrats 07, 10, 11 §9). Ce ne sont PAS des entrées
+#   runtime de cette garde : aucun drapeau de recette n'est lu ici.
 #   Référence : contrats/arrosage/10_prerequis_runtime.md
 #
 # ⚠️ NON-ACTIONNEL
-#   Cette autorisation NE déclenche rien. Elle ne fait
-#   qu'attester que les verrous terrain sont levés. Aucune
-#   automatisation ne la consomme dans ce lot.
+#   Cette garde NE déclenche rien. Elle atteste seulement que le
+#   pont est radio-exploitable. Le script Run supervisé la LIT
+#   comme précondition ; il décide, pas elle.
 #
 # 🚫 INTERDITS
 #   - Piloter directement un équipement
 #   - Déclencher une action
 #   - Confondre autorisation logique et exécution
 #   - Transformer une donnée inconnue en feu vert
+#   - Réintroduire un drapeau de recette / validation terrain
 #
 # 🏷️ STATUT
 #   Autorisation — Arsenal v14.x
@@ -77,12 +73,7 @@
         {% set ble_ok = ble not in indispo and ble | int(99) < 0 and ble | int(99) >= -90 %}
         {% set bat_ok = bat not in indispo %}
         {% set wifi_ok = wifi not in indispo and wifi | int(99) < 0 and wifi | int(99) >= -90 %}
-        {% set tous = ble_ok and bat_ok and wifi_ok
-              and is_state('input_boolean.arrosage_rainbird_wifi_qualifie', 'on')
-              and is_state('input_boolean.arrosage_rainbird_test_station_courte_valide', 'on')
-              and is_state('input_boolean.arrosage_rainbird_test_stop_all_valide', 'on')
-              and is_state('input_boolean.arrosage_rainbird_emplacement_physique_valide', 'on') %}
-        {{ 'mdi:lock-open-check' if tous else 'mdi:lock' }}
+        {{ 'mdi:lock-open-check' if (ble_ok and bat_ok and wifi_ok) else 'mdi:lock' }}
       state: >
         {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
         {% set ble = states('sensor.rain_bird_bat_bt_2_e9a3_ble_rssi') %}
@@ -91,12 +82,7 @@
         {% set ble_ok = ble not in indispo and ble | int(99) < 0 and ble | int(99) >= -90 %}
         {% set bat_ok = bat not in indispo %}
         {% set wifi_ok = wifi not in indispo and wifi | int(99) < 0 and wifi | int(99) >= -90 %}
-        {{ 'on' if (ble_ok and bat_ok and wifi_ok
-           and is_state('input_boolean.arrosage_rainbird_wifi_qualifie', 'on')
-           and is_state('input_boolean.arrosage_rainbird_test_station_courte_valide', 'on')
-           and is_state('input_boolean.arrosage_rainbird_test_stop_all_valide', 'on')
-           and is_state('input_boolean.arrosage_rainbird_emplacement_physique_valide', 'on'))
-           else 'off' }}
+        {{ 'on' if (ble_ok and bat_ok and wifi_ok) else 'off' }}
       attributes:
         ble_ok: >
           {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
@@ -108,7 +94,3 @@
           {% set indispo = ['unknown', 'unavailable', 'none', 'None', ''] %}
           {% set r = states('sensor.rain_bird_bat_bt_2_e9a3_bridge_wifi_rssi') %}
           {{ r not in indispo and r | int(99) < 0 and r | int(99) >= -90 }}
-        station_courte_validee: "{{ states('input_boolean.arrosage_rainbird_test_station_courte_valide') }}"
-        stop_all_valide: "{{ states('input_boolean.arrosage_rainbird_test_stop_all_valide') }}"
-        emplacement_valide: "{{ states('input_boolean.arrosage_rainbird_emplacement_physique_valide') }}"
-        wifi_qualifie: "{{ states('input_boolean.arrosage_rainbird_wifi_qualifie') }}"
