@@ -4,7 +4,7 @@
 # ----------------------------------------------------------
 # 🎯 RÔLE
 #   Lancer une COURTE irrigation supervisée de la station 1 :
-#   gardes complètes, durée fixe courte, commande native
+#   gardes complètes, durée paramétrable bornée, commande native
 #   encapsulée, vérification de démarrage, arrêt supervisé en
 #   fin de séquence, notification d'échec.
 #   Conforme au contrat 11 (mode manuel supervisé) :
@@ -27,7 +27,8 @@
 #   Gardes        : binary_sensor.rain_bird_pont_donnees_disponibles
 #                   binary_sensor.arrosage_rain_bird_preconditions_runtime
 #                   sensor.rain_bird_bat_bt_2_e9a3_active_station (repos avant lancement)
-#   Durée         : number.rain_bird_bat_bt_2_e9a3_station_1_duration (réglée à 2)
+#   Durée         : input_number.arrosage_rainbird_station_1_duree_minutes (helper opérateur, borné [1,10])
+#                   number.rain_bird_bat_bt_2_e9a3_station_1_duration (réglée depuis le helper, clampée)
 #   Commande      : switch.rain_bird_bat_bt_2_e9a3_station_1
 #   Confirmation  : switch.rain_bird_bat_bt_2_e9a3_station_1 == on (PREUVE PRIMAIRE)
 #   Diag (notif)  : sensor.rain_bird_pont_sante,
@@ -66,7 +67,9 @@ arrosage_rain_bird_station_1_courte_supervisee:
         station_switch: switch.rain_bird_bat_bt_2_e9a3_station_1
         station_duration: number.rain_bird_bat_bt_2_e9a3_station_1_duration
         active_sensor: sensor.rain_bird_bat_bt_2_e9a3_active_station
-        duree_minutes: 2
+        # Durée opérateur lue depuis le helper borné, clampée défensivement à [1,10]
+        # (repli 2 si indisponible). Le number.… natif n'est jamais exposé à l'UI.
+        duree_minutes: "{{ [[states('input_number.arrosage_rainbird_station_1_duree_minutes') | int(2), 1] | max, 10] | min }}"
         idle_states: ['idle', 'none', 'off', '']
         dispo_ok: "{{ is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') }}"
         precond_ok: "{{ is_state('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'on') }}"
@@ -97,7 +100,7 @@ arrosage_rain_bird_station_1_courte_supervisee:
             - stop: "Refus : gardes Run non satisfaites"
 
     # =========================================================
-    # ▶️ COMMANDE ENCADRÉE — durée 2 min puis ouverture station 1
+    # ▶️ COMMANDE ENCADRÉE — durée paramétrée (helper, clamp [1,10]) puis ouverture station 1
     # =========================================================
     - service: number.set_value
       target:
@@ -146,11 +149,12 @@ arrosage_rain_bird_station_1_courte_supervisee:
             - stop: "Démarrage station 1 non confirmé (switch non 'on')"
 
     # =========================================================
-    # ⏱️ ARROSAGE COURT (2 min max) puis ARRÊT SUPERVISÉ
+    # ⏱️ ARROSAGE (durée paramétrée) puis ARRÊT SUPERVISÉ
     # =========================================================
     # Le Stop supervisé vérifie l'arrêt et notifie son propre échec :
     # on ne duplique pas sa notification (anti-bruit). Pas de notif de
     # succès en fin de cycle nominal.
-    - delay: "00:02:00"
+    - delay:
+        minutes: "{{ duree_minutes }}"
 
     - service: script.arrosage_rain_bird_stop_supervise

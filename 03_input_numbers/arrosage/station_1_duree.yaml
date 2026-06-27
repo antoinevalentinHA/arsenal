@@ -1,0 +1,37 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Arrosage / Rain Bird — Durée station 1 (manuel)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker la durée (minutes) de l'arrosage manuel supervisé
+#   de la station 1, réglable par l'opérateur. Lue et bornée
+#   par le script `arrosage_rain_bird_station_1_courte_supervisee`
+#   avant d'être appliquée à la durée native Rain Bird.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul
+#   - Aucune logique métier locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre utilisateur
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Piloter directement un équipement
+#   - Exposer le `number.…` natif Rain Bird à l'UI
+#
+# 🏷️ STATUT
+#   Socle — Arsenal v14.x
+# ==========================================================
+
+arrosage_rainbird_station_1_duree_minutes:
+  name: "Arrosage Rain Bird — Durée station 1"
+  min: 1
+  max: 10
+  step: 1
+  initial: 2
+  unit_of_measurement: "min"
+  mode: box
+  icon: mdi:timer-sand
