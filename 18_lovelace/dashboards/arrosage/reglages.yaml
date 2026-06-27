@@ -86,3 +86,22 @@ views:
             features:
               - type: numeric-input
                 style: buttons
+
+          - type: custom:button-card
+            template: section_header
+            name: ⚙️ Arrosage manuel
+
+          - type: markdown
+            content: >
+              <div style="font-size: 13px; line-height: 1.45;">
+              Durée de la commande manuelle supervisée de la station 1.
+              Réglage <b>uniquement</b> : aucun arrosage n'est déclenché ici.
+              </div>
+
+          - type: tile
+            entity: input_number.arrosage_rainbird_station_1_duree_minutes
+            name: Durée station 1 (min)
+            features_position: inline
+            features:
+              - type: numeric-input
+                style: buttons
