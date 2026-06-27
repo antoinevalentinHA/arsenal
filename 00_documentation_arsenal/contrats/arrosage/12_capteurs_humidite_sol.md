@@ -112,22 +112,28 @@ Sonde **appairée**. Entités exposées telles que relevées dans Home Assistant
 
 ---
 
-## 5. Entités à relever après appairage complet — **ne pas inventer**
+## 5. Diagnostics Zigbee des sondes — **batterie & linkquality relevés et intégrés**
 
-Plusieurs entités habituelles de ces sondes Zigbee (alimentation, lien, mise à
-jour) **n'ont pas été relevées précisément** et **ne doivent pas être inventées** :
+Les diagnostics de **supervision capteur** (alimentation, lien radio) des trois
+points sont désormais **relevés** et **intégrés aux périmètres transversaux
+canoniques** Arsenal. Les autres diagnostics (firmware, dernière vue…) **n'ont
+pas été relevés précisément** et **ne doivent pas être inventés** :
 
-| Entité (rôle) | Statut | Observation connue |
-|---|---|---|
-| Batterie (`sensor.*_battery` ou diagnostic) | **à relever** | **100 %** vue dans les **diagnostics** de l'appareil (Zone 1) — `entity_id` exact non relevé |
-| Linkquality (`sensor.*_linkquality` si exposé) | **à relever** | non relevé |
-| Autres diagnostics Zigbee (LQI, dernière vue, etc.) | **à relever** | non relevé |
-| Mise à jour firmware (`update.*` si exposé) | **à relever** | **update disponible** signalée (Zone 1), **non traitée** dans ce lot |
+| Entité (rôle) | `entity_id` réel | Statut | Périmètre transversal |
+|---|---|---|---|
+| Batterie | `sensor.jardin_humidite_sol_zone_1_battery`, `sensor.jardin_humidite_sol_zone_2_battery`, `sensor.jardin_humidite_sol_zone_3_battery` | **relevé + intégré** | `group.batteries` + `01_customize/batteries.yaml` (cosmétique) |
+| Linkquality (LQI) | `sensor.jardin_humidite_sol_zone_1_linkquality`, `sensor.jardin_humidite_sol_zone_2_linkquality`, `sensor.jardin_humidite_sol_zone_3_linkquality` | **relevé + intégré** | `group.zigbee_linkquality_all` + liste trigger de l'agrégateur LQI + `01_customize/connectivite/zigbee_lqi.yaml` (cosmétique) |
+| Autres diagnostics Zigbee (dernière vue, etc.) | — | **à relever** | non relevé |
+| Mise à jour firmware (`update.*` si exposé) | — | **à relever** | **update disponible** signalée (Zone 1), **non traitée** dans ce lot |
 
-> **Honnêteté de relevé.** Une valeur **observée dans l'UI** (batterie 100 %,
-> update disponible) **n'autorise pas** à écrire un `entity_id` supposé. L'`entity_id`
-> exact de la batterie, de la linkquality et de l'`update` sera **relevé** après
-> appairage complet — d'ici là, ces lignes restent **à relever**.
+> **Honnêteté de relevé — maintenue.** L'intégration ci-dessus ne porte **que** sur
+> la **batterie** et la **linkquality** des trois points : leurs `entity_id` sont
+> des **faits** (présents dans les périmètres canoniques), pas des suppositions.
+> Elle **ne confirme pas** pour autant les `entity_id` `*_soil_moisture` /
+> `*_temperature` des **zones 2 et 3**, qui restent **dérivés** tant que leur relevé
+> formel n'est pas fait (§4). Le firmware (`update.*`) reste **à relever** et **hors
+> périmètre**. Une valeur observée dans l'UI **n'autorise jamais** à écrire un
+> `entity_id` supposé.
 
 ---
 
@@ -139,9 +145,16 @@ cellules `à relever` / `à établir` ne sont **pas** des trous d'erreur : elles
 
 | Zone | Appareil Zigbee2MQTT | `entity_id` humidité | `entity_id` température | Batterie | Linkquality | Emplacement physique réel | Station Rain Bird concernée | Statut |
 |---|---|---|---|---|---|---|---|---|
-| Zone 1 | `Jardin - Humidité sol - Zone 1` | `sensor.jardin_humidite_sol_zone_1_soil_moisture` | `sensor.jardin_humidite_sol_zone_1_temperature` | à relever (100 % vu en diagnostic) | à relever | à relever | à établir (Phase 0 T02) | **confirmé (appairé)** |
-| Zone 2 | `Jardin - Humidité sol - Zone 2` | `sensor.jardin_humidite_sol_zone_2_soil_moisture` *(attendu)* | `sensor.jardin_humidite_sol_zone_2_temperature` *(attendu)* | à relever | à relever | à relever | à établir (Phase 0 T02) | **attendu (non appairé)** |
-| Zone 3 | `Jardin - Humidité sol - Zone 3` | `sensor.jardin_humidite_sol_zone_3_soil_moisture` *(attendu)* | `sensor.jardin_humidite_sol_zone_3_temperature` *(attendu)* | à relever | à relever | à relever | à établir (Phase 0 T02) | **attendu (non appairé)** |
+| Zone 1 | `Jardin - Humidité sol - Zone 1` | `sensor.jardin_humidite_sol_zone_1_soil_moisture` | `sensor.jardin_humidite_sol_zone_1_temperature` | `sensor.jardin_humidite_sol_zone_1_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_1_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | à établir (Phase 0 T02) | **confirmé (appairé)** |
+| Zone 2 | `Jardin - Humidité sol - Zone 2` | `sensor.jardin_humidite_sol_zone_2_soil_moisture` *(attendu)* | `sensor.jardin_humidite_sol_zone_2_temperature` *(attendu)* | `sensor.jardin_humidite_sol_zone_2_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_2_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | à établir (Phase 0 T02) | **attendu (non appairé)** |
+| Zone 3 | `Jardin - Humidité sol - Zone 3` | `sensor.jardin_humidite_sol_zone_3_soil_moisture` *(attendu)* | `sensor.jardin_humidite_sol_zone_3_temperature` *(attendu)* | `sensor.jardin_humidite_sol_zone_3_battery` *(intégré `group.batteries`)* | `sensor.jardin_humidite_sol_zone_3_linkquality` *(intégré `group.zigbee_linkquality_all`)* | à relever | à établir (Phase 0 T02) | **attendu (non appairé)** |
+
+> **Précision de relevé.** Les `entity_id` **batterie** et **linkquality** ci-dessus
+> sont **confirmés par leur intégration** aux périmètres canoniques transversaux ;
+> les colonnes **humidité** / **température** des zones 2/3 demeurent **dérivées**
+> *(attendu)* tant que leur relevé formel n'est pas fait (§4). Renseigner ces deux
+> colonnes **ne requalifie pas** le `Statut` de la zone, qui reste gouverné par le
+> relevé des entités d'observation hydrique.
 
 ---
 
@@ -176,12 +189,17 @@ de nouvelle :
 |---|---|---|
 | `sensor.*_soil_moisture` | **Observation** (hydrique candidate) | Lecture seule ; entrée pressentie du besoin ([`04`](04_besoin_hydrique.md)). Ne décide ni n'écrit jamais. |
 | `sensor.*_temperature` | **Observation** (secondaire) | Lecture seule ; contexte, non moteur de décision. |
-| Batterie / linkquality / diagnostics | **Observation** (supervision capteur) | Lecture seule ; santé du capteur, jamais une base d'action. |
+| Batterie / linkquality (LQI) | **Observation** (supervision transversale / diagnostic capteur) | Lecture seule. **Intégrés aux périmètres canoniques transversaux** (`group.batteries` ; `group.zigbee_linkquality_all` + agrégateur LQI, §5) au titre de la **santé du capteur**. **Jamais** une base de décision d'arrosage. |
+| Autres diagnostics Zigbee | **Observation** (supervision capteur) | Lecture seule ; santé du capteur, jamais une base d'action. |
 | `number.*_calibration` (°C / °F / humidité) | **Interdit au runtime automatique** | **Aucune écriture automatique Arsenal.** Réglage technique **manuel**, réservé à une **intervention documentée** ([`11`](11_mode_manuel_supervise.md) §2.3 — paramètre borné, jamais un `number.…` librement piloté). |
 | `update.*` firmware (si exposé) | **Interdit** (maintenance) | **Hors runtime arrosage.** Même doctrine OTA que le pont ([`09`](09_classification_entites.md) §3, [`07`](07_phase_0_terrain.md) T16). |
 
 > **Aucun de ces capteurs n'est un actionneur.** Aucune sonde sol n'ouvre une
-> station, ne pose un `rain_delay`, ni ne touche au secours Rain Bird.
+> station, ne pose un `rain_delay`, ni ne touche au secours Rain Bird. L'intégration
+> de la **batterie** et de la **linkquality** dans les périmètres transversaux relève
+> de la **supervision / observation** ([`09`](09_classification_entites.md)) : elle
+> **n'introduit aucune chaîne de décision d'arrosage** et **ne promeut aucune sonde**
+> en déclencheur.
 
 ---
 
