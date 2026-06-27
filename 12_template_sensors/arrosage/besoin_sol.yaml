@@ -1,0 +1,47 @@
+# ==========================================================
+# 🧠 ARSENAL — BINARY_SENSOR
+#     Arrosage — Besoin sol (perception V1)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Perception pure : « le sol mérite-t-il de l'eau ? »
+#   on  = humidité représentative (médiane) SOUS le seuil de
+#         déclenchement, avec hystérésis pour éviter le battement.
+#   Ne décide rien, ne pilote rien (cf. contrat 04).
+#
+# 🧩 ENTRÉES
+#   - sensor.jardin_humidite_sol_mediane (médiane, %)
+#   - input_number.arrosage_seuil_humidite_declenchement (%)
+#   - input_number.arrosage_hysteresis_humidite (%)
+#
+# 🧱 HYSTÉRÉSIS
+#   Le besoin s'active sous `seuil` et ne retombe qu'au-dessus de
+#   `seuil + hystérésis` (lecture de l'état précédent via `this`).
+#
+# 🚫 GARDE ANTI-FAUX-NÉGATIF (contrat 04 §4)
+#   Médiane indisponible → besoin `off` (abstention) : on ne
+#   fabrique JAMAIS un « sol humide » par défaut, et on ne force
+#   pas non plus l'arrosage (le secours Rain Bird reste le filet).
+#
+# 🏷️ STATUT
+#   Runtime V1 (contrat 17) — Arsenal v14.x
+# ==========================================================
+
+- binary_sensor:
+    - name: "Arrosage besoin sol"
+      unique_id: arrosage_besoin_sol
+      icon: >
+        {{ 'mdi:water-alert' if is_state('binary_sensor.arrosage_besoin_sol', 'on') else 'mdi:water-check' }}
+      state: >
+        {% set raw = states('sensor.jardin_humidite_sol_mediane') %}
+        {% if raw in ['unknown', 'unavailable', 'none', 'None', ''] %}
+          off
+        {% else %}
+          {% set m = raw | float(999) %}
+          {% set seuil = states('input_number.arrosage_seuil_humidite_declenchement') | float(30) %}
+          {% set hyst = states('input_number.arrosage_hysteresis_humidite') | float(5) %}
+          {% if this.state == 'on' %}
+            {{ 'on' if m < (seuil + hyst) else 'off' }}
+          {% else %}
+            {{ 'on' if m < seuil else 'off' }}
+          {% endif %}
+        {% endif %}

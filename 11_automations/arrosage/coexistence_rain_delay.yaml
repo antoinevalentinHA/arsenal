@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Arrosage — Coexistence rain_delay (renouvellement)
+#
+#  ID : 10270000000003
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Maintenir la COEXISTENCE MINIMALE V1 (contrat 17, 03 §4) :
+#   réappliquer périodiquement l'état rain_delay voulu via le
+#   script supervisé `arrosage_rain_bird_rain_delay_appliquer`.
+#   - renouvellement périodique (toutes les 12 h) tant qu'Arsenal
+#     vit → programme interne neutralisé pendant l'autorité Arsenal ;
+#   - à chaque changement du maître (on/off) → application immédiate
+#     (neutralisation ou retour au secours) ;
+#   - au démarrage de Home Assistant → réaffirme l'état voulu.
+#
+# 🧯 FAIL-SAFE PAR CONSTRUCTION
+#   Si Home Assistant disparaît (crash, coupure), cette automation
+#   ne tourne plus → plus de renouvellement → `rain_delay` expire →
+#   le programme interne Rain Bird reprend AUTOMATIQUEMENT son rôle
+#   de secours. Aucune logique de reprise n'est nécessaire.
+#
+# 🚫 NE FAIT PAS
+#   - aucune écriture directe : tout passe par le script supervisé ;
+#   - aucune commande de station / stop / run_program / OTA.
+#
+# 🏷️ STATUT
+#   Runtime V1 (contrat 17) — Arsenal v14.x
+# ==========================================================
+
+- id: "10270000000003"
+  alias: "Arrosage - Coexistence rain_delay (renouvellement)"
+  mode: single
+
+  trigger:
+    - id: renouvellement
+      platform: time_pattern
+      hours: "/12"
+
+    - id: maitre
+      platform: state
+      entity_id: input_boolean.arrosage_automatique_actif
+
+    - id: demarrage
+      platform: homeassistant
+      event: start
+
+  action:
+    - service: script.arrosage_rain_bird_rain_delay_appliquer
