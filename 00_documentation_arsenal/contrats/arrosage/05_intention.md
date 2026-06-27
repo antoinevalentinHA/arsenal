@@ -112,6 +112,7 @@ régime et le calendrier.
 
 ## Renvois
 
+- Décision V1 (spécialisation livrable, mono-station) : [`17_decision_v1.md`](17_decision_v1.md)
 - Besoin hydrique : [`04_besoin_hydrique.md`](04_besoin_hydrique.md)
 - Régimes : [`02_regimes.md`](02_regimes.md)
 - Coexistence / cooldown / direction de défaillance : [`03_coexistence_rainbird.md`](03_coexistence_rainbird.md)
