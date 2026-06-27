@@ -91,71 +91,11 @@ views:
                 icon: mdi:sprinkler-variant
 
           # =========================================================
-          # 🔒 Préconditions
+          # ℹ️ Informations pont
           # =========================================================
           - type: custom:button-card
             template: section_header
-            name: 🔒 Préconditions
-
-          - type: custom:button-card
-            template: status_72_on_off
-            entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
-            name: Préconditions runtime
-            icon: mdi:check-decagram
-
-          # Détail des critères : conditionnel (uniquement si non satisfaites)
-          - type: conditional
-            conditions:
-              - entity: binary_sensor.arrosage_rain_bird_preconditions_runtime
-                state: "off"
-            card:
-              type: markdown
-              content: >
-                <div style="font-size: 13px; line-height: 1.6;">
-                <b>Critères non satisfaits :</b><br>
-                • BLE exploitable : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'ble_ok') else '⛔' }}<br>
-                • Batterie connue : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'batterie_ok') else '⛔' }}<br>
-                • Wi-Fi exploitable : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'wifi_ok') else '⛔' }}<br>
-                • Test station courte : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'station_courte_validee') else '⛔' }}<br>
-                • Test Stop All : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'stop_all_valide') else '⛔' }}<br>
-                • Emplacement physique : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'emplacement_valide') else '⛔' }}<br>
-                • Wi-Fi qualifié : {{ '✅' if state_attr('binary_sensor.arrosage_rain_bird_preconditions_runtime', 'wifi_qualifie') else '⛔' }}
-                </div>
-
-          # =========================================================
-          # 🧪 Validation / détails (secondaire)
-          # =========================================================
-          - type: custom:button-card
-            template: section_header
-            name: 🧪 Validation / détails
-
-          - type: grid
-            columns: 2
-            square: false
-            cards:
-              - type: custom:button-card
-                template: socle_toggle
-                entity: input_boolean.arrosage_rainbird_test_station_courte_valide
-                name: Test station courte
-                icon: mdi:water
-
-              - type: custom:button-card
-                template: socle_toggle
-                entity: input_boolean.arrosage_rainbird_test_stop_all_valide
-                name: Test Stop All
-                icon: mdi:stop-circle-outline
-
-              - type: custom:button-card
-                template: socle_toggle
-                entity: input_boolean.arrosage_rainbird_emplacement_physique_valide
-                name: Emplacement physique
-                icon: mdi:map-marker-check
-
-              - type: custom:button-card
-                template: socle_toggle
-                entity: input_boolean.arrosage_rainbird_wifi_qualifie
-                name: Wi-Fi qualifié
-                icon: mdi:wifi-check
+            name: ℹ️ Informations pont
 
           - type: grid
             columns: 3
