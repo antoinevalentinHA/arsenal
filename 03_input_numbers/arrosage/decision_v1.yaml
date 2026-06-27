@@ -1,0 +1,65 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_NUMBER
+#     Arrosage — Paramètres de décision V1
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les paramètres DURABLES de la décision d'arrosage
+#   automatique V1 (contrat 17), réglables par l'opérateur
+#   sans redéploiement : seuil d'humidité de déclenchement,
+#   hystérésis, intervalle minimal (cooldown) entre deux
+#   arrosages automatiques.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage persistant uniquement
+#   - Aucun calcul, aucune logique de décision locale
+#   - Aucun comportement autonome
+#   - La règle qui consomme ces paramètres vit ailleurs
+#     (runtime Lot 3, contrat 17) — pas ici
+#
+# 🏷️ NATURE
+#   Paramètre métier | Réglage de décision V1
+#
+# 🧱 VALEURS PAR DÉFAUT (validées au démarrage)
+#   - Seuil humidité déclenchement : 30 %   (arrose si médiane < seuil)
+#   - Hystérésis                   : 5 %    (retombe au-dessus de seuil + hystérésis)
+#   - Intervalle minimal (cooldown): 24 h   (anti-acharnement)
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Embarquer une pondération, un canal ET₀/VPD, un dead-man
+#     switch ou un paramètre multi-zone (hors périmètre V1)
+#   - Déclencher directement un arrosage
+#
+# 🏷️ STATUT
+#   Socle arrosage — Arsenal v14.x
+# ==========================================================
+
+arrosage_seuil_humidite_declenchement:
+  name: "Arrosage — Seuil humidité déclenchement"
+  icon: mdi:water-percent
+  min: 0
+  max: 100
+  step: 1
+  initial: 30
+  unit_of_measurement: "%"
+  mode: box
+
+arrosage_hysteresis_humidite:
+  name: "Arrosage — Hystérésis humidité"
+  icon: mdi:swap-vertical
+  min: 0
+  max: 50
+  step: 1
+  initial: 5
+  unit_of_measurement: "%"
+  mode: box
+
+arrosage_intervalle_minimal_heures:
+  name: "Arrosage — Intervalle minimal (cooldown)"
+  icon: mdi:timer-sand-complete
+  min: 0
+  max: 168
+  step: 1
+  initial: 24
+  unit_of_measurement: h
+  mode: box

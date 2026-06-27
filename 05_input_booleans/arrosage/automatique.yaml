@@ -1,0 +1,31 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_BOOLEAN
+#     Arrosage — Interrupteur maître automatique (V1)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Interrupteur maître DURABLE de l'arrosage automatique V1
+#   (contrat 17). Quand il est sur 'off', aucune décision V1
+#   ne doit déclencher d'arrosage — coupe-circuit opérateur de
+#   plus haut niveau. Réglage utilisateur, pas un drapeau de
+#   recette.
+#
+# 🧩 PÉRIMÈTRE
+#   - Stockage d'état binaire uniquement
+#   - Aucun calcul, aucune logique de décision locale
+#   - Aucun comportement autonome, aucune action directe
+#
+# 🔖 NATURE
+#   Paramètre métier | Interrupteur maître V1
+#
+# 🚫 INTERDITS
+#   - Confondre état et décision
+#   - Déclencher directement un arrosage
+#   - En faire un drapeau de validation / qualification terrain
+#
+# 🏷️ STATUT
+#   Socle arrosage — Arsenal v14.x
+# ==========================================================
+
+arrosage_automatique_actif:
+  name: "Arrosage automatique — Interrupteur maître"
+  icon: mdi:water-pump
