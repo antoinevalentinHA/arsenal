@@ -98,15 +98,6 @@ views:
             template: section_header
             name: 💧 Commande manuelle supervisée
 
-          - type: markdown
-            content: >
-              <div style="font-size: 13px; line-height: 1.45;">
-              Commandes <b>supervisées</b> de la station 1 Rain Bird. Chaque
-              action demande une <b>confirmation</b> et n'envoie la commande
-              native qu'à travers son script (gardes runtime incluses).
-              La durée se règle dans <i>/reglages-arrosage-dashboard</i>.
-              </div>
-
           - type: grid
             columns: 2
             square: false
