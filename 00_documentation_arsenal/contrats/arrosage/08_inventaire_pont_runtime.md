@@ -80,7 +80,7 @@ rappelée ici à titre indicatif et **ne vaut pas autorisation**.
 | `switch.rain_bird_bat_bt_2_e9a3_station_2` | Action candidate — **attendue (matériel 2 stations), non confirmée au relevé courant** |
 | `number.rain_bird_bat_bt_2_e9a3_station_2_duration` | Action candidate — **attendue, non confirmée au relevé courant** |
 | `button.rain_bird_bat_bt_2_e9a3_stop_all_irrigation` | Dangereux (kill-switch encapsulé) |
-| `number.rain_bird_bat_bt_2_e9a3_rain_delay` | Futur régime (dead-man switch) |
+| `number.rain_bird_bat_bt_2_e9a3_rain_delay` | Action candidate — coexistence V1 (dead-man minimal), cf. [`09`](09_classification_entites.md) / [`17`](17_decision_v1.md) |
 | `select.rain_bird_bat_bt_2_e9a3_controller_mode` | Futur régime |
 | `number.rain_bird_bat_bt_2_e9a3_water_budget` | Interdit (verrouillé 100 %) |
 | `button.rain_bird_bat_bt_2_e9a3_run_program_a` | Interdit (seconde autorité interne) |

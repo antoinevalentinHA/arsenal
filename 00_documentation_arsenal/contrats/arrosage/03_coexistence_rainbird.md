@@ -101,6 +101,13 @@ Arsenal s'en sert comme **dead-man switch** (homme-mort) :
 > `stop irrigation`) **doit être validé en terrain** avant de fonder le secours
 > dessus ([`07_phase_0_terrain.md`](07_phase_0_terrain.md)). Tant qu'il n'est pas
 > validé, `rain_delay` reste un **mécanisme candidat**, pas un acquis.
+>
+> *Carve-out V1 (contrat [`17`](17_decision_v1.md)) : la coexistence `rain_delay`
+> **minimale** de la V1 est **conçue à partir de la documentation officielle** (Rain
+> Bird ESP-BAT-BT, protocole SIP, projets open source), jugée suffisante ; les
+> **comportements fins** sont confirmés **en exploitation**, sans Phase 0 bloquante.
+> Les invariants ci-dessus (court / borné / renouvelé / jamais permanent) restent
+> **intacts**.*
 
 ---
 
@@ -153,9 +160,11 @@ La distinction **fraîcheur ≠ disponibilité ≠ reprise** est reprise de
    automatique du secours.
 6. **Direction de défaillance = vers Rain Bird**, jamais vers l'absence
    d'arrosage.
-7. Le comportement réel de `rain_delay`, `runStation`, `stop irrigation`, et le
-   nombre réel de stations sont **présumés** tant que la Phase 0 ne les a pas
-   **confirmés**.
+7. Le comportement réel de `runStation`, `stop irrigation` et le nombre réel de
+   stations sont **présumés** tant que la Phase 0 ne les a pas **confirmés**. Pour
+   `rain_delay`, la **coexistence minimale V1** est conçue à partir de la
+   **documentation officielle** ; ses comportements fins sont confirmés **en
+   exploitation** (carve-out V1, [`17`](17_decision_v1.md)).
 
 ---
 

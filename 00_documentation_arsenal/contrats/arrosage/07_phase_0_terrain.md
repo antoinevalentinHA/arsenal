@@ -12,12 +12,13 @@ bloque plus la V1 automatique** (voir l'arbitrage ci-dessous).
 > La **V1 d'arrosage automatique** mono-station est **autorisée sans attendre la
 > clôture de la Phase 0** : elle **délègue** son exécution aux scripts **Run/Stop
 > supervisés déjà validés terrain** (P3/P4, [`11_mode_manuel_supervise.md`](11_mode_manuel_supervise.md) §9),
-> **ne neutralise jamais** le secours Rain Bird et **s'abstient** si le pont est
-> dégradé. Ce que la Phase 0 — et la barrière P1–P7 de
+> neutralise le secours **uniquement de façon temporaire et auto-réversible** via
+> `rain_delay` (coexistence minimale V1, [`17`](17_decision_v1.md)) et **s'abstient**
+> si le pont est dégradé. Ce que la Phase 0 — et la barrière P1–P7 de
 > [`10_prerequis_runtime.md`](10_prerequis_runtime.md) — continue de **gater**, ce
-> sont les **raffinements d'autorité** : `rain_delay` / dead-man switch (T07–T09),
-> neutralisation du secours, régimes avancés (R3/R5), multi-zone — **réservés à un
-> lot ultérieur**.
+> sont les **raffinements d'autorité** : dead-man switch **avancé** (T07–T09),
+> neutralisation **permanente** du secours, régimes avancés (R3/R5), multi-zone —
+> **réservés à un lot ultérieur**.
 >
 > **Règle d'interprétation.** Dans tout ce qui suit, « avant toute automatisation /
 > exécution réelle » se lit désormais **« avant tout raffinement d'autorité »** : la
@@ -29,9 +30,10 @@ bloque plus la V1 automatique** (voir l'arbitrage ci-dessous).
 
 > **Aucun raffinement d'autorité ne doit être branché sur une exécution réelle
 > avant que la Phase 0 soit close.** *(Re-cadrage V1, contrat [`17`](17_decision_v1.md) :
-> ce principe vise le dead-man `rain_delay`, la neutralisation du secours et les
-> régimes avancés ; la **V1 automatique** déléguée aux scripts Run/Stop supervisés
-> **déjà validés terrain** n'y est **pas** subordonnée.)*
+> ce principe vise le dead-man **avancé**, la neutralisation **permanente** du
+> secours et les régimes avancés (la coexistence `rain_delay` **minimale** est, elle,
+> en V1) ; la **V1 automatique** déléguée aux scripts supervisés **déjà validés
+> terrain** n'y est **pas** subordonnée.)*
 
 Le domaine `arrosage` repose sur des hypothèses matérielles (comportement de
 `rain_delay`, latence BLE, fiabilité Zigbee, nombre réel de stations) qui
