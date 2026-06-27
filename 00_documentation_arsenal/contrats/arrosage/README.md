@@ -65,9 +65,10 @@ fait exception : ses entités sont réelles et livrées, cf. [`15`](15_canal_res
 | [`13_observation_hydrique_jardin.md`](13_observation_hydrique_jardin.md) | **Chapeau** de l'observabilité hydrique (v0 = **observation + diagnostic uniquement**) : invariants, frontière observation/diagnostic/recommandation/action, architecture par **canaux** (réservoir sol / demande climatique / modulateurs), classes de recommandation **futures non émises**. Aucune reco, aucune action en v0. |
 | [`14_qualite_donnees_sol.md`](14_qualite_donnees_sol.md) | **Socle transverse de qualité/confiance** des trois points sol : états par point (frais/stale/indisponible/suspect), qualité agrégée, invariants de dégradation, capteur « suspect » (concept, sans seuil chiffré), Point 2 à suivre, vérification humaine = drapeau diagnostic. **Mécanisme, pas valeurs.** |
 | [`15_canal_reservoir_sol.md`](15_canal_reservoir_sol.md) | **Canal réservoir sol (observation v0 — runtime livré, #103)** : grandeurs produites par `reservoir_sol.yaml` — humidité représentative (**médiane**), point le plus sec (**minimum**), hétérogénéité (**max − min**), nombre de points frais, état qualitatif du canal (`complet`/`degrade`/`insuffisant`/`indisponible`/`heterogene`/`a_verifier`). Dépend de `14` ; **n'émet aucune reco**, ne pilote rien, aucun seuil chiffré. |
+| [`16_canal_demande_climatique.md`](16_canal_demande_climatique.md) | **Canal demande climatique (observation v0 — spécification, runtime non livré)** : grandeurs d'évapotranspiration de référence — **ET₀ journalière** (Hargreaves-Samani) et **VPD courant**, avec état qualitatif (`complet`/`degrade`/`indisponible`). Penman-Monteith **exclu** (ni vent ni rayonnement mesurés) ; **aucune constante inventée**. Complète `15` (ce que le climat **retire** vs ce qu'il **reste**) ; **n'émet aucune reco**, ne pilote rien, aucun seuil chiffré. |
 
-> **Deux natures de documents.** Les fichiers `01`–`07`, `09`–`11`, `13`, `14` et
-> `15` sont **normatifs** (doctrine et invariants opposables). Les fichiers `08` et `12`
+> **Deux natures de documents.** Les fichiers `01`–`07`, `09`–`11`, `13`, `14`, `15`
+> et `16` sont **normatifs** (doctrine et invariants opposables). Les fichiers `08` et `12`
 > sont **factuels** : des **relevés** de surfaces réelles (le pont Rain Bird après
 > découverte MQTT ; les sondes sol Zigbee après appairage), qui **ne créent aucune
 > entité Arsenal** et **ne figent rien** — `12` y adjoint la **doctrine

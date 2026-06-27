@@ -83,10 +83,16 @@ reste est **vocabulaire de cadrage** (futur).
 - **fraîcheur** (qualité, [`14`](14_qualite_donnees_sol.md)) ;
 - **tendance** (futur) ; **tarissement** (futur).
 
-### 3.2 Canal demande climatique (rapide) — *cadrage futur, non v0-runtime*
+### 3.2 Canal demande climatique (rapide) — *spécifié par [`16`](16_canal_demande_climatique.md), runtime non livré*
 - saison ; température extérieure ; **Tmax prévue** ;
 - **chaleur consécutive** ; **nuits chaudes** ; **canicule** ;
 - humidex / proxy **ET** éventuel.
+
+> **Cœur quantitatif spécifié.** Les grandeurs d'évapotranspiration de ce canal —
+> **ET₀ journalière (Hargreaves-Samani)** et **VPD courant** — sont définies par
+> [`16_canal_demande_climatique.md`](16_canal_demande_climatique.md). Penman-Monteith
+> y est **exclu** (ni vent ni rayonnement mesurés). Spécification **sans runtime** ;
+> les descripteurs qualitatifs (canicule, nuits chaudes…) restent **futurs**.
 
 > La **demande climatique ne déclenche aucune action autonome** ; la **canicule
 > n'est pas un déclencheur**. Température = **proxy de demande**, jamais indicateur
@@ -160,6 +166,7 @@ amont — **aucune** n'est un état runtime v0 :
 
 - Qualité des données sol (socle transverse) : [`14_qualite_donnees_sol.md`](14_qualite_donnees_sol.md)
 - Canal réservoir sol (grandeurs d'observation, §3.1) : [`15_canal_reservoir_sol.md`](15_canal_reservoir_sol.md)
+- Canal demande climatique (ET₀ / VPD, §3.2) : [`16_canal_demande_climatique.md`](16_canal_demande_climatique.md)
 - Capteurs humidité sol (3 points / 1 zone) : [`12_capteurs_humidite_sol.md`](12_capteurs_humidite_sol.md)
 - Besoin hydrique (perception, référence) : [`04_besoin_hydrique.md`](04_besoin_hydrique.md)
 - Observation & preuves : [`06_observation_et_preuves.md`](06_observation_et_preuves.md)
