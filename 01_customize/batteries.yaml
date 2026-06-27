@@ -329,3 +329,23 @@ sensor.sirene_battery:
 sensor.bluetti_battery_soc:
   friendly_name: "Bluetti"
   icon: mdi:battery-high
+
+############################################################
+# 🌱 JARDIN / ARROSAGE
+############################################################
+
+sensor.rain_bird_bat_bt_2_e9a3_battery_level:
+  friendly_name: "Contrôleur Rain Bird"
+  icon: mdi:sprinkler-variant
+
+sensor.jardin_humidite_sol_zone_1_battery:
+  friendly_name: "Humidité sol jardin — Zone 1"
+  icon: mdi:water-percent
+
+sensor.jardin_humidite_sol_zone_2_battery:
+  friendly_name: "Humidité sol jardin — Zone 2"
+  icon: mdi:water-percent
+
+sensor.jardin_humidite_sol_zone_3_battery:
+  friendly_name: "Humidité sol jardin — Zone 3"
+  icon: mdi:water-percent
