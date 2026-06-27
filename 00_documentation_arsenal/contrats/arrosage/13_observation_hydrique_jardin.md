@@ -3,9 +3,11 @@
 
 **Version contrat :** v0.1
 **Statut :** **Normatif — chapeau de l'observabilité hydrique.** Fixe la doctrine
-opposable du futur runtime d'**observation + diagnostic** hydrique du jardin
-(**v0**), **en deçà** de toute recommandation et de toute action. Aucune entité
-runtime n'est créée par ce lot.
+opposable du runtime d'**observation + diagnostic** hydrique du jardin (**v0**),
+**en deçà** de toute recommandation et de toute action. **Partiellement livré :**
+le **canal réservoir sol** (§3.1) est implémenté
+(`12_template_sensors/arrosage/reservoir_sol.yaml`, PR #103) ; les canaux **demande
+climatique** (§3.2) et **modulateurs** (§3.3) restent **à venir**.
 
 > **Arbitrage retenu (post-conception, audits #99/#100).** **v0 = observation +
 > diagnostic uniquement.** La v0 **n'émet aucune recommandation d'arrosage**, **ne
