@@ -23,7 +23,11 @@ de l'honnêteté d'observation ([`06_observation_et_preuves.md`](06_observation_
 > « **action candidate** » n'est **jamais** exécutable tant que la **Phase 0**
 > n'est pas close ([`07_phase_0_terrain.md`](07_phase_0_terrain.md)) et que les
 > **pré-requis runtime** ne sont pas satisfaits
-> ([`10_prerequis_runtime.md`](10_prerequis_runtime.md)).
+> ([`10_prerequis_runtime.md`](10_prerequis_runtime.md)). *(Carve-out V1, contrat
+> [`17`](17_decision_v1.md) : pour le **périmètre V1** — station 1 et `rain_delay`,
+> via scripts supervisés — la lecture **suspensive** de la Phase 0 / P1–P7 est
+> **levée par décision opérateur** ; la sûreté est portée par les invariants
+> paramétrés et les gardes des scripts.)*
 
 ---
 
@@ -49,7 +53,7 @@ de l'honnêteté d'observation ([`06_observation_et_preuves.md`](06_observation_
 | `switch.…_station_2` | **Action candidate** | Idem station 2. |
 | `number.…_station_2_duration` | **Action candidate** | Durée de la station 2. |
 | `button.…_stop_all_irrigation` | **Dangereux** | Kill-switch matériel. À encapsuler **avec retry/guard** côté Arsenal ([`03`](03_coexistence_rainbird.md)) ; jamais un bouton brut. Couper l'arrosage touche directement F1 ([`01`](01_metier.md)). |
-| `number.…_rain_delay` | **Futur régime** | **Dead-man switch** ([`03`](03_coexistence_rainbird.md) §4) : court, borné, renouvelé, jamais permanent. **Jamais** un contrôle brut ; réservé à la logique de régime/secours. |
+| `number.…_rain_delay` | **Action candidate** | **Dead-man switch minimal** de coexistence V1 ([`03`](03_coexistence_rainbird.md) §4, [`17`](17_decision_v1.md)) : court, borné, renouvelé, jamais permanent. Écrit **uniquement** via un **script supervisé** (renouvellement, [`11`](11_mode_manuel_supervise.md) §3), **jamais** un contrôle brut. Les formes **avancées** (régimes R3/R5, `mode Off`) restent réservées (cf. `controller_mode`). |
 | `select.…_controller_mode` | **Futur régime** | Sélectionne `Auto`/`Off` (cf. R1–R5, [`02`](02_regimes.md)). `mode Off` (R3) n'est **jamais** un défaut ni un effet de bord ; à encapsuler dans la logique de régime, pas un sélecteur libre. |
 | `number.…_water_budget` | **Interdit** | Doit **rester à 100 %** et ne pas être exposé librement. Le toucher fausserait silencieusement le besoin/exécution ([`04`](04_besoin_hydrique.md)). Verrou. |
 | `button.…_run_program_a` | **Interdit** | Programme **interne** Rain Bird = **seconde autorité**. L'exposer recréerait la **double autorité accidentelle** interdite ([`03`](03_coexistence_rainbird.md) §1). |
@@ -92,9 +96,9 @@ ne **décident** jamais ([`06`](06_observation_et_preuves.md), [`01`](01_metier.
 
 | Classe | Entités | Écriture Arsenal autorisée ? |
 |---|---|---|
-| **Action candidate** | `station_1`, `station_2`, `station_1_duration`, `station_2_duration` | Seulement **après** Phase 0 + pré-requis, via l'**intention** — jamais brute |
+| **Action candidate** | `station_1`, `station_2`, `station_1_duration`, `station_2_duration`, `rain_delay` | Via l'**intention/exécution** encapsulée — jamais brute. `rain_delay` : coexistence V1 minimale via script supervisé ([`17`](17_decision_v1.md)) |
 | **Dangereux** | `stop_all_irrigation` | Seulement **encapsulée** (retry/guard) |
-| **Futur régime** | `rain_delay`, `controller_mode` | **Non** comme contrôle brut — réservé à un lot régime/dead-man futur |
+| **Futur régime** | `controller_mode` | **Non** comme contrôle brut — réservé à un lot régime futur (`mode Off` / R3) |
 | **Interdit** | `water_budget`, `run_program_a/b/c`, `ota_update`, `firmware_update` | **Non** |
 | **Ignoré** | `advance_station` | **Non** (statu quo) |
 | **Observation** | tous les `sensor.*` + `binary_sensor.rain_sensor` | **Lecture seule** — aucune écriture |
@@ -105,12 +109,16 @@ ne **décident** jamais ([`06`](06_observation_et_preuves.md), [`01`](01_metier.
 
 1. Une classe **autorise au plus**, jamais n'oblige ni n'exécute.
 2. **Aucune** entité — y compris « action candidate » — n'est exécutable avant
-   clôture de la **Phase 0** et satisfaction des **pré-requis runtime**.
+   clôture de la **Phase 0** et satisfaction des **pré-requis runtime**. *(Carve-out
+   V1, contrat [`17`](17_decision_v1.md) : levée pour le périmètre V1 — station 1 et
+   `rain_delay` via scripts supervisés.)*
 3. **`stop_all_irrigation`** ne s'expose qu'**encapsulé** (retry/guard) : jamais
    un bouton brut.
-4. **`rain_delay`** et **`controller_mode`** sont **gelés** comme contrôles bruts ;
-   ils n'existent pour Arsenal qu'à travers une logique de **régime / dead-man
-   switch** ([`02`](02_regimes.md), [`03`](03_coexistence_rainbird.md)).
+4. **`rain_delay`** n'est **jamais** un contrôle brut : il n'existe pour Arsenal
+   qu'à travers un **script supervisé** (dead-man switch **minimal** de coexistence
+   V1, [`03`](03_coexistence_rainbird.md) §4, [`17`](17_decision_v1.md)).
+   **`controller_mode`** reste **gelé** (régime / `mode Off` réservé,
+   [`02`](02_regimes.md)).
 5. **`water_budget` reste à 100 %** ; **`run_program_a/b/c`**, **`ota_update`**,
    **`firmware_update`** sont **interdits** d'écriture Arsenal.
 6. Les `sensor.*` et `binary_sensor.rain_sensor` sont **lecture seule** ; ils

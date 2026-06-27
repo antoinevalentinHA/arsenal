@@ -20,8 +20,10 @@ matérialisation relève des Lots 2 (helpers) et 3 (runtime).
 
 > **Garde-fou de lecture.** **On livre une V1 paramétrable d'abord** ;
 > l'observation est un **moyen de calibration** (Lot 4), **jamais** une condition
-> suspensive infinie. **Mono-station** (aucune station 2). **Aucune commande Rain
-> Bird native nouvelle** : toute action passe par le script Run supervisé. En cas
+> suspensive infinie. **Mono-station** (aucune station 2). Les commandes natives
+> se limitent à celles **déjà validées** (Run / Stop supervisés) **plus**
+> `rain_delay` (coexistence minimale, §1), toujours via un **script supervisé** —
+> aucune autre commande native nouvelle. En cas
 > de doute, Arsenal **s'abstient** et **laisse le secours Rain Bird opérer** — il
 > ne coupe jamais le jardin ([`03`](03_coexistence_rainbird.md) §5).
 
@@ -45,11 +47,18 @@ paramètres opérateur, en **déléguant l'exécution** au script supervisé ép
   paramétrés** (§4), les **gardes runtime du script supervisé**
   ([`11`](11_mode_manuel_supervise.md) §6), l'**interrupteur maître** et la
   **fenêtre disjointe** du secours — **pas** par l'attente d'un feu vert terrain.
-- La V1 **ne construit pas** le dead-man switch (`rain_delay`) ni les régimes
-  sophistiqués : elle **coexiste** avec le **secours minimal Rain Bird laissé
-  actif** (`Auto`, [`02`](02_regimes.md) R1), dans une **fenêtre Arsenal
-  disjointe**. Le raffinement d'autorité (dead-man, `rain_delay`, R3/R5) est
-  **réservé au Lot 5**, **uniquement si** l'observation en prouve le besoin.
+- La V1 **inclut une coexistence minimale par `rain_delay`** : tant qu'Arsenal
+  fonctionne, le programme interne Rain Bird est **temporairement neutralisé** par
+  **renouvellement** d'un `rain_delay` court et borné ; si Arsenal cesse de le
+  renouveler (HA absent, pont dégradé), `rain_delay` **expire** et le programme
+  interne **reprend** son rôle de secours — réalisation **minimale** du régime R1
+  ([`02`](02_regimes.md)), application directe de
+  [`03`](03_coexistence_rainbird.md) §4. La conception s'appuie sur la
+  **documentation officielle** (Rain Bird ESP-BAT-BT, protocole SIP, projets open
+  source), jugée suffisante ; les **comportements fins** sont confirmés **en
+  exploitation**, sans Phase 0 bloquante. **Restent hors V1** : le dead-man
+  complet, les **régimes avancés** (R3/R5, `mode Off`), le multi-zone et toute
+  coexistence sophistiquée.
 
 > **Convention de nommage.** Les **paramètres et entités V1 non encore créés**
 > sont **conceptuels** (`‹…›`) ; leur matérialisation est aux Lots 2/3. Les
@@ -121,9 +130,11 @@ ici**.
    ([`03`](03_coexistence_rainbird.md) §3) : au plus **un** décideur légitime par
    instant.
 5. **Direction de défaillance** : toute abstention/défaillance Arsenal **rend la
-   main au secours** ; la décision V1 **ne neutralise jamais** le secours Rain
-   Bird (pas de `mode Off`, pas de `rain_delay` en V1) et **ne bloque jamais à la
-   fois** Arsenal **et** le secours ([`03`](03_coexistence_rainbird.md) §5).
+   main au secours**. La V1 neutralise le secours **uniquement de façon temporaire
+   et auto-réversible** (`rain_delay` court, borné, renouvelé) : l'arrêt du
+   renouvellement le fait **expirer** et le secours **reprend** seul. **Jamais** de
+   neutralisation permanente, **jamais** de `mode Off`, et **jamais** un blocage
+   simultané d'Arsenal **et** du secours ([`03`](03_coexistence_rainbird.md) §4–§5).
 6. **Anti-faux-négatif sol** : un capteur sol muet / canal `indisponible` **n'est
    jamais** lu comme « sol humide, pas besoin » ⇒ abstention, pas exécution
    optimiste ([`04`](04_besoin_hydrique.md) §4).
@@ -170,9 +181,10 @@ décision ni à **retarder** l'automatisation.
 ## 7. Hors périmètre V1
 
 - ❌ **Station 2** (mono-station définitive) ;
-- ❌ **dead-man switch / `rain_delay` / régimes R3-R5 sophistiqués** (réservés au
-  **Lot 5**, seulement si l'observation en prouve la valeur) ;
-- ❌ `mode Off` Rain Bird / neutralisation du secours ;
+- ❌ **dead-man switch complet / régimes avancés (R3/R5) / coexistence
+  sophistiquée** (réservés à un lot ultérieur ; la coexistence `rain_delay`
+  **minimale** fait, elle, partie de la V1 — §1, §4) ;
+- ❌ `mode Off` Rain Bird / neutralisation **permanente** du secours ;
 - ❌ **commande native nouvelle** ; besoin **multi-zone** ;
 - ❌ figer `sensor.arrosage_dernier_effectif` (Lot 3) ou tout `entity_id` de
   paramètre V1 (Lot 2) ;
@@ -191,8 +203,9 @@ décision ni à **retarder** l'automatisation.
    toute abstention est **explicable**.
 4. **Plafond journalier**, **cooldown**, **maître**, **fenêtre disjointe** :
    invariants de sûreté non négociables.
-5. **Abstention ⇒ secours** ; la V1 **ne neutralise jamais** le filet de survie et
-   **ne bloque jamais tout arrosage**.
+5. **Abstention ⇒ secours** ; la V1 ne neutralise le secours que **temporairement
+   et de façon auto-réversible** (`rain_delay`), **jamais** en permanence, et **ne
+   bloque jamais tout arrosage**.
 6. **Historique prouvé** (switch natif), jamais présumé.
 7. **Aucune commande native nouvelle** ; **aucun seuil/`entity_id` V1 figé** ici.
 

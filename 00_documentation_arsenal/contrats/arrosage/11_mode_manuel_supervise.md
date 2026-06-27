@@ -66,6 +66,7 @@ préconditions validées.
 | `switch.…_station_1` | Action candidate | **Uniquement** via `‹script_station_courte_supervisee›`, après préconditions. |
 | `number.…_station_1_duration` | Action candidate | **Uniquement** via script ou helper contrôlé/borné — jamais un réglage libre. |
 | `switch.…_station_2` / `number.…_station_2_duration` | Action candidate | **Même doctrine** que la station 1 — **pas nécessairement** implémentée au premier runtime (et **non confirmée** au relevé courant, [`08`](08_inventaire_pont_runtime.md)). |
+| `number.…_rain_delay` | Action candidate | **Uniquement** via un **script supervisé** de renouvellement (court, borné, jamais permanent), pour la **coexistence minimale V1** ([`17`](17_decision_v1.md), [`03`](03_coexistence_rainbird.md) §4) — jamais un `number` brut. Les formes avancées (régimes, `mode Off`) restent hors V1. |
 
 ---
 
@@ -77,9 +78,10 @@ courant :
 - `button.…_run_program_a` / `_b` / `_c` — programme interne = **seconde autorité**
   ([`03_coexistence_rainbird.md`](03_coexistence_rainbird.md) §1).
 - `button.…_advance_station` — hors périmètre (statu quo).
-- `select.…_controller_mode`, `number.…_rain_delay` — **futur régime / dead-man
-  switch** uniquement ([`03`](03_coexistence_rainbird.md) §4), pas une action
-  manuelle.
+- `select.…_controller_mode` — **futur régime** (`mode Off` / R3) uniquement
+  ([`03`](03_coexistence_rainbird.md) §4), pas une action V1. *(`rain_delay` n'est
+  plus ici : il est autorisé en §3 pour la coexistence minimale V1,
+  [`17`](17_decision_v1.md).)*
 - `number.…_water_budget` — **verrou 100 %**.
 - `button.…_ota_update`, `update.…_firmware_update` — **OTA gelé** tant que le
   sujet OTA n'est pas tranché ([`07`](07_phase_0_terrain.md) T16).

@@ -22,10 +22,11 @@ jamais présumés.
 > **Arbitrage V1 (réconciliation contrat [`17_decision_v1.md`](17_decision_v1.md)).**
 > Cette barrière P1–P7 **ne bloque pas** la **V1 d'arrosage automatique** : la V1
 > **délègue** aux scripts **Run/Stop supervisés déjà validés terrain** (P3/P4),
-> **ne neutralise jamais** le secours et **s'abstient** si le pont est dégradé. La
-> barrière **gate** désormais les seuls **raffinements d'autorité** : `rain_delay` /
-> dead-man switch (P1/P7 ↔ T07–T09), neutralisation du secours, régimes avancés,
-> multi-zone.
+> neutralise le secours **uniquement de façon temporaire et auto-réversible** via
+> `rain_delay` (coexistence minimale V1, [`17`](17_decision_v1.md)) et **s'abstient**
+> si le pont est dégradé. La barrière **gate** désormais les seuls **raffinements
+> d'autorité** : dead-man switch **avancé** (P1/P7 ↔ T07–T09), neutralisation
+> **permanente** du secours, régimes avancés, multi-zone.
 >
 > **Règle d'interprétation.** Ci-dessous, « ferme l'automatisation » / « avant toute
 > automatisation » se lit **« ferme / avant tout raffinement d'autorité »** ; la V1
@@ -35,10 +36,11 @@ jamais présumés.
 
 ## 1. Principe — une barrière, pas une intention
 
-> **Aucun raffinement d'autorité** (dead-man `rain_delay`, neutralisation du
-> secours, régimes avancés, multi-zone) n'est créé tant que **tous** les pré-requis
-> ci-dessous ne sont pas **confirmés**. La **V1 automatique** (contrat
-> [`17`](17_decision_v1.md)) en est **exceptée** : elle est autorisée car elle
+> **Aucun raffinement d'autorité** (dead-man **avancé**, neutralisation
+> **permanente** du secours, régimes avancés, multi-zone) n'est créé tant que
+> **tous** les pré-requis ci-dessous ne sont pas **confirmés**. La **V1 automatique**
+> (contrat [`17`](17_decision_v1.md)) — y compris la coexistence `rain_delay`
+> **minimale** — en est **exceptée** : elle est autorisée car elle
 > **délègue** aux scripts Run/Stop supervisés **déjà validés terrain** (P3/P4) et ne
 > neutralise jamais le secours.
 
