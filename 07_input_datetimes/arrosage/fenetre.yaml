@@ -1,0 +1,49 @@
+# ==========================================================
+# 🧠 ARSENAL — INPUT_DATETIME
+#     Arrosage — Fenêtre horaire Arsenal (V1)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Stocker les bornes horaires de la fenêtre pendant laquelle
+#   l'arrosage automatique V1 (contrat 17) est autorisé à
+#   décider. Réglable par l'opérateur. La fenêtre doit rester
+#   DISJOINTE du calendrier de secours minimal Rain Bird
+#   (contrat 03 §3) — cette disjonction relève du réglage et
+#   de la logique de décision (Lot 3), pas de ce stockage.
+#
+# 🧩 PÉRIMÈTRE
+#   - Heure du jour uniquement (has_time)
+#   - Stockage persistant uniquement
+#   - Aucun calcul, aucune logique de décision locale
+#   - Aucun comportement autonome
+#
+# 🏷️ NATURE
+#   Paramètre métier | Fenêtre horaire V1
+#
+# 🧱 VALEURS PAR DÉFAUT
+#   - Début : 05:30
+#   - Fin   : 06:30  (fenêtre centrée sur l'aube : sol encore frais,
+#                     pertes par évaporation limitées, arrosage terminé
+#                     avant que le soleil ne chauffe ; à régler disjoint
+#                     du secours)
+#
+# 🚫 INTERDITS
+#   - Confondre stockage et décision
+#   - Déclencher directement un arrosage
+#
+# 🏷️ STATUT
+#   Socle arrosage — Arsenal v14.x
+# ==========================================================
+
+arrosage_fenetre_debut:
+  name: "Arrosage — Fenêtre début"
+  has_date: false
+  has_time: true
+  initial: "05:30:00"
+  icon: mdi:clock-start
+
+arrosage_fenetre_fin:
+  name: "Arrosage — Fenêtre fin"
+  has_date: false
+  has_time: true
+  initial: "06:30:00"
+  icon: mdi:clock-end
