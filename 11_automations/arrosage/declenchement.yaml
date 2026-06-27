@@ -1,0 +1,75 @@
+# ==========================================================
+# 🧠 ARSENAL — AUTOMATISATION
+#     Arrosage — Déclenchement automatique V1
+#
+#  ID : 10270000000002
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Exécuter la décision V1 : appeler le SCRIPT RUN SUPERVISÉ
+#   DÉJÀ VALIDÉ TERRAIN dès que l'intention est vraie. Toute
+#   l'autorisation (maître, besoin, fenêtre, cooldown, pluie,
+#   préconditions) est portée par `binary_sensor.arrosage_intention`
+#   (contrat 17 §3) ; le script Run re-vérifie ses propres gardes
+#   runtime (préconditions, pont disponible, station au repos,
+#   preuve de démarrage par le switch natif).
+#
+# 🔔 DÉCLENCHEURS (couverture des cas-bord) + GARDE
+#   L'intention `off → on` ne suffit pas : on couvre aussi les cas
+#   où l'intention est DÉJÀ vraie au moment d'un autre événement.
+#   - intention `off → on`        : besoin devient vrai dans la fenêtre ;
+#   - démarrage Home Assistant    : HA redémarre alors qu'on est en
+#                                    fenêtre et que tout est réuni ;
+#   - maître `off → on`           : l'opérateur active l'automatique
+#                                    alors que l'intention serait déjà vraie ;
+#   - heure = début de fenêtre    : on entre dans la fenêtre alors que
+#                                    le besoin est déjà vrai.
+#   GARDE commune : `binary_sensor.arrosage_intention` == `on` (toute
+#   l'autorisation est re-vérifiée par l'intention).
+#
+# 🔗 ACTION
+#   - script.arrosage_rain_bird_station_1_courte_supervisee
+#
+# 🧱 AUTO-LIMITATION
+#   Le démarrage confirmé (switch natif `on`) horodate
+#   `sensor.arrosage_dernier_effectif`, ce qui active le cooldown
+#   et fait retomber l'intention → pas de nouveau déclenchement
+#   avant l'intervalle minimal.
+#
+# 🚫 NE FAIT PAS
+#   - aucune commande native directe : seule frontière = le script
+#     supervisé (contrat 11 §2) ;
+#   - aucune écriture rain_delay (portée par la coexistence) ;
+#   - n'introduit aucune station 2, aucun arrosage multi-zone.
+#
+# 🏷️ STATUT
+#   Runtime V1 (contrat 17) — Arsenal v14.x
+# ==========================================================
+
+- id: "10270000000002"
+  alias: "Arrosage - Declenchement automatique V1"
+  mode: single
+
+  trigger:
+    # besoin devient vrai dans la fenêtre (et ré-évaluation /minute via now())
+    - platform: state
+      entity_id: binary_sensor.arrosage_intention
+      to: "on"
+    # démarrage HA alors que l'intention est déjà vraie (ex. en fenêtre)
+    - platform: homeassistant
+      event: start
+    # maître activé alors que l'intention serait déjà vraie
+    - platform: state
+      entity_id: input_boolean.arrosage_automatique_actif
+      to: "on"
+    # entrée dans la fenêtre alors que le besoin est déjà vrai
+    - platform: time
+      at: input_datetime.arrosage_fenetre_debut
+
+  condition:
+    # garde commune : on n'arrose que si TOUTE l'autorisation est réunie
+    - condition: state
+      entity_id: binary_sensor.arrosage_intention
+      state: "on"
+
+  action:
+    - service: script.arrosage_rain_bird_station_1_courte_supervisee

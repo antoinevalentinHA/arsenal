@@ -1,0 +1,40 @@
+# ==========================================================
+# 🧠 ARSENAL — SENSOR (déclenché)
+#     Arrosage — Dernier arrosage effectif (preuve)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Horodater le DERNIER ARROSAGE RÉELLEMENT EFFECTIF, comme
+#   PREUVE d'exécution (contrat 06 / 17) : l'horodatage n'est posé
+#   que sur le **démarrage prouvé par le switch natif** de la
+#   station 1 (`off → on`), JAMAIS sur un simple ACK.
+#   Alimente le cooldown de la décision (intention).
+#
+# 🧩 PORTÉE
+#   - Déclenché sur le switch natif passant à `on` — qu'il s'agisse
+#     d'un arrosage Arsenal OU du secours interne Rain Bird : dans
+#     les deux cas le jardin a réellement reçu de l'eau, donc le
+#     cooldown doit s'appliquer (anti sur-arrosage, F2).
+#   - device_class timestamp : valeur restaurée au redémarrage.
+#
+# 🔗 ENTITÉ SOURCE
+#   - switch.rain_bird_bat_bt_2_e9a3_station_1 (preuve primaire)
+#
+# 🚫 NE FAIT PAS
+#   - aucune commande, aucun pilotage : pure observation horodatée.
+#   - ne se fonde JAMAIS sur active_station / ACK BLE seul.
+#
+# 🏷️ STATUT
+#   Runtime V1 (contrat 17) — Arsenal v14.x
+# ==========================================================
+
+- trigger:
+    - platform: state
+      entity_id: switch.rain_bird_bat_bt_2_e9a3_station_1
+      to: "on"
+
+  sensor:
+    - name: "Arrosage dernier effectif"
+      unique_id: arrosage_dernier_effectif
+      device_class: timestamp
+      icon: mdi:history
+      state: "{{ now().isoformat() }}"

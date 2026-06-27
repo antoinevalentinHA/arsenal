@@ -1,0 +1,73 @@
+# ==========================================================
+# 🧠 ARSENAL — SCRIPT
+#     Arrosage / Rain Bird — Appliquer rain_delay (coexistence V1)
+# ----------------------------------------------------------
+# 🎯 RÔLE
+#   Encapsuler l'écriture native de `rain_delay` (contrat 11 §2 :
+#   jamais un `number` brut) pour réaliser la COEXISTENCE MINIMALE
+#   V1 (contrat 17, 03 §4) :
+#     - Arsenal autorité (maître `on`) + pont joignable
+#       → pose un `rain_delay` court et borné : le programme
+#         interne Rain Bird est temporairement neutralisé.
+#     - Arsenal en retrait (maître `off`) + pont joignable
+#       → remet `rain_delay` à 0 : le secours interne reprend
+#         immédiatement la main.
+#     - Pont indisponible → AUCUNE écriture : `rain_delay` n'est
+#       plus renouvelé, expire, et le secours reprend seul
+#       (direction de défaillance, 03 §5 — fail-safe).
+#
+# 🧱 INVARIANTS rain_delay (contrat 03 §4) — CONSERVÉS
+#   court · borné · renouvelé · JAMAIS permanent. La valeur posée
+#   (jours) est volontairement courte et supérieure à la cadence
+#   de renouvellement de l'automation, pour ne jamais expirer tant
+#   qu'Arsenal vit, et expirer rapidement s'il disparaît.
+#
+# 🔗 ENTITÉS
+#   - number.rain_bird_bat_bt_2_e9a3_rain_delay (écrit, encadré)
+#   - input_boolean.arrosage_automatique_actif (autorité Arsenal)
+#   - binary_sensor.rain_bird_pont_donnees_disponibles (garde)
+#
+# 🚫 NE FAIT PAS
+#   - aucune autre commande native (station, stop, run_program,
+#     advance, controller_mode, water_budget, OTA) ;
+#   - aucune valeur permanente ni arbitrairement longue.
+#
+# 🏷️ STATUT
+#   Runtime V1 supervisé (contrat 17) — Arsenal v14.x
+# ==========================================================
+
+arrosage_rain_bird_rain_delay_appliquer:
+  alias: "Arrosage - Appliquer rain_delay (coexistence V1)"
+  mode: single
+
+  sequence:
+    - variables:
+        rd_entity: number.rain_bird_bat_bt_2_e9a3_rain_delay
+        # Valeur active en JOURS : courte, bornée, > cadence de renouvellement (12 h).
+        valeur_active: 2
+        maitre_on: "{{ is_state('input_boolean.arrosage_automatique_actif', 'on') }}"
+        dispo_ok: "{{ is_state('binary_sensor.rain_bird_pont_donnees_disponibles', 'on') }}"
+
+    - choose:
+        # Arsenal autorité + pont joignable → neutralisation temporaire
+        - conditions:
+            - condition: template
+              value_template: "{{ maitre_on and dispo_ok }}"
+          sequence:
+            - service: number.set_value
+              target:
+                entity_id: "{{ rd_entity }}"
+              data:
+                value: "{{ valeur_active }}"
+
+        # Arsenal en retrait + pont joignable → rendre la main au secours
+        - conditions:
+            - condition: template
+              value_template: "{{ not maitre_on and dispo_ok }}"
+          sequence:
+            - service: number.set_value
+              target:
+                entity_id: "{{ rd_entity }}"
+              data:
+                value: 0
+      # default : pont indisponible → aucune écriture (expiration → secours)
